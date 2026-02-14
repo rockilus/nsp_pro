@@ -21,6 +21,7 @@ import {
   formatWeeklyTime,
   formatMonthlyDuties,
 } from "../../../../utils/replacementHelpers";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 interface ReplacementCandidatesListProps {
   lng: string;
@@ -50,6 +51,7 @@ export function ReplacementCandidatesList({
   isCheckingReplacement,
 }: ReplacementCandidatesListProps) {
   const { t } = useTranslation(lng, "schedule-page");
+  const isMobile = useIsMobile();
 
   return (
     <Box>
@@ -80,18 +82,20 @@ export function ReplacementCandidatesList({
           <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 1 }}>
             {t("replacement_candidates")}{" "}
           </Typography>
-          <Button
-            size="small"
-            variant="contained"
-            onClick={() => {
-              // Open dialog with all candidates for comparison
-              if (candidates.length > 0) onViewDetails(candidates[0]);
-            }}
-            sx={{ textTransform: "none", mb: 1, ml: "auto" }}
-            data-testid="see-details-button"
-          >
-            {t("see_details")}
-          </Button>
+          {!isMobile && (
+            <Button
+              size="small"
+              variant="contained"
+              onClick={() => {
+                // Open dialog with all candidates for comparison
+                if (candidates.length > 0) onViewDetails(candidates[0]);
+              }}
+              sx={{ textTransform: "none", mb: 1, ml: "auto" }}
+              data-testid="see-details-button"
+            >
+              {t("see_details")}
+            </Button>
+          )}
           <List sx={{ maxHeight: 400, overflow: "auto", p: 0 }}>
             {candidates
               .filter((candidate) => candidate.rank !== 0)

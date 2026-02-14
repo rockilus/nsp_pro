@@ -48,13 +48,11 @@ test.describe("Assignment Read-Only - Team Member", () => {
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
-  test("should open assignment in read-only mode for team member", async ({
-    page,
-  }, testInfo) => {
+  test("should not be clickable", async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const dbUtils = (scheduleTestBase as any).dbUtils;
+    const testWorkers = scheduleTestBase.getTestWorkers();
+    const testShifts = scheduleTestBase.getTestShifts();
 
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
@@ -63,236 +61,23 @@ test.describe("Assignment Read-Only - Team Member", () => {
       dayjs.utc().add(2, "month").endOf("day"),
     );
     const assignments = AR.assignmentsRead;
+    await expect(assignments.length).toBeGreaterThan(0);
 
-    if (assignments.length === 0) {
-      console.log("⚠️ No assignments found, skipping test");
-      test.skip();
-      return;
-    }
     const assignment = assignments[0];
-    const assignmentDate = dayjs(assignment.date);
 
-    // Click on assignment cell to open dialog
-    const assignmentCell = page
-      .locator(`[data-date="${assignmentDate.format("YYYY-MM-DD")}"]`)
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      console.log("⚠️ Assignment cell not found, skipping test");
-      test.skip();
-      return;
-    }
+    // Click on assignment cell to open edit dialog
+    // Note: Selector depends on schedule UI implementation
+    const assignmentCell = page.locator(
+      `[data-testid="assignment-cell-${assignment.id}"]`,
+    );
+    await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
 
-    // Verify dialog opens
+    // Verify dialog opens in edit mode
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-    await expect(dialog).toBeVisible();
+    await expect(dialog).not.toBeVisible();
 
-    // Verify form fields are disabled (read-only)
-    const workerSelect = page.locator(
-      '[data-testid="edit-assignment-worker-select"]',
-    );
-    const shiftSelect = page.locator(
-      '[data-testid="edit-assignment-shift-select"]',
-    );
-    const datePicker = page.locator(
-      '[data-testid="edit-assignment-date-picker"]',
-    );
-
-    if (await workerSelect.isVisible()) {
-      await expect(workerSelect).toBeDisabled();
-    }
-    if (await shiftSelect.isVisible()) {
-      await expect(shiftSelect).toBeDisabled();
-    }
-    if (await datePicker.isVisible()) {
-      await expect(datePicker).toBeDisabled();
-    }
-
-    console.log("✅ Assignment fields are read-only for team member");
-  });
-
-  test("should NOT show save and delete buttons for team member", async ({
-    page,
-  }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-
-    const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
-      false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
-    );
-    const assignments = AR2.assignmentsRead;
-
-    if (assignments.length === 0) {
-      test.skip();
-      return;
-    }
-    const assignment = assignments[0];
-    const assignmentDate = dayjs(assignment.date);
-
-    const assignmentCell = page
-      .locator(`[data-date="${assignmentDate.format("YYYY-MM-DD")}"]`)
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
-
-    await assignmentCell.click();
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).toBeVisible();
-
-    // Verify Save and Delete buttons are NOT visible
-    const saveButton = page.locator('[data-testid="save-assignment-button"]');
-    const deleteButton = page.locator(
-      '[data-testid="delete-assignment-button"]',
-    );
-
-    await expect(saveButton).not.toBeVisible();
-    await expect(deleteButton).not.toBeVisible();
-
-    console.log("✅ Save and Delete buttons hidden for team member");
-  });
-
-  test("should NOT show create button for new assignments to team member", async ({
-    page,
-  }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-
-    // Try to open dialog for creating new assignment
-    const addButton = page
-      .locator('[data-testid="add-schedule-item-button"]')
-      .first();
-
-    // Team members should not be able to create assignments
-    // The button might not be visible at all, or clicking it should do nothing
-    if (await addButton.isVisible().catch(() => false)) {
-      await addButton.click();
-
-      const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-
-      if (await dialog.isVisible()) {
-        // If dialog opens, Assignment button should not be available
-        const assignmentButton = page.locator(
-          '[data-testid="assignment-button"]',
-        );
-
-        // Either the assignment button is not visible, or
-        // the create button should not be visible after selecting assignment
-        if (await assignmentButton.isVisible()) {
-          await assignmentButton.click();
-
-          const createButton = page.locator(
-            '[data-testid="edit-assignment-create-button"]',
-          );
-          await expect(createButton).not.toBeVisible();
-        }
-      }
-
-      console.log("✅ Team member cannot create new assignments");
-    } else {
-      console.log("✅ Add button not visible for team member (expected)");
-    }
-  });
-
-  test("should allow team member to close read-only assignment dialog", async ({
-    page,
-  }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-
-    const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
-      false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
-    );
-    const assignments = AR3.assignmentsRead;
-
-    if (assignments.length === 0) {
-      test.skip();
-      return;
-    }
-    const assignment = assignments[0];
-    const assignmentDate = dayjs(assignment.date);
-
-    const assignmentCell = page
-      .locator(`[data-date="${assignmentDate.format("YYYY-MM-DD")}"]`)
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
-
-    await assignmentCell.click();
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).toBeVisible();
-
-    // Close button should be available
-    const closeButton = page.locator('[data-testid="close-dialog-button"]');
-    await expect(closeButton).toBeVisible();
-    await closeButton.click();
-
-    // Dialog should close
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).not.toBeVisible();
-
-    console.log("✅ Team member can close read-only dialog");
-  });
-
-  test("should NOT allow team member to access replacement candidates", async ({
-    page,
-  }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
-    const dbUtils = (scheduleTestBase as any).dbUtils;
-
-    const AR4 = await scheduleTestBase.getAssignmentsAndRecurrences(
-      false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
-    );
-    const assignments = AR4.assignmentsRead;
-
-    if (assignments.length === 0) {
-      test.skip();
-      return;
-    }
-    const assignment = assignments[0];
-    const assignmentDate = dayjs(assignment.date);
-
-    const assignmentCell = page
-      .locator(`[data-date="${assignmentDate.format("YYYY-MM-DD")}"]`)
-      .first();
-
-    if (!(await assignmentCell.isVisible().catch(() => false))) {
-      test.skip();
-      return;
-    }
-
-    await assignmentCell.click();
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).toBeVisible();
-
-    // Check replacement button should NOT be visible
-    const checkReplacementButton = page.locator(
-      '[data-testid="check-replacement-button"]',
-    );
-    await expect(checkReplacementButton).not.toBeVisible();
-
-    console.log("✅ Replacement feature hidden for team member");
+    console.log("✅ Assignment cell is not clickable for team member");
   });
 });

@@ -31,7 +31,7 @@ test.describe("Mobile Assignment Dialogs - Team Member", () => {
 
     await scheduleTestBase.setupScheduleTests(workerIndex, {
       referenceDate: dayjs.utc().add(1, "day"),
-      createAssignments: false,
+      createAssignments: true,
       linkMemberToWorker: true,
     });
 
