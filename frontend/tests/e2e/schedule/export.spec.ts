@@ -9,38 +9,74 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { ExportTestBase } from "../../utils/export-test-base";
+import { randomUUID } from "crypto";
+import { ScheduleTestBase } from "../../utils/schedule-test-base";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 
-const exportTestBase = new ExportTestBase();
+dayjs.extend(utc);
 
 test.describe("Export Feature", () => {
-  test.beforeAll(async () => {
-    // Setup the export test environment
-    await exportTestBase.setupExportTests(test.info().workerIndex);
+  const testBasesMap = new Map<string, ScheduleTestBase>();
+
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex =
+      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+    console.log(`[Test Run ${testRunId}] Starting replacement test setup`);
+
+    const scheduleTestBase = new ScheduleTestBase();
+    testBasesMap.set(testRunId, scheduleTestBase);
+
+    (testInfo as any).testRunId = testRunId;
+
+    await scheduleTestBase.setupScheduleTests(workerIndex, {
+      referenceDate: dayjs.utc().add(1, "day"),
+      createAssignments: true,
+      linkMemberToWorker: false,
+      campaignDates: {
+        start: dayjs.utc().add(1, "day").subtract(7, "day").toISOString(),
+        end: dayjs.utc().add(1, "day").add(7, "day").toISOString(),
+      },
+    });
+
+    await scheduleTestBase.actAsOwner(page);
+    await scheduleTestBase.navigateToSchedulePage(page);
   });
 
-  test.beforeEach(async ({ page }) => {
-    // Navigate to the schedule page for each test
-    await exportTestBase.navigateToSchedulePage(page);
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
+    testBasesMap.delete(testRunId);
+    console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
-  test("should open dialog when clicking export button", async ({ page }) => {
+  test("should open dialog when clicking export button", async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const scheduleTestBase = testBasesMap.get(testRunId)!;
+
     // Get the export button
-    const exportButton = exportTestBase.getExportButton(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
     await expect(exportButton).toBeVisible();
 
     // Click the export button
     await exportButton.click();
 
     // Verify dialog is visible
-    const dialog = exportTestBase.getExportDialog(page);
+    const dialog = page.locator('[data-testid="export-dialog"]');
     await expect(dialog).toBeVisible();
 
     // Verify dialog contains expected elements
-    const periodToggleGroup = exportTestBase.getPeriodToggleGroup(page);
+    const periodToggleGroup = page.locator(
+      '[data-testid="export-period-toggle-group"]',
+    );
     await expect(periodToggleGroup).toBeVisible();
 
-    const confirmButton = exportTestBase.getConfirmExportButton(page);
+    const confirmButton = page.locator('[data-testid="confirm-export-button"]');
     await expect(confirmButton).toBeVisible();
 
     console.log("✅ Export dialog opens successfully");
@@ -48,14 +84,21 @@ test.describe("Export Feature", () => {
 
   test("should close dialog when clicking close icon", async ({ page }) => {
     // Open the dialog
-    await exportTestBase.openExportDialog(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await exportButton.waitFor({ state: "visible", timeout: 10000 });
+    await exportButton.click();
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]');
+    await exportDialog.waitFor({ state: "visible", timeout: 5000 });
 
     // Verify dialog is visible
-    const dialog = exportTestBase.getExportDialog(page);
+    const dialog = page.locator('[data-testid="export-dialog"]');
     await expect(dialog).toBeVisible();
 
     // Click the close button
-    const closeButton = exportTestBase.getDialogCloseButton(page);
+    const closeButton = page.locator(
+      '[data-testid="export-dialog-close-button"]',
+    );
     await closeButton.click();
 
     // Verify dialog is closed
@@ -68,13 +111,33 @@ test.describe("Export Feature", () => {
     page,
   }) => {
     // Open the dialog
-    await exportTestBase.openExportDialog(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await exportButton.waitFor({ state: "visible", timeout: 10000 });
+    await exportButton.click();
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]');
+    await exportDialog.waitFor({ state: "visible", timeout: 5000 });
 
     // Select "Current Selection" option (value 0)
-    await exportTestBase.selectPeriodOption(page, 0);
+    const optionButton = page.locator(
+      `[data-testid="export-period-option-${0}"]`,
+    );
+    await optionButton.click();
+    // Wait a bit for state to update
+    await page.waitForTimeout(200);
 
     // Verify date pickers are disabled
-    const disabled = await exportTestBase.areDatePickersDisabled(page);
+    const startDatePicker = page.locator(
+      '[data-testid="export-start-date-picker"]',
+    );
+    const endDatePicker = page.locator(
+      '[data-testid="export-end-date-picker"]',
+    );
+
+    const startDisabled = await startDatePicker.isDisabled();
+    const endDisabled = await endDatePicker.isDisabled();
+
+    const disabled = startDisabled && endDisabled;
     expect(disabled).toBe(true);
 
     console.log("✅ Date pickers disabled for Current Selection option");
@@ -90,23 +153,34 @@ test.describe("Export Feature", () => {
     const endDate = new Date(today);
     endDate.setDate(today.getDate() + 7);
 
-    await exportTestBase.createCampaignSchedule(
-      startDate.toISOString().split("T")[0],
-      endDate.toISOString().split("T")[0]
-    );
-
-    // Reload the page to get the campaign
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
     // Open the dialog
-    await exportTestBase.openExportDialog(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await exportButton.waitFor({ state: "visible", timeout: 10000 });
+    await exportButton.click();
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]');
+    await exportDialog.waitFor({ state: "visible", timeout: 5000 });
 
     // Select "Campaign" option (value 1)
-    await exportTestBase.selectPeriodOption(page, 1);
+    const optionButton = page.locator(
+      `[data-testid="export-period-option-${1}"]`,
+    );
+    await optionButton.click();
+    // Wait a bit for state to update
+    await page.waitForTimeout(200);
 
     // Verify date pickers are disabled
-    const disabled = await exportTestBase.areDatePickersDisabled(page);
+    const startDatePicker = page.locator(
+      '[data-testid="export-start-date-picker"]',
+    );
+    const endDatePicker = page.locator(
+      '[data-testid="export-end-date-picker"]',
+    );
+
+    const startDisabled = await startDatePicker.isDisabled();
+    const endDisabled = await endDatePicker.isDisabled();
+
+    const disabled = startDisabled && endDisabled;
     expect(disabled).toBe(true);
 
     console.log("✅ Date pickers disabled for Campaign option");
@@ -116,13 +190,33 @@ test.describe("Export Feature", () => {
     page,
   }) => {
     // Open the dialog
-    await exportTestBase.openExportDialog(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await exportButton.waitFor({ state: "visible", timeout: 10000 });
+    await exportButton.click();
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]');
+    await exportDialog.waitFor({ state: "visible", timeout: 5000 });
 
     // Select "All" option (value 2)
-    await exportTestBase.selectPeriodOption(page, 2);
+    const optionButton = page.locator(
+      `[data-testid="export-period-option-${2}"]`,
+    );
+    await optionButton.click();
+    // Wait a bit for state to update
+    await page.waitForTimeout(200);
 
     // Verify date pickers are disabled
-    const disabled = await exportTestBase.areDatePickersDisabled(page);
+    const startDatePicker = page.locator(
+      '[data-testid="export-start-date-picker"]',
+    );
+    const endDatePicker = page.locator(
+      '[data-testid="export-end-date-picker"]',
+    );
+
+    const startDisabled = await startDatePicker.isDisabled();
+    const endDisabled = await endDatePicker.isDisabled();
+
+    const disabled = startDisabled && endDisabled;
     expect(disabled).toBe(true);
 
     console.log("✅ Date pickers disabled for All option");
@@ -132,13 +226,32 @@ test.describe("Export Feature", () => {
     page,
   }) => {
     // Open the dialog
-    await exportTestBase.openExportDialog(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await exportButton.waitFor({ state: "visible", timeout: 10000 });
+    await exportButton.click();
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]');
+    await exportDialog.waitFor({ state: "visible", timeout: 5000 });
 
     // Select "Custom" option (value 3)
-    await exportTestBase.selectPeriodOption(page, 3);
+    const optionButton = page.locator(
+      `[data-testid="export-period-option-${3}"]`,
+    );
+    await optionButton.click();
+    // Wait a bit for state to update
+    await page.waitForTimeout(200);
 
     // Verify date pickers are enabled
-    const enabled = await exportTestBase.areDatePickersEnabled(page);
+    const startDatePicker = page.locator(
+      '[data-testid="export-start-date-picker"]',
+    );
+    const endDatePicker = page.locator(
+      '[data-testid="export-end-date-picker"]',
+    );
+
+    const startEnabled = !(await startDatePicker.isDisabled());
+    const endEnabled = !(await endDatePicker.isDisabled());
+    const enabled = startEnabled && endEnabled;
     expect(enabled).toBe(true);
 
     console.log("✅ Date pickers enabled for Custom option");
@@ -148,16 +261,39 @@ test.describe("Export Feature", () => {
     page,
   }) => {
     // Open the dialog
-    await exportTestBase.openExportDialog(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await exportButton.waitFor({ state: "visible", timeout: 10000 });
+    await exportButton.click();
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]');
+    await exportDialog.waitFor({ state: "visible", timeout: 5000 });
 
     // Select "Current Selection" option (value 0)
-    await exportTestBase.selectPeriodOption(page, 0);
+    const optionButton = page.locator(
+      `[data-testid="export-period-option-${0}"]`,
+    );
+    await optionButton.click();
+    // Wait a bit for state to update
+    await page.waitForTimeout(200);
 
     // Click confirm and wait for download
-    const download = await exportTestBase.confirmExportAndWaitForDownload(page);
+    const confirmButton = page.locator('[data-testid="confirm-export-button"]');
+
+    // Start waiting for download before clicking
+    const downloadPromise = page.waitForEvent("download", { timeout: 30000 });
+
+    await confirmButton.click();
+
+    // Wait for the download to start
+    const download = await downloadPromise;
 
     // Verify it's an Excel file
-    await exportTestBase.verifyExcelDownload(download);
+    const suggestedFilename = download.suggestedFilename();
+
+    // Check that the filename ends with .xlsx
+    expect(suggestedFilename).toMatch(/\.xlsx$/);
+
+    console.log(`✅ Download verified: ${suggestedFilename}`);
 
     console.log("✅ Excel file downloaded for Current Selection option");
   });
@@ -172,26 +308,40 @@ test.describe("Export Feature", () => {
     const endDate = new Date(today);
     endDate.setDate(today.getDate() + 7);
 
-    await exportTestBase.createCampaignSchedule(
-      startDate.toISOString().split("T")[0],
-      endDate.toISOString().split("T")[0]
-    );
-
-    // Reload the page to get the campaign
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
     // Open the dialog
-    await exportTestBase.openExportDialog(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await exportButton.waitFor({ state: "visible", timeout: 10000 });
+    await exportButton.click();
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]');
+    await exportDialog.waitFor({ state: "visible", timeout: 5000 });
 
     // Select "Campaign" option (value 1)
-    await exportTestBase.selectPeriodOption(page, 1);
+    const optionButton = page.locator(
+      `[data-testid="export-period-option-${1}"]`,
+    );
+    await optionButton.click();
+    // Wait a bit for state to update
+    await page.waitForTimeout(200);
 
     // Click confirm and wait for download
-    const download = await exportTestBase.confirmExportAndWaitForDownload(page);
+    const confirmButton = page.locator('[data-testid="confirm-export-button"]');
+
+    // Start waiting for download before clicking
+    const downloadPromise = page.waitForEvent("download", { timeout: 30000 });
+
+    await confirmButton.click();
+
+    // Wait for the download to start
+    const download = await downloadPromise;
 
     // Verify it's an Excel file
-    await exportTestBase.verifyExcelDownload(download);
+    const suggestedFilename = download.suggestedFilename();
+
+    // Check that the filename ends with .xlsx
+    expect(suggestedFilename).toMatch(/\.xlsx$/);
+
+    console.log(`✅ Download verified: ${suggestedFilename}`);
 
     console.log("✅ Excel file downloaded for Campaign option");
   });
@@ -200,16 +350,39 @@ test.describe("Export Feature", () => {
     page,
   }) => {
     // Open the dialog
-    await exportTestBase.openExportDialog(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await exportButton.waitFor({ state: "visible", timeout: 10000 });
+    await exportButton.click();
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]');
+    await exportDialog.waitFor({ state: "visible", timeout: 5000 });
 
     // Select "All" option (value 2)
-    await exportTestBase.selectPeriodOption(page, 2);
+    const optionButton = page.locator(
+      `[data-testid="export-period-option-${2}"]`,
+    );
+    await optionButton.click();
+    // Wait a bit for state to update
+    await page.waitForTimeout(200);
 
     // Click confirm and wait for download
-    const download = await exportTestBase.confirmExportAndWaitForDownload(page);
+    const confirmButton = page.locator('[data-testid="confirm-export-button"]');
+
+    // Start waiting for download before clicking
+    const downloadPromise = page.waitForEvent("download", { timeout: 30000 });
+
+    await confirmButton.click();
+
+    // Wait for the download to start
+    const download = await downloadPromise;
 
     // Verify it's an Excel file
-    await exportTestBase.verifyExcelDownload(download);
+    const suggestedFilename = download.suggestedFilename();
+
+    // Check that the filename ends with .xlsx
+    expect(suggestedFilename).toMatch(/\.xlsx$/);
+
+    console.log(`✅ Download verified: ${suggestedFilename}`);
 
     console.log("✅ Excel file downloaded for All option");
   });
@@ -218,43 +391,98 @@ test.describe("Export Feature", () => {
     page,
   }) => {
     // Open the dialog
-    await exportTestBase.openExportDialog(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await exportButton.waitFor({ state: "visible", timeout: 10000 });
+    await exportButton.click();
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]');
+    await exportDialog.waitFor({ state: "visible", timeout: 5000 });
 
     // Select "Custom" option (value 3)
-    await exportTestBase.selectPeriodOption(page, 3);
+    const optionButton = page.locator(
+      `[data-testid="export-period-option-${3}"]`,
+    );
+    await optionButton.click();
+    // Wait a bit for state to update
+    await page.waitForTimeout(200);
 
     // Verify date pickers are enabled
-    const enabled = await exportTestBase.areDatePickersEnabled(page);
+    const startDatePicker = page.locator(
+      '[data-testid="export-start-date-picker"]',
+    );
+    const endDatePicker = page.locator(
+      '[data-testid="export-end-date-picker"]',
+    );
+
+    const startEnabled = !(await startDatePicker.isDisabled());
+    const endEnabled = !(await endDatePicker.isDisabled());
+    const enabled = startEnabled && endEnabled;
     expect(enabled).toBe(true);
 
     // Note: We're not modifying the dates here - using default dates
     // In a more comprehensive test, you could set specific dates
 
     // Click confirm and wait for download
-    const download = await exportTestBase.confirmExportAndWaitForDownload(page);
+    const confirmButton = page.locator('[data-testid="confirm-export-button"]');
+
+    // Start waiting for download before clicking
+    const downloadPromise = page.waitForEvent("download", { timeout: 30000 });
+
+    await confirmButton.click();
+
+    // Wait for the download to start
+    const download = await downloadPromise;
 
     // Verify it's an Excel file
-    await exportTestBase.verifyExcelDownload(download);
+    const suggestedFilename = download.suggestedFilename();
+
+    // Check that the filename ends with .xlsx
+    expect(suggestedFilename).toMatch(/\.xlsx$/);
+
+    console.log(`✅ Download verified: ${suggestedFilename}`);
 
     console.log("✅ Excel file downloaded for Custom option");
   });
 
   test("should close dialog after successful export", async ({ page }) => {
     // Open the dialog
-    await exportTestBase.openExportDialog(page);
+    const exportButton = page.locator('[data-testid="export-button"]');
+    await exportButton.waitFor({ state: "visible", timeout: 10000 });
+    await exportButton.click();
+
+    const exportDialog = page.locator('[data-testid="export-dialog"]');
+    await exportDialog.waitFor({ state: "visible", timeout: 5000 });
 
     // Select "Current Selection" option
-    await exportTestBase.selectPeriodOption(page, 0);
+    const optionButton = page.locator(
+      `[data-testid="export-period-option-${0}"]`,
+    );
+    await optionButton.click();
+    // Wait a bit for state to update
+    await page.waitForTimeout(200);
 
     // Get dialog reference
-    const dialog = exportTestBase.getExportDialog(page);
+    const dialog = page.locator('[data-testid="export-dialog"]');
     await expect(dialog).toBeVisible();
 
     // Click confirm and wait for download
-    const download = await exportTestBase.confirmExportAndWaitForDownload(page);
+    const confirmButton = page.locator('[data-testid="confirm-export-button"]');
+
+    // Start waiting for download before clicking
+    const downloadPromise = page.waitForEvent("download", { timeout: 30000 });
+
+    await confirmButton.click();
+
+    // Wait for the download to start
+    const download = await downloadPromise;
 
     // Verify download succeeded
-    await exportTestBase.verifyExcelDownload(download);
+    const suggestedFilename = download.suggestedFilename();
+
+    // Check that the filename ends with .xlsx
+    expect(suggestedFilename).toMatch(/\.xlsx$/);
+
+    console.log(`✅ Download verified: ${suggestedFilename}`);
 
     // Note: The dialog behavior after export may vary
     // Some implementations keep it open, some close it
