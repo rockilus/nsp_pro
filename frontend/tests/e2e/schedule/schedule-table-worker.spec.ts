@@ -254,7 +254,7 @@ test.describe("ScheduleTableWorker - Owner Tests", () => {
       console.log("✅ Assignments displayed correctly");
     });
 
-    test("should open AssignmentSelection panel when clicking on an assignment", async ({
+    test("should open assignment dialog when clicking on an assignment", async ({
       page,
     }) => {
       // Find and click on an assignment cell
@@ -262,11 +262,9 @@ test.describe("ScheduleTableWorker - Owner Tests", () => {
       await expect(assignmentCell.first()).toBeVisible();
       await assignmentCell.first().click();
 
-      // Wait for the assignment selection panel to open
-      const assignmentSelectionPanel = page
-        .locator('text="Assignment"')
-        .first();
-      await expect(assignmentSelectionPanel).toBeVisible({ timeout: 5000 });
+      // Wait for the assignment dialog
+      const assignmentDialog = page.locator("data-testid=assignment-form");
+      await expect(assignmentDialog).toBeVisible({ timeout: 5000 });
 
       console.log("✅ AssignmentSelection panel opened on assignment click");
     });
@@ -354,35 +352,25 @@ test.describe("ScheduleTableWorker - Member Tests", () => {
         end: today.endOf("month").format("YYYY-MM-DD"),
       },
     });
+    const campaign = scheduleTestBase.getCampaign();
+    expect(campaign).not.toBeNull();
+    await scheduleTestBase.validateSchedule(campaign!.id);
   });
 
   test.beforeEach(async ({ page }) => {
     await scheduleTestBase.actAsMember(page);
     await scheduleTestBase.navigateToSchedulePage(page);
 
-    // Update scheduleViewSettings to worker view in localStorage
-    const teamId = scheduleTestBase.getTestTeam()?.teamId;
-    await page.evaluate((teamId) => {
-      const storageKey = `scheduleViewSettings_${teamId}`;
-      const settings = JSON.parse(localStorage.getItem(storageKey) || "{}");
-      settings.groupBy = "worker";
-      localStorage.setItem(storageKey, JSON.stringify(settings));
-    }, teamId);
-
-    // Reload the page to apply settings
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
-    // Wait for the schedule table to render
-    await page.waitForSelector('[data-testid="schedule-table-worker"]', {
-      timeout: 10000,
-    });
+    await scheduleTestBase.setScheduleViewSettings(page, { groupBy: "worker" });
   });
 
   test.describe("Date Header - No Schedule Status", () => {
     test("should not display schedule status in date header cells for members", async ({
       page,
     }) => {
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+
       // Wait for dates header row to be visible
       await page.waitForSelector('[data-testid="dates-header-row"]', {
         timeout: 5000,

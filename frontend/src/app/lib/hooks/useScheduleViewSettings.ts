@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { ScheduleViewSettingsT } from "@/types/schedule";
 import { useLocalStorageState } from "./useLocalStorageState";
 import {
@@ -83,9 +83,14 @@ export function useScheduleViewSettings(
   }, [setSettings, defaultSettings]);
 
   // Ensure the current settings are always valid
-  const validatedSettings = validateScheduleViewSettings(
-    settings,
-    defaultSettings.showDailyShiftDemands
+  // Memoize to prevent creating new objects on every render
+  const validatedSettings = useMemo(
+    () =>
+      validateScheduleViewSettings(
+        settings,
+        defaultSettings.showDailyShiftDemands
+      ),
+    [settings, defaultSettings.showDailyShiftDemands]
   );
 
   return [validatedSettings, updateSettings, resetSettings];

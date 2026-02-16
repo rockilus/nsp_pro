@@ -263,7 +263,7 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
       console.log(`✅ Found ${assignmentCount} assignment(s) displayed`);
     });
 
-    test("should open AssignmentSelection panel when clicking on an assignment", async ({
+    test("should open assignment dialog when clicking on an assignment", async ({
       page,
     }) => {
       // Wait for assignments to load
@@ -280,7 +280,7 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
       // Wait for dialog to open with AssignmentSelection
       await page.waitForTimeout(500);
 
-      // Verify AssignmentSelection panel is open
+      // Verify assignment dialog is open
       // Look for assignment-specific elements in the dialog
       const assignmentEditDialog = page.locator("data-testid=assignment-form");
       await expect(assignmentEditDialog).toBeVisible({ timeout: 3000 });
@@ -422,6 +422,9 @@ test.describe("ScheduleTableShift - Member Tests", () => {
         end: today.endOf("month").format("YYYY-MM-DD"),
       },
     });
+    const campaign = scheduleTestBase.getCampaign();
+    expect(campaign).not.toBeNull();
+    await scheduleTestBase.validateSchedule(campaign!.id);
   });
 
   test.beforeEach(async ({ page }) => {
@@ -541,6 +544,12 @@ test.describe("ScheduleTableShift - Member Tests", () => {
     test("should display only validated schedule assignments, not campaign", async ({
       page,
     }) => {
+      const schedules = scheduleTestBase.getSchedules();
+      const campaign = scheduleTestBase.createCampaignSchedule({
+        start: dayjs.utc().startOf("month").format("YYYY-MM-DD"),
+        end: dayjs.utc().endOf("month").format("YYYY-MM-DD"),
+      });
+
       // Wait for table to load
       await page.waitForSelector('[data-testid="schedule-table-shift"]', {
         timeout: 5000,
