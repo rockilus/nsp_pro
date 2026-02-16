@@ -2195,7 +2195,9 @@ export class RequestTestBase {
       filters: existingSettings?.filters || [],
       sort: existingSettings?.sort || null,
       timeFrame: existingSettings?.timeFrame || "month",
-      periodStartDate: existingSettings?.periodStartDate || dayjs().utc().startOf("month").toISOString(),
+      periodStartDate:
+        existingSettings?.periodStartDate ||
+        dayjs().utc().startOf("month").toISOString(),
       ...stateUpdates, // Apply updates on top
     };
 
