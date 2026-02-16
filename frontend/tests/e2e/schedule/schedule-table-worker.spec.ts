@@ -24,7 +24,7 @@ test.describe("ScheduleTableWorker - Owner Tests", () => {
   test.beforeAll(async () => {
     // Setup with assignments and campaign
     const today = dayjs.utc();
-    await scheduleTestBase.setupScheduleTests(test.info().workerIndex + 3000, {
+    await scheduleTestBase.setupScheduleTests(test.info().workerIndex, {
       referenceDate: today,
       createAssignments: true,
       linkMemberToWorker: true,
@@ -39,23 +39,25 @@ test.describe("ScheduleTableWorker - Owner Tests", () => {
     await scheduleTestBase.actAsOwner(page);
     await scheduleTestBase.navigateToSchedulePage(page);
 
-    // Update scheduleViewSettings to worker view in localStorage
-    const teamId = scheduleTestBase.getTestTeam()?.teamId;
-    await page.evaluate((teamId) => {
-      const storageKey = `scheduleViewSettings_${teamId}`;
-      const settings = JSON.parse(localStorage.getItem(storageKey) || "{}");
-      settings.groupBy = "worker";
-      localStorage.setItem(storageKey, JSON.stringify(settings));
-    }, teamId);
+    await scheduleTestBase.setScheduleViewSettings(page, { groupBy: "worker" });
 
-    // Reload the page to apply settings
-    await page.reload();
-    await page.waitForLoadState("networkidle");
+    // // Update scheduleViewSettings to worker view in localStorage
+    // const teamId = scheduleTestBase.getTestTeam()?.teamId;
+    // await page.evaluate((teamId) => {
+    //   const storageKey = `scheduleViewSettings_${teamId}`;
+    //   const settings = JSON.parse(localStorage.getItem(storageKey) || "{}");
+    //   settings.groupBy = "worker";
+    //   localStorage.setItem(storageKey, JSON.stringify(settings));
+    // }, teamId);
 
-    // Wait for the schedule table to render
-    await page.waitForSelector('[data-testid="schedule-table-worker"]', {
-      timeout: 10000,
-    });
+    // // Reload the page to apply settings
+    // await page.reload();
+    // await page.waitForLoadState("networkidle");
+
+    // // Wait for the schedule table to render
+    // await page.waitForSelector('[data-testid="schedule-table-worker"]', {
+    //   timeout: 10000,
+    // });
   });
 
   test.describe("Date Header - Schedule Status Display", () => {
