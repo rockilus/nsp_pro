@@ -270,6 +270,9 @@ test.describe("Request Calendar", () => {
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
     const testRequests = requestTestBase.getTestRequests(testRunId);
 
+    expect(testWorkers.length).toBeGreaterThan(0);
+    expect(testRequests.length).toBeGreaterThan(0);
+
     // First request should be a future pending work request for worker 2
     const futureRequest = testRequests[0];
     expect(futureRequest.workerId).toBe(testWorkers[1].id);

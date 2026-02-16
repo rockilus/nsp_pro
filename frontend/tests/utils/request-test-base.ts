@@ -1207,14 +1207,10 @@ export class RequestTestBase {
     // Wait a bit for the selection to register
     await page.waitForTimeout(200);
 
-    // The popover should close automatically after selection
-    // Or we can force-click the invisible backdrop to close it
-    const invisibleBackdrop = page.locator(
-      "#simple-popover .MuiBackdrop-invisible",
-    );
-    if (await invisibleBackdrop.isVisible()) {
-      await invisibleBackdrop.click({ force: true });
-    }
+    // The popover does not close automatically after selection
+    // We can force-click the invisible backdrop to close it
+    await page.mouse.click(100, 100);
+    await expect(shiftOption).not.toBeVisible();
 
     // Wait for the popover to close (with a reasonable timeout)
     await shiftOptionsPopover
