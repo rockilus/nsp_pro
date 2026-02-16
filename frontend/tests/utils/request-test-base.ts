@@ -2106,4 +2106,123 @@ export class RequestTestBase {
     const count = await this.countVisibleRequests(page);
     expect(count).toBe(expectedCount);
   }
+
+  /**
+   * Set the request calendar view settings in localStorage
+   * Only updates the provided settings, leaving others unchanged.
+   * If targetDate and timeFrame are provided, calculates the appropriate periodStartDate.
+   *
+   * @param page - Playwright page object
+   * @param options - Optional settings to update
+   * @param reload - Whether to reload the page after setting (default: true)
+   */
+  async setRequestCalendarViewSettings(
+    page: Page,
+    options?: {
+      selectedTab?: number; // 0 for table view, 1 for calendar view
+      targetDate?: dayjs.Dayjs;
+      timeFrame?: "week" | "month";
+      periodStartDate?: dayjs.Dayjs;
+      filters?: Array<{
+        id: string;
+        type: "text" | "select" | "date" | "boolean";
+        value: any;
+      }>;
+      sort?: {
+        columnId: string;
+        direction: "asc" | "desc";
+      } | null;
+    },
+    reload: boolean = true,
+  ): Promise<void> {
+    const storageKey = "nsp-pro-request-tab-state";
+
+    // Get existing settings from localStorage
+    const existingSettings = await page.evaluate((key) => {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : null;
+    }, storageKey);
+
+    // Build updates object with only provided values
+    const stateUpdates: any = {};
+
+    // Handle selectedTab
+    if (options?.selectedTab !== undefined) {
+      stateUpdates.selectedTab = options.selectedTab;
+    }
+
+    // Handle periodStartDate calculation or direct setting
+    if (options?.periodStartDate) {
+      stateUpdates.periodStartDate = options.periodStartDate
+        .utc()
+        .toISOString();
+    } else if (options?.targetDate && options?.timeFrame) {
+      let calculatedDate: dayjs.Dayjs;
+      if (options.timeFrame === "week") {
+        // Start of ISO week (Monday)
+        calculatedDate = options.targetDate.startOf("isoWeek");
+      } else {
+        // Start of the month
+        calculatedDate = options.targetDate.startOf("month");
+      }
+      stateUpdates.periodStartDate = calculatedDate.utc().toISOString();
+    }
+
+    // Add timeFrame
+    if (options?.timeFrame !== undefined) {
+      stateUpdates.timeFrame = options.timeFrame;
+    }
+
+    // Add filters and sort
+    if (options?.filters !== undefined) {
+      stateUpdates.filters = options.filters;
+    }
+    if (options?.sort !== undefined) {
+      stateUpdates.sort = options.sort;
+    }
+
+    // Merge with existing settings
+    const settings = {
+      version: "1.0",
+      timestamp: dayjs().utc().unix(),
+      state: {
+        ...existingSettings?.state,
+        ...stateUpdates,
+      },
+    };
+
+    // Set in localStorage
+    await page.evaluate(
+      ({ key, value }) => {
+        localStorage.setItem(key, JSON.stringify(value));
+      },
+      { key: storageKey, value: settings },
+    );
+
+    const logParts = ["✅ Set request calendar view settings:"];
+    if (stateUpdates.selectedTab !== undefined) {
+      logParts.push(
+        `tab ${stateUpdates.selectedTab === 0 ? "table" : "calendar"}`,
+      );
+    }
+    if (stateUpdates.timeFrame) {
+      logParts.push(`${stateUpdates.timeFrame} view`);
+    }
+    if (stateUpdates.periodStartDate) {
+      logParts.push(
+        `starting ${dayjs(stateUpdates.periodStartDate).format("YYYY-MM-DD")}`,
+      );
+    }
+    if (Object.keys(stateUpdates).length === 0) {
+      logParts.push("(no changes)");
+    }
+    console.log(logParts.join(" "));
+
+    // Reload page to apply localStorage changes
+    if (reload) {
+      await page.reload();
+      await page.waitForLoadState("networkidle");
+      console.log("  ↻ Reloaded page to apply settings");
+    }
+  }
 }

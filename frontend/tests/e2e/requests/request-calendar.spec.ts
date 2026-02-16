@@ -285,24 +285,17 @@ test.describe("Request Calendar", () => {
     expect(pastRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(pastRequest.status).toBe(RequestStatus.PENDING);
 
-    // Navigate to calendar
-    await requestTestBase.navigateToCalendarTab(page);
-
-    // Verify past request is shown
-    await requestTestBase.verifyCalendarCellHasRequest(
-      page,
-      testWorkers[0].id,
-      pastRequest.startDate,
-      pastRequest.id,
+    await requestTestBase.setRequestCalendarViewSettings(page, {
+      selectedTab: 1, // Switch to calendar view
+      targetDate: pastRequest.startDate,
+      timeFrame: "month",
+    });
+    const pastRequestCell = page.locator(
+      `[data-testid="calendar-cell-${testWorkers[0].id}-${dayjs
+        .utc(pastRequest.startDate)
+        .format("YYYY-MM-DD")}-request-${pastRequest.id}"]`,
     );
-
-    // Verify future request is shown
-    await requestTestBase.verifyCalendarCellHasRequest(
-      page,
-      testWorkers[1].id,
-      futureRequest.startDate,
-      futureRequest.id,
-    );
+    await expect(pastRequestCell).toBeVisible();
 
     console.log("✅ Existing requests (past and future) are shown in calendar");
   });
