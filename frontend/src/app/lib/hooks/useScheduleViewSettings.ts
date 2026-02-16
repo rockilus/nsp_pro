@@ -40,7 +40,7 @@ const scheduleViewSettingsSerializer = {
     } catch (error) {
       console.warn(
         "Error deserializing schedule view settings, using defaults:",
-        error
+        error,
       );
       // Return partial object - validation will fill in defaults
       return {} as ScheduleViewSettingsT;
@@ -50,18 +50,18 @@ const scheduleViewSettingsSerializer = {
 
 export function useScheduleViewSettings(
   teamId: string,
-  defaultSettings: ScheduleViewSettingsT
+  defaultSettings: ScheduleViewSettingsT,
 ): [
   ScheduleViewSettingsT,
   (updates: Partial<ScheduleViewSettingsT>) => void,
-  () => void // reset function
+  () => void, // reset function
 ] {
   const storageKey = `scheduleViewSettings_${teamId}`;
 
   const [settings, setSettings] = useLocalStorageState(
     storageKey,
     defaultSettings,
-    scheduleViewSettingsSerializer
+    scheduleViewSettingsSerializer,
   );
 
   const updateSettings = useCallback(
@@ -71,11 +71,11 @@ export function useScheduleViewSettings(
         // Validate before saving to ensure consistency
         return validateScheduleViewSettings(
           newSettings,
-          defaultSettings.showDailyShiftDemands
+          defaultSettings.showDailyShiftDemands,
         );
       });
     },
-    [setSettings, defaultSettings.showDailyShiftDemands]
+    [setSettings, defaultSettings.showDailyShiftDemands],
   );
 
   const resetSettings = useCallback(() => {
@@ -88,9 +88,9 @@ export function useScheduleViewSettings(
     () =>
       validateScheduleViewSettings(
         settings,
-        defaultSettings.showDailyShiftDemands
+        defaultSettings.showDailyShiftDemands,
       ),
-    [settings, defaultSettings.showDailyShiftDemands]
+    [settings, defaultSettings.showDailyShiftDemands],
   );
 
   return [validatedSettings, updateSettings, resetSettings];
