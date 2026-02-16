@@ -651,6 +651,17 @@ export class ScheduleTestBase {
   }
 
   /**
+   * Get all schedules for the test team using DatabaseTestUtils
+   */
+  async getSchedules(): Promise<ScheduleT[]> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    return await this.dbUtils.getSchedules(this.testTeam.teamId);
+  }
+
+  /**
    * Get assignments for the test team
    */
   async getAssignmentsAndRecurrences(

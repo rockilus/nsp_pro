@@ -458,6 +458,9 @@ test.describe("ScheduleTableWorker - Member Tests", () => {
     test("should display only validated schedule assignments, not campaign", async ({
       page,
     }) => {
+      const schedules = await scheduleTestBase.getSchedules();
+      expect(schedules.length).toBeGreaterThan(0);
+
       // Get the campaign schedule
       const campaign = scheduleTestBase.getCampaign();
       expect(campaign).not.toBeNull();
