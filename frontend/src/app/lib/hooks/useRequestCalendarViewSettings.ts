@@ -53,9 +53,11 @@ const requestViewSettingsSerializer = {
           parsed.selectedTab === "table" || parsed.selectedTab === "calendar"
             ? parsed.selectedTab
             : defaults.selectedTab,
-        filters: Array.isArray(parsed.filters) ? parsed.filters : defaults.filters,
+        filters: Array.isArray(parsed.filters)
+          ? parsed.filters
+          : defaults.filters,
         sort: parsed.sort !== undefined ? parsed.sort : defaults.sort,
-        timeFrame: 
+        timeFrame:
           parsed.timeFrame === "week" || parsed.timeFrame === "month"
             ? parsed.timeFrame
             : defaults.timeFrame,

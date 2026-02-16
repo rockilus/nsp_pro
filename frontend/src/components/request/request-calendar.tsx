@@ -39,9 +39,7 @@ interface RequestCalendarProps {
   shiftOptions?: Array<any>;
   userTeamRole?: any;
   viewSettings: RequestViewSettingsT;
-  onUpdateViewSettings: (
-    updates: Partial<RequestViewSettingsT>,
-  ) => void;
+  onUpdateViewSettings: (updates: Partial<RequestViewSettingsT>) => void;
   handleAddRequest?: (request: RequestT) => void;
   handleUpdateRequest?: (request: RequestT) => void;
   handleDeleteRequest?: (requestId: string) => void;
@@ -116,24 +114,41 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   // Sync viewSettings filters/sort into local tableState when they change
   React.useEffect(() => {
     // Only update if different to avoid infinite loops
-    const filtersChanged = JSON.stringify(viewSettings.filters) !== JSON.stringify(tableState.filters);
-    const sortChanged = JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
-    
+    const filtersChanged =
+      JSON.stringify(viewSettings.filters) !==
+      JSON.stringify(tableState.filters);
+    const sortChanged =
+      JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
+
     if (filtersChanged || sortChanged) {
       // Reset and apply all filters from viewSettings
-      viewSettings.filters.forEach((filter: ColumnFilter) => addFilterInternal(filter));
+      viewSettings.filters.forEach((filter: ColumnFilter) =>
+        addFilterInternal(filter),
+      );
       if (viewSettings.sort !== tableState.sort) {
         updateSortInternal(viewSettings.sort);
       }
     }
-  }, [viewSettings.filters, viewSettings.sort, tableState.filters, tableState.sort, addFilterInternal, updateSortInternal]);
+  }, [
+    viewSettings.filters,
+    viewSettings.sort,
+    tableState.filters,
+    tableState.sort,
+    addFilterInternal,
+    updateSortInternal,
+  ]);
 
   // Wrapped callbacks that update both local state and parent viewSettings
   const addFilter = React.useCallback(
     (filter: ColumnFilter) => {
       addFilterInternal(filter);
       onUpdateViewSettings({
-        filters: [...viewSettings.filters.filter((f: ColumnFilter) => f.id !== filter.id), filter],
+        filters: [
+          ...viewSettings.filters.filter(
+            (f: ColumnFilter) => f.id !== filter.id,
+          ),
+          filter,
+        ],
       });
     },
     [addFilterInternal, onUpdateViewSettings, viewSettings.filters],
@@ -143,7 +158,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     (filterId: string) => {
       removeFilterInternal(filterId);
       onUpdateViewSettings({
-        filters: viewSettings.filters.filter((f: ColumnFilter) => f.id !== filterId),
+        filters: viewSettings.filters.filter(
+          (f: ColumnFilter) => f.id !== filterId,
+        ),
       });
     },
     [removeFilterInternal, onUpdateViewSettings, viewSettings.filters],
@@ -157,13 +174,10 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     [updateSortInternal, onUpdateViewSettings],
   );
 
-  const resetAll = React.useCallback(
-    () => {
-      resetAllInternal();
-      onUpdateViewSettings({ filters: [], sort: null });
-    },
-    [resetAllInternal, onUpdateViewSettings],
-  );
+  const resetAll = React.useCallback(() => {
+    resetAllInternal();
+    onUpdateViewSettings({ filters: [], sort: null });
+  }, [resetAllInternal, onUpdateViewSettings]);
 
   // Apply worker filter and sort to determine which worker rows to show and their order
   const filteredWorkers = React.useMemo(() => {

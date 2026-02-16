@@ -504,24 +504,41 @@ export default function RequestTable({
   // Sync viewSettings filters/sort into local tableState when they change
   useEffect(() => {
     // Only update if different to avoid infinite loops
-    const filtersChanged = JSON.stringify(viewSettings.filters) !== JSON.stringify(tableState.filters);
-    const sortChanged = JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
-    
+    const filtersChanged =
+      JSON.stringify(viewSettings.filters) !==
+      JSON.stringify(tableState.filters);
+    const sortChanged =
+      JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
+
     if (filtersChanged || sortChanged) {
       // Update internal state to match parent
-      viewSettings.filters.forEach((filter: ColumnFilter) => addFilterInternal(filter));
+      viewSettings.filters.forEach((filter: ColumnFilter) =>
+        addFilterInternal(filter),
+      );
       if (viewSettings.sort !== tableState.sort) {
         updateSortInternal(viewSettings.sort);
       }
     }
-  }, [viewSettings.filters, viewSettings.sort, tableState.filters, tableState.sort, addFilterInternal, updateSortInternal]);
+  }, [
+    viewSettings.filters,
+    viewSettings.sort,
+    tableState.filters,
+    tableState.sort,
+    addFilterInternal,
+    updateSortInternal,
+  ]);
 
   // Wrapped callbacks that update both local state and parent viewSettings
   const addFilter = useCallback(
     (filter: ColumnFilter) => {
       addFilterInternal(filter);
       onUpdateViewSettings({
-        filters: [...viewSettings.filters.filter((f: ColumnFilter) => f.id !== filter.id), filter],
+        filters: [
+          ...viewSettings.filters.filter(
+            (f: ColumnFilter) => f.id !== filter.id,
+          ),
+          filter,
+        ],
       });
     },
     [addFilterInternal, onUpdateViewSettings, viewSettings.filters],
@@ -531,7 +548,9 @@ export default function RequestTable({
     (filterId: string) => {
       removeFilterInternal(filterId);
       onUpdateViewSettings({
-        filters: viewSettings.filters.filter((f: ColumnFilter) => f.id !== filterId),
+        filters: viewSettings.filters.filter(
+          (f: ColumnFilter) => f.id !== filterId,
+        ),
       });
     },
     [removeFilterInternal, onUpdateViewSettings, viewSettings.filters],
@@ -545,13 +564,10 @@ export default function RequestTable({
     [updateSortInternal, onUpdateViewSettings],
   );
 
-  const resetAll = useCallback(
-    () => {
-      resetAllInternal();
-      onUpdateViewSettings({ filters: [], sort: null });
-    },
-    [resetAllInternal, onUpdateViewSettings],
-  );
+  const resetAll = useCallback(() => {
+    resetAllInternal();
+    onUpdateViewSettings({ filters: [], sort: null });
+  }, [resetAllInternal, onUpdateViewSettings]);
 
   return (
     <div className="w-full">
