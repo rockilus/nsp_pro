@@ -29,8 +29,8 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       createShiftDemands: true,
       createRequests: true,
       campaignDates: {
-        start: today.startOf("month").format("YYYY-MM-DD"),
-        end: today.endOf("month").format("YYYY-MM-DD"),
+        start: today.startOf("month").utc(),
+        end: today.endOf("month").utc(),
       },
     });
   });
@@ -130,7 +130,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       // Verify the period label shows week format (e.g., "January 2026")
       const periodLabel = page.locator('[data-testid="time-nav-label"]');
       const labelText = await periodLabel.textContent();
-      expect(labelText).toMatch(/^[A-Za-z]+ \d{4}$/); // Format: "January 2026"
+      expect(labelText).toBe("Dec 2025 - Jan 2026");
 
       // Verify the schedule table shows all 7 days of the displayed week
       const scheduleTable = page.locator(
@@ -1171,8 +1171,8 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       }
 
       // UI displays dates in "DD MMM YYYY" format
-      const expectedStartFormatted = campaign.startDate.format("D MMM YYYY");
-      const expectedEndFormatted = campaign.endDate.format("D MMM YYYY");
+      const expectedStartFormatted = campaign.startDate.format("MMM YYYY");
+      const expectedEndFormatted = campaign.endDate.format("MMM YYYY");
 
       // Verify the displayed text contains the expected formatted dates
       expect(datesText).toContain(expectedStartFormatted);
@@ -1303,8 +1303,8 @@ test.describe("ScheduleNavBar - Member Tests", () => {
       createAssignments: true,
       linkMemberToWorker: true,
       campaignDates: {
-        start: today.startOf("month").format("YYYY-MM-DD"),
-        end: today.endOf("month").format("YYYY-MM-DD"),
+        start: today.startOf("month").utc(),
+        end: today.endOf("month").utc(),
       },
     });
   });

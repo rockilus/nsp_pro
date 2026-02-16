@@ -52,8 +52,8 @@ export interface ScheduleSetupOptions {
   createRequests?: boolean; // Default false - whether to create test requests
   numberOfWorkers?: number; // Optional: number of workers to create (minimum 2). Defaults to 2.
   campaignDates?: {
-    start: string;
-    end: string;
+    start: dayjs.Dayjs;
+    end: dayjs.Dayjs;
   };
   // Whether to create duty and recuperation shifts. Default: false (do not create)
   createDutyAndRecuperation?: boolean;
@@ -514,8 +514,8 @@ export class ScheduleTestBase {
    * Create a campaign schedule for testing
    */
   async createCampaignSchedule(
-    startDate: string,
-    endDate: string,
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
   ): Promise<ScheduleT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupScheduleTests first.");
@@ -529,8 +529,8 @@ export class ScheduleTestBase {
     // Step 2: Update with specific dates
     const updatedSchedule = await this.dbUtils.updateSchedule({
       ...schedule,
-      startDate: dayjs(startDate).utc(),
-      endDate: dayjs(endDate).utc(),
+      startDate: startDate,
+      endDate: endDate,
     });
 
     this.testSchedule = updatedSchedule;

@@ -42,8 +42,8 @@ test.describe("ScheduleTableWorker - Owner Tests", () => {
       createAssignments: true, // Create initial assignments for editing
       linkMemberToWorker: false,
       campaignDates: {
-        start: today.startOf("month").format("YYYY-MM-DD"),
-        end: today.endOf("month").format("YYYY-MM-DD"),
+        start: today.startOf("month").utc(),
+        end: today.endOf("month").utc(),
       },
     });
 
@@ -364,8 +364,8 @@ test.describe("ScheduleTableWorker - Member Tests", () => {
       createAssignments: true, // Create initial assignments for editing
       linkMemberToWorker: true,
       campaignDates: {
-        start: today.startOf("month").format("YYYY-MM-DD"),
-        end: today.endOf("month").format("YYYY-MM-DD"),
+        start: today.startOf("month").utc(),
+        end: today.endOf("month").utc(),
       },
     });
 
@@ -504,8 +504,8 @@ test.describe("ScheduleTableWorker - Member Tests", () => {
       expect(latestEndDate).not.toBeNull();
 
       const campaign = await scheduleTestBase.createCampaignSchedule(
-        latestEndDate!.add(1, "day").format("YYYY-MM-DD"),
-        latestEndDate!.add(10, "days").format("YYYY-MM-DD"),
+        latestEndDate!.add(1, "day").utc(),
+        latestEndDate!.add(10, "days").utc(),
       );
 
       const assignment = await scheduleTestBase.createAssignment({

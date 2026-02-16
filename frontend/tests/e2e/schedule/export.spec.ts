@@ -36,8 +36,8 @@ test.describe("Export Feature", () => {
       createAssignments: true,
       linkMemberToWorker: false,
       campaignDates: {
-        start: dayjs.utc().add(1, "day").subtract(7, "day").toISOString(),
-        end: dayjs.utc().add(1, "day").add(7, "day").toISOString(),
+        start: dayjs.utc().add(1, "day").subtract(7, "day"),
+        end: dayjs.utc().add(1, "day").add(7, "day"),
       },
     });
 
