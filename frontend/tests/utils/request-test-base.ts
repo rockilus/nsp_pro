@@ -2188,14 +2188,15 @@ export class RequestTestBase {
       stateUpdates.sort = options.sort;
     }
 
-    // Merge with existing settings
+    // Merge with existing settings using new flat structure
+    // Ensure all required fields have defaults
     const settings = {
-      version: "1.0",
-      timestamp: dayjs().utc().unix(),
-      state: {
-        ...existingSettings?.state,
-        ...stateUpdates,
-      },
+      selectedTab: existingSettings?.selectedTab || "table",
+      filters: existingSettings?.filters || [],
+      sort: existingSettings?.sort || null,
+      timeFrame: existingSettings?.timeFrame || "month",
+      periodStartDate: existingSettings?.periodStartDate || dayjs().utc().startOf("month").toISOString(),
+      ...stateUpdates, // Apply updates on top
     };
 
     // Set in localStorage
