@@ -2,7 +2,7 @@ import React from "react";
 import dayjs, { Dayjs } from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import "./request-calendar.css";
-import { RequestT, RequestCalendarViewSettingsT } from "../../types/request";
+import { RequestT, RequestViewSettingsT } from "../../types/request";
 import { WorkerT } from "../../types/worker";
 import RequestPanel from "./request-panel";
 import { RequestCalendarToolbar } from "./RequestCalendarToolbar";
@@ -17,6 +17,7 @@ import RequestCalendarTable from "./RequestCalendarTable";
 import { useTableState } from "../../hooks/useTableState";
 import { createWorkerColumns } from "./workerColumns";
 import TableFilterBar from "../table/TableFilterBar";
+import { ColumnFilter } from "../../types/filter";
 
 dayjs.extend(isoWeek);
 
@@ -37,9 +38,9 @@ interface RequestCalendarProps {
   teamId?: string;
   shiftOptions?: Array<any>;
   userTeamRole?: any;
-  viewSettings: RequestCalendarViewSettingsT;
+  viewSettings: RequestViewSettingsT;
   onUpdateViewSettings: (
-    updates: Partial<RequestCalendarViewSettingsT>,
+    updates: Partial<RequestViewSettingsT>,
   ) => void;
   handleAddRequest?: (request: RequestT) => void;
   handleUpdateRequest?: (request: RequestT) => void;
@@ -97,20 +98,71 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     [workers, shifts],
   );
 
-  // Table state for filtering requests
-  // Use unified team-scoped storage key shared with request table
-  // This manages filters for all request properties (worker, shift, date, type, status, fulfillment)
+  // Table state for filtering requests (in-memory only, synced with parent viewSettings)
+  // Don't persist here - parent useRequestViewSettings handles all persistence
   const {
     tableState,
     filteredAndSortedData: filteredRequests,
-    addFilter,
-    removeFilter,
-    updateSort,
-    resetAll,
+    addFilter: addFilterInternal,
+    removeFilter: removeFilterInternal,
+    updateSort: updateSortInternal,
+    resetAll: resetAllInternal,
   } = useTableState(
     requests,
     columns,
-    teamId ? `requestViewSettings_${teamId}` : undefined,
+    undefined, // No storage key - parent manages persistence
+  );
+
+  // Sync viewSettings filters/sort into local tableState when they change
+  React.useEffect(() => {
+    // Only update if different to avoid infinite loops
+    const filtersChanged = JSON.stringify(viewSettings.filters) !== JSON.stringify(tableState.filters);
+    const sortChanged = JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
+    
+    if (filtersChanged || sortChanged) {
+      // Reset and apply all filters from viewSettings
+      viewSettings.filters.forEach((filter: ColumnFilter) => addFilterInternal(filter));
+      if (viewSettings.sort !== tableState.sort) {
+        updateSortInternal(viewSettings.sort);
+      }
+    }
+  }, [viewSettings.filters, viewSettings.sort, tableState.filters, tableState.sort, addFilterInternal, updateSortInternal]);
+
+  // Wrapped callbacks that update both local state and parent viewSettings
+  const addFilter = React.useCallback(
+    (filter: ColumnFilter) => {
+      addFilterInternal(filter);
+      onUpdateViewSettings({
+        filters: [...viewSettings.filters.filter((f: ColumnFilter) => f.id !== filter.id), filter],
+      });
+    },
+    [addFilterInternal, onUpdateViewSettings, viewSettings.filters],
+  );
+
+  const removeFilter = React.useCallback(
+    (filterId: string) => {
+      removeFilterInternal(filterId);
+      onUpdateViewSettings({
+        filters: viewSettings.filters.filter((f: ColumnFilter) => f.id !== filterId),
+      });
+    },
+    [removeFilterInternal, onUpdateViewSettings, viewSettings.filters],
+  );
+
+  const updateSort = React.useCallback(
+    (sort: any) => {
+      updateSortInternal(sort);
+      onUpdateViewSettings({ sort });
+    },
+    [updateSortInternal, onUpdateViewSettings],
+  );
+
+  const resetAll = React.useCallback(
+    () => {
+      resetAllInternal();
+      onUpdateViewSettings({ filters: [], sort: null });
+    },
+    [resetAllInternal, onUpdateViewSettings],
   );
 
   // Apply worker filter and sort to determine which worker rows to show and their order

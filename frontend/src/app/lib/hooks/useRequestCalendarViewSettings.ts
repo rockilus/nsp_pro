@@ -39,29 +39,44 @@ const requestViewSettingsSerializer = {
     try {
       const parsed: Partial<SerializedRequestViewSettings> = JSON.parse(value);
 
-      // Convert back to UTC dayjs object if it exists
-      const settings: Partial<RequestViewSettingsT> = {
+      // Get defaults to fill in any missing fields
+      const defaults = {
+        selectedTab: "table" as const,
+        filters: [],
+        sort: null,
+        ...getDefaultRequestCalendarViewSettings(),
+      };
+
+      // Merge parsed values with defaults
+      const settings: RequestViewSettingsT = {
         selectedTab:
           parsed.selectedTab === "table" || parsed.selectedTab === "calendar"
             ? parsed.selectedTab
-            : "table",
-        filters: Array.isArray(parsed.filters) ? parsed.filters : [],
-        sort: parsed.sort || null,
-        timeFrame: parsed.timeFrame || "month",
+            : defaults.selectedTab,
+        filters: Array.isArray(parsed.filters) ? parsed.filters : defaults.filters,
+        sort: parsed.sort !== undefined ? parsed.sort : defaults.sort,
+        timeFrame: 
+          parsed.timeFrame === "week" || parsed.timeFrame === "month"
+            ? parsed.timeFrame
+            : defaults.timeFrame,
         periodStartDate: parsed.periodStartDate
           ? dayjs.utc(parsed.periodStartDate)
-          : undefined,
+          : defaults.periodStartDate,
       };
 
-      // Return partial object - validation will fill in defaults
-      return settings as RequestViewSettingsT;
+      return settings;
     } catch (error) {
       console.warn(
         "Error deserializing request view settings, using defaults:",
         error,
       );
-      // Return partial object - validation will fill in defaults
-      return {} as RequestViewSettingsT;
+      // Return complete defaults on error
+      return {
+        selectedTab: "table",
+        filters: [],
+        sort: null,
+        ...getDefaultRequestCalendarViewSettings(),
+      };
     }
   },
 };

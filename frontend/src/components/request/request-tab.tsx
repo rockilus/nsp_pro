@@ -308,12 +308,6 @@ export default function RequestTab({
   const [requestViewSettings, updateRequestViewSettings] =
     useRequestViewSettings(teamId);
 
-  // Extract calendar settings for RequestCalendar component
-  const calendarSettings = {
-    timeFrame: requestViewSettings.timeFrame,
-    periodStartDate: requestViewSettings.periodStartDate,
-  };
-
   // Render mobile version if on mobile device
   if (isMobile) {
     return (
@@ -447,6 +441,8 @@ export default function RequestTab({
               handleAcceptRequest={handleAcceptRequest}
               handleDenyRequest={handleDenyRequest}
               showPastRequests={showPastRequests}
+              viewSettings={requestViewSettings}
+              onUpdateViewSettings={updateRequestViewSettings}
             />
           )}
           {requestViewSettings.selectedTab === "calendar" && (
@@ -459,7 +455,7 @@ export default function RequestTab({
               teamId={teamId}
               shiftOptions={shiftOptions}
               userTeamRole={userTeamRole}
-              viewSettings={calendarSettings}
+              viewSettings={requestViewSettings}
               onUpdateViewSettings={(updates) =>
                 updateRequestViewSettings(updates)
               }
