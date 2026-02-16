@@ -366,12 +366,12 @@ export function useApproveSwap() {
 
       try {
         const result = await SwapApi.approveSwap(apiClient, swapId);
-        
+
         // Invalidate assignment cache since approval modifies assignments
         queryClient.invalidateQueries({
           queryKey: assignmentsQueryKeys.all,
         });
-        
+
         return result;
       } catch (error) {
         console.error("❌ Failed to approve swap:", {
@@ -503,12 +503,12 @@ export function useRevertSwap() {
 
       try {
         const result = await SwapApi.revertSwap(apiClient, swapId);
-        
+
         // Invalidate assignment cache since revert modifies assignments
         queryClient.invalidateQueries({
           queryKey: assignmentsQueryKeys.all,
         });
-        
+
         return result;
       } catch (error) {
         console.error("❌ Failed to revert swap:", {

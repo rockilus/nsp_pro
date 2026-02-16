@@ -521,7 +521,8 @@ export default function SwapTab({
 
   // Combine loading states from local data and React Query
   const isLoading = loading || isLoadingAssignments;
-  const combinedError = error || (assignmentsError ? String(assignmentsError) : null);
+  const combinedError =
+    error || (assignmentsError ? String(assignmentsError) : null);
 
   return (
     <Box sx={{ backgroundColor: "white", minHeight: "100vh" }}>
