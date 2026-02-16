@@ -1183,7 +1183,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       );
     });
 
-    test("should open breaches in LHS panel when campaign status is clicked", async ({
+    test("should open breaches in dialog when campaign status is clicked", async ({
       page,
     }) => {
       // Look for solve status chip
@@ -1195,7 +1195,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         await statusChips.first().click();
         await page.waitForTimeout(500);
 
-        // Verify LHS panel opened on breaches tab
+        // Verify dialog opened on breaches tab
         const breachPanel = page.locator('[data-testid="breaches-dialog"]');
         await expect(breachPanel).toBeVisible({ timeout: 3000 });
 

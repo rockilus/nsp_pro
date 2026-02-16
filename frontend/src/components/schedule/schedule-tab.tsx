@@ -62,7 +62,6 @@ import {
   useUpdateSchedule,
   useGetSchedules,
   useGetScheduleEntities,
-  useGetScheduleLHSData,
   useDuplicatePeriod,
 } from "../../hooks/useSchedule";
 import { useExportSchedule } from "../../hooks/useExport";
@@ -140,7 +139,6 @@ export default function ScheduleTab({
   const updateSchedule = useUpdateSchedule();
   const getSchedules = useGetSchedules();
   const getScheduleEntities = useGetScheduleEntities();
-  const getScheduleLHSData = useGetScheduleLHSData();
   const duplicatePeriod = useDuplicatePeriod();
   const exportSchedule = useExportSchedule();
 

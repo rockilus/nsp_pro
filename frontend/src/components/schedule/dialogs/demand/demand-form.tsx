@@ -6,8 +6,8 @@ import { useTranslation } from "../../../../app/i18n/client";
 import { Button, MenuItem, Select } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Styles
-import "../../lhs-tabs/demand-selection.css";
-import "../../lhs-tabs/create-demand.css";
+import "./demand-selection.css";
+import "./create-demand.css";
 // Types
 import { ShiftT } from "../../../../types/shift";
 import { SpecialtyT } from "@/types/specialty";
