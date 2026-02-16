@@ -19,11 +19,8 @@ import {
   DialogMode,
   ScheduleItemDialogData,
   CreateAssignmentData,
-  CreateDemandData,
-  CreateRequestData,
 } from "./dialogs/schedule-item-types";
 import NoAssignmentsDisplay from "./no-assignments-display";
-import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
 // Skeletons
@@ -95,14 +92,6 @@ import {
   CreateAssignmentT,
 } from "@/types/assignment";
 import { RequestT } from "../../types/request";
-import {
-  StatsT,
-  StatsOptionsT,
-  StatsTimeFrameOptions,
-  StatsUnitOptions,
-  HeaderUnitOptions,
-} from "../../types/stats";
-import { AttributeOwnerType } from "../../types/attribute";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 import { SpecialtyT } from "@/types/specialty";
 import { TeamWithMembership } from "@/types/team";
