@@ -90,13 +90,6 @@ export type WorkTimeTableT = {
   nbWeeks: number;
 };
 
-export type LHSTabContentT = {
-  name: string;
-  label: string;
-  content: ReactNode | null;
-  ownerOnly?: boolean;
-};
-
 export type periodDateT = {
   date: dayjs.Dayjs;
   scheduleId: string | null;
@@ -177,7 +170,7 @@ export const toScheduleT = (data: any): ScheduleT => {
     startDate: dayjs.unix(data.startDate).utc(),
     endDate: dayjs.unix(data.endDate).utc(),
     missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
-      dayjs.unix(timeStamp).utc()
+      dayjs.unix(timeStamp).utc(),
     ),
     createdAt: dayjs.unix(data.createdAt).utc(),
     updatedAt: dayjs.unix(data.updatedAt).utc(),
@@ -190,7 +183,7 @@ export const fromScheduleT = (data: ScheduleT): any => {
     startDate: data.startDate.unix(),
     endDate: data.endDate.unix(),
     missingCoverageDates: data.missingCoverageDates.map((date: dayjs.Dayjs) =>
-      date.unix()
+      date.unix(),
     ),
     createdAt: data.createdAt.unix(),
     updatedAt: data.updatedAt.unix(),
@@ -238,7 +231,7 @@ export const validateScheduleDuration = (schedule: ScheduleT): void => {
   const maxEnd = schedule.startDate.add(MAX_SCHEDULE_DURATION_MONTHS, "month");
   if (schedule.endDate.isAfter(maxEnd)) {
     throw new Error(
-      `Schedule duration must be at most ${MAX_SCHEDULE_DURATION_MONTHS} months`
+      `Schedule duration must be at most ${MAX_SCHEDULE_DURATION_MONTHS} months`,
     );
   }
 };

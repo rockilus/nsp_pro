@@ -16,6 +16,7 @@ import {
 } from "../../../types/schedule";
 import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
 import { SolveTaskStatusResponseT } from "../../../types/solveTaskStatus";
+import { BreachT } from "../../../types/breach";
 
 export default function ScheduleNavBar({
   lng,
@@ -23,6 +24,7 @@ export default function ScheduleNavBar({
   currentPeriodStart,
   currentPeriodEnd,
   scheduleCampaign,
+  breaches,
   scheduleViewSettings,
   handleToday,
   handlePreviousPeriod,
@@ -31,7 +33,6 @@ export default function ScheduleNavBar({
   handleSendDuplicateRequest,
   updateScheduleViewSettings,
   handleChangeTimeFrame,
-  handleOpenLHS,
   useSqsWorkflow = false, // Feature flag for SQS workflow
   onSqsSolveComplete,
 }: {
@@ -40,6 +41,7 @@ export default function ScheduleNavBar({
   currentPeriodStart: dayjs.Dayjs;
   currentPeriodEnd: dayjs.Dayjs;
   scheduleCampaign: ScheduleT | null;
+  breaches: BreachT[];
   scheduleViewSettings: ScheduleViewSettingsT;
   handleToday: () => void;
   handlePreviousPeriod: () => void;
@@ -48,11 +50,10 @@ export default function ScheduleNavBar({
   handleSendDuplicateRequest: (
     request: DuplicateRequestT,
     campaignId: string,
-    teamId: string
+    teamId: string,
   ) => void;
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
   handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
-  handleOpenLHS: (tabName: string) => void;
   useSqsWorkflow?: boolean;
   onSqsSolveComplete?: (result: SolveTaskStatusResponseT) => void;
 }) {
@@ -108,8 +109,8 @@ export default function ScheduleNavBar({
               lng={lng}
               teamWithMembership={teamWithMembership}
               scheduleCampaign={scheduleCampaign}
+              breaches={breaches}
               handleValidateSchedule={handleValidateSchedule}
-              handleOpenLHS={handleOpenLHS}
               useSqsWorkflow={useSqsWorkflow}
               onSqsSolveComplete={onSqsSolveComplete}
             />

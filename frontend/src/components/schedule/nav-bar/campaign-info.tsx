@@ -14,12 +14,14 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 // Components
 import ScheduleDialogValidate from "../schedule-options/schedule-dialog-validate";
 import { GetStatusLabel } from "../../data-display/get-status-label";
+import BreachesDialog from "../dialogs/breaches-dialog";
 // Types
 import { ScheduleT } from "../../../types/schedule";
 import {
   SolveTaskStatusResponseT,
   ScheduleSolveStatus,
 } from "../../../types/solveTaskStatus";
+import { BreachT } from "../../../types/breach";
 //Constants
 import { SolveStatusColors } from "../../../constants/constants";
 import { TeamWithMembership } from "@/types/team";
@@ -32,16 +34,16 @@ export default function CampaignInfo({
   lng,
   teamWithMembership,
   scheduleCampaign,
+  breaches,
   handleValidateSchedule,
-  handleOpenLHS,
   useSqsWorkflow = true, // Feature flag for SQS workflow
   onSqsSolveComplete, // Add this to destructuring
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
   scheduleCampaign: ScheduleT;
+  breaches: BreachT[];
   handleValidateSchedule: (scheduleId: string) => void;
-  handleOpenLHS: (tabName: string) => void;
   useSqsWorkflow?: boolean;
   onSqsSolveComplete?: (result: SolveTaskStatusResponseT) => void;
 }) {
@@ -60,6 +62,7 @@ export default function CampaignInfo({
   const spaceBetween: string = "8px";
 
   // UI state
+  const [breachesDialogOpen, setBreachesDialogOpen] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [showErrorNotification, setShowErrorNotification] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
@@ -88,7 +91,7 @@ export default function CampaignInfo({
         scheduleCampaign.id,
         teamWithMembership.team.id,
         undefined, // constraints
-        onSqsSolveComplete // Pass the completion callback
+        onSqsSolveComplete, // Pass the completion callback
       );
     } catch (error) {
       console.error("Failed to start SQS solve:", error);
@@ -116,14 +119,14 @@ export default function CampaignInfo({
           console.error("Failed to retry polling:", error);
           setLastError((error as Error).message);
           setShowErrorNotification(true);
-        }
+        },
       );
     }
   };
 
   function getCampaignPeriodLabel(
     start: dayjs.Dayjs,
-    end: dayjs.Dayjs
+    end: dayjs.Dayjs,
   ): string {
     if (start.isSame(end, "month") && start.isSame(end, "year")) {
       return start.format("D") + " - " + end.format("D MMM YYYY");
@@ -201,7 +204,7 @@ export default function CampaignInfo({
           >
             {getCampaignPeriodLabel(
               scheduleCampaign.startDate,
-              scheduleCampaign.endDate
+              scheduleCampaign.endDate,
             )}
           </span>
         </div>
@@ -210,7 +213,7 @@ export default function CampaignInfo({
             <Chip
               data-testid={`solve-status-chip-${currentSolveStatus}`}
               label={GetStatusLabel(lng, currentSolveStatus)}
-              onClick={() => handleOpenLHS("breaches")}
+              onClick={() => setBreachesDialogOpen(true)}
               color={
                 (SolveStatusColors[currentSolveStatus] as
                   | "default"
@@ -332,6 +335,14 @@ export default function CampaignInfo({
           {lastError || t("solveError")}
         </Alert>
       </Snackbar>
+
+      {/* Breaches dialog */}
+      <BreachesDialog
+        lng={lng}
+        breaches={breaches}
+        open={breachesDialogOpen}
+        onClose={() => setBreachesDialogOpen(false)}
+      />
     </>
   );
 }
