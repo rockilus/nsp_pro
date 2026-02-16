@@ -235,3 +235,18 @@ export const validateScheduleDuration = (schedule: ScheduleT): void => {
     );
   }
 };
+
+/**
+ * Return the latest end date among an array of schedules.
+ * Returns `null` when the array is empty or not provided.
+ */
+export const getLatestScheduleEndDate = (
+  schedules: ScheduleT[] | null | undefined,
+): dayjs.Dayjs | null => {
+  if (!schedules || schedules.length === 0) return null;
+
+  return schedules.reduce((latest: dayjs.Dayjs | null, s: ScheduleT) => {
+    if (!latest) return s.endDate;
+    return s.endDate.isAfter(latest) ? s.endDate : latest;
+  }, null);
+};

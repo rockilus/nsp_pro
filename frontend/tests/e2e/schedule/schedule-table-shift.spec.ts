@@ -13,35 +13,50 @@
 import { test, expect } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { randomUUID } from "crypto";
+import { ScheduleT } from "@/types/schedule";
 import { ScheduleTestBase } from "../../utils/schedule-test-base";
 
 dayjs.extend(utc);
 
 test.describe("ScheduleTableShift - Owner Tests", () => {
-  const scheduleTestBase = new ScheduleTestBase();
+  const testBasesMap = new Map<string, ScheduleTestBase>();
 
-  test.beforeAll(async () => {
-    // Setup with assignments and campaign
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex =
+      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+    console.log(`[Test Run ${testRunId}] Starting assignment edit test setup`);
+
+    const scheduleTestBase = new ScheduleTestBase();
+    testBasesMap.set(testRunId, scheduleTestBase);
+
+    (testInfo as any).testRunId = testRunId;
+
+    // Setup schedule test environment with workers and shifts
     const today = dayjs.utc();
-    await scheduleTestBase.setupScheduleTests(test.info().workerIndex, {
-      referenceDate: today,
-      createAssignments: true,
-      linkMemberToWorker: true,
+    await scheduleTestBase.setupScheduleTests(workerIndex, {
+      referenceDate: dayjs.utc().add(1, "day"),
+      createAssignments: true, // Create initial assignments for editing
+      linkMemberToWorker: false,
       campaignDates: {
         start: today.startOf("month").format("YYYY-MM-DD"),
         end: today.endOf("month").format("YYYY-MM-DD"),
       },
     });
-  });
 
-  test.beforeEach(async ({ page }) => {
+    // Authenticate as owner and navigate to schedule page
     await scheduleTestBase.actAsOwner(page);
     await scheduleTestBase.navigateToSchedulePage(page);
+  });
 
-    // Wait for the schedule table to render
-    await page.waitForSelector('[data-testid="schedule-table-shift"]', {
-      timeout: 10000,
-    });
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
+    testBasesMap.delete(testRunId);
+    console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
   test.describe("Date Header - Schedule Status Display", () => {
@@ -80,7 +95,10 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
 
     test("should display schedule status 'v' for validated dates in date header cells", async ({
       page,
-    }) => {
+    }, testInfo) => {
+      const testRunId = (testInfo as any).testRunId as string;
+      const scheduleTestBase = testBasesMap.get(testRunId)!;
+
       // Get the campaign schedule
       const campaign = scheduleTestBase.getCampaign();
       expect(campaign).not.toBeNull();
@@ -408,33 +426,47 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
 });
 
 test.describe("ScheduleTableShift - Member Tests", () => {
-  const scheduleTestBase = new ScheduleTestBase();
+  const testBasesMap = new Map<string, ScheduleTestBase>();
 
-  test.beforeAll(async () => {
-    // Setup with assignments and campaign
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex =
+      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+    console.log(`[Test Run ${testRunId}] Starting assignment edit test setup`);
+
+    const scheduleTestBase = new ScheduleTestBase();
+    testBasesMap.set(testRunId, scheduleTestBase);
+
+    (testInfo as any).testRunId = testRunId;
+
+    // Setup schedule test environment with workers and shifts
     const today = dayjs.utc();
-    await scheduleTestBase.setupScheduleTests(test.info().workerIndex + 2000, {
-      referenceDate: today,
-      createAssignments: true,
+    await scheduleTestBase.setupScheduleTests(workerIndex, {
+      referenceDate: dayjs.utc().add(1, "day"),
+      createAssignments: true, // Create initial assignments for editing
       linkMemberToWorker: true,
       campaignDates: {
         start: today.startOf("month").format("YYYY-MM-DD"),
         end: today.endOf("month").format("YYYY-MM-DD"),
       },
     });
+
     const campaign = scheduleTestBase.getCampaign();
     expect(campaign).not.toBeNull();
     await scheduleTestBase.validateSchedule(campaign!.id);
-  });
 
-  test.beforeEach(async ({ page }) => {
+    // Authenticate as owner and navigate to schedule page
     await scheduleTestBase.actAsMember(page);
     await scheduleTestBase.navigateToSchedulePage(page);
+  });
 
-    // Wait for the schedule table to render
-    await page.waitForSelector('[data-testid="schedule-table-shift"]', {
-      timeout: 10000,
-    });
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
+    testBasesMap.delete(testRunId);
+    console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
   test.describe("Date Header - No Schedule Status", () => {
@@ -543,61 +575,65 @@ test.describe("ScheduleTableShift - Member Tests", () => {
   test.describe("Assignments Display", () => {
     test("should display only validated schedule assignments, not campaign", async ({
       page,
-    }) => {
-      const schedules = scheduleTestBase.getSchedules();
-      const campaign = scheduleTestBase.createCampaignSchedule({
-        start: dayjs.utc().startOf("month").format("YYYY-MM-DD"),
-        end: dayjs.utc().endOf("month").format("YYYY-MM-DD"),
-      });
+    }, testInfo) => {
+      const testRunId = (testInfo as any).testRunId as string;
+      const scheduleTestBase = testBasesMap.get(testRunId)!;
+      const testWorkers = scheduleTestBase.getTestWorkers();
+      const testShifts = scheduleTestBase.getTestShifts();
 
-      // Wait for table to load
-      await page.waitForSelector('[data-testid="schedule-table-shift"]', {
-        timeout: 5000,
-      });
+      expect(testWorkers.length).toBeGreaterThan(0);
+      expect(testShifts.length).toBeGreaterThan(0);
 
-      // Step 1: Verify members do NOT see campaign assignments before validation
-      const assignmentCellsBefore = page.locator(
-        '[data-testid^="assignment-cell-"]',
-      );
-      const assignmentCountBefore = await assignmentCellsBefore.count();
+      const schedules = await scheduleTestBase.getSchedules();
+      expect(schedules.length).toBeGreaterThan(0);
 
-      expect(assignmentCountBefore).toBe(0);
-      console.log(
-        "✅ Members correctly see no campaign assignments before validation",
+      const latestEndDate = schedules.reduce(
+        (latest: dayjs.Dayjs | null, s: ScheduleT) => {
+          if (!latest) return s.endDate;
+          return s.endDate.isAfter(latest) ? s.endDate : latest;
+        },
+        null,
       );
 
-      // Step 2: Validate the schedule as owner (via API)
-      const campaign = scheduleTestBase.getCampaign();
-      expect(campaign).not.toBeNull();
+      expect(latestEndDate).not.toBeNull();
 
-      if (!campaign) {
-        throw new Error("Campaign schedule not available");
-      }
+      const campaign = await scheduleTestBase.createCampaignSchedule(
+        latestEndDate!.add(1, "day").format("YYYY-MM-DD"),
+        latestEndDate!.add(10, "days").format("YYYY-MM-DD"),
+      );
 
-      // Temporarily act as owner to validate the schedule
-      await scheduleTestBase.actAsOwner(page);
+      const assignment = await scheduleTestBase.createAssignment({
+        scheduleId: campaign.id,
+        workerId: testWorkers[0].id,
+        shiftId: testShifts[0].id,
+        date: latestEndDate!.add(1, "day"),
+      });
+
+      await scheduleTestBase.setScheduleViewSettings(page, {
+        targetDate: latestEndDate!.add(1, "day"),
+        timeFrame: "week",
+      });
+
+      const assignmentCellCampaign = page.locator(
+        `[data-testid="assignment-cell-${assignment.id}"]`,
+      );
+      await expect(assignmentCellCampaign).not.toBeVisible();
+
+      // Validate the schedule first
       await scheduleTestBase.validateSchedule(campaign.id);
-      console.log("✅ Schedule validated via API as owner");
 
-      // Step 3: Switch back to member and refresh to see validated assignments
-      await scheduleTestBase.actAsMember(page);
+      // Refresh the page
       await page.reload();
       await page.waitForLoadState("networkidle");
 
-      // Wait for the schedule table to render
-      await page.waitForSelector('[data-testid="schedule-table-shift"]', {
-        timeout: 10000,
-      });
-
-      // Step 4: Verify members now see validated assignments
-      const assignmentCellsAfter = page.locator(
-        '[data-testid^="assignment-cell-"]',
+      // Find assignment cells
+      const assignmentCell = page.locator(
+        `[data-testid="assignment-cell-${assignment.id}"]`,
       );
-      const assignmentCountAfter = await assignmentCellsAfter.count();
+      await expect(assignmentCell).toBeVisible();
 
-      expect(assignmentCountAfter).toBeGreaterThan(0);
       console.log(
-        `✅ Members correctly see ${assignmentCountAfter} validated assignment(s) after validation`,
+        "✅ Only validated schedule assignments are displayed for members",
       );
     });
 
