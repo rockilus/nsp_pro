@@ -328,10 +328,8 @@ test.describe("ScheduleTableWorker - Owner Tests", () => {
       const addButton = workerCells.first().locator(".add-icon-button");
       await addButton.click({ force: true });
 
-      // Verify CreateAssignment panel is open
-      const createAssignmentPanel = page.locator(
-        ".create-assignment-container",
-      );
+      // Verify CreateAssignment dialog is open
+      const createAssignmentPanel = page.locator("data-testid=assignment-form");
       await expect(createAssignmentPanel).toBeVisible({ timeout: 3000 });
 
       console.log("✅ CreateAssignment panel opened on add button click");

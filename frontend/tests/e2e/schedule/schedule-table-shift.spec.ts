@@ -277,13 +277,13 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
         .first();
       await firstAssignment.click();
 
-      // Wait for LHS panel to open with AssignmentSelection
+      // Wait for dialog to open with AssignmentSelection
       await page.waitForTimeout(500);
 
       // Verify AssignmentSelection panel is open
       // Look for assignment-specific elements in the LHS panel
-      const lhsPanel = page.locator(".assignment-options-assignment-container");
-      await expect(lhsPanel).toBeVisible({ timeout: 3000 });
+      const assignmentEditDialog = page.locator("data-testid=assignment-form");
+      await expect(assignmentEditDialog).toBeVisible({ timeout: 3000 });
 
       console.log("✅ AssignmentSelection panel opened on assignment click");
     });
@@ -398,10 +398,8 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
       // Wait for LHS panel to open with CreateAssignment
       await page.waitForTimeout(500);
 
-      // Verify CreateAssignment panel is open
-      const createAssignmentPanel = page.locator(
-        ".create-assignment-container",
-      );
+      // Verify CreateAssignment dialog is open
+      const createAssignmentPanel = page.locator("data-testid=assignment-form");
       await expect(createAssignmentPanel).toBeVisible({ timeout: 3000 });
 
       console.log("✅ CreateAssignment panel opened on add button click");
