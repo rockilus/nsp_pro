@@ -12,9 +12,9 @@ import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 // Hooks
 import {
-  useRequestViewSettings,
+  useMobileRequestViewSettings,
   getDefaultRequestViewSettings,
-} from "../../../app/lib/hooks/useRequestViewSettings";
+} from "../../../app/lib/hooks/useMobileRequestViewSettings";
 // Types
 import { RequestT } from "../../../types/request";
 import { ShiftT } from "../../../types/shift";
@@ -70,7 +70,7 @@ export default function MobileRequestTab({
 
   const defaultSettings = getDefaultRequestViewSettings();
   const [requestViewSettings, updateRequestViewSettings] =
-    useRequestViewSettings(teamId, defaultSettings);
+    useMobileRequestViewSettings(teamId, defaultSettings);
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activeRequest, setActiveRequest] = useState<RequestT | null>(null);
@@ -101,7 +101,7 @@ export default function MobileRequestTab({
       workers.length > 0 &&
       (!requestViewSettings.mobileSelectedWorkerId ||
         !workers.find(
-          (w) => w.id === requestViewSettings.mobileSelectedWorkerId
+          (w) => w.id === requestViewSettings.mobileSelectedWorkerId,
         ))
     ) {
       // Try to preselect user's worker
@@ -185,7 +185,7 @@ export default function MobileRequestTab({
   React.useEffect(() => {
     if (hasInitializedMonthRef.current) return;
     const monthLabel = today.format(
-      today.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+      today.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
     );
     setVisibleMonth(monthLabel);
     hasInitializedMonthRef.current = true;
@@ -228,7 +228,7 @@ export default function MobileRequestTab({
         const week = weeks[i];
         if (week) {
           const monthLabel = week.start.format(
-            week.start.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+            week.start.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
           );
           setVisibleMonth(monthLabel);
         }
@@ -246,7 +246,7 @@ export default function MobileRequestTab({
       const todayWeekIndex = weeks.findIndex(
         (w) =>
           (today.isAfter(w.start, "day") || today.isSame(w.start, "day")) &&
-          (today.isBefore(w.end, "day") || today.isSame(w.end, "day"))
+          (today.isBefore(w.end, "day") || today.isSame(w.end, "day")),
       );
 
       if (todayWeekIndex >= 0 && weekRefs.current[todayWeekIndex]) {
@@ -272,7 +272,7 @@ export default function MobileRequestTab({
   }
 
   const selectedWorker = workers.find(
-    (w) => w.id === requestViewSettings.mobileSelectedWorkerId
+    (w) => w.id === requestViewSettings.mobileSelectedWorkerId,
   );
 
   return (

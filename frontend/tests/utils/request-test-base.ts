@@ -2119,7 +2119,7 @@ export class RequestTestBase {
   async setRequestCalendarViewSettings(
     page: Page,
     options?: {
-      selectedTab?: number; // 0 for table view, 1 for calendar view
+      selectedTab?: "table" | "calendar";
       targetDate?: dayjs.Dayjs;
       timeFrame?: "week" | "month";
       periodStartDate?: dayjs.Dayjs;
@@ -2135,7 +2135,14 @@ export class RequestTestBase {
     },
     reload: boolean = true,
   ): Promise<void> {
-    const storageKey = "nsp-pro-request-tab-state";
+    if (!this.testTeam) {
+      throw new Error(
+        "Test team not initialized. Call setupRequestTests first.",
+      );
+    }
+
+    // Use team-scoped storage key
+    const storageKey = `requestViewSettings_${this.testTeam.teamId}`;
 
     // Get existing settings from localStorage
     const existingSettings = await page.evaluate((key) => {
@@ -2199,11 +2206,9 @@ export class RequestTestBase {
       { key: storageKey, value: settings },
     );
 
-    const logParts = ["✅ Set request calendar view settings:"];
+    const logParts = ["✅ Set request view settings (team-scoped):"];
     if (stateUpdates.selectedTab !== undefined) {
-      logParts.push(
-        `tab ${stateUpdates.selectedTab === 0 ? "table" : "calendar"}`,
-      );
+      logParts.push(`tab ${stateUpdates.selectedTab}`);
     }
     if (stateUpdates.timeFrame) {
       logParts.push(`${stateUpdates.timeFrame} view`);

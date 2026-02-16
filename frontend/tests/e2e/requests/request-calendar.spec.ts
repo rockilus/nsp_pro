@@ -286,7 +286,7 @@ test.describe("Request Calendar", () => {
     expect(pastRequest.status).toBe(RequestStatus.PENDING);
 
     await requestTestBase.setRequestCalendarViewSettings(page, {
-      selectedTab: 1, // Switch to calendar view
+      selectedTab: "calendar",
       targetDate: pastRequest.startDate,
       timeFrame: "month",
     });

@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 // Types
 import { MissingAttribute, ShiftWorkerOptionT } from "./constraint";
+import { ColumnFilter, TableSort } from "./filter";
 
 export enum RequestStatus {
   PENDING = "pending", // Waiting for manager review
@@ -56,4 +57,19 @@ export const fromRequestT = (data: RequestT) => {
     endDate: data.endDate.unix(),
     createdAt: data.createdAt.unix(),
   };
+};
+
+// Request Calendar View Settings
+export type RequestCalendarViewSettingsT = {
+  timeFrame: "week" | "month";
+  periodStartDate: dayjs.Dayjs;
+};
+
+// Request View Settings (combines calendar and table state)
+export type RequestViewSettingsT = {
+  selectedTab: "table" | "calendar";
+  filters: ColumnFilter[];
+  sort: TableSort | null;
+  timeFrame: "week" | "month";
+  periodStartDate: dayjs.Dayjs;
 };

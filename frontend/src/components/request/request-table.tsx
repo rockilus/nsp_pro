@@ -119,7 +119,7 @@ const ShiftCell = ({
       request,
       workers,
       shifts,
-      t("not")
+      t("not"),
     );
 
     return (
@@ -346,6 +346,7 @@ const ActionsCell = ({
 
 export default function RequestTable({
   lng,
+  teamId,
   requests,
   workers,
   shifts,
@@ -360,6 +361,7 @@ export default function RequestTable({
   showPastRequests,
 }: {
   lng: string;
+  teamId: string;
   requests: RequestT[];
   workers: WorkerT[];
   shifts: ShiftT[];
@@ -440,7 +442,7 @@ export default function RequestTable({
             return request.startDate.format("MMM D, YYYY");
           }
           return `${request.startDate.format(
-            "MMM D"
+            "MMM D",
           )} - ${request.endDate.format("MMM D, YYYY")}`;
         },
       },
@@ -480,7 +482,7 @@ export default function RequestTable({
         ],
       },
     ],
-    [workers, shifts, t]
+    [workers, shifts, t],
   );
 
   const {
@@ -490,7 +492,7 @@ export default function RequestTable({
     removeFilter,
     updateSort,
     resetAll,
-  } = useTableState(requests, columns, "nsp-pro-request-tab-state");
+  } = useTableState(requests, columns, `requestViewSettings_${teamId}`);
 
   return (
     <div className="w-full">
@@ -534,7 +536,7 @@ export default function RequestTable({
                           : undefined
                       }
                       currentFilter={tableState.filters.find(
-                        (f) => f.id === column.id
+                        (f) => f.id === column.id,
                       )}
                       onSort={updateSort}
                       onFilter={addFilter}
