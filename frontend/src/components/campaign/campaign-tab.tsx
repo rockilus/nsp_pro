@@ -5,6 +5,9 @@ import Button from "@mui/material/Button";
 // Components
 import ScheduleSelector from "./schedule-selector";
 import ConstraintSelector from "./constraint-selector";
+import MobileNavAppBar from "../app-bar/mobile-nav-app-bar";
+// Hooks
+import { useIsMobile } from "../../hooks/useIsMobile";
 // Skeletons
 import TablesSkeleton from "../skeletons/tables-skeleton";
 // New hooks (authenticated)
@@ -33,6 +36,7 @@ export default function CampaignTab({
   teamWithMembership: TeamWithMembership;
 }) {
   const { t } = useTranslation(lng, "campaign-page");
+  const isMobile = useIsMobile();
 
   // Campaign hooks
   const getCampaignTabData = useGetCampaignTabData();
@@ -45,12 +49,12 @@ export default function CampaignTab({
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
-    null
+    null,
   );
   const [schedulesValidated, setSchedulesValidated] = useState<ScheduleT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
   const [workTimeTable, setWorkTimeTable] = useState<WorkTimeTableT | null>(
-    null
+    null,
   );
 
   //////////////////////////
@@ -63,7 +67,7 @@ export default function CampaignTab({
       setScheduleCampaign(newSchedule);
       const newWorkTimeTable = await getWorkTimeTable(
         newSchedule.id,
-        teamWithMembership.team.id
+        teamWithMembership.team.id,
       );
       setWorkTimeTable(newWorkTimeTable);
     } catch (error) {
@@ -78,7 +82,7 @@ export default function CampaignTab({
       setScheduleCampaign(newSchedule);
       const newWorkTimeTable = await getWorkTimeTable(
         newSchedule.id,
-        newSchedule.teamId
+        newSchedule.teamId,
       );
       setWorkTimeTable(newWorkTimeTable);
     } catch (error) {
@@ -99,7 +103,7 @@ export default function CampaignTab({
           setConstraints(data.constraints);
         } else {
           const data = await getCampaignTabDataNoSolver(
-            teamWithMembership.team.id
+            teamWithMembership.team.id,
           );
           setScheduleCampaign(data.scheduleCampaign);
           setSchedulesValidated(data.schedulesValidated);
@@ -121,7 +125,7 @@ export default function CampaignTab({
         try {
           const newWorkTimeTable = await getWorkTimeTable(
             scheduleCampaign.id,
-            teamWithMembership.team.id
+            teamWithMembership.team.id,
           );
           setWorkTimeTable(newWorkTimeTable);
         } catch (error) {
@@ -134,45 +138,48 @@ export default function CampaignTab({
   }, [scheduleCampaign, teamWithMembership, workTimeTable, getWorkTimeTable]);
 
   return (
-    <div className="tab-container" data-testid="campaign-page-heading">
-      {isLoading ? (
-        <TablesSkeleton numTables={3} numInternalRows={3} />
-      ) : scheduleCampaign ? (
-        <div>
-          <ScheduleSelector
-            lng={lng}
-            scheduleCampaign={scheduleCampaign}
-            schedulesValidated={schedulesValidated}
-            workTimeTable={workTimeTable}
-            handleUpdateSchedule={handleUpdateSchedule}
-          />
-          {teamWithMembership.team.useSolver && (
-            <>
-              <div className="divider" />
-              <ConstraintSelector
-                lng={lng}
-                schedule={scheduleCampaign}
-                constraints={constraints}
-                handleUpdateSchedule={handleUpdateSchedule}
-              />
-            </>
-          )}
-        </div>
-      ) : (
-        <Button
-          variant="contained"
-          onClick={handleAddSchedule}
-          sx={{
-            paddingLeft: 0.3,
-            paddingRight: 1,
-            margin: "8px",
-            height: "35px",
-            textTransform: "none",
-          }}
-        >
-          {t("start_new_campaign")}
-        </Button>
-      )}
-    </div>
+    <>
+      {isMobile && <MobileNavAppBar lng={lng} />}
+      <div className="tab-container" data-testid="campaign-page-heading">
+        {isLoading ? (
+          <TablesSkeleton numTables={3} numInternalRows={3} />
+        ) : scheduleCampaign ? (
+          <div>
+            <ScheduleSelector
+              lng={lng}
+              scheduleCampaign={scheduleCampaign}
+              schedulesValidated={schedulesValidated}
+              workTimeTable={workTimeTable}
+              handleUpdateSchedule={handleUpdateSchedule}
+            />
+            {teamWithMembership.team.useSolver && (
+              <>
+                <div className="divider" />
+                <ConstraintSelector
+                  lng={lng}
+                  schedule={scheduleCampaign}
+                  constraints={constraints}
+                  handleUpdateSchedule={handleUpdateSchedule}
+                />
+              </>
+            )}
+          </div>
+        ) : (
+          <Button
+            variant="contained"
+            onClick={handleAddSchedule}
+            sx={{
+              paddingLeft: 0.3,
+              paddingRight: 1,
+              margin: "8px",
+              height: "35px",
+              textTransform: "none",
+            }}
+          >
+            {t("start_new_campaign")}
+          </Button>
+        )}
+      </div>
+    </>
   );
 }
