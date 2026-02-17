@@ -9,6 +9,8 @@ import TableContainer from "@mui/material/TableContainer";
 import TableRow from "@mui/material/TableRow";
 // Components
 import MissingProperties from "../constraints/constraint-list/missing-properties";
+// Hooks
+import { useIsMobile } from "../../hooks/useIsMobile";
 // Styles
 import "./constraint-selector.css";
 import "../../styles/text-styles.css";
@@ -28,6 +30,7 @@ export default function ConstraintSelector({
   handleUpdateSchedule: (schedule: ScheduleT) => void;
 }) {
   const { t } = useTranslation(lng, "campaign-page");
+  const isMobile = useIsMobile();
 
   const handleUpdateScheduleConstraintIds = (constraintId: string) => {
     const updatedSchedule = {
@@ -72,7 +75,10 @@ export default function ConstraintSelector({
         </div>
       </div>
       <TableContainer>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table
+          sx={{ minWidth: isMobile ? "100%" : 650, width: "100%" }}
+          aria-label="simple table"
+        >
           <TableBody>
             {constraints.map((constraint) => (
               <TableRow
@@ -86,7 +92,7 @@ export default function ConstraintSelector({
                   <div className="check-cell-container">
                     <Checkbox
                       checked={schedule.constraintBuildIds.includes(
-                        constraint.id
+                        constraint.id,
                       )}
                       onChange={() =>
                         handleUpdateScheduleConstraintIds(constraint.id)
