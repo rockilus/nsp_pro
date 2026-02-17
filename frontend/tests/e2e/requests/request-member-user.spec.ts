@@ -79,10 +79,10 @@ test.describe("Request Page - Member User", () => {
     await roleTestBase.dbUtils.createRequest({
       teamId: testTeam.teamId,
       workerId: otherWorker.workerId,
-      requestType: "work_demand",
+      requestType: RequestType.WORK_DEMAND,
       startDate: tomorrow,
       endDate: tomorrow,
-      status: "pending",
+      status: RequestStatus.PENDING,
       negative: false,
       shiftOptions: [
         {
@@ -103,10 +103,10 @@ test.describe("Request Page - Member User", () => {
       await roleTestBase.dbUtils.createRequest({
         teamId: testTeam.teamId,
         workerId: memberWorker.id,
-        requestType: "work_demand",
+        requestType: RequestType.WORK_DEMAND,
         startDate: tomorrow,
         endDate: tomorrow,
-        status: "pending",
+        status: RequestStatus.PENDING,
         negative: false,
         shiftOptions: [
           {

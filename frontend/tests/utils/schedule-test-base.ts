@@ -15,7 +15,7 @@ import { testConfig } from "./test-config";
 import { ShiftType } from "../../src/types/shift";
 import { WorkerT } from "../../src/types/worker";
 import { ShiftT, ShiftRestType, ShiftLeaveType } from "../../src/types/shift";
-import { RequestT } from "../../src/types/request";
+import { RequestT, RequestType, RequestStatus } from "../../src/types/request";
 import { ScheduleT } from "../../src/types/schedule";
 import {
   AssignmentT,
@@ -221,10 +221,10 @@ export class ScheduleTestBase {
       const secondWorker = this.testWorkers[1];
       const testRequest = await this.createRequest({
         workerId: secondWorker.id,
-        requestType: "work_demand",
+        requestType: RequestType.WORK_DEMAND,
         startDate: options.referenceDate,
         endDate: options.referenceDate,
-        status: "pending",
+        status: RequestStatus.PENDING,
         negative: false,
         comment: "Test work demand request",
         shiftId: null,
@@ -444,10 +444,10 @@ export class ScheduleTestBase {
    */
   async createRequest(requestData: {
     workerId: string;
-    requestType: "work_demand" | "leave";
+    requestType: RequestType;
     startDate: dayjs.Dayjs;
     endDate: dayjs.Dayjs;
-    status?: "pending" | "approved" | "denied" | "deferred";
+    status?: RequestStatus;
     negative?: boolean;
     comment?: string;
     shiftId?: string | null;
@@ -463,7 +463,7 @@ export class ScheduleTestBase {
       requestType: requestData.requestType,
       startDate: requestData.startDate,
       endDate: requestData.endDate,
-      status: requestData.status ?? "pending",
+      status: requestData.status ?? RequestStatus.PENDING,
       negative: requestData.negative ?? false,
       comment: requestData.comment,
       shiftId: requestData.shiftId ?? null,
