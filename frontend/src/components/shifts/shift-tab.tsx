@@ -2,6 +2,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "../../app/i18n/client";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+// Mobile
+import { useIsMobile } from "../../hooks/useIsMobile";
+import MobileShiftTab from "./mobile/mobile-shift-tab";
 // MUI
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 // Components
@@ -109,7 +112,7 @@ export default function ShiftTab({
       dimensions,
       dimEntries,
       filterWorkShifts(shifts),
-      false
+      false,
     );
   }, [t, specialties, dimensions, dimEntries, shifts]);
 
@@ -120,7 +123,7 @@ export default function ShiftTab({
       dimensions,
       dimEntries,
       filterRestShifts(shifts),
-      true
+      true,
     );
   }, [t, specialties, dimensions, dimEntries, shifts]);
 
@@ -135,7 +138,7 @@ export default function ShiftTab({
   } = useTableState(
     filterWorkShifts(shifts),
     workShiftColumns,
-    "nsp-pro-work-shift-table-state"
+    "nsp-pro-work-shift-table-state",
   );
 
   // Table state for rest shifts
@@ -149,7 +152,7 @@ export default function ShiftTab({
   } = useTableState(
     filterRestShifts(shifts),
     restShiftColumns,
-    "nsp-pro-rest-shift-table-state"
+    "nsp-pro-rest-shift-table-state",
   );
 
   // Show filter toolbars
@@ -165,7 +168,7 @@ export default function ShiftTab({
   // Toggle handler
   const handleShiftViewChange = (
     event: React.MouseEvent<HTMLElement>,
-    newView: "work" | "rest"
+    newView: "work" | "rest",
   ) => {
     if (newView !== null) {
       setShiftView(newView);
@@ -245,21 +248,23 @@ export default function ShiftTab({
         linkShiftsIdsDeleted,
       } = await updateShiftFn(shift);
       setShifts((prevShifts) =>
-        prevShifts.map((w) => (w.id === updatedShift.id ? updatedShift : w))
+        prevShifts.map((w) => (w.id === updatedShift.id ? updatedShift : w)),
       );
       setLinkShifts((prevLinkShifts) => {
         const filteredLinkShifts = prevLinkShifts.filter(
-          (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id)
+          (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id),
         );
         const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
           const lsUpdated = linkShiftsUpdated.find(
-            (ls: LinkShiftT) => ls.id === linkShift.id
+            (ls: LinkShiftT) => ls.id === linkShift.id,
           );
           return lsUpdated ? lsUpdated : linkShift;
         });
         const newLinkShifts = linkShiftsUpdated.filter(
           (linkShift: LinkShiftT) =>
-            !filteredLinkShifts.some((ls: LinkShiftT) => ls.id === linkShift.id)
+            !filteredLinkShifts.some(
+              (ls: LinkShiftT) => ls.id === linkShift.id,
+            ),
         );
         return replacedLinkShifts.concat(newLinkShifts);
       });
@@ -276,22 +281,24 @@ export default function ShiftTab({
     try {
       const { linkShiftsUpdated, linkShiftsIdsDeleted } = await deleteShiftFn(
         shiftId,
-        selectedTeamId
+        selectedTeamId,
       );
       setShifts(shifts.filter((shift) => shift.id !== shiftId));
       setLinkShifts((prevLinkShifts) => {
         const filteredLinkShifts = prevLinkShifts.filter(
-          (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id)
+          (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id),
         );
         const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
           const lsUpdated = linkShiftsUpdated.find(
-            (ls: LinkShiftT) => ls.id === linkShift.id
+            (ls: LinkShiftT) => ls.id === linkShift.id,
           );
           return lsUpdated ? lsUpdated : linkShift;
         });
         const newLinkShifts = linkShiftsUpdated.filter(
           (linkShift: LinkShiftT) =>
-            !filteredLinkShifts.some((ls: LinkShiftT) => ls.id === linkShift.id)
+            !filteredLinkShifts.some(
+              (ls: LinkShiftT) => ls.id === linkShift.id,
+            ),
         );
         return replacedLinkShifts.concat(newLinkShifts);
       });
@@ -307,7 +314,7 @@ export default function ShiftTab({
 
   const handleAddDimension = async (
     newDimension: DimensionT,
-    newDimEntries: DimEntryT[]
+    newDimEntries: DimEntryT[],
   ) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
@@ -322,7 +329,7 @@ export default function ShiftTab({
     setShifts((prevShifts) =>
       prevShifts.map((shift) => {
         const newAttributes = newAttributesResponse.filter(
-          (attribute: AttributeT) => attribute.ownerId === shift.id
+          (attribute: AttributeT) => attribute.ownerId === shift.id,
         );
         return newAttributes
           ? {
@@ -330,7 +337,7 @@ export default function ShiftTab({
               attributes: [...shift.attributes, ...newAttributes],
             }
           : shift;
-      })
+      }),
     );
     return true;
   };
@@ -342,8 +349,8 @@ export default function ShiftTab({
     const updatedDimension = await updateDimensionFn(dimension);
     setDimensions((prevDimensions) =>
       prevDimensions.map((prevDim) =>
-        prevDim.id === updatedDimension.id ? updatedDimension : prevDim
-      )
+        prevDim.id === updatedDimension.id ? updatedDimension : prevDim,
+      ),
     );
   };
 
@@ -374,8 +381,8 @@ export default function ShiftTab({
     const updatedDimEntry = await updateDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries((prevDimEntries) =>
       prevDimEntries.map((de) =>
-        de.id === updatedDimEntry.id ? updatedDimEntry : de
-      )
+        de.id === updatedDimEntry.id ? updatedDimEntry : de,
+      ),
     );
   };
 
@@ -385,7 +392,7 @@ export default function ShiftTab({
     }
     const updatedAttributes = await deleteDimEntryFn(
       dimEntryId,
-      selectedTeamId
+      selectedTeamId,
     );
     setDimEntries(dimEntries.filter((dimEntry) => dimEntry.id !== dimEntryId));
     for (const updatedAttribute of updatedAttributes) {
@@ -395,17 +402,17 @@ export default function ShiftTab({
             ? {
                 ...shift,
                 attributes: shift.attributes.some(
-                  (attribute) => attribute.id === updatedAttribute.id
+                  (attribute) => attribute.id === updatedAttribute.id,
                 )
                   ? shift.attributes.map((attribute) =>
                       attribute.id === updatedAttribute.id
                         ? { ...attribute, ...updatedAttribute }
-                        : attribute
+                        : attribute,
                     )
                   : [...shift.attributes, updatedAttribute],
               }
-            : shift
-        )
+            : shift,
+        ),
       );
     }
   };
@@ -425,17 +432,17 @@ export default function ShiftTab({
           ? {
               ...shift,
               attributes: shift.attributes.some(
-                (attribute) => attribute.id === updatedAttribute.id
+                (attribute) => attribute.id === updatedAttribute.id,
               )
                 ? shift.attributes.map((attribute) =>
                     attribute.id === updatedAttribute.id
                       ? { ...attribute, ...updatedAttribute }
-                      : attribute
+                      : attribute,
                   )
                 : [...shift.attributes, updatedAttribute],
             }
-          : shift
-      )
+          : shift,
+      ),
     );
   };
 
@@ -454,7 +461,7 @@ export default function ShiftTab({
     }
     await deleteLinkShiftFn(linkShiftId, selectedTeamId);
     setLinkShifts(
-      linkShifts.filter((linkShift) => linkShift.id !== linkShiftId)
+      linkShifts.filter((linkShift) => linkShift.id !== linkShiftId),
     );
   };
 
@@ -485,6 +492,12 @@ export default function ShiftTab({
     };
     fetchShiftsTabData();
   }, [selectedTeamId, getShiftsTabDataFn]);
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobileShiftTab lng={lng} selectedTeamId={selectedTeamId} />;
+  }
 
   return (
     <div className="tab-container-wide" data-testid="shifts-page-heading">

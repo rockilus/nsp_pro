@@ -3,6 +3,9 @@ import { useTranslation } from "../../app/i18n/client";
 import dayjs, { Dayjs } from "dayjs";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isoWeek from "dayjs/plugin/isoWeek";
+// Mobile
+import { useIsMobile } from "../../hooks/useIsMobile";
+import MobileShiftDemandTab from "./mobile/mobile-shift-demand-tab";
 // MUI
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -1000,6 +1003,12 @@ export default function ShiftDemandTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobileShiftDemandTab lng={lng} selectedTeamId={selectedTeamId} />;
+  }
+
   return (
     <ReactQueryProvider>
       <ShiftDemandTabInternal lng={lng} selectedTeamId={selectedTeamId} />
