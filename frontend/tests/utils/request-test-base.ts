@@ -593,8 +593,6 @@ export class RequestTestBase {
    * @param testId - The test ID to clean up
    */
   async cleanupTestData(testId: string): Promise<void> {
-    await this.deleteTestWorkers(testId);
-    await this.deleteTestRequests(testId);
     this.testWorkersMap.delete(testId);
     this.testShiftsMap.delete(testId);
     this.testRequestsMap.delete(testId);
@@ -654,28 +652,9 @@ export class RequestTestBase {
       shiftOptions: requestData.shiftOptions,
     });
 
-    // Convert API response to RequestT
-    const request: RequestT = {
-      id: apiResponse.id,
-      teamId: apiResponse.teamId,
-      requestType: requestData.requestType,
-      workerId: apiResponse.workerId,
-      startDate: dayjs.unix(apiResponse.startDate).utc(),
-      endDate: dayjs.unix(apiResponse.endDate).utc(),
-      shiftId: apiResponse.shiftId || null,
-      shiftOptions: apiResponse.shiftOptions || [],
-      negative: apiResponse.negative || false,
-      hard: apiResponse.hard || true,
-      status: requestData.status || RequestStatus.PENDING,
-      fulfillment: FulfillmentStatus.NOT_PROCESSED,
-      comment: apiResponse.comment || "",
-      createdAt: dayjs.unix(apiResponse.createdAt).utc(),
-      active: apiResponse.active || true,
-      shiftTargetIds: apiResponse.shiftTargetIds || [],
-      missingAttributes: apiResponse.missingAttributes || [],
-    };
-
-    return request;
+    // API response is already converted to RequestT by RequestApi.addRequest (via toRequestT)
+    // apiResponse is already a RequestT with dayjs objects, so we can return it directly
+    return apiResponse;
   }
 
   /**
@@ -2144,10 +2123,6 @@ export class RequestTestBase {
     // Use team-scoped storage key
     const storageKey = `requestViewSettings_${this.testTeam.teamId}`;
 
-    console.log(
-      `Setting request calendar view settings with key: ${storageKey}`,
-    );
-
     // Get existing settings from localStorage
     const existingSettings = await page.evaluate((key) => {
       const stored = localStorage.getItem(key);
@@ -2176,8 +2151,6 @@ export class RequestTestBase {
         // Start of the month
         calculatedDate = options.targetDate.startOf("month");
       }
-      console.log("targetDate: ", options.targetDate);
-      console.log("calculated periodStartDate: ", calculatedDate);
 
       stateUpdates.periodStartDate = calculatedDate.utc().toISOString();
     }
@@ -2208,10 +2181,6 @@ export class RequestTestBase {
       ...stateUpdates, // Apply updates on top
     };
 
-    console.log(
-      `Updating request view settings to: ${JSON.stringify(settings)}`,
-    );
-
     // Set in localStorage
     await page.evaluate(
       ({ key, value }) => {
@@ -2237,11 +2206,17 @@ export class RequestTestBase {
     }
     console.log(logParts.join(" "));
 
-    // Reload page to apply localStorage changes
+    // Navigate to requests page to apply localStorage changes
+    // This is more reliable than reload() because it re-runs the addInitScript for team selection
     if (reload) {
-      await page.reload();
+      // Navigate to the requests page
+      await page.goto(`http://localhost:3000/en/plan/requests`);
       await page.waitForLoadState("networkidle");
-      console.log("  ↻ Reloaded page to apply settings");
+
+      // Wait for the requests page to load
+      await page.waitForSelector('[data-testid="request-tab"]', {
+        timeout: 10000,
+      });
     }
   }
 }
