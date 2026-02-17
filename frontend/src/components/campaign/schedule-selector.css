@@ -17,6 +17,10 @@
   width: 100%;
 }
 
+.campaign-info .title {
+  text-align: left;
+}
+
 .campaign-info-row {
   display: flex;
   flex-direction: row;
