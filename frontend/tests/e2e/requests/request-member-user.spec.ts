@@ -72,7 +72,7 @@ test.describe("Request Page - Member User", () => {
     });
 
     console.log(
-      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.workerId})`,
+      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.id})`,
     );
 
     // Create a request for the other worker using the same dayShift
