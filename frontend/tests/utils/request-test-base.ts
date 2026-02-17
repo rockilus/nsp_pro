@@ -9,6 +9,7 @@ import { Page, expect } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import isoWeek from "dayjs/plugin/isoWeek";
 import { randomUUID } from "crypto";
 import { DatabaseTestUtils } from "./database-utils";
 import {
@@ -29,6 +30,7 @@ import { AssignmentT } from "@/types/assignment";
 
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
+dayjs.extend(isoWeek);
 
 export class RequestTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -1327,6 +1329,113 @@ export class RequestTestBase {
     );
     await expect(cell).toBeVisible();
     await cell.click();
+  }
+
+  /**
+   * Formats period label based on start and end dates and the selected time frame.
+   * Mirrors the logic from TimeNavigation component.
+   * Examples:
+   * - Week view, same month: "January 2026"
+   * - Week view, different months, same year: "Jan - Feb 2026"
+   * - Week view, different years: "Dec 2025 - Jan 2026"
+   * - Month view, same month: "January 2026"
+   * - Month view, different months, same year: "Jan - Feb 2026"
+   * - Month view, different years: "Dec 2025 - Jan 2026"
+   */
+  formatPeriodLabel(
+    start: dayjs.Dayjs,
+    end: dayjs.Dayjs,
+    timeFrame: "week" | "month",
+  ): string {
+    // Both week and month views use the same formatting logic
+    if (start.month() === end.month() && start.year() === end.year()) {
+      return start.format("MMMM YYYY");
+    } else if (start.month() !== end.month() && start.year() === end.year()) {
+      return start.format("MMM") + " - " + end.format("MMM YYYY");
+    } else {
+      return start.format("MMM YYYY") + " - " + end.format("MMM YYYY");
+    }
+  }
+
+  /**
+   * Navigates to a specific period (week or month) in the calendar
+   * @param page - The Playwright page object
+   * @param targetDate - A date within the target period
+   * @param timeFrame - The time frame to navigate to ("week" or "month")
+   */
+  async navigateToPeriod(
+    page: Page,
+    targetDate: dayjs.Dayjs,
+    timeFrame: "week" | "month",
+  ): Promise<void> {
+    const periodNav = this.getPeriodNav(page);
+
+    // Ensure we're in the correct view (week or month)
+    await periodNav.select.selectOption(timeFrame);
+    // Wait for the view to actually change
+    await page.waitForTimeout(200);
+    await expect(periodNav.select).toHaveValue(timeFrame);
+
+    // Wait for the calendar to be fully loaded
+    await expect(periodNav.label).toBeVisible();
+
+    // Calculate target period boundaries
+    const targetStart =
+      timeFrame === "week"
+        ? targetDate.startOf("isoWeek")
+        : targetDate.startOf("month");
+
+    // Get the target date header to check visibility
+    const targetDateStr = targetStart.format("YYYY-MM-DD");
+    const targetDateHeader = this.getDateHeader(page, targetDateStr);
+
+    // Check if already on the correct period
+    const isAlreadyVisible = await targetDateHeader
+      .isVisible()
+      .catch(() => false);
+    if (isAlreadyVisible) {
+      return;
+    }
+
+    // Navigate to the target period using the today button or navigation buttons
+    const now = dayjs.utc();
+    const nowStart =
+      timeFrame === "week" ? now.startOf("isoWeek") : now.startOf("month");
+
+    // If target period is the current period, use Today button
+    if (targetStart.isSame(nowStart, "day")) {
+      await periodNav.todayButton.click();
+      await page.waitForTimeout(300);
+      await expect(targetDateHeader).toBeVisible({ timeout: 5000 });
+      return;
+    }
+
+    // Otherwise, navigate using prev/next buttons
+    const maxAttempts = 50;
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+
+      // Check if target date is now visible
+      const isVisible = await targetDateHeader.isVisible().catch(() => false);
+      if (isVisible) {
+        break;
+      }
+
+      // Determine direction based on whether target is before or after now
+      if (targetStart.isBefore(nowStart)) {
+        await periodNav.previousButton.click();
+      } else {
+        await periodNav.nextButton.click();
+      }
+
+      // Small wait for UI to update
+      await page.waitForTimeout(200);
+    }
+
+    // Final verification
+    await expect(targetDateHeader).toBeVisible({ timeout: 5000 });
   }
 
   /**

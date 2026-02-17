@@ -55,13 +55,13 @@ export function RequestCalendarToolbar({
 }: RequestCalendarToolbarProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedColumn, setSelectedColumn] = useState<ColumnDefinition | null>(
-    null
+    null,
   );
 
   // Handlers for TimeNavigation
   const handleToday = () => {
     // Calculate today's period based on timeFrame
-    const today = dayjs();
+    const today = dayjs.utc();
     let start: Dayjs, end: Dayjs;
 
     if (timeFrame === "week") {
@@ -111,21 +111,8 @@ export function RequestCalendarToolbar({
   };
 
   const handleTimeFrameChangeInternal = (newTimeFrame: "week" | "month") => {
+    // The parent's onTimeFrameChange already handles period adjustment
     onTimeFrameChange(newTimeFrame);
-
-    // Adjust current period to match new time frame
-    let start: Dayjs, end: Dayjs;
-
-    if (newTimeFrame === "week") {
-      start = currentPeriod.start.startOf("isoWeek");
-      end = currentPeriod.start.endOf("isoWeek");
-    } else {
-      // month
-      start = currentPeriod.start.startOf("month");
-      end = currentPeriod.start.endOf("month");
-    }
-
-    onPeriodChange(start, end);
   };
 
   // Filter menu handlers
@@ -225,7 +212,7 @@ export function RequestCalendarToolbar({
             <List sx={{ minWidth: 200 }} data-testid="filter-column-list">
               {filterableColumns.map((column, index) => {
                 const hasFilter = filters.some((f) =>
-                  f.id.startsWith(column.id)
+                  f.id.startsWith(column.id),
                 );
                 return (
                   <React.Fragment key={column.id}>
