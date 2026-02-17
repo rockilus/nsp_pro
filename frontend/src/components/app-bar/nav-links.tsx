@@ -162,42 +162,42 @@ export function NavLinksMobile({
     href: string;
     route: string;
   }[] = [
-    {
-      name: "workers",
-      label: t("workers"),
-      href: `/${lng}/plan/workers`,
-      route: "/workers",
-    },
-    {
-      name: "shifts",
-      label: t("shifts"),
-      href: `/${lng}/plan/shifts`,
-      route: "/shifts",
-    },
-    {
-      name: "shift-demands",
-      label: t("shift_demands"),
-      href: `/${lng}/plan/shift-demands`,
-      route: "/shift-demands",
-    },
-    {
-      name: "constraints",
-      label: t("constraints"),
-      href: `/${lng}/plan/constraints`,
-      route: "/constraints",
-    },
+    // {
+    //   name: "workers",
+    //   label: t("workers"),
+    //   href: `/${lng}/plan/workers`,
+    //   route: "/workers",
+    // },
+    // {
+    //   name: "shifts",
+    //   label: t("shifts"),
+    //   href: `/${lng}/plan/shifts`,
+    //   route: "/shifts",
+    // },
+    // {
+    //   name: "shift-demands",
+    //   label: t("shift_demands"),
+    //   href: `/${lng}/plan/shift-demands`,
+    //   route: "/shift-demands",
+    // },
+    // {
+    //   name: "constraints",
+    //   label: t("constraints"),
+    //   href: `/${lng}/plan/constraints`,
+    //   route: "/constraints",
+    // },
     {
       name: "requests",
       label: t("requests"),
       href: `/${lng}/plan/requests`,
       route: "/requests",
     },
-    {
-      name: "campaign",
-      label: t("campaign"),
-      href: `/${lng}/plan/campaign`,
-      route: "/campaign",
-    },
+    // {
+    //   name: "campaign",
+    //   label: t("campaign"),
+    //   href: `/${lng}/plan/campaign`,
+    //   route: "/campaign",
+    // },
     {
       name: "schedule",
       label: t("schedule"),
@@ -210,12 +210,12 @@ export function NavLinksMobile({
       href: `/${lng}/plan/swaps`,
       route: "/swaps",
     },
-    {
-      name: "stats",
-      label: t("stats"),
-      href: `/${lng}/plan/stats`,
-      route: "/stats",
-    },
+    // {
+    //   name: "stats",
+    //   label: t("stats"),
+    //   href: `/${lng}/plan/stats`,
+    //   route: "/stats",
+    // },
   ];
 
   const links = allLinks.filter((link) => {
