@@ -11,6 +11,8 @@ import { test, expect } from "@playwright/test";
 import { randomUUID } from "crypto";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import isoWeek from "dayjs/plugin/isoWeek";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { ScheduleTestBase } from "../../../utils/schedule-test-base";
 import {
   AssignmentT,
@@ -37,6 +39,8 @@ import {
 import { AttributeOwnerType } from "@/types/attribute";
 
 dayjs.extend(utc);
+dayjs.extend(isoWeek);
+dayjs.extend(isSameOrBefore);
 
 test.describe("Assignment Replacement - Team Leader", () => {
   const testBasesMap = new Map<string, ScheduleTestBase>();
@@ -464,15 +468,44 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     // Setup worker to test weekly work time and monthly duties implications
     const w2 = pickUnused();
-    // Create two duty-shift assignments for w2: 2 days and 5 days before test date
-    const dutyDate1 = dayjs(testDate)
-      .subtract(2, "day")
-      .startOf("day")
-      .add(12, "hours");
-    const dutyDate2 = dayjs(testDate)
-      .subtract(5, "day")
-      .startOf("day")
-      .add(12, "hours");
+    // Create two duty-shift assignments for w2 that are:
+    // - In the same week as testDate
+    // - 2 days apart from each other
+    // - Not on testDate or the day before testDate
+    let dutyDate1: dayjs.Dayjs | undefined = undefined;
+    let dutyDate2: dayjs.Dayjs | undefined = undefined;
+
+    for (
+      let currDate = dayjs(testDate).utc().startOf("isoWeek");
+      currDate.isSameOrBefore(dayjs(testDate).utc().endOf("isoWeek"), "day");
+      currDate = currDate.add(1, "day")
+    ) {
+      // Ensure neither date conflicts with testDate or testDate - 1
+      const testDateMinus1 = dayjs(testDate).subtract(1, "day");
+      if (
+        currDate.isSame(testDate, "day") ||
+        currDate.isSame(testDateMinus1, "day")
+      ) {
+        continue;
+      }
+      if (!dutyDate1) {
+        dutyDate1 = currDate.startOf("day").add(12, "hours");
+        continue;
+      }
+      if (!dutyDate2 && dutyDate1 && currDate.diff(dutyDate1, "day") >= 2) {
+        dutyDate2 = currDate.startOf("day").add(12, "hours");
+        break;
+      }
+    }
+
+    expect(dutyDate1).toBeDefined();
+    expect(dutyDate2).toBeDefined();
+
+    if (!dutyDate1 || !dutyDate2) {
+      throw new Error(
+        "Failed to find suitable dates for duty assignments for w2",
+      );
+    }
 
     await scheduleTestBase.createAssignmentWithRecurrence({
       workerId: w2.id,

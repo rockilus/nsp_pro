@@ -28,7 +28,10 @@ import { TeamWithMembership } from "../../types/team";
 import { useGetWorkers } from "../../hooks/useWorker";
 import { useGetShifts } from "../../hooks/useShift";
 import { useGetLinkShifts } from "../../hooks/useLinkShift";
-import { useGetAssignments } from "../../hooks/useAssignment";
+import {
+  useAssignmentsByPeriod,
+  useAssignmentsQueryClient,
+} from "../../app/lib/hooks/useAssignments";
 import {
   useGetSwaps,
   useGetSwapById,
@@ -131,6 +134,25 @@ export default function SwapTab({
   const teamId = teamWithMembership.team.id;
   const isMobile = useIsMobile();
 
+  // React Query hook for assignments with smart caching
+  const {
+    assignments: rawAssignments,
+    recurrences,
+    isLoading: isLoadingAssignments,
+    isFetching: isFetchingAssignments,
+    error: assignmentsError,
+  } = useAssignmentsByPeriod(
+    teamId,
+    dayjs.utc().add(1, "day").startOf("day"), // Tomorrow onwards
+    dayjs.utc().add(6, "month"), // 6 months ahead (reasonable limit for swaps)
+    false, // includeCampaign - swaps don't show campaign assignments
+    undefined, // no worker filter for desktop view
+    { enabled: !!teamId },
+  );
+
+  // Query client for manual cache operations
+  const { invalidateAssignments } = useAssignmentsQueryClient();
+
   // Hooks
   const getSwaps = useGetSwaps();
   const getSwapById = useGetSwapById();
@@ -148,7 +170,6 @@ export default function SwapTab({
   const getWorkers = useGetWorkers();
   const getShifts = useGetShifts();
   const getLinkShifts = useGetLinkShifts();
-  const getAssignments = useGetAssignments();
 
   const [currentFilter, setCurrentFilter] = useState<SwapFilter>(
     SwapFilter.ALL_ACTIVE_OPEN,
@@ -161,7 +182,6 @@ export default function SwapTab({
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [linkShifts, setLinkShifts] = useState<LinkShiftT[]>([]);
-  const [assignments, setAssignments] = useState<AssignmentDataDictT[]>([]);
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -180,9 +200,9 @@ export default function SwapTab({
   // Get current user's worker
   const currentUserWorker = getWorkerByUserId(currentUserId, workers);
 
-  // Helper function to process assignments with worker and shift data
-  const buildAssignmentDataDict = useCallback(
-    (
+  // Derive enriched assignments from React Query data
+  const assignments = useMemo(() => {
+    const buildAssignmentDataDict = (
       assignmentsRead: any[],
       workersData: WorkerT[],
       shiftsData: ShiftT[],
@@ -200,9 +220,12 @@ export default function SwapTab({
         breaches: [],
         requests: [],
       }));
-    },
-    [],
-  );
+    };
+
+    return sortAssignmentsByDateThenShiftStart(
+      buildAssignmentDataDict(rawAssignments, workers, shifts),
+    );
+  }, [rawAssignments, workers, shifts]);
 
   const loadInitialData = useCallback(async () => {
     if (!teamId) return;
@@ -211,48 +234,23 @@ export default function SwapTab({
       setLoading(true);
       setError(null);
 
-      // Load workers, shifts, link shifts, and assignments in parallel
-      const [workersData, shiftsData, linkShiftsData, assignmentsResult] =
-        await Promise.all([
-          getWorkers(teamId),
-          getShifts(teamId),
-          getLinkShifts(teamId),
-          getAssignments(
-            teamId,
-            false,
-            dayjs.utc().add(1, "day").startOf("day"),
-            undefined,
-          ),
-        ]);
+      // Load workers, shifts, and link shifts (assignments come from React Query)
+      const [workersData, shiftsData, linkShiftsData] = await Promise.all([
+        getWorkers(teamId),
+        getShifts(teamId),
+        getLinkShifts(teamId),
+      ]);
 
       setWorkers(workersData);
       setShifts(shiftsData);
       setLinkShifts(linkShiftsData);
-
-      const assignmentsData = buildAssignmentDataDict(
-        assignmentsResult.assignmentsRead,
-        workersData,
-        shiftsData,
-      );
-
-      const sortedAssignmentsData =
-        sortAssignmentsByDateThenShiftStart(assignmentsData);
-
-      setAssignments(sortedAssignmentsData);
     } catch (err: any) {
       console.error("Failed to load initial data:", err);
       setError(err.message || "Failed to load data");
     } finally {
       setLoading(false);
     }
-  }, [
-    teamId,
-    getWorkers,
-    getShifts,
-    getLinkShifts,
-    getAssignments,
-    buildAssignmentDataDict,
-  ]);
+  }, [teamId, getWorkers, getShifts, getLinkShifts]);
 
   const loadSwaps = useCallback(async () => {
     if (!teamId) return;
@@ -269,29 +267,6 @@ export default function SwapTab({
       setLoading(false);
     }
   }, [teamId, getSwaps]);
-
-  const loadAssignments = useCallback(async () => {
-    if (!teamId) return;
-
-    try {
-      const assignmentsResult = await getAssignments(
-        teamId,
-        false,
-        dayjs.utc().add(1, "day").startOf("day"),
-        undefined,
-      );
-
-      const assignmentsData = buildAssignmentDataDict(
-        assignmentsResult.assignmentsRead,
-        workers,
-        shifts,
-      );
-
-      setAssignments(assignmentsData);
-    } catch (err: any) {
-      console.error("Failed to load assignments:", err);
-    }
-  }, [teamId, getAssignments, workers, shifts, buildAssignmentDataDict]);
 
   // Load initial data
   useEffect(() => {
@@ -475,7 +450,9 @@ export default function SwapTab({
 
   const handleApproveSwap = async (swapId: string) => {
     await approveSwap(swapId);
-    await Promise.all([loadSwaps(), loadAssignments()]);
+    // Invalidate assignment cache to trigger refetch
+    invalidateAssignments(teamId);
+    await loadSwaps();
   };
 
   const handleDenySwap = async (swapId: string) => {
@@ -542,6 +519,11 @@ export default function SwapTab({
     [isLeader],
   );
 
+  // Combine loading states from local data and React Query
+  const isLoading = loading || isLoadingAssignments;
+  const combinedError =
+    error || (assignmentsError ? String(assignmentsError) : null);
+
   return (
     <Box sx={{ backgroundColor: "white", minHeight: "100vh" }}>
       {isMobile && <MobileNavAppBar lng={lng} />}
@@ -597,19 +579,19 @@ export default function SwapTab({
           ))}
         </Tabs>
 
-        {loading && (
+        {isLoading && (
           <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress />
           </Box>
         )}
 
-        {error && (
+        {combinedError && (
           <Typography color="error" sx={{ py: 2 }}>
-            {error}
+            {combinedError}
           </Typography>
         )}
 
-        {!loading && !error && filteredSwaps.length === 0 && (
+        {!isLoading && !combinedError && filteredSwaps.length === 0 && (
           <Typography
             variant="body1"
             color="text.secondary"
@@ -633,8 +615,8 @@ export default function SwapTab({
             overflowY: "auto",
           }}
         >
-          {!loading &&
-            !error &&
+          {!isLoading &&
+            !combinedError &&
             sortedEnrichedSwaps.map(
               ({ swap, offeredAssignments, requestedAssignments }) => (
                 <SwapCard

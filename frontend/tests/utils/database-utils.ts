@@ -74,6 +74,7 @@ import {
   ConstraintType,
   BlockT,
   TemplateT,
+  ShiftWorkerOptionT,
 } from "../../src/types/constraint";
 
 export interface DatabaseResetOptions {
@@ -1788,38 +1789,21 @@ export class DatabaseTestUtils {
   async createRequest(requestData: {
     teamId: string;
     workerId: string;
-    requestType: "work_demand" | "leave";
+    requestType: RequestType;
     startDate: dayjs.Dayjs;
     endDate: dayjs.Dayjs;
-    status?: "pending" | "approved" | "denied" | "deferred";
+    status?: RequestStatus;
     negative?: boolean;
     comment?: string;
     shiftId?: string | null;
-    shiftOptions?: any[];
+    shiftOptions?: ShiftWorkerOptionT[];
   }): Promise<any> {
     try {
-      if (
-        !Object.values(RequestType).includes(
-          requestData.requestType as RequestType,
-        )
-      ) {
-        throw new Error(`Invalid RequestType: ${requestData.requestType}`);
-      }
-
-      if (
-        requestData.status &&
-        !Object.values(RequestStatus).includes(
-          requestData.status as RequestStatus,
-        )
-      ) {
-        throw new Error(`Invalid RequestStatus: ${requestData.status}`);
-      }
-
       // RequestDTO expects camelCase fields
       const requestPayload: RequestT = {
         id: "",
         teamId: requestData.teamId,
-        requestType: requestData.requestType as RequestType,
+        requestType: requestData.requestType,
         workerId: requestData.workerId,
         startDate: requestData.startDate,
         endDate: requestData.endDate,
@@ -1827,7 +1811,7 @@ export class DatabaseTestUtils {
         shiftOptions: requestData.shiftOptions || [],
         negative: requestData.negative || false,
         hard: true,
-        status: (requestData.status as RequestStatus) || RequestStatus.PENDING,
+        status: requestData.status || RequestStatus.PENDING,
         fulfillment: FulfillmentStatus.NOT_PROCESSED,
         comment: requestData.comment || "",
         createdAt: dayjs(),

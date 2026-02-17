@@ -10,27 +10,45 @@ import { test, expect } from "@playwright/test";
 import { ScheduleTestBase } from "../../utils/schedule-test-base";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { randomUUID } from "crypto";
 
 dayjs.extend(utc);
 
 test.describe("Schedule Page - Member without Worker Profile", () => {
-  const scheduleTestBase = new ScheduleTestBase();
+  const testBasesMap = new Map<string, ScheduleTestBase>();
 
-  test.beforeAll(async () => {
-    // Setup schedule tests WITHOUT creating assignments or campaign
-    // Member will NOT have a worker profile linked
-    await scheduleTestBase.setupScheduleTests(test.info().workerIndex, {
-      referenceDate: dayjs.utc(),
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex =
+      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+    console.log(
+      `[Test Run ${testRunId}] Starting assignment creation test setup`,
+    );
+
+    const scheduleTestBase = new ScheduleTestBase();
+    testBasesMap.set(testRunId, scheduleTestBase);
+
+    (testInfo as any).testRunId = testRunId;
+
+    // Setup schedule test environment with workers and shifts, no assignments
+    await scheduleTestBase.setupScheduleTests(workerIndex, {
+      referenceDate: dayjs.utc().add(1, "day"),
       createAssignments: false,
-      linkMemberToWorker: false, // Do not link member to worker for this test
-      // No campaign dates provided
+      linkMemberToWorker: false,
     });
-  });
 
-  test.beforeEach(async ({ page }) => {
-    // Authenticate as member and navigate to schedule page
+    // Authenticate as owner and navigate to schedule page
     await scheduleTestBase.actAsMember(page);
     await scheduleTestBase.navigateToSchedulePage(page);
+  });
+
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
+    testBasesMap.delete(testRunId);
+    console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
   test("should display error message when member has no worker profile", async ({
@@ -50,12 +68,12 @@ test.describe("Schedule Page - Member without Worker Profile", () => {
 
     // Verify the error message content
     const errorMessage = alert.getByText(
-      /You are not associated with a worker profile/i
+      /You are not associated with a worker profile/i,
     );
     await expect(errorMessage).toBeVisible();
 
     console.log(
-      "✅ Error message displayed correctly for member without worker profile"
+      "✅ Error message displayed correctly for member without worker profile",
     );
   });
 
@@ -69,12 +87,12 @@ test.describe("Schedule Page - Member without Worker Profile", () => {
 
     // Verify that the "no assignments" member display is NOT visible when there's an error
     const noAssignmentsDisplay = page.locator(
-      '[data-testid="no-assignments-display-member"]'
+      '[data-testid="no-assignments-display-member"]',
     );
     await expect(noAssignmentsDisplay).not.toBeVisible();
 
     console.log(
-      "✅ No assignments display correctly hidden when member has no worker profile"
+      "✅ No assignments display correctly hidden when member has no worker profile",
     );
   });
 
@@ -91,7 +109,7 @@ test.describe("Schedule Page - Member without Worker Profile", () => {
     await expect(scheduleTable).not.toBeVisible();
 
     console.log(
-      "✅ Schedule table correctly hidden for member without worker profile"
+      "✅ Schedule table correctly hidden for member without worker profile",
     );
   });
 
@@ -109,29 +127,47 @@ test.describe("Schedule Page - Member without Worker Profile", () => {
     await expect(todayButton).not.toBeVisible();
 
     console.log(
-      "✅ Schedule navigation correctly hidden for member without worker profile"
+      "✅ Schedule navigation correctly hidden for member without worker profile",
     );
   });
 });
 
 test.describe("Schedule Page - Owner without Assignments", () => {
-  const scheduleTestBase = new ScheduleTestBase();
+  const testBasesMap = new Map<string, ScheduleTestBase>();
 
-  test.beforeAll(async () => {
-    // Setup schedule tests WITHOUT creating assignments or campaign
-    await scheduleTestBase.setupScheduleTests(test.info().workerIndex, {
-      referenceDate: dayjs.utc(),
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex =
+      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+    console.log(
+      `[Test Run ${testRunId}] Starting assignment creation test setup`,
+    );
+
+    const scheduleTestBase = new ScheduleTestBase();
+    testBasesMap.set(testRunId, scheduleTestBase);
+
+    (testInfo as any).testRunId = testRunId;
+
+    // Setup schedule test environment with workers and shifts, no assignments
+    await scheduleTestBase.setupScheduleTests(workerIndex, {
+      referenceDate: dayjs.utc().add(1, "day"),
       createAssignments: false,
-      // No campaign dates provided
+      linkMemberToWorker: false,
     });
-  });
 
-  test.beforeEach(async ({ page }) => {
     // Authenticate as owner and navigate to schedule page
     await scheduleTestBase.actAsOwner(page);
     await scheduleTestBase.navigateToSchedulePage(page);
   });
 
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
+    testBasesMap.delete(testRunId);
+    console.log(`[Test Run ${testRunId}] Cleanup completed`);
+  });
   test("should display no assignments message for owner", async ({ page }) => {
     // Wait for the schedule page to render
     await page.waitForSelector('[data-testid="schedule-page-heading"]', {
@@ -140,7 +176,7 @@ test.describe("Schedule Page - Owner without Assignments", () => {
 
     // Verify that the no assignments display for owner is visible
     const noAssignmentsDisplay = page.locator(
-      '[data-testid="no-assignments-display-owner"]'
+      '[data-testid="no-assignments-display-owner"]',
     );
     await expect(noAssignmentsDisplay).toBeVisible();
 
@@ -164,7 +200,7 @@ test.describe("Schedule Page - Owner without Assignments", () => {
 
     // Verify that the "Create campaign" button is visible
     const createCampaignButton = page.locator(
-      '[data-testid="create-campaign-button"]'
+      '[data-testid="create-campaign-button"]',
     );
     await expect(createCampaignButton).toBeVisible();
 
@@ -181,7 +217,7 @@ test.describe("Schedule Page - Owner without Assignments", () => {
 
     // Click the "Create campaign" button
     const createCampaignButton = page.locator(
-      '[data-testid="create-campaign-button"]'
+      '[data-testid="create-campaign-button"]',
     );
     await createCampaignButton.click();
 
@@ -202,7 +238,7 @@ test.describe("Schedule Page - Owner without Assignments", () => {
 
     // Verify that the "Create assignment" button is visible
     const createAssignmentButton = page.locator(
-      '[data-testid="create-assignment-button"]'
+      '[data-testid="create-assignment-button"]',
     );
     await expect(createAssignmentButton).toBeVisible();
 
@@ -219,97 +255,95 @@ test.describe("Schedule Page - Owner without Assignments", () => {
 
     // Click the "Create assignment" button
     const createAssignmentButton = page.locator(
-      '[data-testid="create-assignment-button"]'
+      '[data-testid="create-assignment-button"]',
     );
     await createAssignmentButton.click();
 
     // Verify that the create assignment dialog is visible
-    const dialog = page.locator('[data-testid="create-assignment-dialog"]');
+    const dialog = page.locator('[data-testid="assignment-form"]');
     await expect(dialog).toBeVisible({ timeout: 5000 });
-
-    // Verify dialog content contains CreateAssignment component elements
-    // (e.g., look for common elements in the form)
-    const dialogContent = dialog.locator('[role="dialog"]');
-    await expect(dialogContent).toBeVisible();
 
     console.log("✅ Create assignment dialog opened correctly");
   });
 
   test("should create assignment and display schedule table when form is filled and saved", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const testWorkers = scheduleTestBase.getTestWorkers();
+    const testShifts = scheduleTestBase.getTestShifts();
+
     // Wait for the schedule page to render
     await page.waitForSelector('[data-testid="schedule-page-heading"]', {
       timeout: 10000,
     });
 
     // Verify no schedule table exists initially
-    const scheduleTableBefore = page.locator('[data-testid="schedule-table"]');
+    const scheduleTableBefore = page.locator(
+      '[data-testid="schedule-table-shift"]',
+    );
     await expect(scheduleTableBefore).not.toBeVisible();
 
     // Click the "Create assignment" button to open the dialog
     const createAssignmentButton = page.locator(
-      '[data-testid="create-assignment-button"]'
+      '[data-testid="create-assignment-button"]',
     );
     await createAssignmentButton.click();
 
     // Wait for the create assignment dialog to be visible
-    const dialog = page.locator('[data-testid="create-assignment-dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 5000 });
+    const assignmentDialog = page.locator('[data-testid="assignment-form"]');
+    await expect(assignmentDialog).toBeVisible({ timeout: 5000 });
 
-    // Fill in the worker field
-    const workerSelect = dialog.locator(
-      '[data-testid="edit-assignment-worker-select"]'
+    // Select worker
+    const workerSelect = page.locator(
+      '[data-testid="edit-assignment-worker-select"]',
     );
     await workerSelect.click();
-    // Select the first worker from the dropdown
-    await page.locator('li[role="option"]').first().click();
+    await page
+      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
+      .click();
 
-    // Fill in the date field (use today's date)
-    const datePicker = dialog.locator(
-      '[data-testid="edit-assignment-date-picker"]'
+    // Select shift
+    const shiftSelect = page.locator(
+      '[data-testid="edit-assignment-shift-select"]',
     );
-    const today = dayjs.utc();
-    const dateValue = today.format("DD/MM/YYYY");
+    await shiftSelect.click();
+    await page
+      .locator(`[data-testid="shift-option-${testShifts[0].id}"]`)
+      .click();
 
-    // Wait for the input to be visible
+    // Select date (tomorrow)
+    const tomorrow = dayjs.utc().add(1, "day");
+
+    const datePicker = page.locator(
+      '[data-testid="edit-assignment-date-picker"]',
+    );
     await datePicker.waitFor({ state: "visible" });
-
-    // For MUI date pickers, use fill with force
     await datePicker.fill("", { force: true }); // Clear first
     await page.waitForTimeout(100);
-    await datePicker.fill(dateValue, { force: true }); // Then fill
-
-    // Press Enter to confirm the value
+    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
     await datePicker.press("Enter");
     await page.waitForTimeout(300);
 
-    // Fill in the shift field
-    const shiftSelect = dialog.locator(
-      '[data-testid="edit-assignment-shift-select"]'
-    );
-    await shiftSelect.click();
-
-    // Select the first test shift by ID
-    const testShifts = scheduleTestBase.getTestShifts();
-    const shiftToSelect = testShifts[0].id;
-    await page.locator(`[data-testid="shift-option-${shiftToSelect}"]`).click();
-
-    // Click the Create button
-    const createButton = dialog.locator(
-      '[data-testid="edit-assignment-create-button"]'
+    // Click create button
+    const createButton = page.locator(
+      '[data-testid="edit-assignment-create-button"]',
     );
     await createButton.click();
 
-    // Wait for the dialog to close
+    // Wait for dialog to close
+    const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
     // Verify that the schedule table now appears
-    const scheduleTableAfter = page.locator('[data-testid="schedule-table"]');
+    const scheduleTableAfter = page.locator(
+      '[data-testid="schedule-table-shift"]',
+    );
     await expect(scheduleTableAfter).toBeVisible({ timeout: 10000 });
 
     console.log(
-      "✅ Assignment created successfully and schedule table is now visible"
+      "✅ Assignment created successfully and schedule table is now visible",
     );
   });
 
@@ -358,7 +392,7 @@ test.describe("Schedule Page - Member with Worker Profile but No Assignments", (
 
     // Verify that the no assignments display for member is visible
     const noAssignmentsDisplay = page.locator(
-      '[data-testid="no-assignments-display-member"]'
+      '[data-testid="no-assignments-display-member"]',
     );
     await expect(noAssignmentsDisplay).toBeVisible();
 
@@ -366,7 +400,7 @@ test.describe("Schedule Page - Member with Worker Profile but No Assignments", (
     await expect(noAssignmentsDisplay).toContainText(/No assignments yet/i);
 
     console.log(
-      "✅ No assignments message displayed correctly for member with worker profile"
+      "✅ No assignments message displayed correctly for member with worker profile",
     );
   });
 
@@ -380,13 +414,13 @@ test.describe("Schedule Page - Member with Worker Profile but No Assignments", (
 
     // Verify that the "Create campaign" button is NOT visible
     const createCampaignButton = page.locator(
-      '[data-testid="create-campaign-button"]'
+      '[data-testid="create-campaign-button"]',
     );
     await expect(createCampaignButton).not.toBeVisible();
 
     // Verify that the "Create assignment" button is NOT visible
     const createAssignmentButton = page.locator(
-      '[data-testid="create-assignment-button"]'
+      '[data-testid="create-assignment-button"]',
     );
     await expect(createAssignmentButton).not.toBeVisible();
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Table from "@mui/material/Table";
@@ -37,11 +37,12 @@ import {
   RequestStatus,
   FulfillmentStatus,
   RequestType,
+  RequestViewSettingsT,
 } from "../../types/request";
 import { ShiftT } from "../../types/shift";
 import { TeamMembershipRole } from "@/types/team";
 import { ShiftWorkerOptionT } from "@/types/constraint";
-import { ColumnDefinition } from "../../types/filter";
+import { ColumnDefinition, ColumnFilter } from "../../types/filter";
 
 // Helper components for better organization
 const WorkerCell = ({
@@ -119,7 +120,7 @@ const ShiftCell = ({
       request,
       workers,
       shifts,
-      t("not")
+      t("not"),
     );
 
     return (
@@ -346,6 +347,7 @@ const ActionsCell = ({
 
 export default function RequestTable({
   lng,
+  teamId,
   requests,
   workers,
   shifts,
@@ -358,8 +360,11 @@ export default function RequestTable({
   handleAcceptRequest,
   handleDenyRequest,
   showPastRequests,
+  viewSettings,
+  onUpdateViewSettings,
 }: {
   lng: string;
+  teamId: string;
   requests: RequestT[];
   workers: WorkerT[];
   shifts: ShiftT[];
@@ -372,6 +377,8 @@ export default function RequestTable({
   handleAcceptRequest: (requestId: string) => void;
   handleDenyRequest: (requestId: string) => void;
   showPastRequests: boolean;
+  viewSettings: RequestViewSettingsT;
+  onUpdateViewSettings: (updates: Partial<RequestViewSettingsT>) => void;
 }) {
   const { t } = useTranslation(lng, "request-page");
 
@@ -440,7 +447,7 @@ export default function RequestTable({
             return request.startDate.format("MMM D, YYYY");
           }
           return `${request.startDate.format(
-            "MMM D"
+            "MMM D",
           )} - ${request.endDate.format("MMM D, YYYY")}`;
         },
       },
@@ -480,17 +487,87 @@ export default function RequestTable({
         ],
       },
     ],
-    [workers, shifts, t]
+    [workers, shifts, t],
   );
 
+  // Table state for filtering requests (in-memory only, synced with parent viewSettings)
+  // Don't persist here - parent useRequestViewSettings handles all persistence
   const {
     tableState,
     filteredAndSortedData,
-    addFilter,
-    removeFilter,
-    updateSort,
-    resetAll,
-  } = useTableState(requests, columns, "nsp-pro-request-tab-state");
+    addFilter: addFilterInternal,
+    removeFilter: removeFilterInternal,
+    updateSort: updateSortInternal,
+    resetAll: resetAllInternal,
+  } = useTableState(requests, columns, undefined); // No storage key - parent manages persistence
+
+  // Sync viewSettings filters/sort into local tableState when they change
+  useEffect(() => {
+    // Only update if different to avoid infinite loops
+    const filtersChanged =
+      JSON.stringify(viewSettings.filters) !==
+      JSON.stringify(tableState.filters);
+    const sortChanged =
+      JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
+
+    if (filtersChanged || sortChanged) {
+      // Update internal state to match parent
+      viewSettings.filters.forEach((filter: ColumnFilter) =>
+        addFilterInternal(filter),
+      );
+      if (viewSettings.sort !== tableState.sort) {
+        updateSortInternal(viewSettings.sort);
+      }
+    }
+  }, [
+    viewSettings.filters,
+    viewSettings.sort,
+    tableState.filters,
+    tableState.sort,
+    addFilterInternal,
+    updateSortInternal,
+  ]);
+
+  // Wrapped callbacks that update both local state and parent viewSettings
+  const addFilter = useCallback(
+    (filter: ColumnFilter) => {
+      addFilterInternal(filter);
+      onUpdateViewSettings({
+        filters: [
+          ...viewSettings.filters.filter(
+            (f: ColumnFilter) => f.id !== filter.id,
+          ),
+          filter,
+        ],
+      });
+    },
+    [addFilterInternal, onUpdateViewSettings, viewSettings.filters],
+  );
+
+  const removeFilter = useCallback(
+    (filterId: string) => {
+      removeFilterInternal(filterId);
+      onUpdateViewSettings({
+        filters: viewSettings.filters.filter(
+          (f: ColumnFilter) => f.id !== filterId,
+        ),
+      });
+    },
+    [removeFilterInternal, onUpdateViewSettings, viewSettings.filters],
+  );
+
+  const updateSort = useCallback(
+    (sort: any) => {
+      updateSortInternal(sort);
+      onUpdateViewSettings({ sort });
+    },
+    [updateSortInternal, onUpdateViewSettings],
+  );
+
+  const resetAll = useCallback(() => {
+    resetAllInternal();
+    onUpdateViewSettings({ filters: [], sort: null });
+  }, [resetAllInternal, onUpdateViewSettings]);
 
   return (
     <div className="w-full">
@@ -534,7 +611,7 @@ export default function RequestTable({
                           : undefined
                       }
                       currentFilter={tableState.filters.find(
-                        (f) => f.id === column.id
+                        (f) => f.id === column.id,
                       )}
                       onSort={updateSort}
                       onFilter={addFilter}

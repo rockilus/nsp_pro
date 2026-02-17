@@ -32,8 +32,8 @@ test.describe("Mobile Schedule Nav - Owner Tests", () => {
       createAssignments: true,
       linkMemberToWorker: true,
       campaignDates: {
-        start: today.startOf("month").format("YYYY-MM-DD"),
-        end: today.endOf("month").format("YYYY-MM-DD"),
+        start: today.startOf("month").utc(),
+        end: today.endOf("month").utc(),
       },
     });
   });
@@ -348,8 +348,8 @@ test.describe("Mobile Schedule Nav - Member Tests", () => {
       createAssignments: true,
       linkMemberToWorker: true,
       campaignDates: {
-        start: today.startOf("month").format("YYYY-MM-DD"),
-        end: today.endOf("month").format("YYYY-MM-DD"),
+        start: today.startOf("month").utc(),
+        end: today.endOf("month").utc(),
       },
     });
   });

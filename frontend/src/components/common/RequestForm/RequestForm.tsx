@@ -712,7 +712,7 @@ const RequestForm = ({
           )}
         </div>
         <div className="save-button-container">
-          {isMobile && isEdit && request && handleDeleteRequest && (
+          {isEdit && request && handleDeleteRequest && (
             <Button
               variant="outlined"
               color="error"

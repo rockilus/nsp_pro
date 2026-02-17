@@ -9,6 +9,7 @@ import { Page, expect } from "@playwright/test";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import isoWeek from "dayjs/plugin/isoWeek";
 import { randomUUID } from "crypto";
 import { DatabaseTestUtils } from "./database-utils";
 import {
@@ -29,6 +30,7 @@ import { AssignmentT } from "@/types/assignment";
 
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
+dayjs.extend(isoWeek);
 
 export class RequestTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -593,8 +595,6 @@ export class RequestTestBase {
    * @param testId - The test ID to clean up
    */
   async cleanupTestData(testId: string): Promise<void> {
-    await this.deleteTestWorkers(testId);
-    await this.deleteTestRequests(testId);
     this.testWorkersMap.delete(testId);
     this.testShiftsMap.delete(testId);
     this.testRequestsMap.delete(testId);
@@ -625,57 +625,22 @@ export class RequestTestBase {
       );
     }
 
-    // Convert RequestType enum to API format
-    const requestTypeMap = {
-      [RequestType.WORK_DEMAND]: "work_demand" as const,
-      [RequestType.LEAVE]: "leave" as const,
-    };
-
-    // Convert RequestStatus enum to API format
-    const requestStatusMap = {
-      [RequestStatus.PENDING]: "pending" as const,
-      [RequestStatus.APPROVED]: "approved" as const,
-      [RequestStatus.DENIED]: "denied" as const,
-      [RequestStatus.DEFERRED]: "deferred" as const,
-    };
-
     const apiResponse = await this.dbUtils.createRequest({
       teamId: this.testTeam.teamId,
       workerId: requestData.workerId,
-      requestType: requestTypeMap[requestData.requestType],
+      requestType: requestData.requestType,
       startDate: requestData.startDate,
       endDate: requestData.endDate,
-      status: requestData.status
-        ? requestStatusMap[requestData.status]
-        : "pending",
+      status: requestData.status ? requestData.status : RequestStatus.PENDING,
       negative: requestData.negative || false,
       comment: requestData.comment || "",
       shiftId: requestData.shiftId,
       shiftOptions: requestData.shiftOptions,
     });
 
-    // Convert API response to RequestT
-    const request: RequestT = {
-      id: apiResponse.id,
-      teamId: apiResponse.teamId,
-      requestType: requestData.requestType,
-      workerId: apiResponse.workerId,
-      startDate: dayjs.unix(apiResponse.startDate).utc(),
-      endDate: dayjs.unix(apiResponse.endDate).utc(),
-      shiftId: apiResponse.shiftId || null,
-      shiftOptions: apiResponse.shiftOptions || [],
-      negative: apiResponse.negative || false,
-      hard: apiResponse.hard || true,
-      status: requestData.status || RequestStatus.PENDING,
-      fulfillment: FulfillmentStatus.NOT_PROCESSED,
-      comment: apiResponse.comment || "",
-      createdAt: dayjs.unix(apiResponse.createdAt).utc(),
-      active: apiResponse.active || true,
-      shiftTargetIds: apiResponse.shiftTargetIds || [],
-      missingAttributes: apiResponse.missingAttributes || [],
-    };
-
-    return request;
+    // API response is already converted to RequestT by RequestApi.addRequest (via toRequestT)
+    // apiResponse is already a RequestT with dayjs objects, so we can return it directly
+    return apiResponse;
   }
 
   /**
@@ -1207,14 +1172,10 @@ export class RequestTestBase {
     // Wait a bit for the selection to register
     await page.waitForTimeout(200);
 
-    // The popover should close automatically after selection
-    // Or we can force-click the invisible backdrop to close it
-    const invisibleBackdrop = page.locator(
-      "#simple-popover .MuiBackdrop-invisible",
-    );
-    if (await invisibleBackdrop.isVisible()) {
-      await invisibleBackdrop.click({ force: true });
-    }
+    // The popover does not close automatically after selection
+    // We can force-click the invisible backdrop to close it
+    await page.mouse.click(100, 100);
+    await expect(shiftOption).not.toBeVisible();
 
     // Wait for the popover to close (with a reasonable timeout)
     await shiftOptionsPopover
@@ -1368,6 +1329,113 @@ export class RequestTestBase {
     );
     await expect(cell).toBeVisible();
     await cell.click();
+  }
+
+  /**
+   * Formats period label based on start and end dates and the selected time frame.
+   * Mirrors the logic from TimeNavigation component.
+   * Examples:
+   * - Week view, same month: "January 2026"
+   * - Week view, different months, same year: "Jan - Feb 2026"
+   * - Week view, different years: "Dec 2025 - Jan 2026"
+   * - Month view, same month: "January 2026"
+   * - Month view, different months, same year: "Jan - Feb 2026"
+   * - Month view, different years: "Dec 2025 - Jan 2026"
+   */
+  formatPeriodLabel(
+    start: dayjs.Dayjs,
+    end: dayjs.Dayjs,
+    timeFrame: "week" | "month",
+  ): string {
+    // Both week and month views use the same formatting logic
+    if (start.month() === end.month() && start.year() === end.year()) {
+      return start.format("MMMM YYYY");
+    } else if (start.month() !== end.month() && start.year() === end.year()) {
+      return start.format("MMM") + " - " + end.format("MMM YYYY");
+    } else {
+      return start.format("MMM YYYY") + " - " + end.format("MMM YYYY");
+    }
+  }
+
+  /**
+   * Navigates to a specific period (week or month) in the calendar
+   * @param page - The Playwright page object
+   * @param targetDate - A date within the target period
+   * @param timeFrame - The time frame to navigate to ("week" or "month")
+   */
+  async navigateToPeriod(
+    page: Page,
+    targetDate: dayjs.Dayjs,
+    timeFrame: "week" | "month",
+  ): Promise<void> {
+    const periodNav = this.getPeriodNav(page);
+
+    // Ensure we're in the correct view (week or month)
+    await periodNav.select.selectOption(timeFrame);
+    // Wait for the view to actually change
+    await page.waitForTimeout(200);
+    await expect(periodNav.select).toHaveValue(timeFrame);
+
+    // Wait for the calendar to be fully loaded
+    await expect(periodNav.label).toBeVisible();
+
+    // Calculate target period boundaries
+    const targetStart =
+      timeFrame === "week"
+        ? targetDate.startOf("isoWeek")
+        : targetDate.startOf("month");
+
+    // Get the target date header to check visibility
+    const targetDateStr = targetStart.format("YYYY-MM-DD");
+    const targetDateHeader = this.getDateHeader(page, targetDateStr);
+
+    // Check if already on the correct period
+    const isAlreadyVisible = await targetDateHeader
+      .isVisible()
+      .catch(() => false);
+    if (isAlreadyVisible) {
+      return;
+    }
+
+    // Navigate to the target period using the today button or navigation buttons
+    const now = dayjs.utc();
+    const nowStart =
+      timeFrame === "week" ? now.startOf("isoWeek") : now.startOf("month");
+
+    // If target period is the current period, use Today button
+    if (targetStart.isSame(nowStart, "day")) {
+      await periodNav.todayButton.click();
+      await page.waitForTimeout(300);
+      await expect(targetDateHeader).toBeVisible({ timeout: 5000 });
+      return;
+    }
+
+    // Otherwise, navigate using prev/next buttons
+    const maxAttempts = 50;
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+
+      // Check if target date is now visible
+      const isVisible = await targetDateHeader.isVisible().catch(() => false);
+      if (isVisible) {
+        break;
+      }
+
+      // Determine direction based on whether target is before or after now
+      if (targetStart.isBefore(nowStart)) {
+        await periodNav.previousButton.click();
+      } else {
+        await periodNav.nextButton.click();
+      }
+
+      // Small wait for UI to update
+      await page.waitForTimeout(200);
+    }
+
+    // Final verification
+    await expect(targetDateHeader).toBeVisible({ timeout: 5000 });
   }
 
   /**
@@ -2109,5 +2177,139 @@ export class RequestTestBase {
   async verifyRequestCount(page: Page, expectedCount: number): Promise<void> {
     const count = await this.countVisibleRequests(page);
     expect(count).toBe(expectedCount);
+  }
+
+  /**
+   * Set the request calendar view settings in localStorage
+   * Only updates the provided settings, leaving others unchanged.
+   * If targetDate and timeFrame are provided, calculates the appropriate periodStartDate.
+   *
+   * @param page - Playwright page object
+   * @param options - Optional settings to update
+   * @param reload - Whether to reload the page after setting (default: true)
+   */
+  async setRequestCalendarViewSettings(
+    page: Page,
+    options?: {
+      selectedTab?: "table" | "calendar";
+      targetDate?: dayjs.Dayjs;
+      timeFrame?: "week" | "month";
+      periodStartDate?: dayjs.Dayjs;
+      filters?: Array<{
+        id: string;
+        type: "text" | "select" | "date" | "boolean";
+        value: any;
+      }>;
+      sort?: {
+        columnId: string;
+        direction: "asc" | "desc";
+      } | null;
+    },
+    reload: boolean = true,
+  ): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error(
+        "Test team not initialized. Call setupRequestTests first.",
+      );
+    }
+
+    // Use team-scoped storage key
+    const storageKey = `requestViewSettings_${this.testTeam.teamId}`;
+
+    // Get existing settings from localStorage
+    const existingSettings = await page.evaluate((key) => {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : null;
+    }, storageKey);
+
+    // Build updates object with only provided values
+    const stateUpdates: any = {};
+
+    // Handle selectedTab
+    if (options?.selectedTab !== undefined) {
+      stateUpdates.selectedTab = options.selectedTab;
+    }
+
+    // Handle periodStartDate calculation or direct setting
+    if (options?.periodStartDate) {
+      stateUpdates.periodStartDate = options.periodStartDate
+        .utc()
+        .toISOString();
+    } else if (options?.targetDate && options?.timeFrame) {
+      let calculatedDate: dayjs.Dayjs;
+      if (options.timeFrame === "week") {
+        // Start of ISO week (Monday)
+        calculatedDate = options.targetDate.startOf("isoWeek");
+      } else {
+        // Start of the month
+        calculatedDate = options.targetDate.startOf("month");
+      }
+
+      stateUpdates.periodStartDate = calculatedDate.utc().toISOString();
+    }
+
+    // Add timeFrame
+    if (options?.timeFrame !== undefined) {
+      stateUpdates.timeFrame = options.timeFrame;
+    }
+
+    // Add filters and sort
+    if (options?.filters !== undefined) {
+      stateUpdates.filters = options.filters;
+    }
+    if (options?.sort !== undefined) {
+      stateUpdates.sort = options.sort;
+    }
+
+    // Merge with existing settings using new flat structure
+    // Ensure all required fields have defaults
+    const settings = {
+      selectedTab: existingSettings?.selectedTab || "table",
+      filters: existingSettings?.filters || [],
+      sort: existingSettings?.sort || null,
+      timeFrame: existingSettings?.timeFrame || "month",
+      periodStartDate:
+        existingSettings?.periodStartDate ||
+        dayjs().utc().startOf("month").toISOString(),
+      ...stateUpdates, // Apply updates on top
+    };
+
+    // Set in localStorage
+    await page.evaluate(
+      ({ key, value }) => {
+        localStorage.setItem(key, JSON.stringify(value));
+      },
+      { key: storageKey, value: settings },
+    );
+
+    const logParts = ["✅ Set request view settings (team-scoped):"];
+    if (stateUpdates.selectedTab !== undefined) {
+      logParts.push(`tab ${stateUpdates.selectedTab}`);
+    }
+    if (stateUpdates.timeFrame) {
+      logParts.push(`${stateUpdates.timeFrame} view`);
+    }
+    if (stateUpdates.periodStartDate) {
+      logParts.push(
+        `starting ${dayjs(stateUpdates.periodStartDate).format("YYYY-MM-DD")}`,
+      );
+    }
+    if (Object.keys(stateUpdates).length === 0) {
+      logParts.push("(no changes)");
+    }
+    console.log(logParts.join(" "));
+
+    // Navigate to requests page to apply localStorage changes
+    // This is more reliable than reload() because it re-runs the addInitScript for team selection
+    if (reload) {
+      // Navigate to the requests page
+      await page.goto(`http://localhost:3000/en/plan/requests`);
+      await page.waitForLoadState("networkidle");
+
+      // Wait for the requests page to load
+      await page.waitForSelector('[data-testid="request-tab"]', {
+        timeout: 10000,
+      });
+    }
   }
 }

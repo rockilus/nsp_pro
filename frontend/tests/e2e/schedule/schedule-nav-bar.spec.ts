@@ -26,9 +26,11 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       referenceDate: today,
       createAssignments: true,
       linkMemberToWorker: true,
+      createShiftDemands: true,
+      createRequests: true,
       campaignDates: {
-        start: today.startOf("month").format("YYYY-MM-DD"),
-        end: today.endOf("month").format("YYYY-MM-DD"),
+        start: today.startOf("month").utc(),
+        end: today.endOf("month").utc(),
       },
     });
   });
@@ -64,7 +66,9 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       expect(labelText).toMatch(/^[A-Za-z]+ \d{4}$/); // Format: "January 2026"
 
       // Verify the schedule table column headers show the days of the selected month
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
+      const scheduleTable = page.locator(
+        '[data-testid="schedule-table-shift"]',
+      );
       await expect(scheduleTable).toBeVisible();
 
       // Get the periodStartDate from scheduleViewSettings in localStorage
@@ -85,7 +89,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Parse the periodStartDate from settings
       const displayedMonthStart = dayjs.utc(
-        scheduleViewSettings.periodStartDate
+        scheduleViewSettings.periodStartDate,
       );
       const displayedMonthEnd = displayedMonthStart.endOf("month");
       const daysInDisplayedMonth = displayedMonthEnd.date();
@@ -95,15 +99,15 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         const date = displayedMonthStart.date(day);
         const dateString = date.format("YYYY-MM-DD");
         const dateHeader = page.locator(
-          `[data-testid="date-header-day-${dateString}"]`
+          `[data-testid="date-header-day-${dateString}"]`,
         );
         await expect(dateHeader).toBeVisible();
       }
 
       console.log(
         `✅ Monthly view displayed correctly with all ${daysInDisplayedMonth} days of ${displayedMonthStart.format(
-          "MMMM YYYY"
-        )}`
+          "MMMM YYYY",
+        )}`,
       );
     });
 
@@ -126,10 +130,12 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       // Verify the period label shows week format (e.g., "January 2026")
       const periodLabel = page.locator('[data-testid="time-nav-label"]');
       const labelText = await periodLabel.textContent();
-      expect(labelText).toMatch(/^[A-Za-z]+ \d{4}$/); // Format: "January 2026"
+      expect(labelText).toBe("Dec 2025 - Jan 2026");
 
       // Verify the schedule table shows all 7 days of the displayed week
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
+      const scheduleTable = page.locator(
+        '[data-testid="schedule-table-shift"]',
+      );
       await expect(scheduleTable).toBeVisible();
 
       // Get the periodStartDate from scheduleViewSettings in localStorage
@@ -150,7 +156,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Parse the periodStartDate from settings (this is the week start)
       const displayedWeekStart = dayjs.utc(
-        scheduleViewSettings.periodStartDate
+        scheduleViewSettings.periodStartDate,
       );
 
       // Verify all 7 days of the displayed week are present
@@ -158,15 +164,15 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         const date = displayedWeekStart.add(dayOffset, "day");
         const dateString = date.format("YYYY-MM-DD");
         const dateHeader = page.locator(
-          `[data-testid="date-header-day-${dateString}"]`
+          `[data-testid="date-header-day-${dateString}"]`,
         );
         await expect(dateHeader).toBeVisible();
       }
 
       console.log(
         `✅ Weekly view displayed correctly with all 7 days starting from ${displayedWeekStart.format(
-          "YYYY-MM-DD"
-        )}`
+          "YYYY-MM-DD",
+        )}`,
       );
     });
   });
@@ -211,19 +217,19 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Verify the new week is exactly 7 days after the initial week
       expect(newWeekStart.format("YYYY-MM-DD")).toBe(
-        expectedWeekStart.format("YYYY-MM-DD")
+        expectedWeekStart.format("YYYY-MM-DD"),
       );
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
-        `[data-testid="date-header-day-${newWeekStart.format("YYYY-MM-DD")}"]`
+        `[data-testid="date-header-day-${newWeekStart.format("YYYY-MM-DD")}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
       console.log(
         `✅ Navigated from ${initialWeekStart.format(
-          "YYYY-MM-DD"
-        )} to ${newWeekStart.format("YYYY-MM-DD")}`
+          "YYYY-MM-DD",
+        )} to ${newWeekStart.format("YYYY-MM-DD")}`,
       );
     });
 
@@ -264,19 +270,19 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Verify the new week is exactly 7 days before
       expect(afterWeekStart.format("YYYY-MM-DD")).toBe(
-        expectedWeekStart.format("YYYY-MM-DD")
+        expectedWeekStart.format("YYYY-MM-DD"),
       );
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
-        `[data-testid="date-header-day-${afterWeekStart.format("YYYY-MM-DD")}"]`
+        `[data-testid="date-header-day-${afterWeekStart.format("YYYY-MM-DD")}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
       console.log(
         `✅ Navigated from ${beforeWeekStart.format(
-          "YYYY-MM-DD"
-        )} to ${afterWeekStart.format("YYYY-MM-DD")}`
+          "YYYY-MM-DD",
+        )} to ${afterWeekStart.format("YYYY-MM-DD")}`,
       );
     });
 
@@ -322,15 +328,15 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
         `[data-testid="date-header-day-${currentWeekStart.format(
-          "YYYY-MM-DD"
-        )}"]`
+          "YYYY-MM-DD",
+        )}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
       console.log(
         `✅ Navigated to current week starting ${currentWeekStart.format(
-          "YYYY-MM-DD"
-        )} (contains today: ${todayDate})`
+          "YYYY-MM-DD",
+        )} (contains today: ${todayDate})`,
       );
     });
   });
@@ -377,19 +383,19 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Verify the new month is the next month
       expect(newMonthStart.format("YYYY-MM")).toBe(
-        expectedMonthStart.format("YYYY-MM")
+        expectedMonthStart.format("YYYY-MM"),
       );
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
-        `[data-testid="date-header-day-${newMonthStart.format("YYYY-MM-DD")}"]`
+        `[data-testid="date-header-day-${newMonthStart.format("YYYY-MM-DD")}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
       console.log(
         `✅ Navigated from ${initialMonthStart.format(
-          "MMMM YYYY"
-        )} to ${newMonthStart.format("MMMM YYYY")}`
+          "MMMM YYYY",
+        )} to ${newMonthStart.format("MMMM YYYY")}`,
       );
     });
 
@@ -432,21 +438,21 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Verify the new month is the previous month
       expect(afterMonthStart.format("YYYY-MM")).toBe(
-        expectedMonthStart.format("YYYY-MM")
+        expectedMonthStart.format("YYYY-MM"),
       );
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
         `[data-testid="date-header-day-${afterMonthStart.format(
-          "YYYY-MM-DD"
-        )}"]`
+          "YYYY-MM-DD",
+        )}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
       console.log(
         `✅ Navigated from ${beforeMonthStart.format(
-          "MMMM YYYY"
-        )} to ${afterMonthStart.format("MMMM YYYY")}`
+          "MMMM YYYY",
+        )} to ${afterMonthStart.format("MMMM YYYY")}`,
       );
     });
 
@@ -482,21 +488,21 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Verify the displayed month is the current month
       expect(currentMonthStart.format("YYYY-MM")).toBe(
-        expectedMonthStart.format("YYYY-MM")
+        expectedMonthStart.format("YYYY-MM"),
       );
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
         `[data-testid="date-header-day-${currentMonthStart.format(
-          "YYYY-MM-DD"
-        )}"]`
+          "YYYY-MM-DD",
+        )}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
       console.log(
         `✅ Navigated to current month ${currentMonthStart.format(
-          "MMMM YYYY"
-        )} (contains today: ${today.format("YYYY-MM-DD")})`
+          "MMMM YYYY",
+        )} (contains today: ${today.format("YYYY-MM-DD")})`,
       );
     });
   });
@@ -533,8 +539,8 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       console.log(
         `✅ Period label displays correctly: "${labelText}" for month ${selectedMonth.format(
-          "YYYY-MM"
-        )}`
+          "YYYY-MM",
+        )}`,
       );
     });
 
@@ -558,13 +564,13 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         ({ teamId, periodStartDate }) => {
           const settingsKey = `scheduleViewSettings_${teamId}`;
           const settings = JSON.parse(
-            localStorage.getItem(settingsKey) || "{}"
+            localStorage.getItem(settingsKey) || "{}",
           );
           settings.periodStartDate = periodStartDate;
           settings.timeFrame = "week";
           localStorage.setItem(settingsKey, JSON.stringify(settings));
         },
-        { teamId: testTeam.teamId, periodStartDate: week1Start.toISOString() }
+        { teamId: testTeam.teamId, periodStartDate: week1Start.toISOString() },
       );
       await page.reload();
       await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
@@ -582,13 +588,13 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         ({ teamId, periodStartDate }) => {
           const settingsKey = `scheduleViewSettings_${teamId}`;
           const settings = JSON.parse(
-            localStorage.getItem(settingsKey) || "{}"
+            localStorage.getItem(settingsKey) || "{}",
           );
           settings.periodStartDate = periodStartDate;
           settings.timeFrame = "week";
           localStorage.setItem(settingsKey, JSON.stringify(settings));
         },
-        { teamId: testTeam.teamId, periodStartDate: week2Start.toISOString() }
+        { teamId: testTeam.teamId, periodStartDate: week2Start.toISOString() },
       );
       await page.reload();
       await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
@@ -598,7 +604,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       labelText = await periodLabel.textContent();
       expect(labelText).toBe("January 2026");
       console.log(
-        `✅ Week within same month displays correctly: "${labelText}"`
+        `✅ Week within same month displays correctly: "${labelText}"`,
       );
 
       // Test case 3: Week spanning different months, same year (Jan 26 - Feb 1, 2026)
@@ -608,13 +614,13 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         ({ teamId, periodStartDate }) => {
           const settingsKey = `scheduleViewSettings_${teamId}`;
           const settings = JSON.parse(
-            localStorage.getItem(settingsKey) || "{}"
+            localStorage.getItem(settingsKey) || "{}",
           );
           settings.periodStartDate = periodStartDate;
           settings.timeFrame = "week";
           localStorage.setItem(settingsKey, JSON.stringify(settings));
         },
-        { teamId: testTeam.teamId, periodStartDate: week3Start.toISOString() }
+        { teamId: testTeam.teamId, periodStartDate: week3Start.toISOString() },
       );
       await page.reload();
       await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
@@ -624,7 +630,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       labelText = await periodLabel.textContent();
       expect(labelText).toBe("Jan - Feb 2026");
       console.log(
-        `✅ Week spanning months (same year) displays correctly: "${labelText}"`
+        `✅ Week spanning months (same year) displays correctly: "${labelText}"`,
       );
     });
   });
@@ -635,7 +641,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
     }) => {
       // Click on shift button in data view selector
       const shiftButton = page.locator(
-        '[data-testid="data-view-shift-button"]'
+        '[data-testid="data-view-shift-button"]',
       );
       await shiftButton.click();
       await page.waitForTimeout(500);
@@ -644,7 +650,9 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       expect(await shiftButton.getAttribute("aria-pressed")).toBe("true");
 
       // Verify schedule table is visible (both shift and worker use same table)
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
+      const scheduleTable = page.locator(
+        '[data-testid="schedule-table-shift"]',
+      );
       await expect(scheduleTable).toBeVisible();
 
       console.log("✅ Shift view displayed correctly");
@@ -655,14 +663,14 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
     }) => {
       // First select shift view
       const shiftButton = page.locator(
-        '[data-testid="data-view-shift-button"]'
+        '[data-testid="data-view-shift-button"]',
       );
       await shiftButton.click();
       await page.waitForTimeout(300);
 
       // Then click on worker button
       const workerButton = page.locator(
-        '[data-testid="data-view-worker-button"]'
+        '[data-testid="data-view-worker-button"]',
       );
       await workerButton.click();
       await page.waitForTimeout(500);
@@ -671,7 +679,9 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       expect(await workerButton.getAttribute("aria-pressed")).toBe("true");
 
       // Verify schedule table is visible
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
+      const scheduleTable = page.locator(
+        '[data-testid="schedule-table-worker"]',
+      );
       await expect(scheduleTable).toBeVisible();
 
       console.log("✅ Worker view displayed correctly");
@@ -684,7 +694,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
     }) => {
       // Click settings button
       const settingsButton = page.locator(
-        '[data-testid="schedule-settings-button"]'
+        '[data-testid="schedule-settings-button"]',
       );
       await settingsButton.click();
 
@@ -700,7 +710,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
     }) => {
       // Open settings
       const settingsButton = page.locator(
-        '[data-testid="schedule-settings-button"]'
+        '[data-testid="schedule-settings-button"]',
       );
       await settingsButton.click();
 
@@ -709,7 +719,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Click shift button in settings
       const shiftButton = popover.locator(
-        '[data-testid="settings-groupby-shift"]'
+        '[data-testid="settings-groupby-shift"]',
       );
       await shiftButton.click();
       await page.waitForTimeout(500);
@@ -722,7 +732,9 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       await page.waitForTimeout(300);
 
       // Verify schedule table is visible
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
+      const scheduleTable = page.locator(
+        '[data-testid="schedule-table-shift"]',
+      );
       await expect(scheduleTable).toBeVisible();
 
       console.log("✅ Shift view displayed from settings");
@@ -733,7 +745,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
     }) => {
       // Open settings
       const settingsButton = page.locator(
-        '[data-testid="schedule-settings-button"]'
+        '[data-testid="schedule-settings-button"]',
       );
       await settingsButton.click();
 
@@ -742,7 +754,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Click worker button in settings
       const workerButton = popover.locator(
-        '[data-testid="settings-groupby-worker"]'
+        '[data-testid="settings-groupby-worker"]',
       );
       await workerButton.click();
       await page.waitForTimeout(500);
@@ -755,7 +767,9 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       await page.waitForTimeout(300);
 
       // Verify schedule table is visible
-      const scheduleTable = page.locator('[data-testid="schedule-table"]');
+      const scheduleTable = page.locator(
+        '[data-testid="schedule-table-worker"]',
+      );
       await expect(scheduleTable).toBeVisible();
 
       console.log("✅ Worker view displayed from settings");
@@ -775,7 +789,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         ({ teamId, periodStartDate, timeFrame }) => {
           const settingsKey = `scheduleViewSettings_${teamId}`;
           const settings = JSON.parse(
-            localStorage.getItem(settingsKey) || "{}"
+            localStorage.getItem(settingsKey) || "{}",
           );
           settings.periodStartDate = periodStartDate;
           settings.timeFrame = timeFrame;
@@ -785,7 +799,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
           teamId: testTeam.teamId,
           periodStartDate: today.startOf("month").toISOString(),
           timeFrame: "month",
-        }
+        },
       );
       await page.reload();
       await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
@@ -794,7 +808,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Open settings
       const settingsButton = page.locator(
-        '[data-testid="schedule-settings-button"]'
+        '[data-testid="schedule-settings-button"]',
       );
       await settingsButton.click();
 
@@ -803,7 +817,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Get assignments checkbox
       const assignmentsCheckbox = popover.locator(
-        '[data-testid="settings-checkbox-assignments"]'
+        '[data-testid="settings-checkbox-assignments"]',
       );
 
       // Ensure it's checked
@@ -859,7 +873,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         ({ teamId, periodStartDate, timeFrame, groupBy }) => {
           const settingsKey = `scheduleViewSettings_${teamId}`;
           const settings = JSON.parse(
-            localStorage.getItem(settingsKey) || "{}"
+            localStorage.getItem(settingsKey) || "{}",
           );
           settings.periodStartDate = periodStartDate;
           settings.timeFrame = timeFrame;
@@ -871,7 +885,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
           periodStartDate: today.startOf("month").toISOString(),
           timeFrame: "month",
           groupBy: "shift",
-        }
+        },
       );
       await page.reload();
       await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
@@ -880,14 +894,14 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Ensure shift view
       const shiftButton = page.locator(
-        '[data-testid="data-view-shift-button"]'
+        '[data-testid="data-view-shift-button"]',
       );
       await shiftButton.click();
       await page.waitForTimeout(300);
 
       // Open settings
       const settingsButton = page.locator(
-        '[data-testid="schedule-settings-button"]'
+        '[data-testid="schedule-settings-button"]',
       );
       await settingsButton.click();
 
@@ -896,7 +910,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Get demands checkbox (only visible for solver teams)
       const demandsCheckbox = popover.locator(
-        '[data-testid="settings-checkbox-demands"]'
+        '[data-testid="settings-checkbox-demands"]',
       );
 
       // Ensure it's checked
@@ -952,7 +966,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         ({ teamId, periodStartDate, timeFrame, groupBy }) => {
           const settingsKey = `scheduleViewSettings_${teamId}`;
           const settings = JSON.parse(
-            localStorage.getItem(settingsKey) || "{}"
+            localStorage.getItem(settingsKey) || "{}",
           );
           settings.periodStartDate = periodStartDate;
           settings.timeFrame = timeFrame;
@@ -964,7 +978,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
           periodStartDate: today.startOf("month").toISOString(),
           timeFrame: "month",
           groupBy: "worker",
-        }
+        },
       );
       await page.reload();
       await page.waitForSelector('[data-testid="schedule-nav-bar"]', {
@@ -973,14 +987,14 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Ensure worker view
       const workerButton = page.locator(
-        '[data-testid="data-view-worker-button"]'
+        '[data-testid="data-view-worker-button"]',
       );
       await workerButton.click();
       await page.waitForTimeout(300);
 
       // Open settings
       const settingsButton = page.locator(
-        '[data-testid="schedule-settings-button"]'
+        '[data-testid="schedule-settings-button"]',
       );
       await settingsButton.click();
 
@@ -989,7 +1003,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Get requests checkbox
       const requestsCheckbox = popover.locator(
-        '[data-testid="settings-checkbox-requests"]'
+        '[data-testid="settings-checkbox-requests"]',
       );
 
       // Ensure it's checked
@@ -1041,7 +1055,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Open settings
       let settingsButton = page.locator(
-        '[data-testid="schedule-settings-button"]'
+        '[data-testid="schedule-settings-button"]',
       );
       await settingsButton.click();
 
@@ -1050,7 +1064,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Check if duplicate week button is disabled
       const duplicateWeekButton = popover.locator(
-        '[data-testid="settings-duplicate-week-button"]'
+        '[data-testid="settings-duplicate-week-button"]',
       );
       const isDisabledInMonth = await duplicateWeekButton.isDisabled();
       expect(isDisabledInMonth).toBe(true);
@@ -1085,7 +1099,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       console.log(
         `✅ Duplicate week button is ${
           isDisabledInWeek ? "disabled" : "enabled"
-        } in weekly view`
+        } in weekly view`,
       );
     });
 
@@ -1104,7 +1118,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Open settings
       const settingsButton = page.locator(
-        '[data-testid="schedule-settings-button"]'
+        '[data-testid="schedule-settings-button"]',
       );
       await settingsButton.click();
 
@@ -1113,7 +1127,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Try to click duplicate week button
       const duplicateWeekButton = popover.locator(
-        '[data-testid="settings-duplicate-week-button"]'
+        '[data-testid="settings-duplicate-week-button"]',
       );
       const isDisabled = await duplicateWeekButton.isDisabled();
 
@@ -1128,7 +1142,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         console.log("✅ Duplicate week dialog opened successfully");
       } else {
         console.log(
-          "⏭️  Duplicate week button is disabled (may not meet requirements: Monday start, campaign exists, exactly 7 days)"
+          "⏭️  Duplicate week button is disabled (may not meet requirements: Monday start, campaign exists, exactly 7 days)",
         );
       }
     });
@@ -1142,7 +1156,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Check if campaign dates are displayed
       const campaignDates = page.locator(
-        '[data-testid="campaign-period-dates"]'
+        '[data-testid="campaign-period-dates"]',
       );
       await expect(campaignDates).toBeVisible();
 
@@ -1157,19 +1171,19 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       }
 
       // UI displays dates in "DD MMM YYYY" format
-      const expectedStartFormatted = campaign.startDate.format("D MMM YYYY");
-      const expectedEndFormatted = campaign.endDate.format("D MMM YYYY");
+      const expectedStartFormatted = campaign.startDate.format("MMM YYYY");
+      const expectedEndFormatted = campaign.endDate.format("MMM YYYY");
 
       // Verify the displayed text contains the expected formatted dates
       expect(datesText).toContain(expectedStartFormatted);
       expect(datesText).toContain(expectedEndFormatted);
 
       console.log(
-        `✅ Campaign dates displayed correctly: "${datesText}" (expected: ${expectedStartFormatted} to ${expectedEndFormatted})`
+        `✅ Campaign dates displayed correctly: "${datesText}" (expected: ${expectedStartFormatted} to ${expectedEndFormatted})`,
       );
     });
 
-    test("should open breaches in LHS panel when campaign status is clicked", async ({
+    test("should open breaches in dialog when campaign status is clicked", async ({
       page,
     }) => {
       // Look for solve status chip
@@ -1181,16 +1195,16 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
         await statusChips.first().click();
         await page.waitForTimeout(500);
 
-        // Verify LHS panel opened on breaches tab
-        const breachPanel = page.locator('[data-testid="breach-lhs-panel"]');
+        // Verify dialog opened on breaches tab
+        const breachPanel = page.locator('[data-testid="breaches-dialog"]');
         await expect(breachPanel).toBeVisible({ timeout: 3000 });
 
         console.log(
-          "✅ Campaign status chip clicked and breaches panel opened"
+          "✅ Campaign status chip clicked and breaches panel opened",
         );
       } else {
         console.log(
-          "⏭️  No campaign status chip found (team may not use solver)"
+          "⏭️  No campaign status chip found (team may not use solver)",
         );
       }
     });
@@ -1226,7 +1240,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
           createAssignments: true,
           linkMemberToWorker: true,
           // No campaign dates
-        }
+        },
       );
     });
 
@@ -1242,12 +1256,12 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Check if create campaign button is visible
       const createCampaignButton = page.locator(
-        '[data-testid="nav-bar-create-campaign-button"]'
+        '[data-testid="nav-bar-create-campaign-button"]',
       );
       await expect(createCampaignButton).toBeVisible();
 
       console.log(
-        "✅ Create campaign button displayed when no campaign exists"
+        "✅ Create campaign button displayed when no campaign exists",
       );
     });
 
@@ -1263,7 +1277,7 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
 
       // Click create campaign button
       const createCampaignButton = page.locator(
-        '[data-testid="nav-bar-create-campaign-button"]'
+        '[data-testid="nav-bar-create-campaign-button"]',
       );
       await createCampaignButton.click();
 
@@ -1289,8 +1303,8 @@ test.describe("ScheduleNavBar - Member Tests", () => {
       createAssignments: true,
       linkMemberToWorker: true,
       campaignDates: {
-        start: today.startOf("month").format("YYYY-MM-DD"),
-        end: today.endOf("month").format("YYYY-MM-DD"),
+        start: today.startOf("month").utc(),
+        end: today.endOf("month").utc(),
       },
     });
   });
@@ -1308,7 +1322,7 @@ test.describe("ScheduleNavBar - Member Tests", () => {
   test("should not display settings button for members", async ({ page }) => {
     // Verify settings button is not visible
     const settingsButton = page.locator(
-      '[data-testid="schedule-settings-button"]'
+      '[data-testid="schedule-settings-button"]',
     );
     await expect(settingsButton).not.toBeVisible();
 
@@ -1342,7 +1356,7 @@ test.describe("ScheduleNavBar - Member Tests", () => {
     // Verify data view selector is visible
     const shiftButton = page.locator('[data-testid="data-view-shift-button"]');
     const workerButton = page.locator(
-      '[data-testid="data-view-worker-button"]'
+      '[data-testid="data-view-worker-button"]',
     );
 
     await expect(shiftButton).toBeVisible();

@@ -29,7 +29,7 @@ test.describe("Request Calendar - Period Navigation", () => {
     // Generate a unique ID for this specific test run
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     console.log(
-      `[Test Run ${testRunId}] Starting request calendar period navigation test setup`
+      `[Test Run ${testRunId}] Starting request calendar period navigation test setup`,
     );
 
     // Create a new RequestTestBase instance for this test run
@@ -63,7 +63,7 @@ test.describe("Request Calendar - Period Navigation", () => {
 
     if (!requestTestBase) {
       console.warn(
-        `[Test Run ${testRunId}] No requestTestBase found in afterEach`
+        `[Test Run ${testRunId}] No requestTestBase found in afterEach`,
       );
       return;
     }
@@ -76,7 +76,7 @@ test.describe("Request Calendar - Period Navigation", () => {
     } catch (error) {
       console.error(
         `[Test Run ${testRunId}] Error during cleanup:`,
-        error instanceof Error ? error.message : String(error)
+        error instanceof Error ? error.message : String(error),
       );
     }
 
@@ -95,51 +95,76 @@ test.describe("Request Calendar - Period Navigation", () => {
     const startOfWeek = today.startOf("isoWeek");
     const endOfWeek = today.endOf("isoWeek");
 
-    // Explicitly select week view
-    await periodNav.select.selectOption("week");
+    // Navigate to current week using helper method
+    await requestTestBase.navigateToPeriod(page, today, "week");
 
-    // Set a known starting point by clicking "Today"
-    await periodNav.todayButton.click();
+    // Verify we're in week view
+    await expect(periodNav.select).toHaveValue("week");
 
-    // Check that the view is the current week
-    await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
+    // Check that the view is the current week using formatPeriodLabel
+    const expectedLabel = requestTestBase.formatPeriodLabel(
+      startOfWeek,
+      endOfWeek,
+      "week",
+    );
+    await expect(periodNav.label).toHaveText(expectedLabel);
     await expect(
-      requestTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD")),
     ).toBeVisible();
     await expect(
-      requestTestBase.getDateHeader(page, endOfWeek.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, endOfWeek.format("YYYY-MM-DD")),
     ).toBeVisible();
 
     // Navigate to the previous week
-    await periodNav.previousButton.click();
-    const prevWeekStart = startOfWeek.subtract(1, "week");
-    const prevWeekEnd = endOfWeek.subtract(1, "week");
+    const prevWeekDate = startOfWeek.subtract(1, "week");
+    const prevWeekStart = prevWeekDate.startOf("isoWeek");
+    const prevWeekEnd = prevWeekDate.endOf("isoWeek");
+    await requestTestBase.navigateToPeriod(page, prevWeekDate, "week");
+
+    const prevWeekLabel = requestTestBase.formatPeriodLabel(
+      prevWeekStart,
+      prevWeekEnd,
+      "week",
+    );
+    await expect(periodNav.label).toHaveText(prevWeekLabel);
     await expect(
-      requestTestBase.getDateHeader(page, prevWeekStart.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, prevWeekStart.format("YYYY-MM-DD")),
     ).toBeVisible();
     await expect(
-      requestTestBase.getDateHeader(page, prevWeekEnd.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, prevWeekEnd.format("YYYY-MM-DD")),
     ).toBeVisible();
 
     // Navigate to the next week (back to current)
-    await periodNav.nextButton.click();
+    await requestTestBase.navigateToPeriod(page, today, "week");
+    await expect(periodNav.label).toHaveText(expectedLabel);
     await expect(
-      requestTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD")),
     ).toBeVisible();
     await expect(
-      requestTestBase.getDateHeader(page, endOfWeek.format("YYYY-MM-DD"))
-    ).toBeVisible();
-
-    // Navigate to next week, then click Today
-    await periodNav.nextButton.click();
-    const nextWeekStart = startOfWeek.add(1, "week");
-    await expect(
-      requestTestBase.getDateHeader(page, nextWeekStart.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, endOfWeek.format("YYYY-MM-DD")),
     ).toBeVisible();
 
+    // Navigate to next week
+    const nextWeekDate = startOfWeek.add(1, "week");
+    const nextWeekStart = nextWeekDate.startOf("isoWeek");
+    const nextWeekEnd = nextWeekDate.endOf("isoWeek");
+    await requestTestBase.navigateToPeriod(page, nextWeekDate, "week");
+
+    const nextWeekLabel = requestTestBase.formatPeriodLabel(
+      nextWeekStart,
+      nextWeekEnd,
+      "week",
+    );
+    await expect(periodNav.label).toHaveText(nextWeekLabel);
+    await expect(
+      requestTestBase.getDateHeader(page, nextWeekStart.format("YYYY-MM-DD")),
+    ).toBeVisible();
+
+    // Click Today button and verify it returns to current week
     await periodNav.todayButton.click();
+    await expect(periodNav.label).toHaveText(expectedLabel);
     await expect(
-      requestTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD")),
     ).toBeVisible();
 
     console.log("✅ Request calendar navigates weeks correctly in week view");
@@ -154,53 +179,70 @@ test.describe("Request Calendar - Period Navigation", () => {
     const startOfMonth = today.startOf("month");
     const endOfMonth = today.endOf("month");
 
-    // Switch to month view
-    await periodNav.select.selectOption("month");
+    // Navigate to current month using helper method
+    await requestTestBase.navigateToPeriod(page, today, "month");
 
-    // Set a known starting point by clicking "Today"
-    await periodNav.todayButton.click();
+    // Verify we're in month view
+    await expect(periodNav.select).toHaveValue("month");
 
-    // Check that the view is the current month
-    await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
+    // Check that the view is the current month using formatPeriodLabel
+    const expectedLabel = requestTestBase.formatPeriodLabel(
+      startOfMonth,
+      endOfMonth,
+      "month",
+    );
+    await expect(periodNav.label).toHaveText(expectedLabel);
     await expect(
-      requestTestBase.getDateHeader(page, startOfMonth.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, startOfMonth.format("YYYY-MM-DD")),
     ).toBeVisible();
     await expect(
-      requestTestBase.getDateHeader(page, endOfMonth.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, endOfMonth.format("YYYY-MM-DD")),
     ).toBeVisible();
 
     // Navigate to the previous month
-    await periodNav.previousButton.click();
-    const prevMonthStart = startOfMonth.subtract(1, "month");
-    const prevMonthEnd = prevMonthStart.endOf("month");
-    await expect(periodNav.label).toHaveText(
-      prevMonthStart.format("MMMM YYYY")
+    const prevMonthDate = startOfMonth.subtract(1, "month");
+    const prevMonthStart = prevMonthDate.startOf("month");
+    const prevMonthEnd = prevMonthDate.endOf("month");
+    await requestTestBase.navigateToPeriod(page, prevMonthDate, "month");
+
+    const prevMonthLabel = requestTestBase.formatPeriodLabel(
+      prevMonthStart,
+      prevMonthEnd,
+      "month",
     );
+    await expect(periodNav.label).toHaveText(prevMonthLabel);
     await expect(
-      requestTestBase.getDateHeader(page, prevMonthStart.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, prevMonthStart.format("YYYY-MM-DD")),
     ).toBeVisible();
     await expect(
-      requestTestBase.getDateHeader(page, prevMonthEnd.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, prevMonthEnd.format("YYYY-MM-DD")),
     ).toBeVisible();
 
     // Navigate to the next month (back to current)
-    await periodNav.nextButton.click();
-    await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
+    await requestTestBase.navigateToPeriod(page, today, "month");
+    await expect(periodNav.label).toHaveText(expectedLabel);
     await expect(
-      requestTestBase.getDateHeader(page, startOfMonth.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, startOfMonth.format("YYYY-MM-DD")),
     ).toBeVisible();
 
-    // Navigate to next month, then click Today
-    await periodNav.nextButton.click();
-    const nextMonthStart = startOfMonth.add(1, "month");
-    await expect(periodNav.label).toHaveText(
-      nextMonthStart.format("MMMM YYYY")
-    );
+    // Navigate to next month
+    const nextMonthDate = startOfMonth.add(1, "month");
+    const nextMonthStart = nextMonthDate.startOf("month");
+    const nextMonthEnd = nextMonthDate.endOf("month");
+    await requestTestBase.navigateToPeriod(page, nextMonthDate, "month");
 
+    const nextMonthLabel = requestTestBase.formatPeriodLabel(
+      nextMonthStart,
+      nextMonthEnd,
+      "month",
+    );
+    await expect(periodNav.label).toHaveText(nextMonthLabel);
+
+    // Click Today button and verify it returns to current month
     await periodNav.todayButton.click();
-    await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
+    await expect(periodNav.label).toHaveText(expectedLabel);
     await expect(
-      requestTestBase.getDateHeader(page, startOfMonth.format("YYYY-MM-DD"))
+      requestTestBase.getDateHeader(page, startOfMonth.format("YYYY-MM-DD")),
     ).toBeVisible();
 
     console.log("✅ Request calendar navigates months correctly in month view");
@@ -214,64 +256,87 @@ test.describe("Request Calendar - Period Navigation", () => {
 
     const periodNav = requestTestBase.getPeriodNav(page);
 
-    // 1. Switch from week to month
+    // 1. Start in week view, navigate to current week containing start of month
     const today = dayjs.utc();
     const startOfMonthTest = today.startOf("month");
     const startOfWeek = startOfMonthTest.startOf("isoWeek");
+    const endOfWeek = startOfMonthTest.endOf("isoWeek");
     const monthOfStartOfWeek = startOfWeek.startOf("month");
+    const monthEndOfStartOfWeek = startOfWeek.endOf("month");
 
-    console.log("Start of week:", startOfWeek.format("YYYY-MM-DD"));
-    console.log(
-      "Month of start of week:",
-      monthOfStartOfWeek.format("YYYY-MM-DD")
-    );
-
-    // Explicitly select week view first
-    await periodNav.select.selectOption("week");
+    // Navigate to week containing start of month
+    await requestTestBase.navigateToPeriod(page, startOfMonthTest, "week");
     await expect(periodNav.select).toHaveValue("week");
-
-    // Switch to month view
-    await periodNav.select.selectOption("month");
-
-    await expect(periodNav.select).toHaveValue("month");
-    await expect(periodNav.label).toHaveText(
-      monthOfStartOfWeek.format("MMMM YYYY")
+    const weekLabel = requestTestBase.formatPeriodLabel(
+      startOfWeek,
+      endOfWeek,
+      "week",
     );
+    await expect(periodNav.label).toHaveText(weekLabel);
+
+    // Switch to month view - should show the month containing the week start
+    await periodNav.select.selectOption("month");
+    await expect(periodNav.select).toHaveValue("month");
+
+    // Wait for calendar to update and show the month
+    await page.waitForTimeout(500);
+    const monthLabel = requestTestBase.formatPeriodLabel(
+      monthOfStartOfWeek,
+      monthEndOfStartOfWeek,
+      "month",
+    );
+    await expect(periodNav.label).toHaveText(monthLabel);
     await expect(
       requestTestBase.getDateHeader(
         page,
-        monthOfStartOfWeek.format("YYYY-MM-DD")
-      )
+        monthOfStartOfWeek.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
 
-    // 2. Switch from month to week
-    const startOfMonth = monthOfStartOfWeek.add(1, "month").startOf("month");
-    await periodNav.nextButton.click(); // Go to next month
-    await expect(periodNav.label).toHaveText(startOfMonth.format("MMMM YYYY"));
+    // 2. Navigate to next month, then switch from month to week
+    const nextMonthDate = monthOfStartOfWeek.add(1, "month");
+    const startOfMonth = nextMonthDate.startOf("month");
+    const endOfMonth = nextMonthDate.endOf("month");
+    await requestTestBase.navigateToPeriod(page, nextMonthDate, "month");
 
-    // Explicitly confirm we're in month view, then switch to week
-    await expect(periodNav.select).toHaveValue("month");
+    const nextMonthLabel = requestTestBase.formatPeriodLabel(
+      startOfMonth,
+      endOfMonth,
+      "month",
+    );
+    await expect(periodNav.label).toHaveText(nextMonthLabel);
+
+    // Switch to week view - should show week containing start of month
     await periodNav.select.selectOption("week");
+    await expect(periodNav.select).toHaveValue("week");
+
+    // Wait for calendar to update
+    await page.waitForTimeout(500);
     const weekOfStartOfMonth = startOfMonth.startOf("isoWeek");
     const endOfWeekOfStartOfMonth = startOfMonth.endOf("isoWeek");
 
-    await expect(periodNav.select).toHaveValue("week");
-    // The label might span two months, so we check the dates are visible
+    const weekLabel2 = requestTestBase.formatPeriodLabel(
+      weekOfStartOfMonth,
+      endOfWeekOfStartOfMonth,
+      "week",
+    );
+    await expect(periodNav.label).toHaveText(weekLabel2);
+    // The dates should be visible
     await expect(
       requestTestBase.getDateHeader(
         page,
-        weekOfStartOfMonth.format("YYYY-MM-DD")
-      )
+        weekOfStartOfMonth.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
     await expect(
       requestTestBase.getDateHeader(
         page,
-        endOfWeekOfStartOfMonth.format("YYYY-MM-DD")
-      )
+        endOfWeekOfStartOfMonth.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
 
     console.log(
-      "✅ Request calendar switches between week and month views correctly"
+      "✅ Request calendar switches between week and month views correctly",
     );
   });
 });

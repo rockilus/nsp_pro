@@ -1,20 +1,20 @@
 import { useCallback } from "react";
 import { useLocalStorageState } from "./useLocalStorageState";
 
-export type RequestViewSettingsT = {
+export type MobileRequestViewSettingsT = {
   mobileSelectedWorkerId: string | null;
   showPastRequests: boolean;
 };
 
-export type SerializedRequestViewSettings = {
+export type SerializedMobileRequestViewSettings = {
   mobileSelectedWorkerId: string | null;
   showPastRequests: boolean;
 };
 
-const requestViewSettingsSerializer = {
-  serialize: (settings: RequestViewSettingsT): string => {
+const mobileRequestViewSettingsSerializer = {
+  serialize: (settings: MobileRequestViewSettingsT): string => {
     try {
-      const serialized: SerializedRequestViewSettings = {
+      const serialized: SerializedMobileRequestViewSettings = {
         mobileSelectedWorkerId: settings.mobileSelectedWorkerId,
         showPastRequests: settings.showPastRequests,
       };
@@ -25,10 +25,11 @@ const requestViewSettingsSerializer = {
     }
   },
 
-  deserialize: (value: string): RequestViewSettingsT => {
+  deserialize: (value: string): MobileRequestViewSettingsT => {
     try {
-      const parsed: Partial<SerializedRequestViewSettings> = JSON.parse(value);
-      const settings: RequestViewSettingsT = {
+      const parsed: Partial<SerializedMobileRequestViewSettings> =
+        JSON.parse(value);
+      const settings: MobileRequestViewSettingsT = {
         mobileSelectedWorkerId: parsed.mobileSelectedWorkerId ?? null,
         showPastRequests: parsed.showPastRequests ?? false,
       };
@@ -36,7 +37,7 @@ const requestViewSettingsSerializer = {
     } catch (error) {
       console.warn(
         "Error deserializing request view settings, using defaults:",
-        error
+        error,
       );
       return {
         mobileSelectedWorkerId: null,
@@ -46,34 +47,34 @@ const requestViewSettingsSerializer = {
   },
 };
 
-export function getDefaultRequestViewSettings(): RequestViewSettingsT {
+export function getDefaultRequestViewSettings(): MobileRequestViewSettingsT {
   return {
     mobileSelectedWorkerId: null,
     showPastRequests: false,
   };
 }
 
-export function useRequestViewSettings(
+export function useMobileRequestViewSettings(
   teamId: string,
-  defaultSettings: RequestViewSettingsT
+  defaultSettings: MobileRequestViewSettingsT,
 ): [
-  RequestViewSettingsT,
-  (updates: Partial<RequestViewSettingsT>) => void,
-  () => void // reset function
+  MobileRequestViewSettingsT,
+  (updates: Partial<MobileRequestViewSettingsT>) => void,
+  () => void, // reset function
 ] {
-  const storageKey = `requestViewSettings_${teamId}`;
+  const storageKey = `mobileRequestViewSettings_${teamId}`;
 
   const [settings, setSettings] = useLocalStorageState(
     storageKey,
     defaultSettings,
-    requestViewSettingsSerializer
+    mobileRequestViewSettingsSerializer,
   );
 
   const updateSettings = useCallback(
-    (updates: Partial<RequestViewSettingsT>) => {
+    (updates: Partial<MobileRequestViewSettingsT>) => {
       setSettings((prev) => ({ ...prev, ...updates }));
     },
-    [setSettings]
+    [setSettings],
   );
 
   const resetSettings = useCallback(() => {

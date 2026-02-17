@@ -11,30 +11,22 @@ import MobileScheduleTab from "./mobile/mobile-schedule-tab";
 // Hooks
 import { useIsMobile } from "@/hooks/useIsMobile";
 // Components
-import BreachList from "./lhs-tabs/breach-list";
-import QuickStaffingTable from "./lhs-tabs/quick-staffing";
-import QuickStatsTable from "./lhs-tabs/quick-stats";
 import ScheduleDisplay from "./table/schedule-display";
 import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
-import LHSTab from "./lhs-tabs/lhs-tab";
 import ScheduleItemDialog from "./dialogs/schedule-item-dialog";
 import {
   ScheduleItemType,
   DialogMode,
   ScheduleItemDialogData,
   CreateAssignmentData,
-  CreateDemandData,
-  CreateRequestData,
 } from "./dialogs/schedule-item-types";
 import NoAssignmentsDisplay from "./no-assignments-display";
-import { buildAssignmentsDataByOwnerAndDate } from "./table/shared/assignment-utils";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
 // Actions
-import { useGetStats } from "../../hooks/useStats";
 import { useGetBreaches } from "../../hooks/useBreach";
 import { useGetSpecialties } from "../../hooks/useSpecialty";
 // Assignment Hooks
@@ -67,7 +59,6 @@ import {
   useUpdateSchedule,
   useGetSchedules,
   useGetScheduleEntities,
-  useGetScheduleLHSData,
   useDuplicatePeriod,
 } from "../../hooks/useSchedule";
 import { useExportSchedule } from "../../hooks/useExport";
@@ -83,7 +74,6 @@ import {
   ScheduleT,
   ExportOptionsT,
   ScheduleStatus,
-  LHSTabContentT,
   periodDateT,
   DuplicateRequestT,
   AssignmentDataT,
@@ -102,14 +92,6 @@ import {
   CreateAssignmentT,
 } from "@/types/assignment";
 import { RequestT } from "../../types/request";
-import {
-  StatsT,
-  StatsOptionsT,
-  StatsTimeFrameOptions,
-  StatsUnitOptions,
-  HeaderUnitOptions,
-} from "../../types/stats";
-import { AttributeOwnerType } from "../../types/attribute";
 import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
 import { SpecialtyT } from "@/types/specialty";
 import { TeamWithMembership } from "@/types/team";
@@ -136,9 +118,6 @@ export default function ScheduleTab({
   // Query client for manual cache operations (prefetching)
   const queryClient = useQueryClient();
 
-  // Stats hook
-  const getStats = useGetStats();
-
   // Data hooks for owner-only data
   const getBreaches = useGetBreaches();
   const getSpecialties = useGetSpecialties();
@@ -149,7 +128,6 @@ export default function ScheduleTab({
   const updateSchedule = useUpdateSchedule();
   const getSchedules = useGetSchedules();
   const getScheduleEntities = useGetScheduleEntities();
-  const getScheduleLHSData = useGetScheduleLHSData();
   const duplicatePeriod = useDuplicatePeriod();
   const exportSchedule = useExportSchedule();
 
@@ -192,7 +170,6 @@ export default function ScheduleTab({
     null,
   );
   const [breaches, setBreaches] = useState<BreachT[]>([]);
-  const [stats, setStats] = useState<StatsT | null>(null);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
 
   // Use persistent schedule view settings
@@ -332,11 +309,6 @@ export default function ScheduleTab({
     ],
   );
 
-  const [selectedTab, setSelectedTab] = useState<string | null>(null);
-
-  const [selectedQuickStatsTimeFrame, setSelectedQuickStatsTimeFrame] =
-    useState<StatsTimeFrameOptions>(StatsTimeFrameOptions.CAMPAING);
-
   // Unified dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<DialogMode>(DialogMode.CREATE);
@@ -346,14 +318,6 @@ export default function ScheduleTab({
   const [dialogData, setDialogData] = useState<ScheduleItemDialogData>(null);
 
   const isMobile = useIsMobile();
-
-  const toggleTab = (tabName: string) => {
-    if (selectedTab === tabName) {
-      setSelectedTab(null);
-    } else {
-      setSelectedTab(tabName);
-    }
-  };
 
   const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {
     setDialogOpen(true);
@@ -460,9 +424,6 @@ export default function ScheduleTab({
         };
 
         await shiftDemandMutations.create.mutateAsync({ demand: demandData });
-
-        // Update selected demand if applicable
-        setSelectedTab("selection");
 
         // Note: React Query will handle state updates automatically
         // No need to manually update local state
@@ -645,10 +606,6 @@ export default function ScheduleTab({
     [scheduleViewSettings.groupBy],
   );
 
-  const handleCloseLHS = useCallback(() => {
-    setSelectedTab(null);
-  }, []);
-
   const handleCloseDialog = useCallback(() => {
     setDialogOpen(false);
     setDialogData(null);
@@ -812,30 +769,6 @@ export default function ScheduleTab({
   };
 
   //////////////////////////
-  // Stats Actions
-  //////////////////////////
-
-  const handleChangeStatsTimeFrame = async (
-    timeFrame: StatsTimeFrameOptions,
-  ) => {
-    const newStatsOptions = {
-      timeFrame,
-      startDate: dayjs.utc().startOf("day").subtract(1, "year"),
-      endDate: dayjs.utc().startOf("day"),
-      statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
-      headerUnit: HeaderUnitOptions.WEEK,
-      selectedShifts: [],
-      showFavorites: true,
-    };
-    const newStats = await getStats(
-      teamWithMembership.team.id,
-      newStatsOptions,
-    );
-    setStats(newStats);
-    setSelectedQuickStatsTimeFrame(timeFrame);
-  };
-
-  //////////////////////////
   // Export Actions
   //////////////////////////
 
@@ -931,25 +864,11 @@ export default function ScheduleTab({
 
         // Fetch owner-only data conditionally
         if (teamWithMembership.membership.role !== TeamMembershipRole.MEMBER) {
-          // Prepare stats options
-          const statsOptions: StatsOptionsT = {
-            timeFrame: StatsTimeFrameOptions.CAMPAING,
-            startDate: dayjs.utc().startOf("day").subtract(1, "year"),
-            endDate: dayjs.utc().startOf("day"),
-            statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
-            headerUnit: HeaderUnitOptions.WEEK,
-            selectedShifts: [],
-            showFavorites: true,
-          };
-
-          const [fetchedBreaches, fetchedStats, fetchedSpecialties] =
-            await Promise.all([
-              getBreaches(teamWithMembership.team.id),
-              getStats(teamWithMembership.team.id, statsOptions),
-              getSpecialties(teamWithMembership.team.id),
-            ]);
+          const [fetchedBreaches, fetchedSpecialties] = await Promise.all([
+            getBreaches(teamWithMembership.team.id),
+            getSpecialties(teamWithMembership.team.id),
+          ]);
           setBreaches(fetchedBreaches);
-          setStats(fetchedStats);
           setSpecialties(fetchedSpecialties);
         }
       } catch (error) {
@@ -966,61 +885,8 @@ export default function ScheduleTab({
     getScheduleEntities,
     getRequests,
     getBreaches,
-    getStats,
     getSpecialties,
   ]);
-
-  // Filter tabs based on user role - members don't see owner-only tabs
-  const isOwner =
-    teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
-
-  const allLhsTabContent: LHSTabContentT[] = [
-    {
-      name: "breaches",
-      label: t("breaches"),
-      content: (
-        <BreachList lng={lng} breaches={breaches} onClose={handleCloseLHS} />
-      ),
-      ownerOnly: true,
-    },
-    {
-      name: "quick_staffing",
-      label: t("quick_staffing"),
-      content: scheduleCampaign ? (
-        <QuickStaffingTable
-          lng={lng}
-          shifts={shifts.filter((s) => !s.deleted)}
-          workers={workers.filter((w) => !w.deleted)}
-          assignments={assignments}
-          schedule={scheduleCampaign as ScheduleT}
-          onClose={handleCloseLHS}
-          handleUpdateSchedule={handleUpdateSchedule}
-        />
-      ) : null,
-      ownerOnly: true,
-    },
-    {
-      name: "quick_stats",
-      label: t("quick_stats"),
-      content: stats ? (
-        <QuickStatsTable
-          lng={lng}
-          shifts={shifts.filter((s) => !s.deleted)}
-          workers={workers.filter((w) => !w.deleted)}
-          stats={stats}
-          selectedQuickStatsTimeFrame={selectedQuickStatsTimeFrame}
-          onClose={handleCloseLHS}
-          handleChangeStatsTimeFrame={handleChangeStatsTimeFrame}
-        />
-      ) : null,
-      ownerOnly: true,
-    },
-  ];
-
-  // Filter tabs based on role
-  const lhsTabContent: LHSTabContentT[] = allLhsTabContent.filter(
-    (tab) => isOwner || !tab.ownerOnly,
-  );
 
   if (isMobile) {
     return (
@@ -1077,6 +943,7 @@ export default function ScheduleTab({
               scheduleViewSettings.timeFrame,
             )}
             scheduleCampaign={scheduleCampaign}
+            breaches={breaches}
             scheduleViewSettings={scheduleViewSettings}
             handleToday={handleToday}
             handlePreviousPeriod={handlePreviousPeriod}
@@ -1085,18 +952,11 @@ export default function ScheduleTab({
             handleSendDuplicateRequest={handleSendDuplicateRequest}
             updateScheduleViewSettings={updateScheduleViewSettings}
             handleChangeTimeFrame={handleChangeTimeFrame}
-            handleOpenLHS={setSelectedTab}
             useSqsWorkflow={true}
             onSqsSolveComplete={handleSqsSolveComplete}
           />
         )}
         <div style={{ display: "flex", flexDirection: "row" }}>
-          <LHSTab
-            teamWithMembership={teamWithMembership}
-            tabContent={lhsTabContent}
-            selectedTab={selectedTab}
-            toggleTab={toggleTab}
-          />
           {isLoadingAssignments ||
           (teamWithMembership.team.useSolver && isLoadingShiftDemands) ? (
             <ScheduleTableSkeleton />

@@ -15,7 +15,7 @@ import { testConfig } from "./test-config";
 import { ShiftType } from "../../src/types/shift";
 import { WorkerT } from "../../src/types/worker";
 import { ShiftT, ShiftRestType, ShiftLeaveType } from "../../src/types/shift";
-import { RequestT } from "../../src/types/request";
+import { RequestT, RequestType, RequestStatus } from "../../src/types/request";
 import { ScheduleT } from "../../src/types/schedule";
 import {
   AssignmentT,
@@ -52,8 +52,8 @@ export interface ScheduleSetupOptions {
   createRequests?: boolean; // Default false - whether to create test requests
   numberOfWorkers?: number; // Optional: number of workers to create (minimum 2). Defaults to 2.
   campaignDates?: {
-    start: string;
-    end: string;
+    start: dayjs.Dayjs;
+    end: dayjs.Dayjs;
   };
   // Whether to create duty and recuperation shifts. Default: false (do not create)
   createDutyAndRecuperation?: boolean;
@@ -221,10 +221,10 @@ export class ScheduleTestBase {
       const secondWorker = this.testWorkers[1];
       const testRequest = await this.createRequest({
         workerId: secondWorker.id,
-        requestType: "work_demand",
+        requestType: RequestType.WORK_DEMAND,
         startDate: options.referenceDate,
         endDate: options.referenceDate,
-        status: "pending",
+        status: RequestStatus.PENDING,
         negative: false,
         comment: "Test work demand request",
         shiftId: null,
@@ -444,10 +444,10 @@ export class ScheduleTestBase {
    */
   async createRequest(requestData: {
     workerId: string;
-    requestType: "work_demand" | "leave";
+    requestType: RequestType;
     startDate: dayjs.Dayjs;
     endDate: dayjs.Dayjs;
-    status?: "pending" | "approved" | "denied" | "deferred";
+    status?: RequestStatus;
     negative?: boolean;
     comment?: string;
     shiftId?: string | null;
@@ -463,7 +463,7 @@ export class ScheduleTestBase {
       requestType: requestData.requestType,
       startDate: requestData.startDate,
       endDate: requestData.endDate,
-      status: requestData.status ?? "pending",
+      status: requestData.status ?? RequestStatus.PENDING,
       negative: requestData.negative ?? false,
       comment: requestData.comment,
       shiftId: requestData.shiftId ?? null,
@@ -514,8 +514,8 @@ export class ScheduleTestBase {
    * Create a campaign schedule for testing
    */
   async createCampaignSchedule(
-    startDate: string,
-    endDate: string,
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
   ): Promise<ScheduleT> {
     if (!this.testTeam) {
       throw new Error("Test team not created. Call setupScheduleTests first.");
@@ -529,8 +529,8 @@ export class ScheduleTestBase {
     // Step 2: Update with specific dates
     const updatedSchedule = await this.dbUtils.updateSchedule({
       ...schedule,
-      startDate: dayjs(startDate).utc(),
-      endDate: dayjs(endDate).utc(),
+      startDate: startDate,
+      endDate: endDate,
     });
 
     this.testSchedule = updatedSchedule;
@@ -648,6 +648,17 @@ export class ScheduleTestBase {
    */
   getCampaign(): ScheduleT | null {
     return this.testSchedule;
+  }
+
+  /**
+   * Get all schedules for the test team using DatabaseTestUtils
+   */
+  async getSchedules(): Promise<ScheduleT[]> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    return await this.dbUtils.getSchedules(this.testTeam.teamId);
   }
 
   /**

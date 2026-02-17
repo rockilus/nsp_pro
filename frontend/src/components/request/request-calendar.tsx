@@ -2,7 +2,7 @@ import React from "react";
 import dayjs, { Dayjs } from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import "./request-calendar.css";
-import { RequestT } from "../../types/request";
+import { RequestT, RequestViewSettingsT } from "../../types/request";
 import { WorkerT } from "../../types/worker";
 import RequestPanel from "./request-panel";
 import { RequestCalendarToolbar } from "./RequestCalendarToolbar";
@@ -17,6 +17,7 @@ import RequestCalendarTable from "./RequestCalendarTable";
 import { useTableState } from "../../hooks/useTableState";
 import { createWorkerColumns } from "./workerColumns";
 import TableFilterBar from "../table/TableFilterBar";
+import { ColumnFilter } from "../../types/filter";
 
 dayjs.extend(isoWeek);
 
@@ -37,6 +38,8 @@ interface RequestCalendarProps {
   teamId?: string;
   shiftOptions?: Array<any>;
   userTeamRole?: any;
+  viewSettings: RequestViewSettingsT;
+  onUpdateViewSettings: (updates: Partial<RequestViewSettingsT>) => void;
   handleAddRequest?: (request: RequestT) => void;
   handleUpdateRequest?: (request: RequestT) => void;
   handleDeleteRequest?: (requestId: string) => void;
@@ -66,6 +69,8 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   teamId,
   shiftOptions = [],
   userTeamRole,
+  viewSettings,
+  onUpdateViewSettings,
   handleAddRequest,
   handleUpdateRequest,
   handleDeleteRequest,
@@ -73,17 +78,13 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   handleAcceptRequest,
   handleDenyRequest,
 }) => {
-  // State management
-  const [currentMonth, setCurrentMonth] = React.useState(
-    dayjs().utc().startOf("month")
-  );
-  const [timeFrame, setTimeFrame] = React.useState<"week" | "month">("month");
+  // State management (use viewSettings for timeFrame and periodStartDate)
   const [selectedCell, setSelectedCell] = React.useState<{
     workerId: string;
     date: Dayjs;
   } | null>(null);
   const [selectedRequest, setSelectedRequest] = React.useState<RequestT | null>(
-    null
+    null,
   );
   const [staffingSummary, setStaffingSummary] =
     React.useState<StaffingSummary | null>(null);
@@ -92,20 +93,91 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   // Column definitions for filtering (matching request table)
   const columns = React.useMemo(
     () => createWorkerColumns((key: string) => key, workers, shifts),
-    [workers, shifts]
+    [workers, shifts],
   );
 
-  // Table state for filtering requests
-  // Use unified storage key shared with request table
-  // This manages filters for all request properties (worker, shift, date, type, status, fulfillment)
+  // Table state for filtering requests (in-memory only, synced with parent viewSettings)
+  // Don't persist here - parent useRequestViewSettings handles all persistence
   const {
     tableState,
     filteredAndSortedData: filteredRequests,
-    addFilter,
-    removeFilter,
-    updateSort,
-    resetAll,
-  } = useTableState(requests, columns, "nsp-pro-request-tab-state");
+    addFilter: addFilterInternal,
+    removeFilter: removeFilterInternal,
+    updateSort: updateSortInternal,
+    resetAll: resetAllInternal,
+  } = useTableState(
+    requests,
+    columns,
+    undefined, // No storage key - parent manages persistence
+  );
+
+  // Sync viewSettings filters/sort into local tableState when they change
+  React.useEffect(() => {
+    // Only update if different to avoid infinite loops
+    const filtersChanged =
+      JSON.stringify(viewSettings.filters) !==
+      JSON.stringify(tableState.filters);
+    const sortChanged =
+      JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
+
+    if (filtersChanged || sortChanged) {
+      // Reset and apply all filters from viewSettings
+      viewSettings.filters.forEach((filter: ColumnFilter) =>
+        addFilterInternal(filter),
+      );
+      if (viewSettings.sort !== tableState.sort) {
+        updateSortInternal(viewSettings.sort);
+      }
+    }
+  }, [
+    viewSettings.filters,
+    viewSettings.sort,
+    tableState.filters,
+    tableState.sort,
+    addFilterInternal,
+    updateSortInternal,
+  ]);
+
+  // Wrapped callbacks that update both local state and parent viewSettings
+  const addFilter = React.useCallback(
+    (filter: ColumnFilter) => {
+      addFilterInternal(filter);
+      onUpdateViewSettings({
+        filters: [
+          ...viewSettings.filters.filter(
+            (f: ColumnFilter) => f.id !== filter.id,
+          ),
+          filter,
+        ],
+      });
+    },
+    [addFilterInternal, onUpdateViewSettings, viewSettings.filters],
+  );
+
+  const removeFilter = React.useCallback(
+    (filterId: string) => {
+      removeFilterInternal(filterId);
+      onUpdateViewSettings({
+        filters: viewSettings.filters.filter(
+          (f: ColumnFilter) => f.id !== filterId,
+        ),
+      });
+    },
+    [removeFilterInternal, onUpdateViewSettings, viewSettings.filters],
+  );
+
+  const updateSort = React.useCallback(
+    (sort: any) => {
+      updateSortInternal(sort);
+      onUpdateViewSettings({ sort });
+    },
+    [updateSortInternal, onUpdateViewSettings],
+  );
+
+  const resetAll = React.useCallback(() => {
+    resetAllInternal();
+    onUpdateViewSettings({ filters: [], sort: null });
+  }, [resetAllInternal, onUpdateViewSettings]);
 
   // Apply worker filter and sort to determine which worker rows to show and their order
   const filteredWorkers = React.useMemo(() => {
@@ -113,7 +185,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
     // Apply worker filter
     const workerFilter = tableState.filters.find((f) =>
-      f.id.startsWith("workerId")
+      f.id.startsWith("workerId"),
     );
     if (workerFilter) {
       const filterValues = workerFilter.value as string[];
@@ -144,23 +216,23 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
   // Calculate current period
   const currentPeriod = React.useMemo(() => {
-    if (timeFrame === "month") {
+    if (viewSettings.timeFrame === "month") {
       return {
-        start: currentMonth.startOf("month"),
-        end: currentMonth.endOf("month"),
+        start: viewSettings.periodStartDate.startOf("month"),
+        end: viewSettings.periodStartDate.endOf("month"),
       };
     } else {
       return {
-        start: currentMonth.startOf("isoWeek"),
-        end: currentMonth.endOf("isoWeek"),
+        start: viewSettings.periodStartDate.startOf("isoWeek"),
+        end: viewSettings.periodStartDate.endOf("isoWeek"),
       };
     }
-  }, [currentMonth, timeFrame]);
+  }, [viewSettings.periodStartDate, viewSettings.timeFrame]);
 
   // Memoize days based on the current period
   const days = React.useMemo(
     () => getDaysInPeriod(currentPeriod.start, currentPeriod.end),
-    [currentPeriod]
+    [currentPeriod],
   );
 
   // Get all demands for the current period
@@ -173,7 +245,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           !demandDate.isAfter(currentPeriod.end, "day")
         );
       }),
-    [demands, currentPeriod]
+    [demands, currentPeriod],
   );
 
   // Map workerId to requests for quick lookup
@@ -224,12 +296,12 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
             const demandCount = demandsForShift.reduce(
               (sum, d) => sum + d.count,
-              0
+              0,
             );
             const shiftStaffing = shift.staffing.reduce(
               (sum, s) =>
                 sum + (typeof s.staffing === "number" ? s.staffing : 0),
-              0
+              0,
             );
             totalDemand += demandCount * shiftStaffing;
           }
@@ -344,21 +416,23 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         }) || null
       );
     },
-    [requestsByWorker, tableState.filters, columns]
+    [requestsByWorker, tableState.filters, columns],
   );
 
   // Event handlers
   const handlePeriodChange = (start: Dayjs, end: Dayjs) => {
-    setCurrentMonth(start);
+    onUpdateViewSettings({ periodStartDate: start });
   };
 
   const handleTimeFrameChange = (newTimeFrame: "week" | "month") => {
-    setTimeFrame(newTimeFrame);
-    if (newTimeFrame === "month") {
-      setCurrentMonth(currentMonth.startOf("month"));
-    } else {
-      setCurrentMonth(currentMonth.startOf("isoWeek"));
-    }
+    // When changing time frame, ensure the period start is aligned to the new boundary
+    const alignedStart = viewSettings.periodStartDate.startOf(
+      newTimeFrame === "month" ? "month" : "isoWeek",
+    );
+    onUpdateViewSettings({
+      timeFrame: newTimeFrame,
+      periodStartDate: alignedStart,
+    });
   };
 
   const handleCellClick = (workerId: string, date: Dayjs) => {
@@ -381,7 +455,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
   const createPrePopulatedRequest = (
     workerId: string,
-    date: Dayjs
+    date: Dayjs,
   ): RequestT => ({
     id: "",
     teamId: teamId || "",
@@ -430,7 +504,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           lng={lng}
           currentPeriod={currentPeriod}
           onPeriodChange={handlePeriodChange}
-          timeFrame={timeFrame}
+          timeFrame={viewSettings.timeFrame}
           onTimeFrameChange={handleTimeFrameChange}
           columns={columns}
           filters={tableState.filters}
@@ -466,7 +540,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         // Worker filter/sort props
         currentSort={tableState.sort || undefined}
         currentFilter={tableState.filters.find((f) =>
-          f.id.startsWith("workerId")
+          f.id.startsWith("workerId"),
         )}
         onSort={updateSort}
         onFilter={addFilter}
@@ -481,7 +555,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           isEdit={false}
           request={createPrePopulatedRequest(
             selectedCell.workerId,
-            selectedCell.date
+            selectedCell.date,
           )}
           workers={workers.filter((w) => !w.deleted)}
           shifts={shifts}

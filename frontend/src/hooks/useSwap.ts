@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 // Types
 import { SwapRequestT, SwapStatus, SwapType } from "../types/swap";
 import { SwapValidationResultT } from "../types/swapValidation";
@@ -8,6 +9,7 @@ import { useApiClient } from "../app/lib/api-client";
 // Auth Context
 import { useAuth } from "../contexts/auth-context";
 import { env } from "@/config/env";
+import { assignmentsQueryKeys } from "../app/lib/hooks/useAssignments";
 
 //////////////////////////
 // Authenticated Swap Hooks //
@@ -340,6 +342,7 @@ export function useAcceptDirectSwap() {
 export function useApproveSwap() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
+  const queryClient = useQueryClient();
 
   const approveSwap = useCallback(
     async (swapId: string): Promise<SwapRequestT> => {
@@ -362,7 +365,14 @@ export function useApproveSwap() {
       }
 
       try {
-        return await SwapApi.approveSwap(apiClient, swapId);
+        const result = await SwapApi.approveSwap(apiClient, swapId);
+
+        // Invalidate assignment cache since approval modifies assignments
+        queryClient.invalidateQueries({
+          queryKey: assignmentsQueryKeys.all,
+        });
+
+        return result;
       } catch (error) {
         console.error("❌ Failed to approve swap:", {
           error: error instanceof Error ? error.message : "Unknown error",
@@ -371,7 +381,7 @@ export function useApproveSwap() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading, user, queryClient],
   );
 
   return approveSwap;
@@ -469,6 +479,7 @@ export function useDenySwap() {
 export function useRevertSwap() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
+  const queryClient = useQueryClient();
 
   const revertSwap = useCallback(
     async (swapId: string): Promise<SwapRequestT> => {
@@ -491,7 +502,14 @@ export function useRevertSwap() {
       }
 
       try {
-        return await SwapApi.revertSwap(apiClient, swapId);
+        const result = await SwapApi.revertSwap(apiClient, swapId);
+
+        // Invalidate assignment cache since revert modifies assignments
+        queryClient.invalidateQueries({
+          queryKey: assignmentsQueryKeys.all,
+        });
+
+        return result;
       } catch (error) {
         console.error("❌ Failed to revert swap:", {
           error: error instanceof Error ? error.message : "Unknown error",
@@ -500,7 +518,7 @@ export function useRevertSwap() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading, user, queryClient],
   );
 
   return revertSwap;

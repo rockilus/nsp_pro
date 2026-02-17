@@ -13,7 +13,7 @@ import { ReplacementCandidatesList } from "../shared/replacement-candidates-list
 // Hooks
 import { useGetReplacementCandidates } from "../../../../hooks/useAssignment";
 // Styles
-import "../../lhs-tabs/edit-assignment.css";
+import "./edit-assignment.css";
 // Types
 import { WorkerT } from "../../../../types/worker";
 import { ShiftT } from "../../../../types/shift";

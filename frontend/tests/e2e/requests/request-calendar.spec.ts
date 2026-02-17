@@ -270,36 +270,87 @@ test.describe("Request Calendar", () => {
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
     const testRequests = requestTestBase.getTestRequests(testRunId);
 
+    expect(testWorkers.length).toBeGreaterThan(0);
+    expect(testRequests.length).toBeGreaterThan(0);
+
+    console.log(`📋 Test has ${testRequests.length} requests:`);
+    testRequests.forEach((req, idx) => {
+      console.log(
+        `  ${idx + 1}. Worker: ${req.workerId}, Date: ${req.startDate.format("YYYY-MM-DD")}, Status: ${req.status}`,
+      );
+    });
+
+    const today = dayjs.utc().startOf("day");
+    console.log(`📅 Today is: ${today.format("YYYY-MM-DD")}`);
+
+    // Navigate to calendar view
+    console.log("🔧 Navigating to calendar tab...");
+    await requestTestBase.navigateToCalendarTab(page);
+    const requestCalendar = page.locator('[data-testid="request-calendar"]');
+    await expect(requestCalendar).toBeVisible();
+    console.log("✅ Calendar tab is visible");
+
     // First request should be a future pending work request for worker 2
-    const futureRequest = testRequests[0];
+    const futureRequest = testRequests.find((r) => r.startDate.isAfter(today));
+    expect(futureRequest).toBeDefined();
+
+    if (!futureRequest) {
+      throw new Error("Expected a future request, but none found");
+    }
+
+    console.log(
+      `🔮 Future request: Worker ${futureRequest.workerId}, Date: ${futureRequest.startDate.format("YYYY-MM-DD")}`,
+    );
     expect(futureRequest.workerId).toBe(testWorkers[1].id);
     expect(futureRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
+    // Navigate to the month of the future request
+    console.log("🔧 Navigating to future request month...");
+    await requestTestBase.navigateToMonth(page, futureRequest.startDate);
+    await expect(requestCalendar).toBeVisible();
+    console.log("✅ Navigated to future request month");
+
+    // Verify the future request is visible in the calendar
+    const futureRequestCell = requestTestBase.getCalendarCellWithRequest(
+      page,
+      futureRequest.workerId,
+      futureRequest.startDate,
+      futureRequest.id,
+    );
+    await expect(futureRequestCell).toBeVisible({ timeout: 5000 });
+    console.log("✅ Future request is visible in calendar");
+
     // Second request should be a past pending work request for worker 1
-    const pastRequest = testRequests[1];
+    const pastRequest = testRequests.find((r) => r.startDate.isBefore(today));
+    expect(pastRequest).toBeDefined();
+
+    if (!pastRequest) {
+      throw new Error("Expected a past request, but none found");
+    }
+
+    console.log(
+      `⏮️ Past request: Worker ${pastRequest.workerId}, Date: ${pastRequest.startDate.format("YYYY-MM-DD")}`,
+    );
     expect(pastRequest.workerId).toBe(testWorkers[0].id);
     expect(pastRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(pastRequest.status).toBe(RequestStatus.PENDING);
 
-    // Navigate to calendar
-    await requestTestBase.navigateToCalendarTab(page);
+    // Navigate to the month of the past request
+    console.log("🔧 Navigating to past request month...");
+    await requestTestBase.navigateToMonth(page, pastRequest.startDate);
+    await expect(requestCalendar).toBeVisible();
+    console.log("✅ Navigated to past request month");
 
-    // Verify past request is shown
-    await requestTestBase.verifyCalendarCellHasRequest(
+    // Verify the past request is visible in the calendar
+    const pastRequestCell = requestTestBase.getCalendarCellWithRequest(
       page,
-      testWorkers[0].id,
+      pastRequest.workerId,
       pastRequest.startDate,
       pastRequest.id,
     );
-
-    // Verify future request is shown
-    await requestTestBase.verifyCalendarCellHasRequest(
-      page,
-      testWorkers[1].id,
-      futureRequest.startDate,
-      futureRequest.id,
-    );
+    await expect(pastRequestCell).toBeVisible({ timeout: 5000 });
+    console.log("✅ Past request is visible in calendar");
 
     console.log("✅ Existing requests (past and future) are shown in calendar");
   });
@@ -335,10 +386,7 @@ test.describe("Request Calendar", () => {
 
     // Verify the form is populated with existing request data
     // Check that we're in edit mode by looking for action buttons
-    const deleteButton = requestTestBase.getDeleteRequestButton(
-      page,
-      futureRequest.id,
-    );
+    const deleteButton = page.locator('[data-testid="delete-request-button"]');
     await expect(deleteButton).toBeVisible();
 
     console.log(
@@ -376,10 +424,7 @@ test.describe("Request Calendar", () => {
     await expect(requestPanel).toBeVisible();
 
     // Click delete button
-    const deleteButton = requestTestBase.getDeleteRequestButton(
-      page,
-      futureRequest.id,
-    );
+    const deleteButton = page.locator('[data-testid="delete-request-button"]');
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
 

@@ -19,6 +19,7 @@ import { RoleTestBase } from "../../utils/role-test-base";
 import { RequestTestBase } from "../../utils/request-test-base";
 import { RequestStatus, RequestType } from "../../../src/types/request";
 import { ShiftType } from "../../../src/types/shift";
+import { WorkerT } from "../../../src/types/worker";
 
 dayjs.extend(utc);
 
@@ -26,7 +27,7 @@ test.describe("Request Page - Member User", () => {
   const roleTestBase = new RoleTestBase();
   const requestTestBase = new RequestTestBase();
   let testRunId: string;
-  let otherWorker: any;
+  let otherWorker: WorkerT;
 
   test.beforeEach(async ({ page }, testInfo) => {
     // Generate unique test run ID for data isolation
@@ -71,18 +72,20 @@ test.describe("Request Page - Member User", () => {
     });
 
     console.log(
-      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.workerId})`,
+      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.id})`,
     );
 
     // Create a request for the other worker using the same dayShift
+    expect(otherWorker).toBeDefined();
+
     const tomorrow = dayjs.utc().add(1, "day");
     await roleTestBase.dbUtils.createRequest({
       teamId: testTeam.teamId,
-      workerId: otherWorker.workerId,
-      requestType: "work_demand",
+      workerId: otherWorker.id,
+      requestType: RequestType.WORK_DEMAND,
       startDate: tomorrow,
       endDate: tomorrow,
-      status: "pending",
+      status: RequestStatus.PENDING,
       negative: false,
       shiftOptions: [
         {
@@ -99,28 +102,32 @@ test.describe("Request Page - Member User", () => {
 
     // Create a request for the member's worker using createRequest
     const memberWorker = roleTestBase.getMemberWorker();
-    if (memberWorker) {
-      await roleTestBase.dbUtils.createRequest({
-        teamId: testTeam.teamId,
-        workerId: memberWorker.id,
-        requestType: "work_demand",
-        startDate: tomorrow,
-        endDate: tomorrow,
-        status: "pending",
-        negative: false,
-        shiftOptions: [
-          {
-            name: dayShift.name,
-            id: dayShift.id,
-            idType: 2,
-            isBoolDim: false,
-            categoryName: "Shifts",
-          },
-        ],
-      });
 
-      console.log(`[${testRunId}] Created request for member worker via API`);
+    expect(memberWorker).toBeDefined();
+    if (!memberWorker) {
+      throw new Error("Member worker not created");
     }
+
+    await roleTestBase.dbUtils.createRequest({
+      teamId: testTeam.teamId,
+      workerId: memberWorker.id,
+      requestType: RequestType.WORK_DEMAND,
+      startDate: tomorrow,
+      endDate: tomorrow,
+      status: RequestStatus.PENDING,
+      negative: false,
+      shiftOptions: [
+        {
+          name: dayShift.name,
+          id: dayShift.id,
+          idType: 2,
+          isBoolDim: false,
+          categoryName: "Shifts",
+        },
+      ],
+    });
+
+    console.log(`[${testRunId}] Created request for member worker via API`);
 
     // Set up authentication and navigate to requests page as member
     await roleTestBase.actAsMember(page);

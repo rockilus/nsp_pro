@@ -66,7 +66,7 @@ export function formatWeeklyTime(
         "span",
         {
           style: {
-            color: deltaMinutes > 0 ? "green" : "red",
+            color: deltaMinutes > 0 ? "red" : "green",
           },
         },
         " ",
@@ -94,7 +94,7 @@ export function formatMonthlyDuties(
         "span",
         {
           style: {
-            color: delta > 0 ? "green" : "red",
+            color: delta > 0 ? "red" : "green",
           },
         },
         " ",

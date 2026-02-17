@@ -400,7 +400,27 @@ class ReplacementService(BaseService):
 
         dates = [a.date for a in assignments_target]
         earliest_date = min(dates)
-        latest_date = max(dates)
+
+        # Base latest date from assignments
+        raw_latest_date = max(dates)
+
+        # Compute end of week (Sunday) for the latest date
+        # Python's weekday(): Monday=0 ... Sunday=6
+        end_of_week = raw_latest_date + timedelta(days=6 - raw_latest_date.weekday())
+
+        # Compute end of month for the latest date without adding new imports
+        if raw_latest_date.month == 12:
+            first_of_next_month = raw_latest_date.replace(
+                year=raw_latest_date.year + 1, month=1, day=1
+            )
+        else:
+            first_of_next_month = raw_latest_date.replace(
+                month=raw_latest_date.month + 1, day=1
+            )
+        end_of_month = first_of_next_month - timedelta(days=1)
+
+        # Choose whichever is latest: the raw latest date, end of week, or end of month
+        latest_date = max(raw_latest_date, end_of_week, end_of_month)
 
         try:
             earliest_date_minus_1_year = earliest_date.replace(

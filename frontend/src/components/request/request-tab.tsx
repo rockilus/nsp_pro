@@ -31,6 +31,7 @@ import MobileRequestTab from "./mobile/mobile-request-tab";
 // Hooks
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { useShiftDemands } from "../../app/lib/hooks/useShiftDemands";
+import { useRequestViewSettings } from "../../app/lib/hooks/useRequestCalendarViewSettings";
 import {
   useAddRequest,
   useUpdateRequest,
@@ -303,49 +304,9 @@ export default function RequestTab({
     t,
   ]);
 
-  // ToggleButton state for request type
-
-  // Tabs for request status/calendar - with persistence
-  const [statusTab, setStatusTab] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("nsp-pro-request-tab-state");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          return typeof parsed.state?.selectedTab === "number"
-            ? parsed.state.selectedTab
-            : 0;
-        }
-      } catch (error) {
-        console.error("Error loading selected tab:", error);
-      }
-    }
-    return 0;
-  });
-
-  // Save selected tab to localStorage when it changes
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("nsp-pro-request-tab-state");
-        let current;
-        if (stored) {
-          current = JSON.parse(stored);
-          current.state = current.state || {};
-        } else {
-          current = { version: "1.0", state: {} };
-        }
-        current.state.selectedTab = statusTab;
-        current.timestamp = Date.now();
-        localStorage.setItem(
-          "nsp-pro-request-tab-state",
-          JSON.stringify(current),
-        );
-      } catch (error) {
-        console.error("Error saving selected tab:", error);
-      }
-    }
-  }, [statusTab]);
+  // Use persistent settings for request view (includes selectedTab, filters, sort, calendar settings)
+  const [requestViewSettings, updateRequestViewSettings] =
+    useRequestViewSettings(teamId);
 
   // Render mobile version if on mobile device
   if (isMobile) {
@@ -399,8 +360,12 @@ export default function RequestTab({
             }}
           >
             <Tabs
-              value={statusTab}
-              onChange={(_e, v) => setStatusTab(v)}
+              value={requestViewSettings.selectedTab === "calendar" ? 1 : 0}
+              onChange={(_e, v) =>
+                updateRequestViewSettings({
+                  selectedTab: v === 1 ? "calendar" : "table",
+                })
+              }
               sx={{
                 marginLeft: 2,
                 "& .MuiTab-root": {
@@ -421,7 +386,7 @@ export default function RequestTab({
             </Tabs>
 
             <div className="flex items-center gap-4">
-              {statusTab === 0 && (
+              {requestViewSettings.selectedTab === "table" && (
                 <div className="flex items-center gap-2">
                   <FormControlLabel
                     control={
@@ -460,9 +425,10 @@ export default function RequestTab({
               />
             </div>
           </div>
-          {statusTab === 0 && (
+          {requestViewSettings.selectedTab === "table" && (
             <RequestTable
               lng={lng}
+              teamId={teamId}
               requests={displayRequests}
               workers={workers}
               shifts={shifts}
@@ -475,9 +441,11 @@ export default function RequestTab({
               handleAcceptRequest={handleAcceptRequest}
               handleDenyRequest={handleDenyRequest}
               showPastRequests={showPastRequests}
+              viewSettings={requestViewSettings}
+              onUpdateViewSettings={updateRequestViewSettings}
             />
           )}
-          {statusTab === 1 && (
+          {requestViewSettings.selectedTab === "calendar" && (
             <RequestCalendar
               workers={workers}
               requests={requests}
@@ -487,6 +455,10 @@ export default function RequestTab({
               teamId={teamId}
               shiftOptions={shiftOptions}
               userTeamRole={userTeamRole}
+              viewSettings={requestViewSettings}
+              onUpdateViewSettings={(updates) =>
+                updateRequestViewSettings(updates)
+              }
               handleAddRequest={handleAddRequest}
               handleUpdateRequest={handleUpdateRequest}
               handleDeleteRequest={handleDeleteRequest}
