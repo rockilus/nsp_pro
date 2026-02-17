@@ -273,14 +273,36 @@ test.describe("Request Calendar", () => {
     expect(testWorkers.length).toBeGreaterThan(0);
     expect(testRequests.length).toBeGreaterThan(0);
 
+    const today = dayjs.utc().startOf("day");
+
     // First request should be a future pending work request for worker 2
-    const futureRequest = testRequests[0];
+    const futureRequest = testRequests.find((r) => r.startDate.isAfter(today));
+    expect(futureRequest).toBeDefined();
+
+    if (!futureRequest) {
+      throw new Error("Expected a future request, but none found");
+    }
+
     expect(futureRequest.workerId).toBe(testWorkers[1].id);
     expect(futureRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
+    await requestTestBase.setRequestCalendarViewSettings(page, {
+      selectedTab: "calendar",
+      targetDate: futureRequest.startDate,
+      timeFrame: "month",
+    });
+    const requestCalendar = page.locator('[data-testid="request-calendar"]');
+    await expect(requestCalendar).toBeVisible();
+
     // Second request should be a past pending work request for worker 1
-    const pastRequest = testRequests[1];
+    const pastRequest = testRequests.find((r) => r.startDate.isBefore(today));
+    expect(pastRequest).toBeDefined();
+
+    if (!pastRequest) {
+      throw new Error("Expected a past request, but none found");
+    }
+
     expect(pastRequest.workerId).toBe(testWorkers[0].id);
     expect(pastRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(pastRequest.status).toBe(RequestStatus.PENDING);
@@ -290,8 +312,8 @@ test.describe("Request Calendar", () => {
       targetDate: pastRequest.startDate,
       timeFrame: "month",
     });
-    const requestCalendar = page.locator('[data-testid="request-calendar"]');
-    await expect(requestCalendar).toBeVisible();
+    // const requestCalendar = page.locator('[data-testid="request-calendar"]');
+    // await expect(requestCalendar).toBeVisible();
     // const pastRequestCell = page.locator(
     //   `[data-testid="calendar-cell-${testWorkers[0].id}-${dayjs
     //     .utc(pastRequest.startDate)

@@ -2144,6 +2144,10 @@ export class RequestTestBase {
     // Use team-scoped storage key
     const storageKey = `requestViewSettings_${this.testTeam.teamId}`;
 
+    console.log(
+      `Setting request calendar view settings with key: ${storageKey}`,
+    );
+
     // Get existing settings from localStorage
     const existingSettings = await page.evaluate((key) => {
       const stored = localStorage.getItem(key);
@@ -2172,6 +2176,9 @@ export class RequestTestBase {
         // Start of the month
         calculatedDate = options.targetDate.startOf("month");
       }
+      console.log("targetDate: ", options.targetDate);
+      console.log("calculated periodStartDate: ", calculatedDate);
+
       stateUpdates.periodStartDate = calculatedDate.utc().toISOString();
     }
 
@@ -2200,6 +2207,10 @@ export class RequestTestBase {
         dayjs().utc().startOf("month").toISOString(),
       ...stateUpdates, // Apply updates on top
     };
+
+    console.log(
+      `Updating request view settings to: ${JSON.stringify(settings)}`,
+    );
 
     // Set in localStorage
     await page.evaluate(
