@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
+// Mobile
+import { useIsMobile } from "../../hooks/useIsMobile";
+import MobileConstraintTab from "./mobile/mobile-constraint-tab";
 // Components
 import ConstraintList from "./constraint-list/constraint-list";
 import NewConstraint from "./edit-constraint/new-constraint";
@@ -89,8 +92,8 @@ export default function ConstraintTab({
       const newConstraint = await updateConstraint(updatedConstraint);
       setConstraints((prevConstraints) =>
         prevConstraints.map((constraint) =>
-          constraint.id === newConstraint.id ? newConstraint : constraint
-        )
+          constraint.id === newConstraint.id ? newConstraint : constraint,
+        ),
       );
       setAddingConstraint(false);
     } catch (error) {
@@ -105,7 +108,7 @@ export default function ConstraintTab({
     try {
       await deleteConstraint(constraintId, selectedTeamId);
       setConstraints((prevConstraints) =>
-        prevConstraints.filter((constraint) => constraint.id !== constraintId)
+        prevConstraints.filter((constraint) => constraint.id !== constraintId),
       );
     } catch (error) {
       console.error("Failed to delete constraint:", error);
@@ -117,6 +120,12 @@ export default function ConstraintTab({
   useEffect(() => {
     loadConstraintsData();
   }, [loadConstraintsData]);
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobileConstraintTab lng={lng} selectedTeamId={selectedTeamId} />;
+  }
 
   return (
     <>

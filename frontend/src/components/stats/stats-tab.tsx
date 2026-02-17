@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
+// Mobile
+import { useIsMobile } from "../../hooks/useIsMobile";
+import MobileStatsTab from "./mobile/mobile-stats-tab";
 // Components
 import StatsTable from "./table/stats-table";
 import StatsNavBar from "./nav-bar/stats-nav-bar";
@@ -55,7 +58,7 @@ export default function StatsTab({
   const [isLoadingStats, setIsLoadingStats] = useState<boolean>(false);
   const [stats, setStats] = useState<StatsT | null>(null);
   const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
-    null
+    null,
   );
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
@@ -66,7 +69,7 @@ export default function StatsTab({
 
   const [statsOptions, updateStatsOptions, resetStatsOptions] = useStatsOptions(
     selectedTeamId || "",
-    defaultOptions
+    defaultOptions,
   );
 
   // resetStatsOptions can be called to reset all options to defaults
@@ -147,7 +150,7 @@ export default function StatsTab({
         [],
       statsValues:
         prev?.statsValues.map((v) =>
-          v.headerId === header.id ? { ...v, headerId: newHeader.id } : v
+          v.headerId === header.id ? { ...v, headerId: newHeader.id } : v,
         ) || [],
     }));
   };
@@ -160,7 +163,7 @@ export default function StatsTab({
     setStats((prev) => ({
       statsHeaders:
         prev?.statsHeaders.map((h) =>
-          h.id === headerId ? { ...h, isFavorite: false } : h
+          h.id === headerId ? { ...h, isFavorite: false } : h,
         ) || [],
       statsValues: prev?.statsValues || [],
     }));
@@ -227,6 +230,12 @@ export default function StatsTab({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTeamId]);
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobileStatsTab lng={lng} selectedTeamId={selectedTeamId} />;
+  }
 
   return (
     <div className="tab-container-ultrawide" data-testid="stats-page-heading">

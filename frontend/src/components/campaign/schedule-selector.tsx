@@ -8,6 +8,8 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import useStatusLabel from "../data-display/get-status-label";
 import WorkTimeTable from "./work-time-table";
+// Hooks
+import { useIsMobile } from "../../hooks/useIsMobile";
 // Styles
 import "./schedule-selector.css";
 import "../../styles/text-styles.css";
@@ -36,6 +38,7 @@ export default function ScheduleSelector({
   handleUpdateSchedule: (schedule: ScheduleT) => void;
 }) {
   const { t } = useTranslation(lng, "campaign-page");
+  const isMobile = useIsMobile();
   const getStatusLabel = useStatusLabel(lng); // Use the custom hook
   // Calculate the lastScheduleValidatedDate
   const lastScheduleValidatedDate = schedulesValidated.reduce(
@@ -44,7 +47,7 @@ export default function ScheduleSelector({
         ? schedule.endDate
         : latestDate;
     },
-    dayjs(0)
+    dayjs(0),
   ); // Initialize with the earliest possible date
   const today = dayjs.utc().startOf("day");
   const minDate = lastScheduleValidatedDate.add(1, "day").isAfter(today)
@@ -75,10 +78,10 @@ export default function ScheduleSelector({
                     const newStart = dayjs.utc(newValue);
                     const maxEndForNewStart = newStart.add(
                       MAX_SCHEDULE_DURATION_MONTHS,
-                      "month"
+                      "month",
                     );
                     const newEnd = scheduleCampaign.endDate.isAfter(
-                      maxEndForNewStart
+                      maxEndForNewStart,
                     )
                       ? maxEndForNewStart
                       : scheduleCampaign.endDate;
@@ -108,7 +111,7 @@ export default function ScheduleSelector({
                     const candidate = dayjs.utc(newValue);
                     const maxAllowed = scheduleCampaign.startDate.add(
                       MAX_SCHEDULE_DURATION_MONTHS,
-                      "month"
+                      "month",
                     );
                     const finalEnd = candidate.isAfter(maxAllowed)
                       ? maxAllowed
@@ -147,7 +150,13 @@ export default function ScheduleSelector({
         {workTimeTable && (
           <div>
             <span className="title">{t("supply_and_demand")}</span>
-            <WorkTimeTable lng={lng} data={workTimeTable} />
+            {isMobile ? (
+              <div style={{ overflowX: "auto", width: "100%" }}>
+                <WorkTimeTable lng={lng} data={workTimeTable} />
+              </div>
+            ) : (
+              <WorkTimeTable lng={lng} data={workTimeTable} />
+            )}
           </div>
         )}
       </div>

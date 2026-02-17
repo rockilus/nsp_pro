@@ -17,6 +17,10 @@
   width: 100%;
 }
 
+.campaign-info .title {
+  text-align: left;
+}
+
 .campaign-info-row {
   display: flex;
   flex-direction: row;
@@ -82,4 +86,16 @@
   height: 40px;
   font-size: 0.75rem;
   font-weight: 550;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 600px), ((max-width: 960px) and (orientation: landscape)) {
+  .campaign-and-work-time {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .campaign-info-container {
+    padding: 0 10px;
+  }
 }

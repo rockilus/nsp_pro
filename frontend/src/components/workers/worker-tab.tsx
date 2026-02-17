@@ -4,6 +4,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../app/i18n/client";
+// Mobile
+import { useIsMobile } from "../../hooks/useIsMobile";
+import MobileWorkerTab from "./mobile/mobile-worker-tab";
 // Components
 import WorkerTable from "./worker-table";
 import TableFilterBar from "../table/TableFilterBar";
@@ -70,7 +73,7 @@ const useTableHeight = (isFilterToolbarActive: boolean) => {
         paddingAndMargins;
       const maxHeight = Math.max(
         300,
-        Math.min(availableHeight, viewportHeight)
+        Math.min(availableHeight, viewportHeight),
       );
 
       setTableHeight(`${maxHeight}px`);
@@ -150,7 +153,7 @@ export default function WorkerTab({
   const dimensionsDisplayed = useMemo(
     () =>
       dimensions.filter((dim) => dim.dimTypes.includes(DimensionType.WORKER)),
-    [dimensions]
+    [dimensions],
   );
 
   const DefaultWorkerFields: Record<string, string>[] = [
@@ -199,7 +202,7 @@ export default function WorkerTab({
     }
     const updatedWorker = await updateWorkerFn(worker);
     setWorkers((prevWorkers) =>
-      prevWorkers.map((w) => (w.id === updatedWorker.id ? updatedWorker : w))
+      prevWorkers.map((w) => (w.id === updatedWorker.id ? updatedWorker : w)),
     );
   };
 
@@ -217,7 +220,7 @@ export default function WorkerTab({
 
   const handleAddDimension = async (
     newDimension: DimensionT,
-    newDimEntries: DimEntryT[]
+    newDimEntries: DimEntryT[],
   ) => {
     if (!selectedTeamId) {
       throw new Error("Team not selected");
@@ -235,7 +238,7 @@ export default function WorkerTab({
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) => {
         const newAttributes = newAttributesResponse.filter(
-          (attribute: AttributeT) => attribute.ownerId === worker.id
+          (attribute: AttributeT) => attribute.ownerId === worker.id,
         );
         return newAttributes
           ? {
@@ -243,7 +246,7 @@ export default function WorkerTab({
               attributes: [...worker.attributes, ...newAttributes],
             }
           : worker;
-      })
+      }),
     );
     return true;
   };
@@ -255,8 +258,8 @@ export default function WorkerTab({
     const updatedDimension = await updateDimensionFn(dimension);
     setDimensions((prevDimensions) =>
       prevDimensions.map((prevDim) =>
-        prevDim.id === updatedDimension.id ? updatedDimension : prevDim
-      )
+        prevDim.id === updatedDimension.id ? updatedDimension : prevDim,
+      ),
     );
   };
 
@@ -287,8 +290,8 @@ export default function WorkerTab({
     const updatedDimEntry = await updateDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries((prevDimEntries) =>
       prevDimEntries.map((de) =>
-        de.id === updatedDimEntry.id ? updatedDimEntry : de
-      )
+        de.id === updatedDimEntry.id ? updatedDimEntry : de,
+      ),
     );
   };
 
@@ -298,7 +301,7 @@ export default function WorkerTab({
     }
     const updatedAttributes = await deleteDimEntryFn(
       dimEntryId,
-      selectedTeamId
+      selectedTeamId,
     );
     setDimEntries(dimEntries.filter((dimEntry) => dimEntry.id !== dimEntryId));
     for (const updatedAttribute of updatedAttributes) {
@@ -308,17 +311,17 @@ export default function WorkerTab({
             ? {
                 ...worker,
                 attributes: worker.attributes.some(
-                  (attribute) => attribute.id === updatedAttribute.id
+                  (attribute) => attribute.id === updatedAttribute.id,
                 )
                   ? worker.attributes.map((attribute) =>
                       attribute.id === updatedAttribute.id
                         ? { ...attribute, ...updatedAttribute }
-                        : attribute
+                        : attribute,
                     )
                   : [...worker.attributes, updatedAttribute],
               }
-            : worker
-        )
+            : worker,
+        ),
       );
     }
   };
@@ -338,17 +341,17 @@ export default function WorkerTab({
           ? {
               ...worker,
               attributes: worker.attributes.some(
-                (attribute) => attribute.id === updatedAttribute.id
+                (attribute) => attribute.id === updatedAttribute.id,
               )
                 ? worker.attributes.map((attribute) =>
                     attribute.id === updatedAttribute.id
                       ? { ...attribute, ...updatedAttribute }
-                      : attribute
+                      : attribute,
                   )
                 : [...worker.attributes, updatedAttribute],
             }
-          : worker
-      )
+          : worker,
+      ),
     );
   };
 
@@ -371,8 +374,8 @@ export default function WorkerTab({
     const updatedSpecialty = await updateSpecialtyFn(specialty, selectedTeamId);
     setSpecialties((prevSpecialties) =>
       prevSpecialties.map((de) =>
-        de.id === updatedSpecialty.id ? updatedSpecialty : de
-      )
+        de.id === updatedSpecialty.id ? updatedSpecialty : de,
+      ),
     );
   };
 
@@ -382,7 +385,7 @@ export default function WorkerTab({
     }
     const updatedWorkers = await deleteSpecialtyFn(specialtyId, selectedTeamId);
     setSpecialties(
-      specialties.filter((specialty) => specialty.id !== specialtyId)
+      specialties.filter((specialty) => specialty.id !== specialtyId),
     );
 
     // If backend did not return any updated workers, fall back to an
@@ -395,11 +398,11 @@ export default function WorkerTab({
             ? {
                 ...worker,
                 specialtyIds: worker.specialtyIds.filter(
-                  (id) => id !== specialtyId
+                  (id) => id !== specialtyId,
                 ),
               }
-            : worker
-        )
+            : worker,
+        ),
       );
       return;
     }
@@ -407,10 +410,10 @@ export default function WorkerTab({
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) => {
         const updatedWorker = updatedWorkers.find(
-          (w: WorkerT) => w.id === worker.id
+          (w: WorkerT) => w.id === worker.id,
         );
         return updatedWorker ? updatedWorker : worker;
-      })
+      }),
     );
   };
 
@@ -450,6 +453,12 @@ export default function WorkerTab({
 
   //   fetchAccessTokenPayload();
   // }, []);
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobileWorkerTab lng={lng} selectedTeamId={selectedTeamId} />;
+  }
 
   return (
     <div className="tab-container-wide">
