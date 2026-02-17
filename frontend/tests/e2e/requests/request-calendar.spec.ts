@@ -386,10 +386,7 @@ test.describe("Request Calendar", () => {
 
     // Verify the form is populated with existing request data
     // Check that we're in edit mode by looking for action buttons
-    const deleteButton = requestTestBase.getDeleteRequestButton(
-      page,
-      futureRequest.id,
-    );
+    const deleteButton = page.locator('[data-testid="delete-request-button"]');
     await expect(deleteButton).toBeVisible();
 
     console.log(
@@ -427,10 +424,7 @@ test.describe("Request Calendar", () => {
     await expect(requestPanel).toBeVisible();
 
     // Click delete button
-    const deleteButton = requestTestBase.getDeleteRequestButton(
-      page,
-      futureRequest.id,
-    );
+    const deleteButton = page.locator('[data-testid="delete-request-button"]');
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
 

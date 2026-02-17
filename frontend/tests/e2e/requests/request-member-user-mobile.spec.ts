@@ -19,6 +19,7 @@ import { RoleTestBase } from "../../utils/role-test-base";
 import { RequestTestBase } from "../../utils/request-test-base";
 import { RequestStatus, RequestType } from "../../../src/types/request";
 import { ShiftType } from "../../../src/types/shift";
+import { SWOIdTypes } from "@/types/constraint";
 
 dayjs.extend(utc);
 
@@ -82,16 +83,16 @@ test.describe("Mobile Request Page - Member User", () => {
     await roleTestBase.dbUtils.createRequest({
       teamId: testTeam.teamId,
       workerId: otherWorker.workerId,
-      requestType: "work_demand",
+      requestType: RequestType.WORK_DEMAND,
       startDate: tomorrow,
       endDate: tomorrow,
-      status: "pending",
+      status: RequestStatus.PENDING,
       negative: false,
       shiftOptions: [
         {
           name: dayShift.name,
           id: dayShift.id,
-          idType: 2,
+          idType: SWOIdTypes.SHIFT,
           isBoolDim: false,
           categoryName: "Shifts",
         },
@@ -106,16 +107,16 @@ test.describe("Mobile Request Page - Member User", () => {
       await roleTestBase.dbUtils.createRequest({
         teamId: testTeam.teamId,
         workerId: memberWorker.id,
-        requestType: "work_demand",
+        requestType: RequestType.WORK_DEMAND,
         startDate: tomorrow,
         endDate: tomorrow,
-        status: "pending",
+        status: RequestStatus.PENDING,
         negative: false,
         shiftOptions: [
           {
             name: dayShift.name,
             id: dayShift.id,
-            idType: 2,
+            idType: SWOIdTypes.SHIFT,
             isBoolDim: false,
             categoryName: "Shifts",
           },

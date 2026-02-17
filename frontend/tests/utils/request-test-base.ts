@@ -623,29 +623,13 @@ export class RequestTestBase {
       );
     }
 
-    // Convert RequestType enum to API format
-    const requestTypeMap = {
-      [RequestType.WORK_DEMAND]: "work_demand" as const,
-      [RequestType.LEAVE]: "leave" as const,
-    };
-
-    // Convert RequestStatus enum to API format
-    const requestStatusMap = {
-      [RequestStatus.PENDING]: "pending" as const,
-      [RequestStatus.APPROVED]: "approved" as const,
-      [RequestStatus.DENIED]: "denied" as const,
-      [RequestStatus.DEFERRED]: "deferred" as const,
-    };
-
     const apiResponse = await this.dbUtils.createRequest({
       teamId: this.testTeam.teamId,
       workerId: requestData.workerId,
-      requestType: requestTypeMap[requestData.requestType],
+      requestType: requestData.requestType,
       startDate: requestData.startDate,
       endDate: requestData.endDate,
-      status: requestData.status
-        ? requestStatusMap[requestData.status]
-        : "pending",
+      status: requestData.status ? requestData.status : RequestStatus.PENDING,
       negative: requestData.negative || false,
       comment: requestData.comment || "",
       shiftId: requestData.shiftId,
