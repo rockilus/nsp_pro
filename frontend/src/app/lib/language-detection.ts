@@ -1,10 +1,27 @@
 import { languages, fallbackLng, cookieName } from "@/app/i18n/settings";
 
+function safeLocalStorageGet(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    // iOS Safari Private Browsing throws SecurityError on localStorage access
+    return null;
+  }
+}
+
+function safeLocalStorageSet(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // iOS Safari Private Browsing throws SecurityError on localStorage access
+  }
+}
+
 export function detectLanguage(): string {
   if (typeof window === "undefined") return fallbackLng;
 
   // 1. Check localStorage
-  const stored = localStorage.getItem(cookieName);
+  const stored = safeLocalStorageGet(cookieName);
   if (stored && languages.includes(stored)) {
     return stored;
   }
@@ -21,6 +38,6 @@ export function detectLanguage(): string {
 
 export function setLanguagePreference(lng: string) {
   if (typeof window !== "undefined") {
-    localStorage.setItem(cookieName, lng);
+    safeLocalStorageSet(cookieName, lng);
   }
 }
