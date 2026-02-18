@@ -102,7 +102,7 @@ const clearAuthTokens = (): void => {
             key.startsWith("oidc.") ||
             key.includes("cognito") ||
             key.includes("auth") ||
-            key.startsWith("_capacitor_") // Capacitor storage prefix if using mobile
+            key.startsWith("_capacitor_"), // Capacitor storage prefix if using mobile
         );
 
         authKeys.forEach((key) => {
@@ -113,7 +113,7 @@ const clearAuthTokens = (): void => {
           `Error clearing ${
             storage === localStorage ? "localStorage" : "sessionStorage"
           }:`,
-          storageError
+          storageError,
         );
       }
     });
@@ -258,20 +258,33 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
         error?.error_description?.includes("Token is not valid")
       ) {
         console.warn(
-          "🔄 Refresh token rotation conflict detected, clearing auth state"
+          "🔄 Refresh token rotation conflict or expiry detected — clearing state and redirecting to login",
         );
         clearAuthTokens();
         // Reset refresh attempt counter on rotation errors
         localStorage.removeItem("refreshAttempts");
         localStorage.removeItem("lastRefreshAttempt");
-        // Don't force immediate redirect for rotation errors - let user decide
+        // Actively redirect to Cognito so the user isn't silently logged out
+        // with no way to recover without a hard refresh.
+        try {
+          await auth.signinRedirect();
+        } catch {
+          // Last resort: send to Cognito login page directly
+          const authUrl =
+            `${cognitoDomain}/oauth2/authorize?` +
+            `client_id=${cognitoAuthConfig.client_id}&` +
+            `response_type=${cognitoAuthConfig.response_type}&` +
+            `scope=${encodeURIComponent(cognitoAuthConfig.scope)}&` +
+            `redirect_uri=${encodeURIComponent(cognitoAuthConfig.redirect_uri)}`;
+          window.location.href = authUrl;
+        }
       }
     };
 
     // Handle access token expiring notification
     const handleAccessTokenExpiring = () => {
       console.log(
-        "⏰ Access token expiring soon, silent renew will be attempted"
+        "⏰ Access token expiring soon, silent renew will be attempted",
       );
 
       // Pre-emptively check network connectivity
@@ -416,7 +429,7 @@ const handleNetworkAwareRefresh = async (auth: any): Promise<void> => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(
-        `🔄 Attempting token refresh (attempt ${attempt}/${maxRetries})`
+        `🔄 Attempting token refresh (attempt ${attempt}/${maxRetries})`,
       );
 
       // Check if we have a valid refresh token before attempting
@@ -445,14 +458,14 @@ const handleNetworkAwareRefresh = async (auth: any): Promise<void> => {
 
         if (attempt < maxRetries) {
           console.log(
-            `🔄 Network error detected, retrying in ${retryDelay}ms...`
+            `🔄 Network error detected, retrying in ${retryDelay}ms...`,
           );
           await new Promise((resolve) => setTimeout(resolve, retryDelay));
           continue;
         } else {
           console.error("❌ Max network retry attempts reached");
           throw new Error(
-            "Network connectivity issues preventing token refresh"
+            "Network connectivity issues preventing token refresh",
           );
         }
       }
@@ -466,7 +479,7 @@ const handleNetworkAwareRefresh = async (auth: any): Promise<void> => {
         console.warn("🔄 Refresh token rotation conflict detected");
         clearAuthTokens();
         throw new Error(
-          "Refresh token rotation conflict - please sign in again"
+          "Refresh token rotation conflict - please sign in again",
         );
       }
 

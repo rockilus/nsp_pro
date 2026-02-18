@@ -1,16 +1,20 @@
+import { WebStorageStateStore } from "oidc-client-ts";
 import { env } from "./env";
 
 export const cognitoAuthConfig = {
   authority: env.cognitoAuthority,
   client_id: env.cognitoClientId,
   redirect_uri: env.redirectUri,
+  // Dedicated URI for silent token renewal — avoids iframe fallback that Safari ITP blocks.
+  // Must be registered as a callback URL in Cognito and handled by the /silent-renew page.
+  silent_redirect_uri: `${env.redirectUri.replace(/\/[^/]*$/, "")}/silent-renew`,
   post_logout_redirect_uri: env.logoutRedirectUri,
   response_type: "code",
   scope: "email openid phone aws.cognito.signin.user.admin",
   automaticSilentRenew: true,
   includeIdTokenInSilentRenew: true,
   monitorSession: false,
-  checkSessionInterval: 30000, // Increased to 30 seconds to reduce frequency
+  checkSessionInterval: 30000, // 30 seconds
   revokeAccessTokenOnSignout: true,
   revokeRefreshTokenOnSignout: true,
   validateSubOnSilentRenew: true,
@@ -22,6 +26,17 @@ export const cognitoAuthConfig = {
   filterProtocolClaims: true,
   // Silent renew retry settings
   staleStateAge: 900, // 15 minutes before considering state stale
+  // Explicit localStorage so behaviour is consistent and auditable
+  userStore:
+    typeof window !== "undefined"
+      ? new WebStorageStateStore({ store: window.localStorage })
+      : undefined,
+  // Clean up ?code=&state= from the URL after the OAuth callback exchange
+  onSigninCallback: () => {
+    if (typeof window !== "undefined") {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  },
 };
 
 export const cognitoDomain = env.cognitoDomain;
@@ -44,6 +59,6 @@ export const isNetworkError = (error: any): boolean => {
   return networkErrors.some(
     (errorType) =>
       error?.message?.includes(errorType) ||
-      error?.toString?.()?.includes(errorType)
+      error?.toString?.()?.includes(errorType),
   );
 };

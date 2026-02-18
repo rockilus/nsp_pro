@@ -125,13 +125,13 @@ resource "aws_cognito_user_pool_client" "main" {
   explicit_auth_flows = [
     "ALLOW_USER_AUTH",
     "ALLOW_USER_SRP_AUTH",
-    # "ALLOW_REFRESH_TOKEN_AUTH",
+    # "ALLOW_REFRESH_TOKEN_AUTH", # Required for PKCE silent renew (signinSilent via refresh token grant)
   ]
 
   # Token validity - Adjusted for SPA security best practices
   access_token_validity  = 60 # 1 hour
   id_token_validity      = 60 # 1 hour
-  refresh_token_validity = 5  # 30 days (typical for SPA)
+  refresh_token_validity = 30 # 30 days for persistent sessions
   auth_session_validity  = 3
 
   token_validity_units {

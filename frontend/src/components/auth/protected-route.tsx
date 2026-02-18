@@ -26,6 +26,34 @@ export default function ProtectedRoute({
   const [networkRetrying, setNetworkRetrying] = useState(false);
   const [showManualSignIn, setShowManualSignIn] = useState(false);
   const [callbackTimeout, setCallbackTimeout] = useState(false);
+  // Tracks whether the hard loading timeout has fired.
+  // Prevents users (especially mobile Safari) being stuck on the loading
+  // spinner indefinitely when automaticSilentRenew hangs at startup.
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  // Hard timeout on the loading state: if auth is still loading after 6 s,
+  // force a redirect to Cognito. This unblocks Safari ITP-related hangs and
+  // any other case where isLoading never resolves.
+  useEffect(() => {
+    if (!loading) return;
+
+    const loadingTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn(
+          "⚠️ Auth loading timed out after 6s — forcing sign-in redirect (mobile Safari / ITP guard)",
+        );
+        setLoadingTimedOut(true);
+      }
+    }, 6000);
+
+    return () => clearTimeout(loadingTimeout);
+  }, [loading]);
+
+  useEffect(() => {
+    if (loadingTimedOut && !isAuthenticated) {
+      signIn();
+    }
+  }, [loadingTimedOut, isAuthenticated, signIn]);
 
   useEffect(() => {
     // Check if we're handling an OAuth callback (has code and state in URL)
@@ -36,7 +64,7 @@ export default function ProtectedRoute({
 
     if (isHandlingCallback) {
       console.log(
-        "🔄 OAuth callback detected in URL, waiting for authentication..."
+        "🔄 OAuth callback detected in URL, waiting for authentication...",
       );
       console.log("Auth state:", {
         isAuthenticated,
@@ -99,7 +127,7 @@ export default function ProtectedRoute({
       const fallbackTimer = setTimeout(() => {
         if (!isAuthenticated && !loading && !error) {
           console.log(
-            "⚠️ Automatic redirect may have failed, showing manual sign-in button"
+            "⚠️ Automatic redirect may have failed, showing manual sign-in button",
           );
           setShowManualSignIn(true);
         }
