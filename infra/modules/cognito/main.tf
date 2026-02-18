@@ -215,7 +215,7 @@ resource "aws_route53_record" "cognito_custom_domain" {
 resource "awscc_cognito_managed_login_branding" "branding" {
   user_pool_id                = aws_cognito_user_pool.main.id
   client_id                   = aws_cognito_user_pool_client.main.id
-  use_cognito_provided_values = true
+  use_cognito_provided_values = false
 
   depends_on = [
     aws_cognito_user_pool_domain.main,
