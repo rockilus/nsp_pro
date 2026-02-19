@@ -26,7 +26,7 @@ import {
   AssignmentT,
   AssignmentsRecurrencesResultT,
 } from "../../src/types/assignment";
-import { SwapRequestT } from "../../src/types/swap";
+import { SwapRequestT, SwapType } from "../../src/types/swap";
 import { testConfig } from "./test-config";
 import { WorkerT } from "../../src/types/worker";
 
@@ -551,7 +551,7 @@ export class SwapTestBase {
       teamId: this.testTeam.teamId,
       offeredAssignmentIds: worker1OfferIds,
       requestedAssignmentIds: worker2OfferIds,
-      swapType: "direct",
+      swapType: SwapType.DIRECT,
       targetWorkerId: worker2.id,
       comment: "Test direct swap - 2 normal shifts on different dates",
     });
@@ -627,7 +627,7 @@ export class SwapTestBase {
             worker1AfternoonAssignment.id,
           ],
           requestedAssignmentIds: [worker2DutyAssignment.id],
-          swapType: "direct",
+          swapType: SwapType.DIRECT,
           targetWorkerId: worker2.id,
           comment: "Test duty swap - 2 normal shifts for 1 duty shift",
         });
@@ -655,7 +655,7 @@ export class SwapTestBase {
             worker3Assignments[1].id,
           ],
           requestedAssignmentIds: null,
-          swapType: "open",
+          swapType: SwapType.OPEN,
           targetWorkerId: null,
           comment: "Test open swap - accepting bids from all workers",
         });
@@ -919,7 +919,7 @@ export class SwapTestBase {
       teamId: this.testTeam.teamId,
       offeredAssignmentIds,
       requestedAssignmentIds: null,
-      swapType: "open",
+      swapType: SwapType.OPEN,
       targetWorkerId: null,
       comment,
     });
@@ -973,45 +973,7 @@ export class SwapTestBase {
    * Approve a swap as member (should fail with permission error)
    */
   async approveSwapAsMember(swapId: string): Promise<SwapRequestT> {
-    // Create a client authenticated as TEST_USER_2 (member)
-    const memberClient = this.dbUtils.createAuthenticatedClientForUser(
-      TEST_USER_2.user_id,
-    );
-
-    // Make the approve request as member
-    const response = await memberClient.post<any>(
-      `/swaps/${swapId}/approve`,
-      {},
-    );
-
-    return {
-      id: response.id,
-      teamId: response.teamId,
-      createdByUserId: response.createdByUserId,
-      swapType: response.swapType,
-      status: response.status,
-      offeredAssignmentIds: response.offeredAssignmentIds,
-      requestedAssignmentIds: response.requestedAssignmentIds,
-      targetWorkerId: response.targetWorkerId,
-      comment: response.comment,
-      bids: (response.bids || []).map((bid: any) => ({
-        id: bid.id,
-        workerId: bid.workerId,
-        offeredAssignmentIds: bid.offeredAssignmentIds,
-        createdAt: dayjs.unix(bid.createdAt),
-        accepted: bid.accepted,
-        obsolete: bid.obsolete ?? false,
-      })),
-      createdAt: dayjs.unix(response.createdAt),
-      completedAt: response.completedAt
-        ? dayjs.unix(response.completedAt)
-        : null,
-      completedByUserId: response.completedByUserId,
-      revertedAt: response.revertedAt ? dayjs.unix(response.revertedAt) : null,
-      revertedByUserId: response.revertedByUserId,
-      auditData: response.auditData || [],
-      obsolete: response.obsolete ?? false,
-    };
+    return await this.dbUtils.approveSwapAsUser(swapId, TEST_USER_2.user_id);
   }
 
   /**

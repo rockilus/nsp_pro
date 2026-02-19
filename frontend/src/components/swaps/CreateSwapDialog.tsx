@@ -28,7 +28,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { SwapType } from "../../types/swap";
+import { SwapRequestT, SwapType } from "../../types/swap";
 import { WorkerT } from "../../types/worker";
 import { AssignmentDataDictT } from "../../types/assignment";
 import { LinkShiftT } from "../../types/shift";
@@ -392,7 +392,7 @@ export default function CreateSwapDialog({
       case 4:
         // Step 5: Review - using SwapDetailContent for preview
         // Create a mock swap object for preview
-        const mockSwap = {
+        const mockSwap: SwapRequestT = {
           id: "preview",
           teamId: teamId,
           swapType: swapType,
@@ -400,6 +400,7 @@ export default function CreateSwapDialog({
           requestedAssignmentIds:
             swapType === SwapType.DIRECT ? requestedAssignmentIds : null,
           targetWorkerId: swapType === SwapType.DIRECT ? targetWorkerId : null,
+          offeringWorkerId: "",
           createdByUserId: currentUserId,
           comment: comment,
           status: "ACTIVE" as any,
