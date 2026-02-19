@@ -33,8 +33,12 @@ class AppConfig(BaseSettings):
     client_url: str = Field(..., description="Client URL")
 
     # MongoDB configuration
-    mongodb_uri: str | None = Field(None, description="Database connection URL")
-    mongodb_database_name: str = Field("test", description="MongoDB database name")
+    mongodb_uri: str | None = Field(
+        None, description="Database connection URL"
+    )
+    mongodb_database_name: str = Field(
+        "test", description="MongoDB database name"
+    )
     backend_api_key_ssm_parameter_name: str = Field(
         ..., description="SSM Parameter name for backend API key"
     )
@@ -61,7 +65,7 @@ class AppConfig(BaseSettings):
         True, description="Enable retry logic for authorization checks"
     )
     authz_max_retries: int = Field(
-        3, description="Maximum number of authorization retry attempts"
+        0, description="Maximum number of authorization retry attempts"
     )
     authz_initial_delay: float = Field(
         0.5, description="Initial delay in seconds before first retry"
@@ -71,7 +75,9 @@ class AppConfig(BaseSettings):
         False,
         description="Enable Uvicorn auto-reload",
     )
-    task_expiration: int = Field(90, description="Task expiration time in seconds")
+    task_expiration: int = Field(
+        90, description="Task expiration time in seconds"
+    )
     aws_region: str = Field(
         "eu-west-3",
         description="AWS region for services like SQS and Secrets Manager",
@@ -95,7 +101,9 @@ class AppConfig(BaseSettings):
     cognito_user_pool_id: str | None = Field(
         None, description="AWS Cognito User Pool ID"
     )
-    cognito_client_id: str | None = Field(None, description="AWS Cognito App Client ID")
+    cognito_client_id: str | None = Field(
+        None, description="AWS Cognito App Client ID"
+    )
 
     # Development authentication fields
     dev_user_id: str = Field(
@@ -127,7 +135,9 @@ class AppConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed
-        env_file=os.path.join(os.path.dirname(__file__), "..", ".env.development"),
+        env_file=os.path.join(
+            os.path.dirname(__file__), "..", ".env.development"
+        ),
         case_sensitive=False,
         extra="ignore",  # Ignore extra fields from env
     )
@@ -166,7 +176,8 @@ class AppConfig(BaseSettings):
             )
 
             log_info(
-                f"Retrieved DocumentDB credentials for host: " f"{credentials.host}"
+                f"Retrieved DocumentDB credentials for host: "
+                f"{credentials.host}"
             )
 
             return DatabaseConfig(
@@ -180,7 +191,9 @@ class AppConfig(BaseSettings):
             )
 
         except DocumentDBCredentialsError as e:
-            log_error(f"Failed to retrieve DocumentDB credentials: {e.message}")
+            log_error(
+                f"Failed to retrieve DocumentDB credentials: {e.message}"
+            )
             if e.missing_fields:
                 log_error(f"Missing credential fields: {e.missing_fields}")
             raise ValueError(
@@ -302,7 +315,9 @@ def download_documentdb_ca_bundle(
             )
             ca_bundle_path = os.path.abspath(ca_bundle_path)
 
-    ca_bundle_url = "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
+    ca_bundle_url = (
+        "https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem"
+    )
 
     try:
         # Create directory if it doesn't exist and we have permission
@@ -321,7 +336,9 @@ def download_documentdb_ca_bundle(
         ssl_context.check_hostname = True
         ssl_context.verify_mode = ssl.CERT_REQUIRED
 
-        with urllib.request.urlopen(ca_bundle_url, context=ssl_context) as response:
+        with urllib.request.urlopen(
+            ca_bundle_url, context=ssl_context
+        ) as response:
             ca_content = response.read()
 
         # Validate certificate content before writing
@@ -331,7 +348,9 @@ def download_documentdb_ca_bundle(
         with open(ca_bundle_path, 'wb') as f:
             f.write(ca_content)
 
-        print(f"DocumentDB CA bundle downloaded and validated: {ca_bundle_path}")
+        print(
+            f"DocumentDB CA bundle downloaded and validated: {ca_bundle_path}"
+        )
         # Update environment variable with actual path
         os.environ["DOCUMENTDB_CA_BUNDLE_PATH"] = ca_bundle_path
 
@@ -522,7 +541,9 @@ def initialize_environment() -> AppConfig:
         # Use MongoDB for development
         os.environ["USE_DOCUMENTDB"] = "false"
         # Load local .env file
-        local_env_file = os.path.join(os.path.dirname(__file__), ".env.development")
+        local_env_file = os.path.join(
+            os.path.dirname(__file__), ".env.development"
+        )
         load_dotenv(local_env_file)
         # Env file is already loaded, no need to set Config
 

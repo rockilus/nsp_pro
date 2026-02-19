@@ -44,7 +44,7 @@ function createEnvironmentConfig(): EnvironmentConfig {
       process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || "2rccpq0s894f6a66d1hmimship",
     redirectUri:
       process.env.NEXT_PUBLIC_REDIRECT_URI ||
-      "https://app.rockilus.com/fr/plan/workers",
+      "https://app.rockilus.com/fr/plan/schedule/",
     logoutRedirectUri:
       process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || "https://www.rockilus.com",
     cognitoDomain:

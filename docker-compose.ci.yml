@@ -155,7 +155,7 @@ services:
         # Production Cognito Config (not used in development but kept for compatibility)
         - NEXT_PUBLIC_COGNITO_AUTHORITY=https://placeholder-cognito-authority
         - NEXT_PUBLIC_COGNITO_CLIENT_ID=placeholder-client-id
-        - NEXT_PUBLIC_REDIRECT_URI=http://localhost:3000/fr/plan/workers
+        - NEXT_PUBLIC_REDIRECT_URI=http://localhost:3000/fr/plan/schedule/
         - NEXT_PUBLIC_LOGOUT_REDIRECT_URI=http://localhost:3000
       # Use the Dockerfile that builds the production version.
       # If your main Dockerfile does this, no change is needed here.
