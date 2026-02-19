@@ -50,15 +50,9 @@ class SwapRequestSchema(DocumentBaseSchema):
         doc_dict["swap_type"] = SwapType(doc_dict["swap_type"])
         doc_dict["status"] = SwapStatus(doc_dict["status"])
         doc_dict["target_worker_id"] = doc_dict.pop("target_worker", None)
-        doc_dict["offering_worker_id"] = (
-            doc_dict.pop("offering_worker", "") or ""
-        )
-        doc_dict["completed_by_user_id"] = doc_dict.pop(
-            "completed_by_user", None
-        )
-        doc_dict["reverted_by_user_id"] = doc_dict.pop(
-            "reverted_by_user", None
-        )
+        doc_dict["offering_worker_id"] = doc_dict.pop("offering_worker", "") or ""
+        doc_dict["completed_by_user_id"] = doc_dict.pop("completed_by_user", None)
+        doc_dict["reverted_by_user_id"] = doc_dict.pop("reverted_by_user", None)
 
         # Convert timestamps to datetime with UTC timezone
         doc_dict["created_at"] = datetime.fromtimestamp(
@@ -74,14 +68,11 @@ class SwapRequestSchema(DocumentBaseSchema):
             )
 
         # Convert bids from dicts to SwapBid objects
-        doc_dict["bids"] = [
-            SwapBid.from_dict(bid) for bid in doc_dict.get("bids", [])
-        ]
+        doc_dict["bids"] = [SwapBid.from_dict(bid) for bid in doc_dict.get("bids", [])]
 
         # Convert audit_data from dicts to SwapAuditData objects
         doc_dict["audit_data"] = [
-            SwapAuditData.from_dict(audit)
-            for audit in doc_dict.get("audit_data", [])
+            SwapAuditData.from_dict(audit) for audit in doc_dict.get("audit_data", [])
         ]
 
         return SwapRequest(**doc_dict)

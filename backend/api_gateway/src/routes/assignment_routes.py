@@ -52,9 +52,7 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence:
             r_data = RecurrenceRule.from_dto(recurrence)
-        ar_result = assignment_service.create_assignment_and_recurrence(
-            a_data, r_data
-        )
+        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
@@ -78,9 +76,7 @@ async def get_assignments(
     try:
         # Validate date range
         if end_date < start_date:
-            raise ValueError(
-                "end_date must be greater than or equal to start_date"
-            )
+            raise ValueError("end_date must be greater than or equal to start_date")
 
         # Prevent abuse: reject ranges > 6 months
         max_range_days = 365
@@ -116,9 +112,7 @@ async def get_assignments(
             include_campaign,
             worker_id,
             shift_types=(
-                [ShiftType(v) for v in shift_type]
-                if shift_type is not None
-                else None
+                [ShiftType(v) for v in shift_type] if shift_type is not None else None
             ),
         )
         response = ar_result.to_dto()
@@ -156,9 +150,7 @@ async def update_assignment(
             if recurrence_update_scope
             else None
         )
-        recurrence_data = (
-            RecurrenceRule.from_dto(recurrence) if recurrence else None
-        )
+        recurrence_data = RecurrenceRule.from_dto(recurrence) if recurrence else None
         ar_result = assignment_service.update_assignment_and_recurrence(
             assignment_new=assignment_data,
             recurrence_update_scope=recurrence_update_scope_data,
@@ -206,9 +198,7 @@ async def delete_assignment(
     return response
 
 
-@router.get(
-    "/assignments/{assignment_id}/replacement-candidates/teams/{team_id}"
-)
+@router.get("/assignments/{assignment_id}/replacement-candidates/teams/{team_id}")
 async def get_replacement_candidates(
     assignment_id: str,
     team_id: str,
@@ -228,8 +218,6 @@ async def get_replacement_candidates(
         )
         response = [candidate.to_dto() for candidate in candidates]
     except Exception as e:
-        log_info(
-            f"Failed to get replacement candidates for assignment {assignment_id}"
-        )
+        log_info(f"Failed to get replacement candidates for assignment {assignment_id}")
         handle_routes_errors(e)
     return response
