@@ -38,17 +38,21 @@ export function TeamProvider({
   const isSecurityPage = pathname.includes("/plan/settings/security");
 
   React.useEffect(() => {
-    // Security: Only redirect authenticated users when necessary
+    // Redirect when loading is done and no valid team is resolved.
+    // This covers: no team id at all, invalid team id string, and a valid-looking
+    // id that doesn't match any of the user's teams.
     if (
       !loading &&
       !selectedTeam &&
-      !selectedTeamId &&
       !isTeamsPage &&
       !isProfilePage &&
       !isPersonalInfoPage &&
       !isSecurityPage
     ) {
       const language = getLanguageFromPath();
+
+      // Clear any stale team id from storage to avoid redirect loops
+      localStorage.removeItem("selectedTeamId");
 
       // Construct the teams page URL with the current language
       const teamsUrl = `/${language}/plan/settings/teams`;
@@ -57,7 +61,6 @@ export function TeamProvider({
     }
   }, [
     selectedTeam,
-    selectedTeamId,
     isTeamsPage,
     isProfilePage,
     isPersonalInfoPage,
