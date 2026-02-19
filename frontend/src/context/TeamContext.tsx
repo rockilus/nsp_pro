@@ -14,7 +14,7 @@ type TeamContextType = {
 };
 
 export const TeamContext = createContext<TeamContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function useTeam() {

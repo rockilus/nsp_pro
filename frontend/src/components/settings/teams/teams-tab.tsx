@@ -69,7 +69,7 @@ export default function TeamsTab({
       await leaveTeamFn(teamId);
       // If we get here, the leave operation was successful
       setTeams((prevTeams) =>
-        prevTeams.filter((team) => team.team.id !== teamId)
+        prevTeams.filter((team) => team.team.id !== teamId),
       );
     } catch (error) {
       console.error("Failed to leave team:", error);
@@ -86,7 +86,7 @@ export default function TeamsTab({
       const newTeam = await acceptTeamInvitationFn(token);
       setTeams((prevTeams) => [...prevTeams, newTeam]);
       setInvitations((prevInvitations) =>
-        prevInvitations.filter((invitation) => invitation.token !== token)
+        prevInvitations.filter((invitation) => invitation.token !== token),
       );
     } catch (error) {
       console.error("Failed to accept team invitation:", error);
@@ -98,7 +98,7 @@ export default function TeamsTab({
     try {
       await rejectTeamInvitationFn(token);
       setInvitations((prevInvitations) =>
-        prevInvitations.filter((invitation) => invitation.token !== token)
+        prevInvitations.filter((invitation) => invitation.token !== token),
       );
     } catch (error) {
       console.error("Failed to reject team invitation:", error);

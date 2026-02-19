@@ -17,8 +17,8 @@ export function useTeamSelector() {
   const updateTeamInContext = (updatedTeam: TeamT) => {
     setTeams((prevTeams) =>
       prevTeams.map((t) =>
-        t.team.id === updatedTeam.id ? { ...t, team: updatedTeam } : t
-      )
+        t.team.id === updatedTeam.id ? { ...t, team: updatedTeam } : t,
+      ),
     );
   };
 
