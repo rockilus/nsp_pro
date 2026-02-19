@@ -29,6 +29,7 @@ export const assignmentsQueryKeys = {
     endDate: dayjs.Dayjs,
     includeCampaign: boolean,
     workerId?: string,
+    shiftTypes?: number[],
   ) =>
     [
       ...assignmentsQueryKeys.teams(teamId),
@@ -37,6 +38,7 @@ export const assignmentsQueryKeys = {
       endDate.format("YYYY-MM-DD"),
       includeCampaign,
       workerId,
+      shiftTypes ? shiftTypes.slice().sort().join(",") : undefined,
     ] as const,
 };
 
@@ -73,6 +75,7 @@ export const useAssignmentsByPeriod = (
     enabled?: boolean;
     refetchInterval?: number;
   },
+  shiftTypes?: number[],
 ): UseAssignmentsByPeriodResult => {
   const apiClient = useApiClient();
   const { isAuthenticated, user, loading } = useAuth();
@@ -84,6 +87,7 @@ export const useAssignmentsByPeriod = (
       endDate,
       includeCampaign,
       workerId,
+      shiftTypes,
     ),
     queryFn: async (): Promise<AssignmentsRecurrencesResultT> => {
       if (env.isDevelopment) {
@@ -108,6 +112,7 @@ export const useAssignmentsByPeriod = (
         startDate,
         endDate,
         workerId,
+        shiftTypes,
       );
 
       if (env.isDevelopment) {

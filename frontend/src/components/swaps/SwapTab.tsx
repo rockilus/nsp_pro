@@ -148,6 +148,7 @@ export default function SwapTab({
     false, // includeCampaign - swaps don't show campaign assignments
     undefined, // no worker filter for desktop view
     { enabled: !!teamId },
+    [0, 1], // only NORMAL and DUTY shifts are relevant for swaps
   );
 
   // Query client for manual cache operations
