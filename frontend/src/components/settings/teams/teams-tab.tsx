@@ -19,6 +19,8 @@ import {
   useAcceptTeamInvitation,
   useRejectTeamInvitation,
 } from "@/hooks/useTeamInvitation";
+// Context
+import { useTeam } from "@/context/TeamContext";
 // Styles
 import "../../../styles/text-styles.css";
 import "../../../styles/tab-container-styles.css";
@@ -50,6 +52,7 @@ export default function TeamsTab({
   const getUserPendingInvitationsFn = useGetUserPendingInvitations();
   const acceptTeamInvitationFn = useAcceptTeamInvitation();
   const rejectTeamInvitationFn = useRejectTeamInvitation();
+  const { addTeamToContext } = useTeam();
 
   //////////////////////////
   // Team Actions
@@ -58,6 +61,7 @@ export default function TeamsTab({
   const handleCreateTeam = async (teamName: string) => {
     const newTeam = await createTeamFn(teamName);
     setTeams((prevTeams) => [...prevTeams, newTeam]);
+    addTeamToContext(newTeam);
   };
 
   const handleLeaveTeam = async (teamId: string) => {

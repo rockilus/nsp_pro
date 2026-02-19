@@ -15,9 +15,11 @@ export function TeamProvider({
   const {
     teams,
     selectedTeam,
+    selectedTeamId,
     setSelectedTeamId,
     loading,
     updateTeamInContext,
+    addTeamToContext,
   } = useTeamSelector();
   const pathname = usePathname();
   const router = useRouter();
@@ -40,6 +42,7 @@ export function TeamProvider({
     if (
       !loading &&
       !selectedTeam &&
+      !selectedTeamId &&
       !isTeamsPage &&
       !isProfilePage &&
       !isPersonalInfoPage &&
@@ -54,6 +57,7 @@ export function TeamProvider({
     }
   }, [
     selectedTeam,
+    selectedTeamId,
     isTeamsPage,
     isProfilePage,
     isPersonalInfoPage,
@@ -69,9 +73,11 @@ export function TeamProvider({
       value={{
         teams,
         selectedTeam,
+        selectedTeamId,
         setSelectedTeamId,
         loading,
         updateTeamInContext,
+        addTeamToContext,
       }}
     >
       {children}

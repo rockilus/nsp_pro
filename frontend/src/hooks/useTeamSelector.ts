@@ -70,24 +70,28 @@ export function useTeamSelector() {
   //   }
   // }, [teams]);
 
-  useEffect(() => {
-    if (selectedTeamId) {
-      localStorage.setItem("selectedTeamId", selectedTeamId);
-      //   const params = new URLSearchParams(window.location.search);
-      //   params.set("team", selectedTeamId);
-      //   router.replace(`?${params.toString()}`);
+  const setSelectedTeamIdAndPersist = (id: string | null) => {
+    if (id) {
+      localStorage.setItem("selectedTeamId", id);
     }
-  }, [selectedTeamId]);
+    setSelectedTeamId(id);
+  };
+
+  const addTeamToContext = (team: TeamWithMembership) => {
+    setTeams((prev) => [...prev, team]);
+  };
 
   const selectedTeam = teams.find((t) => t.team.id === selectedTeamId) ?? null;
 
   return {
     teams,
     selectedTeam,
-    setSelectedTeamId,
+    selectedTeamId,
+    setSelectedTeamId: setSelectedTeamIdAndPersist,
     loading,
     error,
     updateTeamInContext,
+    addTeamToContext,
     // Add a manual refresh function for explicit updates
     refresh: () => {
       hasFetched.current = false;

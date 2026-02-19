@@ -190,6 +190,70 @@ test.describe("Teams Settings Page with Database Reset", () => {
     expect(teamIdFromUrl).toBe(testTeam.teamId);
   });
 
+  // test("should redirect to teams page if no team is selected and user tries to access schedule", async ({
+  //   page,
+  // }) => {
+  //   // Attempt to navigate directly to the schedule page without a team
+  //   await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
+
+  //   // Clear any selected team from localStorage to simulate no team selected
+  //   await page.evaluate(() => localStorage.removeItem("selectedTeamId"));
+
+  //   // Refresh the page to trigger the redirect logic
+  //   await page.reload();
+
+  //   // Verify that we are redirected to the teams settings page
+  //   await expect(page).toHaveURL(
+  //     `${testConfig.frontendUrl}/en/plan/settings/teams/`,
+  //   );
+
+  //   // Verify that the teams page heading is visible
+  //   const heading = page.getByTestId("teams-page-heading");
+  //   await expect(heading).toBeVisible();
+  // });
+
+  test("should redirect to teams page if selected team id is invalid and user tries to access schedule", async ({
+    page,
+  }) => {
+    // Set an invalid team ID in localStorage
+    await page.evaluate(() =>
+      localStorage.setItem("selectedTeamId", "invalid-team-id"),
+    );
+
+    // Attempt to navigate directly to the schedule page
+    await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
+
+    // Verify that we are redirected to the teams settings page
+    await expect(page).toHaveURL(
+      `${testConfig.frontendUrl}/en/plan/settings/teams/`,
+    );
+
+    // Verify that the teams page heading is visible
+    const heading = page.getByTestId("teams-page-heading");
+    await expect(heading).toBeVisible();
+  });
+
+  test("should redirect to teams page if no team correspond to selected team id", async ({
+    page,
+  }) => {
+    // Set an invalid team ID in localStorage
+    await page.evaluate(() =>
+      localStorage.setItem("selectedTeamId", "6997559c394575f0483cc827"),
+    );
+
+    // Attempt to navigate directly to the schedule page
+    await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
+
+    // Verify that we are redirected to the teams settings page
+    await expect(page).toHaveURL(
+      `${testConfig.frontendUrl}/en/plan/settings/teams/`,
+    );
+
+    // Verify that the teams page heading is visible
+    const heading = page.getByTestId("teams-page-heading");
+    await expect(heading).toBeVisible();
+  });
+
   //   test("should show isolated test data across test runs", async ({ page }) => {
   //     // This test verifies that database reset is working properly
   //     // by ensuring we start with a clean state
