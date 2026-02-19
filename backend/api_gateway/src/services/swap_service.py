@@ -59,10 +59,8 @@ class SwapService(BaseService):
             ValueError: If validation fails
         """
         # Validate assignments exist and get the creator from the first assignment
-        offered_assignments = (
-            self.collection.assignment_db.get_assignments_by_ids(
-                assignment_ids=offered_assignment_ids
-            )
+        offered_assignments = self.collection.assignment_db.get_assignments_by_ids(
+            assignment_ids=offered_assignment_ids
         )
 
         if not offered_assignments or len(offered_assignments) != len(
@@ -71,15 +69,11 @@ class SwapService(BaseService):
             raise ValueError("Some offered assignments not found")
 
         # Get the worker ID from the first assignment
-        created_by_worker_id = offered_assignments[0].worker_id
+        offering_worker_id = offered_assignments[0].worker_id
 
         # Validate all assignments belong to the same worker
-        if not all(
-            a.worker_id == created_by_worker_id for a in offered_assignments
-        ):
-            raise ValueError(
-                "All offered assignments must belong to the same worker"
-            )
+        if not all(a.worker_id == offering_worker_id for a in offered_assignments):
+            raise ValueError("All offered assignments must belong to the same worker")
 
         # Validate all assignments belong to the team
         if not all(a.team_id == team_id for a in offered_assignments):
@@ -117,7 +111,7 @@ class SwapService(BaseService):
             requested_assignment_ids=requested_assignment_ids,
             target_worker_id=target_worker_id,
             comment=comment,
-            offering_worker_id=created_by_worker_id,
+            offering_worker_id=offering_worker_id,
             bids=[],
             created_at=datetime.now(timezone.utc),
         )
@@ -157,9 +151,7 @@ class SwapService(BaseService):
         if swap.swap_type != SwapType.OPEN:
             raise ValueError("Can only bid on open swaps")
         if swap.status != SwapStatus.ACTIVE:
-            raise ValueError(
-                f"Swap is not active (status: {swap.status.value})"
-            )
+            raise ValueError(f"Swap is not active (status: {swap.status.value})")
 
         # Check if swap is obsolete
         if swap.obsolete:
@@ -207,9 +199,7 @@ class SwapService(BaseService):
         updated_swap = self.collection.swap_db.update_swap_request(swap)
         return updated_swap
 
-    def accept_bid_on_open_swap(
-        self, swap_id: str, bid_id: str
-    ) -> SwapRequest:
+    def accept_bid_on_open_swap(self, swap_id: str, bid_id: str) -> SwapRequest:
         """
         Accept a bid on an open swap, moving it to PENDING_APPROVAL status.
 
@@ -233,9 +223,7 @@ class SwapService(BaseService):
         if swap.swap_type != SwapType.OPEN:
             raise ValueError("Can only accept bids on open swaps")
         if swap.status != SwapStatus.ACTIVE:
-            raise ValueError(
-                f"Swap is not active (status: {swap.status.value})"
-            )
+            raise ValueError(f"Swap is not active (status: {swap.status.value})")
 
         # Check if swap is obsolete
         if swap.obsolete:
@@ -376,9 +364,7 @@ class SwapService(BaseService):
         if swap.swap_type != SwapType.DIRECT:
             raise ValueError("Can only accept direct swaps")
         if swap.status != SwapStatus.ACTIVE:
-            raise ValueError(
-                f"Swap is not active (status: {swap.status.value})"
-            )
+            raise ValueError(f"Swap is not active (status: {swap.status.value})")
 
         # Check if swap is obsolete
         if swap.obsolete:
@@ -450,9 +436,7 @@ class SwapService(BaseService):
 
         # Can only delete active or pending approval swaps
         if swap.status not in [SwapStatus.ACTIVE, SwapStatus.PENDING_APPROVAL]:
-            raise ValueError(
-                f"Cannot delete swap with status: {swap.status.value}"
-            )
+            raise ValueError(f"Cannot delete swap with status: {swap.status.value}")
 
         # Delete from database
         self.collection.swap_db.delete_swap_request(swap_id)
@@ -520,14 +504,10 @@ class SwapService(BaseService):
 
         # Verify audit data exists
         if not swap.audit_data:
-            raise ValueError(
-                f"Cannot revert swap {swap_id}: no audit data available"
-            )
+            raise ValueError(f"Cannot revert swap {swap_id}: no audit data available")
 
         # Build map of assignment ID to original worker ID
-        audit_map = {
-            audit.assignment_id: audit.worker_id for audit in swap.audit_data
-        }
+        audit_map = {audit.assignment_id: audit.worker_id for audit in swap.audit_data}
 
         # Fetch all assignments from audit data
         assignment_ids = list(audit_map.keys())
@@ -536,9 +516,7 @@ class SwapService(BaseService):
         )
 
         if not assignments:
-            raise ValueError(
-                f"Cannot revert swap {swap_id}: assignments not found"
-            )
+            raise ValueError(f"Cannot revert swap {swap_id}: assignments not found")
 
         # Restore original worker IDs for all assignments
         for assignment in assignments:
@@ -548,9 +526,7 @@ class SwapService(BaseService):
                 self.collection.assignment_db.update_assignment(assignment)
 
                 # Handle recuperation assignments for DUTY shifts
-                shift = self.collection.shift_db.get_shift_by_id(
-                    assignment.shift_id
-                )
+                shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
                 if shift and shift.shift_type == ShiftType.DUTY:
                     # Find recuperation assignment linked to this assignment
                     recup = self.collection.assignment_db.get_assignment_by_reference(
@@ -648,14 +624,10 @@ class SwapService(BaseService):
                     assignment.schedule_id
                 )
                 if schedule and schedule.status == ScheduleStatus.CAMPAIGN:
-                    raise ValueError(
-                        "Cannot swap assignments from campaign schedules"
-                    )
+                    raise ValueError("Cannot swap assignments from campaign schedules")
 
             # Check shift type
-            shift = self.collection.shift_db.get_shift_by_id(
-                assignment.shift_id
-            )
+            shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
             if not shift:
                 raise ValueError(f"Shift {assignment.shift_id} not found")
 
@@ -665,18 +637,14 @@ class SwapService(BaseService):
                     + f"{shift.shift_type.value})"
                 )
 
-    def _validate_assignments_not_past(
-        self, assignments: List[Assignment]
-    ) -> None:
+    def _validate_assignments_not_past(self, assignments: List[Assignment]) -> None:
         """Validate that assignments are not in the past."""
         today = datetime.now(timezone.utc).date()
 
         past_assignments = [a for a in assignments if a.date < today]
         if past_assignments:
             dates_str = ", ".join(a.date.isoformat() for a in past_assignments)
-            raise ValueError(
-                f"Cannot swap assignments from past dates: {dates_str}"
-            )
+            raise ValueError(f"Cannot swap assignments from past dates: {dates_str}")
 
     def _mark_swap_obsolescence(self, swap: SwapRequest) -> bool:
         """
@@ -749,9 +717,7 @@ class SwapService(BaseService):
         3. Handles linked recuperation assignments for DUTY shifts
         """
         if not swap.requested_assignment_ids or not swap.target_worker_id:
-            raise ValueError(
-                "Cannot execute swap without requested assignments"
-            )
+            raise ValueError("Cannot execute swap without requested assignments")
 
         # Fetch all assignments
         offered_assignments = [
@@ -764,9 +730,7 @@ class SwapService(BaseService):
         ]
 
         if None in offered_assignments + requested_assignments:
-            raise ValueError(
-                "One or more assignments in the swap were not found"
-            )
+            raise ValueError("One or more assignments in the swap were not found")
 
         # Build audit data before making changes
         audit_data = []
@@ -794,13 +758,10 @@ class SwapService(BaseService):
         # Get creator worker ID from offered assignments
         offered_worker_id_set = {a.worker_id for a in offered_assignments if a}
         creator_worker_id = swap.offering_worker_id or (
-            offered_worker_id_set.pop()
-            if len(offered_worker_id_set) == 1
-            else None
+            offered_worker_id_set.pop() if len(offered_worker_id_set) == 1 else None
         )
         if not creator_worker_id or (
-            offered_worker_id_set
-            and offered_worker_id_set != {creator_worker_id}
+            offered_worker_id_set and offered_worker_id_set != {creator_worker_id}
         ):
             raise ValueError("Offered assignments belong to multiple workers")
         target_worker_id = swap.target_worker_id
@@ -825,13 +786,13 @@ class SwapService(BaseService):
                 all_assignments.append(assignment)
 
                 # Check if this is a DUTY assignment with a recuperation
-                shift = self.collection.shift_db.get_shift_by_id(
-                    assignment.shift_id
-                )
+                shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
                 if shift and shift.shift_type == ShiftType.DUTY:
                     # Find recuperation assignment
-                    recup_assignment = self.collection.assignment_db.get_assignment_by_reference(
-                        assignment.id
+                    recup_assignment = (
+                        self.collection.assignment_db.get_assignment_by_reference(
+                            assignment.id
+                        )
                     )
                     if recup_assignment:
                         all_assignments.append(recup_assignment)
