@@ -14,9 +14,10 @@ export default function RootPage() {
 
     // Hard fallback: if router.replace hasn't navigated within 800ms
     // (e.g. bfcache stall or hydration delay on iOS Safari), force navigation.
+    // Reduced to 300ms — covers slow networks; meta refresh below covers full JS block
     const fallbackTimer = setTimeout(() => {
       window.location.replace(`/${fallbackLng}/`);
-    }, 800);
+    }, 300);
 
     try {
       router.replace(targetPath);
@@ -31,8 +32,24 @@ export default function RootPage() {
   }, []);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div>Redirecting...</div>
-    </div>
+    <>
+      {/*
+        Pure-HTML redirect — fires after 1s with no JS required.
+        Handles VPN/firewall environments where _next/static chunks are blocked.
+        If JS loads normally, router.replace above fires first and this is a no-op.
+      */}
+      <meta httpEquiv="refresh" content={`1;url=/${fallbackLng}/`} />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p>Redirecting...</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Not redirected?{" "}
+            <a href={`/${fallbackLng}/`} className="underline">
+              Click here
+            </a>
+          </p>
+        </div>
+      </div>
+    </>
   );
 }
