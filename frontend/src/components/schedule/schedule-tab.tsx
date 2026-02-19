@@ -838,20 +838,6 @@ export default function ScheduleTab({
       setIsLoadingSchedule(true);
 
       try {
-        // Fetch schedules
-        const fetchedSchedule = await getSchedules(teamWithMembership.team.id);
-        setScheduleCampaign(
-          fetchedSchedule.find(
-            (s: ScheduleT) => s.status === ScheduleStatus.CAMPAIGN,
-          ) || null,
-        );
-        setSchedulesValidated(
-          fetchedSchedule.filter(
-            (s: ScheduleT) => s.status === ScheduleStatus.VALIDATED,
-          ),
-        );
-        setIsLoadingSchedule(false);
-
         // Fetch entities (shifts and workers) - assignments now loaded via React Query
         const { workers: fetchedWorkers, shifts: fetchedShifts } =
           await getScheduleEntities(teamWithMembership.team.id);
@@ -862,12 +848,24 @@ export default function ScheduleTab({
         const fetchedRequests = await getRequests(teamWithMembership.team.id);
         setRequests(fetchedRequests);
 
-        // Fetch owner-only data conditionally
+        // Fetch owner-only data (schedules, breaches, specialties) — not available to members
         if (teamWithMembership.membership.role !== TeamMembershipRole.MEMBER) {
-          const [fetchedBreaches, fetchedSpecialties] = await Promise.all([
-            getBreaches(teamWithMembership.team.id),
-            getSpecialties(teamWithMembership.team.id),
-          ]);
+          const [fetchedSchedule, fetchedBreaches, fetchedSpecialties] =
+            await Promise.all([
+              getSchedules(teamWithMembership.team.id),
+              getBreaches(teamWithMembership.team.id),
+              getSpecialties(teamWithMembership.team.id),
+            ]);
+          setScheduleCampaign(
+            fetchedSchedule.find(
+              (s: ScheduleT) => s.status === ScheduleStatus.CAMPAIGN,
+            ) || null,
+          );
+          setSchedulesValidated(
+            fetchedSchedule.filter(
+              (s: ScheduleT) => s.status === ScheduleStatus.VALIDATED,
+            ),
+          );
           setBreaches(fetchedBreaches);
           setSpecialties(fetchedSpecialties);
         }
