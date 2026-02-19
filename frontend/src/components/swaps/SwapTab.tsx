@@ -293,13 +293,13 @@ export default function SwapTab({
           return (
             swap.swapType === SwapType.OPEN &&
             swap.status === SwapStatus.ACTIVE &&
-            swap.createdByUserId !== currentUserId
+            swap.offeringWorkerId !== currentUserWorker?.id
           );
 
         case SwapFilter.MY_SWAPS:
           // Swaps I created OR direct swaps targeting me OR open swaps where my bid was accepted
           return (
-            swap.createdByUserId === currentUserId ||
+            swap.offeringWorkerId === currentUserWorker?.id ||
             (swap.swapType === SwapType.DIRECT &&
               currentUserWorker &&
               swap.targetWorkerId === currentUserWorker.id) ||
@@ -326,7 +326,7 @@ export default function SwapTab({
           return true;
       }
     });
-  }, [swaps, currentFilter, currentUserId, currentUserWorker]);
+  }, [swaps, currentFilter, currentUserWorker]);
 
   // Pre-compute enriched swap data with assignments and creator info
   const enrichedSwaps = useMemo(() => {
