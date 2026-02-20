@@ -7,7 +7,7 @@ export const cognitoAuthConfig = {
   redirect_uri: env.redirectUri,
   // Dedicated URI for silent token renewal — avoids iframe fallback that Safari ITP blocks.
   // Must be registered as a callback URL in Cognito and handled by the /silent-renew page.
-  silent_redirect_uri: `${env.redirectUri.replace(/\/[^/]*$/, "")}/silent-renew`,
+  silent_redirect_uri: `${env.clientUrl}/silent-renew`,
   post_logout_redirect_uri: env.logoutRedirectUri,
   response_type: "code",
   scope: "email openid phone aws.cognito.signin.user.admin",

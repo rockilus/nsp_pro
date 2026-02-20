@@ -6,6 +6,7 @@
 export interface EnvironmentConfig {
   isDevelopment: boolean;
   apiUrl: string;
+  clientUrl: string;
   devUserId: string;
   devApiKey: string;
   // Production Cognito config
@@ -31,6 +32,11 @@ function createEnvironmentConfig(): EnvironmentConfig {
     apiUrl: isDevelopment
       ? process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
       : process.env.NEXT_PUBLIC_API_URL || "https://api.rockilus.com",
+
+    // Client URL - used for constructing links in emails, etc.
+    clientUrl: isDevelopment
+      ? process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000"
+      : process.env.NEXT_PUBLIC_CLIENT_URL || "https://app.rockilus.com",
 
     // Development Configuration - must match backend
     devUserId: process.env.NEXT_PUBLIC_DEV_USER_ID || "dev-user-123",

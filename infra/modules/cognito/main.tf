@@ -169,8 +169,12 @@ resource "aws_cognito_user_pool_client" "main" {
   allowed_oauth_flows                  = ["code"]
   allowed_oauth_flows_user_pool_client = true
   # allowed_oauth_scopes                 = ["email", "openid", "profile"]
-  allowed_oauth_scopes         = ["email", "openid", "phone", "aws.cognito.signin.user.admin"]
-  callback_urls                = ["https://${var.frontend_domain_name}/fr/plan/schedule/"]
+  allowed_oauth_scopes = ["email", "openid", "phone", "aws.cognito.signin.user.admin"]
+  callback_urls = [
+    "https://${var.frontend_domain_name}/fr/plan/schedule/",
+    # Required for SPA silent token renewal via iframe
+    "https://${var.frontend_domain_name}/silent-renew",
+  ]
   logout_urls                  = ["https://${var.landing_page_domain_name}"]
   supported_identity_providers = ["COGNITO"]
 
