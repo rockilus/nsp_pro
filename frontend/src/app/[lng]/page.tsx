@@ -1,6 +1,8 @@
 // Force static export for this page
 export const dynamic = "force-static";
 
+import { redirect } from "next/navigation";
+
 interface HomePageProps {
   params: { lng: string };
 }
@@ -14,9 +16,8 @@ export async function generateStaticParams() {
 }
 
 export default function Home({ params }: HomePageProps) {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <p>Home Page</p>
-    </main>
-  );
+  // Server-side redirect straight to the schedule page for the current language.
+  // This ensures the language root (`/[lng]/`) immediately resolves to the
+  // app's main schedule view and is compatible with static export.
+  redirect(`/${params.lng}/plan/schedule`);
 }
