@@ -7,16 +7,16 @@ import { fallbackLng } from "./i18n/settings";
 
 export default function RootPage() {
   const router = useRouter();
+  const detectedLang = detectLanguage();
+  const targetPath = `/${detectedLang}/`;
 
   useEffect(() => {
-    const detectedLang = detectLanguage();
-    const targetPath = `/${detectedLang}/`;
-
-    // Hard fallback: if router.replace hasn't navigated within 800ms
-    // (e.g. bfcache stall or hydration delay on iOS Safari), force navigation.
-    // Reduced to 300ms — covers slow networks; meta refresh below covers full JS block
+    // Hard fallback: if `router.replace` hasn't navigated within 300ms
+    // (e.g. bfcache stall or hydration delay on iOS Safari), force navigation
+    // to the *detected* language. The meta refresh below is the final no-JS
+    // fallback and also uses the detected language so all paths are consistent.
     const fallbackTimer = setTimeout(() => {
-      window.location.replace(`/${fallbackLng}/`);
+      window.location.replace(targetPath);
     }, 300);
 
     try {
@@ -38,7 +38,7 @@ export default function RootPage() {
         Handles VPN/firewall environments where _next/static chunks are blocked.
         If JS loads normally, router.replace above fires first and this is a no-op.
       */}
-      <meta httpEquiv="refresh" content={`1;url=/${fallbackLng}/`} />
+      <meta httpEquiv="refresh" content={`1;url=${targetPath}`} />
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p>Redirecting...</p>
