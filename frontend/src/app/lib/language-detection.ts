@@ -17,22 +17,40 @@ function safeLocalStorageSet(key: string, value: string): void {
   }
 }
 
+function safeCookieGet(name: string): string | null {
+  try {
+    const match = document.cookie
+      .split(";")
+      .map((c) => c.trim())
+      .find((c) => c.startsWith(name + "="));
+    return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function detectLanguage(): string {
   if (typeof window === "undefined") return fallbackLng;
 
-  // 1. Check localStorage
+  // 1. Check localStorage (explicit user preference set by the app)
   const stored = safeLocalStorageGet(cookieName);
   if (stored && languages.includes(stored)) {
     return stored;
   }
 
-  // 2. Check browser language
+  // 2. Check cookie (set by server-side i18n middleware or a previous session)
+  const cookieVal = safeCookieGet(cookieName);
+  if (cookieVal && languages.includes(cookieVal)) {
+    return cookieVal;
+  }
+
+  // 3. Check browser language
   const browserLang = navigator.language.split("-")[0];
   if (languages.includes(browserLang)) {
     return browserLang;
   }
 
-  // 3. Fallback
+  // 4. Fallback
   return fallbackLng;
 }
 

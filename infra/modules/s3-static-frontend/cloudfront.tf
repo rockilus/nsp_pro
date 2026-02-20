@@ -126,19 +126,25 @@ resource "aws_cloudfront_distribution" "frontend" {
     cloudfront_default_certificate = var.cloudfront_certificate_arn == null && var.certificate_arn == null ? true : null
   }
 
-  # Custom error responses for SPA routing
+  # Custom error responses for SPA routing.
+  # response_page_path is /index.html which is the language-redirector root page.
+  # That page now contains a client-side loop guard (page.tsx) that detects when
+  # it is being served at a non-root path (e.g. /en/ instead of /) and redirects
+  # to the real app entry point rather than looping back to /en/.
+  # error_caching_min_ttl = 0 ensures S3 errors are not cached by CloudFront so
+  # a fresh deployment that adds missing files is immediately visible.
   custom_error_response {
     error_code            = 403
     response_code         = 200
     response_page_path    = "/index.html"
-    error_caching_min_ttl = 10
+    error_caching_min_ttl = 0
   }
 
   custom_error_response {
     error_code            = 404
     response_code         = 200
     response_page_path    = "/index.html"
-    error_caching_min_ttl = 10
+    error_caching_min_ttl = 0
   }
 
   tags = merge(var.tags, {
