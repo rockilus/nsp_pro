@@ -248,6 +248,24 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
     pruneOidcState();
   }, []);
 
+  // Strip ?code=&state= from the URL whenever an auth error is set.
+  // Without this, a failed callback URL stays in the address bar and every
+  // refresh re-triggers the same failed code exchange, creating an infinite
+  // error loop (e.g. "No matching state found in storage" on reload).
+  useEffect(() => {
+    if (!auth.error) return;
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("code") || params.has("state")) {
+      console.warn(
+        "⚠️ Auth error with callback params in URL — stripping to prevent refresh loop:",
+        auth.error.message,
+      );
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [auth.error]);
+
   useEffect(() => {
     // Set loading to false once auth state is determined
     if (!auth.isLoading) {

@@ -93,6 +93,13 @@ export default function ProtectedRoute({
         error.message.includes("Token is not valid") ||
         error.message.includes("rotation conflict");
 
+      // Terminal callback errors: the code/state are unusable — auto-redirect
+      // to a fresh sign-in rather than leaving the user on a frozen spinner.
+      const isTerminalCallbackError =
+        error.message.includes("No matching state") ||
+        error.message.includes("No state in response") ||
+        error.message.includes("Invalid state");
+
       const isNetworkIssue = isNetworkError(error);
 
       // Avoid calling setState synchronously inside the effect body -
@@ -101,8 +108,21 @@ export default function ProtectedRoute({
       let manualSignInTimer: ReturnType<typeof setTimeout> | undefined;
       let networkStartTimer: ReturnType<typeof setTimeout> | undefined;
       let networkRetryTimer: ReturnType<typeof setTimeout> | undefined;
+      let autoRedirectTimer: ReturnType<typeof setTimeout> | undefined;
 
-      if (isRotationError && !isNetworkIssue) {
+      if (isTerminalCallbackError) {
+        // Auto-redirect after a brief delay so the user sees something is
+        // happening rather than a sudden redirect with no feedback.
+        console.warn(
+          "🔄 Terminal callback error — auto-redirecting to sign-in:",
+          error.message,
+        );
+        autoRedirectTimer = setTimeout(() => {
+          if (!isAuthenticated) {
+            signIn();
+          }
+        }, 2000);
+      } else if (isRotationError && !isNetworkIssue) {
         console.warn("🔄 Refresh token rotation error detected");
         manualSignInTimer = setTimeout(() => setShowManualSignIn(true), 0);
       } else if (isNetworkIssue) {
@@ -121,9 +141,18 @@ export default function ProtectedRoute({
             }
           }, 10000); // 10 second delay for network recovery
         }, 0);
+      } else {
+        // Catch-all: any other non-network error — show the sign-in button
+        // after 3 seconds rather than leaving the user on a permanent spinner.
+        manualSignInTimer = setTimeout(() => {
+          if (!isAuthenticated) {
+            setShowManualSignIn(true);
+          }
+        }, 3000);
       }
 
       return () => {
+        if (autoRedirectTimer) clearTimeout(autoRedirectTimer);
         if (manualSignInTimer) clearTimeout(manualSignInTimer);
         if (networkStartTimer) clearTimeout(networkStartTimer);
         if (networkRetryTimer) clearTimeout(networkRetryTimer);
