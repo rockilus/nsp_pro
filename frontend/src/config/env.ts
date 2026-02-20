@@ -48,9 +48,11 @@ function createEnvironmentConfig(): EnvironmentConfig {
       "https://cognito-idp.eu-west-3.amazonaws.com/eu-west-3_9tyN1YsF6",
     cognitoClientId:
       process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || "2rccpq0s894f6a66d1hmimship",
+    // Cognito redirects here after sign-in. Dedicated callback page keeps
+    // the OIDC code exchange isolated from heavy feature chunks.
     redirectUri:
       process.env.NEXT_PUBLIC_REDIRECT_URI ||
-      "https://app.rockilus.com/fr/plan/schedule/",
+      "https://app.rockilus.com/fr/callback/",
     logoutRedirectUri:
       process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || "https://www.rockilus.com",
     cognitoDomain:

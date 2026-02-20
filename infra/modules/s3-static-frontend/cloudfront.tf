@@ -49,9 +49,10 @@ resource "aws_cloudfront_distribution" "frontend" {
       }
     }
 
+    # Content-hashed filenames — safe to cache for 1 year as immutable
     min_ttl     = 0
-    default_ttl = 3600  # 1 hour
-    max_ttl     = 86400 # 24 hours
+    default_ttl = 31536000 # 1 year
+    max_ttl     = 31536000 # 1 year
   }
 
   # Cache behavior for static assets (images, CSS, JS)
@@ -97,9 +98,11 @@ resource "aws_cloudfront_distribution" "frontend" {
       }
     }
 
+    # HTML files carry Cache-Control: no-cache from S3 metadata, so CloudFront
+    # will always revalidate with the origin. TTL here is a ceiling only.
     min_ttl     = 0
-    default_ttl = 300   # 5 minutes (shorter for HTML files)
-    max_ttl     = 86400 # 24 hours
+    default_ttl = 0  # Always respect Cache-Control headers from S3
+    max_ttl     = 60 # At most 60 s if no Cache-Control header present
   }
 
   # Price class

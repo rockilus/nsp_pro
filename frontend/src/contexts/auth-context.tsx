@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAuth as useOidcAuth, ErrorContext } from "react-oidc-context";
-import { User } from "oidc-client-ts";
+import { User, UserManager } from "oidc-client-ts";
 import {
   cognitoAuthConfig,
   cognitoDomain,
@@ -213,6 +213,22 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
   const auth = useOidcAuth();
   const [loading, setLoading] = useState<boolean>(true);
   const [retryingRefresh, setRetryingRefresh] = useState<boolean>(false);
+
+  // On mount: clear stale PKCE state entries left in localStorage by abandoned
+  // sign-in flows. Without this, oidc-client-ts can throw "No matching state
+  // found in storage" and never settle isLoading — leaving Safari stuck on the
+  // loading screen indefinitely.
+  useEffect(() => {
+    try {
+      const manager = new UserManager(cognitoAuthConfig as any);
+      manager.clearStaleState().catch((err: unknown) => {
+        console.warn("clearStaleState failed (non-critical):", err);
+      });
+    } catch {
+      // Non-critical — ignore
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     // Set loading to false once auth state is determined

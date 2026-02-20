@@ -25,7 +25,6 @@ export default function ProtectedRoute({
   const { isAuthenticated, loading, error, signIn } = useAuth();
   const [networkRetrying, setNetworkRetrying] = useState(false);
   const [showManualSignIn, setShowManualSignIn] = useState(false);
-  const [callbackTimeout, setCallbackTimeout] = useState(false);
   // Tracks whether the hard loading timeout has fired.
   // Prevents users (especially mobile Safari) being stuck on the loading
   // spinner indefinitely when automaticSilentRenew hangs at startup.
@@ -56,61 +55,8 @@ export default function ProtectedRoute({
   }, [loadingTimedOut, isAuthenticated, signIn]);
 
   useEffect(() => {
-    // Check if we're handling an OAuth callback (has code and state in URL)
-    const isHandlingCallback =
-      typeof window !== "undefined" &&
-      window.location.search.includes("code=") &&
-      window.location.search.includes("state=");
-
-    if (isHandlingCallback) {
-      console.log(
-        "🔄 OAuth callback detected in URL, waiting for authentication...",
-      );
-      console.log("Auth state:", {
-        isAuthenticated,
-        loading,
-        hasError: !!error,
-      });
-
-      // Set a timeout for callback processing (10 seconds)
-      const callbackTimer = setTimeout(() => {
-        if (!isAuthenticated) {
-          console.error("❌ Callback processing timed out after 10 seconds");
-          setCallbackTimeout(true);
-          // Clean up the URL by removing query params
-          if (typeof window !== "undefined") {
-            const cleanUrl = window.location.pathname;
-            window.history.replaceState({}, "", cleanUrl);
-          }
-        }
-      }, 10000);
-
-      return () => clearTimeout(callbackTimer);
-    }
-
-    // If callback timed out, trigger manual sign-in
-    if (callbackTimeout && !isAuthenticated) {
-      console.log("🔄 Callback failed, triggering new sign-in...");
-      const resetTimer = setTimeout(() => {
-        setCallbackTimeout(false);
-        signIn();
-      }, 0);
-      return () => clearTimeout(resetTimer);
-    }
-
-    // Clean up URL if authenticated and still has callback params
-    if (isAuthenticated && isHandlingCallback) {
-      console.log("✅ Authentication successful, cleaning up URL...");
-      if (typeof window !== "undefined") {
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, "", cleanUrl);
-      }
-      return;
-    }
-
-    // Also don't redirect if we're still loading (might be processing callback)
+    // Don't redirect while auth state is still resolving
     if (loading) {
-      console.log("⏳ Still loading authentication state...");
       return;
     }
 
@@ -183,7 +129,7 @@ export default function ProtectedRoute({
         if (networkRetryTimer) clearTimeout(networkRetryTimer);
       };
     }
-  }, [requireAuth, loading, error, isAuthenticated, signIn, callbackTimeout]);
+  }, [requireAuth, loading, error, isAuthenticated, signIn]);
 
   // Network connectivity issues
   if (networkRetrying || (error && isNetworkError(error))) {

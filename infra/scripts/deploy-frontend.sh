@@ -228,12 +228,40 @@ if [[ $DRY_RUN == true ]]; then
         aws s3 sync out/ "s3://$S3_BUCKET" --delete --dryrun
     fi
 else
-    # Sync files to S3
-    if [[ $VERBOSE == true ]]; then
-        aws s3 sync out/ "s3://$S3_BUCKET" --delete
-    else
-        aws s3 sync out/ "s3://$S3_BUCKET" --delete --quiet
-    fi
+    QUIET_FLAG="--quiet"
+    [[ $VERBOSE == true ]] && QUIET_FLAG=""
+
+    # Pass 1: Content-hashed _next/static/ assets — safe to cache for 1 year.
+    # These files have a unique hash in their name so they never collide across deploys.
+    print_info "Uploading immutable static chunks..."
+    aws s3 sync out/_next/static/ "s3://$S3_BUCKET/_next/static/" \
+        --cache-control "public, max-age=31536000, immutable" \
+        $QUIET_FLAG
+
+    # Pass 2: HTML files — must never be cached so browsers always get fresh
+    # asset references after a redeploy. This is the root fix for the
+    # "SyntaxError: Unexpected token '<'" chunk-loading bug on Safari.
+    print_info "Uploading HTML files with no-cache headers..."
+    aws s3 sync out/ "s3://$S3_BUCKET" \
+        --exclude "*" --include "*.html" \
+        --cache-control "no-cache, no-store, must-revalidate" \
+        $QUIET_FLAG
+
+    # Pass 3: Everything else (fonts, images, manifests, icons, etc.)
+    print_info "Uploading remaining assets..."
+    aws s3 sync out/ "s3://$S3_BUCKET" \
+        --exclude "_next/static/*" --exclude "*.html" \
+        --cache-control "public, max-age=3600" \
+        $QUIET_FLAG
+
+    # Pass 4: Remove files from S3 that are no longer in the build.
+    # Use --size-only so already-uploaded files are not re-sent (avoids resetting
+    # cache headers set in the passes above).
+    print_info "Removing stale files from S3..."
+    aws s3 sync out/ "s3://$S3_BUCKET" \
+        --delete --size-only \
+        $QUIET_FLAG
+
     print_success "Files deployed to S3"
 fi
 
