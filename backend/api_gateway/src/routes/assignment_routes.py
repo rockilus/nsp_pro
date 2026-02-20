@@ -52,7 +52,9 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence:
             r_data = RecurrenceRule.from_dto(recurrence)
-        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
+        ar_result = assignment_service.create_assignment_and_recurrence(
+            a_data, r_data
+        )
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
@@ -76,33 +78,44 @@ async def get_assignments(
     try:
         # Validate date range
         if end_date < start_date:
-            raise ValueError("end_date must be greater than or equal to start_date")
+            raise ValueError(
+                "end_date must be greater than or equal to start_date"
+            )
 
         # Prevent abuse: reject ranges > 6 months
         max_range_days = 365
         if (end_date - start_date).days > max_range_days:
             raise ValueError(f"Date range cannot exceed {max_range_days} days")
 
-        # Check if user has permission to read assignments
-        if not await authz_check(
-            user_context.user_id, "read-assignments", "team", team_id
-        ):
-            # If user doesn't have read-assignments (i.e., they're a member),
-            # check if they have read-assignments-validated permission
+        # Authorization strategy:
+        # - If requesting campaign data (`include_campaign`), require full
+        #   `read-assignments` permission and deny otherwise.
+        # - For non-campaign requests prefer the faster
+        #   `read-assignments-validated` check (fast path for members). If
+        #   that fails, fall back to checking full `read-assignments` so
+        #   admins/privileged users are still allowed.
+        if include_campaign:
+            if not await authz_check(
+                user_context.user_id, "read-assignments", "team", team_id
+            ):
+                raise NotAuthorizedError(
+                    "You do not have permission to get campaign assignments",
+                )
+        else:
+            # Fast path: validated members
             if not await authz_check(
                 user_context.user_id,
                 "read-assignments-validated",
                 "team",
                 team_id,
             ):
-                raise NotAuthorizedError(
-                    "You do not have permission to get assignments",
-                )
-            # Members are not allowed to request campaign assignments
-            if include_campaign:
-                raise NotAuthorizedError(
-                    "You do not have permission to access campaign assignments",
-                )
+                # Fall back to full permission for privileged users
+                if not await authz_check(
+                    user_context.user_id, "read-assignments", "team", team_id
+                ):
+                    raise NotAuthorizedError(
+                        "You do not have permission to get assignments",
+                    )
 
         start_time = time_module.time()
         ar_result = assignment_service.get_assignments_and_recurrences(
@@ -112,7 +125,9 @@ async def get_assignments(
             include_campaign,
             worker_id,
             shift_types=(
-                [ShiftType(v) for v in shift_type] if shift_type is not None else None
+                [ShiftType(v) for v in shift_type]
+                if shift_type is not None
+                else None
             ),
         )
         response = ar_result.to_dto()
@@ -150,7 +165,9 @@ async def update_assignment(
             if recurrence_update_scope
             else None
         )
-        recurrence_data = RecurrenceRule.from_dto(recurrence) if recurrence else None
+        recurrence_data = (
+            RecurrenceRule.from_dto(recurrence) if recurrence else None
+        )
         ar_result = assignment_service.update_assignment_and_recurrence(
             assignment_new=assignment_data,
             recurrence_update_scope=recurrence_update_scope_data,
@@ -198,7 +215,9 @@ async def delete_assignment(
     return response
 
 
-@router.get("/assignments/{assignment_id}/replacement-candidates/teams/{team_id}")
+@router.get(
+    "/assignments/{assignment_id}/replacement-candidates/teams/{team_id}"
+)
 async def get_replacement_candidates(
     assignment_id: str,
     team_id: str,
@@ -218,6 +237,8 @@ async def get_replacement_candidates(
         )
         response = [candidate.to_dto() for candidate in candidates]
     except Exception as e:
-        log_info(f"Failed to get replacement candidates for assignment {assignment_id}")
+        log_info(
+            f"Failed to get replacement candidates for assignment {assignment_id}"
+        )
         handle_routes_errors(e)
     return response
