@@ -9,10 +9,11 @@
  *
  * This page's sole job is:
  *  1. Show a lightweight loading screen while the token exchange runs.
- *  2. Clear stale PKCE state entries (leftover oidc.{hash} keys in localStorage
- *     from abandoned sign-in flows).
- *  3. Redirect to /[lng]/plan/schedule/ once isAuthenticated is true.
- *  4. Surface an error and offer a retry if the exchange fails.
+ *  2. Redirect to /[lng]/plan/schedule/ once isAuthenticated is true.
+ *  3. Surface an error and offer a retry if the exchange fails.
+ *
+ * Stale PKCE state cleanup is handled by pruneOidcState() in auth-context.tsx,
+ * which runs on every mount and preserves the active ?state= entry.
  *
  * Intentionally imports NO feature chunks — this page must load even when the
  * app has just been redeployed and old cached HTML references stale chunk hashes.
@@ -20,7 +21,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserManager } from "oidc-client-ts";
 import {
   Box,
   CircularProgress,
@@ -31,7 +31,6 @@ import {
   AlertTitle,
 } from "@mui/material";
 import { useAuth } from "../../../contexts/auth-context";
-import { cognitoAuthConfig } from "../../../config/cognito";
 
 interface CallbackPageProps {
   params: { lng: string };
@@ -41,17 +40,6 @@ export default function CallbackPage({ params }: CallbackPageProps) {
   const { isAuthenticated, loading, error, signIn } = useAuth();
   const router = useRouter();
   const [callbackError, setCallbackError] = useState<string | null>(null);
-
-  // Clear stale PKCE state left over from any abandoned sign-in flows.
-  // This prevents "No matching state found in storage" errors on retry.
-  useEffect(() => {
-    try {
-      const manager = new UserManager(cognitoAuthConfig as any);
-      manager.clearStaleState().catch(() => {});
-    } catch {
-      // Non-critical — ignore
-    }
-  }, []);
 
   // Redirect once the token exchange completes successfully.
   useEffect(() => {

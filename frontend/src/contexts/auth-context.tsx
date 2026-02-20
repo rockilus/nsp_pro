@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAuth as useOidcAuth, ErrorContext } from "react-oidc-context";
-import { User, UserManager } from "oidc-client-ts";
+import { User } from "oidc-client-ts";
 import {
   cognitoAuthConfig,
   cognitoDomain,
@@ -207,6 +207,33 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 /**
+ * Prunes stale PKCE state entries from localStorage without touching the
+ * currently active one.
+ *
+ * oidc-client-ts stores each sign-in attempt as `oidc.{stateHash}` in
+ * localStorage. On the callback URL, the active hash is embedded in
+ * `?state=`. Any other `oidc.{hash}` key is from an abandoned flow and
+ * can be safely deleted.
+ *
+ * This is safer than `UserManager.clearStaleState()` because that function
+ * uses a time-based threshold (`staleStateAge`) and will delete the active
+ * entry if the user spent too long on the Cognito login page.
+ */
+function pruneOidcState(): void {
+  if (typeof window === "undefined") return;
+
+  const activeState = new URLSearchParams(window.location.search).get("state");
+
+  Object.keys(localStorage)
+    .filter((key) => key.startsWith("oidc.") && !key.startsWith("oidc.user:"))
+    .forEach((key) => {
+      // Keep the entry whose hash matches the current callback's state param.
+      if (activeState && key === `oidc.${activeState}`) return;
+      localStorage.removeItem(key);
+    });
+}
+
+/**
  * Production Auth Provider - Full Cognito OIDC authentication
  */
 function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
@@ -214,19 +241,11 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [retryingRefresh, setRetryingRefresh] = useState<boolean>(false);
 
-  // On mount: clear stale PKCE state entries left in localStorage by abandoned
-  // sign-in flows. Without this, oidc-client-ts can throw "No matching state
-  // found in storage" and never settle isLoading — leaving Safari stuck on the
-  // loading screen indefinitely.
+  // On mount: prune stale PKCE state entries left in localStorage by abandoned
+  // sign-in flows. pruneOidcState() is safe to call even during an active
+  // callback because it preserves the entry matching ?state= in the URL.
   useEffect(() => {
-    try {
-      const manager = new UserManager(cognitoAuthConfig as any);
-      manager.clearStaleState().catch((err: unknown) => {
-        console.warn("clearStaleState failed (non-critical):", err);
-      });
-    } catch {
-      // Non-critical — ignore
-    }
+    pruneOidcState();
   }, []);
 
   useEffect(() => {
