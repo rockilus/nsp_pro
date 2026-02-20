@@ -65,7 +65,8 @@ export default function CallbackPage({ params }: CallbackPageProps) {
   useEffect(() => {
     if (!error) return;
     const t = setTimeout(
-      () => setCallbackError(error.message ?? "An authentication error occurred."),
+      () =>
+        setCallbackError(error.message ?? "An authentication error occurred."),
       0,
     );
     return () => clearTimeout(t);
