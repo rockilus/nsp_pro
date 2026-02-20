@@ -127,23 +127,27 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   # Custom error responses for SPA routing.
-  # response_page_path is /index.html which is the language-redirector root page.
-  # That page now contains a client-side loop guard (page.tsx) that detects when
-  # it is being served at a non-root path (e.g. /en/ instead of /) and redirects
-  # to the real app entry point rather than looping back to /en/.
-  # error_caching_min_ttl = 0 ensures S3 errors are not cached by CloudFront so
-  # a fresh deployment that adds missing files is immediately visible.
+  # response_page_path points to /404.html — a fully self-contained static page
+  # (no _next/ JS chunks, no meta-refresh, no auto-redirect) with manual links
+  # to /en/, /fr/, /es/. This is a stable, loop-free fallback: if S3 returns
+  # 403 or 404 for any path (e.g. /en/index.html missing after a failed deploy),
+  # the user lands on a human-readable page rather than back in the language-
+  # redirector which could loop. The language-redirector (index.html) also has a
+  # client-side loop guard, but /404.html is the structural safety net.
+  # error_caching_min_ttl = 0 ensures this error response is never cached by
+  # CloudFront edge nodes, so a re-deploy that fixes the missing file is visible
+  # immediately without a manual cache invalidation.
   custom_error_response {
     error_code            = 403
     response_code         = 200
-    response_page_path    = "/index.html"
+    response_page_path    = "/404.html"
     error_caching_min_ttl = 0
   }
 
   custom_error_response {
     error_code            = 404
     response_code         = 200
-    response_page_path    = "/index.html"
+    response_page_path    = "/404.html"
     error_caching_min_ttl = 0
   }
 
