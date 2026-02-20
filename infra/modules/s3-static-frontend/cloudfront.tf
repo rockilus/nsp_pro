@@ -127,26 +127,25 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   # Custom error responses for SPA routing.
-  # response_page_path points to /404.html — a fully self-contained static page
-  # (no _next/ JS chunks, no meta-refresh, no auto-redirect) with manual links
-  # to /en/, /fr/, /es/. This is a stable, loop-free fallback: if S3 returns
-  # 403 or 404 for any path (e.g. /en/index.html missing after a failed deploy),
-  # the user lands on a human-readable page rather than back in the language-
-  # redirector which could loop. The language-redirector (index.html) also has a
-  # client-side loop guard, but /404.html is the structural safety net.
-  # error_caching_min_ttl = 0 ensures this error response is never cached by
-  # CloudFront edge nodes, so a re-deploy that fixes the missing file is visible
-  # immediately without a manual cache invalidation.
+  # Both 403 (S3 returns 403 for missing keys on private/OAC buckets to prevent
+  # key enumeration) and 404 are mapped to /404.html — a fully self-contained
+  # static page with no _next/ chunks, no meta-refresh, and no auto-redirect,
+  # containing manual language links to /en/, /fr/, /es/.
+  # response_code mirrors the real error code (404) so crawlers, monitoring
+  # tools, and browser devtools receive accurate HTTP status codes and avoid
+  # the "soft 404" anti-pattern that response_code = 200 would cause.
+  # error_caching_min_ttl = 0 ensures a re-deploy that fixes a missing file is
+  # visible immediately at every edge node without a manual cache invalidation.
   custom_error_response {
     error_code            = 403
-    response_code         = 200
+    response_code         = 404
     response_page_path    = "/404.html"
     error_caching_min_ttl = 0
   }
 
   custom_error_response {
     error_code            = 404
-    response_code         = 200
+    response_code         = 404
     response_page_path    = "/404.html"
     error_caching_min_ttl = 0
   }
