@@ -93,6 +93,45 @@
         color: #94a3b8;
       }
     </style>
+    <script>
+      /**
+       * Auto-redirect when the URL contains an invalid language segment
+       * (e.g. /undefined/plan/schedule/).
+       *
+       * Safety rule: only redirect when the first path segment is NOT one of
+       * the known language codes. If it IS a valid lang (e.g. /en/missing-page/),
+       * a redirect would loop back here — so we skip it and show the manual UI.
+       */
+      (function () {
+        var langs = ["en", "fr", "es"];
+
+        function detectLang() {
+          try {
+            var s = localStorage.getItem("i18next");
+            if (s && langs.indexOf(s) !== -1) return s;
+          } catch (e) {}
+          var b = (navigator.language || "").split("-")[0];
+          return langs.indexOf(b) !== -1 ? b : "en";
+        }
+
+        var parts = window.location.pathname
+          .replace(/^\/|\/$/g, "")
+          .split("/")
+          .filter(Boolean);
+
+        var firstSeg = parts[0] || "";
+
+        // Only act when the first segment is not a recognised language code.
+        if (langs.indexOf(firstSeg) === -1) {
+          var lang = detectLang();
+          // Drop the bad first segment; keep the rest of the path.
+          var rest = parts.slice(1);
+          var newPath =
+            "/" + lang + "/" + (rest.length ? rest.join("/") + "/" : "");
+          window.location.replace(newPath);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div class="card">
@@ -119,8 +158,8 @@
       </div>
 
       <p class="hint">
-        This page does not redirect automatically to avoid loops.<br />
-        Tap a language above to return to the app.
+        If you arrived here from a broken link, you should be redirected
+        automatically. Otherwise, tap a language above to continue.
       </p>
     </div>
   </body>
