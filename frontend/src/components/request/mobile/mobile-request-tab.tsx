@@ -14,6 +14,7 @@ import {
   useMobileRequestViewSettings,
   getDefaultRequestViewSettings,
 } from "../../../app/lib/hooks/useMobileRequestViewSettings";
+import { useUserWorker } from "../../../hooks/useUserWorker";
 // Types
 import { RequestT } from "../../../types/request";
 import { ShiftT } from "../../../types/shift";
@@ -76,11 +77,17 @@ export default function MobileRequestTab({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState<string>("");
 
-  const userWorker = workers.find((w) => w.userId === userId);
+  // Fetch user's worker for role-based filtering (cached via React Query)
+  const { data: userWorker, isLoading: isLoadingUserWorker } = useUserWorker(
+    teamId,
+    userTeamRole === TeamMembershipRole.MEMBER, // Only fetch for members
+  );
 
   // Check if member has no worker association
   const memberHasNoWorker =
-    userTeamRole === TeamMembershipRole.MEMBER && !isLoading && !userWorker;
+    userTeamRole === TeamMembershipRole.MEMBER &&
+    !isLoadingUserWorker &&
+    userWorker === null;
 
   // Scroll handler refs - define early so they're available for scroll functions
   const containerRef = React.useRef<HTMLDivElement | null>(null);
