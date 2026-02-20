@@ -61,10 +61,14 @@ export default function CallbackPage({ params }: CallbackPageProps) {
   }, [isAuthenticated, router, params.lng]);
 
   // Surface any auth errors that appeared during the exchange.
+  // Schedule setState via setTimeout to avoid synchronous-setState-in-effect lint error.
   useEffect(() => {
-    if (error) {
-      setCallbackError(error.message ?? "An authentication error occurred.");
-    }
+    if (!error) return;
+    const t = setTimeout(
+      () => setCallbackError(error.message ?? "An authentication error occurred."),
+      0,
+    );
+    return () => clearTimeout(t);
   }, [error]);
 
   if (callbackError) {

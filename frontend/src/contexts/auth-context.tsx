@@ -227,7 +227,6 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Non-critical — ignore
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
