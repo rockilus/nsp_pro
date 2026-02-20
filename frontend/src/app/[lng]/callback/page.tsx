@@ -19,7 +19,7 @@
  * app has just been redeployed and old cached HTML references stale chunk hashes.
  */
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -31,12 +31,19 @@ import {
   AlertTitle,
 } from "@mui/material";
 import { useAuth } from "../../../contexts/auth-context";
+import { fallbackLng, languages } from "../../i18n/settings";
 
 interface CallbackPageProps {
-  params: { lng: string };
+  // Next.js 15: params is a Promise even for client components.
+  params: Promise<{ lng: string }>;
 }
 
 export default function CallbackPage({ params }: CallbackPageProps) {
+  // Unwrap the params Promise synchronously under React 19 concurrent model.
+  // Falls back to fallbackLng so we never navigate to /undefined/plan/schedule/.
+  const { lng: rawLng } = use(params);
+  const safeLng = languages.includes(rawLng) ? rawLng : fallbackLng;
+
   const { isAuthenticated, loading, error, signIn } = useAuth();
   const router = useRouter();
   const [callbackError, setCallbackError] = useState<string | null>(null);
@@ -44,9 +51,9 @@ export default function CallbackPage({ params }: CallbackPageProps) {
   // Redirect once the token exchange completes successfully.
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace(`/${params.lng}/plan/schedule/`);
+      router.replace(`/${safeLng}/plan/schedule/`);
     }
-  }, [isAuthenticated, router, params.lng]);
+  }, [isAuthenticated, router, safeLng]);
 
   // Surface any auth errors that appeared during the exchange.
   // Schedule setState via setTimeout to avoid synchronous-setState-in-effect lint error.
