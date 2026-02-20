@@ -174,9 +174,6 @@ resource "aws_cognito_user_pool_client" "main" {
     # Dedicated callback page — decouples token exchange from heavy feature chunks.
     # This is the active redirect_uri used by the app.
     "https://${var.frontend_domain_name}/fr/callback/",
-    # Legacy: kept during transition so users with old cached HTML can still complete
-    # a sign-in that was initiated before the deploy. Remove after one release cycle.
-    "https://${var.frontend_domain_name}/fr/plan/schedule/",
     # Required for SPA silent token renewal via iframe
     "https://${var.frontend_domain_name}/silent-renew/",
   ]
