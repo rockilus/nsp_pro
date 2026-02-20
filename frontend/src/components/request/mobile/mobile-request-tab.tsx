@@ -8,8 +8,7 @@ import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
-import Alert from "@mui/material/Alert";
-import Typography from "@mui/material/Typography";
+import NoWorkerAssigned from "../../common/NoWorkerAssigned";
 // Hooks
 import {
   useMobileRequestViewSettings,
@@ -279,21 +278,10 @@ export default function MobileRequestTab({
     <Box data-testid="mobile-request-tab">
       <MobileNavAppBar lng={lng} mobileContent={requestMobileNav} />
       {memberHasNoWorker ? (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "calc(100vh - 128px)",
-            p: 3,
-          }}
-        >
-          <Alert severity="info" sx={{ maxWidth: "500px" }}>
-            <Typography variant="body1">
-              {t("error_no_worker_assigned")}
-            </Typography>
-          </Alert>
-        </Box>
+        <NoWorkerAssigned
+          message={t("error_no_worker_assigned")}
+          minHeight="calc(100vh - 128px)"
+        />
       ) : (
         <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
           <PortraitRequestList

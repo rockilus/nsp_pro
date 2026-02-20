@@ -22,7 +22,7 @@ import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
+import NoWorkerAssigned from "../common/NoWorkerAssigned";
 // Components
 import RequestPanel from "./request-panel";
 import RequestTable from "./request-table";
@@ -334,21 +334,7 @@ export default function RequestTab({
   return (
     <div className="tab-container-wide" data-testid="request-tab">
       {memberHasNoWorker ? (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "400px",
-            p: 4,
-          }}
-        >
-          <Alert severity="info" sx={{ maxWidth: "600px" }}>
-            <Typography variant="body1">
-              {t("error_no_worker_assigned")}
-            </Typography>
-          </Alert>
-        </Box>
+        <NoWorkerAssigned message={t("error_no_worker_assigned")} />
       ) : (
         <div>
           <div

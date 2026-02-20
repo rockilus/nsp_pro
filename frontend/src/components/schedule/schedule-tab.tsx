@@ -63,7 +63,7 @@ import {
 } from "../../hooks/useSchedule";
 import { useExportSchedule } from "../../hooks/useExport";
 import { useUserWorker } from "../../hooks/useUserWorker";
-import Alert from "@mui/material/Alert";
+import NoWorkerAssigned from "../common/NoWorkerAssigned";
 // Styles
 import "../../styles/tab-container-styles.css";
 import "./schedule-tab.css";
@@ -898,25 +898,7 @@ export default function ScheduleTab({
         className="tab-container-ultrawide"
         data-testid="schedule-page-heading"
       >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "400px",
-            p: 4,
-          }}
-        >
-          <Alert
-            severity="info"
-            sx={{ maxWidth: "600px" }}
-            data-testid="no-worker-profile-alert"
-          >
-            <Typography variant="body1">
-              {t("error_no_worker_assigned")}
-            </Typography>
-          </Alert>
-        </Box>
+        <NoWorkerAssigned message={t("error_no_worker_assigned")} />
       </div>
     );
   }

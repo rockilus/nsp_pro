@@ -11,5 +11,6 @@
     "replacement_reason_hard_constraint_violation": "Hard constraint violation",
     "replacement_reason_request_conflict": "Request conflict",
     "replacement_reason_soft_constraint_violation": "Soft constraint violation",
-    "replacement_reason_no_constraints_violated": "No constraints violated"
+    "replacement_reason_no_constraints_violated": "No constraints violated",
+    "error_no_worker_assigned": "You are not associated with a worker profile. Please contact your team administrator."
 }

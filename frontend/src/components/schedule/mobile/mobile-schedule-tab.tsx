@@ -8,8 +8,7 @@ import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
 import AddIcon from "@mui/icons-material/Add";
-import Alert from "@mui/material/Alert";
-import Typography from "@mui/material/Typography";
+import NoWorkerAssigned from "../../common/NoWorkerAssigned";
 // Hooks
 import { useIsLandscape } from "@/hooks/useIsMobile";
 import { useGetScheduleEntities } from "../../../hooks/useSchedule";
@@ -356,25 +355,11 @@ export default function MobileScheduleTab({
     return (
       <>
         <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
-        <Box
-          data-testid="mobile-schedule-container"
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "calc(100vh - 128px)",
-            p: 3,
-          }}
-        >
-          <Alert
-            data-testid="mobile-no-worker-profile-alert"
-            severity="info"
-            sx={{ maxWidth: "500px" }}
-          >
-            <Typography variant="body1">
-              {t("error_no_worker_assigned")}
-            </Typography>
-          </Alert>
+        <Box data-testid="mobile-schedule-container">
+          <NoWorkerAssigned
+            message={t("error_no_worker_assigned")}
+            minHeight="calc(100vh - 128px)"
+          />
         </Box>
       </>
     );

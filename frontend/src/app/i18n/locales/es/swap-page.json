@@ -11,5 +11,6 @@
     "replacement_reason_hard_constraint_violation": "Violación de restricción dura",
     "replacement_reason_request_conflict": "Conflicto de solicitud",
     "replacement_reason_soft_constraint_violation": "Violación de restricción suave",
-    "replacement_reason_no_constraints_violated": "Sin restricciones violadas"
+    "replacement_reason_no_constraints_violated": "Sin restricciones violadas",
+    "error_no_worker_assigned": "No estás asociado con un perfil de trabajador. Por favor, contacta al administrador de tu equipo."
 }
