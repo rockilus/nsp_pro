@@ -2770,6 +2770,7 @@ def test_get_replacement_candidates_overlap_recuperation_assignment(
     # Select target assignment for morning shift
     target_assignment = next(a for a in assignments if a.shift_id == "shift_morning")
     target_date = target_assignment.date
+    target_shift = next(s for s in base_shifts if s.id == target_assignment.shift_id)
 
     # Find 1 worker without assignments on target date
     workers_with_assignments_on_date = {
@@ -2828,7 +2829,7 @@ def test_get_replacement_candidates_overlap_recuperation_assignment(
         team_id=base_team_id,
         schedule_id=None,
         worker_id=test_worker.id,
-        date=target_date - -timedelta(days=1),  # Starts previous day
+        date=target_date - timedelta(days=1),  # Starts previous day
         shift_id="duty_shift",
         fixed=False,
         source=AssignmentSource.MANUAL,
@@ -2839,7 +2840,7 @@ def test_get_replacement_candidates_overlap_recuperation_assignment(
         team_id=base_team_id,
         schedule_id=None,
         worker_id=test_worker.id,
-        date=target_date - timedelta(days=1),  # Starts previous day
+        date=duty_assignment.date,
         shift_id="recup_shift",
         fixed=False,
         source=AssignmentSource.MANUAL,
@@ -2870,10 +2871,41 @@ def test_get_replacement_candidates_overlap_recuperation_assignment(
     # Assert - Check each worker has overlap hit
     candidate = next(c for c in candidates if c.worker_id == test_worker.id)
 
+    days_since_monday = target_date.weekday()  # Monday is 0
+    week_start = target_date - timedelta(days=days_since_monday)
+    week_end = week_start + timedelta(days=6)  # Sunday
+
+    # Calculate current weekly work time for test worker
+    shift_by_id = {s.id: s for s in all_shifts}
+    current_weekly_minutes = 0
+    for assignment in all_assignments:
+        if (
+            assignment.worker_id == test_worker.id
+            and assignment.shift_id != recup_assignment.shift_id
+            and week_start <= assignment.date <= week_end
+        ):
+            shift = shift_by_id.get(assignment.shift_id)
+            if shift:
+                # Calculate shift duration
+                shift_duration = shift.end_time - shift.start_time
+                shift_minutes = int(shift_duration.total_seconds() / 60)
+                current_weekly_minutes += shift_minutes
+
+    target_shift_duration = target_shift.end_time - target_shift.start_time
+    target_shift_minutes = int(target_shift_duration.total_seconds() / 60)
+    expected_new_weekly_minutes = current_weekly_minutes + target_shift_minutes
+
+    expected_weekly_time_delta = max(
+        expected_new_weekly_minutes - test_worker.weekly_hours * 60, 0
+    )
+
     # All should be CANT_DO due to overlap
     assert_candidate(
         candidate,
         expected_category="cant_do",
+        weekly_time_meets_target=expected_weekly_time_delta == 0,
+        expected_new_weekly_minutes=expected_new_weekly_minutes,
+        expected_weekly_time_delta=expected_weekly_time_delta,
         hasnt_overlap=False,
     )
     assert (

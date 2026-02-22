@@ -422,7 +422,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
         .startOf("day")
         .add(12, "hours"); // Add 12 hours to avoid timezone issues
 
-      await scheduleTestBase.createAssignmentWithRecurrence({
+      await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: w1.id,
         shiftId: testShift.id,
         date: pastDate,
@@ -438,7 +438,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
         .startOf("day")
         .add(12, "hours"); // Add 12 hours to avoid timezone issues
 
-      await scheduleTestBase.createAssignmentWithRecurrence({
+      await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: w1.id,
         shiftId: testShift.id,
         date: pastDate,
@@ -512,12 +512,12 @@ test.describe("Assignment Replacement - Team Leader", () => {
       );
     }
 
-    await scheduleTestBase.createAssignmentWithRecurrence({
+    await scheduleTestBase.createAssignmentAndRecurrence({
       workerId: w2.id,
       shiftId: dutyShift.id,
       date: dutyDate1,
     });
-    await scheduleTestBase.createAssignmentWithRecurrence({
+    await scheduleTestBase.createAssignmentAndRecurrence({
       workerId: w2.id,
       shiftId: dutyShift.id,
       date: dutyDate2,
@@ -759,12 +759,13 @@ test.describe("Assignment Replacement - Team Leader", () => {
     // Setup worker to test overlap implications
     const w6 = pickUnused();
 
-    const assignmentOverlap =
-      await scheduleTestBase.createAssignmentWithRecurrence({
-        workerId: w6.id,
-        shiftId: testShift.id,
-        date: testDate,
-      });
+    const ARResultW6 = await scheduleTestBase.createAssignmentAndRecurrence({
+      workerId: w6.id,
+      shiftId: testShift.id,
+      date: testDate,
+    });
+
+    const assignmentOverlap = ARResultW6.assignmentsCreated[0];
 
     expectedCandidates[w6.id] = {
       ...defaultCandidate,
@@ -787,12 +788,18 @@ test.describe("Assignment Replacement - Team Leader", () => {
     // Setup worker to test overlap implications with recuperation shift
     const w6_2 = pickUnused();
 
-    const assignmentOverlap_2 =
-      await scheduleTestBase.createAssignmentWithRecurrence({
-        workerId: w6_2.id,
-        shiftId: dutyShift.id,
-        date: testDate.add(-1, "day"),
-      });
+    const ARResultW6_2 = await scheduleTestBase.createAssignmentAndRecurrence({
+      workerId: w6_2.id,
+      shiftId: dutyShift.id,
+      date: testDate.add(-1, "day"),
+    });
+
+    const dutyAssignment = ARResultW6_2.assignmentsCreated.find(
+      (a) => a.shiftId === dutyShift.id,
+    )!;
+    const recupAssignment = ARResultW6_2.assignmentsCreated.find(
+      (a) => a.referenceAssignmentId === dutyAssignment.id,
+    )!;
 
     expectedCandidates[w6_2.id] = {
       ...defaultCandidate,
@@ -805,7 +812,12 @@ test.describe("Assignment Replacement - Team Leader", () => {
         ...defaultCandidate.replacementImplications,
         overlapHits: {
           hasntOverlap: false,
-          overlapAssignmentIds: [assignmentOverlap.id],
+          overlapAssignmentIds: [recupAssignment.id],
+        },
+        newMonthlyDuties: {
+          newNumberMonthlyDuties: 1,
+          newMonthlyDutiesDelta: 1,
+          meetsTarget: false,
         },
       },
     };

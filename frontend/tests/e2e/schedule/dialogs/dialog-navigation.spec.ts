@@ -221,14 +221,14 @@ test.describe("ScheduleItemDialog Navigation", () => {
     const tomorrow = dayjs.utc().add(1, "day");
     const dbUtils = (scheduleTestBase as any).dbUtils;
 
-    const testAssignment =
-      await scheduleTestBase.createAssignmentWithRecurrence({
-        workerId: testWorkers[0].id,
-        shiftId: testShifts[0].id,
-        date: tomorrow,
-        fixed: false,
-        comment: "Test assignment",
-      });
+    const ARResult = await scheduleTestBase.createAssignmentAndRecurrence({
+      workerId: testWorkers[0].id,
+      shiftId: testShifts[0].id,
+      date: tomorrow,
+      fixed: false,
+      comment: "Test assignment",
+    });
+    const testAssignment = ARResult.assignmentsCreated[0];
 
     // Set schedule view settings to show the week containing tomorrow
     await scheduleTestBase.setScheduleViewSettings(page, {

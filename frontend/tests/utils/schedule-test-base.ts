@@ -485,7 +485,7 @@ export class ScheduleTestBase {
   }
 
   /**
-   * Create an assignment for testing
+   * Create an assignment for testing TODO:DELETE
    */
   async createAssignment(assignmentData: {
     workerId: string;
@@ -686,7 +686,7 @@ export class ScheduleTestBase {
   /**
    * Create an assignment with optional recurrence
    */
-  async createAssignmentWithRecurrence(
+  async createAssignmentAndRecurrence(
     data: {
       workerId: string;
       shiftId: string;
@@ -696,12 +696,12 @@ export class ScheduleTestBase {
       scheduleId?: string;
     },
     recurrence?: RecurrenceRuleT | null,
-  ): Promise<AssignmentT> {
+  ): Promise<AssignmentsRecurrencesResultT> {
     if (!this.testTeam) {
       throw new Error("Test team not initialized");
     }
 
-    const assignment = await this.dbUtils.createAssignmentAndRecurrence(
+    const result = await this.dbUtils.createAssignmentAndRecurrence(
       {
         teamId: this.testTeam.teamId,
         workerId: data.workerId,
@@ -718,7 +718,7 @@ export class ScheduleTestBase {
       `✅ Created assignment${recurrence ? " with recurrence" : ""} for worker ${data.workerId}`,
     );
 
-    return assignment;
+    return result;
   }
 
   /**

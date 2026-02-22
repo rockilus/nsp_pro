@@ -44,6 +44,7 @@ from shared.schemas.core import (
     RequestStatus,
     RequestType,
     Shift,
+    ShiftRestType,
     ShiftType,
     Specialty,
     SwapAssignmentInfo,
@@ -787,17 +788,48 @@ class ReplacementService(BaseService):
         return filtered_fils
 
     def _compute_assignment_datetimes(
-        self, assignment: Assignment, shift: Shift
+        self,
+        assignment: Assignment,
+        shift: Shift,
+        duty_assignment: Assignment | None = None,
+        duty_shift: Shift | None = None,
     ) -> tuple[datetime, datetime]:
         """Compute actual start and end datetimes for an assignment.
 
+        For recuperation shifts the assignment is stored on the same date as the
+        preceding duty, but the recuperation period only begins once the duty
+        ends (which may be on the following calendar day).  When ``duty_assignment``
+        and ``duty_shift`` are provided the recuperation window is anchored to the
+        duty end time rather than to ``assignment.date``.
+
         Args:
-            assignment: The assignment
-            shift: The shift for this assignment
+            assignment: The assignment whose datetime window is being computed.
+            shift: The shift associated with this assignment.
+            duty_assignment: The duty assignment that precedes a recuperation
+                assignment (``assignment.reference_assignment_id`` → this).
+                Only relevant when ``shift.rest_type == ShiftRestType.RECUPERATION``.
+            duty_shift: The shift object for ``duty_assignment``.  Must be
+                supplied together with ``duty_assignment``.
 
         Returns:
-            Tuple of (start_datetime, end_datetime)
+            Tuple of (start_datetime, end_datetime), both UTC-aware.
         """
+        # Recuperation shifts start when the preceding duty ends, not at the
+        # naive combination of assignment.date + shift.start_time.
+        if (
+            shift.rest_type == ShiftRestType.RECUPERATION
+            and duty_assignment is not None
+            and duty_shift is not None
+        ):
+            duty_days_diff = (duty_shift.end_time - duty_shift.start_time).days
+            duty_end_dt = datetime.combine(
+                duty_assignment.date,
+                duty_shift.end_time.time(),
+                tzinfo=timezone.utc,
+            ) + timedelta(days=duty_days_diff)
+            recup_duration = shift.end_time - shift.start_time
+            return duty_end_dt, duty_end_dt + recup_duration
+
         # Combine assignment date with shift start time
         start_dt = datetime.combine(
             assignment.date, shift.start_time.time(), tzinfo=timezone.utc
@@ -843,11 +875,23 @@ class ReplacementService(BaseService):
         # Pre-compute start and end datetimes for all assignments
         assignment_times = {}
         shift_by_id = {s.id: s for s in replacement_data.shifts}
+        assignment_by_id = {a.id: a for a in replacement_data.assignments}
         for assgn in replacement_data.assignments:
             shift = shift_by_id.get(assgn.shift_id)
             if shift:
+                duty_assignment = None
+                duty_shift = None
+                if (
+                    shift.rest_type == ShiftRestType.RECUPERATION
+                    and assgn.reference_assignment_id
+                ):
+                    duty_assignment = assignment_by_id.get(
+                        assgn.reference_assignment_id
+                    )
+                    if duty_assignment:
+                        duty_shift = shift_by_id.get(duty_assignment.shift_id)
                 assignment_times[assgn.id] = self._compute_assignment_datetimes(
-                    assgn, shift
+                    assgn, shift, duty_assignment, duty_shift
                 )
 
         # Pre-compute augmented requests
@@ -2625,11 +2669,23 @@ class ReplacementService(BaseService):
 
         # Compute assignment times for all assignments
         assignment_times = {}
+        assignment_by_id = {a.id: a for a in replacement_data.assignments}
         for assignment in replacement_data.assignments:
             shift = shifts_dict.get(assignment.shift_id)
             if shift:
+                duty_assignment = None
+                duty_shift = None
+                if (
+                    shift.rest_type == ShiftRestType.RECUPERATION
+                    and assignment.reference_assignment_id
+                ):
+                    duty_assignment = assignment_by_id.get(
+                        assignment.reference_assignment_id
+                    )
+                    if duty_assignment:
+                        duty_shift = shifts_dict.get(duty_assignment.shift_id)
                 start_time, end_time = self._compute_assignment_datetimes(
-                    assignment, shift
+                    assignment, shift, duty_assignment, duty_shift
                 )
                 assignment_times[assignment.id] = (start_time, end_time)
 
