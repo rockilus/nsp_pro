@@ -177,7 +177,7 @@ export class ScheduleTestBase {
       const recuperationShift = await this.createShift({
         name: "Recuperation Shift",
         startTime: dutyShift.endTime,
-        endTime: dutyShift.endTime.add(1, "day"),
+        endTime: dutyShift.endTime.add(dutyShift.recuperationTime, "hour"),
         shiftType: ShiftType.REST,
         restType: ShiftRestType.RECUPERATION,
         recuperationDutyId: dutyShift.id,
