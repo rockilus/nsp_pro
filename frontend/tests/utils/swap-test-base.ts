@@ -277,7 +277,7 @@ export class SwapTestBase {
 
     // Create assignments for today (should not be visible in swap dialog)
     for (const worker of this.testWorkers) {
-      const assignment = await this.dbUtils.createAssignmentAndRecurrence({
+      const ARResult = await this.dbUtils.createAssignmentAndRecurrence({
         teamId: this.testTeam.teamId,
         workerId: worker.id,
         shiftId: this.testShifts[0].id,
@@ -286,13 +286,14 @@ export class SwapTestBase {
         fixed: false,
         comment: "Today's assignment - should not appear in swap dialog",
       });
+      const assignment = ARResult.assignmentsCreated[0];
       this.testAssignments.push(assignment);
     }
 
     // Create assignments without schedule association (tomorrow and future)
     const tomorrow = today.add(1, "day").utc();
     for (const worker of this.testWorkers) {
-      const assignment = await this.dbUtils.createAssignmentAndRecurrence({
+      const ARResult = await this.dbUtils.createAssignmentAndRecurrence({
         teamId: this.testTeam.teamId,
         workerId: worker.id,
         shiftId: this.testShifts[0].id,
@@ -301,6 +302,7 @@ export class SwapTestBase {
         fixed: false,
         comment: "No schedule assignment",
       });
+      const assignment = ARResult.assignmentsCreated[0];
       this.testAssignments.push(assignment);
     }
 
@@ -322,7 +324,7 @@ export class SwapTestBase {
 
       for (const worker of this.testWorkers) {
         // Create 2 assignments on validatedDate1 (morning + afternoon)
-        const assignment1Morning =
+        const ARResult1Morning =
           await this.dbUtils.createAssignmentAndRecurrence({
             teamId: this.testTeam.teamId,
             workerId: worker.id,
@@ -332,9 +334,10 @@ export class SwapTestBase {
             fixed: false,
             comment: "Validated schedule assignment 1 - Morning",
           });
+        const assignment1Morning = ARResult1Morning.assignmentsCreated[0];
         this.testAssignments.push(assignment1Morning);
 
-        const assignment1Afternoon =
+        const ARResult1Afternoon =
           await this.dbUtils.createAssignmentAndRecurrence({
             teamId: this.testTeam.teamId,
             workerId: worker.id,
@@ -344,10 +347,11 @@ export class SwapTestBase {
             fixed: false,
             comment: "Validated schedule assignment 1 - Afternoon",
           });
+        const assignment1Afternoon = ARResult1Afternoon.assignmentsCreated[0];
         this.testAssignments.push(assignment1Afternoon);
 
         // Create 2 assignments on validatedDate2 (morning + afternoon)
-        const assignment2Morning =
+        const ARResult2Morning =
           await this.dbUtils.createAssignmentAndRecurrence({
             teamId: this.testTeam.teamId,
             workerId: worker.id,
@@ -357,9 +361,10 @@ export class SwapTestBase {
             fixed: false,
             comment: "Validated schedule assignment 2 - Morning",
           });
+        const assignment2Morning = ARResult2Morning.assignmentsCreated[0];
         this.testAssignments.push(assignment2Morning);
 
-        const assignment2Afternoon =
+        const ARResult2Afternoon =
           await this.dbUtils.createAssignmentAndRecurrence({
             teamId: this.testTeam.teamId,
             workerId: worker.id,
@@ -369,6 +374,7 @@ export class SwapTestBase {
             fixed: false,
             comment: "Validated schedule assignment 2 - Afternoon",
           });
+        const assignment2Afternoon = ARResult2Afternoon.assignmentsCreated[0];
         this.testAssignments.push(assignment2Afternoon);
       }
 
@@ -377,7 +383,7 @@ export class SwapTestBase {
         const linkedShiftDate = tomorrow.add(3, "days");
         for (const worker of this.testWorkers) {
           // Morning shift assignment
-          const morningAssignment =
+          const ARResultMorning =
             await this.dbUtils.createAssignmentAndRecurrence({
               teamId: this.testTeam.teamId,
               workerId: worker.id,
@@ -387,10 +393,11 @@ export class SwapTestBase {
               fixed: false,
               comment: "Linked shift - Morning",
             });
+          const morningAssignment = ARResultMorning.assignmentsCreated[0];
           this.testAssignments.push(morningAssignment);
 
           // Afternoon shift assignment
-          const afternoonAssignment =
+          const ARResultAfternoon =
             await this.dbUtils.createAssignmentAndRecurrence({
               teamId: this.testTeam.teamId,
               workerId: worker.id,
@@ -400,6 +407,7 @@ export class SwapTestBase {
               fixed: false,
               comment: "Linked shift - Afternoon",
             });
+          const afternoonAssignment = ARResultAfternoon.assignmentsCreated[0];
           this.testAssignments.push(afternoonAssignment);
         }
       }
@@ -415,7 +423,7 @@ export class SwapTestBase {
       const campaignDate2 = nextMonth.date(15);
 
       for (const worker of this.testWorkers) {
-        const assignment1 = await this.dbUtils.createAssignmentAndRecurrence({
+        const ARResult1 = await this.dbUtils.createAssignmentAndRecurrence({
           teamId: this.testTeam.teamId,
           workerId: worker.id,
           shiftId: this.testShifts[0].id,
@@ -424,9 +432,10 @@ export class SwapTestBase {
           fixed: false,
           comment: "Campaign schedule assignment",
         });
+        const assignment1 = ARResult1.assignmentsCreated[0];
         this.testAssignments.push(assignment1);
 
-        const assignment2 = await this.dbUtils.createAssignmentAndRecurrence({
+        const ARResult2 = await this.dbUtils.createAssignmentAndRecurrence({
           teamId: this.testTeam.teamId,
           workerId: worker.id,
           shiftId: this.testShifts[1].id,
@@ -435,6 +444,7 @@ export class SwapTestBase {
           fixed: false,
           comment: "Campaign schedule assignment 2",
         });
+        const assignment2 = ARResult2.assignmentsCreated[0];
         this.testAssignments.push(assignment2);
       }
     }
@@ -580,7 +590,7 @@ export class SwapTestBase {
         // Create 2 normal shifts for Worker1 on a specific date (e.g., tomorrow + 10 days)
         const worker1DutySwapDate = tomorrow.add(10, "days");
 
-        const worker1MorningAssignment =
+        const ARResultW1Morning =
           await this.dbUtils.createAssignmentAndRecurrence({
             teamId: this.testTeam.teamId,
             workerId: worker1.id,
@@ -590,9 +600,11 @@ export class SwapTestBase {
             fixed: false,
             comment: "For duty swap test - morning",
           });
+        const worker1MorningAssignment =
+          ARResultW1Morning.assignmentsCreated[0];
         this.testAssignments.push(worker1MorningAssignment);
 
-        const worker1AfternoonAssignment =
+        const ARResultW1Afternoon =
           await this.dbUtils.createAssignmentAndRecurrence({
             teamId: this.testTeam.teamId,
             workerId: worker1.id,
@@ -602,13 +614,15 @@ export class SwapTestBase {
             fixed: false,
             comment: "For duty swap test - afternoon",
           });
+        const worker1AfternoonAssignment =
+          ARResultW1Afternoon.assignmentsCreated[0];
         this.testAssignments.push(worker1AfternoonAssignment);
 
         // Create 1 duty shift for Worker2 on a different date (e.g., tomorrow + 12 days)
         const worker2DutySwapDate = tomorrow.add(12, "days");
 
-        const worker2DutyAssignment =
-          await this.dbUtils.createAssignmentAndRecurrence({
+        const ARResultW2Duty = await this.dbUtils.createAssignmentAndRecurrence(
+          {
             teamId: this.testTeam.teamId,
             workerId: worker2.id,
             shiftId: dutyShift.id,
@@ -616,7 +630,9 @@ export class SwapTestBase {
             scheduleId: validatedSchedule.id,
             fixed: false,
             comment: "For duty swap test - duty shift",
-          });
+          },
+        );
+        const worker2DutyAssignment = ARResultW2Duty.assignmentsCreated[0];
         this.testAssignments.push(worker2DutyAssignment);
 
         // Create the duty swap
