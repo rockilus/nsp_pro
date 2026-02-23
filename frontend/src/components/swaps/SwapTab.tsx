@@ -24,7 +24,7 @@ import SwapDetailDialog from "./SwapDetailDialog";
 import SwapCard from "./SwapCard";
 import SwapAnalysisView from "./SwapAnalysisView";
 import SwapAnalysisDialog from "./SwapAnalysisDialog";
-import { TeamWithMembership } from "../../types/team";
+import { TeamWithMembership, TeamMembershipRole } from "../../types/team";
 import { useGetWorkers } from "../../hooks/useWorker";
 import { useGetShifts } from "../../hooks/useShift";
 import { useGetLinkShifts } from "../../hooks/useLinkShift";
@@ -47,8 +47,11 @@ import {
   useRevertSwap,
   useValidateSwap,
 } from "../../hooks/useSwap";
+import { useTranslation } from "../../app/i18n/client";
+import { useUserWorker } from "../../hooks/useUserWorker";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import MobileNavAppBar from "../app-bar/mobile-nav-app-bar";
+import NoWorkerAssigned from "../common/NoWorkerAssigned";
 import {
   sortAssignmentsByDateThenShiftStart,
   sortItemsByEarliestAssignment,
@@ -133,6 +136,19 @@ export default function SwapTab({
 }: SwapTabProps) {
   const teamId = teamWithMembership.team.id;
   const isMobile = useIsMobile();
+  const { t } = useTranslation(lng, "swap-page");
+
+  // Fetch user's worker for role-based checks (only for members)
+  const { data: userWorker, isLoading: isLoadingUserWorker } = useUserWorker(
+    teamId,
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER,
+  );
+
+  // Check if member has no worker association
+  const memberHasNoWorker =
+    teamWithMembership.membership.role === TeamMembershipRole.MEMBER &&
+    !isLoadingUserWorker &&
+    userWorker === null;
 
   // React Query hook for assignments with smart caching
   const {
@@ -147,7 +163,8 @@ export default function SwapTab({
     dayjs.utc().add(6, "month"), // 6 months ahead (reasonable limit for swaps)
     false, // includeCampaign - swaps don't show campaign assignments
     undefined, // no worker filter for desktop view
-    { enabled: !!teamId },
+    { enabled: !!teamId && !memberHasNoWorker },
+    [0, 1], // only NORMAL and DUTY shifts are relevant for swaps
   );
 
   // Query client for manual cache operations
@@ -293,13 +310,13 @@ export default function SwapTab({
           return (
             swap.swapType === SwapType.OPEN &&
             swap.status === SwapStatus.ACTIVE &&
-            swap.createdByUserId !== currentUserId
+            swap.offeringWorkerId !== currentUserWorker?.id
           );
 
         case SwapFilter.MY_SWAPS:
           // Swaps I created OR direct swaps targeting me OR open swaps where my bid was accepted
           return (
-            swap.createdByUserId === currentUserId ||
+            swap.offeringWorkerId === currentUserWorker?.id ||
             (swap.swapType === SwapType.DIRECT &&
               currentUserWorker &&
               swap.targetWorkerId === currentUserWorker.id) ||
@@ -326,7 +343,7 @@ export default function SwapTab({
           return true;
       }
     });
-  }, [swaps, currentFilter, currentUserId, currentUserWorker]);
+  }, [swaps, currentFilter, currentUserWorker]);
 
   // Pre-compute enriched swap data with assignments and creator info
   const enrichedSwaps = useMemo(() => {
@@ -523,6 +540,18 @@ export default function SwapTab({
   const isLoading = loading || isLoadingAssignments;
   const combinedError =
     error || (assignmentsError ? String(assignmentsError) : null);
+
+  if (memberHasNoWorker) {
+    return (
+      <Box sx={{ backgroundColor: "white", minHeight: "100vh" }}>
+        {isMobile && <MobileNavAppBar lng={lng} />}
+        <NoWorkerAssigned
+          message={t("error_no_worker_assigned")}
+          minHeight="calc(100vh - 128px)"
+        />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ backgroundColor: "white", minHeight: "100vh" }}>

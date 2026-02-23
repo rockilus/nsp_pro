@@ -30,7 +30,7 @@ export const renderWeeklyTime = (
         <Typography
           variant="caption"
           sx={{
-            color: delta > 0 ? "success.main" : "error.main",
+            color: delta > 0 ? "error.main" : "success.main",
           }}
         >
           ({delta > 0 ? "+" : ""}
@@ -54,7 +54,7 @@ export const renderMonthlyDuties = (
         <Typography
           variant="caption"
           sx={{
-            color: delta > 0 ? "success.main" : "error.main",
+            color: delta > 0 ? "error.main" : "success.main",
           }}
         >
           ({delta > 0 ? "+" : ""}

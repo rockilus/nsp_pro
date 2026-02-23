@@ -125,13 +125,13 @@ resource "aws_cognito_user_pool_client" "main" {
   explicit_auth_flows = [
     "ALLOW_USER_AUTH",
     "ALLOW_USER_SRP_AUTH",
-    # "ALLOW_REFRESH_TOKEN_AUTH",
+    # "ALLOW_REFRESH_TOKEN_AUTH", # Required for PKCE silent renew (signinSilent via refresh token grant)
   ]
 
   # Token validity - Adjusted for SPA security best practices
   access_token_validity  = 60 # 1 hour
   id_token_validity      = 60 # 1 hour
-  refresh_token_validity = 5  # 30 days (typical for SPA)
+  refresh_token_validity = 30 # 30 days for persistent sessions
   auth_session_validity  = 3
 
   token_validity_units {
@@ -169,8 +169,14 @@ resource "aws_cognito_user_pool_client" "main" {
   allowed_oauth_flows                  = ["code"]
   allowed_oauth_flows_user_pool_client = true
   # allowed_oauth_scopes                 = ["email", "openid", "profile"]
-  allowed_oauth_scopes         = ["email", "openid", "phone", "aws.cognito.signin.user.admin"]
-  callback_urls                = ["https://${var.frontend_domain_name}/fr/plan/workers/"]
+  allowed_oauth_scopes = ["email", "openid", "phone", "aws.cognito.signin.user.admin"]
+  callback_urls = [
+    # Dedicated callback page — decouples token exchange from heavy feature chunks.
+    # This is the active redirect_uri used by the app.
+    "https://${var.frontend_domain_name}/fr/callback/",
+    # Required for SPA silent token renewal via iframe
+    "https://${var.frontend_domain_name}/silent-renew/",
+  ]
   logout_urls                  = ["https://${var.landing_page_domain_name}"]
   supported_identity_providers = ["COGNITO"]
 
@@ -215,7 +221,7 @@ resource "aws_route53_record" "cognito_custom_domain" {
 resource "awscc_cognito_managed_login_branding" "branding" {
   user_pool_id                = aws_cognito_user_pool.main.id
   client_id                   = aws_cognito_user_pool_client.main.id
-  use_cognito_provided_values = true
+  use_cognito_provided_values = false
 
   depends_on = [
     aws_cognito_user_pool_domain.main,

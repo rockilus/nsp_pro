@@ -763,7 +763,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     // Create recurring assignment
     const tomorrow = dayjs.utc().add(1, "day");
-    await scheduleTestBase.createAssignmentWithRecurrence(
+    await scheduleTestBase.createAssignmentAndRecurrence(
       {
         workerId: testWorkers[0].id,
         shiftId: testShifts[0].id,
@@ -893,7 +893,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     // Create recurring assignment
     const tomorrow = dayjs.utc().add(1, "day");
-    await scheduleTestBase.createAssignmentWithRecurrence(
+    await scheduleTestBase.createAssignmentAndRecurrence(
       {
         workerId: testWorkers[0].id,
         shiftId: testShifts[0].id,
@@ -1009,7 +1009,7 @@ test.describe("Assignment Recurrence - Team Leader", () => {
 
     // Create recurring assignment
     const tomorrow = dayjs.utc().add(1, "day");
-    await scheduleTestBase.createAssignmentWithRecurrence(
+    await scheduleTestBase.createAssignmentAndRecurrence(
       {
         workerId: testWorkers[0].id,
         shiftId: testShifts[0].id,

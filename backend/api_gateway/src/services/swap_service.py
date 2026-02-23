@@ -69,10 +69,10 @@ class SwapService(BaseService):
             raise ValueError("Some offered assignments not found")
 
         # Get the worker ID from the first assignment
-        created_by_worker_id = offered_assignments[0].worker_id
+        offering_worker_id = offered_assignments[0].worker_id
 
         # Validate all assignments belong to the same worker
-        if not all(a.worker_id == created_by_worker_id for a in offered_assignments):
+        if not all(a.worker_id == offering_worker_id for a in offered_assignments):
             raise ValueError("All offered assignments must belong to the same worker")
 
         # Validate all assignments belong to the team
@@ -111,6 +111,7 @@ class SwapService(BaseService):
             requested_assignment_ids=requested_assignment_ids,
             target_worker_id=target_worker_id,
             comment=comment,
+            offering_worker_id=offering_worker_id,
             bids=[],
             created_at=datetime.now(timezone.utc),
         )
@@ -157,14 +158,17 @@ class SwapService(BaseService):
             raise ValueError("Cannot bid on an obsolete swap")
 
         # Get creator worker ID from offered assignments
-        offered_assignments_for_creator = (
-            self.collection.assignment_db.get_assignments_by_ids(
-                assignment_ids=swap.offered_assignment_ids
+        creator_worker_id = swap.offering_worker_id
+        if not creator_worker_id:
+            # Fallback for legacy swaps without offering_worker_id
+            offered_assignments_for_creator = (
+                self.collection.assignment_db.get_assignments_by_ids(
+                    assignment_ids=swap.offered_assignment_ids
+                )
             )
-        )
-        if not offered_assignments_for_creator:
-            raise ValueError("Offered assignments not found")
-        creator_worker_id = offered_assignments_for_creator[0].worker_id
+            if not offered_assignments_for_creator:
+                raise ValueError("Offered assignments not found")
+            creator_worker_id = offered_assignments_for_creator[0].worker_id
 
         # Validate bidder is not the creator
         if bidder_worker_id == creator_worker_id:
@@ -753,9 +757,13 @@ class SwapService(BaseService):
 
         # Get creator worker ID from offered assignments
         offered_worker_id_set = {a.worker_id for a in offered_assignments if a}
-        if len(offered_worker_id_set) != 1:
+        creator_worker_id = swap.offering_worker_id or (
+            offered_worker_id_set.pop() if len(offered_worker_id_set) == 1 else None
+        )
+        if not creator_worker_id or (
+            offered_worker_id_set and offered_worker_id_set != {creator_worker_id}
+        ):
             raise ValueError("Offered assignments belong to multiple workers")
-        creator_worker_id = offered_worker_id_set.pop()
         target_worker_id = swap.target_worker_id
 
         # Swap the workers

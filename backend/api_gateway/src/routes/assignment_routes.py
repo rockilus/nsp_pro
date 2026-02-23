@@ -1,6 +1,6 @@
 import time as time_module
 from datetime import date
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from shared.logger import log_info
@@ -8,6 +8,7 @@ from shared.schemas.core import (
     Assignment,
     RecurrenceRule,
     RecurrenceUpdateScope,
+    ShiftType,
 )
 from shared.schemas.dto import (
     AssignmentDTO,
@@ -66,6 +67,7 @@ async def get_assignments(
     end_date: date = Query(..., alias="end_date"),
     include_campaign: bool = Query(False, alias="include_campaign"),
     worker_id: Optional[str] = Query(None, alias="worker_id"),
+    shift_type: Optional[List[int]] = Query(None, alias="shift_type"),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(
         get_assignment_service,
@@ -81,26 +83,35 @@ async def get_assignments(
         if (end_date - start_date).days > max_range_days:
             raise ValueError(f"Date range cannot exceed {max_range_days} days")
 
-        # Check if user has permission to read assignments
-        if not await authz_check(
-            user_context.user_id, "read-assignments", "team", team_id
-        ):
-            # If user doesn't have read-assignments (i.e., they're a member),
-            # check if they have read-assignments-validated permission
+        # Authorization strategy:
+        # - If requesting campaign data (`include_campaign`), require full
+        #   `read-assignments` permission and deny otherwise.
+        # - For non-campaign requests prefer the faster
+        #   `read-assignments-validated` check (fast path for members). If
+        #   that fails, fall back to checking full `read-assignments` so
+        #   admins/privileged users are still allowed.
+        if include_campaign:
+            if not await authz_check(
+                user_context.user_id, "read-assignments", "team", team_id
+            ):
+                raise NotAuthorizedError(
+                    "You do not have permission to get campaign assignments",
+                )
+        else:
+            # Fast path: validated members
             if not await authz_check(
                 user_context.user_id,
                 "read-assignments-validated",
                 "team",
                 team_id,
             ):
-                raise NotAuthorizedError(
-                    "You do not have permission to get assignments",
-                )
-            # Members are not allowed to request campaign assignments
-            if include_campaign:
-                raise NotAuthorizedError(
-                    "You do not have permission to access campaign assignments",
-                )
+                # Fall back to full permission for privileged users
+                if not await authz_check(
+                    user_context.user_id, "read-assignments", "team", team_id
+                ):
+                    raise NotAuthorizedError(
+                        "You do not have permission to get assignments",
+                    )
 
         start_time = time_module.time()
         ar_result = assignment_service.get_assignments_and_recurrences(
@@ -109,6 +120,9 @@ async def get_assignments(
             end_date,
             include_campaign,
             worker_id,
+            shift_types=(
+                [ShiftType(v) for v in shift_type] if shift_type is not None else None
+            ),
         )
         response = ar_result.to_dto()
         end_time = time_module.time()

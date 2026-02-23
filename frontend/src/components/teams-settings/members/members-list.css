@@ -36,8 +36,52 @@
   margin-left: 0.5rem;
 }
 
+.team-list-item-description {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.teams-list-item-email {
+  flex: 1;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  padding: 0 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  order: 2;
+}
+
 .members-list-item-actions {
   display: flex;
   flex-direction: row;
   align-items: center;
+  flex-shrink: 0;
+  order: 3;
+}
+
+@media (max-width: 640px) {
+  .teams-list-item {
+    flex-wrap: wrap;
+  }
+
+  .team-list-item-description {
+    flex: 1;
+    order: 1;
+  }
+
+  .members-list-item-actions {
+    order: 2;
+  }
+
+  .teams-list-item-email {
+    order: 3;
+    flex: none;
+    width: 100%;
+    text-align: left;
+    padding: 0.25rem 0 0;
+  }
 }

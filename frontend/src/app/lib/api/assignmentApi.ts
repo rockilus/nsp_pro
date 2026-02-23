@@ -60,6 +60,7 @@ export class AssignmentApi extends BaseApi {
     startDate?: dayjs.Dayjs,
     endDate?: dayjs.Dayjs,
     workerId?: string,
+    shiftTypes?: number[],
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!teamId) {
@@ -80,6 +81,9 @@ export class AssignmentApi extends BaseApi {
     }
     if (workerId) {
       params.append("worker_id", workerId);
+    }
+    if (shiftTypes && shiftTypes.length > 0) {
+      shiftTypes.forEach((t) => params.append("shift_type", String(t)));
     }
 
     if (params.toString()) {

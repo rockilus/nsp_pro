@@ -17,6 +17,7 @@ import { RequestApi } from "../../src/app/lib/api/requestApi";
 import { ScheduleApi } from "../../src/app/lib/api/scheduleApi";
 import { AssignmentApi } from "../../src/app/lib/api/assignmentApi";
 import { ConstraintApi } from "../../src/app/lib/api/constraintApi";
+import { SwapApi } from "../../src/app/lib/api/swapApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
 import { WorkerT, toWorkerT } from "../../src/types/worker";
@@ -63,7 +64,7 @@ import {
   AssignmentsRecurrencesResultT,
 } from "@/types/assignment";
 import { LinkShiftApi } from "@/app/lib/api/linkShiftApi";
-import { SwapRequestT } from "@/types/swap";
+import { SwapRequestT, SwapType } from "@/types/swap";
 import {
   RecurrenceRuleT,
   RecurrenceUpdateScope,
@@ -2049,7 +2050,7 @@ export class DatabaseTestUtils {
       scheduleId?: string | null;
     },
     recurrence?: RecurrenceRuleT | null,
-  ): Promise<AssignmentT> {
+  ): Promise<AssignmentsRecurrencesResultT> {
     try {
       // Construct AssignmentT object
       const assignment: AssignmentT = {
@@ -2070,12 +2071,7 @@ export class DatabaseTestUtils {
         assignment,
         recurrence ?? null,
       );
-
-      // Return the first created assignment
-      if (result.assignmentsCreated.length === 0) {
-        throw new Error("No assignment was created");
-      }
-      return result.assignmentsCreated[0];
+      return result;
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Failed to create assignment: ${error.message}`);
@@ -2221,13 +2217,14 @@ export class DatabaseTestUtils {
     teamId: string;
     offeredAssignmentIds: string[];
     requestedAssignmentIds: string[] | null;
-    swapType: "direct" | "open";
+    swapType: SwapType;
     targetWorkerId: string | null;
     comment: string;
   }): Promise<SwapRequestT> {
     try {
-      const response = await this.testApiClient.post<any>(
-        `/swaps/teams/${swapData.teamId}`,
+      const result = await SwapApi.createSwap(
+        this.testApiClient,
+        swapData.teamId,
         {
           swapType: swapData.swapType,
           offeredAssignmentIds: swapData.offeredAssignmentIds,
@@ -2236,40 +2233,8 @@ export class DatabaseTestUtils {
           comment: swapData.comment,
         },
       );
-
-      console.log(`✅ Created swap: ${response.id}`);
-
-      // Convert response to SwapRequestT
-      return {
-        id: response.id,
-        teamId: response.teamId,
-        createdByUserId: response.createdByUserId,
-        swapType: response.swapType,
-        status: response.status,
-        offeredAssignmentIds: response.offeredAssignmentIds,
-        requestedAssignmentIds: response.requestedAssignmentIds,
-        targetWorkerId: response.targetWorkerId,
-        comment: response.comment,
-        bids: (response.bids || []).map((bid: any) => ({
-          id: bid.id,
-          workerId: bid.workerId,
-          offeredAssignmentIds: bid.offeredAssignmentIds,
-          createdAt: dayjs.unix(bid.createdAt),
-          accepted: bid.accepted,
-          obsolete: bid.obsolete ?? false,
-        })),
-        createdAt: dayjs.unix(response.createdAt),
-        completedAt: response.completedAt
-          ? dayjs.unix(response.completedAt)
-          : null,
-        completedByUserId: response.completedByUserId,
-        revertedAt: response.revertedAt
-          ? dayjs.unix(response.revertedAt)
-          : null,
-        revertedByUserId: response.revertedByUserId,
-        auditData: response.auditData || [],
-        obsolete: response.obsolete ?? false,
-      };
+      console.log(`✅ Created swap: ${result.id}`);
+      return result;
     } catch (error) {
       console.error("Failed to create swap:", error);
       throw new Error(
@@ -2289,46 +2254,14 @@ export class DatabaseTestUtils {
     offeredAssignmentIds: string[],
   ): Promise<SwapRequestT> {
     try {
-      const response = await this.testApiClient.post<any>(
-        `/swaps/${swapId}/bids`,
-        {
-          bidderWorkerId,
-          offeredAssignmentIds,
-        },
+      const result = await SwapApi.addBid(
+        this.testApiClient,
+        swapId,
+        bidderWorkerId,
+        offeredAssignmentIds,
       );
-
       console.log(`✅ Added bid to swap: ${swapId}`);
-
-      return {
-        id: response.id,
-        teamId: response.teamId,
-        createdByUserId: response.createdByUserId,
-        swapType: response.swapType,
-        status: response.status,
-        offeredAssignmentIds: response.offeredAssignmentIds,
-        requestedAssignmentIds: response.requestedAssignmentIds,
-        targetWorkerId: response.targetWorkerId,
-        comment: response.comment,
-        bids: (response.bids || []).map((bid: any) => ({
-          id: bid.id,
-          workerId: bid.workerId,
-          offeredAssignmentIds: bid.offeredAssignmentIds,
-          createdAt: dayjs.unix(bid.createdAt),
-          accepted: bid.accepted,
-          obsolete: bid.obsolete ?? false,
-        })),
-        createdAt: dayjs.unix(response.createdAt),
-        completedAt: response.completedAt
-          ? dayjs.unix(response.completedAt)
-          : null,
-        completedByUserId: response.completedByUserId,
-        revertedAt: response.revertedAt
-          ? dayjs.unix(response.revertedAt)
-          : null,
-        revertedByUserId: response.revertedByUserId,
-        auditData: response.auditData || [],
-        obsolete: response.obsolete ?? false,
-      };
+      return result;
     } catch (error) {
       console.error("Failed to add bid to swap:", error);
       throw new Error(
@@ -2347,43 +2280,9 @@ export class DatabaseTestUtils {
     bidId: string,
   ): Promise<SwapRequestT> {
     try {
-      const response = await this.testApiClient.post<any>(
-        `/swaps/${swapId}/accept-bid/${bidId}`,
-        {},
-      );
-
+      const result = await SwapApi.acceptBid(this.testApiClient, swapId, bidId);
       console.log(`✅ Accepted bid ${bidId} on swap: ${swapId}`);
-
-      return {
-        id: response.id,
-        teamId: response.teamId,
-        createdByUserId: response.createdByUserId,
-        swapType: response.swapType,
-        status: response.status,
-        offeredAssignmentIds: response.offeredAssignmentIds,
-        requestedAssignmentIds: response.requestedAssignmentIds,
-        targetWorkerId: response.targetWorkerId,
-        comment: response.comment,
-        bids: (response.bids || []).map((bid: any) => ({
-          id: bid.id,
-          workerId: bid.workerId,
-          offeredAssignmentIds: bid.offeredAssignmentIds,
-          createdAt: dayjs.unix(bid.createdAt),
-          accepted: bid.accepted,
-          obsolete: bid.obsolete ?? false,
-        })),
-        createdAt: dayjs.unix(response.createdAt),
-        completedAt: response.completedAt
-          ? dayjs.unix(response.completedAt)
-          : null,
-        completedByUserId: response.completedByUserId,
-        revertedAt: response.revertedAt
-          ? dayjs.unix(response.revertedAt)
-          : null,
-        revertedByUserId: response.revertedByUserId,
-        auditData: response.auditData || [],
-        obsolete: response.obsolete ?? false,
-      };
+      return result;
     } catch (error) {
       console.error("Failed to accept bid on swap:", error);
       throw new Error(
@@ -2402,39 +2301,12 @@ export class DatabaseTestUtils {
     status?: "active" | "pending_approval" | "completed" | "cancelled",
   ): Promise<SwapRequestT[]> {
     try {
-      let endpoint = `/swaps/teams/${teamId}`;
-      if (status) {
-        endpoint += `?status=${status}`;
-      }
-
-      const response = await this.testApiClient.get<any[]>(endpoint);
-
-      return response.map((swap) => ({
-        id: swap.id,
-        teamId: swap.teamId,
-        createdByUserId: swap.createdByUserId,
-        swapType: swap.swapType,
-        status: swap.status,
-        offeredAssignmentIds: swap.offeredAssignmentIds,
-        requestedAssignmentIds: swap.requestedAssignmentIds,
-        targetWorkerId: swap.targetWorkerId,
-        comment: swap.comment,
-        bids: (swap.bids || []).map((bid: any) => ({
-          id: bid.id,
-          workerId: bid.workerId,
-          offeredAssignmentIds: bid.offeredAssignmentIds,
-          createdAt: dayjs.unix(bid.createdAt),
-          accepted: bid.accepted,
-          obsolete: bid.obsolete ?? false,
-        })),
-        createdAt: dayjs.unix(swap.createdAt),
-        completedAt: swap.completedAt ? dayjs.unix(swap.completedAt) : null,
-        completedByUserId: swap.completedByUserId,
-        revertedAt: swap.revertedAt ? dayjs.unix(swap.revertedAt) : null,
-        revertedByUserId: swap.revertedByUserId,
-        auditData: swap.auditData || [],
-        obsolete: swap.obsolete ?? false,
-      }));
+      const result = await SwapApi.getSwapsForTeam(
+        this.testApiClient,
+        teamId,
+        status as any,
+      );
+      return result;
     } catch (error) {
       console.error("Failed to get swaps:", error);
       throw new Error(
@@ -2450,38 +2322,8 @@ export class DatabaseTestUtils {
    */
   async getSwapById(swapId: string): Promise<SwapRequestT> {
     try {
-      const response = await this.testApiClient.get<any>(`/swaps/${swapId}`);
-
-      return {
-        id: response.id,
-        teamId: response.teamId,
-        createdByUserId: response.createdByUserId,
-        swapType: response.swapType,
-        status: response.status,
-        offeredAssignmentIds: response.offeredAssignmentIds,
-        requestedAssignmentIds: response.requestedAssignmentIds,
-        targetWorkerId: response.targetWorkerId,
-        comment: response.comment,
-        bids: (response.bids || []).map((bid: any) => ({
-          id: bid.id,
-          workerId: bid.workerId,
-          offeredAssignmentIds: bid.offeredAssignmentIds,
-          createdAt: dayjs.unix(bid.createdAt),
-          accepted: bid.accepted,
-          obsolete: bid.obsolete ?? false,
-        })),
-        createdAt: dayjs.unix(response.createdAt),
-        completedAt: response.completedAt
-          ? dayjs.unix(response.completedAt)
-          : null,
-        completedByUserId: response.completedByUserId,
-        revertedAt: response.revertedAt
-          ? dayjs.unix(response.revertedAt)
-          : null,
-        revertedByUserId: response.revertedByUserId,
-        auditData: response.auditData || [],
-        obsolete: response.obsolete ?? false,
-      };
+      const result = await SwapApi.getSwapById(this.testApiClient, swapId);
+      return result;
     } catch (error) {
       console.error("Failed to get swap by ID:", error);
       throw new Error(
@@ -2497,43 +2339,9 @@ export class DatabaseTestUtils {
    */
   async acceptDirectSwap(swapId: string): Promise<SwapRequestT> {
     try {
-      const response = await this.testApiClient.post<any>(
-        `/swaps/${swapId}/accept`,
-        {},
-      );
-
+      const result = await SwapApi.acceptDirectSwap(this.testApiClient, swapId);
       console.log(`✅ Accepted direct swap: ${swapId}`);
-
-      return {
-        id: response.id,
-        teamId: response.teamId,
-        createdByUserId: response.createdByUserId,
-        swapType: response.swapType,
-        status: response.status,
-        offeredAssignmentIds: response.offeredAssignmentIds,
-        requestedAssignmentIds: response.requestedAssignmentIds,
-        targetWorkerId: response.targetWorkerId,
-        comment: response.comment,
-        bids: (response.bids || []).map((bid: any) => ({
-          id: bid.id,
-          workerId: bid.workerId,
-          offeredAssignmentIds: bid.offeredAssignmentIds,
-          createdAt: dayjs.unix(bid.createdAt),
-          accepted: bid.accepted,
-          obsolete: bid.obsolete ?? false,
-        })),
-        createdAt: dayjs.unix(response.createdAt),
-        completedAt: response.completedAt
-          ? dayjs.unix(response.completedAt)
-          : null,
-        completedByUserId: response.completedByUserId,
-        revertedAt: response.revertedAt
-          ? dayjs.unix(response.revertedAt)
-          : null,
-        revertedByUserId: response.revertedByUserId,
-        auditData: response.auditData || [],
-        obsolete: response.obsolete ?? false,
-      };
+      return result;
     } catch (error) {
       console.error("Failed to accept direct swap:", error);
       throw new Error(
@@ -2549,47 +2357,35 @@ export class DatabaseTestUtils {
    */
   async approveSwap(swapId: string): Promise<SwapRequestT> {
     try {
-      const response = await this.testApiClient.post<any>(
-        `/swaps/${swapId}/approve`,
-        {},
-      );
-
+      const result = await SwapApi.approveSwap(this.testApiClient, swapId);
       console.log(`✅ Approved swap: ${swapId}`);
-
-      return {
-        id: response.id,
-        teamId: response.teamId,
-        createdByUserId: response.createdByUserId,
-        swapType: response.swapType,
-        status: response.status,
-        offeredAssignmentIds: response.offeredAssignmentIds,
-        requestedAssignmentIds: response.requestedAssignmentIds,
-        targetWorkerId: response.targetWorkerId,
-        comment: response.comment,
-        bids: (response.bids || []).map((bid: any) => ({
-          id: bid.id,
-          workerId: bid.workerId,
-          offeredAssignmentIds: bid.offeredAssignmentIds,
-          createdAt: dayjs.unix(bid.createdAt),
-          accepted: bid.accepted,
-          obsolete: bid.obsolete ?? false,
-        })),
-        createdAt: dayjs.unix(response.createdAt),
-        completedAt: response.completedAt
-          ? dayjs.unix(response.completedAt)
-          : null,
-        completedByUserId: response.completedByUserId,
-        revertedAt: response.revertedAt
-          ? dayjs.unix(response.revertedAt)
-          : null,
-        revertedByUserId: response.revertedByUserId,
-        auditData: response.auditData || [],
-        obsolete: response.obsolete ?? false,
-      };
+      return result;
     } catch (error) {
       console.error("Failed to approve swap:", error);
       throw new Error(
         `Failed to approve swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Approve a swap using a client authenticated as a specific user
+   */
+  async approveSwapAsUser(
+    swapId: string,
+    userId: string,
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.approveSwap(userClient, swapId);
+      console.log(`✅ Approved swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to approve swap as user:", error);
+      throw new Error(
+        `Failed to approve swap as user: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       );
@@ -2602,43 +2398,9 @@ export class DatabaseTestUtils {
    */
   async revertSwap(swapId: string): Promise<SwapRequestT> {
     try {
-      const response = await this.testApiClient.post<any>(
-        `/swaps/${swapId}/revert`,
-        {},
-      );
-
+      const result = await SwapApi.revertSwap(this.testApiClient, swapId);
       console.log(`✅ Reverted swap: ${swapId}`);
-
-      return {
-        id: response.id,
-        teamId: response.teamId,
-        createdByUserId: response.createdByUserId,
-        swapType: response.swapType,
-        status: response.status,
-        offeredAssignmentIds: response.offeredAssignmentIds,
-        requestedAssignmentIds: response.requestedAssignmentIds,
-        targetWorkerId: response.targetWorkerId,
-        comment: response.comment,
-        bids: (response.bids || []).map((bid: any) => ({
-          id: bid.id,
-          workerId: bid.workerId,
-          offeredAssignmentIds: bid.offeredAssignmentIds,
-          createdAt: dayjs.unix(bid.createdAt),
-          accepted: bid.accepted,
-          obsolete: bid.obsolete ?? false,
-        })),
-        createdAt: dayjs.unix(response.createdAt),
-        completedAt: response.completedAt
-          ? dayjs.unix(response.completedAt)
-          : null,
-        completedByUserId: response.completedByUserId,
-        revertedAt: response.revertedAt
-          ? dayjs.unix(response.revertedAt)
-          : null,
-        revertedByUserId: response.revertedByUserId,
-        auditData: response.auditData || [],
-        obsolete: response.obsolete ?? false,
-      };
+      return result;
     } catch (error) {
       console.error("Failed to revert swap:", error);
       throw new Error(
@@ -2654,8 +2416,7 @@ export class DatabaseTestUtils {
    */
   async deleteSwap(swapId: string): Promise<void> {
     try {
-      await this.testApiClient.delete<void>(`/swaps/${swapId}`);
-
+      await SwapApi.deleteSwap(this.testApiClient, swapId);
       console.log(`✅ Deleted swap: ${swapId}`);
     } catch (error) {
       console.error("Failed to delete swap:", error);

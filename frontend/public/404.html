@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rockilus — Page not found</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        background: #f8fafc;
+        color: #1e293b;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+
+      .card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 2.5rem 3rem;
+        max-width: 420px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+      }
+
+      .logo {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #2563eb;
+        letter-spacing: -0.5px;
+        margin-bottom: 1.5rem;
+      }
+
+      h1 {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+      }
+
+      .lang-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .lang-btn {
+        display: block;
+        padding: 0.65rem 0.5rem;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #1e293b;
+        transition: border-color 0.15s, background 0.15s;
+      }
+
+      .lang-btn:hover {
+        border-color: #2563eb;
+        background: #eff6ff;
+        color: #2563eb;
+      }
+
+      .lang-btn .flag {
+        display: block;
+        font-size: 1.4rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .hint {
+        font-size: 0.78rem;
+        color: #94a3b8;
+      }
+    </style>
+    <script>
+      /**
+       * Auto-redirect when the URL contains an invalid language segment
+       * (e.g. /undefined/plan/schedule/).
+       *
+       * Safety rule: only redirect when the first path segment is NOT one of
+       * the known language codes. If it IS a valid lang (e.g. /en/missing-page/),
+       * a redirect would loop back here — so we skip it and show the manual UI.
+       */
+      (function () {
+        var langs = ["en", "fr", "es"];
+
+        function detectLang() {
+          try {
+            var s = localStorage.getItem("i18next");
+            if (s && langs.indexOf(s) !== -1) return s;
+          } catch (e) {}
+          var b = (navigator.language || "").split("-")[0];
+          return langs.indexOf(b) !== -1 ? b : "en";
+        }
+
+        var parts = window.location.pathname
+          .replace(/^\/|\/$/g, "")
+          .split("/")
+          .filter(Boolean);
+
+        var firstSeg = parts[0] || "";
+
+        // Only act when the first segment is not a recognised language code.
+        if (langs.indexOf(firstSeg) === -1) {
+          var lang = detectLang();
+          // Drop the bad first segment; keep the rest of the path.
+          var rest = parts.slice(1);
+          var newPath =
+            "/" + lang + "/" + (rest.length ? rest.join("/") + "/" : "");
+          window.location.replace(newPath);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="card">
+      <div class="logo">Rockilus</div>
+      <h1>Page not found</h1>
+      <p>
+        The page you requested could not be loaded.<br />
+        Please choose your language to continue.
+      </p>
+
+      <div class="lang-grid">
+        <a href="/en/" class="lang-btn">
+          <span class="flag">🇬🇧</span>
+          English
+        </a>
+        <a href="/fr/" class="lang-btn">
+          <span class="flag">🇫🇷</span>
+          Français
+        </a>
+        <a href="/es/" class="lang-btn">
+          <span class="flag">🇪🇸</span>
+          Español
+        </a>
+      </div>
+
+      <p class="hint">
+        If you arrived here from a broken link, you should be redirected
+        automatically. Otherwise, tap a language above to continue.
+      </p>
+    </div>
+  </body>
+</html>

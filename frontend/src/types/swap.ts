@@ -38,6 +38,7 @@ export type SwapRequestT = {
   offeredAssignmentIds: string[];
   requestedAssignmentIds: string[] | null;
   targetWorkerId: string | null;
+  offeringWorkerId: string;
   comment: string;
   bids: SwapBidT[];
   createdAt: dayjs.Dayjs;
@@ -82,6 +83,7 @@ export function toSwapRequestT(data: any): SwapRequestT {
     offeredAssignmentIds: data.offeredAssignmentIds,
     requestedAssignmentIds: data.requestedAssignmentIds,
     targetWorkerId: data.targetWorkerId,
+    offeringWorkerId: data.offeringWorkerId ?? "",
     comment: data.comment,
     bids: (data.bids || []).map(toSwapBidT),
     createdAt: dayjs.unix(data.createdAt),
@@ -104,6 +106,7 @@ export function fromSwapRequestT(swap: Partial<SwapRequestT>): any {
     offeredAssignmentIds: swap.offeredAssignmentIds,
     requestedAssignmentIds: swap.requestedAssignmentIds,
     targetWorkerId: swap.targetWorkerId,
+    offeringWorkerId: swap.offeringWorkerId ?? "",
     comment: swap.comment || "",
     bids: (swap.bids || []).map(fromSwapBidT),
     createdAt: swap.createdAt?.unix(),

@@ -177,7 +177,7 @@ export class ScheduleTestBase {
       const recuperationShift = await this.createShift({
         name: "Recuperation Shift",
         startTime: dutyShift.endTime,
-        endTime: dutyShift.endTime.add(1, "day"),
+        endTime: dutyShift.endTime.add(dutyShift.recuperationTime, "hour"),
         shiftType: ShiftType.REST,
         restType: ShiftRestType.RECUPERATION,
         recuperationDutyId: dutyShift.id,
@@ -485,32 +485,6 @@ export class ScheduleTestBase {
   }
 
   /**
-   * Create an assignment for testing
-   */
-  async createAssignment(assignmentData: {
-    workerId: string;
-    shiftId: string;
-    date: dayjs.Dayjs;
-    fixed?: boolean;
-    comment?: string;
-    scheduleId?: string;
-  }): Promise<AssignmentT> {
-    if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
-    }
-
-    return await this.dbUtils.createAssignmentAndRecurrence({
-      teamId: this.testTeam.teamId,
-      workerId: assignmentData.workerId,
-      shiftId: assignmentData.shiftId,
-      date: assignmentData.date,
-      fixed: assignmentData.fixed ?? false,
-      comment: assignmentData.comment,
-      scheduleId: assignmentData.scheduleId,
-    });
-  }
-
-  /**
    * Create a campaign schedule for testing
    */
   async createCampaignSchedule(
@@ -686,7 +660,7 @@ export class ScheduleTestBase {
   /**
    * Create an assignment with optional recurrence
    */
-  async createAssignmentWithRecurrence(
+  async createAssignmentAndRecurrence(
     data: {
       workerId: string;
       shiftId: string;
@@ -696,12 +670,12 @@ export class ScheduleTestBase {
       scheduleId?: string;
     },
     recurrence?: RecurrenceRuleT | null,
-  ): Promise<AssignmentT> {
+  ): Promise<AssignmentsRecurrencesResultT> {
     if (!this.testTeam) {
       throw new Error("Test team not initialized");
     }
 
-    const assignment = await this.dbUtils.createAssignmentAndRecurrence(
+    const result = await this.dbUtils.createAssignmentAndRecurrence(
       {
         teamId: this.testTeam.teamId,
         workerId: data.workerId,
@@ -718,7 +692,7 @@ export class ScheduleTestBase {
       `✅ Created assignment${recurrence ? " with recurrence" : ""} for worker ${data.workerId}`,
     );
 
-    return assignment;
+    return result;
   }
 
   /**

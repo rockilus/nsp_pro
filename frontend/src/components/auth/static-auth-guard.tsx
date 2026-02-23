@@ -9,7 +9,7 @@ interface StaticAuthGuardProps {
 }
 
 export function StaticAuthGuard({ children, fallback }: StaticAuthGuardProps) {
-  const { isAuthenticated, loading, user } = useAuth();
+  const { isAuthenticated, loading, user, signIn } = useAuth();
   const [isRehydrated, setIsRehydrated] = useState(false);
 
   useEffect(() => {
@@ -28,15 +28,25 @@ export function StaticAuthGuard({ children, fallback }: StaticAuthGuardProps) {
     return () => clearTimeout(timer);
   }, [isAuthenticated, loading, user]);
 
+  // Actively redirect to Cognito when we know the user is unauthenticated,
+  // rather than just showing a static fallback with no recovery path.
+  useEffect(() => {
+    if (isRehydrated && !loading && !isAuthenticated) {
+      console.warn(
+        "🚫 StaticAuthGuard: not authenticated — redirecting to sign-in",
+      );
+      signIn();
+    }
+  }, [isRehydrated, loading, isAuthenticated, signIn]);
+
   // Show loading during hydration
   if (!isRehydrated || loading) {
     return fallback || <div>Loading authentication...</div>;
   }
 
-  // Show sign-in prompt if not authenticated
+  // Show fallback while redirect is in-flight
   if (!isAuthenticated || !user?.id_token) {
-    console.warn("🚫 Authentication required - redirecting to sign-in");
-    return fallback || <div>Please sign in to continue</div>;
+    return fallback || <div>Redirecting to sign in...</div>;
   }
 
   return <>{children}</>;

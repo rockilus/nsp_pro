@@ -25,64 +25,38 @@ export default function ProtectedRoute({
   const { isAuthenticated, loading, error, signIn } = useAuth();
   const [networkRetrying, setNetworkRetrying] = useState(false);
   const [showManualSignIn, setShowManualSignIn] = useState(false);
-  const [callbackTimeout, setCallbackTimeout] = useState(false);
+  // Tracks whether the hard loading timeout has fired.
+  // Prevents users (especially mobile Safari) being stuck on the loading
+  // spinner indefinitely when automaticSilentRenew hangs at startup.
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  // Hard timeout on the loading state: if auth is still loading after 6 s,
+  // force a redirect to Cognito. This unblocks Safari ITP-related hangs and
+  // any other case where isLoading never resolves.
+  useEffect(() => {
+    if (!loading) return;
+
+    const loadingTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn(
+          "⚠️ Auth loading timed out after 6s — forcing sign-in redirect (mobile Safari / ITP guard)",
+        );
+        setLoadingTimedOut(true);
+      }
+    }, 6000);
+
+    return () => clearTimeout(loadingTimeout);
+  }, [loading]);
 
   useEffect(() => {
-    // Check if we're handling an OAuth callback (has code and state in URL)
-    const isHandlingCallback =
-      typeof window !== "undefined" &&
-      window.location.search.includes("code=") &&
-      window.location.search.includes("state=");
-
-    if (isHandlingCallback) {
-      console.log(
-        "🔄 OAuth callback detected in URL, waiting for authentication..."
-      );
-      console.log("Auth state:", {
-        isAuthenticated,
-        loading,
-        hasError: !!error,
-      });
-
-      // Set a timeout for callback processing (10 seconds)
-      const callbackTimer = setTimeout(() => {
-        if (!isAuthenticated) {
-          console.error("❌ Callback processing timed out after 10 seconds");
-          setCallbackTimeout(true);
-          // Clean up the URL by removing query params
-          if (typeof window !== "undefined") {
-            const cleanUrl = window.location.pathname;
-            window.history.replaceState({}, "", cleanUrl);
-          }
-        }
-      }, 10000);
-
-      return () => clearTimeout(callbackTimer);
+    if (loadingTimedOut && !isAuthenticated) {
+      signIn();
     }
+  }, [loadingTimedOut, isAuthenticated, signIn]);
 
-    // If callback timed out, trigger manual sign-in
-    if (callbackTimeout && !isAuthenticated) {
-      console.log("🔄 Callback failed, triggering new sign-in...");
-      const resetTimer = setTimeout(() => {
-        setCallbackTimeout(false);
-        signIn();
-      }, 0);
-      return () => clearTimeout(resetTimer);
-    }
-
-    // Clean up URL if authenticated and still has callback params
-    if (isAuthenticated && isHandlingCallback) {
-      console.log("✅ Authentication successful, cleaning up URL...");
-      if (typeof window !== "undefined") {
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, "", cleanUrl);
-      }
-      return;
-    }
-
-    // Also don't redirect if we're still loading (might be processing callback)
+  useEffect(() => {
+    // Don't redirect while auth state is still resolving
     if (loading) {
-      console.log("⏳ Still loading authentication state...");
       return;
     }
 
@@ -99,7 +73,7 @@ export default function ProtectedRoute({
       const fallbackTimer = setTimeout(() => {
         if (!isAuthenticated && !loading && !error) {
           console.log(
-            "⚠️ Automatic redirect may have failed, showing manual sign-in button"
+            "⚠️ Automatic redirect may have failed, showing manual sign-in button",
           );
           setShowManualSignIn(true);
         }
@@ -119,6 +93,13 @@ export default function ProtectedRoute({
         error.message.includes("Token is not valid") ||
         error.message.includes("rotation conflict");
 
+      // Terminal callback errors: the code/state are unusable — auto-redirect
+      // to a fresh sign-in rather than leaving the user on a frozen spinner.
+      const isTerminalCallbackError =
+        error.message.includes("No matching state") ||
+        error.message.includes("No state in response") ||
+        error.message.includes("Invalid state");
+
       const isNetworkIssue = isNetworkError(error);
 
       // Avoid calling setState synchronously inside the effect body -
@@ -127,8 +108,21 @@ export default function ProtectedRoute({
       let manualSignInTimer: ReturnType<typeof setTimeout> | undefined;
       let networkStartTimer: ReturnType<typeof setTimeout> | undefined;
       let networkRetryTimer: ReturnType<typeof setTimeout> | undefined;
+      let autoRedirectTimer: ReturnType<typeof setTimeout> | undefined;
 
-      if (isRotationError && !isNetworkIssue) {
+      if (isTerminalCallbackError) {
+        // Auto-redirect after a brief delay so the user sees something is
+        // happening rather than a sudden redirect with no feedback.
+        console.warn(
+          "🔄 Terminal callback error — auto-redirecting to sign-in:",
+          error.message,
+        );
+        autoRedirectTimer = setTimeout(() => {
+          if (!isAuthenticated) {
+            signIn();
+          }
+        }, 2000);
+      } else if (isRotationError && !isNetworkIssue) {
         console.warn("🔄 Refresh token rotation error detected");
         manualSignInTimer = setTimeout(() => setShowManualSignIn(true), 0);
       } else if (isNetworkIssue) {
@@ -147,15 +141,24 @@ export default function ProtectedRoute({
             }
           }, 10000); // 10 second delay for network recovery
         }, 0);
+      } else {
+        // Catch-all: any other non-network error — show the sign-in button
+        // after 3 seconds rather than leaving the user on a permanent spinner.
+        manualSignInTimer = setTimeout(() => {
+          if (!isAuthenticated) {
+            setShowManualSignIn(true);
+          }
+        }, 3000);
       }
 
       return () => {
+        if (autoRedirectTimer) clearTimeout(autoRedirectTimer);
         if (manualSignInTimer) clearTimeout(manualSignInTimer);
         if (networkStartTimer) clearTimeout(networkStartTimer);
         if (networkRetryTimer) clearTimeout(networkRetryTimer);
       };
     }
-  }, [requireAuth, loading, error, isAuthenticated, signIn, callbackTimeout]);
+  }, [requireAuth, loading, error, isAuthenticated, signIn]);
 
   // Network connectivity issues
   if (networkRetrying || (error && isNetworkError(error))) {

@@ -28,7 +28,7 @@ export default function MembersList({
   handleAttachUserToWorker: (
     workerId: string,
     userId: string,
-    teamId: string
+    teamId: string,
   ) => Promise<void>;
 }) {
   const { t } = useTranslation(lng, "teams-page");
@@ -62,6 +62,9 @@ export default function MembersList({
             {userWithMembership.membership.role.valueOf()}
           </span>
         </div>
+        <span className="teams-list-item-email">
+          {userWithMembership.user.email}
+        </span>
         <div className="members-list-item-actions">
           <EditWorkerPopover
             lng={lng}

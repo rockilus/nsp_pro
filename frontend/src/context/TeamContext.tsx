@@ -6,13 +6,15 @@ import { TeamWithMembership, TeamT } from "@/types/team";
 type TeamContextType = {
   teams: TeamWithMembership[];
   selectedTeam: TeamWithMembership | null;
+  selectedTeamId: string | null;
   setSelectedTeamId: (teamId: string) => void;
   loading: boolean; // Indicates if the team context is loading
   updateTeamInContext: (team: TeamT) => void;
+  addTeamToContext: (team: TeamWithMembership) => void;
 };
 
 export const TeamContext = createContext<TeamContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function useTeam() {

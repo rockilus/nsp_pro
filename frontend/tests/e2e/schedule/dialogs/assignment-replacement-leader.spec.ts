@@ -62,7 +62,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       createAssignments: true,
       linkMemberToWorker: false,
       createDutyAndRecuperation: true,
-      numberOfWorkers: 11,
+      numberOfWorkers: 12,
     });
 
     await scheduleTestBase.actAsOwner(page);
@@ -279,6 +279,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     const pool = testWorkers;
     const used = new Set<number>();
+    let rankCounter = 0;
 
     function pickUnused() {
       for (let i = 0; i < pool.length; i++) {
@@ -394,7 +395,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ...defaultCandidate,
       workerId: testWorker.id,
       workerName: testWorker.name,
-      rank: 0,
+      rank: rankCounter,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         nbTimesDidShiftLtm: {
@@ -408,6 +409,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
       },
     };
 
+    rankCounter++;
+
     // Setup worker to test LTM indicators
     // Create 5 assignments for the same shift on the same weekday in the last
     // 12 months
@@ -419,7 +422,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
         .startOf("day")
         .add(12, "hours"); // Add 12 hours to avoid timezone issues
 
-      await scheduleTestBase.createAssignmentWithRecurrence({
+      await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: w1.id,
         shiftId: testShift.id,
         date: pastDate,
@@ -435,7 +438,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
         .startOf("day")
         .add(12, "hours"); // Add 12 hours to avoid timezone issues
 
-      await scheduleTestBase.createAssignmentWithRecurrence({
+      await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: w1.id,
         shiftId: testShift.id,
         date: pastDate,
@@ -446,7 +449,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ...defaultCandidate,
       workerId: w1.id,
       workerName: w1.name,
-      rank: 1,
+      rank: rankCounter,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         nbTimesDidShiftLtm: {
@@ -465,6 +468,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
         },
       },
     };
+
+    rankCounter++;
 
     // Setup worker to test weekly work time and monthly duties implications
     const w2 = pickUnused();
@@ -507,12 +512,12 @@ test.describe("Assignment Replacement - Team Leader", () => {
       );
     }
 
-    await scheduleTestBase.createAssignmentWithRecurrence({
+    await scheduleTestBase.createAssignmentAndRecurrence({
       workerId: w2.id,
       shiftId: dutyShift.id,
       date: dutyDate1,
     });
-    await scheduleTestBase.createAssignmentWithRecurrence({
+    await scheduleTestBase.createAssignmentAndRecurrence({
       workerId: w2.id,
       shiftId: dutyShift.id,
       date: dutyDate2,
@@ -522,7 +527,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ...defaultCandidate,
       workerId: w2.id,
       workerName: w2.name,
-      rank: 2,
+      rank: rankCounter,
       replacementCategory: "could_do",
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
@@ -538,6 +543,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
         },
       },
     };
+
+    rankCounter++;
 
     // Setup worker to test soft constaint breach
     const w3 = pickUnused();
@@ -593,7 +600,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ...defaultCandidate,
       workerId: w3.id,
       workerName: w3.name,
-      rank: 3,
+      rank: rankCounter,
       replacementCategory: "could_do",
       mostConstrainingReason: MostConstrainingReasonT.SOFT_CONSTRAINT_VIOLATION,
       replacementImplications: {
@@ -620,6 +627,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
         },
       },
     };
+
+    rankCounter++;
 
     // Setup worker to test request conflict
     const w4 = pickUnused();
@@ -649,7 +658,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ...defaultCandidate,
       workerId: w4.id,
       workerName: w4.name,
-      rank: 4,
+      rank: rankCounter,
       replacementCategory: "cant_do",
       mostConstrainingReason: MostConstrainingReasonT.REQUEST_CONFLICT,
       replacementImplications: {
@@ -660,6 +669,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
         },
       },
     };
+
+    rankCounter++;
 
     // Setup worker to test hard constaint breach
     const w5 = pickUnused();
@@ -715,7 +726,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ...defaultCandidate,
       workerId: w5.id,
       workerName: w5.name,
-      rank: 5,
+      rank: rankCounter,
       replacementCategory: "cant_do",
       mostConstrainingReason: MostConstrainingReasonT.HARD_CONSTRAINT_VIOLATION,
       replacementImplications: {
@@ -743,21 +754,24 @@ test.describe("Assignment Replacement - Team Leader", () => {
       },
     };
 
+    rankCounter++;
+
     // Setup worker to test overlap implications
     const w6 = pickUnused();
 
-    const assignmentOverlap =
-      await scheduleTestBase.createAssignmentWithRecurrence({
-        workerId: w6.id,
-        shiftId: testShift.id,
-        date: testDate,
-      });
+    const ARResultW6 = await scheduleTestBase.createAssignmentAndRecurrence({
+      workerId: w6.id,
+      shiftId: testShift.id,
+      date: testDate,
+    });
+
+    const assignmentOverlap = ARResultW6.assignmentsCreated[0];
 
     expectedCandidates[w6.id] = {
       ...defaultCandidate,
       workerId: w6.id,
       workerName: w6.name,
-      rank: 6,
+      rank: rankCounter,
       replacementCategory: "cant_do",
       mostConstrainingReason: MostConstrainingReasonT.HAS_OVERLAP,
       replacementImplications: {
@@ -768,6 +782,47 @@ test.describe("Assignment Replacement - Team Leader", () => {
         },
       },
     };
+
+    rankCounter++;
+
+    // Setup worker to test overlap implications with recuperation shift
+    const w6_2 = pickUnused();
+
+    const ARResultW6_2 = await scheduleTestBase.createAssignmentAndRecurrence({
+      workerId: w6_2.id,
+      shiftId: dutyShift.id,
+      date: testDate.add(-1, "day"),
+    });
+
+    const dutyAssignment = ARResultW6_2.assignmentsCreated.find(
+      (a) => a.shiftId === dutyShift.id,
+    )!;
+    const recupAssignment = ARResultW6_2.assignmentsCreated.find(
+      (a) => a.referenceAssignmentId === dutyAssignment.id,
+    )!;
+
+    expectedCandidates[w6_2.id] = {
+      ...defaultCandidate,
+      workerId: w6_2.id,
+      workerName: w6_2.name,
+      rank: rankCounter,
+      replacementCategory: "cant_do",
+      mostConstrainingReason: MostConstrainingReasonT.HAS_OVERLAP,
+      replacementImplications: {
+        ...defaultCandidate.replacementImplications,
+        overlapHits: {
+          hasntOverlap: false,
+          overlapAssignmentIds: [recupAssignment.id],
+        },
+        newMonthlyDuties: {
+          newNumberMonthlyDuties: 1,
+          newMonthlyDutiesDelta: 1,
+          meetsTarget: false,
+        },
+      },
+    };
+
+    rankCounter++;
 
     // Setup worker to test fitler implications
     const w7 = pickUnused();
@@ -809,7 +864,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ...defaultCandidate,
       workerId: w7.id,
       workerName: w7.name,
-      rank: 7,
+      rank: rankCounter,
       replacementCategory: "cant_do",
       mostConstrainingReason: MostConstrainingReasonT.FILTERED_OUT,
       replacementImplications: {
@@ -820,6 +875,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
         },
       },
     };
+
+    rankCounter++;
 
     // Setup worker to test leave implications
     const w8 = pickUnused();
@@ -844,7 +901,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ...defaultCandidate,
       workerId: w8.id,
       workerName: w8.name,
-      rank: 8,
+      rank: rankCounter,
       replacementCategory: "cant_do",
       mostConstrainingReason: MostConstrainingReasonT.ON_LEAVE,
       replacementImplications: {
@@ -856,6 +913,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
         },
       },
     };
+
+    rankCounter++;
 
     // Setup worker to test specialty implications
     const w9 = pickUnused();
@@ -885,7 +944,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ...defaultCandidate,
       workerId: w9.id,
       workerName: w9.name,
-      rank: 9,
+      rank: rankCounter,
       replacementCategory: "cant_do",
       mostConstrainingReason: MostConstrainingReasonT.MISSING_SPECIALTY,
       replacementImplications: {
@@ -893,6 +952,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
         hasSpecialty: false,
       },
     };
+
+    rankCounter++;
 
     // Setup worker to test no employed implications
     const w10 = pickUnused();
@@ -904,7 +965,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       ...defaultCandidate,
       workerId: w10.id,
       workerName: w10.name,
-      rank: 10,
+      rank: rankCounter,
       replacementCategory: "cant_do",
       mostConstrainingReason: MostConstrainingReasonT.NOT_EMPLOYED,
       replacementImplications: {
@@ -912,6 +973,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
         isEmployed: false,
       },
     };
+
+    rankCounter++;
 
     // Get replacement candidates via the api
     const actualCandidates = await scheduleTestBase.getReplacementCandidates(

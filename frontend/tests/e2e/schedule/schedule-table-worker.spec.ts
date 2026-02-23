@@ -508,12 +508,13 @@ test.describe("ScheduleTableWorker - Member Tests", () => {
         latestEndDate!.add(10, "days").utc(),
       );
 
-      const assignment = await scheduleTestBase.createAssignment({
+      const ARResult = await scheduleTestBase.createAssignmentAndRecurrence({
         scheduleId: campaign.id,
         workerId: testWorkers[0].id,
         shiftId: testShifts[0].id,
         date: latestEndDate!.add(1, "day"),
       });
+      const assignment = ARResult.assignmentsCreated[0];
 
       await scheduleTestBase.setScheduleViewSettings(page, {
         targetDate: latestEndDate!.add(1, "day"),

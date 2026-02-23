@@ -39,6 +39,7 @@ class SwapRequestDTO(BaseModel):
     requestedAssignmentIds: List[str] | None
     targetWorkerId: str | None
     comment: str
+    offeringWorkerId: str = ""
     bids: List[Dict]  # List of SwapBidDTO dicts
     createdAt: float
     completedAt: float | None

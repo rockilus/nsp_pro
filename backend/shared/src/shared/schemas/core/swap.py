@@ -103,6 +103,7 @@ class SwapRequest:
     )  # Assignments requested (None for open swaps)
     target_worker_id: str | None  # Target worker for direct swaps (None for open swaps)
     comment: str
+    offering_worker_id: str = ""  # Worker ID of the person offering assignments
     bids: List[SwapBid] = field(default_factory=list)  # Bids for open swaps
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime | None = None
@@ -152,6 +153,7 @@ class SwapRequest:
             requested_assignment_ids=data.get("requested_assignment_ids"),
             target_worker_id=data.get("target_worker_id"),
             comment=data.get("comment", ""),
+            offering_worker_id=data.get("offering_worker_id", ""),
             bids=[SwapBid.from_dict(b) for b in data.get("bids", [])],
             created_at=datetime.fromtimestamp(data["created_at"], tz=timezone.utc),
             completed_at=(

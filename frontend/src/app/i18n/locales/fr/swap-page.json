@@ -11,5 +11,6 @@
     "replacement_reason_hard_constraint_violation": "Violation de contrainte dure",
     "replacement_reason_request_conflict": "Conflit de demande",
     "replacement_reason_soft_constraint_violation": "Violation de contrainte douce",
-    "replacement_reason_no_constraints_violated": "Aucune contrainte violée"
+    "replacement_reason_no_constraints_violated": "Aucune contrainte violée",
+    "error_no_worker_assigned": "Vous n'êtes pas associé à un profil de travailleur. Veuillez contacter l'administrateur de votre équipe."
 }

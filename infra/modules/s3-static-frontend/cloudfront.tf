@@ -49,9 +49,10 @@ resource "aws_cloudfront_distribution" "frontend" {
       }
     }
 
+    # Content-hashed filenames — safe to cache for 1 year as immutable
     min_ttl     = 0
-    default_ttl = 3600  # 1 hour
-    max_ttl     = 86400 # 24 hours
+    default_ttl = 31536000 # 1 year
+    max_ttl     = 31536000 # 1 year
   }
 
   # Cache behavior for static assets (images, CSS, JS)
@@ -97,9 +98,11 @@ resource "aws_cloudfront_distribution" "frontend" {
       }
     }
 
+    # HTML files carry Cache-Control: no-cache from S3 metadata, so CloudFront
+    # will always revalidate with the origin. TTL here is a ceiling only.
     min_ttl     = 0
-    default_ttl = 300   # 5 minutes (shorter for HTML files)
-    max_ttl     = 86400 # 24 hours
+    default_ttl = 0  # Always respect Cache-Control headers from S3
+    max_ttl     = 60 # At most 60 s if no Cache-Control header present
   }
 
   # Price class
@@ -123,19 +126,28 @@ resource "aws_cloudfront_distribution" "frontend" {
     cloudfront_default_certificate = var.cloudfront_certificate_arn == null && var.certificate_arn == null ? true : null
   }
 
-  # Custom error responses for SPA routing
+  # Custom error responses for SPA routing.
+  # Both 403 (S3 returns 403 for missing keys on private/OAC buckets to prevent
+  # key enumeration) and 404 are mapped to /404.html — a fully self-contained
+  # static page with no _next/ chunks, no meta-refresh, and no auto-redirect,
+  # containing manual language links to /en/, /fr/, /es/.
+  # response_code mirrors the real error code (404) so crawlers, monitoring
+  # tools, and browser devtools receive accurate HTTP status codes and avoid
+  # the "soft 404" anti-pattern that response_code = 200 would cause.
+  # error_caching_min_ttl = 0 ensures a re-deploy that fixes a missing file is
+  # visible immediately at every edge node without a manual cache invalidation.
   custom_error_response {
     error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 10
+    response_code         = 404
+    response_page_path    = "/404.html"
+    error_caching_min_ttl = 0
   }
 
   custom_error_response {
     error_code            = 404
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 10
+    response_code         = 404
+    response_page_path    = "/404.html"
+    error_caching_min_ttl = 0
   }
 
   tags = merge(var.tags, {

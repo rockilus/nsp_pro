@@ -102,7 +102,7 @@ const clearAuthTokens = (): void => {
             key.startsWith("oidc.") ||
             key.includes("cognito") ||
             key.includes("auth") ||
-            key.startsWith("_capacitor_") // Capacitor storage prefix if using mobile
+            key.startsWith("_capacitor_"), // Capacitor storage prefix if using mobile
         );
 
         authKeys.forEach((key) => {
@@ -113,7 +113,7 @@ const clearAuthTokens = (): void => {
           `Error clearing ${
             storage === localStorage ? "localStorage" : "sessionStorage"
           }:`,
-          storageError
+          storageError,
         );
       }
     });
@@ -207,12 +207,64 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 /**
+ * Prunes stale PKCE state entries from localStorage without touching the
+ * currently active one.
+ *
+ * oidc-client-ts stores each sign-in attempt as `oidc.{stateHash}` in
+ * localStorage. On the callback URL, the active hash is embedded in
+ * `?state=`. Any other `oidc.{hash}` key is from an abandoned flow and
+ * can be safely deleted.
+ *
+ * This is safer than `UserManager.clearStaleState()` because that function
+ * uses a time-based threshold (`staleStateAge`) and will delete the active
+ * entry if the user spent too long on the Cognito login page.
+ */
+function pruneOidcState(): void {
+  if (typeof window === "undefined") return;
+
+  const activeState = new URLSearchParams(window.location.search).get("state");
+
+  Object.keys(localStorage)
+    .filter((key) => key.startsWith("oidc.") && !key.startsWith("oidc.user:"))
+    .forEach((key) => {
+      // Keep the entry whose hash matches the current callback's state param.
+      if (activeState && key === `oidc.${activeState}`) return;
+      localStorage.removeItem(key);
+    });
+}
+
+/**
  * Production Auth Provider - Full Cognito OIDC authentication
  */
 function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
   const auth = useOidcAuth();
   const [loading, setLoading] = useState<boolean>(true);
   const [retryingRefresh, setRetryingRefresh] = useState<boolean>(false);
+
+  // On mount: prune stale PKCE state entries left in localStorage by abandoned
+  // sign-in flows. pruneOidcState() is safe to call even during an active
+  // callback because it preserves the entry matching ?state= in the URL.
+  useEffect(() => {
+    pruneOidcState();
+  }, []);
+
+  // Strip ?code=&state= from the URL whenever an auth error is set.
+  // Without this, a failed callback URL stays in the address bar and every
+  // refresh re-triggers the same failed code exchange, creating an infinite
+  // error loop (e.g. "No matching state found in storage" on reload).
+  useEffect(() => {
+    if (!auth.error) return;
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("code") || params.has("state")) {
+      console.warn(
+        "⚠️ Auth error with callback params in URL — stripping to prevent refresh loop:",
+        auth.error.message,
+      );
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [auth.error]);
 
   useEffect(() => {
     // Set loading to false once auth state is determined
@@ -258,20 +310,33 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
         error?.error_description?.includes("Token is not valid")
       ) {
         console.warn(
-          "🔄 Refresh token rotation conflict detected, clearing auth state"
+          "🔄 Refresh token rotation conflict or expiry detected — clearing state and redirecting to login",
         );
         clearAuthTokens();
         // Reset refresh attempt counter on rotation errors
         localStorage.removeItem("refreshAttempts");
         localStorage.removeItem("lastRefreshAttempt");
-        // Don't force immediate redirect for rotation errors - let user decide
+        // Actively redirect to Cognito so the user isn't silently logged out
+        // with no way to recover without a hard refresh.
+        try {
+          await auth.signinRedirect();
+        } catch {
+          // Last resort: send to Cognito login page directly
+          const authUrl =
+            `${cognitoDomain}/oauth2/authorize?` +
+            `client_id=${cognitoAuthConfig.client_id}&` +
+            `response_type=${cognitoAuthConfig.response_type}&` +
+            `scope=${encodeURIComponent(cognitoAuthConfig.scope)}&` +
+            `redirect_uri=${encodeURIComponent(cognitoAuthConfig.redirect_uri)}`;
+          window.location.href = authUrl;
+        }
       }
     };
 
     // Handle access token expiring notification
     const handleAccessTokenExpiring = () => {
       console.log(
-        "⏰ Access token expiring soon, silent renew will be attempted"
+        "⏰ Access token expiring soon, silent renew will be attempted",
       );
 
       // Pre-emptively check network connectivity
@@ -416,7 +481,7 @@ const handleNetworkAwareRefresh = async (auth: any): Promise<void> => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(
-        `🔄 Attempting token refresh (attempt ${attempt}/${maxRetries})`
+        `🔄 Attempting token refresh (attempt ${attempt}/${maxRetries})`,
       );
 
       // Check if we have a valid refresh token before attempting
@@ -445,14 +510,14 @@ const handleNetworkAwareRefresh = async (auth: any): Promise<void> => {
 
         if (attempt < maxRetries) {
           console.log(
-            `🔄 Network error detected, retrying in ${retryDelay}ms...`
+            `🔄 Network error detected, retrying in ${retryDelay}ms...`,
           );
           await new Promise((resolve) => setTimeout(resolve, retryDelay));
           continue;
         } else {
           console.error("❌ Max network retry attempts reached");
           throw new Error(
-            "Network connectivity issues preventing token refresh"
+            "Network connectivity issues preventing token refresh",
           );
         }
       }
@@ -466,7 +531,7 @@ const handleNetworkAwareRefresh = async (auth: any): Promise<void> => {
         console.warn("🔄 Refresh token rotation conflict detected");
         clearAuthTokens();
         throw new Error(
-          "Refresh token rotation conflict - please sign in again"
+          "Refresh token rotation conflict - please sign in again",
         );
       }
 

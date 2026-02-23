@@ -492,6 +492,7 @@ class AssignmentService(BaseService):
         end_date: date,
         include_campaign: bool = False,
         worker_id: Optional[str] = None,
+        shift_types: Optional[List[ShiftType]] = None,
     ) -> AssignmentsRecurrencesResult:
         # Fetch assignments by date range
         assignments = self.collection.assignment_db.get_assignments_by_dates(
@@ -512,6 +513,17 @@ class AssignmentService(BaseService):
         # Filter by worker_id if provided
         if worker_id is not None:
             assignments = [a for a in assignments if a.worker_id == worker_id]
+
+        # Filter by shift_types if provided
+        if shift_types is not None:
+            shifts = self.collection.shift_db.get_shifts(team_id=team_id)
+            shift_type_map: Dict[str, ShiftType] = {s.id: s.shift_type for s in shifts}
+            allowed_types = set(shift_types)
+            assignments = [
+                a
+                for a in assignments
+                if shift_type_map.get(a.shift_id) in allowed_types
+            ]
 
         # Lazy materialization: extend recurrence assignments if needed
         newly_materialized_assignments = self._lazy_materialize_recurrences(

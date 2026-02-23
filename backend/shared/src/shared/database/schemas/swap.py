@@ -24,6 +24,7 @@ class SwapRequestSchema(DocumentBaseSchema):
     requested_assignment_ids: Optional[List[str]] = None
     target_worker: Optional[str] = None
     comment: str
+    offering_worker: Optional[str] = None
     bids: List[Dict[str, Any]]  # List of bid dictionaries
     created_at: float
     completed_at: Optional[float] = None
@@ -49,6 +50,7 @@ class SwapRequestSchema(DocumentBaseSchema):
         doc_dict["swap_type"] = SwapType(doc_dict["swap_type"])
         doc_dict["status"] = SwapStatus(doc_dict["status"])
         doc_dict["target_worker_id"] = doc_dict.pop("target_worker", None)
+        doc_dict["offering_worker_id"] = doc_dict.pop("offering_worker", "") or ""
         doc_dict["completed_by_user_id"] = doc_dict.pop("completed_by_user", None)
         doc_dict["reverted_by_user_id"] = doc_dict.pop("reverted_by_user", None)
 
@@ -86,6 +88,7 @@ class SwapRequestSchema(DocumentBaseSchema):
             offered_assignment_ids=swap_request.offered_assignment_ids,
             requested_assignment_ids=swap_request.requested_assignment_ids,
             target_worker=swap_request.target_worker_id,
+            offering_worker=swap_request.offering_worker_id or None,
             comment=swap_request.comment,
             bids=[bid.to_dict() for bid in swap_request.bids],
             created_at=swap_request.created_at.timestamp(),
