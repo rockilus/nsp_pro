@@ -56,7 +56,7 @@ interface TimeNavigationProps {
 function formatPeriodLabel(
   start: Dayjs,
   end: Dayjs,
-  timeFrame: TimeFrame
+  timeFrame: TimeFrame,
 ): string {
   // Both week and month views use the same formatting logic
   if (start.month() === end.month() && start.year() === end.year()) {
@@ -81,6 +81,11 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
 }) => {
   const { t } = useTranslation(lng, "common");
 
+  const todayTooltip = dayjs().format("DD/MM/YYYY");
+  const previousTooltip =
+    timeFrame === "week" ? t("previous_week") : t("previous_month");
+  const nextTooltip = timeFrame === "week" ? t("next_week") : t("next_month");
+
   return (
     <div className={styles.container}>
       {/* Today Button */}
@@ -90,6 +95,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         className={styles.todayButton}
         data-testid="time-nav-today"
         aria-label="Navigate to today"
+        title={todayTooltip}
       >
         {t("today")}
       </button>
@@ -101,6 +107,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         className={styles.previousButton}
         data-testid="time-nav-previous"
         aria-label="Navigate to previous period"
+        title={previousTooltip}
       >
         <NavigateBeforeIcon />
       </button>
@@ -112,6 +119,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         className={styles.nextButton}
         data-testid="time-nav-next"
         aria-label="Navigate to next period"
+        title={nextTooltip}
       >
         <NavigateNextIcon />
       </button>
@@ -123,7 +131,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         aria-label={`Current period: ${formatPeriodLabel(
           currentPeriodStart,
           currentPeriodEnd,
-          timeFrame
+          timeFrame,
         )}`}
       >
         {formatPeriodLabel(currentPeriodStart, currentPeriodEnd, timeFrame)}
