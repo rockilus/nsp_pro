@@ -44,6 +44,7 @@ interface TemplateListProps {
   onSelectTemplate: (template: TemplateListItem) => void;
   onCreateTemplate: () => void;
   onDeleteTemplate: (templateId: string) => void;
+  onApplyTemplate: (templateId: string) => void;
   onError: (error: string) => void;
   onTemplatesLoaded: (templates: TemplateListItem[]) => void;
   onLoadTemplates: () => Promise<void>;
@@ -61,6 +62,7 @@ export function TemplateList({
   onSelectTemplate,
   onCreateTemplate,
   onDeleteTemplate,
+  onApplyTemplate,
   onError,
   onTemplatesLoaded,
   onLoadTemplates,
@@ -194,8 +196,7 @@ export function TemplateList({
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // TODO: Implement quick apply
-                          onSelectTemplate(template);
+                          onApplyTemplate(template.id);
                         }}
                       >
                         <PlayArrow fontSize="small" />

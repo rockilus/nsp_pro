@@ -618,6 +618,7 @@ export default function TemplateManagementWindow({
                 templates={templates}
                 selectedTemplateId={selectedTemplate?.id || null}
                 onSelectTemplate={handleTemplateSelect}
+                onApplyTemplate={handleTemplateApply}
                 onCreateTemplate={handleCreateNew}
                 onDeleteTemplate={handleTemplateDelete}
                 onError={handleError}
