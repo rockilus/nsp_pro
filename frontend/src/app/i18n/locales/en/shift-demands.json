@@ -1,11 +1,11 @@
 {
-    "title": "Shift Demand Management",
-    "description": "Manage shift demands and staffing requirements for your team.",
-    "select_team_message": "Please select a team to manage shift demands",
+    "title": "Coverage management",
+    "description": "Manage coverage requirements for your team.",
+    "select_team_message": "Please select a team to manage coverage",
     "error_loading_data": "Error loading data",
     "retry": "Retry",
-    "no_shifts_title": "No Shifts Available",
-    "no_shifts_message": "Create shifts first before managing shift demands. Go to the Shifts tab to add work shifts.",
+    "no_shifts_title": "No shifts available",
+    "no_shifts_message": "Create shifts first before managing coverage. Go to the shifts tab to add work shifts.",
     "cancel": "Cancel",
     "save_changes": "Save Changes",
     "pending_changes_message": "You have {{count}} unsaved changes",
@@ -17,11 +17,11 @@
     "selection": "Selection",
     "select": "Select",
     "none": "None",
-    "shift_demands": "Shift demands",
+    "shift_demands": "Besoins",
     "templates": "Templates",
     "save": "Save",
     "delete": "Delete",
     "reset": "Reset",
     "confirm_delete": "Confirm Delete",
-    "delete_selection_confirmation": "Are you sure you want to delete the shift demands for {{count}} selected cells? This action cannot be undone."
+    "delete_selection_confirmation": "Are you sure you want to delete the coverage for {{count}} selected cells? This action cannot be undone."
 }
