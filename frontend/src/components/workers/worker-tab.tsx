@@ -506,6 +506,7 @@ export default function WorkerTab({
               <TableAddButton
                 text={t("worker")}
                 handleClick={handleAddWorker}
+                tooltip={t("create_member_tooltip")}
               />
               <DimensionDialog
                 title={t("new_property")}

@@ -1,6 +1,7 @@
 import * as React from "react";
 // MUI
 import AddIcon from "@mui/icons-material/Add";
+import Tooltip from "@mui/material/Tooltip";
 // Styles
 import "./table-add-button.css";
 
@@ -8,12 +9,14 @@ const TableAddButton = ({
   text,
   handleClick,
   showIcon = true,
+  tooltip,
 }: {
   text: string;
   handleClick?: () => void;
   showIcon?: boolean;
+  tooltip?: string;
 }) => {
-  return (
+  const button = (
     <button
       className="add-button"
       onClick={() => handleClick && handleClick()}
@@ -23,5 +26,7 @@ const TableAddButton = ({
       {text}
     </button>
   );
+
+  return tooltip ? <Tooltip title={tooltip}>{button}</Tooltip> : button;
 };
 export default TableAddButton;
