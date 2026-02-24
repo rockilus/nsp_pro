@@ -176,21 +176,33 @@ export default function ShiftTab({
   };
 
   const DefaultWorkShiftFields: Record<string, string>[] = [
-    { name: "color", label: t("color") },
-    { name: "name", label: t("name") },
-    { name: "acronym", label: t("acronym") },
-    { name: "duty", label: t("duty") },
-    { name: "recuperation", label: t("recuperation") },
-    { name: "start_time", label: t("start_time") },
-    { name: "end_time", label: t("end_time") },
-    { name: "staffing", label: t("staffing") },
+    { name: "color", label: t("color"), tooltip: t("color_tooltip") },
+    { name: "name", label: t("name"), tooltip: t("name_tooltip") },
+    { name: "acronym", label: t("acronym"), tooltip: t("acronym_tooltip") },
+    { name: "duty", label: t("duty"), tooltip: t("duty_tooltip") },
+    {
+      name: "recuperation",
+      label: t("recuperation"),
+      tooltip: t("recuperation_tooltip"),
+    },
+    {
+      name: "start_time",
+      label: t("start_time"),
+      tooltip: t("start_time_tooltip"),
+    },
+    { name: "end_time", label: t("end_time"), tooltip: t("end_time_tooltip") },
+    { name: "staffing", label: t("staffing"), tooltip: t("staffing_tooltip") },
   ];
   const DefaultRestShiftFields: Record<string, string>[] = [
-    { name: "color", label: t("color") },
-    { name: "name", label: t("name") },
-    { name: "acronym", label: t("acronym") },
-    { name: "start_time", label: t("start_time") },
-    { name: "end_time", label: t("end_time") },
+    { name: "color", label: t("color"), tooltip: t("color_tooltip") },
+    { name: "name", label: t("name"), tooltip: t("name_tooltip") },
+    { name: "acronym", label: t("acronym"), tooltip: t("acronym_tooltip") },
+    {
+      name: "start_time",
+      label: t("start_time"),
+      tooltip: t("start_time_tooltip"),
+    },
+    { name: "end_time", label: t("end_time"), tooltip: t("end_time_tooltip") },
   ];
 
   const roundTime = (dt: dayjs.Dayjs): dayjs.Dayjs => {
@@ -534,18 +546,25 @@ export default function ShiftTab({
                     />
                     <TableAddButton
                       text={t("shift")}
+                      tooltip={t("create_shift_tooltip")}
                       handleClick={() => handleAddShift(false)}
                     />
                   </>
                 ) : (
                   <TableAddButton
                     text={t("rest")}
+                    tooltip={t("create_rest_tooltip")}
                     handleClick={() => handleAddShift(true)}
                   />
                 )}
                 <DimensionDialog
                   title={t("new_property")}
-                  buttonContent={<TableAddButton text={t("property")} />}
+                  buttonContent={
+                    <TableAddButton
+                      text={t("property")}
+                      tooltip={t("create_property_tooltip")}
+                    />
+                  }
                   content={
                     <NewDimensionForm
                       lng={lng}

@@ -64,6 +64,7 @@ export default function LinkShiftDialog({
       <div className="ls-button-container">
         <TableAddButton
           text={t("link_shifts")}
+          tooltip={t("link_shifts_tooltip")}
           handleClick={handleClickOpen}
           showIcon={false}
         />

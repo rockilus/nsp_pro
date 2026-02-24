@@ -80,7 +80,7 @@ export default function ShiftTable({
   const dimensionsDisplayed = dimensions.filter((dim: DimensionT) =>
     isRest
       ? dim.dimTypes.includes(DimensionType.REST_SHIFT)
-      : dim.dimTypes.includes(DimensionType.SHIFT)
+      : dim.dimTypes.includes(DimensionType.SHIFT),
   );
 
   // Memoize filtered dimensions for performance
@@ -89,9 +89,9 @@ export default function ShiftTable({
       dimensions.filter((dim: DimensionT) =>
         isRest
           ? dim.dimTypes.includes(DimensionType.REST_SHIFT)
-          : dim.dimTypes.includes(DimensionType.SHIFT)
+          : dim.dimTypes.includes(DimensionType.SHIFT),
       ),
-    [dimensions, isRest]
+    [dimensions, isRest],
   );
 
   return (
@@ -126,7 +126,7 @@ export default function ShiftTable({
                     }}
                   >
                     <div className="flex items-center justify-between">
-                      <Tooltip title={field.label} placement="top">
+                      <Tooltip title={field.tooltip} placement="top">
                         <span className="table-header-default">
                           {field.label}
                         </span>
@@ -136,7 +136,7 @@ export default function ShiftTable({
                         shiftColumns &&
                         (() => {
                           const column = shiftColumns.find(
-                            (col) => col.id === field.name
+                            (col) => col.id === field.name,
                           );
                           return column ? (
                             <ColumnSortFilterMenu
@@ -154,7 +154,7 @@ export default function ShiftTable({
                         })()}
                     </div>
                   </TableCell>
-                )
+                ),
               )}
               {displayedDimensions.map((dim: DimensionT, dIndex: number) => (
                 <DimensionCell
@@ -166,11 +166,11 @@ export default function ShiftTable({
                   }
                   dimension={dim}
                   dimEntries={dimEntries.filter(
-                    (de: DimEntryT) => de.dimensionId === dim.id
+                    (de: DimEntryT) => de.dimensionId === dim.id,
                   )}
                   // Add sorting/filtering props
                   column={shiftColumns?.find(
-                    (col) => col.id === `dimension_${dim.id}`
+                    (col) => col.id === `dimension_${dim.id}`,
                   )}
                   currentSort={
                     currentSort?.columnId === `dimension_${dim.id}`
@@ -194,11 +194,7 @@ export default function ShiftTable({
               <TableCell
                 className="shared-table-actions-header"
                 sx={{ padding: 0 }}
-              >
-                <Tooltip title={t("actions")} placement="top">
-                  <span className="table-header-default">{t("actions")}</span>
-                </Tooltip>
-              </TableCell>
+              ></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -227,11 +223,11 @@ export default function ShiftTable({
                       setEditing={setBodyEditing}
                       handleUpdateShift={handleUpdateShift}
                     />
-                  )
+                  ),
                 )}
                 {displayedDimensions.map((dim: DimensionT, dIndex: number) => {
                   const attribute = shift.attributes.find(
-                    (a: AttributeT) => a.dimensionId === dim.id
+                    (a: AttributeT) => a.dimensionId === dim.id,
                   );
                   return (
                     <AttributeCell
@@ -254,7 +250,7 @@ export default function ShiftTable({
                       }
                       dimension={dim}
                       dimEntries={dimEntries.filter(
-                        (de: DimEntryT) => de.dimensionId === dim.id
+                        (de: DimEntryT) => de.dimensionId === dim.id,
                       )}
                       editing={bodyEditing[shift.id] === dim.id}
                       setEditing={setBodyEditing}
@@ -274,7 +270,7 @@ export default function ShiftTable({
                   sx={{ paddingY: 0 }}
                 >
                   <Box sx={{ display: "flex", justifyContent: "center" }}>
-                    <Tooltip title="Delete Shift">
+                    <Tooltip title={t("delete_shift_tooltip")}>
                       <Button
                         disabled={
                           shift.leaveType !== ShiftLeaveType.NONE ||
