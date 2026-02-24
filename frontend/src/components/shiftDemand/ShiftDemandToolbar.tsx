@@ -3,7 +3,7 @@ import { useTranslation } from "../../app/i18n/client";
 import dayjs, { Dayjs } from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 // MUI
-import { Box, Paper, Button } from "@mui/material";
+import { Box, Paper, Button, Tooltip } from "@mui/material";
 import { Description, Group } from "@mui/icons-material";
 // Components
 import { TimeNavigation } from "../common/TimeNavigation";
@@ -168,56 +168,70 @@ export function ShiftDemandToolbar({
 
         {/* Right side - Template Management, Bulk Select, Multitasking */}
         <Box display="flex" gap={1} alignItems="center">
-          <Button
-            data-testid="shift-demand-template-button"
-            variant="outlined"
-            startIcon={<Description />}
-            onClick={onOpenTemplates}
-            disabled={isLoading}
-            sx={{
-              height: "35px",
-              fontSize: "0.9rem",
-              fontWeight: 550,
-              textTransform: "none",
-              minWidth: "auto",
-              px: 2,
-            }}
-          >
-            {t("templates")}
-          </Button>
+          <Tooltip title={t("templates_tooltip")}>
+            <span style={{ display: "inline-block" }}>
+              <Button
+                data-testid="shift-demand-template-button"
+                variant="outlined"
+                startIcon={<Description />}
+                onClick={onOpenTemplates}
+                disabled={isLoading}
+                sx={{
+                  height: "35px",
+                  fontSize: "0.9rem",
+                  fontWeight: 550,
+                  textTransform: "none",
+                  minWidth: "auto",
+                  px: 2,
+                }}
+              >
+                {t("templates")}
+              </Button>
+            </span>
+          </Tooltip>
 
           {/* Bulk Select Button */}
-          <button
-            data-testid="shift-demand-select-button"
-            onClick={onToggleBulkMode}
-            disabled={isLoading || multitaskingModeActive}
-            style={{
-              borderRadius: "4px",
-              border: "1px solid #e5e7eb",
-              height: "35px",
-              padding: "0 15px",
-              fontSize: "0.9rem",
-              fontWeight: 550,
-              color: bulkModeActive ? "white" : "#616161",
-              backgroundColor: bulkModeActive ? "#1976d2" : "white",
-              cursor:
-                isLoading || multitaskingModeActive ? "not-allowed" : "pointer",
-              transition: "background-color 0.2s ease",
-              opacity: multitaskingModeActive ? 0.5 : 1,
-            }}
-            onMouseEnter={(e) => {
-              if (!isLoading && !bulkModeActive && !multitaskingModeActive) {
-                e.currentTarget.style.backgroundColor = "#f0f0f0";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!bulkModeActive && !multitaskingModeActive) {
-                e.currentTarget.style.backgroundColor = "white";
-              }
-            }}
-          >
-            {t("select")}
-          </button>
+          <Tooltip title={t("select_tooltip")}>
+            <span style={{ display: "inline-block" }}>
+              <button
+                data-testid="shift-demand-select-button"
+                onClick={onToggleBulkMode}
+                disabled={isLoading || multitaskingModeActive}
+                style={{
+                  borderRadius: "4px",
+                  border: "1px solid #e5e7eb",
+                  height: "35px",
+                  padding: "0 15px",
+                  fontSize: "0.9rem",
+                  fontWeight: 550,
+                  color: bulkModeActive ? "white" : "#616161",
+                  backgroundColor: bulkModeActive ? "#1976d2" : "white",
+                  cursor:
+                    isLoading || multitaskingModeActive
+                      ? "not-allowed"
+                      : "pointer",
+                  transition: "background-color 0.2s ease",
+                  opacity: multitaskingModeActive ? 0.5 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (
+                    !isLoading &&
+                    !bulkModeActive &&
+                    !multitaskingModeActive
+                  ) {
+                    e.currentTarget.style.backgroundColor = "#f0f0f0";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!bulkModeActive && !multitaskingModeActive) {
+                    e.currentTarget.style.backgroundColor = "white";
+                  }
+                }}
+              >
+                {t("select")}
+              </button>
+            </span>
+          </Tooltip>
 
           {/* Multitasking Button */}
           {/* <button
