@@ -32,6 +32,8 @@
     "parental_leave_morning": "Licencia parental mañana",
     "parental_leave_afternoon": "Licencia parental tarde",
     "property": "Propiedad",
+    "property_new_option": "Nueva opción",
+    "property_new_option_helper_text": "Por favor, introduce una nueva opción",
     "property_type": "Tipo de propiedad",
     "property_type_helper_text": "Por favor, selecciona un tipo de propiedad",
     "recuperation": "Recup (h)",

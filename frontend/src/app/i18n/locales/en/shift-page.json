@@ -32,6 +32,8 @@
     "parental_leave_morning": "Parental leave morning",
     "parental_leave_afternoon": "Parental leave afternoon",
     "property": "Property",
+    "property_new_option": "New option",
+    "property_new_option_helper_text": "Please enter an option",
     "property_type": "Property type",
     "property_type_helper_text": "Please select an option",
     "recuperation": "Recup (h)",

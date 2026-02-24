@@ -32,6 +32,8 @@
     "parental_leave_morning": "Congé parental matin",
     "parental_leave_afternoon": "Congé parental après-midi",
     "property": "Propriété",
+    "property_new_option": "Nouvelle option",
+    "property_new_option_helper_text": "Entrez une nouvelle option",
     "property_type": "Type de propriété",
     "property_type_helper_text": "Sélectionnez le type de propriété",
     "recuperation": "RC (h)",

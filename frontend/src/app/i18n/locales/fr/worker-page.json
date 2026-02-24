@@ -1,5 +1,5 @@
 {
-    "acronym": "Acronyme",
+    "acronym": "Code",
     "add": "Ajouter",
     "annual_leave": "Congés (jours)",
     "cancel": "Annuler",
@@ -26,6 +26,6 @@
     "update_specialties": "Mettre à jour les spécialités",
     "weekly_hours": "Heures hebdomadaires",
     "weekly_hours_desired": "Heures hebdomadaires souhaitées",
-    "worker": "Travailleur",
-    "workers": "Travailleurs"
+    "worker": "Membre",
+    "workers": "Membres"
 }

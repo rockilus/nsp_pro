@@ -39,6 +39,7 @@ i18next
     ns: [
       "translation",
       "request-page",
+      "shift-page",
       "stats-page",
       "schedule-page",
       "common",

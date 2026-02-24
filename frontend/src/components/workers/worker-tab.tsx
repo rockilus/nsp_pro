@@ -157,15 +157,43 @@ export default function WorkerTab({
   );
 
   const DefaultWorkerFields: Record<string, string>[] = [
-    { name: "name", label: t("name") },
-    { name: "acronym", label: t("acronym") },
-    { name: "employmentStartDate", label: t("employment_start_date") },
-    { name: "employmentEndDate", label: t("employment_end_date") },
-    { name: "specialties", label: t("specialties") },
-    { name: "weeklyHours", label: t("weekly_hours") },
-    { name: "weeklyHoursDesired", label: t("weekly_hours_desired") },
-    { name: "dutiesPerMonth", label: t("duties_per_month") },
-    { name: "annualLeave", label: t("annual_leave") },
+    { name: "name", label: t("name"), tooltip: t("name_tooltip") },
+    { name: "acronym", label: t("acronym"), tooltip: t("acronym_tooltip") },
+    {
+      name: "employmentStartDate",
+      label: t("employment_start_date"),
+      tooltip: t("employment_start_date_tooltip"),
+    },
+    {
+      name: "employmentEndDate",
+      label: t("employment_end_date"),
+      tooltip: t("employment_end_date_tooltip"),
+    },
+    {
+      name: "specialties",
+      label: t("specialties"),
+      tooltip: t("specialties_tooltip"),
+    },
+    {
+      name: "weeklyHours",
+      label: t("weekly_hours"),
+      tooltip: t("weekly_hours_tooltip"),
+    },
+    {
+      name: "weeklyHoursDesired",
+      label: t("weekly_hours_desired"),
+      tooltip: t("weekly_hours_desired_tooltip"),
+    },
+    {
+      name: "dutiesPerMonth",
+      label: t("duties_per_month"),
+      tooltip: t("duties_per_month_tooltip"),
+    },
+    {
+      name: "annualLeave",
+      label: t("annual_leave"),
+      tooltip: t("annual_leave_tooltip"),
+    },
   ];
 
   //////////////////////////
@@ -472,7 +500,7 @@ export default function WorkerTab({
               aria-level={1}
               data-testid="workers-page-heading"
             >
-              {t("workers")}
+              {t("team")}
             </span>
             <div style={{ display: "flex", gap: "8px" }}>
               <TableAddButton

@@ -30,7 +30,7 @@ export default function UpdateDimensionDimEntriesInput({
   updateDimEntry: (dimEntry: DimEntryT) => void;
   deleteDimEntry: (dimEntryId: string) => void;
 }) {
-  const { t } = useTranslation(lng, "inputs-components");
+  const { t } = useTranslation(lng, "shift-page");
 
   const [newDimEntry, setNewDimEntry] = useState<DimEntryT>({
     id: "",
@@ -39,7 +39,7 @@ export default function UpdateDimensionDimEntriesInput({
     deleted: false,
   });
   const [DimEntryEditing, setDimEntryEditing] = useState<DimEntryT | null>(
-    null
+    null,
   );
   const [error, setError] = useState<boolean>(false);
   const [errorEditing, setErrorEditing] = useState<boolean>(false);

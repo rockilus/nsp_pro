@@ -49,7 +49,7 @@ export default function WorkerSpecialtyHeaderCell({
 
   const cellContent = () => (
     <div className="table-header-default flex items-center justify-between">
-      <Tooltip title={t("specialties")} placement="top">
+      <Tooltip title={t("specialties_tooltip")} placement="top">
         <span>{t("specialties")}</span>
       </Tooltip>
       <div className="flex items-center gap-1">
