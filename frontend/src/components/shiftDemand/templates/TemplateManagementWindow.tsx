@@ -50,7 +50,6 @@ import {
 import { TemplateList } from "./TemplateList";
 import { TemplateViewer } from "./TemplateViewer";
 import { TemplateCreationDialog } from "./TemplateCreationDialog";
-import { TemplateApplicationDialog } from "./TemplateApplicationDialog";
 import TemplateApplicationToRangeDialog from "./TemplateApplicationToRangeDialog";
 
 // Import CSS
@@ -96,12 +95,8 @@ export default function TemplateManagementWindow({
     useState<ShiftDemandTemplateDTO | null>(null);
   const [viewMode, setViewMode] = useState<TemplateViewMode>("list");
   const [showCreationDialog, setShowCreationDialog] = useState(false);
-  const [showApplicationDialog, setShowApplicationDialog] = useState(false);
   const [showRangeApplicationDialog, setShowRangeApplicationDialog] =
     useState(false);
-  const [templateToApplyId, setTemplateToApplyId] = useState<string | null>(
-    null
-  );
   const [templateToApply, setTemplateToApply] =
     useState<ShiftDemandTemplateDTO | null>(null);
 
@@ -131,8 +126,6 @@ export default function TemplateManagementWindow({
       setSelectedTemplate(null);
       setViewMode("list");
       setShowCreationDialog(false);
-      setShowApplicationDialog(false);
-      setTemplateToApplyId(null);
       setError(null);
       setSuccessMessage(null);
       setSidebarVisible(true); // Reset sidebar visibility
@@ -157,11 +150,11 @@ export default function TemplateManagementWindow({
         }
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : t("error_loading_template")
+          error instanceof Error ? error.message : t("error_loading_template"),
         );
       }
     },
-    [getTemplate, teamId, isMobile, t]
+    [getTemplate, teamId, isMobile, t],
   );
 
   const handleTemplateApply = async (templateId?: string) => {
@@ -175,7 +168,6 @@ export default function TemplateManagementWindow({
         }
 
         setTemplateToApply(templateToUse);
-        setTemplateToApplyId(idToUse);
         setShowRangeApplicationDialog(true);
       } catch (error) {
         console.error("Failed to fetch template for application:", error);
@@ -192,11 +184,11 @@ export default function TemplateManagementWindow({
       // Trigger template list refresh by updating templates state
       setTemplates((prev) => prev.filter((t) => t.id !== templateId));
     },
-    [t]
+    [t],
   );
 
   const handleTemplateCreated = async (
-    templateData: ShiftDemandTemplateCreateDTO
+    templateData: ShiftDemandTemplateCreateDTO,
   ) => {
     try {
       // Create the template via hook
@@ -232,27 +224,17 @@ export default function TemplateManagementWindow({
     }
   };
 
-  const handleTemplateApplied = () => {
-    setShowApplicationDialog(false);
-    setTemplateToApplyId(null);
-    setSuccessMessage(t("template_applied_successfully"));
-
-    // Notify parent component to refresh shift demand data
-    onTemplateApplied?.();
-  };
-
   const handleRangeApplicationComplete = (
-    result: TemplateApplicationResult
+    result: TemplateApplicationResult,
   ) => {
     setShowRangeApplicationDialog(false);
-    setTemplateToApplyId(null);
     setTemplateToApply(null);
     setSuccessMessage(
       t("template_applied_successfully_with_counts", {
         created: result.demandsCreated,
         updated: result.demandsUpdated,
         deleted: result.demandsDeleted,
-      })
+      }),
     );
 
     // Notify parent component to refresh shift demand data
@@ -266,7 +248,7 @@ export default function TemplateManagementWindow({
   };
 
   const handleApplyTemplateToRange = async (
-    request: ApplyTemplateToDateRangeDTO
+    request: ApplyTemplateToDateRangeDTO,
   ): Promise<TemplateApplicationResult> => {
     if (!templateToApply) {
       throw new Error("No template selected for application");
@@ -276,7 +258,7 @@ export default function TemplateManagementWindow({
       return await applyTemplateToDateRange(
         templateToApply.id,
         teamId,
-        request
+        request,
       );
     } catch (error) {
       console.error("Failed to apply template to date range:", error);
@@ -313,7 +295,7 @@ export default function TemplateManagementWindow({
     (loadedTemplates: TemplateListItem[]) => {
       setTemplates(loadedTemplates);
     },
-    []
+    [],
   );
 
   const handleLoadTemplates = useCallback(async () => {
@@ -333,14 +315,14 @@ export default function TemplateManagementWindow({
           createdAt: dayjs(template.createdAt * 1000), // Convert timestamp to milliseconds
           updatedAt: dayjs(template.updatedAt * 1000), // Convert timestamp to milliseconds
           totalDemands: TemplateUtils.calculateTotalDemands(template),
-        })
+        }),
       );
 
       setTemplates(listItems);
     } catch (error) {
       console.error("Failed to load templates:", error);
       setError(
-        error instanceof Error ? error.message : "Failed to load templates"
+        error instanceof Error ? error.message : "Failed to load templates",
       );
     }
   }, [teamId, getTemplates]);
@@ -353,17 +335,17 @@ export default function TemplateManagementWindow({
       } catch (error) {
         console.error("Failed to delete template:", error);
         setError(
-          error instanceof Error ? error.message : "Failed to delete template"
+          error instanceof Error ? error.message : "Failed to delete template",
         );
         throw error;
       }
     },
-    [deleteTemplate, teamId, handleTemplateDelete]
+    [deleteTemplate, teamId, handleTemplateDelete],
   );
 
   // Centralized template update handlers
   const handleUpdateTemplate = async (
-    updates: Partial<ShiftDemandTemplateDTO>
+    updates: Partial<ShiftDemandTemplateDTO>,
   ) => {
     if (!selectedTemplate) return;
 
@@ -372,7 +354,7 @@ export default function TemplateManagementWindow({
       const updatedTemplate = await updateTemplate(
         selectedTemplate.id,
         teamId,
-        updates
+        updates,
       );
 
       // Update local state
@@ -381,7 +363,7 @@ export default function TemplateManagementWindow({
     } catch (error) {
       console.error("Failed to update template:", error);
       setError(
-        error instanceof Error ? error.message : t("error_updating_template")
+        error instanceof Error ? error.message : t("error_updating_template"),
       );
       throw error; // Re-throw so child components can handle loading states
     } finally {
@@ -478,7 +460,7 @@ export default function TemplateManagementWindow({
     } catch (error) {
       console.error("Failed to delete template:", error);
       setError(
-        error instanceof Error ? error.message : t("error_deleting_template")
+        error instanceof Error ? error.message : t("error_deleting_template"),
       );
       throw error;
     }
@@ -486,7 +468,7 @@ export default function TemplateManagementWindow({
 
   const handleApplyDemandsToTemplateWeek = async (
     sourceWeekStartDate: number,
-    targetWeekNumber: number
+    targetWeekNumber: number,
   ) => {
     if (!selectedTemplate) return;
 
@@ -501,7 +483,7 @@ export default function TemplateManagementWindow({
       const updatedTemplate = await applyDemandsToTemplateWeek(
         selectedTemplate.id,
         teamId,
-        request
+        request,
       );
 
       // Update local state
@@ -512,7 +494,7 @@ export default function TemplateManagementWindow({
       setError(
         error instanceof Error
           ? error.message
-          : t("failed_to_apply_demands_to_template_week")
+          : t("failed_to_apply_demands_to_template_week"),
       );
       throw error; // Re-throw so child components can handle loading states
     } finally {
@@ -671,22 +653,6 @@ export default function TemplateManagementWindow({
         onError={handleError}
       />
 
-      {/* Template Application Dialog */}
-      {templateToApplyId && (
-        <TemplateApplicationDialog
-          lng={lng}
-          open={showApplicationDialog}
-          onClose={() => {
-            setShowApplicationDialog(false);
-            setTemplateToApplyId(null);
-          }}
-          templateId={templateToApplyId}
-          currentPeriod={currentPeriod}
-          onApplicationComplete={handleTemplateApplied}
-          onError={handleError}
-        />
-      )}
-
       {/* Error Snackbar */}
       <Snackbar
         open={!!error}
@@ -726,7 +692,6 @@ export default function TemplateManagementWindow({
           open={showRangeApplicationDialog}
           onClose={() => {
             setShowRangeApplicationDialog(false);
-            setTemplateToApplyId(null);
             setTemplateToApply(null);
           }}
           template={templateToApply}
