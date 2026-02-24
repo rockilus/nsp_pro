@@ -510,7 +510,12 @@ export default function WorkerTab({
               />
               <DimensionDialog
                 title={t("new_property")}
-                buttonContent={<TableAddButton text={t("property")} />}
+                buttonContent={
+                  <TableAddButton
+                    text={t("property")}
+                    tooltip={t("create_property_tooltip")}
+                  />
+                }
                 content={
                   <NewDimensionForm
                     lng={lng}

@@ -1,5 +1,6 @@
 {
     "acronym": "Code",
+    "acronym_tooltip": "Short identifier for the member",
     "add": "Add",
     "annual_leave": "Leave (days)",
     "annual_leave_tooltip": "Number of annual leave days",
@@ -8,6 +9,7 @@
     "create_property_tooltip": "Add a new attribute to members (e.g. location), used for filtering by shift or rules",
     "delete": "Delete",
     "delete_confirm": "Delete all",
+    "delete_member_tooltip": "Delete member",
     "delete_text": "Deleting this attribute will remove it from all members. This action cannot be undone.",
     "delete_title": "Delete this attribute for all?",
     "duties_per_month": "Duty/month",

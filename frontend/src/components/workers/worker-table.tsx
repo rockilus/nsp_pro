@@ -457,6 +457,8 @@ function WorkerTableRow({
   handleDeleteWorker,
   handleUpdateAttribute,
 }: WorkerTableRowProps) {
+  const { t } = useTranslation(lng, "worker-page");
+
   return (
     <TableRow
       className="worker-table-row"
@@ -526,7 +528,7 @@ function WorkerTableRow({
         data-testid="worker-actions-cell"
       >
         <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Tooltip title="Delete Worker">
+          <Tooltip title={t("delete_member_tooltip")}>
             <Button
               onClick={() => handleDeleteWorker(worker.id)}
               size="small"
