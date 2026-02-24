@@ -6,7 +6,7 @@ import utc from "dayjs/plugin/utc";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import MobileShiftTab from "./mobile/mobile-shift-tab";
 // MUI
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 // Components
 import ShiftTable from "./shift-table";
 import TableFilterBar from "../table/TableFilterBar";
@@ -529,8 +529,16 @@ export default function ShiftTab({
                   size="small"
                   sx={{ ml: 2, height: "35px" }}
                 >
-                  <ToggleButton value="work">{t("shifts")}</ToggleButton>
-                  <ToggleButton value="rest">{t("rest")}</ToggleButton>
+                  <Tooltip title={t("shifts_tooltip") || t("shifts")}>
+                    <span>
+                      <ToggleButton value="work">{t("shifts")}</ToggleButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={t("rest_tooltip") || t("rest")}>
+                    <span>
+                      <ToggleButton value="rest">{t("rest")}</ToggleButton>
+                    </span>
+                  </Tooltip>
                 </ToggleButtonGroup>
               </div>
               <div className="shift-actions-container">
