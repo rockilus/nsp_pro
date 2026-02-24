@@ -47,7 +47,7 @@ interface TemplateApplicationToRangeDialogProps {
   onApplicationComplete: (result: TemplateApplicationResult) => void;
   onError: (error: string) => void;
   onApplyTemplate: (
-    request: ApplyTemplateToDateRangeDTO
+    request: ApplyTemplateToDateRangeDTO,
   ) => Promise<TemplateApplicationResult>;
 }
 
@@ -64,8 +64,10 @@ export default function TemplateApplicationToRangeDialog({
   const { t } = useTranslation(lng, "shift-demand-templates");
 
   // State management
-  const [startDate, setStartDate] = useState<Dayjs | null>(null);
-  const [endDate, setEndDate] = useState<Dayjs | null>(null);
+  // Default start date one month from today (UTC) and end date defaults to same
+  const defaultStart = dayjs.utc().add(1, "month").startOf("day");
+  const [startDate, setStartDate] = useState<Dayjs | null>(defaultStart);
+  const [endDate, setEndDate] = useState<Dayjs | null>(defaultStart);
   const [overwriteExisting, setOverwriteExisting] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -78,6 +80,11 @@ export default function TemplateApplicationToRangeDialog({
     } else {
       if (endDate.isBefore(startDate)) {
         errors.push(t("end_date_before_start_date"));
+      }
+
+      // Start date must not be in the past (compare to UTC start of today)
+      if (startDate.isBefore(dayjs.utc().startOf("day"))) {
+        errors.push(t("start_date_in_past"));
       }
 
       const daysDiff = endDate.diff(startDate, "days") + 1;
@@ -115,7 +122,8 @@ export default function TemplateApplicationToRangeDialog({
     setStartDate(utcDate);
     // Auto-adjust end date if it becomes invalid
     if (utcDate && endDate && endDate.isBefore(utcDate)) {
-      setEndDate(utcDate.add(6, "days")); // Default to 1 week
+      // Ensure end date is on or after the new start date — make it the same day
+      setEndDate(utcDate);
     }
   };
 
@@ -156,7 +164,7 @@ export default function TemplateApplicationToRangeDialog({
       onError(
         error instanceof Error
           ? error.message
-          : t("template_application_failed")
+          : t("template_application_failed"),
       );
     } finally {
       setLoading(false);
@@ -205,21 +213,37 @@ export default function TemplateApplicationToRangeDialog({
 
       <DialogContent>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          {/* Preview */}
+          {previewData && (
+            <Box>
+              {template.templateType === TemplateType.STANDARD && (
+                <Typography variant="body2" color="text.secondary">
+                  {t("standard_template_range_explanation", {
+                    weeks: template.weeksData.length,
+                  })}
+                </Typography>
+              )}
+
+              {template.templateType === TemplateType.EVEN_ODD && (
+                <Typography variant="body2" color="text.secondary">
+                  {t("even_odd_template_range_explanation")}
+                </Typography>
+              )}
+            </Box>
+          )}
           {/* Date Range Selection */}
           <Box>
-            <Typography variant="subtitle1" gutterBottom>
-              {t("select_date_range")}
-            </Typography>
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
               <DatePicker
                 label={t("start_date")}
                 value={startDate}
                 onChange={handleStartDateChange}
                 timezone="UTC"
+                minDate={dayjs.utc().startOf("day")}
                 slotProps={{
                   textField: {
                     error: validation.errors.some(
-                      (e) => e.includes("required") || e.includes("before")
+                      (e) => e.includes("required") || e.includes("before"),
                     ),
                     sx: { minWidth: 200 },
                     inputProps: {
@@ -237,7 +261,7 @@ export default function TemplateApplicationToRangeDialog({
                 slotProps={{
                   textField: {
                     error: validation.errors.some(
-                      (e) => e.includes("required") || e.includes("before")
+                      (e) => e.includes("required") || e.includes("before"),
                     ),
                     sx: { minWidth: 200 },
                     inputProps: {
@@ -251,9 +275,6 @@ export default function TemplateApplicationToRangeDialog({
 
           {/* Options */}
           <Box>
-            <Typography variant="subtitle1" gutterBottom>
-              {t("application_options")}
-            </Typography>
             <FormControlLabel
               data-testid="template-application-overwrite-switch"
               control={
@@ -268,7 +289,7 @@ export default function TemplateApplicationToRangeDialog({
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               {overwriteExisting
                 ? t("overwrite_range_warning")
-                : t("merge_not_implemented")}
+                : t("merge_template_with_existing_warning")}
             </Typography>
           </Box>
 
@@ -280,46 +301,6 @@ export default function TemplateApplicationToRangeDialog({
                   <li key={index}>{error}</li>
                 ))}
               </ul>
-            </Alert>
-          )}
-
-          {/* Preview */}
-          {previewData && (
-            <Box>
-              <Typography variant="subtitle1" gutterBottom>
-                {t("application_preview")}
-              </Typography>
-              <Alert severity="info" sx={{ mb: 2 }}>
-                <Typography variant="body2">
-                  {t("template_application_summary", {
-                    days: previewData.totalDays,
-                    weeks: previewData.weekCount,
-                    templateWeeks: previewData.templateWeeks,
-                  })}
-                </Typography>
-              </Alert>
-
-              {template.templateType === TemplateType.STANDARD && (
-                <Typography variant="body2" color="text.secondary">
-                  {t("standard_template_range_explanation", {
-                    weeks: template.weeksData.length,
-                  })}
-                </Typography>
-              )}
-
-              {template.templateType === TemplateType.EVEN_ODD && (
-                <Typography variant="body2" color="text.secondary">
-                  {t("even_odd_template_range_explanation")}
-                </Typography>
-              )}
-            </Box>
-          )}
-
-          {overwriteExisting && (
-            <Alert severity="warning">
-              <Typography variant="body2">
-                {t("overwrite_demands_warning")}
-              </Typography>
             </Alert>
           )}
         </Box>
