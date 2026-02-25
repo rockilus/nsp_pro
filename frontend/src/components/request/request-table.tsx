@@ -48,16 +48,18 @@ import { ColumnDefinition, ColumnFilter } from "../../types/filter";
 const WorkerCell = ({
   request,
   workers,
+  t,
 }: {
   request: RequestT;
   workers: WorkerT[];
+  t: any;
 }) => {
   const worker = workers.find((w) => w.id === request.workerId);
   return (
     <div className="flex flex-col">
-      <span className="font-medium">{worker?.name || "Unknown"}</span>
+      <span className="font-medium">{worker?.name || t("unknown")}</span>
       {worker?.deleted && (
-        <span className="text-xs text-red-500">Worker deleted</span>
+        <span className="text-xs text-red-500">{t("worker")} deleted</span>
       )}
     </div>
   );
@@ -79,7 +81,7 @@ const ShiftCell = ({
 
   if (request.requestType === RequestType.LEAVE) {
     if (!request.shiftId) {
-      return <Chip label="All Day" size="small" variant="outlined" />;
+      return <Chip label={t("all_day")} size="small" variant="outlined" />;
     }
     const shift = shifts.find((s) => s.id === request.shiftId);
 
@@ -87,8 +89,8 @@ const ShiftCell = ({
     if (shift?.deleted) {
       return (
         <div className="flex flex-col">
-          <span>{shift?.name || "Unknown"}</span>
-          <span className="text-xs text-red-500">Shift deleted</span>
+          <span>{shift?.name || t("unknown")}</span>
+          <span className="text-xs text-red-500">{t("shift")} deleted</span>
         </div>
       );
     }
@@ -113,7 +115,9 @@ const ShiftCell = ({
   } else {
     // Work request - show shift preferences
     if (request.shiftOptions.length === 0) {
-      return <Chip label="No Preferences" size="small" variant="outlined" />;
+      return (
+        <Chip label={t("no_preferences")} size="small" variant="outlined" />
+      );
     }
 
     const displayText = getRequestTargetDisplayText(
@@ -142,37 +146,50 @@ const ShiftCell = ({
   }
 };
 
-const DateCell = ({ request }: { request: RequestT }) => {
-  if (request.startDate.isSame(request.endDate, "day")) {
+const DateCell = ({
+  request,
+  lng,
+  t,
+}: {
+  request: RequestT;
+  lng: string;
+  t: any;
+}) => {
+  // Use localized formatting on the date object (assumes dayjs/moment-like API)
+  const start = request.startDate.locale
+    ? request.startDate.locale(lng)
+    : request.startDate;
+  const end = request.endDate.locale
+    ? request.endDate.locale(lng)
+    : request.endDate;
+
+  if (start.isSame(end, "day")) {
     return (
       <div className="flex flex-col">
-        <span className="font-medium">{request.startDate.format("MMM D")}</span>
-        <span className="table-helper-text">
-          {request.startDate.format("dddd")}
-        </span>
+        <span className="font-medium">{start.format("MMM D")}</span>
+        <span className="table-helper-text">{start.format("dddd")}</span>
       </div>
     );
   } else {
     return (
       <div className="flex flex-col">
         <span className="font-medium">
-          {request.startDate.format("MMM D")} -{" "}
-          {request.endDate.format("MMM D")}
+          {start.format("MMM D")} - {end.format("MMM D")}
         </span>
         <span className="table-helper-text">
-          {request.startDate.format("ddd")} - {request.endDate.format("ddd")}
+          {start.format("ddd")} - {end.format("ddd")}
         </span>
       </div>
     );
   }
 };
 
-const TypeCell = ({ request }: { request: RequestT }) => {
+const TypeCell = ({ request, t }: { request: RequestT; t: any }) => {
   const isWork = request.requestType === RequestType.WORK_DEMAND;
   return (
     <div className="flex flex-col items-start gap-1">
       <Chip
-        label={isWork ? "Work" : "Leave"}
+        label={isWork ? t("work") : t("leave")}
         size="small"
         color={isWork ? "primary" : "secondary"}
         variant="filled"
@@ -260,6 +277,7 @@ const ActionsCell = ({
   handleAcceptRequest: (requestId: string) => void;
   handleDenyRequest: (requestId: string) => void;
 }) => {
+  const { t } = useTranslation(lng, "request-page");
   const canEdit =
     userTeamRole !== TeamMembershipRole.MEMBER ||
     (userWorkerId && request.workerId === userWorkerId);
@@ -297,7 +315,7 @@ const ActionsCell = ({
         <IconButton
           size="small"
           onClick={() => handleAcceptRequest(request.id)}
-          title="Approve Request"
+          title={t("approve_request")}
           color="success"
           data-testid={`approve-request-button-${request.id}`}
         >
@@ -309,7 +327,7 @@ const ActionsCell = ({
         <IconButton
           size="small"
           onClick={() => handleDenyRequest(request.id)}
-          title="Reject Request"
+          title={t("reject_request")}
           color="error"
           data-testid={`reject-request-button-${request.id}`}
         >
@@ -321,9 +339,11 @@ const ActionsCell = ({
         <IconButton
           size="small"
           onClick={() => handleRescindRequest(request.id)}
-          title={`Rescind ${
-            request.status === RequestStatus.APPROVED ? "Approval" : "Rejection"
-          }`}
+          title={
+            request.status === RequestStatus.APPROVED
+              ? t("rescind_approval")
+              : t("rescind_rejection")
+          }
           color="warning"
           data-testid={`rescind-request-button-${request.id}`}
         >
@@ -335,7 +355,7 @@ const ActionsCell = ({
         size="small"
         disabled={!canEdit}
         onClick={() => handleDeleteRequest(request.id)}
-        title="Delete Request"
+        title={t("delete_request")}
         color="error"
         data-testid={`delete-request-button-${request.id}`}
       >
@@ -420,17 +440,17 @@ export default function RequestTable({
         },
         getDisplayValue: (request: RequestT) => {
           if (request.requestType === RequestType.LEAVE) {
-            if (!request.shiftId) return "All Day";
+            if (!request.shiftId) return t("all_day");
             const shift = shifts.find((s) => s.id === request.shiftId);
-            return shift ? shift.name : "Unknown";
+            return shift ? shift.name : t("unknown");
           }
           return request.shiftOptions.length > 0
             ? request.shiftOptions.map((opt) => opt.name).join(", ")
-            : "No Preferences";
+            : t("no_preferences");
         },
         getOptions: () => [
-          { value: "all_day", label: "All Day" },
-          { value: "no_preferences", label: "No Preferences" },
+          { value: "all_day", label: t("all_day") },
+          { value: "no_preferences", label: t("no_preferences") },
           ...shifts.map((shift) => ({
             value: shift.id,
             label: shift.name,
@@ -457,10 +477,12 @@ export default function RequestTable({
         type: "select" as const,
         getValue: (request: RequestT) => request.requestType,
         getDisplayValue: (request: RequestT) =>
-          request.requestType === RequestType.WORK_DEMAND ? "Work" : "Leave",
+          request.requestType === RequestType.WORK_DEMAND
+            ? t("work")
+            : t("leave"),
         getOptions: () => [
-          { value: RequestType.WORK_DEMAND, label: "Work" },
-          { value: RequestType.LEAVE, label: "Leave" },
+          { value: RequestType.WORK_DEMAND, label: t("work") },
+          { value: RequestType.LEAVE, label: t("leave") },
         ],
       },
       {
@@ -481,9 +503,9 @@ export default function RequestTable({
         type: "select" as const,
         getValue: (request: RequestT) => request.fulfillment,
         getOptions: () => [
-          { value: FulfillmentStatus.NOT_PROCESSED, label: "Not Processed" },
-          { value: FulfillmentStatus.FULFILLED, label: "Fulfilled" },
-          { value: FulfillmentStatus.UNFULFILLED, label: "Unfulfilled" },
+          { value: FulfillmentStatus.NOT_PROCESSED, label: t("not_processed") },
+          { value: FulfillmentStatus.FULFILLED, label: t("fulfilled") },
+          { value: FulfillmentStatus.UNFULFILLED, label: t("unfulfilled") },
         ],
       },
     ],
@@ -626,7 +648,7 @@ export default function RequestTable({
                   width: "8rem",
                 }}
               >
-                Actions
+                <span />
               </TableCell>
             </TableRow>
           </TableHead>
@@ -653,7 +675,7 @@ export default function RequestTable({
                 >
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <WorkerCell request={request} workers={workers} />
+                      <WorkerCell request={request} workers={workers} t={t} />
                       {isPast && showPastRequests && (
                         <Chip
                           label={t("past") || "Past"}
@@ -674,10 +696,10 @@ export default function RequestTable({
                     />
                   </TableCell>
                   <TableCell>
-                    <DateCell request={request} />
+                    <DateCell request={request} lng={lng} t={t} />
                   </TableCell>
                   <TableCell>
-                    <TypeCell request={request} />
+                    <TypeCell request={request} t={t} />
                   </TableCell>
                   <TableCell>
                     <StatusCell request={request} t={t} />
