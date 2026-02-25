@@ -19,5 +19,17 @@
     "status": "Statut",
     "type": "Type",
     "work": "Travail",
-    "worker": "Membre"
+    "worker": "Membre",
+    "all_day": "Toute la journée",
+    "no_preferences": "Aucune préférence",
+    "unknown": "Inconnu",
+    "fulfillment": "Satisfaction",
+    "not_processed": "Non traité",
+    "fulfilled": "Satisfait",
+    "unfulfilled": "Non satisfait",
+    "approve_request": "Approuver la demande",
+    "reject_request": "Rejeter la demande",
+    "rescind_approval": "Annuler l'approbation",
+    "rescind_rejection": "Annuler le rejet",
+    "delete_request": "Supprimer la demande"
 }

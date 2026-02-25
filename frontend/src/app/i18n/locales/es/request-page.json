@@ -19,5 +19,17 @@
     "status": "Estado",
     "type": "Tipo",
     "work": "Trabajo",
-    "worker": "Trabajador"
+    "worker": "Trabajador",
+    "all_day": "Todo el día",
+    "no_preferences": "Sin preferencias",
+    "unknown": "Desconocido",
+    "fulfillment": "Cumplimiento",
+    "not_processed": "No procesado",
+    "fulfilled": "Cumplido",
+    "unfulfilled": "No cumplido",
+    "approve_request": "Aprobar solicitud",
+    "reject_request": "Rechazar solicitud",
+    "rescind_approval": "Anular aprobación",
+    "rescind_rejection": "Anular rechazo",
+    "delete_request": "Eliminar solicitud"
 }

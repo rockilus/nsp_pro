@@ -198,7 +198,7 @@ const StatusCell = ({ request, t }: { request: RequestT; t: any }) => {
   );
 };
 
-const FulfillmentCell = ({ request }: { request: RequestT }) => {
+const FulfillmentCell = ({ request, t }: { request: RequestT; t: any }) => {
   const getFulfillmentColor = (fulfillment: FulfillmentStatus) => {
     switch (fulfillment) {
       case FulfillmentStatus.FULFILLED:
@@ -213,13 +213,13 @@ const FulfillmentCell = ({ request }: { request: RequestT }) => {
   const getFulfillmentLabel = (fulfillment: FulfillmentStatus) => {
     switch (fulfillment) {
       case FulfillmentStatus.FULFILLED:
-        return "✅ Fulfilled";
+        return `✅ ${t("fulfilled")}`;
       case FulfillmentStatus.UNFULFILLED:
-        return "❌ Unfulfilled";
+        return `❌ ${t("unfulfilled")}`;
       case FulfillmentStatus.NOT_PROCESSED:
-        return "Not Processed";
+        return t("not_processed");
       default:
-        return "Unknown";
+        return t("unknown");
     }
   };
 
@@ -683,7 +683,7 @@ export default function RequestTable({
                     <StatusCell request={request} t={t} />
                   </TableCell>
                   <TableCell>
-                    <FulfillmentCell request={request} />
+                    <FulfillmentCell request={request} t={t} />
                   </TableCell>
                   <TableCell>
                     <ActionsCell
