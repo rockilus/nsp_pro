@@ -125,11 +125,11 @@ export default function ScheduleSelector({
               }
             </div>
           </div>
-          <div className="campaign-info-row">
+          {/* <div className="campaign-info-row">
             <div className="row-label-container">
               <span className="row-label">{t("status")}</span>
-            </div>
-            {/* <div className="row-value-container">
+            </div> */}
+          {/* <div className="row-value-container">
               {
                 <Chip
                   className="status-chip"
@@ -144,7 +144,7 @@ export default function ScheduleSelector({
                 />
               }
             </div> */}
-          </div>
+          {/* </div> */}
         </div>
 
         {workTimeTable && (
