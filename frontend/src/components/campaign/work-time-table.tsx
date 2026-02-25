@@ -47,7 +47,7 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
           </th>
           <th></th>
           <th colSpan={2}>
-            <div className="column-header">{t("others")}</div>
+            <div className="column-header">{t("non_duty")}</div>
           </th>
           <th></th>
           <th colSpan={2}>
@@ -81,7 +81,7 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
       <tbody>
         <tr>
           <th>
-            <div className="row-header">{t("shifts")}</div>
+            <div className="row-header">{t("coverage")}</div>
           </th>
           <td>
             <div className={dutiesCellsClassName}>
@@ -118,7 +118,7 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
         </tr>
         <tr>
           <th>
-            <div className="row-header">{t("workers")}</div>
+            <div className="row-header">{t("capacity")}</div>
           </th>
           <td>
             <div className={dutiesCellsClassName}>
@@ -183,7 +183,7 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
             <div className={totalCellsClassName}>
               {convertToPerWeek(
                 (duties.hours + others.hours) / workers.count,
-                0
+                0,
               )}
             </div>
           </td>
@@ -191,7 +191,7 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
             <div className={totalCellsClassName}>
               {convertToPerWeek(
                 (duties.count + others.count) / workers.count,
-                1
+                1,
               )}
             </div>
           </td>
