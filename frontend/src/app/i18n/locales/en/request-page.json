@@ -5,7 +5,8 @@
     "do": "Do",
     "dont": "Don't",
     "edit_request": "Edit request",
-    "error_no_worker_assigned": "You are not associated with a worker profile. Please contact your team administrator.",
+    "error_no_worker_assigned": "You are not associated with a member profile. Please contact your team administrator.",
+    "fulfillement": "Fulfillment",
     "leave": "Leave",
     "new_request": "New request",
     "no": "No",
@@ -19,5 +20,5 @@
     "status": "Status",
     "type": "Type",
     "work": "Work",
-    "worker": "Worker"
+    "worker": "Member"
 }

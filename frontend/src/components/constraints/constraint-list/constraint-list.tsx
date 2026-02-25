@@ -45,7 +45,7 @@ export default function ConstraintList({
     >
       {constraints.length === 0 ? (
         <Grid size={{ xs: 12 }} sx={{ p: 2, textAlign: "center" }}>
-          <span>{t("no_constraints")}</span>
+          <span>{t("no_constraint_message")}</span>
         </Grid>
       ) : (
         constraints.map((constraint, index) => (

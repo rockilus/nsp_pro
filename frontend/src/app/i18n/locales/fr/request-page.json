@@ -5,7 +5,7 @@
     "do": "Faire",
     "dont": "Ne pas faire",
     "edit_request": "Modifier la demande",
-    "error_no_worker_assigned": "Vous n'êtes pas associé à un profil de travailleur. Veuillez contacter l'administrateur de votre équipe.",
+    "error_no_worker_assigned": "Vous n'êtes pas associé à un profil de membre. Veuillez contacter l'administrateur de votre équipe.",
     "leave": "Congé",
     "new_request": "Nouvelle demande",
     "no": "Pas de",
@@ -15,9 +15,9 @@
     "request": "Demande",
     "requests": "Demandes",
     "save": "Sauvegarder",
-    "shift": "Tache",
+    "shift": "Poste",
     "status": "Statut",
     "type": "Type",
     "work": "Travail",
-    "worker": "Travailleur"
+    "worker": "Membre"
 }
