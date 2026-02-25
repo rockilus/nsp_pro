@@ -200,9 +200,7 @@ export default function TemplateApplicationToRangeDialog({
       }}
     >
       <DialogTitle>
-        <Typography variant="h6">
-          {t("apply_template_to_date_range")}
-        </Typography>
+        <Typography variant="h6">{t("apply_template")}</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
           {t("template_name")}: <strong>{template.name}</strong> •{" "}
           {t("template_type")}:{" "}
@@ -321,7 +319,7 @@ export default function TemplateApplicationToRangeDialog({
           disabled={!validation.isValid || loading}
           startIcon={loading ? <CircularProgress size={16} /> : null}
         >
-          {loading ? t("applying_template") : t("apply_template")}
+          {loading ? t("applying") : t("apply")}
         </Button>
       </DialogActions>
     </Dialog>

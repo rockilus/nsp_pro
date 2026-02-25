@@ -21,7 +21,7 @@ import {
   MenuItem,
   CircularProgress,
 } from "@mui/material";
-import { Build, ContentCopy } from "@mui/icons-material";
+import { ContentCopy } from "@mui/icons-material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -40,7 +40,7 @@ interface BuildFromDemandsDialogProps {
   template: ShiftDemandTemplateDTO;
   onApplyDemands: (
     sourceWeekStartDate: number,
-    targetWeekNumber: number
+    targetWeekNumber: number,
   ) => Promise<void>;
   applyLoading?: boolean;
 }
@@ -80,7 +80,7 @@ export function BuildFromDemandsDialog({
 
       await onApplyDemands(
         Math.floor(mondayOfWeek.valueOf() / 1000), // Convert ms to seconds (Unix timestamp)
-        targetWeekNumber
+        targetWeekNumber,
       );
 
       handleClose();
@@ -108,14 +108,13 @@ export function BuildFromDemandsDialog({
       fullWidth
     >
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Build color="primary" />
-        {t("build_from_demands")}
+        {t("import_coverage")}
       </DialogTitle>
 
       <DialogContent>
         <Box sx={{ py: 2 }}>
           <Alert severity="info" sx={{ mb: 3 }}>
-            {t("build_from_demands_explanation")}
+            {t("import_coverage_description")}
           </Alert>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -199,6 +198,7 @@ export function BuildFromDemandsDialog({
           data-testid="build-from-demands-cancel-button"
           onClick={handleClose}
           disabled={applyLoading}
+          sx={{ textTransform: "none" }}
         >
           {t("cancel")}
         </Button>
@@ -207,11 +207,9 @@ export function BuildFromDemandsDialog({
           onClick={handleApply}
           variant="contained"
           disabled={!sourceWeekStart || applyLoading}
-          startIcon={
-            applyLoading ? <CircularProgress size={20} /> : <ContentCopy />
-          }
+          sx={{ textTransform: "none" }}
         >
-          {applyLoading ? t("applying") : t("apply_demands")}
+          {applyLoading ? t("importing") : t("import")}
         </Button>
       </DialogActions>
     </Dialog>
