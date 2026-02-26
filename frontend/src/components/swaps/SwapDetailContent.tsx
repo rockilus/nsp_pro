@@ -211,7 +211,7 @@ export default function SwapDetailContent({
           data-testid="swap-type-chip"
         />
         <Chip
-          label={swap.status}
+          label={t(`status_${swap.status}`)}
           color={getStatusColor(swap.status)}
           data-testid="swap-status-chip"
         />
