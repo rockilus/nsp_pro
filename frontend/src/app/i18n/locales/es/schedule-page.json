@@ -103,6 +103,8 @@
     "view": "Vista",
     "week": "Semana",
     "worker": "Trabajador",
+    "display_by_shift": "Mostrar el horario por turno",
+    "display_by_worker": "Mostrar el horario por miembro",
     "worker_count": "Número de trabajadores",
     "work_time_contract": "Tiempo de trabajo contratado",
     "work_time_desired": "Tiempo de trabajo deseado",

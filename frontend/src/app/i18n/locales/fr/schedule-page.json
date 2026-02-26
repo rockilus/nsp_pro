@@ -101,6 +101,8 @@
     "view": "Vue",
     "week": "Semaine",
     "worker": "Travailleur",
+    "display_by_shift": "Afficher le planning par tâche",
+    "display_by_worker": "Afficher le planning par membre",
     "worker_count": "Nombre de travailleurs",
     "work_time_contract": "Temps de travail contractuel",
     "work_time_desired": "Temps de travail souhaité",
