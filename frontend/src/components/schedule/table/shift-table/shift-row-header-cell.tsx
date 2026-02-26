@@ -1,6 +1,8 @@
 import React from "react";
+import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import TableCell from "@mui/material/TableCell";
+import Tooltip from "@mui/material/Tooltip";
 // Components
 import { countShiftsTotalPeriod } from "../shared/assignment-count-methods";
 import { RoleBased } from "@/components/access/role-based";
@@ -17,18 +19,21 @@ import { ShiftColorMappings } from "../../../../constants/constants";
 import { TeamWithMembership } from "@/types/team";
 
 export default function ShiftRowHeaderCell({
+  lng,
   teamWithMembership,
   shift,
   assignments,
   shiftDemands,
   scheduleCampaign: scheduleCampaign,
 }: {
+  lng: string;
   teamWithMembership: TeamWithMembership;
   shift: ShiftT;
   assignments: AssignmentT[];
   shiftDemands: ShiftDemandDTO[];
   scheduleCampaign: ScheduleT | null;
 }) {
+  const { t } = useTranslation(lng, "schedule-page");
   const { background, sample, text } = ShiftColorMappings[shift.color] || {
     background: "#f5f5f5",
     sample: "#9e9e9e",
@@ -74,14 +79,16 @@ export default function ShiftRowHeaderCell({
             allowedRoles={[TeamMembershipRole.OWNER]}
           >
             {teamWithMembership.team.useSolver && scheduleCampaign && (
-              <span
-                className={`shift-stats-total ${
-                  shiftCountActual !== shiftCountTarget && "breach"
-                }`}
-                data-testid={`shift-count-${shift.id}`}
-              >
-                {`${shiftCountActual} / ${shiftCountTarget}`}
-              </span>
+              <Tooltip title={t("shift_count_tooltip")} placement="right" arrow>
+                <span
+                  className={`shift-stats-total ${
+                    shiftCountActual !== shiftCountTarget && "breach"
+                  }`}
+                  data-testid={`shift-count-${shift.id}`}
+                >
+                  {`${shiftCountActual} / ${shiftCountTarget}`}
+                </span>
+              </Tooltip>
             )}
           </RoleBased>
         </div>

@@ -50,6 +50,7 @@ export default function ShiftTableRow({
   return (
     <TableRow>
       <ShiftRowHeaderCell
+        lng={lng}
         teamWithMembership={teamWithMembership}
         shift={shift}
         assignments={assignments}

@@ -44,6 +44,8 @@
     "export_to_excel": "Export to Excel",
     "group_by": "Group by",
     "h/week": "h/week",
+    "h/week_tooltip": "average weekly work time over campaign / desired weekly work time",
+    "duties/month_tooltip": "average monthly number duties over campaign / desired monthly number of duties",
     "last_12_months": "Last 12 months",
     "link_shift": "Link shift",
     "locked": "Locked",
@@ -185,5 +187,6 @@
     "saturday_short": "S",
     "sunday_short": "S",
     "dsd.tooltip.shift": "number of shifts assigned / coverage shift requirement for the day",
-    "dsd.tooltip.worker": "number of members assigned / coverage staffing requirement for the day"
+    "dsd.tooltip.worker": "number of members assigned / coverage staffing requirement for the day",
+    "shift_count_tooltip": "shift count / shift required coverage over campaign"
 }

@@ -44,6 +44,8 @@
     "export_to_excel": "Exporter vers Excel",
     "group_by": "Grouper par",
     "h/week": "h/semaine",
+    "h/week_tooltip": "temps de travail hebdomadaire moyen sur la campagne / temps de travail hebdomadaire souhaité",
+    "duties/month_tooltip": "nombre de gardes mensuel moyen sur la campagne / nombre mensuel de gardes souhaité",
     "last_12_months": "12 derniers mois",
     "link_shift": "Tâche liée",
     "locked": "Verrouillé",
@@ -185,5 +187,6 @@
     "saturday_short": "S",
     "sunday_short": "D",
     "dsd.tooltip.shift": "nombre de postes assignés / exigence de couverture pour la journée",
-    "dsd.tooltip.worker": "nombre de membres assignés / exigence de personnel pour la journée"
+    "dsd.tooltip.worker": "nombre de membres assignés / exigence de personnel pour la journée",
+    "shift_count_tooltip": "nombre de postes / besoins de postes requis sur la campagne"
 }

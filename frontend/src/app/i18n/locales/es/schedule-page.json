@@ -44,6 +44,8 @@
     "export_to_excel": "Exportar a Excel",
     "group_by": "Agrupar por",
     "h/week": "h/semana",
+    "h/week_tooltip": "tiempo de trabajo semanal promedio durante la campaña / tiempo de trabajo semanal deseado",
+    "duties/month_tooltip": "número de guardias mensual promedio durante la campaña / número mensual de guardias deseado",
     "last_12_months": "Últimos 12 meses",
     "link_shift": "Enlace de turno",
     "locked": "Bloqueado",
@@ -185,5 +187,6 @@
     "saturday_short": "S",
     "sunday_short": "D",
     "dsd.tooltip.shift": "número de turnos asignados / requisito de cobertura para el día",
-    "dsd.tooltip.worker": "número de miembros asignados / requisito de personal para el día"
+    "dsd.tooltip.worker": "número de miembros asignados / requisito de personal para el día",
+    "shift_count_tooltip": "número de turnos / cobertura de turnos requerida durante la campaña"
 }
