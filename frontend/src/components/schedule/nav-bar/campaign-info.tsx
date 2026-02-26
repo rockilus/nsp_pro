@@ -300,7 +300,7 @@ export default function CampaignInfo({
                 </Tooltip>
               )}
               {useSqsWorkflow && sqsState.lastError && !isActiveSolve && (
-                <Tooltip title={t("retryPolling")}>
+                <Tooltip title={t("retry_polling")}>
                   <IconButton
                     size="small"
                     onClick={handleRetryPolling}
