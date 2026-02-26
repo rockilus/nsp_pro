@@ -32,6 +32,8 @@
     "status_reverted": "Reverted",
     "type_direct": "Direct Swap",
     "type_open": "Open Swap",
+    "type_direct_chip": "direct",
+    "type_open_chip": "open",
     "btn_cancel": "Cancel",
     "btn_back": "Back",
     "btn_next": "Next",

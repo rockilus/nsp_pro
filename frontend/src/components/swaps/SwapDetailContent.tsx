@@ -204,8 +204,8 @@ export default function SwapDetailContent({
         <Chip
           label={
             swap.swapType === SwapType.DIRECT
-              ? t("type_direct")
-              : t("type_open")
+              ? t("type_direct_chip")
+              : t("type_open_chip")
           }
           color="primary"
           data-testid="swap-type-chip"

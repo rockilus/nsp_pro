@@ -32,6 +32,8 @@
     "status_reverted": "Revertido",
     "type_direct": "Intercambio directo",
     "type_open": "Intercambio abierto",
+    "type_direct_chip": "directo",
+    "type_open_chip": "abierto",
     "btn_cancel": "Cancelar",
     "btn_back": "Atrás",
     "btn_next": "Siguiente",
