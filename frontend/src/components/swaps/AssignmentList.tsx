@@ -3,6 +3,7 @@
 import { Box, Typography } from "@mui/material";
 import { AssignmentDataDictT } from "../../types/assignment";
 import AssignmentOfferItem from "./AssignmentOfferItem";
+import { useTranslation } from "../../app/i18n/client";
 
 interface AssignmentListProps {
   assignments: AssignmentDataDictT[];
@@ -11,6 +12,7 @@ interface AssignmentListProps {
   isMobile?: boolean;
   testIdPrefix?: string;
   emptyMessage?: string;
+  lng: string;
 }
 
 export default function AssignmentList({
@@ -19,12 +21,15 @@ export default function AssignmentList({
   showTimes = true,
   isMobile = false,
   testIdPrefix,
-  emptyMessage = "No assignments",
+  emptyMessage,
+  lng,
 }: AssignmentListProps) {
+  const { t } = useTranslation(lng, "swap-page");
+
   if (assignments.length === 0) {
     return (
       <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
-        {emptyMessage}
+        {emptyMessage ?? t("list_no_assignments")}
       </Typography>
     );
   }
@@ -55,7 +60,7 @@ export default function AssignmentList({
       </Box>
       {remainingCount > 0 && (
         <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
-          + {remainingCount} more
+          {t("list_more", { count: remainingCount })}
         </Typography>
       )}
     </Box>

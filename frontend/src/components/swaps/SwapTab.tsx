@@ -575,7 +575,7 @@ export default function SwapTab({
               aria-level={1}
               sx={{ fontSize: "1.25rem", fontWeight: 600, color: "#1976d2" }}
             >
-              Swaps
+              {t("page_title")}
             </Typography>
           )}
           {!isMobile && (
@@ -585,7 +585,7 @@ export default function SwapTab({
               onClick={() => setCreateDialogOpen(true)}
               data-testid="create-swap-button"
             >
-              Create Swap
+              {t("btn_create_swap")}
             </Button>
           )}
         </Box>
@@ -600,7 +600,7 @@ export default function SwapTab({
           {visibleTabs.map((tab) => (
             <Tab
               key={tab.value}
-              label={tab.label}
+              label={t(`filter_${tab.value}`)}
               value={tab.value}
               data-testid={tab.dataTestId}
               sx={tab.sx}
@@ -626,13 +626,14 @@ export default function SwapTab({
             color="text.secondary"
             sx={{ py: 4, textAlign: "center" }}
           >
-            {currentFilter === SwapFilter.MY_SWAPS && "No swaps involving you"}
+            {currentFilter === SwapFilter.MY_SWAPS && t("empty_my_swaps")}
             {currentFilter === SwapFilter.ALL_ACTIVE_OPEN &&
-              "No active open swaps available"}
+              t("empty_open_swaps")}
             {currentFilter === SwapFilter.PENDING_APPROVAL &&
-              "No swaps pending approval"}
-            {currentFilter === SwapFilter.COMPLETED && "No completed swaps"}
-            {currentFilter === SwapFilter.ALL_SWAPS && "No swaps found"}
+              t("empty_pending_approval")}
+            {currentFilter === SwapFilter.COMPLETED &&
+              t("empty_completed_swaps")}
+            {currentFilter === SwapFilter.ALL_SWAPS && t("empty_all_swaps")}
           </Typography>
         )}
 
@@ -655,6 +656,7 @@ export default function SwapTab({
                   requestedAssignments={requestedAssignments}
                   isMobile={isMobile}
                   onClick={openDetailDialog}
+                  lng={lng}
                 />
               ),
             )}

@@ -24,6 +24,7 @@ import SwapDetailContent from "./SwapDetailContent";
 import SwapAnalysisDialog from "./SwapAnalysisDialog";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
 import { getAssignmentsForIds } from "../../utils/swapHelpers";
+import { useTranslation } from "../../app/i18n/client";
 
 interface SwapDetailDialogProps {
   open: boolean;
@@ -83,6 +84,7 @@ export default function SwapDetailDialog({
 }: SwapDetailDialogProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { t } = useTranslation(lng, "swap-page");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +114,7 @@ export default function SwapDetailDialog({
   const handleAddBid = async () => {
     if (!onAddBid || bidAssignmentIds.length === 0 || !currentUserWorker) {
       if (!currentUserWorker) {
-        setError("Worker not found for current user");
+        setError(t("error_worker_not_found"));
       }
       return;
     }
@@ -125,7 +127,7 @@ export default function SwapDetailDialog({
       setBidAssignmentIds([]);
     } catch (err) {
       console.error("Failed to add bid:", err);
-      setError(err instanceof Error ? err.message : "Failed to add bid");
+      setError(err instanceof Error ? err.message : t("error_add_bid"));
     } finally {
       setLoading(false);
     }
@@ -140,7 +142,7 @@ export default function SwapDetailDialog({
       await onDeleteBid(bidId);
     } catch (err) {
       console.error("Failed to delete bid:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete bid");
+      setError(err instanceof Error ? err.message : t("error_delete_bid"));
     } finally {
       setLoading(false);
     }
@@ -155,7 +157,7 @@ export default function SwapDetailDialog({
       await onAcceptBid(bidId);
     } catch (err) {
       console.error("Failed to accept bid:", err);
-      setError(err instanceof Error ? err.message : "Failed to accept bid");
+      setError(err instanceof Error ? err.message : t("error_accept_bid"));
     } finally {
       setLoading(false);
     }
@@ -170,7 +172,7 @@ export default function SwapDetailDialog({
       await onAcceptDirectSwap();
     } catch (err) {
       console.error("Failed to accept swap:", err);
-      setError(err instanceof Error ? err.message : "Failed to accept swap");
+      setError(err instanceof Error ? err.message : t("error_accept_swap"));
     } finally {
       setLoading(false);
     }
@@ -186,7 +188,7 @@ export default function SwapDetailDialog({
       onClose();
     } catch (err) {
       console.error("Failed to approve swap:", err);
-      setError(err instanceof Error ? err.message : "Failed to approve swap");
+      setError(err instanceof Error ? err.message : t("error_approve_swap"));
     } finally {
       setLoading(false);
     }
@@ -201,7 +203,7 @@ export default function SwapDetailDialog({
       await onDeny();
     } catch (err) {
       console.error("Failed to deny swap:", err);
-      setError(err instanceof Error ? err.message : "Failed to deny swap");
+      setError(err instanceof Error ? err.message : t("error_deny_swap"));
     } finally {
       setLoading(false);
     }
@@ -216,7 +218,7 @@ export default function SwapDetailDialog({
     } catch (err) {
       console.error("Failed to cancel bid acceptance:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to cancel bid acceptance",
+        err instanceof Error ? err.message : t("error_cancel_acceptance"),
       );
     } finally {
       setLoading(false);
@@ -231,7 +233,7 @@ export default function SwapDetailDialog({
       await onRevert();
     } catch (err) {
       console.error("Failed to revert swap:", err);
-      setError(err instanceof Error ? err.message : "Failed to revert swap");
+      setError(err instanceof Error ? err.message : t("error_revert_swap"));
     } finally {
       setLoading(false);
     }
@@ -247,7 +249,7 @@ export default function SwapDetailDialog({
       onClose();
     } catch (err) {
       console.error("Failed to delete swap:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete swap");
+      setError(err instanceof Error ? err.message : t("error_delete_swap"));
     } finally {
       setLoading(false);
     }
@@ -443,7 +445,7 @@ export default function SwapDetailDialog({
                   data-testid="delete-swap-button"
                   size={isMobile ? "small" : "medium"}
                 >
-                  Delete Swap
+                  {t("btn_delete_swap")}
                 </Button>
               )}
               {canDeny && (
@@ -454,7 +456,7 @@ export default function SwapDetailDialog({
                   data-testid="deny-swap-button"
                   size={isMobile ? "small" : "medium"}
                 >
-                  Deny Swap
+                  {t("btn_deny_swap")}
                 </Button>
               )}
               {canRevert && (
@@ -465,7 +467,7 @@ export default function SwapDetailDialog({
                   data-testid="revert-swap-button"
                   size={isMobile ? "small" : "medium"}
                 >
-                  Revert Swap
+                  {t("btn_revert_swap")}
                 </Button>
               )}
             </Box>
@@ -476,7 +478,7 @@ export default function SwapDetailDialog({
                 data-testid="close-button"
                 size={isMobile ? "small" : "medium"}
               >
-                Close
+                {t("btn_close")}
               </Button>
               {canAcceptDirectSwap && (
                 <Button
@@ -487,7 +489,7 @@ export default function SwapDetailDialog({
                   data-testid="accept-direct-swap-button"
                   size={isMobile ? "small" : "medium"}
                 >
-                  Accept Swap
+                  {t("btn_accept_swap")}
                 </Button>
               )}
               {canApprove && (
@@ -499,7 +501,7 @@ export default function SwapDetailDialog({
                   data-testid="approve-swap-button"
                   size={isMobile ? "small" : "medium"}
                 >
-                  Approve Swap
+                  {t("btn_approve_swap")}
                 </Button>
               )}
             </Box>

@@ -37,6 +37,7 @@ import AssignmentSelector from "./AssignmentSelector";
 import SwapDetailContent from "./SwapDetailContent";
 import { RoleBased } from "../access/role-based";
 import { useTheme } from "@mui/material/styles";
+import { useTranslation } from "../../app/i18n/client";
 
 interface CreateSwapDialogProps {
   open: boolean;
@@ -58,13 +59,13 @@ interface CreateSwapDialogProps {
   lng: string;
 }
 
-const steps = [
-  "Select offered assignments",
-  "Choose swap type",
-  "Target details",
-  "Add comment",
-  "Review & submit",
-];
+const STEP_KEYS = [
+  "step_select_offered",
+  "step_choose_type",
+  "step_target_details",
+  "step_add_comment",
+  "step_review_submit",
+] as const;
 
 export default function CreateSwapDialog({
   open,
@@ -79,6 +80,9 @@ export default function CreateSwapDialog({
   linkShifts,
   lng,
 }: CreateSwapDialogProps) {
+  const { t } = useTranslation(lng, "swap-page");
+  const steps = STEP_KEYS.map((key) => t(key));
+
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -126,22 +130,22 @@ export default function CreateSwapDialog({
     // Validation before moving to next step
     if (activeStep === 0) {
       if (!selectedWorkerId) {
-        setError("Please select a worker");
+        setError(t("error_select_worker"));
         return;
       }
       if (offeredAssignmentIds.length === 0) {
-        setError("Please select at least one assignment to offer");
+        setError(t("error_select_offered"));
         return;
       }
     }
 
     if (activeStep === 2 && swapType === SwapType.DIRECT) {
       if (!targetWorkerId) {
-        setError("Please select a target worker");
+        setError(t("error_select_target"));
         return;
       }
       if (requestedAssignmentIds.length === 0) {
-        setError("Please select at least one requested assignment");
+        setError(t("error_select_requested"));
         return;
       }
     }
@@ -182,7 +186,7 @@ export default function CreateSwapDialog({
       handleClose();
     } catch (err) {
       console.error("Failed to create swap:", err);
-      setError(err instanceof Error ? err.message : "Failed to create swap");
+      setError(err instanceof Error ? err.message : t("error_create_swap"));
     } finally {
       setLoading(false);
     }
@@ -209,10 +213,10 @@ export default function CreateSwapDialog({
           <Box>
             <RoleBased role={role} allowedRoles={[TeamMembershipRole.OWNER]}>
               <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>Select Worker</InputLabel>
+                <InputLabel>{t("label_select_worker")}</InputLabel>
                 <Select
                   value={selectedWorkerId}
-                  label="Select Worker"
+                  label={t("label_select_worker")}
                   onChange={(e) => {
                     setSelectedWorkerId(e.target.value);
                     setOfferedAssignmentIds([]); // Reset selections
@@ -235,7 +239,7 @@ export default function CreateSwapDialog({
             {selectedWorkerId && (
               <Box data-testid="assignment-selector">
                 <Typography variant="subtitle2" gutterBottom>
-                  Select Assignments to Offer
+                  {t("label_select_offered")}
                 </Typography>
                 <AssignmentSelector
                   selectedAssignmentIds={offeredAssignmentIds}
@@ -247,6 +251,7 @@ export default function CreateSwapDialog({
                   )}
                   linkShifts={linkShifts}
                   allowMultiple={true}
+                  lng={lng}
                 />
               </Box>
             )}
@@ -281,10 +286,10 @@ export default function CreateSwapDialog({
                   label={
                     <Box>
                       <Typography variant="body1" fontWeight="medium">
-                        Direct Swap
+                        {t("type_direct")}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Exchange assignments with a specific worker
+                        {t("type_direct_desc")}
                       </Typography>
                     </Box>
                   }
@@ -297,10 +302,10 @@ export default function CreateSwapDialog({
                   label={
                     <Box>
                       <Typography variant="body1" fontWeight="medium">
-                        Open Swap
+                        {t("type_open")}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Let any worker bid with their own assignments
+                        {t("type_open_desc")}
                       </Typography>
                     </Box>
                   }
@@ -313,21 +318,16 @@ export default function CreateSwapDialog({
       case 2:
         // Step 3: Target details (only for direct swap)
         if (swapType === SwapType.OPEN) {
-          return (
-            <Alert severity="info">
-              For open swaps, workers will bid with their own assignments. Click
-              Next to continue.
-            </Alert>
-          );
+          return <Alert severity="info">{t("open_swap_info")}</Alert>;
         }
 
         return (
           <Box>
             <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel>Select Target Worker</InputLabel>
+              <InputLabel>{t("label_target_worker")}</InputLabel>
               <Select
                 value={targetWorkerId}
-                label="Select Target Worker"
+                label={t("label_target_worker")}
                 onChange={(e) => {
                   setTargetWorkerId(e.target.value);
                   setRequestedAssignmentIds([]); // Reset selections
@@ -350,7 +350,7 @@ export default function CreateSwapDialog({
             {targetWorkerId && (
               <>
                 <Typography variant="subtitle2" gutterBottom>
-                  Select Requested Assignments
+                  {t("label_requested_assignments")}
                 </Typography>
                 <AssignmentSelector
                   selectedAssignmentIds={requestedAssignmentIds}
@@ -362,6 +362,7 @@ export default function CreateSwapDialog({
                   )}
                   linkShifts={linkShifts}
                   allowMultiple={true}
+                  lng={lng}
                 />
               </>
             )}
@@ -374,7 +375,7 @@ export default function CreateSwapDialog({
           <Box>
             {!isMobile && (
               <Typography variant="subtitle2" gutterBottom>
-                Add a comment (optional)
+                {t("label_add_comment")}
               </Typography>
             )}
             <TextField
@@ -383,7 +384,7 @@ export default function CreateSwapDialog({
               fullWidth
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Add any additional information about this swap..."
+              placeholder={t("placeholder_comment")}
               variant="outlined"
             />
           </Box>
@@ -441,7 +442,7 @@ export default function CreateSwapDialog({
       fullWidth
       data-testid="create-swap-dialog"
     >
-      <DialogTitle>Create Swap Request</DialogTitle>
+      <DialogTitle>{t("dialog_title_create")}</DialogTitle>
       <DialogContent>
         <Box>
           {isMobile ? (
@@ -491,7 +492,7 @@ export default function CreateSwapDialog({
           disabled={loading}
           data-testid="cancel-button"
         >
-          Cancel
+          {t("btn_cancel")}
         </Button>
         {activeStep > 0 && (
           <Button
@@ -499,7 +500,7 @@ export default function CreateSwapDialog({
             disabled={loading}
             data-testid="back-button"
           >
-            Back
+            {t("btn_back")}
           </Button>
         )}
         {activeStep < steps.length - 1 ? (
@@ -509,7 +510,7 @@ export default function CreateSwapDialog({
             disabled={loading}
             data-testid="next-button"
           >
-            Next
+            {t("btn_next")}
           </Button>
         ) : (
           <Button
@@ -519,7 +520,7 @@ export default function CreateSwapDialog({
             disabled={loading}
             data-testid="submit-button"
           >
-            {loading ? "Creating..." : "Create Swap"}
+            {loading ? t("btn_creating") : t("btn_create_swap")}
           </Button>
         )}
       </DialogActions>
