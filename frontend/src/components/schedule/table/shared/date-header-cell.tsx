@@ -48,9 +48,11 @@ const ScheduleStatusLogo: React.FC<ScheduleStatusLogoProps> = ({
 export default function DateHeaderCell({
   periodDate,
   teamWithMembership,
+  lng,
 }: {
   periodDate: periodDateT;
   teamWithMembership: TeamWithMembership;
+  lng: string;
 }) {
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
@@ -64,7 +66,7 @@ export default function DateHeaderCell({
     >
       <div className="date-header-container">
         <span className={`weekday ${isToday && "today"}`}>
-          {periodDate.date.format("ddd")}
+          {periodDate.date.locale(lng).format("ddd").slice(0, 3)}
         </span>
         <div className={`month-day-container ${isToday && "today"}`}>
           <span
