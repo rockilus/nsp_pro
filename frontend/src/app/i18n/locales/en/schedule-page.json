@@ -16,6 +16,8 @@
     "create_demand": "Create coverage",
     "creating": "Creating",
     "create_assignment": "Create assignment",
+    "new_assignment": "New assignment",
+    "edit_assignment": "Edit assignment",
     "current_selection": "Current selection",
     "custom": "Custom",
     "date": "Date",
@@ -29,6 +31,7 @@
     "duplicate_week": "Duplicate week",
     "duties_per_month": "Duties per month",
     "duties/month": "duties/month",
+    "edit_coverage": "Edit coverage",
     "end": "End",
     "ends": "Ends",
     "error_no_worker_assigned": "You are not associated with a member profile. Please contact your team administrator.",
@@ -40,6 +43,7 @@
     "locked": "Locked",
     "month": "Month",
     "never": "Never",
+    "new_coverage": "New coverage",
     "no_assignment_selected_msg": "No assignment selected",
     "no_assignment_yet_member": "No assignments yet",
     "no_assignments_yet_owner": "No assignments yet. Start a new campaign to generate your first schedule, or create your first assignment.",
@@ -74,6 +78,8 @@
     "repeat_on": "Repeat on",
     "request": "Request",
     "requests": "Requests",
+    "new_request": "New request",
+    "edit_request": "Edit request",
     "select_a_shift": "Select a shift",
     "select_a_worker": "Select a member",
     "selection": "Selection",
@@ -138,5 +144,7 @@
     "replacement_reason_hard_constraint_violation": "Strict rule conflict",
     "replacement_reason_request_conflict": "Request conflict",
     "replacement_reason_soft_constraint_violation": "Flexible rule conflict",
-    "replacement_reason_no_constraints_violated": "No rule conflict"
+    "replacement_reason_no_constraints_violated": "No rule conflict",
+    "new_schedule_item": "New schedule item",
+    "edit_schedule_item": "Edit schedule item"
 }

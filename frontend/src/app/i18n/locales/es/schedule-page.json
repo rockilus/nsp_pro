@@ -14,6 +14,8 @@
     "create_demand": "Crear demanda",
     "creating": "Creando",
     "create_assignment": "Crear asignación",
+    "new_assignment": "Nueva asignación",
+    "edit_assignment": "Editar asignación",
     "current_selection": "Selección actual",
     "custom": "Personalizado",
     "date": "Fecha",
@@ -74,6 +76,8 @@
     "repeat_on": "Repetir el",
     "request": "Solicitud",
     "requests": "Solicitudes",
+    "new_request": "Nueva solicitud",
+    "edit_request": "Editar solicitud",
     "select_a_shift": "Seleccionar un turno",
     "select_a_worker": "Seleccionar un trabajador",
     "selection": "Selección",
@@ -137,5 +141,7 @@
     "replacement_reason_hard_constraint_violation": "Violación de restricción dura",
     "replacement_reason_request_conflict": "Conflicto de solicitud",
     "replacement_reason_soft_constraint_violation": "Violación de restricción suave",
-    "replacement_reason_no_constraints_violated": "Sin restricciones violadas"
+    "replacement_reason_no_constraints_violated": "Sin restricciones violadas",
+    "new_schedule_item": "Nuevo elemento de horario",
+    "edit_schedule_item": "Editar elemento de horario"
 }

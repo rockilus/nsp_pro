@@ -14,6 +14,8 @@
     "create_demand": "Créer demande",
     "creating": "Création",
     "create_assignment": "Créer une affectation",
+    "new_assignment": "Nouvelle affectation",
+    "edit_assignment": "Modifier l'affectation",
     "current_selection": "Sélection actuelle",
     "custom": "Personnalisé",
     "date": "Date",
@@ -72,6 +74,8 @@
     "repeat_on": "Répéter le",
     "request": "Demande",
     "requests": "Demandes",
+    "new_request": "Nouvelle demande",
+    "edit_request": "Modifier la demande",
     "select_a_shift": "Sélectionner une tâche",
     "select_a_worker": "Sélectionner un travailleur",
     "selection": "Sélection",
@@ -135,5 +139,9 @@
     "replacement_reason_hard_constraint_violation": "Violation de contrainte dure",
     "replacement_reason_request_conflict": "Conflit de demande",
     "replacement_reason_soft_constraint_violation": "Violation de contrainte douce",
-    "replacement_reason_no_constraints_violated": "Aucune contrainte violée"
+    "replacement_reason_no_constraints_violated": "Aucune contrainte violée",
+    "new_coverage": "Nouvelle demande",
+    "edit_coverage": "Modifier la demande",
+    "new_schedule_item": "Nouvel élément d'horaire",
+    "edit_schedule_item": "Modifier l'élément d'horaire"
 }
