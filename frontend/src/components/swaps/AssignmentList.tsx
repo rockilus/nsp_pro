@@ -53,6 +53,7 @@ export default function AssignmentList({
               data={data}
               showTimes={showTimes}
               isMobile={isMobile}
+              lng={lng}
               testId={`${testIdPrefix ?? "assignment-offer-item"}-${data.assignment.id}`}
             />
           </Box>
