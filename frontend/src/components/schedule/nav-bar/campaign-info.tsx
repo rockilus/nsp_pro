@@ -237,25 +237,27 @@ export default function CampaignInfo({
         </div>
         {teamWithMembership.team.useSolver && (
           <>
-            <Chip
-              data-testid={`solve-status-chip-${currentSolveStatus}`}
-              label={GetStatusLabel(lng, currentSolveStatus)}
-              onClick={() => setBreachesDialogOpen(true)}
-              color={
-                (SolveStatusColors[currentSolveStatus] as
-                  | "default"
-                  | "success"
-                  | "error"
-                  | "warning") || "default"
-              }
-              sx={{
-                height: "35px",
-                width: "120px",
-                fontSize: "0.9rem",
-                marginLeft: spaceBetween,
-                fontWeight: 550,
-              }}
-            />
+            <Tooltip title={t("solve_status_chip_tooltip")}>
+              <Chip
+                data-testid={`solve-status-chip-${currentSolveStatus}`}
+                label={GetStatusLabel(lng, currentSolveStatus)}
+                onClick={() => setBreachesDialogOpen(true)}
+                color={
+                  (SolveStatusColors[currentSolveStatus] as
+                    | "default"
+                    | "success"
+                    | "error"
+                    | "warning") || "default"
+                }
+                sx={{
+                  height: "35px",
+                  width: "120px",
+                  fontSize: "0.9rem",
+                  marginLeft: spaceBetween,
+                  fontWeight: 550,
+                }}
+              />
+            </Tooltip>
             <div
               style={{
                 display: "flex",
@@ -263,24 +265,26 @@ export default function CampaignInfo({
                 marginLeft: spaceBetween,
               }}
             >
-              <Button
-                data-testid="solve-button"
-                variant="contained"
-                color="primary"
-                onClick={handleSolve}
-                disabled={isActiveSolve}
-                sx={{
-                  textTransform: "none",
-                  paddingLeft: 0.2,
-                  paddingRight: 0.2,
-                  marginRight:
-                    useSqsWorkflow && isActiveSolve ? "4px" : spaceBetween,
-                  height: "35px",
-                  width: useSqsWorkflow && isActiveSolve ? "120px" : "65px",
-                }}
-              >
-                {isActiveSolve ? animatedSolve : t("solve")}
-              </Button>
+              <Tooltip title={t("solve_button_tooltip")}>
+                <Button
+                  data-testid="solve-button"
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSolve}
+                  disabled={isActiveSolve}
+                  sx={{
+                    textTransform: "none",
+                    paddingLeft: 0.2,
+                    paddingRight: 0.2,
+                    marginRight:
+                      useSqsWorkflow && isActiveSolve ? "4px" : spaceBetween,
+                    height: "35px",
+                    width: useSqsWorkflow && isActiveSolve ? "120px" : "65px",
+                  }}
+                >
+                  {isActiveSolve ? animatedSolve : t("solve")}
+                </Button>
+              </Tooltip>
               {useSqsWorkflow && isActiveSolve && (
                 <Tooltip title={t("cancelSolve")}>
                   <IconButton

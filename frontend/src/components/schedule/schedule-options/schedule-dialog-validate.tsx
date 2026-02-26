@@ -3,6 +3,7 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Tooltip from "@mui/material/Tooltip";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -34,20 +35,22 @@ export default function ScheduleDialogValidate({
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <Button
-        data-testid="validate-button"
-        variant="outlined"
-        onClick={handleClickOpen}
-        sx={{
-          paddingLeft: 0.2,
-          paddingRight: 0.2,
-          textTransform: "none",
-          height: "35px",
-          width: "65px",
-        }}
-      >
-        {t("validate")}
-      </Button>
+      <Tooltip title={t("validate_button_tooltip")}>
+        <Button
+          data-testid="validate-button"
+          variant="outlined"
+          onClick={handleClickOpen}
+          sx={{
+            paddingLeft: 0.2,
+            paddingRight: 0.2,
+            textTransform: "none",
+            height: "35px",
+            width: "65px",
+          }}
+        >
+          {t("validate")}
+        </Button>
+      </Tooltip>
       <Dialog
         open={open}
         onClose={handleClose}
