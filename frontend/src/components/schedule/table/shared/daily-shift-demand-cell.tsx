@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 // Styles
 import "./daily-shift-demand-cell.css";
@@ -44,11 +45,11 @@ export default function DailyShiftDemandCell({
   const { t } = useTranslation(lng, "schedule-page");
   const tooltipText =
     scheduleViewSettings.groupBy === "shift"
-      ? t("dsd.tooltip.shift") || ""
-      : t("dsd.tooltip.worker") || "";
+      ? t("dsd.tooltip.shift")
+      : t("dsd.tooltip.worker");
 
   return (
-    <Tooltip title={tooltipText || ""} arrow>
+    <Tooltip title={tooltipText} arrow>
       <div
         className="dsd-cell-container"
         data-testid={`demand-cell-${scheduleCellData.shiftDemandsData?.shiftDemand?.id}`}

@@ -4,7 +4,18 @@ import "@testing-library/jest-dom";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import DailyShiftDemandCell from "../../../../src/components/schedule/table/shared/daily-shift-demand-cell";
-import type { ScheduleCellDataT } from "../../../../src/types/schedule";
+import type {
+  ScheduleCellDataT,
+  ScheduleViewSettingsT,
+} from "../../../../src/types/schedule";
+
+// Mock the translation hook
+jest.mock("../../../../src/app/i18n/client", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { changeLanguage: jest.fn(), resolvedLanguage: "en" },
+  }),
+}));
 import {
   ShiftType,
   ShiftRestType,
@@ -19,6 +30,16 @@ dayjs.extend(utc);
  */
 describe("DailyShiftDemandCell", () => {
   const mockHandleDemandSelection = jest.fn();
+  const mockScheduleViewSettings: ScheduleViewSettingsT = {
+    timeFrame: "week",
+    groupBy: "shift",
+    showBreaches: false,
+    showAssignments: true,
+    showDailyShiftDemands: true,
+    showRequests: false,
+    periodStartDate: dayjs.utc("2026-01-26"),
+  };
+  const mockLng = "en";
 
   const createMockScheduleCellData = (
     assignmentsCount: number,
@@ -81,6 +102,8 @@ describe("DailyShiftDemandCell", () => {
         <DailyShiftDemandCell
           scheduleCellData={scheduleCellData}
           handleDemandSelection={mockHandleDemandSelection}
+          scheduleViewSettings={mockScheduleViewSettings}
+          lng={mockLng}
         />,
       );
 
@@ -97,6 +120,8 @@ describe("DailyShiftDemandCell", () => {
         <DailyShiftDemandCell
           scheduleCellData={scheduleCellData}
           handleDemandSelection={mockHandleDemandSelection}
+          scheduleViewSettings={mockScheduleViewSettings}
+          lng={mockLng}
         />,
       );
 
@@ -112,6 +137,8 @@ describe("DailyShiftDemandCell", () => {
         <DailyShiftDemandCell
           scheduleCellData={scheduleCellData}
           handleDemandSelection={mockHandleDemandSelection}
+          scheduleViewSettings={mockScheduleViewSettings}
+          lng={mockLng}
         />,
       );
 
@@ -132,6 +159,8 @@ describe("DailyShiftDemandCell", () => {
         <DailyShiftDemandCell
           scheduleCellData={scheduleCellData}
           handleDemandSelection={mockHandleDemandSelection}
+          scheduleViewSettings={mockScheduleViewSettings}
+          lng={mockLng}
         />,
       );
 
@@ -149,6 +178,8 @@ describe("DailyShiftDemandCell", () => {
         <DailyShiftDemandCell
           scheduleCellData={scheduleCellData}
           handleDemandSelection={mockHandleDemandSelection}
+          scheduleViewSettings={mockScheduleViewSettings}
+          lng={mockLng}
         />,
       );
 
@@ -166,6 +197,8 @@ describe("DailyShiftDemandCell", () => {
           <DailyShiftDemandCell
             scheduleCellData={scheduleCellData}
             handleDemandSelection={mockHandleDemandSelection}
+            scheduleViewSettings={mockScheduleViewSettings}
+            lng={mockLng}
           />,
         );
       }).not.toThrow();
@@ -178,6 +211,8 @@ describe("DailyShiftDemandCell", () => {
         <DailyShiftDemandCell
           scheduleCellData={scheduleCellData}
           handleDemandSelection={mockHandleDemandSelection}
+          scheduleViewSettings={mockScheduleViewSettings}
+          lng={mockLng}
         />,
       );
 
@@ -196,6 +231,8 @@ describe("DailyShiftDemandCell", () => {
         <DailyShiftDemandCell
           scheduleCellData={scheduleCellData}
           handleDemandSelection={mockHandleDemandSelection}
+          scheduleViewSettings={mockScheduleViewSettings}
+          lng={mockLng}
         />,
       );
 
@@ -211,6 +248,8 @@ describe("DailyShiftDemandCell", () => {
         <DailyShiftDemandCell
           scheduleCellData={scheduleCellData}
           handleDemandSelection={mockHandleDemandSelection}
+          scheduleViewSettings={mockScheduleViewSettings}
+          lng={mockLng}
         />,
       );
 
