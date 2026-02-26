@@ -183,5 +183,7 @@
     "thursday_short": "J",
     "friday_short": "V",
     "saturday_short": "S",
-    "sunday_short": "D"
+    "sunday_short": "D",
+    "dsd.tooltip.shift": "nombre de postes assignés / exigence de couverture pour la journée",
+    "dsd.tooltip.worker": "nombre de membres assignés / exigence de personnel pour la journée"
 }

@@ -123,6 +123,7 @@ export default function ScheduleTableShift({
           {shiftsForHeader.map((shift, shiftIndex) => (
             <ShiftTableRow
               key={shiftIndex}
+              lng={lng}
               teamWithMembership={teamWithMembership}
               shift={shift}
               assignments={assignments}

@@ -183,5 +183,7 @@
     "thursday_short": "T",
     "friday_short": "F",
     "saturday_short": "S",
-    "sunday_short": "S"
+    "sunday_short": "S",
+    "dsd.tooltip.shift": "number of shifts assigned / coverage shift requirement for the day",
+    "dsd.tooltip.worker": "number of members assigned / coverage staffing requirement for the day"
 }
