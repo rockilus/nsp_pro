@@ -127,13 +127,39 @@ export default function CampaignInfo({
   function getCampaignPeriodLabel(
     start: dayjs.Dayjs,
     end: dayjs.Dayjs,
+    lng: string,
   ): string {
+    // Helper to format short month localized (3 letters, capitalized, no dots)
+    const shortMonth = (d: dayjs.Dayjs) => {
+      const raw = d.locale(lng).format("MMM").replace(/\./g, "");
+      const short = raw.slice(0, 3);
+      return short.charAt(0).toUpperCase() + short.slice(1);
+    };
+
     if (start.isSame(end, "month") && start.isSame(end, "year")) {
-      return start.format("D") + " - " + end.format("D MMM YYYY");
+      return (
+        start.locale(lng).format("D") +
+        " - " +
+        (end.locale(lng).format("D") + " " + shortMonth(end) + " " + end.year())
+      );
     } else if (!start.isSame(end, "month") && start.isSame(end, "year")) {
-      return start.format("D MMM") + " - " + end.format("D MMM YYYY");
+      return (
+        start.locale(lng).format("D") +
+        " " +
+        shortMonth(start) +
+        " - " +
+        (end.locale(lng).format("D") + " " + shortMonth(end) + " " + end.year())
+      );
     } else {
-      return start.format("D MMM YYYY") + " - " + end.format("D MMM YYYY");
+      return (
+        start.locale(lng).format("D") +
+        " " +
+        shortMonth(start) +
+        " " +
+        start.year() +
+        " - " +
+        (end.locale(lng).format("D") + " " + shortMonth(end) + " " + end.year())
+      );
     }
   }
 
@@ -205,6 +231,7 @@ export default function CampaignInfo({
             {getCampaignPeriodLabel(
               scheduleCampaign.startDate,
               scheduleCampaign.endDate,
+              lng,
             )}
           </span>
         </div>
