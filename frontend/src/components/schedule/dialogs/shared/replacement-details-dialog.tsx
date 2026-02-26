@@ -100,7 +100,8 @@ export function ReplacementDetailsDialog({
           (() => {
             const shift = shifts.find((s) => s.id === assignment.shiftId);
             const dateStr = assignment.date
-              ? assignment.date.format("dddd, D MMMM")
+              ? // format date in user's language
+                assignment.date.locale(lng).format("dddd, D MMMM")
               : "";
             if (!shift) return null;
             const startStr = shift.startTime.format("HH:mm");
