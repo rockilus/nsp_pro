@@ -6,6 +6,7 @@ import {
   IconButton,
   Box,
   Typography,
+  Tooltip,
   Table,
   TableContainer,
   TableHead,
@@ -173,7 +174,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.h_week")}
+                  <Tooltip title={t("replace_dialog.tooltip.h_week")} arrow>
+                    <Box component="span">{t("replace_dialog.h_week")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -184,7 +187,14 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.duties_per_month")}
+                  <Tooltip
+                    title={t("replace_dialog.tooltip.duties_per_month")}
+                    arrow
+                  >
+                    <Box component="span">
+                      {t("replace_dialog.duties_per_month")}
+                    </Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -195,7 +205,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.shift_ltm")}
+                  <Tooltip title={t("replace_dialog.tooltip.shift_ltm")} arrow>
+                    <Box component="span">{t("replace_dialog.shift_ltm")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -206,7 +218,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.day_ltm")}
+                  <Tooltip title={t("replace_dialog.tooltip.day_ltm")} arrow>
+                    <Box component="span">{t("replace_dialog.day_ltm")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -217,7 +231,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.soft")}
+                  <Tooltip title={t("replace_dialog.tooltip.soft")} arrow>
+                    <Box component="span">{t("replace_dialog.soft")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -228,7 +244,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.hard")}
+                  <Tooltip title={t("replace_dialog.tooltip.hard")} arrow>
+                    <Box component="span">{t("replace_dialog.hard")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -239,7 +257,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.request")}
+                  <Tooltip title={t("replace_dialog.tooltip.request")} arrow>
+                    <Box component="span">{t("replace_dialog.request")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -250,7 +270,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.overlap")}
+                  <Tooltip title={t("replace_dialog.tooltip.overlap")} arrow>
+                    <Box component="span">{t("replace_dialog.overlap")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -261,7 +283,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.filter")}
+                  <Tooltip title={t("replace_dialog.tooltip.filter")} arrow>
+                    <Box component="span">{t("replace_dialog.filter")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -272,7 +296,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.leave")}
+                  <Tooltip title={t("replace_dialog.tooltip.leave")} arrow>
+                    <Box component="span">{t("replace_dialog.leave")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -283,7 +309,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.specialty")}
+                  <Tooltip title={t("replace_dialog.tooltip.specialty")} arrow>
+                    <Box component="span">{t("replace_dialog.specialty")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -294,7 +322,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  {t("replace_dialog.employed")}
+                  <Tooltip title={t("replace_dialog.tooltip.employed")} arrow>
+                    <Box component="span">{t("replace_dialog.employed")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
