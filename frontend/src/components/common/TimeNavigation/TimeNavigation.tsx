@@ -57,14 +57,23 @@ function formatPeriodLabel(
   start: Dayjs,
   end: Dayjs,
   timeFrame: TimeFrame,
+  lng: string,
 ): string {
+  // Helper: short month (3 letters), remove dots and capitalize
+  const shortMonth = (d: Dayjs) => {
+    const raw = d.locale(lng).format("MMM").replace(/\./g, "");
+    const short = raw.slice(0, 3);
+    return short.charAt(0).toUpperCase() + short.slice(1);
+  };
+
   // Both week and month views use the same formatting logic
   if (start.month() === end.month() && start.year() === end.year()) {
-    return start.format("MMMM YYYY");
+    const full = start.locale(lng).format("MMMM YYYY");
+    return full.charAt(0).toUpperCase() + full.slice(1);
   } else if (start.month() !== end.month() && start.year() === end.year()) {
-    return start.format("MMM") + " - " + end.format("MMM YYYY");
+    return `${shortMonth(start)} - ${shortMonth(end)} ${end.year()}`;
   } else {
-    return start.format("MMM YYYY") + " - " + end.format("MMM YYYY");
+    return `${shortMonth(start)} ${start.year()} - ${shortMonth(end)} ${end.year()}`;
   }
 }
 
@@ -132,9 +141,15 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
           currentPeriodStart,
           currentPeriodEnd,
           timeFrame,
+          lng,
         )}`}
       >
-        {formatPeriodLabel(currentPeriodStart, currentPeriodEnd, timeFrame)}
+        {formatPeriodLabel(
+          currentPeriodStart,
+          currentPeriodEnd,
+          timeFrame,
+          lng,
+        )}
       </span>
 
       {/* Period Type Selector */}
