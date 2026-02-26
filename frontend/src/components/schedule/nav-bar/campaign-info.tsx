@@ -286,7 +286,7 @@ export default function CampaignInfo({
                 </Button>
               </Tooltip>
               {useSqsWorkflow && isActiveSolve && (
-                <Tooltip title={t("cancelSolve")}>
+                <Tooltip title={t("cancel_solve")}>
                   <IconButton
                     size="small"
                     onClick={handleCancelSolve}
@@ -337,7 +337,7 @@ export default function CampaignInfo({
           severity="success"
           variant="filled"
         >
-          {t("solveCompleted")}
+          {t("solve_completed")}
         </Alert>
       </Snackbar>
 
@@ -363,7 +363,7 @@ export default function CampaignInfo({
           severity="error"
           variant="filled"
         >
-          {lastError || t("solveError")}
+          {lastError || t("solve_error")}
         </Alert>
       </Snackbar>
 
