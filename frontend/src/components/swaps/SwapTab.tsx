@@ -22,7 +22,6 @@ import { AssignmentDataDictT } from "../../types/assignment";
 import CreateSwapDialog from "./CreateSwapDialog";
 import SwapDetailDialog from "./SwapDetailDialog";
 import SwapCard from "./SwapCard";
-import SwapAnalysisView from "./SwapAnalysisView";
 import SwapAnalysisDialog from "./SwapAnalysisDialog";
 import { TeamWithMembership, TeamMembershipRole } from "../../types/team";
 import { useGetWorkers } from "../../hooks/useWorker";
