@@ -47,3 +47,17 @@ export const formatSwapTitleDate = (
     monthWeekday,
   };
 };
+
+export const formatSwapDateTime = (dateValue: any, lng: string): string => {
+  if (!dateValue || typeof dateValue.format !== "function") {
+    return "";
+  }
+
+  const dayjsLocale = getDayjsLocaleFromLng(lng);
+  const localizedDateValue =
+    typeof dateValue.locale === "function"
+      ? dateValue.locale(dayjsLocale)
+      : dateValue;
+
+  return localizedDateValue.format("MMM D, YYYY HH:mm");
+};

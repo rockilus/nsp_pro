@@ -29,7 +29,10 @@ import { LinkShiftT } from "../../types/shift";
 import AssignmentSelector from "./AssignmentSelector";
 import AssignmentList from "./AssignmentList";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
-import { formatSwapTitleDate } from "../../utils/swapHelpers";
+import {
+  formatSwapDateTime,
+  formatSwapTitleDate,
+} from "../../utils/swapHelpers";
 import { getWorkerName } from "../../utils/workerHelpers";
 import { getAssignmentsForIds } from "../../utils/swapHelpers";
 import { useTranslation } from "../../app/i18n/client";
@@ -536,7 +539,7 @@ export default function SwapDetailContent({
           <Box>
             <Typography variant="caption" color="text.secondary">
               {t("lbl_created", {
-                date: swap.createdAt?.format("MMM D, YYYY HH:mm"),
+                date: formatSwapDateTime(swap.createdAt, lng),
               })}
             </Typography>
             {swap.completedAt && (
@@ -546,7 +549,7 @@ export default function SwapDetailContent({
                 display="block"
               >
                 {t("lbl_completed", {
-                  date: swap.completedAt.format("MMM D, YYYY HH:mm"),
+                  date: formatSwapDateTime(swap.completedAt, lng),
                 })}
               </Typography>
             )}
