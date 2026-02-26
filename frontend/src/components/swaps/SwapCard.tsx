@@ -6,10 +6,8 @@ import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
 import AssignmentOfferItem from "./AssignmentOfferItem";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
+import { formatSwapTitleDate } from "../../utils/swapHelpers";
 import { useTranslation } from "../../app/i18n/client";
-import "dayjs/locale/en-gb";
-import "dayjs/locale/fr";
-import "dayjs/locale/es";
 
 const statusColors: Record<
   SwapStatus,
@@ -53,7 +51,6 @@ export default function SwapCard({
   lng,
 }: SwapCardProps) {
   const { t } = useTranslation(lng, "swap-page");
-  const dayjsLocale = lng === "en" ? "en-gb" : lng;
   const createdAtLabel =
     swap.createdAt && typeof (swap as any).createdAt?.format === "function"
       ? (swap as any).createdAt.format("MMM D, YYYY")
@@ -65,23 +62,7 @@ export default function SwapCard({
   const titleDate = earliestOffered
     ? earliestOffered.assignment.date
     : swap.createdAt || null;
-
-  const localizedTitleDate =
-    titleDate && typeof (titleDate as any).locale === "function"
-      ? (titleDate as any).locale(dayjsLocale)
-      : titleDate;
-
-  const dayNumber =
-    localizedTitleDate &&
-    typeof (localizedTitleDate as any).format === "function"
-      ? localizedTitleDate.format("D")
-      : "";
-
-  const monthWeekday =
-    localizedTitleDate &&
-    typeof (localizedTitleDate as any).format === "function"
-      ? localizedTitleDate.format("MMM, ddd")
-      : "";
+  const { dayNumber, monthWeekday } = formatSwapTitleDate(titleDate, lng);
 
   const titleShiftName = earliestOffered ? earliestOffered.shift.name : "";
 

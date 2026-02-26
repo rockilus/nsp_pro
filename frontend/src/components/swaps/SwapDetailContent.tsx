@@ -29,6 +29,7 @@ import { LinkShiftT } from "../../types/shift";
 import AssignmentSelector from "./AssignmentSelector";
 import AssignmentList from "./AssignmentList";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
+import { formatSwapTitleDate } from "../../utils/swapHelpers";
 import { getWorkerName } from "../../utils/workerHelpers";
 import { getAssignmentsForIds } from "../../utils/swapHelpers";
 import { useTranslation } from "../../app/i18n/client";
@@ -120,14 +121,7 @@ export default function SwapDetailContent({
   const titleDate = earliestOffered
     ? earliestOffered.assignment.date
     : swap.createdAt || null;
-  const dayNumber =
-    titleDate && typeof (titleDate as any).format === "function"
-      ? titleDate.format("D")
-      : "";
-  const monthWeekday =
-    titleDate && typeof (titleDate as any).format === "function"
-      ? titleDate.format("MMM, ddd")
-      : "";
+  const { dayNumber, monthWeekday } = formatSwapTitleDate(titleDate, lng);
   const titleShiftName = earliestOffered ? earliestOffered.shift.name : "";
 
   // Creator worker
