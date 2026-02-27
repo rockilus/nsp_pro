@@ -361,10 +361,7 @@ export default function RequestTab({
               aria-label="Request Tabs"
               data-testid="request-tabs"
             >
-              <Tab
-                label={t("requests") || "Requests"}
-                data-testid="requests-tab"
-              />
+              <Tab label={t("list") || "List"} data-testid="requests-tab" />
               <Tab
                 label={t("calendar") || "Calendar"}
                 data-testid="calendar-tab"

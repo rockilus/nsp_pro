@@ -67,7 +67,7 @@ export default function TeamSettingsLayout({
     },
     {
       name: "members",
-      label: t("members") || "Members",
+      label: t("users") || "Members",
       href: `/${lng}/plan/teams/members?teamId=${teamId}`,
     },
   ];

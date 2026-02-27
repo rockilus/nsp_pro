@@ -30,7 +30,7 @@ export default function UpdateSpecialtiesInput({
   updateSpecialty: (specialty: SpecialtyT) => void;
   deleteSpecialty: (specialtyId: string) => void;
 }) {
-  const { t } = useTranslation(lng, "inputs-components");
+  const { t } = useTranslation(lng, "shift-page");
 
   const [newSpecialty, setNewSpecialty] = useState<SpecialtyT>({
     id: "",
@@ -39,7 +39,7 @@ export default function UpdateSpecialtiesInput({
     deleted: false,
   });
   const [SpecialtyEditing, setSpecialtyEditing] = useState<SpecialtyT | null>(
-    null
+    null,
   );
   const [error, setError] = useState<boolean>(false);
   const [errorEditing, setErrorEditing] = useState<boolean>(false);

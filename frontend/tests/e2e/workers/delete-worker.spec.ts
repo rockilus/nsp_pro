@@ -290,7 +290,6 @@ test.describe("Worker Deletion", () => {
     const headerRow = table.locator("thead tr");
     await expect(headerRow).toContainText("Name");
     await expect(headerRow).toContainText("Acronym");
-    await expect(headerRow).toContainText("actions"); // Note: lowercase in actual implementation
 
     // Delete the worker
     await workerTestBase.deleteWorkerViaUIAndWait(page, testWorker.id);
@@ -298,7 +297,6 @@ test.describe("Worker Deletion", () => {
     // Verify table headers are still present after deletion
     await expect(headerRow).toContainText("Name");
     await expect(headerRow).toContainText("Acronym");
-    await expect(headerRow).toContainText("actions"); // Note: lowercase in actual implementation
 
     // Verify table shows empty state
     const workerRows = workerTestBase.getWorkerRows(page);

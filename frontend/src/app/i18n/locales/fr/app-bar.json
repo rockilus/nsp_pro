@@ -1,16 +1,16 @@
 {
     "campaign": "Campagne",
-    "constraints": "Contraintes",
-    "coverages": "Agendas",
+    "constraints": "Règles",
     "profile": "Profil",
     "requests": "Demandes",
     "schedule": "Planning",
     "settings": "Paramètres",
-    "shift_demands": "Demandes de Tâches",
+    "shift_demands": "Besoins",
     "sign_out": "Déconnexion",
     "signing_out": "Déconnexion...",
-    "shifts": "Tâches",
+    "shifts": "Postes",
     "stats": "Stats",
+    "swaps": "Échanges",
     "teams": "Équipes",
-    "workers": "Travailleurs"
+    "workers": "Équipe"
 }

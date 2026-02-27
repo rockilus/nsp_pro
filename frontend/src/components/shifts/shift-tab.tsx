@@ -6,7 +6,7 @@ import utc from "dayjs/plugin/utc";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import MobileShiftTab from "./mobile/mobile-shift-tab";
 // MUI
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 // Components
 import ShiftTable from "./shift-table";
 import TableFilterBar from "../table/TableFilterBar";
@@ -176,21 +176,33 @@ export default function ShiftTab({
   };
 
   const DefaultWorkShiftFields: Record<string, string>[] = [
-    { name: "color", label: t("color") },
-    { name: "name", label: t("name") },
-    { name: "acronym", label: t("acronym") },
-    { name: "duty", label: t("duty") },
-    { name: "recuperation", label: t("recuperation") },
-    { name: "start_time", label: t("start_time") },
-    { name: "end_time", label: t("end_time") },
-    { name: "staffing", label: t("staffing") },
+    { name: "color", label: t("color"), tooltip: t("color_tooltip") },
+    { name: "name", label: t("name"), tooltip: t("name_tooltip") },
+    { name: "acronym", label: t("acronym"), tooltip: t("acronym_tooltip") },
+    { name: "duty", label: t("duty"), tooltip: t("duty_tooltip") },
+    {
+      name: "recuperation",
+      label: t("recuperation"),
+      tooltip: t("recuperation_tooltip"),
+    },
+    {
+      name: "start_time",
+      label: t("start_time"),
+      tooltip: t("start_time_tooltip"),
+    },
+    { name: "end_time", label: t("end_time"), tooltip: t("end_time_tooltip") },
+    { name: "staffing", label: t("staffing"), tooltip: t("staffing_tooltip") },
   ];
   const DefaultRestShiftFields: Record<string, string>[] = [
-    { name: "color", label: t("color") },
-    { name: "name", label: t("name") },
-    { name: "acronym", label: t("acronym") },
-    { name: "start_time", label: t("start_time") },
-    { name: "end_time", label: t("end_time") },
+    { name: "color", label: t("color"), tooltip: t("color_tooltip") },
+    { name: "name", label: t("name"), tooltip: t("name_tooltip") },
+    { name: "acronym", label: t("acronym"), tooltip: t("acronym_tooltip") },
+    {
+      name: "start_time",
+      label: t("start_time"),
+      tooltip: t("start_time_tooltip"),
+    },
+    { name: "end_time", label: t("end_time"), tooltip: t("end_time_tooltip") },
   ];
 
   const roundTime = (dt: dayjs.Dayjs): dayjs.Dayjs => {
@@ -517,8 +529,16 @@ export default function ShiftTab({
                   size="small"
                   sx={{ ml: 2, height: "35px" }}
                 >
-                  <ToggleButton value="work">{t("shifts")}</ToggleButton>
-                  <ToggleButton value="rest">{t("rest")}</ToggleButton>
+                  <Tooltip title={t("shifts_tooltip") || t("shifts")}>
+                    <span>
+                      <ToggleButton value="work">{t("shifts")}</ToggleButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={t("rest_tooltip") || t("rest")}>
+                    <span>
+                      <ToggleButton value="rest">{t("rest")}</ToggleButton>
+                    </span>
+                  </Tooltip>
                 </ToggleButtonGroup>
               </div>
               <div className="shift-actions-container">
@@ -534,18 +554,25 @@ export default function ShiftTab({
                     />
                     <TableAddButton
                       text={t("shift")}
+                      tooltip={t("create_shift_tooltip")}
                       handleClick={() => handleAddShift(false)}
                     />
                   </>
                 ) : (
                   <TableAddButton
                     text={t("rest")}
+                    tooltip={t("create_rest_tooltip")}
                     handleClick={() => handleAddShift(true)}
                   />
                 )}
                 <DimensionDialog
                   title={t("new_property")}
-                  buttonContent={<TableAddButton text={t("property")} />}
+                  buttonContent={
+                    <TableAddButton
+                      text={t("property")}
+                      tooltip={t("create_property_tooltip")}
+                    />
+                  }
                   content={
                     <NewDimensionForm
                       lng={lng}

@@ -249,13 +249,16 @@ export default function SwapAnalysisDialog({
     >
       <DialogTitle sx={{ position: "relative" }}>
         <Box sx={{ fontWeight: 500, fontSize: "1.25rem" }}>
-          Swap Analysis: {workerAInfo.workerName} ↔ {workerBInfo.workerName}
+          {t("analysis_title", {
+            workerA: workerAInfo.workerName,
+            workerB: workerBInfo.workerName,
+          })}
         </Box>
         <Typography variant="body2" color="text.secondary">
           {validationMessage}
         </Typography>
         <IconButton
-          aria-label={t("close")}
+          aria-label={t("btn_close")}
           onClick={onClose}
           sx={{ position: "absolute", right: 8, top: 8 }}
           size="large"
@@ -288,7 +291,7 @@ export default function SwapAnalysisDialog({
                     paddingLeft: "16px",
                   }}
                 >
-                  Assignment
+                  {t("col_assignment")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -309,7 +312,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  H/week
+                  {t("col_h_week")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -320,7 +323,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Duties/month
+                  {t("col_duties_month")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -331,7 +334,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Shift LTM
+                  {t("col_shift_ltm")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -342,7 +345,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Day LTM
+                  {t("col_day_ltm")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -353,7 +356,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Soft
+                  {t("col_soft")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -364,7 +367,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Hard
+                  {t("col_hard")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -375,7 +378,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Request
+                  {t("col_request")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -386,7 +389,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Overlap
+                  {t("col_overlap")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -397,7 +400,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Filter
+                  {t("col_filter")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -408,7 +411,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Leave
+                  {t("col_leave")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -419,7 +422,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Specialty
+                  {t("col_specialty")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -430,7 +433,7 @@ export default function SwapAnalysisDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Employed
+                  {t("col_employed")}
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -451,7 +454,7 @@ export default function SwapAnalysisDialog({
                   }}
                   data-testid="section-postswap"
                 >
-                  Post-swap
+                  {t("analysis_post_swap")}
                 </TableCell>
               </TableRow>
 
@@ -481,7 +484,7 @@ export default function SwapAnalysisDialog({
                     colSpan={totalColumns}
                     sx={{ textAlign: "center", padding: "16px" }}
                   >
-                    No assignments
+                    {t("analysis_no_assignments")}
                   </TableCell>
                 </TableRow>
               )}
@@ -512,7 +515,7 @@ export default function SwapAnalysisDialog({
                     colSpan={totalColumns}
                     sx={{ textAlign: "center", padding: "16px" }}
                   >
-                    No assignments
+                    {t("analysis_no_assignments")}
                   </TableCell>
                 </TableRow>
               )}
@@ -545,7 +548,7 @@ export default function SwapAnalysisDialog({
                   }}
                   data-testid="section-preswap"
                 >
-                  Pre-swap
+                  {t("analysis_pre_swap")}
                 </TableCell>
               </TableRow>
 
@@ -575,7 +578,7 @@ export default function SwapAnalysisDialog({
                     colSpan={totalColumns}
                     sx={{ textAlign: "center", padding: "16px" }}
                   >
-                    No assignments
+                    {t("analysis_no_assignments")}
                   </TableCell>
                 </TableRow>
               )}
@@ -606,7 +609,7 @@ export default function SwapAnalysisDialog({
                     colSpan={totalColumns}
                     sx={{ textAlign: "center", padding: "16px" }}
                   >
-                    No assignments
+                    {t("analysis_no_assignments")}
                   </TableCell>
                 </TableRow>
               )}
@@ -616,9 +619,7 @@ export default function SwapAnalysisDialog({
 
         <Box sx={{ mt: 2 }}>
           <Typography variant="caption" color="text.secondary">
-            Post-swap shows the projected state after completing the swap.
-            Pre-swap shows the current state with existing assignments. Green ✓
-            indicates pass, red ✗ indicates violation.
+            {t("analysis_footer")}
           </Typography>
         </Box>
       </DialogContent>

@@ -46,6 +46,7 @@ export default function DatesHeaderRow({
           key={dateIndex}
           periodDate={pDate}
           teamWithMembership={teamWithMembership}
+          lng={lng}
         />
       ))}
     </TableRow>

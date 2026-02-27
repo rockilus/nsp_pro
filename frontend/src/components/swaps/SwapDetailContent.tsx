@@ -29,8 +29,13 @@ import { LinkShiftT } from "../../types/shift";
 import AssignmentSelector from "./AssignmentSelector";
 import AssignmentList from "./AssignmentList";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
+import {
+  formatSwapDateTime,
+  formatSwapTitleDate,
+} from "../../utils/swapHelpers";
 import { getWorkerName } from "../../utils/workerHelpers";
 import { getAssignmentsForIds } from "../../utils/swapHelpers";
+import { useTranslation } from "../../app/i18n/client";
 
 interface SwapDetailContentProps {
   swap: SwapRequestT;
@@ -97,6 +102,7 @@ export default function SwapDetailContent({
 }: SwapDetailContentProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { t } = useTranslation(lng, "swap-page");
   const [showAnalysis, setShowAnalysis] = useState(false);
 
   // Show analysis when validation result is available
@@ -118,14 +124,7 @@ export default function SwapDetailContent({
   const titleDate = earliestOffered
     ? earliestOffered.assignment.date
     : swap.createdAt || null;
-  const dayNumber =
-    titleDate && typeof (titleDate as any).format === "function"
-      ? titleDate.format("D")
-      : "";
-  const monthWeekday =
-    titleDate && typeof (titleDate as any).format === "function"
-      ? titleDate.format("MMM, ddd")
-      : "";
+  const { dayNumber, monthWeekday } = formatSwapTitleDate(titleDate, lng);
   const titleShiftName = earliestOffered ? earliestOffered.shift.name : "";
 
   // Creator worker
@@ -204,13 +203,15 @@ export default function SwapDetailContent({
       <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
         <Chip
           label={
-            swap.swapType === SwapType.DIRECT ? "Direct Swap" : "Open Swap"
+            swap.swapType === SwapType.DIRECT
+              ? t("type_direct_chip")
+              : t("type_open_chip")
           }
           color="primary"
           data-testid="swap-type-chip"
         />
         <Chip
-          label={swap.status}
+          label={t(`status_${swap.status}`)}
           color={getStatusColor(swap.status)}
           data-testid="swap-status-chip"
         />
@@ -219,10 +220,10 @@ export default function SwapDetailContent({
       {/* Worker */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="subtitle2" color="text.secondary">
-          Worker
+          {t("lbl_worker")}
         </Typography>
         <Typography variant="body1">
-          {creatorWorker?.name || "Unknown Worker"}
+          {creatorWorker?.name || t("lbl_unknown_worker")}
         </Typography>
       </Box>
 
@@ -231,7 +232,7 @@ export default function SwapDetailContent({
       {/* Offered Assignments */}
       <Box sx={{ mb: 2 }} data-testid="offered-assignments-section">
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Offered Assignments ({offeredAssignments.length})
+          {t("lbl_offered_count", { count: offeredAssignments.length })}
         </Typography>
         <AssignmentList
           assignments={offeredAssignments}
@@ -239,6 +240,7 @@ export default function SwapDetailContent({
           showTimes={true}
           isMobile={isMobile}
           testIdPrefix={`swap-detail-${swap.id}-assignment`}
+          lng={lng}
         />
       </Box>
 
@@ -254,14 +256,18 @@ export default function SwapDetailContent({
                 color="text.secondary"
                 gutterBottom
               >
-                Requested Assignments ({requestedAssignments.length})
+                {t("lbl_requested_count", {
+                  count: requestedAssignments.length,
+                })}
               </Typography>
               <Typography
                 variant="body2"
                 sx={{ mb: 1 }}
                 data-testid="target-worker-name"
               >
-                From: {getWorkerName(swap.targetWorkerId, workers)}
+                {t("lbl_from_worker", {
+                  workerName: getWorkerName(swap.targetWorkerId!, workers),
+                })}
               </Typography>
               <AssignmentList
                 assignments={requestedAssignments}
@@ -269,6 +275,7 @@ export default function SwapDetailContent({
                 showTimes={true}
                 isMobile={isMobile}
                 testIdPrefix={`swap-detail-${swap.id}-assignment`}
+                lng={lng}
               />
             </Box>
           </>
@@ -280,7 +287,7 @@ export default function SwapDetailContent({
           <Divider sx={{ my: 2 }} />
           <Box sx={{ mb: 2 }} data-testid="bids-section">
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Bids ({swap.bids.length})
+              {t("lbl_bids_count", { count: swap.bids.length })}
             </Typography>
 
             {/* Add Bid UI */}
@@ -294,13 +301,13 @@ export default function SwapDetailContent({
                     showAddBid ? "cancel-add-bid-button" : "add-bid-button"
                   }
                 >
-                  {showAddBid ? "Cancel" : "Create Bid"}
+                  {showAddBid ? t("btn_cancel_bid") : t("btn_create_bid")}
                 </Button>
 
                 <Collapse in={showAddBid}>
                   <Box sx={{ mt: 2 }} data-testid="add-bid-section">
                     <Typography variant="body2" sx={{ mb: 1 }}>
-                      Select your assignments to bid:
+                      {t("lbl_select_bid_assignments")}
                     </Typography>
                     {onBidAssignmentChange && (
                       <AssignmentSelector
@@ -317,6 +324,7 @@ export default function SwapDetailContent({
                         )}
                         linkShifts={linkShifts}
                         allowMultiple={true}
+                        lng={lng}
                       />
                     )}
                     {onSubmitBid && (
@@ -327,7 +335,7 @@ export default function SwapDetailContent({
                         sx={{ mt: 2 }}
                         data-testid="submit-bid-button"
                       >
-                        Submit Bid
+                        {t("btn_submit_bid")}
                       </Button>
                     )}
                   </Box>
@@ -337,7 +345,7 @@ export default function SwapDetailContent({
 
             {/* Bids List */}
             {sortedBids.length === 0 ? (
-              <Alert severity="info">No bids yet</Alert>
+              <Alert severity="info">{t("lbl_no_bids")}</Alert>
             ) : (
               <Box>
                 {sortedBids.map((bid) => {
@@ -381,14 +389,14 @@ export default function SwapDetailContent({
                             </Typography>
                             {isUserBid && (
                               <Chip
-                                label="Your Bid"
+                                label={t("lbl_your_bid")}
                                 size="small"
                                 color="primary"
                               />
                             )}
                             {bid.accepted && (
                               <Chip
-                                label="Accepted"
+                                label={t("lbl_accepted")}
                                 size="small"
                                 color="success"
                                 data-testid={`bid-accepted-chip-${bid.id}`}
@@ -422,7 +430,7 @@ export default function SwapDetailContent({
                               data-testid={`accept-bid-button-${bid.id}`}
                               sx={{ textTransform: "none" }}
                             >
-                              Accept bid
+                              {t("lbl_accept_bid")}
                             </Button>
                           )}
                         </Box>
@@ -442,6 +450,7 @@ export default function SwapDetailContent({
                         showTimes={true}
                         isMobile={isMobile}
                         testIdPrefix={`swap-detail-${swap.id}-bid-${bid.id}-assignment`}
+                        lng={lng}
                       />
 
                       {bid.accepted &&
@@ -456,7 +465,7 @@ export default function SwapDetailContent({
                             data-testid="cancel-bid-acceptance-button"
                             sx={{ textTransform: "none" }}
                           >
-                            Revert to open
+                            {t("lbl_revert_to_open")}
                           </Button>
                         )}
                     </Paper>
@@ -474,7 +483,7 @@ export default function SwapDetailContent({
           <Divider sx={{ my: 2 }} />
           <Box sx={{ mb: 2 }}>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Comment
+              {t("lbl_comment")}
             </Typography>
             <Typography variant="body2">{swap.comment}</Typography>
           </Box>
@@ -505,10 +514,10 @@ export default function SwapDetailContent({
                   {isAnalyzing ? (
                     <>
                       <CircularProgress size={16} sx={{ mr: 1 }} />
-                      Analyzing...
+                      {t("btn_analyzing")}
                     </>
                   ) : (
-                    "Analyze Swap"
+                    t("btn_analyze")
                   )}
                 </Button>
               ) : (
@@ -529,7 +538,9 @@ export default function SwapDetailContent({
           <Divider sx={{ my: 2 }} />
           <Box>
             <Typography variant="caption" color="text.secondary">
-              Created: {swap.createdAt?.format("MMM D, YYYY HH:mm")}
+              {t("lbl_created", {
+                date: formatSwapDateTime(swap.createdAt, lng),
+              })}
             </Typography>
             {swap.completedAt && (
               <Typography
@@ -537,7 +548,9 @@ export default function SwapDetailContent({
                 color="text.secondary"
                 display="block"
               >
-                Completed: {swap.completedAt.format("MMM D, YYYY HH:mm")}
+                {t("lbl_completed", {
+                  date: formatSwapDateTime(swap.completedAt, lng),
+                })}
               </Typography>
             )}
           </Box>

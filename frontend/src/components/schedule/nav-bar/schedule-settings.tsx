@@ -17,7 +17,7 @@ import {
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
-import TuneIcon from "@mui/icons-material/Tune";
+import SettingsIcon from "@mui/icons-material/Settings";
 // Components
 import ScheduleSettingsView from "./schedule-settings-view";
 // Styles
@@ -41,7 +41,7 @@ interface ScheduleSettingsProps {
   handleSendDuplicateRequest: (
     request: DuplicateRequestT,
     campaignId: string,
-    teamId: string
+    teamId: string,
   ) => void;
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
   handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
@@ -69,10 +69,10 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
     endDate: dayjs.Dayjs;
   } | null>(null);
   const [occurrenceType, setOccurrenceType] = useState<OccurrenceType>(
-    OccurrenceType.ASSIGNMENT
+    OccurrenceType.ASSIGNMENT,
   );
   const [copyAssignments, setCopyAssignments] = useState(
-    !teamWithMembership.team.useSolver
+    !teamWithMembership.team.useSolver,
   );
   const [copyDemands, setCopyDemands] = useState(false);
   const [copyAssignmentsError, setCopyAssignmentsError] = useState(false);
@@ -124,7 +124,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
     await handleSendDuplicateRequest(
       duplicateRequest,
       campaign.id,
-      campaign.teamId
+      campaign.teamId,
     );
     setWarningDialogOpen(false);
     setDuplicateDialogOpen(false);
@@ -150,12 +150,12 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
     while (currentStart.isSameOrBefore(campaignEnd)) {
       const currentEnd = dayjs.min(
         currentStart.endOf("week").add(1, "day"),
-        campaignEnd
+        campaignEnd,
       );
       if (!(currentStart.isBefore(endDate) && currentEnd.isAfter(startDate))) {
         weeks.push({
           label: `${currentStart.format("D MMMM YYYY")} - ${currentEnd.format(
-            "D MMMM YYYY"
+            "D MMMM YYYY",
           )}`,
           startDate: currentStart,
           endDate: currentEnd,
@@ -173,7 +173,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         data-testid="schedule-settings-button"
         onClick={handleOpenPopover}
       >
-        <TuneIcon />
+        <SettingsIcon />
       </IconButton>
       <Popover
         data-testid="schedule-settings-popover"
@@ -232,7 +232,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
               value={targetWeek?.label || ""}
               onChange={(e) => {
                 const selectedWeek = weekOptions.find(
-                  (week) => week.label === e.target.value
+                  (week) => week.label === e.target.value,
                 );
                 setTargetWeek(selectedWeek || null);
               }}

@@ -70,7 +70,7 @@ export default function SwapAnalysisView({
         </Typography>
 
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          Will receive {postSwap.length} assignment(s)
+          {t("analysis_will_receive", { count: postSwap.length })}
         </Typography>
 
         <List dense>
@@ -208,7 +208,7 @@ export default function SwapAnalysisView({
         }}
       >
         <Typography variant="subtitle2" color="text.secondary">
-          Swap Analysis
+          {t("analysis_subtitle")}
         </Typography>
         <Button
           variant="contained"
@@ -216,7 +216,7 @@ export default function SwapAnalysisView({
           sx={{ textTransform: "none" }}
           data-testid="view-analysis-details-button"
         >
-          See Details
+          {t("btn_see_details")}
         </Button>
       </Box>
 

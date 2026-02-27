@@ -70,7 +70,7 @@ export default function WorkerTable({
   const dimensionsDisplayed = useMemo(
     () =>
       dimensions.filter((dim) => dim.dimTypes.includes(DimensionType.WORKER)),
-    [dimensions]
+    [dimensions],
   );
 
   return (
@@ -158,7 +158,7 @@ interface WorkerTableProps {
   handleDeleteWorker: (workerId: string) => void;
   handleAddDimension: (
     newDimension: DimensionT,
-    dimEntries: DimEntryT[]
+    dimEntries: DimEntryT[],
   ) => Promise<boolean>;
   handleUpdateDimension: (dimension: DimensionT) => void;
   handleDeleteDimension: (dimensionId: string) => void;
@@ -333,7 +333,7 @@ function WorkerTableHeader({
           }}
         >
           <div className="flex items-center justify-between">
-            <Tooltip title={t("name")} placement="top">
+            <Tooltip title={t("name_tooltip")} placement="top">
               <span className="table-header-default">{t("name")}</span>
             </Tooltip>
             {onSort && onFilter && (
@@ -378,7 +378,7 @@ function WorkerTableHeader({
               data-testid={`worker-${field.name}-header-cell`}
             >
               <div className="flex items-center justify-between">
-                <Tooltip title={field.label} placement="top">
+                <Tooltip title={field.tooltip} placement="top">
                   <span className="table-header-default">{field.label}</span>
                 </Tooltip>
                 {onSort && onFilter && (
@@ -396,7 +396,7 @@ function WorkerTableHeader({
                 )}
               </div>
             </TableCell>
-          )
+          ),
         )}
 
         {/* Dynamic dimensions */}
@@ -410,7 +410,7 @@ function WorkerTableHeader({
             dimEntries={dimEntries.filter((de) => de.dimensionId === dim.id)}
             // Add sorting/filtering props
             column={workerColumns.find(
-              (col) => col.id === `dimension_${dim.id}`
+              (col) => col.id === `dimension_${dim.id}`,
             )}
             currentSort={
               currentSort?.columnId === `dimension_${dim.id}`
@@ -436,11 +436,7 @@ function WorkerTableHeader({
         <TableCell
           className="worker-table-actions-header"
           data-testid="worker-actions-header-cell"
-        >
-          <Tooltip title={t("actions")} placement="top">
-            <span className="table-header-default">{t("actions")}</span>
-          </Tooltip>
-        </TableCell>
+        ></TableCell>
       </TableRow>
     </TableHead>
   );
@@ -461,6 +457,8 @@ function WorkerTableRow({
   handleDeleteWorker,
   handleUpdateAttribute,
 }: WorkerTableRowProps) {
+  const { t } = useTranslation(lng, "worker-page");
+
   return (
     <TableRow
       className="worker-table-row"
@@ -491,7 +489,7 @@ function WorkerTableRow({
       {/* Dynamic dimensions */}
       {dimensionsDisplayed.map((dim, dIndex) => {
         const attribute = worker.attributes.find(
-          (a) => a.dimensionId === dim.id
+          (a) => a.dimensionId === dim.id,
         );
         return (
           <AttributeCell
@@ -530,7 +528,7 @@ function WorkerTableRow({
         data-testid="worker-actions-cell"
       >
         <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Tooltip title="Delete Worker">
+          <Tooltip title={t("delete_member_tooltip")}>
             <Button
               onClick={() => handleDeleteWorker(worker.id)}
               size="small"

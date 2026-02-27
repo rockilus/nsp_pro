@@ -75,17 +75,24 @@ export default function ScheduleItemDialog({
   };
 
   const getDialogTitle = () => {
-    if (mode === DialogMode.EDIT) {
-      switch (activeType) {
-        case ScheduleItemType.ASSIGNMENT:
-          return t("edit_assignment");
-        case ScheduleItemType.DEMAND:
-          return t("edit_demand");
-        case ScheduleItemType.REQUEST:
-          return t("edit_request");
-      }
+    switch (activeType) {
+      case ScheduleItemType.ASSIGNMENT:
+        return mode === DialogMode.CREATE
+          ? t("new_assignment")
+          : t("edit_assignment");
+      case ScheduleItemType.DEMAND:
+        return mode === DialogMode.CREATE
+          ? t("new_coverage")
+          : t("edit_coverage");
+      case ScheduleItemType.REQUEST:
+        return mode === DialogMode.CREATE
+          ? t("new_request")
+          : t("edit_request");
+      default:
+        return mode === DialogMode.CREATE
+          ? t("new_schedule_item")
+          : t("edit_schedule_item");
     }
-    return t("new_schedule_item");
   };
 
   return (

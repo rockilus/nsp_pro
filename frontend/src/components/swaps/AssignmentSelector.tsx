@@ -27,13 +27,15 @@ import { Add as AddIcon } from "@mui/icons-material";
 import dayjs from "dayjs";
 import { AssignmentDataDictT } from "../../types/assignment";
 import { LinkShiftT } from "../../types/shift";
+import { useTranslation } from "../../app/i18n/client";
 
 interface AssignmentSelectorProps {
   selectedAssignmentIds: string[];
   onSelectionChange: (assignmentIds: string[]) => void;
   assignments: AssignmentDataDictT[];
   linkShifts: LinkShiftT[];
-  allowMultiple?: boolean; // Default true
+  allowMultiple?: boolean;
+  lng: string;
 }
 
 interface GroupedAssignment {
@@ -47,9 +49,11 @@ export default function AssignmentSelector({
   assignments,
   linkShifts,
   allowMultiple = true,
+  lng,
 }: AssignmentSelectorProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { t } = useTranslation(lng, "swap-page");
 
   // Group assignments by date
   const groupedAssignments = useMemo(() => {
@@ -146,7 +150,7 @@ export default function AssignmentSelector({
   if (assignments.length === 0) {
     return (
       <Alert severity="info" sx={{ m: 2 }}>
-        No assignments found for the selected criteria.
+        {t("selector_no_assignments")}
       </Alert>
     );
   }
@@ -211,11 +215,11 @@ export default function AssignmentSelector({
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox">Select</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>Worker</TableCell>
-                <TableCell>Shift</TableCell>
-                <TableCell>Time</TableCell>
+                <TableCell padding="checkbox">{t("col_select")}</TableCell>
+                <TableCell>{t("col_date")}</TableCell>
+                <TableCell>{t("col_worker")}</TableCell>
+                <TableCell>{t("col_shift")}</TableCell>
+                <TableCell>{t("col_time")}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -272,17 +276,17 @@ export default function AssignmentSelector({
               onClick={handleAddSuggested}
               data-testid="add-all-linked-shifts"
             >
-              Add All
+              {t("btn_add_all")}
             </Button>
           }
         >
           <Typography variant="body2" fontWeight="medium" gutterBottom>
-            Linked shift assignments available
+            {t("selector_linked_title")}
           </Typography>
           <Typography variant="body2">
-            Consider adding {suggestedLinkedAssignments.length} linked shift
-            assignment{suggestedLinkedAssignments.length !== 1 ? "s" : ""} to
-            keep shifts together:
+            {t("selector_linked_body", {
+              count: suggestedLinkedAssignments.length,
+            })}
           </Typography>
           <Box sx={{ mt: 1 }}>
             {suggestedLinkedAssignments.map((data) => (

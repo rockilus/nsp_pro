@@ -6,6 +6,7 @@ import {
   IconButton,
   Box,
   Typography,
+  Tooltip,
   Table,
   TableContainer,
   TableHead,
@@ -26,6 +27,7 @@ import {
   renderRequestHit,
 } from "../../../common/implications-renderers";
 import { getCategoryEmoji } from "../../../../utils/replacementHelpers";
+import { useTranslation } from "../../../../app/i18n/client";
 import { WorkerT } from "../../../../types/worker";
 import { ShiftT } from "../../../../types/shift";
 import { AssignmentT } from "../../../../types/assignment";
@@ -64,6 +66,8 @@ export function ReplacementDetailsDialog({
       ? workers.find((w) => w.id === assignment.workerId)?.name || ""
       : "";
 
+  const { t } = useTranslation(lng, "schedule-page");
+
   return (
     <Dialog
       open={open}
@@ -75,13 +79,13 @@ export function ReplacementDetailsDialog({
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">
-            {"Replace "}
+            {t("replace_dialog.title")}{" "}
             {headerWorkerName ? (
               <Box component="span" sx={{ fontWeight: "bold" }}>
                 {headerWorkerName}
               </Box>
             ) : (
-              "assignment"
+              t("replace_dialog.assignment")
             )}
           </Typography>
           <IconButton onClick={onClose} size="small">
@@ -96,7 +100,8 @@ export function ReplacementDetailsDialog({
           (() => {
             const shift = shifts.find((s) => s.id === assignment.shiftId);
             const dateStr = assignment.date
-              ? assignment.date.format("dddd, D MMMM")
+              ? // format date in user's language
+                assignment.date.locale(lng).format("dddd, D MMMM")
               : "";
             if (!shift) return null;
             const startStr = shift.startTime.format("HH:mm");
@@ -145,7 +150,7 @@ export function ReplacementDetailsDialog({
                     verticalAlign: "bottom",
                   }}
                 >
-                  Candidate
+                  {t("replace_dialog.candidate")}
                 </TableCell>
                 <TableCell
                   sx={{
@@ -170,7 +175,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  H/week
+                  <Tooltip title={t("replace_dialog.tooltip.h_week")} arrow>
+                    <Box component="span">{t("replace_dialog.h_week")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -181,7 +188,14 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Duties/month
+                  <Tooltip
+                    title={t("replace_dialog.tooltip.duties_per_month")}
+                    arrow
+                  >
+                    <Box component="span">
+                      {t("replace_dialog.duties_per_month")}
+                    </Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -192,7 +206,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Shift LTM
+                  <Tooltip title={t("replace_dialog.tooltip.shift_ltm")} arrow>
+                    <Box component="span">{t("replace_dialog.shift_ltm")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -203,7 +219,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Day LTM
+                  <Tooltip title={t("replace_dialog.tooltip.day_ltm")} arrow>
+                    <Box component="span">{t("replace_dialog.day_ltm")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -214,7 +232,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Soft
+                  <Tooltip title={t("replace_dialog.tooltip.soft")} arrow>
+                    <Box component="span">{t("replace_dialog.soft")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -225,7 +245,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Hard
+                  <Tooltip title={t("replace_dialog.tooltip.hard")} arrow>
+                    <Box component="span">{t("replace_dialog.hard")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -236,7 +258,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Request
+                  <Tooltip title={t("replace_dialog.tooltip.request")} arrow>
+                    <Box component="span">{t("replace_dialog.request")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -247,7 +271,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Overlap
+                  <Tooltip title={t("replace_dialog.tooltip.overlap")} arrow>
+                    <Box component="span">{t("replace_dialog.overlap")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -258,7 +284,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Filter
+                  <Tooltip title={t("replace_dialog.tooltip.filter")} arrow>
+                    <Box component="span">{t("replace_dialog.filter")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -269,7 +297,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Leave
+                  <Tooltip title={t("replace_dialog.tooltip.leave")} arrow>
+                    <Box component="span">{t("replace_dialog.leave")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -280,7 +310,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Specialty
+                  <Tooltip title={t("replace_dialog.tooltip.specialty")} arrow>
+                    <Box component="span">{t("replace_dialog.specialty")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -291,7 +323,9 @@ export function ReplacementDetailsDialog({
                     writingMode: "sideways-lr",
                   }}
                 >
-                  Employed
+                  <Tooltip title={t("replace_dialog.tooltip.employed")} arrow>
+                    <Box component="span">{t("replace_dialog.employed")}</Box>
+                  </Tooltip>
                 </TableCell>
                 <TableCell
                   sx={{
@@ -301,9 +335,7 @@ export function ReplacementDetailsDialog({
                     textAlign: "center",
                     verticalAlign: "bottom",
                   }}
-                >
-                  Actions
-                </TableCell>
+                ></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -423,10 +455,10 @@ export function ReplacementDetailsDialog({
                           {isSubmitting ? (
                             <>
                               <CircularProgress size={12} sx={{ mr: 0.5 }} />
-                              Replacing...
+                              {t("replace_dialog.replacing")}
                             </>
                           ) : (
-                            "Replace"
+                            t("replace_dialog.replace")
                           )}
                         </Button>
                       )}

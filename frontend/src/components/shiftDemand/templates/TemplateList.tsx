@@ -44,12 +44,13 @@ interface TemplateListProps {
   onSelectTemplate: (template: TemplateListItem) => void;
   onCreateTemplate: () => void;
   onDeleteTemplate: (templateId: string) => void;
+  onApplyTemplate: (templateId: string) => void;
   onError: (error: string) => void;
   onTemplatesLoaded: (templates: TemplateListItem[]) => void;
   onLoadTemplates: () => Promise<void>;
   onDeleteTemplateRequest: (
     templateId: string,
-    templateName: string
+    templateName: string,
   ) => Promise<void>;
 }
 
@@ -61,6 +62,7 @@ export function TemplateList({
   onSelectTemplate,
   onCreateTemplate,
   onDeleteTemplate,
+  onApplyTemplate,
   onError,
   onTemplatesLoaded,
   onLoadTemplates,
@@ -90,7 +92,7 @@ export function TemplateList({
 
   const handleDeleteTemplate = async (
     templateId: string,
-    templateName: string
+    templateName: string,
   ) => {
     setConfirmDialog({
       open: true,
@@ -107,7 +109,7 @@ export function TemplateList({
     } catch (error) {
       console.error("Failed to delete template:", error);
       onError(
-        error instanceof Error ? error.message : "Failed to delete template"
+        error instanceof Error ? error.message : "Failed to delete template",
       );
     } finally {
       setDeleteLoading(null);
@@ -149,6 +151,7 @@ export function TemplateList({
           onClick={onCreateTemplate}
           className="template-list-create-button"
           fullWidth
+          sx={{ textTransform: "none" }}
         >
           {t("create_template")}
         </Button>
@@ -193,8 +196,7 @@ export function TemplateList({
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // TODO: Implement quick apply
-                          onSelectTemplate(template);
+                          onApplyTemplate(template.id);
                         }}
                       >
                         <PlayArrow fontSize="small" />
@@ -228,7 +230,7 @@ export function TemplateList({
                     size="small"
                     className={`template-list-item-type ${template.templateType.replace(
                       "_",
-                      "-"
+                      "-",
                     )}`}
                   />
 

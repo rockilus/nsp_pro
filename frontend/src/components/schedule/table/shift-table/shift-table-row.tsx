@@ -21,6 +21,7 @@ import { AssignmentT } from "@/types/assignment";
 import { TeamWithMembership } from "@/types/team";
 
 export default function ShiftTableRow({
+  lng,
   teamWithMembership,
   shift,
   assignments,
@@ -33,6 +34,7 @@ export default function ShiftTableRow({
   handleDemandSelection,
   handleOpenCreateAssignment,
 }: {
+  lng: string;
   teamWithMembership: TeamWithMembership;
   shift: ShiftT;
   assignments: AssignmentT[];
@@ -48,6 +50,7 @@ export default function ShiftTableRow({
   return (
     <TableRow>
       <ShiftRowHeaderCell
+        lng={lng}
         teamWithMembership={teamWithMembership}
         shift={shift}
         assignments={assignments}
@@ -63,6 +66,7 @@ export default function ShiftTableRow({
         return (
           <ShiftCell
             key={dateIndex}
+            lng={lng}
             teamWithMembership={teamWithMembership}
             periodDate={pDate}
             shift={shift}

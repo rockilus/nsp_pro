@@ -2,8 +2,8 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import { AuthProvider } from "../components/auth/auth-provider";
+import ThemeRegistry from "../components/providers/ThemeRegistry";
 // Components
 // import ImpersonationBanner from "../components/app-bar/impersonation-banner";
 
@@ -21,14 +21,14 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <AppRouterCacheProvider>
+      <ThemeRegistry>
         <body className={inter.className}>
           <AuthProvider>
             {/* <ImpersonationBanner /> */}
             {children}
           </AuthProvider>
         </body>
-      </AppRouterCacheProvider>
+      </ThemeRegistry>
     </html>
   );
 }

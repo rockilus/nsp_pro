@@ -16,6 +16,7 @@ import {
   Typography,
   Button,
   IconButton,
+  Tooltip,
   Chip,
   CircularProgress,
   Dialog,
@@ -77,7 +78,7 @@ interface TemplateViewerProps {
   onDeleteTemplate: (templateId: string) => Promise<void>;
   onApplyDemandsToTemplateWeek: (
     sourceWeekStartDate: number,
-    targetWeekNumber: number
+    targetWeekNumber: number,
   ) => Promise<void>;
   templateUpdateLoading: boolean;
 }
@@ -106,7 +107,7 @@ export function TemplateViewer({
   const [currentWeek, setCurrentWeek] = useState(0);
   const [weeksToShow, setWeeksToShow] = useState<1 | 2 | "all">(2);
   const [templateType, setTemplateType] = useState<TemplateType>(
-    template.templateType as TemplateType
+    template.templateType as TemplateType,
   );
   const [buildDialogOpen, setBuildDialogOpen] = useState(false);
 
@@ -115,7 +116,7 @@ export function TemplateViewer({
   const [editDescriptionOpen, setEditDescriptionOpen] = useState(false);
   const [editedName, setEditedName] = useState(template.name);
   const [editedDescription, setEditedDescription] = useState(
-    template.description || ""
+    template.description || "",
   );
   const [saveLoading, setSaveLoading] = useState(false);
 
@@ -175,7 +176,7 @@ export function TemplateViewer({
   // Shift column definitions for filtering/sorting
   const shiftColumns = useMemo(
     () => createShiftColumns(t, shifts),
-    [t, shifts]
+    [t, shifts],
   );
 
   // Table state for shift filtering and sorting
@@ -218,7 +219,7 @@ export function TemplateViewer({
     } catch (error) {
       console.error("Failed to delete template:", error);
       onError(
-        error instanceof Error ? error.message : "Failed to delete template"
+        error instanceof Error ? error.message : "Failed to delete template",
       );
     } finally {
       setDeleteLoading(false);
@@ -260,7 +261,7 @@ export function TemplateViewer({
       onError(
         error instanceof Error
           ? error.message
-          : "Failed to update template name"
+          : "Failed to update template name",
       );
     } finally {
       setSaveLoading(false);
@@ -284,7 +285,7 @@ export function TemplateViewer({
       onError(
         error instanceof Error
           ? error.message
-          : "Failed to update template description"
+          : "Failed to update template description",
       );
     } finally {
       setSaveLoading(false);
@@ -341,7 +342,7 @@ export function TemplateViewer({
 
   const handleApplyDemandsRequest = async (
     sourceWeekStartDate: number,
-    targetWeekNumber: number
+    targetWeekNumber: number,
   ) => {
     try {
       await onApplyDemandsToTemplateWeek(sourceWeekStartDate, targetWeekNumber);
@@ -356,13 +357,16 @@ export function TemplateViewer({
   // Render a week data grid
   const renderWeekGrid = (demands: DemandEntryDTO[], title: string) => {
     // Group demands by shift
-    const demandsByShift = demands.reduce((acc, demand) => {
-      if (!acc[demand.shiftId]) {
-        acc[demand.shiftId] = new Array(7).fill(0);
-      }
-      acc[demand.shiftId][demand.dayOfWeek] = demand.count;
-      return acc;
-    }, {} as Record<string, number[]>);
+    const demandsByShift = demands.reduce(
+      (acc, demand) => {
+        if (!acc[demand.shiftId]) {
+          acc[demand.shiftId] = new Array(7).fill(0);
+        }
+        acc[demand.shiftId][demand.dayOfWeek] = demand.count;
+        return acc;
+      },
+      {} as Record<string, number[]>,
+    );
 
     // Get unique shifts that have demands
     const shiftsWithDemands = Object.keys(demandsByShift)
@@ -417,7 +421,7 @@ export function TemplateViewer({
   const getDemandValue = (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ): number => {
     const key = `${shiftId}-${weekNumber}-${dayIndex}`;
     return templateDataMap.get(key) || 0;
@@ -427,7 +431,7 @@ export function TemplateViewer({
     shiftId: string,
     weekNumber: number,
     dayIndex: number,
-    value: string
+    value: string,
   ): Promise<void> => {
     const cellKey = `${shiftId}-${weekNumber}-${dayIndex}`;
     const numericValue = parseInt(value, 10);
@@ -447,14 +451,14 @@ export function TemplateViewer({
 
         // Update or add demand for this week
         const existingDemandIndex = week.demands.findIndex(
-          (d) => d.shiftId === shiftId && d.dayOfWeek === dayIndex
+          (d) => d.shiftId === shiftId && d.dayOfWeek === dayIndex,
         );
 
         let updatedDemands: DemandEntryDTO[];
         if (numericValue === 0) {
           // Remove demand if value is 0
           updatedDemands = week.demands.filter(
-            (d) => !(d.shiftId === shiftId && d.dayOfWeek === dayIndex)
+            (d) => !(d.shiftId === shiftId && d.dayOfWeek === dayIndex),
           );
         } else if (existingDemandIndex >= 0) {
           // Update existing demand
@@ -491,7 +495,7 @@ export function TemplateViewer({
     } catch (error) {
       console.error("Failed to update template demand:", error);
       onError(
-        error instanceof Error ? error.message : "Failed to update demand"
+        error instanceof Error ? error.message : "Failed to update demand",
       );
     } finally {
       setSavingCells((prev) => {
@@ -506,27 +510,27 @@ export function TemplateViewer({
   const isCellSelected = (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ): boolean => {
     return bulkChangeState.selectedCells.some(
       (cell) =>
         cell.shiftId === shiftId &&
         cell.weekNumber === weekNumber &&
-        cell.dayIndex === dayIndex
+        cell.dayIndex === dayIndex,
     );
   };
 
   const toggleCellSelection = (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ): void => {
     setBulkChangeState((prev) => {
       const isSelected = prev.selectedCells.some(
         (cell) =>
           cell.shiftId === shiftId &&
           cell.weekNumber === weekNumber &&
-          cell.dayIndex === dayIndex
+          cell.dayIndex === dayIndex,
       );
 
       if (isSelected) {
@@ -538,7 +542,7 @@ export function TemplateViewer({
                 cell.shiftId === shiftId &&
                 cell.weekNumber === weekNumber &&
                 cell.dayIndex === dayIndex
-              )
+              ),
           ),
         };
       } else {
@@ -571,8 +575,8 @@ export function TemplateViewer({
           (selected) =>
             selected.shiftId === cell.shiftId &&
             selected.weekNumber === cell.weekNumber &&
-            selected.dayIndex === cell.dayIndex
-        )
+            selected.dayIndex === cell.dayIndex,
+        ),
       );
 
       if (isRowSelected) {
@@ -585,8 +589,8 @@ export function TemplateViewer({
                 (cell) =>
                   cell.shiftId === selected.shiftId &&
                   cell.weekNumber === selected.weekNumber &&
-                  cell.dayIndex === selected.dayIndex
-              )
+                  cell.dayIndex === selected.dayIndex,
+              ),
           ),
         };
       } else {
@@ -597,8 +601,8 @@ export function TemplateViewer({
               (selected) =>
                 selected.shiftId === cell.shiftId &&
                 selected.weekNumber === cell.weekNumber &&
-                selected.dayIndex === cell.dayIndex
-            )
+                selected.dayIndex === cell.dayIndex,
+            ),
         );
         return {
           ...prev,
@@ -624,8 +628,8 @@ export function TemplateViewer({
           (selected) =>
             selected.shiftId === cell.shiftId &&
             selected.weekNumber === cell.weekNumber &&
-            selected.dayIndex === cell.dayIndex
-        )
+            selected.dayIndex === cell.dayIndex,
+        ),
       );
 
       if (isColumnSelected) {
@@ -638,8 +642,8 @@ export function TemplateViewer({
                 (cell) =>
                   cell.shiftId === selected.shiftId &&
                   cell.weekNumber === selected.weekNumber &&
-                  cell.dayIndex === selected.dayIndex
-              )
+                  cell.dayIndex === selected.dayIndex,
+              ),
           ),
         };
       } else {
@@ -650,8 +654,8 @@ export function TemplateViewer({
               (selected) =>
                 selected.shiftId === cell.shiftId &&
                 selected.weekNumber === cell.weekNumber &&
-                selected.dayIndex === cell.dayIndex
-            )
+                selected.dayIndex === cell.dayIndex,
+            ),
         );
         return {
           ...prev,
@@ -681,8 +685,8 @@ export function TemplateViewer({
           (selected) =>
             selected.shiftId === cell.shiftId &&
             selected.weekNumber === cell.weekNumber &&
-            selected.dayIndex === cell.dayIndex
-        )
+            selected.dayIndex === cell.dayIndex,
+        ),
       );
 
       if (isAllSelected) {
@@ -710,8 +714,8 @@ export function TemplateViewer({
         (selected) =>
           selected.shiftId === cell.shiftId &&
           selected.weekNumber === cell.weekNumber &&
-          selected.dayIndex === cell.dayIndex
-      )
+          selected.dayIndex === cell.dayIndex,
+      ),
     );
   };
 
@@ -730,8 +734,8 @@ export function TemplateViewer({
         (selected) =>
           selected.shiftId === cell.shiftId &&
           selected.weekNumber === cell.weekNumber &&
-          selected.dayIndex === cell.dayIndex
-      )
+          selected.dayIndex === cell.dayIndex,
+      ),
     );
   };
 
@@ -754,8 +758,8 @@ export function TemplateViewer({
         (selected) =>
           selected.shiftId === cell.shiftId &&
           selected.weekNumber === cell.weekNumber &&
-          selected.dayIndex === cell.dayIndex
-      )
+          selected.dayIndex === cell.dayIndex,
+      ),
     );
   };
 
@@ -776,7 +780,7 @@ export function TemplateViewer({
       const updatedWeeksData = template.weeksData.map((week) => {
         // Find all selected cells for this week
         const cellsForThisWeek = bulkChangeState.selectedCells.filter(
-          (cell) => cell.weekNumber === week.weekNumber
+          (cell) => cell.weekNumber === week.weekNumber,
         );
 
         if (cellsForThisWeek.length === 0) {
@@ -789,14 +793,14 @@ export function TemplateViewer({
         // Apply changes for each selected cell in this week
         cellsForThisWeek.forEach((cell) => {
           const existingDemandIndex = updatedDemands.findIndex(
-            (d) => d.shiftId === cell.shiftId && d.dayOfWeek === cell.dayIndex
+            (d) => d.shiftId === cell.shiftId && d.dayOfWeek === cell.dayIndex,
           );
 
           if (value === 0) {
             // Remove demand if value is 0
             updatedDemands = updatedDemands.filter(
               (d) =>
-                !(d.shiftId === cell.shiftId && d.dayOfWeek === cell.dayIndex)
+                !(d.shiftId === cell.shiftId && d.dayOfWeek === cell.dayIndex),
             );
           } else if (existingDemandIndex >= 0) {
             // Update existing demand
@@ -841,7 +845,7 @@ export function TemplateViewer({
     } catch (error) {
       console.error("Failed to apply bulk changes:", error);
       onError(
-        error instanceof Error ? error.message : "Failed to apply bulk changes"
+        error instanceof Error ? error.message : "Failed to apply bulk changes",
       );
     }
   };
@@ -854,7 +858,7 @@ export function TemplateViewer({
       const updatedWeeksData = template.weeksData.map((week) => {
         // Find all selected cells for this week
         const cellsForThisWeek = bulkChangeState.selectedCells.filter(
-          (cell) => cell.weekNumber === week.weekNumber
+          (cell) => cell.weekNumber === week.weekNumber,
         );
 
         if (cellsForThisWeek.length === 0) {
@@ -866,7 +870,7 @@ export function TemplateViewer({
           return !cellsForThisWeek.some(
             (cell) =>
               cell.shiftId === demand.shiftId &&
-              cell.dayIndex === demand.dayOfWeek
+              cell.dayIndex === demand.dayOfWeek,
           );
         });
 
@@ -899,7 +903,7 @@ export function TemplateViewer({
       onError(
         error instanceof Error
           ? error.message
-          : "Failed to delete bulk selection"
+          : "Failed to delete bulk selection",
       );
     }
   };
@@ -965,25 +969,34 @@ export function TemplateViewer({
 
           {/* Right side: Action buttons (icons only) */}
           <Box sx={{ display: "flex", gap: 1 }}>
-            <IconButton
-              data-testid="template-viewer-apply-button"
-              onClick={() => onApply(template.id)}
-              color="primary"
-              sx={{
-                bgcolor: "primary.main",
-                color: "white",
-                "&:hover": { bgcolor: "primary.dark" },
-              }}
-            >
-              <PlayArrow />
-            </IconButton>
-            <IconButton
-              onClick={handleDelete}
-              disabled={deleteLoading}
-              color="error"
-            >
-              {deleteLoading ? <CircularProgress size={20} /> : <Delete />}
-            </IconButton>
+            <Tooltip title={t("apply_template")}>
+              <span>
+                <IconButton
+                  data-testid="template-viewer-apply-button"
+                  onClick={() => onApply(template.id)}
+                  color="primary"
+                  sx={{
+                    bgcolor: "primary.main",
+                    color: "white",
+                    "&:hover": { bgcolor: "primary.dark" },
+                  }}
+                >
+                  <PlayArrow />
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            <Tooltip title={t("delete_template")}>
+              <span>
+                <IconButton
+                  onClick={handleDelete}
+                  disabled={deleteLoading}
+                  color="error"
+                >
+                  {deleteLoading ? <CircularProgress size={20} /> : <Delete />}
+                </IconButton>
+              </span>
+            </Tooltip>
           </Box>
         </Box>
 

@@ -7,6 +7,7 @@ import Button from "@mui/material/Button";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import IosShareIcon from "@mui/icons-material/IosShare";
+import Tooltip from "@mui/material/Tooltip";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import TableCell from "@mui/material/TableCell";
@@ -279,7 +280,9 @@ export default function ExportCell({
           onClick={handleClick}
           data-testid="export-button"
         >
-          <IosShareIcon sx={{ color: "#616161cf" }} />
+          <Tooltip title={t("export_to_excel")} placement="top">
+            <IosShareIcon sx={{ color: "#616161cf" }} />
+          </Tooltip>
         </button>
         <Dialog
           open={open}

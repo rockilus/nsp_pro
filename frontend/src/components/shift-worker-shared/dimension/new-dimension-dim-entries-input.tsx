@@ -21,7 +21,7 @@ export default function NewDimensionDimEntriesInput({
   addDimEntry: (newDimEntry: DimEntryT) => void;
   removeDimEntry: (index: number) => void;
 }) {
-  const { t } = useTranslation(lng, "inputs-components");
+  const { t } = useTranslation(lng, "shift-page");
 
   const [newDimEntry, setNewDimEntry] = useState<DimEntryT>({
     id: "",

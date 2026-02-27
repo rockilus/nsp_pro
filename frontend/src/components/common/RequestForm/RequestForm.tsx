@@ -335,7 +335,7 @@ const RequestForm = ({
           <Select
             value={requestState.workerId}
             disabled={userTeamRole === TeamMembershipRole.MEMBER}
-            label="Worker"
+            label={t("worker")}
             onChange={(e) => {
               setRequestState({
                 ...requestState,
@@ -362,7 +362,7 @@ const RequestForm = ({
         <FormControl fullWidth error={shiftIdError}>
           <Select
             value={requestState.shiftId || ""}
-            label="Shift"
+            label={t("shift")}
             onChange={(e) => {
               setRequestState({
                 ...requestState,
@@ -435,7 +435,7 @@ const RequestForm = ({
                   status: RequestStatus.APPROVED,
                 }));
               }}
-              title="Approve Request"
+              title={t("approve_request")}
               color="success"
               data-testid={`approve-request-button-${request.id}`}
             >
@@ -454,7 +454,7 @@ const RequestForm = ({
                   status: RequestStatus.DENIED,
                 }));
               }}
-              title="Reject Request"
+              title={t("deny_request")}
               color="error"
               data-testid={`reject-request-button-${request.id}`}
             >
@@ -473,11 +473,11 @@ const RequestForm = ({
                   status: RequestStatus.PENDING,
                 }));
               }}
-              title={`Rescind ${
+              title={
                 requestState.status === RequestStatus.APPROVED
-                  ? "Approval"
-                  : "Rejection"
-              }`}
+                  ? t("rescind_approval")
+                  : t("rescind_denial")
+              }
               color="warning"
               data-testid={`rescind-request-button-${request.id}`}
             >

@@ -538,7 +538,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               fontWeight: 500,
             }}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             variant="contained"
@@ -546,7 +546,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             data-testid="recurrence-done-button"
             sx={{ textTransform: "none", fontSize: "0.8rem", fontWeight: 500 }}
           >
-            Done
+            {t("ok")}
           </Button>
         </div>
       </div>

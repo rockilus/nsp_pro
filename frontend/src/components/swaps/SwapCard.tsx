@@ -6,6 +6,8 @@ import { AssignmentDataDictT } from "../../types/assignment";
 import { WorkerT } from "../../types/worker";
 import AssignmentOfferItem from "./AssignmentOfferItem";
 import { getEarliestAssignment } from "../../utils/assignmentSort";
+import { formatSwapTitleDate } from "../../utils/swapHelpers";
+import { useTranslation } from "../../app/i18n/client";
 
 const statusColors: Record<
   SwapStatus,
@@ -37,6 +39,7 @@ interface SwapCardProps {
   requestedAssignments?: AssignmentDataDictT[];
   isMobile: boolean;
   onClick: (swap: SwapRequestT) => void;
+  lng: string;
 }
 
 export default function SwapCard({
@@ -45,7 +48,9 @@ export default function SwapCard({
   requestedAssignments,
   isMobile,
   onClick,
+  lng,
 }: SwapCardProps) {
+  const { t } = useTranslation(lng, "swap-page");
   const createdAtLabel =
     swap.createdAt && typeof (swap as any).createdAt?.format === "function"
       ? (swap as any).createdAt.format("MMM D, YYYY")
@@ -57,16 +62,7 @@ export default function SwapCard({
   const titleDate = earliestOffered
     ? earliestOffered.assignment.date
     : swap.createdAt || null;
-
-  const dayNumber =
-    titleDate && typeof (titleDate as any).format === "function"
-      ? titleDate.format("D")
-      : "";
-
-  const monthWeekday =
-    titleDate && typeof (titleDate as any).format === "function"
-      ? titleDate.format("MMM, ddd")
-      : "";
+  const { dayNumber, monthWeekday } = formatSwapTitleDate(titleDate, lng);
 
   const titleShiftName = earliestOffered ? earliestOffered.shift.name : "";
 
@@ -168,7 +164,7 @@ export default function SwapCard({
           {/* On desktop keep chip at right; on mobile render it under the title */}
           {!isMobile && (
             <Chip
-              label={statusLabels[swap.status]}
+              label={t(`status_${swap.status}`)}
               color={statusColors[swap.status]}
               size="small"
             />
@@ -191,6 +187,7 @@ export default function SwapCard({
                     data={data}
                     showTimes={true}
                     isMobile={isMobile}
+                    lng={lng}
                     testId={`swap-card-${swap.id}-assignment-${data.assignment.id}`}
                   />
                 </Box>
@@ -203,7 +200,7 @@ export default function SwapCard({
           )}
           {remainingOfferedCount > 0 && (
             <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
-              + {remainingOfferedCount} more
+              {t("card_more", { count: remainingOfferedCount })}
             </Typography>
           )}
         </Box>
@@ -213,13 +210,8 @@ export default function SwapCard({
           requestedAssignments.length > 0 && (
             <>
               <Box>
-                <Typography
-                  variant="body2"
-                  //   fontWeight={600}
-                  color="text.primary"
-                  sx={{ mb: 1 }}
-                >
-                  Requesting:
+                <Typography variant="body2" color="text.primary" sx={{ mb: 1 }}>
+                  {t("card_requesting")}
                 </Typography>
                 {displayedRequested.length > 0 ? (
                   <Box
@@ -239,6 +231,7 @@ export default function SwapCard({
                           data={data}
                           showTimes={true}
                           isMobile={isMobile}
+                          lng={lng}
                           testId={`swap-card-${swap.id}-assignment-${data.assignment.id}`}
                         />
                       </Box>
@@ -259,7 +252,7 @@ export default function SwapCard({
                     color="text.secondary"
                     sx={{ pl: 1 }}
                   >
-                    + {remainingRequestedCount} more
+                    {t("card_more", { count: remainingRequestedCount })}
                   </Typography>
                 )}
               </Box>
@@ -276,8 +269,7 @@ export default function SwapCard({
               color="text.secondary"
               display="block"
             >
-              <strong>{swap.bids.length}</strong>{" "}
-              {swap.bids.length === 1 ? "bid" : "bids"}
+              {t("card_bid_count", { count: swap.bids.length })}
             </Typography>
           )}
         </Box>
@@ -286,7 +278,7 @@ export default function SwapCard({
         {isMobile && (
           <Box>
             <Chip
-              label={statusLabels[swap.status]}
+              label={t(`status_${swap.status}`)}
               color={statusColors[swap.status]}
               size="small"
             />

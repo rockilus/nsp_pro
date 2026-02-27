@@ -1,5 +1,9 @@
 {
     "today": "Today",
     "week": "Week",
-    "month": "Month"
+    "month": "Month",
+    "previous_week": "Previous week",
+    "previous_month": "Previous month",
+    "next_week": "Next week",
+    "next_month": "Next month"
 }

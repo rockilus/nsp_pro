@@ -4,17 +4,22 @@ import Typography from "@mui/material/Typography";
 import { ShiftColorMappings } from "../../constants/constants";
 import { ShiftType } from "../../types/shift";
 import { AssignmentDataDictT } from "../../types/assignment";
+import "dayjs/locale/en-gb";
+import "dayjs/locale/fr";
+import "dayjs/locale/es";
 
 export default function AssignmentOfferItem({
   data,
   showTimes = true,
   isMobile = false,
   testId,
+  lng = "en",
 }: {
   data: AssignmentDataDictT;
   showTimes?: boolean;
   isMobile?: boolean;
   testId?: string;
+  lng?: string;
 }) {
   const shift = data.shift;
   const assignment = data.assignment;
@@ -34,8 +39,13 @@ export default function AssignmentOfferItem({
       ? !shift.endTime.isSame(shift.startTime, "day")
       : false;
 
-  const dateLabel = assignment.date?.format
-    ? assignment.date.format("D MMM, ddd")
+  const dayjsLocale = lng === "en" ? "en-gb" : lng;
+  const localizedDate = assignment.date?.locale
+    ? assignment.date.locale(dayjsLocale)
+    : assignment.date;
+
+  const dateLabel = localizedDate?.format
+    ? localizedDate.format("D MMM, ddd")
     : "";
 
   return (

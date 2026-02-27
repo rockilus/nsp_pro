@@ -21,6 +21,7 @@ import { CreateAssignmentT } from "@/types/assignment";
 import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
 
 export default function ShiftCell({
+  lng,
   teamWithMembership,
   periodDate,
   shift,
@@ -30,6 +31,7 @@ export default function ShiftCell({
   handleDemandSelection,
   handleOpenCreateAssignment,
 }: {
+  lng: string;
   teamWithMembership: TeamWithMembership;
   periodDate: periodDateT;
   shift: ShiftT;
@@ -73,6 +75,8 @@ export default function ShiftCell({
             <DailyShiftDemandCell
               scheduleCellData={scheduleCellData}
               handleDemandSelection={handleDemandSelection}
+              scheduleViewSettings={scheduleViewSettings}
+              lng={lng}
             />
           )}
       </RoleBased>

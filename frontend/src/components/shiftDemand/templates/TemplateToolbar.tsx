@@ -174,7 +174,7 @@ export function TemplateToolbar({
   // Template type toggle handler
   const handleTemplateTypeChange = async (
     event: React.MouseEvent<HTMLElement>,
-    newType: TemplateType | null
+    newType: TemplateType | null,
   ) => {
     if (newType === null || newType === templateType) return;
 
@@ -198,14 +198,14 @@ export function TemplateToolbar({
     const validation = validateTemplateForTypeChange(
       templateType,
       newType,
-      totalWeeks
+      totalWeeks,
     );
 
     if (!validation.isValid) {
       const errorMessage = getValidationErrorMessage(
         validation.error || "unknown_error",
         newType,
-        totalWeeks
+        totalWeeks,
       );
       onError(errorMessage);
       return;
@@ -224,7 +224,7 @@ export function TemplateToolbar({
       onError(
         error instanceof Error
           ? error.message
-          : "Failed to update template type"
+          : "Failed to update template type",
       );
     }
   };
@@ -262,22 +262,30 @@ export function TemplateToolbar({
         <div className={styles.leftSection}>
           {/* Week Navigator */}
           <div className={styles.weekNavigation}>
-            <button
-              data-testid="template-toolbar-previous-week-button"
-              onClick={handlePreviousWeek}
-              disabled={!canNavigatePrevious}
-              className={styles.iconButton}
-            >
-              <NavigateBefore />
-            </button>
-            <button
-              data-testid="template-toolbar-next-week-button"
-              onClick={handleNextWeek}
-              disabled={!canNavigateNext}
-              className={styles.iconButton}
-            >
-              <NavigateNext />
-            </button>
+            <Tooltip title={t("previous_week")}>
+              <span>
+                <button
+                  data-testid="template-toolbar-previous-week-button"
+                  onClick={handlePreviousWeek}
+                  disabled={!canNavigatePrevious}
+                  className={styles.iconButton}
+                >
+                  <NavigateBefore />
+                </button>
+              </span>
+            </Tooltip>
+            <Tooltip title={t("next_week")}>
+              <span>
+                <button
+                  data-testid="template-toolbar-next-week-button"
+                  onClick={handleNextWeek}
+                  disabled={!canNavigateNext}
+                  className={styles.iconButton}
+                >
+                  <NavigateNext />
+                </button>
+              </span>
+            </Tooltip>
 
             <div className={styles.weekDisplay}>
               <Typography
@@ -384,18 +392,26 @@ export function TemplateToolbar({
               size="small"
               disabled={updateLoading}
             >
-              <ToggleButton
-                data-testid="template-toolbar-standard-type-button"
-                value={TemplateType.STANDARD}
-              >
-                {t("standard")}
-              </ToggleButton>
-              <ToggleButton
-                data-testid="template-toolbar-even-odd-type-button"
-                value={TemplateType.EVEN_ODD}
-              >
-                {t("even_odd")}
-              </ToggleButton>
+              <Tooltip title={t("standard_template_tooltip")}>
+                <span>
+                  <ToggleButton
+                    data-testid="template-toolbar-standard-type-button"
+                    value={TemplateType.STANDARD}
+                  >
+                    {t("standard")}
+                  </ToggleButton>
+                </span>
+              </Tooltip>
+              <Tooltip title={t("even_odd_template_tooltip")}>
+                <span>
+                  <ToggleButton
+                    data-testid="template-toolbar-even-odd-type-button"
+                    value={TemplateType.EVEN_ODD}
+                  >
+                    {t("even_odd")}
+                  </ToggleButton>
+                </span>
+              </Tooltip>
             </ToggleButtonGroup>
             {updateLoading && (
               <CircularProgress size={16} style={{ marginLeft: "8px" }} />
@@ -405,43 +421,51 @@ export function TemplateToolbar({
 
         {/* Third Group: Select Button and From Demands Button */}
         <div className={styles.rightSection}>
-          <button
-            data-testid="template-toolbar-from-demands-button"
-            onClick={onBuildFromDemands}
-            className={styles.standardButton}
-          >
-            {t("from_demands")}
-          </button>
+          <Tooltip title={t("import_template_from_existing_coverage")}>
+            <span>
+              <button
+                data-testid="template-toolbar-from-demands-button"
+                onClick={onBuildFromDemands}
+                className={styles.standardButton}
+              >
+                {t("import")}
+              </button>
+            </span>
+          </Tooltip>
 
-          <button
-            data-testid="template-toolbar-select-button"
-            onClick={onToggleBulkMode}
-            style={{
-              borderRadius: "4px",
-              border: "1px solid #e5e7eb",
-              height: "35px",
-              padding: "0 15px",
-              fontSize: "0.9rem",
-              fontWeight: 550,
-              color: bulkModeActive ? "white" : "#616161",
-              backgroundColor: bulkModeActive ? "#1976d2" : "white",
-              cursor: "pointer",
-              transition: "background-color 0.2s ease",
-              marginLeft: "8px",
-            }}
-            onMouseEnter={(e) => {
-              if (!bulkModeActive) {
-                e.currentTarget.style.backgroundColor = "#f0f0f0";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!bulkModeActive) {
-                e.currentTarget.style.backgroundColor = "white";
-              }
-            }}
-          >
-            {t("select", "Select")}
-          </button>
+          <Tooltip title={t("select_tooltip")}>
+            <span>
+              <button
+                data-testid="template-toolbar-select-button"
+                onClick={onToggleBulkMode}
+                style={{
+                  borderRadius: "4px",
+                  border: "1px solid #e5e7eb",
+                  height: "35px",
+                  padding: "0 15px",
+                  fontSize: "0.9rem",
+                  fontWeight: 550,
+                  color: bulkModeActive ? "white" : "#616161",
+                  backgroundColor: bulkModeActive ? "#1976d2" : "white",
+                  cursor: "pointer",
+                  transition: "background-color 0.2s ease",
+                  marginLeft: "8px",
+                }}
+                onMouseEnter={(e) => {
+                  if (!bulkModeActive) {
+                    e.currentTarget.style.backgroundColor = "#f0f0f0";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!bulkModeActive) {
+                    e.currentTarget.style.backgroundColor = "white";
+                  }
+                }}
+              >
+                {t("select", "Select")}
+              </button>
+            </span>
+          </Tooltip>
         </div>
       </div>
 

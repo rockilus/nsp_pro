@@ -3,6 +3,7 @@ import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Tooltip from "@mui/material/Tooltip";
 // Types
 import { ScheduleViewSettingsT } from "../../../types/schedule";
 
@@ -19,7 +20,7 @@ export default function DataViewSelector({
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
-    newAlignment: "shift" | "worker" | null
+    newAlignment: "shift" | "worker" | null,
   ) => {
     if (newAlignment !== null) {
       const newSettings = {
@@ -47,28 +48,32 @@ export default function DataViewSelector({
         onChange={handleChange}
         aria-label="Platform"
       >
-        <ToggleButton
-          data-testid="data-view-shift-button"
-          value="shift"
-          sx={{
-            textTransform: "none",
-            height: "35px",
-            fontSize: "0.9rem",
-          }}
-        >
-          {t("shift")}
-        </ToggleButton>
-        <ToggleButton
-          data-testid="data-view-worker-button"
-          value="worker"
-          sx={{
-            textTransform: "none",
-            height: "35px",
-            fontSize: "0.9rem",
-          }}
-        >
-          {t("worker")}
-        </ToggleButton>
+        <Tooltip title={t("display_by_shift")}>
+          <ToggleButton
+            data-testid="data-view-shift-button"
+            value="shift"
+            sx={{
+              textTransform: "none",
+              height: "35px",
+              fontSize: "0.9rem",
+            }}
+          >
+            {t("shift")}
+          </ToggleButton>
+        </Tooltip>
+        <Tooltip title={t("display_by_worker")}>
+          <ToggleButton
+            data-testid="data-view-worker-button"
+            value="worker"
+            sx={{
+              textTransform: "none",
+              height: "35px",
+              fontSize: "0.9rem",
+            }}
+          >
+            {t("worker")}
+          </ToggleButton>
+        </Tooltip>
       </ToggleButtonGroup>
     </div>
   );

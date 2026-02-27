@@ -3,6 +3,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // MUI
 import TableCell from "@mui/material/TableCell";
+import Tooltip from "@mui/material/Tooltip";
+import { useTranslation } from "../../../../app/i18n/client";
 // Components
 import { RoleBased } from "../../../access/role-based";
 // Styles
@@ -14,11 +16,15 @@ import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
 dayjs.extend(utc);
 type ScheduleStatusLogoProps = {
   scheduleStatus: ScheduleStatus | null;
+  lng: string;
 };
 
 const ScheduleStatusLogo: React.FC<ScheduleStatusLogoProps> = ({
   scheduleStatus,
+  lng,
 }) => {
+  const { t } = useTranslation(lng, "schedule-page");
+
   if (scheduleStatus === null) return null;
 
   const containerClass =
@@ -28,29 +34,40 @@ const ScheduleStatusLogo: React.FC<ScheduleStatusLogoProps> = ({
         ? "campaign"
         : "";
 
-  const content =
-    scheduleStatus === ScheduleStatus.VALIDATED
-      ? "v"
-      : scheduleStatus === ScheduleStatus.CAMPAIGN
-        ? "c"
-        : "";
+  const isPublished = scheduleStatus === ScheduleStatus.VALIDATED;
+
+  const content = isPublished
+    ? t("schedule_status_published_short") || "p"
+    : scheduleStatus === ScheduleStatus.CAMPAIGN
+      ? t("schedule_status_campaign_short") || "c"
+      : "";
+
+  const tooltipTitle = isPublished
+    ? t("schedule_status_published_tooltip") || "Published"
+    : scheduleStatus === ScheduleStatus.CAMPAIGN
+      ? t("schedule_status_campaign_tooltip") || "Campaign"
+      : "";
 
   return (
-    <div
-      className={`schedule-status-logo-container ${containerClass}`}
-      data-testid={`schedule-status-${scheduleStatus}`}
-    >
-      <div className="schedule-status-logo">{content}</div>
-    </div>
+    <Tooltip title={tooltipTitle}>
+      <div
+        className={`schedule-status-logo-container ${containerClass}`}
+        data-testid={`schedule-status-${scheduleStatus}`}
+      >
+        <div className="schedule-status-logo">{content}</div>
+      </div>
+    </Tooltip>
   );
 };
 
 export default function DateHeaderCell({
   periodDate,
   teamWithMembership,
+  lng,
 }: {
   periodDate: periodDateT;
   teamWithMembership: TeamWithMembership;
+  lng: string;
 }) {
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
@@ -64,7 +81,7 @@ export default function DateHeaderCell({
     >
       <div className="date-header-container">
         <span className={`weekday ${isToday && "today"}`}>
-          {periodDate.date.format("ddd")}
+          {periodDate.date.locale(lng).format("ddd").slice(0, 3)}
         </span>
         <div className={`month-day-container ${isToday && "today"}`}>
           <span
@@ -81,7 +98,10 @@ export default function DateHeaderCell({
           allowedRoles={[TeamMembershipRole.OWNER]}
         >
           {periodDate.scheduleStatus !== null && (
-            <ScheduleStatusLogo scheduleStatus={periodDate.scheduleStatus} />
+            <ScheduleStatusLogo
+              scheduleStatus={periodDate.scheduleStatus}
+              lng={lng}
+            />
           )}
         </RoleBased>
       </div>

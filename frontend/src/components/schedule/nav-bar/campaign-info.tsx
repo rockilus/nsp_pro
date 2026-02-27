@@ -127,13 +127,39 @@ export default function CampaignInfo({
   function getCampaignPeriodLabel(
     start: dayjs.Dayjs,
     end: dayjs.Dayjs,
+    lng: string,
   ): string {
+    // Helper to format short month localized (3 letters, capitalized, no dots)
+    const shortMonth = (d: dayjs.Dayjs) => {
+      const raw = d.locale(lng).format("MMM").replace(/\./g, "");
+      const short = raw.slice(0, 3);
+      return short.charAt(0).toUpperCase() + short.slice(1);
+    };
+
     if (start.isSame(end, "month") && start.isSame(end, "year")) {
-      return start.format("D") + " - " + end.format("D MMM YYYY");
+      return (
+        start.locale(lng).format("D") +
+        " - " +
+        (end.locale(lng).format("D") + " " + shortMonth(end) + " " + end.year())
+      );
     } else if (!start.isSame(end, "month") && start.isSame(end, "year")) {
-      return start.format("D MMM") + " - " + end.format("D MMM YYYY");
+      return (
+        start.locale(lng).format("D") +
+        " " +
+        shortMonth(start) +
+        " - " +
+        (end.locale(lng).format("D") + " " + shortMonth(end) + " " + end.year())
+      );
     } else {
-      return start.format("D MMM YYYY") + " - " + end.format("D MMM YYYY");
+      return (
+        start.locale(lng).format("D") +
+        " " +
+        shortMonth(start) +
+        " " +
+        start.year() +
+        " - " +
+        (end.locale(lng).format("D") + " " + shortMonth(end) + " " + end.year())
+      );
     }
   }
 
@@ -205,30 +231,33 @@ export default function CampaignInfo({
             {getCampaignPeriodLabel(
               scheduleCampaign.startDate,
               scheduleCampaign.endDate,
+              lng,
             )}
           </span>
         </div>
         {teamWithMembership.team.useSolver && (
           <>
-            <Chip
-              data-testid={`solve-status-chip-${currentSolveStatus}`}
-              label={GetStatusLabel(lng, currentSolveStatus)}
-              onClick={() => setBreachesDialogOpen(true)}
-              color={
-                (SolveStatusColors[currentSolveStatus] as
-                  | "default"
-                  | "success"
-                  | "error"
-                  | "warning") || "default"
-              }
-              sx={{
-                height: "35px",
-                width: "120px",
-                fontSize: "0.9rem",
-                marginLeft: spaceBetween,
-                fontWeight: 550,
-              }}
-            />
+            <Tooltip title={t("solve_status_chip_tooltip")}>
+              <Chip
+                data-testid={`solve-status-chip-${currentSolveStatus}`}
+                label={GetStatusLabel(lng, currentSolveStatus)}
+                onClick={() => setBreachesDialogOpen(true)}
+                color={
+                  (SolveStatusColors[currentSolveStatus] as
+                    | "default"
+                    | "success"
+                    | "error"
+                    | "warning") || "default"
+                }
+                sx={{
+                  height: "35px",
+                  width: "120px",
+                  fontSize: "0.9rem",
+                  marginLeft: spaceBetween,
+                  fontWeight: 550,
+                }}
+              />
+            </Tooltip>
             <div
               style={{
                 display: "flex",
@@ -236,26 +265,28 @@ export default function CampaignInfo({
                 marginLeft: spaceBetween,
               }}
             >
-              <Button
-                data-testid="solve-button"
-                variant="contained"
-                color="primary"
-                onClick={handleSolve}
-                disabled={isActiveSolve}
-                sx={{
-                  textTransform: "none",
-                  paddingLeft: 0.2,
-                  paddingRight: 0.2,
-                  marginRight:
-                    useSqsWorkflow && isActiveSolve ? "4px" : spaceBetween,
-                  height: "35px",
-                  width: useSqsWorkflow && isActiveSolve ? "120px" : "65px",
-                }}
-              >
-                {isActiveSolve ? animatedSolve : t("solve")}
-              </Button>
+              <Tooltip title={t("solve_button_tooltip")}>
+                <Button
+                  data-testid="solve-button"
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSolve}
+                  disabled={isActiveSolve}
+                  sx={{
+                    textTransform: "none",
+                    paddingLeft: 0.2,
+                    paddingRight: 0.2,
+                    marginRight:
+                      useSqsWorkflow && isActiveSolve ? "4px" : spaceBetween,
+                    height: "35px",
+                    width: useSqsWorkflow && isActiveSolve ? "120px" : "65px",
+                  }}
+                >
+                  {isActiveSolve ? animatedSolve : t("solve")}
+                </Button>
+              </Tooltip>
               {useSqsWorkflow && isActiveSolve && (
-                <Tooltip title={t("cancelSolve")}>
+                <Tooltip title={t("cancel_solve")}>
                   <IconButton
                     size="small"
                     onClick={handleCancelSolve}
@@ -269,7 +300,7 @@ export default function CampaignInfo({
                 </Tooltip>
               )}
               {useSqsWorkflow && sqsState.lastError && !isActiveSolve && (
-                <Tooltip title={t("retryPolling")}>
+                <Tooltip title={t("retry_polling")}>
                   <IconButton
                     size="small"
                     onClick={handleRetryPolling}
@@ -306,7 +337,7 @@ export default function CampaignInfo({
           severity="success"
           variant="filled"
         >
-          {t("solveCompleted")}
+          {t("solve_completed")}
         </Alert>
       </Snackbar>
 
@@ -332,7 +363,7 @@ export default function CampaignInfo({
           severity="error"
           variant="filled"
         >
-          {lastError || t("solveError")}
+          {lastError || t("solve_error")}
         </Alert>
       </Snackbar>
 
