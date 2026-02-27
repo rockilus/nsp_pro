@@ -1,16 +1,23 @@
 import asyncio
+from dataclasses import dataclass
 from typing import List
 
 from permit import PermitApiError  # type: ignore
 from permit import Permit, PermitConnectionError, UserRead  # type: ignore
 from shared.logger import log_debug, log_info
-from shared.schemas.core import Team, User, UserAuth
+from shared.schemas.core import Team, User
 
 from src.config import config
 from src.errors import AuthzConnectionError, handle_permit_errors
 
 # Permit API doc:
 # https://api.permit.io/v2/redoc#tag/Users
+
+
+@dataclass
+class UserAuth:
+    id: str
+    email: str
 
 
 def authz_connect(pdp_url: str, pdp_api_key: str) -> Permit:

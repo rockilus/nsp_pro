@@ -18,17 +18,6 @@ export type UserT = {
   impersonatingUserId: string | null;
 };
 
-export type UserAuthT = {
-  id: string;
-  email: string;
-};
-
-export type UserDashboardT = {
-  user: UserT | null;
-  userAuthn: UserAuthT | null;
-  userAuthz: UserAuthT | null;
-};
-
 export type UserWithMembership = {
   user: UserT;
   membership: MembershipForTeamWithMembership;
@@ -59,12 +48,5 @@ export const fromUserWithMembership = (data: UserWithMembership): any => {
   return {
     ...data,
     user: fromUserT(data.user),
-  };
-};
-
-export const toUserDashboardT = (data: any): UserDashboardT => {
-  return {
-    ...data,
-    user: data.user ? toUserT(data.user) : null,
   };
 };

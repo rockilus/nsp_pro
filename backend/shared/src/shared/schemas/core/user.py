@@ -9,8 +9,6 @@ from pydantic import TypeAdapter
 from shared.schemas.core.team import MembershipForTeamWithMembership
 from shared.schemas.dto.user import (
     PasswordDataDTO,
-    UserAuthDTO,
-    UserDashboardDTO,
     UserDTO,
     UserWithMembershipDTO,
 )
@@ -69,42 +67,6 @@ class PasswordData:
     def from_dto(cls, data: PasswordDataDTO) -> "PasswordData":
         data_dict = humps.decamelize(data.model_dump())
         return cls(**data_dict)
-
-
-@dataclass
-class UserAuth:
-    id: str
-    email: str
-
-    def to_dto(self) -> UserAuthDTO:
-        data = asdict(self)
-        as_dict = humps.camelize(data)
-        validator = TypeAdapter(UserAuthDTO)
-        return validator.validate_python(as_dict)
-
-    @classmethod
-    def from_dto(cls, data: UserAuthDTO) -> "UserAuth":
-        data_dict = humps.decamelize(data.model_dump())
-        return cls(**data_dict)
-
-
-@dataclass
-class UserDashboard:
-    user: User | None
-    user_authn: UserAuth | None
-    user_authz: UserAuth | None
-
-    def to_dto(self) -> UserDashboardDTO:
-        data = asdict(self)
-        if self.user:
-            data["user"] = self.user.to_dto()
-        if self.user_authn:
-            data["user_authn"] = self.user_authn.to_dto()
-        if self.user_authz:
-            data["user_authz"] = self.user_authz.to_dto()
-        as_dict = humps.camelize(data)
-        validator = TypeAdapter(UserDashboardDTO)
-        return validator.validate_python(as_dict)
 
 
 @dataclass

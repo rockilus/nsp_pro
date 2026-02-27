@@ -23,14 +23,3 @@ class PasswordDataDTO(BaseModel):
     newPassword: str
     newPasswordConfirm: str
     accessToken: str
-
-
-class UserAuthDTO(BaseModel):
-    id: str
-    email: str
-
-
-class UserDashboardDTO(BaseModel):
-    user: UserDTO | None
-    userAuthn: UserAuthDTO | None
-    userAuthz: UserAuthDTO | None

@@ -191,8 +191,6 @@ from shared.schemas.core.user import (
     Language,
     PasswordData,
     User,
-    UserAuth,
-    UserDashboard,
     UserWithMembership,
 )
 from shared.schemas.core.worker import Worker, WorkerDates
@@ -356,8 +354,6 @@ __all__ = [
     "Language",
     "PasswordData",
     "User",
-    "UserAuth",
-    "UserDashboard",
     "UserWithMembership",
     "Worker",
     "WorkerDates",
