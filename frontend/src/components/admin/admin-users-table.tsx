@@ -46,6 +46,9 @@ export default function AdminUsersTable({
             <TableCell>
               <strong>Last name</strong>
             </TableCell>
+            <TableCell>
+              <strong>Email</strong>
+            </TableCell>
             <TableCell align="right">
               <strong>Actions</strong>
             </TableCell>
@@ -56,6 +59,7 @@ export default function AdminUsersTable({
             <TableRow key={user.id} hover>
               <TableCell>{user.firstName}</TableCell>
               <TableCell>{user.lastName}</TableCell>
+              <TableCell>{user.email}</TableCell>
               <TableCell align="right">
                 <Button
                   variant="outlined"
