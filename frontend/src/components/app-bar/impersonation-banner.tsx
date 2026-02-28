@@ -22,15 +22,13 @@ import {
  * useStartImpersonationWithTarget) and renders nothing when inactive.
  */
 export default function ImpersonationBanner() {
-  const [target, setTarget] = useState<ImpersonationTarget | null>(
-    () => getImpersonationTarget(),
+  const [target, setTarget] = useState<ImpersonationTarget | null>(() =>
+    getImpersonationTarget(),
   );
   const [stopping, setStopping] = useState(false);
   const [stopError, setStopError] = useState<string | null>(null);
 
   const stopImpersonation = useStopAdminImpersonation();
-
-
 
   if (!target) return null;
 
