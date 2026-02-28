@@ -107,7 +107,9 @@ async def authz_role_assignment_unassign(
         handle_permit_errors(e)
 
 
-async def authz_role_assignment_get_user_team_ids(user_id: str, role: str) -> List[str]:
+async def authz_role_assignment_get_user_team_ids(
+    user_id: str, role: str
+) -> List[str]:
     try:
         team_permit = await permit.api.role_assignments.list(
             user_key=user_id,
@@ -143,7 +145,9 @@ async def authz_check(
     Raises:
         Exception: If authorization check fails with errors after all retries
     """
-    resource_instance = f"{resource}:{resource_id}" if resource_id else resource
+    resource_instance = (
+        f"{resource}:{resource_id}" if resource_id else resource
+    )
 
     # If retry is disabled, use the original single-check logic
     if not config.authz_enable_retry:
@@ -153,7 +157,9 @@ async def authz_check(
                 action=action,
                 resource=resource_instance,
             )
-            log_info(f"Authorization check result: {result} for {resource_instance}")
+            log_info(
+                f"Authorization check result: {result} for {resource_instance}"
+            )
             return result
         except Exception as e:
             log_info("Permit check error")
@@ -234,11 +240,15 @@ async def authz_check(
 async def authz_get_all_users() -> List[UserAuth]:
     users: List[UserRead] = []
     page = 1
-    per_page = 100  # Adjust this value based on the actual limit specified by the API
+    per_page = (
+        100  # Adjust this value based on the actual limit specified by the API
+    )
 
     try:
         while True:
-            response = await permit.api.users.list(page=page, per_page=per_page)
+            response = await permit.api.users.list(
+                page=page, per_page=per_page
+            )
             users.extend(response.data)
 
             # Check if there's another page of results
@@ -285,6 +295,30 @@ async def authz_delete_all_users() -> None:
         handle_permit_errors(e)
 
 
+async def authz_delete_all_users_except(exclude_user_ids: List[str]) -> None:
+    try:
+        users = await authz_get_all_users()
+        for user in users:
+            if user.id not in exclude_user_ids:
+                await authz_delete_user(user.id)
+    except Exception as e:
+        log_info("Permit delete all users (with exclusions) error")
+        handle_permit_errors(e)
+
+
+async def authz_delete_all_instances_except_user(user_id: str) -> None:
+    """
+    Delete all resource instances and users from Permit.io, except for the
+    specified user.
+    """
+    try:
+        await authz_delete_all_resource_instances()
+        await authz_delete_all_users_except([user_id])
+    except Exception as e:
+        log_info("Permit delete all instances (with user exclusion) error")
+        handle_permit_errors(e)
+
+
 async def authz_delete_all_resource_instances() -> None:
     """Delete all resource instances from Permit.io."""
     try:
@@ -297,7 +331,8 @@ async def authz_delete_all_resource_instances() -> None:
             )
 
             log_info(
-                f"Fetched {len(resource_instances)} resource instances " f"for deletion"
+                f"Fetched {len(resource_instances)} resource instances "
+                f"for deletion"
             )
 
             # If no instances found, we're done
@@ -310,12 +345,16 @@ async def authz_delete_all_resource_instances() -> None:
                 # (resource:key format)
                 # Fallback to just the key if resource is not available
                 if hasattr(instance, 'resource') and instance.resource:
-                    resource_instance_id = f"{instance.resource}:{instance.key}"
+                    resource_instance_id = (
+                        f"{instance.resource}:{instance.key}"
+                    )
                 else:
                     # If resource is not available, try just the key
                     resource_instance_id = instance.key
 
-                await permit.api.resource_instances.delete(resource_instance_id)
+                await permit.api.resource_instances.delete(
+                    resource_instance_id
+                )
 
     except Exception as e:
         log_info("Permit delete all resource instances error")
