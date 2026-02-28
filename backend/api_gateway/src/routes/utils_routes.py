@@ -83,9 +83,7 @@ async def get_test_environment_only() -> None:
 
     # Check environment
     if environment not in ["test", "testing", "local", "development"]:
-        logger.warning(
-            f"Test utilities access denied for environment: {environment}"
-        )
+        logger.warning(f"Test utilities access denied for environment: {environment}")
         raise HTTPException(
             status_code=403,
             detail="Test utilities are only available in test environments",
@@ -100,9 +98,7 @@ async def get_test_environment_only() -> None:
             detail="Cannot run test utilities against production database",
         )
 
-    logger.info(
-        f"Test utilities access granted for environment: {environment}"
-    )
+    logger.info(f"Test utilities access granted for environment: {environment}")
 
 
 @router.post("/reset-database", response_model=DatabaseResetResponse)
@@ -133,9 +129,7 @@ async def reset_database_endpoint(
         # Validate confirmation token
         if request.confirmation_token != "test-reset-confirm":
             logger.warning("Invalid confirmation token provided")
-            raise HTTPException(
-                status_code=400, detail="Invalid confirmation token"
-            )
+            raise HTTPException(status_code=400, detail="Invalid confirmation token")
 
         logger.info(
             f"Database reset requested: collections={request.collections}, "
@@ -143,9 +137,7 @@ async def reset_database_endpoint(
         )
 
         # Snapshot preserved user before reset
-        preserved_user = db_collections.user_db.get_user_by_id(
-            PRESERVED_USER_ID
-        )
+        preserved_user = db_collections.user_db.get_user_by_id(PRESERVED_USER_ID)
 
         # Create reset service with the database interface
         reset_service = DatabaseResetService(db_interface)
@@ -155,9 +147,7 @@ async def reset_database_endpoint(
             result = await reset_service.reset_all_collections()
             await authz_delete_all_instances_except_user(PRESERVED_USER_ID)
         else:
-            result = await reset_service.reset_specific_collections(
-                request.collections
-            )
+            result = await reset_service.reset_specific_collections(request.collections)
             if "users" in request.collections:
                 await authz_delete_all_instances_except_user(PRESERVED_USER_ID)
 
@@ -227,9 +217,7 @@ async def dry_run_reset_database(
 
     except Exception as e:
         logger.error(f"Dry run failed: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Dry run failed: {str(e)}"
-        ) from e
+        raise HTTPException(status_code=500, detail=f"Dry run failed: {str(e)}") from e
 
 
 @router.get("/health")
@@ -272,9 +260,7 @@ async def load_test_scenario(
                 f"Authorization denied for user {user_context.user_id} "
                 f"to create worker in team {request.team_id}"
             )
-            raise NotAuthorizedError(
-                "You do not have permission to create a worker"
-            )
+            raise NotAuthorizedError("You do not have permission to create a worker")
         log_info(
             f"Loading test scenario '{request.scenario_name}' "
             f"for team '{request.team_id}'"
@@ -304,9 +290,7 @@ async def load_test_scenario(
         rs_augmented = [
             r_to_r_augmented(
                 request=r,
-                worker=next(
-                    (w for w in scenario.workers if w.id == r.worker_id), None
-                ),
+                worker=next((w for w in scenario.workers if w.id == r.worker_id), None),
                 shifts=scenario.shifts,
                 dimensions=scenario.dimensions,
                 dim_entries=scenario.dim_entries,
@@ -418,8 +402,7 @@ async def add_team_member(
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    f"Invalid role '{request.role}'. "
-                    "Must be 'owner' or 'member'."
+                    f"Invalid role '{request.role}'. " "Must be 'owner' or 'member'."
                 ),
             )
 
@@ -443,8 +426,8 @@ async def add_team_member(
             role=role_enum,
         )
 
-        created_membership = (
-            await team_membership_service.create_team_membership(membership)
+        created_membership = await team_membership_service.create_team_membership(
+            membership
         )
 
         logger.info(f"Successfully added team member: {created_membership.id}")

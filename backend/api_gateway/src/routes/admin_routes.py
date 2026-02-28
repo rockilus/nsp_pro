@@ -45,9 +45,7 @@ async def start_impersonation(
     try:
         admin_user_id = user_context.user_id
 
-        if not await authz_check(
-            admin_user_id, "create-impersonation", "admin"
-        ):
+        if not await authz_check(admin_user_id, "create-impersonation", "admin"):
             raise NotAuthorizedError(
                 "You do not have permission to access user accounts"
             )
@@ -55,9 +53,7 @@ async def start_impersonation(
         # Verify the target user exists before writing anything
         target_user = db_collections.user_db.get_user_by_id(target_user_id)
         if target_user is None:
-            raise HTTPException(
-                status_code=404, detail="Target user not found"
-            )
+            raise HTTPException(status_code=404, detail="Target user not found")
 
         # Prevent admins from impersonating themselves
         if admin_user_id == target_user_id:
@@ -74,9 +70,7 @@ async def start_impersonation(
         admin_user.impersonating_user_id = target_user_id
         updated_admin = db_collections.user_db.update_user(admin_user)
 
-        log_info(
-            f"Admin {admin_user_id} started impersonating user {target_user_id}"
-        )
+        log_info(f"Admin {admin_user_id} started impersonating user {target_user_id}")
 
         response = updated_admin.to_dto()
     except (NotAuthorizedError, HTTPException):
@@ -103,12 +97,8 @@ async def stop_impersonation(
     try:
         admin_user_id = user_context.user_id
 
-        if not await authz_check(
-            admin_user_id, "delete-impersonation", "admin"
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to stop impersonation"
-            )
+        if not await authz_check(admin_user_id, "delete-impersonation", "admin"):
+            raise NotAuthorizedError("You do not have permission to stop impersonation")
 
         admin_user = db_collections.user_db.get_user_by_id(admin_user_id)
         if admin_user is None:
@@ -140,9 +130,7 @@ async def list_all_users(
     response: List[UserDTO]
     try:
         if not await authz_check(user_context.user_id, "read-users", "admin"):
-            raise NotAuthorizedError(
-                "You do not have permission to list users"
-            )
+            raise NotAuthorizedError("You do not have permission to list users")
         users = db_collections.user_db.get_users()
         response = [u.to_dto() for u in users]
     except (NotAuthorizedError, HTTPException):

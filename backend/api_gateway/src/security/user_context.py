@@ -79,9 +79,7 @@ def extract_user_context(
         ValueError: If required user context is missing
     """
     if not x_user_sub:
-        logger.error(
-            "Missing required user context: X-User-Sub header not found"
-        )
+        logger.error("Missing required user context: X-User-Sub header not found")
         raise ValueError("User context missing - authentication required")
 
     # Parse groups if provided
@@ -89,9 +87,7 @@ def extract_user_context(
     if x_user_groups:
         # Handle comma-separated groups and clean whitespace
         user_groups = [
-            group.strip()
-            for group in x_user_groups.split(",")
-            if group.strip()
+            group.strip() for group in x_user_groups.split(",") if group.strip()
         ]
 
     user_context = UserContext(

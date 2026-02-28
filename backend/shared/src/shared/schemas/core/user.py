@@ -41,9 +41,7 @@ class User:
         data = asdict(self)
         data["language"] = self.language.value
         data["sign_up_at"] = self.sign_up_at.timestamp()
-        data["system_role"] = (
-            self.system_role.value if self.system_role else None
-        )
+        data["system_role"] = self.system_role.value if self.system_role else None
         as_dict = humps.camelize(data)
         validator = TypeAdapter(UserDTO)
         return validator.validate_python(as_dict)

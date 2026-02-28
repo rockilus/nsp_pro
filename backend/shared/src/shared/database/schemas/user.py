@@ -35,9 +35,7 @@ class UserSchema(DocumentBaseSchema):
             language=Language(self.language),
             sign_up_at=self.sign_up_at,
             impersonating_user_id=self.impersonating_user,
-            system_role=(
-                SystemRole(self.system_role) if self.system_role else None
-            ),
+            system_role=(SystemRole(self.system_role) if self.system_role else None),
         )
 
     @classmethod
