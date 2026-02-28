@@ -35,7 +35,6 @@ export const toUserT = (data: any): UserT => {
 export const fromUserT = (data: UserT): any => {
   // Omit systemRole — the self-update endpoint only accepts
   // firstName, lastName, email, and language.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { systemRole, impersonatingUserId, signUpAt, id, ...updateFields } =
     data;
   return {

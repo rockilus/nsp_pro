@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 // MUI
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
@@ -22,16 +22,15 @@ import {
  * useStartImpersonationWithTarget) and renders nothing when inactive.
  */
 export default function ImpersonationBanner() {
-  const [target, setTarget] = useState<ImpersonationTarget | null>(null);
+  const [target, setTarget] = useState<ImpersonationTarget | null>(
+    () => getImpersonationTarget(),
+  );
   const [stopping, setStopping] = useState(false);
   const [stopError, setStopError] = useState<string | null>(null);
 
   const stopImpersonation = useStopAdminImpersonation();
 
-  // Read from sessionStorage on mount (client-side only)
-  useEffect(() => {
-    setTarget(getImpersonationTarget());
-  }, []);
+
 
   if (!target) return null;
 
