@@ -4,6 +4,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 // Components
 import AdminLayout from "@/components/admin/admin-layout";
 import ProtectedRoute from "@/components/auth/protected-route";
+import SuperAdminGuard from "@/components/admin/super-admin-guard";
 // Context
 import { UserProvider } from "@/context/UserProvider";
 import React from "react";
@@ -25,7 +26,9 @@ export default async function Layout({
     <ProtectedRoute requireAuth={true}>
       <UserProvider>
         <CssBaseline />
-        <AdminLayout params={{ lng }}>{children}</AdminLayout>
+        <SuperAdminGuard lng={lng}>
+          <AdminLayout params={{ lng }}>{children}</AdminLayout>
+        </SuperAdminGuard>
       </UserProvider>
     </ProtectedRoute>
   );
