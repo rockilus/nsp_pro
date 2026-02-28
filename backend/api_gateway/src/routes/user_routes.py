@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
@@ -165,27 +165,5 @@ async def change_user_password(
         response = {"message": "Password updated successfully"}
     except Exception as e:
         log_info("Failed to update user password")
-        handle_routes_errors(e)
-    return response
-
-
-@router.get("/admin/users")
-async def list_all_users(
-    user_context: UserContext = Depends(get_user_context),
-    db_collections: DatabaseCollections = Depends(get_db_collections),
-) -> List[UserDTO]:
-    """
-    Admin endpoint: list all users in the database.
-    Requires the read-users permission on the admin resource.
-    """
-    try:
-        if not await authz_check(user_context.user_id, "read-users", "admin"):
-            raise NotAuthorizedError(
-                "You do not have permission to list users"
-            )
-        users = db_collections.user_db.get_users()
-        response = [u.to_dto() for u in users]
-    except Exception as e:
-        log_info("Failed to list all users")
         handle_routes_errors(e)
     return response

@@ -8,7 +8,7 @@ user_context.effective_user_id, which routes use instead of user_context.user_id
 when serving user-scoped data.
 """
 
-from typing import Dict
+from typing import Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from shared.database.database_collections import DatabaseCollections
@@ -124,5 +124,30 @@ async def stop_impersonation(
         raise
     except Exception as e:
         log_info("Failed to stop impersonation")
+        handle_routes_errors(e)
+    return response  # type: ignore[return-value]
+
+
+@router.get("/admin/users")
+async def list_all_users(
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> List[UserDTO]:
+    """
+    Admin endpoint: list all users in the database.
+    Requires the read-users permission on the admin resource.
+    """
+    response: List[UserDTO]
+    try:
+        if not await authz_check(user_context.user_id, "read-users", "admin"):
+            raise NotAuthorizedError(
+                "You do not have permission to list users"
+            )
+        users = db_collections.user_db.get_users()
+        response = [u.to_dto() for u in users]
+    except (NotAuthorizedError, HTTPException):
+        raise
+    except Exception as e:
+        log_info("Failed to list all users")
         handle_routes_errors(e)
     return response  # type: ignore[return-value]
