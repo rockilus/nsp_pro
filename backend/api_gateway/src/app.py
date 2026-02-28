@@ -11,6 +11,7 @@ from src.config import config
 # pylint: disable=unused-import
 from src.integrations.authorization import authz_services  # noqa: F401
 from src.routes import (
+    router_admin,
     router_assignment,
     router_attribute,
     router_breach,
@@ -72,6 +73,7 @@ def create_app(
 
     # Include all routers
     routers = [
+        router_admin,
         router_assignment,
         router_attribute,
         router_breach,

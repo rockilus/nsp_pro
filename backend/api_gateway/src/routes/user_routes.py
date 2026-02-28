@@ -171,12 +171,18 @@ async def change_user_password(
 
 @router.get("/admin/users")
 async def list_all_users(
+    user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[UserDTO]:
     """
     Admin endpoint: list all users in the database.
+    Requires the read-users permission on the admin resource.
     """
     try:
+        if not await authz_check(user_context.user_id, "read-users", "admin"):
+            raise NotAuthorizedError(
+                "You do not have permission to list users"
+            )
         users = db_collections.user_db.get_users()
         response = [u.to_dto() for u in users]
     except Exception as e:

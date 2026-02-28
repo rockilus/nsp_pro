@@ -4,7 +4,7 @@ Handles Cognito user information passed from API Gateway.
 """
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -19,10 +19,24 @@ class UserContext:
     groups: Optional[List[str]] = None
     request_id: Optional[str] = None
     source_ip: Optional[str] = None
+    # Impersonation state — populated by get_effective_user_context dependency
+    impersonated_user_id: Optional[str] = field(default=None)
+    is_impersonating: bool = field(default=False)
 
     def __post_init__(self):
         if self.groups is None:
             self.groups = []
+
+    @property
+    def effective_user_id(self) -> str:
+        """
+        Returns the target user ID when impersonation is active,
+        otherwise returns the authenticated admin's own ID.
+        Routes that serve user-scoped data should use this instead of user_id.
+        """
+        if self.is_impersonating and self.impersonated_user_id:
+            return self.impersonated_user_id
+        return self.user_id
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for logging/serialization"""
@@ -32,6 +46,8 @@ class UserContext:
             "groups": self.groups,
             "request_id": self.request_id,
             "source_ip": self.source_ip,
+            "is_impersonating": self.is_impersonating,
+            "impersonated_user_id": self.impersonated_user_id,
         }
 
     def get_user_id(self) -> str:
@@ -63,7 +79,9 @@ def extract_user_context(
         ValueError: If required user context is missing
     """
     if not x_user_sub:
-        logger.error("Missing required user context: X-User-Sub header not found")
+        logger.error(
+            "Missing required user context: X-User-Sub header not found"
+        )
         raise ValueError("User context missing - authentication required")
 
     # Parse groups if provided
@@ -71,7 +89,9 @@ def extract_user_context(
     if x_user_groups:
         # Handle comma-separated groups and clean whitespace
         user_groups = [
-            group.strip() for group in x_user_groups.split(",") if group.strip()
+            group.strip()
+            for group in x_user_groups.split(",")
+            if group.strip()
         ]
 
     user_context = UserContext(

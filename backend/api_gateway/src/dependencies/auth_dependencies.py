@@ -6,9 +6,11 @@ Replaces the current authentication system with API Gateway-based auth.
 import logging
 from typing import Annotated, Optional
 
-from fastapi import Header, HTTPException, Request
+from fastapi import Depends, Header, HTTPException, Request
+from shared.database.database_collections import DatabaseCollections
 
 from src.config import config
+from src.dependencies.database import get_db_collections
 from src.security.service_auth import (
     ServiceAuthError,
     validate_service_api_key,
@@ -58,7 +60,9 @@ async def verify_service_authentication(
 
 async def get_user_context(
     request: Request,
-    x_dev_user_id: Annotated[Optional[str], Header(alias="X-Dev-User-ID")] = None,
+    x_dev_user_id: Annotated[
+        Optional[str], Header(alias="X-Dev-User-ID")
+    ] = None,
     x_api_key: Annotated[Optional[str], Header(alias="X-API-Key")] = None,
 ) -> UserContext:
     """Extract user context from request headers or token."""
@@ -79,7 +83,9 @@ async def get_user_context(
         user_id = x_dev_user_id or config.dev_user_id
         user_email = config.dev_user_email
 
-        logger.debug("Development auth: user_id=%s, email=%s", user_id, user_email)
+        logger.debug(
+            "Development auth: user_id=%s, email=%s", user_id, user_email
+        )
 
         return UserContext(
             user_id=user_id,
@@ -105,3 +111,27 @@ async def get_user_context(
         x_request_id=x_request_id,
         x_source_ip=x_source_ip,
     )
+
+
+async def get_effective_user_context(
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> UserContext:
+    """
+    Extends the base user context with impersonation state.
+
+    Looks up the authenticated user's DB record and, if they have set
+    an active impersonation target (impersonating_user_id != None), marks
+    the UserContext accordingly so route handlers can serve data scoped
+    to the target user via user_context.effective_user_id.
+    """
+    user = db_collections.user_db.get_user_by_id(user_context.user_id)
+    if user and user.impersonating_user_id:
+        user_context.impersonated_user_id = user.impersonating_user_id
+        user_context.is_impersonating = True
+        logger.debug(
+            "Admin %s is impersonating user %s",
+            user_context.user_id,
+            user.impersonating_user_id,
+        )
+    return user_context
