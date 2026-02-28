@@ -22,6 +22,10 @@ class Language(Enum):
     FR = "fr"
 
 
+class SystemRole(Enum):
+    SUPER_ADMIN = "super_admin"
+
+
 @dataclass
 class User:
     id: str
@@ -31,11 +35,15 @@ class User:
     language: Language
     sign_up_at: datetime
     impersonating_user_id: str | None
+    system_role: SystemRole | None = None
 
     def to_dto(self) -> UserDTO:
         data = asdict(self)
         data["language"] = self.language.value
         data["sign_up_at"] = self.sign_up_at.timestamp()
+        data["system_role"] = (
+            self.system_role.value if self.system_role else None
+        )
         as_dict = humps.camelize(data)
         validator = TypeAdapter(UserDTO)
         return validator.validate_python(as_dict)
@@ -46,6 +54,11 @@ class User:
         data_dict["language"] = Language(data_dict["language"])
         data_dict["sign_up_at"] = datetime.fromtimestamp(
             data_dict["sign_up_at"], tz=timezone.utc
+        )
+        data_dict["system_role"] = (
+            SystemRole(data_dict["system_role"])
+            if data_dict.get("system_role")
+            else None
         )
         return cls(**data_dict)
 

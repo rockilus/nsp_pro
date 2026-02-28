@@ -16,6 +16,7 @@ export type UserT = {
   language: string;
   signUpAt: dayjs.Dayjs;
   impersonatingUserId: string | null;
+  systemRole: string | null;
 };
 
 export type UserWithMembership = {
@@ -27,13 +28,19 @@ export const toUserT = (data: any): UserT => {
   return {
     ...data,
     signUpAt: dayjs.unix(data.signUpAt).utc(),
+    systemRole: data.systemRole ?? null,
   };
 };
 
 export const fromUserT = (data: UserT): any => {
+  // Omit systemRole — the self-update endpoint only accepts
+  // firstName, lastName, email, and language.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { systemRole, impersonatingUserId, signUpAt, id, ...updateFields } =
+    data;
   return {
-    ...data,
-    signUpAt: data.signUpAt.unix(),
+    ...updateFields,
+    signUpAt: signUpAt.unix(),
   };
 };
 

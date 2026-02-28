@@ -6,7 +6,7 @@ from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import PasswordData
 from shared.schemas.dto import WorkerDTO
-from shared.schemas.dto.user import PasswordDataDTO, UserDTO
+from shared.schemas.dto.user import PasswordDataDTO, UserDTO, UserUpdateDTO
 
 from src.dependencies import (
     get_db_collections,
@@ -81,6 +81,40 @@ async def get_current_user(
         response = user.to_dto()
     except Exception as e:
         log_info("Failed to get current user")
+        handle_routes_errors(e)
+    return response
+
+
+@router.put("/users/{user_id}")
+async def update_user(
+    user_id: str,
+    user_update: UserUpdateDTO,
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+    user_service: UserService = Depends(get_user_service),
+) -> UserDTO:
+    """Update the authenticated user's own profile.
+
+    Only firstName, lastName, email, and language may be changed.
+    system_role and impersonatingUserId are ignored — they are always
+    carried over from the existing DB record.
+    """
+    try:
+        if user_context.user_id != user_id:
+            raise NotAuthorizedError("You can only update your own profile")
+        if not await authz_check(
+            user_context.user_id, "update", "user", user_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update this user"
+            )
+        updated_user = await user_service.update_user(
+            user_id=user_id,
+            update_dto=user_update,
+        )
+        response = updated_user.to_dto()
+    except Exception as e:
+        log_info(f"Failed to update user {user_id}")
         handle_routes_errors(e)
     return response
 

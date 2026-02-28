@@ -11,6 +11,20 @@ class UserDTO(BaseModel):
     language: str
     signUpAt: float
     impersonatingUserId: str | None
+    systemRole: str | None = None
+
+
+class UserUpdateDTO(BaseModel):
+    """Fields a user is allowed to update on their own profile.
+
+    Intentionally excludes id, email, signUpAt, impersonatingUserId, and systemRole.
+    Email changes affect authentication (Cognito) and must go through a
+    dedicated endpoint.
+    """
+
+    firstName: str
+    lastName: str
+    language: str
 
 
 class UserWithMembershipDTO(BaseModel):
