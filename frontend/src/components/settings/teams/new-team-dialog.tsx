@@ -50,6 +50,7 @@ export default function NewTeamDialog({
       <Button
         variant="contained"
         onClick={handleClickOpen}
+        data-testid="new-team-btn"
         sx={{
           textTransform: "none",
           fontSize: "12px",
@@ -86,6 +87,7 @@ export default function NewTeamDialog({
             variant="standard"
             error={error}
             helperText={helperText}
+            slotProps={{ htmlInput: { "data-testid": "team-name-input" } }}
           />
         </DialogContent>
         <DialogActions>
@@ -100,6 +102,7 @@ export default function NewTeamDialog({
           <Button
             variant="contained"
             type="submit"
+            data-testid="create-team-submit-btn"
             sx={{
               textTransform: "none",
             }}

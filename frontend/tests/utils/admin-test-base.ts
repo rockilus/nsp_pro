@@ -81,6 +81,13 @@ export class AdminTestBase {
   }
 
   /**
+   * Navigate to the teams settings page.
+   */
+  async navigateToTeamsSettingsPage(page: Page): Promise<void> {
+    await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
+  }
+
+  /**
    * Make an HTTP request authenticated as the admin user (TEST_USER).
    * Throws on non-2xx responses — catch the error to inspect status.
    */

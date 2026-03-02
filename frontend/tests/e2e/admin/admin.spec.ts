@@ -17,6 +17,7 @@
 import { randomUUID } from "crypto";
 import { test, expect } from "@playwright/test";
 import { AdminTestBase } from "../../utils/admin-test-base";
+import { testConfig } from "../../utils/test-config";
 
 test.describe("Admin Panel", () => {
   // Map of testRunId → AdminTestBase instance, keyed per-test for parallel safety
@@ -135,6 +136,48 @@ test.describe("Admin Panel", () => {
       ).toBeVisible({ timeout: 5_000 });
 
       console.log("✅ Impersonation started and banner is displayed");
+
+      // ── Team creation via UI while impersonating ────────────────────────
+      await adminBase.navigateToTeamsSettingsPage(page);
+      await expect(
+        page.locator('[data-testid="teams-page-heading"]'),
+      ).toBeVisible({ timeout: 10_000 });
+
+      const testTeamName = `Impersonation-Team-${Date.now()}`;
+
+      await page.locator('[data-testid="new-team-btn"]').click();
+      await expect(
+        page.locator('[data-testid="create-team-submit-btn"]'),
+      ).toBeVisible({ timeout: 5_000 });
+      await page.locator('[data-testid="team-name-input"]').fill(testTeamName);
+      await page.locator('[data-testid="create-team-submit-btn"]').click();
+
+      // Wait for the team to appear in the list (dialog closes, team row shows)
+      await expect(page.getByText(testTeamName, { exact: true })).toBeVisible({
+        timeout: 10_000,
+      });
+
+      console.log(
+        `✅ Team "${testTeamName}" created via UI while impersonating`,
+      );
+
+      // ── API verification ────────────────────────────────────────────────
+      // Clear admin's impersonation state in DB before verifying ownership
+      await adminBase.makeAdminRequest("DELETE", "/admin/users/impersonate");
+
+      // TEST_USER_2 (the impersonated user) should own the team
+      const nonAdminTeams = await adminBase.makeNonAdminRequest<
+        Array<{ name: string }>
+      >("GET", "/teams");
+      expect(nonAdminTeams.some((t) => t.name === testTeamName)).toBe(true);
+      console.log("✅ GET /teams as TEST_USER_2 includes the test team");
+
+      // TEST_USER (the admin) should NOT own the team
+      const adminTeams = await adminBase.makeAdminRequest<
+        Array<{ name: string }>
+      >("GET", "/teams");
+      expect(adminTeams.some((t) => t.name === testTeamName)).toBe(false);
+      console.log("✅ GET /teams as TEST_USER does not include the test team");
     });
 
     test("'stop impersonation' clears banner and returns to admin users page", async ({
