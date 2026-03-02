@@ -5,6 +5,11 @@
 import { UserT, toUserT } from "../../../types/user";
 import { BaseApi, AuthenticatedApiClient } from "./baseApi";
 
+export interface ImpersonationTokenResponse {
+  token: string;
+  expires_in: number;
+}
+
 export class AdminApi extends BaseApi {
   /**
    * List all users in the system (admin only)
@@ -20,26 +25,25 @@ export class AdminApi extends BaseApi {
 
   /**
    * Start accessing a user's account as a super-admin.
-   * Writes impersonating_user_id on the admin's own user record so that
-   * subsequent requests resolve effective_user_id to the target user.
+   * Returns a short-lived signed JWT that the frontend sends as
+   * X-Impersonation-Token on subsequent requests.
    */
   static async startImpersonation(
     apiClient: AuthenticatedApiClient,
     targetUserId: string,
-  ): Promise<UserT> {
+  ): Promise<ImpersonationTokenResponse> {
     if (!targetUserId) throw new Error("Target user ID is required");
 
-    const responseData = await this.makeRequest<any>(
+    return this.makeRequest<ImpersonationTokenResponse>(
       apiClient,
       "post",
       `/admin/users/${targetUserId}/impersonate`,
     );
-    return toUserT(responseData) as UserT;
   }
 
   /**
    * Stop impersonating and restore the admin's own session.
-   * Clears impersonating_user_id on the admin's user record.
+   * The server has no state to clear — the frontend simply discards the token.
    */
   static async stopImpersonation(
     apiClient: AuthenticatedApiClient,

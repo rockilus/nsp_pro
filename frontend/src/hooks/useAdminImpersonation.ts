@@ -2,34 +2,28 @@ import { useCallback } from "react";
 // API Client
 import { AdminApi } from "@/app/lib/api/adminApi";
 import { useApiClient } from "@/app/lib/api-client";
+// Storage utilities (no circular dependency with api-client)
+import {
+  IMPERSONATION_SESSION_KEY,
+  StoredImpersonationTarget,
+  getImpersonationTarget,
+  getImpersonationToken,
+} from "@/app/lib/impersonation-storage";
 // Auth Context
 import { useAuth } from "@/contexts/auth-context";
 import { env } from "@/config/env";
 
-export const IMPERSONATION_SESSION_KEY = "admin_impersonation_target";
+export {
+  IMPERSONATION_SESSION_KEY,
+  getImpersonationTarget,
+  getImpersonationToken,
+};
 
-export interface ImpersonationTarget {
-  userId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  language: string;
-}
+/** Shape stored in sessionStorage and used by ImpersonationBanner. */
+export type ImpersonationTarget = StoredImpersonationTarget;
 
-/**
- * Returns the currently active impersonation target from sessionStorage,
- * or null if no impersonation is active.
- * Safe to call from server and client components (returns null on server).
- */
-export function getImpersonationTarget(): ImpersonationTarget | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = sessionStorage.getItem(IMPERSONATION_SESSION_KEY);
-    return raw ? (JSON.parse(raw) as ImpersonationTarget) : null;
-  } catch {
-    return null;
-  }
-}
+/** Input shape for starting impersonation — token is added by the hook. */
+export type ImpersonationTargetInput = Omit<StoredImpersonationTarget, "token">;
 
 /**
  * Hook for starting admin impersonation of a target user account.
@@ -57,32 +51,24 @@ export function useStartImpersonation() {
         });
       }
 
-      const adminUser = await AdminApi.startImpersonation(
+      const { token } = await AdminApi.startImpersonation(
         apiClient,
         targetUserId,
       );
 
-      // adminUser is the updated admin record; we need the target user's info.
-      // The API returns the updated admin DTO after writing impersonatingUserId.
-      // Fetch target from sessionStorage context is not needed since we already
-      // have the target ID; navigate using the admin's language as fallback and
-      // let the target info come from the updated admin impersonatingUserId.
-      // For the banner we store what the caller provides (id + minimal info).
       const target: ImpersonationTarget = {
         userId: targetUserId,
-        firstName: adminUser.impersonatingUserId ?? targetUserId, // will be overridden below
+        firstName: "",
         lastName: "",
         email: "",
-        language: adminUser.language,
+        language: "en",
+        token,
       };
 
-      // We need to store the target user's display info. The `startImpersonation`
-      // endpoint returns the ADMIN's updated user record, not the target's.
-      // Callers (AdminUsersTab) pass the full UserT they already have, so we
-      // rely on the component to call the enriched variant below.
       sessionStorage.setItem(IMPERSONATION_SESSION_KEY, JSON.stringify(target));
 
-      window.location.href = `/${adminUser.language}/plan/workers`;
+      // Navigate using the stored language fallback
+      window.location.href = `/en/plan/workers`;
     },
     [apiClient, isAuthenticated, loading, user],
   );
@@ -97,7 +83,7 @@ export function useStartImpersonationWithTarget() {
   const { user, isAuthenticated, loading } = useAuth();
 
   return useCallback(
-    async (target: ImpersonationTarget): Promise<void> => {
+    async (target: ImpersonationTargetInput): Promise<void> => {
       if (loading)
         throw new Error("Authentication still loading - please wait");
       if (!isAuthenticated || !user?.id_token)
@@ -110,9 +96,15 @@ export function useStartImpersonationWithTarget() {
         );
       }
 
-      await AdminApi.startImpersonation(apiClient, target.userId);
+      const { token } = await AdminApi.startImpersonation(
+        apiClient,
+        target.userId,
+      );
 
-      sessionStorage.setItem(IMPERSONATION_SESSION_KEY, JSON.stringify(target));
+      sessionStorage.setItem(
+        IMPERSONATION_SESSION_KEY,
+        JSON.stringify({ ...target, token }),
+      );
 
       // Navigate to the target user's default page in their language
       window.location.href = `/${target.language}/plan/workers`;
