@@ -25,11 +25,17 @@ export default function AdminLayout({
   return (
     <div className="admin-layout">
       {/* Sidebar */}
-      <List dense component="nav" className="admin-sidebar">
+      <List
+        dense
+        component="nav"
+        className="admin-sidebar"
+        data-testid="admin-sidebar"
+      >
         <p className="admin-sidebar-title">Admin</p>
         {links.map((link) => (
           <ListItemButton
             key={link.name}
+            data-testid={`admin-sidebar-link-${link.name}`}
             selected={pathname.includes(link.name)}
             LinkComponent={Link}
             href={link.href}

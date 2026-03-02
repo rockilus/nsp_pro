@@ -29,14 +29,22 @@ export default function AdminUsersTable({
 }: AdminUsersTableProps) {
   if (users.length === 0) {
     return (
-      <Typography color="text.secondary" sx={{ mt: 2 }}>
+      <Typography
+        data-testid="admin-no-users-message"
+        color="text.secondary"
+        sx={{ mt: 2 }}
+      >
         No users found.
       </Typography>
     );
   }
 
   return (
-    <TableContainer component={Paper} variant="outlined">
+    <TableContainer
+      data-testid="admin-users-table"
+      component={Paper}
+      variant="outlined"
+    >
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -56,12 +64,13 @@ export default function AdminUsersTable({
         </TableHead>
         <TableBody>
           {users.map((user) => (
-            <TableRow key={user.id} hover>
+            <TableRow key={user.id} data-testid={`user-row-${user.id}`} hover>
               <TableCell>{user.firstName}</TableCell>
               <TableCell>{user.lastName}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell align="right">
                 <Button
+                  data-testid={`access-account-btn-${user.id}`}
                   variant="outlined"
                   size="small"
                   disabled={!onAccessAccount}

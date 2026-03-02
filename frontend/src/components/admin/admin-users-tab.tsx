@@ -44,7 +44,13 @@ export default function AdminUsersTab({ lng }: AdminUsersTabProps) {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" p={4}>
+      <Box
+        data-testid="admin-users-loading"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        p={4}
+      >
         <CircularProgress />
       </Box>
     );
@@ -52,19 +58,20 @@ export default function AdminUsersTab({ lng }: AdminUsersTabProps) {
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ m: 2 }}>
+      <Alert data-testid="admin-users-error" severity="error" sx={{ m: 2 }}>
         {error}
       </Alert>
     );
   }
 
   return (
-    <div>
+    <div data-testid="admin-users-tab">
       <Typography variant="h5" fontWeight={600} mb={3}>
         Users
       </Typography>
       {accessError && (
         <Alert
+          data-testid="admin-access-error"
           severity="error"
           sx={{ mb: 2 }}
           onClose={() => setAccessError(null)}

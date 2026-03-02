@@ -50,6 +50,7 @@ export default function ImpersonationBanner() {
 
   return (
     <Box
+      data-testid="impersonation-banner"
       sx={{
         position: "sticky",
         top: 0,
@@ -63,6 +64,7 @@ export default function ImpersonationBanner() {
         sx={{ borderRadius: 0, py: 0.75 }}
         action={
           <Button
+            data-testid="stop-impersonation-btn"
             color="inherit"
             size="small"
             variant="outlined"
