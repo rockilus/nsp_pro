@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { canAccessPage } from "@/app/lib/access-control/check-access";
@@ -49,6 +49,12 @@ export function AccessGuard({
   showToast = true,
 }: AccessGuardProps) {
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Extract language prefix from the current path (e.g. "/en" from "/en/plan/workers/")
+  const lngPrefix = pathname
+    ? `/${pathname.replace(/^\//, "").split("/")[0]}`
+    : "/en";
 
   const allowed = teamWithMembership
     ? canAccessPage(route, teamWithMembership)
@@ -59,14 +65,14 @@ export function AccessGuard({
 
   useEffect(() => {
     if (!allowed) {
-      // Redirect to allowed page
-      router.push(redirectTo);
+      // Redirect to allowed page, preserving the language prefix
+      router.push(`${lngPrefix}${redirectTo}`);
     }
-  }, [allowed, redirectTo, router]);
+  }, [allowed, lngPrefix, redirectTo, router]);
 
   const handleSnackbarClose = (
     event?: React.SyntheticEvent | Event,
-    reason?: string
+    reason?: string,
   ) => {
     if (reason === "clickaway") {
       return;
