@@ -220,6 +220,88 @@ test.describe("Admin Panel", () => {
         "✅ Impersonation stopped, banner cleared, back on admin page",
       );
     });
+
+    test("starting impersonation should set expected impersonation token in storage", async ({
+      page,
+    }, testInfo) => {
+      const testRunId = (testInfo as any).testRunId as string;
+      const adminBase = testBasesMap.get(testRunId)!;
+      const nonAdminUser = adminBase.getNonAdminUser();
+
+      await adminBase.actAsAdmin(page);
+      await adminBase.navigateToAdminUsersPage(page);
+
+      await expect(
+        page.locator('[data-testid="admin-users-table"]'),
+      ).toBeVisible({ timeout: 10_000 });
+
+      await page
+        .locator(`[data-testid="access-account-btn-${nonAdminUser.user_id}"]`)
+        .click();
+
+      await page.waitForURL(/\/plan\/workers/, { timeout: 10_000 });
+
+      const raw = await page.evaluate(
+        (key) => sessionStorage.getItem(key),
+        "admin_impersonation_target",
+      );
+      expect(raw).not.toBeNull();
+
+      const stored = JSON.parse(raw!);
+      expect(stored.userId).toBe(nonAdminUser.user_id);
+      expect(stored.firstName).toBe(nonAdminUser.first_name);
+      expect(stored.lastName).toBe(nonAdminUser.last_name);
+      expect(stored.email).toBe(nonAdminUser.email);
+      expect(typeof stored.token).toBe("string");
+      expect(stored.token.length).toBeGreaterThan(0);
+
+      console.log(
+        "✅ Impersonation sessionStorage entry has expected shape and JWT token",
+      );
+    });
+
+    test("stopping impersonation should remove impersonation token from storage", async ({
+      page,
+    }, testInfo) => {
+      const testRunId = (testInfo as any).testRunId as string;
+      const adminBase = testBasesMap.get(testRunId)!;
+      const nonAdminUser = adminBase.getNonAdminUser();
+
+      await adminBase.actAsAdmin(page);
+      await adminBase.navigateToAdminUsersPage(page);
+
+      await expect(
+        page.locator('[data-testid="admin-users-table"]'),
+      ).toBeVisible({ timeout: 10_000 });
+
+      await page
+        .locator(`[data-testid="access-account-btn-${nonAdminUser.user_id}"]`)
+        .click();
+
+      await page.waitForURL(/\/plan\/workers/, { timeout: 10_000 });
+
+      // Pre-condition: token is present in storage after starting impersonation
+      const rawBefore = await page.evaluate(
+        (key) => sessionStorage.getItem(key),
+        "admin_impersonation_target",
+      );
+      expect(rawBefore).not.toBeNull();
+
+      // Stop impersonation
+      await page.locator('[data-testid="stop-impersonation-btn"]').click();
+      await page.waitForURL(/\/admin\/users/, { timeout: 10_000 });
+
+      // Token must be removed from storage
+      const rawAfter = await page.evaluate(
+        (key) => sessionStorage.getItem(key),
+        "admin_impersonation_target",
+      );
+      expect(rawAfter).toBeNull();
+
+      console.log(
+        "✅ Impersonation token removed from sessionStorage after stopping",
+      );
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────────
