@@ -37,8 +37,14 @@ export class AdminTestBase {
   async setup(workerIndex: number): Promise<void> {
     console.log(`[AdminTestBase] Setup starting (worker ${workerIndex})`);
 
-    await this.dbUtils.waitForServicesReady(30_000);
-    await this.dbUtils.resetAllData();
+    // 1. Wait for API to be ready
+    await this.dbUtils.waitForApiReady();
+
+    // 2. Check health
+    const health = await this.dbUtils.checkHealth();
+    if (!health.test_utilities_available) {
+      throw new Error("Test utilities not available");
+    }
 
     // Create the non-admin test user
     await this.dbUtils.createTestUser({
