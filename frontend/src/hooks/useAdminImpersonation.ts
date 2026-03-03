@@ -8,6 +8,7 @@ import {
   StoredImpersonationTarget,
   getImpersonationTarget,
   getImpersonationToken,
+  clearImpersonationTarget,
 } from "@/app/lib/impersonation-storage";
 // Auth Context
 import { useAuth } from "@/contexts/auth-context";
@@ -129,9 +130,22 @@ export function useStopAdminImpersonation() {
       console.log("🔍 useStopAdminImpersonation: stopping impersonation");
     }
 
-    await AdminApi.stopImpersonation(apiClient);
+    // Clear sessionStorage BEFORE the API call so that api-client does not
+    // attach the (potentially expired) X-Impersonation-Token header. The
+    // server is fully stateless — there is nothing to roll back.
+    clearImpersonationTarget();
 
-    sessionStorage.removeItem(IMPERSONATION_SESSION_KEY);
+    try {
+      await AdminApi.stopImpersonation(apiClient);
+    } catch (err) {
+      // The server had nothing to clean up, so log and continue regardless.
+      if (env.isDevelopment) {
+        console.warn(
+          "🔍 useStopAdminImpersonation: API call failed (ignored):",
+          err,
+        );
+      }
+    }
 
     window.location.href = "/en/admin/users";
   }, [apiClient, isAuthenticated, loading, user]);

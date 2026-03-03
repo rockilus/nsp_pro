@@ -13,6 +13,10 @@ import {
   ImpersonationTarget,
   useStopAdminImpersonation,
 } from "@/hooks/useAdminImpersonation";
+import {
+  isImpersonationTokenExpired,
+  clearImpersonationTarget,
+} from "@/app/lib/impersonation-storage";
 
 /**
  * Sticky banner displayed at the top of every page when an admin is
@@ -22,9 +26,15 @@ import {
  * useStartImpersonationWithTarget) and renders nothing when inactive.
  */
 export default function ImpersonationBanner() {
-  const [target, setTarget] = useState<ImpersonationTarget | null>(() =>
-    getImpersonationTarget(),
-  );
+  const [target, setTarget] = useState<ImpersonationTarget | null>(() => {
+    const stored = getImpersonationTarget();
+    if (stored && isImpersonationTokenExpired()) {
+      // Token already expired on load — silently clear so the user isn't stuck
+      clearImpersonationTarget();
+      return null;
+    }
+    return stored;
+  });
   const [stopping, setStopping] = useState(false);
   const [stopError, setStopError] = useState<string | null>(null);
 
