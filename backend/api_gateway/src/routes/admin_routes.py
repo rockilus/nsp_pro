@@ -6,6 +6,12 @@ the server issues a short-lived HS256 JWT containing the admin's ID and the
 target user's ID. The frontend stores this token in sessionStorage and sends
 it as the X-Impersonation-Token header on every subsequent request.
 get_user_context verifies the JWT inline — no DB lookup required.
+
+IMPERSONATION-EXEMPT: All routes in this module intentionally use
+user_context.user_id (the real admin identity) for every operation.
+They must never be replaced with effective_user_id so that impersonation
+management actions are always attributed to the actual admin, not the
+target user being impersonated.
 """
 
 from typing import Dict, List
