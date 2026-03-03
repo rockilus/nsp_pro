@@ -162,9 +162,6 @@ test.describe("Admin Panel", () => {
       );
 
       // ── API verification ────────────────────────────────────────────────
-      // Clear admin's impersonation state in DB before verifying ownership
-      await adminBase.makeAdminRequest("DELETE", "/admin/users/impersonate");
-
       // TEST_USER_2 (the impersonated user) should own the team
       const nonAdminTeams = await adminBase.makeNonAdminRequest<
         Array<{ name: string }>
