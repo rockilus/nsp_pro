@@ -1,9 +1,13 @@
 /**
- * Thin, dependency-free helpers for reading impersonation state from
- * sessionStorage. Kept in a separate module so that both api-client.ts and
+ * Thin helpers for reading impersonation state from sessionStorage.
+ * Kept in a separate module so that both api-client.ts and
  * useAdminImpersonation.ts can import from here without creating a circular
  * dependency.
  */
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 export const IMPERSONATION_SESSION_KEY = "admin_impersonation_target";
 
@@ -54,8 +58,9 @@ export function isImpersonationTokenExpired(): boolean {
     );
     const exp: number | undefined = payload.exp;
     if (typeof exp !== "number") return true;
-    // Add a 10-second buffer so we don't issue a request that expires in flight
-    return Date.now() / 1000 >= exp - 10;
+    // Add a 10-second buffer so we don't issue a request that expires in flight.
+    // Use dayjs.utc() to match the UTC-based exp claim set by the backend.
+    return dayjs.utc().unix() >= exp - 10;
   } catch {
     return true;
   }
