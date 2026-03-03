@@ -66,8 +66,9 @@ async def start_impersonation(
         if not await authz_check(
             admin_user_id, "create-impersonation", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to access user accounts"
+            raise HTTPException(
+                status_code=403,
+                detail="You do not have permission to access user accounts",
             )
 
         # Verify the target user exists before issuing a token
@@ -126,8 +127,9 @@ async def stop_impersonation(
         if not await authz_check(
             admin_user_id, "delete-impersonation", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to stop impersonation"
+            raise HTTPException(
+                status_code=403,
+                detail="You do not have permission to stop impersonation",
             )
 
         log_info(f"Admin {admin_user_id} stopped impersonation")
@@ -153,8 +155,9 @@ async def list_all_users(
     response: List[UserDTO]
     try:
         if not await authz_check(user_context.user_id, "read-users", "admin"):
-            raise NotAuthorizedError(
-                "You do not have permission to list users"
+            raise HTTPException(
+                status_code=403,
+                detail="You do not have permission to list users",
             )
         users = db_collections.user_db.get_users()
         response = [u.to_dto() for u in users]
