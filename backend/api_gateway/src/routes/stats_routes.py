@@ -36,13 +36,16 @@ async def create_stats_header(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> StatsHeaderDTO:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-stats-header", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "create-stats-header", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to create a stats header",
             )
         sh_data = StatsHeader.from_dto(req)
-        stats_header = db_collections.stats_header_db.create_stats_header(sh_data)
+        stats_header = db_collections.stats_header_db.create_stats_header(
+            sh_data
+        )
         # stats = build_stats(team_id)
         response = stats_header.to_dto()
     except Exception as e:
@@ -58,8 +61,9 @@ async def get_shift_options(
     stats_service: StatsService = Depends(get_stats_service),
 ) -> List[ShiftWorkerOptionDTO]:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-options", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-shift-options", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )
@@ -79,8 +83,9 @@ async def calculate_stats(
     stats_service: StatsService = Depends(get_stats_service),
 ) -> StatsDTO:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-stats", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-stats", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )
@@ -105,8 +110,9 @@ async def delete_stats_header(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> Dict:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "delete-stats-header", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "delete-stats-header", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to delete stats header",
             )

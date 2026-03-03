@@ -38,13 +38,16 @@ async def create_shift_demands(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ShiftDemandMessage]:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "create-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to create a shift demand",
             )
         sds_data = [msg_to_core_shift_demand(sd) for sd in shift_demands]
-        sd_created = db_collections.shift_demand_db.create_shift_demands(sds_data)
+        sd_created = db_collections.shift_demand_db.create_shift_demands(
+            sds_data
+        )
         response = [core_to_msg_shift_demand(sd) for sd in sd_created]
     except Exception as e:
         log_info("Failed to create shift demand")
@@ -59,9 +62,12 @@ async def get_shift_demands(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ShiftDemandMessage]:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
-            raise NotAuthorizedError("You do not have permission to get shift demands")
+        if not await authz_check(
+            user_context.user_id, "read-shift-demands", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to get shift demands"
+            )
         coverages = db_collections.coverage_db.get_coverages(team_id)
         shift_demands = (
             db_collections.shift_demand_db.get_shift_demands_by_coverage_ids(
@@ -85,8 +91,9 @@ async def update_shift_demand(
     ),
 ) -> ShiftDemandMessage:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "update-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "update-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to update a shift demand",
             )
@@ -108,9 +115,12 @@ async def delete_shift_demands(
         get_shift_demand_service,
     ),
 ):
-    user_id = user_context.user_id
-    if not await authz_check(user_id, "delete-shift-demand", "team", team_id):
-        raise NotAuthorizedError("You do not have permission to delete a shift demand")
+    if not await authz_check(
+        user_context.user_id, "delete-shift-demand", "team", team_id
+    ):
+        raise NotAuthorizedError(
+            "You do not have permission to delete a shift demand"
+        )
     for shift_demand_id in shift_demand_ids:
         shift_demand_service.delete_shift_demand(shift_demand_id)
     return {"message": "Shift demand deleted successfully"}

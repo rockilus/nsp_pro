@@ -94,9 +94,8 @@ async def get_team_invitations(
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = user_context.user_id
         if not await authz_check(
-            user_id, "read-team-invitations", "team", team_id
+            user_context.user_id, "read-team-invitations", "team", team_id
         ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -200,9 +199,8 @@ async def resend_team_invitation_email(
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ) -> TeamInvitationDTO:
     try:
-        user_id = user_context.user_id
         if not await authz_check(
-            user_id, "resend-team-invitation", "team", team_id
+            user_context.user_id, "resend-team-invitation", "team", team_id
         ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
