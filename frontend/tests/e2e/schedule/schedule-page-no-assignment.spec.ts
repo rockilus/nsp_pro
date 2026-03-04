@@ -60,7 +60,7 @@ test.describe("Schedule Page - Member without Worker Profile", () => {
     });
 
     // Verify that the error alert is visible
-    const alert = page.locator('[data-testid="no-worker-profile-alert"]');
+    const alert = page.locator('[data-testid="no-worker-alert"]');
     await expect(alert).toBeVisible();
 
     // Verify the alert has info severity
@@ -356,7 +356,7 @@ test.describe("Schedule Page - Owner without Assignments", () => {
     });
 
     // The page should NOT show the "no worker profile" error
-    const alert = page.locator('[data-testid="no-worker-profile-alert"]');
+    const alert = page.locator('[data-testid="no-worker-alert"]');
     await expect(alert).not.toBeVisible();
 
     console.log("✅ Owner does not see worker profile error");
@@ -436,7 +436,7 @@ test.describe("Schedule Page - Member with Worker Profile but No Assignments", (
     });
 
     // The page should NOT show the "no worker profile" error
-    const alert = page.locator('[data-testid="no-worker-profile-alert"]');
+    const alert = page.locator('[data-testid="no-worker-alert"]');
     await expect(alert).not.toBeVisible();
 
     console.log("✅ Member with worker profile does not see error");

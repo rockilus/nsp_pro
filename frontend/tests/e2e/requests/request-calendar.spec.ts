@@ -603,7 +603,7 @@ test.describe("Request Calendar", () => {
     // Verify the status chip in the panel shows "Rejected"
     const statusChip = requestPanel.locator('[class*="MuiChip-filled"]');
     await expect(statusChip).toBeVisible();
-    await expect(statusChip).toHaveText(/rejected/i);
+    await expect(statusChip).toHaveText(/declined/i);
 
     // Close the panel
     const closeButton = page.getByTestId("close-request-dialog-button");

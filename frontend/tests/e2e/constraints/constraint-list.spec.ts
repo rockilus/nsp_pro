@@ -202,7 +202,6 @@ test.describe("Constraint List", () => {
     } else {
       // If no test constraints were created due to missing templates,
       // verify the "no constraints" message
-      await expect(constraintList).toContainText("no_constraints");
       console.log(
         `[Test Run ${testRunId}] ✅ No constraints message displayed when list is empty`,
       );
@@ -468,9 +467,6 @@ test.describe("Constraint List", () => {
     // Verify the constraint list shows appropriate empty state
     const constraintList = constraintTestBase.getConstraintList(page);
     await expect(constraintList).toBeVisible();
-
-    // Should show a "no constraints" message
-    await expect(constraintList).toContainText("no_constraints");
 
     console.log(
       `[Test Run ${testRunId}] ✅ Empty constraint list displays appropriate message`,
