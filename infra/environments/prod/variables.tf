@@ -177,14 +177,12 @@ variable "replica_region" {
   default     = "us-west-2"
 }
 
-# Sensitive initial value for impersonation JWT HMAC secret. This should be
-# supplied via CI/CD or secure variable input (do NOT commit plaintext values).
-variable "impersonation_jwt_value" {
-  description = "Initial HMAC secret value for impersonation JWT (sensitive)"
+variable "impersonation_jwt_secret_name" {
+  description = "Name of the impersonation JWT secret in AWS Secrets Manager (created out-of-band)"
   type        = string
-  sensitive   = true
-  default     = ""
+  default     = "rockilus-prod-impersonation-jwt"
 }
+
 
 variable "recovery_window_in_days" {
   description = "Number of days to retain secrets for recovery"
