@@ -93,10 +93,11 @@ resource "aws_api_gateway_method" "any_proxy" {
   authorization = "COGNITO_USER_POOLS"
   authorizer_id = aws_api_gateway_authorizer.cognito.id
   request_parameters = {
-    "method.request.path.proxy"               = true
-    "method.request.header.X-Forwarded-For"   = false
-    "method.request.header.X-Forwarded-Host"  = false
-    "method.request.header.X-Forwarded-Proto" = false
+    "method.request.path.proxy"                   = true
+    "method.request.header.X-Forwarded-For"       = false
+    "method.request.header.X-Forwarded-Host"      = false
+    "method.request.header.X-Forwarded-Proto"     = false
+    "method.request.header.X-Impersonation-Token" = false
   }
 }
 
@@ -153,6 +154,8 @@ resource "aws_api_gateway_integration" "any_proxy" {
     # Request metadata
     "integration.request.header.X-Request-ID" = "context.requestId"
     "integration.request.header.X-Source-IP"  = "context.identity.sourceIp"
+    # Forward impersonation token if provided by client
+    "integration.request.header.X-Impersonation-Token" = "method.request.header.X-Impersonation-Token"
   }
 }
 
@@ -172,6 +175,7 @@ resource "aws_api_gateway_integration_response" "any_proxy_200" {
 
   # response_parameters = {
   #   "method.response.header.Access-Control-Allow-Origin" = "'*'"
+  # "method.response.header.Access-Control-Allow-Headers"     = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,fdi-version,rid,st-auth-mode,X-Impersonation-Token'"
   # }
 }
 
@@ -236,7 +240,7 @@ resource "aws_api_gateway_gateway_response" "default_4xx" {
 
   response_parameters = {
     "gatewayresponse.header.Access-Control-Allow-Origin"      = "'${join(",", var.cors_allowed_origins)}'"
-    "gatewayresponse.header.Access-Control-Allow-Headers"     = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,anti-csrf,fdi-version,rid,st-auth-mode,authorization'"
+    "gatewayresponse.header.Access-Control-Allow-Headers"     = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,anti-csrf,fdi-version,rid,st-auth-mode,X-Impersonation-Token,authorization'"
     "gatewayresponse.header.Access-Control-Allow-Methods"     = "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
     "gatewayresponse.header.Access-Control-Allow-Credentials" = "'true'"
   }
@@ -254,7 +258,7 @@ resource "aws_api_gateway_gateway_response" "default_5xx" {
 
   response_parameters = {
     "gatewayresponse.header.Access-Control-Allow-Origin"      = "'${join(",", var.cors_allowed_origins)}'"
-    "gatewayresponse.header.Access-Control-Allow-Headers"     = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,anti-csrf,fdi-version,rid,st-auth-mode,authorization'"
+    "gatewayresponse.header.Access-Control-Allow-Headers"     = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,anti-csrf,fdi-version,rid,st-auth-mode,X-Impersonation-Token,authorization'"
     "gatewayresponse.header.Access-Control-Allow-Methods"     = "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
     "gatewayresponse.header.Access-Control-Allow-Credentials" = "'true'"
   }
