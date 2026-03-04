@@ -177,6 +177,15 @@ variable "replica_region" {
   default     = "us-west-2"
 }
 
+# Sensitive initial value for impersonation JWT HMAC secret. This should be
+# supplied via CI/CD or secure variable input (do NOT commit plaintext values).
+variable "impersonation_jwt_value" {
+  description = "Initial HMAC secret value for impersonation JWT (sensitive)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "recovery_window_in_days" {
   description = "Number of days to retain secrets for recovery"
   type        = number

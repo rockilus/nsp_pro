@@ -17,6 +17,11 @@ variable "documentdb_secret_arn" {
     error_message = "documentdb_secret_arn must be provided and non-empty"
   }
 }
+variable "impersonation_jwt_secret_arn" {
+  description = "ARN of the impersonation JWT HMAC secret in Secrets Manager"
+  type        = string
+  default     = ""
+}
 variable "project_name" {
   description = "Name of the project"
   type        = string

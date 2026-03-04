@@ -251,6 +251,12 @@ variable "documentdb_secret_arn" {
   default     = ""
 }
 
+variable "main_service_impersonation_secret_arn" {
+  description = "ARN of the impersonation JWT secret to expose to the main service container"
+  type        = string
+  default     = ""
+}
+
 variable "documentdb_secret_name" {
   description = "Name of the DocumentDB credentials secret"
   type        = string
