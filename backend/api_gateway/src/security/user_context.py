@@ -19,9 +19,11 @@ class UserContext:
     groups: Optional[List[str]] = None
     request_id: Optional[str] = None
     source_ip: Optional[str] = None
-    # Impersonation state — populated by get_user_context via X-Impersonation-Token header.
+    # Impersonation state — populated by get_user_context via
+    # X-Impersonation-Token header.
     # Use effective_user_id (not user_id) for all data-scoped operations so that
-    # when an admin is impersonating a user, data is fetched/written for the target user.
+    # when an admin is impersonating a user, data is fetched/written for the
+    # target user.
     # Always pass user_id (not effective_user_id) to authz_check so that permission
     # decisions are made against the admin's own role, never the target user's role.
     impersonated_user_id: Optional[str] = field(default=None)
@@ -83,9 +85,7 @@ def extract_user_context(
         ValueError: If required user context is missing
     """
     if not x_user_sub:
-        logger.error(
-            "Missing required user context: X-User-Sub header not found"
-        )
+        logger.error("Missing required user context: X-User-Sub header not found")
         raise ValueError("User context missing - authentication required")
 
     # Parse groups if provided
@@ -93,9 +93,7 @@ def extract_user_context(
     if x_user_groups:
         # Handle comma-separated groups and clean whitespace
         user_groups = [
-            group.strip()
-            for group in x_user_groups.split(",")
-            if group.strip()
+            group.strip() for group in x_user_groups.split(",") if group.strip()
         ]
 
     user_context = UserContext(

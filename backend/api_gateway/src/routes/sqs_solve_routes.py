@@ -33,9 +33,7 @@ router = APIRouter(
 async def submit_solve_request(
     body: SolveRequest,
     user_context: UserContext = Depends(get_user_context),
-    sqs_solve_service: APIGatewaySQSSolveService = Depends(
-        get_sqs_solve_service
-    ),
+    sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
 ) -> SolveTaskStatusResponseDTO:
     """
     Submit a solve request via SQS.
@@ -65,9 +63,7 @@ async def submit_solve_request(
         if not await authz_check(
             user_context.user_id, "solve-schedule", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to solve a schedule"
-            )
+            raise NotAuthorizedError("You do not have permission to solve a schedule")
 
         # Submit solve request (defaults: NORMAL priority, FULL_SOLVE type)
         result = await sqs_solve_service.submit_solve_request(
@@ -109,9 +105,7 @@ async def submit_solve_request(
 async def get_solve_status_by_id(
     solve_id: str,
     _: UserContext = Depends(get_user_context),
-    sqs_solve_service: APIGatewaySQSSolveService = Depends(
-        get_sqs_solve_service
-    ),
+    sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
 ) -> SolveTaskStatusResponseDTO:
     """
     Get the current solve status for a solve request by solve_id.
@@ -161,9 +155,7 @@ async def get_solve_status_by_id(
 async def get_latest_solve_status_by_schedule_id(
     schedule_id: str,
     _: UserContext = Depends(get_user_context),
-    sqs_solve_service: APIGatewaySQSSolveService = Depends(
-        get_sqs_solve_service
-    ),
+    sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
 ) -> SolveTaskStatusResponseDTO:
     """
     Get the latest completed solve status for a schedule.

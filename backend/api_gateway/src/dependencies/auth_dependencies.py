@@ -62,9 +62,7 @@ async def verify_service_authentication(
 
 async def get_user_context(
     request: Request,
-    x_dev_user_id: Annotated[
-        Optional[str], Header(alias="X-Dev-User-ID")
-    ] = None,
+    x_dev_user_id: Annotated[Optional[str], Header(alias="X-Dev-User-ID")] = None,
     x_api_key: Annotated[Optional[str], Header(alias="X-API-Key")] = None,
     x_impersonation_token: Annotated[
         Optional[str], Header(alias="X-Impersonation-Token")
@@ -88,9 +86,7 @@ async def get_user_context(
         user_id = x_dev_user_id or config.dev_user_id
         user_email = config.dev_user_email
 
-        logger.debug(
-            "Development auth: user_id=%s, email=%s", user_id, user_email
-        )
+        logger.debug("Development auth: user_id=%s, email=%s", user_id, user_email)
 
         user_context = UserContext(
             user_id=user_id,
@@ -124,15 +120,15 @@ async def get_user_context(
             claims = verify_impersonation_token(
                 x_impersonation_token, config.impersonation_jwt_secret
             )
-        except jwt.ExpiredSignatureError:
+        except jwt.ExpiredSignatureError as exc:
             raise HTTPException(
                 status_code=401, detail="Impersonation token has expired"
-            )
+            ) from exc
         except jwt.InvalidTokenError as exc:
             logger.warning("Invalid impersonation token: %s", exc)
             raise HTTPException(
                 status_code=401, detail="Invalid impersonation token"
-            )
+            ) from exc
 
         # Prevent token from one admin being used by another admin
         if claims["sub"] != user_context.user_id:

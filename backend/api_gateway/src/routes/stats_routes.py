@@ -43,9 +43,7 @@ async def create_stats_header(
                 "You do not have permission to create a stats header",
             )
         sh_data = StatsHeader.from_dto(req)
-        stats_header = db_collections.stats_header_db.create_stats_header(
-            sh_data
-        )
+        stats_header = db_collections.stats_header_db.create_stats_header(sh_data)
         # stats = build_stats(team_id)
         response = stats_header.to_dto()
     except Exception as e:
@@ -83,9 +81,7 @@ async def calculate_stats(
     stats_service: StatsService = Depends(get_stats_service),
 ) -> StatsDTO:
     try:
-        if not await authz_check(
-            user_context.user_id, "read-stats", "team", team_id
-        ):
+        if not await authz_check(user_context.user_id, "read-stats", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to get stats options",
             )

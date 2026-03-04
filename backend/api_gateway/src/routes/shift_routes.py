@@ -28,12 +28,8 @@ async def create_shift(
     shift_service: ShiftService = Depends(get_shift_service),
 ) -> ShiftDTO:
     try:
-        if not await authz_check(
-            user_context.user_id, "create-shift", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to create a shift"
-            )
+        if not await authz_check(user_context.user_id, "create-shift", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to create a shift")
         s_data = Shift.from_dto(shift)
         shift_created, a_bool = shift_service.create_shift(s_data)
         response = shift_created.to_dto(a_bool)
@@ -50,12 +46,8 @@ async def get_shifts(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ShiftDTO]:
     try:
-        if not await authz_check(
-            user_context.user_id, "read-shifts", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shifts"
-            )
+        if not await authz_check(user_context.user_id, "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = db_collections.shift_db.get_shifts_not_deleted(team_id)
         attributes = [
             db_collections.attribute_db.get_attributes_by_owner_id(shift.id)
@@ -75,12 +67,8 @@ async def get_work_shifts(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ShiftDTO]:
     try:
-        if not await authz_check(
-            user_context.user_id, "read-shifts", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shifts"
-            )
+        if not await authz_check(user_context.user_id, "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = db_collections.shift_db.get_work_shifts_not_deleted(team_id)
         attributes = [
             db_collections.attribute_db.get_attributes_by_owner_id(shift.id)
@@ -100,12 +88,8 @@ async def get_all_shifts(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ShiftDTO]:
     try:
-        if not await authz_check(
-            user_context.user_id, "read-shifts", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shifts"
-            )
+        if not await authz_check(user_context.user_id, "read-shifts", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to read shifts")
         start_time = time_module.time()
         shifts = db_collections.shift_db.get_shifts(team_id)
         attributes = [
@@ -131,12 +115,8 @@ async def update_shift(
     shift_service: ShiftService = Depends(get_shift_service),
 ) -> Dict:
     try:
-        if not await authz_check(
-            user_context.user_id, "update-shift", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to update shifts"
-            )
+        if not await authz_check(user_context.user_id, "update-shift", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to update shifts")
         shift_data = Shift.from_dto(shift)
         updated_shift, ls_change = shift_service.update_shift(shift_data)
         attributes = db_collections.attribute_db.get_attributes_by_owner_id(
@@ -160,12 +140,8 @@ async def delete_shift(
     shift_service: ShiftService = Depends(get_shift_service),
 ) -> Dict:
     try:
-        if not await authz_check(
-            user_context.user_id, "delete-shift", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete shifts"
-            )
+        if not await authz_check(user_context.user_id, "delete-shift", "team", team_id):
+            raise NotAuthorizedError("You do not have permission to delete shifts")
         ls_change = shift_service.delete_shift(shift_id)
     except Exception as e:
         log_info("Failed to delete shift")

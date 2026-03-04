@@ -63,9 +63,7 @@ async def start_impersonation(
     try:
         admin_user_id = user_context.user_id
 
-        if not await authz_check(
-            admin_user_id, "create-impersonation", "admin"
-        ):
+        if not await authz_check(admin_user_id, "create-impersonation", "admin"):
             raise HTTPException(
                 status_code=403,
                 detail="You do not have permission to access user accounts",
@@ -74,9 +72,7 @@ async def start_impersonation(
         # Verify the target user exists before issuing a token
         target_user = db_collections.user_db.get_user_by_id(target_user_id)
         if target_user is None:
-            raise HTTPException(
-                status_code=404, detail="Target user not found"
-            )
+            raise HTTPException(status_code=404, detail="Target user not found")
 
         # Prevent admins from impersonating themselves
         if admin_user_id == target_user_id:
@@ -92,9 +88,7 @@ async def start_impersonation(
             ttl_seconds=config.impersonation_token_ttl_seconds,
         )
 
-        log_info(
-            f"Admin {admin_user_id} started impersonating user {target_user_id}"
-        )
+        log_info(f"Admin {admin_user_id} started impersonating user {target_user_id}")
 
         response = ImpersonationTokenResponse(
             token=token,
@@ -124,9 +118,7 @@ async def stop_impersonation(
     try:
         admin_user_id = user_context.user_id
 
-        if not await authz_check(
-            admin_user_id, "delete-impersonation", "admin"
-        ):
+        if not await authz_check(admin_user_id, "delete-impersonation", "admin"):
             raise HTTPException(
                 status_code=403,
                 detail="You do not have permission to stop impersonation",
