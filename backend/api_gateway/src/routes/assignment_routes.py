@@ -143,6 +143,74 @@ async def get_assignments(
     return response
 
 
+@router.post("/assignments/bulk/teams/{team_id}", status_code=201)
+async def bulk_create_assignments(
+    team_id: str,
+    body: BulkAssignmentCreateDTO,
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+) -> AssignmentsRecurrencesResultDTO:
+    try:
+        if not await authz_check(
+            user_context.user_id, "create-assignment", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to create assignments",
+            )
+        assignments = [Assignment.from_dto(a) for a in body.assignments]
+        ar_result = assignment_service.bulk_create_assignments(assignments)
+        response = ar_result.to_dto()
+    except Exception as e:
+        log_info("Failed to bulk create assignments")
+        handle_routes_errors(e)
+    return response
+
+
+@router.put("/assignments/bulk/teams/{team_id}")
+async def bulk_update_assignments(
+    team_id: str,
+    body: BulkAssignmentUpdateDTO,
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+) -> AssignmentsRecurrencesResultDTO:
+    try:
+        if not await authz_check(
+            user_context.user_id, "update-assignment", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update assignments",
+            )
+        assignments = [Assignment.from_dto(a) for a in body.assignments]
+        ar_result = assignment_service.bulk_update_assignments(assignments)
+        response = ar_result.to_dto()
+    except Exception as e:
+        log_info("Failed to bulk update assignments")
+        handle_routes_errors(e)
+    return response
+
+
+@router.delete("/assignments/bulk/teams/{team_id}")
+async def bulk_delete_assignments(
+    team_id: str,
+    body: BulkAssignmentDeleteDTO,
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+) -> AssignmentsRecurrencesResultDTO:
+    try:
+        if not await authz_check(
+            user_context.user_id, "delete-assignment", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to delete assignments",
+            )
+        ar_result = assignment_service.bulk_delete_assignments(body.ids)
+        response = ar_result.to_dto()
+    except Exception as e:
+        log_info("Failed to bulk delete assignments")
+        handle_routes_errors(e)
+    return response
+
+
 # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
 @router.put("/assignments/{assignment_id}/teams/{team_id}")
 async def update_assignment(
@@ -243,73 +311,5 @@ async def get_replacement_candidates(
         log_info(
             f"Failed to get replacement candidates for assignment {assignment_id}"
         )
-        handle_routes_errors(e)
-    return response
-
-
-@router.post("/assignments/bulk/teams/{team_id}", status_code=201)
-async def bulk_create_assignments(
-    team_id: str,
-    body: BulkAssignmentCreateDTO,
-    user_context: UserContext = Depends(get_user_context),
-    assignment_service: AssignmentService = Depends(get_assignment_service),
-) -> AssignmentsRecurrencesResultDTO:
-    try:
-        if not await authz_check(
-            user_context.user_id, "create-assignment", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to create assignments",
-            )
-        assignments = [Assignment.from_dto(a) for a in body.assignments]
-        ar_result = assignment_service.bulk_create_assignments(assignments)
-        response = ar_result.to_dto()
-    except Exception as e:
-        log_info("Failed to bulk create assignments")
-        handle_routes_errors(e)
-    return response
-
-
-@router.put("/assignments/bulk/teams/{team_id}")
-async def bulk_update_assignments(
-    team_id: str,
-    body: BulkAssignmentUpdateDTO,
-    user_context: UserContext = Depends(get_user_context),
-    assignment_service: AssignmentService = Depends(get_assignment_service),
-) -> AssignmentsRecurrencesResultDTO:
-    try:
-        if not await authz_check(
-            user_context.user_id, "update-assignment", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to update assignments",
-            )
-        assignments = [Assignment.from_dto(a) for a in body.assignments]
-        ar_result = assignment_service.bulk_update_assignments(assignments)
-        response = ar_result.to_dto()
-    except Exception as e:
-        log_info("Failed to bulk update assignments")
-        handle_routes_errors(e)
-    return response
-
-
-@router.delete("/assignments/bulk/teams/{team_id}")
-async def bulk_delete_assignments(
-    team_id: str,
-    body: BulkAssignmentDeleteDTO,
-    user_context: UserContext = Depends(get_user_context),
-    assignment_service: AssignmentService = Depends(get_assignment_service),
-) -> AssignmentsRecurrencesResultDTO:
-    try:
-        if not await authz_check(
-            user_context.user_id, "delete-assignment", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete assignments",
-            )
-        ar_result = assignment_service.bulk_delete_assignments(body.ids)
-        response = ar_result.to_dto()
-    except Exception as e:
-        log_info("Failed to bulk delete assignments")
         handle_routes_errors(e)
     return response
