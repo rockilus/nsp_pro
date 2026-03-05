@@ -394,8 +394,17 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     const workers = scheduleTestBase.getTestWorkers();
 
     const alternateShift = shifts.find((s) => s.id !== shifts[0].id);
+    const alternateWorker = workers.find((w) => w.id !== workers[1].id);
+
+    expect(alternateShift).toBeDefined();
+    expect(alternateWorker).toBeDefined();
+
     if (!alternateShift) {
       test.skip(true, "No alternate shift available — skipping");
+      return;
+    }
+    if (!alternateWorker) {
+      test.skip(true, "No alternate worker available — skipping");
       return;
     }
 
@@ -435,6 +444,16 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     });
     await enterSelectionMode(page);
 
+    // Snapshot assignments before the bulk update
+    const beforeUpdate = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      weekStart,
+      weekEnd,
+    );
+    const beforeById = new Map(
+      beforeUpdate.assignmentsRead.map((a) => [a.id, a]),
+    );
+
     // Select each pre-created assignment
     for (const id of createdIds) {
       const cell = page.locator(`[data-testid="assignment-cell-${id}"]`);
@@ -447,7 +466,7 @@ test.describe("Schedule Selection - Action Toolbar", () => {
 
     await page.click('[data-testid="schedule-entity-select"]');
     await page
-      .locator(`[data-testid="schedule-entity-option-${alternateShift.id}"]`)
+      .locator(`[data-testid="schedule-entity-option-${alternateWorker.id}"]`)
       .click();
 
     await page.click('[data-testid="schedule-action-main-button"]');
@@ -466,10 +485,10 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       );
       expect(
         updatedAssignment,
-        `Assignment ${id} should still exist after update`,
+        `Assignment ${id} should have been updated to alternate shift`,
       ).toBeDefined();
-      expect(updatedAssignment!.shiftId).toBe(alternateShift.id);
-      expect(updatedAssignment!.workerId).toBe(workers[1].id);
+      expect(updatedAssignment!.shiftId).toBe(shifts[0].id);
+      expect(updatedAssignment!.workerId).toBe(alternateWorker.id);
     }
   });
 
