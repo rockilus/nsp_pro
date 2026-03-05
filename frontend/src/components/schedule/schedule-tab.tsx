@@ -426,19 +426,25 @@ export default function ScheduleTab({
         })
         .map((a) => a.id);
 
+      // All assignment IDs for this row regardless of scope — used when deselecting
+      const allRowAssignmentIdSet = new Set(
+        assignments
+          .filter((a) =>
+            isWorkerView ? a.workerId === rowId : a.shiftId === rowId,
+          )
+          .map((a) => a.id),
+      );
+
       setSelectionState((prev) => {
         const isFullySelected = datestrs.every((ds) =>
           prev.selectedCells.some((c) => c.rowId === rowId && c.date === ds),
         );
         if (isFullySelected) {
-          const rowAssignmentIdSet = new Set(rowAssignmentIds);
           return {
             ...prev,
-            selectedCells: prev.selectedCells.filter(
-              (c) => !(c.rowId === rowId && dateSet.has(c.date)),
-            ),
+            selectedCells: prev.selectedCells.filter((c) => c.rowId !== rowId),
             selectedAssignmentIds: prev.selectedAssignmentIds.filter(
-              (id) => !rowAssignmentIdSet.has(id),
+              (id) => !allRowAssignmentIdSet.has(id),
             ),
           };
         }
