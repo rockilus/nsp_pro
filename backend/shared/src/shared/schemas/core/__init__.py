@@ -190,9 +190,8 @@ from shared.schemas.core.team_membership import (
 from shared.schemas.core.user import (
     Language,
     PasswordData,
+    SystemRole,
     User,
-    UserAuth,
-    UserDashboard,
     UserWithMembership,
 )
 from shared.schemas.core.worker import Worker, WorkerDates
@@ -355,9 +354,8 @@ __all__ = [
     "TeamMembershipRole",
     "Language",
     "PasswordData",
+    "SystemRole",
     "User",
-    "UserAuth",
-    "UserDashboard",
     "UserWithMembership",
     "Worker",
     "WorkerDates",

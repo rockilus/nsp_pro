@@ -4,10 +4,10 @@ from typing import Any, Callable, Coroutine
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import Language, PasswordData, User
+from shared.schemas.dto.user import UserUpdateDTO
 from shared.schemas.errors import UserNotFoundError
 
 from src.errors import AuthnUpdateEmailError
-from src.integrations.authentication.authn_types import RecipeUserIdType
 from src.services.base_service import BaseService
 from src.utils.user_utils import is_valid_email
 
@@ -21,9 +21,7 @@ class UserService(BaseService):
         authz_role_assignment_assign: Callable[
             [str, str, str, str], Coroutine[Any, Any, None]
         ],
-        authn_update_user_email: Callable[
-            [str, RecipeUserIdType, str, str], Coroutine[Any, Any, None]
-        ],
+        authn_update_user_email: Callable[[str, str, str], Coroutine[Any, Any, None]],
         authn_change_password: Callable[[str, str, str], Coroutine[Any, Any, None]],
     ):
         super().__init__(collection)
@@ -69,28 +67,35 @@ class UserService(BaseService):
         )
         return new_user
 
-    async def update_user(
-        self, user: User, recipe_user_id: RecipeUserIdType, tenant_id: str
-    ) -> User:
-        existing_user = self.collection.user_db.get_user_by_id(user.id)
+    async def update_user(self, user_id: str, update_dto: UserUpdateDTO) -> User:
+        existing_user = self.collection.user_db.get_user_by_id(user_id)
         if existing_user is None:
-            raise UserNotFoundError(f"User with id {user.id} not found")
-        if existing_user.email != user.email:
-            await self.update_user_email(user, recipe_user_id, tenant_id)
-        user.impersonating_user_id = existing_user.impersonating_user_id
-        return self.collection.user_db.update_user(user)
+            raise UserNotFoundError(f"User with id {user_id} not found")
+
+        # Build an updated User, only applying fields the user is allowed to change.
+        # system_role and impersonating_user_id are always carried over from the
+        # existing DB record — they cannot be overwritten via this path.
+        updated_user = User(
+            id=existing_user.id,
+            email=existing_user.email,
+            first_name=update_dto.firstName,
+            last_name=update_dto.lastName,
+            language=Language(update_dto.language),
+            sign_up_at=existing_user.sign_up_at,
+            impersonating_user_id=existing_user.impersonating_user_id,
+            system_role=existing_user.system_role,
+        )
+
+        return self.collection.user_db.update_user(updated_user)
 
     async def update_user_email(
         self,
         user: User,
-        recipe_user_id: RecipeUserIdType,
         tenant_id: str,
     ) -> None:
         if not is_valid_email(user.email):
             raise AuthnUpdateEmailError("Invalid email")
-        await self.authn_update_user_email(
-            user.id, recipe_user_id, tenant_id, user.email
-        )
+        await self.authn_update_user_email(user.id, tenant_id, user.email)
 
     async def change_user_password(self, password_data: PasswordData) -> None:
         await self.authn_change_password(

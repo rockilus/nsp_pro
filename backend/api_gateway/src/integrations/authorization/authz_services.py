@@ -1,16 +1,23 @@
 import asyncio
+from dataclasses import dataclass
 from typing import List
 
 from permit import PermitApiError  # type: ignore
 from permit import Permit, PermitConnectionError, UserRead  # type: ignore
 from shared.logger import log_debug, log_info
-from shared.schemas.core import Team, User, UserAuth
+from shared.schemas.core import Team, User
 
 from src.config import config
 from src.errors import AuthzConnectionError, handle_permit_errors
 
 # Permit API doc:
 # https://api.permit.io/v2/redoc#tag/Users
+
+
+@dataclass
+class UserAuth:
+    id: str
+    email: str
 
 
 def authz_connect(pdp_url: str, pdp_api_key: str) -> Permit:
@@ -275,6 +282,30 @@ async def authz_delete_all_users() -> None:
             await authz_delete_user(user.id)
     except Exception as e:
         log_info("Permit delete all users error")
+        handle_permit_errors(e)
+
+
+async def authz_delete_all_users_except(exclude_user_ids: List[str]) -> None:
+    try:
+        users = await authz_get_all_users()
+        for user in users:
+            if user.id not in exclude_user_ids:
+                await authz_delete_user(user.id)
+    except Exception as e:
+        log_info("Permit delete all users (with exclusions) error")
+        handle_permit_errors(e)
+
+
+async def authz_delete_all_instances_except_user(user_id: str) -> None:
+    """
+    Delete all resource instances and users from Permit.io, except for the
+    specified user.
+    """
+    try:
+        await authz_delete_all_resource_instances()
+        await authz_delete_all_users_except([user_id])
+    except Exception as e:
+        log_info("Permit delete all instances (with user exclusion) error")
         handle_permit_errors(e)
 
 

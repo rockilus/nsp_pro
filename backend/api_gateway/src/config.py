@@ -111,6 +111,17 @@ class AppConfig(BaseSettings):
         description="Development API key for service authentication",
     )
 
+    # Impersonation JWT configuration
+    impersonation_jwt_secret: str = Field(
+        "dev-impersonation-secret-change-in-production",
+        description="HMAC secret used to sign impersonation JWTs (set via "
+        + "IMPERSONATION_JWT_SECRET env var)",
+    )
+    impersonation_token_ttl_seconds: int = Field(
+        3600,
+        description="Lifetime of impersonation JWTs in seconds (default 1 h)",
+    )
+
     # SQS Configuration - Queue URLs (managed by Terraform)
     sqs_solve_queue_url: str = Field(
         ...,

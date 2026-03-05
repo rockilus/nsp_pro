@@ -30,9 +30,8 @@ async def create_request(
     request_service: RequestService = Depends(get_request_service),
 ) -> RequestDTO:
     try:
-        user_id = user_context.user_id
         if not await authz_check(
-            user_id=user_id,
+            user_id=user_context.user_id,
             action="create-request",
             resource="team",
             resource_id=team_id,
@@ -40,7 +39,7 @@ async def create_request(
             raise NotAuthorizedError("You do not have permission to create a request")
 
         roles = await authz_role_assignments_list(
-            user_id=user_id,
+            user_id=user_context.effective_user_id,
             resource="team",
             resource_instance_key=team_id,
         )
@@ -49,7 +48,7 @@ async def create_request(
         r_data = Request.from_dto(req)
         request = request_service.create_request(
             request=r_data,
-            author_id=user_id,
+            author_id=user_context.effective_user_id,
             team_role=roles[0],
         )
         response = request.to_dto()
@@ -69,13 +68,14 @@ async def get_requests(
     request_service: RequestService = Depends(get_request_service),
 ) -> List[RequestDTO]:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-requests", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-requests", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to get requests")
 
         # Get user role to determine filtering behavior
         roles = await authz_role_assignments_list(
-            user_id=user_id,
+            user_id=user_context.effective_user_id,
             resource="team",
             resource_instance_key=team_id,
         )
@@ -89,7 +89,7 @@ async def get_requests(
         if team_role == "member":
             # Get workers linked to this user
             workers = request_service.collection.worker_db.get_workers_by_team_and_user(
-                team_id=team_id, user_id=user_id
+                team_id=team_id, user_id=user_context.effective_user_id
             )
             if workers:
                 # Use first worker (assumption: one worker per user per team)
@@ -119,16 +119,15 @@ async def update_request(
     request_service: RequestService = Depends(get_request_service),
 ):
     try:
-        user_id = user_context.user_id
         if not await authz_check(
-            user_id=user_id,
+            user_id=user_context.user_id,
             action="update-request",
             resource="team",
             resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to update a request")
         roles = await authz_role_assignments_list(
-            user_id=user_id,
+            user_id=user_context.effective_user_id,
             resource="team",
             resource_instance_key=team_id,
         )
@@ -137,7 +136,7 @@ async def update_request(
         r_data = Request.from_dto(updated_request)
         request = request_service.update_request(
             request=r_data,
-            author_id=user_id,
+            author_id=user_context.effective_user_id,
             team_role=roles[0],
         )
         response = request.to_dto()
@@ -155,9 +154,8 @@ async def accept_request(
     request_service: RequestService = Depends(get_request_service),
 ) -> dict:
     try:
-        user_id = user_context.user_id
         if not await authz_check(
-            user_id=user_id,
+            user_id=user_context.user_id,
             action="approve-request",
             resource="team",
             resource_id=team_id,
@@ -182,9 +180,8 @@ async def deny_request(
     request_service: RequestService = Depends(get_request_service),
 ) -> RequestDTO:
     try:
-        user_id = user_context.user_id
         if not await authz_check(
-            user_id=user_id,
+            user_id=user_context.user_id,
             action="deny-request",
             resource="team",
             resource_id=team_id,
@@ -206,9 +203,8 @@ async def rescind_request(
     request_service: RequestService = Depends(get_request_service),
 ) -> dict:
     try:
-        user_id = user_context.user_id
         if not await authz_check(
-            user_id=user_id,
+            user_id=user_context.user_id,
             action="rescind-request",
             resource="team",
             resource_id=team_id,
@@ -233,16 +229,15 @@ async def delete_request(
     request_service: RequestService = Depends(get_request_service),
 ):
     try:
-        user_id = user_context.user_id
         if not await authz_check(
-            user_id=user_id,
+            user_id=user_context.user_id,
             action="delete-request",
             resource="team",
             resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to delete a request")
         roles = await authz_role_assignments_list(
-            user_id=user_id,
+            user_id=user_context.effective_user_id,
             resource="team",
             resource_instance_key=team_id,
         )
@@ -250,7 +245,7 @@ async def delete_request(
             raise NotAuthorizedError("You do not have permission to create a request")
         request_service.delete_request(
             request_id=request_id,
-            author_id=user_id,
+            author_id=user_context.effective_user_id,
             team_role=roles[0],
         )
     except Exception as e:

@@ -42,7 +42,7 @@ export default function NewConstraint({
   const { t } = useTranslation(lng, "constraint-page");
 
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateT | null>(
-    null
+    null,
   );
 
   const handleSelectedTemplate = (ct: TemplateT) => {
@@ -64,7 +64,10 @@ export default function NewConstraint({
       aria-labelledby="new-constraint-dialog-title"
       data-testid="new-constraint-dialog"
     >
-      <DialogTitle id="new-constraint-dialog-title">
+      <DialogTitle
+        id="new-constraint-dialog-title"
+        data-testid="new-constraint-dialog-title"
+      >
         <div className="title-container">
           <span className="title">{t("new_constraint")}</span>
           <IconButton edge="end" onClick={handleClose} aria-label="close">
@@ -98,7 +101,10 @@ export default function NewConstraint({
               data-testid="constraint-edit-form"
             />
           ) : (
-            <span className="select-template-placeholder">
+            <span
+              className="select-template-placeholder"
+              data-testid="select-template-placeholder"
+            >
               {t("select_template")}
             </span>
           )}

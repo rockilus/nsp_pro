@@ -60,20 +60,21 @@ async def submit_solve_request(
         team_id = body.team_id
 
         # Check authorization
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "solve-schedule", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "solve-schedule", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to solve a schedule")
 
         # Submit solve request (defaults: NORMAL priority, FULL_SOLVE type)
         result = await sqs_solve_service.submit_solve_request(
             schedule_id=schedule_id,
             team_id=team_id,
-            user_id=user_id,
+            user_id=user_context.effective_user_id,
         )
 
         logger.info(
             f"SQS solve request submitted for schedule {schedule_id} "
-            f"by user {user_id}"
+            f"by user {user_context.effective_user_id}"
         )
         response = result.to_response_dto()
         return response

@@ -33,8 +33,9 @@ async def create_shift_demand(
 ) -> ShiftDemandNewDTO:
     """Create a new shift demand."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "create-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to create shift demands"
             )
@@ -98,8 +99,9 @@ async def get_shift_demands_by_period(
 ) -> List[ShiftDemandNewDTO]:
     """Get shift demands for a specific period with optional buffering."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-shift-demands", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         demands = service.get_shift_demands_by_period(
@@ -127,8 +129,9 @@ async def get_shift_demands_matrix(
 ) -> Dict[str, Dict[str, int]]:
     """Get shift demands formatted as a matrix for grid display."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-shift-demands", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         return service.get_shift_demands_matrix(
@@ -153,8 +156,9 @@ async def update_shift_demand(
 ) -> Union[ShiftDemandNewDTO, Response]:
     """Update an existing shift demand."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "update-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "update-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to update shift demands"
             )
@@ -247,8 +251,9 @@ async def delete_shift_demand(
 ) -> None:
     """Delete a shift demand."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "delete-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "delete-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to delete shift demands"
             )
@@ -274,8 +279,9 @@ async def bulk_upsert_shift_demands(
 ) -> ShiftDemandsResultDTO:
     """Bulk upsert (create or update) shift demands."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "create-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to create/update shift demands"
             )
@@ -355,8 +361,9 @@ async def copy_shift_demands_from_period(
 ) -> List[ShiftDemandNewDTO]:
     """Copy shift demands from one period to another."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "create-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to create shift demands"
             )
@@ -388,8 +395,9 @@ async def get_team_shift_summary(
 ) -> Dict[str, Dict[str, int]]:
     """Get summary statistics for shift demands by shift."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-shift-demands", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         return service.get_team_shift_summary(
@@ -415,8 +423,9 @@ async def get_demands_by_shift_and_date_range(
 ) -> List[ShiftDemandNewDTO]:
     """Get demands for a specific shift within a date range."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-shift-demands", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         demands = service.get_demands_by_shift_and_date_range(
@@ -447,8 +456,9 @@ async def delete_demands_by_date_range(
 ) -> Dict[str, int]:
     """Delete demands within a date range, optionally filtered by shifts."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "delete-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "delete-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to delete shift demands"
             )
@@ -478,8 +488,9 @@ async def get_demands_by_source(
 ) -> List[ShiftDemandNewDTO]:
     """Get demands by source type and optional source ID."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-shift-demands", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         demands = service.get_demands_by_source(
@@ -507,8 +518,9 @@ async def prefetch_for_navigation(
 ) -> Dict[str, str]:
     """Prefetch shift demands for adjacent periods to improve navigation UX."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-shift-demands", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
 
         service.prefetch_for_navigation(

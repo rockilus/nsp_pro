@@ -6,9 +6,13 @@ Replaces the current authentication system with API Gateway-based auth.
 import logging
 from typing import Annotated, Optional
 
-from fastapi import Header, HTTPException, Request
+import jwt
+from fastapi import Depends, Header, HTTPException, Request
+from shared.database.database_collections import DatabaseCollections
 
 from src.config import config
+from src.dependencies.database import get_db_collections
+from src.security.impersonation_token import verify_impersonation_token
 from src.security.service_auth import (
     ServiceAuthError,
     validate_service_api_key,
@@ -60,6 +64,9 @@ async def get_user_context(
     request: Request,
     x_dev_user_id: Annotated[Optional[str], Header(alias="X-Dev-User-ID")] = None,
     x_api_key: Annotated[Optional[str], Header(alias="X-API-Key")] = None,
+    x_impersonation_token: Annotated[
+        Optional[str], Header(alias="X-Impersonation-Token")
+    ] = None,
 ) -> UserContext:
     """Extract user context from request headers or token."""
 
@@ -81,27 +88,90 @@ async def get_user_context(
 
         logger.debug("Development auth: user_id=%s, email=%s", user_id, user_email)
 
-        return UserContext(
+        user_context = UserContext(
             user_id=user_id,
             email=user_email,
             groups=["user"],  # Default group for development
         )
+    else:
+        # Production mode: extract from Cognito headers via API Gateway
+        logger.debug("Production mode: using Cognito authentication")
 
-    # Production mode: extract from Cognito headers via API Gateway
-    logger.debug("Production mode: using Cognito authentication")
+        # Extract standard API Gateway headers for production
+        x_user_sub = request.headers.get("X-User-Sub")
+        x_user_email = request.headers.get("X-User-Email")
+        x_user_groups = request.headers.get("X-User-Groups")
+        x_request_id = request.headers.get("X-Request-ID")
+        x_source_ip = request.headers.get("X-Source-IP")
 
-    # Extract standard API Gateway headers for production
-    x_user_sub = request.headers.get("X-User-Sub")
-    x_user_email = request.headers.get("X-User-Email")
-    x_user_groups = request.headers.get("X-User-Groups")
-    x_request_id = request.headers.get("X-Request-ID")
-    x_source_ip = request.headers.get("X-Source-IP")
+        # Use the existing extract_user_context function for production
+        user_context = extract_user_context(
+            x_user_sub=x_user_sub,
+            x_user_email=x_user_email,
+            x_user_groups=x_user_groups,
+            x_request_id=x_request_id,
+            x_source_ip=x_source_ip,
+        )
 
-    # Use the existing extract_user_context function for production
-    return extract_user_context(
-        x_user_sub=x_user_sub,
-        x_user_email=x_user_email,
-        x_user_groups=x_user_groups,
-        x_request_id=x_request_id,
-        x_source_ip=x_source_ip,
-    )
+    # If an impersonation token is present, verify it and populate the context.
+    # This is environment-agnostic so dev sessions can also impersonate.
+    if x_impersonation_token:
+        try:
+            claims = verify_impersonation_token(
+                x_impersonation_token, config.impersonation_jwt_secret
+            )
+        except jwt.ExpiredSignatureError as exc:
+            raise HTTPException(
+                status_code=401, detail="Impersonation token has expired"
+            ) from exc
+        except jwt.InvalidTokenError as exc:
+            logger.warning("Invalid impersonation token: %s", exc)
+            raise HTTPException(
+                status_code=401, detail="Invalid impersonation token"
+            ) from exc
+
+        # Prevent token from one admin being used by another admin
+        if claims["sub"] != user_context.user_id:
+            logger.warning(
+                "Impersonation token sub mismatch: token sub=%s, request user=%s",
+                claims["sub"],
+                user_context.user_id,
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="Impersonation token was issued for a different user",
+            )
+
+        user_context.impersonated_user_id = claims["impersonating"]
+        user_context.is_impersonating = True
+        logger.debug(
+            "Admin %s is impersonating user %s (JWT)",
+            user_context.user_id,
+            claims["impersonating"],
+        )
+
+    return user_context
+
+
+async def get_effective_user_context(
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> UserContext:
+    """
+    Extends the base user context with impersonation state.
+
+    Looks up the authenticated user's DB record and, if they have set
+    an active impersonation target (impersonating_user_id != None), marks
+    the UserContext accordingly so route handlers can serve data scoped
+    to the target user via user_context.effective_user_id.
+    """
+    user = db_collections.user_db.get_user_by_id(user_context.user_id)
+    if user and user.impersonating_user_id:
+        user_context.impersonated_user_id = user.impersonating_user_id
+        user_context.is_impersonating = True
+        logger.debug(
+            "Admin %s is impersonating user %s",
+            user_context.user_id,
+            user.impersonating_user_id,
+        )
+    return user_context

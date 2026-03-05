@@ -28,8 +28,7 @@ async def create_shift(
     shift_service: ShiftService = Depends(get_shift_service),
 ) -> ShiftDTO:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-shift", "team", team_id):
+        if not await authz_check(user_context.user_id, "create-shift", "team", team_id):
             raise NotAuthorizedError("You do not have permission to create a shift")
         s_data = Shift.from_dto(shift)
         shift_created, a_bool = shift_service.create_shift(s_data)
@@ -47,8 +46,7 @@ async def get_shifts(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ShiftDTO]:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shifts", "team", team_id):
+        if not await authz_check(user_context.user_id, "read-shifts", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = db_collections.shift_db.get_shifts_not_deleted(team_id)
         attributes = [
@@ -69,8 +67,7 @@ async def get_work_shifts(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ShiftDTO]:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shifts", "team", team_id):
+        if not await authz_check(user_context.user_id, "read-shifts", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shifts")
         shifts = db_collections.shift_db.get_work_shifts_not_deleted(team_id)
         attributes = [
@@ -91,8 +88,7 @@ async def get_all_shifts(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ShiftDTO]:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shifts", "team", team_id):
+        if not await authz_check(user_context.user_id, "read-shifts", "team", team_id):
             raise NotAuthorizedError("You do not have permission to read shifts")
         start_time = time_module.time()
         shifts = db_collections.shift_db.get_shifts(team_id)
@@ -119,8 +115,7 @@ async def update_shift(
     shift_service: ShiftService = Depends(get_shift_service),
 ) -> Dict:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "update-shift", "team", team_id):
+        if not await authz_check(user_context.user_id, "update-shift", "team", team_id):
             raise NotAuthorizedError("You do not have permission to update shifts")
         shift_data = Shift.from_dto(shift)
         updated_shift, ls_change = shift_service.update_shift(shift_data)
@@ -145,8 +140,7 @@ async def delete_shift(
     shift_service: ShiftService = Depends(get_shift_service),
 ) -> Dict:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "delete-shift", "team", team_id):
+        if not await authz_check(user_context.user_id, "delete-shift", "team", team_id):
             raise NotAuthorizedError("You do not have permission to delete shifts")
         ls_change = shift_service.delete_shift(shift_id)
     except Exception as e:

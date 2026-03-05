@@ -2,6 +2,7 @@ import { User } from "oidc-client-ts";
 import { env } from "../../config/env";
 import { useAuth } from "../../contexts/auth-context";
 import { useMemo } from "react";
+import { getImpersonationToken } from "./impersonation-storage";
 
 interface ApiClientOptions extends RequestInit {
   requireAuth?: boolean;
@@ -48,13 +49,19 @@ class APIClient {
       }
     }
 
+    // Attach the impersonation JWT when an admin has an active session
+    const impersonationToken = getImpersonationToken();
+    if (impersonationToken) {
+      headers["X-Impersonation-Token"] = impersonationToken;
+    }
+
     return headers;
   }
 
   async request<T>(
     endpoint: string,
     options: ApiClientOptions = {},
-    user?: User | null
+    user?: User | null,
   ): Promise<T> {
     const { requireAuth = true, ...restOptions } = options;
     const headers = this.getAuthHeaders(user);
@@ -86,8 +93,8 @@ class APIClient {
       credentials: env.isDevelopment
         ? undefined
         : user?.id_token
-        ? undefined
-        : "include",
+          ? undefined
+          : "include",
     });
 
     if (!response.ok) {
@@ -116,7 +123,7 @@ class APIClient {
   async requestRaw(
     endpoint: string,
     options: ApiClientOptions = {},
-    user?: User | null
+    user?: User | null,
   ): Promise<Response> {
     const { requireAuth = true, ...restOptions } = options;
     const headers = this.getAuthHeaders(user);
@@ -134,8 +141,8 @@ class APIClient {
       credentials: env.isDevelopment
         ? undefined
         : user?.id_token
-        ? undefined
-        : "include",
+          ? undefined
+          : "include",
     });
 
     return response;
@@ -144,7 +151,7 @@ class APIClient {
   async get<T>(
     endpoint: string,
     user?: User | null,
-    options?: ApiClientOptions
+    options?: ApiClientOptions,
   ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "GET" }, user);
   }
@@ -153,7 +160,7 @@ class APIClient {
     endpoint: string,
     data?: any,
     user?: User | null,
-    options?: ApiClientOptions
+    options?: ApiClientOptions,
   ): Promise<T> {
     return this.request<T>(
       endpoint,
@@ -162,7 +169,7 @@ class APIClient {
         method: "POST",
         body: data ? JSON.stringify(data) : undefined,
       },
-      user
+      user,
     );
   }
 
@@ -173,7 +180,7 @@ class APIClient {
     endpoint: string,
     data?: any,
     user?: User | null,
-    options?: ApiClientOptions
+    options?: ApiClientOptions,
   ): Promise<Response> {
     return this.requestRaw(
       endpoint,
@@ -182,7 +189,7 @@ class APIClient {
         method: "POST",
         body: data ? JSON.stringify(data) : undefined,
       },
-      user
+      user,
     );
   }
 
@@ -190,7 +197,7 @@ class APIClient {
     endpoint: string,
     data?: any,
     user?: User | null,
-    options?: ApiClientOptions
+    options?: ApiClientOptions,
   ): Promise<T> {
     return this.request<T>(
       endpoint,
@@ -199,14 +206,14 @@ class APIClient {
         method: "PUT",
         body: data ? JSON.stringify(data) : undefined,
       },
-      user
+      user,
     );
   }
 
   async delete<T>(
     endpoint: string,
     user?: User | null,
-    options?: ApiClientOptions
+    options?: ApiClientOptions,
   ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: "DELETE" }, user);
   }
@@ -267,6 +274,6 @@ export function useSimpleApiClient() {
       delete: <T>(endpoint: string, options?: ApiClientOptions) =>
         apiClient.delete<T>(endpoint, null, options),
     }),
-    []
+    [],
   );
 }

@@ -177,6 +177,13 @@ variable "replica_region" {
   default     = "us-west-2"
 }
 
+variable "impersonation_jwt_secret_name" {
+  description = "Name of the impersonation JWT secret in AWS Secrets Manager (created out-of-band)"
+  type        = string
+  default     = "rockilus-prod-impersonation-jwt"
+}
+
+
 variable "recovery_window_in_days" {
   description = "Number of days to retain secrets for recovery"
   type        = number

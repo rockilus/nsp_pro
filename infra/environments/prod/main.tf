@@ -9,8 +9,20 @@ data "aws_secretsmanager_secret" "permit_api_key" {
   name = var.permit_api_key_secret_name
 }
 
+
 data "aws_secretsmanager_secret_version" "permit_api_key_version" {
   secret_id = data.aws_secretsmanager_secret.permit_api_key.id
+}
+
+# Impersonation JWT secret — this secret is created/managed out-of-band
+# (manually or by a separate process). We read it here via a data source
+# so Terraform never contains the plaintext value.
+data "aws_secretsmanager_secret" "impersonation_jwt" {
+  name = var.impersonation_jwt_secret_name
+}
+
+data "aws_secretsmanager_secret_version" "impersonation_jwt_version" {
+  secret_id = data.aws_secretsmanager_secret.impersonation_jwt.id
 }
 
 # Ensure we have an AWS account id available when not provided via terraform.tfvars.
@@ -106,8 +118,9 @@ module "iam" {
   environment  = var.environment
 
   # Pass secret ARNs so the IAM policy can reference concrete resources
-  permit_api_key_secret_arn = data.aws_secretsmanager_secret.permit_api_key.arn
-  documentdb_secret_arn     = module.documentdb.credentials_secret_arn
+  permit_api_key_secret_arn    = data.aws_secretsmanager_secret.permit_api_key.arn
+  documentdb_secret_arn        = module.documentdb.credentials_secret_arn
+  impersonation_jwt_secret_arn = data.aws_secretsmanager_secret.impersonation_jwt.arn
 
   tags = {
     Environment = var.environment
@@ -542,6 +555,9 @@ module "ecs" {
   documentdb_secret_arn                      = module.documentdb.credentials_secret_arn
   documentdb_secret_name                     = module.documentdb.credentials_secret_name
   api_gateway_backend_api_key_parameter_name = module.api_gateway.backend_api_key_parameter.name
+  # Impersonation JWT secret ARN passed to the ECS module so the task definition
+  # can mount it as an environment secret
+  main_service_impersonation_secret_arn = data.aws_secretsmanager_secret.impersonation_jwt.arn
 
   # SQS Queue URLs (managed by Terraform)
   sqs_solve_queue_url = module.sqs.solve_queue_url

@@ -6,7 +6,7 @@ from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import PasswordData
 from shared.schemas.dto import WorkerDTO
-from shared.schemas.dto.user import PasswordDataDTO, UserDTO
+from shared.schemas.dto.user import PasswordDataDTO, UserDTO, UserUpdateDTO
 
 from src.dependencies import (
     get_db_collections,
@@ -63,15 +63,45 @@ async def get_current_user(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> UserDTO:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_context.user_id, "read", "user", user_id):
+        if not await authz_check(
+            user_context.user_id, "read", "user", user_context.user_id
+        ):
             raise NotAuthorizedError("You do not have permission to read the user")
-        user = db_collections.user_db.get_user_by_id(user_id)
+        user = db_collections.user_db.get_user_by_id(user_context.effective_user_id)
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
         response = user.to_dto()
     except Exception as e:
         log_info("Failed to get current user")
+        handle_routes_errors(e)
+    return response
+
+
+@router.put("/users/{user_id}")
+async def update_user(
+    user_id: str,
+    user_update: UserUpdateDTO,
+    user_context: UserContext = Depends(get_user_context),
+    user_service: UserService = Depends(get_user_service),
+) -> UserDTO:
+    """Update the authenticated user's own profile.
+
+    Only firstName, lastName, email, and language may be changed.
+    system_role and impersonatingUserId are ignored — they are always
+    carried over from the existing DB record.
+    """
+    try:
+        if user_context.effective_user_id != user_id:
+            raise NotAuthorizedError("You can only update your own profile")
+        if not await authz_check(user_context.user_id, "update", "user", user_id):
+            raise NotAuthorizedError("You do not have permission to update this user")
+        updated_user = await user_service.update_user(
+            user_id=user_id,
+            update_dto=user_update,
+        )
+        response = updated_user.to_dto()
+    except Exception as e:
+        log_info(f"Failed to update user {user_id}")
         handle_routes_errors(e)
     return response
 
@@ -87,22 +117,21 @@ async def get_user_worker_for_team(
     Returns None if no worker is linked to the user for this team.
     """
     try:
-        user_id = user_context.user_id
-
         # Check permission to read workers for this team
-        if not await authz_check(user_id, "read-workers", "team", team_id):
+        if not await authz_check(user_context.user_id, "read-workers", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to access workers for this team"
             )
 
         # Get workers linked to this user for the specified team
         workers = db_collections.worker_db.get_workers_by_team_and_user(
-            team_id=team_id, user_id=user_id
+            team_id=team_id, user_id=user_context.effective_user_id
         )
 
         if not workers:
             log_info(
-                f"No worker found for user {user_id} in team {team_id}. "
+                f"No worker found for user {user_context.effective_user_id} in "
+                + f"team {team_id}. "
                 "User may need worker association created by team admin."
             )
             return None
@@ -114,7 +143,7 @@ async def get_user_worker_for_team(
         if len(workers) > 1:
             log_info(
                 f"Warning: Multiple workers ({len(workers)}) found for "
-                f"user {user_id} in team {team_id}. "
+                f"user {user_context.effective_user_id} in team {team_id}. "
                 f"Returning first worker: {worker.id}"
             )
 

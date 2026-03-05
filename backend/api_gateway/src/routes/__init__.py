@@ -1,11 +1,11 @@
 import src.routes.utils_routes as test_utils_routes
+from src.routes.admin_routes import router as router_admin
 from src.routes.assignment_routes import router as router_assignment
 from src.routes.attribute_routes import router as router_attribute
 from src.routes.breach_routes import router as router_breach
 from src.routes.constraint_routes import router as router_constraint
 from src.routes.constraint_template_routes import router as router_constraint_template
 from src.routes.coverage_routes import router as router_coverage
-from src.routes.dashboard_routes import router as router_dashboard
 from src.routes.dim_entry_routes import router as router_dim_entry
 from src.routes.dimension_routes import router as router_dimension
 from src.routes.export_routes import router as router_export
@@ -31,13 +31,13 @@ from src.routes.utils_routes import router as router_test_utils
 from src.routes.worker_routes import router as router_worker
 
 __all__ = [
+    "router_admin",
     "router_assignment",
     "router_attribute",
     "router_breach",
     "router_constraint",
     "router_constraint_template",
     "router_coverage",
-    "router_dashboard",
     "router_dim_entry",
     "router_dimension",
     "router_export",

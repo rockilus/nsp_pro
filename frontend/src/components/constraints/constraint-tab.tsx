@@ -145,6 +145,7 @@ export default function ConstraintTab({
             <TableAddButton
               text={t("constraint")}
               handleClick={handleOpenAddConstraint}
+              dataTestId="add-constraint-button"
             />
           </div>
 

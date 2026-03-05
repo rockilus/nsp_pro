@@ -26,7 +26,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the workers page is displayed
       await expect(
-        page.locator('[data-testid="workers-page-heading"]')
+        page.locator('[data-testid="workers-page-heading"]'),
       ).toBeVisible();
 
       // Verify we're on the correct URL
@@ -39,7 +39,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the schedule page is displayed
       await expect(
-        page.locator('[data-testid="schedule-page-heading"]')
+        page.locator('[data-testid="schedule-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/plan/schedule");
@@ -61,7 +61,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the teams page is displayed
       await expect(
-        page.locator('[data-testid="teams-page-heading"]')
+        page.locator('[data-testid="teams-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/settings/teams");
@@ -73,7 +73,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the shifts page is displayed
       await expect(
-        page.locator('[data-testid="shifts-page-heading"]')
+        page.locator('[data-testid="shifts-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/plan/shifts");
@@ -85,7 +85,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the shift demands page is displayed
       await expect(
-        page.locator('[data-testid="shift-demand-tab"]')
+        page.locator('[data-testid="shift-demand-tab"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/plan/shift-demands");
@@ -97,7 +97,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the constraints page is displayed
       await expect(
-        page.locator('[data-testid="constraints-page-heading"]')
+        page.locator('[data-testid="constraints-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/plan/constraints");
@@ -109,7 +109,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the campaign page is displayed
       await expect(
-        page.locator('[data-testid="campaign-page-heading"]')
+        page.locator('[data-testid="campaign-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/plan/campaign");
@@ -121,7 +121,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the stats page is displayed
       await expect(
-        page.locator('[data-testid="stats-page-heading"]')
+        page.locator('[data-testid="stats-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/plan/stats");
@@ -133,7 +133,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the personal info page is displayed
       await expect(
-        page.locator('[data-testid="personal-info-page-heading"]')
+        page.locator('[data-testid="personal-info-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/settings/personal-info");
@@ -145,7 +145,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the security page is displayed
       await expect(
-        page.locator('[data-testid="security-page-heading"]')
+        page.locator('[data-testid="security-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/settings/security");
@@ -157,7 +157,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the team general page is displayed
       await expect(
-        page.locator('[data-testid="team-general-page-heading"]')
+        page.locator('[data-testid="team-general-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/teams/general");
@@ -169,33 +169,10 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the team members page is displayed
       await expect(
-        page.locator('[data-testid="team-members-page-heading"]')
+        page.locator('[data-testid="team-members-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/teams/members");
-    });
-
-    test("owner cannot access dashboard page (admin only)", async ({
-      page,
-    }) => {
-      await roleTestBase.actAsOwner(page);
-
-      // Try to navigate to dashboard page
-      await roleTestBase.navigateToDashboardPage(page);
-
-      // Owner should be redirected away from dashboard page
-      // Dashboard is admin-only, not accessible to regular owners
-
-      // Wait a moment for any redirects to occur
-      await page.waitForTimeout(1000);
-
-      // Verify we're NOT on the dashboard page
-      await roleTestBase.verifyPageNotAccessible(page, "/plan/dashboard");
-
-      // The user should be redirected somewhere else
-      // (exact destination depends on app routing logic)
-      const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/plan/dashboard");
     });
   });
 
@@ -206,7 +183,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the schedule page is displayed
       await expect(
-        page.locator('[data-testid="schedule-page-heading"]')
+        page.locator('[data-testid="schedule-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/plan/schedule");
@@ -234,7 +211,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the personal info page is displayed
       await expect(
-        page.locator('[data-testid="personal-info-page-heading"]')
+        page.locator('[data-testid="personal-info-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/settings/personal-info");
@@ -246,7 +223,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the security page is displayed
       await expect(
-        page.locator('[data-testid="security-page-heading"]')
+        page.locator('[data-testid="security-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/settings/security");
@@ -258,7 +235,7 @@ test.describe("Role-Based Access Control", () => {
 
       // Verify the teams page is displayed
       await expect(
-        page.locator('[data-testid="teams-page-heading"]')
+        page.locator('[data-testid="teams-page-heading"]'),
       ).toBeVisible();
 
       await roleTestBase.verifyPageAccessible(page, "/settings/teams");
@@ -404,25 +381,6 @@ test.describe("Role-Based Access Control", () => {
 
       const currentUrl = page.url();
       expect(currentUrl).not.toContain("/teams/members");
-    });
-
-    test("member cannot access dashboard page (admin only)", async ({
-      page,
-    }) => {
-      await roleTestBase.actAsMember(page);
-
-      // Try to navigate to dashboard page
-      await roleTestBase.navigateToDashboardPage(page);
-
-      // Should be redirected to schedule page
-      await page.waitForURL(/\/plan\/schedule/, { timeout: 5000 });
-      await expect(page).toHaveURL(/\/plan\/schedule/);
-
-      // Verify we're NOT on the dashboard page
-      await roleTestBase.verifyPageNotAccessible(page, "/plan/dashboard");
-
-      const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/plan/dashboard");
     });
   });
 

@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import field_validator
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.core.user import Language, User
+from shared.schemas.core.user import Language, SystemRole, User
 
 
 class UserSchema(DocumentBaseSchema):
@@ -16,6 +16,7 @@ class UserSchema(DocumentBaseSchema):
     language: str
     sign_up_at: datetime
     impersonating_user: Optional[str] = None
+    system_role: Optional[str] = None
 
     @field_validator("language")
     @classmethod
@@ -34,6 +35,7 @@ class UserSchema(DocumentBaseSchema):
             language=Language(self.language),
             sign_up_at=self.sign_up_at,
             impersonating_user_id=self.impersonating_user,
+            system_role=(SystemRole(self.system_role) if self.system_role else None),
         )
 
     @classmethod
@@ -46,4 +48,5 @@ class UserSchema(DocumentBaseSchema):
             language=user.language.value,
             sign_up_at=user.sign_up_at,
             impersonating_user=user.impersonating_user_id,
+            system_role=user.system_role.value if user.system_role else None,
         )

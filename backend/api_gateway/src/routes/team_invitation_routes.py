@@ -11,6 +11,7 @@ from shared.schemas.dto import (
 
 from src.dependencies import get_team_invitation_service, get_user_context
 from src.integrations.authorization import authz_check
+from src.security.audit import log_impersonated_action
 from src.security.user_context import UserContext
 from src.services.team_invitation_service import TeamInvitationService
 
@@ -25,15 +26,18 @@ async def create_team_invitation(
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-team-invitation", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "create-team-invitation", "team", team_id
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to create a team invitation.",
             )
+        log_impersonated_action(user_context, "create_team_invitation")
         invitation_data = TeamInvitation.from_dto(invitation)
         created_invitation = await service.create_team_invitation(
-            invitation=invitation_data, sender_id=user_id
+            invitation=invitation_data,
+            sender_id=user_context.effective_user_id,
         )
         if not created_invitation:
             raise HTTPException(
@@ -55,13 +59,19 @@ async def get_user_pending_invitations(
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-team-invitations", "user", user_id):
+        if not await authz_check(
+            user_context.user_id,
+            "read-team-invitations",
+            "user",
+            user_context.user_id,
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to read your pending invitations.",
             )
-        invitations = service.get_user_pending_invitations(user_id=user_id)
+        invitations = service.get_user_pending_invitations(
+            user_id=user_context.effective_user_id
+        )
         response = [invitation.to_dto() for invitation in invitations]
     except ValueError as e:
         raise HTTPException(
@@ -78,8 +88,9 @@ async def get_team_invitations(
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-team-invitations", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-team-invitations", "team", team_id
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to read team invitations.",
@@ -105,8 +116,12 @@ async def accept_team_invitation(
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ) -> TeamWithMembershipDTO:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "accept-team-invitation", "user", user_id):
+        if not await authz_check(
+            user_context.user_id,
+            "accept-team-invitation",
+            "user",
+            user_context.user_id,
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to accept team invitations.",
@@ -117,7 +132,10 @@ async def accept_team_invitation(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Token is required.",
             )
-        team = await service.accept_team_invitation(user_id, token)
+        log_impersonated_action(user_context, "accept_team_invitation")
+        team = await service.accept_team_invitation(
+            user_context.effective_user_id, token
+        )
         response = team.to_dto()
     except ValueError as e:
         raise HTTPException(
@@ -134,8 +152,12 @@ async def reject_team_invitation(
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "reject-team-invitation", "user", user_id):
+        if not await authz_check(
+            user_context.user_id,
+            "reject-team-invitation",
+            "user",
+            user_context.user_id,
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to reject team invitations.",
@@ -146,7 +168,8 @@ async def reject_team_invitation(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Token is required.",
             )
-        success = service.reject_team_invitation(user_id, token)
+        log_impersonated_action(user_context, "reject_team_invitation")
+        success = service.reject_team_invitation(user_context.effective_user_id, token)
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -168,8 +191,9 @@ async def resend_team_invitation_email(
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ) -> TeamInvitationDTO:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "resend-team-invitation", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "resend-team-invitation", "team", team_id
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You do not have permission to resend the team invitation.",
@@ -196,9 +220,11 @@ async def delete_team_invitation(
     service: TeamInvitationService = Depends(get_team_invitation_service),
 ):
     try:
-        user_id = user_context.user_id
         if not await authz_check(
-            user_id, "delete-team-invitation", "team", invitation_id
+            user_context.user_id,
+            "delete-team-invitation",
+            "team",
+            invitation_id,
         ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

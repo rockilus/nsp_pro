@@ -11,13 +11,13 @@ from src.config import config
 # pylint: disable=unused-import
 from src.integrations.authorization import authz_services  # noqa: F401
 from src.routes import (
+    router_admin,
     router_assignment,
     router_attribute,
     router_breach,
     router_constraint,
     router_constraint_template,
     router_coverage,
-    router_dashboard,
     router_dim_entry,
     router_dimension,
     router_export,
@@ -57,7 +57,7 @@ def create_app(
     # Configure CORS
     allowed_headers = ["Content-Type"]
     if config.environment == "development":
-        allowed_headers.extend(["x-dev-user-id", "x-api-key"])
+        allowed_headers.extend(["x-dev-user-id", "x-api-key", "x-impersonation-token"])
 
     app.add_middleware(
         CORSMiddleware,
@@ -73,13 +73,13 @@ def create_app(
 
     # Include all routers
     routers = [
+        router_admin,
         router_assignment,
         router_attribute,
         router_breach,
         router_constraint,
         router_constraint_template,
         router_coverage,
-        router_dashboard,
         router_dim_entry,
         router_dimension,
         router_export,

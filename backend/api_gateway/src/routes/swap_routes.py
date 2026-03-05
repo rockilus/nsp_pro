@@ -51,7 +51,7 @@ async def create_swap_request(
         # Create the swap request
         created_swap = swap_service.create_swap_request(
             team_id=team_id,
-            created_by_user_id=user_context.user_id,
+            created_by_user_id=user_context.effective_user_id,
             swap_type=swap_type,
             offered_assignment_ids=swap_request.offeredAssignmentIds,
             comment=swap_request.comment,
@@ -335,7 +335,7 @@ async def approve_swap(
         # Approve the swap
         updated_swap = swap_service.approve_swap(
             swap_id=swap_id,
-            approver_user_id=user_context.user_id,
+            approver_user_id=user_context.effective_user_id,
         )
 
         response = updated_swap.to_dto()
@@ -398,7 +398,7 @@ async def deny_swap(
 
         # Deny the swap
         updated_swap = swap_service.deny_swap(
-            swap_id=swap_id, denier_user_id=user_context.user_id
+            swap_id=swap_id, denier_user_id=user_context.effective_user_id
         )
 
         response = updated_swap.to_dto()
@@ -429,7 +429,7 @@ async def revert_swap(
 
         # Revert the swap
         updated_swap = swap_service.revert_swap(
-            swap_id=swap_id, reverter_user_id=user_context.user_id
+            swap_id=swap_id, reverter_user_id=user_context.effective_user_id
         )
 
         response = updated_swap.to_dto()
@@ -462,7 +462,7 @@ async def delete_bid(
 
         # Get the worker ID for the current user
         workers = db_collections.worker_db.get_workers_by_team_and_user(
-            team_id=swap.team_id, user_id=user_context.user_id
+            team_id=swap.team_id, user_id=user_context.effective_user_id
         )
         if not workers:
             raise ValueError("Worker not found for current user")

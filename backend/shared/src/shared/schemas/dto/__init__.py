@@ -80,8 +80,6 @@ from shared.schemas.dto.team_invitation import (
 )
 from shared.schemas.dto.user import (
     PasswordDataDTO,
-    UserAuthDTO,
-    UserDashboardDTO,
     UserDTO,
     UserWithMembershipDTO,
 )
@@ -146,8 +144,6 @@ __all__ = [
     "EnrichedTeamInvitationDTO",
     "TeamInvitationDTO",
     "PasswordDataDTO",
-    "UserAuthDTO",
-    "UserDashboardDTO",
     "UserDTO",
     "UserWithMembershipDTO",
     "WorkerDTO",

@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from loguru import logger
 from pydantic import BaseModel
 from shared.augment import cb_to_cb_augmented, r_to_r_augmented
+from shared.database.database_collections import DatabaseCollections
 from shared.database.reset_service import (
     DatabaseResetError,
     DatabaseResetService,
@@ -20,11 +21,15 @@ from shared.logger import log_info
 from shared.schemas.core import TeamMembership, TeamMembershipRole
 
 from src.config import config
-from src.dependencies import get_test_service, get_user_context
+from src.dependencies import (
+    get_db_collections,
+    get_test_service,
+    get_user_context,
+)
 from src.errors import NotAuthorizedError
 from src.integrations.authorization import (
     authz_check,
-    authz_delete_all_instances,
+    authz_delete_all_instances_except_user,
 )
 from src.security.user_context import UserContext
 from src.services.team_membership_service import TeamMembershipService
@@ -60,6 +65,9 @@ class DatabaseResetResponse(BaseModel):
     timestamp: str
     operation_id: str
 
+
+# System user preserved across all database resets
+PRESERVED_USER_ID = "64e9b7f1e13e4a1a9c8b4567"
 
 router = APIRouter(prefix="/test-utils", tags=["test-utilities"])
 
@@ -98,6 +106,7 @@ async def reset_database_endpoint(
     request: DatabaseResetRequest,
     _: None = Depends(get_test_environment_only),
     db_interface=Depends(get_database_interface),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> DatabaseResetResponse:
     """
     Reset database for testing purposes.
@@ -127,17 +136,27 @@ async def reset_database_endpoint(
             f"preserve_system_data={request.preserve_system_data}"
         )
 
+        # Snapshot preserved user before reset
+        preserved_user = db_collections.user_db.get_user_by_id(PRESERVED_USER_ID)
+
         # Create reset service with the database interface
         reset_service = DatabaseResetService(db_interface)
 
         # Perform the reset operation
         if request.collections is None:
             result = await reset_service.reset_all_collections()
-            await authz_delete_all_instances()  # Delete all instances in authz
+            await authz_delete_all_instances_except_user(PRESERVED_USER_ID)
         else:
             result = await reset_service.reset_specific_collections(request.collections)
             if "users" in request.collections:
-                await authz_delete_all_instances()
+                await authz_delete_all_instances_except_user(PRESERVED_USER_ID)
+
+        # Restore preserved user in DB if it existed before reset
+        if preserved_user is not None and (
+            request.collections is None or "users" in request.collections
+        ):
+            db_collections.user_db.create_user(preserved_user)
+            logger.info(f"Restored preserved user: {PRESERVED_USER_ID}")
 
         logger.info(f"Database reset completed: {result['operation_id']}")
 

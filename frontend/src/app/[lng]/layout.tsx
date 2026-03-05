@@ -6,7 +6,6 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
 import { notFound } from "next/navigation";
 // Components
 import { LanguageProvider } from "../../components/providers/LanguageProvider";
-// import ImpersonationBanner from "../../components/app-bar/impersonation-banner";
 import { languages } from "../i18n/settings";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -39,10 +38,5 @@ export default async function RootLayout({
 
   // Only the root layout (src/app/layout.tsx) must render <html> and <body>.
   // Child layouts should return elements that can be nested inside the root body.
-  return (
-    <LanguageProvider initialLanguage={lng}>
-      {/* <ImpersonationBanner /> */}
-      {children}
-    </LanguageProvider>
-  );
+  return <LanguageProvider initialLanguage={lng}>{children}</LanguageProvider>;
 }

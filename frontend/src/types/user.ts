@@ -16,17 +16,7 @@ export type UserT = {
   language: string;
   signUpAt: dayjs.Dayjs;
   impersonatingUserId: string | null;
-};
-
-export type UserAuthT = {
-  id: string;
-  email: string;
-};
-
-export type UserDashboardT = {
-  user: UserT | null;
-  userAuthn: UserAuthT | null;
-  userAuthz: UserAuthT | null;
+  systemRole: string | null;
 };
 
 export type UserWithMembership = {
@@ -38,13 +28,18 @@ export const toUserT = (data: any): UserT => {
   return {
     ...data,
     signUpAt: dayjs.unix(data.signUpAt).utc(),
+    systemRole: data.systemRole ?? null,
   };
 };
 
 export const fromUserT = (data: UserT): any => {
+  // Omit systemRole — the self-update endpoint only accepts
+  // firstName, lastName, email, and language.
+  const { systemRole, impersonatingUserId, signUpAt, id, ...updateFields } =
+    data;
   return {
-    ...data,
-    signUpAt: data.signUpAt.unix(),
+    ...updateFields,
+    signUpAt: signUpAt.unix(),
   };
 };
 
@@ -59,12 +54,5 @@ export const fromUserWithMembership = (data: UserWithMembership): any => {
   return {
     ...data,
     user: fromUserT(data.user),
-  };
-};
-
-export const toUserDashboardT = (data: any): UserDashboardT => {
-  return {
-    ...data,
-    user: data.user ? toUserT(data.user) : null,
   };
 };

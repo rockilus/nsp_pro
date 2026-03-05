@@ -41,8 +41,9 @@ async def create_template(
 ) -> ShiftDemandTemplateDTO:
     """Create a new shift demand template."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "create-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to create templates")
 
         # Create a basic template with minimal data
@@ -58,7 +59,7 @@ async def create_template(
             team_id=team_id,
             template_type=TemplateType.STANDARD,
             weeks_data=[empty_week],
-            created_by=user_id,
+            created_by=user_context.effective_user_id,
         )
 
         # Create through service
@@ -105,8 +106,9 @@ async def get_templates_by_team(
 ) -> List[ShiftDemandTemplateDTO]:
     """Get all templates for a team, optionally filtered by type."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-shift-demands", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to read templates")
 
         # Validate template_type if provided
@@ -142,8 +144,9 @@ async def get_template_by_id(
 ) -> ShiftDemandTemplateDTO:
     """Get a specific template by ID."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-shift-demands", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to read templates")
 
         # Validate template belongs to team
@@ -195,8 +198,9 @@ async def update_template(
 ) -> ShiftDemandTemplateDTO:
     """Update an existing template."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "update-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "update-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to update templates")
 
         # Get existing template for validation and update
@@ -270,8 +274,9 @@ async def delete_template(
 ) -> None:
     """Delete a template."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "delete-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "delete-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to delete templates")
 
         # Validate template belongs to team
@@ -338,8 +343,9 @@ async def apply_demands_to_template_week(
 ) -> ShiftDemandTemplateDTO:
     """Apply existing shift demands from a source week to a template week."""
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "update-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "update-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to update templates")
 
         # Convert timestamp to datetime
@@ -427,8 +433,9 @@ async def apply_template_to_date_range(
     """Apply a template to a specific date range."""
     try:
         # Check permissions for creating shift demands
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "create-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to apply templates")
 
         # Convert timestamps to date objects

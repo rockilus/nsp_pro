@@ -30,8 +30,9 @@ async def create_specialty(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> SpecialtyDTO:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-specialty", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "create-specialty", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to create a specialty")
         s_data = Specialty.from_dto(specialty)
         de_created = db_collections.specialty_db.create_specialty(s_data)
@@ -50,8 +51,9 @@ async def get_specialties(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[SpecialtyDTO]:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-specialties", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-specialties", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to read specialties")
         specialties = db_collections.specialty_db.get_specialties_by_team_id(team_id)
         response = [sp.to_dto() for sp in specialties]
@@ -70,8 +72,9 @@ async def update_specialty(
 ) -> SpecialtyDTO:
     # pylint: disable=R0801
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "update-specialty", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "update-specialty", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to update a specialty")
         de_data = Specialty.from_dto(specialty)
         updated_de = db_collections.specialty_db.update_specialty(de_data)
@@ -91,8 +94,9 @@ async def delete_specialty(
 ) -> List[WorkerDTO]:
     # pylint: disable=R0801
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "delete-specialty", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "delete-specialty", "team", team_id
+        ):
             raise HTTPException(
                 status_code=403,
                 detail="You do not have permission to delete a specialty",

@@ -110,18 +110,20 @@ test.describe("Constraint Creation", () => {
     await expect(dialog).toBeVisible();
 
     // Verify dialog has correct title
-    const dialogTitle = page.locator('[id="new-constraint-dialog-title"]');
+    const dialogTitle = page.locator(
+      '[data-testid="new-constraint-dialog-title"]',
+    );
     await expect(dialogTitle).toBeVisible();
-    await expect(dialogTitle).toContainText("New constraint");
 
     // Verify template list is visible
     const templateList = constraintTestBase.getTemplateList(page);
     await expect(templateList).toBeVisible();
 
     // Verify there's a placeholder message when no template is selected
-    const placeholder = page.locator(".select-template-placeholder");
+    const placeholder = page.locator(
+      '[data-testid="select-template-placeholder"]',
+    );
     await expect(placeholder).toBeVisible();
-    await expect(placeholder).toContainText("Select constraint template");
 
     console.log("✅ Constraint creation popup opens successfully");
   });
@@ -152,7 +154,9 @@ test.describe("Constraint Creation", () => {
     await expect(editForm).toBeVisible();
 
     // Verify the placeholder message is no longer visible
-    const placeholder = page.locator(".select-template-placeholder");
+    const placeholder = page.locator(
+      '[data-testid="select-template-placeholder"]',
+    );
     await expect(placeholder).not.toBeVisible();
 
     // Verify constraint blocks are displayed

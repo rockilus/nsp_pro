@@ -38,8 +38,9 @@ async def create_shift_demands(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ShiftDemandMessage]:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "create-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "create-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to create a shift demand",
             )
@@ -59,8 +60,9 @@ async def get_shift_demands(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ShiftDemandMessage]:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "read-shift-demands", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-shift-demands", "team", team_id
+        ):
             raise NotAuthorizedError("You do not have permission to get shift demands")
         coverages = db_collections.coverage_db.get_coverages(team_id)
         shift_demands = (
@@ -85,8 +87,9 @@ async def update_shift_demand(
     ),
 ) -> ShiftDemandMessage:
     try:
-        user_id = user_context.user_id
-        if not await authz_check(user_id, "update-shift-demand", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "update-shift-demand", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to update a shift demand",
             )
@@ -108,8 +111,9 @@ async def delete_shift_demands(
         get_shift_demand_service,
     ),
 ):
-    user_id = user_context.user_id
-    if not await authz_check(user_id, "delete-shift-demand", "team", team_id):
+    if not await authz_check(
+        user_context.user_id, "delete-shift-demand", "team", team_id
+    ):
         raise NotAuthorizedError("You do not have permission to delete a shift demand")
     for shift_demand_id in shift_demand_ids:
         shift_demand_service.delete_shift_demand(shift_demand_id)

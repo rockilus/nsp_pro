@@ -9,8 +9,6 @@ from pydantic import TypeAdapter
 from shared.schemas.core.team import MembershipForTeamWithMembership
 from shared.schemas.dto.user import (
     PasswordDataDTO,
-    UserAuthDTO,
-    UserDashboardDTO,
     UserDTO,
     UserWithMembershipDTO,
 )
@@ -24,6 +22,10 @@ class Language(Enum):
     FR = "fr"
 
 
+class SystemRole(Enum):
+    SUPER_ADMIN = "super_admin"
+
+
 @dataclass
 class User:
     id: str
@@ -33,11 +35,13 @@ class User:
     language: Language
     sign_up_at: datetime
     impersonating_user_id: str | None
+    system_role: SystemRole | None = None
 
     def to_dto(self) -> UserDTO:
         data = asdict(self)
         data["language"] = self.language.value
         data["sign_up_at"] = self.sign_up_at.timestamp()
+        data["system_role"] = self.system_role.value if self.system_role else None
         as_dict = humps.camelize(data)
         validator = TypeAdapter(UserDTO)
         return validator.validate_python(as_dict)
@@ -48,6 +52,11 @@ class User:
         data_dict["language"] = Language(data_dict["language"])
         data_dict["sign_up_at"] = datetime.fromtimestamp(
             data_dict["sign_up_at"], tz=timezone.utc
+        )
+        data_dict["system_role"] = (
+            SystemRole(data_dict["system_role"])
+            if data_dict.get("system_role")
+            else None
         )
         return cls(**data_dict)
 
@@ -69,42 +78,6 @@ class PasswordData:
     def from_dto(cls, data: PasswordDataDTO) -> "PasswordData":
         data_dict = humps.decamelize(data.model_dump())
         return cls(**data_dict)
-
-
-@dataclass
-class UserAuth:
-    id: str
-    email: str
-
-    def to_dto(self) -> UserAuthDTO:
-        data = asdict(self)
-        as_dict = humps.camelize(data)
-        validator = TypeAdapter(UserAuthDTO)
-        return validator.validate_python(as_dict)
-
-    @classmethod
-    def from_dto(cls, data: UserAuthDTO) -> "UserAuth":
-        data_dict = humps.decamelize(data.model_dump())
-        return cls(**data_dict)
-
-
-@dataclass
-class UserDashboard:
-    user: User | None
-    user_authn: UserAuth | None
-    user_authz: UserAuth | None
-
-    def to_dto(self) -> UserDashboardDTO:
-        data = asdict(self)
-        if self.user:
-            data["user"] = self.user.to_dto()
-        if self.user_authn:
-            data["user_authn"] = self.user_authn.to_dto()
-        if self.user_authz:
-            data["user_authz"] = self.user_authz.to_dto()
-        as_dict = humps.camelize(data)
-        validator = TypeAdapter(UserDashboardDTO)
-        return validator.validate_python(as_dict)
 
 
 @dataclass

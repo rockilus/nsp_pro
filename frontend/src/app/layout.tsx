@@ -5,7 +5,7 @@ import { Inter } from "next/font/google";
 import { AuthProvider } from "../components/auth/auth-provider";
 import ThemeRegistry from "../components/providers/ThemeRegistry";
 // Components
-// import ImpersonationBanner from "../components/app-bar/impersonation-banner";
+import ImpersonationBanner from "../components/app-bar/impersonation-banner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,7 +24,7 @@ export default async function RootLayout({
       <ThemeRegistry>
         <body className={inter.className}>
           <AuthProvider>
-            {/* <ImpersonationBanner /> */}
+            <ImpersonationBanner />
             {children}
           </AuthProvider>
         </body>

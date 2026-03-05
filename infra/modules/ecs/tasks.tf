@@ -65,16 +65,24 @@ resource "aws_ecs_task_definition" "main_service" {
       )
 
 
-      secrets = [
-        {
-          name      = "DB_URI"
-          valueFrom = var.documentdb_secret_arn
-        },
-        {
-          name      = "PDP_API_KEY"
-          valueFrom = var.permit_api_key_secret_arn
-        },
-      ]
+      secrets = concat(
+        [
+          {
+            name      = "DB_URI"
+            valueFrom = var.documentdb_secret_arn
+          },
+          {
+            name      = "PDP_API_KEY"
+            valueFrom = var.permit_api_key_secret_arn
+          }
+        ],
+        var.main_service_impersonation_secret_arn != "" ? [
+          {
+            name      = "IMPERSONATION_JWT_SECRET"
+            valueFrom = var.main_service_impersonation_secret_arn
+          }
+        ] : []
+      )
 
       systemControls = []
       ulimits        = []
