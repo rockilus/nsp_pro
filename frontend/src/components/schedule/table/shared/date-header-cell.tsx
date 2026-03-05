@@ -166,6 +166,7 @@ export default function DateHeaderCell({
               onColumnSelect?.(dateStr, rowIds ?? [], selectionScope ?? "view")
             }
             onClick={(e) => e.stopPropagation()}
+            data-testid={`date-column-checkbox-${dateStr}`}
             sx={{ padding: "2px", display: "block", margin: "0 auto" }}
           />
         )}

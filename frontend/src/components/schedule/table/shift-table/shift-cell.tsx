@@ -134,6 +134,7 @@ export default function ShiftCell({
                 handleCellSelect?.(shift.id, dateStr, periodDate.scheduleId)
               }
               onClick={(e) => e.stopPropagation()}
+              data-testid={`shift-cell-checkbox-${shift.id}-${dateStr}`}
               sx={{
                 padding: "1px",
                 "& .MuiSvgIcon-root": { fontSize: 16 },

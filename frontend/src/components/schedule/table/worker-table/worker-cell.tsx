@@ -68,6 +68,7 @@ export default function WorkerCell({
   return (
     <TableCell
       className="cell-hover-container"
+      data-testid={`worker-cell-${worker.id}-${dateStr}`}
       sx={{
         align: "center",
         borderRight: "1px solid #e0e0e07d",
@@ -135,6 +136,7 @@ export default function WorkerCell({
                 handleCellSelect?.(worker.id, dateStr, periodDate.scheduleId)
               }
               onClick={(e) => e.stopPropagation()}
+              data-testid={`worker-cell-checkbox-${worker.id}-${dateStr}`}
               sx={{
                 padding: "1px",
                 "& .MuiSvgIcon-root": { fontSize: 16 },

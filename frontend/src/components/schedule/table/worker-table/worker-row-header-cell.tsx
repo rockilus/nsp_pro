@@ -127,6 +127,7 @@ export default function WorkerRowHeaderCell({
             indeterminate={isRowIndeterminate}
             onChange={onRowSelect}
             onClick={(e) => e.stopPropagation()}
+            data-testid={`worker-row-checkbox-${worker.id}`}
             sx={{ padding: "2px", flexShrink: 0 }}
           />
         )}

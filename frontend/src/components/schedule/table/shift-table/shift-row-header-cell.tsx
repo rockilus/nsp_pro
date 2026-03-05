@@ -79,6 +79,7 @@ export default function ShiftRowHeaderCell({
             indeterminate={isRowIndeterminate}
             onChange={onRowSelect}
             onClick={(e) => e.stopPropagation()}
+            data-testid={`shift-row-checkbox-${shift.id}`}
             sx={{ padding: "2px", flexShrink: 0 }}
           />
         )}

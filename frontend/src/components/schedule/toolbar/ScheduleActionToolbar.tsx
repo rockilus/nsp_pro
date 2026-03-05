@@ -213,6 +213,7 @@ export function ScheduleActionToolbar({
         >
           <Typography
             variant="body2"
+            data-testid="schedule-selection-counts"
             sx={{ color: "text.secondary", minWidth: "160px", flexShrink: 0 }}
           >
             {cellCount > 0 && `${cellCount} cell${cellCount !== 1 ? "s" : ""}`}
@@ -247,10 +248,12 @@ export function ScheduleActionToolbar({
                 exclusive
                 value={scope}
                 onChange={(_, val) => val && onScopeChange(val)}
+                data-testid="schedule-scope-toggle-group"
               >
                 <Tooltip title="Apply actions to the currently visible period">
                   <ToggleButton
                     value="view"
+                    data-testid="schedule-scope-view"
                     sx={{ fontSize: "0.7rem", textTransform: "none" }}
                   >
                     View
@@ -259,6 +262,7 @@ export function ScheduleActionToolbar({
                 <Tooltip title="Apply actions across the full campaign">
                   <ToggleButton
                     value="campaign"
+                    data-testid="schedule-scope-campaign"
                     sx={{ fontSize: "0.7rem", textTransform: "none" }}
                   >
                     Campaign
@@ -296,12 +300,14 @@ export function ScheduleActionToolbar({
                   setValidationError(null);
                 }}
                 sx={{ fontSize: "0.8rem" }}
+                data-testid="schedule-entity-select"
               >
                 {options.map((opt) => (
                   <MenuItem
                     key={optionId(opt)}
                     value={optionId(opt)}
                     sx={{ fontSize: "0.8rem" }}
+                    data-testid={`schedule-entity-option-${optionId(opt)}`}
                   >
                     {optionLabel(opt)}
                   </MenuItem>
@@ -322,6 +328,7 @@ export function ScheduleActionToolbar({
                 color="error"
                 disabled={isLoading}
                 onClick={handleMainAction}
+                data-testid="schedule-delete-confirm-button"
                 sx={{ fontSize: "0.75rem" }}
               >
                 Confirm
@@ -330,6 +337,7 @@ export function ScheduleActionToolbar({
                 size="small"
                 variant="text"
                 onClick={() => setDeleteConfirm(false)}
+                data-testid="schedule-delete-cancel-button"
                 sx={{ fontSize: "0.75rem" }}
               >
                 Cancel
@@ -346,6 +354,7 @@ export function ScheduleActionToolbar({
                 <Button
                   disabled={isLoading}
                   onClick={handleMainAction}
+                  data-testid="schedule-action-main-button"
                   sx={{
                     fontSize: "0.75rem",
                     textTransform: "none",
@@ -356,6 +365,7 @@ export function ScheduleActionToolbar({
                 <Button
                   sx={{ px: 0.5 }}
                   onClick={() => setDropdownOpen((prev) => !prev)}
+                  data-testid="schedule-action-dropdown-toggle"
                 >
                   <ArrowDropDownIcon fontSize="small" />
                 </Button>
@@ -364,6 +374,7 @@ export function ScheduleActionToolbar({
                 <Typography
                   variant="caption"
                   color="error"
+                  data-testid="schedule-validation-error"
                   sx={{ mt: 0.5, lineHeight: 1.2 }}
                 >
                   {validationError}
@@ -374,7 +385,11 @@ export function ScheduleActionToolbar({
         </Box>
         {/* Cancel */}
         <Tooltip title="Exit selection mode">
-          <IconButton size="small" onClick={onCancel}>
+          <IconButton
+            size="small"
+            onClick={onCancel}
+            data-testid="schedule-close-selection-button"
+          >
             <CloseIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -401,6 +416,7 @@ export function ScheduleActionToolbar({
                       key={action.key}
                       selected={action.key === selectedAction}
                       onClick={() => handleActionSelect(action.key)}
+                      data-testid={`schedule-action-option-${action.key}`}
                       sx={{
                         fontSize: "0.8rem",
                         display: "flex",
