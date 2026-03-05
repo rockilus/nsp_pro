@@ -122,7 +122,16 @@ export function ScheduleActionToolbar({
     create: <AddIcon fontSize="small" sx={{ color: "text.secondary" }} />,
     update: <EditIcon fontSize="small" sx={{ color: "text.secondary" }} />,
     toggleFixed: (
-      <span style={{ width: "20px", height: "20px", fontSize: "1.0rem" }}>
+      <span
+        style={{
+          width: "20px",
+          height: "20px",
+          fontSize: "1.0rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         🔒
       </span>
     ),
