@@ -483,20 +483,14 @@ export default function ScheduleTab({
         scope === "campaign" && scheduleCampaign
           ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
           : periodDates;
-      const targetDates =
-        scope === "campaign"
-          ? allDates.map((pd) => ({
-              date: pd.date.format("YYYY-MM-DD"),
-              scheduleId: pd.scheduleId,
-            }))
-          : [
-              {
-                date,
-                scheduleId:
-                  allDates.find((pd) => pd.date.format("YYYY-MM-DD") === date)
-                    ?.scheduleId ?? null,
-              },
-            ];
+      const targetDates = [
+        {
+          date,
+          scheduleId:
+            allDates.find((pd) => pd.date.format("YYYY-MM-DD") === date)
+              ?.scheduleId ?? null,
+        },
+      ];
 
       const isWorkerView = scheduleViewSettings.groupBy === "worker";
       const targetDateSet = new Set(targetDates.map((td) => td.date));
