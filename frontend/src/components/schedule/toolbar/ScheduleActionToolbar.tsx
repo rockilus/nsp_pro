@@ -19,10 +19,11 @@ import {
   ClickAwayListener,
   MenuList,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
-import LockIcon from "@mui/icons-material/Lock";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   ScheduleSelectionState,
   SelectionScope,
@@ -116,6 +117,17 @@ export function ScheduleActionToolbar({
 
   const currentActionLabel =
     ACTION_OPTIONS.find((a) => a.key === selectedAction)?.label ?? "";
+
+  const actionIcon: Record<ActionKey, React.ReactNode> = {
+    create: <AddIcon fontSize="small" sx={{ color: "text.secondary" }} />,
+    update: <EditIcon fontSize="small" sx={{ color: "text.secondary" }} />,
+    toggleFixed: (
+      <span style={{ width: "20px", height: "20px", fontSize: "1.0rem" }}>
+        🔒
+      </span>
+    ),
+    delete: <DeleteIcon fontSize="small" sx={{ color: "error.main" }} />,
+  };
 
   const handleMainAction = async () => {
     const error = validate();
@@ -380,20 +392,14 @@ export function ScheduleActionToolbar({
                       key={action.key}
                       selected={action.key === selectedAction}
                       onClick={() => handleActionSelect(action.key)}
-                      sx={{ fontSize: "0.8rem" }}
+                      sx={{
+                        fontSize: "0.8rem",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
                     >
-                      {action.key === "toggleFixed" && (
-                        <LockIcon
-                          fontSize="small"
-                          sx={{ mr: 1, color: "text.secondary" }}
-                        />
-                      )}
-                      {action.key === "delete" && (
-                        <DeleteIcon
-                          fontSize="small"
-                          sx={{ mr: 1, color: "error.main" }}
-                        />
-                      )}
+                      {actionIcon[action.key]}
                       <Typography
                         variant="inherit"
                         color={
