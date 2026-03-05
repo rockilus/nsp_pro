@@ -154,27 +154,42 @@ export function ScheduleActionToolbar({
       <Box
         display="flex"
         alignItems="center"
+        justifyContent="space-between"
         gap={1}
         flexWrap="wrap"
         minHeight="44px"
       >
         {/* 1. Selection counts */}
-        <Typography
-          variant="body2"
-          sx={{ color: "text.secondary", minWidth: 80 }}
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="flex-start"
+          gap={1}
+          sx={{ flexShrink: 0, flex: 0.3 }}
         >
-          {cellCount > 0 && `${cellCount} cell${cellCount !== 1 ? "s" : ""}`}
-          {cellCount > 0 && assignmentCount > 0 && ", "}
-          {assignmentCount > 0 &&
-            `${assignmentCount} assignment${assignmentCount !== 1 ? "s" : ""}`}
-        </Typography>
+          <Typography
+            variant="body2"
+            sx={{ color: "text.secondary", minWidth: "160px", flexShrink: 0 }}
+          >
+            {cellCount > 0 && `${cellCount} cell${cellCount !== 1 ? "s" : ""}`}
+            {cellCount > 0 && assignmentCount > 0 && ", "}
+            {assignmentCount > 0 &&
+              `${assignmentCount} assignment${assignmentCount !== 1 ? "s" : ""}`}
+          </Typography>
+        </Box>
 
         <Divider orientation="vertical" flexItem />
 
-        {/* 2. Target period (scope selector) — only when a campaign exists */}
-        {scheduleCampaign && (
-          <>
-            <Box display="flex" alignItems="center" gap={0.5}>
+        {/* 2. Target period (scope selector) — grows to fill available space */}
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          gap={0.5}
+          sx={{ flex: 0.4 }}
+        >
+          {scheduleCampaign && (
+            <>
               <Typography
                 variant="caption"
                 color="text.secondary"
@@ -206,138 +221,95 @@ export function ScheduleActionToolbar({
                   </ToggleButton>
                 </Tooltip>
               </ToggleButtonGroup>
-            </Box>
-            <Divider orientation="vertical" flexItem />
-          </>
-        )}
+            </>
+          )}
+        </Box>
+
+        <Divider orientation="vertical" flexItem />
 
         {/* 3. Action area */}
-        {needsEntitySelect && (
-          <FormControl size="small" sx={{ minWidth: 140 }}>
-            <InputLabel sx={{ fontSize: "0.8rem" }}>
-              {groupBy === "shift" ? "Worker" : "Shift"}
-            </InputLabel>
-            <Select
-              value={entityId}
-              label={groupBy === "shift" ? "Worker" : "Shift"}
-              onChange={(e) => setEntityId(e.target.value)}
-              sx={{ fontSize: "0.8rem" }}
-            >
-              {options.map((opt) => (
-                <MenuItem
-                  key={optionId(opt)}
-                  value={optionId(opt)}
-                  sx={{ fontSize: "0.8rem" }}
-                >
-                  {optionLabel(opt)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="flex-end"
+          gap={1}
+          sx={{ flexShrink: 0, flex: 0.4 }}
+        >
+          {needsEntitySelect && (
+            <FormControl size="small" sx={{ minWidth: 160 }}>
+              <InputLabel sx={{ fontSize: "0.8rem" }}>
+                {groupBy === "shift" ? "Worker" : "Shift"}
+              </InputLabel>
+              <Select
+                value={entityId}
+                label={groupBy === "shift" ? "Worker" : "Shift"}
+                onChange={(e) => setEntityId(e.target.value)}
+                sx={{ fontSize: "0.8rem" }}
+              >
+                {options.map((opt) => (
+                  <MenuItem
+                    key={optionId(opt)}
+                    value={optionId(opt)}
+                    sx={{ fontSize: "0.8rem" }}
+                  >
+                    {optionLabel(opt)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
 
-        {deleteConfirm ? (
-          <Box display="flex" alignItems="center" gap={0.5}>
-            <Typography variant="caption" color="error">
-              Delete {assignmentCount} assignment
-              {assignmentCount !== 1 ? "s" : ""}?
-            </Typography>
-            <Button
+          {deleteConfirm ? (
+            <Box display="flex" alignItems="center" gap={0.5}>
+              <Typography variant="caption" color="error">
+                Delete {assignmentCount} assignment
+                {assignmentCount !== 1 ? "s" : ""}?
+              </Typography>
+              <Button
+                size="small"
+                variant="contained"
+                color="error"
+                disabled={isLoading}
+                onClick={handleMainAction}
+                sx={{ fontSize: "0.75rem" }}
+              >
+                Confirm
+              </Button>
+              <Button
+                size="small"
+                variant="text"
+                onClick={() => setDeleteConfirm(false)}
+                sx={{ fontSize: "0.75rem" }}
+              >
+                Cancel
+              </Button>
+            </Box>
+          ) : (
+            <ButtonGroup
+              ref={anchorRef}
               size="small"
               variant="contained"
-              color="error"
-              disabled={isLoading}
-              onClick={handleMainAction}
-              sx={{ fontSize: "0.75rem" }}
+              color={selectedAction === "delete" ? "error" : "primary"}
             >
-              Confirm
-            </Button>
-            <Button
-              size="small"
-              variant="text"
-              onClick={() => setDeleteConfirm(false)}
-              sx={{ fontSize: "0.75rem" }}
-            >
-              Cancel
-            </Button>
-          </Box>
-        ) : (
-          <ButtonGroup
-            ref={anchorRef}
-            size="small"
-            variant="contained"
-            color={selectedAction === "delete" ? "error" : "primary"}
-          >
-            <Button
-              disabled={isMainDisabled}
-              onClick={handleMainAction}
-              sx={{ fontSize: "0.75rem", textTransform: "none" }}
-            >
-              {currentActionLabel}
-            </Button>
-            <Button
-              sx={{ px: 0.5 }}
-              onClick={() => setDropdownOpen((prev) => !prev)}
-            >
-              <ArrowDropDownIcon fontSize="small" />
-            </Button>
-          </ButtonGroup>
-        )}
-
-        <Popper
-          sx={{ zIndex: 1300 }}
-          open={dropdownOpen}
-          anchorEl={anchorRef.current}
-          placement="top-start"
-          transition
-          disablePortal
-        >
-          {({ TransitionProps }) => (
-            <Grow
-              {...TransitionProps}
-              style={{ transformOrigin: "center bottom" }}
-            >
-              <Paper>
-                <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
-                  <MenuList autoFocusItem dense>
-                    {ACTION_OPTIONS.map((action) => (
-                      <MenuItem
-                        key={action.key}
-                        selected={action.key === selectedAction}
-                        onClick={() => handleActionSelect(action.key)}
-                        sx={{ fontSize: "0.8rem" }}
-                      >
-                        {action.key === "toggleFixed" && (
-                          <LockIcon
-                            fontSize="small"
-                            sx={{ mr: 1, color: "text.secondary" }}
-                          />
-                        )}
-                        {action.key === "delete" && (
-                          <DeleteIcon
-                            fontSize="small"
-                            sx={{ mr: 1, color: "error.main" }}
-                          />
-                        )}
-                        <Typography
-                          variant="inherit"
-                          color={
-                            action.key === "delete" ? "error" : "text.primary"
-                          }
-                        >
-                          {action.label}
-                        </Typography>
-                      </MenuItem>
-                    ))}
-                  </MenuList>
-                </ClickAwayListener>
-              </Paper>
-            </Grow>
+              <Button
+                disabled={isMainDisabled}
+                onClick={handleMainAction}
+                sx={{
+                  fontSize: "0.75rem",
+                  textTransform: "none",
+                }}
+              >
+                {currentActionLabel}
+              </Button>
+              <Button
+                sx={{ px: 0.5 }}
+                onClick={() => setDropdownOpen((prev) => !prev)}
+              >
+                <ArrowDropDownIcon fontSize="small" />
+              </Button>
+            </ButtonGroup>
           )}
-        </Popper>
-
-        <Box flex={1} />
-
+        </Box>
         {/* Cancel */}
         <Tooltip title="Exit selection mode">
           <IconButton size="small" onClick={onCancel}>
@@ -345,6 +317,58 @@ export function ScheduleActionToolbar({
           </IconButton>
         </Tooltip>
       </Box>
+
+      <Popper
+        sx={{ zIndex: 1300 }}
+        open={dropdownOpen}
+        anchorEl={anchorRef.current}
+        placement="top-start"
+        transition
+        disablePortal
+      >
+        {({ TransitionProps }) => (
+          <Grow
+            {...TransitionProps}
+            style={{ transformOrigin: "center bottom" }}
+          >
+            <Paper>
+              <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
+                <MenuList autoFocusItem dense>
+                  {ACTION_OPTIONS.map((action) => (
+                    <MenuItem
+                      key={action.key}
+                      selected={action.key === selectedAction}
+                      onClick={() => handleActionSelect(action.key)}
+                      sx={{ fontSize: "0.8rem" }}
+                    >
+                      {action.key === "toggleFixed" && (
+                        <LockIcon
+                          fontSize="small"
+                          sx={{ mr: 1, color: "text.secondary" }}
+                        />
+                      )}
+                      {action.key === "delete" && (
+                        <DeleteIcon
+                          fontSize="small"
+                          sx={{ mr: 1, color: "error.main" }}
+                        />
+                      )}
+                      <Typography
+                        variant="inherit"
+                        color={
+                          action.key === "delete" ? "error" : "text.primary"
+                        }
+                      >
+                        {action.label}
+                      </Typography>
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </ClickAwayListener>
+            </Paper>
+          </Grow>
+        )}
+      </Popper>
     </Paper>
   );
 }
