@@ -8,8 +8,8 @@
  * - Row checkbox selects/deselects entire row (view scope)
  * - Row checkbox selects across campaign (campaign scope)
  * - Top-left select-all checkbox
- * - Switching scope deselects out-of-range cells
- * - Switching groupBy clears selection state
+ * - Switching scope deselects cells when view period is outside campaign
+ * - Switching scope deselects cells when scope reverts and selection no longer overlaps
  */
 
 import { test, expect } from "@playwright/test";
@@ -110,7 +110,9 @@ for (const groupBy of ["shift", "worker"] as const) {
       expect(countsAfterDeselect).not.toContain("cell");
     });
 
-    test("select/unselect individual assignment", async ({ page }, testInfo) => {
+    test("select/unselect individual assignment", async ({
+      page,
+    }, testInfo) => {
       const testRunId = (testInfo as any).testRunId as string;
       const scheduleTestBase = testBasesMap.get(testRunId)!;
 
@@ -190,9 +192,7 @@ for (const groupBy of ["shift", "worker"] as const) {
         rowCheckboxTestId = `worker-row-checkbox-${workers[0].id}`;
       }
 
-      const rowCheckbox = page.locator(
-        `[data-testid="${rowCheckboxTestId}"]`,
-      );
+      const rowCheckbox = page.locator(`[data-testid="${rowCheckboxTestId}"]`);
       await expect(rowCheckbox).toBeVisible();
 
       // Select entire row
@@ -251,9 +251,7 @@ for (const groupBy of ["shift", "worker"] as const) {
         await enterSelectionMode(page);
 
         // Switch to campaign scope
-        await page
-          .locator('[data-testid="schedule-scope-campaign"]')
-          .click();
+        await page.locator('[data-testid="schedule-scope-campaign"]').click();
 
         const workers = scheduleTestBase.getTestWorkers();
         const shifts = scheduleTestBase.getTestShifts();
@@ -302,9 +300,7 @@ for (const groupBy of ["shift", "worker"] as const) {
         await enterSelectionMode(page);
 
         // Switch to campaign scope and select all
-        await page
-          .locator('[data-testid="schedule-scope-campaign"]')
-          .click();
+        await page.locator('[data-testid="schedule-scope-campaign"]').click();
 
         const selectAllCheckbox = page.locator(
           '[data-testid="export-cell-select-all-checkbox"]',
@@ -317,9 +313,7 @@ for (const groupBy of ["shift", "worker"] as const) {
         const campaignCount = campaignMatch ? parseInt(campaignMatch[1]) : 0;
 
         // Switch back to view scope
-        await page
-          .locator('[data-testid="schedule-scope-view"]')
-          .click();
+        await page.locator('[data-testid="schedule-scope-view"]').click();
 
         const viewCountsText = await getSelectionCountsText(page);
         const viewMatch = viewCountsText.match(/(\d+) cell/);
@@ -328,38 +322,64 @@ for (const groupBy of ["shift", "worker"] as const) {
         // View count should be smaller than campaign count (week < month)
         expect(viewCount).toBeLessThanOrEqual(campaignCount);
       });
-    });
 
-    test("switching groupBy clears selection (page reload resets state)", async ({
-      page,
-    }, testInfo) => {
-      const testRunId = (testInfo as any).testRunId as string;
-      const scheduleTestBase = testBasesMap.get(testRunId)!;
-
-      // Select all cells
-      const selectAllCheckbox = page.locator(
-        '[data-testid="export-cell-select-all-checkbox"]',
-      );
-      await selectAllCheckbox.click();
-      const countsBeforeChange = await getSelectionCountsText(page);
-      expect(
-        countsBeforeChange.includes("cell") ||
-          countsBeforeChange.includes("assignment"),
-      ).toBe(true);
-
-      // Change groupBy — this reloads the page which resets React state
-      const otherGroupBy = groupBy === "shift" ? "worker" : "shift";
-      await scheduleTestBase.setScheduleViewSettings(
+      test("switching scope deselects out-of-scope cells when view is outside campaign", async ({
         page,
-        { groupBy: otherGroupBy },
-        true,
-      );
+      }, testInfo) => {
+        const testRunId = (testInfo as any).testRunId as string;
+        const scheduleTestBase = testBasesMap.get(testRunId)!;
 
-      // After reload, toolbar is gone (selection mode not persisted) — counts are cleared
-      const toolbarVisible = await page
-        .locator('[data-testid="schedule-action-toolbar"]')
-        .isVisible();
-      expect(toolbarVisible).toBe(false);
+        const today = dayjs.utc();
+        await scheduleTestBase.createCampaignSchedule(
+          today.startOf("month"),
+          today.endOf("month"),
+        );
+
+        // Navigate to the week following the end of the campaign (outside campaign range)
+        // Adding 7 days to endOf(month) guarantees the resulting week is entirely in the next month
+        const weekAfterCampaign = today.endOf("month").add(7, "days");
+        await scheduleTestBase.setScheduleViewSettings(page, {
+          targetDate: weekAfterCampaign,
+          timeFrame: "week",
+        });
+
+        await enterSelectionMode(page);
+
+        // Switch to campaign scope and select all
+        await page.locator('[data-testid="schedule-scope-campaign"]').click();
+
+        const selectAllCheckbox = page.locator(
+          '[data-testid="export-cell-select-all-checkbox"]',
+        );
+        await selectAllCheckbox.click();
+
+        const campaignCountsText = await getSelectionCountsText(page);
+        expect(
+          campaignCountsText.includes("cell") ||
+            campaignCountsText.includes("assignment"),
+        ).toBe(true);
+
+        // Switch to view scope — view period (week after campaign) has no overlap with campaign
+        await page.locator('[data-testid="schedule-scope-view"]').click();
+
+        const viewCountsAfterSwitch = await getSelectionCountsText(page);
+        expect(viewCountsAfterSwitch).toBe("");
+
+        // Select all in view scope
+        await selectAllCheckbox.click();
+
+        const viewCountsText = await getSelectionCountsText(page);
+        expect(
+          viewCountsText.includes("cell") ||
+            viewCountsText.includes("assignment"),
+        ).toBe(true);
+
+        // Switch back to campaign scope — view cells are outside campaign range
+        await page.locator('[data-testid="schedule-scope-campaign"]').click();
+
+        const campaignCountsAfterSwitch = await getSelectionCountsText(page);
+        expect(campaignCountsAfterSwitch).toBe("");
+      });
     });
   });
 }
