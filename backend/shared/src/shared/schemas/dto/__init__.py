@@ -1,6 +1,9 @@
 from shared.schemas.dto.assignment import (
     AssignmentDTO,
     AssignmentsRecurrencesResultDTO,
+    BulkAssignmentCreateDTO,
+    BulkAssignmentUpdateDTO,
+    BulkAssignmentDeleteDTO,
 )
 from shared.schemas.dto.attribute import AttributeDTO
 from shared.schemas.dto.breach import BreachDTO

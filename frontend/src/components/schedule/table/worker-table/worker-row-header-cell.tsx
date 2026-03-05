@@ -3,6 +3,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
+import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 import Tooltip from "@mui/material/Tooltip";
 // Components
@@ -26,6 +27,10 @@ export default function WorkerRowHeaderCell({
   assignments,
   scheduleCampaign,
   teamWithMembership,
+  isSelectionActive,
+  onRowSelect,
+  isRowSelected,
+  isRowIndeterminate,
 }: {
   lng: string;
   shifts: ShiftT[];
@@ -33,6 +38,10 @@ export default function WorkerRowHeaderCell({
   assignments: AssignmentT[];
   scheduleCampaign: ScheduleT | null;
   teamWithMembership: TeamWithMembership;
+  isSelectionActive?: boolean;
+  onRowSelect?: () => void;
+  isRowSelected?: boolean;
+  isRowIndeterminate?: boolean;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -111,6 +120,16 @@ export default function WorkerRowHeaderCell({
       }}
     >
       <div className="worker-row-header-cell-container">
+        {isSelectionActive && (
+          <Checkbox
+            size="small"
+            checked={!!isRowSelected}
+            indeterminate={isRowIndeterminate}
+            onChange={onRowSelect}
+            onClick={(e) => e.stopPropagation()}
+            sx={{ padding: "2px", flexShrink: 0 }}
+          />
+        )}
         <span
           className="worker-name"
           data-testid={`worker-name-${worker.id}`}

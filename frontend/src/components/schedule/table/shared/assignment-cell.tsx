@@ -1,4 +1,6 @@
 import React from "react";
+// MUI
+import Checkbox from "@mui/material/Checkbox";
 // Styles
 import "./assignment-cell.css";
 // Types
@@ -16,11 +18,17 @@ export default function AssignmentCell({
   scheduleViewSettings,
   handleAssignmentSelection,
   teamWithMembership,
+  isSelectionActive,
+  isSelected,
+  onAssignmentSelect,
 }: {
   assignmentData: AssignmentDataT;
   scheduleViewSettings: ScheduleViewSettingsT;
   handleAssignmentSelection: (seletedCell: AssignmentDataT) => void;
   teamWithMembership: TeamWithMembership;
+  isSelectionActive: boolean;
+  isSelected: boolean;
+  onAssignmentSelect: () => void;
 }) {
   const { background, sample, text } = ShiftColorMappings[
     assignmentData.shift.color
@@ -36,20 +44,46 @@ export default function AssignmentCell({
       data-testid={`assignment-cell-${assignmentData.assignment.id}`}
       onClick={() => {
         if (teamWithMembership.membership.role === TeamMembershipRole.OWNER) {
-          handleAssignmentSelection(assignmentData);
+          if (isSelectionActive && onAssignmentSelect) {
+            onAssignmentSelect();
+          } else {
+            handleAssignmentSelection(assignmentData);
+          }
         }
       }}
       style={
         {
           "--bg-color": background,
           "--text-color": text,
+          position: "relative",
           cursor:
             teamWithMembership.membership.role === TeamMembershipRole.OWNER
               ? "pointer"
               : "default",
+          outline: isSelected ? "2px solid #1976d2" : undefined,
+          outlineOffset: isSelected ? "-2px" : undefined,
         } as React.CSSProperties
       }
     >
+      {isSelectionActive && (
+        <Checkbox
+          size="small"
+          checked={!!isSelected}
+          onChange={(e) => {
+            e.stopPropagation();
+            onAssignmentSelect?.();
+          }}
+          onClick={(e) => e.stopPropagation()}
+          sx={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            padding: "1px",
+            zIndex: 5,
+            "& .MuiSvgIcon-root": { fontSize: 14 },
+          }}
+        />
+      )}
       <span className="a-cell-title">
         {scheduleViewSettings.groupBy === "worker"
           ? scheduleViewSettings.timeFrame === "week"

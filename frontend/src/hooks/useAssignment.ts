@@ -327,3 +327,105 @@ export function useGetReplacementCandidates() {
 
   return getReplacementCandidates;
 }
+
+/**
+ * Hook for bulk creating assignments (no recurrence)
+ */
+export function useBulkCreateAssignments() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+  const queryClient = useQueryClient();
+
+  const bulkCreateAssignments = useCallback(
+    async (
+      assignments: AssignmentT[],
+      teamId: string,
+    ): Promise<AssignmentsRecurrencesResultT> => {
+      if (loading)
+        throw new Error("Authentication still loading - please wait");
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error("User not authenticated - please sign in");
+
+      const result = await AssignmentApi.bulkCreateAssignments(
+        apiClient,
+        assignments,
+        teamId,
+      );
+      queryClient.invalidateQueries({
+        queryKey: assignmentsQueryKeys.teams(teamId),
+      });
+      return result;
+    },
+    [apiClient, isAuthenticated, loading, user, queryClient],
+  );
+
+  return bulkCreateAssignments;
+}
+
+/**
+ * Hook for bulk updating assignments
+ */
+export function useBulkUpdateAssignments() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+  const queryClient = useQueryClient();
+
+  const bulkUpdateAssignments = useCallback(
+    async (
+      assignments: AssignmentT[],
+      teamId: string,
+    ): Promise<AssignmentsRecurrencesResultT> => {
+      if (loading)
+        throw new Error("Authentication still loading - please wait");
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error("User not authenticated - please sign in");
+
+      const result = await AssignmentApi.bulkUpdateAssignments(
+        apiClient,
+        assignments,
+        teamId,
+      );
+      queryClient.invalidateQueries({
+        queryKey: assignmentsQueryKeys.teams(teamId),
+      });
+      return result;
+    },
+    [apiClient, isAuthenticated, loading, user, queryClient],
+  );
+
+  return bulkUpdateAssignments;
+}
+
+/**
+ * Hook for bulk deleting assignments
+ */
+export function useBulkDeleteAssignments() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+  const queryClient = useQueryClient();
+
+  const bulkDeleteAssignments = useCallback(
+    async (
+      assignmentIds: string[],
+      teamId: string,
+    ): Promise<AssignmentsRecurrencesResultT> => {
+      if (loading)
+        throw new Error("Authentication still loading - please wait");
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error("User not authenticated - please sign in");
+
+      const result = await AssignmentApi.bulkDeleteAssignments(
+        apiClient,
+        assignmentIds,
+        teamId,
+      );
+      queryClient.invalidateQueries({
+        queryKey: assignmentsQueryKeys.teams(teamId),
+      });
+      return result;
+    },
+    [apiClient, isAuthenticated, loading, user, queryClient],
+  );
+
+  return bulkDeleteAssignments;
+}

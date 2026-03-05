@@ -19,6 +19,10 @@ import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { CreateAssignmentT } from "@/types/assignment";
 import { AssignmentT } from "@/types/assignment";
 import { TeamWithMembership } from "@/types/team";
+import {
+  ScheduleSelectionState,
+  SelectionScope,
+} from "../../../../types/scheduleSelection";
 
 export default function ShiftTableRow({
   lng,
@@ -30,9 +34,14 @@ export default function ShiftTableRow({
   scheduleCampaign,
   scheduleCellsDict,
   scheduleViewSettings,
+  selectionState,
+  selectionScope,
   handleAssignmentSelection,
   handleDemandSelection,
   handleOpenCreateAssignment,
+  handleCellSelect,
+  handleAssignmentSelect,
+  handleRowSelect,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -43,9 +52,18 @@ export default function ShiftTableRow({
   scheduleCampaign: ScheduleT | null;
   scheduleCellsDict: ScheduleCellsDictT;
   scheduleViewSettings: ScheduleViewSettingsT;
+  selectionState: ScheduleSelectionState;
+  selectionScope: SelectionScope;
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
+  handleCellSelect: (
+    rowId: string,
+    date: string,
+    scheduleId: string | null,
+  ) => void;
+  handleAssignmentSelect: (assignmentId: string) => void;
+  handleRowSelect: (rowId: string, scope: SelectionScope) => void;
 }) {
   return (
     <TableRow>
@@ -56,6 +74,33 @@ export default function ShiftTableRow({
         assignments={assignments}
         shiftDemands={shiftDemands}
         scheduleCampaign={scheduleCampaign}
+        isSelectionActive={selectionState?.isActive}
+        isRowSelected={
+          !!selectionState?.isActive &&
+          periodDates.length > 0 &&
+          periodDates.every((pd) =>
+            selectionState.selectedCells.some(
+              (c) =>
+                c.rowId === shift.id && c.date === pd.date.format("YYYY-MM-DD"),
+            ),
+          )
+        }
+        isRowIndeterminate={
+          !!selectionState?.isActive &&
+          periodDates.some((pd) =>
+            selectionState.selectedCells.some(
+              (c) =>
+                c.rowId === shift.id && c.date === pd.date.format("YYYY-MM-DD"),
+            ),
+          ) &&
+          !periodDates.every((pd) =>
+            selectionState.selectedCells.some(
+              (c) =>
+                c.rowId === shift.id && c.date === pd.date.format("YYYY-MM-DD"),
+            ),
+          )
+        }
+        onRowSelect={() => handleRowSelect(shift.id, selectionScope ?? "view")}
       />
       {periodDates.map((pDate, dateIndex) => {
         const scheduleCellDataKey = generateOwnerIdDateKey(
@@ -72,9 +117,12 @@ export default function ShiftTableRow({
             shift={shift}
             scheduleCellData={scheduleCellData}
             scheduleViewSettings={scheduleViewSettings}
+            selectionState={selectionState}
             handleAssignmentSelection={handleAssignmentSelection}
             handleDemandSelection={handleDemandSelection}
             handleOpenCreateAssignment={handleOpenCreateAssignment}
+            handleCellSelect={handleCellSelect}
+            handleAssignmentSelect={handleAssignmentSelect}
           />
         );
       })}

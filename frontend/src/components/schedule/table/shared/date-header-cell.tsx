@@ -2,6 +2,7 @@ import React from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 // MUI
+import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 import Tooltip from "@mui/material/Tooltip";
 import { useTranslation } from "../../../../app/i18n/client";
@@ -12,6 +13,10 @@ import "./date-header-cell.css";
 // Types
 import { ScheduleStatus, periodDateT } from "../../../../types/schedule";
 import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
+import {
+  ScheduleSelectionState,
+  SelectionScope,
+} from "../../../../types/scheduleSelection";
 
 dayjs.extend(utc);
 type ScheduleStatusLogoProps = {
@@ -64,13 +69,46 @@ export default function DateHeaderCell({
   periodDate,
   teamWithMembership,
   lng,
+  isSelectionActive,
+  selectionState,
+  rowIds,
+  selectionScope,
+  onColumnSelect,
 }: {
   periodDate: periodDateT;
   teamWithMembership: TeamWithMembership;
   lng: string;
+  isSelectionActive?: boolean;
+  selectionState?: ScheduleSelectionState;
+  rowIds?: string[];
+  selectionScope?: SelectionScope;
+  onColumnSelect?: (
+    date: string,
+    rowIds: string[],
+    scope: SelectionScope,
+  ) => void;
 }) {
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
+  const dateStr = periodDate.date.format("YYYY-MM-DD");
+
+  const isColumnSelected =
+    !!isSelectionActive &&
+    !!rowIds?.length &&
+    rowIds.every((rowId) =>
+      selectionState?.selectedCells.some(
+        (c) => c.rowId === rowId && c.date === dateStr,
+      ),
+    );
+
+  const isColumnIndeterminate =
+    !!isSelectionActive &&
+    !isColumnSelected &&
+    !!rowIds?.some((rowId) =>
+      selectionState?.selectedCells.some(
+        (c) => c.rowId === rowId && c.date === dateStr,
+      ),
+    );
 
   return (
     <TableCell
@@ -104,6 +142,18 @@ export default function DateHeaderCell({
             />
           )}
         </RoleBased>
+        {isSelectionActive && (
+          <Checkbox
+            size="small"
+            checked={isColumnSelected}
+            indeterminate={isColumnIndeterminate}
+            onChange={() =>
+              onColumnSelect?.(dateStr, rowIds ?? [], selectionScope ?? "view")
+            }
+            onClick={(e) => e.stopPropagation()}
+            sx={{ padding: "2px", display: "block", margin: "0 auto" }}
+          />
+        )}
       </div>
     </TableCell>
   );

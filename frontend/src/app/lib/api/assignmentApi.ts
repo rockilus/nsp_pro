@@ -201,4 +201,67 @@ export class AssignmentApi extends BaseApi {
       toReplacementCandidateT(candidate),
     );
   }
+
+  /**
+   * Bulk create assignments (no recurrence) (authenticated)
+   */
+  static async bulkCreateAssignments(
+    apiClient: AuthenticatedApiClient,
+    assignments: AssignmentT[],
+    teamId: string,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "post",
+      `/assignments/bulk/teams/${teamId}`,
+      { assignments: assignments.map(fromAssignmentT) },
+    );
+    return toAssignmentsRecurrencesResultT(responseData);
+  }
+
+  /**
+   * Bulk update assignments (authenticated)
+   */
+  static async bulkUpdateAssignments(
+    apiClient: AuthenticatedApiClient,
+    assignments: AssignmentT[],
+    teamId: string,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "put",
+      `/assignments/bulk/teams/${teamId}`,
+      { assignments: assignments.map(fromAssignmentT) },
+    );
+    return toAssignmentsRecurrencesResultT(responseData);
+  }
+
+  /**
+   * Bulk delete assignments (authenticated)
+   */
+  static async bulkDeleteAssignments(
+    apiClient: AuthenticatedApiClient,
+    assignmentIds: string[],
+    teamId: string,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "delete",
+      `/assignments/bulk/teams/${teamId}`,
+      { ids: assignmentIds },
+    );
+    return toAssignmentsRecurrencesResultT(responseData);
+  }
 }

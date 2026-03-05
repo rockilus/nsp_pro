@@ -38,6 +38,8 @@ interface ScheduleSettingsProps {
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   scheduleViewSettings: ScheduleViewSettingsT;
+  isSelectionModeActive: boolean;
+  onToggleSelectionMode: () => void;
   handleSendDuplicateRequest: (
     request: DuplicateRequestT,
     campaignId: string,
@@ -54,6 +56,8 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   startDate,
   endDate,
   scheduleViewSettings,
+  isSelectionModeActive,
+  onToggleSelectionMode,
   handleSendDuplicateRequest,
   updateScheduleViewSettings,
   handleChangeTimeFrame,
@@ -201,6 +205,17 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
               >
                 {t("tools")}
               </h4>
+              <MenuItem
+                data-testid="settings-selection-mode-button"
+                onClick={() => {
+                  onToggleSelectionMode();
+                  handleClosePopover();
+                }}
+                sx={{ fontSize: "0.8rem" }}
+              >
+                {isSelectionModeActive ? "✓ " : ""}
+                {t("select")}
+              </MenuItem>
               <MenuItem
                 data-testid="settings-duplicate-week-button"
                 onClick={handleDuplicateWeek}

@@ -21,6 +21,10 @@ import {
 } from "@/types/assignment";
 import { RequestT } from "../../../../types/request";
 import { TeamWithMembership } from "@/types/team";
+import {
+  ScheduleSelectionState,
+  SelectionScope,
+} from "@/types/scheduleSelection";
 
 export default function WorkerTableRow({
   lng,
@@ -35,6 +39,11 @@ export default function WorkerTableRow({
   handleAssignmentSelection,
   handleRequestSelection,
   handleOpenCreateAssignment,
+  selectionState,
+  selectionScope,
+  handleCellSelect,
+  handleAssignmentSelect,
+  handleRowSelect,
 }: {
   lng: string;
   shifts: ShiftT[];
@@ -48,6 +57,15 @@ export default function WorkerTableRow({
   handleAssignmentSelection: (selectedCell: AssignmentDataDictT) => void;
   handleRequestSelection?: (request: RequestT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
+  selectionState: ScheduleSelectionState;
+  selectionScope: SelectionScope;
+  handleCellSelect: (
+    rowId: string,
+    date: string,
+    scheduleId: string | null,
+  ) => void;
+  handleAssignmentSelect: (assignmentId: string) => void;
+  handleRowSelect: (rowId: string, scope: SelectionScope) => void;
 }) {
   return (
     <TableRow>
@@ -58,6 +76,38 @@ export default function WorkerTableRow({
         assignments={assignments}
         scheduleCampaign={scheduleCampaign}
         teamWithMembership={teamWithMembership}
+        isSelectionActive={selectionState?.isActive}
+        isRowSelected={
+          !!selectionState?.isActive &&
+          periodDates.length > 0 &&
+          periodDates.every((pd) =>
+            selectionState.selectedCells.some(
+              (c) =>
+                c.rowId === worker.id &&
+                c.date === pd.date.format("YYYY-MM-DD"),
+            ),
+          )
+        }
+        isRowIndeterminate={
+          !!selectionState?.isActive &&
+          periodDates.some((pd) =>
+            selectionState.selectedCells.some(
+              (c) =>
+                c.rowId === worker.id &&
+                c.date === pd.date.format("YYYY-MM-DD"),
+            ),
+          ) &&
+          !periodDates.every((pd) =>
+            selectionState.selectedCells.some(
+              (c) =>
+                c.rowId === worker.id &&
+                c.date === pd.date.format("YYYY-MM-DD"),
+            ),
+          )
+        }
+        onRowSelect={() =>
+          handleRowSelect?.(worker.id, selectionScope ?? "view")
+        }
       />
       {periodDates.map((pDate, dateIndex) => {
         const scheduleCellDataKey = generateOwnerIdDateKey(
@@ -77,6 +127,9 @@ export default function WorkerTableRow({
             handleAssignmentSelection={handleAssignmentSelection}
             handleRequestSelection={handleRequestSelection}
             handleOpenCreateAssignment={handleOpenCreateAssignment}
+            selectionState={selectionState}
+            handleCellSelect={handleCellSelect}
+            handleAssignmentSelect={handleAssignmentSelect}
           />
         );
       })}

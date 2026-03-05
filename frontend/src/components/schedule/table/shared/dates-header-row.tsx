@@ -13,6 +13,10 @@ import {
   periodDateT,
 } from "../../../../types/schedule";
 import { TeamWithMembership } from "@/types/team";
+import {
+  ScheduleSelectionState,
+  SelectionScope,
+} from "../../../../types/scheduleSelection";
 
 export default function DatesHeaderRow({
   lng,
@@ -20,12 +24,26 @@ export default function DatesHeaderRow({
   periodDates,
   scheduleCampaign,
   handleExportSchedule,
+  isSelectionActive,
+  selectionState,
+  rowIds,
+  selectionScope,
+  handleColumnSelect,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
   periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
+  isSelectionActive?: boolean;
+  selectionState?: ScheduleSelectionState;
+  rowIds?: string[];
+  selectionScope?: SelectionScope;
+  handleColumnSelect?: (
+    date: string,
+    rowIds: string[],
+    scope: SelectionScope,
+  ) => void;
 }) {
   return (
     <TableRow
@@ -47,6 +65,11 @@ export default function DatesHeaderRow({
           periodDate={pDate}
           teamWithMembership={teamWithMembership}
           lng={lng}
+          isSelectionActive={isSelectionActive}
+          selectionState={selectionState}
+          rowIds={rowIds}
+          selectionScope={selectionScope}
+          onColumnSelect={handleColumnSelect}
         />
       ))}
     </TableRow>

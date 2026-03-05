@@ -27,3 +27,15 @@ class AssignmentsRecurrencesResultDTO(BaseModel):
     recurrencesRead: List[RecurrenceRuleDTO]
     recurrenceUpdated: RecurrenceRuleDTO | None
     recurrencesDeletedIds: List[str]
+
+
+class BulkAssignmentCreateDTO(BaseModel):
+    assignments: List[AssignmentDTO]
+
+
+class BulkAssignmentUpdateDTO(BaseModel):
+    assignments: List[AssignmentDTO]
+
+
+class BulkAssignmentDeleteDTO(BaseModel):
+    ids: List[str]
