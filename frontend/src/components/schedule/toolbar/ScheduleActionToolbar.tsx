@@ -75,6 +75,7 @@ export function ScheduleActionToolbar({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
 
   // In shift view: pick a worker for create/update; in worker view: pick a shift
@@ -89,18 +90,39 @@ export function ScheduleActionToolbar({
   const needsEntitySelect =
     selectedAction === "create" || selectedAction === "update";
 
-  const isMainDisabled = isLoading
-    ? true
-    : selectedAction === "create"
-      ? cellCount === 0 || !entityId
-      : selectedAction === "update"
-        ? assignmentCount === 0 || !entityId
-        : assignmentCount === 0;
+  const entityLabel = groupBy === "shift" ? "worker" : "shift";
+
+  const selectHasError =
+    validationError !== null && needsEntitySelect && !entityId;
+
+  const validate = (): string | null => {
+    switch (selectedAction) {
+      case "create":
+        if (cellCount === 0) return "Please select at least one cell.";
+        if (!entityId) return `Please select a ${entityLabel}.`;
+        return null;
+      case "update":
+        if (assignmentCount === 0)
+          return "Please select at least one assignment.";
+        if (!entityId) return `Please select a ${entityLabel}.`;
+        return null;
+      case "toggleFixed":
+      case "delete":
+        if (assignmentCount === 0)
+          return "Please select at least one assignment.";
+        return null;
+    }
+  };
 
   const currentActionLabel =
     ACTION_OPTIONS.find((a) => a.key === selectedAction)?.label ?? "";
 
   const handleMainAction = async () => {
+    const error = validate();
+    if (error) {
+      setValidationError(error);
+      return;
+    }
     if (selectedAction === "delete" && !deleteConfirm) {
       setDeleteConfirm(true);
       return;
@@ -133,6 +155,7 @@ export function ScheduleActionToolbar({
     setSelectedAction(key);
     setDropdownOpen(false);
     setDeleteConfirm(false);
+    setValidationError(null);
     if (key !== "create" && key !== "update") {
       setEntityId("");
     }
@@ -236,14 +259,21 @@ export function ScheduleActionToolbar({
           sx={{ flexShrink: 0, flex: 0.4 }}
         >
           {needsEntitySelect && (
-            <FormControl size="small" sx={{ minWidth: 160 }}>
+            <FormControl
+              size="small"
+              sx={{ minWidth: 160 }}
+              error={selectHasError}
+            >
               <InputLabel sx={{ fontSize: "0.8rem" }}>
                 {groupBy === "shift" ? "Worker" : "Shift"}
               </InputLabel>
               <Select
                 value={entityId}
                 label={groupBy === "shift" ? "Worker" : "Shift"}
-                onChange={(e) => setEntityId(e.target.value)}
+                onChange={(e) => {
+                  setEntityId(e.target.value);
+                  setValidationError(null);
+                }}
                 sx={{ fontSize: "0.8rem" }}
               >
                 {options.map((opt) => (
@@ -285,29 +315,40 @@ export function ScheduleActionToolbar({
               </Button>
             </Box>
           ) : (
-            <ButtonGroup
-              ref={anchorRef}
-              size="small"
-              variant="contained"
-              color={selectedAction === "delete" ? "error" : "primary"}
-            >
-              <Button
-                disabled={isMainDisabled}
-                onClick={handleMainAction}
-                sx={{
-                  fontSize: "0.75rem",
-                  textTransform: "none",
-                }}
+            <Box display="flex" flexDirection="column" alignItems="flex-start">
+              <ButtonGroup
+                ref={anchorRef}
+                size="small"
+                variant="contained"
+                color={selectedAction === "delete" ? "error" : "primary"}
               >
-                {currentActionLabel}
-              </Button>
-              <Button
-                sx={{ px: 0.5 }}
-                onClick={() => setDropdownOpen((prev) => !prev)}
-              >
-                <ArrowDropDownIcon fontSize="small" />
-              </Button>
-            </ButtonGroup>
+                <Button
+                  disabled={isLoading}
+                  onClick={handleMainAction}
+                  sx={{
+                    fontSize: "0.75rem",
+                    textTransform: "none",
+                  }}
+                >
+                  {currentActionLabel}
+                </Button>
+                <Button
+                  sx={{ px: 0.5 }}
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                >
+                  <ArrowDropDownIcon fontSize="small" />
+                </Button>
+              </ButtonGroup>
+              {validationError && (
+                <Typography
+                  variant="caption"
+                  color="error"
+                  sx={{ mt: 0.5, lineHeight: 1.2 }}
+                >
+                  {validationError}
+                </Typography>
+              )}
+            </Box>
           )}
         </Box>
         {/* Cancel */}
