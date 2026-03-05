@@ -413,17 +413,32 @@ export default function ScheduleTab({
         scope === "campaign" && scheduleCampaign
           ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
           : periodDates;
+      const datestrs = dates.map((pd) => pd.date.format("YYYY-MM-DD"));
+      const dateSet = new Set(datestrs);
+
+      const isWorkerView = scheduleViewSettings.groupBy === "worker";
+      const rowAssignmentIds = assignments
+        .filter((a) => {
+          const rowMatch = isWorkerView
+            ? a.workerId === rowId
+            : a.shiftId === rowId;
+          return rowMatch && dateSet.has(a.date.format("YYYY-MM-DD"));
+        })
+        .map((a) => a.id);
+
       setSelectionState((prev) => {
-        const datestrs = dates.map((pd) => pd.date.format("YYYY-MM-DD"));
         const isFullySelected = datestrs.every((ds) =>
           prev.selectedCells.some((c) => c.rowId === rowId && c.date === ds),
         );
         if (isFullySelected) {
-          const dateSet = new Set(datestrs);
+          const rowAssignmentIdSet = new Set(rowAssignmentIds);
           return {
             ...prev,
             selectedCells: prev.selectedCells.filter(
               (c) => !(c.rowId === rowId && dateSet.has(c.date)),
+            ),
+            selectedAssignmentIds: prev.selectedAssignmentIds.filter(
+              (id) => !rowAssignmentIdSet.has(id),
             ),
           };
         }
@@ -440,10 +455,26 @@ export default function ScheduleTab({
             date: pd.date.format("YYYY-MM-DD"),
             scheduleId: pd.scheduleId,
           }));
-        return { ...prev, selectedCells: [...prev.selectedCells, ...toAdd] };
+        const newAssignmentIds = rowAssignmentIds.filter(
+          (id) => !prev.selectedAssignmentIds.includes(id),
+        );
+        return {
+          ...prev,
+          selectedCells: [...prev.selectedCells, ...toAdd],
+          selectedAssignmentIds: [
+            ...prev.selectedAssignmentIds,
+            ...newAssignmentIds,
+          ],
+        };
       });
     },
-    [scheduleCampaign, periodDates, buildDates],
+    [
+      scheduleCampaign,
+      periodDates,
+      buildDates,
+      assignments,
+      scheduleViewSettings.groupBy,
+    ],
   );
 
   const handleColumnSelect = useCallback(
@@ -466,6 +497,19 @@ export default function ScheduleTab({
                     ?.scheduleId ?? null,
               },
             ];
+
+      const isWorkerView = scheduleViewSettings.groupBy === "worker";
+      const targetDateSet = new Set(targetDates.map((td) => td.date));
+      const rowIdSet = new Set(rowIds);
+      const colAssignmentIds = assignments
+        .filter((a) => {
+          const rowMatch = isWorkerView
+            ? rowIdSet.has(a.workerId)
+            : rowIdSet.has(a.shiftId);
+          return rowMatch && targetDateSet.has(a.date.format("YYYY-MM-DD"));
+        })
+        .map((a) => a.id);
+
       setSelectionState((prev) => {
         const isFullySelected = rowIds.every((rowId) =>
           targetDates.every(({ date: d }) =>
@@ -473,12 +517,14 @@ export default function ScheduleTab({
           ),
         );
         if (isFullySelected) {
-          const targetDateSet = new Set(targetDates.map((td) => td.date));
-          const rowIdSet = new Set(rowIds);
+          const colAssignmentIdSet = new Set(colAssignmentIds);
           return {
             ...prev,
             selectedCells: prev.selectedCells.filter(
               (c) => !(rowIdSet.has(c.rowId) && targetDateSet.has(c.date)),
+            ),
+            selectedAssignmentIds: prev.selectedAssignmentIds.filter(
+              (id) => !colAssignmentIdSet.has(id),
             ),
           };
         }
@@ -494,10 +540,26 @@ export default function ScheduleTab({
             }
           }
         }
-        return { ...prev, selectedCells: [...prev.selectedCells, ...newCells] };
+        const newAssignmentIds = colAssignmentIds.filter(
+          (id) => !prev.selectedAssignmentIds.includes(id),
+        );
+        return {
+          ...prev,
+          selectedCells: [...prev.selectedCells, ...newCells],
+          selectedAssignmentIds: [
+            ...prev.selectedAssignmentIds,
+            ...newAssignmentIds,
+          ],
+        };
       });
     },
-    [scheduleCampaign, periodDates, buildDates],
+    [
+      scheduleCampaign,
+      periodDates,
+      buildDates,
+      assignments,
+      scheduleViewSettings.groupBy,
+    ],
   );
 
   const handleSelectAll = useCallback(
