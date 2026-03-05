@@ -130,61 +130,71 @@ export default function WorkerRowHeaderCell({
             sx={{ padding: "2px", flexShrink: 0 }}
           />
         )}
-        <span
-          className="worker-name"
-          data-testid={`worker-name-${worker.id}`}
-        >{`${worker.name} (${worker.acronym})`}</span>
-        <RoleBased
-          role={teamWithMembership.membership.role}
-          allowedRoles={[TeamMembershipRole.OWNER]}
-        >
-          {scheduleCampaign && (
-            <Tooltip title={t("h/week_tooltip")} placement="right" arrow>
-              <div
-                className="worker-stats-item"
-                data-testid={`worker-stats-hours-${worker.id}`}
+        <div className="worker-row-header-cell-content">
+          <span
+            className="worker-name"
+            data-testid={`worker-name-${worker.id}`}
+          >{`${worker.name} (${worker.acronym})`}</span>
+          <RoleBased
+            role={teamWithMembership.membership.role}
+            allowedRoles={[TeamMembershipRole.OWNER]}
+          >
+            {scheduleCampaign && (
+              <Tooltip title={t("h/week_tooltip")} placement="right" arrow>
+                <div
+                  className="worker-stats-item"
+                  data-testid={`worker-stats-hours-${worker.id}`}
+                >
+                  <div
+                    className={`worker-stats-container ${
+                      workerWeeklyWorkTimeActual > worker.weeklyHoursDesired &&
+                      "breach"
+                    }`}
+                  >
+                    <span className="worker-stats">
+                      {workerWeeklyWorkTimeActual.toFixed(1)}
+                    </span>
+                    <span className="worker-stats-slash">/</span>
+                    <span className="worker-stats">
+                      {worker.weeklyHoursDesired}
+                    </span>
+                  </div>
+                  <span className="worker-stats-label">{t("h/week")}</span>
+                </div>
+              </Tooltip>
+            )}
+            {scheduleCampaign && (
+              <Tooltip
+                title={t("duties/month_tooltip")}
+                placement="right"
+                arrow
               >
                 <div
-                  className={`worker-stats-container ${
-                    workerWeeklyWorkTimeActual > worker.weeklyHoursDesired &&
-                    "breach"
-                  }`}
+                  className="worker-stats-item"
+                  data-testid={`worker-stats-duties-${worker.id}`}
                 >
-                  <span className="worker-stats">
-                    {workerWeeklyWorkTimeActual.toFixed(1)}
-                  </span>
-                  <span className="worker-stats-slash">/</span>
-                  <span className="worker-stats">
-                    {worker.weeklyHoursDesired}
+                  <div
+                    className={`worker-stats-container ${
+                      workerDutiesPerMonthActual > worker.dutiesPerMonth &&
+                      "breach"
+                    }`}
+                  >
+                    <span className="worker-stats">
+                      {workerDutiesPerMonthActual.toFixed(1)}
+                    </span>
+                    <span className="worker-stats-slash">/</span>
+                    <span className="worker-stats">
+                      {worker.dutiesPerMonth}
+                    </span>
+                  </div>
+                  <span className="worker-stats-label">
+                    {t("duties/month")}
                   </span>
                 </div>
-                <span className="worker-stats-label">{t("h/week")}</span>
-              </div>
-            </Tooltip>
-          )}
-          {scheduleCampaign && (
-            <Tooltip title={t("duties/month_tooltip")} placement="right" arrow>
-              <div
-                className="worker-stats-item"
-                data-testid={`worker-stats-duties-${worker.id}`}
-              >
-                <div
-                  className={`worker-stats-container ${
-                    workerDutiesPerMonthActual > worker.dutiesPerMonth &&
-                    "breach"
-                  }`}
-                >
-                  <span className="worker-stats">
-                    {workerDutiesPerMonthActual.toFixed(1)}
-                  </span>
-                  <span className="worker-stats-slash">/</span>
-                  <span className="worker-stats">{worker.dutiesPerMonth}</span>
-                </div>
-                <span className="worker-stats-label">{t("duties/month")}</span>
-              </div>
-            </Tooltip>
-          )}
-        </RoleBased>
+              </Tooltip>
+            )}
+          </RoleBased>
+        </div>
       </div>
     </TableCell>
   );
