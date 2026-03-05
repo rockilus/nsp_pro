@@ -1299,7 +1299,18 @@ export default function ScheduleTab({
               handleNextPeriod={handleNextPeriod}
               handleValidateSchedule={handleValidateSchedule}
               handleSendDuplicateRequest={handleSendDuplicateRequest}
-              updateScheduleViewSettings={updateScheduleViewSettings}
+              updateScheduleViewSettings={(newSettings) => {
+                if (
+                  newSettings.groupBy !== undefined &&
+                  newSettings.groupBy !== scheduleViewSettings.groupBy
+                ) {
+                  setSelectionState((prev) => ({
+                    ...prev,
+                    selectedCells: [],
+                  }));
+                }
+                updateScheduleViewSettings(newSettings);
+              }}
               handleChangeTimeFrame={handleChangeTimeFrame}
               useSqsWorkflow={true}
               onSqsSolveComplete={handleSqsSolveComplete}
