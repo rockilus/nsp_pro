@@ -9,7 +9,11 @@ export interface AuthenticatedApiClient {
   get: <T>(endpoint: string, options?: RequestInit) => Promise<T>;
   post: <T>(endpoint: string, data?: any, options?: RequestInit) => Promise<T>;
   put: <T>(endpoint: string, data?: any, options?: RequestInit) => Promise<T>;
-  delete: <T>(endpoint: string, options?: RequestInit) => Promise<T>;
+  delete: <T>(
+    endpoint: string,
+    data?: any,
+    options?: RequestInit,
+  ) => Promise<T>;
   // Optional raw methods for endpoints that return non-JSON (e.g. file downloads)
   getRaw?: (endpoint: string, options?: RequestInit) => Promise<Response>;
   postRaw?: (
@@ -86,7 +90,7 @@ export abstract class BaseApi {
         case "put":
           return await apiClient.put<T>(endpoint, data, options);
         case "delete":
-          return await apiClient.delete<T>(endpoint, options);
+          return await apiClient.delete<T>(endpoint, data, options);
         default:
           throw new Error(`Unsupported method: ${method}`);
       }

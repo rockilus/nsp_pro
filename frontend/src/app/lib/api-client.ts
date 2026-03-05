@@ -214,8 +214,17 @@ class APIClient {
     endpoint: string,
     user?: User | null,
     options?: ApiClientOptions,
+    data?: any,
   ): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "DELETE" }, user);
+    return this.request<T>(
+      endpoint,
+      {
+        ...options,
+        method: "DELETE",
+        body: data ? JSON.stringify(data) : undefined,
+      },
+      user,
+    );
   }
 }
 
@@ -250,8 +259,8 @@ export function useApiClient() {
         apiClient.postRaw(endpoint, data, user, options),
       put: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
         apiClient.put<T>(endpoint, data, user, options),
-      delete: <T>(endpoint: string, options?: ApiClientOptions) =>
-        apiClient.delete<T>(endpoint, user, options),
+      delete: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
+        apiClient.delete<T>(endpoint, user, options, data),
     };
   }, [user, isAuthenticated, loading]); // Stable dependencies
 }
@@ -271,8 +280,8 @@ export function useSimpleApiClient() {
         apiClient.postRaw(endpoint, data, null, options),
       put: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
         apiClient.put<T>(endpoint, data, null, options),
-      delete: <T>(endpoint: string, options?: ApiClientOptions) =>
-        apiClient.delete<T>(endpoint, null, options),
+      delete: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
+        apiClient.delete<T>(endpoint, null, options, data),
     }),
     [],
   );

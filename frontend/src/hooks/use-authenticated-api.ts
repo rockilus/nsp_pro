@@ -10,6 +10,7 @@ export function useAuthenticatedAPI() {
       apiClient.post<T>(endpoint, data, user),
     put: <T>(endpoint: string, data?: any) =>
       apiClient.put<T>(endpoint, data, user),
-    delete: <T>(endpoint: string) => apiClient.delete<T>(endpoint, user),
+    delete: <T>(endpoint: string, data?: any) =>
+      apiClient.delete<T>(endpoint, user, undefined, data),
   };
 }
