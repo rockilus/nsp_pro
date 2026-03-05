@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Box,
   Paper,
   Button,
+  ButtonGroup,
   IconButton,
   Divider,
   Typography,
@@ -13,7 +14,12 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Tooltip,
+  Popper,
+  Grow,
+  ClickAwayListener,
+  MenuList,
 } from "@mui/material";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LockIcon from "@mui/icons-material/Lock";
@@ -24,6 +30,15 @@ import {
 import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
 import { ScheduleT } from "../../../types/schedule";
+
+type ActionKey = "create" | "update" | "toggleFixed" | "delete";
+
+const ACTION_OPTIONS: { key: ActionKey; label: string }[] = [
+  { key: "create", label: "Create Assignments" },
+  { key: "update", label: "Update Assignments" },
+  { key: "toggleFixed", label: "Toggle Fixed" },
+  { key: "delete", label: "Delete Assignments" },
+];
 
 interface ScheduleActionToolbarProps {
   lng: string;
@@ -55,13 +70,12 @@ export function ScheduleActionToolbar({
   scope,
   onScopeChange,
 }: ScheduleActionToolbarProps) {
-  const [createId, setCreateId] = useState<string>("");
-  const [updateId, setUpdateId] = useState<string>("");
+  const [selectedAction, setSelectedAction] = useState<ActionKey>("create");
+  const [entityId, setEntityId] = useState<string>("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isTogglingFixed, setIsTogglingFixed] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   // In shift view: pick a worker for create/update; in worker view: pick a shift
   const options = groupBy === "shift" ? workers : shifts;
@@ -72,48 +86,55 @@ export function ScheduleActionToolbar({
   const cellCount = selectionState.selectedCells.length;
   const assignmentCount = selectionState.selectedAssignmentIds.length;
 
-  const handleCreate = async () => {
-    if (!createId) return;
-    setIsCreating(true);
-    try {
-      await onBulkCreate(createId);
-      setCreateId("");
-    } finally {
-      setIsCreating(false);
-    }
-  };
+  const needsEntitySelect =
+    selectedAction === "create" || selectedAction === "update";
 
-  const handleUpdate = async () => {
-    if (!updateId) return;
-    setIsUpdating(true);
-    try {
-      await onBulkUpdate(updateId);
-      setUpdateId("");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+  const isMainDisabled = isLoading
+    ? true
+    : selectedAction === "create"
+      ? cellCount === 0 || !entityId
+      : selectedAction === "update"
+        ? assignmentCount === 0 || !entityId
+        : assignmentCount === 0;
 
-  const handleToggleFixed = async () => {
-    setIsTogglingFixed(true);
-    try {
-      await onBulkToggleFixed();
-    } finally {
-      setIsTogglingFixed(false);
-    }
-  };
+  const currentActionLabel =
+    ACTION_OPTIONS.find((a) => a.key === selectedAction)?.label ?? "";
 
-  const handleDelete = async () => {
-    if (!deleteConfirm) {
+  const handleMainAction = async () => {
+    if (selectedAction === "delete" && !deleteConfirm) {
       setDeleteConfirm(true);
       return;
     }
-    setIsDeleting(true);
+    setIsLoading(true);
     try {
-      await onBulkDelete();
-      setDeleteConfirm(false);
+      switch (selectedAction) {
+        case "create":
+          await onBulkCreate(entityId);
+          setEntityId("");
+          break;
+        case "update":
+          await onBulkUpdate(entityId);
+          setEntityId("");
+          break;
+        case "toggleFixed":
+          await onBulkToggleFixed();
+          break;
+        case "delete":
+          await onBulkDelete();
+          setDeleteConfirm(false);
+          break;
+      }
     } finally {
-      setIsDeleting(false);
+      setIsLoading(false);
+    }
+  };
+
+  const handleActionSelect = (key: ActionKey) => {
+    setSelectedAction(key);
+    setDropdownOpen(false);
+    setDeleteConfirm(false);
+    if (key !== "create" && key !== "update") {
+      setEntityId("");
     }
   };
 
@@ -137,7 +158,7 @@ export function ScheduleActionToolbar({
         flexWrap="wrap"
         minHeight="44px"
       >
-        {/* Selection counts */}
+        {/* 1. Selection counts */}
         <Typography
           variant="body2"
           sx={{ color: "text.secondary", minWidth: 80 }}
@@ -150,105 +171,82 @@ export function ScheduleActionToolbar({
 
         <Divider orientation="vertical" flexItem />
 
-        {/* Create section */}
-        <FormControl size="small" sx={{ minWidth: 140 }}>
-          <InputLabel sx={{ fontSize: "0.8rem" }}>
-            {groupBy === "shift" ? "Worker" : "Shift"}
-          </InputLabel>
-          <Select
-            value={createId}
-            label={groupBy === "shift" ? "Worker" : "Shift"}
-            onChange={(e) => setCreateId(e.target.value)}
-            sx={{ fontSize: "0.8rem" }}
-          >
-            {options.map((opt) => (
-              <MenuItem
-                key={optionId(opt)}
-                value={optionId(opt)}
-                sx={{ fontSize: "0.8rem" }}
+        {/* 2. Target period (scope selector) — only when a campaign exists */}
+        {scheduleCampaign && (
+          <>
+            <Box display="flex" alignItems="center" gap={0.5}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ whiteSpace: "nowrap" }}
               >
-                {optionLabel(opt)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Button
-          size="small"
-          variant="contained"
-          disabled={!createId || cellCount === 0 || isCreating}
-          onClick={handleCreate}
-          sx={{ fontSize: "0.75rem" }}
-        >
-          Create
-        </Button>
-
-        <Divider orientation="vertical" flexItem />
-
-        {/* Update section */}
-        <FormControl size="small" sx={{ minWidth: 140 }}>
-          <InputLabel sx={{ fontSize: "0.8rem" }}>
-            {groupBy === "shift" ? "Worker" : "Shift"}
-          </InputLabel>
-          <Select
-            value={updateId}
-            label={groupBy === "shift" ? "Worker" : "Shift"}
-            onChange={(e) => setUpdateId(e.target.value)}
-            sx={{ fontSize: "0.8rem" }}
-          >
-            {options.map((opt) => (
-              <MenuItem
-                key={optionId(opt)}
-                value={optionId(opt)}
-                sx={{ fontSize: "0.8rem" }}
+                Target period:
+              </Typography>
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                value={scope}
+                onChange={(_, val) => val && onScopeChange(val)}
               >
-                {optionLabel(opt)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Button
-          size="small"
-          variant="outlined"
-          disabled={!updateId || assignmentCount === 0 || isUpdating}
-          onClick={handleUpdate}
-          sx={{ fontSize: "0.75rem" }}
-        >
-          Update
-        </Button>
+                <Tooltip title="Apply actions to the currently visible period">
+                  <ToggleButton
+                    value="view"
+                    sx={{ fontSize: "0.7rem", textTransform: "none" }}
+                  >
+                    View
+                  </ToggleButton>
+                </Tooltip>
+                <Tooltip title="Apply actions across the full campaign">
+                  <ToggleButton
+                    value="campaign"
+                    sx={{ fontSize: "0.7rem", textTransform: "none" }}
+                  >
+                    Campaign
+                  </ToggleButton>
+                </Tooltip>
+              </ToggleButtonGroup>
+            </Box>
+            <Divider orientation="vertical" flexItem />
+          </>
+        )}
 
-        <Divider orientation="vertical" flexItem />
-
-        {/* Toggle Fixed */}
-        <Tooltip title="Toggle fixed/unfixed on selected assignments">
-          <span>
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<LockIcon fontSize="small" />}
-              disabled={assignmentCount === 0 || isTogglingFixed}
-              onClick={handleToggleFixed}
-              sx={{ fontSize: "0.75rem" }}
+        {/* 3. Action area */}
+        {needsEntitySelect && (
+          <FormControl size="small" sx={{ minWidth: 140 }}>
+            <InputLabel sx={{ fontSize: "0.8rem" }}>
+              {groupBy === "shift" ? "Worker" : "Shift"}
+            </InputLabel>
+            <Select
+              value={entityId}
+              label={groupBy === "shift" ? "Worker" : "Shift"}
+              onChange={(e) => setEntityId(e.target.value)}
+              sx={{ fontSize: "0.8rem" }}
             >
-              Toggle Fixed
-            </Button>
-          </span>
-        </Tooltip>
+              {options.map((opt) => (
+                <MenuItem
+                  key={optionId(opt)}
+                  value={optionId(opt)}
+                  sx={{ fontSize: "0.8rem" }}
+                >
+                  {optionLabel(opt)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
 
-        <Divider orientation="vertical" flexItem />
-
-        {/* Delete */}
         {deleteConfirm ? (
           <Box display="flex" alignItems="center" gap={0.5}>
             <Typography variant="caption" color="error">
-              Confirm delete {assignmentCount} assignment
+              Delete {assignmentCount} assignment
               {assignmentCount !== 1 ? "s" : ""}?
             </Typography>
             <Button
               size="small"
               variant="contained"
               color="error"
-              disabled={isDeleting}
-              onClick={handleDelete}
+              disabled={isLoading}
+              onClick={handleMainAction}
               sx={{ fontSize: "0.75rem" }}
             >
               Confirm
@@ -259,46 +257,83 @@ export function ScheduleActionToolbar({
               onClick={() => setDeleteConfirm(false)}
               sx={{ fontSize: "0.75rem" }}
             >
-              No
+              Cancel
             </Button>
           </Box>
         ) : (
-          <Tooltip title="Delete selected assignments">
-            <span>
-              <Button
-                size="small"
-                variant="outlined"
-                color="error"
-                startIcon={<DeleteIcon fontSize="small" />}
-                disabled={assignmentCount === 0}
-                onClick={handleDelete}
-                sx={{ fontSize: "0.75rem" }}
-              >
-                Delete
-              </Button>
-            </span>
-          </Tooltip>
+          <ButtonGroup
+            ref={anchorRef}
+            size="small"
+            variant="contained"
+            color={selectedAction === "delete" ? "error" : "primary"}
+          >
+            <Button
+              disabled={isMainDisabled}
+              onClick={handleMainAction}
+              sx={{ fontSize: "0.75rem", textTransform: "none" }}
+            >
+              {currentActionLabel}
+            </Button>
+            <Button
+              sx={{ px: 0.5 }}
+              onClick={() => setDropdownOpen((prev) => !prev)}
+            >
+              <ArrowDropDownIcon fontSize="small" />
+            </Button>
+          </ButtonGroup>
         )}
 
-        {/* Scope toggle — only when campaign exists */}
-        {scheduleCampaign && (
-          <>
-            <Divider orientation="vertical" flexItem />
-            <ToggleButtonGroup
-              size="small"
-              exclusive
-              value={scope}
-              onChange={(_, val) => val && onScopeChange(val)}
+        <Popper
+          sx={{ zIndex: 1300 }}
+          open={dropdownOpen}
+          anchorEl={anchorRef.current}
+          placement="top-start"
+          transition
+          disablePortal
+        >
+          {({ TransitionProps }) => (
+            <Grow
+              {...TransitionProps}
+              style={{ transformOrigin: "center bottom" }}
             >
-              <ToggleButton value="view" sx={{ fontSize: "0.7rem" }}>
-                View
-              </ToggleButton>
-              <ToggleButton value="campaign" sx={{ fontSize: "0.7rem" }}>
-                Campaign
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </>
-        )}
+              <Paper>
+                <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
+                  <MenuList autoFocusItem dense>
+                    {ACTION_OPTIONS.map((action) => (
+                      <MenuItem
+                        key={action.key}
+                        selected={action.key === selectedAction}
+                        onClick={() => handleActionSelect(action.key)}
+                        sx={{ fontSize: "0.8rem" }}
+                      >
+                        {action.key === "toggleFixed" && (
+                          <LockIcon
+                            fontSize="small"
+                            sx={{ mr: 1, color: "text.secondary" }}
+                          />
+                        )}
+                        {action.key === "delete" && (
+                          <DeleteIcon
+                            fontSize="small"
+                            sx={{ mr: 1, color: "error.main" }}
+                          />
+                        )}
+                        <Typography
+                          variant="inherit"
+                          color={
+                            action.key === "delete" ? "error" : "text.primary"
+                          }
+                        >
+                          {action.label}
+                        </Typography>
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </ClickAwayListener>
+              </Paper>
+            </Grow>
+          )}
+        </Popper>
 
         <Box flex={1} />
 
