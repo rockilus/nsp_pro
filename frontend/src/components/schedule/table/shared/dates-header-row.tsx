@@ -30,6 +30,7 @@ export default function DatesHeaderRow({
   rowIds,
   selectionScope,
   handleColumnSelect,
+  handleSelectAll,
   assignments,
 }: {
   lng: string;
@@ -37,16 +38,17 @@ export default function DatesHeaderRow({
   periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
-  isSelectionActive?: boolean;
-  selectionState?: ScheduleSelectionState;
-  rowIds?: string[];
-  selectionScope?: SelectionScope;
-  handleColumnSelect?: (
+  isSelectionActive: boolean;
+  selectionState: ScheduleSelectionState;
+  rowIds: string[];
+  selectionScope: SelectionScope;
+  handleColumnSelect: (
     date: string,
     rowIds: string[],
     scope: SelectionScope,
   ) => void;
-  assignments?: AssignmentT[];
+  handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
+  assignments: AssignmentT[];
 }) {
   return (
     <TableRow
@@ -61,6 +63,11 @@ export default function DatesHeaderRow({
         periodDates={periodDates}
         scheduleCampaign={scheduleCampaign}
         handleExportSchedule={handleExportSchedule}
+        isSelectionActive={isSelectionActive}
+        selectionState={selectionState}
+        rowIds={rowIds}
+        selectionScope={selectionScope}
+        handleSelectAll={handleSelectAll}
       />
       {periodDates.map((pDate, dateIndex) => (
         <DateHeaderCell

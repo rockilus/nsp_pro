@@ -134,6 +134,7 @@ export default function ScheduleTableWorker({
             rowIds={workersForHeader.map((w) => w.id)}
             selectionScope={selectionScope}
             handleColumnSelect={handleColumnSelect}
+            handleSelectAll={handleSelectAll}
             assignments={assignments}
           />
           {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&

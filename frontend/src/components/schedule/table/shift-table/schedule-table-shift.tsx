@@ -133,6 +133,7 @@ export default function ScheduleTableShift({
             rowIds={shiftsForHeader.map((s) => s.id)}
             selectionScope={selectionScope}
             handleColumnSelect={handleColumnSelect}
+            handleSelectAll={handleSelectAll}
             assignments={assignments}
           />
           <RoleBased
