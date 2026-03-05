@@ -337,17 +337,19 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     await expect(rowCheckbox).toBeVisible();
     await rowCheckbox.click();
 
-    // Pick workers[1] as the entity — no pre-existing assignments in the week
-    // for workers[1], so we expect exactly 7 new assignments (one per day)
-    await page.click('[data-testid="schedule-entity-select"]');
-    await workerOption.click();
-
+    // Snapshot assignments before the bulk create
     const beforeCreate = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      referenceDate.startOf("week"),
-      referenceDate.endOf("week"),
+      weekStart,
+      weekEnd,
     );
-    const countBefore = beforeCreate.assignmentsRead.length;
+    const beforeIds = new Set(beforeCreate.assignmentsRead.map((a) => a.id));
+
+    // Pick workers[1] as the entity
+    await page.click('[data-testid="schedule-entity-select"]');
+    await page
+      .locator(`[data-testid="schedule-entity-option-${workers[1].id}"]`)
+      .click();
 
     await page.click('[data-testid="schedule-action-main-button"]');
     await page.waitForTimeout(1500);
@@ -358,9 +360,9 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       weekEnd,
     );
 
-    // Filter to only the assignments created for workers[1] + shifts[0]
+    // Build the list of truly new assignments by excluding IDs that existed before
     const createdAssignments = afterCreate.assignmentsRead.filter(
-      (a) => a.workerId === workers[1].id && a.shiftId === shifts[0].id,
+      (a) => !beforeIds.has(a.id),
     );
     expect(createdAssignments).toHaveLength(7);
 
