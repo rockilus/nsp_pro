@@ -578,13 +578,32 @@ export default function ScheduleTab({
           });
         }
       }
+
+      const isWorkerView = scheduleViewSettings.groupBy === "worker";
+      const rowIdSet = new Set(rowIds);
+      const dateSet = new Set(newCells.map((c) => c.date));
+      const newAssignmentIds = assignments
+        .filter((a) => {
+          const rowMatch = isWorkerView
+            ? rowIdSet.has(a.workerId)
+            : rowIdSet.has(a.shiftId);
+          return rowMatch && dateSet.has(a.date.format("YYYY-MM-DD"));
+        })
+        .map((a) => a.id);
+
       setSelectionState((prev) => ({
         ...prev,
         selectedCells: newCells,
-        selectedAssignmentIds: [],
+        selectedAssignmentIds: newAssignmentIds,
       }));
     },
-    [scheduleCampaign, periodDates, buildDates],
+    [
+      scheduleCampaign,
+      periodDates,
+      buildDates,
+      assignments,
+      scheduleViewSettings.groupBy,
+    ],
   );
 
   //////////////////////////
