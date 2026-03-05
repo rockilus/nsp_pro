@@ -184,6 +184,7 @@ export function ScheduleActionToolbar({
               </Typography>
               <ToggleButtonGroup
                 size="small"
+                color="primary"
                 exclusive
                 value={scope}
                 onChange={(_, val) => val && onScopeChange(val)}
