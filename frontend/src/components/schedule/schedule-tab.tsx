@@ -984,6 +984,39 @@ export default function ScheduleTab({
     bulkDeleteAssignments,
   ]);
 
+  const handleScopeChange = useCallback(
+    (newScope: SelectionScope) => {
+      const validDates =
+        newScope === "campaign" && scheduleCampaign
+          ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
+          : periodDates;
+      const validDateSet = new Set(
+        validDates.map((pd) => pd.date.format("YYYY-MM-DD")),
+      );
+      setSelectionState((prev) => {
+        const newSelectedCells = prev.selectedCells.filter((c) =>
+          validDateSet.has(c.date),
+        );
+        const newSelectedAssignmentIds = prev.selectedAssignmentIds.filter(
+          (id) => {
+            const assignment = assignments.find((a) => a.id === id);
+            return (
+              assignment &&
+              validDateSet.has(assignment.date.format("YYYY-MM-DD"))
+            );
+          },
+        );
+        return {
+          ...prev,
+          selectedCells: newSelectedCells,
+          selectedAssignmentIds: newSelectedAssignmentIds,
+        };
+      });
+      setSelectionScope(newScope);
+    },
+    [scheduleCampaign, periodDates, buildDates, assignments],
+  );
+
   const handleBulkToggleFixed = useCallback(async () => {
     const assignmentsToUpdate: AssignmentT[] = assignments
       .filter((a) => selectionState.selectedAssignmentIds.includes(a.id))
@@ -1284,7 +1317,7 @@ export default function ScheduleTab({
                   scheduleCampaign={scheduleCampaign}
                   groupBy={scheduleViewSettings.groupBy}
                   scope={selectionScope}
-                  onScopeChange={setSelectionScope}
+                  onScopeChange={handleScopeChange}
                   onBulkCreate={handleBulkCreateAssignments}
                   onBulkUpdate={handleBulkUpdateAssignments}
                   onBulkToggleFixed={handleBulkToggleFixed}
