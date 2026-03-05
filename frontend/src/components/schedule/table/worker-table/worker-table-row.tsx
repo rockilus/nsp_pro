@@ -90,20 +90,25 @@ export default function WorkerTableRow({
         }
         isRowIndeterminate={
           !!selectionState?.isActive &&
-          periodDates.some((pd) =>
-            selectionState.selectedCells.some(
-              (c) =>
-                c.rowId === worker.id &&
-                c.date === pd.date.format("YYYY-MM-DD"),
-            ),
-          ) &&
           !periodDates.every((pd) =>
             selectionState.selectedCells.some(
               (c) =>
                 c.rowId === worker.id &&
                 c.date === pd.date.format("YYYY-MM-DD"),
             ),
-          )
+          ) &&
+          (periodDates.some((pd) =>
+            selectionState.selectedCells.some(
+              (c) =>
+                c.rowId === worker.id &&
+                c.date === pd.date.format("YYYY-MM-DD"),
+            ),
+          ) ||
+            assignments.some(
+              (a) =>
+                a.workerId === worker.id &&
+                selectionState.selectedAssignmentIds.includes(a.id),
+            ))
         }
         onRowSelect={() =>
           handleRowSelect?.(worker.id, selectionScope ?? "view")

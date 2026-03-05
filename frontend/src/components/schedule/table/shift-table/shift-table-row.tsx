@@ -87,18 +87,23 @@ export default function ShiftTableRow({
         }
         isRowIndeterminate={
           !!selectionState?.isActive &&
-          periodDates.some((pd) =>
-            selectionState.selectedCells.some(
-              (c) =>
-                c.rowId === shift.id && c.date === pd.date.format("YYYY-MM-DD"),
-            ),
-          ) &&
           !periodDates.every((pd) =>
             selectionState.selectedCells.some(
               (c) =>
                 c.rowId === shift.id && c.date === pd.date.format("YYYY-MM-DD"),
             ),
-          )
+          ) &&
+          (periodDates.some((pd) =>
+            selectionState.selectedCells.some(
+              (c) =>
+                c.rowId === shift.id && c.date === pd.date.format("YYYY-MM-DD"),
+            ),
+          ) ||
+            assignments.some(
+              (a) =>
+                a.shiftId === shift.id &&
+                selectionState.selectedAssignmentIds.includes(a.id),
+            ))
         }
         onRowSelect={() => handleRowSelect(shift.id, selectionScope ?? "view")}
       />

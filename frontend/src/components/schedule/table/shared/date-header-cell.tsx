@@ -17,6 +17,7 @@ import {
   ScheduleSelectionState,
   SelectionScope,
 } from "../../../../types/scheduleSelection";
+import { AssignmentT } from "@/types/assignment";
 
 dayjs.extend(utc);
 type ScheduleStatusLogoProps = {
@@ -74,6 +75,7 @@ export default function DateHeaderCell({
   rowIds,
   selectionScope,
   onColumnSelect,
+  assignments,
 }: {
   periodDate: periodDateT;
   teamWithMembership: TeamWithMembership;
@@ -87,6 +89,7 @@ export default function DateHeaderCell({
     rowIds: string[],
     scope: SelectionScope,
   ) => void;
+  assignments?: AssignmentT[];
 }) {
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
@@ -101,14 +104,26 @@ export default function DateHeaderCell({
       ),
     );
 
+  const rowIdSet = new Set(rowIds ?? []);
+  const columnAssignmentIds = (assignments ?? [])
+    .filter(
+      (a) =>
+        (rowIdSet.has(a.workerId) || rowIdSet.has(a.shiftId)) &&
+        a.date.format("YYYY-MM-DD") === dateStr,
+    )
+    .map((a) => a.id);
+
   const isColumnIndeterminate =
     !!isSelectionActive &&
     !isColumnSelected &&
-    !!rowIds?.some((rowId) =>
+    (!!rowIds?.some((rowId) =>
       selectionState?.selectedCells.some(
         (c) => c.rowId === rowId && c.date === dateStr,
       ),
-    );
+    ) ||
+      columnAssignmentIds.some((id) =>
+        selectionState?.selectedAssignmentIds.includes(id),
+      ));
 
   return (
     <TableCell

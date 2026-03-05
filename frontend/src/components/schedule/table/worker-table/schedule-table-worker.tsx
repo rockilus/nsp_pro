@@ -134,6 +134,7 @@ export default function ScheduleTableWorker({
             rowIds={workersForHeader.map((w) => w.id)}
             selectionScope={selectionScope}
             handleColumnSelect={handleColumnSelect}
+            assignments={assignments}
           />
           {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
             teamWithMembership.team.useSolver && (

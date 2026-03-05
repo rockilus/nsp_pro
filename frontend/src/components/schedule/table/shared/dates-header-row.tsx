@@ -17,6 +17,7 @@ import {
   ScheduleSelectionState,
   SelectionScope,
 } from "../../../../types/scheduleSelection";
+import { AssignmentT } from "@/types/assignment";
 
 export default function DatesHeaderRow({
   lng,
@@ -29,6 +30,7 @@ export default function DatesHeaderRow({
   rowIds,
   selectionScope,
   handleColumnSelect,
+  assignments,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -44,6 +46,7 @@ export default function DatesHeaderRow({
     rowIds: string[],
     scope: SelectionScope,
   ) => void;
+  assignments?: AssignmentT[];
 }) {
   return (
     <TableRow
@@ -70,6 +73,7 @@ export default function DatesHeaderRow({
           rowIds={rowIds}
           selectionScope={selectionScope}
           onColumnSelect={handleColumnSelect}
+          assignments={assignments}
         />
       ))}
     </TableRow>
