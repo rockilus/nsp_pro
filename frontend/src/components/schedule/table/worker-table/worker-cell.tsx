@@ -61,6 +61,9 @@ export default function WorkerCell({
     selectionState?.selectedCells.some(
       (c) => c.rowId === worker.id && c.date === dateStr,
     ) ?? false;
+  const hasAssignments =
+    scheduleViewSettings.showAssignments &&
+    !!scheduleCellData?.assignmentsData?.length;
 
   return (
     <TableCell
@@ -77,60 +80,69 @@ export default function WorkerCell({
         outlineOffset: isCellSelected ? "-2px" : undefined,
       }}
     >
-      {isSelectionActive && (
-        <Checkbox
-          size="small"
-          checked={isCellSelected}
-          onChange={() =>
-            handleCellSelect?.(worker.id, dateStr, periodDate.scheduleId)
-          }
-          onClick={(e) => e.stopPropagation()}
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            padding: "1px",
-            zIndex: 5,
-          }}
-        />
-      )}
-      {scheduleViewSettings.showAssignments &&
-        scheduleCellData?.assignmentsData.map((aData) => {
-          const isAssignmentSelected =
-            selectionState?.selectedAssignmentIds.includes(
-              aData.assignment.id,
-            ) ?? false;
-          return (
-            <AssignmentCell
-              key={aData.assignment.id}
-              assignmentData={aData}
-              scheduleViewSettings={scheduleViewSettings}
-              handleAssignmentSelection={handleAssignmentSelection}
-              teamWithMembership={teamWithMembership}
-              isSelectionActive={isSelectionActive}
-              isSelected={isAssignmentSelected}
-              onAssignmentSelect={() =>
-                handleAssignmentSelect?.(aData.assignment.id)
-              }
-            />
-          );
-        })}
-      <RoleBased
-        role={teamWithMembership.membership.role}
-        allowedRoles={[TeamMembershipRole.OWNER]}
-      >
-        {scheduleViewSettings.showRequests &&
-          scheduleCellData?.requests.map((request) => {
+      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        {scheduleViewSettings.showAssignments &&
+          scheduleCellData?.assignmentsData.map((aData) => {
+            const isAssignmentSelected =
+              selectionState?.selectedAssignmentIds.includes(
+                aData.assignment.id,
+              ) ?? false;
             return (
-              <RequestCell
-                key={request.id}
-                request={request}
-                shifts={shifts}
-                handleRequestSelection={handleRequestSelection}
+              <AssignmentCell
+                key={aData.assignment.id}
+                assignmentData={aData}
+                scheduleViewSettings={scheduleViewSettings}
+                handleAssignmentSelection={handleAssignmentSelection}
+                teamWithMembership={teamWithMembership}
+                isSelectionActive={isSelectionActive}
+                isSelected={isAssignmentSelected}
+                onAssignmentSelect={() =>
+                  handleAssignmentSelect?.(aData.assignment.id)
+                }
               />
             );
           })}
-      </RoleBased>
+        <RoleBased
+          role={teamWithMembership.membership.role}
+          allowedRoles={[TeamMembershipRole.OWNER]}
+        >
+          {scheduleViewSettings.showRequests &&
+            scheduleCellData?.requests.map((request) => {
+              return (
+                <RequestCell
+                  key={request.id}
+                  request={request}
+                  shifts={shifts}
+                  handleRequestSelection={handleRequestSelection}
+                />
+              );
+            })}
+        </RoleBased>
+        {isSelectionActive && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexGrow: hasAssignments ? 0 : 1,
+              padding: hasAssignments ? "2px 0" : 0,
+            }}
+          >
+            <Checkbox
+              size="small"
+              checked={isCellSelected}
+              onChange={() =>
+                handleCellSelect?.(worker.id, dateStr, periodDate.scheduleId)
+              }
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                padding: "1px",
+                "& .MuiSvgIcon-root": { fontSize: 16 },
+              }}
+            />
+          </div>
+        )}
+      </div>
       {!isSelectionActive && (
         <RoleBased
           role={teamWithMembership.membership.role}

@@ -59,6 +59,9 @@ export default function ShiftCell({
     selectionState?.selectedCells.some(
       (c) => c.rowId === shift.id && c.date === dateStr,
     ) ?? false;
+  const hasAssignments =
+    scheduleViewSettings.showAssignments &&
+    !!scheduleCellData?.assignmentsData?.length;
 
   return (
     <TableCell
@@ -78,58 +81,67 @@ export default function ShiftCell({
         "YYYY-MM-DD",
       )}`}
     >
-      {isSelectionActive && (
-        <Checkbox
-          size="small"
-          checked={isCellSelected}
-          onChange={() =>
-            handleCellSelect?.(shift.id, dateStr, periodDate.scheduleId)
-          }
-          onClick={(e) => e.stopPropagation()}
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            padding: "1px",
-            zIndex: 5,
-          }}
-        />
-      )}
-      {scheduleViewSettings.showAssignments &&
-        scheduleCellData?.assignmentsData.map((aData) => {
-          const isAssignmentSelected =
-            selectionState?.selectedAssignmentIds.includes(
-              aData.assignment.id,
-            ) ?? false;
-          return (
-            <AssignmentCell
-              key={aData.assignment.id}
-              assignmentData={aData}
-              scheduleViewSettings={scheduleViewSettings}
-              handleAssignmentSelection={handleAssignmentSelection}
-              teamWithMembership={teamWithMembership}
-              isSelectionActive={isSelectionActive}
-              isSelected={isAssignmentSelected}
-              onAssignmentSelect={() =>
-                handleAssignmentSelect?.(aData.assignment.id)
+      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        {scheduleViewSettings.showAssignments &&
+          scheduleCellData?.assignmentsData.map((aData) => {
+            const isAssignmentSelected =
+              selectionState?.selectedAssignmentIds.includes(
+                aData.assignment.id,
+              ) ?? false;
+            return (
+              <AssignmentCell
+                key={aData.assignment.id}
+                assignmentData={aData}
+                scheduleViewSettings={scheduleViewSettings}
+                handleAssignmentSelection={handleAssignmentSelection}
+                teamWithMembership={teamWithMembership}
+                isSelectionActive={isSelectionActive}
+                isSelected={isAssignmentSelected}
+                onAssignmentSelect={() =>
+                  handleAssignmentSelect?.(aData.assignment.id)
+                }
+              />
+            );
+          })}
+        <RoleBased
+          role={teamWithMembership.membership.role}
+          allowedRoles={[TeamMembershipRole.OWNER]}
+        >
+          {scheduleViewSettings.showDailyShiftDemands &&
+            scheduleCellData?.shiftDemandsData && (
+              <DailyShiftDemandCell
+                scheduleCellData={scheduleCellData}
+                handleDemandSelection={handleDemandSelection}
+                scheduleViewSettings={scheduleViewSettings}
+                lng={lng}
+              />
+            )}
+        </RoleBased>
+        {isSelectionActive && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexGrow: hasAssignments ? 0 : 1,
+              padding: hasAssignments ? "2px 0" : 0,
+            }}
+          >
+            <Checkbox
+              size="small"
+              checked={isCellSelected}
+              onChange={() =>
+                handleCellSelect?.(shift.id, dateStr, periodDate.scheduleId)
               }
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                padding: "1px",
+                "& .MuiSvgIcon-root": { fontSize: 16 },
+              }}
             />
-          );
-        })}
-      <RoleBased
-        role={teamWithMembership.membership.role}
-        allowedRoles={[TeamMembershipRole.OWNER]}
-      >
-        {scheduleViewSettings.showDailyShiftDemands &&
-          scheduleCellData?.shiftDemandsData && (
-            <DailyShiftDemandCell
-              scheduleCellData={scheduleCellData}
-              handleDemandSelection={handleDemandSelection}
-              scheduleViewSettings={scheduleViewSettings}
-              lng={lng}
-            />
-          )}
-      </RoleBased>
+          </div>
+        )}
+      </div>
       {!isSelectionActive && (
         <RoleBased
           role={teamWithMembership.membership.role}
