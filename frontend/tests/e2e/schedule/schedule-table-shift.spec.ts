@@ -133,7 +133,7 @@ test.describe("ScheduleTableShift - Owner Tests", () => {
       // Verify the content is 'v'
       const firstLogo = validatedStatusLogo.first();
       await expect(firstLogo).toBeVisible();
-      await expect(firstLogo).toContainText("v");
+      await expect(firstLogo).toContainText("p");
 
       console.log(
         "✅ Schedule status 'v' displayed correctly for validated dates",

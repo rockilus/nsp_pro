@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
+import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 import Tooltip from "@mui/material/Tooltip";
 // Components
@@ -25,6 +26,10 @@ export default function ShiftRowHeaderCell({
   assignments,
   shiftDemands,
   scheduleCampaign: scheduleCampaign,
+  isSelectionActive,
+  onRowSelect,
+  isRowSelected,
+  isRowIndeterminate,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -32,6 +37,10 @@ export default function ShiftRowHeaderCell({
   assignments: AssignmentT[];
   shiftDemands: ShiftDemandDTO[];
   scheduleCampaign: ScheduleT | null;
+  isSelectionActive?: boolean;
+  onRowSelect: () => void;
+  isRowSelected: boolean;
+  isRowIndeterminate: boolean;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
   const { background, sample, text } = ShiftColorMappings[shift.color] || {
@@ -63,6 +72,17 @@ export default function ShiftRowHeaderCell({
       }}
     >
       <div className="shift-row-header-cell-container">
+        {isSelectionActive && (
+          <Checkbox
+            size="small"
+            checked={!!isRowSelected}
+            indeterminate={isRowIndeterminate}
+            onChange={onRowSelect}
+            onClick={(e) => e.stopPropagation()}
+            data-testid={`shift-row-checkbox-${shift.id}`}
+            sx={{ padding: "2px", flexShrink: 0 }}
+          />
+        )}
         <div
           className={`shift-type-marker ${
             shift.shiftType === ShiftType.DUTY ? "duty" : "other"

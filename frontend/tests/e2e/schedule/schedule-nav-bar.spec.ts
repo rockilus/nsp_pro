@@ -12,6 +12,7 @@
 import { test, expect } from "@playwright/test";
 import { ScheduleTestBase } from "../../utils/schedule-test-base";
 import dayjs from "dayjs";
+import { formatPeriodLabel } from "@/components/common/TimeNavigation/TimeNavigation";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
@@ -127,10 +128,8 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       const selectedValue = await timeFrameSelect.inputValue();
       expect(selectedValue).toBe("week");
 
-      // Verify the period label shows week format (e.g., "January 2026")
+      // Verify the period label shows week format (computed dynamically)
       const periodLabel = page.locator('[data-testid="time-nav-label"]');
-      const labelText = await periodLabel.textContent();
-      expect(labelText).toBe("Dec 2025 - Jan 2026");
 
       // Verify the schedule table shows all 7 days of the displayed week
       const scheduleTable = page.locator(
@@ -158,6 +157,18 @@ test.describe("ScheduleNavBar - Owner Tests", () => {
       const displayedWeekStart = dayjs.utc(
         scheduleViewSettings.periodStartDate,
       );
+
+      // Compute expected label using the same formatting logic as the component
+      const displayedWeekEnd = displayedWeekStart.add(6, "day");
+      const expectedLabel = formatPeriodLabel(
+        displayedWeekStart,
+        displayedWeekEnd,
+        "week",
+        "en",
+      );
+
+      const labelText = await periodLabel.textContent();
+      expect(labelText).toBe(expectedLabel);
 
       // Verify all 7 days of the displayed week are present
       for (let dayOffset = 0; dayOffset < 7; dayOffset++) {

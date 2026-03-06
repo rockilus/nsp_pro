@@ -16,6 +16,7 @@ import {
   InputLabel,
   Checkbox,
   FormControlLabel,
+  Tooltip,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 // Components
@@ -38,6 +39,7 @@ interface ScheduleSettingsProps {
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   scheduleViewSettings: ScheduleViewSettingsT;
+  onToggleSelectionMode: () => void;
   handleSendDuplicateRequest: (
     request: DuplicateRequestT,
     campaignId: string,
@@ -54,6 +56,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   startDate,
   endDate,
   scheduleViewSettings,
+  onToggleSelectionMode,
   handleSendDuplicateRequest,
   updateScheduleViewSettings,
   handleChangeTimeFrame,
@@ -201,6 +204,18 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
               >
                 {t("tools")}
               </h4>
+              <Tooltip title={t("select_mode_tooltip")}>
+                <MenuItem
+                  data-testid="settings-selection-mode-button"
+                  onClick={() => {
+                    onToggleSelectionMode();
+                    handleClosePopover();
+                  }}
+                  sx={{ fontSize: "0.8rem" }}
+                >
+                  {t("select")}
+                </MenuItem>
+              </Tooltip>
               <MenuItem
                 data-testid="settings-duplicate-week-button"
                 onClick={handleDuplicateWeek}

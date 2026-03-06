@@ -1008,6 +1008,75 @@ class AssignmentService(BaseService):
             ar_result.assignments_deleted_ids.append(assignment_id)
         return ar_result
 
+    def bulk_create_assignments(
+        self, assignments: List[Assignment]
+    ) -> AssignmentsRecurrencesResult:
+        """Create multiple assignments without recurrence, handling recuperation."""
+        out = AssignmentsRecurrencesResult(
+            assignments_created=[],
+            assignments_read=[],
+            assignments_updated=[],
+            assignments_deleted_ids=[],
+            recurrence_created=None,
+            recurrences_read=[],
+            recurrence_updated=None,
+            recurrences_deleted_ids=[],
+        )
+        for assignment in assignments:
+            ar = self.create_assignment_and_recurrence(assignment, None)
+            out.assignments_created.extend(ar.assignments_created)
+        return out
+
+    def bulk_update_assignments(
+        self, assignments: List[Assignment]
+    ) -> AssignmentsRecurrencesResult:
+        """Update multiple assignments without recurrence, handling recuperation."""
+        out = AssignmentsRecurrencesResult(
+            assignments_created=[],
+            assignments_read=[],
+            assignments_updated=[],
+            assignments_deleted_ids=[],
+            recurrence_created=None,
+            recurrences_read=[],
+            recurrence_updated=None,
+            recurrences_deleted_ids=[],
+        )
+        for assignment in assignments:
+            ar = self.update_assignment_and_recurrence(
+                assignment_new=assignment,
+                recurrence_update_scope=None,
+                recurrence=None,
+            )
+            out.assignments_created.extend(ar.assignments_created)
+            out.assignments_updated.extend(ar.assignments_updated)
+            out.assignments_deleted_ids.extend(ar.assignments_deleted_ids)
+        return out
+
+    def bulk_delete_assignments(
+        self, assignment_ids: List[str]
+    ) -> AssignmentsRecurrencesResult:
+        """Delete multiple assignments (this occurrence only, no recurrence cascade)."""
+        out = AssignmentsRecurrencesResult(
+            assignments_created=[],
+            assignments_read=[],
+            assignments_updated=[],
+            assignments_deleted_ids=[],
+            recurrence_created=None,
+            recurrences_read=[],
+            recurrence_updated=None,
+            recurrences_deleted_ids=[],
+        )
+        for assignment_id in assignment_ids:
+            ar = self.delete_assignment_and_recurrence(
+                assignment_id=assignment_id,
+                recurrence_id=None,
+                recurrence_update_scope=None,
+            )
+            out.assignments_deleted_ids.extend(ar.assignments_deleted_ids)
+            out.assignments_created.extend(ar.assignments_created)
+            out.assignments_updated.extend(ar.assignments_updated)
+        return out
+
     def _handle_recurrence_delete(
         self,
         assignment_id: str,

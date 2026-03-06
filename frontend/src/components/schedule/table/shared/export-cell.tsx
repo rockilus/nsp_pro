@@ -1,9 +1,10 @@
-import React, { useState, Dispatch, SetStateAction } from "react";
+import React, { useState, useMemo, Dispatch, SetStateAction } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import IosShareIcon from "@mui/icons-material/IosShare";
@@ -25,6 +26,10 @@ import {
   ScheduleStatus,
   periodDateT,
 } from "../../../../types/schedule";
+import {
+  ScheduleSelectionState,
+  SelectionScope,
+} from "../../../../types/scheduleSelection";
 
 dayjs.extend(utc);
 
@@ -70,7 +75,7 @@ const ExportDialogContent = ({
           data-testid="export-period-toggle-group"
           onChange={(
             event: React.MouseEvent<HTMLElement>,
-            newAlignment: number
+            newAlignment: number,
           ) => {
             if (newAlignment !== null) {
               setExportOptionsState((prevState) => ({
@@ -192,13 +197,71 @@ export default function ExportCell({
   periodDates,
   scheduleCampaign,
   handleExportSchedule,
+  isSelectionActive,
+  selectionState,
+  rowIds,
+  selectionScope,
+  handleSelectAll,
 }: {
   lng: string;
   periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
+  isSelectionActive: boolean;
+  selectionState: ScheduleSelectionState;
+  rowIds: string[];
+  selectionScope: SelectionScope;
+  handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
+
+  const targetDates = useMemo(() => {
+    if (!isSelectionActive) return [];
+    if (selectionScope === "campaign" && scheduleCampaign) {
+      const dates: string[] = [];
+      let current = scheduleCampaign.startDate.startOf("day");
+      const end = scheduleCampaign.endDate.startOf("day");
+      while (current.isBefore(end) || current.isSame(end, "day")) {
+        dates.push(current.format("YYYY-MM-DD"));
+        current = current.add(1, "day");
+      }
+      return dates;
+    }
+    return periodDates.map((pd) => pd.date.format("YYYY-MM-DD"));
+  }, [isSelectionActive, selectionScope, scheduleCampaign, periodDates]);
+
+  const isAllSelected = useMemo(() => {
+    if (!rowIds?.length || !targetDates.length) return false;
+    return rowIds.every((rowId) =>
+      targetDates.every((date) =>
+        selectionState?.selectedCells.some(
+          (c) => c.rowId === rowId && c.date === date,
+        ),
+      ),
+    );
+  }, [rowIds, targetDates, selectionState]);
+
+  const isSomeSelected = useMemo(() => {
+    if (!rowIds?.length || !targetDates.length) return false;
+    const hasSomeCell = rowIds.some((rowId) =>
+      targetDates.some((date) =>
+        selectionState?.selectedCells.some(
+          (c) => c.rowId === rowId && c.date === date,
+        ),
+      ),
+    );
+    const hasSomeAssignment =
+      (selectionState?.selectedAssignmentIds.length ?? 0) > 0;
+    return (hasSomeCell || hasSomeAssignment) && !isAllSelected;
+  }, [rowIds, targetDates, selectionState, isAllSelected]);
+
+  const handleSelectAllChange = () => {
+    if (isAllSelected) {
+      handleSelectAll?.([], selectionScope ?? "view");
+    } else {
+      handleSelectAll?.(rowIds ?? [], selectionScope ?? "view");
+    }
+  };
 
   const [open, setOpen] = useState(false);
   const [exportOptionsState, setExportOptionsState] = useState<ExportOptionsT>(
@@ -212,7 +275,7 @@ export default function ExportCell({
           periodOption: ExportPeriodOptions.CURRENT_SELECTION,
           startDate: periodDates[0].date,
           endDate: periodDates[periodDates.length - 1].date,
-        }
+        },
   );
 
   const ExportOptionsMap: { value: number; label: string }[] = [
@@ -235,7 +298,7 @@ export default function ExportCell({
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
-    newAlignment: number
+    newAlignment: number,
   ) => {
     if (newAlignment !== null) {
       setExportOptionsState((prevState) => ({
@@ -284,6 +347,17 @@ export default function ExportCell({
             <IosShareIcon sx={{ color: "#616161cf" }} />
           </Tooltip>
         </button>
+        {isSelectionActive && (
+          <Checkbox
+            size="small"
+            checked={isAllSelected}
+            indeterminate={isSomeSelected}
+            onChange={handleSelectAllChange}
+            onClick={(e) => e.stopPropagation()}
+            data-testid="export-cell-select-all-checkbox"
+            sx={{ padding: "2px", display: "block", margin: "0 auto" }}
+          />
+        )}
         <Dialog
           open={open}
           onClose={handleClose}

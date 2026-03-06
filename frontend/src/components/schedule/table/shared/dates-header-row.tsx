@@ -13,6 +13,11 @@ import {
   periodDateT,
 } from "../../../../types/schedule";
 import { TeamWithMembership } from "@/types/team";
+import {
+  ScheduleSelectionState,
+  SelectionScope,
+} from "../../../../types/scheduleSelection";
+import { AssignmentT } from "@/types/assignment";
 
 export default function DatesHeaderRow({
   lng,
@@ -20,12 +25,30 @@ export default function DatesHeaderRow({
   periodDates,
   scheduleCampaign,
   handleExportSchedule,
+  isSelectionActive,
+  selectionState,
+  rowIds,
+  selectionScope,
+  handleColumnSelect,
+  handleSelectAll,
+  assignments,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
   periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
+  isSelectionActive: boolean;
+  selectionState: ScheduleSelectionState;
+  rowIds: string[];
+  selectionScope: SelectionScope;
+  handleColumnSelect: (
+    date: string,
+    rowIds: string[],
+    scope: SelectionScope,
+  ) => void;
+  handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
+  assignments: AssignmentT[];
 }) {
   return (
     <TableRow
@@ -40,6 +63,11 @@ export default function DatesHeaderRow({
         periodDates={periodDates}
         scheduleCampaign={scheduleCampaign}
         handleExportSchedule={handleExportSchedule}
+        isSelectionActive={isSelectionActive}
+        selectionState={selectionState}
+        rowIds={rowIds}
+        selectionScope={selectionScope}
+        handleSelectAll={handleSelectAll}
       />
       {periodDates.map((pDate, dateIndex) => (
         <DateHeaderCell
@@ -47,6 +75,12 @@ export default function DatesHeaderRow({
           periodDate={pDate}
           teamWithMembership={teamWithMembership}
           lng={lng}
+          isSelectionActive={isSelectionActive}
+          selectionState={selectionState}
+          rowIds={rowIds}
+          selectionScope={selectionScope}
+          onColumnSelect={handleColumnSelect}
+          assignments={assignments}
         />
       ))}
     </TableRow>

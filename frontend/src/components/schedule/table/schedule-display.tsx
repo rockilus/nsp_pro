@@ -21,6 +21,10 @@ import { WorkerT } from "../../../types/worker";
 import { RequestT } from "../../../types/request";
 import { RecurrenceRuleT } from "@/types/recurrence";
 import { TeamWithMembership } from "@/types/team";
+import {
+  ScheduleSelectionState,
+  SelectionScope,
+} from "../../../types/scheduleSelection";
 
 dayjs.extend(utc);
 
@@ -37,11 +41,18 @@ export default function ScheduleDisplay({
   shifts,
   requests,
   scheduleViewSettings,
+  selectionState,
+  selectionScope,
   handleAssignmentSelection,
   handleDemandSelection,
   handleRequestSelection,
   handleExportSchedule,
   handleOpenCreateAssignment,
+  handleCellSelect,
+  handleAssignmentSelect,
+  handleRowSelect,
+  handleColumnSelect,
+  handleSelectAll,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -55,11 +66,26 @@ export default function ScheduleDisplay({
   shifts: ShiftT[];
   requests: RequestT[];
   scheduleViewSettings: ScheduleViewSettingsT;
+  selectionState: ScheduleSelectionState;
+  selectionScope: SelectionScope;
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
   handleRequestSelection?: (request: RequestT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
+  handleCellSelect: (
+    rowId: string,
+    date: string,
+    scheduleId: string | null,
+  ) => void;
+  handleAssignmentSelect: (assignmentId: string) => void;
+  handleRowSelect: (rowId: string, scope: SelectionScope) => void;
+  handleColumnSelect: (
+    date: string,
+    rowIds: string[],
+    scope: SelectionScope,
+  ) => void;
+  handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
 }) {
   const scheduleDisplays: { [key: string]: React.ReactElement } = {
     shift: (
@@ -76,10 +102,17 @@ export default function ScheduleDisplay({
         periodDates={periodDates}
         breaches={breaches}
         scheduleViewSettings={scheduleViewSettings}
+        selectionState={selectionState}
+        selectionScope={selectionScope}
         handleAssignmentSelection={handleAssignmentSelection}
         handleDemandSelection={handleDemandSelection}
         handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
+        handleCellSelect={handleCellSelect}
+        handleAssignmentSelect={handleAssignmentSelect}
+        handleRowSelect={handleRowSelect}
+        handleColumnSelect={handleColumnSelect}
+        handleSelectAll={handleSelectAll}
       />
     ),
     worker: (
@@ -96,10 +129,17 @@ export default function ScheduleDisplay({
         periodDates={periodDates}
         breaches={breaches}
         scheduleViewSettings={scheduleViewSettings}
+        selectionState={selectionState}
+        selectionScope={selectionScope}
         handleAssignmentSelection={handleAssignmentSelection}
         handleRequestSelection={handleRequestSelection}
         handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
+        handleCellSelect={handleCellSelect}
+        handleAssignmentSelect={handleAssignmentSelect}
+        handleRowSelect={handleRowSelect}
+        handleColumnSelect={handleColumnSelect}
+        handleSelectAll={handleSelectAll}
       />
     ),
   };

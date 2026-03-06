@@ -53,7 +53,7 @@ interface TimeNavigationProps {
  * - Month view, different months, same year: "Jan - Feb 2026"
  * - Month view, different years: "Dec 2025 - Jan 2026"
  */
-function formatPeriodLabel(
+export function formatPeriodLabel(
   start: Dayjs,
   end: Dayjs,
   timeFrame: TimeFrame,

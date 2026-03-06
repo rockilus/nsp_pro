@@ -29,6 +29,10 @@ import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
 import { RecurrenceRuleT } from "@/types/recurrence";
 import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
+import {
+  ScheduleSelectionState,
+  SelectionScope,
+} from "@/types/scheduleSelection";
 
 export default function ScheduleTableWorker({
   lng,
@@ -47,6 +51,13 @@ export default function ScheduleTableWorker({
   handleRequestSelection,
   handleExportSchedule,
   handleOpenCreateAssignment,
+  selectionState,
+  selectionScope,
+  handleCellSelect,
+  handleAssignmentSelect,
+  handleRowSelect,
+  handleColumnSelect,
+  handleSelectAll,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -64,6 +75,21 @@ export default function ScheduleTableWorker({
   handleRequestSelection?: (request: RequestT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
+  selectionState: ScheduleSelectionState;
+  selectionScope: SelectionScope;
+  handleCellSelect: (
+    rowId: string,
+    date: string,
+    scheduleId: string | null,
+  ) => void;
+  handleAssignmentSelect: (assignmentId: string) => void;
+  handleRowSelect: (rowId: string, scope: SelectionScope) => void;
+  handleColumnSelect: (
+    date: string,
+    rowIds: string[],
+    scope: SelectionScope,
+  ) => void;
+  handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
 }) {
   const workersForHeader = getRelevantWorkers(
     workers,
@@ -103,6 +129,13 @@ export default function ScheduleTableWorker({
             scheduleCampaign={scheduleCampaign}
             handleExportSchedule={handleExportSchedule}
             teamWithMembership={teamWithMembership}
+            isSelectionActive={selectionState?.isActive}
+            selectionState={selectionState}
+            rowIds={workersForHeader.map((w) => w.id)}
+            selectionScope={selectionScope}
+            handleColumnSelect={handleColumnSelect}
+            handleSelectAll={handleSelectAll}
+            assignments={assignments}
           />
           {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
             teamWithMembership.team.useSolver && (
@@ -132,6 +165,11 @@ export default function ScheduleTableWorker({
               handleAssignmentSelection={handleAssignmentSelection}
               handleRequestSelection={handleRequestSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
+              selectionState={selectionState}
+              selectionScope={selectionScope}
+              handleCellSelect={handleCellSelect}
+              handleAssignmentSelect={handleAssignmentSelect}
+              handleRowSelect={handleRowSelect}
             />
           ))}
         </TableBody>

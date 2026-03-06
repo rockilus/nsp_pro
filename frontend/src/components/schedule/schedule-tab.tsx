@@ -23,6 +23,7 @@ import {
 import NoAssignmentsDisplay from "./no-assignments-display";
 import { getPeriodStartEndDates } from "./schedule-utils";
 import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
+import { ScheduleActionToolbar } from "./toolbar/ScheduleActionToolbar";
 // Skeletons
 import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
 import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
@@ -34,6 +35,9 @@ import {
   useAddAssignmentAndRecurrence,
   useUpdateAssignmentAndRecurrence,
   useDeleteAssignment,
+  useBulkCreateAssignments,
+  useBulkUpdateAssignments,
+  useBulkDeleteAssignments,
 } from "../../hooks/useAssignment";
 import {
   useAssignmentsByPeriod,
@@ -88,6 +92,7 @@ import {
 } from "@/types/shiftDemand";
 import {
   AssignmentT,
+  AssignmentSource,
   AssignmentsRecurrencesResultT,
   CreateAssignmentT,
 } from "@/types/assignment";
@@ -102,6 +107,11 @@ import {
 } from "../../app/lib/hooks/useShiftDemands";
 import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
 import { getDefaultScheduleViewSettings } from "../../app/lib/utils/scheduleViewSettingsUtils";
+import {
+  ScheduleSelectionState,
+  SelectedScheduleCell,
+  SelectionScope,
+} from "../../types/scheduleSelection";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -135,6 +145,9 @@ export default function ScheduleTab({
   const addAssignmentAndRecurrence = useAddAssignmentAndRecurrence();
   const updateAssignmentAndRecurrence = useUpdateAssignmentAndRecurrence();
   const deleteAssignment = useDeleteAssignment();
+  const bulkCreateAssignments = useBulkCreateAssignments();
+  const bulkUpdateAssignments = useBulkUpdateAssignments();
+  const bulkDeleteAssignments = useBulkDeleteAssignments();
 
   // Request hooks
   const addRequest = useAddRequest();
@@ -317,6 +330,14 @@ export default function ScheduleTab({
   );
   const [dialogData, setDialogData] = useState<ScheduleItemDialogData>(null);
 
+  // Selection mode state (OWNER only, desktop only)
+  const [selectionState, setSelectionState] = useState<ScheduleSelectionState>({
+    isActive: false,
+    selectedCells: [],
+    selectedAssignmentIds: [],
+  });
+  const [selectionScope, setSelectionScope] = useState<SelectionScope>("view");
+
   const isMobile = useIsMobile();
 
   const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {
@@ -342,7 +363,248 @@ export default function ScheduleTab({
     setDialogData({ request });
   };
 
-  // updateScheduleViewSettings is now provided by the useScheduleViewSettings hook
+  //////////////////////////
+  // Selection Mode Handlers
+  //////////////////////////
+
+  const handleToggleSelectionMode = useCallback(() => {
+    setSelectionState((prev) => ({
+      isActive: !prev.isActive,
+      selectedCells: [],
+      selectedAssignmentIds: [],
+    }));
+  }, []);
+
+  const handleCellSelect = useCallback(
+    (rowId: string, date: string, scheduleId: string | null) => {
+      setSelectionState((prev) => {
+        const key = `${rowId}-${date}`;
+        const exists = prev.selectedCells.some(
+          (c) => c.rowId === rowId && c.date === date,
+        );
+        return {
+          ...prev,
+          selectedCells: exists
+            ? prev.selectedCells.filter(
+                (c) => !(c.rowId === rowId && c.date === date),
+              )
+            : [...prev.selectedCells, { rowId, date, scheduleId }],
+        };
+      });
+    },
+    [],
+  );
+
+  const handleAssignmentSelect = useCallback((assignmentId: string) => {
+    setSelectionState((prev) => {
+      const exists = prev.selectedAssignmentIds.includes(assignmentId);
+      return {
+        ...prev,
+        selectedAssignmentIds: exists
+          ? prev.selectedAssignmentIds.filter((id) => id !== assignmentId)
+          : [...prev.selectedAssignmentIds, assignmentId],
+      };
+    });
+  }, []);
+
+  const handleRowSelect = useCallback(
+    (rowId: string, scope: SelectionScope) => {
+      const dates =
+        scope === "campaign" && scheduleCampaign
+          ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
+          : periodDates;
+      const datestrs = dates.map((pd) => pd.date.format("YYYY-MM-DD"));
+      const dateSet = new Set(datestrs);
+
+      const isWorkerView = scheduleViewSettings.groupBy === "worker";
+      const rowAssignmentIds = assignments
+        .filter((a) => {
+          const rowMatch = isWorkerView
+            ? a.workerId === rowId
+            : a.shiftId === rowId;
+          return rowMatch && dateSet.has(a.date.format("YYYY-MM-DD"));
+        })
+        .map((a) => a.id);
+
+      // All assignment IDs for this row regardless of scope — used when deselecting
+      const allRowAssignmentIdSet = new Set(
+        assignments
+          .filter((a) =>
+            isWorkerView ? a.workerId === rowId : a.shiftId === rowId,
+          )
+          .map((a) => a.id),
+      );
+
+      setSelectionState((prev) => {
+        const isFullySelected = datestrs.every((ds) =>
+          prev.selectedCells.some((c) => c.rowId === rowId && c.date === ds),
+        );
+        if (isFullySelected) {
+          return {
+            ...prev,
+            selectedCells: prev.selectedCells.filter((c) => c.rowId !== rowId),
+            selectedAssignmentIds: prev.selectedAssignmentIds.filter(
+              (id) => !allRowAssignmentIdSet.has(id),
+            ),
+          };
+        }
+        const existingKeys = new Set(
+          prev.selectedCells.map((c) => `${c.rowId}-${c.date}`),
+        );
+        const toAdd = dates
+          .filter(
+            (pd) =>
+              !existingKeys.has(`${rowId}-${pd.date.format("YYYY-MM-DD")}`),
+          )
+          .map((pd) => ({
+            rowId,
+            date: pd.date.format("YYYY-MM-DD"),
+            scheduleId: pd.scheduleId,
+          }));
+        const newAssignmentIds = rowAssignmentIds.filter(
+          (id) => !prev.selectedAssignmentIds.includes(id),
+        );
+        return {
+          ...prev,
+          selectedCells: [...prev.selectedCells, ...toAdd],
+          selectedAssignmentIds: [
+            ...prev.selectedAssignmentIds,
+            ...newAssignmentIds,
+          ],
+        };
+      });
+    },
+    [
+      scheduleCampaign,
+      periodDates,
+      buildDates,
+      assignments,
+      scheduleViewSettings.groupBy,
+    ],
+  );
+
+  const handleColumnSelect = useCallback(
+    (date: string, rowIds: string[], scope: SelectionScope) => {
+      const allDates =
+        scope === "campaign" && scheduleCampaign
+          ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
+          : periodDates;
+      const targetDates = [
+        {
+          date,
+          scheduleId:
+            allDates.find((pd) => pd.date.format("YYYY-MM-DD") === date)
+              ?.scheduleId ?? null,
+        },
+      ];
+
+      const isWorkerView = scheduleViewSettings.groupBy === "worker";
+      const targetDateSet = new Set(targetDates.map((td) => td.date));
+      const rowIdSet = new Set(rowIds);
+      const colAssignmentIds = assignments
+        .filter((a) => {
+          const rowMatch = isWorkerView
+            ? rowIdSet.has(a.workerId)
+            : rowIdSet.has(a.shiftId);
+          return rowMatch && targetDateSet.has(a.date.format("YYYY-MM-DD"));
+        })
+        .map((a) => a.id);
+
+      setSelectionState((prev) => {
+        const isFullySelected = rowIds.every((rowId) =>
+          targetDates.every(({ date: d }) =>
+            prev.selectedCells.some((c) => c.rowId === rowId && c.date === d),
+          ),
+        );
+        if (isFullySelected) {
+          const colAssignmentIdSet = new Set(colAssignmentIds);
+          return {
+            ...prev,
+            selectedCells: prev.selectedCells.filter(
+              (c) => !(rowIdSet.has(c.rowId) && targetDateSet.has(c.date)),
+            ),
+            selectedAssignmentIds: prev.selectedAssignmentIds.filter(
+              (id) => !colAssignmentIdSet.has(id),
+            ),
+          };
+        }
+        const existingKeys = new Set(
+          prev.selectedCells.map((c) => `${c.rowId}-${c.date}`),
+        );
+        const newCells: SelectedScheduleCell[] = [];
+        for (const rowId of rowIds) {
+          for (const { date: d, scheduleId } of targetDates) {
+            const key = `${rowId}-${d}`;
+            if (!existingKeys.has(key)) {
+              newCells.push({ rowId, date: d, scheduleId });
+            }
+          }
+        }
+        const newAssignmentIds = colAssignmentIds.filter(
+          (id) => !prev.selectedAssignmentIds.includes(id),
+        );
+        return {
+          ...prev,
+          selectedCells: [...prev.selectedCells, ...newCells],
+          selectedAssignmentIds: [
+            ...prev.selectedAssignmentIds,
+            ...newAssignmentIds,
+          ],
+        };
+      });
+    },
+    [
+      scheduleCampaign,
+      periodDates,
+      buildDates,
+      assignments,
+      scheduleViewSettings.groupBy,
+    ],
+  );
+
+  const handleSelectAll = useCallback(
+    (rowIds: string[], scope: SelectionScope) => {
+      const dates =
+        scope === "campaign" && scheduleCampaign
+          ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
+          : periodDates;
+      const newCells: SelectedScheduleCell[] = [];
+      for (const rowId of rowIds) {
+        for (const pd of dates) {
+          newCells.push({
+            rowId,
+            date: pd.date.format("YYYY-MM-DD"),
+            scheduleId: pd.scheduleId,
+          });
+        }
+      }
+
+      const isWorkerView = scheduleViewSettings.groupBy === "worker";
+      const rowIdSet = new Set(rowIds);
+      const dateSet = new Set(newCells.map((c) => c.date));
+      const newAssignmentIds = assignments
+        .filter((a) => {
+          const rowMatch = isWorkerView
+            ? rowIdSet.has(a.workerId)
+            : rowIdSet.has(a.shiftId);
+          return rowMatch && dateSet.has(a.date.format("YYYY-MM-DD"));
+        })
+        .map((a) => a.id);
+
+      setSelectionState((prev) => ({
+        ...prev,
+        selectedCells: newCells,
+        selectedAssignmentIds: newAssignmentIds,
+      }));
+    },
+    [
+      scheduleCampaign,
+      periodDates,
+      buildDates,
+      assignments,
+      scheduleViewSettings.groupBy,
+    ],
+  );
 
   //////////////////////////
   // Schedule Actions
@@ -665,6 +927,131 @@ export default function ScheduleTab({
     ],
   );
 
+  //////////////////////////
+  // Bulk Assignment Actions
+  //////////////////////////
+
+  const handleBulkCreateAssignments = useCallback(
+    async (id: string) => {
+      // id is workerId (shift view) or shiftId (worker view)
+      const isShiftView = scheduleViewSettings.groupBy === "shift";
+      const assignmentsToCreate: AssignmentT[] =
+        selectionState.selectedCells.map((cell) => ({
+          id: "",
+          teamId: teamWithMembership.team.id,
+          scheduleId: cell.scheduleId,
+          workerId: isShiftView ? id : cell.rowId,
+          shiftId: isShiftView ? cell.rowId : id,
+          date: dayjs.utc(cell.date),
+          fixed: false,
+          source: AssignmentSource.MANUAL,
+          referenceAssignmentId: null,
+          sourceId: null,
+        }));
+      if (assignmentsToCreate.length === 0) return;
+      await bulkCreateAssignments(
+        assignmentsToCreate,
+        teamWithMembership.team.id,
+      );
+      setSelectionState((prev) => ({ ...prev, selectedCells: [] }));
+    },
+    [
+      selectionState.selectedCells,
+      scheduleViewSettings.groupBy,
+      teamWithMembership.team.id,
+      bulkCreateAssignments,
+    ],
+  );
+
+  const handleBulkUpdateAssignments = useCallback(
+    async (id: string) => {
+      // id is workerId (shift view) or shiftId (worker view)
+      const isShiftView = scheduleViewSettings.groupBy === "shift";
+      const assignmentsToUpdate: AssignmentT[] = assignments
+        .filter((a) => selectionState.selectedAssignmentIds.includes(a.id))
+        .map((a) => ({
+          ...a,
+          workerId: isShiftView ? id : a.workerId,
+          shiftId: isShiftView ? a.shiftId : id,
+        }));
+      if (assignmentsToUpdate.length === 0) return;
+      await bulkUpdateAssignments(
+        assignmentsToUpdate,
+        teamWithMembership.team.id,
+      );
+      setSelectionState((prev) => ({ ...prev, selectedAssignmentIds: [] }));
+    },
+    [
+      selectionState.selectedAssignmentIds,
+      scheduleViewSettings.groupBy,
+      assignments,
+      teamWithMembership.team.id,
+      bulkUpdateAssignments,
+    ],
+  );
+
+  const handleBulkDeleteAssignments = useCallback(async () => {
+    if (selectionState.selectedAssignmentIds.length === 0) return;
+    await bulkDeleteAssignments(
+      selectionState.selectedAssignmentIds,
+      teamWithMembership.team.id,
+    );
+    setSelectionState((prev) => ({ ...prev, selectedAssignmentIds: [] }));
+  }, [
+    selectionState.selectedAssignmentIds,
+    teamWithMembership.team.id,
+    bulkDeleteAssignments,
+  ]);
+
+  const handleScopeChange = useCallback(
+    (newScope: SelectionScope) => {
+      const validDates =
+        newScope === "campaign" && scheduleCampaign
+          ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
+          : periodDates;
+      const validDateSet = new Set(
+        validDates.map((pd) => pd.date.format("YYYY-MM-DD")),
+      );
+      setSelectionState((prev) => {
+        const newSelectedCells = prev.selectedCells.filter((c) =>
+          validDateSet.has(c.date),
+        );
+        const newSelectedAssignmentIds = prev.selectedAssignmentIds.filter(
+          (id) => {
+            const assignment = assignments.find((a) => a.id === id);
+            return (
+              assignment &&
+              validDateSet.has(assignment.date.format("YYYY-MM-DD"))
+            );
+          },
+        );
+        return {
+          ...prev,
+          selectedCells: newSelectedCells,
+          selectedAssignmentIds: newSelectedAssignmentIds,
+        };
+      });
+      setSelectionScope(newScope);
+    },
+    [scheduleCampaign, periodDates, buildDates, assignments],
+  );
+
+  const handleBulkToggleFixed = useCallback(async () => {
+    const assignmentsToUpdate: AssignmentT[] = assignments
+      .filter((a) => selectionState.selectedAssignmentIds.includes(a.id))
+      .map((a) => ({ ...a, fixed: !a.fixed }));
+    if (assignmentsToUpdate.length === 0) return;
+    await bulkUpdateAssignments(
+      assignmentsToUpdate,
+      teamWithMembership.team.id,
+    );
+  }, [
+    selectionState.selectedAssignmentIds,
+    assignments,
+    teamWithMembership.team.id,
+    bulkUpdateAssignments,
+  ]);
+
   const updateSelectedPeriod = (
     newPeriodStart: dayjs.Dayjs,
     newPeriodEnd: dayjs.Dayjs,
@@ -750,15 +1137,27 @@ export default function ScheduleTab({
   const handleChangeTimeFrame = async (newTimeFrame: "week" | "month") => {
     console.log("Changing time frame to:", newTimeFrame);
 
+    // When switching time frames, we need an appropriate endDate range to
+    // determine overlap with the current week/month. If switching TO week
+    // from a month view, use the current month's end so the week-selection
+    // logic can decide to show the current week when the month contains today.
+    const endDateForComputation =
+      newTimeFrame === "week"
+        ? computePeriodEndDate(
+            scheduleViewSettings.periodStartDate,
+            scheduleViewSettings.timeFrame,
+          )
+        : computePeriodEndDate(
+            scheduleViewSettings.periodStartDate,
+            newTimeFrame,
+          );
+
     // Step 1: Get the new period dates using the NEW timeFrame
     const { firstDate: newPeriodStart, lastDate: newPeriodEnd } =
       getPeriodStartEndDates(
         newTimeFrame,
         scheduleViewSettings.periodStartDate,
-        computePeriodEndDate(
-          scheduleViewSettings.periodStartDate,
-          newTimeFrame,
-        ),
+        endDateForComputation,
       );
 
     // Step 2: Update schedule view settings with both new timeFrame and new start date
@@ -914,27 +1313,60 @@ export default function ScheduleTab({
             <ScheduleSelectorSkeleton />
           </div>
         ) : (
-          <ScheduleNavBar
-            lng={lng}
-            teamWithMembership={teamWithMembership}
-            currentPeriodStart={scheduleViewSettings.periodStartDate}
-            currentPeriodEnd={computePeriodEndDate(
-              scheduleViewSettings.periodStartDate,
-              scheduleViewSettings.timeFrame,
-            )}
-            scheduleCampaign={scheduleCampaign}
-            breaches={breaches}
-            scheduleViewSettings={scheduleViewSettings}
-            handleToday={handleToday}
-            handlePreviousPeriod={handlePreviousPeriod}
-            handleNextPeriod={handleNextPeriod}
-            handleValidateSchedule={handleValidateSchedule}
-            handleSendDuplicateRequest={handleSendDuplicateRequest}
-            updateScheduleViewSettings={updateScheduleViewSettings}
-            handleChangeTimeFrame={handleChangeTimeFrame}
-            useSqsWorkflow={true}
-            onSqsSolveComplete={handleSqsSolveComplete}
-          />
+          <>
+            <ScheduleNavBar
+              lng={lng}
+              teamWithMembership={teamWithMembership}
+              currentPeriodStart={scheduleViewSettings.periodStartDate}
+              currentPeriodEnd={computePeriodEndDate(
+                scheduleViewSettings.periodStartDate,
+                scheduleViewSettings.timeFrame,
+              )}
+              scheduleCampaign={scheduleCampaign}
+              breaches={breaches}
+              scheduleViewSettings={scheduleViewSettings}
+              handleToday={handleToday}
+              handlePreviousPeriod={handlePreviousPeriod}
+              handleNextPeriod={handleNextPeriod}
+              handleValidateSchedule={handleValidateSchedule}
+              handleSendDuplicateRequest={handleSendDuplicateRequest}
+              updateScheduleViewSettings={(newSettings) => {
+                if (
+                  newSettings.groupBy !== undefined &&
+                  newSettings.groupBy !== scheduleViewSettings.groupBy
+                ) {
+                  setSelectionState((prev) => ({
+                    ...prev,
+                    selectedCells: [],
+                  }));
+                }
+                updateScheduleViewSettings(newSettings);
+              }}
+              handleChangeTimeFrame={handleChangeTimeFrame}
+              useSqsWorkflow={true}
+              onSqsSolveComplete={handleSqsSolveComplete}
+              onToggleSelectionMode={handleToggleSelectionMode}
+            />
+            {selectionState.isActive &&
+              teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
+              !isMobile && (
+                <ScheduleActionToolbar
+                  lng={lng}
+                  selectionState={selectionState}
+                  workers={workers.filter((w) => !w.deleted)}
+                  shifts={shifts.filter((s) => !s.deleted)}
+                  scheduleCampaign={scheduleCampaign}
+                  groupBy={scheduleViewSettings.groupBy}
+                  scope={selectionScope}
+                  onScopeChange={handleScopeChange}
+                  onBulkCreate={handleBulkCreateAssignments}
+                  onBulkUpdate={handleBulkUpdateAssignments}
+                  onBulkToggleFixed={handleBulkToggleFixed}
+                  onBulkDelete={handleBulkDeleteAssignments}
+                  onCancel={handleToggleSelectionMode}
+                />
+              )}
+          </>
         )}
         <div style={{ display: "flex", flexDirection: "row" }}>
           {isLoadingAssignments ||
@@ -966,11 +1398,18 @@ export default function ScheduleTab({
               shifts={shifts}
               requests={requests}
               scheduleViewSettings={scheduleViewSettings}
+              selectionState={selectionState}
+              selectionScope={selectionScope}
               handleAssignmentSelection={handleAssignmentSelection}
               handleDemandSelection={handleDemandSelection}
               handleRequestSelection={handleRequestSelection}
               handleExportSchedule={handleExportSchedule}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
+              handleCellSelect={handleCellSelect}
+              handleAssignmentSelect={handleAssignmentSelect}
+              handleRowSelect={handleRowSelect}
+              handleColumnSelect={handleColumnSelect}
+              handleSelectAll={handleSelectAll}
             />
           )}
         </div>

@@ -31,6 +31,10 @@ import { RequestT } from "../../../../types/request";
 import { AttributeOwnerType } from "../../../../types/attribute";
 import { RecurrenceRuleT } from "@/types/recurrence";
 import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
+import {
+  ScheduleSelectionState,
+  SelectionScope,
+} from "../../../../types/scheduleSelection";
 
 export default function ScheduleTableShift({
   lng,
@@ -46,10 +50,17 @@ export default function ScheduleTableShift({
   periodDates,
   breaches,
   scheduleViewSettings,
+  selectionState,
+  selectionScope,
   handleAssignmentSelection,
   handleDemandSelection,
   handleExportSchedule,
   handleOpenCreateAssignment,
+  handleCellSelect,
+  handleAssignmentSelect,
+  handleRowSelect,
+  handleColumnSelect,
+  handleSelectAll,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -63,10 +74,25 @@ export default function ScheduleTableShift({
   periodDates: periodDateT[];
   breaches: BreachT[];
   scheduleViewSettings: ScheduleViewSettingsT;
+  selectionState: ScheduleSelectionState;
+  selectionScope: SelectionScope;
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
+  handleCellSelect: (
+    rowId: string,
+    date: string,
+    scheduleId: string | null,
+  ) => void;
+  handleAssignmentSelect: (assignmentId: string) => void;
+  handleRowSelect: (rowId: string, scope: SelectionScope) => void;
+  handleColumnSelect: (
+    date: string,
+    rowIds: string[],
+    scope: SelectionScope,
+  ) => void;
+  handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(shifts, assignments);
 
@@ -102,6 +128,13 @@ export default function ScheduleTableShift({
             periodDates={periodDates}
             scheduleCampaign={scheduleCampaign}
             handleExportSchedule={handleExportSchedule}
+            isSelectionActive={selectionState?.isActive}
+            selectionState={selectionState}
+            rowIds={shiftsForHeader.map((s) => s.id)}
+            selectionScope={selectionScope}
+            handleColumnSelect={handleColumnSelect}
+            handleSelectAll={handleSelectAll}
+            assignments={assignments}
           />
           <RoleBased
             role={teamWithMembership.membership.role}
@@ -132,9 +165,14 @@ export default function ScheduleTableShift({
               scheduleCampaign={scheduleCampaign}
               scheduleCellsDict={scheduleCellDict}
               scheduleViewSettings={scheduleViewSettings}
+              selectionState={selectionState}
+              selectionScope={selectionScope}
               handleAssignmentSelection={handleAssignmentSelection}
               handleDemandSelection={handleDemandSelection}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
+              handleCellSelect={handleCellSelect}
+              handleAssignmentSelect={handleAssignmentSelect}
+              handleRowSelect={handleRowSelect}
             />
           ))}
         </TableBody>

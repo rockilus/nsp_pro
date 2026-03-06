@@ -6,11 +6,12 @@ dayjs.extend(isoWeek);
 export function getPeriodStartEndDates(
   periodType: "week" | "month",
   startDate: Dayjs,
-  endDate: Dayjs
+  endDate: Dayjs,
 ): { firstDate: Dayjs; lastDate: Dayjs } {
   if (periodType === "month") {
-    const currentMonthStart = dayjs().startOf("month");
-    const currentMonthEnd = dayjs().endOf("month");
+    // Use UTC for current-month boundary checks to match stored UTC periodStartDate
+    const currentMonthStart = dayjs.utc().startOf("month");
+    const currentMonthEnd = dayjs.utc().endOf("month");
 
     if (
       startDate.isBefore(currentMonthEnd) &&
@@ -24,8 +25,9 @@ export function getPeriodStartEndDates(
       };
     }
   } else if (periodType === "week") {
-    const currentWeekStart = dayjs().startOf("isoWeek");
-    const currentWeekEnd = dayjs().endOf("isoWeek");
+    // Use UTC for current-week boundary checks to match stored UTC periodStartDate
+    const currentWeekStart = dayjs.utc().startOf("isoWeek");
+    const currentWeekEnd = dayjs.utc().endOf("isoWeek");
 
     if (
       startDate.isBefore(currentWeekEnd) &&

@@ -3,6 +3,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
+import Checkbox from "@mui/material/Checkbox";
 import TableCell from "@mui/material/TableCell";
 import Tooltip from "@mui/material/Tooltip";
 // Components
@@ -26,6 +27,10 @@ export default function WorkerRowHeaderCell({
   assignments,
   scheduleCampaign,
   teamWithMembership,
+  isSelectionActive,
+  onRowSelect,
+  isRowSelected,
+  isRowIndeterminate,
 }: {
   lng: string;
   shifts: ShiftT[];
@@ -33,6 +38,10 @@ export default function WorkerRowHeaderCell({
   assignments: AssignmentT[];
   scheduleCampaign: ScheduleT | null;
   teamWithMembership: TeamWithMembership;
+  isSelectionActive?: boolean;
+  onRowSelect?: () => void;
+  isRowSelected?: boolean;
+  isRowIndeterminate?: boolean;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -111,61 +120,82 @@ export default function WorkerRowHeaderCell({
       }}
     >
       <div className="worker-row-header-cell-container">
-        <span
-          className="worker-name"
-          data-testid={`worker-name-${worker.id}`}
-        >{`${worker.name} (${worker.acronym})`}</span>
-        <RoleBased
-          role={teamWithMembership.membership.role}
-          allowedRoles={[TeamMembershipRole.OWNER]}
-        >
-          {scheduleCampaign && (
-            <Tooltip title={t("h/week_tooltip")} placement="right" arrow>
-              <div
-                className="worker-stats-item"
-                data-testid={`worker-stats-hours-${worker.id}`}
+        {isSelectionActive && (
+          <Checkbox
+            size="small"
+            checked={!!isRowSelected}
+            indeterminate={isRowIndeterminate}
+            onChange={onRowSelect}
+            onClick={(e) => e.stopPropagation()}
+            data-testid={`worker-row-checkbox-${worker.id}`}
+            sx={{ padding: "2px", flexShrink: 0 }}
+          />
+        )}
+        <div className="worker-row-header-cell-content">
+          <span
+            className="worker-name"
+            data-testid={`worker-name-${worker.id}`}
+          >{`${worker.name} (${worker.acronym})`}</span>
+          <RoleBased
+            role={teamWithMembership.membership.role}
+            allowedRoles={[TeamMembershipRole.OWNER]}
+          >
+            {scheduleCampaign && (
+              <Tooltip title={t("h/week_tooltip")} placement="right" arrow>
+                <div
+                  className="worker-stats-item"
+                  data-testid={`worker-stats-hours-${worker.id}`}
+                >
+                  <div
+                    className={`worker-stats-container ${
+                      workerWeeklyWorkTimeActual > worker.weeklyHoursDesired &&
+                      "breach"
+                    }`}
+                  >
+                    <span className="worker-stats">
+                      {workerWeeklyWorkTimeActual.toFixed(1)}
+                    </span>
+                    <span className="worker-stats-slash">/</span>
+                    <span className="worker-stats">
+                      {worker.weeklyHoursDesired}
+                    </span>
+                  </div>
+                  <span className="worker-stats-label">{t("h/week")}</span>
+                </div>
+              </Tooltip>
+            )}
+            {scheduleCampaign && (
+              <Tooltip
+                title={t("duties/month_tooltip")}
+                placement="right"
+                arrow
               >
                 <div
-                  className={`worker-stats-container ${
-                    workerWeeklyWorkTimeActual > worker.weeklyHoursDesired &&
-                    "breach"
-                  }`}
+                  className="worker-stats-item"
+                  data-testid={`worker-stats-duties-${worker.id}`}
                 >
-                  <span className="worker-stats">
-                    {workerWeeklyWorkTimeActual.toFixed(1)}
-                  </span>
-                  <span className="worker-stats-slash">/</span>
-                  <span className="worker-stats">
-                    {worker.weeklyHoursDesired}
+                  <div
+                    className={`worker-stats-container ${
+                      workerDutiesPerMonthActual > worker.dutiesPerMonth &&
+                      "breach"
+                    }`}
+                  >
+                    <span className="worker-stats">
+                      {workerDutiesPerMonthActual.toFixed(1)}
+                    </span>
+                    <span className="worker-stats-slash">/</span>
+                    <span className="worker-stats">
+                      {worker.dutiesPerMonth}
+                    </span>
+                  </div>
+                  <span className="worker-stats-label">
+                    {t("duties/month")}
                   </span>
                 </div>
-                <span className="worker-stats-label">{t("h/week")}</span>
-              </div>
-            </Tooltip>
-          )}
-          {scheduleCampaign && (
-            <Tooltip title={t("duties/month_tooltip")} placement="right" arrow>
-              <div
-                className="worker-stats-item"
-                data-testid={`worker-stats-duties-${worker.id}`}
-              >
-                <div
-                  className={`worker-stats-container ${
-                    workerDutiesPerMonthActual > worker.dutiesPerMonth &&
-                    "breach"
-                  }`}
-                >
-                  <span className="worker-stats">
-                    {workerDutiesPerMonthActual.toFixed(1)}
-                  </span>
-                  <span className="worker-stats-slash">/</span>
-                  <span className="worker-stats">{worker.dutiesPerMonth}</span>
-                </div>
-                <span className="worker-stats-label">{t("duties/month")}</span>
-              </div>
-            </Tooltip>
-          )}
-        </RoleBased>
+              </Tooltip>
+            )}
+          </RoleBased>
+        </div>
       </div>
     </TableCell>
   );
