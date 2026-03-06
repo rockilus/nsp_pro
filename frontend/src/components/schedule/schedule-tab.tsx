@@ -1137,15 +1137,27 @@ export default function ScheduleTab({
   const handleChangeTimeFrame = async (newTimeFrame: "week" | "month") => {
     console.log("Changing time frame to:", newTimeFrame);
 
+    // When switching time frames, we need an appropriate endDate range to
+    // determine overlap with the current week/month. If switching TO week
+    // from a month view, use the current month's end so the week-selection
+    // logic can decide to show the current week when the month contains today.
+    const endDateForComputation =
+      newTimeFrame === "week"
+        ? computePeriodEndDate(
+            scheduleViewSettings.periodStartDate,
+            scheduleViewSettings.timeFrame,
+          )
+        : computePeriodEndDate(
+            scheduleViewSettings.periodStartDate,
+            newTimeFrame,
+          );
+
     // Step 1: Get the new period dates using the NEW timeFrame
     const { firstDate: newPeriodStart, lastDate: newPeriodEnd } =
       getPeriodStartEndDates(
         newTimeFrame,
         scheduleViewSettings.periodStartDate,
-        computePeriodEndDate(
-          scheduleViewSettings.periodStartDate,
-          newTimeFrame,
-        ),
+        endDateForComputation,
       );
 
     // Step 2: Update schedule view settings with both new timeFrame and new start date

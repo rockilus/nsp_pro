@@ -33,4 +33,19 @@ describe("getPeriodStartEndDates - week->month overlap behavior", () => {
     expect(firstDate.format("YYYY-MM-DD")).toBe("2026-03-01");
     expect(lastDate.format("YYYY-MM-DD")).toBe("2026-03-31");
   });
+
+  test("when current month includes today, switching to week returns current week (Mar 2-8 2026)", () => {
+    // Month that contains 2026-03-06
+    const startDate = dayjs.utc("2026-03-01").startOf("month");
+    const endDate = dayjs.utc("2026-03-31").endOf("month");
+
+    const { firstDate, lastDate } = getPeriodStartEndDates(
+      "week",
+      startDate,
+      endDate,
+    );
+
+    expect(firstDate.format("YYYY-MM-DD")).toBe("2026-03-02");
+    expect(lastDate.format("YYYY-MM-DD")).toBe("2026-03-08");
+  });
 });
