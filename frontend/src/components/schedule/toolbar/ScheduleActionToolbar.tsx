@@ -231,10 +231,17 @@ export function ScheduleActionToolbar({
             data-testid="schedule-selection-counts"
             sx={{ color: "text.secondary", minWidth: "160px", flexShrink: 0 }}
           >
-            {cellCount > 0 && `${cellCount} cell${cellCount !== 1 ? "s" : ""}`}
+            {cellCount > 0 &&
+              t("select_mode_selection_counts_cells", {
+                count: cellCount,
+                s: cellCount !== 1 ? "s" : "",
+              })}
             {cellCount > 0 && assignmentCount > 0 && ", "}
             {assignmentCount > 0 &&
-              `${assignmentCount} assignment${assignmentCount !== 1 ? "s" : ""}`}
+              t("select_mode_selection_counts_assignments", {
+                count: assignmentCount,
+                s: assignmentCount !== 1 ? "s" : "",
+              })}
           </Typography>
         </Box>
 

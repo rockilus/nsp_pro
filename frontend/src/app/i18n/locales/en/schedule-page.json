@@ -140,6 +140,8 @@
     "select": "Select",
     "select_a_shift": "Select a shift",
     "select_a_worker": "Select a member",
+    "select_mode_selection_counts_cells": "{{count}} cell{{s}}",
+    "select_mode_selection_counts_assignments": "{{count}} assignment{{s}}",
     "select_mode_action_create_assignments": "Create assignments",
     "select_mode_action_delete_assignments": "Delete assignments",
     "select_mode_action_toggle_fixed": "Lock/unlock assignments",
