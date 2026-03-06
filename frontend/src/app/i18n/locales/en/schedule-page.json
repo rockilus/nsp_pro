@@ -153,6 +153,7 @@
     "select_mode_target_period_campaign_tooltip": "Global and row selections apply to the entire campaign, including hidden dates",
     "select_mode_target_period_view": "Current view",
     "select_mode_target_period_view_tooltip": "Global and row selections only apply to visible dates",
+    "select_mode_tooltip": "Select multiple assignments to create, edit, or delete them simultaneously",
     "select_mode_warning_no_assignment_selected": "Please select at least one assignment",
     "select_mode_warning_no_cell_selected": "Please select at least one cell",
     "select_mode_warning_no_member_shift_selected": "Please select a {{entity}}",

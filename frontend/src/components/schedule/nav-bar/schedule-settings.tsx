@@ -16,6 +16,7 @@ import {
   InputLabel,
   Checkbox,
   FormControlLabel,
+  Tooltip,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 // Components
@@ -203,16 +204,18 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
               >
                 {t("tools")}
               </h4>
-              <MenuItem
-                data-testid="settings-selection-mode-button"
-                onClick={() => {
-                  onToggleSelectionMode();
-                  handleClosePopover();
-                }}
-                sx={{ fontSize: "0.8rem" }}
-              >
-                {t("select")}
-              </MenuItem>
+              <Tooltip title={t("select_mode_tooltip")}>
+                <MenuItem
+                  data-testid="settings-selection-mode-button"
+                  onClick={() => {
+                    onToggleSelectionMode();
+                    handleClosePopover();
+                  }}
+                  sx={{ fontSize: "0.8rem" }}
+                >
+                  {t("select")}
+                </MenuItem>
+              </Tooltip>
               <MenuItem
                 data-testid="settings-duplicate-week-button"
                 onClick={handleDuplicateWeek}

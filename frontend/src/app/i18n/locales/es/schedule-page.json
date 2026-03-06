@@ -153,6 +153,7 @@
     "select_mode_target_period_campaign_tooltip": "Las selecciones globales y por fila se aplican a toda la campaña, incluidas las fechas no visibles",
     "select_mode_target_period_view": "Vista actual",
     "select_mode_target_period_view_tooltip": "Las selecciones globales y por fila solo se aplican a las fechas visibles",
+    "select_mode_tooltip": "Seleccionar varias asignaciones para crear, editar o eliminar simultáneamente",
     "select_mode_warning_no_assignment_selected": "Por favor selecciona al menos una asignación",
     "select_mode_warning_no_cell_selected": "Por favor selecciona al menos una celda",
     "select_mode_warning_no_member_shift_selected": "Por favor selecciona un {{entity}}",
