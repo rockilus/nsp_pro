@@ -31,15 +31,17 @@ import {
 import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
 import { ScheduleT } from "../../../types/schedule";
+import { useTranslation } from "../../../app/i18n/client";
 
 type ActionKey = "create" | "update" | "toggleFixed" | "delete";
 
-const ACTION_OPTIONS: { key: ActionKey; label: string }[] = [
-  { key: "create", label: "Create Assignments" },
-  { key: "update", label: "Update Assignments" },
-  { key: "toggleFixed", label: "Toggle Fixed" },
-  { key: "delete", label: "Delete Assignments" },
-];
+const ACTION_LABEL_KEYS: Record<ActionKey, string> = {
+  create: "select_mode_action_create_assignments",
+  update: "select_mode_action_update_assignments",
+  toggleFixed: "select_mode_action_toggle_fixed",
+  delete: "select_mode_action_delete_assignments",
+};
+const ACTION_KEYS: ActionKey[] = ["create", "update", "toggleFixed", "delete"];
 
 interface ScheduleActionToolbarProps {
   lng: string;
@@ -58,6 +60,7 @@ interface ScheduleActionToolbarProps {
 }
 
 export function ScheduleActionToolbar({
+  lng,
   selectionState,
   workers,
   shifts,
@@ -71,6 +74,7 @@ export function ScheduleActionToolbar({
   scope,
   onScopeChange,
 }: ScheduleActionToolbarProps) {
+  const { t } = useTranslation(lng, "schedule-page");
   const [selectedAction, setSelectedAction] = useState<ActionKey>("create");
   const [entityId, setEntityId] = useState<string>("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -99,24 +103,31 @@ export function ScheduleActionToolbar({
   const validate = (): string | null => {
     switch (selectedAction) {
       case "create":
-        if (cellCount === 0) return "Please select at least one cell.";
-        if (!entityId) return `Please select a ${entityLabel}.`;
+        if (cellCount === 0) return t("select_mode_warning_no_cell_selected");
+        if (!entityId)
+          return t("select_mode_warning_no_member_shift_selected", {
+            entity:
+              groupBy === "shift" ? t("select_a_worker") : t("select_a_shift"),
+          });
         return null;
       case "update":
         if (assignmentCount === 0)
-          return "Please select at least one assignment.";
-        if (!entityId) return `Please select a ${entityLabel}.`;
+          return t("select_mode_warning_no_assignment_selected");
+        if (!entityId)
+          return t("select_mode_warning_no_member_shift_selected", {
+            entity:
+              groupBy === "shift" ? t("select_a_worker") : t("select_a_shift"),
+          });
         return null;
       case "toggleFixed":
       case "delete":
         if (assignmentCount === 0)
-          return "Please select at least one assignment.";
+          return t("select_mode_warning_no_assignment_selected");
         return null;
     }
   };
 
-  const currentActionLabel =
-    ACTION_OPTIONS.find((a) => a.key === selectedAction)?.label ?? "";
+  const currentActionLabel = t(ACTION_LABEL_KEYS[selectedAction]);
 
   const actionIcon: Record<ActionKey, React.ReactNode> = {
     create: <AddIcon fontSize="small" sx={{ color: "text.secondary" }} />,
@@ -240,7 +251,7 @@ export function ScheduleActionToolbar({
                 color="text.secondary"
                 sx={{ whiteSpace: "nowrap" }}
               >
-                Target period:
+                {t("select_mode_target_period")}
               </Typography>
               <ToggleButtonGroup
                 size="small"
@@ -250,22 +261,24 @@ export function ScheduleActionToolbar({
                 onChange={(_, val) => val && onScopeChange(val)}
                 data-testid="schedule-scope-toggle-group"
               >
-                <Tooltip title="Apply actions to the currently visible period">
+                <Tooltip title={t("select_mode_target_period_view_tooltip")}>
                   <ToggleButton
                     value="view"
                     data-testid="schedule-scope-view"
                     sx={{ fontSize: "0.7rem", textTransform: "none" }}
                   >
-                    View
+                    {t("select_mode_target_period_view")}
                   </ToggleButton>
                 </Tooltip>
-                <Tooltip title="Apply actions across the full campaign">
+                <Tooltip
+                  title={t("select_mode_target_period_campaign_tooltip")}
+                >
                   <ToggleButton
                     value="campaign"
                     data-testid="schedule-scope-campaign"
                     sx={{ fontSize: "0.7rem", textTransform: "none" }}
                   >
-                    Campaign
+                    {t("select_mode_target_period_campaign")}
                   </ToggleButton>
                 </Tooltip>
               </ToggleButtonGroup>
@@ -290,11 +303,11 @@ export function ScheduleActionToolbar({
               error={selectHasError}
             >
               <InputLabel sx={{ fontSize: "0.8rem" }}>
-                {groupBy === "shift" ? "Worker" : "Shift"}
+                {groupBy === "shift" ? t("worker") : t("shift")}
               </InputLabel>
               <Select
                 value={entityId}
-                label={groupBy === "shift" ? "Worker" : "Shift"}
+                label={groupBy === "shift" ? t("worker") : t("shift")}
                 onChange={(e) => {
                   setEntityId(e.target.value);
                   setValidationError(null);
@@ -329,18 +342,18 @@ export function ScheduleActionToolbar({
                 disabled={isLoading}
                 onClick={handleMainAction}
                 data-testid="schedule-delete-confirm-button"
-                sx={{ fontSize: "0.75rem" }}
+                sx={{ fontSize: "0.75rem", textTransform: "none" }}
               >
-                Confirm
+                {t("confirm")}
               </Button>
               <Button
                 size="small"
                 variant="text"
                 onClick={() => setDeleteConfirm(false)}
                 data-testid="schedule-delete-cancel-button"
-                sx={{ fontSize: "0.75rem" }}
+                sx={{ fontSize: "0.75rem", textTransform: "none" }}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </Box>
           ) : (
@@ -384,7 +397,7 @@ export function ScheduleActionToolbar({
           )}
         </Box>
         {/* Cancel */}
-        <Tooltip title="Exit selection mode">
+        <Tooltip title={t("select_mode_exit_tooltip")}>
           <IconButton
             size="small"
             onClick={onCancel}
@@ -411,12 +424,12 @@ export function ScheduleActionToolbar({
             <Paper>
               <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
                 <MenuList autoFocusItem dense>
-                  {ACTION_OPTIONS.map((action) => (
+                  {ACTION_KEYS.map((key) => (
                     <MenuItem
-                      key={action.key}
-                      selected={action.key === selectedAction}
-                      onClick={() => handleActionSelect(action.key)}
-                      data-testid={`schedule-action-option-${action.key}`}
+                      key={key}
+                      selected={key === selectedAction}
+                      onClick={() => handleActionSelect(key)}
+                      data-testid={`schedule-action-option-${key}`}
                       sx={{
                         fontSize: "0.8rem",
                         display: "flex",
@@ -424,14 +437,12 @@ export function ScheduleActionToolbar({
                         gap: 1,
                       }}
                     >
-                      {actionIcon[action.key]}
+                      {actionIcon[key]}
                       <Typography
                         variant="inherit"
-                        color={
-                          action.key === "delete" ? "error" : "text.primary"
-                        }
+                        color={key === "delete" ? "error" : "text.primary"}
                       >
-                        {action.label}
+                        {t(ACTION_LABEL_KEYS[key])}
                       </Typography>
                     </MenuItem>
                   ))}

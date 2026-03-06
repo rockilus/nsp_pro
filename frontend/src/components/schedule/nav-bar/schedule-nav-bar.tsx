@@ -35,7 +35,6 @@ export default function ScheduleNavBar({
   handleChangeTimeFrame,
   useSqsWorkflow = false, // Feature flag for SQS workflow
   onSqsSolveComplete,
-  isSelectionModeActive = false,
   onToggleSelectionMode,
 }: {
   lng: string;
@@ -58,7 +57,6 @@ export default function ScheduleNavBar({
   handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
   useSqsWorkflow?: boolean;
   onSqsSolveComplete?: (result: SolveTaskStatusResponseT) => void;
-  isSelectionModeActive?: boolean;
   onToggleSelectionMode?: () => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
@@ -103,7 +101,6 @@ export default function ScheduleNavBar({
             startDate={currentPeriodStart}
             endDate={currentPeriodEnd}
             scheduleViewSettings={scheduleViewSettings}
-            isSelectionModeActive={isSelectionModeActive}
             onToggleSelectionMode={onToggleSelectionMode ?? (() => {})}
             handleSendDuplicateRequest={handleSendDuplicateRequest}
             updateScheduleViewSettings={updateScheduleViewSettings}

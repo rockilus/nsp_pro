@@ -1345,7 +1345,6 @@ export default function ScheduleTab({
               handleChangeTimeFrame={handleChangeTimeFrame}
               useSqsWorkflow={true}
               onSqsSolveComplete={handleSqsSolveComplete}
-              isSelectionModeActive={selectionState.isActive}
               onToggleSelectionMode={handleToggleSelectionMode}
             />
             {selectionState.isActive &&

@@ -38,7 +38,6 @@ interface ScheduleSettingsProps {
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
   scheduleViewSettings: ScheduleViewSettingsT;
-  isSelectionModeActive: boolean;
   onToggleSelectionMode: () => void;
   handleSendDuplicateRequest: (
     request: DuplicateRequestT,
@@ -56,7 +55,6 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   startDate,
   endDate,
   scheduleViewSettings,
-  isSelectionModeActive,
   onToggleSelectionMode,
   handleSendDuplicateRequest,
   updateScheduleViewSettings,
@@ -213,7 +211,6 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                 }}
                 sx={{ fontSize: "0.8rem" }}
               >
-                {isSelectionModeActive ? "✓ " : ""}
                 {t("select")}
               </MenuItem>
               <MenuItem
