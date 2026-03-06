@@ -147,7 +147,7 @@
     "select_mode_exit_tooltip": "Exit selection mode",
     "select_mode_warning_no_assignment_selected": "Please select at least one assignment",
     "select_mode_warning_no_cell_selected": "Please select at least one cell",
-    "select_mode_warning_no_member_shift_selected": "Please select a {entity}",
+    "select_mode_warning_no_member_shift_selected": "Please select a {{entity}}",
     "select_mode_target_period": "Selection scope:",
     "select_mode_target_period_campaign": "Entire campaign",
     "select_mode_target_period_campaign_tooltip": "Global and row selections apply to the entire campaign, including hidden dates",

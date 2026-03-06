@@ -107,7 +107,9 @@ export function ScheduleActionToolbar({
         if (!entityId)
           return t("select_mode_warning_no_member_shift_selected", {
             entity:
-              groupBy === "shift" ? t("select_a_worker") : t("select_a_shift"),
+              groupBy === "shift"
+                ? t("worker").toLocaleLowerCase()
+                : t("shift").toLocaleLowerCase(),
           });
         return null;
       case "update":
@@ -116,7 +118,9 @@ export function ScheduleActionToolbar({
         if (!entityId)
           return t("select_mode_warning_no_member_shift_selected", {
             entity:
-              groupBy === "shift" ? t("select_a_worker") : t("select_a_shift"),
+              groupBy === "shift"
+                ? t("worker").toLowerCase()
+                : t("shift").toLocaleLowerCase(),
           });
         return null;
       case "toggleFixed":
