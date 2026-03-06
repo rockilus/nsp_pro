@@ -14,7 +14,7 @@
 
 import { test, expect } from "@playwright/test";
 import { randomUUID } from "crypto";
-import { ScheduleTestBase } from "../../../utils/schedule-test-base";
+import { ScheduleTestBase } from "../../../../utils/schedule-test-base";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
