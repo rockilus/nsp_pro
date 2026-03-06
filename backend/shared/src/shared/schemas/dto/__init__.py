@@ -1,6 +1,9 @@
 from shared.schemas.dto.assignment import (
     AssignmentDTO,
     AssignmentsRecurrencesResultDTO,
+    BulkAssignmentCreateDTO,
+    BulkAssignmentDeleteDTO,
+    BulkAssignmentUpdateDTO,
 )
 from shared.schemas.dto.attribute import AttributeDTO
 from shared.schemas.dto.breach import BreachDTO
@@ -88,6 +91,9 @@ from shared.schemas.dto.worker import WorkerDTO
 __all__ = [
     "AssignmentDTO",
     "AssignmentsRecurrencesResultDTO",
+    "BulkAssignmentCreateDTO",
+    "BulkAssignmentDeleteDTO",
+    "BulkAssignmentUpdateDTO",
     "AttributeDTO",
     "BreachDTO",
     "BlockDTO",
