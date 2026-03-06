@@ -539,6 +539,16 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     });
     await enterSelectionMode(page);
 
+    // Snapshot assignments before the bulk toggleFixed
+    const beforeToggle = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      weekStart,
+      weekEnd,
+    );
+    const beforeFixedById = new Map(
+      beforeToggle.assignmentsRead.map((a) => [a.id, a]),
+    );
+
     // Select each pre-created assignment
     for (const id of createdIds) {
       const cell = page.locator(`[data-testid="assignment-cell-${id}"]`);
@@ -557,12 +567,20 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       weekEnd,
     );
 
+    // Build list of truly toggled assignments: existed before and fixed value changed
+    const toggledAssignments = afterToggle.assignmentsRead.filter(
+      (a) =>
+        beforeFixedById.has(a.id) &&
+        beforeFixedById.get(a.id)!.fixed !== a.fixed,
+    );
+    expect(toggledAssignments).toHaveLength(createdIds.length);
+
     // Verify every pre-created assignment was toggled to fixed: true
     for (const id of createdIds) {
-      const toggled = afterToggle.assignmentsRead.find((a) => a.id === id);
+      const toggled = toggledAssignments.find((a) => a.id === id);
       expect(
         toggled,
-        `Assignment ${id} should still exist after toggleFixed`,
+        `Assignment ${id} should have been toggled`,
       ).toBeDefined();
       expect(toggled!.fixed).toBe(true);
     }
@@ -615,6 +633,16 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     });
     await enterSelectionMode(page);
 
+    // Snapshot assignments before the bulk delete
+    const beforeDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
+      false,
+      weekStart,
+      weekEnd,
+    );
+    const beforeDeleteIds = new Set(
+      beforeDelete.assignmentsRead.map((a) => a.id),
+    );
+
     // Select each pre-created assignment
     for (const id of createdIds) {
       const cell = page.locator(`[data-testid="assignment-cell-${id}"]`);
@@ -633,16 +661,21 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       weekStart,
       weekEnd,
     );
+    const afterDeleteIds = new Set(
+      afterDelete.assignmentsRead.map((a) => a.id),
+    );
 
-    // Verify every pre-created assignment was deleted
+    // Build list of truly deleted assignments: existed before but missing after
+    const deletedIds = [...beforeDeleteIds].filter(
+      (id) => !afterDeleteIds.has(id),
+    );
+    expect(deletedIds).toHaveLength(createdIds.length);
+
+    // Verify every pre-created assignment is gone
     for (const id of createdIds) {
-      const deletedAssignment = afterDelete.assignmentsRead.find(
-        (a) => a.id === id,
+      expect(deletedIds, `Assignment ${id} should have been deleted`).toContain(
+        id,
       );
-      expect(
-        deletedAssignment,
-        `Assignment ${id} should have been deleted`,
-      ).toBeUndefined();
     }
   });
 
