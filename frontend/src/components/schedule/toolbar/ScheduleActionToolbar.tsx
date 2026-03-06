@@ -336,8 +336,10 @@ export function ScheduleActionToolbar({
           {deleteConfirm ? (
             <Box display="flex" alignItems="center" gap={0.5}>
               <Typography variant="caption" color="error">
-                Delete {assignmentCount} assignment
-                {assignmentCount !== 1 ? "s" : ""}?
+                {t("select_mode_delete_confirmation", {
+                  count: assignmentCount,
+                  s: assignmentCount !== 1 ? "s" : "",
+                })}
               </Typography>
               <Button
                 size="small"

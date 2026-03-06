@@ -153,6 +153,7 @@
     "select_mode_target_period_campaign_tooltip": "Global and row selections apply to the entire campaign, including hidden dates",
     "select_mode_target_period_view": "Current view",
     "select_mode_target_period_view_tooltip": "Global and row selections only apply to visible dates",
+    "select_mode_delete_confirmation": "Delete {{count}} assignment{{s}}?",
     "selecting": "Selecting...",
     "selection": "Selection",
     "set": "Set",
