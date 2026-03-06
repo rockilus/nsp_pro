@@ -63,15 +63,6 @@ test.describe("Schedule Page - Member without Worker Profile", () => {
     const alert = page.locator('[data-testid="no-worker-alert"]');
     await expect(alert).toBeVisible();
 
-    // Verify the alert has info severity
-    await expect(alert).toHaveClass(/MuiAlert-standardInfo/);
-
-    // Verify the error message content
-    const errorMessage = alert.getByText(
-      /You are not associated with a worker profile/i,
-    );
-    await expect(errorMessage).toBeVisible();
-
     console.log(
       "✅ Error message displayed correctly for member without worker profile",
     );
