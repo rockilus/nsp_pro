@@ -238,10 +238,12 @@ export function ScheduleActionToolbar({
               })}
             {cellCount > 0 && assignmentCount > 0 && ", "}
             {assignmentCount > 0 &&
-              t("select_mode_selection_counts_assignments", {
-                count: assignmentCount,
-                s: assignmentCount !== 1 ? "s" : "",
-              })}
+              (lng === "es"
+                ? `${assignmentCount} ${assignmentCount !== 1 ? "asignaciones" : "asignación"}`
+                : t("select_mode_selection_counts_assignments", {
+                    count: assignmentCount,
+                    s: assignmentCount !== 1 ? "s" : "",
+                  }))}
           </Typography>
         </Box>
 
@@ -343,10 +345,12 @@ export function ScheduleActionToolbar({
           {deleteConfirm ? (
             <Box display="flex" alignItems="center" gap={0.5}>
               <Typography variant="caption" color="error">
-                {t("select_mode_delete_confirmation", {
-                  count: assignmentCount,
-                  s: assignmentCount !== 1 ? "s" : "",
-                })}
+                {lng === "es"
+                  ? `${assignmentCount} ${assignmentCount !== 1 ? "asignaciones" : "asignación"}`
+                  : t("select_mode_delete_confirmation", {
+                      count: assignmentCount,
+                      s: assignmentCount !== 1 ? "s" : "",
+                    })}
               </Typography>
               <Button
                 size="small"
