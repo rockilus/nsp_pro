@@ -819,6 +819,11 @@ test.describe("Assignment Replacement - Team Leader", () => {
           newMonthlyDutiesDelta: 1,
           meetsTarget: false,
         },
+        newWeeklyTime: {
+          newWeeklyWorkedMinutes: (24 + 6) * 60,
+          newWeeklyTimeDeltaMinutes: (24 + 6 - w6_2.weeklyHours) * 60,
+          meetsTarget: true,
+        },
       },
     };
 
