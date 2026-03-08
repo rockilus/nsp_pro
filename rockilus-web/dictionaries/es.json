@@ -1,0 +1,82 @@
+{
+    "nav": {
+        "brand": "Rockilus",
+        "features": "Funciones",
+        "pricing": "Precios",
+        "cta": "Comenzar gratis"
+    },
+    "hero": {
+        "headline": "Planificación de turnos inteligente, resuelta.",
+        "subheadline": "Rockilus automatiza la planificación compleja de turnos para equipos de salud y operaciones — en segundos, no horas.",
+        "cta": "Empezar a planificar gratis"
+    },
+    "problem": {
+        "title": "El Problema",
+        "points": [
+            "Crear horarios manualmente lleva días",
+            "Las brechas de cobertura provocan agotamiento y horas extra",
+            "Los cambios de último momento crean caos",
+            "Las reglas de cumplimiento son difíciles de seguir"
+        ]
+    },
+    "solution": {
+        "title": "La Solución",
+        "points": [
+            "Horarios generados por IA en segundos",
+            "Verificación automática de cobertura y restricciones",
+            "Resolución instantánea de conflictos",
+            "Aplicación integrada de reglas de cumplimiento"
+        ]
+    },
+    "features": [
+        {
+            "title": "Planificación con restricciones",
+            "description": "Define patrones de turno, reglas de descanso y preferencias de trabajadores una vez. Rockilus encuentra el horario óptimo cada vez."
+        },
+        {
+            "title": "Detección de conflictos en tiempo real",
+            "description": "Detecta brechas de cobertura, falta de personal y violaciones de reglas al instante — antes de publicar."
+        },
+        {
+            "title": "Colaboración multi-equipo",
+            "description": "Gestiona múltiples departamentos y ubicaciones desde un solo panel. Comparte horarios con un clic."
+        }
+    ],
+    "howItWorks": {
+        "title": "Cómo funciona",
+        "steps": [
+            {
+                "title": "Integra tu equipo",
+                "description": "Importa a tus trabajadores, roles y tipos de turno en minutos."
+            },
+            {
+                "title": "Define tus restricciones",
+                "description": "Establece disponibilidad, requisitos de descanso y reglas legales una vez."
+            },
+            {
+                "title": "Genera horarios",
+                "description": "Deja que nuestro solucionador encuentre la asignación óptima al instante."
+            },
+            {
+                "title": "Publica y notifica",
+                "description": "Comparte los horarios con tu equipo y rastrea los cambios en tiempo real."
+            }
+        ]
+    },
+    "finalCta": {
+        "heading": "¿Listo para eliminar los dolores de cabeza de la planificación?",
+        "subheadline": "Únete a los equipos que ya ahorran horas cada semana con Rockilus.",
+        "button": "Comenzar gratis"
+    },
+    "footer": {
+        "tagline": "Planificación inteligente para equipos modernos.",
+        "links": {
+            "features": "Funciones",
+            "pricing": "Precios",
+            "privacy": "Privacidad",
+            "terms": "Términos",
+            "contact": "Contacto"
+        },
+        "copyright": "© 2026 Rockilus. Todos los derechos reservados."
+    }
+}

@@ -1,0 +1,82 @@
+{
+    "nav": {
+        "brand": "Rockilus",
+        "features": "Fonctionnalités",
+        "pricing": "Tarifs",
+        "cta": "Commencer gratuitement"
+    },
+    "hero": {
+        "headline": "La planification des équipes, simplifiée.",
+        "subheadline": "Rockilus automatise la planification complexe des équipes de santé et d'exploitation — en quelques secondes, pas en heures.",
+        "cta": "Planifier gratuitement"
+    },
+    "problem": {
+        "title": "Le Problème",
+        "points": [
+            "La création manuelle des plannings prend des jours",
+            "Les lacunes de couverture entraînent l'épuisement et les heures supplémentaires",
+            "Les changements de dernière minute créent le chaos",
+            "Les règles de conformité sont difficiles à suivre"
+        ]
+    },
+    "solution": {
+        "title": "La Solution",
+        "points": [
+            "Plannings générés par IA en quelques secondes",
+            "Vérification automatique de la couverture et des contraintes",
+            "Résolution instantanée des conflits",
+            "Application intégrée des règles de conformité"
+        ]
+    },
+    "features": [
+        {
+            "title": "Planification avec contraintes",
+            "description": "Définissez les modèles de quarts, les règles de repos et les préférences des employés une seule fois. Rockilus trouve le planning optimal à chaque fois."
+        },
+        {
+            "title": "Détection de conflits en temps réel",
+            "description": "Identifiez immédiatement les lacunes, le sous-effectif et les violations de règles — avant la publication."
+        },
+        {
+            "title": "Collaboration multi-équipes",
+            "description": "Gérez plusieurs départements et sites depuis un tableau de bord unique. Partagez les plannings en un clic."
+        }
+    ],
+    "howItWorks": {
+        "title": "Comment ça fonctionne",
+        "steps": [
+            {
+                "title": "Intégrez votre équipe",
+                "description": "Importez vos employés, rôles et types de quarts en quelques minutes."
+            },
+            {
+                "title": "Définissez vos contraintes",
+                "description": "Définissez les disponibilités, les exigences de repos et les règles légales une seule fois."
+            },
+            {
+                "title": "Générez les plannings",
+                "description": "Laissez notre solveur trouver l'affectation optimale instantanément."
+            },
+            {
+                "title": "Publiez et notifiez",
+                "description": "Partagez les plannings avec votre équipe et suivez les changements en temps réel."
+            }
+        ]
+    },
+    "finalCta": {
+        "heading": "Prêt à éliminer les maux de tête liés aux plannings ?",
+        "subheadline": "Rejoignez les équipes qui ont déjà économisé des heures chaque semaine avec Rockilus.",
+        "button": "Commencer gratuitement"
+    },
+    "footer": {
+        "tagline": "Planification intelligente pour les équipes modernes.",
+        "links": {
+            "features": "Fonctionnalités",
+            "pricing": "Tarifs",
+            "privacy": "Confidentialité",
+            "terms": "Conditions",
+            "contact": "Contact"
+        },
+        "copyright": "© 2026 Rockilus. Tous droits réservés."
+    }
+}

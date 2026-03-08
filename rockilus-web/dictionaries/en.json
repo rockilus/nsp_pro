@@ -1,0 +1,82 @@
+{
+    "nav": {
+        "brand": "Rockilus",
+        "features": "Features",
+        "pricing": "Pricing",
+        "cta": "Get Started for Free"
+    },
+    "hero": {
+        "headline": "Smart Staff Scheduling, Solved.",
+        "subheadline": "Rockilus automates complex shift planning for healthcare and operations teams — in seconds, not hours.",
+        "cta": "Start Scheduling Free"
+    },
+    "problem": {
+        "title": "The Problem",
+        "points": [
+            "Manually building schedules takes days",
+            "Coverage gaps lead to burnout and overtime",
+            "Last-minute changes create chaos",
+            "Compliance rules are hard to track"
+        ]
+    },
+    "solution": {
+        "title": "The Solution",
+        "points": [
+            "AI-generated schedules in seconds",
+            "Automatic coverage and constraint checks",
+            "Instant conflict resolution on demand",
+            "Built-in compliance rule enforcement"
+        ]
+    },
+    "features": [
+        {
+            "title": "Constraint-Aware Scheduling",
+            "description": "Define shift patterns, rest rules, and worker preferences once. Rockilus finds the optimal schedule every time."
+        },
+        {
+            "title": "Real-Time Conflict Detection",
+            "description": "Catch coverage gaps, understaffing, and rule violations instantly — before you publish."
+        },
+        {
+            "title": "Multi-Team Collaboration",
+            "description": "Manage multiple departments and locations from a single dashboard. Share schedules with one click."
+        }
+    ],
+    "howItWorks": {
+        "title": "How It Works",
+        "steps": [
+            {
+                "title": "Onboard Your Team",
+                "description": "Import your workers, roles, and shift types in minutes."
+            },
+            {
+                "title": "Set Your Constraints",
+                "description": "Define availability, rest requirements, and legal rules once."
+            },
+            {
+                "title": "Generate Schedules",
+                "description": "Let our solver find the optimal assignment instantly."
+            },
+            {
+                "title": "Publish & Notify",
+                "description": "Share schedules with your team and track changes in real time."
+            }
+        ]
+    },
+    "finalCta": {
+        "heading": "Ready to eliminate scheduling headaches?",
+        "subheadline": "Join teams who have already saved hours every week with Rockilus.",
+        "button": "Get Started for Free"
+    },
+    "footer": {
+        "tagline": "Intelligent scheduling for modern teams.",
+        "links": {
+            "features": "Features",
+            "pricing": "Pricing",
+            "privacy": "Privacy",
+            "terms": "Terms",
+            "contact": "Contact"
+        },
+        "copyright": "© 2026 Rockilus. All rights reserved."
+    }
+}
