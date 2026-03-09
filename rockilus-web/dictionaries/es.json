@@ -2,7 +2,9 @@
     "nav": {
         "brand": "Rockilus",
         "features": "Funciones",
+        "howItWorks": "Cómo funciona",
         "pricing": "Precios",
+        "contact": "Contacto",
         "cta": "Comenzar gratis"
     },
     "hero": {
