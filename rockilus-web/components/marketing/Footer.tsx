@@ -1,3 +1,5 @@
+"use client";
+
 import type { Locale } from "@/lib/dictionaries";
 import LangToggle from "./LangToggle";
 
@@ -23,7 +25,22 @@ export default function Footer({ footer, lang }: FooterProps) {
       <div className="mx-auto max-w-6xl">
         <div className="grid sm:grid-cols-3 gap-8 mb-8">
           <div>
-            <div className="font-bold text-xl text-blue-600 mb-2">Rockilus</div>
+            <button
+              type="button"
+              aria-label="Rockilus"
+              className="inline-block mb-2"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+            >
+              <img
+                src="/images/landing-page/logo/rockilus_logo_blue.jpg"
+                alt="Rockilus"
+                className="h-6 w-auto object-contain"
+              />
+            </button>
             <p className="text-sm text-slate-600">{footer.tagline}</p>
           </div>
           <div>
