@@ -86,7 +86,13 @@ export default function NavBar({ nav, lang, appUrl }: NavBarProps) {
                 </svg>
               </button>
 
-              <div className="font-bold text-xl text-blue-600">{nav.brand}</div>
+              <Link href="/" aria-label={nav.brand} className="inline-block">
+                <img
+                  src="/images/landing-page/logo/rockilus_logo_blue.jpg"
+                  alt={nav.brand}
+                  className="h-5 w-auto object-contain"
+                />
+              </Link>
             </div>
 
             <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-700">
