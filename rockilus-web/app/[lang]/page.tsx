@@ -19,7 +19,11 @@ export default async function LandingPage({
     <main>
       <NavBar nav={dict.nav} lang={lang as Locale} />
       <HeroSection hero={dict.hero} lang={lang as Locale} />
-      <ProblemSolution problem={dict.problem} solution={dict.solution} />
+      <ProblemSolution
+        headline={dict.problemVsSolution.headline}
+        problem={dict.problemVsSolution.problem}
+        solution={dict.problemVsSolution.solution}
+      />
       <CoreFeatures features={dict.features} />
       <HowItWorks howItWorks={dict.howItWorks} />
       <FinalCTA finalCta={dict.finalCta} />

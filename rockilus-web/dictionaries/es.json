@@ -6,26 +6,29 @@
         "cta": "Comenzar gratis"
     },
     "hero": {
-        "headline": "¿Sigues gestionando los turnos médicos en hojas de cálculo?",
+        "headline": "Menos tiempo planificando, más tiempo cuidando.",
         "subheadline": "Automatiza guardias, gestiona los descansos legales y elimina los conflictos de horarios: en segundos, no en horas.",
         "cta": "Empezar gratis",
         "ctaDemo": "Solicitar una demo"
     },
-    "problem": {
-        "title": "El método tradicional",
-        "points": [
-            "Horas perdidas comprobando manualmente los descansos y reglas legales.",
-            "Llamadas desesperadas para encontrar un reemplazo de última hora.",
-            "Horarios injustos que provocan el agotamiento del personal."
-        ]
-    },
-    "solution": {
-        "title": "Con Rockilus",
-        "points": [
-            "Las restricciones complejas y normas legales se aplican automáticamente.",
-            "Encuentra el sustituto perfecto en exactamente dos clics.",
-            "Horarios justos y sin conflictos generados en un solo clic."
-        ]
+    "problemVsSolution": {
+        "headline": "¿Sigues gestionando los turnos médicos en hojas de cálculo?",
+        "problem": {
+            "title": "El método tradicional",
+            "points": [
+                "Horas perdidas comprobando manualmente los descansos y reglas legales.",
+                "Llamadas desesperadas para encontrar un reemplazo de última hora.",
+                "Horarios injustos que provocan el agotamiento del personal."
+            ]
+        },
+        "solution": {
+            "title": "Con Rockilus",
+            "points": [
+                "Las restricciones complejas y normas legales se aplican automáticamente.",
+                "Encuentra el sustituto perfecto en exactamente dos clics.",
+                "Horarios justos y sin conflictos generados en un solo clic."
+            ]
+        }
     },
     "features": [
         {

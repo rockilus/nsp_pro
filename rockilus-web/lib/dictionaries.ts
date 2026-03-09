@@ -13,13 +13,16 @@ export interface Dictionary {
     cta: string;
     ctaDemo: string;
   };
-  problem: {
-    title: string;
-    points: string[];
-  };
-  solution: {
-    title: string;
-    points: string[];
+  problemVsSolution: {
+    headline: string;
+    problem: {
+      title: string;
+      points: string[];
+    };
+    solution: {
+      title: string;
+      points: string[];
+    };
   };
   features: Array<{
     title: string;

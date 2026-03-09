@@ -6,26 +6,29 @@
         "cta": "Commencer gratuitement"
     },
     "hero": {
-        "headline": "Vous gérez encore les gardes médicales sur tableur ?",
+        "headline": "Moins de temps à planifier, plus de temps pour soigner.",
         "subheadline": "Automatisez les gardes, gérez les contraintes de repos et éliminez les conflits d'emploi du temps — en quelques secondes.",
         "cta": "Commencer gratuitement",
         "ctaDemo": "Demander une démo"
     },
-    "problem": {
-        "title": "L'ancienne méthode",
-        "points": [
-            "Des heures perdues à vérifier manuellement les temps de repos et règles légales.",
-            "Des dizaines d'appels pour trouver un remplaçant à la dernière minute.",
-            "Des plannings inéquitables qui épuisent vos équipes."
-        ]
-    },
-    "solution": {
-        "title": "Avec Rockilus",
-        "points": [
-            "Les contraintes complexes et règles légales sont appliquées automatiquement.",
-            "Trouvez le remplaçant idéal en exactement deux clics.",
-            "Des plannings justes et sans conflits générés en un clic."
-        ]
+    "problemVsSolution": {
+        "headline": "Vous gérez encore les gardes médicales sur tableur ?",
+        "problem": {
+            "title": "L'ancienne méthode",
+            "points": [
+                "Des heures perdues à vérifier manuellement les temps de repos et règles légales.",
+                "Des dizaines d'appels pour trouver un remplaçant à la dernière minute.",
+                "Des plannings inéquitables qui épuisent vos équipes."
+            ]
+        },
+        "solution": {
+            "title": "Avec Rockilus",
+            "points": [
+                "Les contraintes complexes et règles légales sont appliquées automatiquement.",
+                "Trouvez le remplaçant idéal en exactement deux clics.",
+                "Des plannings justes et sans conflits générés en un clic."
+            ]
+        }
     },
     "features": [
         {
