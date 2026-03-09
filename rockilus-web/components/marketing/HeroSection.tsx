@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/dictionaries";
+import MobileMock from "./MobileMock";
 
 interface HeroProps {
   hero: {
@@ -61,15 +62,7 @@ export default function HeroSection({ hero, lang }: HeroProps) {
           />
 
           {/* Mobile screenshot inside iPhone frame overlapping the right side — clipped by parent */}
-          <div className="absolute right-8 -bottom-60 w-[160px] sm:w-[240px] md:w-[320px] rounded-[2rem] border-[3px] border-slate-800 bg-slate-800 shadow-2xl overflow-hidden aspect-[9/19.5]">
-            {/* Dynamic island */}
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 w-[80px] h-[22px] bg-slate-900 rounded-full" />
-            <img
-              src={mobileImagePath(lang)}
-              alt="Rockilus schedule — mobile view"
-              className="w-full h-full object-cover object-top"
-            />
-          </div>
+          <MobileMock lang={lang} />
         </div>
       </div>
     </section>
