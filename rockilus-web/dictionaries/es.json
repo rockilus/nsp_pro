@@ -15,8 +15,12 @@
         "ctaDemo": "Solicitar una demo"
     },
     "demoMailto": {
-        "subject": "Solicitud de demo - Acceso Anticipado Rockilus",
+        "subject": "Rockilus - Solicitud de demo de aplicación de horarios",
         "body": "Hola equipo de Rockilus,\n\nMe gustaría solicitar una demo de su aplicación de horarios.\nMis disponibilidades para una llamada de 15 minutos son:\n"
+    },
+    "contactMailto": {
+        "subject": "Rockilus - Pregunta sobre aplicación de horarios",
+        "body": "Hola equipo de Rockilus,\n\nEstoy interesado/a en su aplicación de horarios y tengo una pregunta sobre:"
     },
     "problemVsSolution": {
         "headline": "¿Sigues gestionando los turnos médicos en hojas de cálculo?",

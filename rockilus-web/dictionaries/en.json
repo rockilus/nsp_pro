@@ -15,8 +15,12 @@
         "ctaDemo": "Request a Demo"
     },
     "demoMailto": {
-        "subject": "Request a Demo - Rockilus Early Access",
+        "subject": "Rockilus - Request a Demo of Scheduling App",
         "body": "Hi Rockilus team,\n\nI would like to request a demo of your scheduling app.\nMy availabilities for a quick 15-minute call are:\n"
+    },
+    "contactMailto": {
+        "subject": "Rockilus - Question about Scheduling App",
+        "body": "Hi Rockilus team,\n\nI am interested in your scheduling app and have a question about:"
     },
     "problemVsSolution": {
         "headline": "Still managing medical shifts on spreadsheets?",

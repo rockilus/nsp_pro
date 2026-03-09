@@ -15,8 +15,12 @@
         "ctaDemo": "Demander une démo"
     },
     "demoMailto": {
-        "subject": "Demande de démo - Accès Anticipé Rockilus",
+        "subject": "Rockilus - Demande de démo de l'application de planning",
         "body": "Bonjour l'équipe Rockilus,\n\nJe souhaite planifier une démo de votre application de planning.\nVoici mes disponibilités pour un appel de 15 minutes :\n"
+    },
+    "contactMailto": {
+        "subject": "Rockilus - Question sur l'application de planning",
+        "body": "Bonjour l'équipe Rockilus,\n\nJe suis intéressé(e) par votre application de planning et j'ai une question concernant:"
     },
     "problemVsSolution": {
         "headline": "Vous gérez encore les gardes médicales sur tableur ?",

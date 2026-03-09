@@ -66,6 +66,10 @@ export interface Dictionary {
     subject: string;
     body: string;
   };
+  contactMailto: {
+    subject: string;
+    body: string;
+  };
 }
 
 export async function getDictionary(lang: Locale): Promise<Dictionary> {

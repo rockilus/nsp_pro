@@ -20,10 +20,18 @@ export default async function LandingPage({
   const demoMailto = `mailto:felipe.kharaba@rockilus.com?subject=${encodeURIComponent(
     dict.demoMailto.subject,
   )}&body=${encodeURIComponent(dict.demoMailto.body)}`;
+  const contactMailto = `mailto:felipe.kharaba@rockilus.com?subject=${encodeURIComponent(
+    dict.contactMailto.subject,
+  )}&body=${encodeURIComponent(dict.contactMailto.body)}`;
 
   return (
     <main>
-      <NavBar nav={dict.nav} lang={lang as Locale} appUrl={appUrl} />
+      <NavBar
+        nav={dict.nav}
+        lang={lang as Locale}
+        appUrl={appUrl}
+        contactMailto={contactMailto}
+      />
       <HeroSection
         hero={dict.hero}
         lang={lang as Locale}

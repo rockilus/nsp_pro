@@ -17,9 +17,15 @@ interface NavBarProps {
   };
   lang: Locale;
   appUrl?: string;
+  contactMailto?: string;
 }
 
-export default function NavBar({ nav, lang, appUrl }: NavBarProps) {
+export default function NavBar({
+  nav,
+  lang,
+  appUrl,
+  contactMailto,
+}: NavBarProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -125,7 +131,10 @@ export default function NavBar({ nav, lang, appUrl }: NavBarProps) {
               >
                 {nav.pricing}
               </Link>
-              <a href="#" className="hover:text-blue-600 transition-colors">
+              <a
+                href={contactMailto ?? "#"}
+                className="hover:text-blue-600 transition-colors"
+              >
                 {nav.contact ?? "Contact"}
               </a>
             </div>
@@ -183,7 +192,7 @@ export default function NavBar({ nav, lang, appUrl }: NavBarProps) {
               {nav.pricing}
             </Link>
             <a
-              href="#"
+              href={contactMailto ?? "#"}
               onClick={() => setOpen(false)}
               className="block hover:text-blue-600"
             >
