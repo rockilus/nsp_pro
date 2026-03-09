@@ -20,7 +20,7 @@ export default function LangToggle({ lang }: { lang: Locale }) {
   }
 
   return (
-    <div className="flex items-center gap-1 text-sm font-medium">
+    <div className="flex items-center gap-1 text-xs font-medium">
       {LOCALES.map(({ code, label }) => (
         <button
           key={code}
