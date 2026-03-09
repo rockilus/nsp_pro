@@ -58,6 +58,15 @@ export default function MobileMock({
     return () => window.removeEventListener("resize", update);
   }, [config]);
 
+  // scale visual details relative to a base width (360px)
+  const base = 360;
+  const scale = Math.max(0.4, size.width / base);
+  const borderRadius = Math.round(32 * scale); // base 32px for 360
+  const borderWidth = Math.max(1, Math.round(3 * scale));
+  const islandW = Math.max(28, Math.round(80 * scale));
+  const islandH = Math.max(8, Math.round(22 * scale));
+  const islandTop = Math.max(4, Math.round(8 * scale));
+
   return (
     <div
       style={{
@@ -65,11 +74,22 @@ export default function MobileMock({
         right: `${size.right}px`,
         bottom: `${size.bottom}px`,
         width: `${size.width}px`,
+        borderRadius: `${borderRadius}px`,
+        borderStyle: "solid",
+        borderWidth: `${borderWidth}px`,
       }}
-      className="rounded-[2rem] border-[3px] border-slate-800 bg-slate-800 shadow-2xl overflow-hidden aspect-[9/19.5]"
+      className="border-slate-800 bg-slate-800 shadow-2xl overflow-hidden aspect-[9/19.5]"
     >
-      {/* Dynamic island */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 w-[80px] h-[22px] bg-slate-900 rounded-full" />
+      {/* Dynamic island - sized via inline styles to remain proportional */}
+      <div
+        style={{
+          top: `${islandTop}px`,
+          width: `${islandW}px`,
+          height: `${islandH}px`,
+          borderRadius: `${Math.round(islandH / 2)}px`,
+        }}
+        className="absolute left-1/2 -translate-x-1/2 z-10 bg-slate-900"
+      />
       <img
         src={mobileImagePath(lang)}
         alt="Rockilus schedule — mobile view"
