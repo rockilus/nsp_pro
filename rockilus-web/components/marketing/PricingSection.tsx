@@ -4,11 +4,13 @@ import type { Dictionary } from "@/lib/dictionaries";
 interface PricingSectionProps {
   pricing: Dictionary["pricing"];
   appUrl?: string;
+  sectionLabel?: string;
 }
 
 export default function PricingSection({
   pricing,
   appUrl,
+  sectionLabel,
 }: PricingSectionProps) {
   return (
     <section id="pricing" className="bg-white py-20 px-4 sm:px-6">
@@ -16,7 +18,7 @@ export default function PricingSection({
         {/* Left column — mission text */}
         <div>
           <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-4">
-            Pricing
+            {sectionLabel ?? "Pricing"}
           </p>
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
             {pricing.mission_headline}

@@ -34,7 +34,11 @@ export default async function LandingPage({
       />
       <CoreFeatures features={dict.features} />
       <HowItWorks howItWorks={dict.howItWorks} />
-      <PricingSection pricing={dict.pricing} appUrl={appUrl} />
+      <PricingSection
+        pricing={dict.pricing}
+        appUrl={appUrl}
+        sectionLabel={dict.nav.pricing}
+      />
       <FinalCTA finalCta={dict.finalCta} appUrl={appUrl} />
       <Footer footer={dict.footer} lang={lang as Locale} />
     </main>
