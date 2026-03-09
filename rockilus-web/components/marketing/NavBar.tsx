@@ -89,7 +89,7 @@ export default function NavBar({ nav, lang, appUrl }: NavBarProps) {
               <button
                 type="button"
                 aria-label={nav.brand}
-                className="inline-block"
+                className="inline-block cursor-pointer"
                 onClick={(e) => {
                   e.preventDefault();
                   setOpen(false);
