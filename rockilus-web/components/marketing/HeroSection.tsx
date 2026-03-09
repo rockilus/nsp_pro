@@ -1,3 +1,6 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
 import type { Locale } from "@/lib/dictionaries";
 import MobileMock from "./MobileMock";
 
@@ -12,19 +15,50 @@ interface HeroProps {
 }
 
 const LOCALES_WITH_DESKTOP: Locale[] = ["en", "fr"];
-const LOCALES_WITH_MOBILE: Locale[] = ["en"];
 
 function desktopImagePath(lang: Locale): string {
   const resolved = LOCALES_WITH_DESKTOP.includes(lang) ? lang : "en";
   return `/images/landing-page/hero-section/${resolved}/schedule.desktop.2880.v1.png`;
 }
 
-function mobileImagePath(lang: Locale): string {
-  const resolved = LOCALES_WITH_MOBILE.includes(lang) ? lang : "en";
-  return `/images/landing-page/hero-section/${resolved}/schedule.mobile.1284.v1.jpeg`;
-}
-
 export default function HeroSection({ hero, lang }: HeroProps) {
+  const QUOTES: Record<Locale, string[]> = {
+    en: [
+      "Finally, someone built a tool that actually understands our medical scheduling nightmare. It is an absolute lifesaver.",
+      "I used to spend my entire Sunday building the roster. Now, I click a button and the month is perfectly planned.",
+      "Handling last-minute sick leaves used to cause panic. With the replacement assistant, finding cover takes exactly two clicks.",
+    ],
+    fr: [
+      "Enfin un outil qui comprend notre cauchemar de planification médicale. Ça nous change la vie.",
+      "Je passais mon dimanche entier à faire les plannings. Maintenant, je clique sur un bouton et le mois est parfaitement organisé.",
+      "Gérer les absences de dernière minute était une source d'angoisse. Avec l'assistant de remplacement, trouver un remplaçant prend exactement deux clics.",
+    ],
+    es: [
+      "Por fin una herramienta que entiende nuestra pesadilla con los turnos médicos. Nos ha salvado la vida.",
+      "Antes me pasaba todo el domingo cuadrando los horarios. Ahora hago clic en un botón y el mes queda perfectamente organizado.",
+      "Gestionar las bajas de última hora era un caos. Con el asistente de reemplazos, encontrar un sustituto toma exactamente dos clics.",
+    ],
+  };
+
+  const quotes = QUOTES[lang] ?? QUOTES.en;
+  const [quoteIndex, setQuoteIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    setQuoteIndex(0);
+  }, [lang]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      const t = setTimeout(() => {
+        setQuoteIndex((p) => (p + 1) % quotes.length);
+        setVisible(true);
+      }, 300);
+      return () => clearTimeout(t);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [quotes.length]);
   return (
     <section className="pt-32 pb-20 px-4 sm:px-6 bg-white">
       {/* Text + CTAs — centered single column */}
@@ -64,6 +98,18 @@ export default function HeroSection({ hero, lang }: HeroProps) {
           {/* Mobile screenshot inside iPhone frame overlapping the right side — clipped by parent */}
           <MobileMock lang={lang} />
         </div>
+      </div>
+
+      {/* Rotating user quotes */}
+      <div className="mx-auto max-w-4xl text-center mt-8 px-4 sm:px-6">
+        <blockquote
+          className={`text-sm sm:text-lg italic text-slate-700 transition-opacity duration-700 ${
+            visible ? "opacity-100" : "opacity-0"
+          }`}
+          aria-live="polite"
+        >
+          {quotes[quoteIndex]}
+        </blockquote>
       </div>
     </section>
   );
