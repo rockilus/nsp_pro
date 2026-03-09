@@ -102,14 +102,18 @@ export default function HeroSection({ hero, lang }: HeroProps) {
 
       {/* Rotating user quotes */}
       <div className="mx-auto max-w-4xl text-center mt-8 px-4 sm:px-6">
-        <blockquote
-          className={`text-sm sm:text-lg italic text-slate-700 transition-opacity duration-700 ${
-            visible ? "opacity-100" : "opacity-0"
-          }`}
-          aria-live="polite"
-        >
-          {quotes[quoteIndex]}
-        </blockquote>
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 shadow-sm">
+          <blockquote
+            className={`text-sm sm:text-lg italic text-slate-700 transition-opacity duration-700 ${
+              visible ? "opacity-100" : "opacity-0"
+            }`}
+            aria-live="polite"
+          >
+            <span className="text-slate-400 mr-2">“</span>
+            {quotes[quoteIndex]}
+            <span className="text-slate-400 ml-2">”</span>
+          </blockquote>
+        </div>
       </div>
     </section>
   );
