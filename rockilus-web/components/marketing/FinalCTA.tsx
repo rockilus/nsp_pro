@@ -10,7 +10,11 @@ interface FinalCTAProps {
   demoMailto?: string;
 }
 
-export default function FinalCTA({ finalCta, appUrl }: FinalCTAProps) {
+export default function FinalCTA({
+  finalCta,
+  appUrl,
+  demoMailto,
+}: FinalCTAProps) {
   return (
     <section id="cta" className="py-24 px-4 sm:px-6 bg-blue-50">
       <div className="mx-auto max-w-3xl text-center">

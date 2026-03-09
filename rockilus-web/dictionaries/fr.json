@@ -16,7 +16,7 @@
     },
     "demoMailto": {
         "subject": "Demande de démo - Accès Anticipé Rockilus",
-        "body": "Bonjour l'équipe Rockilus,\nJe souhaite planifier une démo de votre application de planning.\nVoici mes disponibilités pour un appel de 15 minutes :\n"
+        "body": "Bonjour l'équipe Rockilus,\n\nJe souhaite planifier une démo de votre application de planning.\nVoici mes disponibilités pour un appel de 15 minutes :\n"
     },
     "problemVsSolution": {
         "headline": "Vous gérez encore les gardes médicales sur tableur ?",

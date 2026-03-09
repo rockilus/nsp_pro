@@ -29,6 +29,7 @@ export default function HeroSection({
   lang,
   microcopy,
   appUrl,
+  demoMailto,
 }: HeroProps) {
   const QUOTES: Record<Locale, string[]> = {
     en: [
