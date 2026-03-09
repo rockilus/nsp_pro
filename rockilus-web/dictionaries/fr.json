@@ -8,7 +8,8 @@
     "hero": {
         "headline": "Moins de temps à planifier, plus de temps pour soigner.",
         "subheadline": "Automatisez les gardes, gérez les contraintes de repos et éliminez les conflits d'emploi du temps — en quelques secondes.",
-        "cta": "Planifier gratuitement"
+        "cta": "Commencer gratuitement",
+        "ctaDemo": "Demander une démo"
     },
     "problem": {
         "title": "Le Problème",

@@ -8,7 +8,8 @@
     "hero": {
         "headline": "Menos tiempo planificando, más tiempo cuidando.",
         "subheadline": "Automatiza guardias, gestiona los descansos legales y elimina los conflictos de horarios: en segundos, no en horas.",
-        "cta": "Empezar a planificar gratis"
+        "cta": "Empezar gratis",
+        "ctaDemo": "Solicitar una demo"
     },
     "problem": {
         "title": "El Problema",

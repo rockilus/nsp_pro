@@ -8,7 +8,8 @@
     "hero": {
         "headline": "Less time scheduling. More time healing.",
         "subheadline": "Automate complex shifts, manage on-call constraints, and eliminate roster conflicts—in seconds, not hours.",
-        "cta": "Start Scheduling Free"
+        "cta": "Get Started Free",
+        "ctaDemo": "Request a Demo"
     },
     "problem": {
         "title": "The Problem",

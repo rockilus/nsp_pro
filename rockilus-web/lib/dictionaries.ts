@@ -11,6 +11,7 @@ export interface Dictionary {
     headline: string;
     subheadline: string;
     cta: string;
+    ctaDemo: string;
   };
   problem: {
     title: string;
