@@ -16,9 +16,10 @@ interface NavBarProps {
     contact?: string;
   };
   lang: Locale;
+  appUrl?: string;
 }
 
-export default function NavBar({ nav, lang }: NavBarProps) {
+export default function NavBar({ nav, lang, appUrl }: NavBarProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -118,14 +119,14 @@ export default function NavBar({ nav, lang }: NavBarProps) {
               </div>
 
               <Link
-                href="/signin"
+                href={appUrl ?? "/signin"}
                 className="hidden md:inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
               >
                 {nav.signin ?? "Sign in"}
               </Link>
 
               <Link
-                href="#cta"
+                href={appUrl ?? "#cta"}
                 className="hidden md:inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
               >
                 {nav.cta}
@@ -177,13 +178,13 @@ export default function NavBar({ nav, lang }: NavBarProps) {
                 <LangToggle lang={lang} />
               </div>
               <Link
-                href="/signin"
+                href={appUrl ?? "/signin"}
                 className="block w-full text-left px-3 py-2 rounded-md hover:bg-slate-50"
               >
                 {nav.signin ?? "Sign in"}
               </Link>
               <Link
-                href="#cta"
+                href={appUrl ?? "#cta"}
                 onClick={() => setOpen(false)}
                 className="block w-full text-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
               >

@@ -3,9 +3,13 @@ import type { Dictionary } from "@/lib/dictionaries";
 
 interface PricingSectionProps {
   pricing: Dictionary["pricing"];
+  appUrl?: string;
 }
 
-export default function PricingSection({ pricing }: PricingSectionProps) {
+export default function PricingSection({
+  pricing,
+  appUrl,
+}: PricingSectionProps) {
   return (
     <section id="pricing" className="bg-white py-20 px-4 sm:px-6">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -51,7 +55,7 @@ export default function PricingSection({ pricing }: PricingSectionProps) {
 
           {/* CTA button */}
           <a
-            href="#"
+            href={appUrl ?? "#"}
             className="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md py-3 transition-colors"
           >
             {pricing.cta_button}
