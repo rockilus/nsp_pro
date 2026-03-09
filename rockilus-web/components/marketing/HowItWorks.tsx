@@ -1,7 +1,7 @@
-import { Users, Settings, Zap, Share2 } from "lucide-react";
+import { Users, MessagesSquare, Sparkles, Share } from "lucide-react";
 import type { ElementType } from "react";
 
-const ICONS: ElementType[] = [Users, Settings, Zap, Share2];
+const ICONS: ElementType[] = [Users, MessagesSquare, Sparkles, Share];
 
 interface HowItWorksProps {
   howItWorks: {
@@ -19,7 +19,7 @@ export default function HowItWorks({ howItWorks }: HowItWorksProps) {
         </h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8">
           {howItWorks.steps.map((step, i) => {
-            const Icon = ICONS[i] ?? Zap;
+            const Icon = ICONS[i] ?? Sparkles;
             return (
               <div
                 key={i}

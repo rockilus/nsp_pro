@@ -49,23 +49,23 @@
         }
     ],
     "howItWorks": {
-        "title": "Comment ça fonctionne",
+        "title": "Comment ça marche",
         "steps": [
             {
-                "title": "Intégrez votre équipe",
-                "description": "Importez vos employés, rôles et types de quarts en quelques minutes."
+                "title": "Configurez l'équipe et la couverture",
+                "description": "Ajoutez votre personnel, définissez vos postes et besoins de couverture, et saisissez vos règles légales et personnalisées."
             },
             {
-                "title": "Définissez vos contraintes",
-                "description": "Définissez les disponibilités, les exigences de repos et les règles légales une seule fois."
+                "title": "Récoltez les demandes de l'équipe",
+                "description": "Obtenez les préférences de votre équipe avant de générer. Gérez facilement les demandes de congés et les souhaits de postes."
             },
             {
-                "title": "Générez les plannings",
-                "description": "Laissez notre solveur trouver l'affectation optimale instantanément."
+                "title": "Cliquez sur \"Générer\"",
+                "description": "Laissez l'algorithme résoudre les conflits et créer instantanément un planning optimisé et équitable."
             },
             {
-                "title": "Publiez et notifiez",
-                "description": "Partagez les plannings avec votre équipe et suivez les changements en temps réel."
+                "title": "Publiez et gérez",
+                "description": "Partagez le planning avec votre équipe. Gérez les échanges et les remplacements de dernière minute en temps réel."
             }
         ]
     },

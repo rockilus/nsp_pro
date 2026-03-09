@@ -52,20 +52,20 @@
         "title": "How It Works",
         "steps": [
             {
-                "title": "Onboard Your Team",
-                "description": "Import your workers, roles, and shift types in minutes."
+                "title": "Set up team & coverage",
+                "description": "Add your staff, define your shifts and coverage needs, and input your legal and custom rules."
             },
             {
-                "title": "Set Your Constraints",
-                "description": "Define availability, rest requirements, and legal rules once."
+                "title": "Get team requests",
+                "description": "Get your team's preferences before generating. Easily manage leave requests and shift preferences."
             },
             {
-                "title": "Generate Schedules",
-                "description": "Let our solver find the optimal assignment instantly."
+                "title": "Click \"Generate\"",
+                "description": "Let the algorithm resolve conflicts and instantly create an optimized, fair schedule."
             },
             {
-                "title": "Publish & Notify",
-                "description": "Share schedules with your team and track changes in real time."
+                "title": "Publish & manage",
+                "description": "Share the roster with your team. Handle shift swaps and last-minute replacements on the fly."
             }
         ]
     },

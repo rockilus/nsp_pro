@@ -52,20 +52,20 @@
         "title": "Cómo funciona",
         "steps": [
             {
-                "title": "Integra tu equipo",
-                "description": "Importa a tus trabajadores, roles y tipos de turno en minutos."
+                "title": "Configura equipo y cobertura",
+                "description": "Añade a tu personal, define tus turnos y necesidades de cobertura, e introduce tus reglas legales y personalizadas."
             },
             {
-                "title": "Define tus restricciones",
-                "description": "Establece disponibilidad, requisitos de descanso y reglas legales una vez."
+                "title": "Recibe las peticiones del equipo",
+                "description": "Obtén las preferencias de tu equipo antes de generar. Gestiona fácilmente las solicitudes de vacaciones y preferencias de turnos."
             },
             {
-                "title": "Genera horarios",
-                "description": "Deja que nuestro solucionador encuentre la asignación óptima al instante."
+                "title": "Haz clic en \"Generar\"",
+                "description": "Deja que el algoritmo resuelva los conflictos y cree al instante un horario optimizado y justo."
             },
             {
-                "title": "Publica y notifica",
-                "description": "Comparte los horarios con tu equipo y rastrea los cambios en tiempo real."
+                "title": "Publica y gestiona",
+                "description": "Comparte el calendario con tu equipo. Gestiona intercambios y reemplazos de última hora en tiempo real."
             }
         ]
     },
