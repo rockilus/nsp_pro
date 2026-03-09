@@ -20,6 +20,7 @@ interface NavBarProps {
 export default function NavBar({ nav, lang }: NavBarProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -33,6 +34,9 @@ export default function NavBar({ nav, lang }: NavBarProps) {
   useEffect(() => {
     function onClick(e: MouseEvent) {
       if (!open) return;
+      // ignore clicks on the toggle button itself to avoid toggle race
+      if (buttonRef.current && buttonRef.current.contains(e.target as Node))
+        return;
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
@@ -47,8 +51,9 @@ export default function NavBar({ nav, lang }: NavBarProps) {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-3">
-              {/* Mobile: hamburger on the right visually, keep it first in DOM but hidden on md+ */}
+              {/* Mobile hamburger on the left */}
               <button
+                ref={buttonRef}
                 onClick={() => setOpen((v) => !v)}
                 aria-controls="mobile-menu"
                 aria-expanded={open}
@@ -133,7 +138,7 @@ export default function NavBar({ nav, lang }: NavBarProps) {
       <div
         id="mobile-menu"
         ref={menuRef}
-        className={`md:hidden ${open ? "block" : "hidden"} bg-white border-b shadow-sm`}
+        className={`md:hidden ${open ? "block" : "hidden"} bg-white border-b shadow-sm fixed left-0 right-0 top-16 z-40`}
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
           <nav className="flex flex-col gap-3 text-sm font-medium text-slate-700">
