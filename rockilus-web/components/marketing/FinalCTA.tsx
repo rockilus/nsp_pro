@@ -23,14 +23,14 @@ export default function FinalCTA({ finalCta, appUrl }: FinalCTAProps) {
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
             href={appUrl ?? "#"}
-            className="inline-flex items-center justify-center rounded-md bg-blue-600 border border-blue-600 px-6 py-2.5 text-white font-semibold hover:bg-blue-700 transition-colors text-sm w-48"
+            className="inline-flex items-center justify-center rounded-md bg-blue-600 border border-blue-600 px-4 py-2.5 text-white font-semibold hover:bg-blue-700 transition-colors text-sm w-52"
           >
             {finalCta.button_primary}
           </a>
 
           <a
             href="#"
-            className="inline-flex items-center justify-center rounded-md border border-blue-600 px-6 py-2.5 text-blue-600 font-semibold hover:bg-blue-50 transition-colors text-sm w-48"
+            className="inline-flex items-center justify-center rounded-md border border-blue-600 px-4 py-2.5 text-blue-600 font-semibold hover:bg-blue-50 transition-colors text-sm w-52"
           >
             {finalCta.button_secondary}
           </a>
