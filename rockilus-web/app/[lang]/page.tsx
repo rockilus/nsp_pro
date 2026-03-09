@@ -4,6 +4,7 @@ import HeroSection from "@/components/marketing/HeroSection";
 import ProblemSolution from "@/components/marketing/ProblemSolution";
 import CoreFeatures from "@/components/marketing/CoreFeatures";
 import HowItWorks from "@/components/marketing/HowItWorks";
+import PricingSection from "@/components/marketing/PricingSection";
 import FinalCTA from "@/components/marketing/FinalCTA";
 import Footer from "@/components/marketing/Footer";
 
@@ -30,6 +31,7 @@ export default async function LandingPage({
       />
       <CoreFeatures features={dict.features} />
       <HowItWorks howItWorks={dict.howItWorks} />
+      <PricingSection pricing={dict.pricing} />
       <FinalCTA finalCta={dict.finalCta} />
       <Footer footer={dict.footer} lang={lang as Locale} />
     </main>

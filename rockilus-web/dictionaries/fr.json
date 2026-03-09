@@ -76,6 +76,19 @@
         "button_secondary": "Demander une démo",
         "microcopy": "Sans carte bancaire. Aucune installation requise. Sans engagement."
     },
+    "pricing": {
+        "mission_headline": "Rejoignez-nous pour façonner l'avenir de la santé.",
+        "mission_description": "Nous offrons un accès anticipé exclusif à un groupe sélectionné de professionnels de santé. En échange de l'utilisation gratuite de la plateforme, vos retours influenceront directement nos prochaines fonctionnalités.",
+        "card_title": "Accès Anticipé",
+        "card_price": "0 €",
+        "card_period": "/ mois",
+        "features": [
+            "Accès complet à toutes les fonctionnalités",
+            "Support prioritaire direct avec les fondateurs",
+            "Participez à l'évolution du produit"
+        ],
+        "cta_button": "Commencer gratuitement"
+    },
     "footer": {
         "tagline": "Planification intelligente pour les équipes modernes.",
         "links": {

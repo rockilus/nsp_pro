@@ -76,6 +76,19 @@
         "button_secondary": "Solicitar una demo",
         "microcopy": "Sin tarjeta de crédito. Sin instalación. Sin compromiso."
     },
+    "pricing": {
+        "mission_headline": "Únete a nosotros para dar forma al futuro de la salud.",
+        "mission_description": "Ofrecemos acceso anticipado exclusivo a un grupo selecto de profesionales sanitarios. A cambio de usar la plataforma gratis, tus comentarios influirán directamente en nuestras próximas funciones.",
+        "card_title": "Acceso Anticipado",
+        "card_price": "0 €",
+        "card_period": "/ mes",
+        "features": [
+            "Acceso completo a todas las funciones",
+            "Soporte prioritario directo de los fundadores",
+            "Ayuda a definir el futuro del producto"
+        ],
+        "cta_button": "Empezar gratis"
+    },
     "footer": {
         "tagline": "Planificación inteligente para equipos modernos.",
         "links": {

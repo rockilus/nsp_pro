@@ -76,6 +76,19 @@
         "button_secondary": "Request a Demo",
         "microcopy": "No credit card required. No IT setup. No commitment."
     },
+    "pricing": {
+        "mission_headline": "Join us in shaping the future of healthcare.",
+        "mission_description": "We are offering exclusive early access to a select group of healthcare professionals. In exchange for using the platform for free, your feedback will directly influence our upcoming features.",
+        "card_title": "Early Access",
+        "card_price": "€0",
+        "card_period": "/ month",
+        "features": [
+            "Full access to all features",
+            "Priority support directly from the founders",
+            "Shape the product roadmap"
+        ],
+        "cta_button": "Get Started for Free"
+    },
     "footer": {
         "tagline": "Intelligent scheduling for modern teams.",
         "links": {

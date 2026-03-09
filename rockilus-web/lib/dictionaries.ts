@@ -35,10 +35,21 @@ export interface Dictionary {
       description: string;
     }>;
   };
+  pricing: {
+    mission_headline: string;
+    mission_description: string;
+    card_title: string;
+    card_price: string;
+    card_period: string;
+    features: string[];
+    cta_button: string;
+  };
   finalCta: {
-    heading: string;
+    headline: string;
     subheadline: string;
-    button: string;
+    button_primary: string;
+    button_secondary: string;
+    microcopy?: string;
   };
   footer: {
     tagline: string;
