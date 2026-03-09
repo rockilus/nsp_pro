@@ -70,9 +70,11 @@
         ]
     },
     "finalCta": {
-        "heading": "Prêt à éliminer les maux de tête liés aux plannings ?",
-        "subheadline": "Rejoignez les équipes qui ont déjà économisé des heures chaque semaine avec Rockilus.",
-        "button": "Commencer gratuitement"
+        "headline": "Prêt à simplifier les plannings de votre équipe ?",
+        "subheadline": "Rejoignez les professionnels de santé qui gagnent des heures chaque semaine. Créez votre compte et générez votre premier planning sans conflit en quelques minutes.",
+        "button_primary": "Commencer gratuitement",
+        "button_secondary": "Demander une démo",
+        "microcopy": "Sans carte bancaire. Aucune installation requise. Sans engagement."
     },
     "footer": {
         "tagline": "Planification intelligente pour les équipes modernes.",

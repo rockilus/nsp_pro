@@ -70,9 +70,11 @@
         ]
     },
     "finalCta": {
-        "heading": "Ready to eliminate scheduling headaches?",
-        "subheadline": "Join teams who have already saved hours every week with Rockilus.",
-        "button": "Get Started for Free"
+        "headline": "Ready to simplify your team's schedule?",
+        "subheadline": "Join healthcare professionals saving hours every week. Create your account and generate your first conflict-free roster in minutes.",
+        "button_primary": "Get Started for Free",
+        "button_secondary": "Request a Demo",
+        "microcopy": "No credit card required. No IT setup. No commitment."
     },
     "footer": {
         "tagline": "Intelligent scheduling for modern teams.",

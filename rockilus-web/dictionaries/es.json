@@ -70,9 +70,11 @@
         ]
     },
     "finalCta": {
-        "heading": "¿Listo para eliminar los dolores de cabeza de la planificación?",
-        "subheadline": "Únete a los equipos que ya ahorran horas cada semana con Rockilus.",
-        "button": "Comenzar gratis"
+        "headline": "¿Listo para simplificar los horarios de tu equipo?",
+        "subheadline": "Únete a los profesionales de la salud que ahorran horas cada semana. Crea tu cuenta y genera tu primer calendario sin conflictos en minutos.",
+        "button_primary": "Empezar gratis",
+        "button_secondary": "Solicitar una demo",
+        "microcopy": "Sin tarjeta de crédito. Sin instalación. Sin compromiso."
     },
     "footer": {
         "tagline": "Planificación inteligente para equipos modernos.",
