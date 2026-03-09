@@ -2,6 +2,7 @@
     "nav": {
         "brand": "Rockilus",
         "features": "Features",
+        "signin": "Sign in",
         "howItWorks": "How it works",
         "pricing": "Pricing",
         "contact": "Contact",

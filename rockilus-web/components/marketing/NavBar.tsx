@@ -11,6 +11,7 @@ interface NavBarProps {
     features: string;
     pricing: string;
     cta: string;
+    signin?: string;
     howItWorks?: string;
     contact?: string;
   };
@@ -120,7 +121,7 @@ export default function NavBar({ nav, lang }: NavBarProps) {
                 href="/signin"
                 className="hidden md:inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
               >
-                Sign in
+                {nav.signin ?? "Sign in"}
               </Link>
 
               <Link
@@ -179,7 +180,7 @@ export default function NavBar({ nav, lang }: NavBarProps) {
                 href="/signin"
                 className="block w-full text-left px-3 py-2 rounded-md hover:bg-slate-50"
               >
-                Sign in
+                {nav.signin ?? "Sign in"}
               </Link>
               <Link
                 href="#cta"
