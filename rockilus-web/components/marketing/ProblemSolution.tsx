@@ -14,7 +14,7 @@ export default function ProblemSolution({
   return (
     <section className="py-20 px-4 sm:px-6 bg-slate-50">
       <div className="mx-auto max-w-6xl mb-8">
-        <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 text-center">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 text-center">
           {headline}
         </h1>
       </div>
