@@ -18,7 +18,11 @@ export default async function LandingPage({
   return (
     <main>
       <NavBar nav={dict.nav} lang={lang as Locale} />
-      <HeroSection hero={dict.hero} lang={lang as Locale} />
+      <HeroSection
+        hero={dict.hero}
+        lang={lang as Locale}
+        microcopy={dict.finalCta.microcopy}
+      />
       <ProblemSolution
         headline={dict.problemVsSolution.headline}
         problem={dict.problemVsSolution.problem}

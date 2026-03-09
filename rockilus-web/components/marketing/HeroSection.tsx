@@ -12,6 +12,7 @@ interface HeroProps {
     ctaDemo: string;
   };
   lang: Locale;
+  microcopy?: string;
 }
 
 const LOCALES_WITH_DESKTOP: Locale[] = ["en", "fr"];
@@ -21,7 +22,7 @@ function desktopImagePath(lang: Locale): string {
   return `/images/landing-page/hero-section/${resolved}/schedule.desktop.2880.v1.png`;
 }
 
-export default function HeroSection({ hero, lang }: HeroProps) {
+export default function HeroSection({ hero, lang, microcopy }: HeroProps) {
   const QUOTES: Record<Locale, string[]> = {
     en: [
       "Finally, someone built a tool that actually understands our medical scheduling nightmare. It is an absolute lifesaver.",
@@ -83,6 +84,9 @@ export default function HeroSection({ hero, lang }: HeroProps) {
             {hero.ctaDemo}
           </a>
         </div>
+        {microcopy ? (
+          <p className="text-xs text-slate-500 mt-0">{microcopy}</p>
+        ) : null}
       </div>
 
       {/* App screenshots */}

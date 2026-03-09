@@ -36,7 +36,7 @@ export default function FinalCTA({ finalCta }: FinalCTAProps) {
         </div>
 
         {finalCta.microcopy ? (
-          <p className="text-sm text-slate-500 mt-3">{finalCta.microcopy}</p>
+          <p className="text-xs text-slate-500 mt-3">{finalCta.microcopy}</p>
         ) : null}
       </div>
     </section>
