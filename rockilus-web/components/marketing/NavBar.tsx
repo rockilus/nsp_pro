@@ -86,13 +86,24 @@ export default function NavBar({ nav, lang, appUrl }: NavBarProps) {
                 </svg>
               </button>
 
-              <Link href="/" aria-label={nav.brand} className="inline-block">
+              <button
+                type="button"
+                aria-label={nav.brand}
+                className="inline-block"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpen(false);
+                  if (typeof window !== "undefined") {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
+              >
                 <img
                   src="/images/landing-page/logo/rockilus_logo_blue.jpg"
                   alt={nav.brand}
                   className="h-5 w-auto object-contain"
                 />
-              </Link>
+              </button>
             </div>
 
             <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-700">
