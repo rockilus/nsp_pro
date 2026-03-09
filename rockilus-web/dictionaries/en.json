@@ -6,27 +6,25 @@
         "cta": "Get Started for Free"
     },
     "hero": {
-        "headline": "Less time scheduling. More time healing.",
+        "headline": "Still managing medical shifts on spreadsheets?",
         "subheadline": "Automate complex shifts, manage on-call constraints, and eliminate roster conflicts—in seconds, not hours.",
         "cta": "Get Started Free",
         "ctaDemo": "Request a Demo"
     },
     "problem": {
-        "title": "The Problem",
+        "title": "The Old Way",
         "points": [
-            "Manually building schedules takes days",
-            "Coverage gaps lead to burnout and overtime",
-            "Last-minute changes create chaos",
-            "Compliance rules are hard to track"
+            "Hours wasted manually checking rest periods and legal rules.",
+            "Frantic group texts to find last-minute shift replacements.",
+            "Unfair schedules leading to staff burnout and complaints."
         ]
     },
     "solution": {
-        "title": "The Solution",
+        "title": "With Rockilus",
         "points": [
-            "AI-generated schedules in seconds",
-            "Automatic coverage and constraint checks",
-            "Instant conflict resolution on demand",
-            "Built-in compliance rule enforcement"
+            "Complex constraints and legal rules enforced automatically.",
+            "Find the perfect replacement in exactly two clicks.",
+            "Fair, conflict-free schedules generated in one click."
         ]
     },
     "features": [
