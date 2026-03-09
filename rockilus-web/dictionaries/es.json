@@ -32,16 +32,20 @@
     },
     "features": [
         {
-            "title": "Planificación con restricciones",
-            "description": "Define patrones de turno, reglas de descanso y preferencias de trabajadores una vez. Rockilus encuentra el horario óptimo cada vez."
+            "title": "Define tus propias reglas al instante",
+            "description": "Empieza de inmediato sin esperar a un especialista. Define tu equipo, necesidades de cobertura y restricciones médicas complejas: desde descansos legales hasta las preferencias de tu personal."
         },
         {
-            "title": "Detección de conflictos en tiempo real",
-            "description": "Detecta brechas de cobertura, falta de personal y violaciones de reglas al instante — antes de publicar."
+            "title": "Genera y publica en un solo clic",
+            "description": "Deja que el algoritmo haga el trabajo pesado. Genera horarios optimizados y sin conflictos en segundos. Verifica la equidad con las estadísticas integradas y publica el calendario final directamente en los dispositivos de tu equipo."
         },
         {
-            "title": "Colaboración multi-equipo",
-            "description": "Gestiona múltiples departamentos y ubicaciones desde un solo panel. Comparte horarios con un clic."
+            "title": "Empodera a tu equipo",
+            "description": "Mantén a tu personal satisfecho y comprometido. Permíteles enviar solicitudes de vacaciones y disponibilidad con antelación, e intercambiar turnos fácilmente después, todo directamente desde la app."
+        },
+        {
+            "title": "Gestiona imprevistos sin estrés",
+            "description": "Los imprevistos ocurren. Ante una baja, usa el Asistente de Reemplazos para encontrar al sustituto ideal al instante. Visualiza el impacto exacto del cambio en las normas legales y la equidad, ahorrándote un sinfín de llamadas."
         }
     ],
     "howItWorks": {

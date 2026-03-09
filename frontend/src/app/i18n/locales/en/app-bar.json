@@ -1,6 +1,6 @@
 {
     "campaign": "Campaign",
-    "constraints": "Constraints",
+    "constraints": "Rules",
     "profile": "Profile",
     "requests": "Requests",
     "schedule": "Schedule",

@@ -32,16 +32,20 @@
     },
     "features": [
         {
-            "title": "Planification avec contraintes",
-            "description": "Définissez les modèles de quarts, les règles de repos et les préférences des employés une seule fois. Rockilus trouve le planning optimal à chaque fois."
+            "title": "Définissez vos propres règles instantanément",
+            "description": "Démarrez immédiatement sans attendre un spécialiste. Définissez votre équipe, vos besoins de couverture et vos contraintes médicales complexes : des temps de repos légaux aux préférences de votre personnel."
         },
         {
-            "title": "Détection de conflits en temps réel",
-            "description": "Identifiez immédiatement les lacunes, le sous-effectif et les violations de règles — avant la publication."
+            "title": "Générez et publiez en un clic",
+            "description": "Laissez l'algorithme faire le gros du travail. Générez des plannings optimisés et sans conflit en quelques secondes. Vérifiez l'équité avec les statistiques intégrées et publiez le planning final directement sur les appareils de votre équipe."
         },
         {
-            "title": "Collaboration multi-équipes",
-            "description": "Gérez plusieurs départements et sites depuis un tableau de bord unique. Partagez les plannings en un clic."
+            "title": "Autonomisez votre équipe",
+            "description": "Gardez votre personnel satisfait et engagé. Permettez-leur de soumettre leurs demandes de congés et disponibilités en amont, et d'échanger facilement leurs gardes par la suite, directement depuis l'application."
+        },
+        {
+            "title": "Gérez les imprévus sans stress",
+            "description": "Les aléas arrivent. En cas d'absence, utilisez l'Assistant de Remplacement pour trouver instantanément le meilleur substitut. Visualisez l'impact exact du changement sur les contraintes légales et l'équité, et épargnez-vous des dizaines d'appels."
         }
     ],
     "howItWorks": {

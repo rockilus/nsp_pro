@@ -32,16 +32,20 @@
     },
     "features": [
         {
-            "title": "Constraint-Aware Scheduling",
-            "description": "Define shift patterns, rest rules, and worker preferences once. Rockilus finds the optimal schedule every time."
+            "title": "Set your own rules instantly",
+            "description": "Get started immediately without waiting for an onboarding specialist. Define your team, coverage needs, and complex healthcare constraints—from legal rest periods to custom staff preferences."
         },
         {
-            "title": "Real-Time Conflict Detection",
-            "description": "Catch coverage gaps, understaffing, and rule violations instantly — before you publish."
+            "title": "Generate & publish in one click",
+            "description": "Let the algorithm do the heavy lifting. Generate optimized, conflict-free schedules in seconds. Verify shift equity with built-in stats, and publish the final roster directly to your team's devices."
         },
         {
-            "title": "Multi-Team Collaboration",
-            "description": "Manage multiple departments and locations from a single dashboard. Share schedules with one click."
+            "title": "Empower your team",
+            "description": "Keep your staff happy and engaged. Allow team members to submit leave requests and availability before the schedule is generated, and easily swap shifts with peers afterward—all directly within the app."
+        },
+        {
+            "title": "Handle last-minute replacements seamlessly",
+            "description": "Life happens. When someone calls in sick, use the Replacement Assistant to instantly find the best substitute. See the exact impact of swapping staff on legal constraints and team equity, saving you endless phone calls."
         }
     ],
     "howItWorks": {
