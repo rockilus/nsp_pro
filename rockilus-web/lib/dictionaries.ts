@@ -62,6 +62,10 @@ export interface Dictionary {
     };
     copyright: string;
   };
+  demoMailto: {
+    subject: string;
+    body: string;
+  };
 }
 
 export async function getDictionary(lang: Locale): Promise<Dictionary> {

@@ -14,6 +14,7 @@ interface HeroProps {
   lang: Locale;
   microcopy?: string;
   appUrl?: string;
+  demoMailto?: string;
 }
 
 const LOCALES_WITH_DESKTOP: Locale[] = ["en", "fr"];
@@ -84,7 +85,7 @@ export default function HeroSection({
             {hero.cta}
           </a>
           <a
-            href="#demo"
+            href={demoMailto ?? "#demo"}
             className="inline-flex items-center justify-center rounded-md border border-blue-600 px-4 py-2.5 text-blue-600 font-semibold hover:bg-blue-50 transition-colors text-sm w-52"
           >
             {hero.ctaDemo}

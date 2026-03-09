@@ -17,6 +17,9 @@ export default async function LandingPage({
   // Build single canonical app URL and pass it to child components
   const appUrl = `https://app.rockilus.com/${lang}/plan/schedule/`;
   const dict = await getDictionary(lang as Locale);
+  const demoMailto = `mailto:felipe.kharaba@rockilus.com?subject=${encodeURIComponent(
+    dict.demoMailto.subject,
+  )}&body=${encodeURIComponent(dict.demoMailto.body)}`;
 
   return (
     <main>
@@ -26,6 +29,7 @@ export default async function LandingPage({
         lang={lang as Locale}
         microcopy={dict.finalCta.microcopy}
         appUrl={appUrl}
+        demoMailto={demoMailto}
       />
       <ProblemSolution
         headline={dict.problemVsSolution.headline}
@@ -39,7 +43,11 @@ export default async function LandingPage({
         appUrl={appUrl}
         sectionLabel={dict.nav.pricing}
       />
-      <FinalCTA finalCta={dict.finalCta} appUrl={appUrl} />
+      <FinalCTA
+        finalCta={dict.finalCta}
+        appUrl={appUrl}
+        demoMailto={demoMailto}
+      />
       <Footer footer={dict.footer} lang={lang as Locale} />
     </main>
   );
