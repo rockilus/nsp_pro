@@ -27,23 +27,23 @@ export default function HeroSection({ hero, lang }: HeroProps) {
   return (
     <section className="pt-32 pb-20 px-4 sm:px-6 bg-white">
       {/* Text + CTAs — centered single column */}
-      <div className="mx-auto max-w-4xl text-center space-y-8">
-        <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 leading-tight">
+      <div className="mx-auto max-w-4xl text-center space-y-4">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">
           {hero.headline}
         </h1>
-        <p className="text-xl sm:text-2xl text-slate-600 leading-relaxed max-w-3xl mx-auto">
+        <p className="text-lg sm:text-xl text-slate-600 leading-relaxed max-w-3xl mx-auto">
           {hero.subheadline}
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
           <a
             href="#cta"
-            className="inline-flex items-center justify-center rounded-md bg-blue-600 px-8 py-3 text-white font-semibold hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-2.5 text-white font-semibold hover:bg-blue-700 transition-colors text-sm"
           >
             {hero.cta}
           </a>
           <a
             href="#demo"
-            className="inline-flex items-center justify-center rounded-md border border-blue-600 px-8 py-3 text-blue-600 font-semibold hover:bg-blue-50 transition-colors"
+            className="inline-flex items-center justify-center rounded-md border border-blue-600 px-6 py-2.5 text-blue-600 font-semibold hover:bg-blue-50 transition-colors text-sm"
           >
             {hero.ctaDemo}
           </a>
