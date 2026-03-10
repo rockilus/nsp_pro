@@ -44,7 +44,7 @@ export default async function LandingPage({
         problem={dict.problemVsSolution.problem}
         solution={dict.problemVsSolution.solution}
       />
-      <CoreFeatures features={dict.features} />
+      <CoreFeatures features={dict.features} lang={lang as Locale} />
       <HowItWorks howItWorks={dict.howItWorks} />
       <PricingSection
         pricing={dict.pricing}
