@@ -16,7 +16,8 @@ export async function generateMetadata({
   const dict = await getDictionary(lang as Locale);
   const title = dict.meta?.title ?? `Rockilus — ${dict.hero.headline}`;
   const description = dict.meta?.description ?? dict.hero.subheadline;
-  const imageUrl = `/images/landing-page/hero-section/${lang}/schedule.desktop.2880.v1.png`;
+  const imageUrl =
+    "https://rockilus-prod-public-assets.s3.eu-west-3.amazonaws.com/schedule-week-member.desktop.v1.png";
 
   return {
     title,
