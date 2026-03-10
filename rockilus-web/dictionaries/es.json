@@ -14,6 +14,10 @@
         "cta": "Empezar gratis",
         "ctaDemo": "Solicitar una demo"
     },
+    "meta": {
+        "title": "Rockilus | Horarios médicos simplificados",
+        "description": "Genera horarios justos y sin conflictos para tu equipo médico en segundos."
+    },
     "demoMailto": {
         "subject": "Rockilus - Solicitud de demo de aplicación de horarios",
         "body": "Hola equipo de Rockilus,\n\nMe gustaría solicitar una demo de su aplicación de horarios.\nMis disponibilidades para una llamada de 15 minutos son:\n"

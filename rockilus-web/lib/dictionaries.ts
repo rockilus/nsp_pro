@@ -70,6 +70,10 @@ export interface Dictionary {
     subject: string;
     body: string;
   };
+  meta: {
+    title: string;
+    description: string;
+  };
 }
 
 export async function getDictionary(lang: Locale): Promise<Dictionary> {

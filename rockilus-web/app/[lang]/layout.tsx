@@ -14,9 +14,29 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   const dict = await getDictionary(lang as Locale);
+  const title = dict.meta?.title ?? `Rockilus — ${dict.hero.headline}`;
+  const description = dict.meta?.description ?? dict.hero.subheadline;
+  const imageUrl = `/images/landing-page/hero-section/${lang}/schedule.desktop.2880.v1.png`;
+
   return {
-    title: `Rockilus — ${dict.hero.headline}`,
-    description: dict.hero.subheadline,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url: imageUrl,
+          alt: dict.meta?.title ?? dict.hero.headline,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
     alternates: {
       languages: {
         en: "/en",

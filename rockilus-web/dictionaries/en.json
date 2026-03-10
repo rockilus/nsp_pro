@@ -14,6 +14,10 @@
         "cta": "Get Started for Free",
         "ctaDemo": "Request a Demo"
     },
+    "meta": {
+        "title": "Rockilus | Healthcare scheduling simplified",
+        "description": "Generate fair, conflict-free schedules for your healthcare team in seconds."
+    },
     "demoMailto": {
         "subject": "Rockilus - Request a Demo of Scheduling App",
         "body": "Hi Rockilus team,\n\nI would like to request a demo of your scheduling app.\nMy availabilities for a quick 15-minute call are:\n"
