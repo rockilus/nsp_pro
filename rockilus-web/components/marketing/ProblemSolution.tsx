@@ -35,13 +35,13 @@ export default function ProblemSolution({
         </div>
 
         <div className="border border-blue-200 rounded-lg p-8 bg-blue-50">
-          <h2 className="text-2xl font-bold text-blue-900 mb-6">
+          <h2 className="text-2xl font-bold text-blue-600 mb-6">
             {solution.title}
           </h2>
           <ul className="space-y-3">
             {solution.points.map((point, i) => (
               <li key={i} className="flex items-start gap-3 text-slate-700">
-                <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
                 {point}
               </li>
             ))}
