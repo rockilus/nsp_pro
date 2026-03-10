@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy:s3:prod": "aws s3 sync out/ s3://rockilus-landing-page-prod --delete --profile rockilus-production"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
