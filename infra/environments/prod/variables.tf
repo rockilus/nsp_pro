@@ -97,26 +97,6 @@ variable "landing_page_domain_name" {
   }
 }
 
-# Lightsail Configuration
-variable "lightsail_availability_zone" {
-  description = "AWS availability zone for the Lightsail WordPress instance"
-  type        = string
-  default     = "eu-west-3a"
-}
-
-variable "lightsail_blueprint_id" {
-  description = "Lightsail blueprint ID for WordPress (e.g., wordpress_6_4_2)"
-  type        = string
-  # default     = "wordpress_6_4_2"
-  default = "wordpress"
-}
-
-variable "lightsail_bundle_id" {
-  description = "Lightsail bundle ID determining instance size (e.g., nano_3_0, micro_3_0, small_3_0)"
-  type        = string
-  default     = "micro_3_0"
-}
-
 variable "deletion_protection_cognito_user_pool_aws" {
   description = "Enable deletion protection for the Cognito User Pool"
   type        = string

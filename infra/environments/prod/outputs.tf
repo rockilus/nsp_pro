@@ -1,3 +1,24 @@
+# Landing page outputs
+output "landing_page_url" {
+  description = "Landing page website URL"
+  value       = module.landing_page.website_url
+}
+
+output "landing_page_cloudfront_domain" {
+  description = "CloudFront distribution domain name for the landing page"
+  value       = module.landing_page.cloudfront_domain_name
+}
+
+output "landing_page_s3_bucket" {
+  description = "S3 bucket name for the landing page"
+  value       = module.landing_page.s3_bucket_id
+}
+
+output "landing_page_cloudfront_distribution_id" {
+  description = "CloudFront distribution ID for landing page cache invalidation"
+  value       = module.landing_page.cloudfront_distribution_id
+}
+
 # VPC outputs
 output "vpc_id" {
   description = "ID of the VPC"
