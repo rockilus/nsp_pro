@@ -18,8 +18,12 @@ interface FooterProps {
   lang: Locale;
 }
 
-export default function Footer({ footer, lang }: FooterProps) {
-  const { links } = footer;
+export default function Footer(
+  {
+    // footer, lang
+  }: FooterProps,
+) {
+  // const { links } = footer;
   return (
     // <footer className="border-t border-slate-200 bg-white py-12 px-4 sm:px-6">
     //   <div className="mx-auto max-w-6xl">
