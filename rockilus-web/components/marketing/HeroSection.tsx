@@ -54,10 +54,6 @@ export default function HeroSection({
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    setQuoteIndex(0);
-  }, [lang]);
-
-  useEffect(() => {
     const interval = setInterval(() => {
       setVisible(false);
       const t = setTimeout(() => {
@@ -69,7 +65,7 @@ export default function HeroSection({
     return () => clearInterval(interval);
   }, [quotes.length]);
   return (
-    <section className="pt-32 pb-20 px-4 sm:px-6 bg-white">
+    <section key={lang} className="pt-32 pb-20 px-4 sm:px-6 bg-white">
       {/* Text + CTAs — centered single column */}
       <div className="mx-auto max-w-4xl text-center space-y-4">
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-tight">

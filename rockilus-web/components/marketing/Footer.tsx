@@ -1,7 +1,7 @@
 "use client";
 
 import type { Locale } from "@/lib/dictionaries";
-import LangToggle from "./LangToggle";
+// import LangToggle from "./LangToggle";
 
 interface FooterProps {
   footer: {
