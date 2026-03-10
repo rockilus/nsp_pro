@@ -299,19 +299,18 @@ module "route53" {
   }
 }
 
-# Lightsail instance for WordPress landing page
-module "lightsail" {
-  source = "../../modules/lightsail"
+# S3 + CloudFront static hosting for the rockilus-web landing page
+module "landing_page" {
+  source = "../../modules/s3-landing-page"
 
-  project_name      = var.project_name
-  environment       = var.environment
-  availability_zone = var.lightsail_availability_zone
-  blueprint_id      = var.lightsail_blueprint_id
-  bundle_id         = var.lightsail_bundle_id
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
 
-  # DNS integration with Route53
-  route53_zone_id       = module.route53.hosted_zone_id
-  wordpress_domain_name = var.landing_page_domain_name
+  domain_name                = var.landing_page_domain_name # www.rockilus.com
+  cloudfront_certificate_arn = module.route53.cloudfront_certificate_arn
+  route53_zone_id            = module.route53.hosted_zone_id
+  cloudfront_price_class     = var.cloudfront_price_class
 
   tags = {
     Environment = var.environment

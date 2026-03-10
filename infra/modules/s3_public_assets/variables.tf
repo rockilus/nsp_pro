@@ -16,6 +16,11 @@ variable "logo_key" {
   default = "rockilus_logo_blue.jpg"
 }
 
+variable "schedule_image_key" {
+  type    = string
+  default = "schedule-week-member.desktop.v1.png"
+}
+
 variable "acl" {
   type    = string
   default = "public-read"

@@ -1,0 +1,118 @@
+{
+    "nav": {
+        "brand": "Rockilus",
+        "features": "Fonctionnalités",
+        "signin": "Se connecter",
+        "howItWorks": "Comment ça marche",
+        "pricing": "Tarifs",
+        "contact": "Contact",
+        "cta": "Commencer gratuitement"
+    },
+    "hero": {
+        "headline": "Moins de temps à planifier, plus de temps pour soigner.",
+        "subheadline": "Automatisez les gardes, gérez les contraintes de repos et éliminez les conflits d'emploi du temps — en quelques secondes.",
+        "cta": "Commencer gratuitement",
+        "ctaDemo": "Demander une démo"
+    },
+    "meta": {
+        "title": "Rockilus | Les plannings médicaux simplifiés",
+        "description": "Générez des plannings équitables et sans conflit pour votre équipe médicale en quelques secondes."
+    },
+    "demoMailto": {
+        "subject": "Rockilus - Demande de démo de l'application de planning",
+        "body": "Bonjour l'équipe Rockilus,\n\nJe souhaite planifier une démo de votre application de planning.\nVoici mes disponibilités pour un appel de 15 minutes :\n"
+    },
+    "contactMailto": {
+        "subject": "Rockilus - Question sur l'application de planning",
+        "body": "Bonjour l'équipe Rockilus,\n\nJe suis intéressé(e) par votre application de planning et j'ai une question concernant:"
+    },
+    "problemVsSolution": {
+        "headline": "Vous gérez encore les gardes médicales sur tableur ?",
+        "problem": {
+            "title": "L'ancienne méthode",
+            "points": [
+                "Des heures perdues à vérifier manuellement les temps de repos et règles légales.",
+                "Des dizaines d'appels pour trouver un remplaçant à la dernière minute.",
+                "Des plannings inéquitables qui épuisent vos équipes."
+            ]
+        },
+        "solution": {
+            "title": "Avec Rockilus",
+            "points": [
+                "Les contraintes complexes et règles légales sont appliquées automatiquement.",
+                "Trouvez le remplaçant idéal en exactement deux clics.",
+                "Des plannings justes et sans conflits générés en un clic."
+            ]
+        }
+    },
+    "features": [
+        {
+            "title": "Définissez vos propres règles instantanément",
+            "description": "Démarrez immédiatement sans attendre un spécialiste. Définissez votre équipe, vos besoins de couverture et vos contraintes médicales complexes : des temps de repos légaux aux préférences de votre personnel."
+        },
+        {
+            "title": "Générez et publiez en un clic",
+            "description": "Laissez l'algorithme faire le gros du travail. Générez des plannings optimisés et sans conflit en quelques secondes. Vérifiez l'équité avec les statistiques intégrées et publiez le planning final directement sur les appareils de votre équipe."
+        },
+        {
+            "title": "Autonomisez votre équipe",
+            "description": "Gardez votre personnel satisfait et engagé. Permettez-leur de soumettre leurs demandes de congés et disponibilités en amont, et d'échanger facilement leurs gardes par la suite, directement depuis l'application."
+        },
+        {
+            "title": "Gérez les imprévus sans stress",
+            "description": "Les aléas arrivent. En cas d'absence, utilisez l'Assistant de Remplacement pour trouver instantanément le meilleur substitut. Visualisez l'impact exact du changement sur les contraintes légales et l'équité, et épargnez-vous des dizaines d'appels."
+        }
+    ],
+    "howItWorks": {
+        "title": "Comment ça marche",
+        "steps": [
+            {
+                "title": "Configurez l'équipe et la couverture",
+                "description": "Ajoutez votre personnel, définissez vos postes et besoins de couverture, et saisissez vos règles légales et personnalisées."
+            },
+            {
+                "title": "Récoltez les demandes de l'équipe",
+                "description": "Obtenez les préférences de votre équipe avant de générer. Gérez facilement les demandes de congés et les souhaits de postes."
+            },
+            {
+                "title": "Cliquez sur \"Générer\"",
+                "description": "Laissez l'algorithme résoudre les conflits et créer instantanément un planning optimisé et équitable."
+            },
+            {
+                "title": "Publiez et gérez",
+                "description": "Partagez le planning avec votre équipe. Gérez les échanges et les remplacements de dernière minute en temps réel."
+            }
+        ]
+    },
+    "finalCta": {
+        "headline": "Prêt à simplifier les plannings de votre équipe ?",
+        "subheadline": "Rejoignez les professionnels de santé qui gagnent des heures chaque semaine. Créez votre compte et générez votre premier planning sans conflit en quelques minutes.",
+        "button_primary": "Commencer gratuitement",
+        "button_secondary": "Demander une démo",
+        "microcopy": "Sans carte bancaire. Aucune installation requise. Sans engagement."
+    },
+    "pricing": {
+        "mission_headline": "Rejoignez-nous pour façonner l'avenir de la santé.",
+        "mission_description": "Nous offrons un accès anticipé exclusif à un groupe sélectionné de professionnels de santé. En échange de l'utilisation gratuite de la plateforme, vos retours influenceront directement nos prochaines fonctionnalités.",
+        "card_title": "Accès Anticipé",
+        "card_price": "0 €",
+        "card_period": "/ mois",
+        "features": [
+            "Accès complet à toutes les fonctionnalités",
+            "Support prioritaire direct avec les fondateurs",
+            "Participez à l'évolution du produit"
+        ],
+        "cta_button": "Commencer gratuitement"
+    },
+    "footer": {
+        "tagline": "Planification intelligente pour les équipes modernes.",
+        "links": {
+            "features": "Fonctionnalités",
+            "pricing": "Tarifs",
+            "privacy": "Confidentialité",
+            "terms": "Conditions",
+            "contact": "Contact"
+        },
+        "copyright": "© 2026 Rockilus. Tous droits réservés."
+    }
+}

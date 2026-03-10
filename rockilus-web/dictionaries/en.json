@@ -1,0 +1,118 @@
+{
+    "nav": {
+        "brand": "Rockilus",
+        "features": "Features",
+        "signin": "Sign in",
+        "howItWorks": "How it works",
+        "pricing": "Pricing",
+        "contact": "Contact",
+        "cta": "Get Started for Free"
+    },
+    "hero": {
+        "headline": "Less time scheduling. More time healing.",
+        "subheadline": "Automate complex shifts, manage on-call constraints, and eliminate roster conflicts—in seconds, not hours.",
+        "cta": "Get Started for Free",
+        "ctaDemo": "Request a Demo"
+    },
+    "meta": {
+        "title": "Rockilus | Healthcare scheduling simplified",
+        "description": "Generate fair, conflict-free schedules for your healthcare team in seconds."
+    },
+    "demoMailto": {
+        "subject": "Rockilus - Request a Demo of Scheduling App",
+        "body": "Hi Rockilus team,\n\nI would like to request a demo of your scheduling app.\nMy availabilities for a quick 15-minute call are:\n"
+    },
+    "contactMailto": {
+        "subject": "Rockilus - Question about Scheduling App",
+        "body": "Hi Rockilus team,\n\nI am interested in your scheduling app and have a question about:"
+    },
+    "problemVsSolution": {
+        "headline": "Still managing medical shifts on spreadsheets?",
+        "problem": {
+            "title": "The Old Way",
+            "points": [
+                "Hours wasted manually checking rest periods and legal rules.",
+                "Frantic group texts to find last-minute shift replacements.",
+                "Unfair schedules leading to staff burnout and complaints."
+            ]
+        },
+        "solution": {
+            "title": "With Rockilus",
+            "points": [
+                "Complex constraints and legal rules enforced automatically.",
+                "Find the perfect replacement in exactly two clicks.",
+                "Fair, conflict-free schedules generated in one click."
+            ]
+        }
+    },
+    "features": [
+        {
+            "title": "Set your own rules instantly",
+            "description": "Get started immediately without waiting for an onboarding specialist. Define your team, coverage needs, and complex healthcare constraints—from legal rest periods to custom staff preferences."
+        },
+        {
+            "title": "Generate & publish in one click",
+            "description": "Let the algorithm do the heavy lifting. Generate optimized, conflict-free schedules in seconds. Verify shift equity with built-in stats, and publish the final roster directly to your team's devices."
+        },
+        {
+            "title": "Empower your team",
+            "description": "Keep your staff happy and engaged. Allow team members to submit leave requests and availability before the schedule is generated, and easily swap shifts with peers afterward—all directly within the app."
+        },
+        {
+            "title": "Handle last-minute replacements seamlessly",
+            "description": "Life happens. When someone calls in sick, use the Replacement Assistant to instantly find the best substitute. See the exact impact of swapping staff on legal constraints and team equity, saving you endless phone calls."
+        }
+    ],
+    "howItWorks": {
+        "title": "How It Works",
+        "steps": [
+            {
+                "title": "Set up team & coverage",
+                "description": "Add your staff, define your shifts and coverage needs, and input your legal and custom rules."
+            },
+            {
+                "title": "Get team requests",
+                "description": "Get your team's preferences before generating. Easily manage leave requests and shift preferences."
+            },
+            {
+                "title": "Click \"Generate\"",
+                "description": "Let the algorithm resolve conflicts and instantly create an optimized, fair schedule."
+            },
+            {
+                "title": "Publish & manage",
+                "description": "Share the roster with your team. Handle shift swaps and last-minute replacements on the fly."
+            }
+        ]
+    },
+    "finalCta": {
+        "headline": "Ready to simplify your team's schedule?",
+        "subheadline": "Join healthcare professionals saving hours every week. Create your account and generate your first conflict-free roster in minutes.",
+        "button_primary": "Get Started for Free",
+        "button_secondary": "Request a Demo",
+        "microcopy": "No credit card required. No IT setup. No commitment."
+    },
+    "pricing": {
+        "mission_headline": "Join us in shaping the future of healthcare.",
+        "mission_description": "We are offering exclusive early access to a select group of healthcare professionals. In exchange for using the platform for free, your feedback will directly influence our upcoming features.",
+        "card_title": "Early Access",
+        "card_price": "€0",
+        "card_period": "/ month",
+        "features": [
+            "Full access to all features",
+            "Priority support directly from the founders",
+            "Shape the product roadmap"
+        ],
+        "cta_button": "Get Started for Free"
+    },
+    "footer": {
+        "tagline": "Intelligent scheduling for modern teams.",
+        "links": {
+            "features": "Features",
+            "pricing": "Pricing",
+            "privacy": "Privacy",
+            "terms": "Terms",
+            "contact": "Contact"
+        },
+        "copyright": "© 2026 Rockilus. All rights reserved."
+    }
+}

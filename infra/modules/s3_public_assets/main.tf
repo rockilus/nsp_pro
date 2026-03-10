@@ -73,3 +73,12 @@ resource "aws_s3_object" "logo" {
   content_type = "image/jpeg"
   #   acl          = var.acl
 }
+
+# Upload the schedule week member image for OG metadata
+resource "aws_s3_object" "schedule_image" {
+  bucket       = aws_s3_bucket.public_assets.id
+  key          = var.schedule_image_key
+  source       = "${path.module}/assets/schedule-week-member.desktop.v1.png"
+  content_type = "image/png"
+  #   acl          = var.acl
+}

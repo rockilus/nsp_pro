@@ -1,0 +1,118 @@
+{
+    "nav": {
+        "brand": "Rockilus",
+        "features": "Funciones",
+        "signin": "Iniciar sesión",
+        "howItWorks": "Cómo funciona",
+        "pricing": "Precios",
+        "contact": "Contacto",
+        "cta": "Comenzar gratis"
+    },
+    "hero": {
+        "headline": "Menos tiempo planificando, más tiempo cuidando.",
+        "subheadline": "Automatiza guardias, gestiona los descansos legales y elimina los conflictos de horarios: en segundos, no en horas.",
+        "cta": "Empezar gratis",
+        "ctaDemo": "Solicitar una demo"
+    },
+    "meta": {
+        "title": "Rockilus | Horarios médicos simplificados",
+        "description": "Genera horarios justos y sin conflictos para tu equipo médico en segundos."
+    },
+    "demoMailto": {
+        "subject": "Rockilus - Solicitud de demo de aplicación de horarios",
+        "body": "Hola equipo de Rockilus,\n\nMe gustaría solicitar una demo de su aplicación de horarios.\nMis disponibilidades para una llamada de 15 minutos son:\n"
+    },
+    "contactMailto": {
+        "subject": "Rockilus - Pregunta sobre aplicación de horarios",
+        "body": "Hola equipo de Rockilus,\n\nEstoy interesado/a en su aplicación de horarios y tengo una pregunta sobre:"
+    },
+    "problemVsSolution": {
+        "headline": "¿Sigues gestionando los turnos médicos en hojas de cálculo?",
+        "problem": {
+            "title": "El método tradicional",
+            "points": [
+                "Horas perdidas comprobando manualmente los descansos y reglas legales.",
+                "Llamadas desesperadas para encontrar un reemplazo de última hora.",
+                "Horarios injustos que provocan el agotamiento del personal."
+            ]
+        },
+        "solution": {
+            "title": "Con Rockilus",
+            "points": [
+                "Las restricciones complejas y normas legales se aplican automáticamente.",
+                "Encuentra el sustituto perfecto en exactamente dos clics.",
+                "Horarios justos y sin conflictos generados en un solo clic."
+            ]
+        }
+    },
+    "features": [
+        {
+            "title": "Define tus propias reglas al instante",
+            "description": "Empieza de inmediato sin esperar a un especialista. Define tu equipo, necesidades de cobertura y restricciones médicas complejas: desde descansos legales hasta las preferencias de tu personal."
+        },
+        {
+            "title": "Genera y publica en un solo clic",
+            "description": "Deja que el algoritmo haga el trabajo pesado. Genera horarios optimizados y sin conflictos en segundos. Verifica la equidad con las estadísticas integradas y publica el calendario final directamente en los dispositivos de tu equipo."
+        },
+        {
+            "title": "Empodera a tu equipo",
+            "description": "Mantén a tu personal satisfecho y comprometido. Permíteles enviar solicitudes de vacaciones y disponibilidad con antelación, e intercambiar turnos fácilmente después, todo directamente desde la app."
+        },
+        {
+            "title": "Gestiona imprevistos sin estrés",
+            "description": "Los imprevistos ocurren. Ante una baja, usa el Asistente de Reemplazos para encontrar al sustituto ideal al instante. Visualiza el impacto exacto del cambio en las normas legales y la equidad, ahorrándote un sinfín de llamadas."
+        }
+    ],
+    "howItWorks": {
+        "title": "Cómo funciona",
+        "steps": [
+            {
+                "title": "Configura equipo y cobertura",
+                "description": "Añade a tu personal, define tus turnos y necesidades de cobertura, e introduce tus reglas legales y personalizadas."
+            },
+            {
+                "title": "Recibe las peticiones del equipo",
+                "description": "Obtén las preferencias de tu equipo antes de generar. Gestiona fácilmente las solicitudes de vacaciones y preferencias de turnos."
+            },
+            {
+                "title": "Haz clic en \"Generar\"",
+                "description": "Deja que el algoritmo resuelva los conflictos y cree al instante un horario optimizado y justo."
+            },
+            {
+                "title": "Publica y gestiona",
+                "description": "Comparte el calendario con tu equipo. Gestiona intercambios y reemplazos de última hora en tiempo real."
+            }
+        ]
+    },
+    "finalCta": {
+        "headline": "¿Listo para simplificar los horarios de tu equipo?",
+        "subheadline": "Únete a los profesionales de la salud que ahorran horas cada semana. Crea tu cuenta y genera tu primer calendario sin conflictos en minutos.",
+        "button_primary": "Empezar gratis",
+        "button_secondary": "Solicitar una demo",
+        "microcopy": "Sin tarjeta de crédito. Sin instalación. Sin compromiso."
+    },
+    "pricing": {
+        "mission_headline": "Únete a nosotros para dar forma al futuro de la salud.",
+        "mission_description": "Ofrecemos acceso anticipado exclusivo a un grupo selecto de profesionales sanitarios. A cambio de usar la plataforma gratis, tus comentarios influirán directamente en nuestras próximas funciones.",
+        "card_title": "Acceso Anticipado",
+        "card_price": "0 €",
+        "card_period": "/ mes",
+        "features": [
+            "Acceso completo a todas las funciones",
+            "Soporte prioritario directo de los fundadores",
+            "Ayuda a definir el futuro del producto"
+        ],
+        "cta_button": "Empezar gratis"
+    },
+    "footer": {
+        "tagline": "Planificación inteligente para equipos modernos.",
+        "links": {
+            "features": "Funciones",
+            "pricing": "Precios",
+            "privacy": "Privacidad",
+            "terms": "Términos",
+            "contact": "Contacto"
+        },
+        "copyright": "© 2026 Rockilus. Todos los derechos reservados."
+    }
+}

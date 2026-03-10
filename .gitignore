@@ -73,3 +73,21 @@ override.tf.json
 *_override.tf
 *_override.tf.json
 
+# entries from rockilus-web/.gitignore
+rockilus-web/.pnp
+rockilus-web/.pnp.*
+rockilus-web/.yarn/*
+!rockilus-web/.yarn/patches
+!rockilus-web/.yarn/plugins
+!rockilus-web/.yarn/releases
+!rockilus-web/.yarn/versions
+rockilus-web/coverage/
+rockilus-web/out/
+rockilus-web/build
+rockilus-web/*.pem
+rockilus-web/npm-debug.log*
+rockilus-web/yarn-debug.log*
+rockilus-web/yarn-error.log*
+rockilus-web/.pnpm-debug.log*
+rockilus-web/.vercel
+rockilus-web/*.tsbuildinfo
