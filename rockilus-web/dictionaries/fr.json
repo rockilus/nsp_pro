@@ -114,5 +114,10 @@
             "contact": "Contact"
         },
         "copyright": "© 2026 Rockilus. Tous droits réservés."
+    },
+    "notFound": {
+        "title": "Page introuvable",
+        "message": "Désolé, la page que vous recherchez n'existe pas.",
+        "cta": "Retour à l'accueil"
     }
 }
