@@ -6,7 +6,7 @@ resource "aws_route53_record" "google_search_console_verification" {
   ttl     = 300
 
   records = [
-    "\"google-site-verification=pBY5io25zWNESiW8darnt1p3A6vOph0S-1Ia1HOg54g\""
+    "google-site-verification=pBY5io25zWNESiW8darnt1p3A6vOph0S-1Ia1HOg54g"
   ]
 
   # Keep this record managed in IaC so it's auditable and reversible.
