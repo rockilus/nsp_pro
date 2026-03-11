@@ -13,6 +13,18 @@ function handler(event) {
     var request = event.request;
     var uri = request.uri;
 
+    // Redirect apex domain (no www.) to www.
+    var host = (request.headers.host || {}).value || '';
+    if (host && !host.startsWith('www.')) {
+        return {
+            statusCode: 301,
+            statusDescription: 'Moved Permanently',
+            headers: {
+                'location': { value: 'https://www.' + host + uri }
+            }
+        };
+    }
+
     // Skip processing for assets
     if (uri.startsWith('/_next/') || uri.startsWith('/static/') || uri.includes('.')) {
         return request;

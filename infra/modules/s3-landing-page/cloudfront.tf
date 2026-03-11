@@ -29,7 +29,7 @@ resource "aws_cloudfront_distribution" "landing_page" {
   comment             = "Rockilus Landing Page (${var.environment})"
   default_root_object = "index.html"
 
-  aliases = [var.domain_name]
+  aliases = concat([var.domain_name], var.apex_domain_name != "" ? [var.apex_domain_name] : [])
 
   # Cache behavior for Next.js assets — content-hashed, immutable for 1 year
   ordered_cache_behavior {
