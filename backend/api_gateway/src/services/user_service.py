@@ -21,12 +21,8 @@ class UserService(BaseService):
         authz_role_assignment_assign: Callable[
             [str, str, str, str], Coroutine[Any, Any, None]
         ],
-        authn_update_user_email: Callable[
-            [str, str, str], Coroutine[Any, Any, None]
-        ],
-        authn_change_password: Callable[
-            [str, str, str], Coroutine[Any, Any, None]
-        ],
+        authn_update_user_email: Callable[[str, str, str], Coroutine[Any, Any, None]],
+        authn_change_password: Callable[[str, str, str], Coroutine[Any, Any, None]],
     ):
         super().__init__(collection)
         self.authz_user_sync = authz_user_sync
@@ -47,8 +43,7 @@ class UserService(BaseService):
         if existing_user is not None:
             # Log for audit purposes
             log_info(
-                f"User with id {user_id} already exists, "
-                f"returning existing user"
+                f"User with id {user_id} already exists, " f"returning existing user"
             )
             return existing_user
 
@@ -76,9 +71,7 @@ class UserService(BaseService):
         )
         return new_user
 
-    async def update_user(
-        self, user_id: str, update_dto: UserUpdateDTO
-    ) -> User:
+    async def update_user(self, user_id: str, update_dto: UserUpdateDTO) -> User:
         existing_user = self.collection.user_db.get_user_by_id(user_id)
         if existing_user is None:
             raise UserNotFoundError(f"User with id {user_id} not found")
