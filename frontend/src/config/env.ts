@@ -25,6 +25,11 @@ function createEnvironmentConfig(): EnvironmentConfig {
 
   console.log("Environment Configuration:", process.env.NEXT_PUBLIC_NODE_ENV);
 
+  // Extracted so redirectUri can reference it without repeating the fallback logic.
+  const clientUrl = isDevelopment
+    ? process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000"
+    : process.env.NEXT_PUBLIC_CLIENT_URL || "https://app.rockilus.com";
+
   return {
     isDevelopment,
 
@@ -34,9 +39,7 @@ function createEnvironmentConfig(): EnvironmentConfig {
       : process.env.NEXT_PUBLIC_API_URL || "https://api.rockilus.com",
 
     // Client URL - used for constructing links in emails, etc.
-    clientUrl: isDevelopment
-      ? process.env.NEXT_PUBLIC_CLIENT_URL || "http://localhost:3000"
-      : process.env.NEXT_PUBLIC_CLIENT_URL || "https://app.rockilus.com",
+    clientUrl,
 
     // Development Configuration - must match backend
     devUserId: process.env.NEXT_PUBLIC_DEV_USER_ID || "dev-user-123",
@@ -48,11 +51,10 @@ function createEnvironmentConfig(): EnvironmentConfig {
       "https://cognito-idp.eu-west-3.amazonaws.com/eu-west-3_9tyN1YsF6",
     cognitoClientId:
       process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || "2rccpq0s894f6a66d1hmimship",
-    // Cognito redirects here after sign-in. Dedicated callback page keeps
-    // the OIDC code exchange isolated from heavy feature chunks.
-    redirectUri:
-      process.env.NEXT_PUBLIC_REDIRECT_URI ||
-      "https://app.rockilus.com/fr/callback/",
+    // Base client URL — the per-locale callback path (/en/, /fr/, /es/) is
+    // appended dynamically at sign-in time in auth-context.tsx so Cognito
+    // receives the correct redirect_uri for the user's locale.
+    redirectUri: process.env.NEXT_PUBLIC_REDIRECT_URI || clientUrl,
     logoutRedirectUri:
       process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || "https://www.rockilus.com",
     cognitoDomain:

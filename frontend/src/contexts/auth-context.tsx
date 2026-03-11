@@ -432,19 +432,44 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
         console.log("📱 Mobile Safari detected");
       }
 
-      await auth.signinRedirect();
+      // Detect the active locale: URL path → browser language → 'en'
+      const supportedLocales = ["en", "fr", "es"];
+      const pathLocaleMatch = window.location.pathname.match(/\/(en|fr|es)\//);
+      const browserLocale = navigator.language.split("-")[0];
+      const locale =
+        pathLocaleMatch?.[1] ??
+        (supportedLocales.includes(browserLocale) ? browserLocale : "fr");
+
+      // Persist for the callback page so it can set the language on new users.
+      localStorage.setItem("rockilus_signup_locale", locale);
+
+      await auth.signinRedirect({
+        extraQueryParams: { ui_locales: locale },
+        redirect_uri: `${env.clientUrl}/${locale}/callback/`,
+      });
     } catch (error) {
       console.error("❌ Sign-in redirect failed:", error);
 
       // Only use manual redirect as last resort if signinRedirect throws
       // This should rarely happen
       try {
+        // Re-derive locale for the fallback branch
+        const supportedLocales = ["en", "fr", "es"];
+        const pathLocaleMatch =
+          window.location.pathname.match(/\/(en|fr|es)\//);
+        const browserLocale = navigator.language.split("-")[0];
+        const locale =
+          pathLocaleMatch?.[1] ??
+          (supportedLocales.includes(browserLocale) ? browserLocale : "fr");
+
+        const localeRedirectUri = `${env.clientUrl}/${locale}/callback/`;
         const authUrl =
           `${cognitoDomain}/oauth2/authorize?` +
           `client_id=${cognitoAuthConfig.client_id}&` +
           `response_type=${cognitoAuthConfig.response_type}&` +
           `scope=${encodeURIComponent(cognitoAuthConfig.scope)}&` +
-          `redirect_uri=${encodeURIComponent(cognitoAuthConfig.redirect_uri)}`;
+          `redirect_uri=${encodeURIComponent(localeRedirectUri)}&` +
+          `ui_locales=${locale}`;
 
         console.log("🔄 Falling back to window.location.href redirect");
         window.location.href = authUrl;

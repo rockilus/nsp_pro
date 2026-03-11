@@ -4,7 +4,9 @@ import { env } from "./env";
 export const cognitoAuthConfig = {
   authority: env.cognitoAuthority,
   client_id: env.cognitoClientId,
-  redirect_uri: env.redirectUri,
+  // Static English fallback; the real per-locale URI is passed dynamically via
+  // signinRedirect({ redirect_uri }) in auth-context.tsx and takes precedence.
+  redirect_uri: `${env.redirectUri}/fr/callback/`,
   // Dedicated URI for silent token renewal — avoids iframe fallback that Safari ITP blocks.
   // Must be registered as a callback URL in Cognito and handled by the /silent-renew page.
   silent_redirect_uri: `${env.clientUrl}/silent-renew`,

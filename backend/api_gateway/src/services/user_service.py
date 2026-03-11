@@ -21,8 +21,12 @@ class UserService(BaseService):
         authz_role_assignment_assign: Callable[
             [str, str, str, str], Coroutine[Any, Any, None]
         ],
-        authn_update_user_email: Callable[[str, str, str], Coroutine[Any, Any, None]],
-        authn_change_password: Callable[[str, str, str], Coroutine[Any, Any, None]],
+        authn_update_user_email: Callable[
+            [str, str, str], Coroutine[Any, Any, None]
+        ],
+        authn_change_password: Callable[
+            [str, str, str], Coroutine[Any, Any, None]
+        ],
     ):
         super().__init__(collection)
         self.authz_user_sync = authz_user_sync
@@ -31,29 +35,34 @@ class UserService(BaseService):
         self.authn_change_password = authn_change_password
 
     async def create_user(
-        self, user_id: str, email: str, first_name: str, last_name: str
+        self,
+        user_id: str,
+        email: str,
+        first_name: str,
+        last_name: str,
+        language: str | None = None,
     ) -> User:
         # Check if user already exists to ensure idempotency
         existing_user = self.collection.user_db.get_user_by_id(user_id)
         if existing_user is not None:
             # Log for audit purposes
             log_info(
-                f"User with id {user_id} already exists, " f"returning existing user"
+                f"User with id {user_id} already exists, "
+                f"returning existing user"
             )
             return existing_user
 
-        user_language = "fr"
+        user_language = language if language else "fr"
         try:
-            language = Language(user_language)  # type: ignore[call-arg]
-        except ValueError as exc:
-            # pylint: disable=broad-exception-raised
-            raise Exception(f"Language {user_language} not supported") from exc
+            lang = Language(user_language)  # type: ignore[call-arg]
+        except ValueError:
+            lang = Language("fr")  # type: ignore[call-arg]
         user = User(
             id=user_id,
             email=email,
             first_name=first_name,
             last_name=last_name,
-            language=language,  # type: ignore
+            language=lang,  # type: ignore
             sign_up_at=datetime.now(timezone.utc),
             impersonating_user_id=None,
         )
@@ -67,7 +76,9 @@ class UserService(BaseService):
         )
         return new_user
 
-    async def update_user(self, user_id: str, update_dto: UserUpdateDTO) -> User:
+    async def update_user(
+        self, user_id: str, update_dto: UserUpdateDTO
+    ) -> User:
         existing_user = self.collection.user_db.get_user_by_id(user_id)
         if existing_user is None:
             raise UserNotFoundError(f"User with id {user_id} not found")
