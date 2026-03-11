@@ -62,7 +62,7 @@ export default function AccountMenu({ lng }: { lng: string }) {
       setAnchorEl(null);
 
       // Use the existing signOutRedirect method from your auth context
-      signOutRedirect();
+      signOutRedirect(lng);
     } catch (error) {
       console.error("Logout failed:", error);
       setIsLoggingOut(false);

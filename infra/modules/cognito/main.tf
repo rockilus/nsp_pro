@@ -179,7 +179,12 @@ resource "aws_cognito_user_pool_client" "main" {
     # Required for SPA silent token renewal via iframe
     "https://${var.frontend_domain_name}/silent-renew/",
   ]
-  logout_urls                  = ["https://${var.landing_page_domain_name}"]
+  logout_urls = [
+    "https://${var.landing_page_domain_name}",
+    "https://${var.landing_page_domain_name}/en/",
+    "https://${var.landing_page_domain_name}/fr/",
+    "https://${var.landing_page_domain_name}/es/",
+  ]
   supported_identity_providers = ["COGNITO"]
 
   # SPA-specific security settings
