@@ -170,6 +170,7 @@
     "solve_custom_confirm": "Lancer la génération personnalisée",
     "solve_custom_dates": "Dates",
     "solve_custom_dialog_title": "Génération Personnalisée",
+    "solve_custom_full_campaign": "Campagne complète",
     "solve_custom_shifts": "Postes",
     "solve_custom_summary_dates_count": "{{count}} date(s) sélectionnée(s)",
     "solve_custom_summary_empty": "Aucune cellule sélectionnée. Utilisez les icônes d'étincelle dans le tableau pour sélectionner des lignes, colonnes ou cellules individuelles.",

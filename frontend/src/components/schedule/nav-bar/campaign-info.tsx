@@ -504,6 +504,7 @@ export default function CampaignInfo({
         onConfirm={handleCustomConfirm}
         workers={workers}
         shifts={shifts}
+        scheduleCampaign={scheduleCampaign}
         customSolveSelectedCells={customSolveSelectedCells}
         groupBy={groupBy}
         lng={lng}

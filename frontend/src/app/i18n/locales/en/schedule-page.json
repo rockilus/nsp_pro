@@ -170,6 +170,7 @@
     "solve_custom_confirm": "Start Custom Generate",
     "solve_custom_dates": "Dates",
     "solve_custom_dialog_title": "Custom Generate",
+    "solve_custom_full_campaign": "Full campaign",
     "solve_custom_shifts": "Shifts",
     "solve_custom_summary_dates_count": "{{count}} date(s) selected",
     "solve_custom_summary_empty": "No cells selected. Use the sparkle icons in the table to select rows, columns, or individual cells.",

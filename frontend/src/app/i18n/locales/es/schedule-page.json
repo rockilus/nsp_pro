@@ -170,6 +170,7 @@
     "solve_custom_confirm": "Iniciar Generación Personalizada",
     "solve_custom_dates": "Fechas",
     "solve_custom_dialog_title": "Generación Personalizada",
+    "solve_custom_full_campaign": "Campaña completa",
     "solve_custom_shifts": "Turnos",
     "solve_custom_summary_dates_count": "{{count}} fecha(s) seleccionada(s)",
     "solve_custom_summary_empty": "Sin celdas seleccionadas. Use los íconos de destello en la tabla para seleccionar filas, columnas o celdas individuales.",

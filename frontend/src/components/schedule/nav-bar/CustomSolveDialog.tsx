@@ -1,9 +1,9 @@
 /**
  * Summary-only confirmation dialog for custom partial solve scope.
  *
- * Displays a summary of selected cells (workers/shifts + dates) that were
- * chosen via the interactive custom solve mode in the table. The user confirms
- * or cancels; no interactive selection happens here.
+ * Shows a per-shift (or per-worker) breakdown: each entity lists either a
+ * "Full campaign" badge (when all campaign dates are selected) or individual
+ * date chips. The user confirms or cancels; no interactive selection happens here.
  */
 import React, { useMemo } from "react";
 import dayjs from "dayjs";
@@ -28,6 +28,9 @@ import {
   ShiftDateCell,
 } from "../../../types/solveTaskStatus";
 import { SelectedScheduleCell } from "../../../types/scheduleSelection";
+import { ScheduleT } from "../../../types/schedule";
+// Constants
+import { ShiftColorMappings } from "../../../constants/constants";
 
 interface CustomSolveDialogProps {
   open: boolean;
@@ -35,6 +38,7 @@ interface CustomSolveDialogProps {
   onConfirm: (scope: SolveScope) => void;
   workers: WorkerT[];
   shifts: ShiftT[];
+  scheduleCampaign: ScheduleT;
   customSolveSelectedCells: SelectedScheduleCell[];
   groupBy: "worker" | "shift";
   lng: string;
@@ -46,56 +50,79 @@ export default function CustomSolveDialog({
   onConfirm,
   workers,
   shifts,
+  scheduleCampaign,
   customSolveSelectedCells,
   groupBy,
   lng,
 }: CustomSolveDialogProps) {
   const { t } = useTranslation(lng, "schedule-page");
 
-  // Derive unique row names from selected cells
-  const selectedRowNames = useMemo(() => {
-    const rowIds = new Set(customSolveSelectedCells.map((c) => c.rowId));
-    if (groupBy === "worker") {
-      return workers.filter((w) => rowIds.has(w.id)).map((w) => w.name);
+  // Derive per-entity breakdown: each selected shift/worker with its dates or "full" flag
+  const selectedEntities = useMemo(() => {
+    // Build all campaign dates
+    const campaignDates: string[] = [];
+    let current = scheduleCampaign.startDate.startOf("day");
+    const end = scheduleCampaign.endDate.startOf("day");
+    while (current.isBefore(end) || current.isSame(end, "day")) {
+      campaignDates.push(current.format("YYYY-MM-DD"));
+      current = current.add(1, "day");
     }
-    return shifts.filter((s) => rowIds.has(s.id)).map((s) => s.name);
-  }, [customSolveSelectedCells, groupBy, workers, shifts]);
+    const campaignDateSet = new Set(campaignDates);
 
-  // Derive unique dates from selected cells (sorted)
-  const selectedDates = useMemo(() => {
-    const dateSet = new Set(customSolveSelectedCells.map((c) => c.date));
-    return [...dateSet].sort();
-  }, [customSolveSelectedCells]);
+    // Group selected cells by rowId
+    const rowMap = new Map<string, Set<string>>();
+    for (const cell of customSolveSelectedCells) {
+      if (!rowMap.has(cell.rowId)) rowMap.set(cell.rowId, new Set());
+      rowMap.get(cell.rowId)!.add(cell.date);
+    }
 
-  // Build SolveScope from the selected cells
+    // Build ordered list matching the workers/shifts order
+    const entities: (WorkerT | ShiftT)[] =
+      groupBy === "worker" ? workers : shifts;
+
+    return entities
+      .filter((e) => rowMap.has(e.id))
+      .map((e) => {
+        const selectedDates = [...(rowMap.get(e.id) ?? [])]
+          .filter((d) => campaignDateSet.has(d))
+          .sort();
+        const isFull =
+          campaignDates.length > 0 &&
+          selectedDates.length >= campaignDates.length;
+        return {
+          rowId: e.id,
+          name: e.name,
+          isFull,
+          dates: selectedDates,
+          colorKey: groupBy === "shift" ? (e as ShiftT).color : undefined,
+        };
+      });
+  }, [customSolveSelectedCells, scheduleCampaign, groupBy, workers, shifts]);
+
+  // Build SolveScope: full rows → shift_ids/worker_ids; partial → shift_cells/worker_cells
   const handleConfirm = () => {
     const scope: SolveScope = { scope_type: "CUSTOM" };
+    const fullIds = selectedEntities.filter((e) => e.isFull).map((e) => e.rowId);
+    const partialEntities = selectedEntities.filter((e) => !e.isFull);
 
     if (groupBy === "worker") {
-      const cells: WorkerDateCell[] = customSolveSelectedCells.map((c) => ({
-        worker_id: c.rowId,
-        date: c.date,
-      }));
-      scope.worker_cells = cells.length > 0 ? cells : undefined;
+      if (fullIds.length > 0) scope.worker_ids = fullIds;
+      const cells: WorkerDateCell[] = partialEntities.flatMap((e) =>
+        e.dates.map((date) => ({ worker_id: e.rowId, date })),
+      );
+      if (cells.length > 0) scope.worker_cells = cells;
     } else {
-      const cells: ShiftDateCell[] = customSolveSelectedCells.map((c) => ({
-        shift_id: c.rowId,
-        date: c.date,
-      }));
-      scope.shift_cells = cells.length > 0 ? cells : undefined;
+      if (fullIds.length > 0) scope.shift_ids = fullIds;
+      const cells: ShiftDateCell[] = partialEntities.flatMap((e) =>
+        e.dates.map((date) => ({ shift_id: e.rowId, date })),
+      );
+      if (cells.length > 0) scope.shift_cells = cells;
     }
 
     onConfirm(scope);
   };
 
-  const isEmpty = customSolveSelectedCells.length === 0;
-  const rowCount = new Set(customSolveSelectedCells.map((c) => c.rowId)).size;
-  const dateCount = selectedDates.length;
-
-  const rowCountKey =
-    groupBy === "worker"
-      ? "solve_custom_summary_workers_count"
-      : "solve_custom_summary_shifts_count";
+  const isEmpty = selectedEntities.length === 0;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -109,70 +136,67 @@ export default function CustomSolveDialog({
             {t("solve_custom_summary_empty")}
           </Typography>
         ) : (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Box sx={{ display: "flex", gap: 2 }}>
-              <Chip
-                label={t(rowCountKey, { count: rowCount })}
-                size="small"
-                color="primary"
-                variant="outlined"
-              />
-              <Chip
-                label={t("solve_custom_summary_dates_count", {
-                  count: dateCount,
-                })}
-                size="small"
-                color="primary"
-                variant="outlined"
-              />
-            </Box>
-
-            {/* Row names */}
-            <Box>
-              <Typography variant="subtitle2" gutterBottom>
-                {groupBy === "worker"
-                  ? t("solve_custom_workers")
-                  : t("solve_custom_shifts")}
-              </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 0.5,
-                  maxHeight: 120,
-                  overflowY: "auto",
-                }}
-              >
-                {selectedRowNames.map((name) => (
-                  <Chip key={name} label={name} size="small" variant="filled" />
-                ))}
-              </Box>
-            </Box>
-
-            {/* Dates */}
-            <Box>
-              <Typography variant="subtitle2" gutterBottom>
-                {t("solve_custom_dates")}
-              </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 0.5,
-                  maxHeight: 160,
-                  overflowY: "auto",
-                }}
-              >
-                {selectedDates.map((date) => (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 1.5,
+              maxHeight: 400,
+              overflowY: "auto",
+            }}
+          >
+            {selectedEntities.map(({ rowId, name, isFull, dates, colorKey }) => {
+              const colorMapping = colorKey
+                ? ShiftColorMappings[colorKey]
+                : undefined;
+              return (
+                <Box
+                  key={rowId}
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 1,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {/* Entity name chip (colored for shifts) */}
                   <Chip
-                    key={date}
-                    label={dayjs(date).format("ddd DD MMM")}
+                    label={name}
                     size="small"
-                    variant="filled"
+                    sx={
+                      colorMapping
+                        ? {
+                            backgroundColor: colorMapping.background,
+                            color: colorMapping.text,
+                            fontWeight: 600,
+                            flexShrink: 0,
+                          }
+                        : { flexShrink: 0 }
+                    }
                   />
-                ))}
-              </Box>
-            </Box>
+                  {/* Full campaign badge or individual date chips */}
+                  {isFull ? (
+                    <Chip
+                      label={t("solve_custom_full_campaign")}
+                      size="small"
+                      color="success"
+                      variant="outlined"
+                    />
+                  ) : (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {dates.map((date) => (
+                        <Chip
+                          key={date}
+                          label={dayjs(date).format("ddd DD MMM")}
+                          size="small"
+                          variant="filled"
+                        />
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              );
+            })}
           </Box>
         )}
       </DialogContent>
