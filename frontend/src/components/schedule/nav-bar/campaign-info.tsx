@@ -67,7 +67,8 @@ export default function CampaignInfo({
   groupBy = "worker",
   selectedSolveScope = "FULL",
   onSolveOptionChange,
-  customSolveSelectedCells = [],
+  workerSolveCells = [],
+  shiftSolveCells = [],
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -82,7 +83,8 @@ export default function CampaignInfo({
   groupBy?: "worker" | "shift";
   selectedSolveScope?: SolveScopeType;
   onSolveOptionChange?: (scope: SolveScopeType) => void;
-  customSolveSelectedCells?: SelectedScheduleCell[];
+  workerSolveCells?: SelectedScheduleCell[];
+  shiftSolveCells?: SelectedScheduleCell[];
 }) {
   const { t } = useTranslation(lng, "schedule-page");
   const {
@@ -505,7 +507,8 @@ export default function CampaignInfo({
         workers={workers}
         shifts={shifts}
         scheduleCampaign={scheduleCampaign}
-        customSolveSelectedCells={customSolveSelectedCells}
+        workerSolveCells={workerSolveCells}
+        shiftSolveCells={shiftSolveCells}
         groupBy={groupBy}
         lng={lng}
       />

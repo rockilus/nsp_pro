@@ -39,7 +39,8 @@ interface CustomSolveDialogProps {
   workers: WorkerT[];
   shifts: ShiftT[];
   scheduleCampaign: ScheduleT;
-  customSolveSelectedCells: SelectedScheduleCell[];
+  workerSolveCells: SelectedScheduleCell[];
+  shiftSolveCells: SelectedScheduleCell[];
   groupBy: "worker" | "shift";
   lng: string;
 }
@@ -51,7 +52,8 @@ export default function CustomSolveDialog({
   workers,
   shifts,
   scheduleCampaign,
-  customSolveSelectedCells,
+  workerSolveCells,
+  shiftSolveCells,
   groupBy,
   lng,
 }: CustomSolveDialogProps) {
@@ -59,6 +61,8 @@ export default function CustomSolveDialog({
 
   // Derive per-entity breakdown: each selected shift/worker with its dates or "full" flag
   const selectedEntities = useMemo(() => {
+    const activeCells =
+      groupBy === "worker" ? workerSolveCells : shiftSolveCells;
     // Build all campaign dates
     const campaignDates: string[] = [];
     let current = scheduleCampaign.startDate.startOf("day");
@@ -71,7 +75,7 @@ export default function CustomSolveDialog({
 
     // Group selected cells by rowId
     const rowMap = new Map<string, Set<string>>();
-    for (const cell of customSolveSelectedCells) {
+    for (const cell of activeCells) {
       if (!rowMap.has(cell.rowId)) rowMap.set(cell.rowId, new Set());
       rowMap.get(cell.rowId)!.add(cell.date);
     }
@@ -97,12 +101,21 @@ export default function CustomSolveDialog({
           colorKey: groupBy === "shift" ? (e as ShiftT).color : undefined,
         };
       });
-  }, [customSolveSelectedCells, scheduleCampaign, groupBy, workers, shifts]);
+  }, [
+    workerSolveCells,
+    shiftSolveCells,
+    scheduleCampaign,
+    groupBy,
+    workers,
+    shifts,
+  ]);
 
   // Build SolveScope: full rows → shift_ids/worker_ids; partial → shift_cells/worker_cells
   const handleConfirm = () => {
-    const scope: SolveScope = { scope_type: "CUSTOM" };
-    const fullIds = selectedEntities.filter((e) => e.isFull).map((e) => e.rowId);
+    const scope: SolveScope = { scope_type: "CUSTOM", solve_view: groupBy };
+    const fullIds = selectedEntities
+      .filter((e) => e.isFull)
+      .map((e) => e.rowId);
     const partialEntities = selectedEntities.filter((e) => !e.isFull);
 
     if (groupBy === "worker") {
@@ -145,58 +158,60 @@ export default function CustomSolveDialog({
               overflowY: "auto",
             }}
           >
-            {selectedEntities.map(({ rowId, name, isFull, dates, colorKey }) => {
-              const colorMapping = colorKey
-                ? ShiftColorMappings[colorKey]
-                : undefined;
-              return (
-                <Box
-                  key={rowId}
-                  sx={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 1,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {/* Entity name chip (colored for shifts) */}
-                  <Chip
-                    label={name}
-                    size="small"
-                    sx={
-                      colorMapping
-                        ? {
-                            backgroundColor: colorMapping.background,
-                            color: colorMapping.text,
-                            fontWeight: 600,
-                            flexShrink: 0,
-                          }
-                        : { flexShrink: 0 }
-                    }
-                  />
-                  {/* Full campaign badge or individual date chips */}
-                  {isFull ? (
+            {selectedEntities.map(
+              ({ rowId, name, isFull, dates, colorKey }) => {
+                const colorMapping = colorKey
+                  ? ShiftColorMappings[colorKey]
+                  : undefined;
+                return (
+                  <Box
+                    key={rowId}
+                    sx={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 1,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {/* Entity name chip (colored for shifts) */}
                     <Chip
-                      label={t("solve_custom_full_campaign")}
+                      label={name}
                       size="small"
-                      color="success"
-                      variant="outlined"
+                      sx={
+                        colorMapping
+                          ? {
+                              backgroundColor: colorMapping.background,
+                              color: colorMapping.text,
+                              fontWeight: 600,
+                              flexShrink: 0,
+                            }
+                          : { flexShrink: 0 }
+                      }
                     />
-                  ) : (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                      {dates.map((date) => (
-                        <Chip
-                          key={date}
-                          label={dayjs(date).format("ddd DD MMM")}
-                          size="small"
-                          variant="filled"
-                        />
-                      ))}
-                    </Box>
-                  )}
-                </Box>
-              );
-            })}
+                    {/* Full campaign badge or individual date chips */}
+                    {isFull ? (
+                      <Chip
+                        label={t("solve_custom_full_campaign")}
+                        size="small"
+                        color="success"
+                        variant="outlined"
+                      />
+                    ) : (
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                        {dates.map((date) => (
+                          <Chip
+                            key={date}
+                            label={dayjs(date).format("ddd DD MMM")}
+                            size="small"
+                            variant="filled"
+                          />
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                );
+              },
+            )}
           </Box>
         )}
       </DialogContent>

@@ -48,7 +48,8 @@ export default function ScheduleNavBar({
   selectionState,
   selectedSolveScope = "FULL",
   onSolveOptionChange,
-  customSolveSelectedCells = [],
+  workerSolveCells = [],
+  shiftSolveCells = [],
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -76,7 +77,8 @@ export default function ScheduleNavBar({
   selectionState?: ScheduleSelectionState;
   selectedSolveScope?: SolveScopeType;
   onSolveOptionChange?: (scope: SolveScopeType) => void;
-  customSolveSelectedCells?: SelectedScheduleCell[];
+  workerSolveCells?: SelectedScheduleCell[];
+  shiftSolveCells?: SelectedScheduleCell[];
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -141,7 +143,8 @@ export default function ScheduleNavBar({
               groupBy={scheduleViewSettings.groupBy}
               selectedSolveScope={selectedSolveScope}
               onSolveOptionChange={onSolveOptionChange}
-              customSolveSelectedCells={customSolveSelectedCells}
+              workerSolveCells={workerSolveCells}
+              shiftSolveCells={shiftSolveCells}
             />
           ) : (
             <div

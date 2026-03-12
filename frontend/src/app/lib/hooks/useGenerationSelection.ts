@@ -3,12 +3,14 @@ import { SelectedScheduleCell } from "../../../types/scheduleSelection";
 import { SolveScopeType } from "../../../types/solveTaskStatus";
 
 interface GenerationSelectionState {
-  cells: SelectedScheduleCell[];
+  workerCells: SelectedScheduleCell[];
+  shiftCells: SelectedScheduleCell[];
   scopeType: SolveScopeType;
 }
 
 const DEFAULT_STATE: GenerationSelectionState = {
-  cells: [],
+  workerCells: [],
+  shiftCells: [],
   scopeType: "FULL",
 };
 
@@ -18,12 +20,25 @@ function loadFromStorage(campaignId: string): GenerationSelectionState {
     const item = localStorage.getItem(`generateSelection_${campaignId}`);
     if (!item) return DEFAULT_STATE;
     const parsed = JSON.parse(item);
-    // Handle legacy format (plain array of cells without scopeType)
+    // Handle legacy format: plain array of cells (map to workerCells)
     if (Array.isArray(parsed)) {
-      return { cells: parsed as SelectedScheduleCell[], scopeType: "FULL" };
+      return {
+        workerCells: parsed as SelectedScheduleCell[],
+        shiftCells: [],
+        scopeType: "FULL",
+      };
+    }
+    // Handle previous single-array format with `cells` key (map to workerCells)
+    if (Array.isArray(parsed.cells)) {
+      return {
+        workerCells: parsed.cells,
+        shiftCells: [],
+        scopeType: parsed.scopeType ?? "FULL",
+      };
     }
     return {
-      cells: Array.isArray(parsed.cells) ? parsed.cells : [],
+      workerCells: Array.isArray(parsed.workerCells) ? parsed.workerCells : [],
+      shiftCells: Array.isArray(parsed.shiftCells) ? parsed.shiftCells : [],
       scopeType: parsed.scopeType ?? "FULL",
     };
   } catch {
@@ -54,14 +69,23 @@ export function clearGenerationSelection(campaignId: string): void {
 
 /**
  * Persists the custom-solve cell selection and solve scope type in localStorage
- * keyed by campaign ID. When the campaign changes, the previous campaign's
- * selection is preserved in storage and the new campaign's selection is loaded
- * automatically. When campaignId is null, an empty selection is returned and
- * writes are ignored.
+ * keyed by campaign ID. Selections are stored per-view (worker / shift) so
+ * switching views never wipes the other view's selection.
+ *
+ * Returns a 6-tuple:
+ * [workerCells, updateWorkerCells, shiftCells, updateShiftCells, scopeType, setScopeType]
+ *
+ * When campaignId is null, empty selections are returned and writes are ignored.
  */
 export function useGenerationSelection(
   campaignId: string | null,
 ): [
+  SelectedScheduleCell[],
+  (
+    update:
+      | SelectedScheduleCell[]
+      | ((prev: SelectedScheduleCell[]) => SelectedScheduleCell[]),
+  ) => void,
   SelectedScheduleCell[],
   (
     update:
@@ -82,7 +106,7 @@ export function useGenerationSelection(
     setState(campaignId ? loadFromStorage(campaignId) : DEFAULT_STATE);
   }
 
-  const updateCells = useCallback(
+  const updateWorkerCells = useCallback(
     (
       update:
         | SelectedScheduleCell[]
@@ -90,8 +114,25 @@ export function useGenerationSelection(
     ) => {
       setState((prev) => {
         const newCells =
-          typeof update === "function" ? update(prev.cells) : update;
-        const newState = { ...prev, cells: newCells };
+          typeof update === "function" ? update(prev.workerCells) : update;
+        const newState = { ...prev, workerCells: newCells };
+        if (campaignId) saveToStorage(campaignId, newState);
+        return newState;
+      });
+    },
+    [campaignId],
+  );
+
+  const updateShiftCells = useCallback(
+    (
+      update:
+        | SelectedScheduleCell[]
+        | ((prev: SelectedScheduleCell[]) => SelectedScheduleCell[]),
+    ) => {
+      setState((prev) => {
+        const newCells =
+          typeof update === "function" ? update(prev.shiftCells) : update;
+        const newState = { ...prev, shiftCells: newCells };
         if (campaignId) saveToStorage(campaignId, newState);
         return newState;
       });
@@ -110,5 +151,12 @@ export function useGenerationSelection(
     [campaignId],
   );
 
-  return [state.cells, updateCells, state.scopeType, setScopeType];
+  return [
+    state.workerCells,
+    updateWorkerCells,
+    state.shiftCells,
+    updateShiftCells,
+    state.scopeType,
+    setScopeType,
+  ];
 }

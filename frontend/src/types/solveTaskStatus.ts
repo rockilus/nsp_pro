@@ -30,10 +30,9 @@ export interface SolveScope {
   worker_ids?: string[];
   shift_ids?: string[];
   dates?: string[];
-  /** Mutually exclusive with shift_cells */
   worker_cells?: WorkerDateCell[];
-  /** Mutually exclusive with worker_cells */
   shift_cells?: ShiftDateCell[];
+  solve_view?: "worker" | "shift";
 }
 
 export enum SolveRequestStatus {
