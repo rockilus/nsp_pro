@@ -204,7 +204,10 @@ export default function WorkerCell({
             zIndex: 11,
           }}
         >
-          <Sparkle size={10} />
+          <Sparkle
+            size={10}
+            fill={isCustomCellSelected ? "currentColor" : "none"}
+          />
         </button>
       )}
     </TableCell>

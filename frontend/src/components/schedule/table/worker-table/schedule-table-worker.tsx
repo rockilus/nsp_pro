@@ -64,6 +64,7 @@ export default function ScheduleTableWorker({
   handleCustomRowSelect,
   handleCustomColumnSelect,
   handleCustomCellSelect,
+  handleCustomSelectAll,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -105,6 +106,7 @@ export default function ScheduleTableWorker({
     date: string,
     scheduleId: string | null,
   ) => void;
+  handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   const workersForHeader = getRelevantWorkers(
     workers,
@@ -153,6 +155,8 @@ export default function ScheduleTableWorker({
             assignments={assignments}
             isCustomSolveModeActive={isCustomSolveModeActive}
             handleCustomColumnSelect={handleCustomColumnSelect}
+            customSolveSelectedCells={customSolveSelectedCells}
+            handleCustomSelectAll={handleCustomSelectAll}
           />
           {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
             teamWithMembership.team.useSolver && (

@@ -159,7 +159,10 @@ export default function WorkerRowHeaderCell({
                   : "#9e9e9e",
             }}
           >
-            <Sparkle size={14} />
+            <Sparkle
+              size={14}
+              fill={isRowCustomSelected ? "currentColor" : "none"}
+            />
           </IconButton>
         )}
         <div className="worker-row-header-cell-content">

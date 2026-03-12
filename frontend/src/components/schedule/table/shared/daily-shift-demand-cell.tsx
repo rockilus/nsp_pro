@@ -94,7 +94,10 @@ export default function DailyShiftDemandCell({
               color: isCustomCellSelected ? "#1976d2" : "#9e9e9e",
             }}
           >
-            <Sparkle size={10} />
+            <Sparkle
+              size={10}
+              fill={isCustomCellSelected ? "currentColor" : "none"}
+            />
           </button>
         )}
       </div>

@@ -59,6 +59,7 @@ export default function ScheduleDisplay({
   handleCustomRowSelect,
   handleCustomColumnSelect,
   handleCustomCellSelect,
+  handleCustomSelectAll,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -101,6 +102,7 @@ export default function ScheduleDisplay({
     date: string,
     scheduleId: string | null,
   ) => void;
+  handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   const scheduleDisplays: { [key: string]: React.ReactElement } = {
     shift: (
@@ -133,6 +135,7 @@ export default function ScheduleDisplay({
         handleCustomRowSelect={handleCustomRowSelect}
         handleCustomColumnSelect={handleCustomColumnSelect}
         handleCustomCellSelect={handleCustomCellSelect}
+        handleCustomSelectAll={handleCustomSelectAll}
       />
     ),
     worker: (
@@ -165,6 +168,7 @@ export default function ScheduleDisplay({
         handleCustomRowSelect={handleCustomRowSelect}
         handleCustomColumnSelect={handleCustomColumnSelect}
         handleCustomCellSelect={handleCustomCellSelect}
+        handleCustomSelectAll={handleCustomSelectAll}
       />
     ),
   };

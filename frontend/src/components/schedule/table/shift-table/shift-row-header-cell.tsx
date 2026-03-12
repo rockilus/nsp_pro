@@ -111,7 +111,10 @@ export default function ShiftRowHeaderCell({
                   : "#9e9e9e",
             }}
           >
-            <Sparkle size={14} />
+            <Sparkle
+              size={14}
+              fill={isRowCustomSelected ? "currentColor" : "none"}
+            />
           </IconButton>
         )}
         <div

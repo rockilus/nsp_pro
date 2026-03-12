@@ -80,6 +80,8 @@ export default function DateHeaderCell({
   assignments,
   isCustomSolveModeActive = false,
   onCustomColumnSelect,
+  isCustomColumnSelected = false,
+  isCustomColumnIndeterminate = false,
 }: {
   periodDate: periodDateT;
   teamWithMembership: TeamWithMembership;
@@ -96,6 +98,8 @@ export default function DateHeaderCell({
   assignments?: AssignmentT[];
   isCustomSolveModeActive?: boolean;
   onCustomColumnSelect?: (date: string, rowIds: string[]) => void;
+  isCustomColumnSelected?: boolean;
+  isCustomColumnIndeterminate?: boolean;
 }) {
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
@@ -191,10 +195,21 @@ export default function DateHeaderCell({
                 display: "block",
                 margin: "0 auto",
                 padding: "2px",
-                color: "#1976d2",
+                color: isCustomColumnSelected
+                  ? "#1976d2"
+                  : isCustomColumnIndeterminate
+                    ? "#42a5f5"
+                    : "#9e9e9e",
               }}
             >
-              <Sparkle size={14} />
+              <Sparkle
+                size={14}
+                fill={
+                  isCustomColumnSelected || isCustomColumnIndeterminate
+                    ? "currentColor"
+                    : "none"
+                }
+              />
             </button>
           </Tooltip>
         )}

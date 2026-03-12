@@ -460,6 +460,10 @@ export default function ScheduleTab({
     [],
   );
 
+  const handleCustomSelectAll = useCallback((cells: SelectedScheduleCell[]) => {
+    setCustomSolveSelectedCells(cells);
+  }, []);
+
   //////////////////////////
   // Selection Mode Handlers
   //////////////////////////
@@ -1518,6 +1522,7 @@ export default function ScheduleTab({
               handleCustomRowSelect={handleCustomRowSelect}
               handleCustomColumnSelect={handleCustomColumnSelect}
               handleCustomCellSelect={handleCustomCellSelect}
+              handleCustomSelectAll={handleCustomSelectAll}
             />
           )}
         </div>

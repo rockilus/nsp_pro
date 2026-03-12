@@ -1,6 +1,7 @@
 import React, { useState, useMemo, Dispatch, SetStateAction } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { Sparkle } from "lucide-react";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
@@ -28,6 +29,7 @@ import {
 } from "../../../../types/schedule";
 import {
   ScheduleSelectionState,
+  SelectedScheduleCell,
   SelectionScope,
 } from "../../../../types/scheduleSelection";
 
@@ -202,6 +204,9 @@ export default function ExportCell({
   rowIds,
   selectionScope,
   handleSelectAll,
+  isCustomSolveModeActive = false,
+  customSolveSelectedCells = [],
+  handleCustomSelectAll,
 }: {
   lng: string;
   periodDates: periodDateT[];
@@ -212,6 +217,9 @@ export default function ExportCell({
   rowIds: string[];
   selectionScope: SelectionScope;
   handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
+  isCustomSolveModeActive?: boolean;
+  customSolveSelectedCells?: SelectedScheduleCell[];
+  handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -260,6 +268,73 @@ export default function ExportCell({
       handleSelectAll?.([], selectionScope ?? "view");
     } else {
       handleSelectAll?.(rowIds ?? [], selectionScope ?? "view");
+    }
+  };
+
+  const isCustomAllSelected = useMemo(() => {
+    if (!isCustomSolveModeActive || !rowIds?.length || !periodDates.length)
+      return false;
+    return rowIds.every((rowId) =>
+      periodDates.every((pd) =>
+        customSolveSelectedCells.some(
+          (c) => c.rowId === rowId && c.date === pd.date.format("YYYY-MM-DD"),
+        ),
+      ),
+    );
+  }, [isCustomSolveModeActive, rowIds, periodDates, customSolveSelectedCells]);
+
+  const isCustomSomeSelected = useMemo(() => {
+    if (!isCustomSolveModeActive || !rowIds?.length || !periodDates.length)
+      return false;
+    return (
+      !isCustomAllSelected &&
+      rowIds.some((rowId) =>
+        periodDates.some((pd) =>
+          customSolveSelectedCells.some(
+            (c) => c.rowId === rowId && c.date === pd.date.format("YYYY-MM-DD"),
+          ),
+        ),
+      )
+    );
+  }, [
+    isCustomSolveModeActive,
+    rowIds,
+    periodDates,
+    customSolveSelectedCells,
+    isCustomAllSelected,
+  ]);
+
+  const handleCustomSelectAllChange = () => {
+    if (isCustomAllSelected) {
+      // Remove all current-view cells from selection
+      const viewKeys = new Set(
+        rowIds.flatMap((rowId) =>
+          periodDates.map((pd) => `${rowId}-${pd.date.format("YYYY-MM-DD")}`),
+        ),
+      );
+      handleCustomSelectAll?.(
+        customSolveSelectedCells.filter(
+          (c) => !viewKeys.has(`${c.rowId}-${c.date}`),
+        ),
+      );
+    } else {
+      // Add all current-view cells
+      const existingKeys = new Set(
+        customSolveSelectedCells.map((c) => `${c.rowId}-${c.date}`),
+      );
+      const toAdd = rowIds.flatMap((rowId) =>
+        periodDates
+          .filter(
+            (pd) =>
+              !existingKeys.has(`${rowId}-${pd.date.format("YYYY-MM-DD")}`),
+          )
+          .map((pd) => ({
+            rowId,
+            date: pd.date.format("YYYY-MM-DD"),
+            scheduleId: pd.scheduleId,
+          })),
+      );
+      handleCustomSelectAll?.([...customSolveSelectedCells, ...toAdd]);
     }
   };
 
@@ -357,6 +432,39 @@ export default function ExportCell({
             data-testid="export-cell-select-all-checkbox"
             sx={{ padding: "2px", display: "block", margin: "0 auto" }}
           />
+        )}
+        {isCustomSolveModeActive && (
+          <Tooltip title="Select/deselect all visible cells">
+            <button
+              data-testid="export-cell-custom-select-all"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCustomSelectAllChange();
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "block",
+                margin: "0 auto",
+                padding: "2px",
+                color: isCustomAllSelected
+                  ? "#1976d2"
+                  : isCustomSomeSelected
+                    ? "#42a5f5"
+                    : "#9e9e9e",
+              }}
+            >
+              <Sparkle
+                size={14}
+                fill={
+                  isCustomAllSelected || isCustomSomeSelected
+                    ? "currentColor"
+                    : "none"
+                }
+              />
+            </button>
+          </Tooltip>
         )}
         <Dialog
           open={open}

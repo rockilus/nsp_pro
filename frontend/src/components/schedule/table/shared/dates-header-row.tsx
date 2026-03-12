@@ -15,6 +15,7 @@ import {
 import { TeamWithMembership } from "@/types/team";
 import {
   ScheduleSelectionState,
+  SelectedScheduleCell,
   SelectionScope,
 } from "../../../../types/scheduleSelection";
 import { AssignmentT } from "@/types/assignment";
@@ -34,6 +35,8 @@ export default function DatesHeaderRow({
   assignments,
   isCustomSolveModeActive = false,
   handleCustomColumnSelect,
+  customSolveSelectedCells = [],
+  handleCustomSelectAll,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -53,6 +56,8 @@ export default function DatesHeaderRow({
   assignments: AssignmentT[];
   isCustomSolveModeActive?: boolean;
   handleCustomColumnSelect?: (date: string, rowIds: string[]) => void;
+  customSolveSelectedCells?: SelectedScheduleCell[];
+  handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   return (
     <TableRow
@@ -72,23 +77,47 @@ export default function DatesHeaderRow({
         rowIds={rowIds}
         selectionScope={selectionScope}
         handleSelectAll={handleSelectAll}
+        isCustomSolveModeActive={isCustomSolveModeActive}
+        customSolveSelectedCells={customSolveSelectedCells}
+        handleCustomSelectAll={handleCustomSelectAll}
       />
-      {periodDates.map((pDate, dateIndex) => (
-        <DateHeaderCell
-          key={dateIndex}
-          periodDate={pDate}
-          teamWithMembership={teamWithMembership}
-          lng={lng}
-          isSelectionActive={isSelectionActive}
-          selectionState={selectionState}
-          rowIds={rowIds}
-          selectionScope={selectionScope}
-          onColumnSelect={handleColumnSelect}
-          assignments={assignments}
-          isCustomSolveModeActive={isCustomSolveModeActive}
-          onCustomColumnSelect={handleCustomColumnSelect}
-        />
-      ))}
+      {periodDates.map((pDate, dateIndex) => {
+        const dateStr = pDate.date.format("YYYY-MM-DD");
+        const isCustomColumnSelected =
+          isCustomSolveModeActive &&
+          rowIds.length > 0 &&
+          rowIds.every((rowId) =>
+            customSolveSelectedCells.some(
+              (c) => c.rowId === rowId && c.date === dateStr,
+            ),
+          );
+        const isCustomColumnIndeterminate =
+          isCustomSolveModeActive &&
+          !isCustomColumnSelected &&
+          rowIds.some((rowId) =>
+            customSolveSelectedCells.some(
+              (c) => c.rowId === rowId && c.date === dateStr,
+            ),
+          );
+        return (
+          <DateHeaderCell
+            key={dateIndex}
+            periodDate={pDate}
+            teamWithMembership={teamWithMembership}
+            lng={lng}
+            isSelectionActive={isSelectionActive}
+            selectionState={selectionState}
+            rowIds={rowIds}
+            selectionScope={selectionScope}
+            onColumnSelect={handleColumnSelect}
+            assignments={assignments}
+            isCustomSolveModeActive={isCustomSolveModeActive}
+            onCustomColumnSelect={handleCustomColumnSelect}
+            isCustomColumnSelected={isCustomColumnSelected}
+            isCustomColumnIndeterminate={isCustomColumnIndeterminate}
+          />
+        );
+      })}
     </TableRow>
   );
 }

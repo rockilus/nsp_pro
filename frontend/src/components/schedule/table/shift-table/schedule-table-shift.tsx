@@ -67,6 +67,7 @@ export default function ScheduleTableShift({
   handleCustomRowSelect,
   handleCustomColumnSelect,
   handleCustomCellSelect,
+  handleCustomSelectAll,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -108,6 +109,7 @@ export default function ScheduleTableShift({
     date: string,
     scheduleId: string | null,
   ) => void;
+  handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(shifts, assignments);
 
@@ -152,6 +154,8 @@ export default function ScheduleTableShift({
             assignments={assignments}
             isCustomSolveModeActive={isCustomSolveModeActive}
             handleCustomColumnSelect={handleCustomColumnSelect}
+            customSolveSelectedCells={customSolveSelectedCells}
+            handleCustomSelectAll={handleCustomSelectAll}
           />
           <RoleBased
             role={teamWithMembership.membership.role}
