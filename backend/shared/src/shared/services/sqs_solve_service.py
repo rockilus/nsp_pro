@@ -12,6 +12,8 @@ from ..schemas.core.solve_task_status import (
 )
 from .queue_service import QueueService
 
+# pylint: disable=too-many-arguments
+
 
 class SQSSolveService(QueueService[SQSSolveMessage, SQSSolveQueueMessage]):
     """Service for managing solve requests via SQS."""
@@ -27,9 +29,7 @@ class SQSSolveService(QueueService[SQSSolveMessage, SQSSolveQueueMessage]):
         """
         return message.to_dict()
 
-    def _deserialize_message(
-        self, raw_message: Dict[str, Any]
-    ) -> SQSSolveQueueMessage:
+    def _deserialize_message(self, raw_message: Dict[str, Any]) -> SQSSolveQueueMessage:
         """Deserialize an SQS message to a solve queue message.
 
         Args:
