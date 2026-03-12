@@ -1,4 +1,5 @@
 import React from "react";
+import { Sparkle } from "lucide-react";
 // MUI
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import Checkbox from "@mui/material/Checkbox";
@@ -37,6 +38,9 @@ export default function WorkerCell({
   selectionState,
   handleCellSelect,
   handleAssignmentSelect,
+  isCustomSolveModeActive = false,
+  isCustomCellSelected = false,
+  onCustomCellSelect,
 }: {
   periodDate: periodDateT;
   worker: WorkerT;
@@ -54,6 +58,9 @@ export default function WorkerCell({
     scheduleId: string | null,
   ) => void;
   handleAssignmentSelect: (assignmentId: string) => void;
+  isCustomSolveModeActive?: boolean;
+  isCustomCellSelected?: boolean;
+  onCustomCellSelect?: () => void;
 }) {
   const isSelectionActive = !!selectionState?.isActive;
   const dateStr = periodDate.date.format("YYYY-MM-DD");
@@ -176,6 +183,29 @@ export default function WorkerCell({
             <AddCircleIcon />
           </IconButton>
         </RoleBased>
+      )}
+      {isCustomSolveModeActive && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onCustomCellSelect?.();
+          }}
+          data-testid={`worker-cell-custom-select-${worker.id}-${dateStr}`}
+          style={{
+            position: "absolute",
+            top: 1,
+            right: 1,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+            lineHeight: 1,
+            color: isCustomCellSelected ? "#1976d2" : "#9e9e9e",
+            zIndex: 11,
+          }}
+        >
+          <Sparkle size={10} />
+        </button>
       )}
     </TableCell>
   );

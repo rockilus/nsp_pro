@@ -11,13 +11,13 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 // MUI Icons
 import CancelIcon from "@mui/icons-material/Cancel";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+// lucide-react
+import { Sparkle } from "lucide-react";
 // Components
 import ScheduleDialogValidate from "../schedule-options/schedule-dialog-validate";
 import { GetStatusLabel } from "../../data-display/get-status-label";
@@ -29,11 +29,15 @@ import {
   SolveTaskStatusResponseT,
   ScheduleSolveStatus,
   SolveScope,
+  SolveScopeType,
 } from "../../../types/solveTaskStatus";
 import { BreachT } from "../../../types/breach";
 import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
-import { ScheduleSelectionState } from "../../../types/scheduleSelection";
+import {
+  ScheduleSelectionState,
+  SelectedScheduleCell,
+} from "../../../types/scheduleSelection";
 //Constants
 import { SolveStatusColors } from "../../../constants/constants";
 import { TeamWithMembership } from "@/types/team";
@@ -42,6 +46,13 @@ import { useSqsSolve } from "../../../app/lib/contexts/SqsSolveContext";
 // Hooks
 import { useCampaignSolveStatus } from "../../../app/lib/hooks/useCampaignSolveStatus";
 
+const SCOPE_LABEL_MAP: Record<SolveScopeType, string> = {
+  FULL: "solve_full_campaign",
+  DUTIES: "solve_duties",
+  NON_DUTIES: "solve_non_duties",
+  CUSTOM: "solve_custom",
+};
+
 export default function CampaignInfo({
   lng,
   teamWithMembership,
@@ -49,11 +60,14 @@ export default function CampaignInfo({
   breaches,
   handleValidateSchedule,
   useSqsWorkflow = true, // Feature flag for SQS workflow
-  onSqsSolveComplete, // Add this to destructuring
+  onSqsSolveComplete,
   workers = [],
   shifts = [],
   selectionState,
   groupBy = "worker",
+  selectedSolveScope = "FULL",
+  onSolveOptionChange,
+  customSolveSelectedCells = [],
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -66,6 +80,9 @@ export default function CampaignInfo({
   shifts?: ShiftT[];
   selectionState?: ScheduleSelectionState;
   groupBy?: "worker" | "shift";
+  selectedSolveScope?: SolveScopeType;
+  onSolveOptionChange?: (scope: SolveScopeType) => void;
+  customSolveSelectedCells?: SelectedScheduleCell[];
 }) {
   const { t } = useTranslation(lng, "schedule-page");
   const {
@@ -139,11 +156,7 @@ export default function CampaignInfo({
     scopeType: "FULL" | "DUTIES" | "NON_DUTIES" | "CUSTOM",
   ) => {
     handleMenuClose();
-    if (scopeType === "CUSTOM") {
-      setCustomDialogOpen(true);
-    } else {
-      handleSolve({ scope_type: scopeType });
-    }
+    onSolveOptionChange?.(scopeType);
   };
 
   const handleCustomConfirm = (scope: SolveScope) => {
@@ -331,15 +344,31 @@ export default function CampaignInfo({
                   >
                     <Button
                       data-testid="solve-button"
-                      onClick={() => handleSolve({ scope_type: "FULL" })}
+                      onClick={() => {
+                        if (selectedSolveScope === "CUSTOM") {
+                          setCustomDialogOpen(true);
+                        } else {
+                          handleSolve({ scope_type: selectedSolveScope });
+                        }
+                      }}
                       sx={{
                         textTransform: "none",
                         paddingLeft: 1.5,
                         paddingRight: 1.5,
                         width: isActiveSolve ? "120px" : undefined,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
                       }}
                     >
-                      {isActiveSolve ? animatedSolve : t("solve")}
+                      {isActiveSolve ? (
+                        animatedSolve
+                      ) : (
+                        <>
+                          <Sparkle size={25} />
+                          {t(SCOPE_LABEL_MAP[selectedSolveScope])}
+                        </>
+                      )}
                     </Button>
                     <Button
                       data-testid="solve-dropdown-button"
@@ -374,9 +403,6 @@ export default function CampaignInfo({
                   <ListItemText>{t("solve_non_duties")}</ListItemText>
                 </MenuItem>
                 <MenuItem onClick={() => handleMenuItemClick("CUSTOM")}>
-                  <ListItemIcon>
-                    <AutoAwesomeIcon fontSize="small" />
-                  </ListItemIcon>
                   <ListItemText>{t("solve_custom")}</ListItemText>
                 </MenuItem>
               </Menu>
@@ -478,9 +504,7 @@ export default function CampaignInfo({
         onConfirm={handleCustomConfirm}
         workers={workers}
         shifts={shifts}
-        campaignStartDate={scheduleCampaign.startDate}
-        campaignEndDate={scheduleCampaign.endDate}
-        initialSelection={selectionState}
+        customSolveSelectedCells={customSolveSelectedCells}
         groupBy={groupBy}
         lng={lng}
       />

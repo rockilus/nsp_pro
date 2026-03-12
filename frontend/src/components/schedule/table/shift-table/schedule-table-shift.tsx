@@ -33,6 +33,7 @@ import { RecurrenceRuleT } from "@/types/recurrence";
 import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
 import {
   ScheduleSelectionState,
+  SelectedScheduleCell,
   SelectionScope,
 } from "../../../../types/scheduleSelection";
 
@@ -61,6 +62,11 @@ export default function ScheduleTableShift({
   handleRowSelect,
   handleColumnSelect,
   handleSelectAll,
+  isCustomSolveModeActive = false,
+  customSolveSelectedCells = [],
+  handleCustomRowSelect,
+  handleCustomColumnSelect,
+  handleCustomCellSelect,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -93,6 +99,15 @@ export default function ScheduleTableShift({
     scope: SelectionScope,
   ) => void;
   handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
+  isCustomSolveModeActive?: boolean;
+  customSolveSelectedCells?: SelectedScheduleCell[];
+  handleCustomRowSelect?: (rowId: string) => void;
+  handleCustomColumnSelect?: (date: string, rowIds: string[]) => void;
+  handleCustomCellSelect?: (
+    rowId: string,
+    date: string,
+    scheduleId: string | null,
+  ) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(shifts, assignments);
 
@@ -135,6 +150,8 @@ export default function ScheduleTableShift({
             handleColumnSelect={handleColumnSelect}
             handleSelectAll={handleSelectAll}
             assignments={assignments}
+            isCustomSolveModeActive={isCustomSolveModeActive}
+            handleCustomColumnSelect={handleCustomColumnSelect}
           />
           <RoleBased
             role={teamWithMembership.membership.role}
@@ -173,6 +190,10 @@ export default function ScheduleTableShift({
               handleCellSelect={handleCellSelect}
               handleAssignmentSelect={handleAssignmentSelect}
               handleRowSelect={handleRowSelect}
+              isCustomSolveModeActive={isCustomSolveModeActive}
+              customSolveSelectedCells={customSolveSelectedCells}
+              handleCustomRowSelect={handleCustomRowSelect}
+              handleCustomCellSelect={handleCustomCellSelect}
             />
           ))}
         </TableBody>

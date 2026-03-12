@@ -112,6 +112,7 @@ import {
   SelectedScheduleCell,
   SelectionScope,
 } from "../../types/scheduleSelection";
+import { SolveScopeType } from "../../types/solveTaskStatus";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -338,6 +339,22 @@ export default function ScheduleTab({
   });
   const [selectionScope, setSelectionScope] = useState<SelectionScope>("view");
 
+  // Custom solve mode state
+  const [selectedSolveScope, setSelectedSolveScope] =
+    useState<SolveScopeType>("FULL");
+  const [customSolveSelectedCells, setCustomSolveSelectedCells] = useState<
+    SelectedScheduleCell[]
+  >([]);
+
+  const isCustomSolveModeActive = selectedSolveScope === "CUSTOM";
+
+  // Clear custom solve cells when leaving CUSTOM scope
+  useEffect(() => {
+    if (selectedSolveScope !== "CUSTOM") {
+      setCustomSolveSelectedCells([]);
+    }
+  }, [selectedSolveScope]);
+
   const isMobile = useIsMobile();
 
   const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {
@@ -362,6 +379,86 @@ export default function ScheduleTab({
     setDialogType(ScheduleItemType.REQUEST);
     setDialogData({ request });
   };
+
+  //////////////////////////
+  // Selection Mode Handlers
+  //////////////////////////
+
+  const handleSolveOptionChange = useCallback((scope: SolveScopeType) => {
+    setSelectedSolveScope(scope);
+  }, []);
+
+  const handleCustomRowSelect = useCallback(
+    (rowId: string) => {
+      if (!scheduleCampaign) return;
+      const campaignDates = buildDates(
+        scheduleCampaign.startDate,
+        scheduleCampaign.endDate,
+      );
+      setCustomSolveSelectedCells((prev) => {
+        const isFullySelected = campaignDates.every((pd) =>
+          prev.some(
+            (c) => c.rowId === rowId && c.date === pd.date.format("YYYY-MM-DD"),
+          ),
+        );
+        if (isFullySelected) {
+          return prev.filter((c) => c.rowId !== rowId);
+        }
+        const existingKeys = new Set(prev.map((c) => `${c.rowId}-${c.date}`));
+        const toAdd: SelectedScheduleCell[] = campaignDates
+          .filter(
+            (pd) =>
+              !existingKeys.has(`${rowId}-${pd.date.format("YYYY-MM-DD")}`),
+          )
+          .map((pd) => ({
+            rowId,
+            date: pd.date.format("YYYY-MM-DD"),
+            scheduleId: pd.scheduleId,
+          }));
+        return [...prev, ...toAdd];
+      });
+    },
+    [scheduleCampaign, buildDates],
+  );
+
+  const handleCustomColumnSelect = useCallback(
+    (date: string, rowIds: string[]) => {
+      if (!scheduleCampaign) return;
+      const scheduleId =
+        buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate).find(
+          (pd) => pd.date.format("YYYY-MM-DD") === date,
+        )?.scheduleId ?? null;
+      setCustomSolveSelectedCells((prev) => {
+        const rowIdSet = new Set(rowIds);
+        const isFullySelected = rowIds.every((rowId) =>
+          prev.some((c) => c.rowId === rowId && c.date === date),
+        );
+        if (isFullySelected) {
+          return prev.filter(
+            (c) => !(rowIdSet.has(c.rowId) && c.date === date),
+          );
+        }
+        const existingKeys = new Set(prev.map((c) => `${c.rowId}-${c.date}`));
+        const toAdd: SelectedScheduleCell[] = rowIds
+          .filter((rowId) => !existingKeys.has(`${rowId}-${date}`))
+          .map((rowId) => ({ rowId, date, scheduleId }));
+        return [...prev, ...toAdd];
+      });
+    },
+    [scheduleCampaign, buildDates],
+  );
+
+  const handleCustomCellSelect = useCallback(
+    (rowId: string, date: string, scheduleId: string | null) => {
+      setCustomSolveSelectedCells((prev) => {
+        const exists = prev.some((c) => c.rowId === rowId && c.date === date);
+        return exists
+          ? prev.filter((c) => !(c.rowId === rowId && c.date === date))
+          : [...prev, { rowId, date, scheduleId }];
+      });
+    },
+    [],
+  );
 
   //////////////////////////
   // Selection Mode Handlers
@@ -1349,6 +1446,9 @@ export default function ScheduleTab({
               workers={workers.filter((w) => !w.deleted)}
               shifts={shifts.filter((s) => !s.deleted)}
               selectionState={selectionState}
+              selectedSolveScope={selectedSolveScope}
+              onSolveOptionChange={handleSolveOptionChange}
+              customSolveSelectedCells={customSolveSelectedCells}
             />
             {selectionState.isActive &&
               teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
@@ -1413,6 +1513,11 @@ export default function ScheduleTab({
               handleRowSelect={handleRowSelect}
               handleColumnSelect={handleColumnSelect}
               handleSelectAll={handleSelectAll}
+              isCustomSolveModeActive={isCustomSolveModeActive}
+              customSolveSelectedCells={customSolveSelectedCells}
+              handleCustomRowSelect={handleCustomRowSelect}
+              handleCustomColumnSelect={handleCustomColumnSelect}
+              handleCustomCellSelect={handleCustomCellSelect}
             />
           )}
         </div>

@@ -23,6 +23,7 @@ import { RequestT } from "../../../../types/request";
 import { TeamWithMembership } from "@/types/team";
 import {
   ScheduleSelectionState,
+  SelectedScheduleCell,
   SelectionScope,
 } from "@/types/scheduleSelection";
 
@@ -44,6 +45,10 @@ export default function WorkerTableRow({
   handleCellSelect,
   handleAssignmentSelect,
   handleRowSelect,
+  isCustomSolveModeActive = false,
+  customSolveSelectedCells = [],
+  handleCustomRowSelect,
+  handleCustomCellSelect,
 }: {
   lng: string;
   shifts: ShiftT[];
@@ -66,7 +71,23 @@ export default function WorkerTableRow({
   ) => void;
   handleAssignmentSelect: (assignmentId: string) => void;
   handleRowSelect: (rowId: string, scope: SelectionScope) => void;
+  isCustomSolveModeActive?: boolean;
+  customSolveSelectedCells?: SelectedScheduleCell[];
+  handleCustomRowSelect?: (rowId: string) => void;
+  handleCustomCellSelect?: (
+    rowId: string,
+    date: string,
+    scheduleId: string | null,
+  ) => void;
 }) {
+  // Derive custom solve row state
+  const workerCustomCells = customSolveSelectedCells.filter(
+    (c) => c.rowId === worker.id,
+  );
+  const isRowCustomSelected =
+    isCustomSolveModeActive && workerCustomCells.length > 0;
+  const isRowCustomIndeterminate = false; // row sparkle is checked when any cell selected
+
   return (
     <TableRow>
       <WorkerRowHeaderCell
@@ -113,6 +134,10 @@ export default function WorkerTableRow({
         onRowSelect={() =>
           handleRowSelect?.(worker.id, selectionScope ?? "view")
         }
+        isCustomSolveModeActive={isCustomSolveModeActive}
+        isRowCustomSelected={isRowCustomSelected}
+        isRowCustomIndeterminate={isRowCustomIndeterminate}
+        onCustomRowSelect={() => handleCustomRowSelect?.(worker.id)}
       />
       {periodDates.map((pDate, dateIndex) => {
         const scheduleCellDataKey = generateOwnerIdDateKey(
@@ -135,6 +160,19 @@ export default function WorkerTableRow({
             selectionState={selectionState}
             handleCellSelect={handleCellSelect}
             handleAssignmentSelect={handleAssignmentSelect}
+            isCustomSolveModeActive={isCustomSolveModeActive}
+            isCustomCellSelected={customSolveSelectedCells.some(
+              (c) =>
+                c.rowId === worker.id &&
+                c.date === pDate.date.format("YYYY-MM-DD"),
+            )}
+            onCustomCellSelect={() =>
+              handleCustomCellSelect?.(
+                worker.id,
+                pDate.date.format("YYYY-MM-DD"),
+                pDate.scheduleId,
+              )
+            }
           />
         );
       })}

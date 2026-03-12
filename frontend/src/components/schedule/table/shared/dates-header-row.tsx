@@ -32,6 +32,8 @@ export default function DatesHeaderRow({
   handleColumnSelect,
   handleSelectAll,
   assignments,
+  isCustomSolveModeActive = false,
+  handleCustomColumnSelect,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -49,6 +51,8 @@ export default function DatesHeaderRow({
   ) => void;
   handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
   assignments: AssignmentT[];
+  isCustomSolveModeActive?: boolean;
+  handleCustomColumnSelect?: (date: string, rowIds: string[]) => void;
 }) {
   return (
     <TableRow
@@ -81,6 +85,8 @@ export default function DatesHeaderRow({
           selectionScope={selectionScope}
           onColumnSelect={handleColumnSelect}
           assignments={assignments}
+          isCustomSolveModeActive={isCustomSolveModeActive}
+          onCustomColumnSelect={handleCustomColumnSelect}
         />
       ))}
     </TableRow>

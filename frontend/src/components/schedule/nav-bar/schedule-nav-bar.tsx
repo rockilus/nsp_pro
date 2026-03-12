@@ -16,10 +16,14 @@ import {
 } from "../../../types/schedule";
 import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
 import { SolveTaskStatusResponseT } from "../../../types/solveTaskStatus";
+import { SolveScopeType } from "../../../types/solveTaskStatus";
 import { BreachT } from "../../../types/breach";
 import { WorkerT } from "../../../types/worker";
 import { ShiftT } from "../../../types/shift";
-import { ScheduleSelectionState } from "../../../types/scheduleSelection";
+import {
+  ScheduleSelectionState,
+  SelectedScheduleCell,
+} from "../../../types/scheduleSelection";
 
 export default function ScheduleNavBar({
   lng,
@@ -42,6 +46,9 @@ export default function ScheduleNavBar({
   workers = [],
   shifts = [],
   selectionState,
+  selectedSolveScope = "FULL",
+  onSolveOptionChange,
+  customSolveSelectedCells = [],
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -67,6 +74,9 @@ export default function ScheduleNavBar({
   workers?: WorkerT[];
   shifts?: ShiftT[];
   selectionState?: ScheduleSelectionState;
+  selectedSolveScope?: SolveScopeType;
+  onSolveOptionChange?: (scope: SolveScopeType) => void;
+  customSolveSelectedCells?: SelectedScheduleCell[];
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -129,6 +139,9 @@ export default function ScheduleNavBar({
               shifts={shifts}
               selectionState={selectionState}
               groupBy={scheduleViewSettings.groupBy}
+              selectedSolveScope={selectedSolveScope}
+              onSolveOptionChange={onSolveOptionChange}
+              customSolveSelectedCells={customSolveSelectedCells}
             />
           ) : (
             <div

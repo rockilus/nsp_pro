@@ -8,6 +8,8 @@ import Tooltip from "@mui/material/Tooltip";
 import { useTranslation } from "../../../../app/i18n/client";
 // Components
 import { RoleBased } from "../../../access/role-based";
+// lucide-react
+import { Sparkle } from "lucide-react";
 // Styles
 import "./date-header-cell.css";
 // Types
@@ -76,6 +78,8 @@ export default function DateHeaderCell({
   selectionScope,
   onColumnSelect,
   assignments,
+  isCustomSolveModeActive = false,
+  onCustomColumnSelect,
 }: {
   periodDate: periodDateT;
   teamWithMembership: TeamWithMembership;
@@ -90,6 +94,8 @@ export default function DateHeaderCell({
     scope: SelectionScope,
   ) => void;
   assignments?: AssignmentT[];
+  isCustomSolveModeActive?: boolean;
+  onCustomColumnSelect?: (date: string, rowIds: string[]) => void;
 }) {
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
@@ -169,6 +175,28 @@ export default function DateHeaderCell({
             data-testid={`date-column-checkbox-${dateStr}`}
             sx={{ padding: "2px", display: "block", margin: "0 auto" }}
           />
+        )}
+        {isCustomSolveModeActive && (
+          <Tooltip title="Select column for custom solve">
+            <button
+              data-testid={`date-column-sparkle-${dateStr}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onCustomColumnSelect?.(dateStr, rowIds ?? []);
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "block",
+                margin: "0 auto",
+                padding: "2px",
+                color: "#1976d2",
+              }}
+            >
+              <Sparkle size={14} />
+            </button>
+          </Tooltip>
         )}
       </div>
     </TableCell>
