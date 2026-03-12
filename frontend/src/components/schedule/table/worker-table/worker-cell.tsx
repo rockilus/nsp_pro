@@ -41,6 +41,7 @@ export default function WorkerCell({
   isCustomSolveModeActive = false,
   isCustomCellSelected = false,
   onCustomCellSelect,
+  isDateInCampaign = true,
 }: {
   periodDate: periodDateT;
   worker: WorkerT;
@@ -61,6 +62,7 @@ export default function WorkerCell({
   isCustomSolveModeActive?: boolean;
   isCustomCellSelected?: boolean;
   onCustomCellSelect?: () => void;
+  isDateInCampaign?: boolean;
 }) {
   const isSelectionActive = !!selectionState?.isActive;
   const dateStr = periodDate.date.format("YYYY-MM-DD");
@@ -184,7 +186,7 @@ export default function WorkerCell({
           </IconButton>
         </RoleBased>
       )}
-      {isCustomSolveModeActive && (
+      {isCustomSolveModeActive && isDateInCampaign && (
         <button
           onClick={(e) => {
             e.stopPropagation();

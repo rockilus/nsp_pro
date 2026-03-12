@@ -82,6 +82,7 @@ export default function DateHeaderCell({
   onCustomColumnSelect,
   isCustomColumnSelected = false,
   isCustomColumnIndeterminate = false,
+  isDateInCampaign = true,
 }: {
   periodDate: periodDateT;
   teamWithMembership: TeamWithMembership;
@@ -100,6 +101,7 @@ export default function DateHeaderCell({
   onCustomColumnSelect?: (date: string, rowIds: string[]) => void;
   isCustomColumnSelected?: boolean;
   isCustomColumnIndeterminate?: boolean;
+  isDateInCampaign?: boolean;
 }) {
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
@@ -180,7 +182,7 @@ export default function DateHeaderCell({
             sx={{ padding: "2px", display: "block", margin: "0 auto" }}
           />
         )}
-        {isCustomSolveModeActive && (
+        {isCustomSolveModeActive && isDateInCampaign && (
           <Tooltip title="Select column for custom solve">
             <button
               data-testid={`date-column-sparkle-${dateStr}`}

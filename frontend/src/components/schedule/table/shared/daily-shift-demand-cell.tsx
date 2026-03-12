@@ -21,6 +21,7 @@ export default function DailyShiftDemandCell({
   isCustomSolveModeActive = false,
   isCustomCellSelected = false,
   onCustomCellSelect,
+  isDateInCampaign = true,
 }: {
   scheduleCellData: ScheduleCellDataT;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
@@ -29,6 +30,7 @@ export default function DailyShiftDemandCell({
   isCustomSolveModeActive?: boolean;
   isCustomCellSelected?: boolean;
   onCustomCellSelect?: () => void;
+  isDateInCampaign?: boolean;
 }) {
   const assignmentsCount = scheduleCellData.assignmentsData.length;
   const shiftStaffingTotal =
@@ -75,7 +77,7 @@ export default function DailyShiftDemandCell({
           <span className="dsd-stats dsd-stats-slash">/</span>
           <span className="dsd-stats dsd-stats-target">{countTarget}</span>
         </div>
-        {isCustomSolveModeActive && (
+        {isCustomSolveModeActive && isDateInCampaign && (
           <button
             onClick={(e) => {
               e.stopPropagation();

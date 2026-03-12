@@ -272,68 +272,80 @@ export default function ExportCell({
   };
 
   const isCustomAllSelected = useMemo(() => {
-    if (!isCustomSolveModeActive || !rowIds?.length || !periodDates.length)
+    if (!isCustomSolveModeActive || !rowIds?.length || !scheduleCampaign)
       return false;
-    return rowIds.every((rowId) =>
-      periodDates.every((pd) =>
-        customSolveSelectedCells.some(
-          (c) => c.rowId === rowId && c.date === pd.date.format("YYYY-MM-DD"),
-        ),
-      ),
-    );
-  }, [isCustomSolveModeActive, rowIds, periodDates, customSolveSelectedCells]);
-
-  const isCustomSomeSelected = useMemo(() => {
-    if (!isCustomSolveModeActive || !rowIds?.length || !periodDates.length)
-      return false;
-    return (
-      !isCustomAllSelected &&
-      rowIds.some((rowId) =>
-        periodDates.some((pd) =>
+    let current = scheduleCampaign.startDate.startOf("day");
+    const end = scheduleCampaign.endDate.startOf("day");
+    while (current.isBefore(end) || current.isSame(end, "day")) {
+      const date = current.format("YYYY-MM-DD");
+      if (
+        !rowIds.every((rowId) =>
           customSolveSelectedCells.some(
-            (c) => c.rowId === rowId && c.date === pd.date.format("YYYY-MM-DD"),
+            (c) => c.rowId === rowId && c.date === date,
           ),
-        ),
+        )
       )
-    );
+        return false;
+      current = current.add(1, "day");
+    }
+    return true;
   }, [
     isCustomSolveModeActive,
     rowIds,
-    periodDates,
+    scheduleCampaign,
+    customSolveSelectedCells,
+  ]);
+
+  const isCustomSomeSelected = useMemo(() => {
+    if (!isCustomSolveModeActive || !rowIds?.length || !scheduleCampaign)
+      return false;
+    if (isCustomAllSelected) return false;
+    return customSolveSelectedCells.some((c) => rowIds.includes(c.rowId));
+  }, [
+    isCustomSolveModeActive,
+    rowIds,
+    scheduleCampaign,
     customSolveSelectedCells,
     isCustomAllSelected,
   ]);
 
   const handleCustomSelectAllChange = () => {
+    if (!scheduleCampaign) return;
     if (isCustomAllSelected) {
-      // Remove all current-view cells from selection
-      const viewKeys = new Set(
-        rowIds.flatMap((rowId) =>
-          periodDates.map((pd) => `${rowId}-${pd.date.format("YYYY-MM-DD")}`),
-        ),
-      );
+      // Remove all campaign cells from selection
+      const campaignKeys = new Set<string>();
+      let current = scheduleCampaign.startDate.startOf("day");
+      const end = scheduleCampaign.endDate.startOf("day");
+      while (current.isBefore(end) || current.isSame(end, "day")) {
+        const date = current.format("YYYY-MM-DD");
+        rowIds.forEach((rowId) => campaignKeys.add(`${rowId}-${date}`));
+        current = current.add(1, "day");
+      }
       handleCustomSelectAll?.(
         customSolveSelectedCells.filter(
-          (c) => !viewKeys.has(`${c.rowId}-${c.date}`),
+          (c) => !campaignKeys.has(`${c.rowId}-${c.date}`),
         ),
       );
     } else {
-      // Add all current-view cells
+      // Add all campaign cells not yet selected
       const existingKeys = new Set(
         customSolveSelectedCells.map((c) => `${c.rowId}-${c.date}`),
       );
-      const toAdd = rowIds.flatMap((rowId) =>
-        periodDates
-          .filter(
-            (pd) =>
-              !existingKeys.has(`${rowId}-${pd.date.format("YYYY-MM-DD")}`),
-          )
-          .map((pd) => ({
-            rowId,
-            date: pd.date.format("YYYY-MM-DD"),
-            scheduleId: pd.scheduleId,
-          })),
-      );
+      const toAdd: SelectedScheduleCell[] = [];
+      let current = scheduleCampaign.startDate.startOf("day");
+      const end = scheduleCampaign.endDate.startOf("day");
+      while (current.isBefore(end) || current.isSame(end, "day")) {
+        const date = current.format("YYYY-MM-DD");
+        const pd = periodDates.find(
+          (p) => p.date.format("YYYY-MM-DD") === date,
+        );
+        rowIds.forEach((rowId) => {
+          if (!existingKeys.has(`${rowId}-${date}`)) {
+            toAdd.push({ rowId, date, scheduleId: pd?.scheduleId ?? null });
+          }
+        });
+        current = current.add(1, "day");
+      }
       handleCustomSelectAll?.([...customSolveSelectedCells, ...toAdd]);
     }
   };
@@ -434,7 +446,7 @@ export default function ExportCell({
           />
         )}
         {isCustomSolveModeActive && (
-          <Tooltip title="Select/deselect all visible cells">
+          <Tooltip title="Select/deselect entire campaign">
             <button
               data-testid="export-cell-custom-select-all"
               onClick={(e) => {

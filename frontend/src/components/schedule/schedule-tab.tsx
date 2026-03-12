@@ -107,6 +107,7 @@ import {
 } from "../../app/lib/hooks/useShiftDemands";
 import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
 import { getDefaultScheduleViewSettings } from "../../app/lib/utils/scheduleViewSettingsUtils";
+import { useGenerationSelection } from "../../app/lib/hooks/useGenerationSelection";
 import {
   ScheduleSelectionState,
   SelectedScheduleCell,
@@ -342,18 +343,10 @@ export default function ScheduleTab({
   // Custom solve mode state
   const [selectedSolveScope, setSelectedSolveScope] =
     useState<SolveScopeType>("FULL");
-  const [customSolveSelectedCells, setCustomSolveSelectedCells] = useState<
-    SelectedScheduleCell[]
-  >([]);
+  const [customSolveSelectedCells, setCustomSolveSelectedCells] =
+    useGenerationSelection(scheduleCampaign?.id ?? null);
 
   const isCustomSolveModeActive = selectedSolveScope === "CUSTOM";
-
-  // Clear custom solve cells when leaving CUSTOM scope
-  useEffect(() => {
-    if (selectedSolveScope !== "CUSTOM") {
-      setCustomSolveSelectedCells([]);
-    }
-  }, [selectedSolveScope]);
 
   const isMobile = useIsMobile();
 

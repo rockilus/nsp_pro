@@ -170,6 +170,12 @@ export default function ShiftTableRow({
                 pDate.scheduleId,
               )
             }
+            isDateInCampaign={
+              scheduleCampaign
+                ? !pDate.date.isBefore(scheduleCampaign.startDate, "day") &&
+                  !pDate.date.isAfter(scheduleCampaign.endDate, "day")
+                : false
+            }
           />
         );
       })}

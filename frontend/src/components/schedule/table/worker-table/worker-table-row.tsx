@@ -173,6 +173,12 @@ export default function WorkerTableRow({
                 pDate.scheduleId,
               )
             }
+            isDateInCampaign={
+              scheduleCampaign
+                ? !pDate.date.isBefore(scheduleCampaign.startDate, "day") &&
+                  !pDate.date.isAfter(scheduleCampaign.endDate, "day")
+                : false
+            }
           />
         );
       })}

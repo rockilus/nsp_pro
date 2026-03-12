@@ -115,6 +115,12 @@ export default function DatesHeaderRow({
             onCustomColumnSelect={handleCustomColumnSelect}
             isCustomColumnSelected={isCustomColumnSelected}
             isCustomColumnIndeterminate={isCustomColumnIndeterminate}
+            isDateInCampaign={
+              scheduleCampaign
+                ? !pDate.date.isBefore(scheduleCampaign.startDate, "day") &&
+                  !pDate.date.isAfter(scheduleCampaign.endDate, "day")
+                : false
+            }
           />
         );
       })}
