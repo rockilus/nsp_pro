@@ -86,8 +86,9 @@ export default function DailyShiftDemandCell({
             data-testid={`dsd-custom-select-${scheduleCellData.shiftDemandsData?.shiftDemand?.id}`}
             style={{
               position: "absolute",
-              top: 1,
-              right: 1,
+              bottom: 2,
+              left: "50%",
+              transform: "translateX(-50%)",
               background: "none",
               border: "none",
               cursor: "pointer",
@@ -97,7 +98,7 @@ export default function DailyShiftDemandCell({
             }}
           >
             <Sparkle
-              size={10}
+              size={14}
               fill={isCustomCellSelected ? "currentColor" : "none"}
             />
           </button>
