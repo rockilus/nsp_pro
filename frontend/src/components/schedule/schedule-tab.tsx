@@ -107,7 +107,10 @@ import {
 } from "../../app/lib/hooks/useShiftDemands";
 import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
 import { getDefaultScheduleViewSettings } from "../../app/lib/utils/scheduleViewSettingsUtils";
-import { useGenerationSelection } from "../../app/lib/hooks/useGenerationSelection";
+import {
+  useGenerationSelection,
+  clearGenerationSelection,
+} from "../../app/lib/hooks/useGenerationSelection";
 import {
   ScheduleSelectionState,
   SelectedScheduleCell,
@@ -340,11 +343,13 @@ export default function ScheduleTab({
   });
   const [selectionScope, setSelectionScope] = useState<SelectionScope>("view");
 
-  // Custom solve mode state
-  const [selectedSolveScope, setSelectedSolveScope] =
-    useState<SolveScopeType>("FULL");
-  const [customSolveSelectedCells, setCustomSolveSelectedCells] =
-    useGenerationSelection(scheduleCampaign?.id ?? null);
+  // Custom solve mode state - persisted alongside selected cells in localStorage
+  const [
+    customSolveSelectedCells,
+    setCustomSolveSelectedCells,
+    selectedSolveScope,
+    setSelectedSolveScope,
+  ] = useGenerationSelection(scheduleCampaign?.id ?? null);
 
   const isCustomSolveModeActive = selectedSolveScope === "CUSTOM";
 
@@ -377,9 +382,12 @@ export default function ScheduleTab({
   // Selection Mode Handlers
   //////////////////////////
 
-  const handleSolveOptionChange = useCallback((scope: SolveScopeType) => {
-    setSelectedSolveScope(scope);
-  }, []);
+  const handleSolveOptionChange = useCallback(
+    (scope: SolveScopeType) => {
+      setSelectedSolveScope(scope);
+    },
+    [setSelectedSolveScope],
+  );
 
   const handleCustomRowSelect = useCallback(
     (rowId: string) => {
@@ -411,7 +419,7 @@ export default function ScheduleTab({
         return [...prev, ...toAdd];
       });
     },
-    [scheduleCampaign, buildDates],
+    [scheduleCampaign, buildDates, setCustomSolveSelectedCells],
   );
 
   const handleCustomColumnSelect = useCallback(
@@ -438,7 +446,7 @@ export default function ScheduleTab({
         return [...prev, ...toAdd];
       });
     },
-    [scheduleCampaign, buildDates],
+    [scheduleCampaign, buildDates, setCustomSolveSelectedCells],
   );
 
   const handleCustomCellSelect = useCallback(
@@ -450,12 +458,15 @@ export default function ScheduleTab({
           : [...prev, { rowId, date, scheduleId }];
       });
     },
-    [],
+    [setCustomSolveSelectedCells],
   );
 
-  const handleCustomSelectAll = useCallback((cells: SelectedScheduleCell[]) => {
-    setCustomSolveSelectedCells(cells);
-  }, []);
+  const handleCustomSelectAll = useCallback(
+    (cells: SelectedScheduleCell[]) => {
+      setCustomSolveSelectedCells(cells);
+    },
+    [setCustomSolveSelectedCells],
+  );
 
   //////////////////////////
   // Selection Mode Handlers
@@ -720,6 +731,7 @@ export default function ScheduleTab({
         scheduleId,
         teamWithMembership.team.id,
       );
+      clearGenerationSelection(scheduleId);
       setScheduleCampaign(null);
       setSchedulesValidated([...schedulesValidated, newSchedule]);
       setBreaches([]);
