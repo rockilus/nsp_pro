@@ -1,11 +1,12 @@
 """SQS-based solve service for NSP Pro."""
 
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from loguru import logger
 
 from ..schemas.core.solve_task_status import (
+    SolveScope,
     SQSSolveMessage,
     SQSSolveQueueMessage,
 )
@@ -26,7 +27,9 @@ class SQSSolveService(QueueService[SQSSolveMessage, SQSSolveQueueMessage]):
         """
         return message.to_dict()
 
-    def _deserialize_message(self, raw_message: Dict[str, Any]) -> SQSSolveQueueMessage:
+    def _deserialize_message(
+        self, raw_message: Dict[str, Any]
+    ) -> SQSSolveQueueMessage:
         """Deserialize an SQS message to a solve queue message.
 
         Args:
@@ -50,6 +53,7 @@ class SQSSolveService(QueueService[SQSSolveMessage, SQSSolveQueueMessage]):
         team_id: str,
         user_id: str,
         timeout_seconds: int = 300,
+        solve_scope: Optional[SolveScope] = None,
     ) -> str:
         """Submit a solve request to SQS.
 
@@ -58,6 +62,7 @@ class SQSSolveService(QueueService[SQSSolveMessage, SQSSolveQueueMessage]):
             team_id: Team ID for authorization
             user_id: User ID who initiated the request
             timeout_seconds: Timeout for solve operation
+            solve_scope: Optional scope for partial campaign solve
 
         Returns:
             SQS message ID
@@ -72,6 +77,7 @@ class SQSSolveService(QueueService[SQSSolveMessage, SQSSolveQueueMessage]):
             user_id=user_id,
             timeout_seconds=timeout_seconds,
             created_at=datetime.now(timezone.utc),
+            solve_scope=solve_scope,
         )
 
         message_attributes = {

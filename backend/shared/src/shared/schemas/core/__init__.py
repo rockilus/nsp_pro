@@ -144,13 +144,17 @@ from shared.schemas.core.shift_demand_template import (
 )
 from shared.schemas.core.solve_task_status import (
     ResultModel,
+    ShiftDateCell,
     SolveRequest,
     SolveRequestStatus,
+    SolveScope,
+    SolveScopeType,
     SolverOutputMetadata,
     SolverOutputStatus,
     SolveTaskStatus,
     SQSSolveMessage,
     SQSSolveQueueMessage,
+    WorkerDateCell,
 )
 from shared.schemas.core.specialty import Specialty
 from shared.schemas.core.stats import (
@@ -334,13 +338,17 @@ __all__ = [
     "TaskServices",
     "Specialty",
     "ResultModel",
+    "ShiftDateCell",
     "SolveRequest",
     "SolveRequestStatus",
+    "SolveScope",
+    "SolveScopeType",
     "SolverOutputMetadata",
     "SolverOutputStatus",
     "SolveTaskStatus",
     "SQSSolveMessage",
     "SQSSolveQueueMessage",
+    "WorkerDateCell",
     "TeamWithMembership",
     "Team",
     "MembershipForTeamWithMembership",

@@ -3,25 +3,37 @@ import dayjs from "dayjs";
 import { useTranslation } from "../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
+import ButtonGroup from "@mui/material/ButtonGroup";
 import Chip from "@mui/material/Chip";
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
 // MUI Icons
 import CancelIcon from "@mui/icons-material/Cancel";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 // Components
 import ScheduleDialogValidate from "../schedule-options/schedule-dialog-validate";
 import { GetStatusLabel } from "../../data-display/get-status-label";
 import BreachesDialog from "../dialogs/breaches-dialog";
+import CustomSolveDialog from "./CustomSolveDialog";
 // Types
 import { ScheduleT } from "../../../types/schedule";
 import {
   SolveTaskStatusResponseT,
   ScheduleSolveStatus,
+  SolveScope,
 } from "../../../types/solveTaskStatus";
 import { BreachT } from "../../../types/breach";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
+import { ScheduleSelectionState } from "../../../types/scheduleSelection";
 //Constants
 import { SolveStatusColors } from "../../../constants/constants";
 import { TeamWithMembership } from "@/types/team";
@@ -38,6 +50,10 @@ export default function CampaignInfo({
   handleValidateSchedule,
   useSqsWorkflow = true, // Feature flag for SQS workflow
   onSqsSolveComplete, // Add this to destructuring
+  workers = [],
+  shifts = [],
+  selectionState,
+  groupBy = "worker",
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -46,6 +62,10 @@ export default function CampaignInfo({
   handleValidateSchedule: (scheduleId: string) => void;
   useSqsWorkflow?: boolean;
   onSqsSolveComplete?: (result: SolveTaskStatusResponseT) => void;
+  workers?: WorkerT[];
+  shifts?: ShiftT[];
+  selectionState?: ScheduleSelectionState;
+  groupBy?: "worker" | "shift";
 }) {
   const { t } = useTranslation(lng, "schedule-page");
   const {
@@ -67,6 +87,13 @@ export default function CampaignInfo({
   const [showErrorNotification, setShowErrorNotification] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
 
+  // Split button dropdown state
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const menuOpen = Boolean(menuAnchorEl);
+
+  // Custom solve dialog state
+  const [customDialogOpen, setCustomDialogOpen] = useState(false);
+
   // Handle SQS solve completion
   useEffect(() => {
     if (sqsState.status === "COMPLETED" && sqsState.result) {
@@ -85,12 +112,12 @@ export default function CampaignInfo({
     }
   }, [sqsState.lastError, sqsState.errorMessage]);
 
-  const handleSolve = async () => {
+  const handleSolve = async (solveScope?: SolveScope) => {
     try {
       await startSolve(
         scheduleCampaign.id,
         teamWithMembership.team.id,
-        undefined, // constraints
+        solveScope,
         onSqsSolveComplete, // Pass the completion callback
       );
     } catch (error) {
@@ -98,6 +125,30 @@ export default function CampaignInfo({
       setLastError((error as Error).message);
       setShowErrorNotification(true);
     }
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleMenuItemClick = (
+    scopeType: "FULL" | "DUTIES" | "NON_DUTIES" | "CUSTOM",
+  ) => {
+    handleMenuClose();
+    if (scopeType === "CUSTOM") {
+      setCustomDialogOpen(true);
+    } else {
+      handleSolve({ scope_type: scopeType });
+    }
+  };
+
+  const handleCustomConfirm = (scope: SolveScope) => {
+    setCustomDialogOpen(false);
+    handleSolve(scope);
   };
 
   const handleCancelSolve = async () => {
@@ -265,26 +316,71 @@ export default function CampaignInfo({
                 marginLeft: spaceBetween,
               }}
             >
-              <Tooltip title={t("solve_button_tooltip")}>
-                <Button
-                  data-testid="solve-button"
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSolve}
-                  disabled={isActiveSolve}
-                  sx={{
-                    textTransform: "none",
-                    paddingLeft: 0.2,
-                    paddingRight: 0.2,
-                    marginRight:
-                      useSqsWorkflow && isActiveSolve ? "4px" : spaceBetween,
-                    height: "35px",
-                    width: useSqsWorkflow && isActiveSolve ? "120px" : "65px",
-                  }}
-                >
-                  {isActiveSolve ? animatedSolve : t("solve")}
-                </Button>
+              {/* Split Generate button */}
+              <Tooltip title={isActiveSolve ? "" : t("solve_button_tooltip")}>
+                <span>
+                  <ButtonGroup
+                    variant="contained"
+                    color="primary"
+                    disabled={isActiveSolve}
+                    sx={{
+                      height: "35px",
+                      marginRight:
+                        useSqsWorkflow && isActiveSolve ? "4px" : spaceBetween,
+                    }}
+                  >
+                    <Button
+                      data-testid="solve-button"
+                      onClick={() => handleSolve({ scope_type: "FULL" })}
+                      sx={{
+                        textTransform: "none",
+                        paddingLeft: 1.5,
+                        paddingRight: 1.5,
+                        width: isActiveSolve ? "120px" : undefined,
+                      }}
+                    >
+                      {isActiveSolve ? animatedSolve : t("solve")}
+                    </Button>
+                    <Button
+                      data-testid="solve-dropdown-button"
+                      size="small"
+                      aria-controls={menuOpen ? "solve-menu" : undefined}
+                      aria-expanded={menuOpen ? "true" : undefined}
+                      aria-haspopup="menu"
+                      onClick={handleMenuOpen}
+                      sx={{ paddingLeft: 0, paddingRight: 0, minWidth: "28px" }}
+                    >
+                      <ArrowDropDownIcon />
+                    </Button>
+                  </ButtonGroup>
+                </span>
               </Tooltip>
+
+              {/* Dropdown menu */}
+              <Menu
+                id="solve-menu"
+                anchorEl={menuAnchorEl}
+                open={menuOpen}
+                onClose={handleMenuClose}
+                MenuListProps={{ "aria-labelledby": "solve-dropdown-button" }}
+              >
+                <MenuItem onClick={() => handleMenuItemClick("FULL")}>
+                  <ListItemText>{t("solve_full_campaign")}</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => handleMenuItemClick("DUTIES")}>
+                  <ListItemText>{t("solve_duties")}</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => handleMenuItemClick("NON_DUTIES")}>
+                  <ListItemText>{t("solve_non_duties")}</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={() => handleMenuItemClick("CUSTOM")}>
+                  <ListItemIcon>
+                    <AutoAwesomeIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>{t("solve_custom")}</ListItemText>
+                </MenuItem>
+              </Menu>
+
               {useSqsWorkflow && isActiveSolve && (
                 <Tooltip title={t("cancel_solve")}>
                   <IconButton
@@ -373,6 +469,20 @@ export default function CampaignInfo({
         breaches={breaches}
         open={breachesDialogOpen}
         onClose={() => setBreachesDialogOpen(false)}
+      />
+
+      {/* Custom solve dialog */}
+      <CustomSolveDialog
+        open={customDialogOpen}
+        onClose={() => setCustomDialogOpen(false)}
+        onConfirm={handleCustomConfirm}
+        workers={workers}
+        shifts={shifts}
+        campaignStartDate={scheduleCampaign.startDate}
+        campaignEndDate={scheduleCampaign.endDate}
+        initialSelection={selectionState}
+        groupBy={groupBy}
+        lng={lng}
       />
     </>
   );

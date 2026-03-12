@@ -10,6 +10,30 @@ dayjs.extend(utc);
 export interface SolveRequestT {
   schedule_id: string;
   team_id: string;
+  solve_scope?: SolveScope;
+}
+
+export type SolveScopeType = "FULL" | "DUTIES" | "NON_DUTIES" | "CUSTOM";
+
+export interface WorkerDateCell {
+  worker_id: string;
+  date: string; // ISO "YYYY-MM-DD"
+}
+
+export interface ShiftDateCell {
+  shift_id: string;
+  date: string; // ISO "YYYY-MM-DD"
+}
+
+export interface SolveScope {
+  scope_type: SolveScopeType;
+  worker_ids?: string[];
+  shift_ids?: string[];
+  dates?: string[];
+  /** Mutually exclusive with shift_cells */
+  worker_cells?: WorkerDateCell[];
+  /** Mutually exclusive with worker_cells */
+  shift_cells?: ShiftDateCell[];
 }
 
 export enum SolveRequestStatus {
@@ -50,7 +74,7 @@ export interface SolveTaskStatusResponseT {
 export const toResultModelT = (data: any): ResultModelT => {
   return {
     assignments: data.assignments.map((assignment: any) =>
-      toAssignmentT(assignment)
+      toAssignmentT(assignment),
     ),
     breaches: data.breaches.map((breach: any) => toBreachT(breach)),
     requests: data.requests.map((request: any) => toRequestT(request)),
@@ -58,7 +82,7 @@ export const toResultModelT = (data: any): ResultModelT => {
 };
 
 export const toSolveTaskStatusResponseT = (
-  data: any
+  data: any,
 ): SolveTaskStatusResponseT => {
   return {
     ...data,

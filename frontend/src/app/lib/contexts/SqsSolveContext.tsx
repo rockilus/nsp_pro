@@ -10,6 +10,7 @@ import { RequestT } from "@/types/request";
 import { ScheduleT } from "@/types/schedule";
 import {
   SolveRequestStatus,
+  SolveScope,
   SolveTaskStatusResponseT,
 } from "@/types/solveTaskStatus";
 import React, {
@@ -75,7 +76,7 @@ const initialState: SqsSolveState = {
 
 function sqsSolveReducer(
   state: SqsSolveState,
-  action: SqsSolveAction
+  action: SqsSolveAction,
 ): SqsSolveState {
   switch (action.type) {
     case "SOLVE_START":
@@ -160,8 +161,8 @@ interface SqsSolveContextType {
   startSolve: (
     scheduleId: string,
     teamId: string,
-    constraints?: string[],
-    onComplete?: (result: SolveTaskStatusResponseT) => void
+    solveScope?: SolveScope,
+    onComplete?: (result: SolveTaskStatusResponseT) => void,
   ) => Promise<void>;
   cancelSolve: () => Promise<void>;
   clearError: () => void;
@@ -170,7 +171,7 @@ interface SqsSolveContextType {
 }
 
 const SqsSolveContext = createContext<SqsSolveContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function useSqsSolve() {
@@ -233,7 +234,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
                   if (onCompleteCallbackRef.current) {
                     console.log(
                       "Calling onComplete callback with result:",
-                      result
+                      result,
                     );
                     onCompleteCallbackRef.current(result);
                   }
@@ -247,7 +248,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
                     payload: { error: error.message },
                   });
                 },
-              }
+              },
             );
 
             setPollingService(newPollingService);
@@ -276,7 +277,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
           completedAt: state.completedAt,
           errorMessage: state.errorMessage,
           result: state.result,
-        })
+        }),
       );
     } else {
       localStorage.removeItem("sqs-solve-state");
@@ -309,7 +310,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
         onError: (error: Error) => {
           dispatch({ type: "SOLVE_ERROR", payload: { error: error.message } });
         },
-      }
+      },
     );
 
     setPollingService(newPollingService);
@@ -328,8 +329,8 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
   const startSolve = async (
     scheduleId: string,
     teamId: string,
-    constraints?: string[],
-    onComplete?: (result: SolveTaskStatusResponseT) => void
+    solveScope?: SolveScope,
+    onComplete?: (result: SolveTaskStatusResponseT) => void,
   ) => {
     try {
       // Set the callback in the ref immediately
@@ -338,6 +339,7 @@ export function SqsSolveProvider({ children }: SqsSolveProviderProps) {
       const response = await startSolveApi({
         schedule_id: scheduleId,
         team_id: teamId,
+        solve_scope: solveScope,
       });
 
       dispatch({

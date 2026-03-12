@@ -17,6 +17,9 @@ import {
 import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
 import { SolveTaskStatusResponseT } from "../../../types/solveTaskStatus";
 import { BreachT } from "../../../types/breach";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
+import { ScheduleSelectionState } from "../../../types/scheduleSelection";
 
 export default function ScheduleNavBar({
   lng,
@@ -36,6 +39,9 @@ export default function ScheduleNavBar({
   useSqsWorkflow = false, // Feature flag for SQS workflow
   onSqsSolveComplete,
   onToggleSelectionMode,
+  workers = [],
+  shifts = [],
+  selectionState,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -58,6 +64,9 @@ export default function ScheduleNavBar({
   useSqsWorkflow?: boolean;
   onSqsSolveComplete?: (result: SolveTaskStatusResponseT) => void;
   onToggleSelectionMode?: () => void;
+  workers?: WorkerT[];
+  shifts?: ShiftT[];
+  selectionState?: ScheduleSelectionState;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -116,6 +125,10 @@ export default function ScheduleNavBar({
               handleValidateSchedule={handleValidateSchedule}
               useSqsWorkflow={useSqsWorkflow}
               onSqsSolveComplete={onSqsSolveComplete}
+              workers={workers}
+              shifts={shifts}
+              selectionState={selectionState}
+              groupBy={scheduleViewSettings.groupBy}
             />
           ) : (
             <div

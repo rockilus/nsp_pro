@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 import humps
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import BaseModel, Field, TypeAdapter, model_validator
 
 from shared.schemas.core.assignment import Assignment
 from shared.schemas.core.breach import Breach
@@ -28,9 +28,54 @@ class SolveStatus(str, Enum):
     TIMEOUT = "TIMEOUT"
 
 
+class SolveScopeType(str, Enum):
+    """Scope type for partial campaign solve."""
+
+    FULL = "FULL"
+    DUTIES = "DUTIES"
+    NON_DUTIES = "NON_DUTIES"
+    CUSTOM = "CUSTOM"
+
+
+class WorkerDateCell(BaseModel):
+    """A single (worker, date) cell for custom solve scope."""
+
+    worker_id: str
+    date: str  # ISO "YYYY-MM-DD"
+
+
+class ShiftDateCell(BaseModel):
+    """A single (shift, date) cell for custom solve scope."""
+
+    shift_id: str
+    date: str  # ISO "YYYY-MM-DD"
+
+
+class SolveScope(BaseModel):
+    """Scope definition for partial campaign solve requests."""
+
+    scope_type: SolveScopeType
+    worker_ids: Optional[List[str]] = None
+    shift_ids: Optional[List[str]] = None
+    dates: Optional[List[str]] = None
+    worker_cells: Optional[List[WorkerDateCell]] = None
+    shift_cells: Optional[List[ShiftDateCell]] = None
+
+    @model_validator(mode="after")
+    def validate_cell_exclusion(self) -> "SolveScope":
+        """worker_cells and shift_cells cannot both be non-empty."""
+        if self.worker_cells and self.shift_cells:
+            raise ValueError(
+                "worker_cells and shift_cells are mutually exclusive; "
+                "only one can be populated at a time."
+            )
+        return self
+
+
 class SolveRequest(BaseModel):
     schedule_id: str
     team_id: str
+    solve_scope: Optional[SolveScope] = None
 
 
 # pylint: disable=too-few-public-methods
@@ -47,7 +92,12 @@ class SQSSolveMessage(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="When the request was created",
     )
-    message_id: Optional[str] = Field(default=None, description="SQS message ID")
+    message_id: Optional[str] = Field(
+        default=None, description="SQS message ID"
+    )
+    solve_scope: Optional[SolveScope] = Field(
+        default=None, description="Scope for partial campaign solve"
+    )
 
     class Config:
         """Pydantic configuration."""
@@ -72,7 +122,9 @@ class SQSSolveMessage(BaseModel):
         Create an instance from a dict representation.
         Converts created_at from float timestamp back to datetime.
         """
-        if "created_at" in data and isinstance(data["created_at"], (int, float)):
+        if "created_at" in data and isinstance(
+            data["created_at"], (int, float)
+        ):
             data["created_at"] = datetime.fromtimestamp(
                 data["created_at"], tz=timezone.utc
             )
@@ -141,7 +193,9 @@ class SQSHealthCheck(BaseModel):
     queue_messages_delayed: Optional[int] = Field(
         default=None, description="Number of delayed messages"
     )
-    error: Optional[str] = Field(default=None, description="Error message if unhealthy")
+    error: Optional[str] = Field(
+        default=None, description="Error message if unhealthy"
+    )
     timestamp: datetime = Field(
         default_factory=datetime.utcnow,
         description="When the health check was performed",
@@ -188,7 +242,9 @@ class ResultModel(BaseModel):
             assignments=[a.to_dto() for a in self.assignments],
             breaches=[b.to_dto() for b in self.breaches],
             requests=(
-                [r.to_dto() for r in requests_augmented] if requests_augmented else []
+                [r.to_dto() for r in requests_augmented]
+                if requests_augmented
+                else []
             ),
         )
 
@@ -260,7 +316,9 @@ class SolveTaskStatus(BaseModel):
         Convert this SolveTaskStatus to a SolveTaskStatusResponseDTO for API responses.
         """
         data = self.model_dump()
-        data["started_at"] = self.started_at.timestamp() if self.started_at else None
+        data["started_at"] = (
+            self.started_at.timestamp() if self.started_at else None
+        )
         data["completed_at"] = (
             self.completed_at.timestamp() if self.completed_at else None
         )

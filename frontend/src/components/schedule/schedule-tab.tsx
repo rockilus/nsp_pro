@@ -1346,6 +1346,9 @@ export default function ScheduleTab({
               useSqsWorkflow={true}
               onSqsSolveComplete={handleSqsSolveComplete}
               onToggleSelectionMode={handleToggleSelectionMode}
+              workers={workers.filter((w) => !w.deleted)}
+              shifts={shifts.filter((s) => !s.deleted)}
+              selectionState={selectionState}
             />
             {selectionState.isActive &&
               teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
