@@ -74,6 +74,11 @@ export interface Dictionary {
     title: string;
     description: string;
   };
+  notFound: {
+    title: string;
+    message: string;
+    cta: string;
+  };
 }
 
 export async function getDictionary(lang: Locale): Promise<Dictionary> {

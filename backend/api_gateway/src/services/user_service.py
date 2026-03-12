@@ -31,7 +31,12 @@ class UserService(BaseService):
         self.authn_change_password = authn_change_password
 
     async def create_user(
-        self, user_id: str, email: str, first_name: str, last_name: str
+        self,
+        user_id: str,
+        email: str,
+        first_name: str,
+        last_name: str,
+        language: str | None = None,
     ) -> User:
         # Check if user already exists to ensure idempotency
         existing_user = self.collection.user_db.get_user_by_id(user_id)
@@ -42,18 +47,17 @@ class UserService(BaseService):
             )
             return existing_user
 
-        user_language = "fr"
+        user_language = language if language else "fr"
         try:
-            language = Language(user_language)  # type: ignore[call-arg]
-        except ValueError as exc:
-            # pylint: disable=broad-exception-raised
-            raise Exception(f"Language {user_language} not supported") from exc
+            lang = Language(user_language)  # type: ignore[call-arg]
+        except ValueError:
+            lang = Language("fr")  # type: ignore[call-arg]
         user = User(
             id=user_id,
             email=email,
             first_name=first_name,
             last_name=last_name,
-            language=language,  # type: ignore
+            language=lang,  # type: ignore
             sign_up_at=datetime.now(timezone.utc),
             impersonating_user_id=None,
         )

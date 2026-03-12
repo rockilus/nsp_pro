@@ -308,6 +308,7 @@ module "landing_page" {
   aws_region   = var.aws_region
 
   domain_name                = var.landing_page_domain_name # www.rockilus.com
+  apex_domain_name           = var.hosted_zone_domain       # rockilus.com — apex redirects to www via CloudFront
   cloudfront_certificate_arn = module.route53.cloudfront_certificate_arn
   route53_zone_id            = module.route53.hosted_zone_id
   cloudfront_price_class     = var.cloudfront_price_class

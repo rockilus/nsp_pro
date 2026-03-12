@@ -171,13 +171,20 @@ resource "aws_cognito_user_pool_client" "main" {
   # allowed_oauth_scopes                 = ["email", "openid", "profile"]
   allowed_oauth_scopes = ["email", "openid", "phone", "aws.cognito.signin.user.admin"]
   callback_urls = [
-    # Dedicated callback page — decouples token exchange from heavy feature chunks.
-    # This is the active redirect_uri used by the app.
+    # Dedicated callback pages — one per supported locale so Cognito accepts
+    # the per-locale redirect_uri constructed at sign-in time.
+    "https://${var.frontend_domain_name}/en/callback/",
     "https://${var.frontend_domain_name}/fr/callback/",
+    "https://${var.frontend_domain_name}/es/callback/",
     # Required for SPA silent token renewal via iframe
     "https://${var.frontend_domain_name}/silent-renew/",
   ]
-  logout_urls                  = ["https://${var.landing_page_domain_name}"]
+  logout_urls = [
+    "https://${var.landing_page_domain_name}",
+    "https://${var.landing_page_domain_name}/en/",
+    "https://${var.landing_page_domain_name}/fr/",
+    "https://${var.landing_page_domain_name}/es/",
+  ]
   supported_identity_providers = ["COGNITO"]
 
   # SPA-specific security settings

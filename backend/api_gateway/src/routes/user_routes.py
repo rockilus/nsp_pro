@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
@@ -32,6 +32,7 @@ class NewUserInput(BaseModel):
     username: str
     first_name: str
     last_name: str
+    language: Optional[str] = None
 
 
 @router.post("/users/onboard", dependencies=[Depends(verify_service_authentication)])
@@ -45,6 +46,7 @@ async def onboard_new_user(
             email=user_input.email,
             first_name=user_input.first_name,
             last_name=user_input.last_name,
+            language=user_input.language,
         )
 
         log_info(

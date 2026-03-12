@@ -34,6 +34,12 @@ variable "tags" {
   default     = {}
 }
 
+variable "apex_domain_name" {
+  description = "Apex (non-www) domain name to add as a CloudFront alias and redirect to www (e.g., rockilus.com). Leave empty to skip."
+  type        = string
+  default     = ""
+}
+
 variable "cloudfront_price_class" {
   description = "CloudFront price class"
   type        = string

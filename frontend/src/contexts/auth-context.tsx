@@ -20,7 +20,7 @@ interface AuthContextType {
   accessToken: string | null;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
-  signOutRedirect: () => Promise<void>;
+  signOutRedirect: (locale?: string) => Promise<void>;
 }
 
 /**
@@ -158,7 +158,7 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
     console.log("🔧 Development sign-out completed");
   };
 
-  const signOutRedirect = async (): Promise<void> => {
+  const signOutRedirect = async (locale?: string): Promise<void> => {
     await signOut();
     window.location.href = "/";
   };
@@ -370,10 +370,18 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [auth.isLoading, auth.events, auth]);
 
-  const signOutRedirect = async (): Promise<void> => {
+  const signOutRedirect = async (locale?: string): Promise<void> => {
+    // Build locale-aware landing page URI: https://www.rockilus.com/fr/ etc.
+    const supportedLocales = ["en", "fr", "es"];
+    const effectiveLocale =
+      locale && supportedLocales.includes(locale) ? locale : null;
+    const targetUri = effectiveLocale
+      ? `${logoutUri}/${effectiveLocale}/`
+      : logoutUri;
+
     try {
       // Validate logout URI for security
-      if (!isValidLogoutUri(logoutUri)) {
+      if (!isValidLogoutUri(targetUri)) {
         throw new Error("Invalid logout URI detected");
       }
 
@@ -383,20 +391,20 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
       // Use AWS recommended logout URL format
       const logoutUrl = `${cognitoDomain}/logout?client_id=${
         cognitoAuthConfig.client_id
-      }&logout_uri=${encodeURIComponent(logoutUri)}`;
+      }&logout_uri=${encodeURIComponent(targetUri)}`;
 
       // Use window.location.href as recommended by AWS
       window.location.href = logoutUrl;
     } catch (error) {
       console.error("Logout redirect failed:", error);
 
-      // Fallback: clear local state and redirect to app
+      // Fallback: clear local state and redirect to landing page
       try {
         clearAuthTokens();
         await auth.removeUser();
 
-        if (isValidLogoutUri(logoutUri)) {
-          window.location.href = logoutUri;
+        if (isValidLogoutUri(targetUri)) {
+          window.location.href = targetUri;
         } else {
           // Safe fallback to current origin
           window.location.href = window.location.origin;
@@ -432,19 +440,44 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
         console.log("📱 Mobile Safari detected");
       }
 
-      await auth.signinRedirect();
+      // Detect the active locale: URL path → browser language → 'en'
+      const supportedLocales = ["en", "fr", "es"];
+      const pathLocaleMatch = window.location.pathname.match(/\/(en|fr|es)\//);
+      const browserLocale = navigator.language.split("-")[0];
+      const locale =
+        pathLocaleMatch?.[1] ??
+        (supportedLocales.includes(browserLocale) ? browserLocale : "fr");
+
+      // Persist for the callback page so it can set the language on new users.
+      localStorage.setItem("rockilus_signup_locale", locale);
+
+      await auth.signinRedirect({
+        extraQueryParams: { ui_locales: locale },
+        redirect_uri: `${env.clientUrl}/${locale}/callback/`,
+      });
     } catch (error) {
       console.error("❌ Sign-in redirect failed:", error);
 
       // Only use manual redirect as last resort if signinRedirect throws
       // This should rarely happen
       try {
+        // Re-derive locale for the fallback branch
+        const supportedLocales = ["en", "fr", "es"];
+        const pathLocaleMatch =
+          window.location.pathname.match(/\/(en|fr|es)\//);
+        const browserLocale = navigator.language.split("-")[0];
+        const locale =
+          pathLocaleMatch?.[1] ??
+          (supportedLocales.includes(browserLocale) ? browserLocale : "fr");
+
+        const localeRedirectUri = `${env.clientUrl}/${locale}/callback/`;
         const authUrl =
           `${cognitoDomain}/oauth2/authorize?` +
           `client_id=${cognitoAuthConfig.client_id}&` +
           `response_type=${cognitoAuthConfig.response_type}&` +
           `scope=${encodeURIComponent(cognitoAuthConfig.scope)}&` +
-          `redirect_uri=${encodeURIComponent(cognitoAuthConfig.redirect_uri)}`;
+          `redirect_uri=${encodeURIComponent(localeRedirectUri)}&` +
+          `ui_locales=${locale}`;
 
         console.log("🔄 Falling back to window.location.href redirect");
         window.location.href = authUrl;
