@@ -488,5 +488,8 @@ def core_to_engine_fixed_values(
         for var in outside_vars:
             if var not in out:
                 out[var] = 0
-
+    # Ensure all returned fixed variables actually exist in the model
+    # (drop any keys not present in var_model).
+    var_model_set = set(var_model)
+    out = {k: v for k, v in out.items() if k in var_model_set}
     return out
