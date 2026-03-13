@@ -1,10 +1,10 @@
 # Plan: Move Solve Scope Logic into `core_to_engine_inputs`
 
-**TL;DR:** Pull scope application out of `get_engine_inputs` (data layer) and apply it step-by-step inside `core_to_engine_inputs` (parsing layer). Add `as_wip_campaign` (non-fixed WIP assignments) to `EngineInputs`, pass `solve_scope` as a separate parameter to `core_to_engine_inputs`, and prune entities (shift list, shift demands, dates, constraints, requests) at each build step — making the model lighter by removing variables/constraints rather than injecting fixed=1 locks.
+**TL;DR:** Pull scope application out of `get_engine_inputs` (data layer) and apply it step-by-step inside `core_to_engine_inputs` (parsing layer). Add `as_campaign_not_fixed` (non-fixed campaign assignments) to `EngineInputs`, pass `solve_scope` as a separate parameter to `core_to_engine_inputs`, and prune entities (shift list, shift demands, dates, constraints, requests) at each build step — making the model lighter by removing variables/constraints rather than injecting fixed=1 locks.
 
 ---
 
-## Phase 1 — Schema: add `as_wip_campaign` to `EngineInputs`
+## Phase 1 — Schema: add `as_campaign_not_fixed` to `EngineInputs` (Completed)
 
 **File:** `backend/shared/src/shared/schemas/core/engine.py`
 
@@ -14,18 +14,18 @@
 
 ---
 
-## Phase 2 — `get_engine_inputs`: purely fetch, zero scope logic
+## Phase 2 — `get_engine_inputs`: purely fetch, zero scope logic (Completed)
 
 **File:** `backend/solve_service/src/db_operations/get_engine_inputs.py`
 
-4. Always call `get_wip_assignments(schedule, collections)` and place the result in `engine_inputs.as_wip_campaign`.
+4. Always call `get_wip_assignments(schedule, collections)` and place the result in `engine_inputs.as_campaign_not_fixed`.
 5. Delete the `apply_solve_scope(...)` call and its `SolveScopeType.FULL` guard.
 6. Remove imports of `apply_solve_scope` and `SolveScopeType` from this file.
 7. `get_engine_inputs` no longer receives `solve_scope`; the caller holds the scope and passes it to `core_to_engine_inputs`.
 
 ---
 
-## Phase 3 — `core_to_engine_inputs`: accept `solve_scope` parameter
+## Phase 3 — `core_to_engine_inputs`: accept `solve_scope` parameter (Completed)
 
 **File:** `backend/solve_service/src/core_to_engine_service/core_to_engine_inputs.py`
 
@@ -44,8 +44,8 @@ New helper `_preprocess_scope` in `apply_scope.py` or inline in `core_to_engine_
     - CUSTOM → no shift-type pruning.
 
 11. **WIP classification** — reuses `_is_in_scope_worker_view` / `_is_in_scope_shift_view`:
-    - Out-of-scope `as_wip_campaign` assignments → deduplicate and append to `as_wip_fixed` (locked).
-    - In-scope `as_wip_campaign` assignments → remain free for the solver.
+    - Out-of-scope `as_campaign_not_fixed` assignments → deduplicate and append to `as_campaign_fixed` (locked).
+    - In-scope `as_campaign_not_fixed` assignments → remain free for the solver.
 
 12. **Shift demands pruning** — mutates `engine_inputs.shift_demands`:
     - DUTIES → keep demands only for DUTY shift_ids.
@@ -73,7 +73,7 @@ New helper `_preprocess_scope` in `apply_scope.py` or inline in `core_to_engine_
 
 16. `core_to_engine_fixed_values` already uses `shifts_not_deleted` (scoped in Phase 4) and `daily_shift_demands` (scoped in Phase 4).
 17. `_zero_shifts_without_demand` correctly zeros out-of-scope cells because no in-scope demand exists for them.
-18. Out-of-scope WIP assignments are already in `as_wip_fixed` (Phase 4 step 11) → they appear as fixed=1.
+18. Out-of-scope WIP assignments are already in `as_campaign_fixed` (Phase 4 step 11) → they appear as fixed=1.
 
 ---
 
