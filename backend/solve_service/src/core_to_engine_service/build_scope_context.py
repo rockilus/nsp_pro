@@ -188,5 +188,10 @@ def preprocess_scope(
         variables = _custom_shift_view_variables(scope, raw_demand_pairs, W)
     else:
         variables = _custom_worker_view_variables(scope, raw_demand_pairs, W)
+    # Ensure variables are constrained to the provided `var_model` (if any).
+    # `var_model` is a list of (worker_id, date_iso, shift_id) tuples that
+    # represent the model's variables; only keep intersections.
+    var_model_set = set(var_model)
+    variables = variables & var_model_set
 
     return _build_scope_context(variables=variables, demands=demands)
