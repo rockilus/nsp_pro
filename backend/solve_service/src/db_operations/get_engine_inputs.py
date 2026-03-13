@@ -1,9 +1,15 @@
 import time
+from typing import Optional
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import EngineInputs, Schedule
+from shared.schemas.core.solve_task_status import SolveScope, SolveScopeType
 
-from db_operations.assignment_services import get_fixed_assignments
+from db_operations.apply_solve_scope import apply_solve_scope
+from db_operations.assignment_services import (
+    get_fixed_assignments,
+    get_wip_assignments,
+)
 from db_operations.fetch_data import fetch_workers_shifts_dim_attributes_spe
 from db_operations.get_constraint_build import (
     get_active_constraint_builds_by_ids,
@@ -14,7 +20,9 @@ from db_operations.request_services import get_requests_by_dates
 
 # pylint: disable=too-many-locals, too-many-statements
 def get_engine_inputs(
-    schedule: Schedule, collections: DatabaseCollections
+    schedule: Schedule,
+    collections: DatabaseCollections,
+    solve_scope: Optional[SolveScope] = None,
 ) -> EngineInputs:
     start_time_db = time.time()
     (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
@@ -41,10 +49,12 @@ def get_engine_inputs(
         collections,
     )
     link_shifts = get_link_shifts(schedule.team_id, shifts, collections)
-    shift_demands = collections.shift_demand_new_db.get_shift_demands_by_date_range(
-        team_id=schedule.team_id,
-        start_date=schedule.start_date,
-        end_date=schedule.end_date,
+    shift_demands = (
+        collections.shift_demand_new_db.get_shift_demands_by_date_range(
+            team_id=schedule.team_id,
+            start_date=schedule.start_date,
+            end_date=schedule.end_date,
+        )
     )
     model_output = collections.model_output_db.get_model_output(schedule.id)
     end_time_db = time.time()
@@ -66,4 +76,9 @@ def get_engine_inputs(
     )
     total_time_db = end_time_db - start_time_db
     print(f"db time:              {total_time_db:.2f}s")
+    if solve_scope and solve_scope.scope_type != SolveScopeType.FULL:
+        wip_assignments = get_wip_assignments(schedule, collections)
+        engine_inputs = apply_solve_scope(
+            engine_inputs, solve_scope, wip_assignments
+        )
     return engine_inputs
