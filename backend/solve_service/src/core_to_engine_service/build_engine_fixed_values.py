@@ -1,10 +1,11 @@
 from datetime import date, timedelta
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from shared.constraint_parser import build_dim_to_attr_value_to_owner
 from shared.constraint_parser.parse_selected_shifts import (
     parse_selected_shifts,
 )
+from core_to_engine_service.build_scope_context import ScopeContext
 from shared.schemas.core import (
     Assignment,
     Attribute,
@@ -20,6 +21,8 @@ from shared.schemas.core import (
     Worker,
     WorkerDates,
 )
+
+# pylint: disable=too-many-arguments, R0801
 
 
 def _filter_campaign_dates(
@@ -53,7 +56,6 @@ def _filter_campaign_dates(
     ]
 
 
-# pylint: disable=too-many-arguments
 def _zero_overlapping_shifts(
     out: Dict[Tuple[str, str, str], int],
     worker_id: str,
@@ -145,7 +147,9 @@ def _apply_leave_requests(
             continue
 
         leave_shift = shift_dict[req.shift_id]
-        dates_to_process = _filter_campaign_dates(req, worker_ids_to_worker_dates)
+        dates_to_process = _filter_campaign_dates(
+            req, worker_ids_to_worker_dates
+        )
 
         for d in dates_to_process:
             date_iso = d.isoformat()
@@ -154,7 +158,9 @@ def _apply_leave_requests(
             out[req.worker_id, date_iso, req.shift_id] = 1
 
             # Zero out overlapping normal/duty shifts
-            _zero_overlapping_shifts(out, req.worker_id, date_iso, leave_shift, shifts)
+            _zero_overlapping_shifts(
+                out, req.worker_id, date_iso, leave_shift, shifts
+            )
 
 
 def _apply_negative_work_demand(
@@ -178,7 +184,6 @@ def _apply_negative_work_demand(
             out[req.worker_id, date_iso, shift_id] = 0
 
 
-# pylint: disable=too-many-arguments
 def _apply_single_shift_work_demand(
     out: Dict[Tuple[str, str, str], int],
     req: Request,
@@ -236,7 +241,9 @@ def _apply_multi_shift_work_demand(
 
         # For each target shift, zero out overlapping shifts
         for target_shift in target_shifts:
-            _zero_overlapping_shifts(out, req.worker_id, date_iso, target_shift, shifts)
+            _zero_overlapping_shifts(
+                out, req.worker_id, date_iso, target_shift, shifts
+            )
 
 
 def _apply_work_demand_requests(
@@ -245,7 +252,9 @@ def _apply_work_demand_requests(
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shift_dict: Dict[str, Shift],
     shifts: List[Shift],
-    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]],
+    dim_to_attr_value_to_shift: Dict[
+        str, Dict[str | int | float | bool, List[str]]
+    ],
 ) -> None:
     """
     Apply approved WORK_DEMAND requests to fixed values.
@@ -282,15 +291,21 @@ def _apply_work_demand_requests(
             continue
 
         # Filter to valid shift IDs
-        target_shift_ids = [sid for sid in target_shift_ids if sid in shift_dict]
+        target_shift_ids = [
+            sid for sid in target_shift_ids if sid in shift_dict
+        ]
         if not target_shift_ids:
             continue
 
         target_shifts = [shift_dict[sid] for sid in target_shift_ids]
-        dates_to_process = _filter_campaign_dates(req, worker_ids_to_worker_dates)
+        dates_to_process = _filter_campaign_dates(
+            req, worker_ids_to_worker_dates
+        )
 
         if req.negative:
-            _apply_negative_work_demand(out, req, target_shift_ids, dates_to_process)
+            _apply_negative_work_demand(
+                out, req, target_shift_ids, dates_to_process
+            )
         else:
             # Positive request
             if len(target_shift_ids) == 1:
@@ -376,7 +391,6 @@ def _zero_shifts_without_demand(
                     out[w.id, d.isoformat(), s.id] = 0
 
 
-# pylint: disable=too-many-arguments, R0801
 def core_to_engine_fixed_values(
     workers: List[Worker],
     workers_not_deleted: List[Worker],
@@ -390,6 +404,8 @@ def core_to_engine_fixed_values(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
+    var_model: List[Tuple[str, str, str]],
+    scope_ctx: Optional[ScopeContext] = None,
 ) -> Dict[Tuple[str, str, str], int]:
     """
     Build fixed values dictionary for the solver.
@@ -463,5 +479,14 @@ def core_to_engine_fixed_values(
         shifts_not_deleted,
         daily_shift_demands,
     )
+
+    # If a scope context is provided, fix all variables outside of the
+    # scope to 0 (but don't override already-fixed values).
+    if scope_ctx is not None:
+        model_vars = set(var_model)
+        outside_vars = model_vars - scope_ctx.variables
+        for var in outside_vars:
+            if var not in out:
+                out[var] = 0
 
     return out

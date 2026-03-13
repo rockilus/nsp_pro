@@ -240,6 +240,8 @@ def core_to_engine_inputs(
         engine_inputs.dimensions,
         engine_inputs.dim_entries,
         engine_inputs.attributes,
+        variables.assignments,
+        _scope_ctx,
     )
 
     # Constraints:
