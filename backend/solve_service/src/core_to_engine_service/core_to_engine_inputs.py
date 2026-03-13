@@ -171,6 +171,8 @@ def core_to_engine_inputs(
             shifts_not_deleted=shifts_not_deleted,
             demands=engine_inputs.shift_demands,
             var_model=variables.assignments,
+            as_campaign=engine_inputs.as_campaign_fixed
+            + engine_inputs.as_campaign_not_fixed,
         )
         demands_in_scope = [
             sd
