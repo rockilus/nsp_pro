@@ -67,9 +67,7 @@ D2 = date(2024, 3, 2)
 
 SHIFT_NORMAL = _make_shift("shift_normal", ShiftType.NORMAL)
 SHIFT_DUTY = _make_shift("shift_duty", ShiftType.DUTY)
-SHIFT_REST_OFF = _make_shift(
-    "shift_rest_off", ShiftType.REST, ShiftRestType.OFF
-)
+SHIFT_REST_OFF = _make_shift("shift_rest_off", ShiftType.REST, ShiftRestType.OFF)
 SHIFT_REST_RECUP = _make_shift(
     "shift_rest_recup", ShiftType.REST, ShiftRestType.RECUPERATION
 )
@@ -156,9 +154,7 @@ def test_duties_scope_locks_normal_assignments():
     scope = SolveScope(scope_type=SolveScopeType.DUTIES)
     result = apply_solve_scope(ei, scope, wip)
 
-    locked_keys = {
-        (a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed
-    }
+    locked_keys = {(a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed}
     # normal assignment should be locked
     assert ("w1", D1, "shift_normal") in locked_keys
     # duty and recup should NOT be locked
@@ -191,9 +187,7 @@ def test_duties_scope_no_duplicates_in_fixed():
     matching = [
         a
         for a in result.as_wip_fixed
-        if a.worker_id == "w1"
-        and a.date == D1
-        and a.shift_id == "shift_normal"
+        if a.worker_id == "w1" and a.date == D1 and a.shift_id == "shift_normal"
     ]
     assert len(matching) == 1
 
@@ -213,9 +207,7 @@ def test_non_duties_scope_locks_duty_and_recup():
     scope = SolveScope(scope_type=SolveScopeType.NON_DUTIES)
     result = apply_solve_scope(ei, scope, wip)
 
-    locked_keys = {
-        (a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed
-    }
+    locked_keys = {(a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed}
     assert ("w1", D1, "shift_duty") in locked_keys
     assert ("w1", D2, "shift_rest_recup") in locked_keys
     assert ("w1", D1, "shift_normal") not in locked_keys
@@ -252,9 +244,7 @@ def test_custom_worker_view_worker_ids_locks_out_of_scope():
     )
     result = apply_solve_scope(ei, scope, wip)
 
-    locked_keys = {
-        (a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed
-    }
+    locked_keys = {(a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed}
     assert ("w2", D1, "shift_normal") in locked_keys
     assert ("w1", D1, "shift_normal") not in locked_keys
 
@@ -272,9 +262,7 @@ def test_custom_worker_view_dates_locks_out_of_scope():
     )
     result = apply_solve_scope(ei, scope, wip)
 
-    locked_keys = {
-        (a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed
-    }
+    locked_keys = {(a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed}
     assert ("w1", D2, "shift_normal") in locked_keys
     assert ("w1", D1, "shift_normal") not in locked_keys
 
@@ -293,9 +281,7 @@ def test_custom_worker_view_worker_cells_exact_intersection():
     )
     result = apply_solve_scope(ei, scope, wip)
 
-    locked_keys = {
-        (a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed
-    }
+    locked_keys = {(a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed}
     assert ("w1", D1, "shift_normal") not in locked_keys
     assert ("w1", D2, "shift_normal") in locked_keys
     assert ("w2", D1, "shift_normal") in locked_keys
@@ -330,9 +316,7 @@ def test_custom_shift_view_shift_ids_locks_out_of_scope():
     )
     result = apply_solve_scope(ei, scope, wip)
 
-    locked_keys = {
-        (a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed
-    }
+    locked_keys = {(a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed}
     assert ("w1", D1, "shift_duty") in locked_keys
     assert ("w1", D1, "shift_normal") not in locked_keys
 
@@ -346,15 +330,11 @@ def test_custom_shift_view_shift_cells_exact_intersection():
     scope = SolveScope(
         scope_type=SolveScopeType.CUSTOM,
         solve_view="shift",
-        shift_cells=[
-            ShiftDateCell(shift_id="shift_normal", date=D1.isoformat())
-        ],
+        shift_cells=[ShiftDateCell(shift_id="shift_normal", date=D1.isoformat())],
     )
     result = apply_solve_scope(ei, scope, wip)
 
-    locked_keys = {
-        (a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed
-    }
+    locked_keys = {(a.worker_id, a.date, a.shift_id) for a in result.as_wip_fixed}
     assert ("w1", D1, "shift_normal") not in locked_keys
     assert ("w1", D2, "shift_normal") in locked_keys
 
@@ -375,8 +355,6 @@ def test_no_duplicates_after_repeated_apply():
     matching = [
         x
         for x in result.as_wip_fixed
-        if x.worker_id == "w1"
-        and x.date == D1
-        and x.shift_id == "shift_normal"
+        if x.worker_id == "w1" and x.date == D1 and x.shift_id == "shift_normal"
     ]
     assert len(matching) == 1

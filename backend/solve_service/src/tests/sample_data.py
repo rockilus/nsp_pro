@@ -719,9 +719,7 @@ def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
         for dsd in dsds
         if dsd.count > 0
     ]
-    data_dict["shift_demands"] = [
-        sd.to_dict() for sd in shift_demands_from_dsds
-    ]
+    data_dict["shift_demands"] = [sd.to_dict() for sd in shift_demands_from_dsds]
 
     ei = EngineInputs.from_dict(data_dict)
     return EngineInputsAugmented(
@@ -747,9 +745,7 @@ def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
 
 @pytest.fixture
 def sample_data_benoit_case_fixture() -> EngineInputsAugmented:
-    engine_inputs = load_engine_inputs_from_file(
-        "test_data/250521_benoit_case.json"
-    )
+    engine_inputs = load_engine_inputs_from_file("test_data/250521_benoit_case.json")
     # engine_inputs.requests = [
     #     r for r in engine_inputs.requests if r.id != "67893e204c7443695ec41f2b"
     # ]
