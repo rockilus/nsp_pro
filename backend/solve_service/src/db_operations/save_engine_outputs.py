@@ -1,5 +1,5 @@
 import time
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -9,6 +9,7 @@ from shared.schemas.core import (
     EngineOutputs,
     Schedule,
     SolverOutputMetadata,
+    SolveScope,
 )
 from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
@@ -24,13 +25,18 @@ def save_engine_outputs(
     engine_outputs: EngineOutputs,
     processing_cache: ProcessingCache,
     collections: DatabaseCollections,
-) -> Tuple[ScheduleSolveStatus, List[Assignment], List[Breach], SolverOutputMetadata]:
+    solve_scope: Optional[SolveScope],
+) -> Tuple[
+    ScheduleSolveStatus, List[Assignment], List[Breach], SolverOutputMetadata
+]:
     start_time_update_db = time.time()
     assignments_saved = save_assignments(
         assignments=engine_outputs.assignments,
         schedule=schedule,
         shifts=engine_intputs.shifts,
         collections=collections,
+        scope_ctx=processing_cache.scope_ctx,
+        solve_scope=solve_scope,
     )
     update_requests(
         requests=engine_intputs.requests_work + engine_intputs.requests_leave,

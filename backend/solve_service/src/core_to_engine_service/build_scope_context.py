@@ -5,7 +5,6 @@ Scope pre-processing for partial campaign solves.
 `apply_scope_mutations` applies the derived ScopeContext to engine_inputs in-place.
 """
 
-from dataclasses import dataclass
 from typing import List, Set, Tuple
 
 from shared.schemas.core import (
@@ -18,17 +17,10 @@ from shared.schemas.core import (
     Worker,
 )
 
+from engine import ScopeContext
+
 # Type alias for the 3-tuple (worker_id, date_iso, shift_id)
 _Variables = Set[Tuple[str, str, str]]
-
-
-@dataclass
-class ScopeContext:
-    variables: _Variables  # (worker_id, date_iso, shift_id)
-    dates: Set[str]  # {d for (_, d, _) in variables}
-    shift_ids: Set[str]  # {s for (_, _, s) in variables}
-    worker_ids: Set[str]  # {w for (w, _, _) in variables}
-    shift_demand_ids: Set[str]  # ids of ShiftDemandNew rows in scope
 
 
 def _expand_to_workers(pairs: Set[Tuple[str, str]], W: Set[str]) -> _Variables:

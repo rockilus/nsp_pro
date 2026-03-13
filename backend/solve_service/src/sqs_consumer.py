@@ -186,6 +186,7 @@ class SQSSolveConsumer:
                 engine_outputs=engine_outputs,
                 processing_cache=processing_cache,
                 collections=self.collections,
+                solve_scope=message.solve_scope,
             )
         )
         end_time = time.time()

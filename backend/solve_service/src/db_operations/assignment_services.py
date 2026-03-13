@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -7,7 +7,10 @@ from shared.schemas.core import (
     Schedule,
     Shift,
     ShiftRestType,
+    SolveScope,
 )
+
+from engine import ScopeContext
 
 
 # pylint: disable=too-many-locals, too-many-statements
@@ -39,23 +42,72 @@ def get_fixed_assignments(
     return as_hist, as_campaign_fixed
 
 
+def _delete_wip_in_scope(
+    schedule: Schedule,
+    collections: DatabaseCollections,
+    scope_ctx: Optional[ScopeContext],
+    solve_scope: Optional[SolveScope] = None,
+) -> None:
+    """Delete WIP assignments that fall within the solver's scope."""
+    if scope_ctx is None:
+        collections.assignment_db.delete_assignments_by_dates(
+            team_id=schedule.team_id,
+            start_date=schedule.start_date,
+            end_date=schedule.end_date,
+            delete_fixed=False,
+        )
+        return
+    assignments_campaign_not_fixed = (
+        collections.assignment_db.get_assignments_by_dates(
+            team_id=schedule.team_id,
+            start_date=schedule.start_date,
+            end_date=schedule.end_date,
+            fixed=False,
+        )
+    )
+    scoped_as_ids: List[str] = []
+    if solve_scope is not None:
+        if solve_scope.solve_view == "worker":
+            scoped_as_ids = [
+                a.id
+                for a in assignments_campaign_not_fixed
+                if a.worker_id in scope_ctx.worker_ids
+                and a.date.isoformat() in scope_ctx.dates
+                and a.id is not None
+            ]
+        elif solve_scope.solve_view == "shift":
+            scoped_as_ids = [
+                a.id
+                for a in assignments_campaign_not_fixed
+                if a.shift_id in scope_ctx.shift_ids
+                and a.date.isoformat() in scope_ctx.dates
+                and a.id is not None
+            ]
+    if scoped_as_ids:
+        collections.assignment_db.delete_assignments(scoped_as_ids)
+
+
 def save_assignments(
     assignments: List[Assignment],
     schedule: Schedule,
     shifts: List[Shift],
     collections: DatabaseCollections,
+    scope_ctx: Optional[ScopeContext] = None,
+    solve_scope: Optional[SolveScope] = None,
 ) -> List[Assignment]:
-    collections.assignment_db.delete_assignments_by_dates(
-        team_id=schedule.team_id,
-        start_date=schedule.start_date,
-        end_date=schedule.end_date,
-        delete_fixed=False,
+    _delete_wip_in_scope(
+        schedule=schedule,
+        collections=collections,
+        scope_ctx=scope_ctx,
+        solve_scope=solve_scope,
     )
-    fixed_assignment_existing = collections.assignment_db.get_assignments_by_dates(
-        team_id=schedule.team_id,
-        start_date=schedule.start_date,
-        end_date=schedule.end_date,
-        fixed=True,
+    fixed_assignment_existing = (
+        collections.assignment_db.get_assignments_by_dates(
+            team_id=schedule.team_id,
+            start_date=schedule.start_date,
+            end_date=schedule.end_date,
+            fixed=True,
+        )
     )
     if not assignments:
         return []
@@ -92,7 +144,8 @@ def save_assignments(
         for assignment in assignments
         if not (
             shift_map.get(assignment.shift_id)
-            and shift_map[assignment.shift_id].rest_type == ShiftRestType.RECUPERATION
+            and shift_map[assignment.shift_id].rest_type
+            == ShiftRestType.RECUPERATION
         )
     ]
 
@@ -100,12 +153,15 @@ def save_assignments(
         assignment
         for assignment in assignments
         if shift_map.get(assignment.shift_id)
-        and shift_map[assignment.shift_id].rest_type == ShiftRestType.RECUPERATION
+        and shift_map[assignment.shift_id].rest_type
+        == ShiftRestType.RECUPERATION
     ]
 
     # Create non-recuperation assignments first
-    created_non_recuperation_assignments = collections.assignment_db.create_assignments(
-        non_recuperation_assignments
+    created_non_recuperation_assignments = (
+        collections.assignment_db.create_assignments(
+            non_recuperation_assignments
+        )
     )
 
     # Process recuperation assignments
@@ -140,11 +196,13 @@ def save_assignments(
                     )
 
                 if reference_assignment:
-                    assignment.reference_assignment_id = reference_assignment.id
+                    assignment.reference_assignment_id = (
+                        reference_assignment.id
+                    )
 
     # Create recuperation assignments
-    created_recuperation_assignments = collections.assignment_db.create_assignments(
-        recuperation_assignments
+    created_recuperation_assignments = (
+        collections.assignment_db.create_assignments(recuperation_assignments)
     )
 
     # Combine all created assignments

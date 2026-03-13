@@ -60,13 +60,9 @@ def solve_schedule(
     )
     end_time_engine_to_core = time.time()
     # time stats
-    total_time_core_to_engine = (
-        end_time_core_to_engine - start_time_core_to_engine
-    )
+    total_time_core_to_engine = end_time_core_to_engine - start_time_core_to_engine
     total_time_engine = end_time_engine - start_time_engine
-    total_time_engine_to_core = (
-        end_time_engine_to_core - start_time_engine_to_core
-    )
+    total_time_engine_to_core = end_time_engine_to_core - start_time_engine_to_core
     print("engine inputs time:   " + f"{total_time_core_to_engine:.2f}s")
     print("engine time:          " + f"{total_time_engine:.2f}s")
     print("process outputs time: " + f"{total_time_engine_to_core:.2f}s")
