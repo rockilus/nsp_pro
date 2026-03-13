@@ -41,7 +41,9 @@ def _duties_variables(
     shifts_not_deleted: List[Shift],
     W: Set[str],
 ) -> _Variables:
-    duty_ids = {s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY}
+    duty_ids = {
+        s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY
+    }
     return _expand_to_workers(
         {(s, d) for s, d in raw_demand_pairs if s in duty_ids}, W
     )
@@ -57,7 +59,8 @@ def _non_duties_variables(
         for s in shifts_not_deleted
         if s.shift_type != ShiftType.DUTY
         and not (
-            s.shift_type == ShiftType.REST and s.rest_type == ShiftRestType.RECUPERATION
+            s.shift_type == ShiftType.REST
+            and s.rest_type == ShiftRestType.RECUPERATION
         )
     }
     return _expand_to_workers(
@@ -131,7 +134,8 @@ def _build_scope_context(
     shift_demand_ids = {
         sd.id
         for sd in demands
-        if (sd.shift_id, sd.date.isoformat()) in shift_date_pairs and sd.id is not None
+        if (sd.shift_id, sd.date.isoformat()) in shift_date_pairs
+        and sd.id is not None
     }
     return ScopeContext(
         variables=variables,
@@ -169,7 +173,9 @@ def preprocess_scope(
     if scope.scope_type == SolveScopeType.DUTIES:
         variables = _duties_variables(raw_demand_pairs, shifts_not_deleted, W)
     elif scope.scope_type == SolveScopeType.NON_DUTIES:
-        variables = _non_duties_variables(raw_demand_pairs, shifts_not_deleted, W)
+        variables = _non_duties_variables(
+            raw_demand_pairs, shifts_not_deleted, W
+        )
     elif scope.solve_view == "shift":
         variables = _custom_shift_view_variables(scope, raw_demand_pairs, W)
     else:
@@ -177,13 +183,17 @@ def preprocess_scope(
 
     # RECUPERATION addendum — no demands exist for recup shifts, but free
     # variables are needed so duty-recup pairs can be enforced for all scope types.
-    all_duty_ids = {s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY}
+    all_duty_ids = {
+        s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY
+    }
     duty_ids_in_scope = {
         shift_id for (_, _, shift_id) in variables if shift_id in all_duty_ids
     }
     if duty_ids_in_scope:
         duty_dates_in_scope = {
-            d for (_, d, shift_id) in variables if shift_id in duty_ids_in_scope
+            d
+            for (_, d, shift_id) in variables
+            if shift_id in duty_ids_in_scope
         }
         recup_ids = {
             s.id
