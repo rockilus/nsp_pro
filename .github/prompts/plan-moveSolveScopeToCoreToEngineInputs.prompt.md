@@ -1,6 +1,6 @@
 # Plan: Move Solve Scope Logic into `core_to_engine_inputs`
 
-**TL;DR:** Pull scope application out of `get_engine_inputs` (data layer) and apply it step-by-step inside `core_to_engine_inputs` (parsing layer). Add `as_campaign_not_fixed` (non-fixed campaign assignments) to `EngineInputs`, pass `solve_scope` as a separate parameter to `core_to_engine_inputs`, and prune entities (shift list, shift demands, dates, constraints, requests) at each build step — making the model lighter by removing variables/constraints rather than injecting fixed=1 locks.
+**TL;DR:** Pull scope application out of `get_engine_inputs` (data layer) and apply it step-by-step inside `core_to_engine_inputs` (parsing layer). Add `as_campaign_not_fixed` (non-fixed campaign assignments) to `EngineInputs`, pass `solve_scope` as a separate parameter to `core_to_engine_inputs`, and prune entities (shift list, shift demands, constraints, requests) at each build step — making the model lighter by removing variables/constraints rather than injecting fixed=1 locks. `worker_ids_to_worker_dates` and all date ranges remain **full** throughout: the solver needs the complete campaign and historical timeline to correctly evaluate sequence constraints, work-time targets, and nb_duties targets.
 
 ---
 
@@ -36,50 +36,40 @@
 
 ## Phase 4 — Scope pre-processing (runs first, before any `build_*`)
 
-New helper `_preprocess_scope` in `apply_scope.py` or inline in `core_to_engine_inputs.py`, reusing helpers from `apply_solve_scope.py` (`_is_in_scope_worker_view` / `_is_in_scope_shift_view`).
+New `preprocess_scope` function in `build_scope_context.py`. See `plan-preprocessScope.prompt.md` for the full detailed plan. Summary:
 
-10. **Shift-type pruning** — mutates `engine_inputs.shifts`:
-    - DUTIES → remove `ShiftType.NORMAL` shifts.
-    - NON_DUTIES → remove `ShiftType.DUTY` and `REST/RECUPERATION` shifts.
-    - CUSTOM → no shift-type pruning.
-
-11. **WIP classification** — reuses `_is_in_scope_worker_view` / `_is_in_scope_shift_view`:
-    - Out-of-scope `as_campaign_not_fixed` assignments → deduplicate and append to `as_campaign_fixed` (locked).
-    - In-scope `as_campaign_not_fixed` assignments → remain free for the solver.
-
-12. **Shift demands pruning** — mutates `engine_inputs.shift_demands`:
-    - DUTIES → keep demands only for DUTY shift_ids.
-    - NON_DUTIES → keep demands only for NORMAL/REST non-recup shift_ids.
-    - CUSTOM+`shift_ids` → filter by those ids.
-    - CUSTOM+`dates` → filter by date.
-    - CUSTOM+`shift_cells` → filter by `(shift_id, date)` pairs.
+10. Compute `raw_demand_pairs` from `engine_inputs.shift_demands` as the demand anchor — a variable `(worker, date, shift)` is in scope only if a demand exists for its `(shift_id, date)` slot.
+11. Build `in_scope_cells` via union (OR) of all present criteria (shift_ids / worker_ids / dates / cells). Returns `ScopeContext` with `in_scope_cells`, `in_scope_dates`, `in_scope_shift_ids`, `in_scope_worker_ids`, `is_worker_anchored`.
+12. **WIP locking** — out-of-scope `as_campaign_not_fixed` assignments dedup-appended to `as_campaign_fixed` (locked); in-scope assignments remain free.
+13. **Shift pruning** (shift-anchored only) — `engine_inputs.shifts` filtered to `in_scope_shift_ids`; caller re-derives `shifts_not_deleted` and related locals afterwards.
+14. **Shift demands pruning** — `engine_inputs.shift_demands` filtered to in-scope `(shift_id, date)` pairs.
 
 ---
 
-## Phase 5 — Date scoping in `worker_ids_to_worker_dates` (CUSTOM scope only)
+## Phase 5 — `worker_ids_to_worker_dates` and all dates: intentionally untouched
 
-13. After `build_worker_ids_to_worker_dates`, if CUSTOM scope specifies dates / worker_cells / shift_cells: intersect each worker's `dates_campaign` list with the resolved `scope_dates_set`.
-14. This single change cascades automatically to: solver variables, no-overlap intervals, `ws_to_dates`, work time targets, nb_duties targets, constraint generation, and all downstream `build_*` calls.
-
----
-
-## Phase 6 — Work times & nb_duties: no code changes needed *(cascades from Phase 5)*
-
-15. `calculate_worker_work_times` and `calculate_worker_nb_duties` use the now-scoped `worker_ids_to_worker_dates` and scoped `shift_demands` → compute in-scope-only targets automatically.
+15. `worker_ids_to_worker_dates`, `dates_campaign`, `dates_hist`, and all `periods_*` remain **full** for every scope type. Pruning dates would silently break sequence constraints (minimum rest gaps, consecutive duty limits), work-time balancing across weeks, and nb_duties targets — all of which require the full timeline to be evaluated correctly.
+16. Scope reduction is achieved entirely through Phase 4 (pruned shifts, pruned demands, locked WIP) and Phases 9–10 (constraint and request cell filtering), not through date truncation. The solver sees the full timeline with most out-of-scope cells already decided (locked WIP), freeing only the in-scope cells.
 
 ---
 
-## Phase 7 — Fixed values: no code changes needed *(cascades from Phases 4 & 5)*
+## Phase 6 — Work times & nb_duties: no code changes needed *(cascades from Phase 4)*
 
-16. `core_to_engine_fixed_values` already uses `shifts_not_deleted` (scoped in Phase 4) and `daily_shift_demands` (scoped in Phase 4).
-17. `_zero_shifts_without_demand` correctly zeros out-of-scope cells because no in-scope demand exists for them.
-18. Out-of-scope WIP assignments are already in `as_campaign_fixed` (Phase 4 step 11) → they appear as fixed=1.
+17. `calculate_worker_work_times` and `calculate_worker_nb_duties` receive the full `worker_ids_to_worker_dates` (unchanged) and the Phase 4-scoped `shifts_not_deleted` + `shift_demands` — targets are naturally computed over the full campaign with only in-scope shift types and demands, which is the correct behaviour.
 
 ---
 
-## Phase 8 — Variables & no-overlap: no code changes needed *(cascades from Phases 4 & 5)*
+## Phase 7 — Fixed values: no code changes needed *(cascades from Phase 4)*
 
-19. `build_engine_variables` uses scoped `worker_ids_to_worker_dates` + scoped `shifts_not_deleted` → only in-scope `(worker, date, shift)` tuples created.
+18. `core_to_engine_fixed_values` already uses `shifts_not_deleted` (scoped in Phase 4) and `shift_demands` (scoped in Phase 4).
+19. `_zero_shifts_without_demand` correctly zeros out-of-scope cells because no in-scope demand exists for them.
+20. Out-of-scope WIP assignments are already in `as_campaign_fixed` (Phase 4 step 12) → they appear as fixed=1.
+
+---
+
+## Phase 8 — Variables & no-overlap: no code changes needed *(cascades from Phase 4)*
+
+21. `build_engine_variables` uses the full `worker_ids_to_worker_dates` + Phase 4-scoped `shifts_not_deleted`. Variables exist for all campaign dates × in-scope shifts; out-of-scope cells are fixed=1 (locked WIP from Phase 4 step 12) so the solver cannot change them, preserving full timeline correctness.
 
 ---
 
@@ -148,7 +138,7 @@ New helper `_preprocess_scope` in `apply_scope.py` or inline in `core_to_engine_
 3. FULL solve: behaviour identical to today.
 4. DUTIES solve: NORMAL shifts absent from model; WIP NORMAL assignments locked.
 5. NON_DUTIES solve: DUTY + RECUP shifts absent; `shift_duties_not_deleted` empty → no nb_duties constraints, no duty-recup pairs.
-6. CUSTOM (dates) solve: only variables for those dates; out-of-scope WIP assignments locked; work-time targets scoped to those dates.
+6. CUSTOM (dates) solve: in-scope shift demands filtered to those dates; out-of-scope WIP assignments locked; work-time targets computed over full campaign (correct — solver enforces global totals with out-of-scope cells already fixed).
 7. Post-solve: assignments outside scope retain their pre-solve WIP values.
 
 ---
@@ -157,6 +147,7 @@ New helper `_preprocess_scope` in `apply_scope.py` or inline in `core_to_engine_
 
 - `solve_scope` is a separate parameter (not in `EngineInputsAugmented`) — it is a processing directive, not engine data.
 - `build_engine_constraints` gets explicit cell-level pruning.
-- Work time / nb_duties are computed only for in-scope dates via scoped `worker_ids_to_worker_dates`.
-- Helper functions from `apply_solve_scope.py` (`_is_in_scope_worker_view`, `_is_in_scope_shift_view`) are moved/reused, not re-implemented.
+- `worker_ids_to_worker_dates`, all date ranges, and all periods remain full — the solver needs the complete campaign timeline for sequence and work-time constraints to be correct.
+- Work time / nb_duties targets are computed over the full campaign with scoped shift types and demands; this is intentional.
+- Helper functions from `apply_solve_scope.py` are moved into `build_scope_context.py`, not re-implemented.
 - Scope application reduces model size by pruning (not by adding fixed=1 locks beyond the WIP classification step).
