@@ -8,7 +8,7 @@
 
 **File:** `backend/shared/src/shared/schemas/core/engine.py`
 
-1. Add `as_wip_campaign: List[Assignment]` to the `EngineInputs` dataclass (after `as_wip_fixed`).
+1. Add `as_campaign_not_fixed: List[Assignment]` to the `EngineInputs` dataclass (after `as_campaign_fixed`).
 2. Update `to_dict()` and `from_dict()` on `EngineInputs` to include the new field.
 3. `EngineInputsAugmented.from_engine_inputs` inherits it automatically — no extra change.
 
@@ -129,7 +129,7 @@ New helper `_preprocess_scope` in `apply_scope.py` or inline in `core_to_engine_
 
 | File | Change |
 |---|---|
-| `backend/shared/src/shared/schemas/core/engine.py` | Add `as_wip_campaign` field |
+| `backend/shared/src/shared/schemas/core/engine.py` | Add `as_campaign_not_fixed` field |
 | `backend/solve_service/src/db_operations/get_engine_inputs.py` | Fetch WIP, remove scope call |
 | `backend/solve_service/src/db_operations/apply_solve_scope.py` | Source for helpers to move; delete after |
 | `backend/solve_service/src/core_to_engine_service/core_to_engine_inputs.py` | Main target: scope param + Phases 4–8 |
