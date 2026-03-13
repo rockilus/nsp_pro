@@ -1,11 +1,8 @@
 import time
-from typing import Optional
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import EngineInputs, Schedule
-from shared.schemas.core.solve_task_status import SolveScope, SolveScopeType
 
-from db_operations.apply_solve_scope import apply_solve_scope
 from db_operations.assignment_services import (
     get_fixed_assignments,
     get_wip_assignments,
@@ -22,7 +19,6 @@ from db_operations.request_services import get_requests_by_dates
 def get_engine_inputs(
     schedule: Schedule,
     collections: DatabaseCollections,
-    solve_scope: Optional[SolveScope] = None,
 ) -> EngineInputs:
     start_time_db = time.time()
     (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
@@ -58,6 +54,7 @@ def get_engine_inputs(
     )
     model_output = collections.model_output_db.get_model_output(schedule.id)
     end_time_db = time.time()
+    wip_assignments = get_wip_assignments(schedule, collections)
     engine_inputs = EngineInputs(
         schedule=schedule,
         workers=workers,
@@ -68,6 +65,7 @@ def get_engine_inputs(
         attributes=attributes,
         as_hist=as_hist,
         as_wip_fixed=as_wip_fixed,
+        as_wip_campaign=wip_assignments,
         cbs_augmented=cbs_augmented,
         shift_demands=shift_demands,
         requests_work=requests_work,
@@ -76,9 +74,4 @@ def get_engine_inputs(
     )
     total_time_db = end_time_db - start_time_db
     print(f"db time:              {total_time_db:.2f}s")
-    if solve_scope and solve_scope.scope_type != SolveScopeType.FULL:
-        wip_assignments = get_wip_assignments(schedule, collections)
-        engine_inputs = apply_solve_scope(
-            engine_inputs, solve_scope, wip_assignments
-        )
     return engine_inputs

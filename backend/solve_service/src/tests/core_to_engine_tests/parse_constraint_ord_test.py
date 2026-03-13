@@ -263,6 +263,7 @@ def make_simple_engine_inputs(
         attributes=attributes,
         as_hist=[],
         as_wip_fixed=[],
+        as_wip_campaign=[],
         cbs_augmented=[cba],
         shift_demands=shift_demands,
         requests_work=[],

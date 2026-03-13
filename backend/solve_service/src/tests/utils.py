@@ -33,6 +33,7 @@ def engine_inputs_to_engine_inputs_augmented(
         attributes=engine_inputs.attributes,
         as_hist=engine_inputs.as_hist,
         as_wip_fixed=engine_inputs.as_wip_fixed,
+        as_wip_campaign=engine_inputs.as_wip_campaign,
         cbs_augmented=engine_inputs.cbs_augmented,
         shift_demands=engine_inputs.shift_demands,
         requests_work=engine_inputs.requests_work,

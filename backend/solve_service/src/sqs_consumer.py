@@ -174,7 +174,6 @@ class SQSSolveConsumer:
         engine_inputs = get_engine_inputs(
             schedule=schedule,
             collections=self.collections,
-            solve_scope=message.solve_scope,
         )
         engine_outputs, processing_cache = solve_schedule(
             engine_inputs=engine_inputs

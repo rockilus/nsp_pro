@@ -264,6 +264,7 @@ def sample_data_fixture() -> EngineInputsAugmented:
         attributes=attributes,
         as_hist=[],
         as_wip_fixed=[],
+        as_wip_campaign=[],
         cbs_augmented=cbs_augmented,
         shift_demands=daily_shift_demands,
         requests_work=[],
@@ -490,6 +491,7 @@ def sample_data() -> EngineInputsAugmented:
         attributes=attributes,
         as_hist=[],
         as_wip_fixed=[],
+        as_wip_campaign=[],
         cbs_augmented=cbs_augmented,
         shift_demands=daily_shift_demands,
         requests_work=[],
@@ -644,6 +646,7 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
         attributes=attributes,
         as_hist=[],
         as_wip_fixed=[],
+        as_wip_campaign=[],
         cbs_augmented=cbs_augmented,
         shift_demands=daily_shift_demands,
         requests_work=[],
@@ -716,7 +719,9 @@ def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
         for dsd in dsds
         if dsd.count > 0
     ]
-    data_dict["shift_demands"] = [sd.to_dict() for sd in shift_demands_from_dsds]
+    data_dict["shift_demands"] = [
+        sd.to_dict() for sd in shift_demands_from_dsds
+    ]
 
     ei = EngineInputs.from_dict(data_dict)
     return EngineInputsAugmented(
@@ -729,6 +734,7 @@ def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
         attributes=ei.attributes,
         as_hist=ei.as_hist,
         as_wip_fixed=ei.as_wip_fixed,
+        as_wip_campaign=ei.as_wip_campaign,
         cbs_augmented=ei.cbs_augmented,
         shift_demands=ei.shift_demands,
         requests_work=ei.requests_work,
@@ -741,7 +747,9 @@ def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
 
 @pytest.fixture
 def sample_data_benoit_case_fixture() -> EngineInputsAugmented:
-    engine_inputs = load_engine_inputs_from_file("test_data/250521_benoit_case.json")
+    engine_inputs = load_engine_inputs_from_file(
+        "test_data/250521_benoit_case.json"
+    )
     # engine_inputs.requests = [
     #     r for r in engine_inputs.requests if r.id != "67893e204c7443695ec41f2b"
     # ]

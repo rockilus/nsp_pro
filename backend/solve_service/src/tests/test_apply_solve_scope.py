@@ -1,9 +1,7 @@
 """Unit tests for apply_solve_scope."""
 
 from datetime import date, datetime, timezone
-from typing import List
 
-import pytest
 from shared.schemas.core.assignment import Assignment, AssignmentSource
 from shared.schemas.core.shift import ShiftLeaveType, ShiftRestType, ShiftType
 from shared.schemas.core.solve_task_status import (
@@ -15,7 +13,6 @@ from shared.schemas.core.solve_task_status import (
 
 from db_operations.apply_solve_scope import apply_solve_scope
 from tests.conftest import *  # noqa: F401,F403  — import fixtures
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -42,7 +39,7 @@ def _make_shift(
     shift_type: ShiftType,
     rest_type: ShiftRestType = ShiftRestType.NONE,
 ):
-    from shared.schemas.core.shift import Shift, Staffing
+    from shared.schemas.core.shift import Shift
 
     _t = datetime(2024, 1, 1, 8, 0, 0, tzinfo=timezone.utc)
     _e = datetime(2024, 1, 1, 16, 0, 0, tzinfo=timezone.utc)
@@ -118,6 +115,7 @@ def _engine_inputs_with(
         attributes=[],
         as_hist=[],
         as_wip_fixed=as_wip_fixed if as_wip_fixed is not None else [],
+        as_wip_campaign=[],
         cbs_augmented=[],
         shift_demands=[],
         requests_work=[],

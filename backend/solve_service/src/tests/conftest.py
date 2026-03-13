@@ -475,6 +475,7 @@ def engine_inputs(
         attributes=attributes,
         as_hist=[],
         as_wip_fixed=[],
+        as_wip_campaign=[],
         cbs_augmented=[],
         shift_demands=daily_shift_demands_shifts_3n_2d,
         requests_work=[],

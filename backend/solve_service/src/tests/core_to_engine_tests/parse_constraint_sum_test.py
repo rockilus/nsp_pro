@@ -271,6 +271,7 @@ def make_simple_engine_inputs(
         attributes=attributes,
         as_hist=[],
         as_wip_fixed=[],
+        as_wip_campaign=[],
         cbs_augmented=[cba],
         shift_demands=shift_demands,
         requests_work=[],
@@ -752,6 +753,7 @@ def test_parse_constraints_sum_prorates_single_day_period(
         attributes=[],
         as_hist=[],
         as_wip_fixed=[],
+        as_wip_campaign=[],
         cbs_augmented=[cba],
         shift_demands=[
             ShiftDemandNew(date=date(2025, 1, 1), shift_id="sh0", team_id="t0", count=1)

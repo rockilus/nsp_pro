@@ -352,6 +352,7 @@ class TestSpecialDayConstraints:
             attributes=[],
             as_hist=[],
             as_wip_fixed=[],
+            as_wip_campaign=[],
             cbs_augmented=[],
             shift_demands=daily_shift_demands,
             requests_work=[],
