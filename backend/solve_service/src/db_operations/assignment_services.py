@@ -67,20 +67,27 @@ def _delete_wip_in_scope(
     )
     scoped_as_ids: List[str] = []
     if solve_scope is not None:
+        # Build convenience sets from the full variable triples
+        # `variables` contains (worker_id, date_iso, shift_id)
+        worker_date_in_scope = {
+            (w_id, date_iso) for (w_id, date_iso, _) in scope_ctx.variables
+        }
+        shift_date_in_scope = {
+            (s_id, date_iso) for (_, date_iso, s_id) in scope_ctx.variables
+        }
+
         if solve_scope.solve_view == "worker":
             scoped_as_ids = [
                 a.id
                 for a in assignments_campaign_not_fixed
-                if a.worker_id in scope_ctx.worker_ids
-                and a.date.isoformat() in scope_ctx.dates
+                if (a.worker_id, a.date.isoformat()) in worker_date_in_scope
                 and a.id is not None
             ]
         elif solve_scope.solve_view == "shift":
             scoped_as_ids = [
                 a.id
                 for a in assignments_campaign_not_fixed
-                if a.shift_id in scope_ctx.shift_ids
-                and a.date.isoformat() in scope_ctx.dates
+                if (a.shift_id, a.date.isoformat()) in shift_date_in_scope
                 and a.id is not None
             ]
     if scoped_as_ids:
