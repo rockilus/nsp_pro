@@ -9,9 +9,9 @@ from dataclasses import dataclass
 from typing import List, Set, Tuple
 
 from shared.schemas.core import EngineInputsAugmented, Shift, Worker
-from shared.schemas.core.assignment import Assignment
-from shared.schemas.core.shift import ShiftRestType, ShiftType
-from shared.schemas.core.solve_task_status import SolveScope, SolveScopeType
+from shared.schemas.core import Assignment
+from shared.schemas.core import ShiftRestType, ShiftType
+from shared.schemas.core import SolveScope, SolveScopeType, ShiftDemandNew
 
 # Type alias for the 3-tuple (worker_id, date_iso, shift_id)
 _Variables = Set[Tuple[str, str, str]]
@@ -26,20 +26,6 @@ class ScopeContext:
     shift_demand_ids: Set[str]  # ids of ShiftDemandNew rows in scope
 
 
-def _dedup_append_locked(
-    engine_inputs: EngineInputsAugmented,
-    to_lock: List[Assignment],
-) -> None:
-    """Append to_lock to as_campaign_fixed, skipping already-present keys."""
-    existing_keys = {
-        (a.worker_id, a.date, a.shift_id) for a in engine_inputs.as_campaign_fixed
-    }
-    new_locked = [
-        a for a in to_lock if (a.worker_id, a.date, a.shift_id) not in existing_keys
-    ]
-    engine_inputs.as_campaign_fixed = engine_inputs.as_campaign_fixed + new_locked
-
-
 def _expand_to_workers(pairs: Set[Tuple[str, str]], W: Set[str]) -> _Variables:
     """Return {(w, date, shift) for w in W for (shift, date) in pairs}."""
     return {(w, date_iso, shift_id) for shift_id, date_iso in pairs for w in W}
@@ -50,7 +36,9 @@ def _duties_variables(
     shifts_not_deleted: List[Shift],
     W: Set[str],
 ) -> _Variables:
-    duty_ids = {s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY}
+    duty_ids = {
+        s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY
+    }
     variables = _expand_to_workers(
         {(s, d) for s, d in raw_demand_pairs if s in duty_ids}, W
     )
@@ -79,7 +67,8 @@ def _non_duties_variables(
         for s in shifts_not_deleted
         if s.shift_type != ShiftType.DUTY
         and not (
-            s.shift_type == ShiftType.REST and s.rest_type == ShiftRestType.RECUPERATION
+            s.shift_type == ShiftType.REST
+            and s.rest_type == ShiftRestType.RECUPERATION
         )
     }
     return _expand_to_workers(
@@ -144,7 +133,7 @@ def _custom_worker_view_variables(
 
 
 def _build_scope_context(
-    variables: _Variables, engine_inputs: EngineInputsAugmented
+    variables: _Variables, demands: List[ShiftDemandNew]
 ) -> ScopeContext:
     dates = {d for (_, d, _) in variables}
     shift_ids = {s for (_, _, s) in variables}
@@ -152,8 +141,9 @@ def _build_scope_context(
     shift_date_pairs = {(s, d) for (_, d, s) in variables}
     shift_demand_ids = {
         sd.id
-        for sd in engine_inputs.shift_demands
-        if (sd.shift_id, sd.date.isoformat()) in shift_date_pairs and sd.id is not None
+        for sd in demands
+        if (sd.shift_id, sd.date.isoformat()) in shift_date_pairs
+        and sd.id is not None
     }
     return ScopeContext(
         variables=variables,
@@ -166,9 +156,10 @@ def _build_scope_context(
 
 def preprocess_scope(
     scope: SolveScope,
-    engine_inputs: EngineInputsAugmented,  # read-only; not mutated
     workers_not_deleted: List[Worker],
     shifts_not_deleted: List[Shift],
+    demands: List[ShiftDemandNew],
+    var_model: List[Tuple[str, str, str]],
 ) -> ScopeContext:
     """
     Compute the full set of (worker_id, date_iso, shift_id) variables in scope
@@ -183,49 +174,19 @@ def preprocess_scope(
         raise ValueError("solve_view must be set when scope_type is CUSTOM")
 
     raw_demand_pairs: Set[Tuple[str, str]] = {
-        (sd.shift_id, sd.date.isoformat()) for sd in engine_inputs.shift_demands
+        (sd.shift_id, sd.date.isoformat()) for sd in demands
     }
     W: Set[str] = {w.id for w in workers_not_deleted}
 
     if scope.scope_type == SolveScopeType.DUTIES:
         variables = _duties_variables(raw_demand_pairs, shifts_not_deleted, W)
     elif scope.scope_type == SolveScopeType.NON_DUTIES:
-        variables = _non_duties_variables(raw_demand_pairs, shifts_not_deleted, W)
+        variables = _non_duties_variables(
+            raw_demand_pairs, shifts_not_deleted, W
+        )
     elif scope.solve_view == "shift":
         variables = _custom_shift_view_variables(scope, raw_demand_pairs, W)
     else:
         variables = _custom_worker_view_variables(scope, raw_demand_pairs, W)
 
-    return _build_scope_context(variables, engine_inputs)
-
-
-def apply_scope_mutations(
-    engine_inputs: EngineInputsAugmented,
-    ctx: ScopeContext,
-) -> None:
-    """
-    Apply scope mutations to engine_inputs in-place using a pre-computed ScopeContext.
-
-    Steps:
-    1. Lock WIP assignments outside scope into as_campaign_fixed.
-    2. Prune engine_inputs.shifts to in-scope shift ids.
-    3. Prune engine_inputs.shift_demands to in-scope (shift_id, date) pairs.
-    """
-    # 1. WIP locking — out-of-scope WIP assignments become fixed
-    to_lock = [
-        a
-        for a in engine_inputs.as_campaign_not_fixed
-        if (a.worker_id, a.date.isoformat(), a.shift_id) not in ctx.variables
-    ]
-    _dedup_append_locked(engine_inputs, to_lock)
-
-    # 2. Shift pruning — keep only in-scope shifts
-    engine_inputs.shifts = [s for s in engine_inputs.shifts if s.id in ctx.shift_ids]
-
-    # 3. Shift demands pruning — keep only (shift_id, date) pairs in scope
-    shift_date_pairs_in_scope = {(s, d) for (_, d, s) in ctx.variables}
-    engine_inputs.shift_demands = [
-        sd
-        for sd in engine_inputs.shift_demands
-        if (sd.shift_id, sd.date.isoformat()) in shift_date_pairs_in_scope
-    ]
+    return _build_scope_context(variables=variables, demands=demands)
