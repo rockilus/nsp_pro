@@ -10,7 +10,7 @@ from shared.schemas.core import (
     ShiftRestType,
     ShiftType,
 )
-from shared.schemas.core.solve_task_status import SolveScope
+from shared.schemas.core.solve_task_status import SolveScope, SolveScopeType
 
 from core_to_engine_service.build_dates import (
     build_dates,
@@ -43,6 +43,10 @@ from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
     build_periods_yearly,
+)
+from core_to_engine_service.build_scope_context import (
+    ScopeContext,
+    preprocess_scope,
 )
 from core_to_engine_service.build_worker_shift_filter import (
     BoolSharedPolicy,
@@ -136,6 +140,25 @@ def core_to_engine_inputs(
         dates_campaign,
     )
 
+    variables = build_engine_variables(
+        engine_inputs.workers,
+        worker_ids_to_worker_dates,
+        engine_inputs.shifts,
+        shifts_not_deleted,
+        shift_id_to_duration_dict,
+    )
+
+    # Scope pre-processing (Phase 4)
+    # Runs before the Dates block so that engine_inputs.shifts and
+    # engine_inputs.shift_demands are pruned, and locked WIP assignments are
+    # appended to as_campaign_fixed, before any build_* call.
+    _scope_ctx: Optional[ScopeContext] = None
+    if solve_scope is not None and solve_scope.scope_type != SolveScopeType.FULL:
+        _scope_ctx = preprocess_scope(
+            solve_scope, engine_inputs, workers_not_deleted, shifts_not_deleted
+        )
+        print(f"Scope pre-processing done. ScopeContext: {_scope_ctx}")
+
     # Requests
     approved_requests = [
         r
@@ -223,13 +246,7 @@ def core_to_engine_inputs(
 
     inputs = InputsEngine(
         ModelSetupEngine(
-            variables=build_engine_variables(
-                engine_inputs.workers,
-                worker_ids_to_worker_dates,
-                engine_inputs.shifts,
-                shifts_not_deleted,
-                shift_id_to_duration_dict,
-            ),
+            variables=variables,
             no_overlap_shift_intervals=[
                 [
                     (w_id, d.isoformat(), s_id)
