@@ -42,21 +42,8 @@ def _duties_variables(
     W: Set[str],
 ) -> _Variables:
     duty_ids = {s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY}
-    variables = _expand_to_workers(
+    return _expand_to_workers(
         {(s, d) for s, d in raw_demand_pairs if s in duty_ids}, W
-    )
-    # RECUPERATION addendum — no demands exist for recup shifts, but free
-    # variables are needed so duty-recup pairs can be enforced.
-    duty_dates = {d for (_, d, _) in variables}
-    recup_ids = {
-        s.id
-        for s in shifts_not_deleted
-        if s.shift_type == ShiftType.REST
-        and s.rest_type == ShiftRestType.RECUPERATION
-        and s.recuperation_duty_id in duty_ids
-    }
-    return variables | _expand_to_workers(
-        {(s_id, d) for s_id in recup_ids for d in duty_dates}, W
     )
 
 
@@ -187,6 +174,28 @@ def preprocess_scope(
         variables = _custom_shift_view_variables(scope, raw_demand_pairs, W)
     else:
         variables = _custom_worker_view_variables(scope, raw_demand_pairs, W)
+
+    # RECUPERATION addendum — no demands exist for recup shifts, but free
+    # variables are needed so duty-recup pairs can be enforced for all scope types.
+    all_duty_ids = {s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY}
+    duty_ids_in_scope = {
+        shift_id for (_, _, shift_id) in variables if shift_id in all_duty_ids
+    }
+    if duty_ids_in_scope:
+        duty_dates_in_scope = {
+            d for (_, d, shift_id) in variables if shift_id in duty_ids_in_scope
+        }
+        recup_ids = {
+            s.id
+            for s in shifts_not_deleted
+            if s.shift_type == ShiftType.REST
+            and s.rest_type == ShiftRestType.RECUPERATION
+            and s.recuperation_duty_id in duty_ids_in_scope
+        }
+        variables = variables | _expand_to_workers(
+            {(s_id, d) for s_id in recup_ids for d in duty_dates_in_scope}, W
+        )
+
     # Ensure variables are constrained to the provided `var_model` (if any).
     # `var_model` is a list of (worker_id, date_iso, shift_id) tuples that
     # represent the model's variables; only keep intersections.
