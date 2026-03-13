@@ -8,12 +8,14 @@ from shared.schemas.core import (
     Shift,
     ShiftRestType,
     SolveScope,
+    SolveScopeType,
 )
 
 from engine import ScopeContext
 
+# pylint: disable=too-many-locals, too-many-statements, too-many-arguments
 
-# pylint: disable=too-many-locals, too-many-statements
+
 def get_wip_assignments(
     schedule: Schedule, collections: DatabaseCollections
 ) -> List[Assignment]:
@@ -57,13 +59,11 @@ def _delete_wip_in_scope(
             delete_fixed=False,
         )
         return
-    assignments_campaign_not_fixed = (
-        collections.assignment_db.get_assignments_by_dates(
-            team_id=schedule.team_id,
-            start_date=schedule.start_date,
-            end_date=schedule.end_date,
-            fixed=False,
-        )
+    assignments_campaign_not_fixed = collections.assignment_db.get_assignments_by_dates(
+        team_id=schedule.team_id,
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
+        fixed=False,
     )
     scoped_as_ids: List[str] = []
     if solve_scope is not None:
@@ -83,7 +83,10 @@ def _delete_wip_in_scope(
                 if (a.worker_id, a.date.isoformat()) in worker_date_in_scope
                 and a.id is not None
             ]
-        elif solve_scope.solve_view == "shift":
+        elif solve_scope.solve_view == "shift" or solve_scope.scope_type in [
+            SolveScopeType.DUTIES,
+            SolveScopeType.NON_DUTIES,
+        ]:
             scoped_as_ids = [
                 a.id
                 for a in assignments_campaign_not_fixed
@@ -108,13 +111,11 @@ def save_assignments(
         scope_ctx=scope_ctx,
         solve_scope=solve_scope,
     )
-    fixed_assignment_existing = (
-        collections.assignment_db.get_assignments_by_dates(
-            team_id=schedule.team_id,
-            start_date=schedule.start_date,
-            end_date=schedule.end_date,
-            fixed=True,
-        )
+    fixed_assignment_existing = collections.assignment_db.get_assignments_by_dates(
+        team_id=schedule.team_id,
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
+        fixed=True,
     )
     if not assignments:
         return []
@@ -151,8 +152,7 @@ def save_assignments(
         for assignment in assignments
         if not (
             shift_map.get(assignment.shift_id)
-            and shift_map[assignment.shift_id].rest_type
-            == ShiftRestType.RECUPERATION
+            and shift_map[assignment.shift_id].rest_type == ShiftRestType.RECUPERATION
         )
     ]
 
@@ -160,15 +160,12 @@ def save_assignments(
         assignment
         for assignment in assignments
         if shift_map.get(assignment.shift_id)
-        and shift_map[assignment.shift_id].rest_type
-        == ShiftRestType.RECUPERATION
+        and shift_map[assignment.shift_id].rest_type == ShiftRestType.RECUPERATION
     ]
 
     # Create non-recuperation assignments first
-    created_non_recuperation_assignments = (
-        collections.assignment_db.create_assignments(
-            non_recuperation_assignments
-        )
+    created_non_recuperation_assignments = collections.assignment_db.create_assignments(
+        non_recuperation_assignments
     )
 
     # Process recuperation assignments
@@ -203,13 +200,11 @@ def save_assignments(
                     )
 
                 if reference_assignment:
-                    assignment.reference_assignment_id = (
-                        reference_assignment.id
-                    )
+                    assignment.reference_assignment_id = reference_assignment.id
 
     # Create recuperation assignments
-    created_recuperation_assignments = (
-        collections.assignment_db.create_assignments(recuperation_assignments)
+    created_recuperation_assignments = collections.assignment_db.create_assignments(
+        recuperation_assignments
     )
 
     # Combine all created assignments
