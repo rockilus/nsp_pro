@@ -167,8 +167,8 @@ class EngineInputs:
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
     as_hist: List[Assignment]
-    as_wip_fixed: List[Assignment]
-    as_wip_campaign: List[Assignment]
+    as_campaign_fixed: List[Assignment]
+    as_campaign_not_fixed: List[Assignment]
     cbs_augmented: List[ConstraintBuildAugmented]
     shift_demands: List[ShiftDemandNew]
     requests_work: List[RequestAugmented]
@@ -180,31 +180,23 @@ class EngineInputs:
             "schedule": self.schedule.to_dict(),
             "workers": [worker.to_dict() for worker in self.workers],
             "shifts": [shift.to_dict() for shift in self.shifts],
-            "link_shifts": [
-                link_shift.to_dict() for link_shift in self.link_shifts
-            ],
+            "link_shifts": [link_shift.to_dict() for link_shift in self.link_shifts],
             "dimensions": [dim.to_dict() for dim in self.dimensions],
             "dim_entries": [entry.to_dict() for entry in self.dim_entries],
             "attributes": [attr.to_dict() for attr in self.attributes],
             "as_hist": [assignment.to_dict() for assignment in self.as_hist],
-            "as_wip_fixed": [
-                assignment.to_dict() for assignment in self.as_wip_fixed
+            "as_campaign_fixed": [
+                assignment.to_dict() for assignment in self.as_campaign_fixed
             ],
-            "as_wip_campaign": [
-                assignment.to_dict() for assignment in self.as_wip_campaign
+            "as_campaign_not_fixed": [
+                assignment.to_dict() for assignment in self.as_campaign_not_fixed
             ],
             "cbs_augmented": [
                 constraint.to_dict() for constraint in self.cbs_augmented
             ],
-            "shift_demands": [
-                demand.to_dict() for demand in self.shift_demands
-            ],
-            "requests_work": [
-                request.to_dict() for request in self.requests_work
-            ],
-            "requests_leave": [
-                request.to_dict() for request in self.requests_leave
-            ],
+            "shift_demands": [demand.to_dict() for demand in self.shift_demands],
+            "requests_work": [request.to_dict() for request in self.requests_work],
+            "requests_leave": [request.to_dict() for request in self.requests_leave],
             "model_output": (
                 self.model_output.to_dict() if self.model_output else None
             ),
@@ -216,45 +208,33 @@ class EngineInputs:
             schedule=Schedule.from_dict(data["schedule"]),
             workers=[Worker.from_dict(worker) for worker in data["workers"]],
             shifts=[Shift.from_dict(shift) for shift in data["shifts"]],
-            link_shifts=[
-                LinkShift.from_dict(link) for link in data["link_shifts"]
-            ],
-            dimensions=[
-                Dimension.from_dict(dim) for dim in data["dimensions"]
-            ],
-            dim_entries=[
-                DimEntry.from_dict(entry) for entry in data["dim_entries"]
-            ],
-            attributes=[
-                Attribute.from_dict(attr) for attr in data["attributes"]
-            ],
+            link_shifts=[LinkShift.from_dict(link) for link in data["link_shifts"]],
+            dimensions=[Dimension.from_dict(dim) for dim in data["dimensions"]],
+            dim_entries=[DimEntry.from_dict(entry) for entry in data["dim_entries"]],
+            attributes=[Attribute.from_dict(attr) for attr in data["attributes"]],
             as_hist=[
-                Assignment.from_dict(assignment)
-                for assignment in data["as_hist"]
+                Assignment.from_dict(assignment) for assignment in data["as_hist"]
             ],
-            as_wip_fixed=[
+            as_campaign_fixed=[
                 Assignment.from_dict(assignment)
-                for assignment in data["as_wip_fixed"]
+                for assignment in data["as_campaign_fixed"]
             ],
-            as_wip_campaign=[
+            as_campaign_not_fixed=[
                 Assignment.from_dict(assignment)
-                for assignment in data.get("as_wip_campaign", [])
+                for assignment in data.get("as_campaign_not_fixed", [])
             ],
             cbs_augmented=[
                 ConstraintBuildAugmented.from_dict(constraint)
                 for constraint in data["cbs_augmented"]
             ],
             shift_demands=[
-                ShiftDemandNew.from_dict(demand)
-                for demand in data["shift_demands"]
+                ShiftDemandNew.from_dict(demand) for demand in data["shift_demands"]
             ],
             requests_work=[
-                RequestAugmented.from_dict(request)
-                for request in data["requests"]
+                RequestAugmented.from_dict(request) for request in data["requests"]
             ],
             requests_leave=[
-                Request.from_dict(request)
-                for request in data.get("requests_leave", [])
+                Request.from_dict(request) for request in data.get("requests_leave", [])
             ],
             model_output=(
                 ModelOutput.from_dict(data["model_output"])
@@ -285,8 +265,8 @@ class EngineInputsAugmented(EngineInputs):
             dim_entries=engine_inputs.dim_entries,
             attributes=engine_inputs.attributes,
             as_hist=engine_inputs.as_hist,
-            as_wip_fixed=engine_inputs.as_wip_fixed,
-            as_wip_campaign=engine_inputs.as_wip_campaign,
+            as_campaign_fixed=engine_inputs.as_campaign_fixed,
+            as_campaign_not_fixed=engine_inputs.as_campaign_not_fixed,
             cbs_augmented=engine_inputs.cbs_augmented,
             shift_demands=engine_inputs.shift_demands,
             requests_work=engine_inputs.requests_work,
@@ -321,9 +301,7 @@ class EngineOutputsAugmented:
     def to_dict(self) -> Dict:
         return {
             "schedule": self.schedule.to_dict(),
-            "assignments": [
-                assignment.to_dict() for assignment in self.assignments
-            ],
+            "assignments": [assignment.to_dict() for assignment in self.assignments],
             "breaches": [breach.to_dict() for breach in self.breaches],
             "requests": [request.to_dict() for request in self.requests],
         }
@@ -333,13 +311,11 @@ class EngineOutputsAugmented:
         return cls(
             schedule=Schedule.from_dict(data["schedule"]),
             assignments=[
-                Assignment.from_dict(assignment)
-                for assignment in data["assignments"]
+                Assignment.from_dict(assignment) for assignment in data["assignments"]
             ],
             breaches=[Breach.from_dict(breach) for breach in data["breaches"]],
             requests=[
-                RequestAugmented.from_dict(request)
-                for request in data["requests"]
+                RequestAugmented.from_dict(request) for request in data["requests"]
             ],
         )
 
