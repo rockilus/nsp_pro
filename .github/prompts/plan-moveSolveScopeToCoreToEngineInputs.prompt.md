@@ -39,10 +39,10 @@
 New `preprocess_scope` function in `build_scope_context.py`. See `plan-preprocessScope.prompt.md` for the full detailed plan. Summary:
 
 10. Compute `raw_demand_pairs` from `engine_inputs.shift_demands` as the demand anchor — a variable `(worker, date, shift)` is in scope only if a demand exists for its `(shift_id, date)` slot.
-11. Build `in_scope_cells` via union (OR) of all present criteria (shift_ids / worker_ids / dates / cells). Returns `ScopeContext` with `in_scope_cells`, `in_scope_dates`, `in_scope_shift_ids`, `in_scope_worker_ids`, `is_worker_anchored`.
-12. **WIP locking** — out-of-scope `as_campaign_not_fixed` assignments dedup-appended to `as_campaign_fixed` (locked); in-scope assignments remain free.
-13. **Shift pruning** (shift-anchored only) — `engine_inputs.shifts` filtered to `in_scope_shift_ids`; caller re-derives `shifts_not_deleted` and related locals afterwards.
-14. **Shift demands pruning** — `engine_inputs.shift_demands` filtered to in-scope `(shift_id, date)` pairs.
+11. Build `variables_in_scope: Set[Tuple[str, str, str]]` — full `(worker_id, date_iso, shift_id)` 3-tuples — via union (OR) of all present criteria. Returns `ScopeContext` with `variables_in_scope`, `in_scope_dates`, `in_scope_shift_ids`, `in_scope_worker_ids` (all derived from the 3-tuple set).
+12. **WIP locking** — for each `a` in `as_campaign_not_fixed`: if `(a.worker_id, a.date.isoformat(), a.shift_id) not in variables_in_scope`, dedup-append to `as_campaign_fixed` (locked); in-scope assignments remain free.
+13. **Shift pruning** — `engine_inputs.shifts` filtered to `in_scope_shift_ids`; works uniformly for all scope types; caller re-derives `shifts_not_deleted` and related locals afterwards.
+14. **Shift demands pruning** — `engine_inputs.shift_demands` filtered by `{(s, d) for (_, d, s) in variables_in_scope}`.
 
 ---
 
