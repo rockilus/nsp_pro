@@ -5,7 +5,6 @@ from shared.constraint_parser import build_dim_to_attr_value_to_owner
 from shared.constraint_parser.parse_selected_shifts import (
     parse_selected_shifts,
 )
-from core_to_engine_service.build_scope_context import ScopeContext
 from shared.schemas.core import (
     Assignment,
     Attribute,
@@ -22,7 +21,9 @@ from shared.schemas.core import (
     WorkerDates,
 )
 
-# pylint: disable=too-many-arguments, R0801
+from core_to_engine_service.build_scope_context import ScopeContext
+
+# pylint: disable=too-many-arguments, too-many-locals, R0801
 
 
 def _filter_campaign_dates(
@@ -147,9 +148,7 @@ def _apply_leave_requests(
             continue
 
         leave_shift = shift_dict[req.shift_id]
-        dates_to_process = _filter_campaign_dates(
-            req, worker_ids_to_worker_dates
-        )
+        dates_to_process = _filter_campaign_dates(req, worker_ids_to_worker_dates)
 
         for d in dates_to_process:
             date_iso = d.isoformat()
@@ -158,9 +157,7 @@ def _apply_leave_requests(
             out[req.worker_id, date_iso, req.shift_id] = 1
 
             # Zero out overlapping normal/duty shifts
-            _zero_overlapping_shifts(
-                out, req.worker_id, date_iso, leave_shift, shifts
-            )
+            _zero_overlapping_shifts(out, req.worker_id, date_iso, leave_shift, shifts)
 
 
 def _apply_negative_work_demand(
@@ -241,9 +238,7 @@ def _apply_multi_shift_work_demand(
 
         # For each target shift, zero out overlapping shifts
         for target_shift in target_shifts:
-            _zero_overlapping_shifts(
-                out, req.worker_id, date_iso, target_shift, shifts
-            )
+            _zero_overlapping_shifts(out, req.worker_id, date_iso, target_shift, shifts)
 
 
 def _apply_work_demand_requests(
@@ -252,9 +247,7 @@ def _apply_work_demand_requests(
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
     shift_dict: Dict[str, Shift],
     shifts: List[Shift],
-    dim_to_attr_value_to_shift: Dict[
-        str, Dict[str | int | float | bool, List[str]]
-    ],
+    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]],
 ) -> None:
     """
     Apply approved WORK_DEMAND requests to fixed values.
@@ -291,21 +284,15 @@ def _apply_work_demand_requests(
             continue
 
         # Filter to valid shift IDs
-        target_shift_ids = [
-            sid for sid in target_shift_ids if sid in shift_dict
-        ]
+        target_shift_ids = [sid for sid in target_shift_ids if sid in shift_dict]
         if not target_shift_ids:
             continue
 
         target_shifts = [shift_dict[sid] for sid in target_shift_ids]
-        dates_to_process = _filter_campaign_dates(
-            req, worker_ids_to_worker_dates
-        )
+        dates_to_process = _filter_campaign_dates(req, worker_ids_to_worker_dates)
 
         if req.negative:
-            _apply_negative_work_demand(
-                out, req, target_shift_ids, dates_to_process
-            )
+            _apply_negative_work_demand(out, req, target_shift_ids, dates_to_process)
         else:
             # Positive request
             if len(target_shift_ids) == 1:

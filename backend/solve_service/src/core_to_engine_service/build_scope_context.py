@@ -8,10 +8,15 @@ Scope pre-processing for partial campaign solves.
 from dataclasses import dataclass
 from typing import List, Set, Tuple
 
-from shared.schemas.core import EngineInputsAugmented, Shift, Worker
-from shared.schemas.core import Assignment
-from shared.schemas.core import ShiftRestType, ShiftType
-from shared.schemas.core import SolveScope, SolveScopeType, ShiftDemandNew
+from shared.schemas.core import (
+    Shift,
+    ShiftDemandNew,
+    ShiftRestType,
+    ShiftType,
+    SolveScope,
+    SolveScopeType,
+    Worker,
+)
 
 # Type alias for the 3-tuple (worker_id, date_iso, shift_id)
 _Variables = Set[Tuple[str, str, str]]
@@ -36,9 +41,7 @@ def _duties_variables(
     shifts_not_deleted: List[Shift],
     W: Set[str],
 ) -> _Variables:
-    duty_ids = {
-        s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY
-    }
+    duty_ids = {s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY}
     variables = _expand_to_workers(
         {(s, d) for s, d in raw_demand_pairs if s in duty_ids}, W
     )
@@ -67,8 +70,7 @@ def _non_duties_variables(
         for s in shifts_not_deleted
         if s.shift_type != ShiftType.DUTY
         and not (
-            s.shift_type == ShiftType.REST
-            and s.rest_type == ShiftRestType.RECUPERATION
+            s.shift_type == ShiftType.REST and s.rest_type == ShiftRestType.RECUPERATION
         )
     }
     return _expand_to_workers(
@@ -142,8 +144,7 @@ def _build_scope_context(
     shift_demand_ids = {
         sd.id
         for sd in demands
-        if (sd.shift_id, sd.date.isoformat()) in shift_date_pairs
-        and sd.id is not None
+        if (sd.shift_id, sd.date.isoformat()) in shift_date_pairs and sd.id is not None
     }
     return ScopeContext(
         variables=variables,
@@ -181,9 +182,7 @@ def preprocess_scope(
     if scope.scope_type == SolveScopeType.DUTIES:
         variables = _duties_variables(raw_demand_pairs, shifts_not_deleted, W)
     elif scope.scope_type == SolveScopeType.NON_DUTIES:
-        variables = _non_duties_variables(
-            raw_demand_pairs, shifts_not_deleted, W
-        )
+        variables = _non_duties_variables(raw_demand_pairs, shifts_not_deleted, W)
     elif scope.solve_view == "shift":
         variables = _custom_shift_view_variables(scope, raw_demand_pairs, W)
     else:

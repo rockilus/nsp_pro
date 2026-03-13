@@ -36,6 +36,12 @@ from core_to_engine_service.build_engine_fixed_values import (
     _zero_unrequested_leave_shifts,
     core_to_engine_fixed_values,
 )
+from core_to_engine_service.build_engine_variables import (
+    build_engine_variables,
+)
+from core_to_engine_service.core_to_engine_inputs import (
+    _build_shift_id_to_duration_dict,
+)
 
 
 # pylint: disable=R0801
@@ -1058,19 +1064,28 @@ class TestCoreToEngineFixedValuesIntegration:
         dim_entries: List[DimEntry] = []
         attributes: List[Attribute] = []
 
+        variables = build_engine_variables(
+            workers=workers,
+            worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+            shifts=shifts,
+            shifts_not_deleted=shifts,
+            shift_id_to_duration_dict=_build_shift_id_to_duration_dict(shifts=shifts),
+        )
+
         result = core_to_engine_fixed_values(
-            workers,
-            workers_not_deleted,
-            worker_ids_to_worker_dates,
-            shifts,
-            shifts,
-            daily_shift_demands,
-            assignments,
-            requests,
-            approved_requests,
-            dimensions,
-            dim_entries,
-            attributes,
+            workers=workers,
+            workers_not_deleted=workers_not_deleted,
+            worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+            shifts=shifts,
+            shifts_not_deleted=shifts,
+            daily_shift_demands=daily_shift_demands,
+            assignments=assignments,
+            requests=requests,
+            approved_requests=approved_requests,
+            dimensions=dimensions,
+            dim_entries=dim_entries,
+            attributes=attributes,
+            var_model=variables.assignments,
         )
 
         # Verify historical assignment
