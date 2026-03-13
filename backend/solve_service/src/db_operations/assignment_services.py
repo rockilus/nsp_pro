@@ -30,13 +30,13 @@ def get_fixed_assignments(
         start_date=None,
         end_date=schedule.start_date - timedelta(days=1),
     )  # validated assignments
-    as_wip_fixed = collections.assignment_db.get_assignments_by_dates(
+    as_campaign_fixed = collections.assignment_db.get_assignments_by_dates(
         team_id=schedule.team_id,
         start_date=schedule.start_date,
         end_date=schedule.end_date,
         fixed=True,
     )  # assignments wip and fixed
-    return as_hist, as_wip_fixed
+    return as_hist, as_campaign_fixed
 
 
 def save_assignments(

@@ -112,7 +112,7 @@ def core_to_engine_inputs(
     )
 
     # Dates
-    fixed_assignments = engine_inputs.as_hist + engine_inputs.as_wip_fixed
+    fixed_assignments = engine_inputs.as_hist + engine_inputs.as_campaign_fixed
     dates_hist, dates_campaign = build_dates(
         engine_inputs.schedule,
         fixed_assignments,

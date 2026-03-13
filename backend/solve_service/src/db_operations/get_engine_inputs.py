@@ -33,7 +33,7 @@ def get_engine_inputs(
         attributes=attributes,
         collections=collections,
     )
-    as_hist, as_wip_fixed = get_fixed_assignments(schedule, collections)
+    as_hist, as_campaign_fixed = get_fixed_assignments(schedule, collections)
     cbs_augmented = get_active_constraint_builds_by_ids(
         schedule.constraint_build_ids,
         workers,
@@ -62,8 +62,8 @@ def get_engine_inputs(
         dim_entries=dim_entries,
         attributes=attributes,
         as_hist=as_hist,
-        as_wip_fixed=as_wip_fixed,
-        as_wip_campaign=wip_assignments,
+        as_campaign_fixed=as_campaign_fixed,
+        as_campaign_not_fixed=wip_assignments,
         cbs_augmented=cbs_augmented,
         shift_demands=shift_demands,
         requests_work=requests_work,

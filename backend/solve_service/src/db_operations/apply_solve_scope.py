@@ -7,18 +7,21 @@ from shared.schemas.core.solve_task_status import SolveScope, SolveScopeType
 
 
 def _existing_fixed_keys(engine_inputs: EngineInputs) -> Set[Tuple]:
-    return {(a.worker_id, a.date, a.shift_id) for a in engine_inputs.as_wip_fixed}
+    return {(a.worker_id, a.date, a.shift_id) for a in engine_inputs.as_campaign_fixed}
 
 
 def _append_locked(
     engine_inputs: EngineInputs, to_lock: List[Assignment]
 ) -> EngineInputs:
-    """Return engine_inputs with to_lock deduplicated and appended to as_wip_fixed."""
+    """
+    Return engine_inputs with to_lock deduplicated and appended to
+    as_campaign_fixed.
+    """
     existing_keys = _existing_fixed_keys(engine_inputs)
     new_locked = [
         a for a in to_lock if (a.worker_id, a.date, a.shift_id) not in existing_keys
     ]
-    engine_inputs.as_wip_fixed = engine_inputs.as_wip_fixed + new_locked
+    engine_inputs.as_campaign_fixed = engine_inputs.as_campaign_fixed + new_locked
     return engine_inputs
 
 

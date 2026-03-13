@@ -351,8 +351,8 @@ class TestSpecialDayConstraints:
             dim_entries=[],
             attributes=[],
             as_hist=[],
-            as_wip_fixed=[],
-            as_wip_campaign=[],
+            as_campaign_fixed=[],
+            as_campaign_not_fixed=[],
             cbs_augmented=[],
             shift_demands=daily_shift_demands,
             requests_work=[],
@@ -380,7 +380,7 @@ class TestSpecialDayConstraints:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         # Call the method under test
@@ -388,7 +388,7 @@ class TestSpecialDayConstraints:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
 
@@ -401,7 +401,7 @@ class TestSpecialDayConstraints:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         shift_duty_ids = [
@@ -485,7 +485,7 @@ class TestSpecialDayConstraints:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         # Call the method under test
@@ -493,7 +493,7 @@ class TestSpecialDayConstraints:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
 
@@ -506,7 +506,7 @@ class TestSpecialDayConstraints:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             # fmt: off
             penalty=engine_inputs_special_days.penalties.system_constraint
             .special_days_target_nb_duties,

@@ -28,7 +28,7 @@ class TestBuildDutyRecupPairs:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -90,7 +90,7 @@ class TestBuildDutyRecupPairs:
         workers: List[Worker] = []
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -128,7 +128,7 @@ class TestBuildDutyRecupPairs:
         workers = sample_data.workers
         shifts: List[Shift] = []
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
