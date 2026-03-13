@@ -66,7 +66,7 @@ Service checks and linting (Makefile targets):
 
 ```bash
 # from backend/
-make solve_service_check   # runs typecheck/linters for solve_service
+make solve_service_check_no_test   # runs typecheck/linters for solve_service
 ```
 
 Frontend dev:
@@ -146,7 +146,7 @@ from shared.schemas.core import (
 
 ## 10 — Quality gates & checks
 - Before finishing a change, run: unit tests, linters/typechecks for affected services, and a local smoke test (start services via docker-compose or run the specific service locally).
-- Important Makefile targets: `make solve_service_check` (runs service checks), and service-specific test runners found in each service folder.
+- Important Makefile targets: `make solve_service_check_no_test` (runs service checks), and service-specific test runners found in each service folder.
 
 ## 11 — Next steps for the agent (if you want me to expand further)
 - Add exact SQS message examples with field names and a minimal script that posts an SQS message for local testing.
