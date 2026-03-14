@@ -723,6 +723,32 @@ class TestScopedSolveEngine:
                 source=AssignmentSource.MANUAL,
             )
             ei_scoped.as_campaign_fixed.append(a_fixed)
+            # If this demand is for a duty shift, also pre-assign a recuperation shift
+            duty_shift = next(
+                (s for s in ei_scoped.shifts if s.id == demand.shift_id),
+                None,
+            )
+            if duty_shift and duty_shift.shift_type == ShiftType.DUTY:
+                try:
+                    recup_shift = next(
+                        s
+                        for s in ei_scoped.shifts
+                        if s.rest_type == ShiftRestType.RECUPERATION
+                    )
+                except StopIteration:
+                    recup_shift = None
+                if recup_shift:
+                    a_fixed_recup = Assignment(
+                        id=f"a_fixed_{recup_shift.id}_{worker_to_assign.id}",
+                        team_id="t0",
+                        schedule_id="sch_s",
+                        worker_id=worker_to_assign.id,
+                        date=test_date,
+                        shift_id=recup_shift.id,
+                        fixed=True,
+                        source=AssignmentSource.MANUAL,
+                    )
+                    ei_scoped.as_campaign_fixed.append(a_fixed_recup)
 
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
@@ -749,52 +775,92 @@ class TestScopedSolveEngine:
             len(matching) == 1
         ), f"Expected exactly 1 new assignment for worker cell with one unfulfilled demand, got {len(matching)-1}"
 
-    # # ------------------------------------------------------------------
-    # # T8c — worker cell with all demands met produces no assignment
-    # # ------------------------------------------------------------------
-    # def test_worker_cell_with_all_demands_met_produces_no_assignment(
-    #     self, ei_scoped: EngineInputsAugmented
-    # ) -> None:
-    #     monday = first_monday(ei_scoped.schedule.start_date)
-    #     ei_scoped.as_campaign_fixed = [
-    #         Assignment(
-    #             id="fix_w1_morning",
-    #             team_id="t0",
-    #             schedule_id="sch_s",
-    #             worker_id="w1",
-    #             date=monday,
-    #             shift_id="s_morning",
-    #             fixed=True,
-    #             source=AssignmentSource.MANUAL,
-    #         ),
-    #         Assignment(
-    #             id="fix_w2_afternoon",
-    #             team_id="t0",
-    #             schedule_id="sch_s",
-    #             worker_id="w2",
-    #             date=monday,
-    #             shift_id="s_afternoon",
-    #             fixed=True,
-    #             source=AssignmentSource.MANUAL,
-    #         ),
-    #     ]
-    #     scope = SolveScope(
-    #         scope_type=SolveScopeType.CUSTOM,
-    #         worker_cells=[
-    #             WorkerDateCell(worker_id="w0", date=monday.isoformat())
-    #         ],
-    #         solve_view="worker",
-    #     )
-    #     outputs = engine_solve_engine_inputs(
-    #         engine_inputs=ei_scoped, solve_scope=scope
-    #     )
+    # ------------------------------------------------------------------
+    # T8c — worker cell with all demands met produces no assignment
+    # ------------------------------------------------------------------
+    def test_worker_cell_with_all_demands_met_produces_no_assignment(
+        self, ei_scoped: EngineInputsAugmented
+    ) -> None:
+        test_worker = next(w for w in ei_scoped.workers)
+        days_range = (
+            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
+        ).days
+        offset = random.randint(0, max(0, days_range))
+        test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
 
-    #     w0_monday = [
-    #         a
-    #         for a in outputs.assignments
-    #         if a.worker_id == "w0" and a.date == monday
-    #     ]
-    #     assert w0_monday == [], (
-    #         f"Expected no assignment for w0 on {monday} (all demands met), got "
-    #         + f"{w0_monday}"
-    #     )
+        test_demands = [
+            d
+            for d in ei_scoped.shift_demands
+            if d.date == test_date and d.count > 0
+        ]
+        assert test_demands, f"No demands with count > 0 on {test_date}"
+
+        # Mark all demands as fulfilled by pre-assigning other workers
+        other_workers = [
+            w for w in ei_scoped.workers if w.id != test_worker.id
+        ]
+        assert (
+            other_workers
+        ), "Need at least one other worker to pre-assign demands"
+        for idx, demand in enumerate(test_demands):
+            worker_to_assign = other_workers[idx % len(other_workers)]
+            a_fixed = Assignment(
+                id=f"a_fixed_{demand.shift_id}_{worker_to_assign.id}",
+                team_id="t0",
+                schedule_id="sch_s",
+                worker_id=worker_to_assign.id,
+                date=test_date,
+                shift_id=demand.shift_id,
+                fixed=True,
+                source=AssignmentSource.MANUAL,
+            )
+            ei_scoped.as_campaign_fixed.append(a_fixed)
+            # If this demand is for a duty shift, also pre-assign a recuperation shift
+            duty_shift = next(
+                (s for s in ei_scoped.shifts if s.id == demand.shift_id),
+                None,
+            )
+            if duty_shift and duty_shift.shift_type == ShiftType.DUTY:
+                try:
+                    recup_shift = next(
+                        s
+                        for s in ei_scoped.shifts
+                        if s.rest_type == ShiftRestType.RECUPERATION
+                    )
+                except StopIteration:
+                    recup_shift = None
+                if recup_shift:
+                    a_fixed_recup = Assignment(
+                        id=f"a_fixed_{recup_shift.id}_{worker_to_assign.id}",
+                        team_id="t0",
+                        schedule_id="sch_s",
+                        worker_id=worker_to_assign.id,
+                        date=test_date,
+                        shift_id=recup_shift.id,
+                        fixed=True,
+                        source=AssignmentSource.MANUAL,
+                    )
+                    ei_scoped.as_campaign_fixed.append(a_fixed_recup)
+
+        scope = SolveScope(
+            scope_type=SolveScopeType.CUSTOM,
+            worker_cells=[
+                WorkerDateCell(
+                    worker_id=test_worker.id, date=test_date.isoformat()
+                )
+            ],
+            solve_view="worker",
+        )
+        outputs = engine_solve_engine_inputs(
+            engine_inputs=ei_scoped, solve_scope=scope
+        )
+        assert outputs.is_solution is True
+
+        matching = [
+            a
+            for a in outputs.assignments
+            if a.worker_id == test_worker.id and a.date == test_date
+        ]
+        assert (
+            matching == []
+        ), f"Expected no assignments for worker cell with all demands met, got {matching}"
