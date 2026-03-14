@@ -671,8 +671,23 @@ class TestScopedSolveEngine:
         days_range = (
             ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
         ).days
-        offset = random.randint(0, max(0, days_range))
-        test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
+        # pick a random weekday (Mon-Fri) within the campaign range
+        max_offset = max(0, days_range)
+        for _ in range(10):
+            offset = random.randint(0, max_offset)
+            test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
+            if test_date.weekday() < 5:
+                break
+        else:
+            # fallback: choose the first weekday in the range
+            test_date = next(
+                d
+                for d in (
+                    ei_scoped.schedule.start_date + timedelta(days=i)
+                    for i in range(max_offset + 1)
+                )
+                if d.weekday() < 5
+            )
 
         test_demands = [
             d
