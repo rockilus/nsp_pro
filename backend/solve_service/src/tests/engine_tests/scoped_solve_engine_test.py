@@ -576,113 +576,154 @@ class TestScopedSolveEngine:
         test_shift = next(
             s for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
         )
+        # Build campaign dates and pick a date that has no demand for the
+        # selected shift
         days_range = (
             ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
         ).days
+        campaign_dates = [
+            ei_scoped.schedule.start_date + timedelta(days=i)
+            for i in range(days_range + 1)
+        ]
         test_date = next(
             d
             for d in campaign_dates
-            if not next(
-                (
-                    d2
-                    for d2 in ei_scoped.shift_demands
-                    if d2.date == d and d2.shift_id == test_shift.id
-                ),
-                None,
+            if not any(
+                d2
+                for d2 in ei_scoped.shift_demands
+                if d2.date == d and d2.shift_id == test_shift.id
             )
         )
+
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
             shift_cells=[
-                ShiftDateCell(shift_id="s_morning", date=saturday.isoformat())
+                ShiftDateCell(
+                    shift_id=test_shift.id, date=test_date.isoformat()
+                )
             ],
             solve_view="shift",
         )
         outputs = engine_solve_engine_inputs(
             engine_inputs=ei_scoped, solve_scope=scope
         )
+        assert outputs.is_solution is True
 
-        morning_saturday = [
+        assignments_on_test_date = [
             a
             for a in outputs.assignments
-            if a.shift_id == "s_morning" and a.date == saturday
+            if a.shift_id == test_shift.id and a.date == test_date
         ]
-        assert morning_saturday == [], (
-            f"Expected no s_morning assignment on Saturday {saturday}, got "
-            + f"{morning_saturday}"
+        assert assignments_on_test_date == [], (
+            f"Expected no {test_shift.id} assignment on {test_date}, got "
+            + f"{assignments_on_test_date}"
         )
 
-    # # ------------------------------------------------------------------
-    # # T8a — worker cell with unfulfilled demand creates an assignment
-    # # ------------------------------------------------------------------
-    # def test_worker_cell_with_unfulfilled_demand_creates_assignment(
-    #     self, ei_scoped: EngineInputsAugmented
-    # ) -> None:
-    #     monday = first_monday(ei_scoped.schedule.start_date)
-    #     ei_scoped.as_campaign_fixed = []
-    #     scope = SolveScope(
-    #         scope_type=SolveScopeType.CUSTOM,
-    #         worker_cells=[
-    #             WorkerDateCell(worker_id="w0", date=monday.isoformat())
-    #         ],
-    #         solve_view="worker",
-    #     )
-    #     outputs = engine_solve_engine_inputs(
-    #         engine_inputs=ei_scoped, solve_scope=scope
-    #     )
+    # ------------------------------------------------------------------
+    # T8a — worker cell with unfulfilled demand creates an assignment
+    # ------------------------------------------------------------------
+    def test_worker_cell_with_unfulfilled_demand_creates_assignment(
+        self, ei_scoped: EngineInputsAugmented
+    ) -> None:
+        test_worker = next(w for w in ei_scoped.workers)
+        days_range = (
+            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
+        ).days
+        offset = random.randint(0, max(0, days_range))
+        test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
 
-    #     w0_monday = [
-    #         a
-    #         for a in outputs.assignments
-    #         if a.worker_id == "w0" and a.date == monday
-    #     ]
-    #     assert (
-    #         w0_monday
-    #     ), f"Expected at least one assignment for w0 on {monday}, got none"
+        test_demands = [
+            d
+            for d in ei_scoped.shift_demands
+            if d.date == test_date and d.count > 0
+        ]
+        assert test_demands, f"No demands with count > 0 on {test_date}"
 
-    # # ------------------------------------------------------------------
-    # # T8b — worker cell assigns only the unfulfilled shift when one demand met
-    # # ------------------------------------------------------------------
-    # def test_worker_cell_assigns_only_unfulfilled_shift_when_one_demand_met(
-    #     self, ei_scoped: EngineInputsAugmented
-    # ) -> None:
-    #     monday = first_monday(ei_scoped.schedule.start_date)
-    #     # Morning demand already satisfied by w1 (out-of-scope fixed)
-    #     ei_scoped.as_campaign_fixed = [
-    #         Assignment(
-    #             id="fix_w1_morning",
-    #             team_id="t0",
-    #             schedule_id="sch_s",
-    #             worker_id="w1",
-    #             date=monday,
-    #             shift_id="s_morning",
-    #             fixed=True,
-    #             source=AssignmentSource.MANUAL,
-    #         )
-    #     ]
-    #     scope = SolveScope(
-    #         scope_type=SolveScopeType.CUSTOM,
-    #         worker_cells=[
-    #             WorkerDateCell(worker_id="w0", date=monday.isoformat())
-    #         ],
-    #         solve_view="worker",
-    #     )
-    #     outputs = engine_solve_engine_inputs(
-    #         engine_inputs=ei_scoped, solve_scope=scope
-    #     )
+        scope = SolveScope(
+            scope_type=SolveScopeType.CUSTOM,
+            worker_cells=[
+                WorkerDateCell(
+                    worker_id=test_worker.id, date=test_date.isoformat()
+                )
+            ],
+            solve_view="worker",
+        )
+        outputs = engine_solve_engine_inputs(
+            engine_inputs=ei_scoped, solve_scope=scope
+        )
+        assert outputs.is_solution is True
+        matching = [
+            a
+            for a in outputs.assignments
+            if a.worker_id == test_worker.id and a.date == test_date
+        ]
+        assert (
+            matching
+        ), "Expected an assignment for worker cell with unfulfilled demand, got none"
 
-    #     w0_assignments = [
-    #         a
-    #         for a in outputs.assignments
-    #         if a.worker_id == "w0" and a.date == monday
-    #     ]
-    #     shift_ids = {a.shift_id for a in w0_assignments}
-    #     assert (
-    #         "s_afternoon" in shift_ids
-    #     ), "w0 should be assigned s_afternoon (only remaining demand)"
-    #     assert (
-    #         "s_morning" not in shift_ids
-    #     ), "w0 should NOT be assigned s_morning (demand already met)"
+    # ------------------------------------------------------------------
+    # T8b — worker cell assigns only the unfulfilled shift when one demand met
+    # ------------------------------------------------------------------
+    def test_worker_cell_assigns_only_unfulfilled_shift_when_one_demand_met(
+        self, ei_scoped: EngineInputsAugmented
+    ) -> None:
+        test_worker = next(w for w in ei_scoped.workers)
+        days_range = (
+            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
+        ).days
+        offset = random.randint(0, max(0, days_range))
+        test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
+
+        test_demands = [
+            d
+            for d in ei_scoped.shift_demands
+            if d.date == test_date and d.count > 0
+        ]
+        assert (
+            len(test_demands) >= 2
+        ), f"Need at least 2 demands with count > 0 on {test_date}"
+
+        test_demand_unfulfilled = test_demands[0]
+        test_demands_fulfilled = [
+            d for d in test_demands if d.id != test_demand_unfulfilled.id
+        ]
+
+        # Mark all but one demand as fulfilled by pre-assigning a worker to them
+        for demand in test_demands_fulfilled:
+            a_fixed = Assignment(
+                id=f"a_fixed_{demand.shift_id}",
+                team_id="t0",
+                schedule_id="sch_s",
+                worker_id=test_worker.id,
+                date=test_date,
+                shift_id=demand.shift_id,
+                fixed=True,
+                source=AssignmentSource.MANUAL,
+            )
+            ei_scoped.as_campaign_fixed.append(a_fixed)
+
+        scope = SolveScope(
+            scope_type=SolveScopeType.CUSTOM,
+            worker_cells=[
+                WorkerDateCell(
+                    worker_id=test_worker.id, date=test_date.isoformat()
+                )
+            ],
+            solve_view="worker",
+        )
+        outputs = engine_solve_engine_inputs(
+            engine_inputs=ei_scoped, solve_scope=scope
+        )
+        assert outputs.is_solution is True
+
+        matching = [
+            a
+            for a in outputs.assignments
+            if a.worker_id == test_worker.id and a.date == test_date
+        ]
+        assert (
+            len(matching) == 2
+        ), f"Expected exactly 1 new assignment for worker cell with one unfulfilled demand, got {len(matching)-1}"
 
     # # ------------------------------------------------------------------
     # # T8c — worker cell with all demands met produces no assignment
