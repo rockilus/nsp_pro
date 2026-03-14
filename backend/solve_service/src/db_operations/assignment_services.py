@@ -59,13 +59,11 @@ def _delete_wip_in_scope(
             delete_fixed=False,
         )
         return
-    assignments_campaign_not_fixed = (
-        collections.assignment_db.get_assignments_by_dates(
-            team_id=schedule.team_id,
-            start_date=schedule.start_date,
-            end_date=schedule.end_date,
-            fixed=False,
-        )
+    assignments_campaign_not_fixed = collections.assignment_db.get_assignments_by_dates(
+        team_id=schedule.team_id,
+        start_date=schedule.start_date,
+        end_date=schedule.end_date,
+        fixed=False,
     )
     scoped_as_ids: List[str] = []
     if solve_scope is not None:
@@ -130,8 +128,7 @@ def save_assignments(
         a
         for a in as_campaign_existing
         if scope_ctx is not None
-        and (a.worker_id, a.date.isoformat(), a.shift_id)
-        not in scope_ctx.variables
+        and (a.worker_id, a.date.isoformat(), a.shift_id) not in scope_ctx.variables
     ]
     not_for_save_existing_keys = set(
         [(a.worker_id, a.date, a.shift_id) for a in as_campaign_existing_fixed]
@@ -163,8 +160,7 @@ def save_assignments(
         for assignment in assignments
         if not (
             shift_map.get(assignment.shift_id)
-            and shift_map[assignment.shift_id].rest_type
-            == ShiftRestType.RECUPERATION
+            and shift_map[assignment.shift_id].rest_type == ShiftRestType.RECUPERATION
         )
     ]
 
@@ -172,15 +168,12 @@ def save_assignments(
         assignment
         for assignment in assignments
         if shift_map.get(assignment.shift_id)
-        and shift_map[assignment.shift_id].rest_type
-        == ShiftRestType.RECUPERATION
+        and shift_map[assignment.shift_id].rest_type == ShiftRestType.RECUPERATION
     ]
 
     # Create non-recuperation assignments first
-    created_non_recuperation_assignments = (
-        collections.assignment_db.create_assignments(
-            non_recuperation_assignments
-        )
+    created_non_recuperation_assignments = collections.assignment_db.create_assignments(
+        non_recuperation_assignments
     )
 
     # Process recuperation assignments
@@ -215,13 +208,11 @@ def save_assignments(
                     )
 
                 if reference_assignment:
-                    assignment.reference_assignment_id = (
-                        reference_assignment.id
-                    )
+                    assignment.reference_assignment_id = reference_assignment.id
 
     # Create recuperation assignments
-    created_recuperation_assignments = (
-        collections.assignment_db.create_assignments(recuperation_assignments)
+    created_recuperation_assignments = collections.assignment_db.create_assignments(
+        recuperation_assignments
     )
 
     # Combine all created assignments

@@ -1,12 +1,14 @@
-import pytest
+import random
 from collections import Counter
+from datetime import timedelta
+
+import pytest
 from shared.schemas.core import (
     EngineInputsAugmented,
     ModelConfig,
-    ObjectiveCategory,
     Penalties,
-    ShiftType,
     ShiftRestType,
+    ShiftType,
 )
 from shared.schemas.core.assignment import Assignment, AssignmentSource
 from shared.schemas.core.solve_task_status import (
@@ -15,18 +17,13 @@ from shared.schemas.core.solve_task_status import (
     SolveScopeType,
     WorkerDateCell,
 )
-from datetime import timedelta
-import random
 
-from engine_to_core_service.build_breaches.build_breaches_model import (
-    _parse_breaches_engine,
-)
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 from tests.engine_tests.scoped_solve_fixture import (
     build_ei_scoped,
-    first_monday,
-    first_saturday,
 )
+
+# pylint: disable=too-many-locals
 
 
 class TestScopedSolveEngine:
@@ -45,9 +42,7 @@ class TestScopedSolveEngine:
         outputs = engine_solve_engine_inputs(ei_scoped)
         assert outputs.is_solution is True
 
-        assignments_count = Counter(
-            (a.date, a.shift_id) for a in outputs.assignments
-        )
+        assignments_count = Counter((a.date, a.shift_id) for a in outputs.assignments)
 
         for demand in ei_scoped.shift_demands:
             key = (demand.date, demand.shift_id)
@@ -70,9 +65,7 @@ class TestScopedSolveEngine:
             s.id for s in ei_scoped.shifts if s.shift_type == ShiftType.DUTY
         }
 
-        assignments_count = Counter(
-            (a.date, a.shift_id) for a in outputs.assignments
-        )
+        assignments_count = Counter((a.date, a.shift_id) for a in outputs.assignments)
 
         for demand in ei_scoped.shift_demands:
             key = (demand.date, demand.shift_id)
@@ -98,9 +91,7 @@ class TestScopedSolveEngine:
         non_duty_shift_ids = {
             s.id for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
         }
-        assignments_count = Counter(
-            (a.date, a.shift_id) for a in outputs.assignments
-        )
+        assignments_count = Counter((a.date, a.shift_id) for a in outputs.assignments)
         for demand in ei_scoped.shift_demands:
             key = (demand.date, demand.shift_id)
             if demand.shift_id in non_duty_shift_ids:
@@ -109,9 +100,10 @@ class TestScopedSolveEngine:
                     assignments_count[key] >= 0
                 ), f"Unfulfilled demand for {key} in full solve"
             else:
-                assert (
-                    assignments_count[key] == 0
-                ), f"Unexpected assignment for non-normal shift {key} in NON_DUTIES scope"
+                assert assignments_count[key] == 0, (
+                    f"Unexpected assignment for non-normal shift {key} in "
+                    + "NON_DUTIES scope"
+                )
 
     # ------------------------------------------------------------------
     # T4a — CUSTOM shift view assigns only the selected shift
@@ -122,10 +114,6 @@ class TestScopedSolveEngine:
         test_shift = next(
             s for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
         )
-        test_demand = next(
-            d for d in ei_scoped.shift_demands if d.shift_id == test_shift.id
-        )
-
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
             shift_ids=[test_shift.id],
@@ -133,9 +121,7 @@ class TestScopedSolveEngine:
         )
         outputs = engine_solve_engine_inputs(ei_scoped, solve_scope=scope)
         assert outputs.is_solution is True
-        assignments_count = Counter(
-            (a.date, a.shift_id) for a in outputs.assignments
-        )
+        assignments_count = Counter((a.date, a.shift_id) for a in outputs.assignments)
         for demand in ei_scoped.shift_demands:
             key = (demand.date, demand.shift_id)
             if demand.shift_id == test_shift.id:
@@ -144,16 +130,15 @@ class TestScopedSolveEngine:
                     assignments_count[key] >= 0
                 ), f"Unfulfilled demand for {key} in custom shift view solve"
             else:
-                assert (
-                    assignments_count[key] == 0
-                ), f"Unexpected assignment for non-selected shift {key} in custom shift view solve"
+                assert assignments_count[key] == 0, (
+                    f"Unexpected assignment for non-selected shift {key} in "
+                    + "custom shift view solve"
+                )
 
     def test_custom_shift_view_date_assigns_only_selected_shift(
         self, ei_scoped: EngineInputsAugmented
     ) -> None:
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         offset = random.randint(0, max(0, days_range))
         test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
 
@@ -164,9 +149,7 @@ class TestScopedSolveEngine:
         )
         outputs = engine_solve_engine_inputs(ei_scoped, solve_scope=scope)
         assert outputs.is_solution is True
-        assignments_count = Counter(
-            (a.date, a.shift_id) for a in outputs.assignments
-        )
+        assignments_count = Counter((a.date, a.shift_id) for a in outputs.assignments)
         for demand in ei_scoped.shift_demands:
             key = (demand.date, demand.shift_id)
             if demand.date == test_date:
@@ -175,9 +158,10 @@ class TestScopedSolveEngine:
                     assignments_count[key] >= 0
                 ), f"Unfulfilled demand for {key} in custom date shift view solve"
             else:
-                assert (
-                    assignments_count[key] == 0
-                ), f"Unexpected assignment for non-selected date {key} in custom date shift view solve"
+                assert assignments_count[key] == 0, (
+                    f"Unexpected assignment for non-selected date {key} in "
+                    + "custom date shift view solve"
+                )
 
     def test_custom_shift_view_shift_cell_assigns_only_selected_shift(
         self, ei_scoped: EngineInputsAugmented
@@ -201,9 +185,7 @@ class TestScopedSolveEngine:
         )
         outputs = engine_solve_engine_inputs(ei_scoped, solve_scope=scope)
         assert outputs.is_solution is True
-        assignments_count = Counter(
-            (a.date, a.shift_id) for a in outputs.assignments
-        )
+        assignments_count = Counter((a.date, a.shift_id) for a in outputs.assignments)
         for demand in ei_scoped.shift_demands:
             key = (demand.date, demand.shift_id)
             if demand.id == test_demand.id:
@@ -212,9 +194,10 @@ class TestScopedSolveEngine:
                     assignments_count[key] >= 0
                 ), f"Unfulfilled demand for {key} in custom shift cell shift view solve"
             else:
-                assert (
-                    assignments_count[key] == 0
-                ), f"Unexpected assignment for non-selected shift cell {key} in custom shift cell shift view solve"
+                assert assignments_count[key] == 0, (
+                    "Unexpected assignment for non-selected shift cell "
+                    + f"{key} in custom shift cell shift view solve"
+                )
 
     # ------------------------------------------------------------------
     # T4b — CUSTOM worker view assigns only the selected worker
@@ -233,17 +216,15 @@ class TestScopedSolveEngine:
         for a in outputs.assignments:
             if a.worker_id == test_worker.id:
                 continue
-            else:
-                assert (
-                    False
-                ), f"Unexpected assignment for non-selected worker {a.worker_id} in custom worker view solve"
+            assert False, (
+                "Unexpected assignment for non-selected worker "
+                + f"{a.worker_id} in custom worker view solve"
+            )
 
     def test_custom_worker_view_date_assigns_only_selected_worker(
         self, ei_scoped: EngineInputsAugmented
     ) -> None:
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         offset = random.randint(0, max(0, days_range))
         test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
 
@@ -257,27 +238,23 @@ class TestScopedSolveEngine:
         for a in outputs.assignments:
             if a.date == test_date:
                 continue
-            else:
-                assert (
-                    False
-                ), f"Unexpected assignment for non-selected worker/date {a.worker_id} on {a.date} in custom worker/date view solve"
+            assert False, (
+                "Unexpected assignment for non-selected worker/date "
+                + f"{a.worker_id} on {a.date} in custom worker/date view solve"
+            )
 
     def test_custom_worker_view_worker_cell_assigns_only_selected_worker(
         self, ei_scoped: EngineInputsAugmented
     ) -> None:
         test_worker = next(w for w in ei_scoped.workers)
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         offset = random.randint(0, max(0, days_range))
         test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
 
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
             worker_cells=[
-                WorkerDateCell(
-                    worker_id=test_worker.id, date=test_date.isoformat()
-                )
+                WorkerDateCell(worker_id=test_worker.id, date=test_date.isoformat())
             ],
             solve_view="worker",
         )
@@ -286,10 +263,10 @@ class TestScopedSolveEngine:
         for a in outputs.assignments:
             if a.worker_id == test_worker.id and a.date == test_date:
                 continue
-            else:
-                assert (
-                    False
-                ), f"Unexpected assignment for non-selected worker/date {a.worker_id} on {a.date} in custom worker cell view solve"
+            assert False, (
+                "Unexpected assignment for non-selected worker/date "
+                + f"{a.worker_id} on {a.date} in custom worker cell view solve"
+            )
 
     # ------------------------------------------------------------------
     # T5 — out-of-scope WIP assignments are preserved as fixed (not deleted)
@@ -301,9 +278,7 @@ class TestScopedSolveEngine:
             s for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
         )
         test_worker = next(w for w in ei_scoped.workers)
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         offset = random.randint(0, max(0, days_range))
         test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
         a_campaign_normal = Assignment(
@@ -320,9 +295,7 @@ class TestScopedSolveEngine:
         ei_scoped.as_campaign_not_fixed = [a_campaign_normal]
 
         scope = SolveScope(scope_type=SolveScopeType.DUTIES)
-        output = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=scope
-        )
+        output = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=scope)
         assert output.is_solution is True
         matching = [
             a
@@ -345,14 +318,10 @@ class TestScopedSolveEngine:
             s for s in ei_scoped.shifts if s.shift_type == ShiftType.DUTY
         )
         test_shift_recup = next(
-            s
-            for s in ei_scoped.shifts
-            if s.rest_type == ShiftRestType.RECUPERATION
+            s for s in ei_scoped.shifts if s.rest_type == ShiftRestType.RECUPERATION
         )
         test_worker = next(w for w in ei_scoped.workers)
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         offset = random.randint(0, max(0, days_range))
         test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
         as_campaign_duty = [
@@ -380,9 +349,7 @@ class TestScopedSolveEngine:
 
         ei_scoped.as_campaign_not_fixed = as_campaign_duty
         scope = SolveScope(scope_type=SolveScopeType.NON_DUTIES)
-        output = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=scope
-        )
+        output = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=scope)
         assert output.is_solution is True
         matching = [
             a
@@ -391,23 +358,19 @@ class TestScopedSolveEngine:
             and a.date == test_date
             and a.shift_id == test_shift_duty.id
         ]
-        assert (
-            matching
-        ), "Out-of-scope duty assignment should be preserved in outputs"
+        assert matching, "Out-of-scope duty assignment should be preserved in outputs"
         assert (
             len(matching) == 1
         ), "Out-of-scope duty assignment should be marked fixed in outputs"
 
-    def test_custom_shift_view_out_of_scope_campaign_assignments_are_preserved_not_deleted(
+    def test_custom_shift_view_out_of_scope_campaign_assignments_are_preserved(
         self, ei_scoped: EngineInputsAugmented
     ) -> None:
         test_shift = next(
             s for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
         )
         test_worker = next(w for w in ei_scoped.workers)
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         offset = random.randint(0, max(0, days_range))
         test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
         a_campaign_normal = Assignment(
@@ -429,9 +392,7 @@ class TestScopedSolveEngine:
             for s in ei_scoped.shifts
             if s.shift_type == ShiftType.NORMAL and s.id != test_shift.id
         )
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         # pick a date within campaign that is not test_date
         candidate_date = ei_scoped.schedule.start_date
         if candidate_date == test_date and days_range > 0:
@@ -440,16 +401,12 @@ class TestScopedSolveEngine:
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
             shift_cells=[
-                ShiftDateCell(
-                    shift_id=other_shift.id, date=candidate_date.isoformat()
-                )
+                ShiftDateCell(shift_id=other_shift.id, date=candidate_date.isoformat())
             ],
             solve_view="shift",
         )
 
-        output = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=scope
-        )
+        output = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=scope)
         assert output.is_solution is True
         matching = [
             a
@@ -465,19 +422,15 @@ class TestScopedSolveEngine:
             len(matching) == 1
         ), "Out-of-scope non-duty assignment should be marked fixed in outputs"
 
-    def test_custom_worker_view_out_of_scope_campaign_assignments_are_preserved_not_deleted(
+    def test_custom_worker_view_out_of_scope_campaign_assignments_are_preserved(
         self, ei_scoped: EngineInputsAugmented
     ) -> None:
         test_shift = next(
             s for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
         )
         test_worker = next(w for w in ei_scoped.workers)
-        other_worker = next(
-            w for w in ei_scoped.workers if w.id != test_worker.id
-        )
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        other_worker = next(w for w in ei_scoped.workers if w.id != test_worker.id)
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         offset = random.randint(0, max(0, days_range))
         test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
         a_campaign_normal = Assignment(
@@ -494,15 +447,11 @@ class TestScopedSolveEngine:
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
             worker_cells=[
-                WorkerDateCell(
-                    worker_id=other_worker.id, date=test_date.isoformat()
-                )
+                WorkerDateCell(worker_id=other_worker.id, date=test_date.isoformat())
             ],
             solve_view="worker",
         )
-        output = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=scope
-        )
+        output = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=scope)
         assert output.is_solution is True
         matching = [
             a
@@ -528,9 +477,7 @@ class TestScopedSolveEngine:
             s for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
         )
         test_worker = next(w for w in ei_scoped.workers)
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         offset = random.randint(0, max(0, days_range))
         test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
         a_fixed = Assignment(
@@ -549,9 +496,7 @@ class TestScopedSolveEngine:
             shift_ids=[test_shift.id],
             solve_view="shift",
         )
-        output = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=scope
-        )
+        output = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=scope)
         assert output.is_solution is True
         matching = [
             a
@@ -560,9 +505,7 @@ class TestScopedSolveEngine:
             and a.date == test_date
             and a.shift_id == test_shift.id
         ]
-        assert (
-            matching
-        ), "Pre-existing fixed assignment should be preserved in outputs"
+        assert matching, "Pre-existing fixed assignment should be preserved in outputs"
         assert (
             len(matching) == 1
         ), "Pre-existing fixed assignment should be unchanged in outputs"
@@ -578,9 +521,7 @@ class TestScopedSolveEngine:
         )
         # Build campaign dates and pick a date that has no demand for the
         # selected shift
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         campaign_dates = [
             ei_scoped.schedule.start_date + timedelta(days=i)
             for i in range(days_range + 1)
@@ -598,15 +539,11 @@ class TestScopedSolveEngine:
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
             shift_cells=[
-                ShiftDateCell(
-                    shift_id=test_shift.id, date=test_date.isoformat()
-                )
+                ShiftDateCell(shift_id=test_shift.id, date=test_date.isoformat())
             ],
             solve_view="shift",
         )
-        outputs = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=scope
-        )
+        outputs = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=scope)
         assert outputs.is_solution is True
 
         assignments_on_test_date = [
@@ -626,31 +563,23 @@ class TestScopedSolveEngine:
         self, ei_scoped: EngineInputsAugmented
     ) -> None:
         test_worker = next(w for w in ei_scoped.workers)
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         offset = random.randint(0, max(0, days_range))
         test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
 
         test_demands = [
-            d
-            for d in ei_scoped.shift_demands
-            if d.date == test_date and d.count > 0
+            d for d in ei_scoped.shift_demands if d.date == test_date and d.count > 0
         ]
         assert test_demands, f"No demands with count > 0 on {test_date}"
 
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
             worker_cells=[
-                WorkerDateCell(
-                    worker_id=test_worker.id, date=test_date.isoformat()
-                )
+                WorkerDateCell(worker_id=test_worker.id, date=test_date.isoformat())
             ],
             solve_view="worker",
         )
-        outputs = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=scope
-        )
+        outputs = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=scope)
         assert outputs.is_solution is True
         matching = [
             a
@@ -668,9 +597,7 @@ class TestScopedSolveEngine:
         self, ei_scoped: EngineInputsAugmented
     ) -> None:
         test_worker = next(w for w in ei_scoped.workers)
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         # pick a random weekday (Mon-Fri) within the campaign range
         max_offset = max(0, days_range)
         for _ in range(10):
@@ -690,9 +617,7 @@ class TestScopedSolveEngine:
             )
 
         test_demands = [
-            d
-            for d in ei_scoped.shift_demands
-            if d.date == test_date and d.count > 0
+            d for d in ei_scoped.shift_demands if d.date == test_date and d.count > 0
         ]
         assert (
             len(test_demands) >= 2
@@ -704,12 +629,8 @@ class TestScopedSolveEngine:
         ]
 
         # Mark all but one demand as fulfilled by pre-assigning other workers
-        other_workers = [
-            w for w in ei_scoped.workers if w.id != test_worker.id
-        ]
-        assert (
-            other_workers
-        ), "Need at least one other worker to pre-assign demands"
+        other_workers = [w for w in ei_scoped.workers if w.id != test_worker.id]
+        assert other_workers, "Need at least one other worker to pre-assign demands"
         for idx, demand in enumerate(test_demands_fulfilled):
             worker_to_assign = other_workers[idx % len(other_workers)]
             a_fixed = Assignment(
@@ -753,15 +674,11 @@ class TestScopedSolveEngine:
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
             worker_cells=[
-                WorkerDateCell(
-                    worker_id=test_worker.id, date=test_date.isoformat()
-                )
+                WorkerDateCell(worker_id=test_worker.id, date=test_date.isoformat())
             ],
             solve_view="worker",
         )
-        outputs = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=scope
-        )
+        outputs = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=scope)
         assert outputs.is_solution is True
 
         matching = [
@@ -771,9 +688,10 @@ class TestScopedSolveEngine:
             and a.date == test_date
             and a.shift_id == test_demand_unfulfilled.shift_id
         ]
-        assert (
-            len(matching) == 1
-        ), f"Expected exactly 1 new assignment for worker cell with one unfulfilled demand, got {len(matching)-1}"
+        assert len(matching) == 1, (
+            "Expected exactly 1 new assignment for worker cell with one "
+            + f"unfulfilled demand, got {len(matching)-1}"
+        )
 
     # ------------------------------------------------------------------
     # T8c — worker cell with all demands met produces no assignment
@@ -782,26 +700,18 @@ class TestScopedSolveEngine:
         self, ei_scoped: EngineInputsAugmented
     ) -> None:
         test_worker = next(w for w in ei_scoped.workers)
-        days_range = (
-            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
-        ).days
+        days_range = (ei_scoped.schedule.end_date - ei_scoped.schedule.start_date).days
         offset = random.randint(0, max(0, days_range))
         test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
 
         test_demands = [
-            d
-            for d in ei_scoped.shift_demands
-            if d.date == test_date and d.count > 0
+            d for d in ei_scoped.shift_demands if d.date == test_date and d.count > 0
         ]
         assert test_demands, f"No demands with count > 0 on {test_date}"
 
         # Mark all demands as fulfilled by pre-assigning other workers
-        other_workers = [
-            w for w in ei_scoped.workers if w.id != test_worker.id
-        ]
-        assert (
-            other_workers
-        ), "Need at least one other worker to pre-assign demands"
+        other_workers = [w for w in ei_scoped.workers if w.id != test_worker.id]
+        assert other_workers, "Need at least one other worker to pre-assign demands"
         for idx, demand in enumerate(test_demands):
             worker_to_assign = other_workers[idx % len(other_workers)]
             a_fixed = Assignment(
@@ -845,15 +755,11 @@ class TestScopedSolveEngine:
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
             worker_cells=[
-                WorkerDateCell(
-                    worker_id=test_worker.id, date=test_date.isoformat()
-                )
+                WorkerDateCell(worker_id=test_worker.id, date=test_date.isoformat())
             ],
             solve_view="worker",
         )
-        outputs = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=scope
-        )
+        outputs = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=scope)
         assert outputs.is_solution is True
 
         matching = [
@@ -861,6 +767,7 @@ class TestScopedSolveEngine:
             for a in outputs.assignments
             if a.worker_id == test_worker.id and a.date == test_date
         ]
-        assert (
-            matching == []
-        ), f"Expected no assignments for worker cell with all demands met, got {matching}"
+        assert matching == [], (
+            "Expected no assignments for worker cell with all demands met, "
+            + f"got {matching}"
+        )

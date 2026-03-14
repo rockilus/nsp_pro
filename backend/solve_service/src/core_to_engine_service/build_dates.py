@@ -49,13 +49,7 @@ def build_worker_ids_to_worker_dates(
                 worker.employment_end_date or schedule.end_date,
             )
             dates_campaign_worker = list(
-                sorted(
-                    set(
-                        d
-                        for d in dates_campaign
-                        if d in dates_worker_employment
-                    )
-                )
+                sorted(set(d for d in dates_campaign if d in dates_worker_employment))
             )
 
         worker_ids_to_worker_dates[worker.id] = WorkerDates(
@@ -101,11 +95,7 @@ def build_ws_ids_to_dates(
         )
         for s in shifts_not_deleted:
             dates_campaign_ws = list(
-                sorted(
-                    set(dates_campaign).intersection(
-                        dates_worker_employment_set
-                    )
-                )
+                sorted(set(dates_campaign).intersection(dates_worker_employment_set))
             )
             ws_ids_to_dates[w.id, s.id].dates_campaign = dates_campaign_ws
 
