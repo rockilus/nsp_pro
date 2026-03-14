@@ -3,7 +3,8 @@ import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
-import { Button, MenuItem, Select, Box } from "@mui/material";
+import { Button, MenuItem, Select, Box, Chip } from "@mui/material";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import RecurrenceEdit from "../shared/recurrence-edit/recurrence-edit";
@@ -61,6 +62,7 @@ interface AssignmentFormProps {
     updateScope: RecurrenceUpdateScope | null,
   ) => void;
   onCancel: () => void;
+  isLeader?: boolean;
 }
 
 const AssignmentForm: React.FC<AssignmentFormProps> = ({
@@ -77,6 +79,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   onSave,
   onDelete,
   onCancel,
+  isLeader = false,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -127,6 +130,8 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [selectedCandidate, setSelectedCandidate] =
     useState<ReplacementCandidateT | null>(null);
+
+  const mobile = useIsMobile();
 
   const getReplacementCandidates = useGetReplacementCandidates();
 
@@ -307,6 +312,28 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     }
   };
 
+  const handleToggleFixed = async () => {
+    if (!isEditing || !assignment || isSubmitting) return;
+
+    const updatedAssignment: AssignmentT = {
+      ...assignment,
+      fixed: !assignment.fixed,
+    };
+
+    try {
+      setIsSubmitting(true);
+      // pass an options object to indicate the dialog should remain open
+      // callers may ignore the extra param; schedule-item-dialog handles it
+      // and will not close when { keepOpen: true } is provided.
+      onSave(updatedAssignment, recurrenceState, null, { keepOpen: true });
+    } catch (error) {
+      console.error("Failed to toggle fixed:", error);
+      alert("Failed to update assignment. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleCandidateDetailsClick = (candidate: ReplacementCandidateT) => {
     setSelectedCandidate(candidate);
     setShowDetailsDialog(true);
@@ -368,6 +395,20 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
   return (
     <Box data-testid="assignment-form">
+      {isEditing && isLeader && !mobile && (
+        <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
+          <Chip
+            size="small"
+            label={assignment && assignment.fixed ? "Locked 🔒" : "Unlocked 🔓"}
+            color="default"
+            clickable
+            onClick={handleToggleFixed}
+            disabled={isSubmitting}
+            data-testid="assignment-fixed-chip"
+            sx={{ height: 24 }}
+          />
+        </Box>
+      )}
       <div className="form">
         <span className="form-title">{t("worker")}</span>
         <Select
