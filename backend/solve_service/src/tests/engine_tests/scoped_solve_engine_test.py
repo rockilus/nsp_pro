@@ -688,13 +688,20 @@ class TestScopedSolveEngine:
             d for d in test_demands if d.id != test_demand_unfulfilled.id
         ]
 
-        # Mark all but one demand as fulfilled by pre-assigning a worker to them
-        for demand in test_demands_fulfilled:
+        # Mark all but one demand as fulfilled by pre-assigning other workers
+        other_workers = [
+            w for w in ei_scoped.workers if w.id != test_worker.id
+        ]
+        assert (
+            other_workers
+        ), "Need at least one other worker to pre-assign demands"
+        for idx, demand in enumerate(test_demands_fulfilled):
+            worker_to_assign = other_workers[idx % len(other_workers)]
             a_fixed = Assignment(
-                id=f"a_fixed_{demand.shift_id}",
+                id=f"a_fixed_{demand.shift_id}_{worker_to_assign.id}",
                 team_id="t0",
                 schedule_id="sch_s",
-                worker_id=test_worker.id,
+                worker_id=worker_to_assign.id,
                 date=test_date,
                 shift_id=demand.shift_id,
                 fixed=True,
@@ -719,10 +726,12 @@ class TestScopedSolveEngine:
         matching = [
             a
             for a in outputs.assignments
-            if a.worker_id == test_worker.id and a.date == test_date
+            if a.worker_id == test_worker.id
+            and a.date == test_date
+            and a.shift_id == test_demand_unfulfilled.shift_id
         ]
         assert (
-            len(matching) == 2
+            len(matching) == 1
         ), f"Expected exactly 1 new assignment for worker cell with one unfulfilled demand, got {len(matching)-1}"
 
     # # ------------------------------------------------------------------
