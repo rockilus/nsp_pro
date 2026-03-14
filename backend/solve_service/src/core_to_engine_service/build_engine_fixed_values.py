@@ -389,7 +389,13 @@ def _zero_shifts_without_demand(
                     and s.id not in shifts_in_dsds
                     and s.deleted is False
                 ):
-                    out[w.id, d.isoformat(), s.id] = 0
+                    key = (w.id, d.isoformat(), s.id)
+                    # Do not overwrite if we already have a fixed value for this
+                    # variable (value 0 or 1). Presence in `out` means it's
+                    # already initialized or set by earlier logic.
+                    if key in out:
+                        continue
+                    out[key] = 0
 
 
 def core_to_engine_fixed_values(
@@ -488,12 +494,6 @@ def core_to_engine_fixed_values(
         outside_vars = model_vars - scope_ctx.variables
         for var in outside_vars:
             if var not in out:
-                if var == (
-                    "69afd80dd2d7e03a80eb6633",
-                    "2026-04-09",
-                    "69afd80dd2d7e03a80eb663e",
-                ):
-                    print("Debug: Fixing variable outside scope:", var)
                 out[var] = 0
     # Ensure all returned fixed variables actually exist in the model
     # (drop any keys not present in var_model).

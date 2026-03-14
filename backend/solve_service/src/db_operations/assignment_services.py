@@ -59,11 +59,13 @@ def _delete_wip_in_scope(
             delete_fixed=False,
         )
         return
-    assignments_campaign_not_fixed = collections.assignment_db.get_assignments_by_dates(
-        team_id=schedule.team_id,
-        start_date=schedule.start_date,
-        end_date=schedule.end_date,
-        fixed=False,
+    assignments_campaign_not_fixed = (
+        collections.assignment_db.get_assignments_by_dates(
+            team_id=schedule.team_id,
+            start_date=schedule.start_date,
+            end_date=schedule.end_date,
+            fixed=False,
+        )
     )
     scoped_as_ids: List[str] = []
     if solve_scope is not None:
@@ -111,23 +113,28 @@ def save_assignments(
         scope_ctx=scope_ctx,
         solve_scope=solve_scope,
     )
-    fixed_assignment_existing = collections.assignment_db.get_assignments_by_dates(
+    as_campaign_existing = collections.assignment_db.get_assignments_by_dates(
         team_id=schedule.team_id,
         start_date=schedule.start_date,
         end_date=schedule.end_date,
-        fixed=True,
     )
     if not assignments:
         return []
 
     shift_map = {shift.id: shift for shift in shifts}
 
-    # Avoid creating assignments that already exist in the DB as fixed
+    # Avoid creating assignments that already exist in the DB as fixed or that
+    # are out of scope
     existing_fixed_keys = set()
-    if fixed_assignment_existing:
+    if as_campaign_existing:
         tmp = []
-        for fa in fixed_assignment_existing:
-            tmp.append((fa.worker_id, fa.date, fa.shift_id))
+        for fa in as_campaign_existing:
+            if (
+                fa.fixed
+                or (fa.worker_id, fa.date.isoformat(), fa.shift_id)
+                not in scope_ctx.variables
+            ):
+                tmp.append((fa.worker_id, fa.date, fa.shift_id))
         existing_fixed_keys = set(tmp)
 
     # Also deduplicate incoming assignments (keep first occurrence)
@@ -152,7 +159,8 @@ def save_assignments(
         for assignment in assignments
         if not (
             shift_map.get(assignment.shift_id)
-            and shift_map[assignment.shift_id].rest_type == ShiftRestType.RECUPERATION
+            and shift_map[assignment.shift_id].rest_type
+            == ShiftRestType.RECUPERATION
         )
     ]
 
@@ -160,12 +168,15 @@ def save_assignments(
         assignment
         for assignment in assignments
         if shift_map.get(assignment.shift_id)
-        and shift_map[assignment.shift_id].rest_type == ShiftRestType.RECUPERATION
+        and shift_map[assignment.shift_id].rest_type
+        == ShiftRestType.RECUPERATION
     ]
 
     # Create non-recuperation assignments first
-    created_non_recuperation_assignments = collections.assignment_db.create_assignments(
-        non_recuperation_assignments
+    created_non_recuperation_assignments = (
+        collections.assignment_db.create_assignments(
+            non_recuperation_assignments
+        )
     )
 
     # Process recuperation assignments
@@ -187,11 +198,11 @@ def save_assignments(
                 )
 
                 # If not found among newly-created, check fixed assignments
-                if not reference_assignment and fixed_assignment_existing:
+                if not reference_assignment and as_campaign_existing:
                     reference_assignment = next(
                         (
                             a
-                            for a in fixed_assignment_existing
+                            for a in as_campaign_existing
                             if a.date == assignment.date
                             and a.worker_id == assignment.worker_id
                             and a.shift_id == reference_shift_id
@@ -200,17 +211,19 @@ def save_assignments(
                     )
 
                 if reference_assignment:
-                    assignment.reference_assignment_id = reference_assignment.id
+                    assignment.reference_assignment_id = (
+                        reference_assignment.id
+                    )
 
     # Create recuperation assignments
-    created_recuperation_assignments = collections.assignment_db.create_assignments(
-        recuperation_assignments
+    created_recuperation_assignments = (
+        collections.assignment_db.create_assignments(recuperation_assignments)
     )
 
     # Combine all created assignments
     out = (
         created_non_recuperation_assignments
         + created_recuperation_assignments
-        + fixed_assignment_existing
+        + as_campaign_existing
     )
     return out

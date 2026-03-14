@@ -268,18 +268,6 @@ def core_to_engine_inputs(
         scope_ctx=_scope_ctx,
     )
 
-    for key, value in fixed_values.items():
-        as_test = as_campaign_not_fixed_out_of_scope[0]
-        if key == (
-            as_test.worker_id,
-            as_test.date.isoformat(),
-            as_test.shift_id,
-        ):
-            print("Found fixed value for out-of-scope assignment:")
-            print(f"Key: {key}")
-            print(f"Value: {value}")
-            # fixed_values[key] = 1
-
     # Constraints:
     constraints = build_engine_constraints(
         engine_inputs.cbs_augmented,
