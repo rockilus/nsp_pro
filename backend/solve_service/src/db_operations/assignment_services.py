@@ -125,24 +125,28 @@ def save_assignments(
 
     # Avoid creating assignments that already exist in the DB as fixed or that
     # are out of scope
-    existing_fixed_keys = set()
-    if as_campaign_existing:
-        tmp = []
-        for fa in as_campaign_existing:
-            if (
-                fa.fixed
-                or (fa.worker_id, fa.date.isoformat(), fa.shift_id)
-                not in scope_ctx.variables
-            ):
-                tmp.append((fa.worker_id, fa.date, fa.shift_id))
-        existing_fixed_keys = set(tmp)
+    as_campaign_existing_fixed = [a for a in as_campaign_existing if a.fixed]
+    as_campaign_existing_out_of_scope = [
+        a
+        for a in as_campaign_existing
+        if scope_ctx is not None
+        and (a.worker_id, a.date.isoformat(), a.shift_id)
+        not in scope_ctx.variables
+    ]
+    not_for_save_existing_keys = set(
+        [(a.worker_id, a.date, a.shift_id) for a in as_campaign_existing_fixed]
+        + [
+            (aoos.worker_id, aoos.date, aoos.shift_id)
+            for aoos in as_campaign_existing_out_of_scope
+        ]
+    )
 
     # Also deduplicate incoming assignments (keep first occurrence)
     seen = set()
     filtered_assignments: List[Assignment] = []
     for a in assignments:
         key = (a.worker_id, a.date, a.shift_id)
-        if key in existing_fixed_keys:
+        if key in not_for_save_existing_keys:
             # Skip creating this assignment, it already exists as fixed in DB
             continue
         if key in seen:
