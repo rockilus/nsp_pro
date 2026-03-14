@@ -79,7 +79,9 @@ def core_to_engine_inputs(
 ) -> Tuple[InputsEngine, ProcessingCache]:
     # Workers
     workers_not_deleted = [w for w in engine_inputs.workers if not w.deleted]
-    worker_not_deleted_ids = [w.id for w in engine_inputs.workers if not w.deleted]
+    worker_not_deleted_ids = [
+        w.id for w in engine_inputs.workers if not w.deleted
+    ]
     dim_to_attr_value_to_worker = build_dim_to_attr_value_to_owner(
         engine_inputs.workers,
         engine_inputs.dimensions,
@@ -106,9 +108,13 @@ def core_to_engine_inputs(
         for s in engine_inputs.shifts
         if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
     ]
-    shift_duties = [s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY]
+    shift_duties = [
+        s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY
+    ]
     shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
-    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(engine_inputs.shifts)
+    shift_id_to_duration_dict = _build_shift_id_to_duration_dict(
+        engine_inputs.shifts
+    )
     dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
         engine_inputs.shifts,
         engine_inputs.dimensions,
@@ -117,28 +123,27 @@ def core_to_engine_inputs(
     )
 
     # Dates
-    fixed_assignments = engine_inputs.as_hist + engine_inputs.as_campaign_fixed
     dates_hist, dates_campaign = build_dates(
-        engine_inputs.schedule,
-        fixed_assignments,
+        schedule=engine_inputs.schedule,
+        as_hist=engine_inputs.as_hist,
     )
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-        engine_inputs.schedule,
-        engine_inputs.workers,
-        fixed_assignments,
-        dates_campaign,
+        schedule=engine_inputs.schedule,
+        workers=engine_inputs.workers,
+        as_hist=engine_inputs.as_hist,
+        dates_campaign=dates_campaign,
     )
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
     ws_to_dates = build_ws_ids_to_dates(
-        engine_inputs.schedule,
-        engine_inputs.workers,
-        workers_not_deleted,
-        engine_inputs.shifts,
-        shifts_not_deleted,
-        fixed_assignments,
-        dates_campaign,
+        schedule=engine_inputs.schedule,
+        workers=engine_inputs.workers,
+        workers_not_deleted=workers_not_deleted,
+        shifts=engine_inputs.shifts,
+        shifts_not_deleted=shifts_not_deleted,
+        as_hist=engine_inputs.as_hist,
+        dates_campaign=dates_campaign,
     )
 
     variables = build_engine_variables(
@@ -155,7 +160,10 @@ def core_to_engine_inputs(
     # appended to as_campaign_fixed, before any build_* call.
     _scope_ctx: Optional[ScopeContext] = None
     demands_in_scope: List[ShiftDemandNew] = engine_inputs.shift_demands
-    if solve_scope is not None and solve_scope.scope_type != SolveScopeType.FULL:
+    if (
+        solve_scope is not None
+        and solve_scope.scope_type != SolveScopeType.FULL
+    ):
         _scope_ctx = preprocess_scope(
             scope=solve_scope,
             workers_not_deleted=workers_not_deleted,
@@ -171,6 +179,23 @@ def core_to_engine_inputs(
             if sd.id is not None and sd.id in _scope_ctx.shift_demand_ids
         ]
 
+    as_campaign_not_fixed_out_of_scope = (
+        []
+        if _scope_ctx is None
+        else [
+            a
+            for a in engine_inputs.as_campaign_not_fixed
+            if (a.worker_id, a.date.isoformat(), a.shift_id)
+            not in _scope_ctx.variables
+        ]
+    )
+
+    fixed_assignments = (
+        engine_inputs.as_hist
+        + engine_inputs.as_campaign_fixed
+        + as_campaign_not_fixed_out_of_scope
+    )
+
     # Requests
     approved_requests = [
         r
@@ -178,7 +203,9 @@ def core_to_engine_inputs(
         if r.status == RequestStatus.APPROVED
     ]
     deferred_requests = [
-        r for r in engine_inputs.requests_work if r.status == RequestStatus.DEFERRED
+        r
+        for r in engine_inputs.requests_work
+        if r.status == RequestStatus.DEFERRED
     ]
 
     # Work times
@@ -240,6 +267,18 @@ def core_to_engine_inputs(
         var_model=variables.assignments,
         scope_ctx=_scope_ctx,
     )
+
+    for key, value in fixed_values.items():
+        as_test = as_campaign_not_fixed_out_of_scope[0]
+        if key == (
+            as_test.worker_id,
+            as_test.date.isoformat(),
+            as_test.shift_id,
+        ):
+            print("Found fixed value for out-of-scope assignment:")
+            print(f"Key: {key}")
+            print(f"Value: {value}")
+            # fixed_values[key] = 1
 
     # Constraints:
     constraints = build_engine_constraints(
@@ -463,5 +502,6 @@ def core_to_engine_inputs(
 
 def _build_shift_id_to_duration_dict(shifts: List[Shift]) -> Dict[str, int]:
     return {
-        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1) for s in shifts
+        s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1)
+        for s in shifts
     }
