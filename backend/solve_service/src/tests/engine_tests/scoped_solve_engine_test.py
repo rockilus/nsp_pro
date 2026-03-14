@@ -6,6 +6,7 @@ from shared.schemas.core import (
     ObjectiveCategory,
     Penalties,
     ShiftType,
+    ShiftRestType,
 )
 from shared.schemas.core.assignment import Assignment, AssignmentSource
 from shared.schemas.core.solve_task_status import (
@@ -336,6 +337,99 @@ class TestScopedSolveEngine:
         assert (
             len(matching) == 1
         ), "Out-of-scope non-duty assignment should be marked fixed in outputs"
+
+    def test_non_duties_out_of_scope_campaign_assignments_are_preserved_not_deleted(
+        self, ei_scoped: EngineInputsAugmented
+    ) -> None:
+        test_shift_duty = next(
+            s for s in ei_scoped.shifts if s.shift_type == ShiftType.DUTY
+        )
+        test_shift_recup = next(
+            s
+            for s in ei_scoped.shifts
+            if s.rest_type == ShiftRestType.RECUPERATION
+        )
+        test_worker = next(w for w in ei_scoped.workers)
+        days_range = (
+            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
+        ).days
+        offset = random.randint(0, max(0, days_range))
+        test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
+        as_campaign_duty = [
+            Assignment(
+                id="a_campaign_duty",
+                team_id="t0",
+                schedule_id="sch_s",
+                worker_id=test_worker.id,
+                date=test_date,
+                shift_id=test_shift_duty.id,
+                fixed=False,
+                source=AssignmentSource.MANUAL,
+            ),
+            Assignment(
+                id="a_campaign_recup",
+                team_id="t0",
+                schedule_id="sch_s",
+                worker_id=test_worker.id,
+                date=test_date,
+                shift_id=test_shift_recup.id,
+                fixed=False,
+                source=AssignmentSource.MANUAL,
+            ),
+        ]
+
+        ei_scoped.as_campaign_not_fixed = as_campaign_duty
+        scope = SolveScope(scope_type=SolveScopeType.NON_DUTIES)
+        output = engine_solve_engine_inputs(
+            engine_inputs=ei_scoped, solve_scope=scope
+        )
+        assert output.is_solution is True
+        matching = [
+            a
+            for a in output.assignments
+            if a.worker_id == test_worker.id
+            and a.date == test_date
+            and a.shift_id == test_shift_duty.id
+        ]
+        assert (
+            matching
+        ), "Out-of-scope duty assignment should be preserved in outputs"
+        assert (
+            len(matching) == 1
+        ), "Out-of-scope duty assignment should be marked fixed in outputs"
+
+    def test_custom_shift_view_out_of_scope_campaign_assignments_are_preserved_not_deleted(
+        self, ei_scoped: EngineInputsAugmented
+    ) -> None:
+        test_shift = next(
+            s for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
+        )
+        test_worker = next(w for w in ei_scoped.workers)
+        days_range = (
+            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
+        ).days
+        offset = random.randint(0, max(0, days_range))
+        test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
+        a_campaign_normal = Assignment(
+            id="a_campaign_normal",
+            team_id="t0",
+            schedule_id="sch_s",
+            worker_id=test_worker.id,
+            date=test_date,
+            shift_id=test_shift.id,
+            fixed=False,
+            source=AssignmentSource.MANUAL,
+        )
+        ei_scoped.as_campaign_not_fixed = [a_campaign_normal]
+        scope = SolveScope(
+            scope_type=SolveScopeType.CUSTOM,
+            shift_cells=[
+                ShiftDateCell(
+                    shift_id=test_shift.id, date=test_date.isoformat()
+                )
+            ],
+            solve_view="shift",
+        )
 
     # ------------------------------------------------------------------
     # T6 — pre-existing fixed assignments are honoured by an in-scope solve
