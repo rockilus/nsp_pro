@@ -131,6 +131,11 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const [selectedCandidate, setSelectedCandidate] =
     useState<ReplacementCandidateT | null>(null);
 
+  // Local copy of `fixed` to allow optimistic UI updates when toggling
+  const [localFixed, setLocalFixed] = useState<boolean | null>(
+    assignment ? assignment.fixed : null,
+  );
+
   const mobile = useIsMobile();
 
   const getReplacementCandidates = useGetReplacementCandidates();
@@ -141,6 +146,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
       setShiftId(assignment.shiftId);
       setDate(assignment.date);
       setRecurrenceState(recurrence);
+      setLocalFixed(assignment.fixed);
     } else if (initialData) {
       setWorkerId(initialData.workerId);
       setShiftId(initialData.shiftId);
@@ -150,6 +156,11 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     setShiftError(false);
     setDateError(false);
   }, [isEditing, assignment, initialData, recurrence]);
+
+  // Keep localFixed in sync when the assignment prop changes
+  useEffect(() => {
+    setLocalFixed(assignment ? assignment.fixed : null);
+  }, [assignment?.id, assignment?.fixed]);
 
   // Reset replacement state when assignment changes
   useEffect(() => {
@@ -314,21 +325,28 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
   const handleToggleFixed = async () => {
     if (!isEditing || !assignment || isSubmitting) return;
-
+    // Use the localFixed state as the source of truth for optimistic toggling
+    const newFixed = !Boolean(localFixed);
     const updatedAssignment: AssignmentT = {
       ...assignment,
-      fixed: !assignment.fixed,
+      fixed: newFixed,
     };
 
     try {
+      // Optimistically update UI
+      setLocalFixed(newFixed);
       setIsSubmitting(true);
       // pass an options object to indicate the dialog should remain open
       // callers may ignore the extra param; schedule-item-dialog handles it
       // and will not close when { keepOpen: true } is provided.
-      onSave(updatedAssignment, recurrenceState, null, { keepOpen: true });
+      await Promise.resolve(
+        onSave(updatedAssignment, recurrenceState, null, { keepOpen: true }),
+      );
     } catch (error) {
       console.error("Failed to toggle fixed:", error);
       alert("Failed to update assignment. Please try again.");
+      // Revert optimistic update on error using authoritative prop value
+      setLocalFixed(assignment.fixed ?? null);
     } finally {
       setIsSubmitting(false);
     }
@@ -399,7 +417,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
           <Chip
             size="small"
-            label={assignment && assignment.fixed ? "Locked 🔒" : "Unlocked 🔓"}
+            label={localFixed ? "Locked 🔒" : "Unlocked 🔓"}
             color="default"
             clickable
             onClick={handleToggleFixed}
