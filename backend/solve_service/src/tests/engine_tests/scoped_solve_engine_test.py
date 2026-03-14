@@ -421,77 +421,196 @@ class TestScopedSolveEngine:
             source=AssignmentSource.MANUAL,
         )
         ei_scoped.as_campaign_not_fixed = [a_campaign_normal]
+        ei_scoped.as_campaign_not_fixed = [a_campaign_normal]
+        # Choose another normal shift (not the test_shift) and a date
+        # different from test_date so the campaign assignment is out-of-scope
+        other_shift = next(
+            s
+            for s in ei_scoped.shifts
+            if s.shift_type == ShiftType.NORMAL and s.id != test_shift.id
+        )
+        days_range = (
+            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
+        ).days
+        # pick a date within campaign that is not test_date
+        candidate_date = ei_scoped.schedule.start_date
+        if candidate_date == test_date and days_range > 0:
+            candidate_date = ei_scoped.schedule.start_date + timedelta(days=1)
+
         scope = SolveScope(
             scope_type=SolveScopeType.CUSTOM,
             shift_cells=[
                 ShiftDateCell(
-                    shift_id=test_shift.id, date=test_date.isoformat()
+                    shift_id=other_shift.id, date=candidate_date.isoformat()
                 )
             ],
             solve_view="shift",
         )
 
+        output = engine_solve_engine_inputs(
+            engine_inputs=ei_scoped, solve_scope=scope
+        )
+        assert output.is_solution is True
+        matching = [
+            a
+            for a in output.assignments
+            if a.worker_id == test_worker.id
+            and a.date == test_date
+            and a.shift_id == test_shift.id
+        ]
+        assert (
+            matching
+        ), "Out-of-scope non-duty assignment should be preserved in outputs"
+        assert (
+            len(matching) == 1
+        ), "Out-of-scope non-duty assignment should be marked fixed in outputs"
+
+    def test_custom_worker_view_out_of_scope_campaign_assignments_are_preserved_not_deleted(
+        self, ei_scoped: EngineInputsAugmented
+    ) -> None:
+        test_shift = next(
+            s for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
+        )
+        test_worker = next(w for w in ei_scoped.workers)
+        other_worker = next(
+            w for w in ei_scoped.workers if w.id != test_worker.id
+        )
+        days_range = (
+            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
+        ).days
+        offset = random.randint(0, max(0, days_range))
+        test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
+        a_campaign_normal = Assignment(
+            id="a_campaign_normal",
+            team_id="t0",
+            schedule_id="sch_s",
+            worker_id=test_worker.id,
+            date=test_date,
+            shift_id=test_shift.id,
+            fixed=False,
+            source=AssignmentSource.MANUAL,
+        )
+        ei_scoped.as_campaign_not_fixed = [a_campaign_normal]
+        scope = SolveScope(
+            scope_type=SolveScopeType.CUSTOM,
+            worker_cells=[
+                WorkerDateCell(
+                    worker_id=other_worker.id, date=test_date.isoformat()
+                )
+            ],
+            solve_view="worker",
+        )
+        output = engine_solve_engine_inputs(
+            engine_inputs=ei_scoped, solve_scope=scope
+        )
+        assert output.is_solution is True
+        matching = [
+            a
+            for a in output.assignments
+            if a.worker_id == test_worker.id
+            and a.date == test_date
+            and a.shift_id == test_shift.id
+        ]
+        assert (
+            matching
+        ), "Out-of-scope non-duty assignment should be preserved in outputs"
+        assert (
+            len(matching) == 1
+        ), "Out-of-scope non-duty assignment should be marked fixed in outputs"
+
     # ------------------------------------------------------------------
     # T6 — pre-existing fixed assignments are honoured by an in-scope solve
     # ------------------------------------------------------------------
-    # def test_fixed_assignments_unchanged_by_in_scope_solve(
-    #     self, ei_scoped: EngineInputsAugmented
-    # ) -> None:
-    #     monday = first_monday(ei_scoped.schedule.start_date)
-    #     fixed = Assignment(
-    #         id="fix_w0_duty",
-    #         team_id="t0",
-    #         schedule_id="sch_s",
-    #         worker_id="w0",
-    #         date=monday,
-    #         shift_id="s_duty",
-    #         fixed=True,
-    #         source=AssignmentSource.MANUAL,
-    #     )
-    #     ei_scoped.as_campaign_fixed = [fixed]
-    #     scope = SolveScope(scope_type=SolveScopeType.DUTIES)
-    #     outputs = engine_solve_engine_inputs(
-    #         engine_inputs=ei_scoped, solve_scope=scope
-    #     )
+    def test_fixed_assignments_unchanged_by_in_scope_solve(
+        self, ei_scoped: EngineInputsAugmented
+    ) -> None:
+        test_shift = next(
+            s for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
+        )
+        test_worker = next(w for w in ei_scoped.workers)
+        days_range = (
+            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
+        ).days
+        offset = random.randint(0, max(0, days_range))
+        test_date = ei_scoped.schedule.start_date + timedelta(days=offset)
+        a_fixed = Assignment(
+            id="a_fixed",
+            team_id="t0",
+            schedule_id="sch_s",
+            worker_id=test_worker.id,
+            date=test_date,
+            shift_id=test_shift.id,
+            fixed=True,
+            source=AssignmentSource.MANUAL,
+        )
+        ei_scoped.as_campaign_fixed = [a_fixed]
+        scope = SolveScope(
+            scope_type=SolveScopeType.CUSTOM,
+            shift_ids=[test_shift.id],
+            solve_view="shift",
+        )
+        output = engine_solve_engine_inputs(
+            engine_inputs=ei_scoped, solve_scope=scope
+        )
+        assert output.is_solution is True
+        matching = [
+            a
+            for a in output.assignments
+            if a.worker_id == test_worker.id
+            and a.date == test_date
+            and a.shift_id == test_shift.id
+        ]
+        assert (
+            matching
+        ), "Pre-existing fixed assignment should be preserved in outputs"
+        assert (
+            len(matching) == 1
+        ), "Pre-existing fixed assignment should be unchanged in outputs"
 
-    #     matching = [
-    #         a
-    #         for a in outputs.assignments
-    #         if a.worker_id == "w0"
-    #         and a.date == monday
-    #         and a.shift_id == "s_duty"
-    #     ]
-    #     assert (
-    #         matching
-    #     ), "Fixed assignment for (w0, monday, s_duty) should appear in outputs"
+    # ------------------------------------------------------------------
+    # T7 — CUSTOM shift cell with no demand produces no assignment
+    # ------------------------------------------------------------------
+    def test_custom_shift_cell_with_no_demand_produces_no_assignment(
+        self, ei_scoped: EngineInputsAugmented
+    ) -> None:
+        test_shift = next(
+            s for s in ei_scoped.shifts if s.shift_type == ShiftType.NORMAL
+        )
+        days_range = (
+            ei_scoped.schedule.end_date - ei_scoped.schedule.start_date
+        ).days
+        test_date = next(
+            d
+            for d in campaign_dates
+            if not next(
+                (
+                    d2
+                    for d2 in ei_scoped.shift_demands
+                    if d2.date == d and d2.shift_id == test_shift.id
+                ),
+                None,
+            )
+        )
+        scope = SolveScope(
+            scope_type=SolveScopeType.CUSTOM,
+            shift_cells=[
+                ShiftDateCell(shift_id="s_morning", date=saturday.isoformat())
+            ],
+            solve_view="shift",
+        )
+        outputs = engine_solve_engine_inputs(
+            engine_inputs=ei_scoped, solve_scope=scope
+        )
 
-    # # ------------------------------------------------------------------
-    # # T7 — CUSTOM shift cell with no demand produces no assignment
-    # # ------------------------------------------------------------------
-    # def test_custom_shift_cell_with_no_demand_produces_no_assignment(
-    #     self, ei_scoped: EngineInputsAugmented
-    # ) -> None:
-    #     saturday = first_saturday(ei_scoped.schedule.start_date)
-    #     scope = SolveScope(
-    #         scope_type=SolveScopeType.CUSTOM,
-    #         shift_cells=[
-    #             ShiftDateCell(shift_id="s_morning", date=saturday.isoformat())
-    #         ],
-    #         solve_view="shift",
-    #     )
-    #     outputs = engine_solve_engine_inputs(
-    #         engine_inputs=ei_scoped, solve_scope=scope
-    #     )
-
-    #     morning_saturday = [
-    #         a
-    #         for a in outputs.assignments
-    #         if a.shift_id == "s_morning" and a.date == saturday
-    #     ]
-    #     assert morning_saturday == [], (
-    #         f"Expected no s_morning assignment on Saturday {saturday}, got "
-    #         + f"{morning_saturday}"
-    #     )
+        morning_saturday = [
+            a
+            for a in outputs.assignments
+            if a.shift_id == "s_morning" and a.date == saturday
+        ]
+        assert morning_saturday == [], (
+            f"Expected no s_morning assignment on Saturday {saturday}, got "
+            + f"{morning_saturday}"
+        )
 
     # # ------------------------------------------------------------------
     # # T8a — worker cell with unfulfilled demand creates an assignment
