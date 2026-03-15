@@ -66,6 +66,16 @@ test.describe("Solver - Scoped Solve", () => {
     // Navigate to the schedule page
     await navigateToSchedulePage(page, solverTestBase);
 
+    // Set monthly view on the campaign month (default groupBy: shift)
+    const fixture = solverTestBase.getCurrentFixture();
+    await solverTestBase.setScheduleViewSettings(page, teamId, {
+      timeFrame: "month",
+      groupBy: "shift",
+      periodStartDate: fixture.campaignStart.toISOString(),
+    });
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
     console.log(`[${testRunId}] beforeEach complete`);
   });
 
@@ -211,16 +221,7 @@ test.describe("Solver - Scoped Solve", () => {
     const solverTestBase = testBasesMap.get(testRunId)!;
     const fixture = solverTestBase.getCurrentFixture();
 
-    // Switch to shift view
-    await solverTestBase.setScheduleViewSettings(
-      page,
-      solverTestBase.getTestTeam()!.teamId,
-      { groupBy: "shift" },
-    );
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
-    // Activate CUSTOM scope
+    // Shift view is already set by beforeEach; activate CUSTOM scope directly
     await solverTestBase.selectSolveScope(page, "CUSTOM");
 
     // Build weekday dates for the first week of the campaign month
@@ -278,7 +279,7 @@ test.describe("Solver - Scoped Solve", () => {
     const fixture = solverTestBase.getCurrentFixture();
     const teamId = solverTestBase.getTestTeam()!.teamId;
 
-    // Switch to worker view
+    // Switch to worker view (preserves campaign month periodStartDate from beforeEach)
     await solverTestBase.setScheduleViewSettings(page, teamId, {
       groupBy: "worker",
     });
@@ -464,15 +465,8 @@ test.describe("Solver - Scoped Solve", () => {
     const testRunId = (testInfo as any).testRunId as string;
     const solverTestBase = testBasesMap.get(testRunId)!;
     const fixture = solverTestBase.getCurrentFixture();
-    const teamId = solverTestBase.getTestTeam()!.teamId;
 
-    // Switch to shift view
-    await solverTestBase.setScheduleViewSettings(page, teamId, {
-      groupBy: "shift",
-    });
-    await page.reload();
-    await page.waitForLoadState("networkidle");
-
+    // Shift view is already set by beforeEach; activate CUSTOM scope directly
     await solverTestBase.selectSolveScope(page, "CUSTOM");
 
     const saturdayDate = fixture.firstSaturday.format("YYYY-MM-DD");
@@ -538,7 +532,7 @@ test.describe("Solver - Scoped Solve", () => {
       scheduleId: fixture.schedule.id,
     });
 
-    // Switch to worker view
+    // Switch to worker view (preserves campaign month periodStartDate from beforeEach)
     await solverTestBase.setScheduleViewSettings(page, teamId, {
       groupBy: "worker",
     });
@@ -610,7 +604,7 @@ test.describe("Solver - Scoped Solve", () => {
       scheduleId: fixture.schedule.id,
     });
 
-    // Switch to worker view
+    // Switch to worker view (preserves campaign month periodStartDate from beforeEach)
     await solverTestBase.setScheduleViewSettings(page, teamId, {
       groupBy: "worker",
     });

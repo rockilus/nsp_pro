@@ -417,8 +417,7 @@ export class SolverTestBase {
       ({ teamId, settings }) => {
         const storageKey = `scheduleViewSettings_${teamId}`;
 
-        // Start with default settings
-        const now = new Date().toISOString();
+        // Base defaults
         const defaultSettings = {
           timeFrame: "week",
           groupBy: "shift",
@@ -426,12 +425,17 @@ export class SolverTestBase {
           showAssignments: true,
           showDailyShiftDemands: true,
           showRequests: true,
-          periodStartDate: now,
+          periodStartDate: new Date().toISOString(),
         };
 
-        // Merge defaults with provided settings
+        // Read existing settings so partial calls (e.g. just groupBy) preserve other values
+        const existingRaw = localStorage.getItem(storageKey);
+        const existingSettings = existingRaw ? JSON.parse(existingRaw) : {};
+
+        // Merge: defaults → existing → new settings
         const updatedSettings = {
           ...defaultSettings,
+          ...existingSettings,
           ...settings,
         };
 
