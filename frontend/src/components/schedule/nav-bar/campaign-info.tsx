@@ -395,16 +395,28 @@ export default function CampaignInfo({
                 onClose={handleMenuClose}
                 MenuListProps={{ "aria-labelledby": "solve-dropdown-button" }}
               >
-                <MenuItem onClick={() => handleMenuItemClick("FULL")}>
+                <MenuItem
+                  data-testid="solve-scope-menu-item-FULL"
+                  onClick={() => handleMenuItemClick("FULL")}
+                >
                   <ListItemText>{t("solve_full_campaign")}</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => handleMenuItemClick("DUTIES")}>
+                <MenuItem
+                  data-testid="solve-scope-menu-item-DUTIES"
+                  onClick={() => handleMenuItemClick("DUTIES")}
+                >
                   <ListItemText>{t("solve_duties")}</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => handleMenuItemClick("NON_DUTIES")}>
+                <MenuItem
+                  data-testid="solve-scope-menu-item-NON_DUTIES"
+                  onClick={() => handleMenuItemClick("NON_DUTIES")}
+                >
                   <ListItemText>{t("solve_non_duties")}</ListItemText>
                 </MenuItem>
-                <MenuItem onClick={() => handleMenuItemClick("CUSTOM")}>
+                <MenuItem
+                  data-testid="solve-scope-menu-item-CUSTOM"
+                  onClick={() => handleMenuItemClick("CUSTOM")}
+                >
                   <ListItemText>{t("solve_custom")}</ListItemText>
                 </MenuItem>
               </Menu>

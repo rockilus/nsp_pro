@@ -138,7 +138,13 @@ export default function CustomSolveDialog({
   const isEmpty = selectedEntities.length === 0;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog
+      data-testid="custom-solve-dialog"
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+    >
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Sparkle size={16} />
         {t("solve_custom_dialog_title")}
@@ -220,6 +226,7 @@ export default function CustomSolveDialog({
           {t("cancel")}
         </Button>
         <Button
+          data-testid="custom-solve-confirm-button"
           onClick={handleConfirm}
           variant="contained"
           disabled={isEmpty}

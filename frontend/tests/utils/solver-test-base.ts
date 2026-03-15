@@ -10,8 +10,17 @@
  */
 
 import { Page, expect } from "@playwright/test";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { DatabaseTestUtils } from "./database-utils";
 import { SolverScenarioResult } from "./database-utils";
+import {
+  createScopedSolveFixture,
+  ScopedSolveFixtureResult,
+} from "../fixtures/scoped-solve-fixture";
+import { AssignmentsRecurrencesResultT } from "@/types/assignment";
+
+dayjs.extend(utc);
 
 const testConfig = {
   apiUrl: process.env.NEXT_PUBLIC_API_GATEWAY_URL || "http://localhost:8000",
@@ -38,6 +47,7 @@ export class SolverTestBase {
   protected dbUtils: DatabaseTestUtils;
   protected testTeam: { teamId: string; name: string } | null = null;
   protected currentScheduleId: string | null = null;
+  protected currentFixture: ScopedSolveFixtureResult | null = null;
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
@@ -76,7 +86,7 @@ export class SolverTestBase {
     // Load scenario using DatabaseTestUtils which handles authentication properly
     const scenario = await this.dbUtils.loadSolverScenario(
       scenarioName,
-      this.testTeam.teamId
+      this.testTeam.teamId,
     );
 
     console.log(`✅ Loaded scenario: ${scenarioName}`);
@@ -100,7 +110,7 @@ export class SolverTestBase {
    */
   async navigateToScheduleWithScenario(
     page: Page,
-    scenarioName: string
+    scenarioName: string,
   ): Promise<SolverScenarioResult> {
     const scenario = await this.loadScenario(scenarioName);
 
@@ -121,7 +131,7 @@ export class SolverTestBase {
     await page.waitForLoadState("networkidle");
 
     console.log(
-      `✅ Navigated to schedule page for team: ${this.testTeam!.name}`
+      `✅ Navigated to schedule page for team: ${this.testTeam!.name}`,
     );
 
     return scenario;
@@ -133,7 +143,7 @@ export class SolverTestBase {
    */
   async createSchedule(
     startDate: string,
-    endDate: string
+    endDate: string,
   ): Promise<{ scheduleId: string }> {
     if (!this.testTeam) {
       throw new Error("Test team not created");
@@ -149,7 +159,7 @@ export class SolverTestBase {
         startDate: startDate,
         endDate: endDate,
         status: "CAMPAIGN",
-      }
+      },
     );
 
     this.currentScheduleId = result.id;
@@ -165,7 +175,7 @@ export class SolverTestBase {
    */
   async triggerSolveAndWait(
     page: Page,
-    timeoutMs: number = 60000
+    timeoutMs: number = 60000,
   ): Promise<void> {
     console.log("🔄 Triggering solver...");
 
@@ -202,10 +212,10 @@ export class SolverTestBase {
 
     // Check that there are no error or success snackbars open
     const errorSnackbar = await page.locator(
-      '[data-testid="solve-error-snackbar"]'
+      '[data-testid="solve-error-snackbar"]',
     );
     const successSnackbar = await page.locator(
-      '[data-testid="solve-success-snackbar"]'
+      '[data-testid="solve-success-snackbar"]',
     );
 
     const isErrorVisible = await errorSnackbar.isVisible().catch(() => false);
@@ -215,7 +225,7 @@ export class SolverTestBase {
 
     if (isErrorVisible) {
       const errorAlert = await page.locator(
-        '[data-testid="solve-error-alert"]'
+        '[data-testid="solve-error-alert"]',
       );
       const errorText = await errorAlert.textContent();
       throw new Error(`Solver failed with error: ${errorText}`);
@@ -224,7 +234,7 @@ export class SolverTestBase {
     // Success snackbar is acceptable but should close
     if (isSuccessVisible) {
       console.log(
-        "ℹ️  Success notification visible, waiting for it to close..."
+        "ℹ️  Success notification visible, waiting for it to close...",
       );
       await page.waitForSelector('[data-testid="solve-success-snackbar"]', {
         state: "hidden",
@@ -243,7 +253,7 @@ export class SolverTestBase {
     let statusFound = false;
     for (const status of validStatuses) {
       const statusChip = await page.locator(
-        `[data-testid="solve-status-chip-${status}"]`
+        `[data-testid="solve-status-chip-${status}"]`,
       );
       const isVisible = await statusChip.isVisible().catch(() => false);
       if (isVisible) {
@@ -255,7 +265,7 @@ export class SolverTestBase {
 
     if (!statusFound) {
       throw new Error(
-        `Expected solve status chip to show one of: ${validStatuses.join(", ")}`
+        `Expected solve status chip to show one of: ${validStatuses.join(", ")}`,
       );
     }
 
@@ -267,7 +277,7 @@ export class SolverTestBase {
    */
   async verifySolveResults(
     page: Page,
-    expectedCriteria: VerifyCriteria
+    expectedCriteria: VerifyCriteria,
   ): Promise<void> {
     console.log("🔍 Verifying solve results...");
 
@@ -292,7 +302,7 @@ export class SolverTestBase {
 
     if (expectedCriteria.minAssignments !== undefined) {
       expect(assignmentCount).toBeGreaterThanOrEqual(
-        expectedCriteria.minAssignments
+        expectedCriteria.minAssignments,
       );
       console.log(`   ✅ Assignments >= ${expectedCriteria.minAssignments}`);
     }
@@ -300,7 +310,7 @@ export class SolverTestBase {
     // Check for breaches if displayed in UI
     if (expectedCriteria.maxBreaches !== undefined) {
       const breachIndicators = page.locator(
-        '[data-testid="constraint-breach"], .breach-indicator, .constraint-violation'
+        '[data-testid="constraint-breach"], .breach-indicator, .constraint-violation',
       );
       const breachCount = await breachIndicators.count();
 
@@ -319,7 +329,7 @@ export class SolverTestBase {
       if (coverageText) {
         const coverage = parseFloat(coverageText.replace(/[^\d.]/g, ""));
         expect(coverage).toBeGreaterThanOrEqual(
-          expectedCriteria.coveragePercentage
+          expectedCriteria.coveragePercentage,
         );
         console.log(`   ✅ Coverage: ${coverage}%`);
       }
@@ -334,7 +344,7 @@ export class SolverTestBase {
   async takeScreenshot(
     page: Page,
     scenarioName: string,
-    description: string = ""
+    description: string = "",
   ): Promise<void> {
     const timestamp = Date.now();
     const filename = `test-results/solver-${scenarioName}${
@@ -398,7 +408,7 @@ export class SolverTestBase {
       showDailyShiftDemands?: boolean;
       showRequests?: boolean;
       periodStartDate?: string; // ISO string
-    }
+    },
   ): Promise<void> {
     // Ensure page has loaded and has a valid origin
     await page.waitForLoadState("domcontentloaded");
@@ -427,12 +437,12 @@ export class SolverTestBase {
 
         localStorage.setItem(storageKey, JSON.stringify(updatedSettings));
       },
-      { teamId, settings }
+      { teamId, settings },
     );
 
     console.log(
       `✅ Set schedule view settings for team ${teamId}:`,
-      JSON.stringify(settings, null, 2)
+      JSON.stringify(settings, null, 2),
     );
   }
 
@@ -448,5 +458,170 @@ export class SolverTestBase {
    */
   getTestTeam(): { teamId: string; name: string } | null {
     return this.testTeam;
+  }
+
+  // -------------------------------------------------------------------
+  // Scoped-solve helpers
+  // -------------------------------------------------------------------
+
+  /**
+   * Build the scoped-solve fixture (workers/shifts/demands/schedule) for the
+   * current test team and store it as `currentFixture`.
+   */
+  async setupScopedSolveScenario(
+    teamId: string,
+  ): Promise<ScopedSolveFixtureResult> {
+    const fixture = await createScopedSolveFixture(this.dbUtils, teamId);
+    this.currentFixture = fixture;
+    return fixture;
+  }
+
+  /**
+   * Get the current scoped-solve fixture (throws if not set).
+   */
+  getCurrentFixture(): ScopedSolveFixtureResult {
+    if (!this.currentFixture) {
+      throw new Error(
+        "No scoped solve fixture loaded. Call setupScopedSolveScenario first.",
+      );
+    }
+    return this.currentFixture;
+  }
+
+  /**
+   * Open the solve-scope dropdown and select the given scope.
+   *
+   * Requires:
+   * - `data-testid="solve-dropdown-button"` on the dropdown toggle
+   * - `data-testid="solve-scope-menu-item-{scope}"` on each menu item
+   */
+  async selectSolveScope(
+    page: Page,
+    scope: "FULL" | "DUTIES" | "NON_DUTIES" | "CUSTOM",
+  ): Promise<void> {
+    const dropdownBtn = page.locator('[data-testid="solve-dropdown-button"]');
+    await dropdownBtn.waitFor({ state: "visible", timeout: 5000 });
+    await dropdownBtn.click();
+
+    const menuItem = page.locator(
+      `[data-testid="solve-scope-menu-item-${scope}"]`,
+    );
+    await menuItem.waitFor({ state: "visible", timeout: 5000 });
+    await menuItem.click();
+
+    console.log(`✅ Selected solve scope: ${scope}`);
+  }
+
+  /**
+   * Trigger a CUSTOM solve using the shift-view selection.
+   *
+   * Assumes CUSTOM scope is already active.
+   * For each (shiftId, date) pair, clicks the custom-select cell, then
+   * clicks the solve button, confirms the dialog, and waits for completion.
+   */
+  async triggerCustomSolveInShiftView(
+    page: Page,
+    shiftIds: string[],
+    dates: string[],
+    timeoutMs: number = 120000,
+  ): Promise<void> {
+    // Click each (shiftId × date) cell to add it to the custom selection
+    for (const shiftId of shiftIds) {
+      for (const date of dates) {
+        const cellSelector = `[data-testid="shift-cell-custom-select-${shiftId}-${date}"]`;
+        const cell = page.locator(cellSelector);
+        await cell.waitFor({ state: "visible", timeout: 5000 });
+        await cell.click();
+      }
+    }
+
+    // Click the solve button — this opens the confirm dialog in CUSTOM mode
+    const solveButton = page.locator('[data-testid="solve-button"]');
+    await solveButton.waitFor({ state: "visible", timeout: 5000 });
+    await solveButton.click();
+
+    // Confirm in the custom-solve dialog
+    const confirmBtn = page.locator(
+      '[data-testid="custom-solve-confirm-button"]',
+    );
+    await confirmBtn.waitFor({ state: "visible", timeout: 5000 });
+    await confirmBtn.click();
+
+    // Wait for solve to finish using the existing triggerSolveAndWait polling logic
+    console.log("⏳ Waiting for custom (shift view) solve to complete...");
+    await page.waitForSelector('[data-testid="solve-button"]:disabled', {
+      timeout: 5000,
+    });
+    await page.waitForSelector('[data-testid="solve-button"]:not(:disabled)', {
+      timeout: timeoutMs,
+    });
+    await page.waitForSelector('[data-testid^="solve-status-chip-"]', {
+      state: "visible",
+      timeout: 5000,
+    });
+    console.log("✅ Custom (shift view) solve completed");
+  }
+
+  /**
+   * Trigger a CUSTOM solve using the worker-view selection.
+   *
+   * Assumes CUSTOM scope is already active.
+   */
+  async triggerCustomSolveInWorkerView(
+    page: Page,
+    workerIds: string[],
+    dates: string[],
+    timeoutMs: number = 120000,
+  ): Promise<void> {
+    for (const workerId of workerIds) {
+      for (const date of dates) {
+        const cellSelector = `[data-testid="worker-cell-custom-select-${workerId}-${date}"]`;
+        const cell = page.locator(cellSelector);
+        await cell.waitFor({ state: "visible", timeout: 5000 });
+        await cell.click();
+      }
+    }
+
+    const solveButton = page.locator('[data-testid="solve-button"]');
+    await solveButton.waitFor({ state: "visible", timeout: 5000 });
+    await solveButton.click();
+
+    const confirmBtn = page.locator(
+      '[data-testid="custom-solve-confirm-button"]',
+    );
+    await confirmBtn.waitFor({ state: "visible", timeout: 5000 });
+    await confirmBtn.click();
+
+    console.log("⏳ Waiting for custom (worker view) solve to complete...");
+    await page.waitForSelector('[data-testid="solve-button"]:disabled', {
+      timeout: 5000,
+    });
+    await page.waitForSelector('[data-testid="solve-button"]:not(:disabled)', {
+      timeout: timeoutMs,
+    });
+    await page.waitForSelector('[data-testid^="solve-status-chip-"]', {
+      state: "visible",
+      timeout: 5000,
+    });
+    console.log("✅ Custom (worker view) solve completed");
+  }
+
+  /**
+   * Fetch all assignments for the current test team within the given date range.
+   * Wraps dbUtils.getAssignmentsAndRecurrences for convenience.
+   */
+  async getAssignmentsForTeam(
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupSolverTests first.");
+    }
+    return this.dbUtils.getAssignmentsAndRecurrences(
+      this.testTeam.teamId,
+      true, // include campaign assignments
+      startDate,
+      endDate,
+    );
   }
 }
