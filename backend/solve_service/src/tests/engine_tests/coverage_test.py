@@ -5,8 +5,6 @@ from datetime import timedelta
 import pytest
 from shared.schemas.core import (
     EngineInputsAugmented,
-    ModelConfig,
-    Penalties,
     ShiftType,
     Specialty,
     Staffing,
@@ -14,7 +12,6 @@ from shared.schemas.core import (
 
 from tests.engine_tests.coverage_test_fixture import build_ei_coverage
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
-from tests.engine_tests.scoped_solve_fixture import build_ei_scoped
 from tests.sample_data import test_data_set_1
 
 # constraints = self.model.Proto().constraints
@@ -122,9 +119,7 @@ class TestCoverage:
         assert sorted(set(shift_ids_assigned)) == sorted(set(shift_ids_normal))
 
         worker_ids_assigned_specialists = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_id_target
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_id_target
         ]
         assert set(worker_ids_assigned_specialists).issubset(
             set(worker_ids_specialists)
@@ -167,9 +162,7 @@ class TestCoverage:
         sample_data.shifts = [shift_target]
 
         dsds = sample_data.shift_demands
-        dsds_shift_target = [
-            dsd for dsd in dsds if dsd.shift_id == shift_target.id
-        ]
+        dsds_shift_target = [dsd for dsd in dsds if dsd.shift_id == shift_target.id]
         sample_data.shift_demands = dsds_shift_target
 
         workers = sample_data.workers
@@ -184,14 +177,10 @@ class TestCoverage:
         outputs = engine_solve_engine_inputs(sample_data)
 
         shift_ids_assigned = [a.shift_id for a in outputs.assignments]
-        assert sorted(set(shift_ids_assigned)) == sorted(
-            set([shift_target.id])
-        )
+        assert sorted(set(shift_ids_assigned)) == sorted(set([shift_target.id]))
 
         worker_ids_assigned_specialists = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_target.id
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_target.id
         ]
         assert set(worker_ids_assigned_specialists).issubset(
             set(worker_ids_specialists)
@@ -274,18 +263,14 @@ class TestCoverage:
         assert sorted(set(shift_ids_assigned)) == sorted(set(shift_ids_normal))
 
         worker_ids_assigned_specialists_1 = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_id_target_1
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_id_target_1
         ]
         assert set(worker_ids_assigned_specialists_1).issubset(
             set(worker_ids_specialists_spe_1)
         )
 
         worker_ids_assigned_specialists_2 = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_id_target_2
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_id_target_2
         ]
         assert set(worker_ids_assigned_specialists_2).issubset(
             set(worker_ids_specialists_spe_2)
@@ -400,18 +385,14 @@ class TestCoverage:
         assert sorted(set(shift_ids_assigned)) == sorted(set(shift_ids_normal))
 
         worker_ids_assigned_qualified_1 = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_id_target_1
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_id_target_1
         ]
         assert set(worker_ids_assigned_qualified_1).issubset(
             set(worker_ids_qualified_spe_1 + worker_ids_qualified_spe_1_2)
         )
 
         worker_ids_assigned_qualified_2 = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_id_target_2
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_id_target_2
         ]
         assert set(worker_ids_assigned_qualified_2).issubset(
             set(worker_ids_qualified_spe_2 + worker_ids_qualified_spe_1_2)
@@ -509,18 +490,14 @@ class TestCoverage:
         assert sorted(set(shift_ids_assigned)) == sorted(set(shift_ids_normal))
 
         worker_ids_assigned_specialists_1 = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_id_target_1
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_id_target_1
         ]
         assert set(worker_ids_assigned_specialists_1).issubset(
             set(worker_ids_specialists_spe_1 + worker_ids_specialists_spe_1_2)
         )
 
         worker_ids_assigned_specialists_1_2 = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_id_target_2
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_id_target_2
         ]
         assert set(worker_ids_assigned_specialists_1_2).issubset(
             set(worker_ids_specialists_spe_1_2)
@@ -616,9 +593,7 @@ class TestCoverage:
         assert sorted(set(shift_ids_assigned)) == sorted(set(shift_ids_normal))
 
         worker_ids_assigned_target_shift = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_id_target
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_id_target
         ]
         assert set(worker_ids_assigned_target_shift).issubset(
             set(worker_ids_qualified_spe_1 + worker_ids_qualified_spe_2)
@@ -784,18 +759,14 @@ class TestCoverage:
         assert sorted(set(shift_ids_assigned)) == sorted(set(shift_ids_normal))
 
         worker_ids_assigned_target_shift_1 = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_id_target_1
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_id_target_1
         ]
         assert set(worker_ids_assigned_target_shift_1).issubset(
             set(worker_ids_qualified_spe_1 + worker_ids_qualified_spe_1_2)
         )
 
         worker_ids_assigned_target_shift_2 = [
-            a.worker_id
-            for a in outputs.assignments
-            if a.shift_id == shift_id_target_2
+            a.worker_id for a in outputs.assignments if a.shift_id == shift_id_target_2
         ]
         assert set(worker_ids_assigned_target_shift_2).issubset(
             set(worker_ids_qualified_spe_2 + worker_ids_qualified_spe_1_2)
@@ -859,14 +830,10 @@ class TestCoverage:
                     and a.worker_id in worker_ids_qualified_spe_1_2
                 )
                 nb_worker_q_1_2_for_spe_1 = (
-                    count_actual_spe_1
-                    + count_actual_spe_1_2
-                    - count_target_spe_1
+                    count_actual_spe_1 + count_actual_spe_1_2 - count_target_spe_1
                 )
                 assert (
-                    count_actual_spe_1
-                    + count_actual_spe_2
-                    + count_actual_spe_1_2
+                    count_actual_spe_1 + count_actual_spe_2 + count_actual_spe_1_2
                     == count_target_spe_1 + count_target_spe_2
                 )
                 assert (
@@ -876,14 +843,11 @@ class TestCoverage:
                     == count_target_spe_1
                 )
                 assert (
-                    count_actual_spe_2 + nb_worker_q_1_2_for_spe_1
-                    == count_target_spe_2
+                    count_actual_spe_2 + nb_worker_q_1_2_for_spe_1 == count_target_spe_2
                 )
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
-    def test_expected_assignments_all(
-        self, sample_data: EngineInputsAugmented
-    ) -> None:
+    def test_expected_assignments_all(self, sample_data: EngineInputsAugmented) -> None:
         shifts = sample_data.shifts
         dsds = sample_data.shift_demands
 
@@ -897,9 +861,7 @@ class TestCoverage:
 
         for d in dates:
             for shift in [
-                s
-                for s in shifts
-                if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+                s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
             ]:
                 shift_staffing = sum(s.staffing for s in shift.staffing)
                 count_target = sum(
@@ -925,11 +887,8 @@ class TestCoverage:
         outputs = engine_solve_engine_inputs(ei_coverage)
         assert outputs.is_solution is True
 
-        assignments_count = Counter(
-            (a.date, a.shift_id) for a in outputs.assignments
-        )
+        assignments_count = Counter((a.date, a.shift_id) for a in outputs.assignments)
 
         assert all(
-            assignments_count[(a.date, a.shift_id)] == 0
-            for a in outputs.assignments
+            assignments_count[(a.date, a.shift_id)] == 0 for a in outputs.assignments
         )

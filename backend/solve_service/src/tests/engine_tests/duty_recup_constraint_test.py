@@ -2,20 +2,20 @@ from datetime import timedelta
 
 import pytest
 from shared.schemas.core import (
-    EngineInputsAugmented,
-    ShiftRestType,
-    ShiftType,
     Assignment,
     AssignmentSource,
-    Penalties,
+    EngineInputsAugmented,
     ModelConfig,
+    Penalties,
+    ShiftRestType,
+    ShiftType,
     SolveScope,
     SolveScopeType,
 )
 
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
-from tests.sample_data import test_data_set_1
 from tests.engine_tests.scoped_solve_fixture import build_ei_scoped
+from tests.sample_data import test_data_set_1
 
 
 # pylint: disable=R0801
@@ -32,12 +32,8 @@ class TestDutyRecupConstraint:
         self, sample_data: EngineInputsAugmented
     ) -> None:
         shifts = sample_data.shifts
-        shifts_duty = [
-            shift for shift in shifts if shift.shift_type == ShiftType.DUTY
-        ]
-        shifts_recup = [
-            s for s in shifts if s.rest_type == ShiftRestType.RECUPERATION
-        ]
+        shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
+        shifts_recup = [s for s in shifts if s.rest_type == ShiftRestType.RECUPERATION]
         shift_ids_duty = [shift.id for shift in shifts_duty]
         shift_ids_recup = [shift.id for shift in shifts_recup]
         sample_data.shifts = shifts_duty + shifts_recup
@@ -104,13 +100,9 @@ class TestDutyRecupConstraint:
         self, sample_data: EngineInputsAugmented
     ) -> None:
         shifts = sample_data.shifts
-        shifts_duty = [
-            shift for shift in shifts if shift.shift_type == ShiftType.DUTY
-        ]
+        shifts_duty = [shift for shift in shifts if shift.shift_type == ShiftType.DUTY]
         shift_ids_target = [shift.id for shift in shifts_duty]
-        shifts_recup = [
-            s for s in shifts if s.recuperation_duty_id in shift_ids_target
-        ]
+        shifts_recup = [s for s in shifts if s.recuperation_duty_id in shift_ids_target]
         assert len(shifts_duty) == len(shifts_recup)
         shift_ids_recup = [shift.id for shift in shifts_recup]
         sample_data.shifts = shifts_duty + shifts_recup
@@ -170,9 +162,7 @@ class TestDutyRecupConstraint:
     def test_duty_without_recup_out_of_scope_does_not_fail_solve(
         self, ei_scoped: EngineInputsAugmented
     ) -> None:
-        shift_duty = next(
-            s for s in ei_scoped.shifts if s.shift_type == ShiftType.DUTY
-        )
+        shift_duty = next(s for s in ei_scoped.shifts if s.shift_type == ShiftType.DUTY)
         assert shift_duty is not None, "Test data must contain a duty shift"
 
         test_worker = ei_scoped.workers[0]
@@ -201,17 +191,13 @@ class TestDutyRecupConstraint:
             solve_view="shift",
         )
 
-        outputs = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=scope
-        )
+        outputs = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=scope)
         assert outputs.is_solution is True
 
     def test_fixed_duty_without_recup_followed_by_assignment_does_not_fail_solve(
         self, ei_scoped: EngineInputsAugmented
     ) -> None:
-        shift_duty = next(
-            s for s in ei_scoped.shifts if s.shift_type == ShiftType.DUTY
-        )
+        shift_duty = next(s for s in ei_scoped.shifts if s.shift_type == ShiftType.DUTY)
         assert shift_duty is not None, "Test data must contain a duty shift"
 
         test_worker = ei_scoped.workers[0]
@@ -246,7 +232,5 @@ class TestDutyRecupConstraint:
 
         ei_scoped.as_campaign_fixed.extend(assignments_duty)
 
-        outputs = engine_solve_engine_inputs(
-            engine_inputs=ei_scoped, solve_scope=None
-        )
+        outputs = engine_solve_engine_inputs(engine_inputs=ei_scoped, solve_scope=None)
         assert outputs.is_solution is True
