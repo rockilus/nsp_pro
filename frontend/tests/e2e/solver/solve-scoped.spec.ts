@@ -113,6 +113,7 @@ test.describe("Solver - Scoped Solve", () => {
       assignments,
       fixture.shiftDemands,
       fixture.schedule,
+      fixture.shifts,
     );
     expect(allFulfilled).toBe(true);
 

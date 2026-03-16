@@ -20,7 +20,7 @@ import {
 } from "../fixtures/scoped-solve-fixture";
 import { AssignmentsRecurrencesResultT, AssignmentT } from "@/types/assignment";
 import { ShiftDemandDTO } from "@/types/shiftDemand";
-import { ShiftType, ShiftRestType } from "@/types/shift";
+import { ShiftType, ShiftRestType, ShiftT } from "@/types/shift";
 import { SolveScope } from "@/types/solveTaskStatus";
 import { ScheduleT } from "@/types/schedule";
 
@@ -648,6 +648,7 @@ export class SolverTestBase {
     assignments: AssignmentT[],
     shiftDemands: ShiftDemandDTO[],
     schedule: ScheduleT,
+    shifts: ShiftT[],
   ): boolean {
     // Helper to normalise dates to YYYY-MM-DD (UTC)
     const normDate = (d: dayjs.Dayjs | number | string) => {
@@ -661,9 +662,24 @@ export class SolverTestBase {
     const start = schedule.startDate.startOf("day");
     const end = schedule.endDate.endOf("day");
 
+    // Build a lookup map from shift id -> ShiftT for fast access
+    const shiftsMap: Record<string, ShiftT> = {};
+    for (const s of shifts) {
+      shiftsMap[s.id] = s;
+    }
+
     const assignmentsInCampaign = assignments.filter((a) => {
       const ad = (a.date as dayjs.Dayjs).utc();
-      return !ad.isBefore(start, "day") && !ad.isAfter(end, "day");
+      // Must be inside campaign period
+      if (ad.isBefore(start, "day") || ad.isAfter(end, "day")) return false;
+
+      // Use the provided shifts list (lookup map) to only keep NORMAL or DUTY
+      const shift = shiftsMap[a.shiftId];
+      if (!shift) return false;
+      return (
+        shift.shiftType === ShiftType.NORMAL ||
+        shift.shiftType === ShiftType.DUTY
+      );
     });
 
     const shiftDemandsInCampaign = shiftDemands.filter((d) => {
@@ -703,29 +719,21 @@ export class SolverTestBase {
     } else if (scopeType === "DUTIES") {
       // duty or recuperation shifts
       const dutyIds = new Set<string>();
-      if (this.currentFixture) {
-        const shifts = Object.values(
-          this.currentFixture.shifts || ({} as any),
-        ) as any[];
-        for (const s of shifts) {
-          if (
-            s.shiftType === ShiftType.DUTY ||
-            s.restType === ShiftRestType.RECUPERATION
-          ) {
-            dutyIds.add(s.id);
-          }
+      const svals = Object.values(shiftsMap) as any[];
+      for (const s of svals) {
+        if (
+          s.shiftType === ShiftType.DUTY ||
+          s.restType === ShiftRestType.RECUPERATION
+        ) {
+          dutyIds.add(s.id);
         }
       }
       includeIf((d) => dutyIds.has(d.shiftId));
     } else if (scopeType === "NON_DUTIES") {
       const nonDutyIds = new Set<string>();
-      if (this.currentFixture) {
-        const shifts = Object.values(
-          this.currentFixture.shifts || ({} as any),
-        ) as any[];
-        for (const s of shifts) {
-          if (s.shiftType === ShiftType.NORMAL) nonDutyIds.add(s.id);
-        }
+      const svals = Object.values(shiftsMap) as any[];
+      for (const s of svals) {
+        if (s.shiftType === ShiftType.NORMAL) nonDutyIds.add(s.id);
       }
       includeIf((d) => nonDutyIds.has(d.shiftId));
     } else if (scopeType === "CUSTOM") {
