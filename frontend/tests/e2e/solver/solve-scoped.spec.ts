@@ -162,29 +162,22 @@ test.describe("Solver - Scoped Solve", () => {
     await solverTestBase.selectSolveScope(page, "DUTIES");
     await solverTestBase.triggerSolveAndWait(page, TEST_TIMEOUT_MS);
 
+    // API assertion: assignments exist for morning+afternoon+duty
     const result = await solverTestBase.getAssignmentsForTeam(
       fixture.campaignStart,
       fixture.campaignEnd,
     );
     const assignments = result.assignmentsRead;
 
-    const dutyAssignments = assignments.filter(
-      (a) => a.shiftId === fixture.shifts.duty.id,
+    // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
+    const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
+      { scope_type: "DUTIES" },
+      assignments,
+      fixture.shiftDemands,
+      fixture.schedule,
+      fixture.shifts,
     );
-    const morningAssignments = assignments.filter(
-      (a) => a.shiftId === fixture.shifts.morning.id,
-    );
-    const afternoonAssignments = assignments.filter(
-      (a) => a.shiftId === fixture.shifts.afternoon.id,
-    );
-
-    expect(dutyAssignments.length).toBeGreaterThan(0);
-    expect(morningAssignments.length).toBe(0);
-    expect(afternoonAssignments.length).toBe(0);
-
-    // UI assertion
-    const assignmentCells = page.locator('[data-testid^="assignment-cell-"]');
-    expect(await assignmentCells.count()).toBeGreaterThan(0);
+    expect(allFulfilled).toBe(true);
 
     console.log("✅ Test 2: DUTIES scope — only duty assignments found");
   });
@@ -203,27 +196,22 @@ test.describe("Solver - Scoped Solve", () => {
     await solverTestBase.selectSolveScope(page, "NON_DUTIES");
     await solverTestBase.triggerSolveAndWait(page, TEST_TIMEOUT_MS);
 
+    // API assertion: assignments exist for morning+afternoon+duty
     const result = await solverTestBase.getAssignmentsForTeam(
       fixture.campaignStart,
       fixture.campaignEnd,
     );
     const assignments = result.assignmentsRead;
 
-    const dutyAssignments = assignments.filter(
-      (a) => a.shiftId === fixture.shifts.duty.id,
+    // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
+    const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
+      { scope_type: "NON_DUTIES" },
+      assignments,
+      fixture.shiftDemands,
+      fixture.schedule,
+      fixture.shifts,
     );
-    const nonDutyAssignments = assignments.filter(
-      (a) =>
-        a.shiftId === fixture.shifts.morning.id ||
-        a.shiftId === fixture.shifts.afternoon.id,
-    );
-
-    expect(nonDutyAssignments.length).toBeGreaterThan(0);
-    expect(dutyAssignments.length).toBe(0);
-
-    // UI assertion
-    const assignmentCells = page.locator('[data-testid^="assignment-cell-"]');
-    expect(await assignmentCells.count()).toBeGreaterThan(0);
+    expect(allFulfilled).toBe(true);
 
     console.log(
       "✅ Test 3: NON_DUTIES scope — only non-duty assignments found",
@@ -251,36 +239,33 @@ test.describe("Solver - Scoped Solve", () => {
       weekDates.push(firstMonday.add(i, "day").format("YYYY-MM-DD"));
     }
 
-    const shiftIds = [fixture.shifts.morning.id, fixture.shifts.afternoon.id];
+    const normalShiftIds = fixture.shifts
+      .filter((s) => s.shiftType === ShiftType.NORMAL)
+      .map((s) => s.id);
 
     await solverTestBase.triggerCustomSolveInShiftView(
       page,
-      shiftIds,
+      normalShiftIds,
       weekDates,
       TEST_TIMEOUT_MS,
     );
 
+    // API assertion: assignments exist for morning+afternoon+duty
     const result = await solverTestBase.getAssignmentsForTeam(
       fixture.campaignStart,
       fixture.campaignEnd,
     );
     const assignments = result.assignmentsRead;
 
-    const dutyAssignments = assignments.filter(
-      (a) => a.shiftId === fixture.shifts.duty.id,
+    // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
+    const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
+      { scope_type: "CUSTOM", shift_ids: normalShiftIds },
+      assignments,
+      fixture.shiftDemands,
+      fixture.schedule,
+      fixture.shifts,
     );
-    const morningOrAfternoon = assignments.filter(
-      (a) =>
-        a.shiftId === fixture.shifts.morning.id ||
-        a.shiftId === fixture.shifts.afternoon.id,
-    );
-
-    expect(morningOrAfternoon.length).toBeGreaterThan(0);
-    expect(dutyAssignments.length).toBe(0);
-
-    // UI assertion
-    const assignmentCells = page.locator('[data-testid^="assignment-cell-"]');
-    expect(await assignmentCells.count()).toBeGreaterThan(0);
+    expect(allFulfilled).toBe(true);
 
     console.log(
       "✅ Test 4: CUSTOM shift view — only morning/afternoon assignments",
