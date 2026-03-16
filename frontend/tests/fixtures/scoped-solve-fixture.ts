@@ -71,16 +71,41 @@ export async function createScopedSolveFixture(
   const employmentStartDate = campaignStart.subtract(4, "month").toDate();
 
   const workerDefs = [
-    { name: "Alice Moreau", acronym: "ALM", weeklyHours: 35 },
-    { name: "Bruno Lenz", acronym: "BRL", weeklyHours: 38 },
-    { name: "Clara Petit", acronym: "CLP", weeklyHours: 40 },
-    { name: "David Mayer", acronym: "DVM", weeklyHours: 36 },
-    { name: "Eva Roux", acronym: "EVR", weeklyHours: 37 },
-    { name: "Felix Sanz", acronym: "FLS", weeklyHours: 39 },
-    { name: "Grace Wolff", acronym: "GRW", weeklyHours: 35 },
-    { name: "Hugo Blanc", acronym: "HGB", weeklyHours: 40 },
-    { name: "Iris Kohl", acronym: "IRK", weeklyHours: 38 },
-    { name: "Jonas Favre", acronym: "JNF", weeklyHours: 36 },
+    {
+      name: "Alice Moreau",
+      acronym: "ALM",
+      weeklyHours: 35,
+      dutiesPerMonth: 10,
+    },
+    { name: "Bruno Lenz", acronym: "BRL", weeklyHours: 38, dutiesPerMonth: 10 },
+    {
+      name: "Clara Petit",
+      acronym: "CLP",
+      weeklyHours: 40,
+      dutiesPerMonth: 10,
+    },
+    {
+      name: "David Mayer",
+      acronym: "DVM",
+      weeklyHours: 36,
+      dutiesPerMonth: 10,
+    },
+    { name: "Eva Roux", acronym: "EVR", weeklyHours: 37, dutiesPerMonth: 10 },
+    { name: "Felix Sanz", acronym: "FLS", weeklyHours: 39, dutiesPerMonth: 10 },
+    {
+      name: "Grace Wolff",
+      acronym: "GRW",
+      weeklyHours: 35,
+      dutiesPerMonth: 10,
+    },
+    { name: "Hugo Blanc", acronym: "HGB", weeklyHours: 40, dutiesPerMonth: 10 },
+    { name: "Iris Kohl", acronym: "IRK", weeklyHours: 38, dutiesPerMonth: 10 },
+    {
+      name: "Jonas Favre",
+      acronym: "JNF",
+      weeklyHours: 36,
+      dutiesPerMonth: 10,
+    },
   ];
 
   const workers = await Promise.all(
@@ -91,6 +116,7 @@ export async function createScopedSolveFixture(
         acronym: w.acronym,
         weeklyHours: w.weeklyHours,
         weeklyHoursDesired: w.weeklyHours,
+        dutiesPerMonth: w.dutiesPerMonth,
         employmentStartDate,
         employmentEndDate: null,
       }),
@@ -107,6 +133,7 @@ export async function createScopedSolveFixture(
     name: "Morning",
     acronym: "MOR",
     shiftType: ShiftType.NORMAL,
+    staffing: [{ specialtyId: null, staffing: 1 }],
     startTime: campaignStart.hour(7).minute(0).second(0),
     endTime: campaignStart.hour(15).minute(0).second(0),
   });
@@ -116,6 +143,7 @@ export async function createScopedSolveFixture(
     name: "Afternoon",
     acronym: "AFT",
     shiftType: ShiftType.NORMAL,
+    staffing: [{ specialtyId: null, staffing: 1 }],
     startTime: campaignStart.hour(15).minute(0).second(0),
     endTime: campaignStart.hour(23).minute(0).second(0),
   });
@@ -125,6 +153,7 @@ export async function createScopedSolveFixture(
     name: "Duty",
     acronym: "DUT",
     shiftType: ShiftType.DUTY,
+    staffing: [{ specialtyId: null, staffing: 1 }],
     startTime: campaignStart.hour(8).minute(0).second(0),
     endTime: campaignStart.add(1, "day").hour(8).minute(0).second(0),
     recuperationTime: 24,
