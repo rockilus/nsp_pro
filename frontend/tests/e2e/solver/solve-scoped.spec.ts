@@ -336,19 +336,20 @@ test.describe("Solver - Scoped Solve", () => {
     await solverTestBase.selectSolveScope(page, "CUSTOM");
 
     const testDemand = fixture.shiftDemands[0];
+    const scope = {
+      scope_type: "CUSTOM",
+      shift_cells: [
+        {
+          shift_id: testDemand.shiftId,
+          date: dayjs(testDemand.date).format("YYYY-MM-DD"),
+        },
+      ],
+      solve_view: "shift",
+    };
 
     await solverTestBase.triggerCustomSolveInShiftView(
       page,
-      {
-        scope_type: "CUSTOM",
-        shift_cells: [
-          {
-            shift_id: testDemand.shiftId,
-            date: dayjs.Dayjs(testDemand.date).format("YYYY-MM-DD"),
-          },
-        ],
-        solve_view: "shift",
-      },
+      scope,
       fixture.shiftDemands,
       TEST_TIMEOUT_MS,
     );
