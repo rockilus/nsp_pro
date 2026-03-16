@@ -675,10 +675,14 @@ export class SolverTestBase {
     });
 
     // Build demand map keyed by `${date}|${shiftId}` -> count
+    // Also keep demandIds for improved error messages when unmet
     const demandMap: Record<string, number> = {};
+    const demandDetails: Record<string, string[]> = {};
     for (const d of shiftDemandsInCampaign) {
       const key = `${normDate(d.date)}|${d.shiftId}`;
       demandMap[key] = (demandMap[key] || 0) + (d.count || 0);
+      demandDetails[key] = demandDetails[key] || [];
+      if ((d as any).id) demandDetails[key].push(String((d as any).id));
     }
 
     // Compute in-scope keys based on solveScope
@@ -771,11 +775,19 @@ export class SolverTestBase {
       assignmentCounts[key] = (assignmentCounts[key] || 0) + 1;
     }
 
-    // Ensure all in-scope demands are fulfilled
+    // Ensure all in-scope demands are fulfilled — throw informative error if not
     for (const key of Array.from(inScopeKeys)) {
       const demandCount = demandMap[key] || 0;
       const assigned = assignmentCounts[key] || 0;
-      if (assigned < demandCount) return false;
+      if (assigned !== demandCount) {
+        const [dateStr, shiftId] = key.split("|");
+        const demandIds = demandDetails[key] || [];
+        throw new Error(
+          `Demand ${
+            demandIds.length ? demandIds.join(",") : "unknown"
+          } for shift ${shiftId} on ${dateStr} requires ${demandCount} assignments but got ${assigned}`,
+        );
+      }
     }
 
     return true;
