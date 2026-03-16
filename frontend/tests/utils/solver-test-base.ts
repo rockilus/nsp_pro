@@ -529,17 +529,61 @@ export class SolverTestBase {
    */
   async triggerCustomSolveInShiftView(
     page: Page,
-    shiftIds: string[],
-    dates: string[],
+    solveScope: SolveScope,
+    shiftDemands: ShiftDemandDTO[],
     timeoutMs: number = 120000,
   ): Promise<void> {
-    // Click each (shiftId × date) cell to add it to the custom selection
+    // Helper to normalise dates to YYYY-MM-DD (UTC)
+    const normDate = (d: any) => {
+      if (typeof d === "number")
+        return dayjs.unix(d).utc().format("YYYY-MM-DD");
+      if (typeof d === "string") return dayjs.utc(d).format("YYYY-MM-DD");
+      return (d as dayjs.Dayjs).utc().format("YYYY-MM-DD");
+    };
+
+    // Based on SolveScope, perform selections in the shift (calendar) view
+    //  - shift_ids -> click shift row sparkle buttons
+    //  - dates -> click date column sparkle buttons
+    //  - shift_cells -> click daily-shift-demand cell sparkle buttons by demand id
+
+    // Select by shift rows
+    const shiftIds = solveScope.shift_ids || [];
     for (const shiftId of shiftIds) {
-      for (const date of dates) {
-        const cellSelector = `[data-testid="shift-cell-custom-select-${shiftId}-${date}"]`;
-        const cell = page.locator(cellSelector);
-        await cell.waitFor({ state: "visible", timeout: 5000 });
-        await cell.click();
+      const rowBtn = page.locator(
+        `[data-testid="shift-row-custom-select-${shiftId}"]`,
+      );
+      await rowBtn.waitFor({ state: "visible", timeout: 5000 });
+      await rowBtn.click();
+    }
+
+    // Select by dates (YYYY-MM-DD)
+    const dates = solveScope.dates || [];
+    for (const d of dates) {
+      const dateStr = normDate(d);
+      const dateBtn = page.locator(
+        `[data-testid="date-column-sparkle-${dateStr}"]`,
+      );
+      await dateBtn.waitFor({ state: "visible", timeout: 5000 });
+      await dateBtn.click();
+    }
+
+    // Select specific shift cells (requires mapping to shiftDemand ids)
+    const shiftCells = solveScope.shift_cells || [];
+    if (shiftCells.length > 0) {
+      for (const c of shiftCells) {
+        const cShiftId = c.shift_id;
+        const cDate = c.date;
+        const match = shiftDemands.find((sd) => {
+          const sdDate = normDate(sd.date as any);
+          return sd.shiftId === cShiftId && sdDate === cDate;
+        });
+        if (match && (match as any).id) {
+          const dsdBtn = page.locator(
+            `[data-testid="dsd-custom-select-${(match as any).id}"]`,
+          );
+          await dsdBtn.waitFor({ state: "visible", timeout: 5000 });
+          await dsdBtn.click();
+        }
       }
     }
 

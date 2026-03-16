@@ -232,6 +232,53 @@ test.describe("Solver - Scoped Solve", () => {
     // Shift view is already set by beforeEach; activate CUSTOM scope directly
     await solverTestBase.selectSolveScope(page, "CUSTOM");
 
+    const normalShiftIds = fixture.shifts
+      .filter((s) => s.shiftType === ShiftType.NORMAL)
+      .map((s) => s.id);
+
+    await solverTestBase.triggerCustomSolveInShiftView(
+      page,
+      {
+        scope_type: "CUSTOM",
+        shift_ids: normalShiftIds,
+        solve_view: "shift",
+      },
+      fixture.shiftDemands,
+      TEST_TIMEOUT_MS,
+    );
+
+    // API assertion: assignments exist for morning+afternoon+duty
+    const result = await solverTestBase.getAssignmentsForTeam(
+      fixture.campaignStart,
+      fixture.campaignEnd,
+    );
+    const assignments = result.assignmentsRead;
+
+    // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
+    const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
+      { scope_type: "CUSTOM", shift_ids: normalShiftIds },
+      assignments,
+      fixture.shiftDemands,
+      fixture.schedule,
+      fixture.shifts,
+    );
+    expect(allFulfilled).toBe(true);
+
+    console.log(
+      "✅ Test 4: CUSTOM shift view — only morning/afternoon assignments",
+    );
+  });
+  test("CUSTOM shift view assigns only selected shifts", async ({
+    page,
+  }, testInfo) => {
+    test.setTimeout(TEST_TIMEOUT_MS);
+    const testRunId = (testInfo as any).testRunId as string;
+    const solverTestBase = testBasesMap.get(testRunId)!;
+    const fixture = solverTestBase.getCurrentFixture();
+
+    // Shift view is already set by beforeEach; activate CUSTOM scope directly
+    await solverTestBase.selectSolveScope(page, "CUSTOM");
+
     // Build weekday dates for the first week of the campaign month
     const firstMonday = fixture.firstMonday;
     const weekDates: string[] = [];
@@ -245,8 +292,13 @@ test.describe("Solver - Scoped Solve", () => {
 
     await solverTestBase.triggerCustomSolveInShiftView(
       page,
-      normalShiftIds,
-      weekDates,
+      {
+        scope_type: "CUSTOM",
+        shift_ids: normalShiftIds,
+        dates: weekDates,
+        solve_view: "shift",
+      },
+      fixture.shiftDemands,
       TEST_TIMEOUT_MS,
     );
 
@@ -479,8 +531,13 @@ test.describe("Solver - Scoped Solve", () => {
     // Request solve for morning on firstSaturday (no demand exists)
     await solverTestBase.triggerCustomSolveInShiftView(
       page,
-      [fixture.shifts.morning.id],
-      [saturdayDate],
+      {
+        scope_type: "CUSTOM",
+        shift_ids: [fixture.shifts.morning.id],
+        dates: [saturdayDate],
+        solve_view: "shift",
+      },
+      fixture.shiftDemands,
       TEST_TIMEOUT_MS,
     );
 
