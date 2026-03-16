@@ -352,8 +352,7 @@ test.describe("Solver - Scoped Solve", () => {
       page,
       scope,
       fixture.shiftDemands,
-      //   TEST_TIMEOUT_MS,
-      1,
+      TEST_TIMEOUT_MS,
     );
 
     // API assertion: assignments exist for morning+afternoon+duty
