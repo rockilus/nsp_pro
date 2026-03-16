@@ -112,6 +112,7 @@ test.describe("Solver - Scoped Solve", () => {
       { scope_type: "FULL" },
       assignments,
       fixture.shiftDemands,
+      fixture.schedule,
     );
     expect(allFulfilled).toBe(true);
 

@@ -22,6 +22,7 @@ import { AssignmentsRecurrencesResultT, AssignmentT } from "@/types/assignment";
 import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { ShiftType, ShiftRestType } from "@/types/shift";
 import { SolveScope } from "@/types/solveTaskStatus";
+import { ScheduleT } from "@/types/schedule";
 
 dayjs.extend(utc);
 
@@ -646,6 +647,7 @@ export class SolverTestBase {
     solveScope: SolveScope,
     assignments: AssignmentT[],
     shiftDemands: ShiftDemandDTO[],
+    schedule: ScheduleT,
   ): boolean {
     // Helper to normalise dates to YYYY-MM-DD (UTC)
     const normDate = (d: dayjs.Dayjs | number | string) => {
@@ -655,9 +657,26 @@ export class SolverTestBase {
       return (d as dayjs.Dayjs).utc().format("YYYY-MM-DD");
     };
 
+    // Filter assignments and demands to the campaign period
+    const start = schedule.startDate.startOf("day");
+    const end = schedule.endDate.endOf("day");
+
+    const assignmentsInCampaign = assignments.filter((a) => {
+      const ad = (a.date as dayjs.Dayjs).utc();
+      return !ad.isBefore(start, "day") && !ad.isAfter(end, "day");
+    });
+
+    const shiftDemandsInCampaign = shiftDemands.filter((d) => {
+      const dd =
+        typeof d.date === "number"
+          ? dayjs.unix(d.date).utc()
+          : dayjs.utc(d.date);
+      return !dd.isBefore(start, "day") && !dd.isAfter(end, "day");
+    });
+
     // Build demand map keyed by `${date}|${shiftId}` -> count
     const demandMap: Record<string, number> = {};
-    for (const d of shiftDemands) {
+    for (const d of shiftDemandsInCampaign) {
       const key = `${normDate(d.date)}|${d.shiftId}`;
       demandMap[key] = (demandMap[key] || 0) + (d.count || 0);
     }
@@ -665,11 +684,11 @@ export class SolverTestBase {
     // Compute in-scope keys based on solveScope
     const inScopeKeys = new Set<string>();
 
-    const scopeType = solveScope?.scope_type || "FULL";
+    const scopeType = solveScope.scope_type;
 
     // Helper: include all demands matching predicate
     const includeIf = (pred: (d: ShiftDemandDTO) => boolean) => {
-      for (const d of shiftDemands) {
+      for (const d of shiftDemandsInCampaign) {
         if (pred(d)) inScopeKeys.add(`${normDate(d.date)}|${d.shiftId}`);
       }
     };
@@ -740,7 +759,7 @@ export class SolverTestBase {
 
     // Count assignments per key and ensure they are in-scope
     const assignmentCounts: Record<string, number> = {};
-    for (const a of assignments) {
+    for (const a of assignmentsInCampaign) {
       const key = `${(a.date as dayjs.Dayjs).utc().format("YYYY-MM-DD")}|${a.shiftId}`;
       // assignment must be in-scope
       if (!inScopeKeys.has(key)) return false;
