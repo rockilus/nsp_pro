@@ -19,9 +19,7 @@ from shared.schemas.core.solve_task_status import (
 )
 
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
-from tests.engine_tests.scoped_solve_fixture import (
-    build_ei_scoped,
-)
+from tests.engine_tests.scoped_solve_fixture import build_ei_scoped
 
 # pylint: disable=too-many-locals
 
