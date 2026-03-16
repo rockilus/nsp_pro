@@ -107,21 +107,13 @@ test.describe("Solver - Scoped Solve", () => {
     );
     const assignments = result.assignmentsRead;
 
-    const morningAssignments = assignments.filter(
-      (a) => a.shiftId === fixture.shifts.morning.id,
+    // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
+    const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
+      { scope_type: "FULL" },
+      assignments,
+      fixture.shiftDemands,
     );
-    const afternoonAssignments = assignments.filter(
-      (a) => a.shiftId === fixture.shifts.afternoon.id,
-    );
-    const dutyAssignments = assignments.filter(
-      (a) => a.shiftId === fixture.shifts.duty.id,
-    );
-
-    expect(
-      morningAssignments.length +
-        afternoonAssignments.length +
-        dutyAssignments.length,
-    ).toBeGreaterThan(0);
+    expect(allFulfilled).toBe(true);
 
     // UI assertion: at least one assignment-cell visible
     const assignmentCells = page.locator('[data-testid^="assignment-cell-"]');

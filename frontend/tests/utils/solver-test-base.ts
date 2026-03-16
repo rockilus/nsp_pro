@@ -18,7 +18,9 @@ import {
   createScopedSolveFixture,
   ScopedSolveFixtureResult,
 } from "../fixtures/scoped-solve-fixture";
-import { AssignmentsRecurrencesResultT } from "@/types/assignment";
+import { AssignmentsRecurrencesResultT, AssignmentT } from "@/types/assignment";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
+import { ShiftType, ShiftRestType } from "@/types/shift";
 
 dayjs.extend(utc);
 
@@ -627,5 +629,134 @@ export class SolverTestBase {
       startDate,
       endDate,
     );
+  }
+
+  /**
+   * Check whether the provided assignments exactly correspond to in-scope shift demands
+   * - `solveScope` mirrors the engine SolveScope shape (minimal fields used below)
+   * - `assignments` is the list of assignments produced by the solver
+   * - `shiftDemands` is the list of all campaign shift demands
+   *
+   * Returns `true` only if:
+   *  - every assignment maps to a demand that is considered "in scope", and
+   *  - every in-scope demand is fulfilled (assignment count >= demand.count)
+   */
+  areAssignmentsFulfillingScope(
+    solveScope: any,
+    assignments: AssignmentT[],
+    shiftDemands: ShiftDemandDTO[],
+  ): boolean {
+    // Helper to normalise dates to YYYY-MM-DD (UTC)
+    const normDate = (d: dayjs.Dayjs | number | string) => {
+      if (typeof d === "number")
+        return dayjs.unix(d).utc().format("YYYY-MM-DD");
+      if (typeof d === "string") return dayjs.utc(d).format("YYYY-MM-DD");
+      return (d as dayjs.Dayjs).utc().format("YYYY-MM-DD");
+    };
+
+    // Build demand map keyed by `${date}|${shiftId}` -> count
+    const demandMap: Record<string, number> = {};
+    for (const d of shiftDemands) {
+      const key = `${normDate(d.date)}|${d.shiftId}`;
+      demandMap[key] = (demandMap[key] || 0) + (d.count || 0);
+    }
+
+    // Compute in-scope keys based on solveScope
+    const inScopeKeys = new Set<string>();
+
+    const scopeType = solveScope?.scope_type || solveScope?.scope || "FULL";
+
+    // Helper: include all demands matching predicate
+    const includeIf = (pred: (d: ShiftDemandDTO) => boolean) => {
+      for (const d of shiftDemands) {
+        if (pred(d)) inScopeKeys.add(`${normDate(d.date)}|${d.shiftId}`);
+      }
+    };
+
+    if (scopeType === "FULL") {
+      // everything
+      for (const key of Object.keys(demandMap)) inScopeKeys.add(key);
+    } else if (scopeType === "DUTIES") {
+      // duty or recuperation shifts
+      const dutyIds = new Set<string>();
+      if (this.currentFixture) {
+        const shifts = Object.values(
+          this.currentFixture.shifts || ({} as any),
+        ) as any[];
+        for (const s of shifts) {
+          if (
+            s.shiftType === ShiftType.DUTY ||
+            s.restType === ShiftRestType.RECUPERATION
+          ) {
+            dutyIds.add(s.id);
+          }
+        }
+      }
+      includeIf((d) => dutyIds.has(d.shiftId));
+    } else if (scopeType === "NON_DUTIES") {
+      const nonDutyIds = new Set<string>();
+      if (this.currentFixture) {
+        const shifts = Object.values(
+          this.currentFixture.shifts || ({} as any),
+        ) as any[];
+        for (const s of shifts) {
+          if (s.shiftType === ShiftType.NORMAL) nonDutyIds.add(s.id);
+        }
+      }
+      includeIf((d) => nonDutyIds.has(d.shiftId));
+    } else if (scopeType === "CUSTOM") {
+      const solveView =
+        solveScope?.solve_view || solveScope?.solveView || "shift";
+
+      if (solveView === "shift") {
+        const shiftIds: string[] =
+          solveScope?.shift_ids || solveScope?.shiftIds || [];
+        const dates: string[] = solveScope?.dates || [];
+        const shiftCells: any[] =
+          solveScope?.shift_cells || solveScope?.shiftCells || [];
+
+        if (shiftIds.length > 0) includeIf((d) => shiftIds.includes(d.shiftId));
+        if (dates.length > 0)
+          includeIf((d) => dates.includes(normDate(d.date)));
+        if (shiftCells.length > 0) {
+          for (const c of shiftCells) {
+            const key = `${normDate(c.date)}|${c.shift_id || c.shiftId}`;
+            if (demandMap[key]) inScopeKeys.add(key);
+          }
+        }
+      } else if (solveView === "worker") {
+        // Worker view selections are typically dates or worker_cells
+        const dates: string[] = solveScope?.dates || [];
+        const workerCells: any[] =
+          solveScope?.worker_cells || solveScope?.workerCells || [];
+
+        if (dates.length > 0)
+          includeIf((d) => dates.includes(normDate(d.date)));
+        if (workerCells.length > 0) {
+          const ws = new Set<string>(workerCells.map((c) => normDate(c.date)));
+          includeIf((d) => ws.has(normDate(d.date)));
+        }
+      }
+    }
+
+    // If no in-scope keys were computed, treat as empty scope (nothing should be assigned)
+
+    // Count assignments per key and ensure they are in-scope
+    const assignmentCounts: Record<string, number> = {};
+    for (const a of assignments) {
+      const key = `${(a.date as dayjs.Dayjs).utc().format("YYYY-MM-DD")}|${a.shiftId}`;
+      // assignment must be in-scope
+      if (!inScopeKeys.has(key)) return false;
+      assignmentCounts[key] = (assignmentCounts[key] || 0) + 1;
+    }
+
+    // Ensure all in-scope demands are fulfilled
+    for (const key of Array.from(inScopeKeys)) {
+      const demandCount = demandMap[key] || 0;
+      const assigned = assignmentCounts[key] || 0;
+      if (assigned < demandCount) return false;
+    }
+
+    return true;
   }
 }
