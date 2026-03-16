@@ -14,6 +14,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { SolverTestBase } from "../../utils/solver-test-base";
 import { ShiftT, ShiftType } from "../../../src/types/shift";
+import type { SolveScope } from "../../../src/types/solveTaskStatus";
 
 dayjs.extend(utc);
 
@@ -336,7 +337,7 @@ test.describe("Solver - Scoped Solve", () => {
     await solverTestBase.selectSolveScope(page, "CUSTOM");
 
     const testDemand = fixture.shiftDemands[0];
-    const scope = {
+    const scope: SolveScope = {
       scope_type: "CUSTOM",
       shift_cells: [
         {
@@ -351,7 +352,8 @@ test.describe("Solver - Scoped Solve", () => {
       page,
       scope,
       fixture.shiftDemands,
-      TEST_TIMEOUT_MS,
+      //   TEST_TIMEOUT_MS,
+      1,
     );
 
     // API assertion: assignments exist for morning+afternoon+duty
@@ -363,7 +365,7 @@ test.describe("Solver - Scoped Solve", () => {
 
     // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
     const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
-      { scope_type: "CUSTOM", shift_ids: normalShiftIds },
+      scope,
       assignments,
       fixture.shiftDemands,
       fixture.schedule,
