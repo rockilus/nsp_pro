@@ -760,9 +760,14 @@ export class SolverTestBase {
     // Count assignments per key and ensure they are in-scope
     const assignmentCounts: Record<string, number> = {};
     for (const a of assignmentsInCampaign) {
-      const key = `${(a.date as dayjs.Dayjs).utc().format("YYYY-MM-DD")}|${a.shiftId}`;
-      // assignment must be in-scope
-      if (!inScopeKeys.has(key)) return false;
+      const dateStr = (a.date as dayjs.Dayjs).utc().format("YYYY-MM-DD");
+      const key = `${dateStr}|${a.shiftId}`;
+      // assignment must be in-scope — if not, throw an explicit error with details
+      if (!inScopeKeys.has(key)) {
+        throw new Error(
+          `Assignment (${a.workerId}, ${dateStr}, ${a.shiftId}) is not in scope`,
+        );
+      }
       assignmentCounts[key] = (assignmentCounts[key] || 0) + 1;
     }
 
