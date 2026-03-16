@@ -1,8 +1,6 @@
 import datetime
 
-from shared.schemas.core import (
-    # Assignment,
-    # AssignmentSource,
+from shared.schemas.core import (  # Assignment,; AssignmentSource,
     ConfigurationConstraintPenalty,
     ConfigurationConstraints,
     CoveragePenalty,
@@ -3285,8 +3283,6 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 max_week_day_nb_duties=True,
                 special_days_target_nb_duties=True,
             ),
-            configuration_constraints=ConfigurationConstraints(
-                work_loads=False
-            ),
+            configuration_constraints=ConfigurationConstraints(work_loads=False),
         ),
     )
