@@ -339,9 +339,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
       // pass an options object to indicate the dialog should remain open
       // callers may ignore the extra param; schedule-item-dialog handles it
       // and will not close when { keepOpen: true } is provided.
-      await Promise.resolve(
-        onSave(updatedAssignment, recurrenceState, null, { keepOpen: true }),
-      );
+      await Promise.resolve(onSave(updatedAssignment, recurrenceState, null));
     } catch (error) {
       console.error("Failed to toggle fixed:", error);
       alert("Failed to update assignment. Please try again.");

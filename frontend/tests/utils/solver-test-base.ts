@@ -21,6 +21,7 @@ import {
 import { AssignmentsRecurrencesResultT, AssignmentT } from "@/types/assignment";
 import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { ShiftType, ShiftRestType } from "@/types/shift";
+import { SolveScope } from "@/types/solveTaskStatus";
 
 dayjs.extend(utc);
 
@@ -642,7 +643,7 @@ export class SolverTestBase {
    *  - every in-scope demand is fulfilled (assignment count >= demand.count)
    */
   areAssignmentsFulfillingScope(
-    solveScope: any,
+    solveScope: SolveScope,
     assignments: AssignmentT[],
     shiftDemands: ShiftDemandDTO[],
   ): boolean {
@@ -664,7 +665,7 @@ export class SolverTestBase {
     // Compute in-scope keys based on solveScope
     const inScopeKeys = new Set<string>();
 
-    const scopeType = solveScope?.scope_type || solveScope?.scope || "FULL";
+    const scopeType = solveScope?.scope_type || "FULL";
 
     // Helper: include all demands matching predicate
     const includeIf = (pred: (d: ShiftDemandDTO) => boolean) => {
@@ -705,15 +706,12 @@ export class SolverTestBase {
       }
       includeIf((d) => nonDutyIds.has(d.shiftId));
     } else if (scopeType === "CUSTOM") {
-      const solveView =
-        solveScope?.solve_view || solveScope?.solveView || "shift";
+      const solveView = solveScope?.solve_view || "shift";
 
       if (solveView === "shift") {
-        const shiftIds: string[] =
-          solveScope?.shift_ids || solveScope?.shiftIds || [];
+        const shiftIds: string[] = solveScope?.shift_ids || [];
         const dates: string[] = solveScope?.dates || [];
-        const shiftCells: any[] =
-          solveScope?.shift_cells || solveScope?.shiftCells || [];
+        const shiftCells: any[] = solveScope?.shift_cells || [];
 
         if (shiftIds.length > 0) includeIf((d) => shiftIds.includes(d.shiftId));
         if (dates.length > 0)
@@ -727,8 +725,7 @@ export class SolverTestBase {
       } else if (solveView === "worker") {
         // Worker view selections are typically dates or worker_cells
         const dates: string[] = solveScope?.dates || [];
-        const workerCells: any[] =
-          solveScope?.worker_cells || solveScope?.workerCells || [];
+        const workerCells: any[] = solveScope?.worker_cells || [];
 
         if (dates.length > 0)
           includeIf((d) => dates.includes(normDate(d.date)));
