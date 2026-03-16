@@ -13,6 +13,7 @@ import { randomUUID } from "crypto";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { SolverTestBase } from "../../utils/solver-test-base";
+import { ShiftT, ShiftType } from "../../../src/types/shift";
 
 dayjs.extend(utc);
 
@@ -117,9 +118,34 @@ test.describe("Solver - Scoped Solve", () => {
     );
     expect(allFulfilled).toBe(true);
 
-    // UI assertion: at least one assignment-cell visible
-    const assignmentCells = page.locator('[data-testid^="assignment-cell-"]');
-    expect(await assignmentCells.count()).toBeGreaterThan(0);
+    const shiftsMap: Record<string, ShiftT> = {};
+    for (const s of fixture.shifts) {
+      shiftsMap[s.id] = s;
+    }
+
+    const assignmentsInCampaign = assignments.filter((a) => {
+      const ad = (a.date as dayjs.Dayjs).utc();
+      // Must be inside campaign period
+      if (
+        ad.isBefore(fixture.campaignStart, "day") ||
+        ad.isAfter(fixture.campaignEnd, "day")
+      )
+        return false;
+
+      // Use the provided shifts list (lookup map) to only keep NORMAL or DUTY
+      const shift = shiftsMap[a.shiftId];
+      if (!shift) return false;
+      return (
+        shift.shiftType === ShiftType.NORMAL ||
+        shift.shiftType === ShiftType.DUTY
+      );
+    });
+
+    // UI assertion: all assignment-cell visible
+    for (const a of assignmentsInCampaign) {
+      const cell = page.locator(`[data-testid="assignment-cell-${a.id}"]`);
+      await expect(cell).toBeVisible({ timeout: 5000 });
+    }
 
     console.log("✅ Test 1: Full campaign solve — assignments found");
   });
