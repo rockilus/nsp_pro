@@ -834,6 +834,16 @@ export class SolverTestBase {
         const dates: string[] = solveScope?.dates || [];
         const workerCells: any[] = solveScope?.worker_cells || [];
 
+        // Include selections by whole worker rows (worker_ids)
+        // Note: this function doesn't receive the `workers` list, so we cannot
+        // compute worker->shift eligibility here. The pragmatic behaviour is
+        // to treat selecting worker rows as including all in-campaign demands
+        // (i.e. every date/shift demand in the campaign period).
+        const workerIds: string[] = solveScope?.worker_ids || [];
+        if (workerIds.length > 0) {
+          includeIf(() => true);
+        }
+
         if (dates.length > 0)
           includeIf((d) => dates.includes(normDate(d.date)));
         if (workerCells.length > 0) {
