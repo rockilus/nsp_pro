@@ -621,17 +621,49 @@ export class SolverTestBase {
    */
   async triggerCustomSolveInWorkerView(
     page: Page,
-    workerIds: string[],
-    dates: string[],
+    solveScope: SolveScope,
     timeoutMs: number = 120000,
   ): Promise<void> {
+    // Helper to normalise dates to YYYY-MM-DD (UTC)
+    const normDate = (d: any) => {
+      if (typeof d === "number")
+        return dayjs.unix(d).utc().format("YYYY-MM-DD");
+      if (typeof d === "string") return dayjs.utc(d).format("YYYY-MM-DD");
+      return (d as dayjs.Dayjs).utc().format("YYYY-MM-DD");
+    };
+
+    // Based on SolveScope, perform selections in the worker view
+    //  - worker_ids -> click worker row sparkle buttons
+    //  - dates -> click date column sparkle buttons
+    //  - worker_cells -> click worker cell sparkle buttons by workerId+date
+
+    const workerIds = solveScope.worker_ids || [];
     for (const workerId of workerIds) {
-      for (const date of dates) {
-        const cellSelector = `[data-testid="worker-cell-custom-select-${workerId}-${date}"]`;
-        const cell = page.locator(cellSelector);
-        await cell.waitFor({ state: "visible", timeout: 5000 });
-        await cell.click();
-      }
+      const rowBtn = page.locator(
+        `[data-testid="worker-row-custom-select-${workerId}"]`,
+      );
+      await rowBtn.waitFor({ state: "visible", timeout: 5000 });
+      await rowBtn.click();
+    }
+
+    const dates = solveScope.dates || [];
+    for (const d of dates) {
+      const dateStr = normDate(d);
+      const dateBtn = page.locator(
+        `[data-testid="date-column-sparkle-${dateStr}"]`,
+      );
+      await dateBtn.waitFor({ state: "visible", timeout: 5000 });
+      await dateBtn.click();
+    }
+
+    const workerCells = solveScope.worker_cells || [];
+    for (const c of workerCells) {
+      const wId = c.worker_id;
+      const dateStr = normDate(c.date);
+      const cellSelector = `[data-testid="worker-cell-custom-select-${wId}-${dateStr}"]`;
+      const cell = page.locator(cellSelector);
+      await cell.waitFor({ state: "visible", timeout: 5000 });
+      await cell.click();
     }
 
     const solveButton = page.locator('[data-testid="solve-button"]');

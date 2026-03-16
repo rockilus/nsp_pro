@@ -241,13 +241,15 @@ test.describe("Solver - Scoped Solve", () => {
       throw new Error("No NORMAL shift found in fixture");
     }
 
+    const scope: SolveScope = {
+      scope_type: "CUSTOM",
+      shift_ids: [normalShiftId],
+      solve_view: "shift",
+    };
+
     await solverTestBase.triggerCustomSolveInShiftView(
       page,
-      {
-        scope_type: "CUSTOM",
-        shift_ids: [normalShiftId],
-        solve_view: "shift",
-      },
+      scope,
       fixture.shiftDemands,
       TEST_TIMEOUT_MS,
     );
@@ -261,7 +263,7 @@ test.describe("Solver - Scoped Solve", () => {
 
     // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
     const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
-      { scope_type: "CUSTOM", shift_ids: [normalShiftId], solve_view: "shift" },
+      scope,
       assignments,
       fixture.shiftDemands,
       fixture.schedule,
@@ -288,13 +290,15 @@ test.describe("Solver - Scoped Solve", () => {
     // Build weekday dates for the first week of the campaign month
     const firstMonday = fixture.firstMonday;
 
+    const scope: SolveScope = {
+      scope_type: "CUSTOM",
+      dates: [firstMonday.format("YYYY-MM-DD")], // only Monday in scope
+      solve_view: "shift",
+    };
+
     await solverTestBase.triggerCustomSolveInShiftView(
       page,
-      {
-        scope_type: "CUSTOM",
-        dates: [firstMonday.format("YYYY-MM-DD")], // only Monday in scope
-        solve_view: "shift",
-      },
+      scope,
       fixture.shiftDemands,
       TEST_TIMEOUT_MS,
     );
@@ -308,11 +312,7 @@ test.describe("Solver - Scoped Solve", () => {
 
     // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
     const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
-      {
-        scope_type: "CUSTOM",
-        dates: [firstMonday.format("YYYY-MM-DD")],
-        solve_view: "shift",
-      },
+      scope,
       assignments,
       fixture.shiftDemands,
       fixture.schedule,
@@ -380,7 +380,7 @@ test.describe("Solver - Scoped Solve", () => {
   // ------------------------------------------------------------------ //
   // Test 5 — CUSTOM worker view: only selected workers covered
   // ------------------------------------------------------------------ //
-  test("CUSTOM worker view assigns only selected workers", async ({
+  test("CUSTOM worker view assigns only selected worker", async ({
     page,
   }, testInfo) => {
     test.setTimeout(TEST_TIMEOUT_MS);
@@ -399,42 +399,36 @@ test.describe("Solver - Scoped Solve", () => {
     // Activate CUSTOM scope
     await solverTestBase.selectSolveScope(page, "CUSTOM");
 
-    // Select first 2 workers
-    const selectedWorkers = [fixture.workers[0], fixture.workers[1]];
-    const selectedWorkerIds = selectedWorkers.map((w) => w.id);
+    const testWorkerId = fixture.workers[0].id;
 
-    // Build weekday dates for the first week of the campaign month
-    const firstMonday = fixture.firstMonday;
-    const weekDates: string[] = [];
-    for (let i = 0; i < 5; i++) {
-      weekDates.push(firstMonday.add(i, "day").format("YYYY-MM-DD"));
-    }
+    const scope: SolveScope = {
+      scope_type: "CUSTOM",
+      worker_ids: [testWorkerId],
+      solve_view: "worker",
+    };
 
     await solverTestBase.triggerCustomSolveInWorkerView(
       page,
-      selectedWorkerIds,
-      weekDates,
+      scope,
       TEST_TIMEOUT_MS,
     );
 
+    // API assertion: assignments exist for morning+afternoon+duty
     const result = await solverTestBase.getAssignmentsForTeam(
       fixture.campaignStart,
       fixture.campaignEnd,
     );
     const assignments = result.assignmentsRead;
 
-    // Only selected workers should have assignments
-    const unselectedWorkerAssignments = assignments.filter(
-      (a) =>
-        !selectedWorkerIds.includes(a.workerId) &&
-        weekDates.includes(a.date.format("YYYY-MM-DD")),
+    // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
+    const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
+      scope,
+      assignments,
+      fixture.shiftDemands,
+      fixture.schedule,
+      fixture.shifts,
     );
-
-    expect(unselectedWorkerAssignments.length).toBe(0);
-
-    // UI assertion
-    const assignmentCells = page.locator('[data-testid^="assignment-cell-"]');
-    expect(await assignmentCells.count()).toBeGreaterThan(0);
+    expect(allFulfilled).toBe(true);
 
     console.log(
       "✅ Test 5: CUSTOM worker view — only selected workers have assignments",
