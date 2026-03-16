@@ -17,12 +17,7 @@ dayjs.extend(utc);
 
 export interface ScopedSolveFixtureResult {
   workers: WorkerT[];
-  shifts: {
-    morning: ShiftT;
-    afternoon: ShiftT;
-    duty: ShiftT;
-    recuperation: ShiftT;
-  };
+  shifts: ShiftT[];
   shiftDemands: ShiftDemandDTO[];
   schedule: ScheduleT;
   campaignStart: dayjs.Dayjs;
@@ -262,12 +257,7 @@ export async function createScopedSolveFixture(
 
   return {
     workers,
-    shifts: {
-      morning: shiftMorning,
-      afternoon: shiftAfternoon,
-      duty: shiftDuty,
-      recuperation: shiftRecuperation,
-    },
+    shifts: [shiftMorning, shiftAfternoon, shiftDuty, shiftRecuperation],
     shiftDemands,
     schedule,
     campaignStart,
