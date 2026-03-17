@@ -289,47 +289,6 @@ def build_max_week_day_nb_duties_vars(
     return weekday_entries_all
 
 
-def build_total_variation_duty_vars(
-    worker_not_deleted: List[Worker],
-    shift_duties_not_deleted: List[Shift],
-    periods_weekly: List[List[date]],
-    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
-) -> List[List[List[Tuple[str, str, str]]]]:
-    """Builds per-worker weekly duty assignment lists for total variation penalty.
-
-    Returns a list per worker. Each worker entry is a list per week (preserving
-    week indexing for consecutive-week diff computation). Each week entry is a
-    list of assignment tuples (worker_id, date_iso, shift_id). Workers with
-    fewer than 2 non-empty weeks are omitted because TV requires at least two
-    data points. Empty week lists are kept to preserve week ordering within a
-    worker's entry.
-    """
-    workers_out: List[List[List[Tuple[str, str, str]]]] = []
-    for w in worker_not_deleted:
-        worker_weeks: List[List[Tuple[str, str, str]]] = []
-        for week in periods_weekly:
-            week_assignments: List[Tuple[str, str, str]] = []
-            if not week:
-                worker_weeks.append(week_assignments)
-                continue
-            for d in week:
-                for s in shift_duties_not_deleted:
-                    key = (w.id, s.id)
-                    if key not in ws_to_dates:
-                        continue
-                    wdates = (
-                        ws_to_dates[key].dates_hist + ws_to_dates[key].dates_campaign
-                    )
-                    if d in wdates:
-                        week_assignments.append((w.id, d.isoformat(), s.id))
-            worker_weeks.append(week_assignments)
-        # Only include workers that have at least 2 non-empty weeks
-        non_empty_weeks = sum(1 for wk in worker_weeks if wk)
-        if non_empty_weeks >= 2:
-            workers_out.append(worker_weeks)
-    return workers_out
-
-
 def build_consecutive_duty_gap_vars(
     worker_not_deleted: List[Worker],
     shift_duties_not_deleted: List[Shift],

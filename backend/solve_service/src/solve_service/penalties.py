@@ -32,10 +32,9 @@ penalties = Penalties(
     system_constraint=SystemConstraintPenalty(
         weekly_target_work_time=5,
         monthly_target_nb_duties=100,
-        max_weekly_nb_duties=500,
-        max_week_day_nb_duties=500,
+        max_weekly_nb_duties=100,
+        max_week_day_nb_duties=50,
         special_days_target_nb_duties=1,
-        duty_total_variation=100,
         duty_consecutive_gap=200,
     ),
 )
