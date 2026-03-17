@@ -2,8 +2,10 @@ import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { useTranslation } from "../../../../app/i18n/client";
+import { Sparkle } from "lucide-react";
 // MUI
 import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
 import TableCell from "@mui/material/TableCell";
 import Tooltip from "@mui/material/Tooltip";
 // Components
@@ -31,6 +33,10 @@ export default function WorkerRowHeaderCell({
   onRowSelect,
   isRowSelected,
   isRowIndeterminate,
+  isCustomSolveModeActive = false,
+  isRowCustomSelected = false,
+  isRowCustomIndeterminate = false,
+  onCustomRowSelect,
 }: {
   lng: string;
   shifts: ShiftT[];
@@ -42,6 +48,10 @@ export default function WorkerRowHeaderCell({
   onRowSelect?: () => void;
   isRowSelected?: boolean;
   isRowIndeterminate?: boolean;
+  isCustomSolveModeActive?: boolean;
+  isRowCustomSelected?: boolean;
+  isRowCustomIndeterminate?: boolean;
+  onCustomRowSelect?: () => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -130,6 +140,30 @@ export default function WorkerRowHeaderCell({
             data-testid={`worker-row-checkbox-${worker.id}`}
             sx={{ padding: "2px", flexShrink: 0 }}
           />
+        )}
+        {isCustomSolveModeActive && (
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCustomRowSelect?.();
+            }}
+            data-testid={`worker-row-custom-select-${worker.id}`}
+            sx={{
+              padding: "2px",
+              flexShrink: 0,
+              color: isRowCustomSelected
+                ? "#1976d2"
+                : isRowCustomIndeterminate
+                  ? "#42a5f5"
+                  : "#9e9e9e",
+            }}
+          >
+            <Sparkle
+              size={14}
+              fill={isRowCustomSelected ? "currentColor" : "none"}
+            />
+          </IconButton>
         )}
         <div className="worker-row-header-cell-content">
           <span

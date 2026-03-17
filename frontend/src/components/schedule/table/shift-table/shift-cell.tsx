@@ -35,6 +35,10 @@ export default function ShiftCell({
   selectionState,
   handleCellSelect,
   handleAssignmentSelect,
+  isCustomSolveModeActive = false,
+  isCustomCellSelected = false,
+  onCustomCellSelect,
+  isDateInCampaign = true,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -52,6 +56,10 @@ export default function ShiftCell({
     scheduleId: string | null,
   ) => void;
   handleAssignmentSelect?: (assignmentId: string) => void;
+  isCustomSolveModeActive?: boolean;
+  isCustomCellSelected?: boolean;
+  onCustomCellSelect?: () => void;
+  isDateInCampaign?: boolean;
 }) {
   const isSelectionActive = !!selectionState?.isActive;
   const dateStr = periodDate.date.format("YYYY-MM-DD");
@@ -114,6 +122,10 @@ export default function ShiftCell({
                 handleDemandSelection={handleDemandSelection}
                 scheduleViewSettings={scheduleViewSettings}
                 lng={lng}
+                isCustomSolveModeActive={isCustomSolveModeActive}
+                isCustomCellSelected={isCustomCellSelected}
+                onCustomCellSelect={onCustomCellSelect}
+                isDateInCampaign={isDateInCampaign}
               />
             )}
         </RoleBased>

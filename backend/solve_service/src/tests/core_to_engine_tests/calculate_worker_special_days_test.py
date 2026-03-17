@@ -345,7 +345,8 @@ def engine_inputs_special_days(
         dim_entries=[],
         attributes=[],
         as_hist=[],
-        as_wip_fixed=[],
+        as_campaign_fixed=[],
+        as_campaign_not_fixed=[],
         cbs_augmented=[],
         shift_demands=daily_shift_demands,
         requests_work=[],
@@ -365,7 +366,7 @@ class TestCalculateWorkerSpecialDays:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         # Call the method under test
@@ -373,7 +374,7 @@ class TestCalculateWorkerSpecialDays:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
         out = calculate_worker_speacial_days(
@@ -385,7 +386,7 @@ class TestCalculateWorkerSpecialDays:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         assert isinstance(out, dict)
@@ -426,7 +427,7 @@ class TestCalculateWorkerSpecialDays:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         # Call the method under test
@@ -434,7 +435,7 @@ class TestCalculateWorkerSpecialDays:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
 
@@ -447,7 +448,7 @@ class TestCalculateWorkerSpecialDays:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         special_day_indexes = [3, 4, 5, 6]
@@ -499,7 +500,7 @@ class TestCalculateWorkerSpecialDays:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
         worker_target_id = engine_inputs_special_days.workers[0].id
         dates_target = [d for d in dates_campaign if d.weekday() == 3]
@@ -529,7 +530,7 @@ class TestCalculateWorkerSpecialDays:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
         out = calculate_worker_speacial_days(
@@ -541,7 +542,7 @@ class TestCalculateWorkerSpecialDays:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         assert out[worker_target_id]["3"]["target"] == 0
@@ -553,7 +554,7 @@ class TestCalculateWorkerSpecialDays:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
         start_date_target = date(2025, 3, 1)
         engine_inputs_special_days.workers[0].employment_start_date = start_date_target
@@ -566,7 +567,7 @@ class TestCalculateWorkerSpecialDays:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
         out = calculate_worker_speacial_days(
@@ -578,7 +579,7 @@ class TestCalculateWorkerSpecialDays:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         worker_other_ids = [
@@ -601,7 +602,7 @@ class TestCalculateWorkerSpecialDays:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
         end_date_target = date(2025, 1, 31)
         engine_inputs_special_days.workers[0].employment_end_date = end_date_target
@@ -614,7 +615,7 @@ class TestCalculateWorkerSpecialDays:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
         out = calculate_worker_speacial_days(
@@ -626,7 +627,7 @@ class TestCalculateWorkerSpecialDays:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         worker_other_ids = [
@@ -686,7 +687,7 @@ class TestCalculateWorkerSpecialDays:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         # Call the method under test
@@ -694,7 +695,7 @@ class TestCalculateWorkerSpecialDays:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
 
@@ -707,7 +708,7 @@ class TestCalculateWorkerSpecialDays:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         special_day_indexes = [3, 4, 5, 6]
@@ -829,7 +830,7 @@ class TestCalculateWorkerSpecialDays:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         # Call the method under test
@@ -837,7 +838,7 @@ class TestCalculateWorkerSpecialDays:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
 
@@ -850,7 +851,7 @@ class TestCalculateWorkerSpecialDays:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         special_day_indexes = [3, 4, 5, 6]
@@ -922,7 +923,7 @@ class TestBuildDutySpecialDaysConstraints:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         # Call the method under test
@@ -930,7 +931,7 @@ class TestBuildDutySpecialDaysConstraints:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
         out = build_duty_special_days_constraints(
@@ -942,7 +943,7 @@ class TestBuildDutySpecialDaysConstraints:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             # fmt: off
             penalty=engine_inputs_special_days.penalties.system_constraint
             .special_days_target_nb_duties,
@@ -958,7 +959,7 @@ class TestBuildDutySpecialDaysConstraints:
         dates_hist, dates_campaign = build_dates(
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         # Call the method under test
@@ -966,7 +967,7 @@ class TestBuildDutySpecialDaysConstraints:
             engine_inputs_special_days.schedule,
             engine_inputs_special_days.workers,
             engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             dates_campaign,
         )
         w_to_special_days = calculate_worker_speacial_days(
@@ -978,7 +979,7 @@ class TestBuildDutySpecialDaysConstraints:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
         )
 
         out = build_duty_special_days_constraints(
@@ -990,7 +991,7 @@ class TestBuildDutySpecialDaysConstraints:
             requests=engine_inputs_special_days.requests_leave,
             daily_shift_demands=engine_inputs_special_days.shift_demands,
             fixed_assignments=engine_inputs_special_days.as_hist
-            + engine_inputs_special_days.as_wip_fixed,
+            + engine_inputs_special_days.as_campaign_fixed,
             # fmt: off
             penalty=engine_inputs_special_days.penalties.system_constraint
             .special_days_target_nb_duties,

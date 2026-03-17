@@ -24,7 +24,7 @@ class TestBuildEngineShiftDemands:
         shifts = sample_data.shifts
         schedule = sample_data.schedule
         daily_shift_demands = sample_data.shift_demands
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -58,7 +58,7 @@ class TestBuildEngineShiftDemands:
         shifts = sample_data.shifts
         schedule = sample_data.schedule
         daily_shift_demands = sample_data.shift_demands
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -93,7 +93,7 @@ class TestBuildEngineShiftDemands:
         shifts: List[Shift] = []
         schedule = sample_data.schedule
         daily_shift_demands = sample_data.shift_demands
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -131,7 +131,7 @@ class TestBuildEngineShiftDemands:
         shifts = sample_data.shifts
         schedule = sample_data.schedule
         daily_shift_demands = sample_data.shift_demands
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -194,7 +194,7 @@ class TestBuildEngineShiftDemands:
         shifts[0].staffing[0].specialty_id = "spe1"
         schedule = sample_data.schedule
         daily_shift_demands = sample_data.shift_demands
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -273,7 +273,7 @@ class TestBuildEngineShiftDemands:
         daily_shift_demands = sample_data_benoit_case_fixture.shift_demands
         fixed_assignments = (
             sample_data_benoit_case_fixture.as_hist
-            + sample_data_benoit_case_fixture.as_wip_fixed
+            + sample_data_benoit_case_fixture.as_campaign_fixed
         )
 
         # Build necessary inputs
@@ -312,7 +312,7 @@ class TestBuildEngineShiftDemands:
         daily_shift_demands = sample_data_benoit_case_fixture.shift_demands
         fixed_assignments = (
             sample_data_benoit_case_fixture.as_hist
-            + sample_data_benoit_case_fixture.as_wip_fixed
+            + sample_data_benoit_case_fixture.as_campaign_fixed
         )
 
         # Build necessary inputs
@@ -374,7 +374,7 @@ class TestBuildEngineShiftDemands:
         daily_shift_demands = sample_data_benoit_case_fixture.shift_demands
         fixed_assignments = (
             sample_data_benoit_case_fixture.as_hist
-            + sample_data_benoit_case_fixture.as_wip_fixed
+            + sample_data_benoit_case_fixture.as_campaign_fixed
         )
 
         # Build necessary inputs

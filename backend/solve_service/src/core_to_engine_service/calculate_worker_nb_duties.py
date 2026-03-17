@@ -142,6 +142,8 @@ def calculate_proportional_nb_duties(
 ) -> Dict[str, List[int]]:
 
     period_index_to_required_nb_duties = {}
+    # Build quick lookup for shifts by id
+    shift_dict = {s.id: s for s in shifts}
     for period_index, period in enumerate(periods):
         shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
         period_dsds_duty = [
@@ -149,9 +151,21 @@ def calculate_proportional_nb_duties(
             for dsd in shift_demands
             if dsd.date in period and dsd.shift_id in shift_duty_ids
         ]
-        period_index_to_required_nb_duties[period_index] = sum(
-            dsd.count for dsd in period_dsds_duty
-        )
+        total_required = 0
+        for dsd in period_dsds_duty:
+            shift = shift_dict.get(dsd.shift_id)
+            if not shift:
+                continue
+            # total staffing for the shift (sum of staffing entries)
+            total_staffing = (
+                sum(s.staffing for s in shift.staffing) if shift.staffing else 0
+            )
+            if total_staffing == 0:
+                # no staffing configured -> contributes 0
+                continue
+            total_required += dsd.count * total_staffing
+
+        period_index_to_required_nb_duties[period_index] = total_required
     total_period_desired_nb_duties: List[float] = [
         sum(worker.duties_per_month * w_id_to_coef[worker.id][i] for worker in workers)
         for i in range(len(periods))

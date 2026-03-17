@@ -1,12 +1,18 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from shared.schemas.core import (
+    Assignment,
     Shift,
     ShiftRestType,
     ShiftType,
     Worker,
     WorkerDates,
 )
+
+from core_to_engine_service.build_scope_context import ScopeContext
+
+# pylint: disable=too-many-arguments, too-many-locals, too-many-nested-blocks
+# pylint: disable=too-many-positional-arguments
 
 
 def build_duty_recup_pairs(
@@ -15,8 +21,12 @@ def build_duty_recup_pairs(
     shifts_not_deleted: List[Shift],
     shift_duties_not_deleted: List[Shift],
     penalty: int,
+    scope_ctx: Optional[ScopeContext] = None,
+    fixed_assignments: Optional[List[Assignment]] = None,
 ) -> List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]]:
     out: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]] = []
+    # build quick lookup for shift objects by id
+    shift_id_to_shift: Dict[str, Shift] = {s.id: s for s in shifts_not_deleted}
     for shift in shift_duties_not_deleted:
         # pylint: disable=R0801
         rec_shift = next(
@@ -31,15 +41,43 @@ def build_duty_recup_pairs(
             None,
         )
         if rec_shift:
-            out.extend(
-                [
-                    (
-                        (w.id, d.isoformat(), shift.id),
-                        (w.id, d.isoformat(), rec_shift.id),
-                        penalty,
+            pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]] = []
+            for w in workers_not_deleted:
+                for d in worker_ids_to_worker_dates[w.id].dates_campaign:
+                    # scope check
+                    if (
+                        scope_ctx is not None
+                        and (w.id, d.isoformat(), shift.id) not in scope_ctx.variables
+                    ):
+                        continue
+
+                    # if there are fixed assignments, check for time overlap
+                    skip_due_to_fixed = False
+                    if fixed_assignments:
+                        for a in fixed_assignments:
+                            if a.worker_id != w.id:
+                                continue
+                            if a.date != d:
+                                continue
+                            assigned_shift = shift_id_to_shift.get(a.shift_id)
+                            if not assigned_shift:
+                                # assigned shift not found in current shifts;
+                                # skip conservative
+                                continue
+                            if assigned_shift.overlaps_with(rec_shift):
+                                skip_due_to_fixed = True
+                                break
+
+                    if skip_due_to_fixed:
+                        continue
+
+                    pairs.append(
+                        (
+                            (w.id, d.isoformat(), shift.id),
+                            (w.id, d.isoformat(), rec_shift.id),
+                            penalty,
+                        )
                     )
-                    for w in workers_not_deleted
-                    for d in worker_ids_to_worker_dates[w.id].dates_campaign
-                ]
-            )
+
+            out.extend(pairs)
     return out

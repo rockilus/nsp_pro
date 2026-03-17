@@ -167,7 +167,7 @@
 #             dim_entries=[],
 #             attributes=[],
 #             as_hist=[],
-#             as_wip_fixed=[],
+#             as_campaign_fixed=[],
 #             cbs_augmented=[],
 #             daily_shift_demands=daily_shift_demands,
 #             requests=[],

@@ -167,7 +167,8 @@ class EngineInputs:
     dim_entries: List[DimEntry]
     attributes: List[Attribute]
     as_hist: List[Assignment]
-    as_wip_fixed: List[Assignment]
+    as_campaign_fixed: List[Assignment]
+    as_campaign_not_fixed: List[Assignment]
     cbs_augmented: List[ConstraintBuildAugmented]
     shift_demands: List[ShiftDemandNew]
     requests_work: List[RequestAugmented]
@@ -184,7 +185,12 @@ class EngineInputs:
             "dim_entries": [entry.to_dict() for entry in self.dim_entries],
             "attributes": [attr.to_dict() for attr in self.attributes],
             "as_hist": [assignment.to_dict() for assignment in self.as_hist],
-            "as_wip_fixed": [assignment.to_dict() for assignment in self.as_wip_fixed],
+            "as_campaign_fixed": [
+                assignment.to_dict() for assignment in self.as_campaign_fixed
+            ],
+            "as_campaign_not_fixed": [
+                assignment.to_dict() for assignment in self.as_campaign_not_fixed
+            ],
             "cbs_augmented": [
                 constraint.to_dict() for constraint in self.cbs_augmented
             ],
@@ -209,8 +215,13 @@ class EngineInputs:
             as_hist=[
                 Assignment.from_dict(assignment) for assignment in data["as_hist"]
             ],
-            as_wip_fixed=[
-                Assignment.from_dict(assignment) for assignment in data["as_wip_fixed"]
+            as_campaign_fixed=[
+                Assignment.from_dict(assignment)
+                for assignment in data["as_campaign_fixed"]
+            ],
+            as_campaign_not_fixed=[
+                Assignment.from_dict(assignment)
+                for assignment in data.get("as_campaign_not_fixed", [])
             ],
             cbs_augmented=[
                 ConstraintBuildAugmented.from_dict(constraint)
@@ -254,7 +265,8 @@ class EngineInputsAugmented(EngineInputs):
             dim_entries=engine_inputs.dim_entries,
             attributes=engine_inputs.attributes,
             as_hist=engine_inputs.as_hist,
-            as_wip_fixed=engine_inputs.as_wip_fixed,
+            as_campaign_fixed=engine_inputs.as_campaign_fixed,
+            as_campaign_not_fixed=engine_inputs.as_campaign_not_fixed,
             cbs_augmented=engine_inputs.cbs_augmented,
             shift_demands=engine_inputs.shift_demands,
             requests_work=engine_inputs.requests_work,

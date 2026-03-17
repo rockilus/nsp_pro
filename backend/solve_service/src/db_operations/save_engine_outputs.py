@@ -1,5 +1,5 @@
 import time
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -9,6 +9,7 @@ from shared.schemas.core import (
     EngineOutputs,
     Schedule,
     SolverOutputMetadata,
+    SolveScope,
 )
 from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
@@ -17,6 +18,8 @@ from db_operations.request_services import update_requests
 from db_operations.save_breaches import save_breaches
 from engine import ProcessingCache
 
+# pylint: disable=too-many-arguments
+
 
 def save_engine_outputs(
     schedule: Schedule,
@@ -24,6 +27,7 @@ def save_engine_outputs(
     engine_outputs: EngineOutputs,
     processing_cache: ProcessingCache,
     collections: DatabaseCollections,
+    solve_scope: Optional[SolveScope],
 ) -> Tuple[ScheduleSolveStatus, List[Assignment], List[Breach], SolverOutputMetadata]:
     start_time_update_db = time.time()
     assignments_saved = save_assignments(
@@ -31,6 +35,8 @@ def save_engine_outputs(
         schedule=schedule,
         shifts=engine_intputs.shifts,
         collections=collections,
+        scope_ctx=processing_cache.scope_ctx,
+        solve_scope=solve_scope,
     )
     update_requests(
         requests=engine_intputs.requests_work + engine_intputs.requests_leave,

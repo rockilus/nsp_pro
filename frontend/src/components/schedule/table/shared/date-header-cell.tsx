@@ -8,6 +8,8 @@ import Tooltip from "@mui/material/Tooltip";
 import { useTranslation } from "../../../../app/i18n/client";
 // Components
 import { RoleBased } from "../../../access/role-based";
+// lucide-react
+import { Sparkle } from "lucide-react";
 // Styles
 import "./date-header-cell.css";
 // Types
@@ -76,6 +78,11 @@ export default function DateHeaderCell({
   selectionScope,
   onColumnSelect,
   assignments,
+  isCustomSolveModeActive = false,
+  onCustomColumnSelect,
+  isCustomColumnSelected = false,
+  isCustomColumnIndeterminate = false,
+  isDateInCampaign = true,
 }: {
   periodDate: periodDateT;
   teamWithMembership: TeamWithMembership;
@@ -90,6 +97,11 @@ export default function DateHeaderCell({
     scope: SelectionScope,
   ) => void;
   assignments?: AssignmentT[];
+  isCustomSolveModeActive?: boolean;
+  onCustomColumnSelect?: (date: string, rowIds: string[]) => void;
+  isCustomColumnSelected?: boolean;
+  isCustomColumnIndeterminate?: boolean;
+  isDateInCampaign?: boolean;
 }) {
   const today = dayjs.utc().startOf("day");
   const isToday = periodDate.date.isSame(today, "day");
@@ -169,6 +181,39 @@ export default function DateHeaderCell({
             data-testid={`date-column-checkbox-${dateStr}`}
             sx={{ padding: "2px", display: "block", margin: "0 auto" }}
           />
+        )}
+        {isCustomSolveModeActive && isDateInCampaign && (
+          <Tooltip title="Select column for custom solve">
+            <button
+              data-testid={`date-column-sparkle-${dateStr}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onCustomColumnSelect?.(dateStr, rowIds ?? []);
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "block",
+                margin: "0 auto",
+                padding: "2px",
+                color: isCustomColumnSelected
+                  ? "#1976d2"
+                  : isCustomColumnIndeterminate
+                    ? "#42a5f5"
+                    : "#9e9e9e",
+              }}
+            >
+              <Sparkle
+                size={14}
+                fill={
+                  isCustomColumnSelected || isCustomColumnIndeterminate
+                    ? "currentColor"
+                    : "none"
+                }
+              />
+            </button>
+          </Tooltip>
         )}
       </div>
     </TableCell>

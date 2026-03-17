@@ -10,8 +10,22 @@
  */
 
 import { Page, expect } from "@playwright/test";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { DatabaseTestUtils } from "./database-utils";
 import { SolverScenarioResult } from "./database-utils";
+import {
+  createScopedSolveFixture,
+  ScopedSolveFixtureResult,
+} from "../fixtures/scoped-solve-fixture";
+import { AssignmentsRecurrencesResultT, AssignmentT } from "@/types/assignment";
+import { ShiftDemandDTO } from "@/types/shiftDemand";
+import { ShiftType, ShiftRestType, ShiftT } from "@/types/shift";
+import { SolveScope } from "@/types/solveTaskStatus";
+import { ScheduleT } from "@/types/schedule";
+import { RecurrenceRuleT } from "@/types/recurrence";
+
+dayjs.extend(utc);
 
 const testConfig = {
   apiUrl: process.env.NEXT_PUBLIC_API_GATEWAY_URL || "http://localhost:8000",
@@ -38,6 +52,7 @@ export class SolverTestBase {
   protected dbUtils: DatabaseTestUtils;
   protected testTeam: { teamId: string; name: string } | null = null;
   protected currentScheduleId: string | null = null;
+  protected currentFixture: ScopedSolveFixtureResult | null = null;
 
   constructor() {
     this.dbUtils = new DatabaseTestUtils();
@@ -76,7 +91,7 @@ export class SolverTestBase {
     // Load scenario using DatabaseTestUtils which handles authentication properly
     const scenario = await this.dbUtils.loadSolverScenario(
       scenarioName,
-      this.testTeam.teamId
+      this.testTeam.teamId,
     );
 
     console.log(`✅ Loaded scenario: ${scenarioName}`);
@@ -100,7 +115,7 @@ export class SolverTestBase {
    */
   async navigateToScheduleWithScenario(
     page: Page,
-    scenarioName: string
+    scenarioName: string,
   ): Promise<SolverScenarioResult> {
     const scenario = await this.loadScenario(scenarioName);
 
@@ -121,7 +136,7 @@ export class SolverTestBase {
     await page.waitForLoadState("networkidle");
 
     console.log(
-      `✅ Navigated to schedule page for team: ${this.testTeam!.name}`
+      `✅ Navigated to schedule page for team: ${this.testTeam!.name}`,
     );
 
     return scenario;
@@ -133,7 +148,7 @@ export class SolverTestBase {
    */
   async createSchedule(
     startDate: string,
-    endDate: string
+    endDate: string,
   ): Promise<{ scheduleId: string }> {
     if (!this.testTeam) {
       throw new Error("Test team not created");
@@ -149,7 +164,7 @@ export class SolverTestBase {
         startDate: startDate,
         endDate: endDate,
         status: "CAMPAIGN",
-      }
+      },
     );
 
     this.currentScheduleId = result.id;
@@ -165,7 +180,7 @@ export class SolverTestBase {
    */
   async triggerSolveAndWait(
     page: Page,
-    timeoutMs: number = 60000
+    timeoutMs: number = 60000,
   ): Promise<void> {
     console.log("🔄 Triggering solver...");
 
@@ -202,10 +217,10 @@ export class SolverTestBase {
 
     // Check that there are no error or success snackbars open
     const errorSnackbar = await page.locator(
-      '[data-testid="solve-error-snackbar"]'
+      '[data-testid="solve-error-snackbar"]',
     );
     const successSnackbar = await page.locator(
-      '[data-testid="solve-success-snackbar"]'
+      '[data-testid="solve-success-snackbar"]',
     );
 
     const isErrorVisible = await errorSnackbar.isVisible().catch(() => false);
@@ -215,7 +230,7 @@ export class SolverTestBase {
 
     if (isErrorVisible) {
       const errorAlert = await page.locator(
-        '[data-testid="solve-error-alert"]'
+        '[data-testid="solve-error-alert"]',
       );
       const errorText = await errorAlert.textContent();
       throw new Error(`Solver failed with error: ${errorText}`);
@@ -224,7 +239,7 @@ export class SolverTestBase {
     // Success snackbar is acceptable but should close
     if (isSuccessVisible) {
       console.log(
-        "ℹ️  Success notification visible, waiting for it to close..."
+        "ℹ️  Success notification visible, waiting for it to close...",
       );
       await page.waitForSelector('[data-testid="solve-success-snackbar"]', {
         state: "hidden",
@@ -243,7 +258,7 @@ export class SolverTestBase {
     let statusFound = false;
     for (const status of validStatuses) {
       const statusChip = await page.locator(
-        `[data-testid="solve-status-chip-${status}"]`
+        `[data-testid="solve-status-chip-${status}"]`,
       );
       const isVisible = await statusChip.isVisible().catch(() => false);
       if (isVisible) {
@@ -255,7 +270,7 @@ export class SolverTestBase {
 
     if (!statusFound) {
       throw new Error(
-        `Expected solve status chip to show one of: ${validStatuses.join(", ")}`
+        `Expected solve status chip to show one of: ${validStatuses.join(", ")}`,
       );
     }
 
@@ -267,7 +282,7 @@ export class SolverTestBase {
    */
   async verifySolveResults(
     page: Page,
-    expectedCriteria: VerifyCriteria
+    expectedCriteria: VerifyCriteria,
   ): Promise<void> {
     console.log("🔍 Verifying solve results...");
 
@@ -292,7 +307,7 @@ export class SolverTestBase {
 
     if (expectedCriteria.minAssignments !== undefined) {
       expect(assignmentCount).toBeGreaterThanOrEqual(
-        expectedCriteria.minAssignments
+        expectedCriteria.minAssignments,
       );
       console.log(`   ✅ Assignments >= ${expectedCriteria.minAssignments}`);
     }
@@ -300,7 +315,7 @@ export class SolverTestBase {
     // Check for breaches if displayed in UI
     if (expectedCriteria.maxBreaches !== undefined) {
       const breachIndicators = page.locator(
-        '[data-testid="constraint-breach"], .breach-indicator, .constraint-violation'
+        '[data-testid="constraint-breach"], .breach-indicator, .constraint-violation',
       );
       const breachCount = await breachIndicators.count();
 
@@ -319,7 +334,7 @@ export class SolverTestBase {
       if (coverageText) {
         const coverage = parseFloat(coverageText.replace(/[^\d.]/g, ""));
         expect(coverage).toBeGreaterThanOrEqual(
-          expectedCriteria.coveragePercentage
+          expectedCriteria.coveragePercentage,
         );
         console.log(`   ✅ Coverage: ${coverage}%`);
       }
@@ -334,7 +349,7 @@ export class SolverTestBase {
   async takeScreenshot(
     page: Page,
     scenarioName: string,
-    description: string = ""
+    description: string = "",
   ): Promise<void> {
     const timestamp = Date.now();
     const filename = `test-results/solver-${scenarioName}${
@@ -398,7 +413,7 @@ export class SolverTestBase {
       showDailyShiftDemands?: boolean;
       showRequests?: boolean;
       periodStartDate?: string; // ISO string
-    }
+    },
   ): Promise<void> {
     // Ensure page has loaded and has a valid origin
     await page.waitForLoadState("domcontentloaded");
@@ -407,8 +422,7 @@ export class SolverTestBase {
       ({ teamId, settings }) => {
         const storageKey = `scheduleViewSettings_${teamId}`;
 
-        // Start with default settings
-        const now = new Date().toISOString();
+        // Base defaults
         const defaultSettings = {
           timeFrame: "week",
           groupBy: "shift",
@@ -416,23 +430,28 @@ export class SolverTestBase {
           showAssignments: true,
           showDailyShiftDemands: true,
           showRequests: true,
-          periodStartDate: now,
+          periodStartDate: new Date().toISOString(),
         };
 
-        // Merge defaults with provided settings
+        // Read existing settings so partial calls (e.g. just groupBy) preserve other values
+        const existingRaw = localStorage.getItem(storageKey);
+        const existingSettings = existingRaw ? JSON.parse(existingRaw) : {};
+
+        // Merge: defaults → existing → new settings
         const updatedSettings = {
           ...defaultSettings,
+          ...existingSettings,
           ...settings,
         };
 
         localStorage.setItem(storageKey, JSON.stringify(updatedSettings));
       },
-      { teamId, settings }
+      { teamId, settings },
     );
 
     console.log(
       `✅ Set schedule view settings for team ${teamId}:`,
-      JSON.stringify(settings, null, 2)
+      JSON.stringify(settings, null, 2),
     );
   }
 
@@ -448,5 +467,517 @@ export class SolverTestBase {
    */
   getTestTeam(): { teamId: string; name: string } | null {
     return this.testTeam;
+  }
+
+  // -------------------------------------------------------------------
+  // Scoped-solve helpers
+  // -------------------------------------------------------------------
+
+  /**
+   * Build the scoped-solve fixture (workers/shifts/demands/schedule) for the
+   * current test team and store it as `currentFixture`.
+   */
+  async setupScopedSolveScenario(
+    teamId: string,
+  ): Promise<ScopedSolveFixtureResult> {
+    const fixture = await createScopedSolveFixture(this.dbUtils, teamId);
+    this.currentFixture = fixture;
+    return fixture;
+  }
+
+  /**
+   * Get the current scoped-solve fixture (throws if not set).
+   */
+  getCurrentFixture(): ScopedSolveFixtureResult {
+    if (!this.currentFixture) {
+      throw new Error(
+        "No scoped solve fixture loaded. Call setupScopedSolveScenario first.",
+      );
+    }
+    return this.currentFixture;
+  }
+
+  /**
+   * Open the solve-scope dropdown and select the given scope.
+   *
+   * Requires:
+   * - `data-testid="solve-dropdown-button"` on the dropdown toggle
+   * - `data-testid="solve-scope-menu-item-{scope}"` on each menu item
+   */
+  async selectSolveScope(
+    page: Page,
+    scope: "FULL" | "DUTIES" | "NON_DUTIES" | "CUSTOM",
+  ): Promise<void> {
+    const dropdownBtn = page.locator('[data-testid="solve-dropdown-button"]');
+    await dropdownBtn.waitFor({ state: "visible", timeout: 5000 });
+    await dropdownBtn.click();
+
+    const menuItem = page.locator(
+      `[data-testid="solve-scope-menu-item-${scope}"]`,
+    );
+    await menuItem.waitFor({ state: "visible", timeout: 5000 });
+    await menuItem.click();
+
+    console.log(`✅ Selected solve scope: ${scope}`);
+  }
+
+  /**
+   * Trigger a CUSTOM solve using the shift-view selection.
+   *
+   * Assumes CUSTOM scope is already active.
+   * For each (shiftId, date) pair, clicks the custom-select cell, then
+   * clicks the solve button, confirms the dialog, and waits for completion.
+   */
+  async triggerCustomSolveInShiftView(
+    page: Page,
+    solveScope: SolveScope,
+    shiftDemands: ShiftDemandDTO[],
+    timeoutMs: number = 120000,
+  ): Promise<void> {
+    // Helper to normalise dates to YYYY-MM-DD (UTC)
+    const normDate = (d: any) => {
+      if (typeof d === "number")
+        return dayjs.unix(d).utc().format("YYYY-MM-DD");
+      if (typeof d === "string") return dayjs.utc(d).format("YYYY-MM-DD");
+      return (d as dayjs.Dayjs).utc().format("YYYY-MM-DD");
+    };
+
+    // Based on SolveScope, perform selections in the shift (calendar) view
+    //  - shift_ids -> click shift row sparkle buttons
+    //  - dates -> click date column sparkle buttons
+    //  - shift_cells -> click daily-shift-demand cell sparkle buttons by demand id
+
+    // Select by shift rows
+    const shiftIds = solveScope.shift_ids || [];
+    for (const shiftId of shiftIds) {
+      const rowBtn = page.locator(
+        `[data-testid="shift-row-custom-select-${shiftId}"]`,
+      );
+      await rowBtn.waitFor({ state: "visible", timeout: 5000 });
+      await rowBtn.click();
+    }
+
+    // Select by dates (YYYY-MM-DD)
+    const dates = solveScope.dates || [];
+    for (const d of dates) {
+      const dateStr = normDate(d);
+      const dateBtn = page.locator(
+        `[data-testid="date-column-sparkle-${dateStr}"]`,
+      );
+      await dateBtn.waitFor({ state: "visible", timeout: 5000 });
+      await dateBtn.click();
+    }
+
+    // Select specific shift cells (requires mapping to shiftDemand ids)
+    const shiftCells = solveScope.shift_cells || [];
+    if (shiftCells.length > 0) {
+      for (const c of shiftCells) {
+        const cShiftId = c.shift_id;
+        const cDate = c.date;
+        const match = shiftDemands.find((sd) => {
+          const sdDate = normDate(dayjs.unix(sd.date).utc());
+          return sd.shiftId === cShiftId && sdDate === cDate;
+        });
+        if (match && (match as any).id) {
+          const dsdBtn = page.locator(
+            `[data-testid="dsd-custom-select-${(match as any).id}"]`,
+          );
+          await dsdBtn.waitFor({ state: "visible", timeout: 5000 });
+          await dsdBtn.click();
+        }
+      }
+    }
+
+    // Click the solve button — this opens the confirm dialog in CUSTOM mode
+    const solveButton = page.locator('[data-testid="solve-button"]');
+    await solveButton.waitFor({ state: "visible", timeout: 5000 });
+    await solveButton.click();
+
+    // Confirm in the custom-solve dialog
+    const confirmBtn = page.locator(
+      '[data-testid="custom-solve-confirm-button"]',
+    );
+    await confirmBtn.waitFor({ state: "visible", timeout: 5000 });
+    await confirmBtn.click();
+
+    // Wait for solve to finish using the existing triggerSolveAndWait polling logic
+    console.log("⏳ Waiting for custom (shift view) solve to complete...");
+    await page.waitForSelector('[data-testid="solve-button"]:disabled', {
+      timeout: 5000,
+    });
+    await page.waitForSelector('[data-testid="solve-button"]:not(:disabled)', {
+      timeout: timeoutMs,
+    });
+    await page.waitForSelector('[data-testid^="solve-status-chip-"]', {
+      state: "visible",
+      timeout: 5000,
+    });
+    console.log("✅ Custom (shift view) solve completed");
+  }
+
+  /**
+   * Trigger a CUSTOM solve using the worker-view selection.
+   *
+   * Assumes CUSTOM scope is already active.
+   */
+  async triggerCustomSolveInWorkerView(
+    page: Page,
+    solveScope: SolveScope,
+    timeoutMs: number = 120000,
+  ): Promise<void> {
+    // Helper to normalise dates to YYYY-MM-DD (UTC)
+    const normDate = (d: any) => {
+      if (typeof d === "number")
+        return dayjs.unix(d).utc().format("YYYY-MM-DD");
+      if (typeof d === "string") return dayjs.utc(d).format("YYYY-MM-DD");
+      return (d as dayjs.Dayjs).utc().format("YYYY-MM-DD");
+    };
+
+    // Based on SolveScope, perform selections in the worker view
+    //  - worker_ids -> click worker row sparkle buttons
+    //  - dates -> click date column sparkle buttons
+    //  - worker_cells -> click worker cell sparkle buttons by workerId+date
+
+    const workerIds = solveScope.worker_ids || [];
+    for (const workerId of workerIds) {
+      const rowBtn = page.locator(
+        `[data-testid="worker-row-custom-select-${workerId}"]`,
+      );
+      await rowBtn.waitFor({ state: "visible", timeout: 5000 });
+      await rowBtn.click();
+    }
+
+    const dates = solveScope.dates || [];
+    for (const d of dates) {
+      const dateStr = normDate(d);
+      const dateBtn = page.locator(
+        `[data-testid="date-column-sparkle-${dateStr}"]`,
+      );
+      await dateBtn.waitFor({ state: "visible", timeout: 5000 });
+      await dateBtn.click();
+    }
+
+    const workerCells = solveScope.worker_cells || [];
+    for (const c of workerCells) {
+      const wId = c.worker_id;
+      const dateStr = normDate(c.date);
+      const cellSelector = `[data-testid="worker-cell-custom-select-${wId}-${dateStr}"]`;
+      const cell = page.locator(cellSelector);
+      await cell.waitFor({ state: "visible", timeout: 5000 });
+      await cell.click();
+    }
+
+    const solveButton = page.locator('[data-testid="solve-button"]');
+    await solveButton.waitFor({ state: "visible", timeout: 5000 });
+    await solveButton.click();
+
+    const confirmBtn = page.locator(
+      '[data-testid="custom-solve-confirm-button"]',
+    );
+    await confirmBtn.waitFor({ state: "visible", timeout: 5000 });
+    await confirmBtn.click();
+
+    console.log("⏳ Waiting for custom (worker view) solve to complete...");
+    await page.waitForSelector('[data-testid="solve-button"]:disabled', {
+      timeout: 5000,
+    });
+    await page.waitForSelector('[data-testid="solve-button"]:not(:disabled)', {
+      timeout: timeoutMs,
+    });
+    await page.waitForSelector('[data-testid^="solve-status-chip-"]', {
+      state: "visible",
+      timeout: 5000,
+    });
+    console.log("✅ Custom (worker view) solve completed");
+  }
+
+  /**
+   * Fetch all assignments for the current test team within the given date range.
+   * Wraps dbUtils.getAssignmentsAndRecurrences for convenience.
+   */
+  async getAssignmentsForTeam(
+    startDate: dayjs.Dayjs,
+    endDate: dayjs.Dayjs,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not created. Call setupSolverTests first.");
+    }
+    return this.dbUtils.getAssignmentsAndRecurrences(
+      this.testTeam.teamId,
+      true, // include campaign assignments
+      startDate,
+      endDate,
+    );
+  }
+
+  /**
+   * Check whether the provided assignments exactly correspond to in-scope shift demands
+   * - `solveScope` mirrors the engine SolveScope shape (minimal fields used below)
+   * - `assignments` is the list of assignments produced by the solver
+   * - `shiftDemands` is the list of all campaign shift demands
+   *
+   * Returns `true` only if:
+   *  - every assignment maps to a demand that is considered "in scope", and
+   *  - every in-scope demand is fulfilled (assignment count >= demand.count)
+   */
+  areAssignmentsFulfillingScope(
+    solveScope: SolveScope,
+    assignments: AssignmentT[],
+    shiftDemands: ShiftDemandDTO[],
+    schedule: ScheduleT,
+    shifts: ShiftT[],
+  ): boolean {
+    // Helper to normalise dates to YYYY-MM-DD (UTC)
+    const normDate = (d: dayjs.Dayjs | number | string) => {
+      if (typeof d === "number")
+        return dayjs.unix(d).utc().format("YYYY-MM-DD");
+      if (typeof d === "string") return dayjs.utc(d).format("YYYY-MM-DD");
+      return (d as dayjs.Dayjs).utc().format("YYYY-MM-DD");
+    };
+
+    // Filter assignments and demands to the campaign period
+    const start = schedule.startDate.startOf("day");
+    const end = schedule.endDate.endOf("day");
+
+    // Build a lookup map from shift id -> ShiftT for fast access
+    const shiftsMap: Record<string, ShiftT> = {};
+    for (const s of shifts) {
+      shiftsMap[s.id] = s;
+    }
+
+    const assignmentsInCampaign = assignments.filter((a) => {
+      const ad = (a.date as dayjs.Dayjs).utc();
+      // Must be inside campaign period
+      if (ad.isBefore(start, "day") || ad.isAfter(end, "day")) return false;
+
+      // Use the provided shifts list (lookup map) to only keep NORMAL or DUTY
+      const shift = shiftsMap[a.shiftId];
+      if (!shift) return false;
+      return (
+        shift.shiftType === ShiftType.NORMAL ||
+        shift.shiftType === ShiftType.DUTY
+      );
+    });
+
+    const shiftDemandsInCampaign = shiftDemands.filter((d) => {
+      const dd =
+        typeof d.date === "number"
+          ? dayjs.unix(d.date).utc()
+          : dayjs.utc(d.date);
+      return !dd.isBefore(start, "day") && !dd.isAfter(end, "day");
+    });
+
+    // Build demand map keyed by `${date}|${shiftId}` -> count
+    // Also keep demandIds for improved error messages when unmet
+    const demandMap: Record<string, number> = {};
+    const demandDetails: Record<string, string[]> = {};
+    for (const d of shiftDemandsInCampaign) {
+      const key = `${normDate(d.date)}|${d.shiftId}`;
+      demandMap[key] = (demandMap[key] || 0) + (d.count || 0);
+      demandDetails[key] = demandDetails[key] || [];
+      if ((d as any).id) demandDetails[key].push(String((d as any).id));
+    }
+
+    // Compute in-scope keys based on solveScope
+    const inScopeKeys = new Set<string>();
+
+    const scopeType = solveScope.scope_type;
+
+    // Helper: include all demands matching predicate
+    const includeIf = (pred: (d: ShiftDemandDTO) => boolean) => {
+      for (const d of shiftDemandsInCampaign) {
+        if (pred(d)) inScopeKeys.add(`${normDate(d.date)}|${d.shiftId}`);
+      }
+    };
+
+    if (scopeType === "FULL") {
+      // everything
+      for (const key of Object.keys(demandMap)) inScopeKeys.add(key);
+    } else if (scopeType === "DUTIES") {
+      // duty or recuperation shifts
+      const dutyIds = new Set<string>();
+      const svals = Object.values(shiftsMap) as any[];
+      for (const s of svals) {
+        if (
+          s.shiftType === ShiftType.DUTY ||
+          s.restType === ShiftRestType.RECUPERATION
+        ) {
+          dutyIds.add(s.id);
+        }
+      }
+      includeIf((d) => dutyIds.has(d.shiftId));
+    } else if (scopeType === "NON_DUTIES") {
+      const nonDutyIds = new Set<string>();
+      const svals = Object.values(shiftsMap) as any[];
+      for (const s of svals) {
+        if (s.shiftType === ShiftType.NORMAL) nonDutyIds.add(s.id);
+      }
+      includeIf((d) => nonDutyIds.has(d.shiftId));
+    } else if (scopeType === "CUSTOM") {
+      const solveView = solveScope?.solve_view || "shift";
+
+      if (solveView === "shift") {
+        const shiftIds: string[] = solveScope?.shift_ids || [];
+        const dates: string[] = solveScope?.dates || [];
+        const shiftCells: any[] = solveScope?.shift_cells || [];
+
+        if (shiftIds.length > 0) includeIf((d) => shiftIds.includes(d.shiftId));
+        if (dates.length > 0)
+          includeIf((d) => dates.includes(normDate(d.date)));
+        if (shiftCells.length > 0) {
+          for (const c of shiftCells) {
+            const key = `${normDate(c.date)}|${c.shift_id || c.shiftId}`;
+            if (demandMap[key]) inScopeKeys.add(key);
+          }
+        }
+      } else if (solveView === "worker") {
+        const dates: string[] = solveScope?.dates || [];
+        const workerCells: any[] = solveScope?.worker_cells || [];
+        const workerIds: string[] = solveScope?.worker_ids || [];
+
+        // Build helper sets
+        const dateSet = new Set<string>(dates.map((d) => normDate(d)));
+        const workerCellSet = new Set<string>(
+          (workerCells || []).map(
+            (c) => `${c.worker_id || c.workerId}|${normDate(c.date)}`,
+          ),
+        );
+        const workerIdSet = new Set<string>(workerIds || []);
+
+        // Include demands matching explicit dates or worker_cells (these behave
+        // the same as shift view date/shift cell selections)
+        if (dateSet.size > 0) includeIf((d) => dateSet.has(normDate(d.date)));
+        if (workerCellSet.size > 0) {
+          includeIf((d) =>
+            workerCells.some((c) => normDate(c.date) === normDate(d.date)),
+          );
+        }
+
+        // NOTE: selecting whole worker rows (`worker_ids`) means "any assignment
+        // for those workers is in-scope". We implement this by permitting
+        // assignments whose `workerId` is present in `worker_ids` during the
+        // assignment validation step below. Selecting worker rows alone does
+        // NOT imply that every campaign demand must be fulfilled by those
+        // workers, therefore we do not add all demands to `inScopeKeys` here.
+      }
+    }
+
+    // If no in-scope keys were computed, treat as empty scope (nothing should be assigned)
+
+    // Count assignments per key and ensure they are in-scope
+    const assignmentCounts: Record<string, number> = {};
+
+    const isCustomWorkerView =
+      scopeType === "CUSTOM" &&
+      (solveScope?.solve_view || "shift") === "worker";
+    // Prebuild sets for worker-view checks if needed
+    let dateSet: Set<string> = new Set();
+    let workerIdSet: Set<string> = new Set();
+    let workerCellSet: Set<string> = new Set();
+    if (isCustomWorkerView) {
+      const dates: string[] = solveScope?.dates || [];
+      const workerCells: any[] = solveScope?.worker_cells || [];
+      const workerIds: string[] = solveScope?.worker_ids || [];
+      dateSet = new Set<string>(dates.map((d) => normDate(d)));
+      workerIdSet = new Set<string>(workerIds || []);
+      workerCellSet = new Set<string>(
+        (workerCells || []).map(
+          (c) => `${c.worker_id || c.workerId}|${normDate(c.date)}`,
+        ),
+      );
+    }
+
+    for (const a of assignmentsInCampaign) {
+      const dateStr = (a.date as dayjs.Dayjs).utc().format("YYYY-MM-DD");
+      const key = `${dateStr}|${a.shiftId}`;
+
+      if (isCustomWorkerView) {
+        // allowed if any of: worker row selected, date column selected, or specific worker/date cell selected
+        const allowedByWorker =
+          workerIdSet.size > 0 && workerIdSet.has(a.workerId);
+        const allowedByDate = dateSet.size > 0 && dateSet.has(dateStr);
+        const allowedByCell =
+          workerCellSet.size > 0 &&
+          workerCellSet.has(`${a.workerId}|${dateStr}`);
+        if (!allowedByWorker && !allowedByDate && !allowedByCell) {
+          throw new Error(
+            `Assignment (${a.workerId}, ${dateStr}, ${a.shiftId}) is not in scope`,
+          );
+        }
+      } else {
+        // previous behaviour: assignment key must be included in in-scope keys
+        if (!inScopeKeys.has(key)) {
+          throw new Error(
+            `Assignment (${a.workerId}, ${dateStr}, ${a.shiftId}) is not in scope`,
+          );
+        }
+      }
+
+      assignmentCounts[key] = (assignmentCounts[key] || 0) + 1;
+    }
+
+    // Ensure all in-scope demands are fulfilled — throw informative error if not
+    for (const key of Array.from(inScopeKeys)) {
+      const demandCount = demandMap[key] || 0;
+      const assigned = assignmentCounts[key] || 0;
+      if (isCustomWorkerView) {
+        if (assigned > demandCount) {
+          const [dateStr, shiftId] = key.split("|");
+          const demandIds = demandDetails[key] || [];
+          throw new Error(
+            `Demand ${
+              demandIds.length ? demandIds.join(",") : "unknown"
+            } for shift ${shiftId} on ${dateStr} requires ${demandCount} assignments but got ${assigned}`,
+          );
+        }
+      } else {
+        if (assigned !== demandCount) {
+          const [dateStr, shiftId] = key.split("|");
+          const demandIds = demandDetails[key] || [];
+          throw new Error(
+            `Demand ${
+              demandIds.length ? demandIds.join(",") : "unknown"
+            } for shift ${shiftId} on ${dateStr} requires ${demandCount} assignments but got ${assigned}`,
+          );
+        }
+      }
+    }
+
+    return true;
+  }
+
+  async createAssignmentAndRecurrence(
+    data: {
+      workerId: string;
+      shiftId: string;
+      date: dayjs.Dayjs;
+      fixed?: boolean;
+      comment?: string;
+      scheduleId?: string;
+    },
+    recurrence?: RecurrenceRuleT | null,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    const result = await this.dbUtils.createAssignmentAndRecurrence(
+      {
+        teamId: this.testTeam.teamId,
+        workerId: data.workerId,
+        shiftId: data.shiftId,
+        date: data.date,
+        fixed: data.fixed ?? false,
+        comment: data.comment,
+        scheduleId: data.scheduleId,
+      },
+      recurrence,
+    );
+
+    console.log(
+      `✅ Created assignment${recurrence ? " with recurrence" : ""} for worker ${data.workerId}`,
+    );
+
+    return result;
   }
 }

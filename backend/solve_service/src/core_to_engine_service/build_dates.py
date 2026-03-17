@@ -11,14 +11,10 @@ from shared.schemas.core import (
 
 
 def build_dates(
-    schedule: Schedule, fixed_assignments: List[Assignment]
+    schedule: Schedule, as_hist: List[Assignment]
 ) -> Tuple[List[date], List[date]]:
     start_date_hist = min(
-        (
-            min(a.date for a in fixed_assignments)
-            if fixed_assignments
-            else schedule.start_date
-        ),
+        (min(a.date for a in as_hist) if as_hist else schedule.start_date),
         schedule.start_date,
     )
     end_date_hist = schedule.start_date - timedelta(days=1)
@@ -30,7 +26,7 @@ def build_dates(
 def build_worker_ids_to_worker_dates(
     schedule: Schedule,
     workers: List[Worker],
-    assignments: List[Assignment],
+    as_hist: List[Assignment],
     dates_campaign: List[date],
 ) -> Dict[str, WorkerDates]:
     worker_ids_to_worker_dates: Dict[str, WorkerDates] = {}
@@ -38,7 +34,7 @@ def build_worker_ids_to_worker_dates(
         # Worker's past dates, i.e. dates for his past assignments
         a_worker_past = [
             a
-            for a in assignments
+            for a in as_hist
             if a.worker_id == worker.id and a.date < schedule.start_date
         ]
         dates_hist_worker = list(sorted(set(a.date for a in a_worker_past)))
@@ -69,7 +65,7 @@ def build_ws_ids_to_dates(
     workers_not_deleted: List[Worker],
     shifts: List[Shift],
     shifts_not_deleted: List[Shift],
-    assignments: List[Assignment],
+    as_hist: List[Assignment],
     dates_campaign: List[date],
 ) -> Dict[Tuple[str, str], WorkerDates]:
     ws_ids_to_dates: Dict[Tuple[str, str], WorkerDates] = {}
@@ -78,7 +74,7 @@ def build_ws_ids_to_dates(
             # Worker and shift past dates, i.e. dates for past assignments
             a_worker_past = [
                 a
-                for a in assignments
+                for a in as_hist
                 if a.worker_id == w.id
                 and a.date < schedule.start_date
                 and a.shift_id == s.id

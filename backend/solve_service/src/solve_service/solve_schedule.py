@@ -1,13 +1,14 @@
 # import json
 # import os
 import time
-from typing import Tuple
+from typing import Optional, Tuple
 
 from shared.schemas.core import (
     EngineInputs,
     EngineInputsAugmented,
     EngineOutputs,
 )
+from shared.schemas.core.solve_task_status import SolveScope
 
 from core_to_engine_service import core_to_engine_inputs
 from engine import Engine, ProcessingCache
@@ -19,6 +20,7 @@ from solve_service.penalties import penalties
 # pylint: disable=too-many-locals
 def solve_schedule(
     engine_inputs: EngineInputs,
+    solve_scope: Optional[SolveScope] = None,
 ) -> Tuple[EngineOutputs, ProcessingCache]:
     # current_path = os.path.dirname(os.path.realpath(__file__))
     # inputs_file_path = os.path.join(current_path, "engine_inputs.json")
@@ -30,7 +32,7 @@ def solve_schedule(
     ei_augmented = EngineInputsAugmented.from_engine_inputs(
         engine_inputs, penalties, model_config
     )
-    inputs, processing_cache = core_to_engine_inputs(ei_augmented)
+    inputs, processing_cache = core_to_engine_inputs(ei_augmented, solve_scope)
     end_time_core_to_engine = time.time()
     start_time_engine = time.time()
     engine = Engine()

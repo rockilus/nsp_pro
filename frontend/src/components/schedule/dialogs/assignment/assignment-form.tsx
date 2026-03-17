@@ -3,7 +3,8 @@ import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
-import { Button, MenuItem, Select, Box } from "@mui/material";
+import { Button, MenuItem, Select, Box, Chip } from "@mui/material";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 // Components
 import RecurrenceEdit from "../shared/recurrence-edit/recurrence-edit";
@@ -54,6 +55,7 @@ interface AssignmentFormProps {
     assignment: AssignmentT,
     recurrence: RecurrenceRuleT | null,
     updateScope: RecurrenceUpdateScope | null,
+    options?: { keepOpen?: boolean },
   ) => void;
   onDelete: (
     assignmentId: string,
@@ -61,6 +63,7 @@ interface AssignmentFormProps {
     updateScope: RecurrenceUpdateScope | null,
   ) => void;
   onCancel: () => void;
+  isLeader?: boolean;
 }
 
 const AssignmentForm: React.FC<AssignmentFormProps> = ({
@@ -77,6 +80,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   onSave,
   onDelete,
   onCancel,
+  isLeader = false,
 }) => {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -128,6 +132,13 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const [selectedCandidate, setSelectedCandidate] =
     useState<ReplacementCandidateT | null>(null);
 
+  // Local copy of `fixed` to allow optimistic UI updates when toggling
+  const [localFixed, setLocalFixed] = useState<boolean | null>(
+    assignment ? assignment.fixed : null,
+  );
+
+  const mobile = useIsMobile();
+
   const getReplacementCandidates = useGetReplacementCandidates();
 
   useEffect(() => {
@@ -136,6 +147,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
       setShiftId(assignment.shiftId);
       setDate(assignment.date);
       setRecurrenceState(recurrence);
+      setLocalFixed(assignment.fixed);
     } else if (initialData) {
       setWorkerId(initialData.workerId);
       setShiftId(initialData.shiftId);
@@ -145,6 +157,11 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     setShiftError(false);
     setDateError(false);
   }, [isEditing, assignment, initialData, recurrence]);
+
+  // Keep localFixed in sync when the assignment prop changes
+  useEffect(() => {
+    setLocalFixed(assignment ? assignment.fixed : null);
+  }, [assignment]);
 
   // Reset replacement state when assignment changes
   useEffect(() => {
@@ -307,6 +324,35 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     }
   };
 
+  const handleToggleFixed = async () => {
+    if (!isEditing || !assignment || isSubmitting) return;
+    // Use the localFixed state as the source of truth for optimistic toggling
+    const newFixed = !Boolean(localFixed);
+    const updatedAssignment: AssignmentT = {
+      ...assignment,
+      fixed: newFixed,
+    };
+
+    try {
+      // Optimistically update UI
+      setLocalFixed(newFixed);
+      setIsSubmitting(true);
+      // pass an options object to indicate the dialog should remain open
+      // callers may ignore the extra param; schedule-item-dialog handles it
+      // and will not close when { keepOpen: true } is provided.
+      await Promise.resolve(
+        onSave(updatedAssignment, recurrenceState, null, { keepOpen: true }),
+      );
+    } catch (error) {
+      console.error("Failed to toggle fixed:", error);
+      alert("Failed to update assignment. Please try again.");
+      // Revert optimistic update on error using authoritative prop value
+      setLocalFixed(assignment.fixed ?? null);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleCandidateDetailsClick = (candidate: ReplacementCandidateT) => {
     setSelectedCandidate(candidate);
     setShowDetailsDialog(true);
@@ -368,6 +414,20 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
   return (
     <Box data-testid="assignment-form">
+      {isEditing && isLeader && !mobile && (
+        <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 1 }}>
+          <Chip
+            size="small"
+            label={localFixed ? "Locked 🔒" : "Unlocked 🔓"}
+            color="default"
+            clickable
+            onClick={handleToggleFixed}
+            disabled={isSubmitting}
+            data-testid="assignment-fixed-chip"
+            sx={{ height: 24 }}
+          />
+        </Box>
+      )}
       <div className="form">
         <span className="form-title">{t("worker")}</span>
         <Select

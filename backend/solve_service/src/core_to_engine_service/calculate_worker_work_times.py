@@ -261,6 +261,15 @@ def calculate_total_work_time_minutes(
         if shift is None:
             continue
         if shift and shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]:
+            # Compute total staffing for the shift (sum of all staffing entries)
+            total_staffing = (
+                sum(s.staffing for s in shift.staffing) if shift.staffing else 0
+            )
+
+            # If there is no staffing configured for this shift, it contributes 0
+            if total_staffing == 0:
+                continue
+
             shift_duration = max(
                 int(
                     (shift.end_time - shift.start_time).total_seconds()
@@ -269,7 +278,9 @@ def calculate_total_work_time_minutes(
                 ),
                 0,
             )
-            total_work_time += shift_duration * dsd.count
+
+            # Work time is duration * demand count * total staffing
+            total_work_time += shift_duration * dsd.count * total_staffing
 
     return int(total_work_time)
 

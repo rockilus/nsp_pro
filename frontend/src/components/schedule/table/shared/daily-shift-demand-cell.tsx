@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { Sparkle } from "lucide-react";
 // Styles
 import "./daily-shift-demand-cell.css";
 // Types
@@ -17,11 +18,19 @@ export default function DailyShiftDemandCell({
   handleDemandSelection,
   scheduleViewSettings,
   lng,
+  isCustomSolveModeActive = false,
+  isCustomCellSelected = false,
+  onCustomCellSelect,
+  isDateInCampaign = true,
 }: {
   scheduleCellData: ScheduleCellDataT;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
   scheduleViewSettings: ScheduleViewSettingsT;
   lng: string;
+  isCustomSolveModeActive?: boolean;
+  isCustomCellSelected?: boolean;
+  onCustomCellSelect?: () => void;
+  isDateInCampaign?: boolean;
 }) {
   const assignmentsCount = scheduleCellData.assignmentsData.length;
   const shiftStaffingTotal =
@@ -59,6 +68,7 @@ export default function DailyShiftDemandCell({
           {
             "--bg-color": background,
             "--text-color": text,
+            position: "relative",
           } as React.CSSProperties
         }
       >
@@ -67,6 +77,32 @@ export default function DailyShiftDemandCell({
           <span className="dsd-stats dsd-stats-slash">/</span>
           <span className="dsd-stats dsd-stats-target">{countTarget}</span>
         </div>
+        {isCustomSolveModeActive && isDateInCampaign && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCustomCellSelect?.();
+            }}
+            data-testid={`dsd-custom-select-${scheduleCellData.shiftDemandsData?.shiftDemand?.id}`}
+            style={{
+              position: "absolute",
+              bottom: 2,
+              left: "50%",
+              transform: "translateX(-50%)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              lineHeight: 1,
+              color: isCustomCellSelected ? "#1976d2" : "#9e9e9e",
+            }}
+          >
+            <Sparkle
+              size={14}
+              fill={isCustomCellSelected ? "currentColor" : "none"}
+            />
+          </button>
+        )}
       </div>
     </Tooltip>
   );

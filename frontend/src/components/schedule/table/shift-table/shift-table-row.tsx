@@ -21,6 +21,7 @@ import { AssignmentT } from "@/types/assignment";
 import { TeamWithMembership } from "@/types/team";
 import {
   ScheduleSelectionState,
+  SelectedScheduleCell,
   SelectionScope,
 } from "../../../../types/scheduleSelection";
 
@@ -42,6 +43,10 @@ export default function ShiftTableRow({
   handleCellSelect,
   handleAssignmentSelect,
   handleRowSelect,
+  isCustomSolveModeActive = false,
+  customSolveSelectedCells = [],
+  handleCustomRowSelect,
+  handleCustomCellSelect,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -64,7 +69,27 @@ export default function ShiftTableRow({
   ) => void;
   handleAssignmentSelect: (assignmentId: string) => void;
   handleRowSelect: (rowId: string, scope: SelectionScope) => void;
+  isCustomSolveModeActive?: boolean;
+  customSolveSelectedCells?: SelectedScheduleCell[];
+  handleCustomRowSelect?: (rowId: string) => void;
+  handleCustomCellSelect?: (
+    rowId: string,
+    date: string,
+    scheduleId: string | null,
+  ) => void;
 }) {
+  // Derive custom solve row state
+  const campaignDates = scheduleCampaign
+    ? customSolveSelectedCells.filter((c) => c.rowId === shift.id)
+    : [];
+  const isRowCustomSelected =
+    isCustomSolveModeActive && campaignDates.length > 0;
+  const isRowCustomIndeterminate =
+    isCustomSolveModeActive &&
+    campaignDates.length > 0 &&
+    campaignDates.length <
+      customSolveSelectedCells.filter((c) => c.rowId === shift.id).length;
+
   return (
     <TableRow>
       <ShiftRowHeaderCell
@@ -106,6 +131,10 @@ export default function ShiftTableRow({
             ))
         }
         onRowSelect={() => handleRowSelect(shift.id, selectionScope ?? "view")}
+        isCustomSolveModeActive={isCustomSolveModeActive}
+        isRowCustomSelected={isRowCustomSelected}
+        isRowCustomIndeterminate={isRowCustomIndeterminate}
+        onCustomRowSelect={() => handleCustomRowSelect?.(shift.id)}
       />
       {periodDates.map((pDate, dateIndex) => {
         const scheduleCellDataKey = generateOwnerIdDateKey(
@@ -128,6 +157,25 @@ export default function ShiftTableRow({
             handleOpenCreateAssignment={handleOpenCreateAssignment}
             handleCellSelect={handleCellSelect}
             handleAssignmentSelect={handleAssignmentSelect}
+            isCustomSolveModeActive={isCustomSolveModeActive}
+            isCustomCellSelected={customSolveSelectedCells.some(
+              (c) =>
+                c.rowId === shift.id &&
+                c.date === pDate.date.format("YYYY-MM-DD"),
+            )}
+            onCustomCellSelect={() =>
+              handleCustomCellSelect?.(
+                shift.id,
+                pDate.date.format("YYYY-MM-DD"),
+                pDate.scheduleId,
+              )
+            }
+            isDateInCampaign={
+              scheduleCampaign
+                ? !pDate.date.isBefore(scheduleCampaign.startDate, "day") &&
+                  !pDate.date.isAfter(scheduleCampaign.endDate, "day")
+                : false
+            }
           />
         );
       })}

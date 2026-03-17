@@ -3,7 +3,7 @@
 import json
 from datetime import datetime, timedelta, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 import humps
 from pydantic import BaseModel, Field, TypeAdapter
@@ -28,9 +28,45 @@ class SolveStatus(str, Enum):
     TIMEOUT = "TIMEOUT"
 
 
+class SolveScopeType(str, Enum):
+    """Scope type for partial campaign solve."""
+
+    FULL = "FULL"
+    DUTIES = "DUTIES"
+    NON_DUTIES = "NON_DUTIES"
+    CUSTOM = "CUSTOM"
+
+
+class WorkerDateCell(BaseModel):
+    """A single (worker, date) cell for custom solve scope."""
+
+    worker_id: str
+    date: str  # ISO "YYYY-MM-DD"
+
+
+class ShiftDateCell(BaseModel):
+    """A single (shift, date) cell for custom solve scope."""
+
+    shift_id: str
+    date: str  # ISO "YYYY-MM-DD"
+
+
+class SolveScope(BaseModel):
+    """Scope definition for partial campaign solve requests."""
+
+    scope_type: SolveScopeType
+    worker_ids: Optional[List[str]] = None
+    shift_ids: Optional[List[str]] = None
+    dates: Optional[List[str]] = None
+    worker_cells: Optional[List[WorkerDateCell]] = None
+    shift_cells: Optional[List[ShiftDateCell]] = None
+    solve_view: Optional[Literal["worker", "shift"]] = None
+
+
 class SolveRequest(BaseModel):
     schedule_id: str
     team_id: str
+    solve_scope: Optional[SolveScope] = None
 
 
 # pylint: disable=too-few-public-methods
@@ -48,6 +84,9 @@ class SQSSolveMessage(BaseModel):
         description="When the request was created",
     )
     message_id: Optional[str] = Field(default=None, description="SQS message ID")
+    solve_scope: Optional[SolveScope] = Field(
+        default=None, description="Scope for partial campaign solve"
+    )
 
     class Config:
         """Pydantic configuration."""

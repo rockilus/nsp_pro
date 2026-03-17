@@ -262,7 +262,8 @@ def make_simple_engine_inputs(
         dim_entries=dim_entries,
         attributes=attributes,
         as_hist=[],
-        as_wip_fixed=[],
+        as_campaign_fixed=[],
+        as_campaign_not_fixed=[],
         cbs_augmented=[cba],
         shift_demands=shift_demands,
         requests_work=[],
@@ -299,13 +300,18 @@ def test_parse_constraints_ord_returns_non_empty(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
+    dates_hist, dates_campaign = build_dates(
+        ei.schedule, ei.as_hist + ei.as_campaign_fixed
+    )
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
 
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-        ei.schedule, ei.workers, ei.as_hist + ei.as_wip_fixed, dates_campaign
+        ei.schedule,
+        ei.workers,
+        ei.as_hist + ei.as_campaign_fixed,
+        dates_campaign,
     )
 
     out = parse_constraints(
@@ -399,13 +405,18 @@ def test_parse_constraints_ord_ignores_workers_ended_before_schedule(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
+    dates_hist, dates_campaign = build_dates(
+        ei.schedule, ei.as_hist + ei.as_campaign_fixed
+    )
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
 
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-        ei.schedule, ei.workers, ei.as_hist + ei.as_wip_fixed, dates_campaign
+        ei.schedule,
+        ei.workers,
+        ei.as_hist + ei.as_campaign_fixed,
+        dates_campaign,
     )
 
     out = parse_constraints(
@@ -468,13 +479,18 @@ def test_parse_constraints_ord_all_workers_ignores_ended_worker(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
+    dates_hist, dates_campaign = build_dates(
+        ei.schedule, ei.as_hist + ei.as_campaign_fixed
+    )
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
 
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-        ei.schedule, ei.workers, ei.as_hist + ei.as_wip_fixed, dates_campaign
+        ei.schedule,
+        ei.workers,
+        ei.as_hist + ei.as_campaign_fixed,
+        dates_campaign,
     )
 
     out = parse_constraints(
@@ -585,13 +601,18 @@ def test_parse_constraints_ord_all_duties_ignores_ended_worker(
         ei.shifts, ei.dimensions, ei.dim_entries, ei.attributes
     )
 
-    dates_hist, dates_campaign = build_dates(ei.schedule, ei.as_hist + ei.as_wip_fixed)
+    dates_hist, dates_campaign = build_dates(
+        ei.schedule, ei.as_hist + ei.as_campaign_fixed
+    )
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
 
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-        ei.schedule, ei.workers, ei.as_hist + ei.as_wip_fixed, dates_campaign
+        ei.schedule,
+        ei.workers,
+        ei.as_hist + ei.as_campaign_fixed,
+        dates_campaign,
     )
 
     out = parse_constraints(

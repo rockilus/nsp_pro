@@ -27,6 +27,7 @@ import {
 import AssignmentForm from "./assignment/assignment-form";
 import DemandForm from "./demand/demand-form";
 import { RequestForm } from "@/components/common/RequestForm";
+import { TeamMembershipRole } from "@/types/team";
 
 export default function ScheduleItemDialog({
   lng,
@@ -188,13 +189,20 @@ export default function ScheduleItemDialog({
                 : null
             }
             useSolver={useSolver}
-            onSave={(assignment, recurrence, updateScope) => {
+            onSave={(
+              assignment,
+              recurrence,
+              updateScope,
+              options?: { keepOpen?: boolean },
+            ) => {
               if (mode === DialogMode.CREATE && handleCreateAssignment) {
                 handleCreateAssignment(assignment, recurrence);
               } else if (mode === DialogMode.EDIT && handleUpdateAssignment) {
                 handleUpdateAssignment(assignment, recurrence, updateScope);
               }
-              onClose();
+              if (!options?.keepOpen) {
+                onClose();
+              }
             }}
             onDelete={(assignmentId, recurrenceId, updateScope) => {
               if (handleDeleteAssignment) {
@@ -203,6 +211,7 @@ export default function ScheduleItemDialog({
               onClose();
             }}
             onCancel={onClose}
+            isLeader={userTeamRole !== TeamMembershipRole.MEMBER}
           />
         )}
 

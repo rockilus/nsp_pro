@@ -70,6 +70,7 @@ async def submit_solve_request(
             schedule_id=schedule_id,
             team_id=team_id,
             user_id=user_context.effective_user_id,
+            solve_scope=body.solve_scope,
         )
 
         logger.info(

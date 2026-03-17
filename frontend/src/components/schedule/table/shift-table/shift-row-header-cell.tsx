@@ -1,7 +1,9 @@
 import React from "react";
 import { useTranslation } from "../../../../app/i18n/client";
+import { Sparkle } from "lucide-react";
 // MUI
 import Checkbox from "@mui/material/Checkbox";
+import IconButton from "@mui/material/IconButton";
 import TableCell from "@mui/material/TableCell";
 import Tooltip from "@mui/material/Tooltip";
 // Components
@@ -30,6 +32,10 @@ export default function ShiftRowHeaderCell({
   onRowSelect,
   isRowSelected,
   isRowIndeterminate,
+  isCustomSolveModeActive = false,
+  isRowCustomSelected = false,
+  isRowCustomIndeterminate = false,
+  onCustomRowSelect,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -41,6 +47,10 @@ export default function ShiftRowHeaderCell({
   onRowSelect: () => void;
   isRowSelected: boolean;
   isRowIndeterminate: boolean;
+  isCustomSolveModeActive?: boolean;
+  isRowCustomSelected?: boolean;
+  isRowCustomIndeterminate?: boolean;
+  onCustomRowSelect?: () => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
   const { background, sample, text } = ShiftColorMappings[shift.color] || {
@@ -82,6 +92,30 @@ export default function ShiftRowHeaderCell({
             data-testid={`shift-row-checkbox-${shift.id}`}
             sx={{ padding: "2px", flexShrink: 0 }}
           />
+        )}
+        {isCustomSolveModeActive && (
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              onCustomRowSelect?.();
+            }}
+            data-testid={`shift-row-custom-select-${shift.id}`}
+            sx={{
+              padding: "2px",
+              flexShrink: 0,
+              color: isRowCustomSelected
+                ? "#1976d2"
+                : isRowCustomIndeterminate
+                  ? "#42a5f5"
+                  : "#9e9e9e",
+            }}
+          >
+            <Sparkle
+              size={14}
+              fill={isRowCustomSelected ? "currentColor" : "none"}
+            />
+          </IconButton>
         )}
         <div
           className={`shift-type-marker ${

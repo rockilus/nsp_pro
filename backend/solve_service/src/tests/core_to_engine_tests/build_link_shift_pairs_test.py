@@ -28,7 +28,7 @@ class TestBuildLinkShiftPairs:
         shifts = sample_data_fixture.shifts
         schedule = sample_data_fixture.schedule
         fixed_assignments = (
-            sample_data_fixture.as_hist + sample_data_fixture.as_wip_fixed
+            sample_data_fixture.as_hist + sample_data_fixture.as_campaign_fixed
         )
 
         shift_target_1 = next((shift for shift in shifts if shift.id == "s0"), None)
@@ -110,7 +110,7 @@ class TestBuildLinkShiftPairs:
         shifts = sample_data_fixture.shifts
         schedule = sample_data_fixture.schedule
         fixed_assignments = (
-            sample_data_fixture.as_hist + sample_data_fixture.as_wip_fixed
+            sample_data_fixture.as_hist + sample_data_fixture.as_campaign_fixed
         )
 
         shift_target_1 = next((shift for shift in shifts if shift.id == "s0"), None)
@@ -157,7 +157,7 @@ class TestBuildLinkShiftPairs:
         shifts: List[Shift] = sample_data_fixture.shifts
         schedule = sample_data_fixture.schedule
         fixed_assignments = (
-            sample_data_fixture.as_hist + sample_data_fixture.as_wip_fixed
+            sample_data_fixture.as_hist + sample_data_fixture.as_campaign_fixed
         )
         shift_target_1 = next((shift for shift in shifts if shift.id == "s0"), None)
         shift_target_2 = next((shift for shift in shifts if shift.id == "s1"), None)
@@ -203,7 +203,7 @@ class TestBuildLinkShiftPairs:
         shifts = sample_data_fixture.shifts
         schedule = sample_data_fixture.schedule
         fixed_assignments = (
-            sample_data_fixture.as_hist + sample_data_fixture.as_wip_fixed
+            sample_data_fixture.as_hist + sample_data_fixture.as_campaign_fixed
         )
 
         shifts[0].deleted = True

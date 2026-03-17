@@ -1,4 +1,5 @@
 import random
+from collections import Counter
 from datetime import timedelta
 
 import pytest
@@ -9,6 +10,7 @@ from shared.schemas.core import (
     Staffing,
 )
 
+from tests.engine_tests.coverage_test_fixture import build_ei_coverage
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 from tests.sample_data import test_data_set_1
 
@@ -16,9 +18,10 @@ from tests.sample_data import test_data_set_1
 # variables = self.model.Proto().variables
 # test = constraint.linear.vars
 
+# pylint: disable=too-many-locals, too-many-statements
+
 
 class TestCoverage:
-    # pylint: disable=too-many-locals
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_normal(
         self, sample_data: EngineInputsAugmented
@@ -649,7 +652,6 @@ class TestCoverage:
                     )
                     assert count_actual == count_target
 
-    # pylint: disable=too-many-statements
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_expected_assignments_staffing_q1_q2_overlap_and_multiple_spe(
         self, sample_data: EngineInputsAugmented
@@ -874,3 +876,19 @@ class TestCoverage:
                 )
 
                 assert count_actual == count_target
+
+    def test_shifts_no_staffing_should_not_be_assigned(self) -> None:
+        ei_coverage = build_ei_coverage()
+
+        assert all(
+            shift.staffing == [] for shift in ei_coverage.shifts
+        ), "All shifts should have no staffing in this test"
+
+        outputs = engine_solve_engine_inputs(ei_coverage)
+        assert outputs.is_solution is True
+
+        assignments_count = Counter((a.date, a.shift_id) for a in outputs.assignments)
+
+        assert all(
+            assignments_count[(a.date, a.shift_id)] == 0 for a in outputs.assignments
+        )

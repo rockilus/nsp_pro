@@ -3,7 +3,10 @@ import time
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import EngineInputs, Schedule
 
-from db_operations.assignment_services import get_fixed_assignments
+from db_operations.assignment_services import (
+    get_fixed_assignments,
+    get_wip_assignments,
+)
 from db_operations.fetch_data import fetch_workers_shifts_dim_attributes_spe
 from db_operations.get_constraint_build import (
     get_active_constraint_builds_by_ids,
@@ -14,7 +17,8 @@ from db_operations.request_services import get_requests_by_dates
 
 # pylint: disable=too-many-locals, too-many-statements
 def get_engine_inputs(
-    schedule: Schedule, collections: DatabaseCollections
+    schedule: Schedule,
+    collections: DatabaseCollections,
 ) -> EngineInputs:
     start_time_db = time.time()
     (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
@@ -29,7 +33,7 @@ def get_engine_inputs(
         attributes=attributes,
         collections=collections,
     )
-    as_hist, as_wip_fixed = get_fixed_assignments(schedule, collections)
+    as_hist, as_campaign_fixed = get_fixed_assignments(schedule, collections)
     cbs_augmented = get_active_constraint_builds_by_ids(
         schedule.constraint_build_ids,
         workers,
@@ -48,6 +52,7 @@ def get_engine_inputs(
     )
     model_output = collections.model_output_db.get_model_output(schedule.id)
     end_time_db = time.time()
+    wip_assignments = get_wip_assignments(schedule, collections)
     engine_inputs = EngineInputs(
         schedule=schedule,
         workers=workers,
@@ -57,7 +62,8 @@ def get_engine_inputs(
         dim_entries=dim_entries,
         attributes=attributes,
         as_hist=as_hist,
-        as_wip_fixed=as_wip_fixed,
+        as_campaign_fixed=as_campaign_fixed,
+        as_campaign_not_fixed=wip_assignments,
         cbs_augmented=cbs_augmented,
         shift_demands=shift_demands,
         requests_work=requests_work,

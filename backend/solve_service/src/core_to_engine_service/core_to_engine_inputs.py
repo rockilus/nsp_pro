@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from shared.constraint_parser import (
     build_dim_to_attr_value_to_owner,
@@ -7,9 +7,11 @@ from shared.schemas.core import (
     EngineInputsAugmented,
     RequestStatus,
     Shift,
+    ShiftDemandNew,
     ShiftRestType,
     ShiftType,
 )
+from shared.schemas.core.solve_task_status import SolveScope, SolveScopeType
 
 from core_to_engine_service.build_dates import (
     build_dates,
@@ -43,6 +45,10 @@ from core_to_engine_service.build_periods import (
     build_periods_weekly,
     build_periods_yearly,
 )
+from core_to_engine_service.build_scope_context import (
+    ScopeContext,
+    preprocess_scope,
+)
 from core_to_engine_service.build_worker_shift_filter import (
     BoolSharedPolicy,
     build_worker_shift_filters,
@@ -66,9 +72,10 @@ from engine import ModelSetup as ModelSetupEngine
 from engine import ProcessingCache, SolHint, SystemConstraintInputs
 
 
-# pylint: disable=too-many-arguments, too-many-locals, R0801
+# pylint: disable=too-many-arguments, too-many-locals, R0801, W0613
 def core_to_engine_inputs(
     engine_inputs: EngineInputsAugmented,
+    solve_scope: Optional[SolveScope] = None,
 ) -> Tuple[InputsEngine, ProcessingCache]:
     # Workers
     workers_not_deleted = [w for w in engine_inputs.workers if not w.deleted]
@@ -110,28 +117,73 @@ def core_to_engine_inputs(
     )
 
     # Dates
-    fixed_assignments = engine_inputs.as_hist + engine_inputs.as_wip_fixed
     dates_hist, dates_campaign = build_dates(
-        engine_inputs.schedule,
-        fixed_assignments,
+        schedule=engine_inputs.schedule,
+        as_hist=engine_inputs.as_hist,
     )
     periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
     periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
     worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
-        engine_inputs.schedule,
-        engine_inputs.workers,
-        fixed_assignments,
-        dates_campaign,
+        schedule=engine_inputs.schedule,
+        workers=engine_inputs.workers,
+        as_hist=engine_inputs.as_hist,
+        dates_campaign=dates_campaign,
     )
     periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
     ws_to_dates = build_ws_ids_to_dates(
-        engine_inputs.schedule,
-        engine_inputs.workers,
-        workers_not_deleted,
-        engine_inputs.shifts,
-        shifts_not_deleted,
-        fixed_assignments,
-        dates_campaign,
+        schedule=engine_inputs.schedule,
+        workers=engine_inputs.workers,
+        workers_not_deleted=workers_not_deleted,
+        shifts=engine_inputs.shifts,
+        shifts_not_deleted=shifts_not_deleted,
+        as_hist=engine_inputs.as_hist,
+        dates_campaign=dates_campaign,
+    )
+
+    variables = build_engine_variables(
+        workers=engine_inputs.workers,
+        worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+        shifts=engine_inputs.shifts,
+        shifts_not_deleted=shifts_not_deleted,
+        shift_id_to_duration_dict=shift_id_to_duration_dict,
+    )
+
+    # Scope pre-processing (Phase 4)
+    # Runs before the Dates block so that engine_inputs.shifts and
+    # engine_inputs.shift_demands are pruned, and locked WIP assignments are
+    # appended to as_campaign_fixed, before any build_* call.
+    _scope_ctx: Optional[ScopeContext] = None
+    demands_in_scope: List[ShiftDemandNew] = engine_inputs.shift_demands
+    if solve_scope is not None and solve_scope.scope_type != SolveScopeType.FULL:
+        _scope_ctx = preprocess_scope(
+            scope=solve_scope,
+            workers_not_deleted=workers_not_deleted,
+            shifts_not_deleted=shifts_not_deleted,
+            demands=engine_inputs.shift_demands,
+            var_model=variables.assignments,
+            as_campaign=engine_inputs.as_campaign_fixed
+            + engine_inputs.as_campaign_not_fixed,
+        )
+        demands_in_scope = [
+            sd
+            for sd in engine_inputs.shift_demands
+            if sd.id is not None and sd.id in _scope_ctx.shift_demand_ids
+        ]
+
+    as_campaign_not_fixed_out_of_scope = (
+        []
+        if _scope_ctx is None
+        else [
+            a
+            for a in engine_inputs.as_campaign_not_fixed
+            if (a.worker_id, a.date.isoformat(), a.shift_id) not in _scope_ctx.variables
+        ]
+    )
+
+    fixed_assignments = (
+        engine_inputs.as_hist
+        + engine_inputs.as_campaign_fixed
+        + as_campaign_not_fixed_out_of_scope
     )
 
     # Requests
@@ -188,18 +240,20 @@ def core_to_engine_inputs(
 
     # Fixed assignments
     fixed_values = core_to_engine_fixed_values(
-        engine_inputs.workers,
-        workers_not_deleted,
-        worker_ids_to_worker_dates,
-        engine_inputs.shifts,
-        shifts_not_deleted,
-        engine_inputs.shift_demands,
-        fixed_assignments,
-        engine_inputs.requests_leave,
-        approved_requests,
-        engine_inputs.dimensions,
-        engine_inputs.dim_entries,
-        engine_inputs.attributes,
+        workers=engine_inputs.workers,
+        workers_not_deleted=workers_not_deleted,
+        worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+        shifts=engine_inputs.shifts,
+        shifts_not_deleted=shifts_not_deleted,
+        daily_shift_demands=demands_in_scope,
+        assignments=fixed_assignments,
+        requests=engine_inputs.requests_leave,
+        approved_requests=approved_requests,
+        dimensions=engine_inputs.dimensions,
+        dim_entries=engine_inputs.dim_entries,
+        attributes=engine_inputs.attributes,
+        var_model=variables.assignments,
+        scope_ctx=_scope_ctx,
     )
 
     # Constraints:
@@ -221,13 +275,7 @@ def core_to_engine_inputs(
 
     inputs = InputsEngine(
         ModelSetupEngine(
-            variables=build_engine_variables(
-                engine_inputs.workers,
-                worker_ids_to_worker_dates,
-                engine_inputs.shifts,
-                shifts_not_deleted,
-                shift_id_to_duration_dict,
-            ),
+            variables=variables,
             no_overlap_shift_intervals=[
                 [
                     (w_id, d.isoformat(), s_id)
@@ -284,12 +332,12 @@ def core_to_engine_inputs(
                 else None
             ),
             shift_demands=build_engine_shift_demands(
-                workers_not_deleted,
-                dates_campaign,
-                worker_ids_to_worker_dates,
-                shifts_not_deleted,
-                engine_inputs.shift_demands,
-                engine_inputs.penalties.configuration_constraint.coverage,
+                workers_not_deleted=workers_not_deleted,
+                dates_campaign=dates_campaign,
+                worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+                shifts_not_deleted=shifts_not_deleted,
+                daily_shift_demands=demands_in_scope,
+                c_penalty=engine_inputs.penalties.configuration_constraint.coverage,
             ),
             # requests=[],
             requests=build_engine_requests(
@@ -307,14 +355,16 @@ def core_to_engine_inputs(
                 shifts_not_deleted,
                 shift_duties_not_deleted,
                 engine_inputs.penalties.configuration_constraint.duty_recup,
+                scope_ctx=_scope_ctx,
+                fixed_assignments=fixed_assignments,
             ),
             link_shifts_pairs=build_link_shift_pairs(
-                workers_not_deleted,
-                worker_ids_to_worker_dates,
-                shifts_not_deleted,
-                engine_inputs.link_shifts,
-                engine_inputs.shift_demands,
-                engine_inputs.penalties.configuration_constraint.link_shift,
+                workers_not_deleted=workers_not_deleted,
+                worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+                shifts_not_deleted=shifts_not_deleted,
+                link_shifts=engine_inputs.link_shifts,
+                daily_shift_demands=demands_in_scope,
+                penalty=engine_inputs.penalties.configuration_constraint.link_shift,
             ),
             worker_shift_filters=build_worker_shift_filters(
                 workers=engine_inputs.workers,
@@ -371,11 +421,13 @@ def core_to_engine_inputs(
                 else []
             ),
             # max_weekly_nb_duties: tuple (weeks x workers x assignments, penalty)
+            # max_weekly_nb_duties=([], 0),
             max_weekly_nb_duties=(
                 max_weekly_nb_duties_vars,
                 engine_inputs.penalties.system_constraint.max_weekly_nb_duties,
             ),
             # max_week_day_nb_duties: tuple (weekday * worker * duties, penalty)
+            # max_week_day_nb_duties=([], 0),
             max_week_day_nb_duties=(
                 max_week_day_nb_duties_vars,
                 engine_inputs.penalties.system_constraint.max_week_day_nb_duties,
@@ -424,6 +476,7 @@ def core_to_engine_inputs(
         w_to_nb_duties=w_to_nb_duties,
         shift_id_to_duration=shift_id_to_duration_dict,
         dim_to_attr_value_to_shift=dim_to_attr_value_to_shift,
+        scope_ctx=_scope_ctx,
     )
 
 

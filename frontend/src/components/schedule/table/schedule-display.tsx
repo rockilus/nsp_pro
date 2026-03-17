@@ -23,6 +23,7 @@ import { RecurrenceRuleT } from "@/types/recurrence";
 import { TeamWithMembership } from "@/types/team";
 import {
   ScheduleSelectionState,
+  SelectedScheduleCell,
   SelectionScope,
 } from "../../../types/scheduleSelection";
 
@@ -53,6 +54,12 @@ export default function ScheduleDisplay({
   handleRowSelect,
   handleColumnSelect,
   handleSelectAll,
+  isCustomSolveModeActive = false,
+  customSolveSelectedCells = [],
+  handleCustomRowSelect,
+  handleCustomColumnSelect,
+  handleCustomCellSelect,
+  handleCustomSelectAll,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -86,6 +93,16 @@ export default function ScheduleDisplay({
     scope: SelectionScope,
   ) => void;
   handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
+  isCustomSolveModeActive?: boolean;
+  customSolveSelectedCells?: SelectedScheduleCell[];
+  handleCustomRowSelect?: (rowId: string) => void;
+  handleCustomColumnSelect?: (date: string, rowIds: string[]) => void;
+  handleCustomCellSelect?: (
+    rowId: string,
+    date: string,
+    scheduleId: string | null,
+  ) => void;
+  handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   const scheduleDisplays: { [key: string]: React.ReactElement } = {
     shift: (
@@ -113,6 +130,12 @@ export default function ScheduleDisplay({
         handleRowSelect={handleRowSelect}
         handleColumnSelect={handleColumnSelect}
         handleSelectAll={handleSelectAll}
+        isCustomSolveModeActive={isCustomSolveModeActive}
+        customSolveSelectedCells={customSolveSelectedCells}
+        handleCustomRowSelect={handleCustomRowSelect}
+        handleCustomColumnSelect={handleCustomColumnSelect}
+        handleCustomCellSelect={handleCustomCellSelect}
+        handleCustomSelectAll={handleCustomSelectAll}
       />
     ),
     worker: (
@@ -140,6 +163,12 @@ export default function ScheduleDisplay({
         handleRowSelect={handleRowSelect}
         handleColumnSelect={handleColumnSelect}
         handleSelectAll={handleSelectAll}
+        isCustomSolveModeActive={isCustomSolveModeActive}
+        customSolveSelectedCells={customSolveSelectedCells}
+        handleCustomRowSelect={handleCustomRowSelect}
+        handleCustomColumnSelect={handleCustomColumnSelect}
+        handleCustomCellSelect={handleCustomCellSelect}
+        handleCustomSelectAll={handleCustomSelectAll}
       />
     ),
   };

@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from shared.constraint_parser import build_dim_to_attr_value_to_owner
 from shared.constraint_parser.parse_selected_shifts import (
@@ -20,6 +20,10 @@ from shared.schemas.core import (
     Worker,
     WorkerDates,
 )
+
+from core_to_engine_service.build_scope_context import ScopeContext
+
+# pylint: disable=too-many-arguments, too-many-locals, R0801
 
 
 def _filter_campaign_dates(
@@ -53,7 +57,6 @@ def _filter_campaign_dates(
     ]
 
 
-# pylint: disable=too-many-arguments
 def _zero_overlapping_shifts(
     out: Dict[Tuple[str, str, str], int],
     worker_id: str,
@@ -178,7 +181,6 @@ def _apply_negative_work_demand(
             out[req.worker_id, date_iso, shift_id] = 0
 
 
-# pylint: disable=too-many-arguments
 def _apply_single_shift_work_demand(
     out: Dict[Tuple[str, str, str], int],
     req: Request,
@@ -373,10 +375,15 @@ def _zero_shifts_without_demand(
                     and s.id not in shifts_in_dsds
                     and s.deleted is False
                 ):
-                    out[w.id, d.isoformat(), s.id] = 0
+                    key = (w.id, d.isoformat(), s.id)
+                    # Do not overwrite if we already have a fixed value for this
+                    # variable (value 0 or 1). Presence in `out` means it's
+                    # already initialized or set by earlier logic.
+                    if key in out:
+                        continue
+                    out[key] = 0
 
 
-# pylint: disable=too-many-arguments, R0801
 def core_to_engine_fixed_values(
     workers: List[Worker],
     workers_not_deleted: List[Worker],
@@ -390,6 +397,8 @@ def core_to_engine_fixed_values(
     dimensions: List[Dimension],
     dim_entries: List[DimEntry],
     attributes: List[Attribute],
+    var_model: List[Tuple[str, str, str]],
+    scope_ctx: Optional[ScopeContext] = None,
 ) -> Dict[Tuple[str, str, str], int]:
     """
     Build fixed values dictionary for the solver.
@@ -464,4 +473,16 @@ def core_to_engine_fixed_values(
         daily_shift_demands,
     )
 
+    # If a scope context is provided, fix all variables outside of the
+    # scope to 0 (but don't override already-fixed values).
+    if scope_ctx is not None:
+        model_vars = set(var_model)
+        outside_vars = model_vars - scope_ctx.variables
+        for var in outside_vars:
+            if var not in out:
+                out[var] = 0
+    # Ensure all returned fixed variables actually exist in the model
+    # (drop any keys not present in var_model).
+    var_model_set = set(var_model)
+    out = {k: v for k, v in out.items() if k in var_model_set}
     return out

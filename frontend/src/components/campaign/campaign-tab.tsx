@@ -21,6 +21,7 @@ import {
   useUpdateSchedule,
   useGetWorkTimeTable,
 } from "../../hooks/useSchedule";
+import { clearGenerationSelection } from "../../app/lib/hooks/useGenerationSelection";
 // Styles
 import "../../styles/tab-container-styles.css";
 // Types
@@ -64,6 +65,7 @@ export default function CampaignTab({
   const handleAddSchedule = async () => {
     try {
       const newSchedule = await createSchedule(teamWithMembership.team.id);
+      clearGenerationSelection(newSchedule.id);
       setScheduleCampaign(newSchedule);
       const newWorkTimeTable = await getWorkTimeTable(
         newSchedule.id,

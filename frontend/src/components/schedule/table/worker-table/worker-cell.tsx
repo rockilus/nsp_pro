@@ -1,4 +1,5 @@
 import React from "react";
+import { Sparkle } from "lucide-react";
 // MUI
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import Checkbox from "@mui/material/Checkbox";
@@ -37,6 +38,10 @@ export default function WorkerCell({
   selectionState,
   handleCellSelect,
   handleAssignmentSelect,
+  isCustomSolveModeActive = false,
+  isCustomCellSelected = false,
+  onCustomCellSelect,
+  isDateInCampaign = true,
 }: {
   periodDate: periodDateT;
   worker: WorkerT;
@@ -54,6 +59,10 @@ export default function WorkerCell({
     scheduleId: string | null,
   ) => void;
   handleAssignmentSelect: (assignmentId: string) => void;
+  isCustomSolveModeActive?: boolean;
+  isCustomCellSelected?: boolean;
+  onCustomCellSelect?: () => void;
+  isDateInCampaign?: boolean;
 }) {
   const isSelectionActive = !!selectionState?.isActive;
   const dateStr = periodDate.date.format("YYYY-MM-DD");
@@ -64,6 +73,37 @@ export default function WorkerCell({
   const hasAssignments =
     scheduleViewSettings.showAssignments &&
     !!scheduleCellData?.assignmentsData?.length;
+  const hasRequests =
+    scheduleViewSettings.showRequests && !!scheduleCellData?.requests?.length;
+  const hasOtherComponents = hasAssignments || hasRequests || isSelectionActive;
+
+  const sparkleStyle: React.CSSProperties = hasOtherComponents
+    ? {
+        position: "absolute",
+        bottom: 4,
+        left: "50%",
+        transform: "translateX(-50%)",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        padding: 0,
+        lineHeight: 1,
+        color: isCustomCellSelected ? "#1976d2" : "#9e9e9e",
+        zIndex: 11,
+      }
+    : {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        padding: 0,
+        lineHeight: 1,
+        color: isCustomCellSelected ? "#1976d2" : "#9e9e9e",
+        zIndex: 11,
+      };
 
   return (
     <TableCell
@@ -176,6 +216,21 @@ export default function WorkerCell({
             <AddCircleIcon />
           </IconButton>
         </RoleBased>
+      )}
+      {isCustomSolveModeActive && isDateInCampaign && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onCustomCellSelect?.();
+          }}
+          data-testid={`worker-cell-custom-select-${worker.id}-${dateStr}`}
+          style={sparkleStyle}
+        >
+          <Sparkle
+            size={14}
+            fill={isCustomCellSelected ? "currentColor" : "none"}
+          />
+        </button>
       )}
     </TableCell>
   );

@@ -21,7 +21,7 @@ class TestBuildDates:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_build_dates(self, sample_data: EngineInputsAugmented) -> None:
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
 
@@ -96,7 +96,7 @@ class TestBuildDates:
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
 
@@ -115,7 +115,7 @@ class TestBuildWorkerIdsToWorkerDates:
     ) -> None:
         schedule = sample_data.schedule
         workers = sample_data.workers
-        assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        assignments = sample_data.as_hist + sample_data.as_campaign_fixed
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -185,7 +185,7 @@ class TestBuildWorkerIdsToWorkerDates:
         schedule = sample_data.schedule
         workers = sample_data.workers
         workers[0].employment_end_date = date(2025, 1, 15)
-        assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        assignments = sample_data.as_hist + sample_data.as_campaign_fixed
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -210,7 +210,7 @@ class TestBuildWorkerIdsToWorkerDates:
         schedule = sample_data.schedule
         workers = sample_data.workers
         workers[0].deleted = True
-        assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        assignments = sample_data.as_hist + sample_data.as_campaign_fixed
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)

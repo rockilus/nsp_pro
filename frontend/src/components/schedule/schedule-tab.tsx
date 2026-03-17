@@ -108,10 +108,15 @@ import {
 import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
 import { getDefaultScheduleViewSettings } from "../../app/lib/utils/scheduleViewSettingsUtils";
 import {
+  useGenerationSelection,
+  clearGenerationSelection,
+} from "../../app/lib/hooks/useGenerationSelection";
+import {
   ScheduleSelectionState,
   SelectedScheduleCell,
   SelectionScope,
 } from "../../types/scheduleSelection";
+import { SolveScopeType } from "../../types/solveTaskStatus";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -338,6 +343,18 @@ export default function ScheduleTab({
   });
   const [selectionScope, setSelectionScope] = useState<SelectionScope>("view");
 
+  // Custom solve mode state - persisted alongside selected cells in localStorage
+  const [
+    workerSolveCells,
+    updateWorkerSolveCells,
+    shiftSolveCells,
+    updateShiftSolveCells,
+    selectedSolveScope,
+    setSelectedSolveScope,
+  ] = useGenerationSelection(scheduleCampaign?.id ?? null);
+
+  const isCustomSolveModeActive = selectedSolveScope === "CUSTOM";
+
   const isMobile = useIsMobile();
 
   const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {
@@ -362,6 +379,132 @@ export default function ScheduleTab({
     setDialogType(ScheduleItemType.REQUEST);
     setDialogData({ request });
   };
+
+  //////////////////////////
+  // Selection Mode Handlers
+  //////////////////////////
+
+  const handleSolveOptionChange = useCallback(
+    (scope: SolveScopeType) => {
+      setSelectedSolveScope(scope);
+    },
+    [setSelectedSolveScope],
+  );
+
+  const handleCustomRowSelect = useCallback(
+    (rowId: string) => {
+      if (!scheduleCampaign) return;
+      const campaignDates = buildDates(
+        scheduleCampaign.startDate,
+        scheduleCampaign.endDate,
+      );
+      const updateFn =
+        scheduleViewSettings.groupBy === "worker"
+          ? updateWorkerSolveCells
+          : updateShiftSolveCells;
+      updateFn((prev) => {
+        const isFullySelected = campaignDates.every((pd) =>
+          prev.some(
+            (c) => c.rowId === rowId && c.date === pd.date.format("YYYY-MM-DD"),
+          ),
+        );
+        if (isFullySelected) {
+          return prev.filter((c) => c.rowId !== rowId);
+        }
+        const existingKeys = new Set(prev.map((c) => `${c.rowId}-${c.date}`));
+        const toAdd: SelectedScheduleCell[] = campaignDates
+          .filter(
+            (pd) =>
+              !existingKeys.has(`${rowId}-${pd.date.format("YYYY-MM-DD")}`),
+          )
+          .map((pd) => ({
+            rowId,
+            date: pd.date.format("YYYY-MM-DD"),
+            scheduleId: pd.scheduleId,
+          }));
+        return [...prev, ...toAdd];
+      });
+    },
+    [
+      scheduleCampaign,
+      buildDates,
+      scheduleViewSettings.groupBy,
+      updateWorkerSolveCells,
+      updateShiftSolveCells,
+    ],
+  );
+
+  const handleCustomColumnSelect = useCallback(
+    (date: string, rowIds: string[]) => {
+      if (!scheduleCampaign) return;
+      const scheduleId =
+        buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate).find(
+          (pd) => pd.date.format("YYYY-MM-DD") === date,
+        )?.scheduleId ?? null;
+      const updateFn =
+        scheduleViewSettings.groupBy === "worker"
+          ? updateWorkerSolveCells
+          : updateShiftSolveCells;
+      updateFn((prev) => {
+        const rowIdSet = new Set(rowIds);
+        const isFullySelected = rowIds.every((rowId) =>
+          prev.some((c) => c.rowId === rowId && c.date === date),
+        );
+        if (isFullySelected) {
+          return prev.filter(
+            (c) => !(rowIdSet.has(c.rowId) && c.date === date),
+          );
+        }
+        const existingKeys = new Set(prev.map((c) => `${c.rowId}-${c.date}`));
+        const toAdd: SelectedScheduleCell[] = rowIds
+          .filter((rowId) => !existingKeys.has(`${rowId}-${date}`))
+          .map((rowId) => ({ rowId, date, scheduleId }));
+        return [...prev, ...toAdd];
+      });
+    },
+    [
+      scheduleCampaign,
+      buildDates,
+      scheduleViewSettings.groupBy,
+      updateWorkerSolveCells,
+      updateShiftSolveCells,
+    ],
+  );
+
+  const handleCustomCellSelect = useCallback(
+    (rowId: string, date: string, scheduleId: string | null) => {
+      const updateFn =
+        scheduleViewSettings.groupBy === "worker"
+          ? updateWorkerSolveCells
+          : updateShiftSolveCells;
+      updateFn((prev) => {
+        const exists = prev.some((c) => c.rowId === rowId && c.date === date);
+        return exists
+          ? prev.filter((c) => !(c.rowId === rowId && c.date === date))
+          : [...prev, { rowId, date, scheduleId }];
+      });
+    },
+    [
+      scheduleViewSettings.groupBy,
+      updateWorkerSolveCells,
+      updateShiftSolveCells,
+    ],
+  );
+
+  const handleCustomSelectAll = useCallback(
+    (cells: SelectedScheduleCell[]) => {
+      if (scheduleViewSettings.groupBy === "worker") {
+        updateWorkerSolveCells(cells);
+      } else {
+        updateShiftSolveCells(cells);
+      }
+    },
+    [
+      scheduleViewSettings.groupBy,
+      updateWorkerSolveCells,
+      updateShiftSolveCells,
+    ],
+  );
 
   //////////////////////////
   // Selection Mode Handlers
@@ -626,6 +769,7 @@ export default function ScheduleTab({
         scheduleId,
         teamWithMembership.team.id,
       );
+      clearGenerationSelection(scheduleId);
       setScheduleCampaign(null);
       setSchedulesValidated([...schedulesValidated, newSchedule]);
       setBreaches([]);
@@ -1346,6 +1490,13 @@ export default function ScheduleTab({
               useSqsWorkflow={true}
               onSqsSolveComplete={handleSqsSolveComplete}
               onToggleSelectionMode={handleToggleSelectionMode}
+              workers={workers.filter((w) => !w.deleted)}
+              shifts={shifts.filter((s) => !s.deleted)}
+              selectionState={selectionState}
+              selectedSolveScope={selectedSolveScope}
+              onSolveOptionChange={handleSolveOptionChange}
+              workerSolveCells={workerSolveCells}
+              shiftSolveCells={shiftSolveCells}
             />
             {selectionState.isActive &&
               teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
@@ -1410,6 +1561,16 @@ export default function ScheduleTab({
               handleRowSelect={handleRowSelect}
               handleColumnSelect={handleColumnSelect}
               handleSelectAll={handleSelectAll}
+              isCustomSolveModeActive={isCustomSolveModeActive}
+              customSolveSelectedCells={
+                scheduleViewSettings.groupBy === "worker"
+                  ? workerSolveCells
+                  : shiftSolveCells
+              }
+              handleCustomRowSelect={handleCustomRowSelect}
+              handleCustomColumnSelect={handleCustomColumnSelect}
+              handleCustomCellSelect={handleCustomCellSelect}
+              handleCustomSelectAll={handleCustomSelectAll}
             />
           )}
         </div>

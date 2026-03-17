@@ -451,7 +451,7 @@ class TestBuildWorkTimeConstraints:
             [w for w in engine_inputs.workers if not w.deleted],
             engine_inputs.shifts,
             [s for s in engine_inputs.shifts if not s.deleted],
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs.as_hist + engine_inputs.as_campaign_fixed,
             dates_campaign,
         )
 
@@ -511,7 +511,7 @@ class TestBuildWorkTimeConstraints:
             [w for w in engine_inputs.workers if not w.deleted],
             engine_inputs.shifts,
             [s for s in engine_inputs.shifts if not s.deleted],
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs.as_hist + engine_inputs.as_campaign_fixed,
             dates_campaign,
         )
 

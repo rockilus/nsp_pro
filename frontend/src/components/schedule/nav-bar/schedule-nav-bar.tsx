@@ -16,7 +16,14 @@ import {
 } from "../../../types/schedule";
 import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
 import { SolveTaskStatusResponseT } from "../../../types/solveTaskStatus";
+import { SolveScopeType } from "../../../types/solveTaskStatus";
 import { BreachT } from "../../../types/breach";
+import { WorkerT } from "../../../types/worker";
+import { ShiftT } from "../../../types/shift";
+import {
+  ScheduleSelectionState,
+  SelectedScheduleCell,
+} from "../../../types/scheduleSelection";
 
 export default function ScheduleNavBar({
   lng,
@@ -36,6 +43,13 @@ export default function ScheduleNavBar({
   useSqsWorkflow = false, // Feature flag for SQS workflow
   onSqsSolveComplete,
   onToggleSelectionMode,
+  workers = [],
+  shifts = [],
+  selectionState,
+  selectedSolveScope = "FULL",
+  onSolveOptionChange,
+  workerSolveCells = [],
+  shiftSolveCells = [],
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -58,6 +72,13 @@ export default function ScheduleNavBar({
   useSqsWorkflow?: boolean;
   onSqsSolveComplete?: (result: SolveTaskStatusResponseT) => void;
   onToggleSelectionMode?: () => void;
+  workers?: WorkerT[];
+  shifts?: ShiftT[];
+  selectionState?: ScheduleSelectionState;
+  selectedSolveScope?: SolveScopeType;
+  onSolveOptionChange?: (scope: SolveScopeType) => void;
+  workerSolveCells?: SelectedScheduleCell[];
+  shiftSolveCells?: SelectedScheduleCell[];
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -116,6 +137,14 @@ export default function ScheduleNavBar({
               handleValidateSchedule={handleValidateSchedule}
               useSqsWorkflow={useSqsWorkflow}
               onSqsSolveComplete={onSqsSolveComplete}
+              workers={workers}
+              shifts={shifts}
+              selectionState={selectionState}
+              groupBy={scheduleViewSettings.groupBy}
+              selectedSolveScope={selectedSolveScope}
+              onSolveOptionChange={onSolveOptionChange}
+              workerSolveCells={workerSolveCells}
+              shiftSolveCells={shiftSolveCells}
             />
           ) : (
             <div

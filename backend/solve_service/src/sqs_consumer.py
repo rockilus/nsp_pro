@@ -164,9 +164,13 @@ class SQSSolveConsumer:
         if not schedule:
             raise ValueError("Schedule not found")
         engine_inputs = get_engine_inputs(
-            schedule=schedule, collections=self.collections
+            schedule=schedule,
+            collections=self.collections,
         )
-        engine_outputs, processing_cache = solve_schedule(engine_inputs=engine_inputs)
+        engine_outputs, processing_cache = solve_schedule(
+            engine_inputs=engine_inputs,
+            solve_scope=message.solve_scope,
+        )
         schedule_solve_status, assignments, breaches, solver_output = (
             save_engine_outputs(
                 schedule=schedule,
@@ -174,6 +178,7 @@ class SQSSolveConsumer:
                 engine_outputs=engine_outputs,
                 processing_cache=processing_cache,
                 collections=self.collections,
+                solve_scope=message.solve_scope,
             )
         )
         end_time = time.time()

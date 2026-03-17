@@ -48,7 +48,7 @@ class TestParseConstraints:
         )
         dates_hist, dates_campaign = build_dates(
             engine_inputs.schedule,
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs.as_hist + engine_inputs.as_campaign_fixed,
         )
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
@@ -56,7 +56,7 @@ class TestParseConstraints:
         worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
             engine_inputs.schedule,
             engine_inputs.workers,
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs.as_hist + engine_inputs.as_campaign_fixed,
             dates_campaign,
         )
         return lambda inputs: parse_constraints(  # type: ignore

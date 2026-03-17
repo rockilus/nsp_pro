@@ -1,6 +1,7 @@
 import React, { useState, useMemo, Dispatch, SetStateAction } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { Sparkle } from "lucide-react";
 import { useTranslation } from "../../../../app/i18n/client";
 // MUI
 import Button from "@mui/material/Button";
@@ -28,6 +29,7 @@ import {
 } from "../../../../types/schedule";
 import {
   ScheduleSelectionState,
+  SelectedScheduleCell,
   SelectionScope,
 } from "../../../../types/scheduleSelection";
 
@@ -202,6 +204,9 @@ export default function ExportCell({
   rowIds,
   selectionScope,
   handleSelectAll,
+  isCustomSolveModeActive = false,
+  customSolveSelectedCells = [],
+  handleCustomSelectAll,
 }: {
   lng: string;
   periodDates: periodDateT[];
@@ -212,6 +217,9 @@ export default function ExportCell({
   rowIds: string[];
   selectionScope: SelectionScope;
   handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
+  isCustomSolveModeActive?: boolean;
+  customSolveSelectedCells?: SelectedScheduleCell[];
+  handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   const { t } = useTranslation(lng, "schedule-page");
 
@@ -260,6 +268,85 @@ export default function ExportCell({
       handleSelectAll?.([], selectionScope ?? "view");
     } else {
       handleSelectAll?.(rowIds ?? [], selectionScope ?? "view");
+    }
+  };
+
+  const isCustomAllSelected = useMemo(() => {
+    if (!isCustomSolveModeActive || !rowIds?.length || !scheduleCampaign)
+      return false;
+    let current = scheduleCampaign.startDate.startOf("day");
+    const end = scheduleCampaign.endDate.startOf("day");
+    while (current.isBefore(end) || current.isSame(end, "day")) {
+      const date = current.format("YYYY-MM-DD");
+      if (
+        !rowIds.every((rowId) =>
+          customSolveSelectedCells.some(
+            (c) => c.rowId === rowId && c.date === date,
+          ),
+        )
+      )
+        return false;
+      current = current.add(1, "day");
+    }
+    return true;
+  }, [
+    isCustomSolveModeActive,
+    rowIds,
+    scheduleCampaign,
+    customSolveSelectedCells,
+  ]);
+
+  const isCustomSomeSelected = useMemo(() => {
+    if (!isCustomSolveModeActive || !rowIds?.length || !scheduleCampaign)
+      return false;
+    if (isCustomAllSelected) return false;
+    return customSolveSelectedCells.some((c) => rowIds.includes(c.rowId));
+  }, [
+    isCustomSolveModeActive,
+    rowIds,
+    scheduleCampaign,
+    customSolveSelectedCells,
+    isCustomAllSelected,
+  ]);
+
+  const handleCustomSelectAllChange = () => {
+    if (!scheduleCampaign) return;
+    if (isCustomAllSelected) {
+      // Remove all campaign cells from selection
+      const campaignKeys = new Set<string>();
+      let current = scheduleCampaign.startDate.startOf("day");
+      const end = scheduleCampaign.endDate.startOf("day");
+      while (current.isBefore(end) || current.isSame(end, "day")) {
+        const date = current.format("YYYY-MM-DD");
+        rowIds.forEach((rowId) => campaignKeys.add(`${rowId}-${date}`));
+        current = current.add(1, "day");
+      }
+      handleCustomSelectAll?.(
+        customSolveSelectedCells.filter(
+          (c) => !campaignKeys.has(`${c.rowId}-${c.date}`),
+        ),
+      );
+    } else {
+      // Add all campaign cells not yet selected
+      const existingKeys = new Set(
+        customSolveSelectedCells.map((c) => `${c.rowId}-${c.date}`),
+      );
+      const toAdd: SelectedScheduleCell[] = [];
+      let current = scheduleCampaign.startDate.startOf("day");
+      const end = scheduleCampaign.endDate.startOf("day");
+      while (current.isBefore(end) || current.isSame(end, "day")) {
+        const date = current.format("YYYY-MM-DD");
+        const pd = periodDates.find(
+          (p) => p.date.format("YYYY-MM-DD") === date,
+        );
+        rowIds.forEach((rowId) => {
+          if (!existingKeys.has(`${rowId}-${date}`)) {
+            toAdd.push({ rowId, date, scheduleId: pd?.scheduleId ?? null });
+          }
+        });
+        current = current.add(1, "day");
+      }
+      handleCustomSelectAll?.([...customSolveSelectedCells, ...toAdd]);
     }
   };
 
@@ -357,6 +444,39 @@ export default function ExportCell({
             data-testid="export-cell-select-all-checkbox"
             sx={{ padding: "2px", display: "block", margin: "0 auto" }}
           />
+        )}
+        {isCustomSolveModeActive && (
+          <Tooltip title="Select/deselect entire campaign">
+            <button
+              data-testid="export-cell-custom-select-all"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCustomSelectAllChange();
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "block",
+                margin: "0 auto",
+                padding: "2px",
+                color: isCustomAllSelected
+                  ? "#1976d2"
+                  : isCustomSomeSelected
+                    ? "#42a5f5"
+                    : "#9e9e9e",
+              }}
+            >
+              <Sparkle
+                size={14}
+                fill={
+                  isCustomAllSelected || isCustomSomeSelected
+                    ? "currentColor"
+                    : "none"
+                }
+              />
+            </button>
+          </Tooltip>
         )}
         <Dialog
           open={open}
