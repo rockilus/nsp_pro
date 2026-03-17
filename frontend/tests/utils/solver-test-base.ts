@@ -830,26 +830,34 @@ export class SolverTestBase {
           }
         }
       } else if (solveView === "worker") {
-        // Worker view selections are typically dates or worker_cells
         const dates: string[] = solveScope?.dates || [];
         const workerCells: any[] = solveScope?.worker_cells || [];
-
-        // Include selections by whole worker rows (worker_ids)
-        // Note: this function doesn't receive the `workers` list, so we cannot
-        // compute worker->shift eligibility here. The pragmatic behaviour is
-        // to treat selecting worker rows as including all in-campaign demands
-        // (i.e. every date/shift demand in the campaign period).
         const workerIds: string[] = solveScope?.worker_ids || [];
-        if (workerIds.length > 0) {
-          includeIf(() => true);
+
+        // Build helper sets
+        const dateSet = new Set<string>(dates.map((d) => normDate(d)));
+        const workerCellSet = new Set<string>(
+          (workerCells || []).map(
+            (c) => `${c.worker_id || c.workerId}|${normDate(c.date)}`,
+          ),
+        );
+        const workerIdSet = new Set<string>(workerIds || []);
+
+        // Include demands matching explicit dates or worker_cells (these behave
+        // the same as shift view date/shift cell selections)
+        if (dateSet.size > 0) includeIf((d) => dateSet.has(normDate(d.date)));
+        if (workerCellSet.size > 0) {
+          includeIf((d) =>
+            workerCells.some((c) => normDate(c.date) === normDate(d.date)),
+          );
         }
 
-        if (dates.length > 0)
-          includeIf((d) => dates.includes(normDate(d.date)));
-        if (workerCells.length > 0) {
-          const ws = new Set<string>(workerCells.map((c) => normDate(c.date)));
-          includeIf((d) => ws.has(normDate(d.date)));
-        }
+        // NOTE: selecting whole worker rows (`worker_ids`) means "any assignment
+        // for those workers is in-scope". We implement this by permitting
+        // assignments whose `workerId` is present in `worker_ids` during the
+        // assignment validation step below. Selecting worker rows alone does
+        // NOT imply that every campaign demand must be fulfilled by those
+        // workers, therefore we do not add all demands to `inScopeKeys` here.
       }
     }
 
@@ -857,15 +865,53 @@ export class SolverTestBase {
 
     // Count assignments per key and ensure they are in-scope
     const assignmentCounts: Record<string, number> = {};
+
+    const isCustomWorkerView =
+      scopeType === "CUSTOM" &&
+      (solveScope?.solve_view || "shift") === "worker";
+    // Prebuild sets for worker-view checks if needed
+    let dateSet: Set<string> = new Set();
+    let workerIdSet: Set<string> = new Set();
+    let workerCellSet: Set<string> = new Set();
+    if (isCustomWorkerView) {
+      const dates: string[] = solveScope?.dates || [];
+      const workerCells: any[] = solveScope?.worker_cells || [];
+      const workerIds: string[] = solveScope?.worker_ids || [];
+      dateSet = new Set<string>(dates.map((d) => normDate(d)));
+      workerIdSet = new Set<string>(workerIds || []);
+      workerCellSet = new Set<string>(
+        (workerCells || []).map(
+          (c) => `${c.worker_id || c.workerId}|${normDate(c.date)}`,
+        ),
+      );
+    }
+
     for (const a of assignmentsInCampaign) {
       const dateStr = (a.date as dayjs.Dayjs).utc().format("YYYY-MM-DD");
       const key = `${dateStr}|${a.shiftId}`;
-      // assignment must be in-scope — if not, throw an explicit error with details
-      if (!inScopeKeys.has(key)) {
-        throw new Error(
-          `Assignment (${a.workerId}, ${dateStr}, ${a.shiftId}) is not in scope`,
-        );
+
+      if (isCustomWorkerView) {
+        // allowed if any of: worker row selected, date column selected, or specific worker/date cell selected
+        const allowedByWorker =
+          workerIdSet.size > 0 && workerIdSet.has(a.workerId);
+        const allowedByDate = dateSet.size > 0 && dateSet.has(dateStr);
+        const allowedByCell =
+          workerCellSet.size > 0 &&
+          workerCellSet.has(`${a.workerId}|${dateStr}`);
+        if (!allowedByWorker && !allowedByDate && !allowedByCell) {
+          throw new Error(
+            `Assignment (${a.workerId}, ${dateStr}, ${a.shiftId}) is not in scope`,
+          );
+        }
+      } else {
+        // previous behaviour: assignment key must be included in in-scope keys
+        if (!inScopeKeys.has(key)) {
+          throw new Error(
+            `Assignment (${a.workerId}, ${dateStr}, ${a.shiftId}) is not in scope`,
+          );
+        }
       }
+
       assignmentCounts[key] = (assignmentCounts[key] || 0) + 1;
     }
 

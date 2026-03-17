@@ -325,7 +325,7 @@ test.describe("Solver - Scoped Solve", () => {
     );
   });
 
-  test("CUSTOM shift view assigns only selected shift demand", async ({
+  test("CUSTOM shift view assigns only selected shift cell", async ({
     page,
   }, testInfo) => {
     test.setTimeout(TEST_TIMEOUT_MS);
@@ -404,6 +404,123 @@ test.describe("Solver - Scoped Solve", () => {
     const scope: SolveScope = {
       scope_type: "CUSTOM",
       worker_ids: [testWorkerId],
+      solve_view: "worker",
+    };
+
+    await solverTestBase.triggerCustomSolveInWorkerView(
+      page,
+      scope,
+      TEST_TIMEOUT_MS,
+    );
+
+    // API assertion: assignments exist for morning+afternoon+duty
+    const result = await solverTestBase.getAssignmentsForTeam(
+      fixture.campaignStart,
+      fixture.campaignEnd,
+    );
+    const assignments = result.assignmentsRead;
+
+    // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
+    const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
+      scope,
+      assignments,
+      fixture.shiftDemands,
+      fixture.schedule,
+      fixture.shifts,
+    );
+    expect(allFulfilled).toBe(true);
+
+    console.log(
+      "✅ Test 5: CUSTOM worker view — only selected workers have assignments",
+    );
+  });
+
+  test("CUSTOM worker view assigns only selected date", async ({
+    page,
+  }, testInfo) => {
+    test.setTimeout(TEST_TIMEOUT_MS);
+    const testRunId = (testInfo as any).testRunId as string;
+    const solverTestBase = testBasesMap.get(testRunId)!;
+    const fixture = solverTestBase.getCurrentFixture();
+    const teamId = solverTestBase.getTestTeam()!.teamId;
+
+    // Switch to worker view (preserves campaign month periodStartDate from beforeEach)
+    await solverTestBase.setScheduleViewSettings(page, teamId, {
+      groupBy: "worker",
+    });
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    // Activate CUSTOM scope
+    await solverTestBase.selectSolveScope(page, "CUSTOM");
+
+    // Build weekday dates for the first week of the campaign month
+    const firstMonday = fixture.firstMonday;
+
+    const scope: SolveScope = {
+      scope_type: "CUSTOM",
+      dates: [firstMonday.format("YYYY-MM-DD")], // only Monday in scope
+      solve_view: "worker",
+    };
+
+    await solverTestBase.triggerCustomSolveInWorkerView(
+      page,
+      scope,
+      TEST_TIMEOUT_MS,
+    );
+
+    // API assertion: assignments exist for morning+afternoon+duty
+    const result = await solverTestBase.getAssignmentsForTeam(
+      fixture.campaignStart,
+      fixture.campaignEnd,
+    );
+    const assignments = result.assignmentsRead;
+
+    // Verify all in-scope (FULL) shift demands are fulfilled by the assignments
+    const allFulfilled = solverTestBase.areAssignmentsFulfillingScope(
+      scope,
+      assignments,
+      fixture.shiftDemands,
+      fixture.schedule,
+      fixture.shifts,
+    );
+    expect(allFulfilled).toBe(true);
+
+    console.log(
+      "✅ Test 5: CUSTOM worker view — only selected workers have assignments",
+    );
+  });
+  test("CUSTOM worker view assigns only selected worker cell", async ({
+    page,
+  }, testInfo) => {
+    test.setTimeout(TEST_TIMEOUT_MS);
+    const testRunId = (testInfo as any).testRunId as string;
+    const solverTestBase = testBasesMap.get(testRunId)!;
+    const fixture = solverTestBase.getCurrentFixture();
+    const teamId = solverTestBase.getTestTeam()!.teamId;
+
+    // Switch to worker view (preserves campaign month periodStartDate from beforeEach)
+    await solverTestBase.setScheduleViewSettings(page, teamId, {
+      groupBy: "worker",
+    });
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+
+    // Activate CUSTOM scope
+    await solverTestBase.selectSolveScope(page, "CUSTOM");
+
+    const testWorkerId = fixture.workers[0].id;
+    // Build weekday dates for the first week of the campaign month
+    const firstMonday = fixture.firstMonday;
+
+    const scope: SolveScope = {
+      scope_type: "CUSTOM",
+      worker_cells: [
+        {
+          worker_id: testWorkerId,
+          date: firstMonday.format("YYYY-MM-DD"),
+        },
+      ],
       solve_view: "worker",
     };
 
