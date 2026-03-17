@@ -260,7 +260,6 @@ export default function CampaignInfo({
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
-          width: "470px",
         }}
       >
         <div
@@ -278,8 +277,8 @@ export default function CampaignInfo({
             style={{
               width: "100%",
               color: "#616161",
-              textTransform: "uppercase",
-              fontSize: "0.8rem",
+              // textTransform: "uppercase",
+              fontSize: "0.7rem",
             }}
           >
             {`${t("campaign")}:`}
@@ -289,7 +288,7 @@ export default function CampaignInfo({
             style={{
               width: "100%",
               color: "#616161",
-              textTransform: "uppercase",
+              // textTransform: "uppercase",
               fontSize: "0.8rem",
               fontWeight: 550,
             }}
@@ -355,12 +354,16 @@ export default function CampaignInfo({
                       }}
                       sx={{
                         textTransform: "none",
+                        paddingTop: "2px",
+                        paddingBottom: "2px",
                         paddingLeft: 1.5,
                         paddingRight: 1.5,
                         width: isActiveSolve ? "120px" : undefined,
                         display: "flex",
+                        justifyContent: "flex-start",
                         alignItems: "center",
                         gap: "4px",
+                        whiteSpace: "normal",
                       }}
                     >
                       {isActiveSolve ? (
@@ -368,7 +371,16 @@ export default function CampaignInfo({
                       ) : (
                         <>
                           <Sparkle size={25} />
-                          {t(SCOPE_LABEL_MAP[selectedSolveScope])}
+                          <span
+                            style={{
+                              whiteSpace: "normal",
+                              textAlign: "left",
+                              lineHeight: 1.15,
+                              display: "inline-block",
+                            }}
+                          >
+                            {t(SCOPE_LABEL_MAP[selectedSolveScope])}
+                          </span>
                         </>
                       )}
                     </Button>
@@ -399,31 +411,39 @@ export default function CampaignInfo({
                   data-testid="solve-scope-menu-item-FULL"
                   onClick={() => handleMenuItemClick("FULL")}
                 >
-                  <ListItemText>{t("generate_menu_option_all")}</ListItemText>
+                  <Tooltip title={t("generate_menu_option_all_tooltip")}>
+                    <ListItemText>{t("generate_menu_option_all")}</ListItemText>
+                  </Tooltip>
                 </MenuItem>
                 <MenuItem
                   data-testid="solve-scope-menu-item-DUTIES"
                   onClick={() => handleMenuItemClick("DUTIES")}
                 >
-                  <ListItemText>
-                    {t("generate_menu_option_duties")}
-                  </ListItemText>
+                  <Tooltip title={t("generate_menu_option_duties_tooltip")}>
+                    <ListItemText>
+                      {t("generate_menu_option_duties")}
+                    </ListItemText>
+                  </Tooltip>
                 </MenuItem>
                 <MenuItem
                   data-testid="solve-scope-menu-item-NON_DUTIES"
                   onClick={() => handleMenuItemClick("NON_DUTIES")}
                 >
-                  <ListItemText>
-                    {t("generate_menu_option_non_duties")}
-                  </ListItemText>
+                  <Tooltip title={t("generate_menu_option_non_duties_tooltip")}>
+                    <ListItemText>
+                      {t("generate_menu_option_non_duties")}
+                    </ListItemText>
+                  </Tooltip>
                 </MenuItem>
                 <MenuItem
                   data-testid="solve-scope-menu-item-CUSTOM"
                   onClick={() => handleMenuItemClick("CUSTOM")}
                 >
-                  <ListItemText>
-                    {t("generate_menu_option_selection")}
-                  </ListItemText>
+                  <Tooltip title={t("generate_menu_option_selection_tooltip")}>
+                    <ListItemText>
+                      {t("generate_menu_option_selection")}
+                    </ListItemText>
+                  </Tooltip>
                 </MenuItem>
               </Menu>
 
