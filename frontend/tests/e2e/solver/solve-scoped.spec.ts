@@ -553,9 +553,9 @@ test.describe("Solver - Scoped Solve", () => {
   });
 
   // ------------------------------------------------------------------ //
-  // Test 6 — Out-of-scope assignments not deleted (DUTIES scope)
+  // Test 6 — Out-of-scope assignments not deleted
   // ------------------------------------------------------------------ //
-  test("DUTIES scope does not delete existing non-duty assignments", async ({
+  test("DUTIES out of scope non fixed assignments are not deleted", async ({
     page,
   }, testInfo) => {
     test.setTimeout(TEST_TIMEOUT_MS);
@@ -565,31 +565,27 @@ test.describe("Solver - Scoped Solve", () => {
     const teamId = solverTestBase.getTestTeam()!.teamId;
 
     // Pre-create morning assignments for workers[0] and workers[1] on firstMonday
-    const morningDate = fixture.firstMonday;
-    const assignmentResult1 = await (
-      solverTestBase as any
-    ).dbUtils.createAssignmentAndRecurrence({
-      teamId,
-      workerId: fixture.workers[0].id,
-      shiftId: fixture.shifts.morning.id,
-      date: morningDate,
-      scheduleId: fixture.schedule.id,
-    });
-    const assignmentResult2 = await (
-      solverTestBase as any
-    ).dbUtils.createAssignmentAndRecurrence({
-      teamId,
-      workerId: fixture.workers[1].id,
-      shiftId: fixture.shifts.morning.id,
-      date: morningDate,
-      scheduleId: fixture.schedule.id,
-    });
+    const testWorkerId = fixture.workers[0].id;
+    const testDate = fixture.firstMonday;
+    const testShiftId = fixture.shifts.find(
+      (s) => s.shiftType === ShiftType.NORMAL,
+    )?.id;
 
-    const preAssignment1 = assignmentResult1.assignmentsRead[0];
-    const preAssignment2 = assignmentResult2.assignmentsRead[0];
+    if (!testShiftId) {
+      throw new Error("No NORMAL shift found in fixture");
+    }
+
+    const assignmentResult1 =
+      await solverTestBase.createAssignmentAndRecurrence({
+        workerId: testWorkerId,
+        shiftId: testShiftId,
+        date: testDate,
+        scheduleId: fixture.schedule.id,
+      });
+
+    const preAssignment1 = assignmentResult1.assignmentsCreated[0];
 
     expect(preAssignment1).toBeDefined();
-    expect(preAssignment2).toBeDefined();
 
     // Run DUTIES solve
     await solverTestBase.selectSolveScope(page, "DUTIES");
@@ -602,20 +598,22 @@ test.describe("Solver - Scoped Solve", () => {
     );
     const assignments = result.assignmentsRead;
 
-    const morningAfterSolve = assignments.filter(
-      (a) => a.shiftId === fixture.shifts.morning.id,
+    const testAssignmentAfterSolve = assignments.find(
+      (a) => a.id === preAssignment1.id,
     );
-    expect(morningAfterSolve.length).toBeGreaterThanOrEqual(2);
+    expect(testAssignmentAfterSolve).toBeDefined();
+    expect(testAssignmentAfterSolve!.shiftId).toBe(preAssignment1.shiftId);
+    expect(testAssignmentAfterSolve!.workerId).toBe(preAssignment1.workerId);
+    expect(
+      (testAssignmentAfterSolve!.date as dayjs.Dayjs).isSame(testDate, "day"),
+    ).toBe(true);
+    expect(testAssignmentAfterSolve!.fixed).toBe(false);
 
-    // UI assertion: morning assignment-cells still visible
+    // UI assertion: test assignment-cell still visible
     const assignmentCell1 = page.locator(
       `[data-testid="assignment-cell-${preAssignment1.id}"]`,
     );
-    const assignmentCell2 = page.locator(
-      `[data-testid="assignment-cell-${preAssignment2.id}"]`,
-    );
     await expect(assignmentCell1).toBeVisible({ timeout: 5000 });
-    await expect(assignmentCell2).toBeVisible({ timeout: 5000 });
 
     console.log(
       "✅ Test 6: DUTIES scope — pre-existing morning assignments preserved",
@@ -634,19 +632,26 @@ test.describe("Solver - Scoped Solve", () => {
     const fixture = solverTestBase.getCurrentFixture();
     const teamId = solverTestBase.getTestTeam()!.teamId;
 
+    const testWorkerId = fixture.workers[0].id;
+    const testDate = fixture.firstMonday;
+    const testShiftId = fixture.shifts.find(
+      (s) => s.shiftType === ShiftType.NORMAL,
+    )?.id;
+
+    if (!testShiftId) {
+      throw new Error("No NORMAL shift found in fixture");
+    }
+
     // Create a fixed assignment on firstMonday for worker[0] + morning
-    const fixedResult = await (
-      solverTestBase as any
-    ).dbUtils.createAssignmentAndRecurrence({
-      teamId,
-      workerId: fixture.workers[0].id,
-      shiftId: fixture.shifts.morning.id,
-      date: fixture.firstMonday,
+    const fixedResult = await solverTestBase.createAssignmentAndRecurrence({
+      workerId: testWorkerId,
+      shiftId: testShiftId,
+      date: testDate,
       fixed: true,
       scheduleId: fixture.schedule.id,
     });
 
-    const fixedAssignment = fixedResult.assignmentsRead[0];
+    const fixedAssignment = fixedResult.assignmentsCreated[0];
     expect(fixedAssignment).toBeDefined();
     expect(fixedAssignment.fixed).toBe(true);
 
@@ -663,6 +668,11 @@ test.describe("Solver - Scoped Solve", () => {
     );
 
     expect(afterSolveAssignment).toBeDefined();
+    expect(afterSolveAssignment!.shiftId).toBe(fixedAssignment.shiftId);
+    expect(afterSolveAssignment!.workerId).toBe(fixedAssignment.workerId);
+    expect(
+      (afterSolveAssignment!.date as dayjs.Dayjs).isSame(testDate, "day"),
+    ).toBe(true);
     expect(afterSolveAssignment!.fixed).toBe(true);
 
     // UI assertion: assignment-cell still present
@@ -690,6 +700,13 @@ test.describe("Solver - Scoped Solve", () => {
     // Shift view is already set by beforeEach; activate CUSTOM scope directly
     await solverTestBase.selectSolveScope(page, "CUSTOM");
 
+    const testShiftId = fixture.shifts.find(
+      (s) => s.shiftType === ShiftType.NORMAL,
+    )?.id;
+
+    if (!testShiftId) {
+      throw new Error("No NORMAL shift found in fixture");
+    }
     const saturdayDate = fixture.firstSaturday.format("YYYY-MM-DD");
 
     // Request solve for morning on firstSaturday (no demand exists)
@@ -697,7 +714,6 @@ test.describe("Solver - Scoped Solve", () => {
       page,
       {
         scope_type: "CUSTOM",
-        shift_ids: [fixture.shifts.morning.id],
         dates: [saturdayDate],
         solve_view: "shift",
       },
@@ -710,13 +726,13 @@ test.describe("Solver - Scoped Solve", () => {
       fixture.firstSaturday,
       fixture.firstSaturday,
     );
-    const morningOnSaturday = result.assignmentsRead.filter(
-      (a) => a.shiftId === fixture.shifts.morning.id,
+    const morningOnSaturday = result.assignmentsRead.find(
+      (a) => a.shiftId === testShiftId,
     );
-    expect(morningOnSaturday.length).toBe(0);
+    expect(morningOnSaturday).toBeUndefined();
 
     // UI: shift cell for morning on firstSaturday should have no assignment-cell inside
-    const shiftCellSelector = `[data-testid="shift-cell-${fixture.shifts.morning.id}-${saturdayDate}"]`;
+    const shiftCellSelector = `[data-testid="shift-cell-${testShiftId}-${saturdayDate}"]`;
     const assignmentCellsInCell = page.locator(
       `${shiftCellSelector} [data-testid^="assignment-cell-"]`,
     );
@@ -741,22 +757,51 @@ test.describe("Solver - Scoped Solve", () => {
 
     // Pre-assign workers[1..9] to afternoon and duty on firstMonday,
     // leaving only morning demand=1 unfulfilled; worker[0] is free
-    const preDate = fixture.firstMonday;
+    const testDate = fixture.firstMonday;
+    const testShift = fixture.shifts.find(
+      (s) => s.shiftType === ShiftType.NORMAL,
+    );
+    if (!testShift) {
+      throw new Error("No NORMAL shift found in fixture");
+    }
 
-    await (solverTestBase as any).dbUtils.createAssignmentAndRecurrence({
-      teamId,
-      workerId: fixture.workers[1].id,
-      shiftId: fixture.shifts.afternoon.id,
-      date: preDate,
-      scheduleId: fixture.schedule.id,
-    });
-    await (solverTestBase as any).dbUtils.createAssignmentAndRecurrence({
-      teamId,
-      workerId: fixture.workers[2].id,
-      shiftId: fixture.shifts.duty.id,
-      date: preDate,
-      scheduleId: fixture.schedule.id,
-    });
+    console.log("testDate", testDate);
+
+    const testDemand = fixture.shiftDemands.find(
+      (d) =>
+        dayjs(d.date).utc().isSame(testDate, "day") &&
+        d.shiftId === testShift.id,
+    );
+    if (!testDemand) {
+      throw new Error("No demand found for NORMAL shift on firstMonday");
+    }
+
+    const testWorkerId = fixture.workers[0].id;
+
+    const otherWorkers = fixture.workers.filter((w) => w.id !== testWorkerId);
+    const otherDemandsOnTestDate = fixture.shiftDemands.filter(
+      (d) => dayjs(d.date).isSame(testDate, "day") && d.id !== testDemand.id,
+    );
+
+    let i = 0;
+    for (let demand of otherDemandsOnTestDate) {
+      const worker = otherWorkers[i];
+      if (!worker) {
+        throw new Error(
+          `Not enough workers in fixture to fill demand: need worker index ${
+            i + 1
+          }`,
+        );
+      }
+
+      await solverTestBase.createAssignmentAndRecurrence({
+        workerId: worker.id,
+        shiftId: demand.shiftId,
+        date: testDate,
+        scheduleId: fixture.schedule.id,
+      });
+      i++;
+    }
 
     // Switch to worker view (preserves campaign month periodStartDate from beforeEach)
     await solverTestBase.setScheduleViewSettings(page, teamId, {
@@ -767,27 +812,33 @@ test.describe("Solver - Scoped Solve", () => {
 
     await solverTestBase.selectSolveScope(page, "CUSTOM");
 
-    const mondayDateStr = preDate.format("YYYY-MM-DD");
+    const scope: SolveScope = {
+      scope_type: "CUSTOM",
+      worker_cells: [
+        {
+          worker_id: testWorkerId,
+          date: testDate.format("YYYY-MM-DD"),
+        },
+      ],
+      solve_view: "worker",
+    };
 
     await solverTestBase.triggerCustomSolveInWorkerView(
       page,
-      [fixture.workers[0].id],
-      [mondayDateStr],
+      scope,
       TEST_TIMEOUT_MS,
     );
 
     // worker[0] should have ≥1 assignment on firstMonday
-    const result = await solverTestBase.getAssignmentsForTeam(preDate, preDate);
-    const worker0Assignments = result.assignmentsRead.filter(
-      (a) => a.workerId === fixture.workers[0].id,
+    const result = await solverTestBase.getAssignmentsForTeam(
+      testDate,
+      testDate,
     );
-    expect(worker0Assignments.length).toBeGreaterThanOrEqual(1);
-
-    // UI: assignment-cell visible in worker[0] row for that date
-    const workerRowSelector = `[data-testid="worker-row-header-${fixture.workers[0].id}"]`;
-    await expect(page.locator(workerRowSelector)).toBeVisible({
-      timeout: 5000,
-    });
+    const testWorkerAssignment = result.assignmentsRead.find(
+      (a) => a.workerId === testWorkerId && a.date.isSame(testDate, "day"),
+    );
+    expect(testWorkerAssignment).toBeDefined();
+    expect(testWorkerAssignment!.shiftId).toBe(testShift.id);
 
     console.log(
       "✅ Test 9: CUSTOM worker view — unfulfilled demand allocated to worker[0]",

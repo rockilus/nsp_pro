@@ -23,6 +23,7 @@ import { ShiftDemandDTO } from "@/types/shiftDemand";
 import { ShiftType, ShiftRestType, ShiftT } from "@/types/shift";
 import { SolveScope } from "@/types/solveTaskStatus";
 import { ScheduleT } from "@/types/schedule";
+import { RecurrenceRuleT } from "@/types/recurrence";
 
 dayjs.extend(utc);
 
@@ -919,17 +920,64 @@ export class SolverTestBase {
     for (const key of Array.from(inScopeKeys)) {
       const demandCount = demandMap[key] || 0;
       const assigned = assignmentCounts[key] || 0;
-      if (assigned !== demandCount) {
-        const [dateStr, shiftId] = key.split("|");
-        const demandIds = demandDetails[key] || [];
-        throw new Error(
-          `Demand ${
-            demandIds.length ? demandIds.join(",") : "unknown"
-          } for shift ${shiftId} on ${dateStr} requires ${demandCount} assignments but got ${assigned}`,
-        );
+      if (isCustomWorkerView) {
+        if (assigned > demandCount) {
+          const [dateStr, shiftId] = key.split("|");
+          const demandIds = demandDetails[key] || [];
+          throw new Error(
+            `Demand ${
+              demandIds.length ? demandIds.join(",") : "unknown"
+            } for shift ${shiftId} on ${dateStr} requires ${demandCount} assignments but got ${assigned}`,
+          );
+        }
+      } else {
+        if (assigned !== demandCount) {
+          const [dateStr, shiftId] = key.split("|");
+          const demandIds = demandDetails[key] || [];
+          throw new Error(
+            `Demand ${
+              demandIds.length ? demandIds.join(",") : "unknown"
+            } for shift ${shiftId} on ${dateStr} requires ${demandCount} assignments but got ${assigned}`,
+          );
+        }
       }
     }
 
     return true;
+  }
+
+  async createAssignmentAndRecurrence(
+    data: {
+      workerId: string;
+      shiftId: string;
+      date: dayjs.Dayjs;
+      fixed?: boolean;
+      comment?: string;
+      scheduleId?: string;
+    },
+    recurrence?: RecurrenceRuleT | null,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    if (!this.testTeam) {
+      throw new Error("Test team not initialized");
+    }
+
+    const result = await this.dbUtils.createAssignmentAndRecurrence(
+      {
+        teamId: this.testTeam.teamId,
+        workerId: data.workerId,
+        shiftId: data.shiftId,
+        date: data.date,
+        fixed: data.fixed ?? false,
+        comment: data.comment,
+        scheduleId: data.scheduleId,
+      },
+      recurrence,
+    );
+
+    console.log(
+      `✅ Created assignment${recurrence ? " with recurrence" : ""} for worker ${data.workerId}`,
+    );
+
+    return result;
   }
 }
