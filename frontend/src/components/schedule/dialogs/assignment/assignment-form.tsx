@@ -55,6 +55,7 @@ interface AssignmentFormProps {
     assignment: AssignmentT,
     recurrence: RecurrenceRuleT | null,
     updateScope: RecurrenceUpdateScope | null,
+    options?: { keepOpen?: boolean },
   ) => void;
   onDelete: (
     assignmentId: string,
@@ -160,7 +161,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   // Keep localFixed in sync when the assignment prop changes
   useEffect(() => {
     setLocalFixed(assignment ? assignment.fixed : null);
-  }, [assignment?.id, assignment?.fixed]);
+  }, [assignment]);
 
   // Reset replacement state when assignment changes
   useEffect(() => {
@@ -339,7 +340,9 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
       // pass an options object to indicate the dialog should remain open
       // callers may ignore the extra param; schedule-item-dialog handles it
       // and will not close when { keepOpen: true } is provided.
-      await Promise.resolve(onSave(updatedAssignment, recurrenceState, null));
+      await Promise.resolve(
+        onSave(updatedAssignment, recurrenceState, null, { keepOpen: true }),
+      );
     } catch (error) {
       console.error("Failed to toggle fixed:", error);
       alert("Failed to update assignment. Please try again.");
