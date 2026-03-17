@@ -305,6 +305,14 @@ class Model:
                 constraint=inputs.system_constraints.max_week_day_nb_duties,
                 obj_category=ObjectiveCategory.MAX_WEEK_DAY_NB_DUTIES,
             )
+            self.add_total_variation_duty_constraints(
+                constraint=inputs.system_constraints.duty_total_variation,
+                # obj_category=ObjectiveCategory.DUTY_TOTAL_VARIATION,
+            )
+            self.add_consecutive_duty_gap_constraints(
+                constraint=inputs.system_constraints.duty_consecutive_gap,
+                # obj_category=ObjectiveCategory.DUTY_CONSECUTIVE_GAP,
+            )
         except Exception:
             # be defensive: if structure is missing or empty, skip
             pass
@@ -783,6 +791,98 @@ class Model:
             self.model.AddMaxEquality(max_excess, excesses)
             self.obj.int_vars.append(max_excess)
             self.obj.int_coeffs.append(constraint.penalty)
+
+    def add_total_variation_duty_constraints(
+        self,
+        constraint: Tuple[List[List[List[Tuple[str, str, str]]]], int],
+    ) -> None:
+        """Add total-variation penalties across consecutive weeks per worker.
+
+        Input: (workers_weeks_vars, penalty) where workers_weeks_vars is a list
+        per worker; each worker entry is a list per week; each week entry is a
+        list of assignment tuples. For each consecutive week pair (t, t+1) the
+        absolute difference |sum_t+1 - sum_t| is penalised.
+        """
+        if not constraint:
+            return
+        workers_weeks_vars, penalty = constraint
+        if not workers_weeks_vars or penalty == 0:
+            return
+
+        for worker_weeks in workers_weeks_vars:
+            # Build one sum_var per week (0 for empty weeks)
+            week_sum_vars: List[cp_model.IntVar] = []
+            for week_assignments in worker_weeks:
+                if not week_assignments:
+                    zero_var = self.model.NewIntVar(0, 0, "")
+                    week_sum_vars.append(zero_var)
+                    continue
+                wvars = [
+                    self.variables[a] for a in week_assignments if a in self.variables
+                ]
+                if not wvars:
+                    zero_var = self.model.NewIntVar(0, 0, "")
+                    week_sum_vars.append(zero_var)
+                    continue
+                sum_var = self.model.NewIntVar(0, len(wvars), "")
+                self.model.Add(sum_var == sum(wvars))
+                week_sum_vars.append(sum_var)
+
+            # Penalise |sum_t+1 - sum_t| for each consecutive pair
+            max_n = max(
+                (
+                    len([a for a in wk if a in self.variables])
+                    for wk in worker_weeks
+                    if wk
+                ),
+                default=1,
+            )
+            for i in range(len(week_sum_vars) - 1):
+                delta = self.model.NewIntVar(-max_n, max_n, "")
+                abs_delta = self.model.NewIntVar(0, max_n, "")
+                self.model.Add(delta == week_sum_vars[i + 1] - week_sum_vars[i])
+                self.model.AddAbsEquality(abs_delta, delta)
+                self.obj.int_vars.append(abs_delta)
+                self.obj.int_coeffs.append(penalty)
+
+    def add_consecutive_duty_gap_constraints(
+        self,
+        constraint: Tuple[
+            List[Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]],
+            int,
+        ],
+    ) -> None:
+        """Add penalties for duties assigned on consecutive days (or within gap).
+
+        Input: (pairs, penalty) where pairs is a list of (vars_d, vars_next).
+        For each pair we penalise the case where both days contain a duty.
+        """
+        if not constraint:
+            return
+        pairs, penalty = constraint
+        if not pairs or penalty == 0:
+            return
+
+        for vars_d, vars_next in pairs:
+            model_vars_d = [self.variables[a] for a in vars_d if a in self.variables]
+            model_vars_next = [
+                self.variables[a] for a in vars_next if a in self.variables
+            ]
+            if not model_vars_d or not model_vars_next:
+                continue
+
+            has_duty_d = self.model.NewBoolVar("")
+            self.model.AddMaxEquality(has_duty_d, model_vars_d)
+
+            has_duty_next = self.model.NewBoolVar("")
+            self.model.AddMaxEquality(has_duty_next, model_vars_next)
+
+            # excess is 1 iff both days have a duty
+            excess = self.model.NewBoolVar("")
+            self.model.Add(has_duty_d + has_duty_next >= 2).OnlyEnforceIf(excess)
+            self.model.Add(has_duty_d + has_duty_next < 2).OnlyEnforceIf(excess.Not())
+            self.obj.bool_vars.append(excess)
+            self.obj.bool_coeffs.append(penalty)
 
     def add_worker_shift_filter_constraints(
         self,

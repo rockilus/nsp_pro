@@ -1,6 +1,6 @@
 import calendar
 import math
-from datetime import date
+from datetime import date, timedelta
 from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
@@ -287,3 +287,90 @@ def build_max_week_day_nb_duties_vars(
         if day_entries:
             weekday_entries_all.append(day_entries)
     return weekday_entries_all
+
+
+def build_total_variation_duty_vars(
+    worker_not_deleted: List[Worker],
+    shift_duties_not_deleted: List[Shift],
+    periods_weekly: List[List[date]],
+    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
+) -> List[List[List[Tuple[str, str, str]]]]:
+    """Builds per-worker weekly duty assignment lists for total variation penalty.
+
+    Returns a list per worker. Each worker entry is a list per week (preserving
+    week indexing for consecutive-week diff computation). Each week entry is a
+    list of assignment tuples (worker_id, date_iso, shift_id). Workers with
+    fewer than 2 non-empty weeks are omitted because TV requires at least two
+    data points. Empty week lists are kept to preserve week ordering within a
+    worker's entry.
+    """
+    workers_out: List[List[List[Tuple[str, str, str]]]] = []
+    for w in worker_not_deleted:
+        worker_weeks: List[List[Tuple[str, str, str]]] = []
+        for week in periods_weekly:
+            week_assignments: List[Tuple[str, str, str]] = []
+            if not week:
+                worker_weeks.append(week_assignments)
+                continue
+            for d in week:
+                for s in shift_duties_not_deleted:
+                    key = (w.id, s.id)
+                    if key not in ws_to_dates:
+                        continue
+                    wdates = (
+                        ws_to_dates[key].dates_hist + ws_to_dates[key].dates_campaign
+                    )
+                    if d in wdates:
+                        week_assignments.append((w.id, d.isoformat(), s.id))
+            worker_weeks.append(week_assignments)
+        # Only include workers that have at least 2 non-empty weeks
+        non_empty_weeks = sum(1 for wk in worker_weeks if wk)
+        if non_empty_weeks >= 2:
+            workers_out.append(worker_weeks)
+    return workers_out
+
+
+def build_consecutive_duty_gap_vars(
+    worker_not_deleted: List[Worker],
+    shift_duties_not_deleted: List[Shift],
+    dates_campaign: List[date],
+    dates_hist: List[date],
+    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
+    min_gap_days: int = 1,
+) -> List[Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]]:
+    """Builds (day_d_vars, day_d+k_vars) pairs for consecutive duty gap penalty.
+
+    For each worker, for each date d in (dates_hist + dates_campaign) and for
+    each k in 1..min_gap_days, if d+k is a campaign date we collect duty vars
+    on d and on d+k. The pair is included only when both sides are non-empty.
+    Historical dates are naturally handled: if d is historical, the duty var is
+    fixed by the solver, which pushes campaign assignments away from h+k dates
+    that follow a historical duty.
+    """
+
+    campaign_date_set = set(dates_campaign)
+    all_dates = dates_hist + dates_campaign
+    pairs: List[Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]] = []
+
+    for w in worker_not_deleted:
+        for d in all_dates:
+            for k in range(1, min_gap_days + 1):
+                d_next = d + timedelta(days=k)
+                if d_next not in campaign_date_set:
+                    continue
+                vars_d: List[Tuple[str, str, str]] = []
+                vars_next: List[Tuple[str, str, str]] = []
+                for s in shift_duties_not_deleted:
+                    key = (w.id, s.id)
+                    if key not in ws_to_dates:
+                        continue
+                    wdates = (
+                        ws_to_dates[key].dates_hist + ws_to_dates[key].dates_campaign
+                    )
+                    if d in wdates:
+                        vars_d.append((w.id, d.isoformat(), s.id))
+                    if d_next in wdates:
+                        vars_next.append((w.id, d_next.isoformat(), s.id))
+                if vars_d and vars_next:
+                    pairs.append((vars_d, vars_next))
+    return pairs
