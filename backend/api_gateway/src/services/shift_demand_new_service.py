@@ -47,11 +47,21 @@ class ShiftDemandNewService(BaseService):
         buffered_start = start_date - timedelta(days=buffer_days)
         buffered_end = end_date + timedelta(days=buffer_days)
 
-        return self.collection.shift_demand_new_db.get_shift_demands_by_date_range(
-            team_id=team_id,
-            start_date=buffered_start,
-            end_date=buffered_end,
+        shifts_not_deleted = self.collection.shift_db.get_shifts_not_deleted(team_id)
+
+        demands_not_filtered = (
+            self.collection.shift_demand_new_db.get_shift_demands_by_date_range(
+                team_id=team_id,
+                start_date=buffered_start,
+                end_date=buffered_end,
+            )
         )
+        # Filter demands to only include those for existing shifts
+        shift_ids = {shift.id for shift in shifts_not_deleted}
+        filtered_demands = [
+            demand for demand in demands_not_filtered if demand.shift_id in shift_ids
+        ]
+        return filtered_demands
 
     def get_shift_demands_matrix(
         self,
