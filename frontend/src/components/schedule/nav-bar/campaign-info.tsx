@@ -47,10 +47,10 @@ import { useSqsSolve } from "../../../app/lib/contexts/SqsSolveContext";
 import { useCampaignSolveStatus } from "../../../app/lib/hooks/useCampaignSolveStatus";
 
 const SCOPE_LABEL_MAP: Record<SolveScopeType, string> = {
-  FULL: "solve_full_campaign",
-  DUTIES: "solve_duties",
-  NON_DUTIES: "solve_non_duties",
-  CUSTOM: "solve_custom",
+  FULL: "generate_button_label_all",
+  DUTIES: "generate_button_label_duties",
+  NON_DUTIES: "generate_button_label_non_duties",
+  CUSTOM: "generate_button_label_selection",
 };
 
 export default function CampaignInfo({
@@ -399,25 +399,31 @@ export default function CampaignInfo({
                   data-testid="solve-scope-menu-item-FULL"
                   onClick={() => handleMenuItemClick("FULL")}
                 >
-                  <ListItemText>{t("solve_full_campaign")}</ListItemText>
+                  <ListItemText>{t("generate_menu_option_all")}</ListItemText>
                 </MenuItem>
                 <MenuItem
                   data-testid="solve-scope-menu-item-DUTIES"
                   onClick={() => handleMenuItemClick("DUTIES")}
                 >
-                  <ListItemText>{t("solve_duties")}</ListItemText>
+                  <ListItemText>
+                    {t("generate_menu_option_duties")}
+                  </ListItemText>
                 </MenuItem>
                 <MenuItem
                   data-testid="solve-scope-menu-item-NON_DUTIES"
                   onClick={() => handleMenuItemClick("NON_DUTIES")}
                 >
-                  <ListItemText>{t("solve_non_duties")}</ListItemText>
+                  <ListItemText>
+                    {t("generate_menu_option_non_duties")}
+                  </ListItemText>
                 </MenuItem>
                 <MenuItem
                   data-testid="solve-scope-menu-item-CUSTOM"
                   onClick={() => handleMenuItemClick("CUSTOM")}
                 >
-                  <ListItemText>{t("solve_custom")}</ListItemText>
+                  <ListItemText>
+                    {t("generate_menu_option_selection")}
+                  </ListItemText>
                 </MenuItem>
               </Menu>
 
