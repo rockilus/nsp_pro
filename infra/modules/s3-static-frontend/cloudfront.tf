@@ -108,11 +108,10 @@ resource "aws_cloudfront_distribution" "frontend" {
   # Price class
   price_class = var.cloudfront_price_class
 
-  # Geographic restrictions
+  # No geo-restriction — frontend is available globally
   restrictions {
     geo_restriction {
-      restriction_type = "whitelist"
-      locations        = ["FR"] # ISO 3166-1 alpha-2 country code for France
+      restriction_type = "none"
     }
   }
   # SSL/TLS certificate configuration
