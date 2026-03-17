@@ -575,7 +575,7 @@ export class SolverTestBase {
         const cShiftId = c.shift_id;
         const cDate = c.date;
         const match = shiftDemands.find((sd) => {
-          const sdDate = normDate(dayjs(sd.date));
+          const sdDate = normDate(dayjs.unix(sd.date).utc());
           return sd.shiftId === cShiftId && sdDate === cDate;
         });
         if (match && (match as any).id) {

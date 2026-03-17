@@ -765,13 +765,9 @@ test.describe("Solver - Scoped Solve", () => {
       throw new Error("No NORMAL shift found in fixture");
     }
 
-    console.log("testDate", testDate);
-    console.log("First demand date unix", fixture.shiftDemands[0].date);
-    console.log("First demand date", dayjs(fixture.shiftDemands[0].date));
-
     const testDemand = fixture.shiftDemands.find(
       (d) =>
-        dayjs(d.date).utc().isSame(testDate, "day") &&
+        dayjs.unix(d.date).utc().isSame(testDate, "day") &&
         d.shiftId === testShift.id,
     );
     if (!testDemand) {
@@ -782,7 +778,8 @@ test.describe("Solver - Scoped Solve", () => {
 
     const otherWorkers = fixture.workers.filter((w) => w.id !== testWorkerId);
     const otherDemandsOnTestDate = fixture.shiftDemands.filter(
-      (d) => dayjs(d.date).isSame(testDate, "day") && d.id !== testDemand.id,
+      (d) =>
+        dayjs.unix(d.date).isSame(testDate, "day") && d.id !== testDemand.id,
     );
 
     let i = 0;
@@ -859,29 +856,39 @@ test.describe("Solver - Scoped Solve", () => {
     const fixture = solverTestBase.getCurrentFixture();
     const teamId = solverTestBase.getTestTeam()!.teamId;
 
-    // Fill all demand=1 slots on firstMonday
-    const preDate = fixture.firstMonday;
-    await (solverTestBase as any).dbUtils.createAssignmentAndRecurrence({
-      teamId,
-      workerId: fixture.workers[1].id,
-      shiftId: fixture.shifts.morning.id,
-      date: preDate,
-      scheduleId: fixture.schedule.id,
-    });
-    await (solverTestBase as any).dbUtils.createAssignmentAndRecurrence({
-      teamId,
-      workerId: fixture.workers[2].id,
-      shiftId: fixture.shifts.afternoon.id,
-      date: preDate,
-      scheduleId: fixture.schedule.id,
-    });
-    await (solverTestBase as any).dbUtils.createAssignmentAndRecurrence({
-      teamId,
-      workerId: fixture.workers[3].id,
-      shiftId: fixture.shifts.duty.id,
-      date: preDate,
-      scheduleId: fixture.schedule.id,
-    });
+    // Pre-assign workers[1..9] to afternoon and duty on firstMonday,
+    // leaving only morning demand=1 unfulfilled; worker[0] is free
+    const testDate = fixture.firstMonday;
+
+    const testDemands = fixture.shiftDemands.filter((d) =>
+      dayjs.unix(d.date).utc().isSame(testDate, "day"),
+    );
+    if (!testDemands) {
+      throw new Error("No demands found on firstMonday");
+    }
+
+    const testWorkerId = fixture.workers[0].id;
+
+    const otherWorkers = fixture.workers.filter((w) => w.id !== testWorkerId);
+    let i = 0;
+    for (let demand of testDemands) {
+      const worker = otherWorkers[i];
+      if (!worker) {
+        throw new Error(
+          `Not enough workers in fixture to fill demand: need worker index ${
+            i + 1
+          }`,
+        );
+      }
+
+      await solverTestBase.createAssignmentAndRecurrence({
+        workerId: worker.id,
+        shiftId: demand.shiftId,
+        date: testDate,
+        scheduleId: fixture.schedule.id,
+      });
+      i++;
+    }
 
     // Switch to worker view (preserves campaign month periodStartDate from beforeEach)
     await solverTestBase.setScheduleViewSettings(page, teamId, {
@@ -892,21 +899,32 @@ test.describe("Solver - Scoped Solve", () => {
 
     await solverTestBase.selectSolveScope(page, "CUSTOM");
 
-    const mondayDateStr = preDate.format("YYYY-MM-DD");
+    const scope: SolveScope = {
+      scope_type: "CUSTOM",
+      worker_cells: [
+        {
+          worker_id: testWorkerId,
+          date: testDate.format("YYYY-MM-DD"),
+        },
+      ],
+      solve_view: "worker",
+    };
 
     await solverTestBase.triggerCustomSolveInWorkerView(
       page,
-      [fixture.workers[0].id],
-      [mondayDateStr],
+      scope,
       TEST_TIMEOUT_MS,
     );
 
-    // worker[0] should have 0 new assignments on firstMonday
-    const result = await solverTestBase.getAssignmentsForTeam(preDate, preDate);
-    const worker0Assignments = result.assignmentsRead.filter(
-      (a) => a.workerId === fixture.workers[0].id,
+    // worker[0] should have ≥1 assignment on firstMonday
+    const result = await solverTestBase.getAssignmentsForTeam(
+      testDate,
+      testDate,
     );
-    expect(worker0Assignments.length).toBe(0);
+    const testWorkerAssignment = result.assignmentsRead.find(
+      (a) => a.workerId === testWorkerId && a.date.isSame(testDate, "day"),
+    );
+    expect(testWorkerAssignment).toBeUndefined();
 
     console.log(
       "✅ Test 10: CUSTOM worker view — no allocation when all demands fulfilled",
