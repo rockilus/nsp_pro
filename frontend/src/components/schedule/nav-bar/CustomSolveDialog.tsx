@@ -147,12 +147,12 @@ export default function CustomSolveDialog({
     >
       <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Sparkle size={16} />
-        {t("solve_custom_dialog_title")}
+        {t("generate_selection_dialog_title")}
       </DialogTitle>
       <DialogContent dividers>
         {isEmpty ? (
           <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-            {t("solve_custom_summary_empty")}
+            {t("generate_selection_dialog_empty")}
           </Typography>
         ) : (
           <Box
@@ -197,7 +197,7 @@ export default function CustomSolveDialog({
                     {/* Full campaign badge or individual date chips */}
                     {isFull ? (
                       <Chip
-                        label={t("solve_custom_full_campaign")}
+                        label={t("generate_selection_dialog_full_campaign")}
                         size="small"
                         color="success"
                         variant="outlined"
@@ -232,7 +232,7 @@ export default function CustomSolveDialog({
           disabled={isEmpty}
           startIcon={<Sparkle size={14} />}
         >
-          {t("solve_custom_confirm")}
+          {t("generate_selection_dialog_confirm_button")}
         </Button>
       </DialogActions>
     </Dialog>
