@@ -40,7 +40,7 @@ function firstDayOfWeekInMonth(
   const startDow = monthStart.day(); // 0=Sun..6=Sat
   let offset = targetDay - startDow;
   if (offset < 0) offset += 7;
-  return monthStart.add(offset, "day");
+  return monthStart.add(offset, "day").utc();
 }
 
 /**

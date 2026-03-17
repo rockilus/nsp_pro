@@ -766,6 +766,8 @@ test.describe("Solver - Scoped Solve", () => {
     }
 
     console.log("testDate", testDate);
+    console.log("First demand date unix", fixture.shiftDemands[0].date);
+    console.log("First demand date", dayjs(fixture.shiftDemands[0].date));
 
     const testDemand = fixture.shiftDemands.find(
       (d) =>
