@@ -10,12 +10,12 @@ from shared.schemas.core import (
 # pylint: disable=R0801
 penalties = Penalties(
     user_constraint=UserConstraintPenalty(
-        eve=Penalty(hard=100, soft=10),
-        fai=Penalty(hard=100, soft=10),
-        fil=Penalty(hard=100, soft=10),
-        ord=Penalty(hard=100, soft=10),
-        seq=Penalty(hard=100, soft=10),
-        sum=Penalty(hard=100, soft=10),
+        eve=Penalty(hard=1000, soft=10),
+        fai=Penalty(hard=1000, soft=10),
+        fil=Penalty(hard=1000, soft=10),
+        ord=Penalty(hard=1000, soft=10),
+        seq=Penalty(hard=1000, soft=10),
+        sum=Penalty(hard=1000, soft=10),
         request=Penalty(hard=10000, soft=10),
     ),
     configuration_constraint=ConfigurationConstraintPenalty(
