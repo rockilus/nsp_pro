@@ -22,6 +22,7 @@
     "name_tooltip": "Member's name",
     "name_helper_text": "Please enter a name",
     "new_property": "New attribute",
+    "no_workers_found": "Create your first member to get started.",
     "permanent": "Permanent",
     "property": "Attribute",
     "property_type": "Attribute type",

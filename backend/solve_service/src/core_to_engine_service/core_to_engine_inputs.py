@@ -54,6 +54,7 @@ from core_to_engine_service.build_worker_shift_filter import (
     build_worker_shift_filters,
 )
 from core_to_engine_service.calculate_worker_nb_duties import (
+    build_consecutive_duty_gap_vars,
     build_max_week_day_nb_duties_vars,
     build_max_weekly_nb_duties_vars,
     build_nb_duties_constraints,
@@ -235,6 +236,19 @@ def core_to_engine_inputs(
             ws_to_dates,
         )
         if engine_inputs.model_config.system_constraints.max_week_day_nb_duties
+        else []
+    )
+
+    duty_consecutive_gap_vars = (
+        build_consecutive_duty_gap_vars(
+            workers_not_deleted,
+            shift_duties_not_deleted,
+            dates_campaign,
+            dates_hist,
+            ws_to_dates,
+            engine_inputs.model_config.system_constraints.duty_consecutive_gap_min_days,
+        )
+        if engine_inputs.model_config.system_constraints.duty_consecutive_gap
         else []
     )
 
@@ -453,6 +467,11 @@ def core_to_engine_inputs(
                 .special_days_target_nb_duties
                 # fmt: on
                 else []
+            ),
+            # duty_consecutive_gap: tuple (pairs of (day_d_vars, day_d+k_vars), penalty)
+            duty_consecutive_gap=(
+                duty_consecutive_gap_vars,
+                engine_inputs.penalties.system_constraint.duty_consecutive_gap,
             ),
         ),
         model_config=engine_inputs.model_config,

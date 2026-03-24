@@ -1393,24 +1393,43 @@ export default function ScheduleTab({
 
         // Fetch owner-only data (schedules, breaches, specialties) — not available to members
         if (teamWithMembership.membership.role !== TeamMembershipRole.MEMBER) {
-          const [fetchedSchedule, fetchedBreaches, fetchedSpecialties] =
-            await Promise.all([
+          const [schedulesResult, breachesResult, specialtiesResult] =
+            await Promise.allSettled([
               getSchedules(teamWithMembership.team.id),
               getBreaches(teamWithMembership.team.id),
               getSpecialties(teamWithMembership.team.id),
             ]);
-          setScheduleCampaign(
-            fetchedSchedule.find(
-              (s: ScheduleT) => s.status === ScheduleStatus.CAMPAIGN,
-            ) || null,
-          );
-          setSchedulesValidated(
-            fetchedSchedule.filter(
-              (s: ScheduleT) => s.status === ScheduleStatus.VALIDATED,
-            ),
-          );
-          setBreaches(fetchedBreaches);
-          setSpecialties(fetchedSpecialties);
+
+          if (schedulesResult.status === "fulfilled") {
+            const fetchedSchedule = schedulesResult.value;
+            setScheduleCampaign(
+              fetchedSchedule.find(
+                (s: ScheduleT) => s.status === ScheduleStatus.CAMPAIGN,
+              ) || null,
+            );
+            setSchedulesValidated(
+              fetchedSchedule.filter(
+                (s: ScheduleT) => s.status === ScheduleStatus.VALIDATED,
+              ),
+            );
+          } else {
+            console.error("Failed to fetch schedules:", schedulesResult.reason);
+          }
+
+          if (breachesResult.status === "fulfilled") {
+            setBreaches(breachesResult.value);
+          } else {
+            console.error("Failed to fetch breaches:", breachesResult.reason);
+          }
+
+          if (specialtiesResult.status === "fulfilled") {
+            setSpecialties(specialtiesResult.value);
+          } else {
+            console.error(
+              "Failed to fetch specialties:",
+              specialtiesResult.reason,
+            );
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);

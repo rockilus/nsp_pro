@@ -305,6 +305,10 @@ class Model:
                 constraint=inputs.system_constraints.max_week_day_nb_duties,
                 obj_category=ObjectiveCategory.MAX_WEEK_DAY_NB_DUTIES,
             )
+            self.add_consecutive_duty_gap_constraints(
+                constraint=inputs.system_constraints.duty_consecutive_gap,
+                # obj_category=ObjectiveCategory.DUTY_CONSECUTIVE_GAP,
+            )
         except Exception:
             # be defensive: if structure is missing or empty, skip
             pass
@@ -783,6 +787,45 @@ class Model:
             self.model.AddMaxEquality(max_excess, excesses)
             self.obj.int_vars.append(max_excess)
             self.obj.int_coeffs.append(constraint.penalty)
+
+    def add_consecutive_duty_gap_constraints(
+        self,
+        constraint: Tuple[
+            List[Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]],
+            int,
+        ],
+    ) -> None:
+        """Add penalties for duties assigned on consecutive days (or within gap).
+
+        Input: (pairs, penalty) where pairs is a list of (vars_d, vars_next).
+        For each pair we penalise the case where both days contain a duty.
+        """
+        if not constraint:
+            return
+        pairs, penalty = constraint
+        if not pairs or penalty == 0:
+            return
+
+        for vars_d, vars_next in pairs:
+            model_vars_d = [self.variables[a] for a in vars_d if a in self.variables]
+            model_vars_next = [
+                self.variables[a] for a in vars_next if a in self.variables
+            ]
+            if not model_vars_d or not model_vars_next:
+                continue
+
+            has_duty_d = self.model.NewBoolVar("")
+            self.model.AddMaxEquality(has_duty_d, model_vars_d)
+
+            has_duty_next = self.model.NewBoolVar("")
+            self.model.AddMaxEquality(has_duty_next, model_vars_next)
+
+            # excess is 1 iff both days have a duty
+            excess = self.model.NewBoolVar("")
+            self.model.Add(has_duty_d + has_duty_next >= 2).OnlyEnforceIf(excess)
+            self.model.Add(has_duty_d + has_duty_next < 2).OnlyEnforceIf(excess.Not())
+            self.obj.bool_vars.append(excess)
+            self.obj.bool_coeffs.append(penalty)
 
     def add_worker_shift_filter_constraints(
         self,

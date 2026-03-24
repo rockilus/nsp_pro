@@ -154,6 +154,12 @@ class SystemConstraintInputs:
         int,
     ]
     special_days_target_nb_duties: List[GroupsAssignmentsTargetConstraint]
+    duty_consecutive_gap: Tuple[
+        List[
+            Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]
+        ],  # (day_d_vars, day_d+k_vars) pairs
+        int,
+    ] = field(default_factory=lambda: ([], 0))
 
 
 @dataclass
@@ -205,6 +211,7 @@ class ObjectiveCategory(Enum):
     SPECIAL_DAYS_TARGET = 11
     MAX_WEEKLY_NB_DUTIES = 12
     MAX_WEEK_DAY_NB_DUTIES = 13
+    DUTY_CONSECUTIVE_GAP = 14
 
 
 # pylint: disable=R0801
