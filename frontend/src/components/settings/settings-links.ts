@@ -19,7 +19,7 @@ export interface SettingsLink {
 export function getSettingsLinks(
   lng: string,
   t: (key: string) => string,
-  tAppBar: (key: string) => string
+  tAppBar: (key: string) => string,
 ): SettingsLink[] {
   return [
     {
@@ -36,6 +36,11 @@ export function getSettingsLinks(
       name: "teams",
       label: tAppBar("teams"),
       href: `/${lng}/plan/settings/teams`,
+    },
+    {
+      name: "notifications",
+      label: t("notifications"),
+      href: `/${lng}/plan/settings/notifications`,
     },
   ];
 }

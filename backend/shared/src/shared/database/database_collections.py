@@ -16,6 +16,10 @@ from shared.database.repositories.model_output import ModelOutputRepository
 from shared.database.repositories.multitasking import (
     MultitaskingGroupRepository,
 )
+from shared.database.repositories.notification import NotificationRepository
+from shared.database.repositories.notification_preferences import (
+    NotificationPreferencesRepository,
+)
 from shared.database.repositories.recurrence import RecurrenceRepository
 from shared.database.repositories.recurrence_exclusion import (
     RecurrenceExclusionRepository,
@@ -82,6 +86,8 @@ class DatabaseCollections:
     team_membership_db: TeamMembershipRepository
     user_db: UserRepository
     worker_db: WorkerRepository
+    notification_db: NotificationRepository
+    notification_preferences_db: NotificationPreferencesRepository
 
     def __init__(self, database_interface: DatabaseInterface):
         """
@@ -98,7 +104,9 @@ class DatabaseCollections:
         self.attribute_db = AttributeRepository(database_interface)
         self.breach_db = BreachRepository(database_interface)
         self.config_db = ConfigRepository(database_interface)
-        self.constraint_build_db = ConstraintBuildRepository(database_interface)
+        self.constraint_build_db = ConstraintBuildRepository(
+            database_interface
+        )
         self.coverage_db = CoverageRepository(database_interface)
         self.dim_entry_db = DimEntryRepository(database_interface)
         self.dimension_db = DimensionRepository(database_interface)
@@ -106,7 +114,9 @@ class DatabaseCollections:
         self.model_output_db = ModelOutputRepository(database_interface)
         self.multitasking_db = MultitaskingGroupRepository(database_interface)
         self.recurrence_db = RecurrenceRepository(database_interface)
-        self.recurrence_exclusion_db = RecurrenceExclusionRepository(database_interface)
+        self.recurrence_exclusion_db = RecurrenceExclusionRepository(
+            database_interface
+        )
         self.request_db = RequestRepository(database_interface)
         self.schedule_db = ScheduleRepository(database_interface)
         self.shift_db = ShiftRepository(database_interface)
@@ -118,7 +128,9 @@ class DatabaseCollections:
         self.shift_demand_template_db = ShiftDemandTemplateRepository(
             database_interface
         )
-        self.solve_task_status_db = SolveTaskStatusRepository(database_interface)
+        self.solve_task_status_db = SolveTaskStatusRepository(
+            database_interface
+        )
         self.specialty_db = SpecialtyRepository(database_interface)
         self.stats_header_db = StatsHeaderRepository(database_interface)
         self.swap_db = SwapRepository(database_interface)
@@ -127,6 +139,10 @@ class DatabaseCollections:
         self.team_membership_db = TeamMembershipRepository(database_interface)
         self.user_db = UserRepository(database_interface)
         self.worker_db = WorkerRepository(database_interface)
+        self.notification_db = NotificationRepository(database_interface)
+        self.notification_preferences_db = NotificationPreferencesRepository(
+            database_interface
+        )
 
     async def health_check(self) -> bool:
         """Check the health of the database connection."""

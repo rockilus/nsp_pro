@@ -1,5 +1,5 @@
 import time as time_module
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
@@ -10,6 +10,7 @@ from shared.schemas.core import (
     RecurrenceUpdateScope,
     ShiftType,
 )
+from shared.schemas.core.notification import Notification, NotificationType
 from shared.schemas.dto import (
     AssignmentDTO,
     AssignmentsRecurrencesResultDTO,
@@ -25,9 +26,12 @@ from src.dependencies import (
     get_replacement_service,
     get_user_context,
 )
+from src.dependencies.notification_service import get_notification_service
 from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
 from src.security.user_context import UserContext
+from src.services.assignment_service import AssignmentService
+from src.services.notification_service import NotificationService
 from src.services.assignment_service import AssignmentService
 from src.services.replacement_service import ReplacementService
 
@@ -55,7 +59,9 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence:
             r_data = RecurrenceRule.from_dto(recurrence)
-        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
+        ar_result = assignment_service.create_assignment_and_recurrence(
+            a_data, r_data
+        )
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
@@ -79,7 +85,9 @@ async def get_assignments(
     try:
         # Validate date range
         if end_date < start_date:
-            raise ValueError("end_date must be greater than or equal to start_date")
+            raise ValueError(
+                "end_date must be greater than or equal to start_date"
+            )
 
         # Prevent abuse: reject ranges > 6 months
         max_range_days = 365
@@ -124,7 +132,9 @@ async def get_assignments(
             include_campaign,
             worker_id,
             shift_types=(
-                [ShiftType(v) for v in shift_type] if shift_type is not None else None
+                [ShiftType(v) for v in shift_type]
+                if shift_type is not None
+                else None
             ),
         )
         response = ar_result.to_dto()
@@ -216,6 +226,9 @@ async def update_assignment(
     ),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -230,12 +243,44 @@ async def update_assignment(
             if recurrence_update_scope
             else None
         )
-        recurrence_data = RecurrenceRule.from_dto(recurrence) if recurrence else None
+        recurrence_data = (
+            RecurrenceRule.from_dto(recurrence) if recurrence else None
+        )
         ar_result = assignment_service.update_assignment_and_recurrence(
             assignment_new=assignment_data,
             recurrence_update_scope=recurrence_update_scope_data,
             recurrence=recurrence_data,
         )
+        # Notify the affected worker
+        try:
+            for updated_assignment in ar_result.assignments_updated:
+                worker = (
+                    assignment_service.collection.worker_db.get_worker_by_id(
+                        updated_assignment.worker_id
+                    )
+                )
+                if not worker or not worker.user_id:
+                    continue
+                shift = assignment_service.collection.shift_db.get_shift_by_id(
+                    updated_assignment.shift_id
+                )
+                shift_name = shift.name if shift else ""
+                now = datetime.now(timezone.utc)
+                notification_service.create_notification(
+                    user_id=worker.user_id,
+                    team_id=team_id,
+                    notification_type=NotificationType.ASSIGNMENT_CHANGED,
+                    event_data={
+                        "assignment_id": updated_assignment.id,
+                        "shift_name": shift_name,
+                        "date": str(updated_assignment.date),
+                        "changed_by": user_context.user_id,
+                    },
+                )
+        except Exception as notify_err:  # pylint: disable=broad-except
+            log_info(
+                f"Failed to send assignment-changed notifications: {notify_err}"
+            )
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to update assignment")
@@ -278,7 +323,9 @@ async def delete_assignment(
     return response
 
 
-@router.get("/assignments/{assignment_id}/replacement-candidates/teams/{team_id}")
+@router.get(
+    "/assignments/{assignment_id}/replacement-candidates/teams/{team_id}"
+)
 async def get_replacement_candidates(
     assignment_id: str,
     team_id: str,
@@ -298,6 +345,8 @@ async def get_replacement_candidates(
         )
         response = [candidate.to_dto() for candidate in candidates]
     except Exception as e:
-        log_info(f"Failed to get replacement candidates for assignment {assignment_id}")
+        log_info(
+            f"Failed to get replacement candidates for assignment {assignment_id}"
+        )
         handle_routes_errors(e)
     return response

@@ -24,6 +24,8 @@ from src.routes import (
     router_health,
     router_link_shift,
     router_multitasking,
+    router_notification,
+    router_notification_preferences,
     router_request,
     router_schedule,
     router_shift,
@@ -57,7 +59,9 @@ def create_app(
     # Configure CORS
     allowed_headers = ["Content-Type"]
     if config.environment == "development":
-        allowed_headers.extend(["x-dev-user-id", "x-api-key", "x-impersonation-token"])
+        allowed_headers.extend(
+            ["x-dev-user-id", "x-api-key", "x-impersonation-token"]
+        )
 
     app.add_middleware(
         CORSMiddleware,
@@ -86,6 +90,8 @@ def create_app(
         router_health,
         router_link_shift,
         router_multitasking,
+        router_notification,
+        router_notification_preferences,
         router_request,
         router_schedule,
         router_shift,

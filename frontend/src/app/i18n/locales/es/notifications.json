@@ -1,0 +1,21 @@
+{
+    "title": "Notificaciones",
+    "mark_all_read": "Marcar todo como leído",
+    "no_notifications": "Sin notificaciones",
+    "see_all": "Ver todas",
+    "delete": "Eliminar",
+    "schedule_published": "El horario {{schedule_name}} ha sido publicado para el equipo {{team_name}}",
+    "new_swap_request": "{{requester_name}} creó una nueva solicitud de cambio",
+    "swap_status_changed": "El estado de tu solicitud de cambio cambió a {{new_status}}",
+    "request_status_changed": "Tu solicitud de {{shift_name}} el {{date}} fue {{new_status}}",
+    "assignment_changed": "Tu asignación de {{shift_name}} el {{date}} fue actualizada",
+    "email_settings": "Notificaciones por correo",
+    "email_enabled": "Activar notificaciones por correo",
+    "email_schedule_published": "Horario publicado",
+    "email_swap_requests": "Solicitudes de cambio",
+    "email_request_decisions": "Decisiones de solicitud",
+    "email_assignment_changes": "Cambios de asignación",
+    "settings_saved": "Configuración de notificaciones guardada",
+    "settings_error": "Error al guardar la configuración de notificaciones",
+    "notifications": "Notificaciones"
+}

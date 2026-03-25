@@ -1,0 +1,21 @@
+{
+    "title": "Notifications",
+    "mark_all_read": "Mark all as read",
+    "no_notifications": "No notifications",
+    "see_all": "See all",
+    "delete": "Delete",
+    "schedule_published": "Schedule {{schedule_name}} has been published for team {{team_name}}",
+    "new_swap_request": "{{requester_name}} created a new swap request",
+    "swap_status_changed": "Your swap request status changed to {{new_status}}",
+    "request_status_changed": "Your request for {{shift_name}} on {{date}} was {{new_status}}",
+    "assignment_changed": "Your assignment for {{shift_name}} on {{date}} was updated",
+    "email_settings": "Email Notifications",
+    "email_enabled": "Enable email notifications",
+    "email_schedule_published": "Schedule published",
+    "email_swap_requests": "Swap requests",
+    "email_request_decisions": "Request decisions",
+    "email_assignment_changes": "Assignment changes",
+    "settings_saved": "Notification settings saved",
+    "settings_error": "Failed to save notification settings",
+    "notifications": "Notifications"
+}

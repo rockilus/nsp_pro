@@ -1,0 +1,21 @@
+{
+    "title": "Notifications",
+    "mark_all_read": "Tout marquer comme lu",
+    "no_notifications": "Aucune notification",
+    "see_all": "Voir tout",
+    "delete": "Supprimer",
+    "schedule_published": "Le planning {{schedule_name}} a été publié pour l'équipe {{team_name}}",
+    "new_swap_request": "{{requester_name}} a créé une nouvelle demande d'échange",
+    "swap_status_changed": "Le statut de votre demande d'échange a changé en {{new_status}}",
+    "request_status_changed": "Votre demande pour {{shift_name}} le {{date}} a été {{new_status}}",
+    "assignment_changed": "Votre affectation pour {{shift_name}} le {{date}} a été mise à jour",
+    "email_settings": "Notifications par e-mail",
+    "email_enabled": "Activer les notifications par e-mail",
+    "email_schedule_published": "Planning publié",
+    "email_swap_requests": "Demandes d'échange",
+    "email_request_decisions": "Décisions de demande",
+    "email_assignment_changes": "Modifications d'affectation",
+    "settings_saved": "Paramètres de notification enregistrés",
+    "settings_error": "Impossible d'enregistrer les paramètres de notification",
+    "notifications": "Notifications"
+}

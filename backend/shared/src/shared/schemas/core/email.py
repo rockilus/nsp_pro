@@ -19,6 +19,10 @@ class EmailType(str, Enum):
     SWAP_INVITATION = "swap_invitation"
     SWAP_BID = "swap_bid"
     SWAP_APPROVED = "swap_approved"
+    NOTIFICATION_SCHEDULE_PUBLISHED = "notification_schedule_published"
+    NOTIFICATION_REQUEST_DECISION = "notification_request_decision"
+    NOTIFICATION_SWAP_REQUEST = "notification_swap_request"
+    NOTIFICATION_ASSIGNMENT_CHANGED = "notification_assignment_changed"
 
 
 class EmailPriority(str, Enum):
@@ -37,7 +41,9 @@ class EmailMessage(BaseModel):
     context: Dict[str, Any] = Field(
         ..., description="Context data for template rendering"
     )
-    language: str = Field(default="en", description="Language code (en, es, fr)")
+    language: str = Field(
+        default="en", description="Language code (en, es, fr)"
+    )
     priority: EmailPriority = Field(
         default=EmailPriority.NORMAL, description="Email priority"
     )
@@ -46,7 +52,9 @@ class EmailMessage(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="When the email request was created",
     )
-    message_id: Optional[str] = Field(default=None, description="SQS message ID")
+    message_id: Optional[str] = Field(
+        default=None, description="SQS message ID"
+    )
     retry_count: int = Field(default=0, description="Number of retry attempts")
 
     # pylint: disable=too-few-public-methods
@@ -72,7 +80,9 @@ class EmailMessage(BaseModel):
         Create an instance from a dict representation.
         Converts created_at from float timestamp back to datetime.
         """
-        if "created_at" in data and isinstance(data["created_at"], (int, float)):
+        if "created_at" in data and isinstance(
+            data["created_at"], (int, float)
+        ):
             data["created_at"] = datetime.fromtimestamp(
                 data["created_at"], tz=timezone.utc
             )
