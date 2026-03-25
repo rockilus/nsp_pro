@@ -49,9 +49,7 @@ async def update_notification_preferences(
     try:
         core_prefs = NotificationPreferences.from_dto(prefs_dto)
         core_prefs.user_id = user_context.effective_user_id
-        updated = prefs_service.update(
-            user_context.effective_user_id, core_prefs
-        )
+        updated = prefs_service.update(user_context.effective_user_id, core_prefs)
         return updated.to_dto()
     except Exception as e:
         handle_routes_errors(e)

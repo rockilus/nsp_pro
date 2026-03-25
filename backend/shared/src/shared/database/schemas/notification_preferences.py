@@ -18,6 +18,7 @@ class NotificationPreferencesSchema(DocumentBaseSchema):
 
     def to_core(self) -> NotificationPreferences:
         valid_keys = {k.value for k in NotificationKey}
+        prefs_map: dict = getattr(self, "preferences", {})
         return NotificationPreferences(
             user_id=self.user_id,
             preferences={
@@ -25,7 +26,7 @@ class NotificationPreferencesSchema(DocumentBaseSchema):
                     email=ch.get("email", True),
                     in_app=ch.get("in_app", True),
                 )
-                for key, ch in self.preferences.items()
+                for key, ch in prefs_map.items()
                 if key in valid_keys
             },
         )

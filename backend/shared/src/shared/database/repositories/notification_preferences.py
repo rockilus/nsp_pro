@@ -10,9 +10,7 @@ from shared.schemas.core.notification_preferences import (
 )
 
 
-class NotificationPreferencesRepository(
-    BaseRepository[NotificationPreferencesSchema]
-):
+class NotificationPreferencesRepository(BaseRepository[NotificationPreferencesSchema]):
     def __init__(self, database_interface: DatabaseInterface):
         super().__init__(
             database_interface,
