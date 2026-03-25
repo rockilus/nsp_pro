@@ -10,7 +10,9 @@ from shared.schemas.core.notification_preferences import (
 )
 
 
-class NotificationPreferencesRepository(BaseRepository[NotificationPreferencesSchema]):
+class NotificationPreferencesRepository(
+    BaseRepository[NotificationPreferencesSchema]
+):
     def __init__(self, database_interface: DatabaseInterface):
         super().__init__(
             database_interface,
@@ -34,10 +36,9 @@ class NotificationPreferencesRepository(BaseRepository[NotificationPreferencesSc
             new_schema = NotificationPreferencesSchema.from_core(prefs)
             created = self.create(new_schema)
             return created.to_core()
-        schema.email_enabled = prefs.email_enabled
-        schema.email_schedule_published = prefs.email_schedule_published
-        schema.email_swap_requests = prefs.email_swap_requests
-        schema.email_request_decisions = prefs.email_request_decisions
-        schema.email_assignment_changes = prefs.email_assignment_changes
+        schema.preferences = {
+            key: {"email": ch.email, "in_app": ch.in_app}
+            for key, ch in prefs.preferences.items()
+        }
         updated = self.update(schema)
         return updated.to_core() if updated else prefs

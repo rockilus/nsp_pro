@@ -1,7 +1,11 @@
 """MongoDB schema for NotificationPreferences documents."""
 
+from pydantic import Field
+
 from shared.database.schemas.base import DocumentBaseSchema
 from shared.schemas.core.notification_preferences import (
+    ChannelPreferences,
+    NotificationKey,
     NotificationPreferences,
 )
 
@@ -10,20 +14,20 @@ class NotificationPreferencesSchema(DocumentBaseSchema):
     """MongoDB document representation of NotificationPreferences."""
 
     user_id: str
-    email_enabled: bool = True
-    email_schedule_published: bool = True
-    email_swap_requests: bool = True
-    email_request_decisions: bool = True
-    email_assignment_changes: bool = True
+    preferences: dict[str, dict] = Field(default_factory=dict)
 
     def to_core(self) -> NotificationPreferences:
+        valid_keys = {k.value for k in NotificationKey}
         return NotificationPreferences(
             user_id=self.user_id,
-            email_enabled=self.email_enabled,
-            email_schedule_published=self.email_schedule_published,
-            email_swap_requests=self.email_swap_requests,
-            email_request_decisions=self.email_request_decisions,
-            email_assignment_changes=self.email_assignment_changes,
+            preferences={
+                NotificationKey(key): ChannelPreferences(
+                    email=ch.get("email", True),
+                    in_app=ch.get("in_app", True),
+                )
+                for key, ch in self.preferences.items()
+                if key in valid_keys
+            },
         )
 
     @classmethod
@@ -33,9 +37,8 @@ class NotificationPreferencesSchema(DocumentBaseSchema):
         return cls(
             id=None,
             user_id=prefs.user_id,
-            email_enabled=prefs.email_enabled,
-            email_schedule_published=prefs.email_schedule_published,
-            email_swap_requests=prefs.email_swap_requests,
-            email_request_decisions=prefs.email_request_decisions,
-            email_assignment_changes=prefs.email_assignment_changes,
+            preferences={
+                key: {"email": ch.email, "in_app": ch.in_app}
+                for key, ch in prefs.preferences.items()
+            },
         )

@@ -47,17 +47,11 @@ async def update_notification_preferences(
 ) -> NotificationPreferencesDTO:
     """Update notification preferences for the current user."""
     try:
-        prefs = prefs_dto.model_dump(by_alias=False)
-
-        core_prefs = NotificationPreferences(
-            user_id=user_context.effective_user_id,
-            email_enabled=prefs["email_enabled"],
-            email_schedule_published=prefs["email_schedule_published"],
-            email_swap_requests=prefs["email_swap_requests"],
-            email_request_decisions=prefs["email_request_decisions"],
-            email_assignment_changes=prefs["email_assignment_changes"],
+        core_prefs = NotificationPreferences.from_dto(prefs_dto)
+        core_prefs.user_id = user_context.effective_user_id
+        updated = prefs_service.update(
+            user_context.effective_user_id, core_prefs
         )
-        updated = prefs_service.update(user_context.effective_user_id, core_prefs)
         return updated.to_dto()
     except Exception as e:
         handle_routes_errors(e)

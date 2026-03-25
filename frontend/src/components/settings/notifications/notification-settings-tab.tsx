@@ -7,16 +7,27 @@ import {
   useUpdateNotificationPreferences,
 } from "@/app/lib/hooks/useNotifications";
 import SnackBarComponent from "@/components/feedback/snack-bar";
+import { type NotificationKey, NOTIFICATION_KEYS } from "@/types/notification";
 // MUI
+import Accordion from "@mui/material/Accordion";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import AccordionSummary from "@mui/material/AccordionSummary";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
-import Divider from "@mui/material/Divider";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import Typography from "@mui/material/Typography";
 import { useRouter } from "next/navigation";
 import NavigationHeader from "@/components/common/navigation-header";
 import { useIsMobile, useIsLandscape } from "@/hooks/useIsMobile";
+
+function getStatusLabel(inApp: boolean, email: boolean): string {
+  if (!inApp && !email) return "status_off";
+  if (inApp && !email) return "status_in_app_only";
+  if (!inApp && email) return "status_email_only";
+  return "status_in_app_and_email";
+}
 
 export default function NotificationSettingsTab({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "notifications");
@@ -41,8 +52,18 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
     );
   }
 
-  const handleChange = (field: keyof typeof prefs, value: boolean) => {
-    const updated = { ...prefs, [field]: value };
+  const handleChange = (
+    key: NotificationKey,
+    channel: "inApp" | "email",
+    value: boolean,
+  ) => {
+    const updated = {
+      ...prefs,
+      preferences: {
+        ...prefs.preferences,
+        [key]: { ...prefs.preferences[key], [channel]: value },
+      },
+    };
     update.mutate(updated, {
       onSuccess: () =>
         setSnackbar({
@@ -59,53 +80,68 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
     });
   };
 
-  const masterOff = !prefs.emailEnabled;
-
   return (
     <Box sx={{ maxWidth: 520, mx: "auto", mt: 2, px: 2 }}>
       <NavigationHeader
-        title={t("email_settings")}
+        title={t("notification_settings")}
         onBack={() => router.push(`/${lng}/plan/settings`)}
         showBackButton={isMobile && !isLandscape}
       />
 
       <Box sx={{ mt: 3 }}>
-        {/* Master toggle */}
-        <FormControlLabel
-          control={
-            <Switch
-              checked={prefs.emailEnabled}
-              onChange={(e) => handleChange("emailEnabled", e.target.checked)}
-            />
-          }
-          label={<Typography fontWeight={500}>{t("email_enabled")}</Typography>}
-        />
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Per-type toggles */}
-        {(
-          [
-            ["emailSchedulePublished", "email_schedule_published"],
-            ["emailSwapRequests", "email_swap_requests"],
-            ["emailRequestDecisions", "email_request_decisions"],
-            ["emailAssignmentChanges", "email_assignment_changes"],
-          ] as [keyof typeof prefs, string][]
-        ).map(([field, labelKey]) => (
-          <Box key={field} sx={{ pl: 2, mb: 1 }}>
-            <FormControlLabel
-              disabled={masterOff}
-              control={
-                <Switch
-                  checked={prefs[field] as boolean}
-                  onChange={(e) => handleChange(field, e.target.checked)}
-                  disabled={masterOff}
+        {NOTIFICATION_KEYS.map((key) => {
+          const ch = prefs.preferences[key] ?? { inApp: true, email: true };
+          return (
+            <Accordion
+              key={key}
+              disableGutters
+              elevation={0}
+              sx={{
+                border: "1px solid",
+                borderColor: "divider",
+                "&:not(:last-child)": { borderBottom: 0 },
+                "&::before": { display: "none" },
+              }}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box>
+                  <Typography fontWeight={500}>{t(`email_${key}`)}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t(getStatusLabel(ch.inApp, ch.email))}
+                  </Typography>
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={ch.inApp}
+                      onChange={(e) =>
+                        handleChange(key, "inApp", e.target.checked)
+                      }
+                    />
+                  }
+                  label={t("in_app_notifications")}
+                  labelPlacement="start"
+                  sx={{ justifyContent: "space-between", width: "100%", ml: 0 }}
                 />
-              }
-              label={t(labelKey)}
-            />
-          </Box>
-        ))}
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={ch.email}
+                      onChange={(e) =>
+                        handleChange(key, "email", e.target.checked)
+                      }
+                    />
+                  }
+                  label={t("email_notifications")}
+                  labelPlacement="start"
+                  sx={{ justifyContent: "space-between", width: "100%", ml: 0 }}
+                />
+              </AccordionDetails>
+            </Accordion>
+          );
+        })}
       </Box>
 
       <SnackBarComponent

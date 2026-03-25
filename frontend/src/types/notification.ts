@@ -22,13 +22,24 @@ export type NotificationT = {
   readAt: dayjs.Dayjs | null;
 };
 
+export type NotificationKey =
+  | "schedule_published"
+  | "swap_requests"
+  | "request_decisions"
+  | "assignment_changes";
+
+export const NOTIFICATION_KEYS: NotificationKey[] = [
+  "schedule_published",
+  "swap_requests",
+  "request_decisions",
+  "assignment_changes",
+];
+
+export type ChannelPreferences = { email: boolean; inApp: boolean };
+
 export type NotificationPreferencesT = {
   userId: string;
-  emailEnabled: boolean;
-  emailSchedulePublished: boolean;
-  emailSwapRequests: boolean;
-  emailRequestDecisions: boolean;
-  emailAssignmentChanges: boolean;
+  preferences: Record<NotificationKey, ChannelPreferences>;
 };
 
 export function toNotificationT(data: any): NotificationT {
@@ -48,14 +59,14 @@ export function toNotificationT(data: any): NotificationT {
 export function toNotificationPreferencesT(
   data: any,
 ): NotificationPreferencesT {
-  return {
-    userId: data.userId,
-    emailEnabled: data.emailEnabled ?? true,
-    emailSchedulePublished: data.emailSchedulePublished ?? true,
-    emailSwapRequests: data.emailSwapRequests ?? true,
-    emailRequestDecisions: data.emailRequestDecisions ?? true,
-    emailAssignmentChanges: data.emailAssignmentChanges ?? true,
-  };
+  const rawPrefs: Record<string, any> = data.preferences ?? {};
+  const preferences = Object.fromEntries(
+    NOTIFICATION_KEYS.map((key) => {
+      const ch = rawPrefs[key];
+      return [key, { email: ch?.email ?? true, inApp: ch?.inApp ?? true }];
+    }),
+  ) as Record<NotificationKey, ChannelPreferences>;
+  return { userId: data.userId, preferences };
 }
 
 export function fromNotificationPreferencesT(
@@ -63,10 +74,11 @@ export function fromNotificationPreferencesT(
 ): any {
   return {
     userId: prefs.userId,
-    emailEnabled: prefs.emailEnabled,
-    emailSchedulePublished: prefs.emailSchedulePublished,
-    emailSwapRequests: prefs.emailSwapRequests,
-    emailRequestDecisions: prefs.emailRequestDecisions,
-    emailAssignmentChanges: prefs.emailAssignmentChanges,
+    preferences: Object.fromEntries(
+      NOTIFICATION_KEYS.map((key) => {
+        const ch = prefs.preferences[key];
+        return [key, { email: ch.email, inApp: ch.inApp }];
+      }),
+    ),
   };
 }
