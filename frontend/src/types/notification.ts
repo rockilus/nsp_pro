@@ -22,17 +22,57 @@ export type NotificationT = {
   readAt: dayjs.Dayjs | null;
 };
 
+import { TeamMembershipRole } from "@/types/team";
+
 export type NotificationKey =
   | "schedule_published"
+  | "new_request"
   | "swap_requests"
   | "request_decisions"
-  | "assignment_changes";
+  | "assignment_changes"
+  | "team_invite_accepted";
 
 export const NOTIFICATION_KEYS: NotificationKey[] = [
   "schedule_published",
+  "new_request",
   "swap_requests",
   "request_decisions",
   "assignment_changes",
+  "team_invite_accepted",
+];
+
+export type NotificationCategory =
+  | "schedule"
+  | "requests"
+  | "assignments"
+  | "team";
+
+export type NotificationKeyMeta = {
+  category: NotificationCategory;
+  /** Empty array = visible to all roles. */
+  visibleTo: TeamMembershipRole[];
+};
+
+export const NOTIFICATION_REGISTRY: Record<
+  NotificationKey,
+  NotificationKeyMeta
+> = {
+  schedule_published: { category: "schedule", visibleTo: [] },
+  new_request: { category: "requests", visibleTo: [TeamMembershipRole.OWNER] },
+  swap_requests: { category: "requests", visibleTo: [] },
+  request_decisions: { category: "requests", visibleTo: [] },
+  assignment_changes: { category: "assignments", visibleTo: [] },
+  team_invite_accepted: {
+    category: "team",
+    visibleTo: [TeamMembershipRole.OWNER],
+  },
+};
+
+export const NOTIFICATION_CATEGORY_ORDER: NotificationCategory[] = [
+  "schedule",
+  "requests",
+  "assignments",
+  "team",
 ];
 
 export type ChannelPreferences = { email: boolean; inApp: boolean };

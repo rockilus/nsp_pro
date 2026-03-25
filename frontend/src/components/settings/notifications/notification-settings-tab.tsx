@@ -7,7 +7,15 @@ import {
   useUpdateNotificationPreferences,
 } from "@/app/lib/hooks/useNotifications";
 import SnackBarComponent from "@/components/feedback/snack-bar";
-import { type NotificationKey, NOTIFICATION_KEYS } from "@/types/notification";
+import {
+  type NotificationCategory,
+  type NotificationKey,
+  NOTIFICATION_CATEGORY_ORDER,
+  NOTIFICATION_KEYS,
+  NOTIFICATION_REGISTRY,
+} from "@/types/notification";
+import { TeamMembershipRole } from "@/types/team";
+import { useTeamSelector } from "@/hooks/useTeamSelector";
 // MUI
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -34,6 +42,9 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const isLandscape = useIsLandscape();
+
+  const { selectedTeam } = useTeamSelector();
+  const userRole = selectedTeam?.membership.role ?? TeamMembershipRole.MEMBER;
 
   const { data: prefs, isLoading } = useNotificationPreferences();
   const update = useUpdateNotificationPreferences();
@@ -80,6 +91,19 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
     });
   };
 
+  const visibleKeys = NOTIFICATION_KEYS.filter((key) => {
+    const { visibleTo } = NOTIFICATION_REGISTRY[key];
+    return visibleTo.length === 0 || visibleTo.includes(userRole);
+  });
+
+  const keysByCategory = visibleKeys.reduce<
+    Partial<Record<NotificationCategory, NotificationKey[]>>
+  >((acc, key) => {
+    const { category } = NOTIFICATION_REGISTRY[key];
+    (acc[category] ??= []).push(key);
+    return acc;
+  }, {});
+
   return (
     <Box sx={{ maxWidth: 520, mx: "auto", mt: 2, px: 2 }}>
       <NavigationHeader
@@ -89,59 +113,87 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
       />
 
       <Box sx={{ mt: 3 }}>
-        {NOTIFICATION_KEYS.map((key) => {
-          const ch = prefs.preferences[key] ?? { inApp: true, email: true };
-          return (
-            <Accordion
-              key={key}
-              disableGutters
-              elevation={0}
-              sx={{
-                border: "1px solid",
-                borderColor: "divider",
-                "&:not(:last-child)": { borderBottom: 0 },
-                "&::before": { display: "none" },
-              }}
+        {NOTIFICATION_CATEGORY_ORDER.filter(
+          (cat) => (keysByCategory[cat]?.length ?? 0) > 0,
+        ).map((cat) => (
+          <Box key={cat} sx={{ mb: 3 }}>
+            <Typography
+              variant="overline"
+              color="text.secondary"
+              sx={{ px: 0.5 }}
             >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Box>
-                  <Typography fontWeight={500}>{t(`email_${key}`)}</Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {t(getStatusLabel(ch.inApp, ch.email))}
-                  </Typography>
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={ch.inApp}
-                      onChange={(e) =>
-                        handleChange(key, "inApp", e.target.checked)
-                      }
-                    />
-                  }
-                  label={t("in_app_notifications")}
-                  labelPlacement="start"
-                  sx={{ justifyContent: "space-between", width: "100%", ml: 0 }}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={ch.email}
-                      onChange={(e) =>
-                        handleChange(key, "email", e.target.checked)
-                      }
-                    />
-                  }
-                  label={t("email_notifications")}
-                  labelPlacement="start"
-                  sx={{ justifyContent: "space-between", width: "100%", ml: 0 }}
-                />
-              </AccordionDetails>
-            </Accordion>
-          );
-        })}
+              {t(`category_${cat}`)}
+            </Typography>
+            <Box sx={{ mt: 0.5 }}>
+              {keysByCategory[cat]!.map((key) => {
+                const ch = prefs.preferences[key] ?? {
+                  inApp: true,
+                  email: true,
+                };
+                return (
+                  <Accordion
+                    key={key}
+                    disableGutters
+                    elevation={0}
+                    sx={{
+                      border: "1px solid",
+                      borderColor: "divider",
+                      "&:not(:last-child)": { borderBottom: 0 },
+                      "&::before": { display: "none" },
+                    }}
+                  >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Box>
+                        <Typography fontWeight={500}>
+                          {t(`email_${key}`)}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {t(getStatusLabel(ch.inApp, ch.email))}
+                        </Typography>
+                      </Box>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={ch.inApp}
+                            onChange={(e) =>
+                              handleChange(key, "inApp", e.target.checked)
+                            }
+                          />
+                        }
+                        label={t("in_app_notifications")}
+                        labelPlacement="start"
+                        sx={{
+                          justifyContent: "space-between",
+                          width: "100%",
+                          ml: 0,
+                        }}
+                      />
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={ch.email}
+                            onChange={(e) =>
+                              handleChange(key, "email", e.target.checked)
+                            }
+                          />
+                        }
+                        label={t("email_notifications")}
+                        labelPlacement="start"
+                        sx={{
+                          justifyContent: "space-between",
+                          width: "100%",
+                          ml: 0,
+                        }}
+                      />
+                    </AccordionDetails>
+                  </Accordion>
+                );
+              })}
+            </Box>
+          </Box>
+        ))}
       </Box>
 
       <SnackBarComponent

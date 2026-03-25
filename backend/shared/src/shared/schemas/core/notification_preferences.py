@@ -6,11 +6,52 @@ from enum import StrEnum
 from pydantic import BaseModel, Field
 
 
+class NotificationCategory(StrEnum):
+    SCHEDULE = "schedule"
+    REQUESTS = "requests"
+    ASSIGNMENTS = "assignments"
+    TEAM = "team"
+
+
 class NotificationKey(StrEnum):
     SCHEDULE_PUBLISHED = "schedule_published"
+    NEW_REQUEST = "new_request"
     SWAP_REQUESTS = "swap_requests"
     REQUEST_DECISIONS = "request_decisions"
     ASSIGNMENT_CHANGES = "assignment_changes"
+    TEAM_INVITE_ACCEPTED = "team_invite_accepted"
+
+
+@dataclass(frozen=True)
+class NotificationKeyMeta:
+    category: NotificationCategory
+    # Empty frozenset means visible to all roles.
+    # Use string literals ("owner"/"member") to avoid circular imports.
+    visible_to: frozenset[str] = field(default_factory=frozenset)
+
+
+NOTIFICATION_REGISTRY: dict[NotificationKey, NotificationKeyMeta] = {
+    NotificationKey.SCHEDULE_PUBLISHED: NotificationKeyMeta(
+        category=NotificationCategory.SCHEDULE,
+    ),
+    NotificationKey.NEW_REQUEST: NotificationKeyMeta(
+        category=NotificationCategory.REQUESTS,
+        visible_to=frozenset({"owner"}),
+    ),
+    NotificationKey.SWAP_REQUESTS: NotificationKeyMeta(
+        category=NotificationCategory.REQUESTS,
+    ),
+    NotificationKey.REQUEST_DECISIONS: NotificationKeyMeta(
+        category=NotificationCategory.REQUESTS,
+    ),
+    NotificationKey.ASSIGNMENT_CHANGES: NotificationKeyMeta(
+        category=NotificationCategory.ASSIGNMENTS,
+    ),
+    NotificationKey.TEAM_INVITE_ACCEPTED: NotificationKeyMeta(
+        category=NotificationCategory.TEAM,
+        visible_to=frozenset({"owner"}),
+    ),
+}
 
 
 @dataclass
