@@ -16,7 +16,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 
@@ -59,7 +59,7 @@ export default function NotificationBell({ lng }: { lng: string }) {
           invisible={unreadCount === 0}
           max={99}
         >
-          <NotificationsNoneIcon sx={{ color: "text.secondary" }} />
+          <NotificationsIcon sx={{ color: "text.secondary" }} />
         </Badge>
       </IconButton>
 
