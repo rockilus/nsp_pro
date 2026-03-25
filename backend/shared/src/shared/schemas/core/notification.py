@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 import humps
 from pydantic import BaseModel, Field
@@ -45,7 +45,7 @@ class Notification:
             "updatedAt": self.updated_at.isoformat(),
             "readAt": self.read_at.isoformat() if self.read_at else None,
         }
-        return NotificationDTO(**humps.camelize(data))
+        return NotificationDTO(**cast(Dict[str, Any], humps.camelize(data)))
 
     @classmethod
     def from_dto(cls, dto: "NotificationDTO") -> "Notification":

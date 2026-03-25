@@ -15,11 +15,11 @@ from src.dependencies.dim_entry_service import get_dim_entry_service
 from src.dependencies.dimension_service import get_dimension_service
 from src.dependencies.email_queue_service import get_email_queue_service
 from src.dependencies.link_shift_service import get_link_shift_service
+from src.dependencies.multitasking_service import get_multitasking_service
 from src.dependencies.notification_preferences_service import (
     get_notification_preferences_service,
 )
 from src.dependencies.notification_service import get_notification_service
-from src.dependencies.multitasking_service import get_multitasking_service
 from src.dependencies.replacement_service import get_replacement_service
 from src.dependencies.request_service import get_request_service
 from src.dependencies.schedule_service import get_schedule_service

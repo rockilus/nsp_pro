@@ -12,9 +12,7 @@ from src.services.request_service import RequestService
 def get_request_service(
     db_collections: DatabaseCollections = Depends(get_db_collections),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> RequestService:
     return RequestService(
         collection=db_collections,

@@ -1,6 +1,5 @@
 """Service for managing per-user notification preferences."""
 
-from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core.notification_preferences import (
     NotificationPreferences,
 )
@@ -12,10 +11,8 @@ class NotificationPreferencesService(BaseService):
     """Service for reading and updating notification preferences."""
 
     def get_or_create(self, user_id: str) -> NotificationPreferences:
-        return (
-            self.collection.notification_preferences_db.get_or_create_default(
-                user_id
-            )
+        return self.collection.notification_preferences_db.get_or_create_default(
+            user_id
         )
 
     def update(
