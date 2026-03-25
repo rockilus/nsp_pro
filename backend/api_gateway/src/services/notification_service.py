@@ -159,8 +159,10 @@ class NotificationService(BaseService):
                             updated_at=now,
                         )
                     )
-            memberships = self.collection.team_membership_db.get_memberships_by_team(
-                swap.team_id
+            memberships = (
+                self.collection.team_membership_db.get_team_memberships_by_team_id(
+                    swap.team_id
+                )
             )
             owner_user_ids = {
                 m.user_id

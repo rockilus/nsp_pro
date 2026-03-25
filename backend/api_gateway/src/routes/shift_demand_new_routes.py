@@ -78,14 +78,14 @@ async def create_shift_demand(
     except Exception as e:
         log_info(f"Internal error creating shift demand: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": "internal_error",
-                "operation": "create",
-                "message": ("An internal error occurred. Please try again later."),
-            },
-        ) from e
+        # raise HTTPException(
+        #     status_code=500,
+        #     detail={
+        #         "error": "internal_error",
+        #         "operation": "create",
+        #         "message": ("An internal error occurred. Please try again later."),
+        #     },
+        # ) from e
 
 
 @router.get("/shift-demands-new/teams/{team_id}/period")
@@ -116,7 +116,7 @@ async def get_shift_demands_by_period(
     except Exception as e:
         log_info("Failed to get shift demands by period")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get("/shift-demands-new/teams/{team_id}/matrix")
@@ -143,7 +143,7 @@ async def get_shift_demands_matrix(
     except Exception as e:
         log_info("Failed to get shift demands matrix")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.put("/shift-demands-new/{demand_id}/teams/{team_id}", response_model=None)
@@ -231,15 +231,15 @@ async def update_shift_demand(
     except Exception as e:
         log_info(f"Internal error updating shift demand {demand_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": "internal_error",
-                "operation": "update",
-                "message": ("An internal error occurred. Please try again later."),
-                "demand_id": demand_id,
-            },
-        ) from e
+        # raise HTTPException(
+        #     status_code=500,
+        #     detail={
+        #         "error": "internal_error",
+        #         "operation": "update",
+        #         "message": ("An internal error occurred. Please try again later."),
+        #         "demand_id": demand_id,
+        #     },
+        # ) from e
 
 
 @router.delete("/shift-demands-new/{demand_id}/teams/{team_id}", status_code=204)
@@ -267,7 +267,7 @@ async def delete_shift_demand(
     except Exception as e:
         log_info("Failed to delete shift demand")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.post("/shift-demands-new/teams/{team_id}/bulk-upsert")
@@ -336,14 +336,14 @@ async def bulk_upsert_shift_demands(
     except Exception as e:
         log_info(f"Internal error in bulk upsert: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": "internal_error",
-                "operation": "bulk_upsert",
-                "message": ("An internal error occurred. Please try again later."),
-            },
-        ) from e
+        # raise HTTPException(
+        #     status_code=500,
+        #     detail={
+        #         "error": "internal_error",
+        #         "operation": "bulk_upsert",
+        #         "message": ("An internal error occurred. Please try again later."),
+        #     },
+        # ) from e
 
 
 @router.post("/shift-demands-new/teams/{team_id}/copy-period")
@@ -382,7 +382,7 @@ async def copy_shift_demands_from_period(
     except Exception as e:
         log_info("Failed to copy shift demands from period")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get("/shift-demands-new/teams/{team_id}/summary")
@@ -409,7 +409,7 @@ async def get_team_shift_summary(
     except Exception as e:
         log_info("Failed to get team shift summary")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get("/shift-demands-new/teams/{team_id}/shifts/{shift_id}")
@@ -440,7 +440,7 @@ async def get_demands_by_shift_and_date_range(
     except Exception as e:
         log_info("Failed to get demands by shift and date range")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.delete("/shift-demands-new/teams/{team_id}/period")
@@ -475,7 +475,7 @@ async def delete_demands_by_date_range(
     except Exception as e:
         log_info("Failed to delete demands by date range")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get("/shift-demands-new/teams/{team_id}/source/{source}")
@@ -504,7 +504,7 @@ async def get_demands_by_source(
     except Exception as e:
         log_info("Failed to get demands by source")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.post("/shift-demands-new/teams/{team_id}/prefetch")
@@ -535,4 +535,4 @@ async def prefetch_for_navigation(
     except Exception as e:
         log_info("Failed to prefetch for navigation")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e

@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from shared.logger import log_info
 from shared.schemas.core import ExportOptions
@@ -51,4 +51,5 @@ async def export_schedule(
     except Exception as e:
         log_info("Failed to export schedule")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Failed to export schedule") from e
+        # raise HTTPException(status_code=500, detail="Failed to export
+        # schedule") from e

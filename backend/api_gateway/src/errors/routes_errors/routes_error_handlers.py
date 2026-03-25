@@ -1,3 +1,5 @@
+from typing import NoReturn
+
 from fastapi import HTTPException
 from shared.schemas.errors import SchemaTypeError, SchemaValueError
 
@@ -21,7 +23,7 @@ from src.errors.stats_errors.stats_errors import NoCampaignError
 from src.utils.constants import USER_ERROR_MESSAGE_GENERIC
 
 
-def handle_routes_errors(error: Exception):
+def handle_routes_errors(error: Exception) -> NoReturn:
     if isinstance(error, SchemaTypeError):
         raise HTTPException(
             status_code=400,

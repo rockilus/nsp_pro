@@ -73,7 +73,7 @@ async def get_shift_demand_concurrency(
     except Exception as e:
         log_info(f"Failed to get shift demand concurrency: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.post(
@@ -113,7 +113,7 @@ async def create_multitasking_group(
     except Exception as e:
         log_info(f"Failed to create multitasking group: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.put(
@@ -154,7 +154,7 @@ async def update_multitasking_group(
     except Exception as e:
         log_info(f"Failed to update multitasking group: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get(
@@ -190,7 +190,7 @@ async def get_multitasking_groups(
     except Exception as e:
         log_info(f"Failed to get multitasking groups: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.delete(
@@ -225,4 +225,4 @@ async def delete_multitasking_group(
     except Exception as e:
         log_info(f"Failed to delete multitasking group: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e

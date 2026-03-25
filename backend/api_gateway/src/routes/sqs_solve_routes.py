@@ -91,10 +91,10 @@ async def submit_solve_request(
     except Exception as e:
         logger.error(f"Failed to submit solve request: {e}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to submit solve request",
-        ) from e
+        # raise HTTPException(
+        #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     detail="Failed to submit solve request",
+        # ) from e
 
 
 @router.get(
@@ -138,10 +138,10 @@ async def get_solve_status_by_id(
     except Exception as e:
         logger.error(f"Failed to get solve status by id: {e}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get solve status",
-        ) from e
+        # raise HTTPException(
+        #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     detail="Failed to get solve status",
+        # ) from e
 
 
 @router.get(
@@ -200,7 +200,7 @@ async def get_latest_solve_status_by_schedule_id(
     except Exception as e:
         logger.error(f"Failed to get latest solve status: {e}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get latest solve status",
-        ) from e
+        # raise HTTPException(
+        #     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     detail="Failed to get latest solve status",
+        # ) from e
