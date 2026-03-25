@@ -3,15 +3,21 @@ from shared.database.database_collections import DatabaseCollections
 
 from src.dependencies.assignment_service import get_assignment_service
 from src.dependencies.database import get_db_collections
+from src.dependencies.notification_service import get_notification_service
 from src.services.assignment_service import AssignmentService
+from src.services.notification_service import NotificationService
 from src.services.schedule_service import ScheduleService
 
 
 def get_schedule_service(
     db_collections: DatabaseCollections = Depends(get_db_collections),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
 ) -> ScheduleService:
     return ScheduleService(
         collection=db_collections,
         assignment_service=assignment_service,
+        notification_service=notification_service,
     )

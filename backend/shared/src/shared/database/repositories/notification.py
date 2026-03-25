@@ -11,9 +11,7 @@ from shared.schemas.core.notification import Notification
 
 class NotificationRepository(BaseRepository[NotificationSchema]):
     def __init__(self, database_interface: DatabaseInterface):
-        super().__init__(
-            database_interface, "notifications", NotificationSchema
-        )
+        super().__init__(database_interface, "notifications", NotificationSchema)
 
     def create_notification(self, notification: Notification) -> Notification:
         schema = NotificationSchema.from_core(notification)

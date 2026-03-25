@@ -77,6 +77,15 @@ from shared.schemas.core.multitasking import (
     ShiftDemandConcurrencyRequest,
     ShiftDemandConcurrencyResponse,
 )
+from shared.schemas.core.notification import (
+    Notification,
+    NotificationDTO,
+    NotificationType,
+)
+from shared.schemas.core.notification_preferences import (
+    NotificationPreferences,
+    NotificationPreferencesDTO,
+)
 from shared.schemas.core.recurrence import (
     FrequencyType,
     MonthRepeatType,
@@ -197,15 +206,6 @@ from shared.schemas.core.user import (
     SystemRole,
     User,
     UserWithMembership,
-)
-from shared.schemas.core.notification import (
-    Notification,
-    NotificationDTO,
-    NotificationType,
-)
-from shared.schemas.core.notification_preferences import (
-    NotificationPreferences,
-    NotificationPreferencesDTO,
 )
 from shared.schemas.core.worker import Worker, WorkerDates
 

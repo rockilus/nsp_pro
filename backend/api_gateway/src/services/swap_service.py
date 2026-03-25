@@ -15,9 +15,8 @@ from shared.schemas.core import (
     SwapStatus,
     SwapType,
 )
-from shared.schemas.core.notification import Notification, NotificationType
-
 from src.services.base_service import BaseService
+from src.services.notification_service import NotificationService
 from src.services.replacement_service import (
     ReplacementService,
 )
@@ -28,9 +27,15 @@ from src.services.replacement_service import (
 class SwapService(BaseService):
     """Service for creating, managing, and executing assignment swaps."""
 
-    def __init__(self, collection, replacement_service: ReplacementService):
+    def __init__(
+        self,
+        collection,
+        replacement_service: ReplacementService,
+        notification_service: NotificationService,
+    ):
         super().__init__(collection)
         self.replacement_service = replacement_service
+        self.notification_service = notification_service
 
     def create_swap_request(
         self,
@@ -128,88 +133,9 @@ class SwapService(BaseService):
         saved_swap = self.collection.swap_db.create_swap_request(swap_request)
 
         # Notify relevant parties
-        try:
-            self._notify_new_swap_request(saved_swap)
-        except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send swap-request notifications: {e}")
+        self.notification_service.notify_new_swap_request(saved_swap)
 
         return saved_swap
-
-    def _notify_new_swap_request(self, swap: SwapRequest) -> None:
-        """Notify target worker (DIRECT) or team members (OPEN) of a new swap request."""
-        now = datetime.now(timezone.utc)
-        team = self.collection.team_db.get_team_by_id(swap.team_id)
-        team_name = team.name if team else ""
-        offering_worker = (
-            self.collection.worker_db.get_worker_by_id(swap.offering_worker_id)
-            if swap.offering_worker_id
-            else None
-        )
-        requester_name = offering_worker.name if offering_worker else ""
-        # Find the first offered assignment for date context
-        first_date = ""
-        if swap.offered_assignment_ids:
-            first_assignment = (
-                self.collection.assignment_db.get_assignment_by_id(
-                    swap.offered_assignment_ids[0]
-                )
-            )
-            if first_assignment:
-                first_date = str(first_assignment.date)
-
-        event_data = {
-            "swap_id": swap.id,
-            "requester_name": requester_name,
-            "date": first_date,
-            "team_name": team_name,
-        }
-
-        if swap.swap_type == SwapType.DIRECT and swap.target_worker_id:
-            # Notify the target worker
-            target_worker = self.collection.worker_db.get_worker_by_id(
-                swap.target_worker_id
-            )
-            if target_worker and target_worker.user_id:
-                self.collection.notification_db.create_notification(
-                    Notification(
-                        id="",
-                        user_id=target_worker.user_id,
-                        team_id=swap.team_id,
-                        type=NotificationType.NEW_SWAP_REQUEST,
-                        event_data=event_data,
-                        read=False,
-                        created_at=now,
-                        updated_at=now,
-                    )
-                )
-        # Notify team owners (members with manager/owner roles via team_membership_db)
-        try:
-            memberships = (
-                self.collection.team_membership_db.get_memberships_by_team(
-                    swap.team_id
-                )
-            )
-            owner_user_ids = {
-                m.user_id
-                for m in memberships
-                if getattr(m, "role", None) in ("manager", "owner", "admin")
-                and m.user_id
-            }
-            for user_id in owner_user_ids:
-                self.collection.notification_db.create_notification(
-                    Notification(
-                        id="",
-                        user_id=user_id,
-                        team_id=swap.team_id,
-                        type=NotificationType.NEW_SWAP_REQUEST,
-                        event_data=event_data,
-                        read=False,
-                        created_at=now,
-                        updated_at=now,
-                    )
-                )
-        except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to notify team owners of swap request: {e}")
 
     def add_bid_to_open_swap(
         self,

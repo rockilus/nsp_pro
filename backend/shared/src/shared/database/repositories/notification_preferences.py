@@ -1,7 +1,5 @@
 """Repository for NotificationPreferences documents."""
 
-from datetime import datetime, timezone
-
 from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.notification_preferences import (
@@ -12,9 +10,7 @@ from shared.schemas.core.notification_preferences import (
 )
 
 
-class NotificationPreferencesRepository(
-    BaseRepository[NotificationPreferencesSchema]
-):
+class NotificationPreferencesRepository(BaseRepository[NotificationPreferencesSchema]):
     def __init__(self, database_interface: DatabaseInterface):
         super().__init__(
             database_interface,

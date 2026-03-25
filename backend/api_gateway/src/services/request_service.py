@@ -18,10 +18,9 @@ from shared.schemas.core import (
     Worker,
 )
 from shared.schemas.core.constraint import SWOIdTypes
-from shared.schemas.core.notification import Notification, NotificationType
-
 from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
+from src.services.notification_service import NotificationService
 
 
 class RequestService(BaseService):
@@ -30,9 +29,11 @@ class RequestService(BaseService):
         self,
         collection: DatabaseCollections,
         assignment_service: AssignmentService,
+        notification_service: NotificationService,
     ):
         super().__init__(collection)
         self.assignment_service = assignment_service
+        self.notification_service = notification_service
 
     def create_request(
         self, request: Request, author_id: str, team_role: str
@@ -162,10 +163,9 @@ class RequestService(BaseService):
         request.status = RequestStatus.APPROVED
         updated_request = self.collection.request_db.update_request(request)
         # Notify the worker
-        try:
-            self._notify_request_status_changed(updated_request)
-        except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send request-approved notification: {e}")
+        self.notification_service.notify_request_status_changed(
+            updated_request
+        )
         return self._to_request_augmented(updated_request), assignments_created
 
     def _create_assignments_for_single_shift_request(
@@ -234,10 +234,9 @@ class RequestService(BaseService):
         request.fulfillment = FulfillmentStatus.UNFULFILLED
         updated_request = self.collection.request_db.update_request(request)
         # Notify the worker
-        try:
-            self._notify_request_status_changed(updated_request)
-        except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send request-denied notification: {e}")
+        self.notification_service.notify_request_status_changed(
+            updated_request
+        )
         return self._to_request_augmented(updated_request)
 
     def rescind_request(
@@ -283,38 +282,6 @@ class RequestService(BaseService):
                 "You are not allowed to delete a request for another worker"
             )
         self.collection.request_db.delete_request(request_id)
-
-    def _notify_request_status_changed(self, request: Request) -> None:
-        """Notify the worker whose request status changed."""
-        worker = self.collection.worker_db.get_worker_by_id(request.worker_id)
-        if not worker or not worker.user_id:
-            return
-        team = self.collection.team_db.get_team_by_id(request.team_id)
-        team_name = team.name if team else ""
-        shift_name = ""
-        if request.shift_id:
-            shift = self.collection.shift_db.get_shift_by_id(request.shift_id)
-            if shift:
-                shift_name = shift.name
-        now = datetime.now(timezone.utc)
-        self.collection.notification_db.create_notification(
-            Notification(
-                id="",
-                user_id=worker.user_id,
-                team_id=request.team_id,
-                type=NotificationType.REQUEST_STATUS_CHANGED,
-                event_data={
-                    "request_id": request.id,
-                    "new_status": request.status.value,
-                    "shift_name": shift_name,
-                    "date": str(request.start_date),
-                    "team_name": team_name,
-                },
-                read=False,
-                created_at=now,
-                updated_at=now,
-            )
-        )
 
     # pylint: disable=too-many-arguments
     def authz_request_team_member(

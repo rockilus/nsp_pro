@@ -27,9 +27,7 @@ class NotificationPreferences:
         )
 
     @classmethod
-    def from_dto(
-        cls, dto: "NotificationPreferencesDTO"
-    ) -> "NotificationPreferences":
+    def from_dto(cls, dto: "NotificationPreferencesDTO") -> "NotificationPreferences":
         return cls(
             user_id=dto.user_id,
             email_enabled=dto.email_enabled,
@@ -45,15 +43,9 @@ class NotificationPreferencesDTO(BaseModel):
 
     user_id: str = Field(..., alias="userId")
     email_enabled: bool = Field(default=True, alias="emailEnabled")
-    email_schedule_published: bool = Field(
-        default=True, alias="emailSchedulePublished"
-    )
+    email_schedule_published: bool = Field(default=True, alias="emailSchedulePublished")
     email_swap_requests: bool = Field(default=True, alias="emailSwapRequests")
-    email_request_decisions: bool = Field(
-        default=True, alias="emailRequestDecisions"
-    )
-    email_assignment_changes: bool = Field(
-        default=True, alias="emailAssignmentChanges"
-    )
+    email_request_decisions: bool = Field(default=True, alias="emailRequestDecisions")
+    email_assignment_changes: bool = Field(default=True, alias="emailAssignmentChanges")
 
     model_config = {"populate_by_name": True}

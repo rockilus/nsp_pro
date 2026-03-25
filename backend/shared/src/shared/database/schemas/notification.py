@@ -1,6 +1,6 @@
 """MongoDB schema for Notification documents."""
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema

@@ -1,5 +1,5 @@
 import time as time_module
-from datetime import date, datetime, timezone
+from datetime import date
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
@@ -10,7 +10,6 @@ from shared.schemas.core import (
     RecurrenceUpdateScope,
     ShiftType,
 )
-from shared.schemas.core.notification import Notification, NotificationType
 from shared.schemas.dto import (
     AssignmentDTO,
     AssignmentsRecurrencesResultDTO,
@@ -32,7 +31,6 @@ from src.integrations.authorization import authz_check
 from src.security.user_context import UserContext
 from src.services.assignment_service import AssignmentService
 from src.services.notification_service import NotificationService
-from src.services.assignment_service import AssignmentService
 from src.services.replacement_service import ReplacementService
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
@@ -252,35 +250,9 @@ async def update_assignment(
             recurrence=recurrence_data,
         )
         # Notify the affected worker
-        try:
-            for updated_assignment in ar_result.assignments_updated:
-                worker = (
-                    assignment_service.collection.worker_db.get_worker_by_id(
-                        updated_assignment.worker_id
-                    )
-                )
-                if not worker or not worker.user_id:
-                    continue
-                shift = assignment_service.collection.shift_db.get_shift_by_id(
-                    updated_assignment.shift_id
-                )
-                shift_name = shift.name if shift else ""
-                now = datetime.now(timezone.utc)
-                notification_service.create_notification(
-                    user_id=worker.user_id,
-                    team_id=team_id,
-                    notification_type=NotificationType.ASSIGNMENT_CHANGED,
-                    event_data={
-                        "assignment_id": updated_assignment.id,
-                        "shift_name": shift_name,
-                        "date": str(updated_assignment.date),
-                        "changed_by": user_context.user_id,
-                    },
-                )
-        except Exception as notify_err:  # pylint: disable=broad-except
-            log_info(
-                f"Failed to send assignment-changed notifications: {notify_err}"
-            )
+        notification_service.notify_assignment_changed(
+            ar_result.assignments_updated, team_id, user_context.user_id
+        )
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to update assignment")

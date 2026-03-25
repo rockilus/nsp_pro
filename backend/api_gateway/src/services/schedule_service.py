@@ -15,11 +15,10 @@ from shared.schemas.core import (
     WorkTimeTable,
     WorkTimeTableData,
 )
-from shared.schemas.core.notification import Notification, NotificationType
-
 from src.config import config
 from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
+from src.services.notification_service import NotificationService
 from src.utils.excel_utils import core_to_excel_schedule
 
 
@@ -29,9 +28,11 @@ class ScheduleService(BaseService):
         self,
         collection: DatabaseCollections,
         assignment_service: AssignmentService,
+        notification_service: NotificationService,
     ) -> None:
         super().__init__(collection)
         self.assignment_service = assignment_service
+        self.notification_service = notification_service
 
     def get_schedule_campaign(self, team_id: str, user_id: str) -> Schedule:
         schedules = self.collection.schedule_db.get_schedules(team_id)
@@ -82,40 +83,8 @@ class ScheduleService(BaseService):
         schedule.updated_at = datetime.now(timezone.utc)
         schedule = self.collection.schedule_db.update_schedule(schedule)
         # Notify all team workers that the schedule has been published
-        try:
-            self._notify_schedule_published(schedule)
-        except Exception as e:  # pylint: disable=broad-except
-            logger.error(
-                f"Failed to send schedule-published notifications: {e}"
-            )
+        self.notification_service.notify_schedule_published(schedule)
         return schedule
-
-    def _notify_schedule_published(self, schedule: Schedule) -> None:
-        """Create in-app notifications for all workers with a linked user_id."""
-        team = self.collection.team_db.get_team_by_id(schedule.team_id)
-        team_name = team.name if team else ""
-        workers = self.collection.worker_db.get_workers_not_deleted(
-            schedule.team_id
-        )
-        now = datetime.now(timezone.utc)
-        for worker in workers:
-            if not worker.user_id:
-                continue
-            notification = Notification(
-                id="",
-                user_id=worker.user_id,
-                team_id=schedule.team_id,
-                type=NotificationType.SCHEDULE_PUBLISHED,
-                event_data={
-                    "schedule_id": schedule.id,
-                    "schedule_name": f"{schedule.start_date} – {schedule.end_date}",
-                    "team_name": team_name,
-                },
-                read=False,
-                created_at=now,
-                updated_at=now,
-            )
-            self.collection.notification_db.create_notification(notification)
 
     def update_schedule(self, schedule_new: Schedule) -> Schedule:
         schedule_old = self.collection.schedule_db.get_schedule_by_id(
