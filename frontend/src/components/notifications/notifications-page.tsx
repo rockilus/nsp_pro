@@ -38,7 +38,16 @@ export default function NotificationsPage({ lng }: { lng: string }) {
   }
 
   return (
-    <Box sx={{ maxWidth: 680, mx: "auto", mt: 3, px: 2 }}>
+    <Box
+      sx={{
+        maxWidth: 680,
+        mx: "auto",
+        mt: 3,
+        px: 2,
+        maxHeight: "calc(100vh - 64px)",
+        overflowY: "auto",
+      }}
+    >
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
         <Typography variant="h6" fontWeight={600}>

@@ -105,7 +105,16 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
   }, {});
 
   return (
-    <Box sx={{ maxWidth: 520, mx: "auto", mt: 2, px: 2 }}>
+    <Box
+      sx={{
+        maxWidth: 520,
+        mx: "auto",
+        mt: 2,
+        px: 2,
+        maxHeight: "calc(100vh - 64px)",
+        overflowY: "auto",
+      }}
+    >
       <NavigationHeader
         title={t("notification_settings")}
         onBack={() => router.push(`/${lng}/plan/settings`)}
