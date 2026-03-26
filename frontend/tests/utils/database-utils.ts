@@ -28,7 +28,7 @@ import { TeamWithMembership } from "../../src/types/team";
 import {
   TeamInvitationT,
   TeamInvitationType,
-  toTeamInvitationT,
+  TeamInvitationStatus,
 } from "../../src/types/team-invitation";
 import { NotificationT } from "../../src/types/notification";
 import { WorkerT, toWorkerT } from "../../src/types/worker";
@@ -2667,11 +2667,24 @@ export class DatabaseTestUtils {
     type: TeamInvitationType = TeamInvitationType.MEMBER,
   ): Promise<TeamInvitationT> {
     const client = this.createAuthenticatedClientForUser(userId);
-    const data = await client.post<any>(`/team-invitations/teams/${teamId}`, {
+
+    const invitation = {
+      id: "", // Will be set by backend
+      teamId,
+      firstName: null,
+      lastName: null,
       email,
       type,
-    });
-    return toTeamInvitationT(data);
+      workerId: null,
+      token: "", // Will be set by backend
+      status: TeamInvitationStatus.PENDING,
+      createdBy: null, // Will be set by backend
+      createdAt: dayjs().utc(), // Will be set by backend
+      expiresAt: dayjs().add(7, "day").utc(), // Default expiration (can be overridden by backend)
+      lastSentAt: null,
+    };
+
+    return TeamInvitationApi.createTeamInvitation(client, invitation, teamId);
   }
 
   /**

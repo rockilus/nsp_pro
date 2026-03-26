@@ -21,7 +21,7 @@ export class TeamInvitationApi extends BaseApi {
   static async createTeamInvitation(
     apiClient: AuthenticatedApiClient,
     invitation: TeamInvitationT,
-    teamId: string
+    teamId: string,
   ): Promise<TeamInvitationT> {
     // Security: Input validation
     if (!teamId) {
@@ -35,7 +35,7 @@ export class TeamInvitationApi extends BaseApi {
       apiClient,
       "post",
       `${this.baseEndpoint}/teams/${teamId}`,
-      fromTeamInvitationT(invitation)
+      fromTeamInvitationT(invitation),
     );
     return toTeamInvitationT(responseData);
   }
@@ -45,7 +45,7 @@ export class TeamInvitationApi extends BaseApi {
    */
   static async getTeamInvitations(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<TeamInvitationT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -55,7 +55,7 @@ export class TeamInvitationApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `${this.baseEndpoint}/teams/${teamId}`
+      `${this.baseEndpoint}/teams/${teamId}`,
     );
     return responseData.map(toTeamInvitationT);
   }
@@ -64,12 +64,12 @@ export class TeamInvitationApi extends BaseApi {
    * Get user's pending invitations (authenticated)
    */
   static async getUserPendingInvitations(
-    apiClient: AuthenticatedApiClient
+    apiClient: AuthenticatedApiClient,
   ): Promise<EnrichedTeamInvitationT[]> {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `${this.baseEndpoint}/pending`
+      `${this.baseEndpoint}/pending`,
     );
     return responseData.map(toEnrichedTeamInvitationT);
   }
@@ -79,7 +79,7 @@ export class TeamInvitationApi extends BaseApi {
    */
   static async acceptTeamInvitation(
     apiClient: AuthenticatedApiClient,
-    token: string
+    token: string,
   ): Promise<TeamWithMembership> {
     // Security: Input validation
     if (!token) {
@@ -90,7 +90,7 @@ export class TeamInvitationApi extends BaseApi {
       apiClient,
       "post",
       `${this.baseEndpoint}/accept`,
-      { token }
+      { token },
     );
     return toTeamWithMembership(responseData);
   }
@@ -100,7 +100,7 @@ export class TeamInvitationApi extends BaseApi {
    */
   static async rejectTeamInvitation(
     apiClient: AuthenticatedApiClient,
-    token: string
+    token: string,
   ): Promise<void> {
     // Security: Input validation
     if (!token) {
@@ -111,7 +111,7 @@ export class TeamInvitationApi extends BaseApi {
       apiClient,
       "post",
       `${this.baseEndpoint}/reject`,
-      { token }
+      { token },
     );
   }
 
@@ -121,7 +121,7 @@ export class TeamInvitationApi extends BaseApi {
   static async resendTeamInvitationEmail(
     apiClient: AuthenticatedApiClient,
     invitationId: string,
-    teamId: string
+    teamId: string,
   ): Promise<TeamInvitationT> {
     // Security: Input validation
     if (!invitationId) {
@@ -134,7 +134,7 @@ export class TeamInvitationApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "post",
-      `${this.baseEndpoint}/${invitationId}/resend/teams/${teamId}`
+      `${this.baseEndpoint}/${invitationId}/resend/teams/${teamId}`,
     );
     return toTeamInvitationT(responseData);
   }
@@ -145,7 +145,7 @@ export class TeamInvitationApi extends BaseApi {
   static async deleteTeamInvitation(
     apiClient: AuthenticatedApiClient,
     invitationId: string,
-    teamId: string
+    teamId: string,
   ): Promise<{ message: string }> {
     // Security: Input validation
     if (!invitationId) {
@@ -158,7 +158,7 @@ export class TeamInvitationApi extends BaseApi {
     return await this.makeRequest<{ message: string }>(
       apiClient,
       "delete",
-      `${this.baseEndpoint}/${invitationId}/teams/${teamId}`
+      `${this.baseEndpoint}/${invitationId}/teams/${teamId}`,
     );
   }
 }

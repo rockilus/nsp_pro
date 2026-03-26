@@ -60,7 +60,7 @@ def user_removed_from_team_event(
 def user_left_team_event(
     team_id: str,
     team_name: str,
-    member_name: str,
+    user_name: str,
     owner_user_ids: list[str],
 ) -> NotificationEvent:
     """Notify team owners that a member voluntarily left the team."""
@@ -68,5 +68,5 @@ def user_left_team_event(
         notification_type=NotificationType.USER_LEFT_TEAM,
         user_ids=owner_user_ids,
         team_id=team_id,
-        event_data={"team_name": team_name, "member_name": member_name},
+        event_data={"team_name": team_name, "user_name": user_name},
     )

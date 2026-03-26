@@ -5,6 +5,7 @@ import {
   TEST_USER,
   TEST_USER_2,
 } from "../../../utils/database-utils";
+import { NotificationTypeT } from "@/types/notification";
 
 interface NotifTestContext {
   dbUtils: DatabaseTestUtils;
@@ -59,10 +60,19 @@ test.describe("Team notifications", () => {
     );
 
     expect(notification).toBeDefined();
-    expect(notification!.eventData.team_name).toBe(team.name);
-    expect(notification!.eventData.sender_name).toBe(
+
+    expect(notification!.userId).toBe(TEST_USER_2.user_id);
+    expect(notification!.teamId).toBe(team.teamId);
+    expect(notification!.type).toBe(
+      "user_received_team_invite" as NotificationTypeT,
+    );
+    expect(notification!.eventData.teamName).toBe(team.name);
+    expect(notification!.eventData.senderName).toBe(
       `${TEST_USER.first_name} ${TEST_USER.last_name}`,
     );
+
+    // Target display format
+    // [TEAM NAME] You have been invited to join [TEAM NAME] by [SENDER NAME].
   });
 
   test("inviter is notified when invited user accepts the invitation", async ({}, testInfo) => {
@@ -83,10 +93,19 @@ test.describe("Team notifications", () => {
     );
 
     expect(notification).toBeDefined();
-    expect(notification!.eventData.accepted_user_name).toBe(
+
+    expect(notification!.userId).toBe(TEST_USER.user_id);
+    expect(notification!.teamId).toBe(team.teamId);
+    expect(notification!.type).toBe(
+      "user_accepted_team_invite" as NotificationTypeT,
+    );
+    expect(notification!.eventData.acceptedUserName).toBe(
       `${TEST_USER_2.first_name} ${TEST_USER_2.last_name}`,
     );
-    expect(notification!.eventData.team_name).toBe(team.name);
+    expect(notification!.eventData.teamName).toBe(team.name);
+
+    // Target display format
+    // [TEAM NAME] [ACCEPTED USER NAME] has accepted the invitation to join [TEAM NAME].
   });
 
   test("team owner is notified when a member leaves the team", async ({}, testInfo) => {
@@ -100,10 +119,14 @@ test.describe("Team notifications", () => {
     const notification = notifications.find((n) => n.type === "user_left_team");
 
     expect(notification).toBeDefined();
-    expect(notification!.eventData.member_name).toBe(
+
+    expect(notification!.userId).toBe(TEST_USER.user_id);
+    expect(notification!.teamId).toBe(team.teamId);
+    expect(notification!.type).toBe("user_left_team" as NotificationTypeT);
+    expect(notification!.eventData.userName).toBe(
       `${TEST_USER_2.first_name} ${TEST_USER_2.last_name}`,
     );
-    expect(notification!.eventData.team_name).toBe(team.name);
+    expect(notification!.eventData.teamName).toBe(team.name);
   });
 
   test("removed member is notified when kicked from the team", async ({}, testInfo) => {
@@ -123,6 +146,17 @@ test.describe("Team notifications", () => {
     );
 
     expect(notification).toBeDefined();
+    console.log(notification);
+
+    expect(notification!.userId).toBe(TEST_USER_2.user_id);
+    expect(notification!.teamId).toBe(team.teamId);
+    expect(notification!.type).toBe(
+      "user_removed_from_team" as NotificationTypeT,
+    );
+    expect(notification!.eventData.userName).toBe(
+      `${TEST_USER.first_name} ${TEST_USER.last_name}`,
+    );
+
     expect(notification!.eventData.team_name).toBe(team.name);
   });
 });
