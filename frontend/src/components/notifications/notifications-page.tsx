@@ -39,6 +39,7 @@ export default function NotificationsPage({ lng }: { lng: string }) {
 
   return (
     <Box
+      data-testid="notifications-page"
       sx={{
         maxWidth: 680,
         mx: "auto",
@@ -55,6 +56,7 @@ export default function NotificationsPage({ lng }: { lng: string }) {
         </Typography>
         {unread.length > 0 && (
           <Button
+            data-testid="mark-all-read-button"
             size="small"
             variant="outlined"
             onClick={() => markAllRead.mutate()}

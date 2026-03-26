@@ -23,6 +23,7 @@ export function getNotificationTargetPath(
     case "user_accepted_team_invite":
     case "user_removed_from_team":
     case "user_left_team":
+      return `${base}/settings/teams`;
     default:
       return `${base}/schedule`;
   }

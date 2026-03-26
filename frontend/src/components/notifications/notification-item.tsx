@@ -64,6 +64,9 @@ export default function NotificationItem({
 
   return (
     <Box
+      data-testid="notification-item"
+      data-read={String(notification.read)}
+      data-notification-type={notification.type}
       sx={{
         display: "flex",
         alignItems: "flex-start",
@@ -73,7 +76,6 @@ export default function NotificationItem({
         backgroundColor: notification.read
           ? "transparent"
           : "rgba(25,118,210,0.05)",
-        borderLeft: notification.read ? "none" : "3px solid #1976d2",
         "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
       }}
     >
@@ -83,6 +85,7 @@ export default function NotificationItem({
         style={{ flexGrow: 1, textDecoration: "none", color: "inherit" }}
       >
         <Typography
+          data-testid="notification-message"
           variant={compact ? "body2" : "body1"}
           fontWeight={notification.read ? 400 : 600}
           sx={{ lineHeight: 1.4 }}
@@ -90,13 +93,18 @@ export default function NotificationItem({
           {message}
         </Typography>
         {!compact && (
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            data-testid="notification-timestamp"
+            variant="caption"
+            color="text.secondary"
+          >
             {notification.createdAt.format("DD MMM YYYY HH:mm")}
           </Typography>
         )}
       </Link>
       {!compact && onDelete && (
         <IconButton
+          data-testid="notification-delete-button"
           size="small"
           onClick={(e) => {
             e.preventDefault();
