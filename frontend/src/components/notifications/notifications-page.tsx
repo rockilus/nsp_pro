@@ -43,7 +43,7 @@ export default function NotificationsPage({ lng }: { lng: string }) {
       sx={{
         maxWidth: 680,
         mx: "auto",
-        mt: 3,
+        pt: "20px",
         px: 2,
         maxHeight: "calc(100vh - 64px)",
         overflowY: "auto",
