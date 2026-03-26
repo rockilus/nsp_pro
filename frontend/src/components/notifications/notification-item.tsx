@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslation } from "@/app/i18n/client";
 import { NotificationT } from "@/types/notification";
 import { getNotificationTargetPath } from "@/app/lib/utils/getNotificationTargetPath";
+import dayjs, { Dayjs } from "dayjs";
 // MUI
 import IconButton from "@mui/material/IconButton";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -42,6 +43,19 @@ function getMessageKey(type: NotificationT["type"]): string {
     default:
       return "schedule_published";
   }
+}
+
+function getRelativeTime(createdAt: Dayjs): string {
+  const now = dayjs();
+  const minutes = now.diff(createdAt, "minute");
+  if (minutes < 60) return `${minutes}m`;
+  const hours = now.diff(createdAt, "hour");
+  if (hours < 24) return `${hours}h`;
+  const days = now.diff(createdAt, "day");
+  if (days < 7) return `${days}d`;
+  const weeks = now.diff(createdAt, "week");
+  if (weeks < 4) return `${weeks}w`;
+  return createdAt.format("DD MMM YYYY");
 }
 
 export default function NotificationItem({
@@ -92,28 +106,38 @@ export default function NotificationItem({
         >
           {message}
         </Typography>
-        {!compact && (
+      </Link>
+      {!compact && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            justifyContent: "space-between",
+            ml: 1,
+          }}
+        >
           <Typography
-            data-testid="notification-timestamp"
+            data-testid="notification-time-since"
             variant="caption"
             color="text.secondary"
           >
-            {notification.createdAt.format("DD MMM YYYY HH:mm")}
+            {getRelativeTime(notification.createdAt)}
           </Typography>
-        )}
-      </Link>
-      {!compact && onDelete && (
-        <IconButton
-          data-testid="notification-delete-button"
-          size="small"
-          onClick={(e) => {
-            e.preventDefault();
-            onDelete(notification.id);
-          }}
-          aria-label={t("delete")}
-        >
-          <DeleteOutlineIcon fontSize="small" />
-        </IconButton>
+          {onDelete && (
+            <IconButton
+              data-testid="notification-delete-button"
+              size="small"
+              onClick={(e) => {
+                e.preventDefault();
+                onDelete(notification.id);
+              }}
+              aria-label={t("delete")}
+            >
+              <DeleteOutlineIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
       )}
     </Box>
   );
