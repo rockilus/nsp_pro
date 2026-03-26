@@ -68,11 +68,15 @@ class TeamInvitationService(BaseService):
         invitation.status = TeamInvitationStatus.PENDING
         invitation.created_by = sender_id
         invitation.created_at = datetime.now(tz=timezone.utc)
-        invitation.expires_at = datetime.now(tz=timezone.utc) + timedelta(days=7)
+        invitation.expires_at = datetime.now(tz=timezone.utc) + timedelta(
+            days=7
+        )
         sender = self.collection.user_db.get_user_by_id(user_id=sender_id)
         if not sender:
             raise ValueError("Sender not found")
-        team = self.collection.team_db.get_team_by_id(team_id=invitation.team_id)
+        team = self.collection.team_db.get_team_by_id(
+            team_id=invitation.team_id
+        )
         if not team:
             raise ValueError("Team not found")
         await self.send_invitation_email(
@@ -105,10 +109,8 @@ class TeamInvitationService(BaseService):
         user = self.collection.user_db.get_user_by_id(user_id=user_id)
         if not user:
             raise ValueError("User not found")
-        invitations = (
-            self.collection.team_invitation_db.get_pending_invitations_by_email(
-                email=user.email,
-            )
+        invitations = self.collection.team_invitation_db.get_pending_invitations_by_email(
+            email=user.email,
         )
         team_ids = list(set(invitation.team_id for invitation in invitations))
         creator_ids = list(
@@ -119,7 +121,9 @@ class TeamInvitationService(BaseService):
             )
         )
         teams = self.collection.team_db.get_teams_by_ids(team_ids=team_ids)
-        creators = self.collection.user_db.get_users_by_ids(user_ids=creator_ids)
+        creators = self.collection.user_db.get_users_by_ids(
+            user_ids=creator_ids
+        )
         team_map = {team.id: team.name for team in teams}
         creator_map = {
             creator.id: f"{creator.first_name} {creator.last_name}"
@@ -165,7 +169,9 @@ class TeamInvitationService(BaseService):
         )
         if not sender:
             raise ValueError("Sender not found")
-        team = self.collection.team_db.get_team_by_id(team_id=invitation.team_id)
+        team = self.collection.team_db.get_team_by_id(
+            team_id=invitation.team_id
+        )
         if not team:
             raise ValueError("Team not found")
         await self.send_invitation_email(
@@ -179,22 +185,26 @@ class TeamInvitationService(BaseService):
     async def accept_team_invitation(
         self, user_id: str, token: str
     ) -> TeamWithMembership:
-        invitation = self.collection.team_invitation_db.get_invitation_by_token(
-            token=token,
+        invitation = (
+            self.collection.team_invitation_db.get_invitation_by_token(
+                token=token,
+            )
         )
         if not invitation:
             raise ValueError("Invitation not found")
         user = self.collection.user_db.get_user_by_id(user_id=user_id)
         if not user:
             raise ValueError("User not found")
-        team = self.collection.team_db.get_team_by_id(team_id=invitation.team_id)
+        team = self.collection.team_db.get_team_by_id(
+            team_id=invitation.team_id
+        )
         if not team:
             raise ValueError("Team not found")
         if not self.validate_invitation(invitation=invitation, user=user):
             raise ValueError("Invalid invitation")
-        membership_role_value = INVITE_TYPE_ROLE_MAP.get(invitation.type.value, {}).get(
-            "role", None
-        )
+        membership_role_value = INVITE_TYPE_ROLE_MAP.get(
+            invitation.type.value, {}
+        ).get("role", None)
         if not membership_role_value:
             raise ValueError("Invalid membership role")
         membership_role: TeamMembershipRole | None = None
@@ -213,7 +223,10 @@ class TeamInvitationService(BaseService):
         membership = await self.team_membership_service.create_team_membership(
             membership=membership
         )
-        if invitation.type == TeamInvitationType.MEMBER and invitation.worker_id:
+        if (
+            invitation.type == TeamInvitationType.MEMBER
+            and invitation.worker_id
+        ):
             worker = self.collection.worker_db.get_worker_by_id(
                 worker_id=invitation.worker_id,
             )
@@ -249,8 +262,10 @@ class TeamInvitationService(BaseService):
         )
 
     def reject_team_invitation(self, user_id: str, token: str) -> bool:
-        invitation = self.collection.team_invitation_db.get_invitation_by_token(
-            token=token,
+        invitation = (
+            self.collection.team_invitation_db.get_invitation_by_token(
+                token=token,
+            )
         )
         user = self.collection.user_db.get_user_by_id(user_id=user_id)
         if not invitation or not user:
@@ -273,7 +288,8 @@ class TeamInvitationService(BaseService):
 
         sender_name = f"{sender.first_name} {sender.last_name}"
         invitation_link = (
-            f"{config.client_url}/en/plan/settings/teams" f"?token={invitation.token}"
+            f"{config.client_url}/en/plan/settings/teams"
+            f"?token={invitation.token}"
         )
 
         # Use email queue service to send invitation

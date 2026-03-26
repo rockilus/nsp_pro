@@ -13,5 +13,8 @@ def get_team_service(request: Request = Depends()) -> TeamService:
     team_membership_service = get_team_membership_service()
     notification_service = get_notification_service(db_collections)
     return TeamService(
-        db_collections, shift_service, team_membership_service, notification_service
+        db_collections,
+        shift_service,
+        team_membership_service,
+        notification_service,
     )

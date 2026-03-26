@@ -4,7 +4,10 @@ Each function is a side-effect-free factory — it only assembles data and
 returns a NotificationEvent that can be passed to NotificationService.dispatch().
 """
 
-from shared.schemas.core.notification import NotificationEvent, NotificationType
+from shared.schemas.core.notification import (
+    NotificationEvent,
+    NotificationType,
+)
 
 
 def team_invite_received_event(
@@ -33,7 +36,10 @@ def team_invite_accepted_event(
         notification_type=NotificationType.TEAM_INVITE_ACCEPTED,
         user_ids=owner_user_ids,
         team_id=team_id,
-        event_data={"team_name": team_name, "accepted_user_name": accepted_user_name},
+        event_data={
+            "team_name": team_name,
+            "accepted_user_name": accepted_user_name,
+        },
     )
 
 
