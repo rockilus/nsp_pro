@@ -11,27 +11,22 @@ import type {
   NotificationKey,
   NotificationCategory,
 } from "@/types/notification";
-import { TeamMembershipRole } from "@/types/team";
 
 const SETTINGS_URL = `${testConfig.frontendUrl}/en/plan/settings/notifications/`;
 
 // --- Helpers -----------------------------------------------------------------
 
-/** All keys visible to a given role, grouped by category. */
-function visibleKeysByCategory(
-  role: TeamMembershipRole,
-): Partial<Record<NotificationCategory, NotificationKey[]>> {
-  return NOTIFICATION_KEYS.filter((key) => {
-    const { visibleTo } = NOTIFICATION_REGISTRY[key];
-    return visibleTo.length === 0 || visibleTo.includes(role);
-  }).reduce<Partial<Record<NotificationCategory, NotificationKey[]>>>(
-    (acc, key) => {
-      const { category } = NOTIFICATION_REGISTRY[key];
-      (acc[category] ??= []).push(key);
-      return acc;
-    },
-    {},
-  );
+/** All keys grouped by category. */
+function keysByCategory(): Partial<
+  Record<NotificationCategory, NotificationKey[]>
+> {
+  return NOTIFICATION_KEYS.reduce<
+    Partial<Record<NotificationCategory, NotificationKey[]>>
+  >((acc, key) => {
+    const { category } = NOTIFICATION_REGISTRY[key];
+    (acc[category] ??= []).push(key);
+    return acc;
+  }, {});
 }
 
 // --- Context -----------------------------------------------------------------
@@ -44,10 +39,10 @@ interface NotifSettingsContext {
 const testContextMap = new Map<string, NotifSettingsContext>();
 
 // =============================================================================
-// Owner role — full visibility
+// Notification Settings
 // =============================================================================
 
-test.describe("Notification Settings — owner role", () => {
+test.describe("Notification Settings", () => {
   test.beforeEach(async ({}, testInfo) => {
     const workerIndex =
       typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
@@ -59,7 +54,6 @@ test.describe("Notification Settings — owner role", () => {
       collections: ["teams", "team_memberships", "notification_preferences"],
     });
 
-    // createTeam uses TEST_USER's auth client, making TEST_USER the owner.
     const team = await dbUtils.createTeam({
       name: `Notif Settings Team ${workerIndex}-${Date.now()}`,
     });
@@ -88,9 +82,9 @@ test.describe("Notification Settings — owner role", () => {
     }
   });
 
-  // 2 — All owner-visible keys in correct categories -------------------------
+  // 2 — All keys in correct categories ----------------------------------------
 
-  test("all owner-visible keys are visible in their correct categories", async ({
+  test("all notification keys are visible in their correct categories", async ({
     page,
   }) => {
     await page.goto(SETTINGS_URL);
@@ -98,10 +92,10 @@ test.describe("Notification Settings — owner role", () => {
       timeout: 10_000,
     });
 
-    const keysByCategory = visibleKeysByCategory(TeamMembershipRole.OWNER);
+    const grouped = keysByCategory();
 
     for (const cat of NOTIFICATION_CATEGORY_ORDER) {
-      const keys = keysByCategory[cat];
+      const keys = grouped[cat];
       if (!keys || keys.length === 0) continue;
 
       const categoryBox = page.locator(
@@ -126,10 +120,9 @@ test.describe("Notification Settings — owner role", () => {
       timeout: 10_000,
     });
 
-    const keysByCategory = visibleKeysByCategory(TeamMembershipRole.OWNER);
-    const ownerKeys = Object.values(keysByCategory).flat() as NotificationKey[];
+    const allKeys = NOTIFICATION_KEYS;
 
-    for (const key of ownerKeys) {
+    for (const key of allKeys) {
       // Verify the accordion is present in the correct category
       const { category } = NOTIFICATION_REGISTRY[key];
       const categoryBox = page.locator(
@@ -179,14 +172,7 @@ test.describe("Notification Settings — owner role", () => {
       timeout: 10_000,
     });
 
-    const ownerKeys = NOTIFICATION_KEYS.filter((key) => {
-      const { visibleTo } = NOTIFICATION_REGISTRY[key];
-      return (
-        visibleTo.length === 0 || visibleTo.includes(TeamMembershipRole.OWNER)
-      );
-    });
-
-    for (const key of ownerKeys) {
+    for (const key of NOTIFICATION_KEYS) {
       await page
         .locator(`[data-testid="notification-accordion-summary-${key}"]`)
         .click();
@@ -243,14 +229,7 @@ test.describe("Notification Settings — owner role", () => {
       timeout: 10_000,
     });
 
-    const ownerKeys = NOTIFICATION_KEYS.filter((key) => {
-      const { visibleTo } = NOTIFICATION_REGISTRY[key];
-      return (
-        visibleTo.length === 0 || visibleTo.includes(TeamMembershipRole.OWNER)
-      );
-    });
-
-    for (const key of ownerKeys) {
+    for (const key of NOTIFICATION_KEYS) {
       await page
         .locator(`[data-testid="notification-accordion-summary-${key}"]`)
         .click();
@@ -382,75 +361,5 @@ test.describe("Notification Settings — owner role", () => {
       "data-status",
       "status_in_app_only",
     );
-  });
-});
-
-// =============================================================================
-// Member role — restricted visibility
-// =============================================================================
-
-test.describe("Notification Settings — member role", () => {
-  test.beforeEach(async ({}, testInfo) => {
-    const workerIndex =
-      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
-    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
-    (testInfo as any).testRunId = testRunId;
-
-    const dbUtils = new DatabaseTestUtils();
-    // No team created — selectedTeam will be null, role defaults to MEMBER.
-    await dbUtils.resetDatabase({
-      collections: ["teams", "team_memberships", "notification_preferences"],
-    });
-
-    testContextMap.set(testRunId, {
-      dbUtils,
-      team: { teamId: "", name: "" },
-    });
-  });
-
-  test.afterEach(async ({}, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    if (!testRunId) return;
-    testContextMap.delete(testRunId);
-  });
-
-  // 3 — Owner-only keys hidden for member ------------------------------------
-
-  test("owner-only notification keys are hidden for member users", async ({
-    page,
-  }) => {
-    await page.goto(SETTINGS_URL);
-    await expect(page.locator("role=progressbar")).not.toBeVisible({
-      timeout: 10_000,
-    });
-
-    const ownerOnlyKeys = NOTIFICATION_KEYS.filter(
-      (key) =>
-        NOTIFICATION_REGISTRY[key].visibleTo.length > 0 &&
-        NOTIFICATION_REGISTRY[key].visibleTo.every(
-          (r) => r === TeamMembershipRole.OWNER,
-        ),
-    );
-
-    const memberVisibleKeys = NOTIFICATION_KEYS.filter((key) => {
-      const { visibleTo } = NOTIFICATION_REGISTRY[key];
-      return (
-        visibleTo.length === 0 || visibleTo.includes(TeamMembershipRole.MEMBER)
-      );
-    });
-
-    // Member-visible keys must be present
-    for (const key of memberVisibleKeys) {
-      await expect(
-        page.locator(`[data-testid="notification-accordion-${key}"]`),
-      ).toBeVisible();
-    }
-
-    // Owner-only keys must NOT be present
-    for (const key of ownerOnlyKeys) {
-      await expect(
-        page.locator(`[data-testid="notification-accordion-${key}"]`),
-      ).not.toBeVisible();
-    }
   });
 });

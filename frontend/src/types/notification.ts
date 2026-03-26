@@ -26,8 +26,6 @@ export type NotificationT = {
   readAt: dayjs.Dayjs | null;
 };
 
-import { TeamMembershipRole } from "@/types/team";
-
 export type NotificationKey =
   | "schedule_published"
   | "new_request"
@@ -59,26 +57,21 @@ export type NotificationCategory =
 
 export type NotificationKeyMeta = {
   category: NotificationCategory;
-  /** Empty array = visible to all roles. */
-  visibleTo: TeamMembershipRole[];
 };
 
 export const NOTIFICATION_REGISTRY: Record<
   NotificationKey,
   NotificationKeyMeta
 > = {
-  schedule_published: { category: "schedule", visibleTo: [] },
-  new_request: { category: "requests", visibleTo: [TeamMembershipRole.OWNER] },
-  swap_requests: { category: "requests", visibleTo: [] },
-  request_decisions: { category: "requests", visibleTo: [] },
-  assignment_changes: { category: "assignments", visibleTo: [] },
-  user_received_team_invite: { category: "team", visibleTo: [] },
-  user_accepted_team_invite: {
-    category: "team",
-    visibleTo: [TeamMembershipRole.OWNER],
-  },
-  user_removed_from_team: { category: "team", visibleTo: [] },
-  user_left_team: { category: "team", visibleTo: [TeamMembershipRole.OWNER] },
+  schedule_published: { category: "schedule" },
+  new_request: { category: "requests" },
+  swap_requests: { category: "requests" },
+  request_decisions: { category: "requests" },
+  assignment_changes: { category: "assignments" },
+  user_received_team_invite: { category: "team" },
+  user_accepted_team_invite: { category: "team" },
+  user_removed_from_team: { category: "team" },
+  user_left_team: { category: "team" },
 };
 
 export const NOTIFICATION_CATEGORY_ORDER: NotificationCategory[] = [

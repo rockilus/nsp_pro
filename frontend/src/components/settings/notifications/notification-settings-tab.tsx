@@ -14,8 +14,7 @@ import {
   NOTIFICATION_KEYS,
   NOTIFICATION_REGISTRY,
 } from "@/types/notification";
-import { TeamMembershipRole } from "@/types/team";
-import { useTeamSelector } from "@/hooks/useTeamSelector";
+
 // MUI
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -42,9 +41,6 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const isLandscape = useIsLandscape();
-
-  const { selectedTeam } = useTeamSelector();
-  const userRole = selectedTeam?.membership.role ?? TeamMembershipRole.MEMBER;
 
   const { data: prefs, isLoading } = useNotificationPreferences();
   const update = useUpdateNotificationPreferences();
@@ -91,12 +87,7 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
     });
   };
 
-  const visibleKeys = NOTIFICATION_KEYS.filter((key) => {
-    const { visibleTo } = NOTIFICATION_REGISTRY[key];
-    return visibleTo.length === 0 || visibleTo.includes(userRole);
-  });
-
-  const keysByCategory = visibleKeys.reduce<
+  const keysByCategory = NOTIFICATION_KEYS.reduce<
     Partial<Record<NotificationCategory, NotificationKey[]>>
   >((acc, key) => {
     const { category } = NOTIFICATION_REGISTRY[key];
