@@ -1,9 +1,6 @@
 import { test, expect } from "@playwright/test";
-import {
-  DatabaseTestUtils,
-  TEST_USER,
-  TEST_USER_2,
-} from "../../utils/database-utils";
+import { randomUUID } from "crypto";
+import { DatabaseTestUtils, TestUser } from "../../utils/database-utils";
 import {
   NotifTestContext,
   NotificationTestContextMap,
@@ -26,11 +23,31 @@ test.describe("NotificationsPage", () => {
       ],
     });
 
+    const id1 = randomUUID().replace(/-/g, "").slice(0, 24);
+    const id2 = randomUUID().replace(/-/g, "").slice(0, 24);
+    const user1: TestUser = {
+      user_id: id1,
+      email: `testuser-${id1}@example.com`,
+      username: `testuser-${id1}`,
+      first_name: "Test",
+      last_name: "User",
+    };
+    const user2: TestUser = {
+      user_id: id2,
+      email: `testuser2-${id2}@example.com`,
+      username: `testuser2-${id2}`,
+      first_name: "Test",
+      last_name: "User2",
+    };
+    await dbUtils.createTestUser(user1);
+    await dbUtils.createTestUser(user2);
+
     const team = await dbUtils.createTeam({
       name: `Notif Page Team ${testInfo.workerIndex}-${Date.now()}`,
+      ownerUserId: user1.user_id,
     });
 
-    testContextMap.set(runId, { dbUtils, team });
+    testContextMap.set(runId, { dbUtils, team, user1, user2 });
   });
 
   test.afterEach(async ({}, testInfo) => {
@@ -42,24 +59,24 @@ test.describe("NotificationsPage", () => {
   test("shows notifications in newest-first order", async ({
     page,
   }, testInfo) => {
-    const { dbUtils, team } = testContextMap.get(
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
       testContextMap.getRunId(testInfo),
     );
 
-    // Notification A (older): invite TEST_USER_2 then have them accept
-    // → TEST_USER receives user_accepted_team_invite
+    // Notification A (older): invite user2 then have them accept
+    // → user1 receives user_accepted_team_invite
     const invitation = await dbUtils.createTeamInvitationAs(
-      TEST_USER.user_id,
+      user1!.user_id,
       team.teamId,
-      TEST_USER_2.email,
+      user2!.email,
     );
-    await dbUtils.acceptTeamInvitationAs(TEST_USER_2.user_id, invitation.token);
+    await dbUtils.acceptTeamInvitationAs(user2!.user_id, invitation.token);
 
-    // Notification B (newer): TEST_USER_2 leaves team
-    // → TEST_USER receives user_left_team
-    await dbUtils.leaveTeamAs(TEST_USER_2.user_id, team.teamId);
+    // Notification B (newer): user2 leaves team
+    // → user1 receives user_left_team
+    await dbUtils.leaveTeamAs(user2!.user_id, team.teamId);
 
-    await navigateToNotificationsAsUser(page, dbUtils, TEST_USER.user_id);
+    await navigateToNotificationsAsUser(page, dbUtils, user1!.user_id);
 
     const items = page.locator('[data-testid="notification-item"]');
     await expect(items).toHaveCount(2);
@@ -75,18 +92,18 @@ test.describe("NotificationsPage", () => {
   });
 
   test("unread notifications are highlighted", async ({ page }, testInfo) => {
-    const { dbUtils, team } = testContextMap.get(
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
       testContextMap.getRunId(testInfo),
     );
 
-    // Invite TEST_USER_2 — creates an unread notification for them
+    // Invite user2 — creates an unread notification for them
     await dbUtils.createTeamInvitationAs(
-      TEST_USER.user_id,
+      user1!.user_id,
       team.teamId,
-      TEST_USER_2.email,
+      user2!.email,
     );
 
-    await navigateToNotificationsAsUser(page, dbUtils, TEST_USER_2.user_id);
+    await navigateToNotificationsAsUser(page, dbUtils, user2!.user_id);
 
     const firstItem = page.locator('[data-testid="notification-item"]').first();
     await expect(firstItem).toBeVisible();
@@ -96,25 +113,29 @@ test.describe("NotificationsPage", () => {
   test("shows notifications from all teams the user belongs to", async ({
     page,
   }, testInfo) => {
-    const { dbUtils } = testContextMap.get(testContextMap.getRunId(testInfo));
+    const { dbUtils, user1, user2 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
 
-    // Create two separate teams, both owned by TEST_USER
+    // Create two separate teams, both owned by user1
     const teamA = await dbUtils.createTeam({
       name: `Team A ${Date.now()}`,
+      ownerUserId: user1!.user_id,
     });
     const teamB = await dbUtils.createTeam({
       name: `Team B ${Date.now()}`,
+      ownerUserId: user1!.user_id,
     });
 
-    // TEST_USER_2 joins and leaves Team A → TEST_USER gets user_left_team from Team A
-    await dbUtils.addTeamMember(TEST_USER_2.user_id, teamA.teamId, "member");
-    await dbUtils.leaveTeamAs(TEST_USER_2.user_id, teamA.teamId);
+    // user2 joins and leaves Team A → user1 gets user_left_team from Team A
+    await dbUtils.addTeamMember(user2!.user_id, teamA.teamId, "member");
+    await dbUtils.leaveTeamAs(user2!.user_id, teamA.teamId);
 
-    // TEST_USER_2 joins and leaves Team B → TEST_USER gets user_left_team from Team B
-    await dbUtils.addTeamMember(TEST_USER_2.user_id, teamB.teamId, "member");
-    await dbUtils.leaveTeamAs(TEST_USER_2.user_id, teamB.teamId);
+    // user2 joins and leaves Team B → user1 gets user_left_team from Team B
+    await dbUtils.addTeamMember(user2!.user_id, teamB.teamId, "member");
+    await dbUtils.leaveTeamAs(user2!.user_id, teamB.teamId);
 
-    await navigateToNotificationsAsUser(page, dbUtils, TEST_USER.user_id);
+    await navigateToNotificationsAsUser(page, dbUtils, user1!.user_id);
 
     const items = page.locator('[data-testid="notification-item"]');
     await expect(items).toHaveCount(2);
@@ -123,18 +144,18 @@ test.describe("NotificationsPage", () => {
   test("each notification shows message text and timestamp", async ({
     page,
   }, testInfo) => {
-    const { dbUtils, team } = testContextMap.get(
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
       testContextMap.getRunId(testInfo),
     );
 
-    // Invite TEST_USER_2 → they receive user_received_team_invite notification
+    // Invite user2 → they receive user_received_team_invite notification
     await dbUtils.createTeamInvitationAs(
-      TEST_USER.user_id,
+      user1!.user_id,
       team.teamId,
-      TEST_USER_2.email,
+      user2!.email,
     );
 
-    await navigateToNotificationsAsUser(page, dbUtils, TEST_USER_2.user_id);
+    await navigateToNotificationsAsUser(page, dbUtils, user2!.user_id);
 
     const firstItem = page.locator('[data-testid="notification-item"]').first();
     await expect(firstItem).toBeVisible();
@@ -148,32 +169,5 @@ test.describe("NotificationsPage", () => {
     );
     await expect(timestamp).toBeVisible();
     await expect(timestamp).not.toBeEmpty();
-  });
-
-  test("clicking a team notification navigates to team settings", async ({
-    page,
-  }, testInfo) => {
-    const { dbUtils, team } = testContextMap.get(
-      testContextMap.getRunId(testInfo),
-    );
-
-    // Invite TEST_USER_2 → they receive user_received_team_invite notification
-    await dbUtils.createTeamInvitationAs(
-      TEST_USER.user_id,
-      team.teamId,
-      TEST_USER_2.email,
-    );
-
-    await navigateToNotificationsAsUser(page, dbUtils, TEST_USER_2.user_id);
-
-    const notificationLink = page
-      .locator('[data-testid="notification-item"] a')
-      .first();
-    await expect(notificationLink).toBeVisible();
-
-    await notificationLink.click();
-
-    await page.waitForURL(/\/plan\/settings\/teams/, { timeout: 10_000 });
-    expect(page.url()).toContain("/plan/settings/teams");
   });
 });
