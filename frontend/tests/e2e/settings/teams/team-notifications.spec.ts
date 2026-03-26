@@ -1,16 +1,26 @@
 import { test, expect } from "@playwright/test";
+import { randomUUID } from "crypto";
 import {
   DatabaseTestUtils,
   TEST_USER,
   TEST_USER_2,
 } from "../../../utils/database-utils";
 
-const dbUtils = new DatabaseTestUtils();
+interface NotifTestContext {
+  dbUtils: DatabaseTestUtils;
+  team: { teamId: string; name: string };
+}
+
+const testContextMap = new Map<string, NotifTestContext>();
 
 test.describe("Team notifications", () => {
-  let team: { teamId: string; name: string };
+  test.beforeEach(async ({}, testInfo) => {
+    const workerIndex =
+      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+    (testInfo as any).testRunId = testRunId;
 
-  test.beforeEach(async () => {
+    const dbUtils = new DatabaseTestUtils();
     await dbUtils.resetDatabase({
       collections: [
         "teams",
@@ -19,12 +29,24 @@ test.describe("Team notifications", () => {
         "notifications",
       ],
     });
-    team = await dbUtils.createTeam({
-      name: `Notif Team ${test.info().workerIndex}-${Date.now()}`,
+
+    const team = await dbUtils.createTeam({
+      name: `Notif Team ${workerIndex}-${Date.now()}`,
     });
+
+    testContextMap.set(testRunId, { dbUtils, team });
   });
 
-  test("invited user receives notification when invited to a team", async () => {
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+    testContextMap.delete(testRunId);
+  });
+
+  test("invited user receives notification when invited to a team", async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team } = testContextMap.get(testRunId)!;
+
     await dbUtils.createTeamInvitationAs(
       TEST_USER.user_id,
       team.teamId,
@@ -43,7 +65,10 @@ test.describe("Team notifications", () => {
     );
   });
 
-  test("inviter is notified when invited user accepts the invitation", async () => {
+  test("inviter is notified when invited user accepts the invitation", async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team } = testContextMap.get(testRunId)!;
+
     const invitation = await dbUtils.createTeamInvitationAs(
       TEST_USER.user_id,
       team.teamId,
@@ -64,7 +89,10 @@ test.describe("Team notifications", () => {
     expect(notification!.eventData.team_name).toBe(team.name);
   });
 
-  test("team owner is notified when a member leaves the team", async () => {
+  test("team owner is notified when a member leaves the team", async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team } = testContextMap.get(testRunId)!;
+
     await dbUtils.addTeamMember(TEST_USER_2.user_id, team.teamId, "member");
     await dbUtils.leaveTeamAs(TEST_USER_2.user_id, team.teamId);
 
@@ -78,7 +106,10 @@ test.describe("Team notifications", () => {
     expect(notification!.eventData.team_name).toBe(team.name);
   });
 
-  test("removed member is notified when kicked from the team", async () => {
+  test("removed member is notified when kicked from the team", async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team } = testContextMap.get(testRunId)!;
+
     await dbUtils.addTeamMember(TEST_USER_2.user_id, team.teamId, "member");
     await dbUtils.removeTeamMemberAs(
       TEST_USER.user_id,
