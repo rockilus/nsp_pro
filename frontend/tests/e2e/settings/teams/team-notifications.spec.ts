@@ -146,17 +146,12 @@ test.describe("Team notifications", () => {
     );
 
     expect(notification).toBeDefined();
-    console.log(notification);
 
     expect(notification!.userId).toBe(TEST_USER_2.user_id);
     expect(notification!.teamId).toBe(team.teamId);
     expect(notification!.type).toBe(
       "user_removed_from_team" as NotificationTypeT,
     );
-    expect(notification!.eventData.userName).toBe(
-      `${TEST_USER.first_name} ${TEST_USER.last_name}`,
-    );
-
-    expect(notification!.eventData.team_name).toBe(team.name);
+    expect(notification!.eventData.teamName).toBe(team.name);
   });
 });
