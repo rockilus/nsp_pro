@@ -19,6 +19,11 @@ from shared.schemas.core import (
 from src.config import config
 from src.services.base_service import BaseService
 from src.services.email_queue_service import EmailQueueService
+from src.services.notification_builders import (
+    team_invite_accepted_event,
+    team_invite_received_event,
+)
+from src.services.notification_service import NotificationService
 from src.services.team_membership_service import TeamMembershipService
 
 
@@ -28,10 +33,12 @@ class TeamInvitationService(BaseService):
         collection,
         team_membership_service: TeamMembershipService,
         email_queue_service: EmailQueueService,
+        notification_service: NotificationService,
     ):
         super().__init__(collection)
         self.team_membership_service = team_membership_service
         self.email_queue_service = email_queue_service
+        self.notification_service = notification_service
 
     async def create_team_invitation(
         self, invitation: TeamInvitation, sender_id: str
@@ -75,6 +82,16 @@ class TeamInvitationService(BaseService):
         invitation = self.collection.team_invitation_db.create_invitation(
             invitation=invitation
         )
+        if user is not None and user.id:
+            sender_name = f"{sender.first_name} {sender.last_name}"
+            self.notification_service.dispatch(
+                team_invite_received_event(
+                    team_id=invitation.team_id,
+                    team_name=team.name,
+                    sender_name=sender_name,
+                    invited_user_id=user.id,
+                )
+            )
         return invitation
 
     def get_team_invitations(self, team_id: str) -> list[TeamInvitation]:
@@ -205,6 +222,25 @@ class TeamInvitationService(BaseService):
                 self.collection.worker_db.update_worker(worker)
         invitation.status = TeamInvitationStatus.ACCEPTED
         self.collection.team_invitation_db.update_invitation(invitation)
+        memberships = (
+            self.collection.team_membership_db.get_team_memberships_by_team_id(
+                invitation.team_id
+            )
+        )
+        owner_user_ids = [
+            m.user_id
+            for m in memberships
+            if getattr(m, "role", None) in ("owner",) and m.user_id
+        ]
+        accepted_user_name = f"{user.first_name} {user.last_name}"
+        self.notification_service.dispatch(
+            team_invite_accepted_event(
+                team_id=invitation.team_id,
+                team_name=team.name,
+                accepted_user_name=accepted_user_name,
+                owner_user_ids=owner_user_ids,
+            )
+        )
         return TeamWithMembership(
             team=team,
             membership=MembershipForTeamWithMembership(

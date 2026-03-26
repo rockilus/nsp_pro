@@ -17,6 +17,10 @@ class NotificationType(str, Enum):
     SWAP_STATUS_CHANGED = "swap_status_changed"
     REQUEST_STATUS_CHANGED = "request_status_changed"
     ASSIGNMENT_CHANGED = "assignment_changed"
+    TEAM_INVITE_RECEIVED = "team_invite_received"
+    TEAM_INVITE_ACCEPTED = "team_invite_accepted"
+    MEMBER_REMOVED = "member_removed"
+    MEMBER_LEFT = "member_left"
 
 
 @dataclass
@@ -60,6 +64,16 @@ class Notification:
             updated_at=dto.updated_at,
             read_at=dto.read_at,
         )
+
+
+@dataclass
+class NotificationEvent:
+    """Carries all data needed to create notifications for one or more users."""
+
+    notification_type: NotificationType
+    user_ids: list[str]
+    team_id: str
+    event_data: Dict[str, Any]
 
 
 class NotificationDTO(BaseModel):

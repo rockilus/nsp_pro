@@ -16,6 +16,8 @@ from src.integrations.authorization import (
     authz_team_resource_instance_create,
 )
 from src.services.base_service import BaseService
+from src.services.notification_builders import member_left_event, member_removed_event
+from src.services.notification_service import NotificationService
 from src.services.shift_service import ShiftService
 from src.services.team_membership_service import TeamMembershipService
 
@@ -26,10 +28,12 @@ class TeamService(BaseService):
         collection,
         shift_service: ShiftService,
         team_membership_service: TeamMembershipService,
+        notification_service: NotificationService,
     ):
         super().__init__(collection)
         self.shift_service = shift_service
         self.team_membership_service = team_membership_service
+        self.notification_service = notification_service
 
     async def create_team(self, team_name: str, owner_id: str) -> TeamWithMembership:
         new_team = Team(
@@ -144,7 +148,9 @@ class TeamService(BaseService):
         updated_team = self.collection.team_db.update_team(team)
         return updated_team
 
-    async def remove_user_from_team(self, user_id: str, team_id: str) -> None:
+    async def remove_user_from_team(
+        self, user_id: str, team_id: str, is_self_leave: bool = False
+    ) -> None:
         membership = (
             self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
                 user_id=user_id, team_id=team_id
@@ -164,3 +170,38 @@ class TeamService(BaseService):
             for w in worker:
                 w.user_id = None
             self.collection.worker_db.update_workers(worker)
+        team = self.collection.team_db.get_team_by_id(team_id=team_id)
+        team_name = team.name if team else ""
+        if is_self_leave:
+            removed_user = self.collection.user_db.get_user_by_id(user_id=user_id)
+            member_name = (
+                f"{removed_user.first_name} {removed_user.last_name}"
+                if removed_user
+                else ""
+            )
+            memberships = (
+                self.collection.team_membership_db.get_team_memberships_by_team_id(
+                    team_id
+                )
+            )
+            owner_user_ids = [
+                m.user_id
+                for m in memberships
+                if getattr(m, "role", None) == "owner" and m.user_id
+            ]
+            self.notification_service.dispatch(
+                member_left_event(
+                    team_id=team_id,
+                    team_name=team_name,
+                    member_name=member_name,
+                    owner_user_ids=owner_user_ids,
+                )
+            )
+        else:
+            self.notification_service.dispatch(
+                member_removed_event(
+                    team_id=team_id,
+                    team_name=team_name,
+                    removed_user_id=user_id,
+                )
+            )

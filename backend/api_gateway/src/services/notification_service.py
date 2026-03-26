@@ -11,7 +11,11 @@ from shared.schemas.core import (
     SwapRequest,
     SwapType,
 )
-from shared.schemas.core.notification import Notification, NotificationType
+from shared.schemas.core.notification import (
+    Notification,
+    NotificationEvent,
+    NotificationType,
+)
 
 from src.services.base_service import BaseService
 
@@ -84,6 +88,19 @@ class NotificationService(BaseService):
     # ------------------------------------------------------------------
     # Domain notify methods (fire-and-forget, never raise)
     # ------------------------------------------------------------------
+
+    def dispatch(self, event: NotificationEvent) -> None:
+        """Dispatch a NotificationEvent to all target users (fire-and-forget)."""
+        for user_id in event.user_ids:
+            try:
+                self.create_notification(
+                    user_id, event.team_id, event.notification_type, event.event_data
+                )
+            except Exception as e:  # pylint: disable=broad-except
+                logger.error(
+                    f"Failed to dispatch {event.notification_type} notification "
+                    f"to user {user_id}: {e}"
+                )
 
     def notify_schedule_published(self, schedule: Schedule) -> None:
         """Notify all team workers that a schedule has been published."""

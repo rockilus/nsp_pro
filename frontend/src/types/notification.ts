@@ -8,7 +8,11 @@ export type NotificationTypeT =
   | "new_swap_request"
   | "swap_status_changed"
   | "request_status_changed"
-  | "assignment_changed";
+  | "assignment_changed"
+  | "team_invite_received"
+  | "team_invite_accepted"
+  | "member_removed"
+  | "member_left";
 
 export type NotificationT = {
   id: string;
@@ -30,7 +34,10 @@ export type NotificationKey =
   | "swap_requests"
   | "request_decisions"
   | "assignment_changes"
-  | "team_invite_accepted";
+  | "team_invite_accepted"
+  | "team_invite_received"
+  | "member_removed"
+  | "member_left";
 
 export const NOTIFICATION_KEYS: NotificationKey[] = [
   "schedule_published",
@@ -39,6 +46,9 @@ export const NOTIFICATION_KEYS: NotificationKey[] = [
   "request_decisions",
   "assignment_changes",
   "team_invite_accepted",
+  "team_invite_received",
+  "member_removed",
+  "member_left",
 ];
 
 export type NotificationCategory =
@@ -66,6 +76,9 @@ export const NOTIFICATION_REGISTRY: Record<
     category: "team",
     visibleTo: [TeamMembershipRole.OWNER],
   },
+  team_invite_received: { category: "team", visibleTo: [] },
+  member_removed: { category: "team", visibleTo: [] },
+  member_left: { category: "team", visibleTo: [TeamMembershipRole.OWNER] },
 };
 
 export const NOTIFICATION_CATEGORY_ORDER: NotificationCategory[] = [
