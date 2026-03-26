@@ -119,7 +119,7 @@ test.describe("NotificationsPage", () => {
   test("shows notifications from all teams the user belongs to", async ({
     page,
   }, testInfo) => {
-    const { dbUtils, user1, user2 } = testContextMap.get(
+    const { dbUtils, user1 } = testContextMap.get(
       testContextMap.getRunId(testInfo),
     );
 
@@ -133,13 +133,35 @@ test.describe("NotificationsPage", () => {
       ownerUserId: user1!.user_id,
     });
 
-    // user2 joins and leaves Team A → user1 gets user_left_team from Team A
-    await dbUtils.addTeamMember(user2!.user_id, teamA.teamId, "member");
-    await dbUtils.leaveTeamAs(user2!.user_id, teamA.teamId);
+    // Use two distinct users (one per team) so no membership state is reused.
+    // Reusing the same user across both teams can suppress the second notification
+    // if the backend rechecks membership presence at notification dispatch time.
+    const idA = randomUUID().replace(/-/g, "").slice(0, 24);
+    const idB = randomUUID().replace(/-/g, "").slice(0, 24);
+    const memberA: TestUser = {
+      user_id: idA,
+      email: `memberA-${idA}@example.com`,
+      username: `memberA-${idA}`,
+      first_name: "Member",
+      last_name: "A",
+    };
+    const memberB: TestUser = {
+      user_id: idB,
+      email: `memberB-${idB}@example.com`,
+      username: `memberB-${idB}`,
+      first_name: "Member",
+      last_name: "B",
+    };
+    await dbUtils.createTestUser(memberA);
+    await dbUtils.createTestUser(memberB);
 
-    // user2 joins and leaves Team B → user1 gets user_left_team from Team B
-    await dbUtils.addTeamMember(user2!.user_id, teamB.teamId, "member");
-    await dbUtils.leaveTeamAs(user2!.user_id, teamB.teamId);
+    // memberA joins and leaves Team A → user1 gets user_left_team from Team A
+    await dbUtils.addTeamMember(memberA.user_id, teamA.teamId, "member");
+    await dbUtils.leaveTeamAs(memberA.user_id, teamA.teamId);
+
+    // memberB joins and leaves Team B → user1 gets user_left_team from Team B
+    await dbUtils.addTeamMember(memberB.user_id, teamB.teamId, "member");
+    await dbUtils.leaveTeamAs(memberB.user_id, teamB.teamId);
 
     await navigateToNotificationsAsUser(page, dbUtils, user1!.user_id);
 
