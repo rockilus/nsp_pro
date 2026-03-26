@@ -63,7 +63,7 @@ test.describe("NotificationsPage", () => {
       testContextMap.getRunId(testInfo),
     );
 
-    // Notification A (older): invite user2 then have them accept
+    // Notification A (older): invite user2 and have them accept
     // → user1 receives user_accepted_team_invite
     const invitation = await dbUtils.createTeamInvitationAs(
       user1!.user_id,
@@ -72,9 +72,15 @@ test.describe("NotificationsPage", () => {
     );
     await dbUtils.acceptTeamInvitationAs(user2!.user_id, invitation.token);
 
-    // Notification B (newer): user2 leaves team
+    // Notification B (newer): user2 joins a second team via addTeamMember then leaves
     // → user1 receives user_left_team
-    await dbUtils.leaveTeamAs(user2!.user_id, team.teamId);
+    // Use addTeamMember (not invite) to ensure full membership before leaveTeamAs
+    const team2 = await dbUtils.createTeam({
+      name: `Notif Order Team2 ${Date.now()}`,
+      ownerUserId: user1!.user_id,
+    });
+    await dbUtils.addTeamMember(user2!.user_id, team2.teamId, "member");
+    await dbUtils.leaveTeamAs(user2!.user_id, team2.teamId);
 
     await navigateToNotificationsAsUser(page, dbUtils, user1!.user_id);
 
