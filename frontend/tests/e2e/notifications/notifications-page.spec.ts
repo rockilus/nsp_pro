@@ -161,7 +161,7 @@ test.describe("NotificationsPage", () => {
     await expect(message).not.toBeEmpty();
 
     const timestamp = firstItem.locator(
-      '[data-testid="notification-timestamp"]',
+      '[data-testid="notification-time-since"]',
     );
     await expect(timestamp).toBeVisible();
     await expect(timestamp).not.toBeEmpty();
