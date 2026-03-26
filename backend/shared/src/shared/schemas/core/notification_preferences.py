@@ -19,7 +19,7 @@ class NotificationKey(StrEnum):
     SWAP_REQUESTS = "swap_requests"
     REQUEST_DECISIONS = "request_decisions"
     ASSIGNMENT_CHANGES = "assignment_changes"
-    TEAM_INVITE_ACCEPTED = "team_invite_accepted"
+    USER_ACCEPTED_TEAM_INVITE = "user_accepted_team_invite"
 
 
 @dataclass(frozen=True)
@@ -47,7 +47,7 @@ NOTIFICATION_REGISTRY: dict[NotificationKey, NotificationKeyMeta] = {
     NotificationKey.ASSIGNMENT_CHANGES: NotificationKeyMeta(
         category=NotificationCategory.ASSIGNMENTS,
     ),
-    NotificationKey.TEAM_INVITE_ACCEPTED: NotificationKeyMeta(
+    NotificationKey.USER_ACCEPTED_TEAM_INVITE: NotificationKeyMeta(
         category=NotificationCategory.TEAM,
         visible_to=frozenset({"owner"}),
     ),

@@ -17,9 +17,7 @@ def get_team_service(
     team_membership_service: TeamMembershipService = Depends(
         get_team_membership_service
     ),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> TeamService:
     return TeamService(
         db_collections,

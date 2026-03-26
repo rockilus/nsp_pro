@@ -19,11 +19,10 @@ export function getNotificationTargetPath(
       return `${base}/requests`;
     case "assignment_changed":
       return `${base}/schedule`;
-    case "team_invite_received":
-    case "team_invite_accepted":
-    case "member_removed":
-    case "member_left":
-      return `${base}/settings/team`;
+    case "user_received_team_invite":
+    case "user_accepted_team_invite":
+    case "user_removed_from_team":
+    case "user_left_team":
     default:
       return `${base}/schedule`;
   }

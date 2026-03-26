@@ -31,14 +31,14 @@ function getMessageKey(type: NotificationT["type"]): string {
       return "request_status_changed";
     case "assignment_changed":
       return "assignment_changed";
-    case "team_invite_received":
-      return "team_invite_received";
-    case "team_invite_accepted":
-      return "team_invite_accepted";
-    case "member_removed":
-      return "member_removed";
-    case "member_left":
-      return "member_left";
+    case "user_received_team_invite":
+      return "user_received_team_invite";
+    case "user_accepted_team_invite":
+      return "user_accepted_team_invite";
+    case "user_removed_from_team":
+      return "user_removed_from_team";
+    case "user_left_team":
+      return "user_left_team";
     default:
       return "schedule_published";
   }

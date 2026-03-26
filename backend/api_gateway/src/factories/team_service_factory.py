@@ -6,6 +6,8 @@ from src.dependencies.shift_service import get_shift_service
 from src.dependencies.team_membership import get_team_membership_service
 from src.services.team_service import TeamService
 
+# pylint: disable=R0801
+
 
 def get_team_service(request: Request = Depends()) -> TeamService:
     db_collections = get_db_collections(request)

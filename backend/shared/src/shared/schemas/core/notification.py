@@ -17,10 +17,10 @@ class NotificationType(str, Enum):
     SWAP_STATUS_CHANGED = "swap_status_changed"
     REQUEST_STATUS_CHANGED = "request_status_changed"
     ASSIGNMENT_CHANGED = "assignment_changed"
-    TEAM_INVITE_RECEIVED = "team_invite_received"
-    TEAM_INVITE_ACCEPTED = "team_invite_accepted"
-    MEMBER_REMOVED = "member_removed"
-    MEMBER_LEFT = "member_left"
+    USER_RECEIVED_TEAM_INVITE = "user_received_team_invite"
+    USER_ACCEPTED_TEAM_INVITE = "user_accepted_team_invite"
+    USER_REMOVED_FROM_TEAM = "user_removed_from_team"
+    USER_LEFT_TEAM = "user_left_team"
 
 
 @dataclass

@@ -17,9 +17,7 @@ def get_team_invitation_service(
         get_team_membership_service
     ),
     email_queue_service: EmailQueueService = Depends(get_email_queue_service),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> TeamInvitationService:
     return TeamInvitationService(
         db_collections,

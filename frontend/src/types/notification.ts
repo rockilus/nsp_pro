@@ -9,10 +9,10 @@ export type NotificationTypeT =
   | "swap_status_changed"
   | "request_status_changed"
   | "assignment_changed"
-  | "team_invite_received"
-  | "team_invite_accepted"
-  | "member_removed"
-  | "member_left";
+  | "user_received_team_invite"
+  | "user_accepted_team_invite"
+  | "user_removed_from_team"
+  | "user_left_team";
 
 export type NotificationT = {
   id: string;
@@ -34,10 +34,10 @@ export type NotificationKey =
   | "swap_requests"
   | "request_decisions"
   | "assignment_changes"
-  | "team_invite_accepted"
-  | "team_invite_received"
-  | "member_removed"
-  | "member_left";
+  | "user_received_team_invite"
+  | "user_accepted_team_invite"
+  | "user_removed_from_team"
+  | "user_left_team";
 
 export const NOTIFICATION_KEYS: NotificationKey[] = [
   "schedule_published",
@@ -45,10 +45,10 @@ export const NOTIFICATION_KEYS: NotificationKey[] = [
   "swap_requests",
   "request_decisions",
   "assignment_changes",
-  "team_invite_accepted",
-  "team_invite_received",
-  "member_removed",
-  "member_left",
+  "user_received_team_invite",
+  "user_accepted_team_invite",
+  "user_removed_from_team",
+  "user_left_team",
 ];
 
 export type NotificationCategory =
@@ -72,13 +72,13 @@ export const NOTIFICATION_REGISTRY: Record<
   swap_requests: { category: "requests", visibleTo: [] },
   request_decisions: { category: "requests", visibleTo: [] },
   assignment_changes: { category: "assignments", visibleTo: [] },
-  team_invite_accepted: {
+  user_received_team_invite: { category: "team", visibleTo: [] },
+  user_accepted_team_invite: {
     category: "team",
     visibleTo: [TeamMembershipRole.OWNER],
   },
-  team_invite_received: { category: "team", visibleTo: [] },
-  member_removed: { category: "team", visibleTo: [] },
-  member_left: { category: "team", visibleTo: [TeamMembershipRole.OWNER] },
+  user_removed_from_team: { category: "team", visibleTo: [] },
+  user_left_team: { category: "team", visibleTo: [TeamMembershipRole.OWNER] },
 };
 
 export const NOTIFICATION_CATEGORY_ORDER: NotificationCategory[] = [

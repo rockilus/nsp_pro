@@ -10,7 +10,7 @@ from shared.schemas.core.notification import (
 )
 
 
-def team_invite_received_event(
+def user_received_team_invite_event(
     team_id: str,
     team_name: str,
     sender_name: str,
@@ -18,23 +18,23 @@ def team_invite_received_event(
 ) -> NotificationEvent:
     """Notify the invited user that someone sent them a team invitation."""
     return NotificationEvent(
-        notification_type=NotificationType.TEAM_INVITE_RECEIVED,
+        notification_type=NotificationType.USER_RECEIVED_TEAM_INVITE,
         user_ids=[invited_user_id],
         team_id=team_id,
         event_data={"team_name": team_name, "sender_name": sender_name},
     )
 
 
-def team_invite_accepted_event(
+def user_accepted_team_invite_event(
     team_id: str,
     team_name: str,
     accepted_user_name: str,
-    owner_user_ids: list[str],
+    inviter_user_id: str,
 ) -> NotificationEvent:
-    """Notify team owners that a user accepted their invitation."""
+    """Notify the invitation sender that the recipient accepted."""
     return NotificationEvent(
-        notification_type=NotificationType.TEAM_INVITE_ACCEPTED,
-        user_ids=owner_user_ids,
+        notification_type=NotificationType.USER_ACCEPTED_TEAM_INVITE,
+        user_ids=[inviter_user_id],
         team_id=team_id,
         event_data={
             "team_name": team_name,
@@ -43,21 +43,21 @@ def team_invite_accepted_event(
     )
 
 
-def member_removed_event(
+def user_removed_from_team_event(
     team_id: str,
     team_name: str,
     removed_user_id: str,
 ) -> NotificationEvent:
     """Notify a user that they have been removed from a team."""
     return NotificationEvent(
-        notification_type=NotificationType.MEMBER_REMOVED,
+        notification_type=NotificationType.USER_REMOVED_FROM_TEAM,
         user_ids=[removed_user_id],
         team_id=team_id,
         event_data={"team_name": team_name},
     )
 
 
-def member_left_event(
+def user_left_team_event(
     team_id: str,
     team_name: str,
     member_name: str,
@@ -65,7 +65,7 @@ def member_left_event(
 ) -> NotificationEvent:
     """Notify team owners that a member voluntarily left the team."""
     return NotificationEvent(
-        notification_type=NotificationType.MEMBER_LEFT,
+        notification_type=NotificationType.USER_LEFT_TEAM,
         user_ids=owner_user_ids,
         team_id=team_id,
         event_data={"team_name": team_name, "member_name": member_name},
