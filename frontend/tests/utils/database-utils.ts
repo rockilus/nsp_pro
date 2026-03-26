@@ -6,6 +6,11 @@
  */
 
 import { TeamApi } from "../../src/app/lib/api/teamApi";
+import { TeamInvitationApi } from "../../src/app/lib/api/teamInvitationApi";
+import {
+  NotificationApi,
+  NotificationsResponse,
+} from "../../src/app/lib/api/notificationApi";
 import { WorkerApi } from "../../src/app/lib/api/workerApi";
 import { SpecialtyApi } from "../../src/app/lib/api/specialtyApi";
 import { DimensionApi } from "../../src/app/lib/api/dimensionApi";
@@ -20,6 +25,12 @@ import { ConstraintApi } from "../../src/app/lib/api/constraintApi";
 import { SwapApi } from "../../src/app/lib/api/swapApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
+import {
+  TeamInvitationT,
+  TeamInvitationType,
+  toTeamInvitationT,
+} from "../../src/types/team-invitation";
+import { NotificationT } from "../../src/types/notification";
 import { WorkerT, toWorkerT } from "../../src/types/worker";
 import { SpecialtyT } from "../../src/types/specialty";
 import {
@@ -2644,6 +2655,64 @@ export class DatabaseTestUtils {
         }`,
       );
     }
+  }
+
+  /**
+   * Create a team invitation as a specific user
+   */
+  async createTeamInvitationAs(
+    userId: string,
+    teamId: string,
+    email: string,
+    type: TeamInvitationType = TeamInvitationType.MEMBER,
+  ): Promise<TeamInvitationT> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    const data = await client.post<any>(`/team-invitations/teams/${teamId}`, {
+      email,
+      type,
+    });
+    return toTeamInvitationT(data);
+  }
+
+  /**
+   * Accept a team invitation as a specific user
+   */
+  async acceptTeamInvitationAs(
+    userId: string,
+    token: string,
+  ): Promise<TeamWithMembership> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return TeamInvitationApi.acceptTeamInvitation(client, token);
+  }
+
+  /**
+   * Leave a team as a specific user
+   */
+  async leaveTeamAs(userId: string, teamId: string): Promise<void> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return TeamApi.leaveTeam(client, teamId);
+  }
+
+  /**
+   * Remove a team member as a specific acting user
+   */
+  async removeTeamMemberAs(
+    actingUserId: string,
+    teamId: string,
+    targetUserId: string,
+  ): Promise<void> {
+    const client = this.createAuthenticatedClientForUser(actingUserId);
+    return TeamApi.removeUserFromTeam(client, teamId, targetUserId);
+  }
+
+  /**
+   * Get notifications for a specific user
+   */
+  async getNotificationsAs(userId: string): Promise<NotificationT[]> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    const response: NotificationsResponse =
+      await NotificationApi.getMyNotifications(client);
+    return response.notifications;
   }
 }
 
