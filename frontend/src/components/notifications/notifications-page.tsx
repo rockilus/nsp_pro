@@ -50,20 +50,10 @@ export default function NotificationsPage({ lng }: { lng: string }) {
       }}
     >
       {/* Header */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
         <Typography variant="h6" fontWeight={600}>
           {t("title")}
         </Typography>
-        {unread.length > 0 && (
-          <Button
-            data-testid="mark-all-read-button"
-            size="small"
-            variant="outlined"
-            onClick={() => markAllRead.mutate()}
-          >
-            {t("mark_all_read")}
-          </Button>
-        )}
       </Box>
 
       {notifications.length === 0 && (
