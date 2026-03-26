@@ -1,12 +1,14 @@
 import { expect, Page, TestInfo } from "@playwright/test";
 import { randomUUID } from "crypto";
-import { DatabaseTestUtils } from "../../../utils/database-utils";
+import { DatabaseTestUtils, TestUser } from "../../../utils/database-utils";
 import { testConfig } from "../../../utils/test-config";
 import { NotificationTypeT } from "../../../../src/types/notification";
 
 export interface NotifTestContext {
   dbUtils: DatabaseTestUtils;
   team: { teamId: string; name: string };
+  user1?: TestUser;
+  user2?: TestUser;
 }
 
 const NOTIFICATIONS_URL = `${testConfig.frontendUrl}/en/plan/notifications`;
@@ -66,6 +68,8 @@ export interface NotificationTestCase {
   setup: (
     dbUtils: DatabaseTestUtils,
     team: { teamId: string; name: string },
+    user1: TestUser,
+    user2: TestUser,
   ) => Promise<string>;
   expectedText: (teamName: string) => string;
   expectedUrlPattern: RegExp;

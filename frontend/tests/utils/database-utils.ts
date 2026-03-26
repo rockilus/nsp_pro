@@ -680,11 +680,15 @@ export class DatabaseTestUtils {
    */
   async createTeam(teamData: {
     name: string;
+    ownerUserId?: string;
   }): Promise<{ teamId: string; name: string }> {
     try {
+      const client = teamData.ownerUserId
+        ? this.createAuthenticatedClientForUser(teamData.ownerUserId)
+        : this.testApiClient;
       // Use the existing TeamApi with our test client
       const result: TeamWithMembership = await TeamApi.createTeam(
-        this.testApiClient,
+        client,
         teamData.name,
       );
 
