@@ -12,6 +12,7 @@ export interface NotifTestContext {
 }
 
 const NOTIFICATIONS_URL = `${testConfig.frontendUrl}/en/plan/notifications`;
+const BELL_BASE_URL = `${testConfig.frontendUrl}/en/plan/settings/teams`;
 
 /**
  * Prevents data leakage between parallel workers by keying context on a
@@ -56,6 +57,20 @@ export async function navigateToNotificationsAsUser(
   await expect(page.locator('[data-testid="notifications-page"]')).toBeVisible({
     timeout: 10_000,
   });
+}
+
+export async function navigateToPlanAndOpenBellAsUser(
+  page: Page,
+  dbUtils: DatabaseTestUtils,
+  userId: string,
+): Promise<void> {
+  await dbUtils.authenticatePageAsUser(page, userId);
+  await page.goto(BELL_BASE_URL);
+  await page.waitForSelector('[data-testid="notification-bell-button"]');
+  await page.click('[data-testid="notification-bell-button"]');
+  await expect(
+    page.locator('[data-testid="notification-bell-popover"]'),
+  ).toBeVisible({ timeout: 10_000 });
 }
 
 export interface NotificationTestCase {

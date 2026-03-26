@@ -107,38 +107,36 @@ export default function NotificationItem({
           {message}
         </Typography>
       </Link>
-      {!compact && (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-            ml: 1,
-          }}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          ml: 1,
+        }}
+      >
+        <Typography
+          data-testid="notification-time-since"
+          variant="caption"
+          color="text.secondary"
         >
-          <Typography
-            data-testid="notification-time-since"
-            variant="caption"
-            color="text.secondary"
+          {getRelativeTime(notification.createdAt)}
+        </Typography>
+        {!compact && onDelete && (
+          <IconButton
+            data-testid="notification-delete-button"
+            size="small"
+            onClick={(e) => {
+              e.preventDefault();
+              onDelete(notification.id);
+            }}
+            aria-label={t("delete")}
           >
-            {getRelativeTime(notification.createdAt)}
-          </Typography>
-          {onDelete && (
-            <IconButton
-              data-testid="notification-delete-button"
-              size="small"
-              onClick={(e) => {
-                e.preventDefault();
-                onDelete(notification.id);
-              }}
-              aria-label={t("delete")}
-            >
-              <DeleteOutlineIcon fontSize="small" />
-            </IconButton>
-          )}
-        </Box>
-      )}
+            <DeleteOutlineIcon fontSize="small" />
+          </IconButton>
+        )}
+      </Box>
     </Box>
   );
 }

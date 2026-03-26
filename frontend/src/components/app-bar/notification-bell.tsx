@@ -52,12 +52,20 @@ export default function NotificationBell({ lng }: { lng: string }) {
 
   return (
     <>
-      <IconButton color="inherit" onClick={handleOpen} aria-label={t("title")}>
+      <IconButton
+        color="inherit"
+        onClick={handleOpen}
+        aria-label={t("title")}
+        data-testid="notification-bell-button"
+      >
         <Badge
           badgeContent={displayCount}
           color="error"
           invisible={unreadCount === 0}
           max={99}
+          slotProps={{
+            badge: { "data-testid": "notification-badge-count" } as any,
+          }}
         >
           <NotificationsIcon sx={{ color: "text.secondary" }} />
         </Badge>
@@ -69,7 +77,12 @@ export default function NotificationBell({ lng }: { lng: string }) {
         onClose={handleClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
-        slotProps={{ paper: { sx: { width: 360, maxHeight: 480 } } }}
+        slotProps={{
+          paper: {
+            sx: { width: 360, maxHeight: 480 },
+            "data-testid": "notification-bell-popover",
+          } as any,
+        }}
       >
         {/* Header */}
         <Box
@@ -85,7 +98,11 @@ export default function NotificationBell({ lng }: { lng: string }) {
             {t("title")}
           </Typography>
           {unreadCount > 0 && (
-            <Button size="small" onClick={handleMarkAll}>
+            <Button
+              size="small"
+              onClick={handleMarkAll}
+              data-testid="notification-bell-mark-all-read"
+            >
               {t("mark_all_read")}
             </Button>
           )}
@@ -95,7 +112,11 @@ export default function NotificationBell({ lng }: { lng: string }) {
         {/* Notification list */}
         {notifications.length === 0 ? (
           <Box sx={{ px: 2, py: 3, textAlign: "center" }}>
-            <Typography variant="body2" color="text.secondary">
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              data-testid="notification-bell-empty"
+            >
               {t("no_notifications")}
             </Typography>
           </Box>
@@ -113,7 +134,10 @@ export default function NotificationBell({ lng }: { lng: string }) {
 
         <Divider />
         {/* See all link */}
-        <Box sx={{ px: 2, py: 1, textAlign: "center" }}>
+        <Box
+          sx={{ px: 2, py: 1, textAlign: "center" }}
+          data-testid="notification-bell-see-all"
+        >
           <Link
             href={`/${lng}/plan/notifications`}
             onClick={handleClose}
