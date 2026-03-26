@@ -30,7 +30,10 @@ import {
   TeamInvitationType,
   TeamInvitationStatus,
 } from "../../src/types/team-invitation";
-import { NotificationT } from "../../src/types/notification";
+import {
+  NotificationT,
+  NotificationPreferencesT,
+} from "../../src/types/notification";
 import { WorkerT, toWorkerT } from "../../src/types/worker";
 import { SpecialtyT } from "../../src/types/specialty";
 import {
@@ -2726,6 +2729,16 @@ export class DatabaseTestUtils {
     const response: NotificationsResponse =
       await NotificationApi.getMyNotifications(client);
     return response.notifications;
+  }
+
+  /**
+   * Get notification preferences for a specific user
+   */
+  async getNotificationPreferencesAs(
+    userId: string,
+  ): Promise<NotificationPreferencesT> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return NotificationApi.getNotificationPreferences(client);
   }
 }
 

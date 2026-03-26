@@ -125,7 +125,11 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
         {NOTIFICATION_CATEGORY_ORDER.filter(
           (cat) => (keysByCategory[cat]?.length ?? 0) > 0,
         ).map((cat) => (
-          <Box key={cat} sx={{ mb: 3 }}>
+          <Box
+            key={cat}
+            data-testid={`notification-category-${cat}`}
+            sx={{ mb: 3 }}
+          >
             <Typography
               variant="overline"
               color="text.secondary"
@@ -142,6 +146,7 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
                 return (
                   <Accordion
                     key={key}
+                    data-testid={`notification-accordion-${key}`}
                     disableGutters
                     elevation={0}
                     sx={{
@@ -151,18 +156,27 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
                       "&::before": { display: "none" },
                     }}
                   >
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <AccordionSummary
+                      data-testid={`notification-accordion-summary-${key}`}
+                      expandIcon={<ExpandMoreIcon />}
+                    >
                       <Box>
                         <Typography fontWeight={500}>
                           {t(`email_${key}`)}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          data-testid={`notification-status-${key}`}
+                          data-status={getStatusLabel(ch.inApp, ch.email)}
+                        >
                           {t(getStatusLabel(ch.inApp, ch.email))}
                         </Typography>
                       </Box>
                     </AccordionSummary>
                     <AccordionDetails>
                       <FormControlLabel
+                        data-testid={`notification-inapp-row-${key}`}
                         control={
                           <Switch
                             checked={ch.inApp}
@@ -180,6 +194,7 @@ export default function NotificationSettingsTab({ lng }: { lng: string }) {
                         }}
                       />
                       <FormControlLabel
+                        data-testid={`notification-email-row-${key}`}
                         control={
                           <Switch
                             checked={ch.email}
