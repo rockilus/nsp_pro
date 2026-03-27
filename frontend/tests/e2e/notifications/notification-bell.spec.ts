@@ -59,7 +59,7 @@ test.describe("NotificationBell", () => {
     testContextMap.delete(runId);
   });
 
-  test("badge shows the number of unread notifications", async ({
+  test("badge shows the number of unseen notifications", async ({
     page,
   }, testInfo) => {
     const { dbUtils, team, user1, user2 } = testContextMap.get(
@@ -82,7 +82,7 @@ test.describe("NotificationBell", () => {
     await expect(badge).toHaveText("1");
   });
 
-  test("badge is hidden when there are no unread notifications", async ({
+  test("badge is hidden when there are no unseen notifications", async ({
     page,
   }, testInfo) => {
     const { dbUtils, user1 } = testContextMap.get(
@@ -266,7 +266,38 @@ test.describe("NotificationBell", () => {
     ).toBeVisible();
   });
 
-  test("mark all as read from menu marks all notifications as read", async ({
+  test("badge clears after opening the bell popover", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    // Invite user2 → user2 gets 1 unseen notification
+    await dbUtils.createTeamInvitationAs(
+      user1!.user_id,
+      team.teamId,
+      user2!.email,
+    );
+
+    // Navigate without opening the bell — badge should show 1 (unseen)
+    await dbUtils.authenticatePageAsUser(page, user2!.user_id);
+    await page.goto(BELL_BASE_URL);
+    await page.waitForSelector('[data-testid="notification-bell-button"]');
+
+    const badge = page.locator('[data-testid="notification-badge-count"]');
+    await expect(badge).toHaveText("1");
+
+    // Open the bell — markAllSeen fires, unseen count drops to 0
+    await page.click('[data-testid="notification-bell-button"]');
+    await expect(
+      page.locator('[data-testid="notification-bell-popover"]'),
+    ).toBeVisible({ timeout: 10_000 });
+
+    await expect(badge).not.toBeVisible({ timeout: 10_000 });
+  });
+
+  test("mark all as read from menu marks all notification items as read", async ({
     page,
   }, testInfo) => {
     const { dbUtils, team, user1, user2 } = testContextMap.get(
@@ -282,13 +313,16 @@ test.describe("NotificationBell", () => {
 
     await navigateToPlanAndOpenBellAsUser(page, dbUtils, user2!.user_id);
 
-    const badge = page.locator('[data-testid="notification-badge-count"]');
-    await expect(badge).toHaveText("1");
+    const firstItem = page.locator('[data-testid="notification-item"]').first();
+    await expect(firstItem).toBeVisible();
+    await expect(firstItem).toHaveAttribute("data-read", "false");
 
     await page.click('[data-testid="notification-bell-menu-button"]');
     await page.click('[data-testid="notification-bell-mark-all-read"]');
 
-    await expect(badge).not.toBeVisible({ timeout: 10_000 });
+    await expect(firstItem).toHaveAttribute("data-read", "true", {
+      timeout: 10_000,
+    });
   });
 
   test("clicking notification settings from menu navigates to settings page", async ({
