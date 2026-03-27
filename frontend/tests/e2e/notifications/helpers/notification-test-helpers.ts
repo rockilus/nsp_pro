@@ -2,7 +2,10 @@ import { expect, Page, TestInfo } from "@playwright/test";
 import { randomUUID } from "crypto";
 import { DatabaseTestUtils, TestUser } from "../../../utils/database-utils";
 import { testConfig } from "../../../utils/test-config";
-import { NotificationTypeT } from "../../../../src/types/notification";
+import type {
+  NotificationKey,
+  NotificationTypeT,
+} from "../../../../src/types/notification";
 
 export interface NotifTestContext {
   dbUtils: DatabaseTestUtils;
@@ -76,6 +79,13 @@ export async function navigateToPlanAndOpenBellAsUser(
 export interface NotificationTestCase {
   type: NotificationTypeT;
   description: string;
+  /** The preference key that controls delivery of this notification type. */
+  preferenceKey: NotificationKey;
+  /**
+   * Which of the two test users receives this notification.
+   * Used to disable the preference before triggering the event.
+   */
+  recipientRole: "user1" | "user2";
   /**
    * Creates all required test data for this notification type.
    * Returns the userId of the user who should receive the notification.

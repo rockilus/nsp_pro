@@ -12,6 +12,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
   {
     type: "user_received_team_invite",
     description: "invite sent to TEST_USER_2",
+    preferenceKey: "user_received_team_invite",
+    recipientRole: "user2",
     async setup(dbUtils, team, user1, user2) {
       await dbUtils.createTeamInvitationAs(
         user1.user_id,
@@ -26,6 +28,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
   {
     type: "user_accepted_team_invite",
     description: "TEST_USER_2 accepts invite sent by TEST_USER",
+    preferenceKey: "user_accepted_team_invite",
+    recipientRole: "user1",
     async setup(dbUtils, team, user1, user2) {
       const invitation = await dbUtils.createTeamInvitationAs(
         user1.user_id,
@@ -41,6 +45,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
   {
     type: "user_removed_from_team",
     description: "TEST_USER removes TEST_USER_2 from team",
+    preferenceKey: "user_removed_from_team",
+    recipientRole: "user2",
     async setup(dbUtils, team, user1, user2) {
       await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
       await dbUtils.removeTeamMemberAs(
@@ -56,6 +62,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
   {
     type: "user_left_team",
     description: "TEST_USER_2 leaves team",
+    preferenceKey: "user_left_team",
+    recipientRole: "user1",
     async setup(dbUtils, team, user1, user2) {
       await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
       await dbUtils.leaveTeamAs(user2.user_id, team.teamId);
@@ -124,6 +132,29 @@ for (const tc of NOTIFICATION_TEST_CASES) {
         .locator(`[data-notification-type="${tc.type}"]`)
         .locator('[data-testid="notification-message"]');
       await expect(msg).toHaveText(tc.expectedText(team.name));
+    });
+
+    test("does not appear on page when inApp is disabled", async ({
+      page,
+    }, testInfo) => {
+      const { dbUtils, team, user1, user2 } = ctxMap.get(
+        ctxMap.getRunId(testInfo),
+      );
+      const recipient = tc.recipientRole === "user1" ? user1! : user2!;
+
+      // Disable inApp before the event fires
+      const prefs = await dbUtils.getNotificationPreferencesAs(
+        recipient.user_id,
+      );
+      prefs.preferences[tc.preferenceKey].inApp = false;
+      await dbUtils.setNotificationPreferencesAs(recipient.user_id, prefs);
+
+      await tc.setup(dbUtils, team, user1!, user2!);
+
+      await navigateToNotificationsAsUser(page, dbUtils, recipient.user_id);
+      await expect(
+        page.locator('[data-testid="notification-item"]'),
+      ).toHaveCount(0);
     });
   });
 }

@@ -318,26 +318,4 @@ test.describe("NotificationsPage", () => {
 
     await expect(item).not.toBeVisible({ timeout: 10_000 });
   });
-
-  test("notification not shown on page when inApp is disabled for the notification type", async ({
-    page,
-  }, testInfo) => {
-    const { dbUtils, team, user1, user2 } = testContextMap.get(
-      testContextMap.getRunId(testInfo),
-    );
-
-    // Disable inApp for user_left_team on user1
-    const prefs = await dbUtils.getNotificationPreferencesAs(user1!.user_id);
-    prefs.preferences["user_left_team"].inApp = false;
-    await dbUtils.setNotificationPreferencesAs(user1!.user_id, prefs);
-
-    // Trigger user_left_team event → would normally notify user1
-    await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
-    await dbUtils.leaveTeamAs(user2!.user_id, team.teamId);
-
-    await navigateToNotificationsAsUser(page, dbUtils, user1!.user_id);
-
-    const items = page.locator('[data-testid="notification-item"]');
-    await expect(items).toHaveCount(0);
-  });
 });
