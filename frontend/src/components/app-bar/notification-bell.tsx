@@ -19,7 +19,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 
@@ -116,7 +116,7 @@ export default function NotificationBell({ lng }: { lng: string }) {
             aria-label="notification options"
             data-testid="notification-bell-menu-button"
           >
-            <MoreVertIcon fontSize="small" />
+            <MoreHorizIcon fontSize="small" />
           </IconButton>
           <Menu
             anchorEl={menuAnchorEl}

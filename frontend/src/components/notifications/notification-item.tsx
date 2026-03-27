@@ -11,7 +11,7 @@ import IconButton from "@mui/material/IconButton";
 import ListItemText from "@mui/material/ListItemText";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
@@ -142,7 +142,7 @@ export default function NotificationItem({
               onClick={handleMenuOpen}
               aria-label="notification actions"
             >
-              <MoreVertIcon fontSize="small" />
+              <MoreHorizIcon fontSize="small" />
             </IconButton>
             <Menu
               anchorEl={menuAnchorEl}

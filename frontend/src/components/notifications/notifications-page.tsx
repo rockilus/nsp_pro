@@ -18,7 +18,7 @@ import IconButton from "@mui/material/IconButton";
 import ListItemText from "@mui/material/ListItemText";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Typography from "@mui/material/Typography";
 
 const PAGE_LIMIT = 50;
@@ -78,7 +78,7 @@ export default function NotificationsPage({ lng }: { lng: string }) {
           aria-label="notification options"
           data-testid="notifications-page-menu-button"
         >
-          <MoreVertIcon fontSize="small" />
+          <MoreHorizIcon fontSize="small" />
         </IconButton>
         <Menu
           anchorEl={menuAnchorEl}
