@@ -198,4 +198,77 @@ test.describe("NotificationsPage", () => {
     await expect(timestamp).toBeVisible();
     await expect(timestamp).not.toBeEmpty();
   });
+
+  test("three-dots menu button is visible in page header", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, user1 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    await navigateToNotificationsAsUser(page, dbUtils, user1!.user_id);
+
+    await expect(
+      page.locator('[data-testid="notifications-page-menu-button"]'),
+    ).toBeVisible();
+  });
+
+  test("mark all as read from menu marks all notifications as read", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    // Invite user2 → user2 receives an unread notification
+    await dbUtils.createTeamInvitationAs(
+      user1!.user_id,
+      team.teamId,
+      user2!.email,
+    );
+
+    await navigateToNotificationsAsUser(page, dbUtils, user2!.user_id);
+
+    const firstItem = page.locator('[data-testid="notification-item"]').first();
+    await expect(firstItem).toHaveAttribute("data-read", "false");
+
+    await page.click('[data-testid="notifications-page-menu-button"]');
+    await page.click('[data-testid="notifications-page-mark-all-read"]');
+
+    await expect(firstItem).toHaveAttribute("data-read", "true", {
+      timeout: 10_000,
+    });
+  });
+
+  test("mark all as read is disabled when there are no unread notifications", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, user1 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    // No notifications created — unread count is 0
+    await navigateToNotificationsAsUser(page, dbUtils, user1!.user_id);
+    await page.click('[data-testid="notifications-page-menu-button"]');
+
+    await expect(
+      page.locator('[data-testid="notifications-page-mark-all-read"]'),
+    ).toHaveAttribute("aria-disabled", "true");
+  });
+
+  test("clicking notification settings from menu navigates to settings", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, user1 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    await navigateToNotificationsAsUser(page, dbUtils, user1!.user_id);
+    await page.click('[data-testid="notifications-page-menu-button"]');
+    await page.click('[data-testid="notifications-page-open-settings"]');
+
+    await expect(page).toHaveURL(/\/plan\/settings\/notifications/, {
+      timeout: 10_000,
+    });
+  });
 });

@@ -251,4 +251,91 @@ test.describe("NotificationBell", () => {
 
     await expect(page).toHaveURL(/\/en\/plan\/notifications/);
   });
+
+  test("three-dots menu button is visible in popover header", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, user1 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    await navigateToPlanAndOpenBellAsUser(page, dbUtils, user1!.user_id);
+
+    await expect(
+      page.locator('[data-testid="notification-bell-menu-button"]'),
+    ).toBeVisible();
+  });
+
+  test("mark all as read is disabled when there are no unread notifications", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, user1 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    // No notifications — unread count is 0
+    await navigateToPlanAndOpenBellAsUser(page, dbUtils, user1!.user_id);
+    await page.click('[data-testid="notification-bell-menu-button"]');
+
+    await expect(
+      page.locator('[data-testid="notification-bell-mark-all-read"]'),
+    ).toHaveAttribute("aria-disabled", "true");
+  });
+
+  test("mark all as read from menu marks all notifications as read", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    // Invite user2 → user2 gets 1 unread notification
+    await dbUtils.createTeamInvitationAs(
+      user1!.user_id,
+      team.teamId,
+      user2!.email,
+    );
+
+    await navigateToPlanAndOpenBellAsUser(page, dbUtils, user2!.user_id);
+
+    const badge = page.locator('[data-testid="notification-badge-count"]');
+    await expect(badge).toHaveText("1");
+
+    await page.click('[data-testid="notification-bell-menu-button"]');
+    await page.click('[data-testid="notification-bell-mark-all-read"]');
+
+    await expect(badge).not.toBeVisible({ timeout: 10_000 });
+  });
+
+  test("clicking notification settings from menu navigates to settings page", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, user1 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    await navigateToPlanAndOpenBellAsUser(page, dbUtils, user1!.user_id);
+    await page.click('[data-testid="notification-bell-menu-button"]');
+    await page.click('[data-testid="notification-bell-open-settings"]');
+
+    await expect(page).toHaveURL(/\/plan\/settings\/notifications/, {
+      timeout: 10_000,
+    });
+  });
+
+  test("clicking open notifications from menu navigates to notifications page", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, user1 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    await navigateToPlanAndOpenBellAsUser(page, dbUtils, user1!.user_id);
+    await page.click('[data-testid="notification-bell-menu-button"]');
+    await page.click('[data-testid="notification-bell-open-notifications"]');
+
+    await expect(page).toHaveURL(/\/en\/plan\/notifications/, {
+      timeout: 10_000,
+    });
+  });
 });
