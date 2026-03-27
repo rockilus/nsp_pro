@@ -19,7 +19,10 @@ class NotificationKey(StrEnum):
     SWAP_REQUESTS = "swap_requests"
     REQUEST_DECISIONS = "request_decisions"
     ASSIGNMENT_CHANGES = "assignment_changes"
+    USER_RECEIVED_TEAM_INVITE = "user_received_team_invite"
     USER_ACCEPTED_TEAM_INVITE = "user_accepted_team_invite"
+    USER_REMOVED_FROM_TEAM = "user_removed_from_team"
+    USER_LEFT_TEAM = "user_left_team"
 
 
 @dataclass(frozen=True)
@@ -47,7 +50,17 @@ NOTIFICATION_REGISTRY: dict[NotificationKey, NotificationKeyMeta] = {
     NotificationKey.ASSIGNMENT_CHANGES: NotificationKeyMeta(
         category=NotificationCategory.ASSIGNMENTS,
     ),
+    NotificationKey.USER_RECEIVED_TEAM_INVITE: NotificationKeyMeta(
+        category=NotificationCategory.TEAM,
+    ),
     NotificationKey.USER_ACCEPTED_TEAM_INVITE: NotificationKeyMeta(
+        category=NotificationCategory.TEAM,
+        visible_to=frozenset({"owner"}),
+    ),
+    NotificationKey.USER_REMOVED_FROM_TEAM: NotificationKeyMeta(
+        category=NotificationCategory.TEAM,
+    ),
+    NotificationKey.USER_LEFT_TEAM: NotificationKeyMeta(
         category=NotificationCategory.TEAM,
         visible_to=frozenset({"owner"}),
     ),
@@ -66,7 +79,9 @@ class NotificationPreferences:
 
     user_id: str
     preferences: dict[NotificationKey, ChannelPreferences] = field(
-        default_factory=lambda: {k: ChannelPreferences() for k in NotificationKey}
+        default_factory=lambda: {
+            k: ChannelPreferences() for k in NotificationKey
+        }
     )
 
     def to_dto(self) -> "NotificationPreferencesDTO":
@@ -79,7 +94,9 @@ class NotificationPreferences:
         )
 
     @classmethod
-    def from_dto(cls, dto: "NotificationPreferencesDTO") -> "NotificationPreferences":
+    def from_dto(
+        cls, dto: "NotificationPreferencesDTO"
+    ) -> "NotificationPreferences":
         valid_keys = {k.value for k in NotificationKey}
         return cls(
             user_id=dto.user_id,

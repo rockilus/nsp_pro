@@ -356,4 +356,50 @@ test.describe("NotificationBell", () => {
       timeout: 10_000,
     });
   });
+
+  test("badge does not show when inApp is disabled for the notification type", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    // Disable inApp for user_left_team on user1
+    const prefs = await dbUtils.getNotificationPreferencesAs(user1!.user_id);
+    prefs.preferences["user_left_team"].inApp = false;
+    await dbUtils.setNotificationPreferencesAs(user1!.user_id, prefs);
+
+    // Trigger user_left_team event → would normally notify user1
+    await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
+    await dbUtils.leaveTeamAs(user2!.user_id, team.teamId);
+
+    await dbUtils.authenticatePageAsUser(page, user1!.user_id);
+    await page.goto(BELL_BASE_URL);
+    await page.waitForSelector('[data-testid="notification-bell-button"]');
+
+    const badge = page.locator('[data-testid="notification-badge-count"]');
+    await expect(badge).not.toBeVisible();
+  });
+
+  test("notification item not shown in popover when inApp is disabled for the notification type", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    // Disable inApp for user_left_team on user1
+    const prefs = await dbUtils.getNotificationPreferencesAs(user1!.user_id);
+    prefs.preferences["user_left_team"].inApp = false;
+    await dbUtils.setNotificationPreferencesAs(user1!.user_id, prefs);
+
+    // Trigger user_left_team event → would normally notify user1
+    await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
+    await dbUtils.leaveTeamAs(user2!.user_id, team.teamId);
+
+    await navigateToPlanAndOpenBellAsUser(page, dbUtils, user1!.user_id);
+
+    const items = page.locator('[data-testid="notification-item"]');
+    await expect(items).toHaveCount(0);
+  });
 });

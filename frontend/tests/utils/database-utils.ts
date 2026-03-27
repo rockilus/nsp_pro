@@ -2744,6 +2744,17 @@ export class DatabaseTestUtils {
     const client = this.createAuthenticatedClientForUser(userId);
     return NotificationApi.getNotificationPreferences(client);
   }
+
+  /**
+   * Update notification preferences for a specific user
+   */
+  async setNotificationPreferencesAs(
+    userId: string,
+    prefs: NotificationPreferencesT,
+  ): Promise<NotificationPreferencesT> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return NotificationApi.updateNotificationPreferences(client, prefs);
+  }
 }
 
 /**

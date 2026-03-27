@@ -21,9 +21,7 @@ async def get_my_notifications(
     limit: int = 20,
     skip: int = 0,
     user_context: UserContext = Depends(get_user_context),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> Dict:
     """Return paginated notifications and unread count for the current user."""
     try:
@@ -32,8 +30,7 @@ async def get_my_notifications(
         )
         return {
             "notifications": [
-                n.to_dto().model_dump(by_alias=True)
-                for n in result["notifications"]
+                n.to_dto().model_dump(by_alias=True) for n in result["notifications"]
             ],
             "unreadCount": result["unread_count"],
         }
@@ -44,15 +41,11 @@ async def get_my_notifications(
 @router.get("/me/unseen-count")
 async def get_unseen_count(
     user_context: UserContext = Depends(get_user_context),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> Dict:
     """Lightweight endpoint polled by the bell badge every 30 s."""
     try:
-        count = notification_service.get_unseen_count(
-            user_context.effective_user_id
-        )
+        count = notification_service.get_unseen_count(user_context.effective_user_id)
         return {"count": count}
     except Exception as e:
         handle_routes_errors(e)
@@ -61,9 +54,7 @@ async def get_unseen_count(
 @router.post("/me/mark-all-seen")
 async def mark_all_notifications_seen(
     user_context: UserContext = Depends(get_user_context),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> Dict:
     """Mark all unseen notifications for the current user as seen."""
     try:
@@ -81,9 +72,7 @@ class ReadSeenBeforeBody(BaseModel):
 async def read_seen_before(
     body: ReadSeenBeforeBody,
     user_context: UserContext = Depends(get_user_context),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> Dict:
     """Auto-mark as read all notifications seen before the given timestamp."""
     try:
@@ -98,15 +87,11 @@ async def read_seen_before(
 @router.get("/me/unread-count")
 async def get_unread_count(
     user_context: UserContext = Depends(get_user_context),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> Dict:
     """Lightweight endpoint polled by the bell badge every 30 s."""
     try:
-        count = notification_service.get_unread_count(
-            user_context.effective_user_id
-        )
+        count = notification_service.get_unread_count(user_context.effective_user_id)
         return {"count": count}
     except Exception as e:
         handle_routes_errors(e)
@@ -116,9 +101,7 @@ async def get_unread_count(
 async def mark_notification_read(
     notification_id: str,
     user_context: UserContext = Depends(get_user_context),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> NotificationDTO:
     """Mark a single notification as read."""
     try:
@@ -126,9 +109,7 @@ async def mark_notification_read(
             notification_id, user_context.effective_user_id
         )
         if notification is None:
-            raise HTTPException(
-                status_code=404, detail="Notification not found"
-            )
+            raise HTTPException(status_code=404, detail="Notification not found")
         return notification.to_dto()
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e)) from e
@@ -141,9 +122,7 @@ async def mark_notification_read(
 @router.post("/me/read-all")
 async def mark_all_notifications_read(
     user_context: UserContext = Depends(get_user_context),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> Dict:
     """Mark all notifications for the current user as read."""
     try:
@@ -157,9 +136,7 @@ async def mark_all_notifications_read(
 async def delete_notification(
     notification_id: str,
     user_context: UserContext = Depends(get_user_context),
-    notification_service: NotificationService = Depends(
-        get_notification_service
-    ),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> Dict:
     """Delete a notification owned by the current user."""
     try:
@@ -167,9 +144,7 @@ async def delete_notification(
             notification_id, user_context.effective_user_id
         )
         if not deleted:
-            raise HTTPException(
-                status_code=404, detail="Notification not found"
-            )
+            raise HTTPException(status_code=404, detail="Notification not found")
         return {"status": "ok"}
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e)) from e

@@ -16,8 +16,23 @@ from shared.schemas.core.notification import (
     NotificationEvent,
     NotificationType,
 )
+from shared.schemas.core.notification_preferences import NotificationKey
 
 from src.services.base_service import BaseService
+
+# Maps each NotificationType to a NotificationKey that controls it.
+# Types absent from this map are always delivered (fail-open).
+_NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
+    NotificationType.SCHEDULE_PUBLISHED: NotificationKey.SCHEDULE_PUBLISHED,
+    NotificationType.NEW_SWAP_REQUEST: NotificationKey.SWAP_REQUESTS,
+    NotificationType.SWAP_STATUS_CHANGED: NotificationKey.SWAP_REQUESTS,
+    NotificationType.REQUEST_STATUS_CHANGED: NotificationKey.REQUEST_DECISIONS,
+    NotificationType.ASSIGNMENT_CHANGED: NotificationKey.ASSIGNMENT_CHANGES,
+    NotificationType.USER_RECEIVED_TEAM_INVITE: NotificationKey.USER_RECEIVED_TEAM_INVITE,
+    NotificationType.USER_ACCEPTED_TEAM_INVITE: NotificationKey.USER_ACCEPTED_TEAM_INVITE,
+    NotificationType.USER_REMOVED_FROM_TEAM: NotificationKey.USER_REMOVED_FROM_TEAM,
+    NotificationType.USER_LEFT_TEAM: NotificationKey.USER_LEFT_TEAM,
+}
 
 
 class NotificationService(BaseService):
@@ -114,8 +129,28 @@ class NotificationService(BaseService):
 
     def dispatch(self, event: NotificationEvent) -> None:
         """Dispatch a NotificationEvent to all target users (fire-and-forget)."""
+        pref_key = _NOTIFICATION_TYPE_TO_KEY.get(event.notification_type)
         for user_id in event.user_ids:
             try:
+                if pref_key is not None:
+                    try:
+                        prefs = self.collection.notification_preferences_db.get_or_create_default(
+                            user_id
+                        )
+                        channel = prefs.preferences.get(pref_key)
+                        if channel is not None and not channel.in_app:
+                            logger.debug(
+                                f"Skipping {event.notification_type} notification "
+                                f"for user {user_id}: inApp preference is disabled"
+                            )
+                            continue
+                    except (
+                        Exception
+                    ) as pref_exc:  # pylint: disable=broad-except
+                        logger.warning(
+                            f"Could not fetch preferences for user {user_id}, "
+                            f"defaulting to send: {pref_exc}"
+                        )
                 self.create_notification(
                     user_id,
                     event.team_id,
