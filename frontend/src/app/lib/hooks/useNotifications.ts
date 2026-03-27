@@ -13,8 +13,11 @@ export const notificationKeys = {
   myList: (limit: number, skip: number) =>
     [...notificationKeys.all, "list", limit, skip] as const,
   unreadCount: () => [...notificationKeys.all, "unread-count"] as const,
+  unseenCount: () => [...notificationKeys.all, "unseen-count"] as const,
   preferences: () => [...notificationKeys.all, "preferences"] as const,
 };
+
+export const SEEN_GRACE_PERIOD_HOURS = 1;
 
 /** Polls unread count every 30 s — used for the bell badge. */
 export function useUnreadNotificationCount() {
@@ -24,6 +27,21 @@ export function useUnreadNotificationCount() {
   return useQuery({
     queryKey: notificationKeys.unreadCount(),
     queryFn: () => NotificationApi.getUnreadCount(apiClient),
+    refetchInterval: 30_000,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    enabled: isAuthenticated && !!user?.id_token,
+  });
+}
+
+/** Polls unseen count every 30 s — used for the bell badge (preferred). */
+export function useUnseenNotificationCount() {
+  const apiClient = useApiClient();
+  const { isAuthenticated, user } = useAuth();
+
+  return useQuery({
+    queryKey: notificationKeys.unseenCount(),
+    queryFn: () => NotificationApi.getUnseenCount(apiClient),
     refetchInterval: 30_000,
     staleTime: 30_000,
     refetchOnWindowFocus: false,
@@ -63,6 +81,31 @@ export function useMarkAllNotificationsRead() {
 
   return useMutation({
     mutationFn: () => NotificationApi.markAllRead(apiClient),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+    },
+  });
+}
+
+export function useMarkAllNotificationsSeen() {
+  const apiClient = useApiClient();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => NotificationApi.markAllSeen(apiClient),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+    },
+  });
+}
+
+export function useReadSeenBefore() {
+  const apiClient = useApiClient();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (before: string) =>
+      NotificationApi.readSeenBefore(apiClient, before),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: notificationKeys.all });
     },

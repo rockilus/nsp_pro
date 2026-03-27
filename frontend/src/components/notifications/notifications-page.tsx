@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/app/i18n/client";
 import {
@@ -8,6 +8,9 @@ import {
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
   useDeleteNotification,
+  useMarkAllNotificationsSeen,
+  useReadSeenBefore,
+  SEEN_GRACE_PERIOD_HOURS,
 } from "@/app/lib/hooks/useNotifications";
 import NotificationItem from "./notification-item";
 // MUI
@@ -29,6 +32,8 @@ export default function NotificationsPage({ lng }: { lng: string }) {
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
   const deleteNotification = useDeleteNotification();
+  const markAllSeen = useMarkAllNotificationsSeen();
+  const readSeenBefore = useReadSeenBefore();
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchorEl);
 
@@ -39,6 +44,20 @@ export default function NotificationsPage({ lng }: { lng: string }) {
   const notifications = data?.notifications ?? [];
   const unread = notifications.filter((n) => !n.read);
   const read = notifications.filter((n) => n.read);
+
+  // Mark all loaded notifications as seen, then auto-read those seen > 1 h ago
+  useEffect(() => {
+    if (!data?.notifications?.length) return;
+    markAllSeen.mutate(undefined, {
+      onSuccess: () => {
+        const graceCutoff = new Date(
+          Date.now() - SEEN_GRACE_PERIOD_HOURS * 60 * 60 * 1000,
+        ).toISOString();
+        readSeenBefore.mutate(graceCutoff);
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isLoading) {
     return (

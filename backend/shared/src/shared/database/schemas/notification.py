@@ -18,6 +18,7 @@ class NotificationSchema(DocumentBaseSchema):
     created_at: datetime
     updated_at: datetime
     read_at: Optional[datetime] = None
+    seen_at: Optional[datetime] = None
 
     def to_core(self) -> Notification:
         return Notification(
@@ -30,6 +31,7 @@ class NotificationSchema(DocumentBaseSchema):
             created_at=self.created_at,
             updated_at=self.updated_at,
             read_at=self.read_at,
+            seen_at=self.seen_at,
         )
 
     @classmethod
@@ -44,4 +46,5 @@ class NotificationSchema(DocumentBaseSchema):
             created_at=notification.created_at,
             updated_at=notification.updated_at,
             read_at=notification.read_at,
+            seen_at=notification.seen_at,
         )

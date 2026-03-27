@@ -1,13 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/app/i18n/client";
 import {
-  useUnreadNotificationCount,
+  useUnseenNotificationCount,
   useNotifications,
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
+  useMarkAllNotificationsSeen,
+  useReadSeenBefore,
+  SEEN_GRACE_PERIOD_HOURS,
 } from "@/app/lib/hooks/useNotifications";
 import NotificationItem from "@/components/notifications/notification-item";
 // MUI
@@ -32,17 +35,38 @@ export default function NotificationBell({ lng }: { lng: string }) {
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchorEl);
 
-  const { data: unreadCount = 0 } = useUnreadNotificationCount();
+  const { data: unreadCount = 0 } = useUnseenNotificationCount();
   const { data, refetch } = useNotifications(POPOVER_LIMIT, 0);
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
+  const markAllSeen = useMarkAllNotificationsSeen();
+  const readSeenBefore = useReadSeenBefore();
 
   const notifications = data?.notifications ?? [];
   const displayCount = unreadCount > 99 ? 99 : unreadCount;
 
+  // Auto-read notifications that were seen more than SEEN_GRACE_PERIOD_HOURS ago
+  useEffect(() => {
+    if (!data?.notifications?.length) return;
+    const graceCutoff = new Date(
+      Date.now() - SEEN_GRACE_PERIOD_HOURS * 60 * 60 * 1000,
+    ).toISOString();
+    const hasOldSeen = data.notifications.some(
+      (n) =>
+        n.seenAt !== null &&
+        !n.read &&
+        n.seenAt.toDate() <= new Date(graceCutoff),
+    );
+    if (hasOldSeen) {
+      readSeenBefore.mutate(graceCutoff);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
     refetch();
+    markAllSeen.mutate();
   };
 
   const handleClose = () => setAnchorEl(null);

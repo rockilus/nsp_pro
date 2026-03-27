@@ -36,6 +36,7 @@ class Notification:
     created_at: datetime
     updated_at: datetime
     read_at: Optional[datetime] = None
+    seen_at: Optional[datetime] = None
 
     def to_dto(self) -> "NotificationDTO":
         data = {
@@ -48,6 +49,7 @@ class Notification:
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat(),
             "readAt": self.read_at.isoformat() if self.read_at else None,
+            "seenAt": self.seen_at.isoformat() if self.seen_at else None,
         }
         return NotificationDTO(**cast(Dict[str, Any], humps.camelize(data)))
 
@@ -63,6 +65,7 @@ class Notification:
             created_at=dto.created_at,
             updated_at=dto.updated_at,
             read_at=dto.read_at,
+            seen_at=dto.seen_at,
         )
 
 
@@ -92,5 +95,6 @@ class NotificationDTO(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc), alias="updatedAt"
     )
     read_at: Optional[datetime] = Field(default=None, alias="readAt")
+    seen_at: Optional[datetime] = Field(default=None, alias="seenAt")
 
     model_config = {"populate_by_name": True}

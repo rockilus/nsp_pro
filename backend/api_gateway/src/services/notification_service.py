@@ -43,9 +43,13 @@ class NotificationService(BaseService):
                 created_at=now,
                 updated_at=now,
             )
-            return self.collection.notification_db.create_notification(notification)
+            return self.collection.notification_db.create_notification(
+                notification
+            )
         except Exception as e:
-            logger.error(f"Failed to create notification for user {user_id}: {e}")
+            logger.error(
+                f"Failed to create notification for user {user_id}: {e}"
+            )
             raise
 
     def get_user_notifications(
@@ -55,7 +59,9 @@ class NotificationService(BaseService):
         notifications = self.collection.notification_db.get_by_user_id(
             user_id, limit=limit, skip=skip
         )
-        unread_count = self.collection.notification_db.get_unread_count(user_id)
+        unread_count = self.collection.notification_db.get_unread_count(
+            user_id
+        )
         return {
             "notifications": notifications,
             "unread_count": unread_count,
@@ -64,7 +70,22 @@ class NotificationService(BaseService):
     def get_unread_count(self, user_id: str) -> int:
         return self.collection.notification_db.get_unread_count(user_id)
 
-    def mark_read(self, notification_id: str, user_id: str) -> Optional[Notification]:
+    def get_unseen_count(self, user_id: str) -> int:
+        return self.collection.notification_db.get_unseen_count(user_id)
+
+    def mark_all_seen(self, user_id: str) -> None:
+        self.collection.notification_db.mark_all_seen(user_id)
+
+    def mark_read_where_seen_before(
+        self, user_id: str, before: datetime
+    ) -> int:
+        return self.collection.notification_db.mark_read_where_seen_before(
+            user_id, before
+        )
+
+    def mark_read(
+        self, notification_id: str, user_id: str
+    ) -> Optional[Notification]:
         """Mark a notification as read, verifying ownership."""
         schema = self.collection.notification_db.find_by_id(notification_id)
         if schema is None:
@@ -83,7 +104,9 @@ class NotificationService(BaseService):
             return False
         if schema.user_id != user_id:
             raise PermissionError("Notification does not belong to this user")
-        return self.collection.notification_db.delete_notification(notification_id)
+        return self.collection.notification_db.delete_notification(
+            notification_id
+        )
 
     # ------------------------------------------------------------------
     # Domain notify methods (fire-and-forget, never raise)
@@ -135,7 +158,9 @@ class NotificationService(BaseService):
                     )
                 )
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send schedule-published notifications: {e}")
+            logger.error(
+                f"Failed to send schedule-published notifications: {e}"
+            )
 
     def notify_new_swap_request(self, swap: SwapRequest) -> None:
         """Notify target worker (DIRECT) or team managers of a new swap request."""
@@ -144,15 +169,19 @@ class NotificationService(BaseService):
             team = self.collection.team_db.get_team_by_id(swap.team_id)
             team_name = team.name if team else ""
             offering_worker = (
-                self.collection.worker_db.get_worker_by_id(swap.offering_worker_id)
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
                 if swap.offering_worker_id
                 else None
             )
             requester_name = offering_worker.name if offering_worker else ""
             first_date = ""
             if swap.offered_assignment_ids:
-                first_assignment = self.collection.assignment_db.get_assignment_by_id(
-                    swap.offered_assignment_ids[0]
+                first_assignment = (
+                    self.collection.assignment_db.get_assignment_by_id(
+                        swap.offered_assignment_ids[0]
+                    )
                 )
                 if first_assignment:
                     first_date = str(first_assignment.date)
@@ -179,10 +208,8 @@ class NotificationService(BaseService):
                             updated_at=now,
                         )
                     )
-            memberships = (
-                self.collection.team_membership_db.get_team_memberships_by_team_id(
-                    swap.team_id
-                )
+            memberships = self.collection.team_membership_db.get_team_memberships_by_team_id(
+                swap.team_id
             )
             owner_user_ids = {
                 m.user_id
@@ -209,14 +236,18 @@ class NotificationService(BaseService):
     def notify_request_status_changed(self, request: Request) -> None:
         """Notify the worker whose request status changed."""
         try:
-            worker = self.collection.worker_db.get_worker_by_id(request.worker_id)
+            worker = self.collection.worker_db.get_worker_by_id(
+                request.worker_id
+            )
             if not worker or not worker.user_id:
                 return
             team = self.collection.team_db.get_team_by_id(request.team_id)
             team_name = team.name if team else ""
             shift_name = ""
             if request.shift_id:
-                shift = self.collection.shift_db.get_shift_by_id(request.shift_id)
+                shift = self.collection.shift_db.get_shift_by_id(
+                    request.shift_id
+                )
                 if shift:
                     shift_name = shift.name
             now = datetime.now(timezone.utc)
@@ -239,7 +270,9 @@ class NotificationService(BaseService):
                 )
             )
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send request-status-changed notification: {e}")
+            logger.error(
+                f"Failed to send request-status-changed notification: {e}"
+            )
 
     def notify_assignment_changed(
         self,
@@ -278,4 +311,6 @@ class NotificationService(BaseService):
                     )
                 )
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send assignment-changed notifications: {e}")
+            logger.error(
+                f"Failed to send assignment-changed notifications: {e}"
+            )

@@ -24,6 +24,7 @@ export type NotificationT = {
   createdAt: dayjs.Dayjs;
   updatedAt: dayjs.Dayjs;
   readAt: dayjs.Dayjs | null;
+  seenAt: dayjs.Dayjs | null;
 };
 
 export type NotificationKey =
@@ -99,6 +100,7 @@ export function toNotificationT(data: any): NotificationT {
     createdAt: dayjs(data.createdAt),
     updatedAt: dayjs(data.updatedAt),
     readAt: data.readAt ? dayjs(data.readAt) : null,
+    seenAt: data.seenAt ? dayjs(data.seenAt) : null,
   };
 }
 

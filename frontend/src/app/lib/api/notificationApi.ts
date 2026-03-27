@@ -32,6 +32,17 @@ export class NotificationApi extends BaseApi {
     };
   }
 
+  static async getUnseenCount(
+    apiClient: AuthenticatedApiClient,
+  ): Promise<number> {
+    const data = await this.makeRequest<any>(
+      apiClient,
+      "get",
+      "/notifications/me/unseen-count",
+    );
+    return data.count ?? 0;
+  }
+
   static async getUnreadCount(
     apiClient: AuthenticatedApiClient,
   ): Promise<number> {
@@ -68,6 +79,27 @@ export class NotificationApi extends BaseApi {
     id: string,
   ): Promise<void> {
     await this.makeRequest<any>(apiClient, "delete", `/notifications/${id}`);
+  }
+
+  static async markAllSeen(apiClient: AuthenticatedApiClient): Promise<void> {
+    await this.makeRequest<any>(
+      apiClient,
+      "post",
+      "/notifications/me/mark-all-seen",
+    );
+  }
+
+  static async readSeenBefore(
+    apiClient: AuthenticatedApiClient,
+    before: string,
+  ): Promise<number> {
+    const data = await this.makeRequest<any>(
+      apiClient,
+      "post",
+      "/notifications/me/read-seen-before",
+      { before },
+    );
+    return data.updated ?? 0;
   }
 
   static async getNotificationPreferences(
