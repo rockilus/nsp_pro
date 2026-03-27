@@ -73,7 +73,7 @@ class ScheduleService(BaseService):
         )
         return campaign_created
 
-    def validate_schedule(self, schedule_id: str) -> Schedule:
+    async def validate_schedule(self, schedule_id: str) -> Schedule:
         schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
         if not schedule:
             raise ValueError(f"Schedule with id {schedule_id} not found")
@@ -81,7 +81,7 @@ class ScheduleService(BaseService):
         schedule.updated_at = datetime.now(timezone.utc)
         schedule = self.collection.schedule_db.update_schedule(schedule)
         # Notify all team workers that the schedule has been published
-        self.notification_service.notify_schedule_published(schedule)
+        await self.notification_service.notify_schedule_published(schedule)
         return schedule
 
     def update_schedule(self, schedule_new: Schedule) -> Schedule:

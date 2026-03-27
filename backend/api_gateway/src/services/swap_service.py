@@ -37,7 +37,7 @@ class SwapService(BaseService):
         self.replacement_service = replacement_service
         self.notification_service = notification_service
 
-    def create_swap_request(
+    async def create_swap_request(
         self,
         team_id: str,
         created_by_user_id: str,
@@ -127,7 +127,7 @@ class SwapService(BaseService):
         saved_swap = self.collection.swap_db.create_swap_request(swap_request)
 
         # Notify relevant parties
-        self.notification_service.notify_new_swap_request(saved_swap)
+        await self.notification_service.notify_new_swap_request(saved_swap)
 
         return saved_swap
 

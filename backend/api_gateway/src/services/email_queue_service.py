@@ -313,6 +313,38 @@ class EmailQueueService(BaseService):
 
         return await self._enqueue_email(email_message)
 
+    async def enqueue_notification(
+        self,
+        to_address: str,
+        template_name: str,
+        email_type: EmailType,
+        context: dict,
+        language: str = "en",
+    ) -> str:
+        """
+        Enqueue a generic notification email.
+
+        Args:
+            to_address: Recipient email address
+            template_name: Name of the email template
+            email_type: EmailType enum value
+            context: Template context dict
+            language: Language code string (en/es/fr)
+
+        Returns:
+            SQS message ID
+        """
+        email_message = EmailMessage(
+            to_address=to_address,
+            template_name=template_name,
+            context=context,
+            language=language,
+            priority=EmailPriority.NORMAL,
+            email_type=email_type,
+            created_at=datetime.now(tz=timezone.utc),
+        )
+        return await self._enqueue_email(email_message)
+
     async def enqueue_swap_approved(
         self,
         to_address: str,

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">Demande Mise à Jour</div>
+        <div class="email-body">
+            <p>Bonjour {recipient_name},</p>
+            <p>Votre demande pour le shift <strong>{shift_name}</strong> le <strong>{date}</strong> dans l'équipe <strong>{team_name}</strong> a été <strong>{new_status}</strong>.</p>
+            <p>Cliquez sur le bouton ci-dessous pour consulter votre demande :</p>
+            <a href="{notification_link}" class="cta-button">Voir la Demande</a>
+        </div>
+        <div class="email-footer">
+            <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+            <p>Merci,<br>L'Équipe Rockilus</p>
+        </div>
+    </div>
+</body>
+</html>

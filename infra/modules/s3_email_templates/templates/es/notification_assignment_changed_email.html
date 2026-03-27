@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">Asignación Modificada</div>
+        <div class="email-body">
+            <p>Hola {recipient_name},</p>
+            <p>Tu asignación para el turno <strong>{shift_name}</strong> el <strong>{date}</strong> ha sido modificada.</p>
+            <p>Haz clic en el botón de abajo para ver tu horario actualizado:</p>
+            <a href="{notification_link}" class="cta-button">Ver Horario</a>
+        </div>
+        <div class="email-footer">
+            <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+            <p>Gracias,<br>El Equipo de Rockilus</p>
+        </div>
+    </div>
+</body>
+</html>

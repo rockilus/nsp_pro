@@ -240,7 +240,7 @@ async def update_assignment(
             recurrence=recurrence_data,
         )
         # Notify the affected worker
-        notification_service.notify_assignment_changed(
+        await notification_service.notify_assignment_changed(
             ar_result.assignments_updated, team_id, user_context.user_id
         )
         response = ar_result.to_dto()

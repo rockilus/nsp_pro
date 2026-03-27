@@ -139,7 +139,7 @@ async def validate_schedule(
             raise NotAuthorizedError(
                 "You do not have permission to validate a schedule",
             )
-        schedule = schedule_service.validate_schedule(schedule_id)
+        schedule = await schedule_service.validate_schedule(schedule_id)
         response = schedule.to_dto()
     except Exception as e:
         log_info("Failed to validate schedule")

@@ -191,7 +191,7 @@ class TeamService(BaseService):
                 m.user_id for m in memberships if m.role == TeamMembershipRole.OWNER
             ]
             if owner_user_ids:
-                self.notification_service.dispatch(
+                await self.notification_service.dispatch(
                     user_left_team_event(
                         team_id=team_id,
                         team_name=team_name,
@@ -200,7 +200,7 @@ class TeamService(BaseService):
                     )
                 )
         else:
-            self.notification_service.dispatch(
+            await self.notification_service.dispatch(
                 user_removed_from_team_event(
                     team_id=team_id,
                     team_name=team_name,

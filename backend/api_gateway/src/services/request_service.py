@@ -110,7 +110,7 @@ class RequestService(BaseService):
         new_request = self.collection.request_db.update_request(request)
         return self._to_request_augmented(new_request)
 
-    def approve_request(
+    async def approve_request(
         self, request_id: str
     ) -> tuple[RequestAugmented, List[Assignment]]:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
@@ -150,7 +150,7 @@ class RequestService(BaseService):
         request.status = RequestStatus.APPROVED
         updated_request = self.collection.request_db.update_request(request)
         # Notify the worker
-        self.notification_service.notify_request_status_changed(updated_request)
+        await self.notification_service.notify_request_status_changed(updated_request)
         return self._to_request_augmented(updated_request), assignments_created
 
     def _create_assignments_for_single_shift_request(
@@ -203,7 +203,7 @@ class RequestService(BaseService):
                 created_assignments.extend(ar_result.assignments_created)
         return created_assignments
 
-    def deny_request(self, request_id: str) -> RequestAugmented:
+    async def deny_request(self, request_id: str) -> RequestAugmented:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
         if not request:
             raise ValueError(f"Request with id {request_id} not found")
@@ -213,7 +213,7 @@ class RequestService(BaseService):
         request.fulfillment = FulfillmentStatus.UNFULFILLED
         updated_request = self.collection.request_db.update_request(request)
         # Notify the worker
-        self.notification_service.notify_request_status_changed(updated_request)
+        await self.notification_service.notify_request_status_changed(updated_request)
         return self._to_request_augmented(updated_request)
 
     def rescind_request(self, request_id: str) -> tuple[RequestAugmented, List[str]]:

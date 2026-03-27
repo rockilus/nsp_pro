@@ -75,16 +75,19 @@ class TeamInvitationService(BaseService):
         team = self.collection.team_db.get_team_by_id(team_id=invitation.team_id)
         if not team:
             raise ValueError("Team not found")
-        await self.send_invitation_email(
-            invitation=invitation, sender=sender, team=team
-        )
+        # Only send the transactional invitation email for unregistered users.
+        # Registered users receive a notification email via dispatch() below.
+        if user is None:
+            await self.send_invitation_email(
+                invitation=invitation, sender=sender, team=team
+            )
         invitation.last_sent_at = datetime.now(tz=timezone.utc)
         invitation = self.collection.team_invitation_db.create_invitation(
             invitation=invitation
         )
         if user is not None and user.id:
             sender_name = f"{sender.first_name} {sender.last_name}"
-            self.notification_service.dispatch(
+            await self.notification_service.dispatch(
                 user_received_team_invite_event(
                     team_id=invitation.team_id,
                     team_name=team.name,
@@ -224,7 +227,7 @@ class TeamInvitationService(BaseService):
         self.collection.team_invitation_db.update_invitation(invitation)
         accepted_user_name = f"{user.first_name} {user.last_name}"
         if invitation.created_by:
-            self.notification_service.dispatch(
+            await self.notification_service.dispatch(
                 user_accepted_team_invite_event(
                     team_id=invitation.team_id,
                     team_name=team.name,

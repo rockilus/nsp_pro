@@ -23,6 +23,11 @@ class EmailType(str, Enum):
     NOTIFICATION_REQUEST_DECISION = "notification_request_decision"
     NOTIFICATION_SWAP_REQUEST = "notification_swap_request"
     NOTIFICATION_ASSIGNMENT_CHANGED = "notification_assignment_changed"
+    NOTIFICATION_SWAP_STATUS_CHANGED = "notification_swap_status_changed"
+    NOTIFICATION_USER_RECEIVED_TEAM_INVITE = "notification_user_received_team_invite"
+    NOTIFICATION_USER_ACCEPTED_TEAM_INVITE = "notification_user_accepted_team_invite"
+    NOTIFICATION_USER_REMOVED_FROM_TEAM = "notification_user_removed_from_team"
+    NOTIFICATION_USER_LEFT_TEAM = "notification_user_left_team"
 
 
 class EmailPriority(str, Enum):

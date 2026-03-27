@@ -161,7 +161,9 @@ async def accept_request(
             resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to approve a request")
-        request, assignments = request_service.approve_request(request_id=request_id)
+        request, assignments = await request_service.approve_request(
+            request_id=request_id
+        )
         response = {
             "request": request.to_dto(),
             "assignments": ([a.to_dto() for a in assignments] if assignments else []),
@@ -187,7 +189,7 @@ async def deny_request(
             resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to deny a request")
-        request = request_service.deny_request(request_id=request_id)
+        request = await request_service.deny_request(request_id=request_id)
         response = request.to_dto()
     except Exception as e:
         log_info("Failed to deny request")
