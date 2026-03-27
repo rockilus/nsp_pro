@@ -127,7 +127,6 @@ export default function NotificationBell({ lng }: { lng: string }) {
           >
             <MenuItem
               onClick={handleMarkAll}
-              disabled={unreadCount === 0}
               data-testid="notification-bell-mark-all-read"
             >
               <ListItemText>{t("mark_all_read")}</ListItemText>

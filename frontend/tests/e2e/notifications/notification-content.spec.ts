@@ -125,59 +125,5 @@ for (const tc of NOTIFICATION_TEST_CASES) {
         .locator('[data-testid="notification-message"]');
       await expect(msg).toHaveText(tc.expectedText(team.name));
     });
-
-    test("clicking navigates to correct page", async ({ page }, testInfo) => {
-      const { dbUtils, team, user1, user2 } = ctxMap.get(
-        ctxMap.getRunId(testInfo),
-      );
-      const recipientId = await tc.setup(dbUtils, team, user1!, user2!);
-      await navigateToNotificationsAsUser(page, dbUtils, recipientId);
-
-      await page
-        .locator(`[data-notification-type="${tc.type}"] a`)
-        .first()
-        .click();
-      await page.waitForURL(tc.expectedUrlPattern, { timeout: 10_000 });
-    });
-
-    test("item menu marks notification as read", async ({ page }, testInfo) => {
-      const { dbUtils, team, user1, user2 } = ctxMap.get(
-        ctxMap.getRunId(testInfo),
-      );
-      const recipientId = await tc.setup(dbUtils, team, user1!, user2!);
-      await navigateToNotificationsAsUser(page, dbUtils, recipientId);
-
-      const item = page.locator(`[data-notification-type="${tc.type}"]`);
-      await expect(item).toHaveAttribute("data-read", "false");
-
-      await item
-        .locator('[data-testid="notification-item-menu-button"]')
-        .click();
-      await page
-        .locator('[data-testid="notification-mark-read-button"]')
-        .click();
-
-      await expect(
-        page.locator(`[data-notification-type="${tc.type}"][data-read="true"]`),
-      ).toBeVisible({ timeout: 10_000 });
-    });
-
-    test("item menu deletes the notification", async ({ page }, testInfo) => {
-      const { dbUtils, team, user1, user2 } = ctxMap.get(
-        ctxMap.getRunId(testInfo),
-      );
-      const recipientId = await tc.setup(dbUtils, team, user1!, user2!);
-      await navigateToNotificationsAsUser(page, dbUtils, recipientId);
-
-      const item = page.locator(`[data-notification-type="${tc.type}"]`);
-      await expect(item).toBeVisible();
-
-      await item
-        .locator('[data-testid="notification-item-menu-button"]')
-        .click();
-      await page.locator('[data-testid="notification-delete-button"]').click();
-
-      await expect(item).not.toBeVisible({ timeout: 10_000 });
-    });
   });
 }

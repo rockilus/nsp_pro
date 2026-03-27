@@ -151,7 +151,7 @@ export default function NotificationItem({
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
               transformOrigin={{ vertical: "top", horizontal: "right" }}
             >
-              {onRead && !notification.read && (
+              {onRead && (
                 <MenuItem
                   data-testid="notification-mark-read-button"
                   onClick={() => {

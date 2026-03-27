@@ -92,7 +92,6 @@ export default function NotificationsPage({ lng }: { lng: string }) {
               markAllRead.mutate();
               handleMenuClose();
             }}
-            disabled={unread.length === 0}
             data-testid="notifications-page-mark-all-read"
           >
             <ListItemText>{t("mark_all_read")}</ListItemText>

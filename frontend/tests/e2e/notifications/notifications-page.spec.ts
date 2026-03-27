@@ -240,22 +240,6 @@ test.describe("NotificationsPage", () => {
     });
   });
 
-  test("mark all as read is disabled when there are no unread notifications", async ({
-    page,
-  }, testInfo) => {
-    const { dbUtils, user1 } = testContextMap.get(
-      testContextMap.getRunId(testInfo),
-    );
-
-    // No notifications created — unread count is 0
-    await navigateToNotificationsAsUser(page, dbUtils, user1!.user_id);
-    await page.click('[data-testid="notifications-page-menu-button"]');
-
-    await expect(
-      page.locator('[data-testid="notifications-page-mark-all-read"]'),
-    ).toHaveAttribute("aria-disabled", "true");
-  });
-
   test("clicking notification settings from menu navigates to settings", async ({
     page,
   }, testInfo) => {
@@ -270,5 +254,68 @@ test.describe("NotificationsPage", () => {
     await expect(page).toHaveURL(/\/plan\/settings\/notifications/, {
       timeout: 10_000,
     });
+  });
+
+  test("clicking a notification navigates to the correct page", async ({
+    page,
+  }, testInfo) => {
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    // Invite user2 → user2 receives user_received_team_invite (links to /settings/teams)
+    await dbUtils.createTeamInvitationAs(
+      user1!.user_id,
+      team.teamId,
+      user2!.email,
+    );
+    await navigateToNotificationsAsUser(page, dbUtils, user2!.user_id);
+
+    await page.locator('[data-testid="notification-item"] a').first().click();
+    await page.waitForURL(/\/plan\/settings\/teams/, { timeout: 10_000 });
+  });
+
+  test("item menu marks notification as read", async ({ page }, testInfo) => {
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    await dbUtils.createTeamInvitationAs(
+      user1!.user_id,
+      team.teamId,
+      user2!.email,
+    );
+    await navigateToNotificationsAsUser(page, dbUtils, user2!.user_id);
+
+    const item = page.locator('[data-testid="notification-item"]').first();
+    await expect(item).toHaveAttribute("data-read", "false");
+
+    await item.locator('[data-testid="notification-item-menu-button"]').click();
+    await page.locator('[data-testid="notification-mark-read-button"]').click();
+
+    await expect(item).toHaveAttribute("data-read", "true", {
+      timeout: 10_000,
+    });
+  });
+
+  test("item menu deletes the notification", async ({ page }, testInfo) => {
+    const { dbUtils, team, user1, user2 } = testContextMap.get(
+      testContextMap.getRunId(testInfo),
+    );
+
+    await dbUtils.createTeamInvitationAs(
+      user1!.user_id,
+      team.teamId,
+      user2!.email,
+    );
+    await navigateToNotificationsAsUser(page, dbUtils, user2!.user_id);
+
+    const item = page.locator('[data-testid="notification-item"]').first();
+    await expect(item).toBeVisible();
+
+    await item.locator('[data-testid="notification-item-menu-button"]').click();
+    await page.locator('[data-testid="notification-delete-button"]').click();
+
+    await expect(item).not.toBeVisible({ timeout: 10_000 });
   });
 });

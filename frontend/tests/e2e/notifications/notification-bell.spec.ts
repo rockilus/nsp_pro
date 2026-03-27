@@ -266,22 +266,6 @@ test.describe("NotificationBell", () => {
     ).toBeVisible();
   });
 
-  test("mark all as read is disabled when there are no unread notifications", async ({
-    page,
-  }, testInfo) => {
-    const { dbUtils, user1 } = testContextMap.get(
-      testContextMap.getRunId(testInfo),
-    );
-
-    // No notifications — unread count is 0
-    await navigateToPlanAndOpenBellAsUser(page, dbUtils, user1!.user_id);
-    await page.click('[data-testid="notification-bell-menu-button"]');
-
-    await expect(
-      page.locator('[data-testid="notification-bell-mark-all-read"]'),
-    ).toHaveAttribute("aria-disabled", "true");
-  });
-
   test("mark all as read from menu marks all notifications as read", async ({
     page,
   }, testInfo) => {
