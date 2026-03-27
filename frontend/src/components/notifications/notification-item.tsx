@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/app/i18n/client";
 import { NotificationT } from "@/types/notification";
@@ -8,7 +8,10 @@ import { getNotificationTargetPath } from "@/app/lib/utils/getNotificationTarget
 import dayjs, { Dayjs } from "dayjs";
 // MUI
 import IconButton from "@mui/material/IconButton";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import ListItemText from "@mui/material/ListItemText";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
@@ -69,6 +72,14 @@ export default function NotificationItem({
   const targetPath = getNotificationTargetPath(notification, lng);
   const messageKey = getMessageKey(notification.type);
   const message = t(messageKey, notification.eventData as any) as string;
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const menuOpen = Boolean(menuAnchorEl);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    setMenuAnchorEl(event.currentTarget);
+  };
+  const handleMenuClose = () => setMenuAnchorEl(null);
 
   const handleClick = () => {
     if (!notification.read && onRead) {
@@ -123,18 +134,48 @@ export default function NotificationItem({
         >
           {getRelativeTime(notification.createdAt)}
         </Typography>
-        {!compact && onDelete && (
-          <IconButton
-            data-testid="notification-delete-button"
-            size="small"
-            onClick={(e) => {
-              e.preventDefault();
-              onDelete(notification.id);
-            }}
-            aria-label={t("delete")}
-          >
-            <DeleteOutlineIcon fontSize="small" />
-          </IconButton>
+        {!compact && (onRead || onDelete) && (
+          <>
+            <IconButton
+              data-testid="notification-item-menu-button"
+              size="small"
+              onClick={handleMenuOpen}
+              aria-label="notification actions"
+            >
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+            <Menu
+              anchorEl={menuAnchorEl}
+              open={menuOpen}
+              onClose={handleMenuClose}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              transformOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+              {onRead && !notification.read && (
+                <MenuItem
+                  data-testid="notification-mark-read-button"
+                  onClick={() => {
+                    onRead(notification.id);
+                    handleMenuClose();
+                  }}
+                >
+                  <ListItemText>{t("mark_as_read")}</ListItemText>
+                </MenuItem>
+              )}
+              {onDelete && (
+                <MenuItem
+                  data-testid="notification-delete-button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onDelete(notification.id);
+                    handleMenuClose();
+                  }}
+                >
+                  <ListItemText>{t("delete")}</ListItemText>
+                </MenuItem>
+              )}
+            </Menu>
+          </>
         )}
       </Box>
     </Box>

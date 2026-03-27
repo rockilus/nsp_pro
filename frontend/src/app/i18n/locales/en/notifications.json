@@ -4,6 +4,8 @@
     "no_notifications": "No notifications",
     "see_all": "See all",
     "delete": "Delete",
+    "mark_as_read": "Mark as read",
+    "open_notifications": "Open notifications",
     "schedule_published": "Schedule {{schedule_name}} has been published for team {{teamName}}",
     "new_swap_request": "{{requester_name}} created a new swap request",
     "swap_status_changed": "Your swap request status changed to {{new_status}}",

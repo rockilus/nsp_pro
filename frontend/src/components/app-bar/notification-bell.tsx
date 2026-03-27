@@ -13,10 +13,13 @@ import NotificationItem from "@/components/notifications/notification-item";
 // MUI
 import Badge from "@mui/material/Badge";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
+import ListItemText from "@mui/material/ListItemText";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 
@@ -26,6 +29,8 @@ export default function NotificationBell({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, "notifications");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const menuOpen = Boolean(menuAnchorEl);
 
   const { data: unreadCount = 0 } = useUnreadNotificationCount();
   const { data, refetch } = useNotifications(POPOVER_LIMIT, 0);
@@ -42,8 +47,16 @@ export default function NotificationBell({ lng }: { lng: string }) {
 
   const handleClose = () => setAnchorEl(null);
 
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => setMenuAnchorEl(null);
+
   const handleMarkAll = () => {
     markAllRead.mutate();
+    handleMenuClose();
   };
 
   const handleRead = (id: string) => {
@@ -97,15 +110,51 @@ export default function NotificationBell({ lng }: { lng: string }) {
           <Typography variant="subtitle1" fontWeight={600}>
             {t("title")}
           </Typography>
-          {unreadCount > 0 && (
-            <Button
-              size="small"
+          <IconButton
+            size="small"
+            onClick={handleMenuOpen}
+            aria-label="notification options"
+            data-testid="notification-bell-menu-button"
+          >
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
+          <Menu
+            anchorEl={menuAnchorEl}
+            open={menuOpen}
+            onClose={handleMenuClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
+          >
+            <MenuItem
               onClick={handleMarkAll}
+              disabled={unreadCount === 0}
               data-testid="notification-bell-mark-all-read"
             >
-              {t("mark_all_read")}
-            </Button>
-          )}
+              <ListItemText>{t("mark_all_read")}</ListItemText>
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              href={`/${lng}/plan/settings/notifications`}
+              onClick={() => {
+                handleMenuClose();
+                handleClose();
+              }}
+              data-testid="notification-bell-open-settings"
+            >
+              <ListItemText>{t("notification_settings")}</ListItemText>
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              href={`/${lng}/plan/notifications`}
+              onClick={() => {
+                handleMenuClose();
+                handleClose();
+              }}
+              data-testid="notification-bell-open-notifications"
+            >
+              <ListItemText>{t("open_notifications")}</ListItemText>
+            </MenuItem>
+          </Menu>
         </Box>
         <Divider />
 

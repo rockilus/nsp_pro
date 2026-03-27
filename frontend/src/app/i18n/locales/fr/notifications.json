@@ -4,6 +4,8 @@
     "no_notifications": "Aucune notification",
     "see_all": "Voir tout",
     "delete": "Supprimer",
+    "mark_as_read": "Marquer comme lu",
+    "open_notifications": "Ouvrir les notifications",
     "schedule_published": "Le planning {{schedule_name}} a été publié pour l'équipe {{team_name}}",
     "new_swap_request": "{{requester_name}} a créé une nouvelle demande d'échange",
     "swap_status_changed": "Le statut de votre demande d'échange a changé en {{new_status}}",
