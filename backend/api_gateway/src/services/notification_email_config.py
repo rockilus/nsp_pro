@@ -1,4 +1,7 @@
-"""Notification email configuration: maps NotificationType → email template/type/path."""
+"""
+Notification email configuration: maps NotificationType → email
+template/type/path.
+"""
 
 from typing import Any, Dict
 
@@ -59,11 +62,23 @@ NOTIFICATION_EMAIL_MAP: dict[NotificationType, tuple[str, EmailType, str]] = {
 # Subjects keyed by (NotificationType, language).
 NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
     # English
-    (NotificationType.SCHEDULE_PUBLISHED, "en"): "Your schedule has been published",
+    (
+        NotificationType.SCHEDULE_PUBLISHED,
+        "en",
+    ): "Your schedule has been published",
     (NotificationType.NEW_SWAP_REQUEST, "en"): "New swap request",
-    (NotificationType.SWAP_STATUS_CHANGED, "en"): "Your swap request status changed",
-    (NotificationType.REQUEST_STATUS_CHANGED, "en"): "Your request has been updated",
-    (NotificationType.ASSIGNMENT_CHANGED, "en"): "Your assignment has been changed",
+    (
+        NotificationType.SWAP_STATUS_CHANGED,
+        "en",
+    ): "Your swap request status changed",
+    (
+        NotificationType.REQUEST_STATUS_CHANGED,
+        "en",
+    ): "Your request has been updated",
+    (
+        NotificationType.ASSIGNMENT_CHANGED,
+        "en",
+    ): "Your assignment has been changed",
     (
         NotificationType.USER_RECEIVED_TEAM_INVITE,
         "en",
@@ -78,11 +93,23 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
     ): "You have been removed from a team",
     (NotificationType.USER_LEFT_TEAM, "en"): "A user has left your team",
     # Spanish
-    (NotificationType.SCHEDULE_PUBLISHED, "es"): "Tu horario ha sido publicado",
+    (
+        NotificationType.SCHEDULE_PUBLISHED,
+        "es",
+    ): "Tu horario ha sido publicado",
     (NotificationType.NEW_SWAP_REQUEST, "es"): "Nueva solicitud de cambio",
-    (NotificationType.SWAP_STATUS_CHANGED, "es"): "El estado de tu cambio ha cambiado",
-    (NotificationType.REQUEST_STATUS_CHANGED, "es"): "Tu solicitud ha sido actualizada",
-    (NotificationType.ASSIGNMENT_CHANGED, "es"): "Tu asignación ha sido modificada",
+    (
+        NotificationType.SWAP_STATUS_CHANGED,
+        "es",
+    ): "El estado de tu cambio ha cambiado",
+    (
+        NotificationType.REQUEST_STATUS_CHANGED,
+        "es",
+    ): "Tu solicitud ha sido actualizada",
+    (
+        NotificationType.ASSIGNMENT_CHANGED,
+        "es",
+    ): "Tu asignación ha sido modificada",
     (
         NotificationType.USER_RECEIVED_TEAM_INVITE,
         "es",
@@ -91,14 +118,29 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         NotificationType.USER_ACCEPTED_TEAM_INVITE,
         "es",
     ): "Un usuario aceptó tu invitación al equipo",
-    (NotificationType.USER_REMOVED_FROM_TEAM, "es"): "Has sido eliminado de un equipo",
-    (NotificationType.USER_LEFT_TEAM, "es"): "Un usuario ha abandonado tu equipo",
+    (
+        NotificationType.USER_REMOVED_FROM_TEAM,
+        "es",
+    ): "Has sido eliminado de un equipo",
+    (
+        NotificationType.USER_LEFT_TEAM,
+        "es",
+    ): "Un usuario ha abandonado tu equipo",
     # French
     (NotificationType.SCHEDULE_PUBLISHED, "fr"): "Votre planning a été publié",
     (NotificationType.NEW_SWAP_REQUEST, "fr"): "Nouvelle demande d'échange",
-    (NotificationType.SWAP_STATUS_CHANGED, "fr"): "Le statut de votre échange a changé",
-    (NotificationType.REQUEST_STATUS_CHANGED, "fr"): "Votre demande a été mise à jour",
-    (NotificationType.ASSIGNMENT_CHANGED, "fr"): "Votre affectation a été modifiée",
+    (
+        NotificationType.SWAP_STATUS_CHANGED,
+        "fr",
+    ): "Le statut de votre échange a changé",
+    (
+        NotificationType.REQUEST_STATUS_CHANGED,
+        "fr",
+    ): "Votre demande a été mise à jour",
+    (
+        NotificationType.ASSIGNMENT_CHANGED,
+        "fr",
+    ): "Votre affectation a été modifiée",
     (
         NotificationType.USER_RECEIVED_TEAM_INVITE,
         "fr",
@@ -111,12 +153,14 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         NotificationType.USER_REMOVED_FROM_TEAM,
         "fr",
     ): "Vous avez été retiré d'une équipe",
-    (NotificationType.USER_LEFT_TEAM, "fr"): "Un utilisateur a quitté votre équipe",
+    (
+        NotificationType.USER_LEFT_TEAM,
+        "fr",
+    ): "Un utilisateur a quitté votre équipe",
 }
 
 
 def build_email_context(
-    notification_type: NotificationType,
     event_data: Dict[str, Any],
     user: User,
     link: str,
