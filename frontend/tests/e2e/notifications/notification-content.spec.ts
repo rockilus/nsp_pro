@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { DatabaseTestUtils, TestUser } from "../../utils/database-utils";
 import { RequestType } from "@/types/request";
+import { ShiftType } from "@/types/shift";
 import {
   NotifTestContext,
   NotificationTestCase,
@@ -93,12 +94,15 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker.id, user2!.user_id, team.teamId);
+      const allShifts = await dbUtils.getAllShifts(team.teamId);
+      const leaveShift = allShifts.find((s) => s.shiftType === ShiftType.LEAVE);
       await dbUtils.createRequestAs(user2!.user_id, {
         teamId: team.teamId,
         workerId: worker.id,
         requestType: RequestType.LEAVE,
         startDate: dayjs.utc(REQUEST_DATE),
         endDate: dayjs.utc(REQUEST_DATE),
+        shiftId: leaveShift?.id ?? null,
       });
       return user1!.user_id;
     },
@@ -120,19 +124,23 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker.id, user2!.user_id, team.teamId);
+      const allShifts = await dbUtils.getAllShifts(team.teamId);
+      const leaveShift = allShifts.find((s) => s.shiftType === ShiftType.LEAVE);
       const request = await dbUtils.createRequestAs(user2!.user_id, {
         teamId: team.teamId,
         workerId: worker.id,
         requestType: RequestType.LEAVE,
         startDate: dayjs.utc(REQUEST_DATE),
         endDate: dayjs.utc(REQUEST_DATE),
+        shiftId: leaveShift?.id ?? null,
       });
       await dbUtils.approveRequestAs(user1!.user_id, request.id, team.teamId);
       return user2!.user_id;
     },
     // shift_name is empty for a plain LEAVE request; Playwright normalises
     // whitespace so the double-space collapses to a single space.
-    expectedText: (_name) => `Your request for on ${REQUEST_DATE} was approved`,
+    expectedText: (_name) =>
+      `Your request for ${leaveShift} on ${REQUEST_DATE} was approved`,
     expectedUrlPattern: /\/plan\/requests/,
   },
   {
@@ -148,12 +156,15 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker.id, user2!.user_id, team.teamId);
+      const allShifts = await dbUtils.getAllShifts(team.teamId);
+      const leaveShift = allShifts.find((s) => s.shiftType === ShiftType.LEAVE);
       const request = await dbUtils.createRequestAs(user2!.user_id, {
         teamId: team.teamId,
         workerId: worker.id,
         requestType: RequestType.LEAVE,
         startDate: dayjs.utc(REQUEST_DATE),
         endDate: dayjs.utc(REQUEST_DATE),
+        shiftId: leaveShift?.id ?? null,
       });
       await dbUtils.denyRequestAs(user1!.user_id, request.id, team.teamId);
       return user2!.user_id;

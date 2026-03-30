@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { DatabaseTestUtils, TestUser } from "../../utils/database-utils";
 import { RequestType } from "@/types/request";
+import { ShiftType } from "@/types/shift";
 import { NotificationTypeT } from "@/types/notification";
 
 dayjs.extend(utc);
@@ -28,6 +29,7 @@ interface RequestNotifContext {
   manager: TestUser;
   worker: TestUser;
   workerId: string;
+  leaveShiftId: string | null;
 }
 
 const testContextMap = new Map<string, RequestNotifContext>();
@@ -93,12 +95,17 @@ test.describe("Request notifications", () => {
     // workerUser needs to be a team member so they can create requests.
     await dbUtils.addTeamMember(workerUser.user_id, team.teamId, "member");
 
+    // Find a leave shift for the team (created by default when a team is created).
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const leaveShift = allShifts.find((s) => s.shiftType === ShiftType.LEAVE);
+
     testContextMap.set(testRunId, {
       dbUtils,
       team,
       manager,
       worker: workerUser,
       workerId: workerRecord.id,
+      leaveShiftId: leaveShift?.id ?? null,
     });
   });
 
@@ -110,7 +117,7 @@ test.describe("Request notifications", () => {
 
   test("team manager is notified when a worker creates a new request", async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const { dbUtils, team, manager, worker, workerId } =
+    const { dbUtils, team, manager, worker, workerId, leaveShiftId } =
       testContextMap.get(testRunId)!;
 
     await dbUtils.createRequestAs(worker.user_id, {
@@ -119,6 +126,7 @@ test.describe("Request notifications", () => {
       requestType: RequestType.LEAVE,
       startDate: dayjs.utc(REQUEST_DATE),
       endDate: dayjs.utc(REQUEST_DATE),
+      shiftId: leaveShiftId,
     });
 
     const notifications = await dbUtils.getNotificationsAs(manager.user_id);
@@ -138,7 +146,7 @@ test.describe("Request notifications", () => {
 
   test("request creator is notified when their request is approved", async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const { dbUtils, team, manager, worker, workerId } =
+    const { dbUtils, team, manager, worker, workerId, leaveShiftId } =
       testContextMap.get(testRunId)!;
 
     const request = await dbUtils.createRequestAs(worker.user_id, {
@@ -147,6 +155,7 @@ test.describe("Request notifications", () => {
       requestType: RequestType.LEAVE,
       startDate: dayjs.utc(REQUEST_DATE),
       endDate: dayjs.utc(REQUEST_DATE),
+      shiftId: leaveShiftId,
     });
 
     await dbUtils.approveRequestAs(manager.user_id, request.id, team.teamId);
@@ -167,7 +176,7 @@ test.describe("Request notifications", () => {
 
   test("request creator is notified when their request is denied", async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
-    const { dbUtils, team, manager, worker, workerId } =
+    const { dbUtils, team, manager, worker, workerId, leaveShiftId } =
       testContextMap.get(testRunId)!;
 
     const request = await dbUtils.createRequestAs(worker.user_id, {
@@ -176,6 +185,7 @@ test.describe("Request notifications", () => {
       requestType: RequestType.LEAVE,
       startDate: dayjs.utc(REQUEST_DATE),
       endDate: dayjs.utc(REQUEST_DATE),
+      shiftId: leaveShiftId,
     });
 
     await dbUtils.denyRequestAs(manager.user_id, request.id, team.teamId);
