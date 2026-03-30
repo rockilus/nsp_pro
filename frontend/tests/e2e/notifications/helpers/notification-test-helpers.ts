@@ -96,6 +96,7 @@ export interface NotificationTestCase {
     user1: TestUser,
     user2: TestUser,
   ) => Promise<string>;
-  expectedText: (teamName: string) => string;
+  // Can be a concrete string or a RegExp when part of the text is dynamic
+  expectedText: (teamName: string) => string | RegExp;
   expectedUrlPattern: RegExp;
 }

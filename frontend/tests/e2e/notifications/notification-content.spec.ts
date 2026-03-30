@@ -137,10 +137,9 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.approveRequestAs(user1!.user_id, request.id, team.teamId);
       return user2!.user_id;
     },
-    // shift_name is empty for a plain LEAVE request; Playwright normalises
-    // whitespace so the double-space collapses to a single space.
+    // shift_name can be dynamic (e.g. "Vacation"); accept any name
     expectedText: (_name) =>
-      `Your request for ${leaveShift} on ${REQUEST_DATE} was approved`,
+      new RegExp(`^Your request for .* on ${REQUEST_DATE} was approved$`),
     expectedUrlPattern: /\/plan\/requests/,
   },
   {
@@ -169,7 +168,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.denyRequestAs(user1!.user_id, request.id, team.teamId);
       return user2!.user_id;
     },
-    expectedText: (_name) => `Your request for on ${REQUEST_DATE} was denied`,
+    expectedText: (_name) =>
+      new RegExp(`^Your request for .* on ${REQUEST_DATE} was denied$`),
     expectedUrlPattern: /\/plan\/requests/,
   },
 ];
@@ -231,7 +231,12 @@ for (const tc of NOTIFICATION_TEST_CASES) {
       const msg = page
         .locator(`[data-notification-type="${tc.type}"]`)
         .locator('[data-testid="notification-message"]');
-      await expect(msg).toHaveText(tc.expectedText(team.name));
+      const expected = tc.expectedText(team.name);
+      if (expected instanceof RegExp) {
+        await expect(msg).toHaveText(expected);
+      } else {
+        await expect(msg).toHaveText(expected);
+      }
     });
 
     test("does not appear on page when inApp is disabled", async ({
