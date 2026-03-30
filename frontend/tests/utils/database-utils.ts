@@ -2755,6 +2755,69 @@ export class DatabaseTestUtils {
     const client = this.createAuthenticatedClientForUser(userId);
     return NotificationApi.updateNotificationPreferences(client, prefs);
   }
+
+  /**
+   * Create a request acting as a specific user (e.g., a worker submitting their own request)
+   */
+  async createRequestAs(
+    userId: string,
+    requestData: {
+      teamId: string;
+      workerId: string;
+      requestType: RequestType;
+      startDate: dayjs.Dayjs;
+      endDate: dayjs.Dayjs;
+      negative?: boolean;
+      shiftId?: string | null;
+      shiftOptions?: ShiftWorkerOptionT[];
+    },
+  ): Promise<any> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    const requestPayload: RequestT = {
+      id: "",
+      teamId: requestData.teamId,
+      requestType: requestData.requestType,
+      workerId: requestData.workerId,
+      startDate: requestData.startDate,
+      endDate: requestData.endDate,
+      shiftId: requestData.shiftId || null,
+      shiftOptions: requestData.shiftOptions || [],
+      negative: requestData.negative || false,
+      hard: true,
+      status: RequestStatus.PENDING,
+      fulfillment: FulfillmentStatus.NOT_PROCESSED,
+      comment: "",
+      createdAt: dayjs(),
+      active: true,
+      shiftTargetIds: [],
+      missingAttributes: [],
+    };
+    return RequestApi.addRequest(client, requestPayload, requestData.teamId);
+  }
+
+  /**
+   * Approve a request acting as a specific user (e.g., a manager)
+   */
+  async approveRequestAs(
+    userId: string,
+    requestId: string,
+    teamId: string,
+  ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return RequestApi.acceptRequest(client, requestId, teamId);
+  }
+
+  /**
+   * Deny a request acting as a specific user (e.g., a manager)
+   */
+  async denyRequestAs(
+    userId: string,
+    requestId: string,
+    teamId: string,
+  ): Promise<RequestT> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return RequestApi.denyRequest(client, requestId, teamId);
+  }
 }
 
 /**

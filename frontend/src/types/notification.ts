@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 
 export type NotificationTypeT =
   | "schedule_published"
+  | "new_request"
   | "new_swap_request"
   | "swap_status_changed"
   | "request_status_changed"

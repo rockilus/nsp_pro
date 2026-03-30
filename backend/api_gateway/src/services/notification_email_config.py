@@ -17,6 +17,11 @@ NOTIFICATION_EMAIL_MAP: dict[NotificationType, tuple[str, EmailType, str]] = {
         EmailType.NOTIFICATION_SCHEDULE_PUBLISHED,
         "/plan/schedule",
     ),
+    NotificationType.NEW_REQUEST: (
+        "notification_new_request_email",
+        EmailType.NOTIFICATION_NEW_REQUEST,
+        "/plan/requests",
+    ),
     NotificationType.NEW_SWAP_REQUEST: (
         "notification_new_swap_request_email",
         EmailType.NOTIFICATION_SWAP_REQUEST,
@@ -66,6 +71,7 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         NotificationType.SCHEDULE_PUBLISHED,
         "en",
     ): "Your schedule has been published",
+    (NotificationType.NEW_REQUEST, "en"): "New request received",
     (NotificationType.NEW_SWAP_REQUEST, "en"): "New swap request",
     (
         NotificationType.SWAP_STATUS_CHANGED,
@@ -97,6 +103,7 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         NotificationType.SCHEDULE_PUBLISHED,
         "es",
     ): "Tu horario ha sido publicado",
+    (NotificationType.NEW_REQUEST, "es"): "Nueva solicitud recibida",
     (NotificationType.NEW_SWAP_REQUEST, "es"): "Nueva solicitud de cambio",
     (
         NotificationType.SWAP_STATUS_CHANGED,
@@ -128,6 +135,7 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
     ): "Un usuario ha abandonado tu equipo",
     # French
     (NotificationType.SCHEDULE_PUBLISHED, "fr"): "Votre planning a été publié",
+    (NotificationType.NEW_REQUEST, "fr"): "Nouvelle demande reçue",
     (NotificationType.NEW_SWAP_REQUEST, "fr"): "Nouvelle demande d'échange",
     (
         NotificationType.SWAP_STATUS_CHANGED,

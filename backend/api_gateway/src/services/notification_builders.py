@@ -9,6 +9,8 @@ from shared.schemas.core.notification import (
     NotificationType,
 )
 
+# pylint: disable=too-many-arguments
+
 
 def user_received_team_invite_event(
     team_id: str,
@@ -69,4 +71,48 @@ def user_left_team_event(
         user_ids=owner_user_ids,
         team_id=team_id,
         event_data={"team_name": team_name, "user_name": user_name},
+    )
+
+
+def new_request_created_event(
+    team_id: str,
+    team_name: str,
+    worker_name: str,
+    start_date: str,
+    manager_user_ids: list[str],
+) -> NotificationEvent:
+    """Notify team managers that a new request has been created."""
+    return NotificationEvent(
+        notification_type=NotificationType.NEW_REQUEST,
+        user_ids=manager_user_ids,
+        team_id=team_id,
+        event_data={
+            "team_name": team_name,
+            "worker_name": worker_name,
+            "start_date": start_date,
+        },
+    )
+
+
+def request_status_changed_event(
+    team_id: str,
+    team_name: str,
+    worker_user_id: str,
+    request_id: str,
+    new_status: str,
+    shift_name: str,
+    start_date: str,
+) -> NotificationEvent:
+    """Notify the request creator that their request status has changed."""
+    return NotificationEvent(
+        notification_type=NotificationType.REQUEST_STATUS_CHANGED,
+        user_ids=[worker_user_id],
+        team_id=team_id,
+        event_data={
+            "request_id": request_id,
+            "new_status": new_status,
+            "shift_name": shift_name,
+            "date": start_date,
+            "team_name": team_name,
+        },
     )

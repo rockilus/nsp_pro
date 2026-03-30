@@ -67,6 +67,7 @@ export function TeamProvider({
     isProfilePage,
     isPersonalInfoPage,
     isSecurityPage,
+    isNotificationsPage,
     router,
     loading,
     pathname,

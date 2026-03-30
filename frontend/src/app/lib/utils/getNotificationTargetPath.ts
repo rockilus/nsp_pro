@@ -12,6 +12,8 @@ export function getNotificationTargetPath(
   switch (notification.type) {
     case "schedule_published":
       return `${base}/schedule?scheduleId=${notification.eventData.schedule_id ?? ""}`;
+    case "new_request":
+      return `${base}/requests`;
     case "new_swap_request":
     case "swap_status_changed":
       return `${base}/swaps`;

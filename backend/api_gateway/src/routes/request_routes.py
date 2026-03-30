@@ -36,7 +36,9 @@ async def create_request(
             resource="team",
             resource_id=team_id,
         ):
-            raise NotAuthorizedError("You do not have permission to create a request")
+            raise NotAuthorizedError(
+                "You do not have permission to create a request"
+            )
 
         roles = await authz_role_assignments_list(
             user_id=user_context.effective_user_id,
@@ -44,9 +46,11 @@ async def create_request(
             resource_instance_key=team_id,
         )
         if len(roles) != 1:
-            raise NotAuthorizedError("You do not have permission to create a request")
+            raise NotAuthorizedError(
+                "You do not have permission to create a request"
+            )
         r_data = Request.from_dto(req)
-        request = request_service.create_request(
+        request = await request_service.create_request(
             request=r_data,
             author_id=user_context.effective_user_id,
             team_role=roles[0],
@@ -71,7 +75,9 @@ async def get_requests(
         if not await authz_check(
             user_context.user_id, "read-requests", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to get requests")
+            raise NotAuthorizedError(
+                "You do not have permission to get requests"
+            )
 
         # Get user role to determine filtering behavior
         roles = await authz_role_assignments_list(
@@ -80,7 +86,9 @@ async def get_requests(
             resource_instance_key=team_id,
         )
         if len(roles) != 1:
-            raise NotAuthorizedError("You do not have permission to get requests")
+            raise NotAuthorizedError(
+                "You do not have permission to get requests"
+            )
 
         team_role = roles[0]
 
@@ -100,7 +108,9 @@ async def get_requests(
             filter_worker_id = worker_id
 
         start_time = time_module.time()
-        requests = request_service.get_requests(team_id, worker_id=filter_worker_id)
+        requests = request_service.get_requests(
+            team_id, worker_id=filter_worker_id
+        )
         response = [r.to_dto() for r in requests]
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
@@ -125,14 +135,18 @@ async def update_request(
             resource="team",
             resource_id=team_id,
         ):
-            raise NotAuthorizedError("You do not have permission to update a request")
+            raise NotAuthorizedError(
+                "You do not have permission to update a request"
+            )
         roles = await authz_role_assignments_list(
             user_id=user_context.effective_user_id,
             resource="team",
             resource_instance_key=team_id,
         )
         if len(roles) != 1:
-            raise NotAuthorizedError("You do not have permission to create a request")
+            raise NotAuthorizedError(
+                "You do not have permission to create a request"
+            )
         r_data = Request.from_dto(updated_request)
         request = request_service.update_request(
             request=r_data,
@@ -160,13 +174,17 @@ async def accept_request(
             resource="team",
             resource_id=team_id,
         ):
-            raise NotAuthorizedError("You do not have permission to approve a request")
+            raise NotAuthorizedError(
+                "You do not have permission to approve a request"
+            )
         request, assignments = await request_service.approve_request(
             request_id=request_id
         )
         response = {
             "request": request.to_dto(),
-            "assignments": ([a.to_dto() for a in assignments] if assignments else []),
+            "assignments": (
+                [a.to_dto() for a in assignments] if assignments else []
+            ),
         }
     except Exception as e:
         log_info("Failed to approve request")
@@ -188,7 +206,9 @@ async def deny_request(
             resource="team",
             resource_id=team_id,
         ):
-            raise NotAuthorizedError("You do not have permission to deny a request")
+            raise NotAuthorizedError(
+                "You do not have permission to deny a request"
+            )
         request = await request_service.deny_request(request_id=request_id)
         response = request.to_dto()
     except Exception as e:
@@ -211,8 +231,12 @@ async def rescind_request(
             resource="team",
             resource_id=team_id,
         ):
-            raise NotAuthorizedError("You do not have permission to rescind a request")
-        request, deleted_ids = request_service.rescind_request(request_id=request_id)
+            raise NotAuthorizedError(
+                "You do not have permission to rescind a request"
+            )
+        request, deleted_ids = request_service.rescind_request(
+            request_id=request_id
+        )
         response = {
             "request": request.to_dto(),
             "assignmentsDeletedIds": deleted_ids,
@@ -237,14 +261,18 @@ async def delete_request(
             resource="team",
             resource_id=team_id,
         ):
-            raise NotAuthorizedError("You do not have permission to delete a request")
+            raise NotAuthorizedError(
+                "You do not have permission to delete a request"
+            )
         roles = await authz_role_assignments_list(
             user_id=user_context.effective_user_id,
             resource="team",
             resource_instance_key=team_id,
         )
         if len(roles) != 1:
-            raise NotAuthorizedError("You do not have permission to create a request")
+            raise NotAuthorizedError(
+                "You do not have permission to create a request"
+            )
         request_service.delete_request(
             request_id=request_id,
             author_id=user_context.effective_user_id,

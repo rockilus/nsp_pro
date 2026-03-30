@@ -13,6 +13,7 @@ class NotificationType(str, Enum):
     """Type of in-app notification."""
 
     SCHEDULE_PUBLISHED = "schedule_published"
+    NEW_REQUEST = "new_request"
     NEW_SWAP_REQUEST = "new_swap_request"
     SWAP_STATUS_CHANGED = "swap_status_changed"
     REQUEST_STATUS_CHANGED = "request_status_changed"

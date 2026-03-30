@@ -20,6 +20,10 @@ from shared.schemas.core.notification_preferences import NotificationKey
 
 from src.config import config
 from src.services.base_service import BaseService
+from src.services.notification_builders import (
+    new_request_created_event,
+    request_status_changed_event,
+)
 from src.services.notification_email_config import (
     NOTIFICATION_EMAIL_MAP,
     NOTIFICATION_SUBJECTS,
@@ -35,6 +39,7 @@ if TYPE_CHECKING:
 # Types absent from this map are always delivered (fail-open).
 _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
     NotificationType.SCHEDULE_PUBLISHED: NotificationKey.SCHEDULE_PUBLISHED,
+    NotificationType.NEW_REQUEST: NotificationKey.NEW_REQUEST,
     NotificationType.NEW_SWAP_REQUEST: NotificationKey.SWAP_REQUESTS,
     NotificationType.SWAP_STATUS_CHANGED: NotificationKey.SWAP_REQUESTS,
     NotificationType.REQUEST_STATUS_CHANGED: NotificationKey.REQUEST_DECISIONS,
@@ -83,9 +88,13 @@ class NotificationService(BaseService):
                 created_at=now,
                 updated_at=now,
             )
-            return self.collection.notification_db.create_notification(notification)
+            return self.collection.notification_db.create_notification(
+                notification
+            )
         except Exception as e:
-            logger.error(f"Failed to create notification for user {user_id}: {e}")
+            logger.error(
+                f"Failed to create notification for user {user_id}: {e}"
+            )
             raise
 
     def get_user_notifications(
@@ -95,7 +104,9 @@ class NotificationService(BaseService):
         notifications = self.collection.notification_db.get_by_user_id(
             user_id, limit=limit, skip=skip
         )
-        unread_count = self.collection.notification_db.get_unread_count(user_id)
+        unread_count = self.collection.notification_db.get_unread_count(
+            user_id
+        )
         return {
             "notifications": notifications,
             "unread_count": unread_count,
@@ -110,12 +121,16 @@ class NotificationService(BaseService):
     def mark_all_seen(self, user_id: str) -> None:
         self.collection.notification_db.mark_all_seen(user_id)
 
-    def mark_read_where_seen_before(self, user_id: str, before: datetime) -> int:
+    def mark_read_where_seen_before(
+        self, user_id: str, before: datetime
+    ) -> int:
         return self.collection.notification_db.mark_read_where_seen_before(
             user_id, before
         )
 
-    def mark_read(self, notification_id: str, user_id: str) -> Optional[Notification]:
+    def mark_read(
+        self, notification_id: str, user_id: str
+    ) -> Optional[Notification]:
         """Mark a notification as read, verifying ownership."""
         schema = self.collection.notification_db.find_by_id(notification_id)
         if schema is None:
@@ -134,7 +149,9 @@ class NotificationService(BaseService):
             return False
         if schema.user_id != user_id:
             raise PermissionError("Notification does not belong to this user")
-        return self.collection.notification_db.delete_notification(notification_id)
+        return self.collection.notification_db.delete_notification(
+            notification_id
+        )
 
     # ------------------------------------------------------------------
     # Domain notify methods (fire-and-forget, never raise)
@@ -161,7 +178,9 @@ class NotificationService(BaseService):
                                 f"for user {user_id}: inApp preference is disabled"
                             )
                             continue
-                    except Exception as pref_exc:  # pylint: disable=broad-except
+                    except (
+                        Exception
+                    ) as pref_exc:  # pylint: disable=broad-except
                         logger.warning(
                             f"Could not fetch preferences for user {user_id}, "
                             f"defaulting to send: {pref_exc}"
@@ -261,7 +280,9 @@ class NotificationService(BaseService):
                     created_at=now,
                     updated_at=now,
                 )
-                self.collection.notification_db.create_notification(notification)
+                self.collection.notification_db.create_notification(
+                    notification
+                )
                 await self._try_send_email(
                     user_id=worker.user_id,
                     pref_key=_NOTIFICATION_TYPE_TO_KEY.get(
@@ -276,7 +297,9 @@ class NotificationService(BaseService):
                     ),
                 )
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send schedule-published notifications: {e}")
+            logger.error(
+                f"Failed to send schedule-published notifications: {e}"
+            )
 
     async def notify_new_swap_request(self, swap: SwapRequest) -> None:
         """Notify target worker (DIRECT) or team managers of a new swap request."""
@@ -285,15 +308,19 @@ class NotificationService(BaseService):
             team = self.collection.team_db.get_team_by_id(swap.team_id)
             team_name = team.name if team else ""
             offering_worker = (
-                self.collection.worker_db.get_worker_by_id(swap.offering_worker_id)
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
                 if swap.offering_worker_id
                 else None
             )
             requester_name = offering_worker.name if offering_worker else ""
             first_date = ""
             if swap.offered_assignment_ids:
-                first_assignment = self.collection.assignment_db.get_assignment_by_id(
-                    swap.offered_assignment_ids[0]
+                first_assignment = (
+                    self.collection.assignment_db.get_assignment_by_id(
+                        swap.offered_assignment_ids[0]
+                    )
                 )
                 if first_assignment:
                     first_date = str(first_assignment.date)
@@ -310,10 +337,8 @@ class NotificationService(BaseService):
                 )
                 if target_worker and target_worker.user_id:
                     notify_user_ids.append(target_worker.user_id)
-            memberships = (
-                self.collection.team_membership_db.get_team_memberships_by_team_id(
-                    swap.team_id
-                )
+            memberships = self.collection.team_membership_db.get_team_memberships_by_team_id(
+                swap.team_id
             )
             owner_user_ids = [
                 m.user_id
@@ -322,7 +347,9 @@ class NotificationService(BaseService):
                 and m.user_id
             ]
             notify_user_ids.extend(owner_user_ids)
-            pref_key = _NOTIFICATION_TYPE_TO_KEY.get(NotificationType.NEW_SWAP_REQUEST)
+            pref_key = _NOTIFICATION_TYPE_TO_KEY.get(
+                NotificationType.NEW_SWAP_REQUEST
+            )
             for user_id in notify_user_ids:
                 self.collection.notification_db.create_notification(
                     Notification(
@@ -353,51 +380,67 @@ class NotificationService(BaseService):
     async def notify_request_status_changed(self, request: Request) -> None:
         """Notify the worker whose request status changed."""
         try:
-            worker = self.collection.worker_db.get_worker_by_id(request.worker_id)
+            worker = self.collection.worker_db.get_worker_by_id(
+                request.worker_id
+            )
             if not worker or not worker.user_id:
                 return
             team = self.collection.team_db.get_team_by_id(request.team_id)
             team_name = team.name if team else ""
             shift_name = ""
             if request.shift_id:
-                shift = self.collection.shift_db.get_shift_by_id(request.shift_id)
+                shift = self.collection.shift_db.get_shift_by_id(
+                    request.shift_id
+                )
                 if shift:
                     shift_name = shift.name
-            now = datetime.now(timezone.utc)
-            event_data = {
-                "request_id": request.id,
-                "new_status": request.status.value,
-                "shift_name": shift_name,
-                "date": str(request.start_date),
-                "team_name": team_name,
-            }
-            self.collection.notification_db.create_notification(
-                Notification(
-                    id="",
-                    user_id=worker.user_id,
-                    team_id=request.team_id,
-                    type=NotificationType.REQUEST_STATUS_CHANGED,
-                    event_data=event_data,
-                    read=False,
-                    created_at=now,
-                    updated_at=now,
-                )
+            event = request_status_changed_event(
+                team_id=request.team_id,
+                team_name=team_name,
+                worker_user_id=worker.user_id,
+                request_id=request.id,
+                new_status=request.status.value,
+                shift_name=shift_name,
+                start_date=str(request.start_date),
             )
-            await self._try_send_email(
-                user_id=worker.user_id,
-                pref_key=_NOTIFICATION_TYPE_TO_KEY.get(
-                    NotificationType.REQUEST_STATUS_CHANGED
-                ),
-                prefs=None,
-                event=NotificationEvent(
-                    notification_type=NotificationType.REQUEST_STATUS_CHANGED,
-                    user_ids=[worker.user_id],
-                    team_id=request.team_id,
-                    event_data=event_data,
-                ),
-            )
+            await self.dispatch(event)
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send request-status-changed notification: {e}")
+            logger.error(
+                f"Failed to send request-status-changed notification: {e}"
+            )
+
+    async def notify_new_request_created(self, request: Request) -> None:
+        """Notify team managers that a new request has been created."""
+        try:
+            worker = self.collection.worker_db.get_worker_by_id(
+                request.worker_id
+            )
+            worker_name = worker.name if worker else ""
+            team = self.collection.team_db.get_team_by_id(request.team_id)
+            team_name = team.name if team else ""
+            memberships = self.collection.team_membership_db.get_team_memberships_by_team_id(
+                request.team_id
+            )
+            manager_user_ids = [
+                m.user_id
+                for m in memberships
+                if getattr(m, "role", None) in ("manager", "owner", "admin")
+                and m.user_id
+            ]
+            if not manager_user_ids:
+                return
+            event = new_request_created_event(
+                team_id=request.team_id,
+                team_name=team_name,
+                worker_name=worker_name,
+                start_date=str(request.start_date),
+                manager_user_ids=manager_user_ids,
+            )
+            await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(
+                f"Failed to send new-request-created notification: {e}"
+            )
 
     async def notify_assignment_changed(
         self,
@@ -451,4 +494,6 @@ class NotificationService(BaseService):
                     ),
                 )
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send assignment-changed notifications: {e}")
+            logger.error(
+                f"Failed to send assignment-changed notifications: {e}"
+            )

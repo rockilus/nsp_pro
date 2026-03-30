@@ -1,12 +1,20 @@
 import { test, expect } from "@playwright/test";
 import { randomUUID } from "crypto";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { DatabaseTestUtils, TestUser } from "../../utils/database-utils";
+import { RequestType } from "@/types/request";
 import {
   NotifTestContext,
   NotificationTestCase,
   NotificationTestContextMap,
   navigateToNotificationsAsUser,
 } from "./helpers/notification-test-helpers";
+
+dayjs.extend(utc);
+
+// Fixed future date used by request notification test cases.
+const REQUEST_DATE = "2030-06-15";
 
 const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
   {
@@ -71,6 +79,87 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     },
     expectedText: (name) => `Test User2 left your team ${name}`,
     expectedUrlPattern: /\/plan\/settings\/teams/,
+  },
+  {
+    type: "new_request",
+    description: "user2 creates a request, team manager (user1) is notified",
+    preferenceKey: "new_request",
+    recipientRole: "user1",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
+      const worker = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Worker User",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker.id, user2!.user_id, team.teamId);
+      await dbUtils.createRequestAs(user2!.user_id, {
+        teamId: team.teamId,
+        workerId: worker.id,
+        requestType: RequestType.LEAVE,
+        startDate: dayjs.utc(REQUEST_DATE),
+        endDate: dayjs.utc(REQUEST_DATE),
+      });
+      return user1!.user_id;
+    },
+    expectedText: (_name) =>
+      `Worker User created a new request for ${REQUEST_DATE}`,
+    expectedUrlPattern: /\/plan\/requests/,
+  },
+  {
+    type: "request_status_changed",
+    description:
+      "user2 creates a request, user1 approves it, user2 is notified",
+    preferenceKey: "request_decisions",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
+      const worker = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Worker User",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker.id, user2!.user_id, team.teamId);
+      const request = await dbUtils.createRequestAs(user2!.user_id, {
+        teamId: team.teamId,
+        workerId: worker.id,
+        requestType: RequestType.LEAVE,
+        startDate: dayjs.utc(REQUEST_DATE),
+        endDate: dayjs.utc(REQUEST_DATE),
+      });
+      await dbUtils.approveRequestAs(user1!.user_id, request.id, team.teamId);
+      return user2!.user_id;
+    },
+    // shift_name is empty for a plain LEAVE request; Playwright normalises
+    // whitespace so the double-space collapses to a single space.
+    expectedText: (_name) => `Your request for on ${REQUEST_DATE} was approved`,
+    expectedUrlPattern: /\/plan\/requests/,
+  },
+  {
+    type: "request_status_changed",
+    description: "user2 creates a request, user1 denies it, user2 is notified",
+    preferenceKey: "request_decisions",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
+      const worker = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Worker User",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker.id, user2!.user_id, team.teamId);
+      const request = await dbUtils.createRequestAs(user2!.user_id, {
+        teamId: team.teamId,
+        workerId: worker.id,
+        requestType: RequestType.LEAVE,
+        startDate: dayjs.utc(REQUEST_DATE),
+        endDate: dayjs.utc(REQUEST_DATE),
+      });
+      await dbUtils.denyRequestAs(user1!.user_id, request.id, team.teamId);
+      return user2!.user_id;
+    },
+    expectedText: (_name) => `Your request for on ${REQUEST_DATE} was denied`,
+    expectedUrlPattern: /\/plan\/requests/,
   },
 ];
 
