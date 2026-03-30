@@ -19,9 +19,8 @@ import { NotificationTypeT } from "@/types/notification";
 
 dayjs.extend(utc);
 
-// Fixed future date used across all request notification tests so assertions
-// can rely on a known start_date value in event_data.
-const REQUEST_DATE = "2030-06-15";
+// Future date computed at runtime to avoid hardcoded values rotting over time.
+const REQUEST_DATE = dayjs.utc().add(2, "month").format("YYYY-MM-DD");
 
 interface RequestNotifContext {
   dbUtils: DatabaseTestUtils;
@@ -123,12 +122,16 @@ test.describe("Request notifications", () => {
     });
 
     const notifications = await dbUtils.getNotificationsAs(manager.user_id);
-    const notification = notifications.find((n) => n.type === "new_request");
+    const notification = notifications.find(
+      (n) => n.type === "user_created_request",
+    );
 
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(manager.user_id);
     expect(notification!.teamId).toBe(team.teamId);
-    expect(notification!.type).toBe("new_request" as NotificationTypeT);
+    expect(notification!.type).toBe(
+      "user_created_request" as NotificationTypeT,
+    );
     expect(notification!.eventData.workerName).toBe("Worker User");
     expect(notification!.eventData.startDate).toBe(REQUEST_DATE);
   });
@@ -150,16 +153,15 @@ test.describe("Request notifications", () => {
 
     const notifications = await dbUtils.getNotificationsAs(worker.user_id);
     const notification = notifications.find(
-      (n) => n.type === "request_status_changed",
+      (n) => n.type === "user_accepted_request",
     );
 
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(worker.user_id);
     expect(notification!.teamId).toBe(team.teamId);
     expect(notification!.type).toBe(
-      "request_status_changed" as NotificationTypeT,
+      "user_accepted_request" as NotificationTypeT,
     );
-    expect(notification!.eventData.newStatus).toBe("approved");
     expect(notification!.eventData.date).toBe(REQUEST_DATE);
   });
 
@@ -180,16 +182,13 @@ test.describe("Request notifications", () => {
 
     const notifications = await dbUtils.getNotificationsAs(worker.user_id);
     const notification = notifications.find(
-      (n) => n.type === "request_status_changed",
+      (n) => n.type === "user_denied_request",
     );
 
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(worker.user_id);
     expect(notification!.teamId).toBe(team.teamId);
-    expect(notification!.type).toBe(
-      "request_status_changed" as NotificationTypeT,
-    );
-    expect(notification!.eventData.newStatus).toBe("denied");
+    expect(notification!.type).toBe("user_denied_request" as NotificationTypeT);
     expect(notification!.eventData.date).toBe(REQUEST_DATE);
   });
 });

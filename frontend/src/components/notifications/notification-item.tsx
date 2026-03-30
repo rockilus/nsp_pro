@@ -31,8 +31,12 @@ function getMessageKey(type: NotificationT["type"]): string {
       return "new_swap_request";
     case "swap_status_changed":
       return "swap_status_changed";
-    case "request_status_changed":
-      return "request_status_changed";
+    case "user_accepted_request":
+      return "user_accepted_request";
+    case "user_denied_request":
+      return "user_denied_request";
+    case "user_created_request":
+      return "user_created_request";
     case "assignment_changed":
       return "assignment_changed";
     case "user_received_team_invite":

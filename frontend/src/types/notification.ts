@@ -5,10 +5,11 @@ import dayjs from "dayjs";
 
 export type NotificationTypeT =
   | "schedule_published"
-  | "new_request"
+  | "user_created_request"
   | "new_swap_request"
   | "swap_status_changed"
-  | "request_status_changed"
+  | "user_accepted_request"
+  | "user_denied_request"
   | "assignment_changed"
   | "user_received_team_invite"
   | "user_accepted_team_invite"
@@ -30,9 +31,10 @@ export type NotificationT = {
 
 export type NotificationKey =
   | "schedule_published"
-  | "new_request"
+  | "user_created_request"
   | "swap_requests"
-  | "request_decisions"
+  | "user_accepted_request"
+  | "user_denied_request"
   | "assignment_changes"
   | "user_received_team_invite"
   | "user_accepted_team_invite"
@@ -41,9 +43,10 @@ export type NotificationKey =
 
 export const NOTIFICATION_KEYS: NotificationKey[] = [
   "schedule_published",
-  "new_request",
+  "user_created_request",
   "swap_requests",
-  "request_decisions",
+  "user_accepted_request",
+  "user_denied_request",
   "assignment_changes",
   "user_received_team_invite",
   "user_accepted_team_invite",
@@ -66,9 +69,10 @@ export const NOTIFICATION_REGISTRY: Record<
   NotificationKeyMeta
 > = {
   schedule_published: { category: "schedule" },
-  new_request: { category: "requests" },
+  user_created_request: { category: "requests" },
   swap_requests: { category: "requests" },
-  request_decisions: { category: "requests" },
+  user_accepted_request: { category: "requests" },
+  user_denied_request: { category: "requests" },
   assignment_changes: { category: "assignments" },
   user_received_team_invite: { category: "team" },
   user_accepted_team_invite: { category: "team" },

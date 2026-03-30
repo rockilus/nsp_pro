@@ -74,7 +74,7 @@ def user_left_team_event(
     )
 
 
-def new_request_created_event(
+def user_created_request_event(
     team_id: str,
     team_name: str,
     worker_name: str,
@@ -83,7 +83,7 @@ def new_request_created_event(
 ) -> NotificationEvent:
     """Notify team managers that a new request has been created."""
     return NotificationEvent(
-        notification_type=NotificationType.NEW_REQUEST,
+        notification_type=NotificationType.USER_CREATED_REQUEST,
         user_ids=manager_user_ids,
         team_id=team_id,
         event_data={
@@ -94,23 +94,43 @@ def new_request_created_event(
     )
 
 
-def request_status_changed_event(
+def user_accepted_request_event(
     team_id: str,
     team_name: str,
     worker_user_id: str,
     request_id: str,
-    new_status: str,
     shift_name: str,
     start_date: str,
 ) -> NotificationEvent:
-    """Notify the request creator that their request status has changed."""
+    """Notify the request creator that their request was approved."""
     return NotificationEvent(
-        notification_type=NotificationType.REQUEST_STATUS_CHANGED,
+        notification_type=NotificationType.USER_ACCEPTED_REQUEST,
         user_ids=[worker_user_id],
         team_id=team_id,
         event_data={
             "request_id": request_id,
-            "new_status": new_status,
+            "shift_name": shift_name,
+            "date": start_date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_denied_request_event(
+    team_id: str,
+    team_name: str,
+    worker_user_id: str,
+    request_id: str,
+    shift_name: str,
+    start_date: str,
+) -> NotificationEvent:
+    """Notify the request creator that their request was denied."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_DENIED_REQUEST,
+        user_ids=[worker_user_id],
+        team_id=team_id,
+        event_data={
+            "request_id": request_id,
             "shift_name": shift_name,
             "date": start_date,
             "team_name": team_name,

@@ -13,8 +13,8 @@ import {
 
 dayjs.extend(utc);
 
-// Fixed future date used by request notification test cases.
-const REQUEST_DATE = "2030-06-15";
+// Future date computed at runtime to avoid hardcoded values rotting over time.
+const REQUEST_DATE = dayjs.utc().add(2, "month").format("YYYY-MM-DD");
 
 const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
   {
@@ -81,9 +81,9 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/settings\/teams/,
   },
   {
-    type: "new_request",
+    type: "user_created_request",
     description: "user2 creates a request, team manager (user1) is notified",
-    preferenceKey: "new_request",
+    preferenceKey: "user_created_request",
     recipientRole: "user1",
     async setup(dbUtils, team, user1, user2) {
       await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
@@ -107,10 +107,10 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/requests/,
   },
   {
-    type: "request_status_changed",
+    type: "user_accepted_request",
     description:
       "user2 creates a request, user1 approves it, user2 is notified",
-    preferenceKey: "request_decisions",
+    preferenceKey: "user_accepted_request",
     recipientRole: "user2",
     async setup(dbUtils, team, user1, user2) {
       await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
@@ -136,9 +136,9 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/requests/,
   },
   {
-    type: "request_status_changed",
+    type: "user_denied_request",
     description: "user2 creates a request, user1 denies it, user2 is notified",
-    preferenceKey: "request_decisions",
+    preferenceKey: "user_denied_request",
     recipientRole: "user2",
     async setup(dbUtils, team, user1, user2) {
       await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");

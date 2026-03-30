@@ -17,9 +17,9 @@ NOTIFICATION_EMAIL_MAP: dict[NotificationType, tuple[str, EmailType, str]] = {
         EmailType.NOTIFICATION_SCHEDULE_PUBLISHED,
         "/plan/schedule",
     ),
-    NotificationType.NEW_REQUEST: (
-        "notification_new_request_email",
-        EmailType.NOTIFICATION_NEW_REQUEST,
+    NotificationType.USER_CREATED_REQUEST: (
+        "notification_user_created_request_email",
+        EmailType.NOTIFICATION_USER_CREATED_REQUEST,
         "/plan/requests",
     ),
     NotificationType.NEW_SWAP_REQUEST: (
@@ -32,9 +32,14 @@ NOTIFICATION_EMAIL_MAP: dict[NotificationType, tuple[str, EmailType, str]] = {
         EmailType.NOTIFICATION_SWAP_STATUS_CHANGED,
         "/plan/swaps",
     ),
-    NotificationType.REQUEST_STATUS_CHANGED: (
-        "notification_request_status_changed_email",
-        EmailType.NOTIFICATION_REQUEST_DECISION,
+    NotificationType.USER_ACCEPTED_REQUEST: (
+        "notification_user_accepted_request_email",
+        EmailType.NOTIFICATION_USER_ACCEPTED_REQUEST,
+        "/plan/requests",
+    ),
+    NotificationType.USER_DENIED_REQUEST: (
+        "notification_user_denied_request_email",
+        EmailType.NOTIFICATION_USER_DENIED_REQUEST,
         "/plan/requests",
     ),
     NotificationType.ASSIGNMENT_CHANGED: (
@@ -71,16 +76,20 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         NotificationType.SCHEDULE_PUBLISHED,
         "en",
     ): "Your schedule has been published",
-    (NotificationType.NEW_REQUEST, "en"): "New request received",
+    (NotificationType.USER_CREATED_REQUEST, "en"): "New request received",
     (NotificationType.NEW_SWAP_REQUEST, "en"): "New swap request",
     (
         NotificationType.SWAP_STATUS_CHANGED,
         "en",
     ): "Your swap request status changed",
     (
-        NotificationType.REQUEST_STATUS_CHANGED,
+        NotificationType.USER_ACCEPTED_REQUEST,
         "en",
-    ): "Your request has been updated",
+    ): "Your request has been approved",
+    (
+        NotificationType.USER_DENIED_REQUEST,
+        "en",
+    ): "Your request has been denied",
     (
         NotificationType.ASSIGNMENT_CHANGED,
         "en",
@@ -103,16 +112,20 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         NotificationType.SCHEDULE_PUBLISHED,
         "es",
     ): "Tu horario ha sido publicado",
-    (NotificationType.NEW_REQUEST, "es"): "Nueva solicitud recibida",
+    (NotificationType.USER_CREATED_REQUEST, "es"): "Nueva solicitud recibida",
     (NotificationType.NEW_SWAP_REQUEST, "es"): "Nueva solicitud de cambio",
     (
         NotificationType.SWAP_STATUS_CHANGED,
         "es",
     ): "El estado de tu cambio ha cambiado",
     (
-        NotificationType.REQUEST_STATUS_CHANGED,
+        NotificationType.USER_ACCEPTED_REQUEST,
         "es",
-    ): "Tu solicitud ha sido actualizada",
+    ): "Tu solicitud ha sido aprobada",
+    (
+        NotificationType.USER_DENIED_REQUEST,
+        "es",
+    ): "Tu solicitud ha sido denegada",
     (
         NotificationType.ASSIGNMENT_CHANGED,
         "es",
@@ -135,16 +148,20 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
     ): "Un usuario ha abandonado tu equipo",
     # French
     (NotificationType.SCHEDULE_PUBLISHED, "fr"): "Votre planning a été publié",
-    (NotificationType.NEW_REQUEST, "fr"): "Nouvelle demande reçue",
+    (NotificationType.USER_CREATED_REQUEST, "fr"): "Nouvelle demande reçue",
     (NotificationType.NEW_SWAP_REQUEST, "fr"): "Nouvelle demande d'échange",
     (
         NotificationType.SWAP_STATUS_CHANGED,
         "fr",
     ): "Le statut de votre échange a changé",
     (
-        NotificationType.REQUEST_STATUS_CHANGED,
+        NotificationType.USER_ACCEPTED_REQUEST,
         "fr",
-    ): "Votre demande a été mise à jour",
+    ): "Votre demande a été approuvée",
+    (
+        NotificationType.USER_DENIED_REQUEST,
+        "fr",
+    ): "Votre demande a été refusée",
     (
         NotificationType.ASSIGNMENT_CHANGED,
         "fr",

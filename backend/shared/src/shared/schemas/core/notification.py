@@ -13,10 +13,11 @@ class NotificationType(str, Enum):
     """Type of in-app notification."""
 
     SCHEDULE_PUBLISHED = "schedule_published"
-    NEW_REQUEST = "new_request"
+    USER_CREATED_REQUEST = "user_created_request"
     NEW_SWAP_REQUEST = "new_swap_request"
     SWAP_STATUS_CHANGED = "swap_status_changed"
-    REQUEST_STATUS_CHANGED = "request_status_changed"
+    USER_ACCEPTED_REQUEST = "user_accepted_request"
+    USER_DENIED_REQUEST = "user_denied_request"
     ASSIGNMENT_CHANGED = "assignment_changed"
     USER_RECEIVED_TEAM_INVITE = "user_received_team_invite"
     USER_ACCEPTED_TEAM_INVITE = "user_accepted_team_invite"

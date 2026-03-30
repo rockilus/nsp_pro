@@ -20,17 +20,14 @@ class EmailType(str, Enum):
     SWAP_BID = "swap_bid"
     SWAP_APPROVED = "swap_approved"
     NOTIFICATION_SCHEDULE_PUBLISHED = "notification_schedule_published"
-    NOTIFICATION_NEW_REQUEST = "notification_new_request"
-    NOTIFICATION_REQUEST_DECISION = "notification_request_decision"
+    NOTIFICATION_USER_CREATED_REQUEST = "notification_user_created_request"
+    NOTIFICATION_USER_ACCEPTED_REQUEST = "notification_user_accepted_request"
+    NOTIFICATION_USER_DENIED_REQUEST = "notification_user_denied_request"
     NOTIFICATION_SWAP_REQUEST = "notification_swap_request"
     NOTIFICATION_ASSIGNMENT_CHANGED = "notification_assignment_changed"
     NOTIFICATION_SWAP_STATUS_CHANGED = "notification_swap_status_changed"
-    NOTIFICATION_USER_RECEIVED_TEAM_INVITE = (
-        "notification_user_received_team_invite"
-    )
-    NOTIFICATION_USER_ACCEPTED_TEAM_INVITE = (
-        "notification_user_accepted_team_invite"
-    )
+    NOTIFICATION_USER_RECEIVED_TEAM_INVITE = "notification_user_received_team_invite"
+    NOTIFICATION_USER_ACCEPTED_TEAM_INVITE = "notification_user_accepted_team_invite"
     NOTIFICATION_USER_REMOVED_FROM_TEAM = "notification_user_removed_from_team"
     NOTIFICATION_USER_LEFT_TEAM = "notification_user_left_team"
 
@@ -51,9 +48,7 @@ class EmailMessage(BaseModel):
     context: Dict[str, Any] = Field(
         ..., description="Context data for template rendering"
     )
-    language: str = Field(
-        default="en", description="Language code (en, es, fr)"
-    )
+    language: str = Field(default="en", description="Language code (en, es, fr)")
     priority: EmailPriority = Field(
         default=EmailPriority.NORMAL, description="Email priority"
     )
@@ -62,9 +57,7 @@ class EmailMessage(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="When the email request was created",
     )
-    message_id: Optional[str] = Field(
-        default=None, description="SQS message ID"
-    )
+    message_id: Optional[str] = Field(default=None, description="SQS message ID")
     retry_count: int = Field(default=0, description="Number of retry attempts")
 
     # pylint: disable=too-few-public-methods
@@ -90,9 +83,7 @@ class EmailMessage(BaseModel):
         Create an instance from a dict representation.
         Converts created_at from float timestamp back to datetime.
         """
-        if "created_at" in data and isinstance(
-            data["created_at"], (int, float)
-        ):
+        if "created_at" in data and isinstance(data["created_at"], (int, float)):
             data["created_at"] = datetime.fromtimestamp(
                 data["created_at"], tz=timezone.utc
             )

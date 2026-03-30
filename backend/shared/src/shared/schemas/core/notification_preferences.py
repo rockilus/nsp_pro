@@ -15,9 +15,10 @@ class NotificationCategory(StrEnum):
 
 class NotificationKey(StrEnum):
     SCHEDULE_PUBLISHED = "schedule_published"
-    NEW_REQUEST = "new_request"
+    USER_CREATED_REQUEST = "user_created_request"
     SWAP_REQUESTS = "swap_requests"
-    REQUEST_DECISIONS = "request_decisions"
+    USER_ACCEPTED_REQUEST = "user_accepted_request"
+    USER_DENIED_REQUEST = "user_denied_request"
     ASSIGNMENT_CHANGES = "assignment_changes"
     USER_RECEIVED_TEAM_INVITE = "user_received_team_invite"
     USER_ACCEPTED_TEAM_INVITE = "user_accepted_team_invite"
@@ -37,14 +38,17 @@ NOTIFICATION_REGISTRY: dict[NotificationKey, NotificationKeyMeta] = {
     NotificationKey.SCHEDULE_PUBLISHED: NotificationKeyMeta(
         category=NotificationCategory.SCHEDULE,
     ),
-    NotificationKey.NEW_REQUEST: NotificationKeyMeta(
+    NotificationKey.USER_CREATED_REQUEST: NotificationKeyMeta(
         category=NotificationCategory.REQUESTS,
         visible_to=frozenset({"owner"}),
     ),
     NotificationKey.SWAP_REQUESTS: NotificationKeyMeta(
         category=NotificationCategory.REQUESTS,
     ),
-    NotificationKey.REQUEST_DECISIONS: NotificationKeyMeta(
+    NotificationKey.USER_ACCEPTED_REQUEST: NotificationKeyMeta(
+        category=NotificationCategory.REQUESTS,
+    ),
+    NotificationKey.USER_DENIED_REQUEST: NotificationKeyMeta(
         category=NotificationCategory.REQUESTS,
     ),
     NotificationKey.ASSIGNMENT_CHANGES: NotificationKeyMeta(
