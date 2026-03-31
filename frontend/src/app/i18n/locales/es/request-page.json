@@ -34,5 +34,9 @@
     "unfulfilled": "No cumplido",
     "unknown": "Desconocido",
     "work": "Trabajo",
-    "worker": "Miembro"
+    "worker": "Miembro",
+    "request_deadline_banner": "Tu líder de equipo ha solicitado que envíes tu disponibilidad antes del {date}",
+    "submitted_on": "Enviado el",
+    "before_deadline": "Antes del plazo",
+    "after_deadline": "Después del plazo"
 }

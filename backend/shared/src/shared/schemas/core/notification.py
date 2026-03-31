@@ -35,6 +35,9 @@ class NotificationType(str, Enum):
     USER_VALIDATED_SWAP = "user_validated_swap"
     USER_DENIED_SWAP = "user_denied_swap"
     USER_REVERSED_SWAP = "user_reversed_swap"
+    CAMPAIGN_REQUEST_DEADLINE_SET = "campaign_request_deadline_set"
+    CAMPAIGN_REQUEST_DEADLINE_REMINDER = "campaign_request_deadline_reminder"
+    CAMPAIGN_REQUEST_DEADLINE_EXTENDED = "campaign_request_deadline_extended"
 
 
 @dataclass

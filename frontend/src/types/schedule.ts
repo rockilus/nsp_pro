@@ -47,6 +47,7 @@ export type ScheduleT = {
   createdAt: dayjs.Dayjs;
   updatedAt: dayjs.Dayjs;
   createdBy: string;
+  requestDeadline?: dayjs.Dayjs;
 };
 
 // Solution
@@ -174,6 +175,10 @@ export const toScheduleT = (data: any): ScheduleT => {
     ),
     createdAt: dayjs.unix(data.createdAt).utc(),
     updatedAt: dayjs.unix(data.updatedAt).utc(),
+    requestDeadline:
+      data.requestDeadline != null
+        ? dayjs.unix(data.requestDeadline).utc()
+        : undefined,
   };
 };
 
@@ -187,6 +192,18 @@ export const fromScheduleT = (data: ScheduleT): any => {
     ),
     createdAt: data.createdAt.unix(),
     updatedAt: data.updatedAt.unix(),
+    requestDeadline: data.requestDeadline?.unix() ?? null,
+  };
+};
+
+export type RequestDeadlineT = {
+  deadlineDate: dayjs.Dayjs | null;
+};
+
+export const toRequestDeadlineT = (data: any): RequestDeadlineT => {
+  return {
+    deadlineDate:
+      data.deadlineDate != null ? dayjs.unix(data.deadlineDate).utc() : null,
   };
 };
 

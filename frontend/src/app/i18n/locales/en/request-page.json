@@ -34,5 +34,9 @@
     "unfulfilled": "Unfulfilled",
     "unknown": "Unknown",
     "work": "Work",
-    "worker": "Member"
+    "worker": "Member",
+    "request_deadline_banner": "Your team leader has requested that you submit your availability by {date}",
+    "submitted_on": "Submitted on",
+    "before_deadline": "Before deadline",
+    "after_deadline": "After deadline"
 }

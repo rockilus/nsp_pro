@@ -15,6 +15,8 @@ import {
   fromDuplicateRequestT,
   DuplicateResultT,
   toDuplicateResultT,
+  RequestDeadlineT,
+  toRequestDeadlineT,
 } from "../../../types/schedule";
 import { AssignmentT } from "../../../types/assignment";
 import {
@@ -331,5 +333,80 @@ export class ScheduleApi extends BaseApi {
   }> {
     // Same implementation as getScheduleAssignmentsData for now
     return this.getScheduleAssignmentsData(apiClient, teamId, includeCampaign);
+  }
+
+  /**
+   * Get the request deadline for a team's campaign schedule (accessible to members)
+   */
+  static async getRequestDeadline(
+    apiClient: AuthenticatedApiClient,
+    teamId: string,
+  ): Promise<RequestDeadlineT> {
+    if (!teamId) {
+      throw new Error("Team ID is required");
+    }
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "get",
+      `/schedules/teams/${teamId}/request-deadline`,
+    );
+    return toRequestDeadlineT(responseData);
+  }
+
+  /**
+   * Set the request deadline on a campaign schedule
+   */
+  static async setRequestDeadline(
+    apiClient: AuthenticatedApiClient,
+    scheduleId: string,
+    teamId: string,
+    deadline: Date,
+  ): Promise<ScheduleT> {
+    if (!scheduleId) throw new Error("Schedule ID is required");
+    if (!teamId) throw new Error("Team ID is required");
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "post",
+      `/schedules/${scheduleId}/request-deadline/teams/${teamId}`,
+      { deadline: deadline.getTime() / 1000 },
+    );
+    return toScheduleT(responseData);
+  }
+
+  /**
+   * Send a reminder notification for the request deadline
+   */
+  static async sendRequestDeadlineReminder(
+    apiClient: AuthenticatedApiClient,
+    scheduleId: string,
+    teamId: string,
+  ): Promise<void> {
+    if (!scheduleId) throw new Error("Schedule ID is required");
+    if (!teamId) throw new Error("Team ID is required");
+    await this.makeRequest<void>(
+      apiClient,
+      "post",
+      `/schedules/${scheduleId}/request-deadline/reminder/teams/${teamId}`,
+    );
+  }
+
+  /**
+   * Extend the request deadline on a campaign schedule
+   */
+  static async extendRequestDeadline(
+    apiClient: AuthenticatedApiClient,
+    scheduleId: string,
+    teamId: string,
+    newDeadline: Date,
+  ): Promise<ScheduleT> {
+    if (!scheduleId) throw new Error("Schedule ID is required");
+    if (!teamId) throw new Error("Team ID is required");
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      "put",
+      `/schedules/${scheduleId}/request-deadline/teams/${teamId}`,
+      { deadline: newDeadline.getTime() / 1000 },
+    );
+    return toScheduleT(responseData);
   }
 }

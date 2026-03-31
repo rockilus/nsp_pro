@@ -2050,6 +2050,58 @@ export class DatabaseTestUtils {
     }
   }
 
+  /**
+   * Set the request deadline on a CAMPAIGN schedule as a specific user.
+   */
+  async setRequestDeadlineAs(
+    userId: string,
+    scheduleId: string,
+    teamId: string,
+    deadline: Date,
+  ): Promise<ScheduleT> {
+    const userClient = this.createAuthenticatedClientForUser(userId);
+    return await ScheduleApi.setRequestDeadline(
+      userClient,
+      scheduleId,
+      teamId,
+      deadline,
+    );
+  }
+
+  /**
+   * Send a request deadline reminder as a specific user.
+   */
+  async sendRequestDeadlineReminderAs(
+    userId: string,
+    scheduleId: string,
+    teamId: string,
+  ): Promise<void> {
+    const userClient = this.createAuthenticatedClientForUser(userId);
+    await ScheduleApi.sendRequestDeadlineReminder(
+      userClient,
+      scheduleId,
+      teamId,
+    );
+  }
+
+  /**
+   * Extend the request deadline as a specific user.
+   */
+  async extendRequestDeadlineAs(
+    userId: string,
+    scheduleId: string,
+    teamId: string,
+    newDeadline: Date,
+  ): Promise<ScheduleT> {
+    const userClient = this.createAuthenticatedClientForUser(userId);
+    return await ScheduleApi.extendRequestDeadline(
+      userClient,
+      scheduleId,
+      teamId,
+      newDeadline,
+    );
+  }
+
   //////////////////////////
   // Assignment Methods
   //////////////////////////

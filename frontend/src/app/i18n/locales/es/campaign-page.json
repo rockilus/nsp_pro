@@ -19,5 +19,14 @@
     "start_new_campaign": "Crear nueva campaña",
     "supply_and_demand": "Disponibilidades vs cobertura",
     "status": "Estado",
-    "total": "Total"
+    "total": "Total",
+    "set_deadline": "Establecer fecha límite y notificar",
+    "send_reminder": "Enviar recordatorio",
+    "extend_deadline": "Extender fecha límite",
+    "current_deadline": "Fecha límite actual",
+    "no_deadline_set": "Sin fecha límite establecida",
+    "deadline_dialog_title": "Establecer fecha límite de envío",
+    "extend_deadline_dialog_title": "Extender fecha límite de envío",
+    "cancel": "Cancelar",
+    "reminder_sent": "Recordatorio enviado a los miembros del equipo"
 }

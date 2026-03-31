@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useCallback } from "react";
+import dayjs from "dayjs";
 import { useTranslation } from "../../app/i18n/client";
 // MUI
 import Table from "@mui/material/Table";
@@ -43,6 +44,7 @@ import { ShiftT } from "../../types/shift";
 import { TeamMembershipRole } from "@/types/team";
 import { ShiftWorkerOptionT } from "@/types/constraint";
 import { ColumnDefinition, ColumnFilter } from "../../types/filter";
+import { RequestDeadlineT } from "../../types/schedule";
 
 // Helper components for better organization
 const WorkerCell = ({
@@ -382,6 +384,7 @@ export default function RequestTable({
   showPastRequests,
   viewSettings,
   onUpdateViewSettings,
+  requestDeadline,
 }: {
   lng: string;
   teamId: string;
@@ -399,6 +402,7 @@ export default function RequestTable({
   showPastRequests: boolean;
   viewSettings: RequestViewSettingsT;
   onUpdateViewSettings: (updates: Partial<RequestViewSettingsT>) => void;
+  requestDeadline?: RequestDeadlineT;
 }) {
   const { t } = useTranslation(lng, "request-page");
 
@@ -508,8 +512,21 @@ export default function RequestTable({
           { value: FulfillmentStatus.UNFULFILLED, label: t("unfulfilled") },
         ],
       },
+      ...(userTeamRole !== TeamMembershipRole.MEMBER
+        ? [
+            {
+              id: "createdAt",
+              label: t("submitted_on"),
+              type: "date" as const,
+              getValue: (request: RequestT) =>
+                request.createdAt.format("YYYY-MM-DD"),
+              getDisplayValue: (request: RequestT) =>
+                request.createdAt.format("MMM D, YYYY"),
+            },
+          ]
+        : []),
     ],
-    [workers, shifts, t],
+    [workers, shifts, t, userTeamRole],
   );
 
   // Table state for filtering requests (in-memory only, synced with parent viewSettings)
@@ -707,6 +724,44 @@ export default function RequestTable({
                   <TableCell>
                     <FulfillmentCell request={request} t={t} />
                   </TableCell>
+                  {userTeamRole !== TeamMembershipRole.MEMBER && (
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{request.createdAt.format("MMM D, YYYY")}</span>
+                        {requestDeadline?.deadlineDate && (
+                          <Chip
+                            label={
+                              request.createdAt.isBefore(
+                                requestDeadline.deadlineDate,
+                                "day",
+                              ) ||
+                              request.createdAt.isSame(
+                                requestDeadline.deadlineDate,
+                                "day",
+                              )
+                                ? t("before_deadline")
+                                : t("after_deadline")
+                            }
+                            size="small"
+                            color={
+                              request.createdAt.isBefore(
+                                requestDeadline.deadlineDate,
+                                "day",
+                              ) ||
+                              request.createdAt.isSame(
+                                requestDeadline.deadlineDate,
+                                "day",
+                              )
+                                ? "success"
+                                : "error"
+                            }
+                            variant="outlined"
+                            data-testid="request-created-at-chip"
+                          />
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
                   <TableCell>
                     <ActionsCell
                       request={request}

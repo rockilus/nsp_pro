@@ -25,7 +25,10 @@ export type NotificationTypeT =
   | "swap_ready_for_review"
   | "user_validated_swap"
   | "user_denied_swap"
-  | "user_reversed_swap";
+  | "user_reversed_swap"
+  | "campaign_request_deadline_set"
+  | "campaign_request_deadline_reminder"
+  | "campaign_request_deadline_extended";
 
 export type NotificationT = {
   id: string;
@@ -62,7 +65,10 @@ export type NotificationKey =
   | "swap_ready_for_review"
   | "user_validated_swap"
   | "user_denied_swap"
-  | "user_reversed_swap";
+  | "user_reversed_swap"
+  | "campaign_request_deadline_set"
+  | "campaign_request_deadline_reminder"
+  | "campaign_request_deadline_extended";
 
 export const NOTIFICATION_KEYS: NotificationKey[] = [
   "user_published_schedule",
@@ -87,6 +93,9 @@ export const NOTIFICATION_KEYS: NotificationKey[] = [
   "user_validated_swap",
   "user_denied_swap",
   "user_reversed_swap",
+  "campaign_request_deadline_set",
+  "campaign_request_deadline_reminder",
+  "campaign_request_deadline_extended",
 ];
 
 export type NotificationCategory =
@@ -126,6 +135,9 @@ export const NOTIFICATION_REGISTRY: Record<
   user_validated_swap: { category: "swaps" },
   user_denied_swap: { category: "swaps" },
   user_reversed_swap: { category: "swaps" },
+  campaign_request_deadline_set: { category: "schedule" },
+  campaign_request_deadline_reminder: { category: "schedule" },
+  campaign_request_deadline_extended: { category: "schedule" },
 };
 
 export const NOTIFICATION_CATEGORY_ORDER: NotificationCategory[] = [

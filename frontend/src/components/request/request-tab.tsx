@@ -22,6 +22,7 @@ import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import Alert from "@mui/material/Alert";
 import NoWorkerAssigned from "../common/NoWorkerAssigned";
 // Components
 import RequestPanel from "./request-panel";
@@ -44,6 +45,7 @@ import {
 import { useUserWorker } from "../../hooks/useUserWorker";
 import { useGetShiftOptions } from "../../hooks/useStats";
 import { useApiClient } from "../../app/lib/api-client";
+import { useGetRequestDeadline } from "../../hooks/useSchedule";
 // API clients
 import { RequestApi } from "../../app/lib/api/requestApi";
 import { ShiftApi } from "../../app/lib/api/shiftApi";
@@ -83,6 +85,7 @@ export default function RequestTab({
   const denyRequest = useDenyRequest();
   const getRequestsTabData = useGetRequestsTabData();
   const getShiftOptions = useGetShiftOptions();
+  const getRequestDeadline = useGetRequestDeadline(teamId);
 
   // Fetch user's worker for role-based filtering (cached via React Query)
   const {
@@ -99,6 +102,8 @@ export default function RequestTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
   const [showPastRequests, setShowPastRequests] = useState<boolean>(false);
+  const [deadlineBannerDate, setDeadlineBannerDate] =
+    useState<dayjs.Dayjs | null>(null);
 
   // Check if member has no worker association
   const memberHasNoWorker =
@@ -304,6 +309,23 @@ export default function RequestTab({
     t,
   ]);
 
+  // Fetch request deadline for banner
+  useEffect(() => {
+    const fetchDeadline = async () => {
+      try {
+        const result = await getRequestDeadline();
+        if (result.deadlineDate && result.deadlineDate.isAfter(dayjs().utc())) {
+          setDeadlineBannerDate(result.deadlineDate);
+        } else {
+          setDeadlineBannerDate(null);
+        }
+      } catch {
+        // Fail silently — deadline banner is non-critical
+      }
+    };
+    fetchDeadline();
+  }, [getRequestDeadline]);
+
   // Use persistent settings for request view (includes selectedTab, filters, sort, calendar settings)
   const [requestViewSettings, updateRequestViewSettings] =
     useRequestViewSettings(teamId);
@@ -337,6 +359,17 @@ export default function RequestTab({
         <NoWorkerAssigned message={t("error_no_worker_assigned")} />
       ) : (
         <div>
+          {deadlineBannerDate && (
+            <Alert
+              severity="info"
+              sx={{ mx: 2, mt: 1 }}
+              data-testid="request-deadline-banner"
+            >
+              {t("request_deadline_banner", {
+                date: deadlineBannerDate.format("MMM D, YYYY"),
+              })}
+            </Alert>
+          )}
           <div
             style={{
               display: "flex",
@@ -426,6 +459,11 @@ export default function RequestTab({
               showPastRequests={showPastRequests}
               viewSettings={requestViewSettings}
               onUpdateViewSettings={updateRequestViewSettings}
+              requestDeadline={
+                deadlineBannerDate
+                  ? { deadlineDate: deadlineBannerDate }
+                  : undefined
+              }
             />
           )}
           {requestViewSettings.selectedTab === "calendar" && (

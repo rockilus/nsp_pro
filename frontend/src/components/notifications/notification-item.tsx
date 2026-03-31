@@ -69,6 +69,12 @@ function getMessageKey(type: NotificationT["type"]): string {
       return "user_denied_swap";
     case "user_reversed_swap":
       return "user_reversed_swap";
+    case "campaign_request_deadline_set":
+      return "campaign_request_deadline_set";
+    case "campaign_request_deadline_reminder":
+      return "campaign_request_deadline_reminder";
+    case "campaign_request_deadline_extended":
+      return "campaign_request_deadline_extended";
     default:
       return "user_published_schedule";
   }

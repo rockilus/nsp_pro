@@ -25,6 +25,9 @@ from shared.schemas.core.notification_preferences import NotificationKey
 from src.config import config
 from src.services.base_service import BaseService
 from src.services.notification_builders import (
+    campaign_request_deadline_extended_event,
+    campaign_request_deadline_reminder_event,
+    campaign_request_deadline_set_event,
     swap_ready_for_review_event,
     user_accepted_direct_swap_event,
     user_accepted_request_event,
@@ -85,7 +88,9 @@ _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
     NotificationType.USER_REFUSED_DIRECT_SWAP: (
         NotificationKey.USER_REFUSED_DIRECT_SWAP
     ),
-    NotificationType.USER_CREATED_OPEN_SWAP: (NotificationKey.USER_CREATED_OPEN_SWAP),
+    NotificationType.USER_CREATED_OPEN_SWAP: (
+        NotificationKey.USER_CREATED_OPEN_SWAP
+    ),
     NotificationType.USER_BID_OPEN_SWAP: NotificationKey.USER_BID_OPEN_SWAP,
     NotificationType.USER_SELECTED_BID_OPEN_SWAP: (
         NotificationKey.USER_SELECTED_BID_OPEN_SWAP
@@ -97,6 +102,15 @@ _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
     NotificationType.USER_VALIDATED_SWAP: NotificationKey.USER_VALIDATED_SWAP,
     NotificationType.USER_DENIED_SWAP: NotificationKey.USER_DENIED_SWAP,
     NotificationType.USER_REVERSED_SWAP: NotificationKey.USER_REVERSED_SWAP,
+    NotificationType.CAMPAIGN_REQUEST_DEADLINE_SET: (
+        NotificationKey.CAMPAIGN_REQUEST_DEADLINE_SET
+    ),
+    NotificationType.CAMPAIGN_REQUEST_DEADLINE_REMINDER: (
+        NotificationKey.CAMPAIGN_REQUEST_DEADLINE_REMINDER
+    ),
+    NotificationType.CAMPAIGN_REQUEST_DEADLINE_EXTENDED: (
+        NotificationKey.CAMPAIGN_REQUEST_DEADLINE_EXTENDED
+    ),
 }
 
 
@@ -108,7 +122,9 @@ class AssignmentOperation:
     after: Optional[Assignment]  # None for delete
 
 
-class NotificationService(BaseService):  # pylint: disable=too-many-public-methods
+class NotificationService(
+    BaseService
+):  # pylint: disable=too-many-public-methods
     """Service for managing in-app notifications."""
 
     def __init__(
@@ -139,9 +155,13 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
                 created_at=now,
                 updated_at=now,
             )
-            return self.collection.notification_db.create_notification(notification)
+            return self.collection.notification_db.create_notification(
+                notification
+            )
         except Exception as e:
-            logger.error(f"Failed to create notification for user {user_id}: {e}")
+            logger.error(
+                f"Failed to create notification for user {user_id}: {e}"
+            )
             raise
 
     def get_user_notifications(
@@ -151,7 +171,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
         notifications = self.collection.notification_db.get_by_user_id(
             user_id, limit=limit, skip=skip
         )
-        unread_count = self.collection.notification_db.get_unread_count(user_id)
+        unread_count = self.collection.notification_db.get_unread_count(
+            user_id
+        )
         return {
             "notifications": notifications,
             "unread_count": unread_count,
@@ -166,12 +188,16 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
     def mark_all_seen(self, user_id: str) -> None:
         self.collection.notification_db.mark_all_seen(user_id)
 
-    def mark_read_where_seen_before(self, user_id: str, before: datetime) -> int:
+    def mark_read_where_seen_before(
+        self, user_id: str, before: datetime
+    ) -> int:
         return self.collection.notification_db.mark_read_where_seen_before(
             user_id, before
         )
 
-    def mark_read(self, notification_id: str, user_id: str) -> Optional[Notification]:
+    def mark_read(
+        self, notification_id: str, user_id: str
+    ) -> Optional[Notification]:
         """Mark a notification as read, verifying ownership."""
         schema = self.collection.notification_db.find_by_id(notification_id)
         if schema is None:
@@ -190,7 +216,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             return False
         if schema.user_id != user_id:
             raise PermissionError("Notification does not belong to this user")
-        return self.collection.notification_db.delete_notification(notification_id)
+        return self.collection.notification_db.delete_notification(
+            notification_id
+        )
 
     # ------------------------------------------------------------------
     # Domain notify methods (fire-and-forget, never raise)
@@ -217,7 +245,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
                                 f"for user {user_id}: inApp preference is disabled"
                             )
                             continue
-                    except Exception as pref_exc:  # pylint: disable=broad-except
+                    except (
+                        Exception
+                    ) as pref_exc:  # pylint: disable=broad-except
                         logger.warning(
                             f"Could not fetch preferences for user {user_id}, "
                             f"defaulting to send: {pref_exc}"
@@ -310,7 +340,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             )
             await self.dispatch(event)
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send schedule-published notifications: {e}")
+            logger.error(
+                f"Failed to send schedule-published notifications: {e}"
+            )
 
     def _is_assignment_in_published_period(
         self, assignment_date: date_type, team_id: str
@@ -351,7 +383,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             pending: dict[tuple[str, NotificationType], NotificationEvent] = {}
 
             for op in ops:
-                events = self._build_assignment_op_events(op, team_id, team_name)
+                events = self._build_assignment_op_events(
+                    op, team_id, team_name
+                )
                 for event in events:
                     for user_id in event.user_ids:
                         key = (user_id, event.notification_type)
@@ -381,9 +415,13 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
 
         if op.before is None and op.after is not None:
             # Create
-            if not self._is_assignment_in_published_period(op.after.date, team_id):
+            if not self._is_assignment_in_published_period(
+                op.after.date, team_id
+            ):
                 return events
-            worker = self.collection.worker_db.get_worker_by_id(op.after.worker_id)
+            worker = self.collection.worker_db.get_worker_by_id(
+                op.after.worker_id
+            )
             if not worker or not worker.user_id:
                 return events
             shift = self.collection.shift_db.get_shift_by_id(op.after.shift_id)
@@ -400,12 +438,18 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
 
         elif op.after is None and op.before is not None:
             # Delete
-            if not self._is_assignment_in_published_period(op.before.date, team_id):
+            if not self._is_assignment_in_published_period(
+                op.before.date, team_id
+            ):
                 return events
-            worker = self.collection.worker_db.get_worker_by_id(op.before.worker_id)
+            worker = self.collection.worker_db.get_worker_by_id(
+                op.before.worker_id
+            )
             if not worker or not worker.user_id:
                 return events
-            shift = self.collection.shift_db.get_shift_by_id(op.before.shift_id)
+            shift = self.collection.shift_db.get_shift_by_id(
+                op.before.shift_id
+            )
             shift_name = shift.name if shift else ""
             events.append(
                 user_deleted_assignment_event(
@@ -425,14 +469,18 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
 
             if worker_changed:
                 # Treated as delete-for-old + create-for-new
-                if self._is_assignment_in_published_period(op.after.date, team_id):
+                if self._is_assignment_in_published_period(
+                    op.after.date, team_id
+                ):
                     old_worker = self.collection.worker_db.get_worker_by_id(
                         op.before.worker_id
                     )
                     new_worker = self.collection.worker_db.get_worker_by_id(
                         op.after.worker_id
                     )
-                    shift = self.collection.shift_db.get_shift_by_id(op.after.shift_id)
+                    shift = self.collection.shift_db.get_shift_by_id(
+                        op.after.shift_id
+                    )
                     shift_name = shift.name if shift else ""
                     if old_worker and old_worker.user_id:
                         events.append(
@@ -455,12 +503,18 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
                             )
                         )
             elif shift_changed or date_changed:
-                if not self._is_assignment_in_published_period(op.after.date, team_id):
+                if not self._is_assignment_in_published_period(
+                    op.after.date, team_id
+                ):
                     return events
-                worker = self.collection.worker_db.get_worker_by_id(op.after.worker_id)
+                worker = self.collection.worker_db.get_worker_by_id(
+                    op.after.worker_id
+                )
                 if not worker or not worker.user_id:
                     return events
-                shift = self.collection.shift_db.get_shift_by_id(op.after.shift_id)
+                shift = self.collection.shift_db.get_shift_by_id(
+                    op.after.shift_id
+                )
                 shift_name = shift.name if shift else ""
                 events.append(
                     user_updated_assignment_event(
@@ -481,7 +535,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             team = self.collection.team_db.get_team_by_id(swap.team_id)
             team_name = team.name if team else ""
             offering_worker = (
-                self.collection.worker_db.get_worker_by_id(swap.offering_worker_id)
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
                 if swap.offering_worker_id
                 else None
             )
@@ -505,9 +561,13 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
                     await self.dispatch(event)
             else:
                 # OPEN swap — notify all team members except the creator
-                creator_user_id = offering_worker.user_id if offering_worker else None
+                creator_user_id = (
+                    offering_worker.user_id if offering_worker else None
+                )
                 mem_db = self.collection.team_membership_db
-                memberships = mem_db.get_team_memberships_by_team_id(swap.team_id)
+                memberships = mem_db.get_team_memberships_by_team_id(
+                    swap.team_id
+                )
                 member_user_ids = [
                     m.user_id
                     for m in memberships
@@ -533,7 +593,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             team = self.collection.team_db.get_team_by_id(swap.team_id)
             team_name = team.name if team else ""
             target_worker = (
-                self.collection.worker_db.get_worker_by_id(swap.target_worker_id)
+                self.collection.worker_db.get_worker_by_id(
+                    swap.target_worker_id
+                )
                 if swap.target_worker_id
                 else None
             )
@@ -542,7 +604,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
 
             # Notify creator
             offering_worker = (
-                self.collection.worker_db.get_worker_by_id(swap.offering_worker_id)
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
                 if swap.offering_worker_id
                 else None
             )
@@ -568,7 +632,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
                 date=first_date,
             )
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send direct-swap-accepted notifications: {e}")
+            logger.error(
+                f"Failed to send direct-swap-accepted notifications: {e}"
+            )
 
     async def notify_direct_swap_refused(self, swap: SwapRequest) -> None:
         """Dispatch user_refused_direct_swap to the creator."""
@@ -576,7 +642,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             team = self.collection.team_db.get_team_by_id(swap.team_id)
             team_name = team.name if team else ""
             target_worker = (
-                self.collection.worker_db.get_worker_by_id(swap.target_worker_id)
+                self.collection.worker_db.get_worker_by_id(
+                    swap.target_worker_id
+                )
                 if swap.target_worker_id
                 else None
             )
@@ -584,7 +652,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             shift_name, first_date = self._get_swap_shift_and_date(swap)
 
             offering_worker = (
-                self.collection.worker_db.get_worker_by_id(swap.offering_worker_id)
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
                 if swap.offering_worker_id
                 else None
             )
@@ -600,19 +670,27 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
                 )
                 await self.dispatch(event)
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send direct-swap-refused notifications: {e}")
+            logger.error(
+                f"Failed to send direct-swap-refused notifications: {e}"
+            )
 
-    async def notify_bid_added(self, swap: SwapRequest, bidder_worker_id: str) -> None:
+    async def notify_bid_added(
+        self, swap: SwapRequest, bidder_worker_id: str
+    ) -> None:
         """Dispatch user_bid_open_swap to the swap creator."""
         try:
             team = self.collection.team_db.get_team_by_id(swap.team_id)
             team_name = team.name if team else ""
-            bidder_worker = self.collection.worker_db.get_worker_by_id(bidder_worker_id)
+            bidder_worker = self.collection.worker_db.get_worker_by_id(
+                bidder_worker_id
+            )
             bidder_name = bidder_worker.name if bidder_worker else ""
             shift_name, first_date = self._get_swap_shift_and_date(swap)
 
             offering_worker = (
-                self.collection.worker_db.get_worker_by_id(swap.offering_worker_id)
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
                 if swap.offering_worker_id
                 else None
             )
@@ -638,7 +716,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             team = self.collection.team_db.get_team_by_id(swap.team_id)
             team_name = team.name if team else ""
             offering_worker = (
-                self.collection.worker_db.get_worker_by_id(swap.offering_worker_id)
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
                 if swap.offering_worker_id
                 else None
             )
@@ -771,7 +851,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             )
             if assignment:
                 first_date = str(assignment.date)
-                shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
+                shift = self.collection.shift_db.get_shift_by_id(
+                    assignment.shift_id
+                )
                 if shift:
                     shift_name = shift.name
         return shift_name, first_date
@@ -780,11 +862,15 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
         """Return user IDs for the offering worker and target worker."""
         user_ids: list[str] = []
         if swap.offering_worker_id:
-            w = self.collection.worker_db.get_worker_by_id(swap.offering_worker_id)
+            w = self.collection.worker_db.get_worker_by_id(
+                swap.offering_worker_id
+            )
             if w and w.user_id:
                 user_ids.append(w.user_id)
         if swap.target_worker_id:
-            w = self.collection.worker_db.get_worker_by_id(swap.target_worker_id)
+            w = self.collection.worker_db.get_worker_by_id(
+                swap.target_worker_id
+            )
             if w and w.user_id and w.user_id not in user_ids:
                 user_ids.append(w.user_id)
         return user_ids
@@ -828,28 +914,40 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
         offered_assignment = None
         requested_assignment = None
         if swap.offered_assignment_ids:
-            offered_assignment = self.collection.assignment_db.get_assignment_by_id(
-                swap.offered_assignment_ids[0]
+            offered_assignment = (
+                self.collection.assignment_db.get_assignment_by_id(
+                    swap.offered_assignment_ids[0]
+                )
             )
         if swap.requested_assignment_ids:
-            requested_assignment = self.collection.assignment_db.get_assignment_by_id(
-                swap.requested_assignment_ids[0]
+            requested_assignment = (
+                self.collection.assignment_db.get_assignment_by_id(
+                    swap.requested_assignment_ids[0]
+                )
             )
 
         def _shift_name_for(assignment) -> str:
             if not assignment:
                 return ""
-            shift = self.collection.shift_db.get_shift_by_id(assignment.shift_id)
+            shift = self.collection.shift_db.get_shift_by_id(
+                assignment.shift_id
+            )
             return shift.name if shift else ""
 
         offered_shift = _shift_name_for(offered_assignment)
-        offered_date = str(offered_assignment.date) if offered_assignment else ""
+        offered_date = (
+            str(offered_assignment.date) if offered_assignment else ""
+        )
         requested_shift = _shift_name_for(requested_assignment)
-        requested_date = str(requested_assignment.date) if requested_assignment else ""
+        requested_date = (
+            str(requested_assignment.date) if requested_assignment else ""
+        )
 
         # Notify offering worker: their own shift is offered, other is requested
         if swap.offering_worker_id:
-            w = self.collection.worker_db.get_worker_by_id(swap.offering_worker_id)
+            w = self.collection.worker_db.get_worker_by_id(
+                swap.offering_worker_id
+            )
             if w and w.user_id:
                 event = event_factory(
                     w.user_id,
@@ -862,7 +960,9 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
 
         # Notify target worker: their own shift is requested, other is offered
         if swap.target_worker_id:
-            w = self.collection.worker_db.get_worker_by_id(swap.target_worker_id)
+            w = self.collection.worker_db.get_worker_by_id(
+                swap.target_worker_id
+            )
             if w and w.user_id:
                 event = event_factory(
                     w.user_id,
@@ -876,14 +976,18 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
     async def notify_user_accepted_request(self, request: Request) -> None:
         """Notify the worker whose request was approved."""
         try:
-            worker = self.collection.worker_db.get_worker_by_id(request.worker_id)
+            worker = self.collection.worker_db.get_worker_by_id(
+                request.worker_id
+            )
             if not worker or not worker.user_id:
                 return
             team = self.collection.team_db.get_team_by_id(request.team_id)
             team_name = team.name if team else ""
             shift_name = ""
             if request.shift_id:
-                shift = self.collection.shift_db.get_shift_by_id(request.shift_id)
+                shift = self.collection.shift_db.get_shift_by_id(
+                    request.shift_id
+                )
                 if shift:
                     shift_name = shift.name
             event = user_accepted_request_event(
@@ -896,19 +1000,25 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             )
             await self.dispatch(event)
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send user-accepted-request notification: {e}")
+            logger.error(
+                f"Failed to send user-accepted-request notification: {e}"
+            )
 
     async def notify_user_denied_request(self, request: Request) -> None:
         """Notify the worker whose request was denied."""
         try:
-            worker = self.collection.worker_db.get_worker_by_id(request.worker_id)
+            worker = self.collection.worker_db.get_worker_by_id(
+                request.worker_id
+            )
             if not worker or not worker.user_id:
                 return
             team = self.collection.team_db.get_team_by_id(request.team_id)
             team_name = team.name if team else ""
             shift_name = ""
             if request.shift_id:
-                shift = self.collection.shift_db.get_shift_by_id(request.shift_id)
+                shift = self.collection.shift_db.get_shift_by_id(
+                    request.shift_id
+                )
                 if shift:
                     shift_name = shift.name
             event = user_denied_request_event(
@@ -921,17 +1031,23 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             )
             await self.dispatch(event)
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send user-denied-request notification: {e}")
+            logger.error(
+                f"Failed to send user-denied-request notification: {e}"
+            )
 
     async def notify_user_created_request(self, request: Request) -> None:
         """Notify team managers that a new request has been created."""
         try:
-            worker = self.collection.worker_db.get_worker_by_id(request.worker_id)
+            worker = self.collection.worker_db.get_worker_by_id(
+                request.worker_id
+            )
             worker_name = worker.name if worker else ""
             team = self.collection.team_db.get_team_by_id(request.team_id)
             team_name = team.name if team else ""
             mem_db = self.collection.team_membership_db
-            memberships = mem_db.get_team_memberships_by_team_id(request.team_id)
+            memberships = mem_db.get_team_memberships_by_team_id(
+                request.team_id
+            )
             manager_user_ids = [
                 m.user_id
                 for m in memberships
@@ -948,4 +1064,83 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             )
             await self.dispatch(event)
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send new-request-created notification: {e}")
+            logger.error(
+                f"Failed to send new-request-created notification: {e}"
+            )
+
+    async def notify_campaign_request_deadline_set(
+        self,
+        team_id: str,
+        team_name: str,
+        deadline_date: str,
+        schedule_start: str,
+        schedule_end: str,
+        member_user_ids: list[str],
+    ) -> None:
+        """Notify members that the team leader has set a request deadline."""
+        try:
+            event = campaign_request_deadline_set_event(
+                team_id=team_id,
+                team_name=team_name,
+                deadline_date=deadline_date,
+                schedule_start=schedule_start,
+                schedule_end=schedule_end,
+                member_user_ids=member_user_ids,
+            )
+            await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(
+                f"Failed to send campaign-request-deadline-set notification: {e}"
+            )
+
+    async def notify_campaign_request_deadline_reminder(
+        self,
+        team_id: str,
+        team_name: str,
+        deadline_date: str,
+        schedule_start: str,
+        schedule_end: str,
+        member_user_ids: list[str],
+    ) -> None:
+        """Remind members to submit their requests before the deadline."""
+        try:
+            event = campaign_request_deadline_reminder_event(
+                team_id=team_id,
+                team_name=team_name,
+                deadline_date=deadline_date,
+                schedule_start=schedule_start,
+                schedule_end=schedule_end,
+                member_user_ids=member_user_ids,
+            )
+            await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(
+                f"Failed to send campaign-request-deadline-reminder notification: {e}"
+            )
+
+    async def notify_campaign_request_deadline_extended(
+        self,
+        team_id: str,
+        team_name: str,
+        old_deadline_date: str,
+        new_deadline_date: str,
+        schedule_start: str,
+        schedule_end: str,
+        member_user_ids: list[str],
+    ) -> None:
+        """Notify members that the request deadline has been extended."""
+        try:
+            event = campaign_request_deadline_extended_event(
+                team_id=team_id,
+                team_name=team_name,
+                old_deadline_date=old_deadline_date,
+                new_deadline_date=new_deadline_date,
+                schedule_start=schedule_start,
+                schedule_end=schedule_end,
+                member_user_ids=member_user_ids,
+            )
+            await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(
+                f"Failed to send campaign-request-deadline-extended notification: {e}"
+            )

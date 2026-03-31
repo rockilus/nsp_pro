@@ -5,6 +5,7 @@ import Button from "@mui/material/Button";
 // Components
 import ScheduleSelector from "./schedule-selector";
 import ConstraintSelector from "./constraint-selector";
+import RequestDeadlinePanel from "./request-deadline-panel";
 import MobileNavAppBar from "../app-bar/mobile-nav-app-bar";
 // Hooks
 import { useIsMobile } from "../../hooks/useIsMobile";
@@ -93,6 +94,18 @@ export default function CampaignTab({
     }
   };
 
+  const handleDeadlineSet = (updatedSchedule: ScheduleT) => {
+    setScheduleCampaign(updatedSchedule);
+  };
+
+  const handleDeadlineExtended = (updatedSchedule: ScheduleT) => {
+    setScheduleCampaign(updatedSchedule);
+  };
+
+  const handleReminderSent = () => {
+    // Reminder dispatched — no local state change needed
+  };
+
   useEffect(() => {
     const fetchCampaignTabData = async () => {
       setIsLoading(true);
@@ -153,6 +166,13 @@ export default function CampaignTab({
               schedulesValidated={schedulesValidated}
               workTimeTable={workTimeTable}
               handleUpdateSchedule={handleUpdateSchedule}
+            />
+            <RequestDeadlinePanel
+              lng={lng}
+              scheduleCampaign={scheduleCampaign}
+              onDeadlineSet={handleDeadlineSet}
+              onDeadlineExtended={handleDeadlineExtended}
+              onReminderSent={handleReminderSent}
             />
             {teamWithMembership.team.useSolver && (
               <>

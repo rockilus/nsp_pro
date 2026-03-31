@@ -34,5 +34,9 @@
     "unfulfilled": "Non satisfait",
     "unknown": "Inconnu",
     "work": "Travail",
-    "worker": "Membre"
+    "worker": "Membre",
+    "request_deadline_banner": "Votre responsable d'équipe vous demande de soumettre vos disponibilités avant le {date}",
+    "submitted_on": "Soumis le",
+    "before_deadline": "Avant la date limite",
+    "after_deadline": "Après la date limite"
 }

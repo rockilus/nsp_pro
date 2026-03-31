@@ -6,6 +6,7 @@ import {
   WorkTimeTableT,
   DuplicateRequestT,
   DuplicateResultT,
+  RequestDeadlineT,
 } from "../types/schedule";
 import { AssignmentT } from "../types/assignment";
 import { ShiftT } from "../types/shift";
@@ -506,4 +507,109 @@ export function useGetScheduleAssignmentsDataNoSolver() {
   );
 
   return getScheduleAssignmentsDataNoSolver;
+}
+
+/**
+ * Hook for getting the request deadline for a team's campaign schedule
+ */
+export function useGetRequestDeadline(teamId: string | null | undefined) {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const getRequestDeadline =
+    useCallback(async (): Promise<RequestDeadlineT> => {
+      if (loading)
+        throw new Error("Authentication still loading - please wait");
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error("User not authenticated - please sign in");
+      if (!teamId) throw new Error("Team ID is required");
+      return ScheduleApi.getRequestDeadline(apiClient, teamId);
+    }, [apiClient, isAuthenticated, loading, user, teamId]);
+
+  return getRequestDeadline;
+}
+
+/**
+ * Hook for setting the request deadline on a campaign schedule
+ */
+export function useSetRequestDeadline() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const setRequestDeadline = useCallback(
+    async (
+      scheduleId: string,
+      teamId: string,
+      deadline: Date,
+    ): Promise<ScheduleT> => {
+      if (loading)
+        throw new Error("Authentication still loading - please wait");
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error("User not authenticated - please sign in");
+      return ScheduleApi.setRequestDeadline(
+        apiClient,
+        scheduleId,
+        teamId,
+        deadline,
+      );
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return setRequestDeadline;
+}
+
+/**
+ * Hook for sending a reminder notification for the request deadline
+ */
+export function useSendRequestDeadlineReminder() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const sendReminder = useCallback(
+    async (scheduleId: string, teamId: string): Promise<void> => {
+      if (loading)
+        throw new Error("Authentication still loading - please wait");
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error("User not authenticated - please sign in");
+      return ScheduleApi.sendRequestDeadlineReminder(
+        apiClient,
+        scheduleId,
+        teamId,
+      );
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return sendReminder;
+}
+
+/**
+ * Hook for extending the request deadline on a campaign schedule
+ */
+export function useExtendRequestDeadline() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const extendRequestDeadline = useCallback(
+    async (
+      scheduleId: string,
+      teamId: string,
+      newDeadline: Date,
+    ): Promise<ScheduleT> => {
+      if (loading)
+        throw new Error("Authentication still loading - please wait");
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error("User not authenticated - please sign in");
+      return ScheduleApi.extendRequestDeadline(
+        apiClient,
+        scheduleId,
+        teamId,
+        newDeadline,
+      );
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return extendRequestDeadline;
 }

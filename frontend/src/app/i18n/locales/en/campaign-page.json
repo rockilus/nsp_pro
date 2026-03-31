@@ -19,5 +19,14 @@
     "start_new_campaign": "Create new campaign",
     "supply_and_demand": "Capacity vs coverage",
     "status": "Status",
-    "total": "Total"
+    "total": "Total",
+    "set_deadline": "Set deadline & notify",
+    "send_reminder": "Send reminder",
+    "extend_deadline": "Extend deadline",
+    "current_deadline": "Current deadline",
+    "no_deadline_set": "No deadline set",
+    "deadline_dialog_title": "Set request submission deadline",
+    "extend_deadline_dialog_title": "Extend request submission deadline",
+    "cancel": "Cancel",
+    "reminder_sent": "Reminder sent to team members"
 }

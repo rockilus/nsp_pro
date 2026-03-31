@@ -1001,6 +1001,105 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       /^Your swap of Swap Shift on \d{4}-\d{2}-\d{2} with Swap Shift on \d{4}-\d{2}-\d{2} was reversed$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
+  {
+    type: "campaign_request_deadline_set",
+    description: "owner sets request deadline; member is notified",
+    preferenceKey: "campaign_request_deadline_set",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Member Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      const deadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      await dbUtils.setRequestDeadlineAs(
+        user1.user_id,
+        schedule.id,
+        team.teamId,
+        deadline,
+      );
+      return user2.user_id;
+    },
+    expectedText: (name) =>
+      new RegExp(
+        `has set a request deadline of .+ for team ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+      ),
+    expectedUrlPattern: /\/plan\/requests/,
+  },
+  {
+    type: "campaign_request_deadline_reminder",
+    description: "owner sends deadline reminder; member is notified",
+    preferenceKey: "campaign_request_deadline_reminder",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Member Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      const deadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      await dbUtils.setRequestDeadlineAs(
+        user1.user_id,
+        schedule.id,
+        team.teamId,
+        deadline,
+      );
+      await dbUtils.sendRequestDeadlineReminderAs(
+        user1.user_id,
+        schedule.id,
+        team.teamId,
+      );
+      return user2.user_id;
+    },
+    expectedText: (name) =>
+      new RegExp(
+        `Reminder: Please submit your requests for team ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} before .+`,
+      ),
+    expectedUrlPattern: /\/plan\/requests/,
+  },
+  {
+    type: "campaign_request_deadline_extended",
+    description: "owner extends deadline; member is notified",
+    preferenceKey: "campaign_request_deadline_extended",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Member Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      const initialDeadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const extendedDeadline = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
+      await dbUtils.setRequestDeadlineAs(
+        user1.user_id,
+        schedule.id,
+        team.teamId,
+        initialDeadline,
+      );
+      await dbUtils.extendRequestDeadlineAs(
+        user1.user_id,
+        schedule.id,
+        team.teamId,
+        extendedDeadline,
+      );
+      return user2.user_id;
+    },
+    expectedText: (name) =>
+      new RegExp(
+        `The request deadline for team ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} has been extended to .+`,
+      ),
+    expectedUrlPattern: /\/plan\/requests/,
+  },
 ];
 
 const ctxMap = new NotificationTestContextMap<NotifTestContext>();

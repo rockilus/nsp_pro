@@ -40,6 +40,10 @@ export function getNotificationTargetPath(
       const swapId = notification.eventData.swap_id;
       return swapId ? `${base}/swaps?swapId=${swapId}` : `${base}/swaps`;
     }
+    case "campaign_request_deadline_set":
+    case "campaign_request_deadline_reminder":
+    case "campaign_request_deadline_extended":
+      return `${base}/requests`;
     default:
       return `${base}/schedule`;
   }

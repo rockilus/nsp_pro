@@ -7,6 +7,7 @@ import { useTranslation } from "../../../app/i18n/client";
 import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
 import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
 import AddIcon from "@mui/icons-material/Add";
 import NoWorkerAssigned from "../../common/NoWorkerAssigned";
 // Hooks
@@ -27,6 +28,7 @@ import MobileRequestNav from "./mobile-request-nav";
 import MobileRequestSettings from "./mobile-request-settings";
 import PortraitRequestList from "./portrait-request-list";
 import RequestPanel from "../request-panel";
+import { useGetRequestDeadline } from "../../../hooks/useSchedule";
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -76,6 +78,26 @@ export default function MobileRequestTab({
   const [activeRequest, setActiveRequest] = useState<RequestT | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState<string>("");
+  const [deadlineBannerDate, setDeadlineBannerDate] =
+    useState<dayjs.Dayjs | null>(null);
+
+  const getRequestDeadline = useGetRequestDeadline(teamId);
+
+  useEffect(() => {
+    const fetchDeadline = async () => {
+      try {
+        const result = await getRequestDeadline();
+        if (result.deadlineDate && result.deadlineDate.isAfter(dayjs().utc())) {
+          setDeadlineBannerDate(result.deadlineDate);
+        } else {
+          setDeadlineBannerDate(null);
+        }
+      } catch {
+        // Fail silently
+      }
+    };
+    fetchDeadline();
+  }, [getRequestDeadline]);
 
   // Fetch user's worker for role-based filtering (cached via React Query)
   const { data: userWorker, isLoading: isLoadingUserWorker } = useUserWorker(
@@ -291,6 +313,17 @@ export default function MobileRequestTab({
         />
       ) : (
         <Box sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}>
+          {deadlineBannerDate && (
+            <Alert
+              severity="info"
+              sx={{ mb: 1 }}
+              data-testid="request-deadline-banner"
+            >
+              {t("request_deadline_banner", {
+                date: deadlineBannerDate.format("MMM D, YYYY"),
+              })}
+            </Alert>
+          )}
           <PortraitRequestList
             weeks={weeks}
             containerRef={containerRef}
