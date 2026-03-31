@@ -286,8 +286,8 @@ test.describe("Notification Settings", () => {
       timeout: 10_000,
     });
 
-    // Use schedule_published as it is visible to all roles and always present.
-    const key = "schedule_published";
+    // Use user_published_schedule as it is visible to all roles and always present.
+    const key = "user_published_schedule";
     const statusLocator = page.locator(
       `[data-testid="notification-status-${key}"]`,
     );

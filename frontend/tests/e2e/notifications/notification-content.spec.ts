@@ -172,6 +172,130 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       new RegExp(`^Your request for .* on ${REQUEST_DATE} was denied$`),
     expectedUrlPattern: /\/plan\/requests/,
   },
+  {
+    type: "user_published_schedule",
+    description:
+      "user1 validates a schedule; user2 (linked worker) is notified",
+    preferenceKey: "user_published_schedule",
+    recipientRole: "user2",
+    async setup(dbUtils, team, _user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Worker User",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      return user2.user_id;
+    },
+    expectedText: (name) => new RegExp(`has been published for team ${name}`),
+    expectedUrlPattern: /\/plan\/schedule/,
+  },
+  {
+    type: "user_created_assignment",
+    description:
+      "manager creates an assignment in a published schedule; worker (user2) is notified",
+    preferenceKey: "assignment_changes",
+    recipientRole: "user2",
+    async setup(dbUtils, team, _user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Worker User",
+        weeklyHours: 40,
+      });
+      // Validate BEFORE attaching so user2 does not receive a schedule-published notification.
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+      const allShifts = await dbUtils.getAllShifts(team.teamId);
+      const workShift = allShifts.find(
+        (s) => s.shiftType === ShiftType.NORMAL,
+      )!;
+      await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker.id,
+        shiftId: workShift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      return user2.user_id;
+    },
+    expectedText: (_name) => /has been added to your schedule/,
+    expectedUrlPattern: /\/plan\/schedule/,
+  },
+  {
+    type: "user_updated_assignment",
+    description:
+      "manager changes the date of an assignment in a published schedule; worker (user2) is notified",
+    preferenceKey: "assignment_changes",
+    recipientRole: "user2",
+    async setup(dbUtils, team, _user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Worker User",
+        weeklyHours: 40,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+      const allShifts = await dbUtils.getAllShifts(team.teamId);
+      const workShift = allShifts.find(
+        (s) => s.shiftType === ShiftType.NORMAL,
+      )!;
+      const result = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker.id,
+        shiftId: workShift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const assignment = result.assignmentsCreated[0];
+      await dbUtils.updateAssignment(assignment.id, team.teamId, {
+        date: schedule.startDate.add(1, "day"),
+      });
+      return user2.user_id;
+    },
+    expectedText: (_name) => /was updated/,
+    expectedUrlPattern: /\/plan\/schedule/,
+  },
+  {
+    type: "user_deleted_assignment",
+    description:
+      "manager deletes an assignment in a published schedule; worker (user2) is notified",
+    preferenceKey: "assignment_changes",
+    recipientRole: "user2",
+    async setup(dbUtils, team, _user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Worker User",
+        weeklyHours: 40,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+      const allShifts = await dbUtils.getAllShifts(team.teamId);
+      const workShift = allShifts.find(
+        (s) => s.shiftType === ShiftType.NORMAL,
+      )!;
+      const result = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker.id,
+        shiftId: workShift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const assignment = result.assignmentsCreated[0];
+      await dbUtils.deleteAssignment(assignment.id, team.teamId);
+      return user2.user_id;
+    },
+    expectedText: (_name) => /was removed from your schedule/,
+    expectedUrlPattern: /\/plan\/schedule/,
+  },
 ];
 
 const ctxMap = new NotificationTestContextMap<NotifTestContext>();

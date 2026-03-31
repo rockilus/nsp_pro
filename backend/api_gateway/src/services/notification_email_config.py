@@ -12,9 +12,9 @@ from shared.schemas.core.notification import NotificationType
 # Maps each NotificationType to (template_name, EmailType, app_path_suffix).
 # Adding a new type requires only one new row here and two template files.
 NOTIFICATION_EMAIL_MAP: dict[NotificationType, tuple[str, EmailType, str]] = {
-    NotificationType.SCHEDULE_PUBLISHED: (
-        "notification_schedule_published_email",
-        EmailType.NOTIFICATION_SCHEDULE_PUBLISHED,
+    NotificationType.USER_PUBLISHED_SCHEDULE: (
+        "notification_user_published_schedule_email",
+        EmailType.NOTIFICATION_USER_PUBLISHED_SCHEDULE,
         "/plan/schedule",
     ),
     NotificationType.USER_CREATED_REQUEST: (
@@ -42,9 +42,19 @@ NOTIFICATION_EMAIL_MAP: dict[NotificationType, tuple[str, EmailType, str]] = {
         EmailType.NOTIFICATION_USER_DENIED_REQUEST,
         "/plan/requests",
     ),
-    NotificationType.ASSIGNMENT_CHANGED: (
-        "notification_assignment_changed_email",
-        EmailType.NOTIFICATION_ASSIGNMENT_CHANGED,
+    NotificationType.USER_CREATED_ASSIGNMENT: (
+        "notification_user_created_assignment_email",
+        EmailType.NOTIFICATION_USER_CREATED_ASSIGNMENT,
+        "/plan/schedule",
+    ),
+    NotificationType.USER_UPDATED_ASSIGNMENT: (
+        "notification_user_updated_assignment_email",
+        EmailType.NOTIFICATION_USER_UPDATED_ASSIGNMENT,
+        "/plan/schedule",
+    ),
+    NotificationType.USER_DELETED_ASSIGNMENT: (
+        "notification_user_deleted_assignment_email",
+        EmailType.NOTIFICATION_USER_DELETED_ASSIGNMENT,
         "/plan/schedule",
     ),
     NotificationType.USER_RECEIVED_TEAM_INVITE: (
@@ -73,7 +83,7 @@ NOTIFICATION_EMAIL_MAP: dict[NotificationType, tuple[str, EmailType, str]] = {
 NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
     # English
     (
-        NotificationType.SCHEDULE_PUBLISHED,
+        NotificationType.USER_PUBLISHED_SCHEDULE,
         "en",
     ): "Your schedule has been published",
     (NotificationType.USER_CREATED_REQUEST, "en"): "New request received",
@@ -91,9 +101,17 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         "en",
     ): "Your request has been denied",
     (
-        NotificationType.ASSIGNMENT_CHANGED,
+        NotificationType.USER_CREATED_ASSIGNMENT,
         "en",
-    ): "Your assignment has been changed",
+    ): "A new assignment has been added to your schedule",
+    (
+        NotificationType.USER_UPDATED_ASSIGNMENT,
+        "en",
+    ): "Your assignment has been updated",
+    (
+        NotificationType.USER_DELETED_ASSIGNMENT,
+        "en",
+    ): "Your assignment has been removed from your schedule",
     (
         NotificationType.USER_RECEIVED_TEAM_INVITE,
         "en",
@@ -109,7 +127,7 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
     (NotificationType.USER_LEFT_TEAM, "en"): "A user has left your team",
     # Spanish
     (
-        NotificationType.SCHEDULE_PUBLISHED,
+        NotificationType.USER_PUBLISHED_SCHEDULE,
         "es",
     ): "Tu horario ha sido publicado",
     (NotificationType.USER_CREATED_REQUEST, "es"): "Nueva solicitud recibida",
@@ -127,9 +145,17 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         "es",
     ): "Tu solicitud ha sido denegada",
     (
-        NotificationType.ASSIGNMENT_CHANGED,
+        NotificationType.USER_CREATED_ASSIGNMENT,
         "es",
-    ): "Tu asignación ha sido modificada",
+    ): "Se ha añadido una nueva asignación a tu horario",
+    (
+        NotificationType.USER_UPDATED_ASSIGNMENT,
+        "es",
+    ): "Tu asignación ha sido actualizada",
+    (
+        NotificationType.USER_DELETED_ASSIGNMENT,
+        "es",
+    ): "Tu asignación ha sido eliminada de tu horario",
     (
         NotificationType.USER_RECEIVED_TEAM_INVITE,
         "es",
@@ -147,7 +173,10 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         "es",
     ): "Un usuario ha abandonado tu equipo",
     # French
-    (NotificationType.SCHEDULE_PUBLISHED, "fr"): "Votre planning a été publié",
+    (
+        NotificationType.USER_PUBLISHED_SCHEDULE,
+        "fr",
+    ): "Votre planning a été publié",
     (NotificationType.USER_CREATED_REQUEST, "fr"): "Nouvelle demande reçue",
     (NotificationType.NEW_SWAP_REQUEST, "fr"): "Nouvelle demande d'échange",
     (
@@ -163,9 +192,17 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         "fr",
     ): "Votre demande a été refusée",
     (
-        NotificationType.ASSIGNMENT_CHANGED,
+        NotificationType.USER_CREATED_ASSIGNMENT,
         "fr",
-    ): "Votre affectation a été modifiée",
+    ): "Une nouvelle affectation a été ajoutée à votre planning",
+    (
+        NotificationType.USER_UPDATED_ASSIGNMENT,
+        "fr",
+    ): "Votre affectation a été mise à jour",
+    (
+        NotificationType.USER_DELETED_ASSIGNMENT,
+        "fr",
+    ): "Votre affectation a été supprimée de votre planning",
     (
         NotificationType.USER_RECEIVED_TEAM_INVITE,
         "fr",

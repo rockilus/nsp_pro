@@ -12,6 +12,86 @@ from shared.schemas.core.notification import (
 # pylint: disable=too-many-arguments
 
 
+def user_published_schedule_event(
+    team_id: str,
+    team_name: str,
+    schedule_id: str,
+    schedule_name: str,
+    worker_user_ids: list[str],
+) -> NotificationEvent:
+    """Notify workers that a schedule has been published."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_PUBLISHED_SCHEDULE,
+        user_ids=worker_user_ids,
+        team_id=team_id,
+        event_data={
+            "schedule_id": schedule_id,
+            "schedule_name": schedule_name,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_created_assignment_event(
+    team_id: str,
+    team_name: str,
+    worker_user_id: str,
+    shift_name: str,
+    date: str,
+) -> NotificationEvent:
+    """Notify a worker that an assignment was created for them."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_CREATED_ASSIGNMENT,
+        user_ids=[worker_user_id],
+        team_id=team_id,
+        event_data={
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_updated_assignment_event(
+    team_id: str,
+    team_name: str,
+    worker_user_id: str,
+    shift_name: str,
+    date: str,
+) -> NotificationEvent:
+    """Notify a worker that their assignment was updated."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_UPDATED_ASSIGNMENT,
+        user_ids=[worker_user_id],
+        team_id=team_id,
+        event_data={
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_deleted_assignment_event(
+    team_id: str,
+    team_name: str,
+    worker_user_id: str,
+    shift_name: str,
+    date: str,
+) -> NotificationEvent:
+    """Notify a worker that their assignment was deleted."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_DELETED_ASSIGNMENT,
+        user_ids=[worker_user_id],
+        team_id=team_id,
+        event_data={
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
 def user_received_team_invite_event(
     team_id: str,
     team_name: str,

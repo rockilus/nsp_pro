@@ -14,7 +14,7 @@ class NotificationCategory(StrEnum):
 
 
 class NotificationKey(StrEnum):
-    SCHEDULE_PUBLISHED = "schedule_published"
+    USER_PUBLISHED_SCHEDULE = "user_published_schedule"
     USER_CREATED_REQUEST = "user_created_request"
     SWAP_REQUESTS = "swap_requests"
     USER_ACCEPTED_REQUEST = "user_accepted_request"
@@ -35,7 +35,7 @@ class NotificationKeyMeta:
 
 
 NOTIFICATION_REGISTRY: dict[NotificationKey, NotificationKeyMeta] = {
-    NotificationKey.SCHEDULE_PUBLISHED: NotificationKeyMeta(
+    NotificationKey.USER_PUBLISHED_SCHEDULE: NotificationKeyMeta(
         category=NotificationCategory.SCHEDULE,
     ),
     NotificationKey.USER_CREATED_REQUEST: NotificationKeyMeta(
@@ -83,7 +83,9 @@ class NotificationPreferences:
 
     user_id: str
     preferences: dict[NotificationKey, ChannelPreferences] = field(
-        default_factory=lambda: {k: ChannelPreferences() for k in NotificationKey}
+        default_factory=lambda: {
+            k: ChannelPreferences() for k in NotificationKey
+        }
     )
 
     def to_dto(self) -> "NotificationPreferencesDTO":
@@ -96,7 +98,9 @@ class NotificationPreferences:
         )
 
     @classmethod
-    def from_dto(cls, dto: "NotificationPreferencesDTO") -> "NotificationPreferences":
+    def from_dto(
+        cls, dto: "NotificationPreferencesDTO"
+    ) -> "NotificationPreferences":
         valid_keys = {k.value for k in NotificationKey}
         return cls(
             user_id=dto.user_id,

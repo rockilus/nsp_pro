@@ -4,13 +4,15 @@
 import dayjs from "dayjs";
 
 export type NotificationTypeT =
-  | "schedule_published"
+  | "user_published_schedule"
   | "user_created_request"
   | "new_swap_request"
   | "swap_status_changed"
   | "user_accepted_request"
   | "user_denied_request"
-  | "assignment_changed"
+  | "user_created_assignment"
+  | "user_updated_assignment"
+  | "user_deleted_assignment"
   | "user_received_team_invite"
   | "user_accepted_team_invite"
   | "user_removed_from_team"
@@ -30,7 +32,7 @@ export type NotificationT = {
 };
 
 export type NotificationKey =
-  | "schedule_published"
+  | "user_published_schedule"
   | "user_created_request"
   | "swap_requests"
   | "user_accepted_request"
@@ -42,7 +44,7 @@ export type NotificationKey =
   | "user_left_team";
 
 export const NOTIFICATION_KEYS: NotificationKey[] = [
-  "schedule_published",
+  "user_published_schedule",
   "user_created_request",
   "swap_requests",
   "user_accepted_request",
@@ -68,7 +70,7 @@ export const NOTIFICATION_REGISTRY: Record<
   NotificationKey,
   NotificationKeyMeta
 > = {
-  schedule_published: { category: "schedule" },
+  user_published_schedule: { category: "schedule" },
   user_created_request: { category: "requests" },
   swap_requests: { category: "requests" },
   user_accepted_request: { category: "requests" },

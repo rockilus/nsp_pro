@@ -12,13 +12,15 @@ from pydantic import BaseModel, Field
 class NotificationType(str, Enum):
     """Type of in-app notification."""
 
-    SCHEDULE_PUBLISHED = "schedule_published"
+    USER_PUBLISHED_SCHEDULE = "user_published_schedule"
     USER_CREATED_REQUEST = "user_created_request"
     NEW_SWAP_REQUEST = "new_swap_request"
     SWAP_STATUS_CHANGED = "swap_status_changed"
     USER_ACCEPTED_REQUEST = "user_accepted_request"
     USER_DENIED_REQUEST = "user_denied_request"
-    ASSIGNMENT_CHANGED = "assignment_changed"
+    USER_CREATED_ASSIGNMENT = "user_created_assignment"
+    USER_UPDATED_ASSIGNMENT = "user_updated_assignment"
+    USER_DELETED_ASSIGNMENT = "user_deleted_assignment"
     USER_RECEIVED_TEAM_INVITE = "user_received_team_invite"
     USER_ACCEPTED_TEAM_INVITE = "user_accepted_team_invite"
     USER_REMOVED_FROM_TEAM = "user_removed_from_team"

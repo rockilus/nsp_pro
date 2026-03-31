@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">Assignment Removed</div>
+        <div class="email-body">
+            <p>Hi {recipient_name},</p>
+            <p>Your assignment for shift <strong>{shift_name}</strong> on <strong>{date}</strong> has been removed from your schedule for team <strong>{team_name}</strong>.</p>
+            <p>Click the button below to view your schedule:</p>
+            <a href="{notification_link}" class="cta-button">View Schedule</a>
+        </div>
+        <div class="email-footer">
+            <p>If you have any questions, feel free to reach out to us.</p>
+            <p>Thank you,<br>The Rockilus Team</p>
+        </div>
+    </div>
+</body>
+</html>

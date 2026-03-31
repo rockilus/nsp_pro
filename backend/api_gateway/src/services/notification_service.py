@@ -1,5 +1,7 @@
 """Notification service for creating and managing user notifications."""
 
+from dataclasses import dataclass
+from datetime import date as date_type
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
@@ -8,6 +10,7 @@ from shared.schemas.core import (
     Assignment,
     Request,
     Schedule,
+    ScheduleStatus,
     SwapRequest,
     SwapType,
     TeamMembershipRole,
@@ -23,8 +26,12 @@ from src.config import config
 from src.services.base_service import BaseService
 from src.services.notification_builders import (
     user_accepted_request_event,
+    user_created_assignment_event,
     user_created_request_event,
+    user_deleted_assignment_event,
     user_denied_request_event,
+    user_published_schedule_event,
+    user_updated_assignment_event,
 )
 from src.services.notification_email_config import (
     NOTIFICATION_EMAIL_MAP,
@@ -40,13 +47,15 @@ if TYPE_CHECKING:
 # Maps each NotificationType to a NotificationKey that controls it.
 # Types absent from this map are always delivered (fail-open).
 _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
-    NotificationType.SCHEDULE_PUBLISHED: NotificationKey.SCHEDULE_PUBLISHED,
+    NotificationType.USER_PUBLISHED_SCHEDULE: NotificationKey.USER_PUBLISHED_SCHEDULE,
     NotificationType.USER_CREATED_REQUEST: NotificationKey.USER_CREATED_REQUEST,
     NotificationType.NEW_SWAP_REQUEST: NotificationKey.SWAP_REQUESTS,
     NotificationType.SWAP_STATUS_CHANGED: NotificationKey.SWAP_REQUESTS,
     NotificationType.USER_ACCEPTED_REQUEST: NotificationKey.USER_ACCEPTED_REQUEST,
     NotificationType.USER_DENIED_REQUEST: NotificationKey.USER_DENIED_REQUEST,
-    NotificationType.ASSIGNMENT_CHANGED: NotificationKey.ASSIGNMENT_CHANGES,
+    NotificationType.USER_CREATED_ASSIGNMENT: NotificationKey.ASSIGNMENT_CHANGES,
+    NotificationType.USER_UPDATED_ASSIGNMENT: NotificationKey.ASSIGNMENT_CHANGES,
+    NotificationType.USER_DELETED_ASSIGNMENT: NotificationKey.ASSIGNMENT_CHANGES,
     # fmt: off
     NotificationType.USER_RECEIVED_TEAM_INVITE: (
         NotificationKey.USER_RECEIVED_TEAM_INVITE
@@ -58,6 +67,14 @@ _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
     NotificationType.USER_REMOVED_FROM_TEAM: NotificationKey.USER_REMOVED_FROM_TEAM,
     NotificationType.USER_LEFT_TEAM: NotificationKey.USER_LEFT_TEAM,
 }
+
+
+@dataclass
+class AssignmentOperation:
+    """Represents a single assignment CRUD operation with before/after state."""
+
+    before: Optional[Assignment]  # None for create
+    after: Optional[Assignment]  # None for delete
 
 
 class NotificationService(BaseService):
@@ -263,46 +280,207 @@ class NotificationService(BaseService):
             workers = self.collection.worker_db.get_workers_not_deleted(
                 schedule.team_id
             )
-            now = datetime.now(timezone.utc)
-            for worker in workers:
-                if not worker.user_id:
-                    continue
-                event_data = {
-                    "schedule_id": schedule.id,
-                    "schedule_name": f"{schedule.start_date} – "
-                    + f"{schedule.end_date}",
-                    "team_name": team_name,
-                }
-                notification = Notification(
-                    id="",
-                    user_id=worker.user_id,
-                    team_id=schedule.team_id,
-                    type=NotificationType.SCHEDULE_PUBLISHED,
-                    event_data=event_data,
-                    read=False,
-                    created_at=now,
-                    updated_at=now,
-                )
-                self.collection.notification_db.create_notification(
-                    notification
-                )
-                await self._try_send_email(
-                    user_id=worker.user_id,
-                    pref_key=_NOTIFICATION_TYPE_TO_KEY.get(
-                        NotificationType.SCHEDULE_PUBLISHED
-                    ),
-                    prefs=None,
-                    event=NotificationEvent(
-                        notification_type=NotificationType.SCHEDULE_PUBLISHED,
-                        user_ids=[worker.user_id],
-                        team_id=schedule.team_id,
-                        event_data=event_data,
-                    ),
-                )
+            worker_user_ids = [w.user_id for w in workers if w.user_id]
+            if not worker_user_ids:
+                return
+            schedule_name = f"{schedule.start_date} \u2013 {schedule.end_date}"
+            event = user_published_schedule_event(
+                team_id=schedule.team_id,
+                team_name=team_name,
+                schedule_id=schedule.id,
+                schedule_name=schedule_name,
+                worker_user_ids=worker_user_ids,
+            )
+            await self.dispatch(event)
         except Exception as e:  # pylint: disable=broad-except
             logger.error(
                 f"Failed to send schedule-published notifications: {e}"
             )
+
+    def _is_assignment_in_published_period(
+        self, assignment_date: date_type, team_id: str
+    ) -> bool:
+        """Return True if the assignment date is in a published (validated) period.
+
+        Logic:
+        - If a schedule covers the date and status != VALIDATED → suppress.
+        - If no schedule covers the date → notify (outside any campaign).
+        - If a schedule covers the date and status == VALIDATED → notify.
+        """
+        try:
+            schedules = self.collection.schedule_db.get_schedules(team_id)
+            for schedule in schedules:
+                if schedule.start_date <= assignment_date <= schedule.end_date:
+                    if schedule.status != ScheduleStatus.VALIDATED:
+                        return False
+                    return True
+            # No schedule covers this date — treat as always published
+            return True
+        except Exception as e:  # pylint: disable=broad-except
+            logger.warning(
+                f"Could not check schedule status for date {assignment_date}: {e}"
+            )
+            return True  # Fail-open
+
+    async def notify_assignment_crud(
+        self,
+        ops: List["AssignmentOperation"],
+        team_id: str,
+    ) -> None:
+        """Dispatch create/update/delete notifications for a list of assignment ops."""
+        try:
+            team = self.collection.team_db.get_team_by_id(team_id)
+            team_name = team.name if team else ""
+
+            # Accumulate events keyed by (user_id, NotificationType) for dedup.
+            pending: dict[tuple[str, NotificationType], NotificationEvent] = {}
+
+            for op in ops:
+                events = self._build_assignment_op_events(
+                    op, team_id, team_name
+                )
+                for event in events:
+                    for user_id in event.user_ids:
+                        key = (user_id, event.notification_type)
+                        if key not in pending:
+                            # Store a single-user copy for dispatch
+                            pending[key] = NotificationEvent(
+                                notification_type=event.notification_type,
+                                user_ids=[user_id],
+                                team_id=team_id,
+                                event_data=event.event_data,
+                            )
+
+            for event in pending.values():
+                await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(f"Failed to send assignment CRUD notifications: {e}")
+
+    # pylint: disable=too-many-branches,too-many-return-statements
+    def _build_assignment_op_events(
+        self,
+        op: "AssignmentOperation",
+        team_id: str,
+        team_name: str,
+    ) -> List[NotificationEvent]:  # pylint: disable=too-many-return-statements
+        """Return the NotificationEvents for a single AssignmentOperation."""
+        events: List[NotificationEvent] = []
+
+        if op.before is None and op.after is not None:
+            # Create
+            if not self._is_assignment_in_published_period(
+                op.after.date, team_id
+            ):
+                return events
+            worker = self.collection.worker_db.get_worker_by_id(
+                op.after.worker_id
+            )
+            if not worker or not worker.user_id:
+                return events
+            shift = self.collection.shift_db.get_shift_by_id(op.after.shift_id)
+            shift_name = shift.name if shift else ""
+            events.append(
+                user_created_assignment_event(
+                    team_id=team_id,
+                    team_name=team_name,
+                    worker_user_id=worker.user_id,
+                    shift_name=shift_name,
+                    date=str(op.after.date),
+                )
+            )
+
+        elif op.after is None and op.before is not None:
+            # Delete
+            if not self._is_assignment_in_published_period(
+                op.before.date, team_id
+            ):
+                return events
+            worker = self.collection.worker_db.get_worker_by_id(
+                op.before.worker_id
+            )
+            if not worker or not worker.user_id:
+                return events
+            shift = self.collection.shift_db.get_shift_by_id(
+                op.before.shift_id
+            )
+            shift_name = shift.name if shift else ""
+            events.append(
+                user_deleted_assignment_event(
+                    team_id=team_id,
+                    team_name=team_name,
+                    worker_user_id=worker.user_id,
+                    shift_name=shift_name,
+                    date=str(op.before.date),
+                )
+            )
+
+        elif op.before is not None and op.after is not None:
+            # Update — check what actually changed
+            worker_changed = op.before.worker_id != op.after.worker_id
+            shift_changed = op.before.shift_id != op.after.shift_id
+            date_changed = op.before.date != op.after.date
+
+            if worker_changed:
+                # Treated as delete-for-old + create-for-new
+                if self._is_assignment_in_published_period(
+                    op.after.date, team_id
+                ):
+                    old_worker = self.collection.worker_db.get_worker_by_id(
+                        op.before.worker_id
+                    )
+                    new_worker = self.collection.worker_db.get_worker_by_id(
+                        op.after.worker_id
+                    )
+                    shift = self.collection.shift_db.get_shift_by_id(
+                        op.after.shift_id
+                    )
+                    shift_name = shift.name if shift else ""
+                    if old_worker and old_worker.user_id:
+                        events.append(
+                            user_deleted_assignment_event(
+                                team_id=team_id,
+                                team_name=team_name,
+                                worker_user_id=old_worker.user_id,
+                                shift_name=shift_name,
+                                date=str(op.after.date),
+                            )
+                        )
+                    if new_worker and new_worker.user_id:
+                        events.append(
+                            user_created_assignment_event(
+                                team_id=team_id,
+                                team_name=team_name,
+                                worker_user_id=new_worker.user_id,
+                                shift_name=shift_name,
+                                date=str(op.after.date),
+                            )
+                        )
+            elif shift_changed or date_changed:
+                if not self._is_assignment_in_published_period(
+                    op.after.date, team_id
+                ):
+                    return events
+                worker = self.collection.worker_db.get_worker_by_id(
+                    op.after.worker_id
+                )
+                if not worker or not worker.user_id:
+                    return events
+                shift = self.collection.shift_db.get_shift_by_id(
+                    op.after.shift_id
+                )
+                shift_name = shift.name if shift else ""
+                events.append(
+                    user_updated_assignment_event(
+                        team_id=team_id,
+                        team_name=team_name,
+                        worker_user_id=worker.user_id,
+                        shift_name=shift_name,
+                        date=str(op.after.date),
+                    )
+                )
+            # else: only non-schedule fields changed (e.g. fixed) — no notification
+
+        return events
 
     async def notify_new_swap_request(self, swap: SwapRequest) -> None:
         """Notify target worker (DIRECT) or team managers of a new swap request."""
@@ -472,60 +650,4 @@ class NotificationService(BaseService):
         except Exception as e:  # pylint: disable=broad-except
             logger.error(
                 f"Failed to send new-request-created notification: {e}"
-            )
-
-    async def notify_assignment_changed(
-        self,
-        assignments_updated: List[Assignment],
-        team_id: str,
-        changed_by_user_id: str,
-    ) -> None:
-        """Notify each affected worker that their assignment was changed."""
-        try:
-            now = datetime.now(timezone.utc)
-            pref_key = _NOTIFICATION_TYPE_TO_KEY.get(
-                NotificationType.ASSIGNMENT_CHANGED
-            )
-            for updated_assignment in assignments_updated:
-                worker = self.collection.worker_db.get_worker_by_id(
-                    updated_assignment.worker_id
-                )
-                if not worker or not worker.user_id:
-                    continue
-                shift = self.collection.shift_db.get_shift_by_id(
-                    updated_assignment.shift_id
-                )
-                shift_name = shift.name if shift else ""
-                event_data = {
-                    "assignment_id": updated_assignment.id,
-                    "shift_name": shift_name,
-                    "date": str(updated_assignment.date),
-                    "changed_by": changed_by_user_id,
-                }
-                self.collection.notification_db.create_notification(
-                    Notification(
-                        id="",
-                        user_id=worker.user_id,
-                        team_id=team_id,
-                        type=NotificationType.ASSIGNMENT_CHANGED,
-                        event_data=event_data,
-                        read=False,
-                        created_at=now,
-                        updated_at=now,
-                    )
-                )
-                await self._try_send_email(
-                    user_id=worker.user_id,
-                    pref_key=pref_key,
-                    prefs=None,
-                    event=NotificationEvent(
-                        notification_type=NotificationType.ASSIGNMENT_CHANGED,
-                        user_ids=[worker.user_id],
-                        team_id=team_id,
-                        event_data=event_data,
-                    ),
-                )
-        except Exception as e:  # pylint: disable=broad-except
-            logger.error(
-                f"Failed to send assignment-changed notifications: {e}"
             )

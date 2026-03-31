@@ -30,7 +30,10 @@ from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
 from src.security.user_context import UserContext
 from src.services.assignment_service import AssignmentService
-from src.services.notification_service import NotificationService
+from src.services.notification_service import (
+    AssignmentOperation,
+    NotificationService,
+)
 from src.services.replacement_service import ReplacementService
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
@@ -45,6 +48,9 @@ async def create_assignment(
     recurrence: Optional[RecurrenceRuleDTO] = None,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -57,7 +63,14 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence:
             r_data = RecurrenceRule.from_dto(recurrence)
-        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
+        ar_result = assignment_service.create_assignment_and_recurrence(
+            a_data, r_data
+        )
+        ops = [
+            AssignmentOperation(before=None, after=a)
+            for a in ar_result.assignments_created
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
@@ -81,7 +94,9 @@ async def get_assignments(
     try:
         # Validate date range
         if end_date < start_date:
-            raise ValueError("end_date must be greater than or equal to start_date")
+            raise ValueError(
+                "end_date must be greater than or equal to start_date"
+            )
 
         # Prevent abuse: reject ranges > 6 months
         max_range_days = 365
@@ -126,7 +141,9 @@ async def get_assignments(
             include_campaign,
             worker_id,
             shift_types=(
-                [ShiftType(v) for v in shift_type] if shift_type is not None else None
+                [ShiftType(v) for v in shift_type]
+                if shift_type is not None
+                else None
             ),
         )
         response = ar_result.to_dto()
@@ -145,6 +162,9 @@ async def bulk_create_assignments(
     body: BulkAssignmentCreateDTO,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -155,6 +175,11 @@ async def bulk_create_assignments(
             )
         assignments = [Assignment.from_dto(a) for a in body.assignments]
         ar_result = assignment_service.bulk_create_assignments(assignments)
+        ops = [
+            AssignmentOperation(before=None, after=a)
+            for a in ar_result.assignments_created
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to bulk create assignments")
@@ -168,6 +193,9 @@ async def bulk_update_assignments(
     body: BulkAssignmentUpdateDTO,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -177,7 +205,23 @@ async def bulk_update_assignments(
                 "You do not have permission to update assignments",
             )
         assignments = [Assignment.from_dto(a) for a in body.assignments]
+        # Pre-fetch "before" state
+        ids = [a.id for a in assignments if a.id]
+        before_map: dict[str, Assignment] = {}
+        if ids:
+            before_list = assignment_service.collection.assignment_db.get_assignments_by_ids(
+                ids
+            )
+            before_map = {a.id: a for a in before_list}
         ar_result = assignment_service.bulk_update_assignments(assignments)
+        ops = [
+            AssignmentOperation(
+                before=before_map.get(a.id),
+                after=a,
+            )
+            for a in ar_result.assignments_updated
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to bulk update assignments")
@@ -191,6 +235,9 @@ async def bulk_delete_assignments(
     body: BulkAssignmentDeleteDTO,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -199,7 +246,15 @@ async def bulk_delete_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to delete assignments",
             )
+        # Pre-fetch "before" state
+        before_list = (
+            assignment_service.collection.assignment_db.get_assignments_by_ids(
+                body.ids
+            )
+        )
         ar_result = assignment_service.bulk_delete_assignments(body.ids)
+        ops = [AssignmentOperation(before=a, after=None) for a in before_list]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to bulk delete assignments")
@@ -218,7 +273,9 @@ async def update_assignment(
     ),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-    notification_service: NotificationService = Depends(get_notification_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -228,21 +285,32 @@ async def update_assignment(
                 "You do not have permission to update an assignment",
             )
         assignment_data = Assignment.from_dto(assignment)
+        # Pre-fetch "before" state
+        before_assignment = (
+            assignment_service.collection.assignment_db.get_assignment_by_id(
+                assignment_data.id
+            )
+            if assignment_data.id
+            else None
+        )
         recurrence_update_scope_data = (
             RecurrenceUpdateScope(recurrence_update_scope)
             if recurrence_update_scope
             else None
         )
-        recurrence_data = RecurrenceRule.from_dto(recurrence) if recurrence else None
+        recurrence_data = (
+            RecurrenceRule.from_dto(recurrence) if recurrence else None
+        )
         ar_result = assignment_service.update_assignment_and_recurrence(
             assignment_new=assignment_data,
             recurrence_update_scope=recurrence_update_scope_data,
             recurrence=recurrence_data,
         )
-        # Notify the affected worker
-        await notification_service.notify_assignment_changed(
-            ar_result.assignments_updated, team_id, user_context.user_id
-        )
+        ops = [
+            AssignmentOperation(before=before_assignment, after=a)
+            for a in ar_result.assignments_updated
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to update assignment")
@@ -260,6 +328,9 @@ async def delete_assignment(
     ),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -268,6 +339,12 @@ async def delete_assignment(
             raise NotAuthorizedError(
                 "You do not have permission to delete an assignment",
             )
+        # Pre-fetch "before" state
+        before_assignment = (
+            assignment_service.collection.assignment_db.get_assignment_by_id(
+                assignment_id
+            )
+        )
         recurrence_update_scope_data = (
             RecurrenceUpdateScope(recurrence_update_scope)
             if recurrence_update_scope
@@ -278,6 +355,8 @@ async def delete_assignment(
             recurrence_id=recurrence_id,
             recurrence_update_scope=recurrence_update_scope_data,
         )
+        ops = [AssignmentOperation(before=before_assignment, after=None)]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to delete assignment")
@@ -285,7 +364,9 @@ async def delete_assignment(
     return response
 
 
-@router.get("/assignments/{assignment_id}/replacement-candidates/teams/{team_id}")
+@router.get(
+    "/assignments/{assignment_id}/replacement-candidates/teams/{team_id}"
+)
 async def get_replacement_candidates(
     assignment_id: str,
     team_id: str,
@@ -305,6 +386,8 @@ async def get_replacement_candidates(
         )
         response = [candidate.to_dto() for candidate in candidates]
     except Exception as e:
-        log_info(f"Failed to get replacement candidates for assignment {assignment_id}")
+        log_info(
+            f"Failed to get replacement candidates for assignment {assignment_id}"
+        )
         handle_routes_errors(e)
     return response

@@ -25,8 +25,8 @@ interface NotificationItemProps {
 
 function getMessageKey(type: NotificationT["type"]): string {
   switch (type) {
-    case "schedule_published":
-      return "schedule_published";
+    case "user_published_schedule":
+      return "user_published_schedule";
     case "new_swap_request":
       return "new_swap_request";
     case "swap_status_changed":
@@ -37,8 +37,12 @@ function getMessageKey(type: NotificationT["type"]): string {
       return "user_denied_request";
     case "user_created_request":
       return "user_created_request";
-    case "assignment_changed":
-      return "assignment_changed";
+    case "user_created_assignment":
+      return "user_created_assignment";
+    case "user_updated_assignment":
+      return "user_updated_assignment";
+    case "user_deleted_assignment":
+      return "user_deleted_assignment";
     case "user_received_team_invite":
       return "user_received_team_invite";
     case "user_accepted_team_invite":
@@ -48,7 +52,7 @@ function getMessageKey(type: NotificationT["type"]): string {
     case "user_left_team":
       return "user_left_team";
     default:
-      return "schedule_published";
+      return "user_published_schedule";
   }
 }
 

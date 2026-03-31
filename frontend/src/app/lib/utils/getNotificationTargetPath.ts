@@ -10,7 +10,7 @@ export function getNotificationTargetPath(
 ): string {
   const base = `/${lng}/plan`;
   switch (notification.type) {
-    case "schedule_published":
+    case "user_published_schedule":
       return `${base}/schedule?scheduleId=${notification.eventData.schedule_id ?? ""}`;
     case "user_created_request":
       return `${base}/requests`;
@@ -20,7 +20,9 @@ export function getNotificationTargetPath(
     case "user_accepted_request":
     case "user_denied_request":
       return `${base}/requests`;
-    case "assignment_changed":
+    case "user_created_assignment":
+    case "user_updated_assignment":
+    case "user_deleted_assignment":
       return `${base}/schedule`;
     case "user_received_team_invite":
     case "user_accepted_team_invite":
