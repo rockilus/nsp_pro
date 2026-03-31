@@ -286,6 +286,7 @@ test.describe("assignment notifications in published schedule", () => {
     const match = notifications.find(
       (n) => n.type === "user_updated_assignment",
     );
+
     expect(match).toBeDefined();
     expect(match!.userId).toBe(user2.user_id);
     expect(match!.teamId).toBe(team.teamId);
@@ -314,7 +315,11 @@ test.describe("assignment notifications in published schedule", () => {
       (s) => s.shiftType === ShiftType.NORMAL,
     );
     // Need at least 2 normal shifts to test a shift change.
-    test.skip(normalShifts.length < 2, "Team has fewer than 2 normal shifts");
+    if (normalShifts.length < 2) {
+      throw new Error(
+        `Not enough normal shifts found for the team to test shift change notification. Found ${normalShifts.length}, expected at least 2.`,
+      );
+    }
 
     const result = await dbUtils.createAssignmentAndRecurrence({
       teamId: team.teamId,
