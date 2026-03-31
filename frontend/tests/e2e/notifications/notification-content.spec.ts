@@ -381,7 +381,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       });
       return user2.user_id;
     },
-    expectedText: (_name) => /sent you a swap request for/,
+    expectedText: (_name) =>
+      /^Requester Worker sent you a swap request for Swap Shift on \d{4}-\d{2}-\d{2}$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
@@ -437,7 +438,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
       return user1.user_id;
     },
-    expectedText: (_name) => /accepted your swap request for/,
+    expectedText: (_name) =>
+      /^Target Worker accepted your swap request for Swap Shift on \d{4}-\d{2}-\d{2}$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
@@ -493,7 +495,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.refuseDirectSwapAs(user2.user_id, swap.id);
       return user1.user_id;
     },
-    expectedText: (_name) => /declined your swap request for/,
+    expectedText: (_name) =>
+      /^Target Worker declined your swap request for Swap Shift on \d{4}-\d{2}-\d{2}$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
@@ -534,7 +537,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       });
       return user2.user_id;
     },
-    expectedText: (_name) => /created an open swap request for/,
+    expectedText: (_name) =>
+      /^Requester Worker created an open swap request for Swap Shift on \d{4}-\d{2}-\d{2}$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
@@ -591,7 +595,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       ]);
       return user1.user_id;
     },
-    expectedText: (_name) => /bid on your open swap request for/,
+    expectedText: (_name) =>
+      /^Bidder Worker bid on your open swap request for Swap Shift on \d{4}-\d{2}-\d{2}$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
@@ -654,7 +659,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.acceptBidOnOpenSwapAs(user1.user_id, swap.id, bid.id);
       return user2.user_id;
     },
-    expectedText: (_name) => /selected your bid for/,
+    expectedText: (_name) =>
+      /^Creator Worker selected your bid for Swap Shift on \d{4}-\d{2}-\d{2}$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
@@ -757,7 +763,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       );
       return user2.user_id;
     },
-    expectedText: (_name) => /Another bid was selected for the swap of/,
+    expectedText: (_name) =>
+      /^Another bid was selected for the swap of Swap Shift on \d{4}-\d{2}-\d{2}$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
@@ -814,7 +821,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
       return user1.user_id;
     },
-    expectedText: (_name) => /is ready for review/,
+    expectedText: (_name) =>
+      /^A direct swap by Requester Worker for Swap Shift on \d{4}-\d{2}-\d{2} is ready for review$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
@@ -870,7 +878,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.approveSwapAsUser(swap.id, user1.user_id);
       return user2.user_id;
     },
-    expectedText: (_name) => /swap of .* was approved/,
+    expectedText: (_name) =>
+      /^Your swap of Swap Shift on \d{4}-\d{2}-\d{2} with Swap Shift on \d{4}-\d{2}-\d{2} was approved$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
@@ -926,7 +935,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.denySwapAs(user1.user_id, swap.id);
       return user2.user_id;
     },
-    expectedText: (_name) => /swap request .* was denied/,
+    expectedText: (_name) =>
+      /^Your swap request for Swap Shift on \d{4}-\d{2}-\d{2} was denied$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
@@ -984,7 +994,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.revertSwap(swap.id);
       return user2.user_id;
     },
-    expectedText: (_name) => /swap of .* was reversed/,
+    expectedText: (_name) =>
+      /^Your swap of Swap Shift on \d{4}-\d{2}-\d{2} with Swap Shift on \d{4}-\d{2}-\d{2} was reversed$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
 ];
