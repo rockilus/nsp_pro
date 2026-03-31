@@ -75,6 +75,15 @@ test.beforeEach(async ({}, testInfo) => {
     ownerUserId: user1.user_id,
   });
 
+  // Ensure the team has at least one normal shift for the tests
+  await dbUtils.createShift({
+    teamId: team.teamId,
+    name: "Normal Shift",
+    startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+    endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+    shiftType: ShiftType.NORMAL,
+  });
+
   ctxMap.set(runId, { dbUtils, team, user1, user2 });
 });
 
@@ -192,6 +201,9 @@ test.describe("assignment notifications in published schedule", () => {
     const match = notifications.find(
       (n) => n.type === "user_created_assignment",
     );
+
+    console.log(match);
+
     expect(match).toBeDefined();
     expect(match!.userId).toBe(user2.user_id);
     expect(match!.teamId).toBe(team.teamId);
@@ -246,6 +258,7 @@ test.describe("assignment notifications in published schedule", () => {
       weeklyHours: 40,
     });
     const schedule = await dbUtils.createSchedule(team.teamId);
+
     await dbUtils.validateSchedule(schedule.id, team.teamId);
     await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
     await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
@@ -260,6 +273,11 @@ test.describe("assignment notifications in published schedule", () => {
       scheduleId: schedule.id,
     });
     const assignment = result.assignmentsCreated[0];
+
+    if (!assignment) {
+      throw new Error("Failed to create assignment for testing");
+    }
+
     await dbUtils.updateAssignment(assignment.id, team.teamId, {
       date: schedule.startDate.add(1, "day"),
     });
