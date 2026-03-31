@@ -79,7 +79,15 @@ export default function NotificationItem({
   const { t } = useTranslation(lng, "notifications");
   const targetPath = getNotificationTargetPath(notification, lng);
   const messageKey = getMessageKey(notification.type);
-  const message = t(messageKey, notification.eventData as any) as string;
+  let eventData: Record<string, string> = notification.eventData;
+  if (notification.type === "user_published_schedule") {
+    eventData = { ...eventData };
+    if (eventData.startDate)
+      eventData.startDate = dayjs(eventData.startDate).format("DD/MM/YYYY");
+    if (eventData.endDate)
+      eventData.endDate = dayjs(eventData.endDate).format("DD/MM/YYYY");
+  }
+  const message = t(messageKey, eventData as any) as string;
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchorEl);
 

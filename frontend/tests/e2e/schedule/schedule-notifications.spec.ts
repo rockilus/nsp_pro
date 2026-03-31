@@ -149,7 +149,8 @@ test.describe("user_published_schedule", () => {
     expect(match!.teamId).toBe(team.teamId);
     expect(match!.type).toBe("user_published_schedule" as NotificationTypeT);
     expect(match!.eventData.scheduleId).toBe(schedule.id);
-    expect(match!.eventData.scheduleName).toBeTruthy();
+    expect(match!.eventData.startDate).toBeTruthy();
+    expect(match!.eventData.endDate).toBeTruthy();
     expect(match!.eventData.teamName).toBe(team.name);
   });
 

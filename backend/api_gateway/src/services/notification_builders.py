@@ -16,7 +16,8 @@ def user_published_schedule_event(
     team_id: str,
     team_name: str,
     schedule_id: str,
-    schedule_name: str,
+    start_date: str,
+    end_date: str,
     worker_user_ids: list[str],
 ) -> NotificationEvent:
     """Notify workers that a schedule has been published."""
@@ -26,7 +27,8 @@ def user_published_schedule_event(
         team_id=team_id,
         event_data={
             "schedule_id": schedule_id,
-            "schedule_name": schedule_name,
+            "start_date": start_date,
+            "end_date": end_date,
             "team_name": team_name,
         },
     )

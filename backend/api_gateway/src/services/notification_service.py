@@ -283,12 +283,12 @@ class NotificationService(BaseService):
             worker_user_ids = [w.user_id for w in workers if w.user_id]
             if not worker_user_ids:
                 return
-            schedule_name = f"{schedule.start_date} \u2013 {schedule.end_date}"
             event = user_published_schedule_event(
                 team_id=schedule.team_id,
                 team_name=team_name,
                 schedule_id=schedule.id,
-                schedule_name=schedule_name,
+                start_date=schedule.start_date.isoformat(),
+                end_date=schedule.end_date.isoformat(),
                 worker_user_ids=worker_user_ids,
             )
             await self.dispatch(event)

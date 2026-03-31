@@ -7,7 +7,7 @@
     "mark_as_read": "Marquer comme lu",
     "open_notifications": "Ouvrir les notifications",
     "schedule_published": "Le planning {{schedule_name}} a été publié pour l'équipe {{team_name}}",
-    "user_published_schedule": "Le planning {{schedule_name}} a été publié pour l'équipe {{team_name}}",
+    "user_published_schedule": "Le planning pour la période {{startDate}} - {{endDate}} a été publié pour l'équipe {{teamName}}",
     "user_created_request": "{{workerName}} a créé une nouvelle demande pour {{startDate}}",
     "new_swap_request": "{{requester_name}} a créé une nouvelle demande d'échange",
     "swap_status_changed": "Le statut de votre demande d'échange a changé en {{new_status}}",

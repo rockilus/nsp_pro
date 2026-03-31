@@ -190,7 +190,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.validateSchedule(schedule.id, team.teamId);
       return user2.user_id;
     },
-    expectedText: (name) => new RegExp(`has been published for team ${name}`),
+    expectedText: (_name) =>
+      /^Schedule for period \d{2}\/\d{2}\/\d{4} - \d{2}\/\d{2}\/\d{4} has been published for team .+$/,
     expectedUrlPattern: /\/plan\/schedule/,
   },
   {

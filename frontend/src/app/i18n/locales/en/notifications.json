@@ -7,7 +7,7 @@
     "mark_as_read": "Mark as read",
     "open_notifications": "Open notifications",
     "schedule_published": "Schedule {{schedule_name}} has been published for team {{teamName}}",
-    "user_published_schedule": "Schedule {{schedule_name}} has been published for team {{team_name}}",
+    "user_published_schedule": "Schedule for period {{startDate}} - {{endDate}} has been published for team {{teamName}}",
     "user_created_request": "{{workerName}} created a new request for {{startDate}}",
     "new_swap_request": "{{requester_name}} created a new swap request",
     "swap_status_changed": "Your swap request status changed to {{new_status}}",
