@@ -257,11 +257,13 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       });
       const schedule = await dbUtils.createSchedule(team.teamId);
       await dbUtils.validateSchedule(schedule.id, team.teamId);
-      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
       const allShifts = await dbUtils.getAllShifts(team.teamId);
       const workShift = allShifts.find(
         (s) => s.shiftType === ShiftType.NORMAL,
       )!;
+      // Create the assignment BEFORE attaching user2 so that the implicit
+      // user_created_assignment notification is not delivered to user2,
+      // preventing a side-effect notification from leaking into this test.
       const result = await dbUtils.createAssignmentAndRecurrence({
         teamId: team.teamId,
         workerId: worker.id,
@@ -269,6 +271,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         date: schedule.startDate,
         scheduleId: schedule.id,
       });
+      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
       const assignment = result.assignmentsCreated[0];
       await dbUtils.updateAssignment(assignment.id, team.teamId, {
         date: schedule.startDate.add(1, "day"),
@@ -300,11 +303,13 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       });
       const schedule = await dbUtils.createSchedule(team.teamId);
       await dbUtils.validateSchedule(schedule.id, team.teamId);
-      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
       const allShifts = await dbUtils.getAllShifts(team.teamId);
       const workShift = allShifts.find(
         (s) => s.shiftType === ShiftType.NORMAL,
       )!;
+      // Create the assignment BEFORE attaching user2 so that the implicit
+      // user_created_assignment notification is not delivered to user2,
+      // preventing a side-effect notification from leaking into this test.
       const result = await dbUtils.createAssignmentAndRecurrence({
         teamId: team.teamId,
         workerId: worker.id,
@@ -312,6 +317,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         date: schedule.startDate,
         scheduleId: schedule.id,
       });
+      await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
       const assignment = result.assignmentsCreated[0];
       await dbUtils.deleteAssignment(assignment.id, team.teamId);
       return user2.user_id;
@@ -326,14 +332,10 @@ const ctxMap = new NotificationTestContextMap<NotifTestContext>();
 test.beforeEach(async ({}, testInfo) => {
   const runId = ctxMap.initRunId(testInfo);
   const dbUtils = new DatabaseTestUtils();
-  await dbUtils.resetDatabase({
-    collections: [
-      "teams",
-      "team_memberships",
-      "team_invitations",
-      "notifications",
-    ],
-  });
+  // Each test gets fully unique users (randomUUID) and a unique team (Date.now()),
+  // so no global collection reset is needed — resetting shared collections in
+  // beforeEach would race with concurrently executing tests (fullyParallel: true)
+  // and wipe data that other workers have already created.
   // Use unique users per test run to prevent cross-worker notification leakage.
   // Notifications are shown for all teams a user belongs to, so different tests
   // sharing the same user IDs see each other's notifications when run in parallel.
