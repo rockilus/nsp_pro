@@ -207,6 +207,13 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         name: "Worker User",
         weeklyHours: 40,
       });
+      await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Normal Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
       // Validate BEFORE attaching so user2 does not receive a schedule-published notification.
       const schedule = await dbUtils.createSchedule(team.teamId);
       await dbUtils.validateSchedule(schedule.id, team.teamId);
