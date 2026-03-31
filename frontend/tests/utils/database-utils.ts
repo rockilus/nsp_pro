@@ -2496,10 +2496,17 @@ export class DatabaseTestUtils {
     updateScope?: RecurrenceUpdateScope | null,
   ): Promise<{ assignments: AssignmentT[] }> {
     try {
-      // First get the current assignment to merge with updates
+      // First get the current assignment to merge with updates.
+      // The backend requires start_date and end_date, so use a wide range
+      // to cover all test assignments (including far-future dates).
+      const wideStart = dayjs().subtract(180, "day");
+      const wideEnd = dayjs().add(180, "day");
       const result = await AssignmentApi.getAssignments(
         this.testApiClient,
         teamId,
+        true, // includeCampaign to catch unvalidated schedules too
+        wideStart,
+        wideEnd,
       );
       const existingAssignment = result.assignmentsRead.find(
         (a) => a.id === assignmentId,
