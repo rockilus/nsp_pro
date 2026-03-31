@@ -78,7 +78,7 @@ import {
   AssignmentsRecurrencesResultT,
 } from "@/types/assignment";
 import { LinkShiftApi } from "@/app/lib/api/linkShiftApi";
-import { SwapRequestT, SwapType } from "@/types/swap";
+import { SwapRequestT, SwapType, toSwapRequestT } from "@/types/swap";
 import {
   RecurrenceRuleT,
   RecurrenceUpdateScope,
@@ -2364,6 +2364,161 @@ export class DatabaseTestUtils {
       console.error("Failed to accept direct swap:", error);
       throw new Error(
         `Failed to accept direct swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Refuse a direct swap invitation as a specific user (target worker declines)
+   */
+  async refuseDirectSwapAs(
+    userId: string,
+    swapId: string,
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const responseData = await userClient.post<any>(
+        `/swaps/${swapId}/refuse`,
+      );
+      const result = toSwapRequestT(responseData);
+      console.log(`✅ Refused direct swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to refuse direct swap:", error);
+      throw new Error(
+        `Failed to refuse direct swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Deny a swap (leader only) as a specific user
+   */
+  async denySwapAs(userId: string, swapId: string): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.denySwap(userClient, swapId);
+      console.log(`✅ Denied swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to deny swap as user:", error);
+      throw new Error(
+        `Failed to deny swap as user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Create a swap acting as a specific user (e.g., a worker submitting their own swap)
+   */
+  async createSwapAs(
+    userId: string,
+    swapData: {
+      teamId: string;
+      offeredAssignmentIds: string[];
+      requestedAssignmentIds: string[] | null;
+      swapType: SwapType;
+      targetWorkerId: string | null;
+      comment: string;
+    },
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.createSwap(userClient, swapData.teamId, {
+        swapType: swapData.swapType,
+        offeredAssignmentIds: swapData.offeredAssignmentIds,
+        requestedAssignmentIds: swapData.requestedAssignmentIds,
+        targetWorkerId: swapData.targetWorkerId,
+        comment: swapData.comment,
+      });
+      console.log(`✅ Created swap as user ${userId}: ${result.id}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to create swap as user:", error);
+      throw new Error(
+        `Failed to create swap as user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Accept a direct swap invitation as a specific user (target worker accepts)
+   */
+  async acceptDirectSwapAs(
+    userId: string,
+    swapId: string,
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.acceptDirectSwap(userClient, swapId);
+      console.log(`✅ Accepted direct swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to accept direct swap as user:", error);
+      throw new Error(
+        `Failed to accept direct swap as user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Add a bid to an open swap acting as a specific user
+   */
+  async addBidToOpenSwapAs(
+    userId: string,
+    swapId: string,
+    bidderWorkerId: string,
+    offeredAssignmentIds: string[],
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.addBid(
+        userClient,
+        swapId,
+        bidderWorkerId,
+        offeredAssignmentIds,
+      );
+      console.log(`✅ Added bid to swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to add bid to open swap as user:", error);
+      throw new Error(
+        `Failed to add bid to open swap as user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Accept a bid on an open swap acting as a specific user (the swap creator)
+   */
+  async acceptBidOnOpenSwapAs(
+    userId: string,
+    swapId: string,
+    bidId: string,
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.acceptBid(userClient, swapId, bidId);
+      console.log(
+        `✅ Accepted bid ${bidId} on swap ${swapId} as user ${userId}`,
+      );
+      return result;
+    } catch (error) {
+      console.error("Failed to accept bid on open swap as user:", error);
+      throw new Error(
+        `Failed to accept bid on open swap as user: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       );

@@ -11,12 +11,12 @@ class NotificationCategory(StrEnum):
     REQUESTS = "requests"
     ASSIGNMENTS = "assignments"
     TEAM = "team"
+    SWAPS = "swaps"
 
 
 class NotificationKey(StrEnum):
     USER_PUBLISHED_SCHEDULE = "user_published_schedule"
     USER_CREATED_REQUEST = "user_created_request"
-    SWAP_REQUESTS = "swap_requests"
     USER_ACCEPTED_REQUEST = "user_accepted_request"
     USER_DENIED_REQUEST = "user_denied_request"
     USER_CREATED_ASSIGNMENT = "user_created_assignment"
@@ -26,6 +26,17 @@ class NotificationKey(StrEnum):
     USER_ACCEPTED_TEAM_INVITE = "user_accepted_team_invite"
     USER_REMOVED_FROM_TEAM = "user_removed_from_team"
     USER_LEFT_TEAM = "user_left_team"
+    USER_CREATED_DIRECT_SWAP = "user_created_direct_swap"
+    USER_ACCEPTED_DIRECT_SWAP = "user_accepted_direct_swap"
+    USER_REFUSED_DIRECT_SWAP = "user_refused_direct_swap"
+    USER_CREATED_OPEN_SWAP = "user_created_open_swap"
+    USER_BID_OPEN_SWAP = "user_bid_open_swap"
+    USER_SELECTED_BID_OPEN_SWAP = "user_selected_bid_open_swap"
+    USER_SELECTED_OTHER_BID_OPEN_SWAP = "user_selected_other_bid_open_swap"
+    SWAP_READY_FOR_REVIEW = "swap_ready_for_review"
+    USER_VALIDATED_SWAP = "user_validated_swap"
+    USER_DENIED_SWAP = "user_denied_swap"
+    USER_REVERSED_SWAP = "user_reversed_swap"
 
 
 @dataclass(frozen=True)
@@ -43,9 +54,6 @@ NOTIFICATION_REGISTRY: dict[NotificationKey, NotificationKeyMeta] = {
     NotificationKey.USER_CREATED_REQUEST: NotificationKeyMeta(
         category=NotificationCategory.REQUESTS,
         visible_to=frozenset({"owner"}),
-    ),
-    NotificationKey.SWAP_REQUESTS: NotificationKeyMeta(
-        category=NotificationCategory.REQUESTS,
     ),
     NotificationKey.USER_ACCEPTED_REQUEST: NotificationKeyMeta(
         category=NotificationCategory.REQUESTS,
@@ -75,6 +83,40 @@ NOTIFICATION_REGISTRY: dict[NotificationKey, NotificationKeyMeta] = {
     NotificationKey.USER_LEFT_TEAM: NotificationKeyMeta(
         category=NotificationCategory.TEAM,
         visible_to=frozenset({"owner"}),
+    ),
+    NotificationKey.USER_CREATED_DIRECT_SWAP: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
+    ),
+    NotificationKey.USER_ACCEPTED_DIRECT_SWAP: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
+    ),
+    NotificationKey.USER_REFUSED_DIRECT_SWAP: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
+    ),
+    NotificationKey.USER_CREATED_OPEN_SWAP: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
+    ),
+    NotificationKey.USER_BID_OPEN_SWAP: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
+    ),
+    NotificationKey.USER_SELECTED_BID_OPEN_SWAP: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
+    ),
+    NotificationKey.USER_SELECTED_OTHER_BID_OPEN_SWAP: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
+    ),
+    NotificationKey.SWAP_READY_FOR_REVIEW: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
+        visible_to=frozenset({"manager", "owner"}),
+    ),
+    NotificationKey.USER_VALIDATED_SWAP: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
+    ),
+    NotificationKey.USER_DENIED_SWAP: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
+    ),
+    NotificationKey.USER_REVERSED_SWAP: NotificationKeyMeta(
+        category=NotificationCategory.SWAPS,
     ),
 }
 

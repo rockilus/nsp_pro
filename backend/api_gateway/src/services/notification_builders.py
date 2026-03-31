@@ -218,3 +218,274 @@ def user_denied_request_event(
             "team_name": team_name,
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# Swap notification builders
+# ---------------------------------------------------------------------------
+
+
+def user_created_direct_swap_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    requester_name: str,
+    shift_name: str,
+    date: str,
+    target_user_id: str,
+) -> NotificationEvent:
+    """Notify the target worker that a direct swap was created for them."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_CREATED_DIRECT_SWAP,
+        user_ids=[target_user_id],
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "requester_name": requester_name,
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_accepted_direct_swap_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    target_name: str,
+    shift_name: str,
+    date: str,
+    creator_user_id: str,
+) -> NotificationEvent:
+    """Notify the swap creator that the target accepted their direct swap."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_ACCEPTED_DIRECT_SWAP,
+        user_ids=[creator_user_id],
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "target_name": target_name,
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_refused_direct_swap_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    refuser_name: str,
+    shift_name: str,
+    date: str,
+    creator_user_id: str,
+) -> NotificationEvent:
+    """Notify the swap creator that the target refused their direct swap."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_REFUSED_DIRECT_SWAP,
+        user_ids=[creator_user_id],
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "refuser_name": refuser_name,
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_created_open_swap_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    requester_name: str,
+    shift_name: str,
+    date: str,
+    team_member_user_ids: list[str],
+) -> NotificationEvent:
+    """Notify all team members (except creator) that an open swap was created."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_CREATED_OPEN_SWAP,
+        user_ids=team_member_user_ids,
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "requester_name": requester_name,
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_bid_open_swap_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    bidder_name: str,
+    shift_name: str,
+    date: str,
+    creator_user_id: str,
+) -> NotificationEvent:
+    """Notify the swap creator that someone bid on their open swap."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_BID_OPEN_SWAP,
+        user_ids=[creator_user_id],
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "bidder_name": bidder_name,
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_selected_bid_open_swap_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    requester_name: str,
+    shift_name: str,
+    date: str,
+    accepted_bidder_user_id: str,
+) -> NotificationEvent:
+    """Notify the accepted bidder that their bid was selected."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_SELECTED_BID_OPEN_SWAP,
+        user_ids=[accepted_bidder_user_id],
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "requester_name": requester_name,
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_selected_other_bid_open_swap_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    shift_name: str,
+    date: str,
+    other_bidder_user_ids: list[str],
+) -> NotificationEvent:
+    """Notify non-selected bidders that a different bid was chosen."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_SELECTED_OTHER_BID_OPEN_SWAP,
+        user_ids=other_bidder_user_ids,
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
+def swap_ready_for_review_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    requester_name: str,
+    shift_name: str,
+    date: str,
+    swap_type: str,
+    manager_user_ids: list[str],
+) -> NotificationEvent:
+    """Notify team managers/owners that a swap is ready for review."""
+    return NotificationEvent(
+        notification_type=NotificationType.SWAP_READY_FOR_REVIEW,
+        user_ids=manager_user_ids,
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "requester_name": requester_name,
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+            "swap_type": swap_type,
+        },
+    )
+
+
+def user_validated_swap_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    own_shift_name: str,
+    own_date: str,
+    other_shift_name: str,
+    other_date: str,
+    party_user_id: str,
+) -> NotificationEvent:
+    """Notify one swap party that the swap was validated."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_VALIDATED_SWAP,
+        user_ids=[party_user_id],
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "own_shift_name": own_shift_name,
+            "own_date": own_date,
+            "other_shift_name": other_shift_name,
+            "other_date": other_date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_denied_swap_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    shift_name: str,
+    date: str,
+    party_user_ids: list[str],
+) -> NotificationEvent:
+    """Notify both swap parties that the swap was denied."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_DENIED_SWAP,
+        user_ids=party_user_ids,
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "shift_name": shift_name,
+            "date": date,
+            "team_name": team_name,
+        },
+    )
+
+
+def user_reversed_swap_event(
+    team_id: str,
+    team_name: str,
+    swap_id: str,
+    own_shift_name: str,
+    own_date: str,
+    other_shift_name: str,
+    other_date: str,
+    party_user_id: str,
+) -> NotificationEvent:
+    """Notify one swap party that the swap was reversed."""
+    return NotificationEvent(
+        notification_type=NotificationType.USER_REVERSED_SWAP,
+        user_ids=[party_user_id],
+        team_id=team_id,
+        event_data={
+            "swap_id": swap_id,
+            "own_shift_name": own_shift_name,
+            "own_date": own_date,
+            "other_shift_name": other_shift_name,
+            "other_date": other_date,
+            "team_name": team_name,
+        },
+    )

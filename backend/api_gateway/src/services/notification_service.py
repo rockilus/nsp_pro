@@ -25,13 +25,24 @@ from shared.schemas.core.notification_preferences import NotificationKey
 from src.config import config
 from src.services.base_service import BaseService
 from src.services.notification_builders import (
+    swap_ready_for_review_event,
+    user_accepted_direct_swap_event,
     user_accepted_request_event,
+    user_bid_open_swap_event,
     user_created_assignment_event,
+    user_created_direct_swap_event,
+    user_created_open_swap_event,
     user_created_request_event,
     user_deleted_assignment_event,
     user_denied_request_event,
+    user_denied_swap_event,
     user_published_schedule_event,
+    user_refused_direct_swap_event,
+    user_reversed_swap_event,
+    user_selected_bid_open_swap_event,
+    user_selected_other_bid_open_swap_event,
     user_updated_assignment_event,
+    user_validated_swap_event,
 )
 from src.services.notification_email_config import (
     NOTIFICATION_EMAIL_MAP,
@@ -49,8 +60,6 @@ if TYPE_CHECKING:
 _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
     NotificationType.USER_PUBLISHED_SCHEDULE: NotificationKey.USER_PUBLISHED_SCHEDULE,
     NotificationType.USER_CREATED_REQUEST: NotificationKey.USER_CREATED_REQUEST,
-    NotificationType.NEW_SWAP_REQUEST: NotificationKey.SWAP_REQUESTS,
-    NotificationType.SWAP_STATUS_CHANGED: NotificationKey.SWAP_REQUESTS,
     NotificationType.USER_ACCEPTED_REQUEST: NotificationKey.USER_ACCEPTED_REQUEST,
     NotificationType.USER_DENIED_REQUEST: NotificationKey.USER_DENIED_REQUEST,
     NotificationType.USER_CREATED_ASSIGNMENT: NotificationKey.USER_CREATED_ASSIGNMENT,
@@ -66,6 +75,30 @@ _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
     # fmt: on
     NotificationType.USER_REMOVED_FROM_TEAM: NotificationKey.USER_REMOVED_FROM_TEAM,
     NotificationType.USER_LEFT_TEAM: NotificationKey.USER_LEFT_TEAM,
+    # Swap notification types
+    NotificationType.USER_CREATED_DIRECT_SWAP: (
+        NotificationKey.USER_CREATED_DIRECT_SWAP
+    ),
+    NotificationType.USER_ACCEPTED_DIRECT_SWAP: (
+        NotificationKey.USER_ACCEPTED_DIRECT_SWAP
+    ),
+    NotificationType.USER_REFUSED_DIRECT_SWAP: (
+        NotificationKey.USER_REFUSED_DIRECT_SWAP
+    ),
+    NotificationType.USER_CREATED_OPEN_SWAP: (
+        NotificationKey.USER_CREATED_OPEN_SWAP
+    ),
+    NotificationType.USER_BID_OPEN_SWAP: NotificationKey.USER_BID_OPEN_SWAP,
+    NotificationType.USER_SELECTED_BID_OPEN_SWAP: (
+        NotificationKey.USER_SELECTED_BID_OPEN_SWAP
+    ),
+    NotificationType.USER_SELECTED_OTHER_BID_OPEN_SWAP: (
+        NotificationKey.USER_SELECTED_OTHER_BID_OPEN_SWAP
+    ),
+    NotificationType.SWAP_READY_FOR_REVIEW: NotificationKey.SWAP_READY_FOR_REVIEW,
+    NotificationType.USER_VALIDATED_SWAP: NotificationKey.USER_VALIDATED_SWAP,
+    NotificationType.USER_DENIED_SWAP: NotificationKey.USER_DENIED_SWAP,
+    NotificationType.USER_REVERSED_SWAP: NotificationKey.USER_REVERSED_SWAP,
 }
 
 
@@ -77,7 +110,9 @@ class AssignmentOperation:
     after: Optional[Assignment]  # None for delete
 
 
-class NotificationService(BaseService):
+class NotificationService(
+    BaseService
+):  # pylint: disable=too-many-public-methods
     """Service for managing in-app notifications."""
 
     def __init__(
@@ -482,10 +517,9 @@ class NotificationService(BaseService):
 
         return events
 
-    async def notify_new_swap_request(self, swap: SwapRequest) -> None:
-        """Notify target worker (DIRECT) or team managers of a new swap request."""
+    async def notify_swap_created(self, swap: SwapRequest) -> None:
+        """Dispatch user_created_direct_swap or user_created_open_swap."""
         try:
-            now = datetime.now(timezone.utc)
             team = self.collection.team_db.get_team_by_id(swap.team_id)
             team_name = team.name if team else ""
             offering_worker = (
@@ -496,66 +530,437 @@ class NotificationService(BaseService):
                 else None
             )
             requester_name = offering_worker.name if offering_worker else ""
-            first_date = ""
-            if swap.offered_assignment_ids:
-                first_assignment = (
-                    self.collection.assignment_db.get_assignment_by_id(
-                        swap.offered_assignment_ids[0]
-                    )
-                )
-                if first_assignment:
-                    first_date = str(first_assignment.date)
-            event_data = {
-                "swap_id": swap.id,
-                "requester_name": requester_name,
-                "date": first_date,
-                "team_name": team_name,
-            }
-            notify_user_ids: list[str] = []
+            shift_name, first_date = self._get_swap_shift_and_date(swap)
+
             if swap.swap_type == SwapType.DIRECT and swap.target_worker_id:
                 target_worker = self.collection.worker_db.get_worker_by_id(
                     swap.target_worker_id
                 )
                 if target_worker and target_worker.user_id:
-                    notify_user_ids.append(target_worker.user_id)
-            mem_db = self.collection.team_membership_db
-            memberships = mem_db.get_team_memberships_by_team_id(swap.team_id)
-            owner_user_ids = [
-                m.user_id
-                for m in memberships
-                if getattr(m, "role", None) in ("manager", "owner", "admin")
-                and m.user_id
-            ]
-            notify_user_ids.extend(owner_user_ids)
-            pref_key = _NOTIFICATION_TYPE_TO_KEY.get(
-                NotificationType.NEW_SWAP_REQUEST
-            )
-            for user_id in notify_user_ids:
-                self.collection.notification_db.create_notification(
-                    Notification(
-                        id="",
-                        user_id=user_id,
+                    event = user_created_direct_swap_event(
                         team_id=swap.team_id,
-                        type=NotificationType.NEW_SWAP_REQUEST,
-                        event_data=event_data,
-                        read=False,
-                        created_at=now,
-                        updated_at=now,
+                        team_name=team_name,
+                        swap_id=swap.id,
+                        requester_name=requester_name,
+                        shift_name=shift_name,
+                        date=first_date,
+                        target_user_id=target_worker.user_id,
                     )
+                    await self.dispatch(event)
+            else:
+                # OPEN swap — notify all team members except the creator
+                creator_user_id = (
+                    offering_worker.user_id if offering_worker else None
                 )
-                await self._try_send_email(
-                    user_id=user_id,
-                    pref_key=pref_key,
-                    prefs=None,
-                    event=NotificationEvent(
-                        notification_type=NotificationType.NEW_SWAP_REQUEST,
-                        user_ids=[user_id],
+                mem_db = self.collection.team_membership_db
+                memberships = mem_db.get_team_memberships_by_team_id(
+                    swap.team_id
+                )
+                member_user_ids = [
+                    m.user_id
+                    for m in memberships
+                    if m.user_id and m.user_id != creator_user_id
+                ]
+                if member_user_ids:
+                    event = user_created_open_swap_event(
                         team_id=swap.team_id,
-                        event_data=event_data,
-                    ),
-                )
+                        team_name=team_name,
+                        swap_id=swap.id,
+                        requester_name=requester_name,
+                        shift_name=shift_name,
+                        date=first_date,
+                        team_member_user_ids=member_user_ids,
+                    )
+                    await self.dispatch(event)
         except Exception as e:  # pylint: disable=broad-except
-            logger.error(f"Failed to send swap-request notifications: {e}")
+            logger.error(f"Failed to send swap-created notifications: {e}")
+
+    async def notify_direct_swap_accepted(self, swap: SwapRequest) -> None:
+        """Dispatch user_accepted_direct_swap + swap_ready_for_review."""
+        try:
+            team = self.collection.team_db.get_team_by_id(swap.team_id)
+            team_name = team.name if team else ""
+            target_worker = (
+                self.collection.worker_db.get_worker_by_id(
+                    swap.target_worker_id
+                )
+                if swap.target_worker_id
+                else None
+            )
+            target_name = target_worker.name if target_worker else ""
+            shift_name, first_date = self._get_swap_shift_and_date(swap)
+
+            # Notify creator
+            offering_worker = (
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
+                if swap.offering_worker_id
+                else None
+            )
+            if offering_worker and offering_worker.user_id:
+                event = user_accepted_direct_swap_event(
+                    team_id=swap.team_id,
+                    team_name=team_name,
+                    swap_id=swap.id,
+                    target_name=target_name,
+                    shift_name=shift_name,
+                    date=first_date,
+                    creator_user_id=offering_worker.user_id,
+                )
+                await self.dispatch(event)
+
+            # Notify managers/owners
+            offering_name = offering_worker.name if offering_worker else ""
+            await self._dispatch_swap_ready_for_review(
+                swap=swap,
+                team_name=team_name,
+                requester_name=offering_name,
+                shift_name=shift_name,
+                date=first_date,
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(
+                f"Failed to send direct-swap-accepted notifications: {e}"
+            )
+
+    async def notify_direct_swap_refused(self, swap: SwapRequest) -> None:
+        """Dispatch user_refused_direct_swap to the creator."""
+        try:
+            team = self.collection.team_db.get_team_by_id(swap.team_id)
+            team_name = team.name if team else ""
+            target_worker = (
+                self.collection.worker_db.get_worker_by_id(
+                    swap.target_worker_id
+                )
+                if swap.target_worker_id
+                else None
+            )
+            refuser_name = target_worker.name if target_worker else ""
+            shift_name, first_date = self._get_swap_shift_and_date(swap)
+
+            offering_worker = (
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
+                if swap.offering_worker_id
+                else None
+            )
+            if offering_worker and offering_worker.user_id:
+                event = user_refused_direct_swap_event(
+                    team_id=swap.team_id,
+                    team_name=team_name,
+                    swap_id=swap.id,
+                    refuser_name=refuser_name,
+                    shift_name=shift_name,
+                    date=first_date,
+                    creator_user_id=offering_worker.user_id,
+                )
+                await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(
+                f"Failed to send direct-swap-refused notifications: {e}"
+            )
+
+    async def notify_bid_added(
+        self, swap: SwapRequest, bidder_worker_id: str
+    ) -> None:
+        """Dispatch user_bid_open_swap to the swap creator."""
+        try:
+            team = self.collection.team_db.get_team_by_id(swap.team_id)
+            team_name = team.name if team else ""
+            bidder_worker = self.collection.worker_db.get_worker_by_id(
+                bidder_worker_id
+            )
+            bidder_name = bidder_worker.name if bidder_worker else ""
+            shift_name, first_date = self._get_swap_shift_and_date(swap)
+
+            offering_worker = (
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
+                if swap.offering_worker_id
+                else None
+            )
+            if offering_worker and offering_worker.user_id:
+                event = user_bid_open_swap_event(
+                    team_id=swap.team_id,
+                    team_name=team_name,
+                    swap_id=swap.id,
+                    bidder_name=bidder_name,
+                    shift_name=shift_name,
+                    date=first_date,
+                    creator_user_id=offering_worker.user_id,
+                )
+                await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(f"Failed to send bid-added notifications: {e}")
+
+    async def notify_bid_accepted(
+        self, swap: SwapRequest, accepted_bid_worker_id: str
+    ) -> None:
+        """Dispatch selected/other-bid notifications + swap_ready_for_review."""
+        try:
+            team = self.collection.team_db.get_team_by_id(swap.team_id)
+            team_name = team.name if team else ""
+            offering_worker = (
+                self.collection.worker_db.get_worker_by_id(
+                    swap.offering_worker_id
+                )
+                if swap.offering_worker_id
+                else None
+            )
+            requester_name = offering_worker.name if offering_worker else ""
+            shift_name, first_date = self._get_swap_shift_and_date(swap)
+
+            # Notify accepted bidder
+            accepted_worker = self.collection.worker_db.get_worker_by_id(
+                accepted_bid_worker_id
+            )
+            if accepted_worker and accepted_worker.user_id:
+                event = user_selected_bid_open_swap_event(
+                    team_id=swap.team_id,
+                    team_name=team_name,
+                    swap_id=swap.id,
+                    requester_name=requester_name,
+                    shift_name=shift_name,
+                    date=first_date,
+                    accepted_bidder_user_id=accepted_worker.user_id,
+                )
+                await self.dispatch(event)
+
+            # Notify other (non-accepted) bidders
+            other_bidder_user_ids: list[str] = []
+            for bid in swap.bids:
+                if bid.worker_id == accepted_bid_worker_id:
+                    continue
+                w = self.collection.worker_db.get_worker_by_id(bid.worker_id)
+                if w and w.user_id:
+                    other_bidder_user_ids.append(w.user_id)
+            if other_bidder_user_ids:
+                other_event = user_selected_other_bid_open_swap_event(
+                    team_id=swap.team_id,
+                    team_name=team_name,
+                    swap_id=swap.id,
+                    shift_name=shift_name,
+                    date=first_date,
+                    other_bidder_user_ids=other_bidder_user_ids,
+                )
+                await self.dispatch(other_event)
+
+            # Notify managers/owners
+            await self._dispatch_swap_ready_for_review(
+                swap=swap,
+                team_name=team_name,
+                requester_name=requester_name,
+                shift_name=shift_name,
+                date=first_date,
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(f"Failed to send bid-accepted notifications: {e}")
+
+    async def notify_swap_validated(self, swap: SwapRequest) -> None:
+        """Dispatch user_validated_swap to both swap parties."""
+        try:
+            team = self.collection.team_db.get_team_by_id(swap.team_id)
+            team_name = team.name if team else ""
+            await self._dispatch_swap_party_events(
+                swap=swap,
+                event_factory=lambda pid, os, od, xs, xd: (
+                    user_validated_swap_event(
+                        team_id=swap.team_id,
+                        team_name=team_name,
+                        swap_id=swap.id,
+                        own_shift_name=os,
+                        own_date=od,
+                        other_shift_name=xs,
+                        other_date=xd,
+                        party_user_id=pid,
+                    )
+                ),
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(f"Failed to send swap-validated notifications: {e}")
+
+    async def notify_swap_denied(self, swap: SwapRequest) -> None:
+        """Dispatch user_denied_swap to both swap parties."""
+        try:
+            team = self.collection.team_db.get_team_by_id(swap.team_id)
+            team_name = team.name if team else ""
+            shift_name, first_date = self._get_swap_shift_and_date(swap)
+            party_user_ids = self._get_swap_party_user_ids(swap)
+            if party_user_ids:
+                event = user_denied_swap_event(
+                    team_id=swap.team_id,
+                    team_name=team_name,
+                    swap_id=swap.id,
+                    shift_name=shift_name,
+                    date=first_date,
+                    party_user_ids=party_user_ids,
+                )
+                await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(f"Failed to send swap-denied notifications: {e}")
+
+    async def notify_swap_reversed(self, swap: SwapRequest) -> None:
+        """Dispatch user_reversed_swap to both swap parties."""
+        try:
+            team = self.collection.team_db.get_team_by_id(swap.team_id)
+            team_name = team.name if team else ""
+            await self._dispatch_swap_party_events(
+                swap=swap,
+                event_factory=lambda pid, os, od, xs, xd: (
+                    user_reversed_swap_event(
+                        team_id=swap.team_id,
+                        team_name=team_name,
+                        swap_id=swap.id,
+                        own_shift_name=os,
+                        own_date=od,
+                        other_shift_name=xs,
+                        other_date=xd,
+                        party_user_id=pid,
+                    )
+                ),
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(f"Failed to send swap-reversed notifications: {e}")
+
+    # ------------------------------------------------------------------
+    # Private swap helpers
+    # ------------------------------------------------------------------
+
+    def _get_swap_shift_and_date(self, swap: SwapRequest) -> tuple[str, str]:
+        """Return (shift_name, date_str) from the first offered assignment."""
+        shift_name = ""
+        first_date = ""
+        if swap.offered_assignment_ids:
+            assignment = self.collection.assignment_db.get_assignment_by_id(
+                swap.offered_assignment_ids[0]
+            )
+            if assignment:
+                first_date = str(assignment.date)
+                shift = self.collection.shift_db.get_shift_by_id(
+                    assignment.shift_id
+                )
+                if shift:
+                    shift_name = shift.name
+        return shift_name, first_date
+
+    def _get_swap_party_user_ids(self, swap: SwapRequest) -> list[str]:
+        """Return user IDs for the offering worker and target worker."""
+        user_ids: list[str] = []
+        if swap.offering_worker_id:
+            w = self.collection.worker_db.get_worker_by_id(
+                swap.offering_worker_id
+            )
+            if w and w.user_id:
+                user_ids.append(w.user_id)
+        if swap.target_worker_id:
+            w = self.collection.worker_db.get_worker_by_id(
+                swap.target_worker_id
+            )
+            if w and w.user_id and w.user_id not in user_ids:
+                user_ids.append(w.user_id)
+        return user_ids
+
+    async def _dispatch_swap_ready_for_review(  # pylint: disable=too-many-arguments
+        self,
+        swap: SwapRequest,
+        team_name: str,
+        requester_name: str,
+        shift_name: str,
+        date: str,
+    ) -> None:
+        """Send swap_ready_for_review to all team managers/owners."""
+        mem_db = self.collection.team_membership_db
+        memberships = mem_db.get_team_memberships_by_team_id(swap.team_id)
+        manager_user_ids = [
+            m.user_id
+            for m in memberships
+            if getattr(m, "role", None) in ("manager", "owner", "admin")
+            and m.user_id
+        ]
+        if manager_user_ids:
+            event = swap_ready_for_review_event(
+                team_id=swap.team_id,
+                team_name=team_name,
+                swap_id=swap.id,
+                requester_name=requester_name,
+                shift_name=shift_name,
+                date=date,
+                swap_type=swap.swap_type.value,
+                manager_user_ids=manager_user_ids,
+            )
+            await self.dispatch(event)
+
+    async def _dispatch_swap_party_events(
+        self,
+        swap: SwapRequest,
+        event_factory,
+    ) -> None:
+        """Send per-party events (validated/reversed) to each swap participant."""
+        # Gather assignment info for both parties
+        offered_assignment = None
+        requested_assignment = None
+        if swap.offered_assignment_ids:
+            offered_assignment = (
+                self.collection.assignment_db.get_assignment_by_id(
+                    swap.offered_assignment_ids[0]
+                )
+            )
+        if swap.requested_assignment_ids:
+            requested_assignment = (
+                self.collection.assignment_db.get_assignment_by_id(
+                    swap.requested_assignment_ids[0]
+                )
+            )
+
+        def _shift_name_for(assignment) -> str:
+            if not assignment:
+                return ""
+            shift = self.collection.shift_db.get_shift_by_id(
+                assignment.shift_id
+            )
+            return shift.name if shift else ""
+
+        offered_shift = _shift_name_for(offered_assignment)
+        offered_date = (
+            str(offered_assignment.date) if offered_assignment else ""
+        )
+        requested_shift = _shift_name_for(requested_assignment)
+        requested_date = (
+            str(requested_assignment.date) if requested_assignment else ""
+        )
+
+        # Notify offering worker: their own shift is offered, other is requested
+        if swap.offering_worker_id:
+            w = self.collection.worker_db.get_worker_by_id(
+                swap.offering_worker_id
+            )
+            if w and w.user_id:
+                event = event_factory(
+                    w.user_id,
+                    offered_shift,
+                    offered_date,
+                    requested_shift,
+                    requested_date,
+                )
+                await self.dispatch(event)
+
+        # Notify target worker: their own shift is requested, other is offered
+        if swap.target_worker_id:
+            w = self.collection.worker_db.get_worker_by_id(
+                swap.target_worker_id
+            )
+            if w and w.user_id:
+                event = event_factory(
+                    w.user_id,
+                    requested_shift,
+                    requested_date,
+                    offered_shift,
+                    offered_date,
+                )
+                await self.dispatch(event)
 
     async def notify_user_accepted_request(self, request: Request) -> None:
         """Notify the worker whose request was approved."""

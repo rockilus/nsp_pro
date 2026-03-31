@@ -27,10 +27,6 @@ function getMessageKey(type: NotificationT["type"]): string {
   switch (type) {
     case "user_published_schedule":
       return "user_published_schedule";
-    case "new_swap_request":
-      return "new_swap_request";
-    case "swap_status_changed":
-      return "swap_status_changed";
     case "user_accepted_request":
       return "user_accepted_request";
     case "user_denied_request":
@@ -51,6 +47,28 @@ function getMessageKey(type: NotificationT["type"]): string {
       return "user_removed_from_team";
     case "user_left_team":
       return "user_left_team";
+    case "user_created_direct_swap":
+      return "user_created_direct_swap";
+    case "user_accepted_direct_swap":
+      return "user_accepted_direct_swap";
+    case "user_refused_direct_swap":
+      return "user_refused_direct_swap";
+    case "user_created_open_swap":
+      return "user_created_open_swap";
+    case "user_bid_open_swap":
+      return "user_bid_open_swap";
+    case "user_selected_bid_open_swap":
+      return "user_selected_bid_open_swap";
+    case "user_selected_other_bid_open_swap":
+      return "user_selected_other_bid_open_swap";
+    case "swap_ready_for_review":
+      return "swap_ready_for_review";
+    case "user_validated_swap":
+      return "user_validated_swap";
+    case "user_denied_swap":
+      return "user_denied_swap";
+    case "user_reversed_swap":
+      return "user_reversed_swap";
     default:
       return "user_published_schedule";
   }

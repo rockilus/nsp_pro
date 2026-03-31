@@ -6,8 +6,6 @@ import dayjs from "dayjs";
 export type NotificationTypeT =
   | "user_published_schedule"
   | "user_created_request"
-  | "new_swap_request"
-  | "swap_status_changed"
   | "user_accepted_request"
   | "user_denied_request"
   | "user_created_assignment"
@@ -16,7 +14,18 @@ export type NotificationTypeT =
   | "user_received_team_invite"
   | "user_accepted_team_invite"
   | "user_removed_from_team"
-  | "user_left_team";
+  | "user_left_team"
+  | "user_created_direct_swap"
+  | "user_accepted_direct_swap"
+  | "user_refused_direct_swap"
+  | "user_created_open_swap"
+  | "user_bid_open_swap"
+  | "user_selected_bid_open_swap"
+  | "user_selected_other_bid_open_swap"
+  | "swap_ready_for_review"
+  | "user_validated_swap"
+  | "user_denied_swap"
+  | "user_reversed_swap";
 
 export type NotificationT = {
   id: string;
@@ -34,7 +43,6 @@ export type NotificationT = {
 export type NotificationKey =
   | "user_published_schedule"
   | "user_created_request"
-  | "swap_requests"
   | "user_accepted_request"
   | "user_denied_request"
   | "user_created_assignment"
@@ -43,12 +51,22 @@ export type NotificationKey =
   | "user_received_team_invite"
   | "user_accepted_team_invite"
   | "user_removed_from_team"
-  | "user_left_team";
+  | "user_left_team"
+  | "user_created_direct_swap"
+  | "user_accepted_direct_swap"
+  | "user_refused_direct_swap"
+  | "user_created_open_swap"
+  | "user_bid_open_swap"
+  | "user_selected_bid_open_swap"
+  | "user_selected_other_bid_open_swap"
+  | "swap_ready_for_review"
+  | "user_validated_swap"
+  | "user_denied_swap"
+  | "user_reversed_swap";
 
 export const NOTIFICATION_KEYS: NotificationKey[] = [
   "user_published_schedule",
   "user_created_request",
-  "swap_requests",
   "user_accepted_request",
   "user_denied_request",
   "user_created_assignment",
@@ -58,13 +76,25 @@ export const NOTIFICATION_KEYS: NotificationKey[] = [
   "user_accepted_team_invite",
   "user_removed_from_team",
   "user_left_team",
+  "user_created_direct_swap",
+  "user_accepted_direct_swap",
+  "user_refused_direct_swap",
+  "user_created_open_swap",
+  "user_bid_open_swap",
+  "user_selected_bid_open_swap",
+  "user_selected_other_bid_open_swap",
+  "swap_ready_for_review",
+  "user_validated_swap",
+  "user_denied_swap",
+  "user_reversed_swap",
 ];
 
 export type NotificationCategory =
   | "schedule"
   | "requests"
   | "assignments"
-  | "team";
+  | "team"
+  | "swaps";
 
 export type NotificationKeyMeta = {
   category: NotificationCategory;
@@ -76,7 +106,6 @@ export const NOTIFICATION_REGISTRY: Record<
 > = {
   user_published_schedule: { category: "schedule" },
   user_created_request: { category: "requests" },
-  swap_requests: { category: "requests" },
   user_accepted_request: { category: "requests" },
   user_denied_request: { category: "requests" },
   user_created_assignment: { category: "assignments" },
@@ -86,6 +115,17 @@ export const NOTIFICATION_REGISTRY: Record<
   user_accepted_team_invite: { category: "team" },
   user_removed_from_team: { category: "team" },
   user_left_team: { category: "team" },
+  user_created_direct_swap: { category: "swaps" },
+  user_accepted_direct_swap: { category: "swaps" },
+  user_refused_direct_swap: { category: "swaps" },
+  user_created_open_swap: { category: "swaps" },
+  user_bid_open_swap: { category: "swaps" },
+  user_selected_bid_open_swap: { category: "swaps" },
+  user_selected_other_bid_open_swap: { category: "swaps" },
+  swap_ready_for_review: { category: "swaps" },
+  user_validated_swap: { category: "swaps" },
+  user_denied_swap: { category: "swaps" },
+  user_reversed_swap: { category: "swaps" },
 };
 
 export const NOTIFICATION_CATEGORY_ORDER: NotificationCategory[] = [
@@ -93,6 +133,7 @@ export const NOTIFICATION_CATEGORY_ORDER: NotificationCategory[] = [
   "requests",
   "assignments",
   "team",
+  "swaps",
 ];
 
 export type ChannelPreferences = { email: boolean; inApp: boolean };

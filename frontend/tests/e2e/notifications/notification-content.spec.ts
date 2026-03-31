@@ -5,6 +5,7 @@ import utc from "dayjs/plugin/utc";
 import { DatabaseTestUtils, TestUser } from "../../utils/database-utils";
 import { RequestType } from "@/types/request";
 import { ShiftType } from "@/types/shift";
+import { SwapType } from "@/types/swap";
 import {
   NotifTestContext,
   NotificationTestCase,
@@ -324,6 +325,667 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     },
     expectedText: (_name) => /was removed from your schedule/,
     expectedUrlPattern: /\/plan\/schedule/,
+  },
+  // ---------------------------------------------------------------------------
+  // Swap notifications (11 types)
+  // ---------------------------------------------------------------------------
+  {
+    type: "user_created_direct_swap",
+    description:
+      "user1 creates a direct swap targeting user2; user2 (target) is notified",
+    preferenceKey: "user_created_direct_swap",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Requester Worker",
+        weeklyHours: 40,
+      });
+      const worker2 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Target Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const r2 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker2.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      });
+      await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.DIRECT,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: [r2.assignmentsCreated[0].id],
+        targetWorkerId: worker2.id,
+        comment: "",
+      });
+      return user2.user_id;
+    },
+    expectedText: (_name) => /sent you a swap request for/,
+    expectedUrlPattern: /\/plan\/swaps/,
+  },
+  {
+    type: "user_accepted_direct_swap",
+    description:
+      "user2 (target) accepts user1's direct swap; user1 (requester) is notified",
+    preferenceKey: "user_accepted_direct_swap",
+    recipientRole: "user1",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Requester Worker",
+        weeklyHours: 40,
+      });
+      const worker2 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Target Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const r2 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker2.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      });
+      const swap = await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.DIRECT,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: [r2.assignmentsCreated[0].id],
+        targetWorkerId: worker2.id,
+        comment: "",
+      });
+      await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
+      return user1.user_id;
+    },
+    expectedText: (_name) => /accepted your swap request for/,
+    expectedUrlPattern: /\/plan\/swaps/,
+  },
+  {
+    type: "user_refused_direct_swap",
+    description:
+      "user2 (target) refuses user1's direct swap; user1 (requester) is notified",
+    preferenceKey: "user_refused_direct_swap",
+    recipientRole: "user1",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Requester Worker",
+        weeklyHours: 40,
+      });
+      const worker2 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Target Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const r2 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker2.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      });
+      const swap = await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.DIRECT,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: [r2.assignmentsCreated[0].id],
+        targetWorkerId: worker2.id,
+        comment: "",
+      });
+      await dbUtils.refuseDirectSwapAs(user2.user_id, swap.id);
+      return user1.user_id;
+    },
+    expectedText: (_name) => /declined your swap request for/,
+    expectedUrlPattern: /\/plan\/swaps/,
+  },
+  {
+    type: "user_created_open_swap",
+    description: "user1 creates an open swap; user2 (team member) is notified",
+    preferenceKey: "user_created_open_swap",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Requester Worker",
+        weeklyHours: 40,
+      });
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.OPEN,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: null,
+        targetWorkerId: null,
+        comment: "",
+      });
+      return user2.user_id;
+    },
+    expectedText: (_name) => /created an open swap request for/,
+    expectedUrlPattern: /\/plan\/swaps/,
+  },
+  {
+    type: "user_bid_open_swap",
+    description: "user2 bids on user1's open swap; user1 (creator) is notified",
+    preferenceKey: "user_bid_open_swap",
+    recipientRole: "user1",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Creator Worker",
+        weeklyHours: 40,
+      });
+      const worker2 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Bidder Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const r2 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker2.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      });
+      const swap = await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.OPEN,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: null,
+        targetWorkerId: null,
+        comment: "",
+      });
+      await dbUtils.addBidToOpenSwapAs(user2.user_id, swap.id, worker2.id, [
+        r2.assignmentsCreated[0].id,
+      ]);
+      return user1.user_id;
+    },
+    expectedText: (_name) => /bid on your open swap request for/,
+    expectedUrlPattern: /\/plan\/swaps/,
+  },
+  {
+    type: "user_selected_bid_open_swap",
+    description: "user2's bid is accepted; user2 (accepted bidder) is notified",
+    preferenceKey: "user_selected_bid_open_swap",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Creator Worker",
+        weeklyHours: 40,
+      });
+      const worker2 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Bidder Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const r2 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker2.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      });
+      const swap = await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.OPEN,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: null,
+        targetWorkerId: null,
+        comment: "",
+      });
+      const swapWithBid = await dbUtils.addBidToOpenSwapAs(
+        user2.user_id,
+        swap.id,
+        worker2.id,
+        [r2.assignmentsCreated[0].id],
+      );
+      const bid = swapWithBid.bids?.[0];
+      if (!bid) throw new Error("Bid not found on swap");
+      await dbUtils.acceptBidOnOpenSwapAs(user1.user_id, swap.id, bid.id);
+      return user2.user_id;
+    },
+    expectedText: (_name) => /selected your bid for/,
+    expectedUrlPattern: /\/plan\/swaps/,
+  },
+  {
+    type: "user_selected_other_bid_open_swap",
+    description:
+      "user2's bid is not selected; user2 (non-selected bidder) is notified",
+    preferenceKey: "user_selected_other_bid_open_swap",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      // Create a 3rd user whose bid WILL be selected.
+      const thirdId = randomUUID().replace(/-/g, "").slice(0, 24);
+      const thirdUser: TestUser = {
+        user_id: thirdId,
+        email: `third-${thirdId}@example.com`,
+        username: `third-${thirdId}`,
+        first_name: "Selected",
+        last_name: "Bidder",
+      };
+      await dbUtils.createTestUser(thirdUser);
+      await dbUtils.addTeamMember(thirdUser.user_id, team.teamId, "member");
+
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Creator Worker",
+        weeklyHours: 40,
+      });
+      const worker2 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Rejected Bidder Worker",
+        weeklyHours: 40,
+      });
+      const worker3 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Selected Bidder Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
+      await dbUtils.attachWorkerToUser(
+        worker3.id,
+        thirdUser.user_id,
+        team.teamId,
+      );
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const r2 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker2.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      });
+      const r3 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker3.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(2, "day"),
+        scheduleId: schedule.id,
+      });
+      const swap = await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.OPEN,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: null,
+        targetWorkerId: null,
+        comment: "",
+      });
+      // Both bid; user2 will be rejected.
+      await dbUtils.addBidToOpenSwapAs(user2.user_id, swap.id, worker2.id, [
+        r2.assignmentsCreated[0].id,
+      ]);
+      const swapAfterBids = await dbUtils.addBidToOpenSwapAs(
+        thirdUser.user_id,
+        swap.id,
+        worker3.id,
+        [r3.assignmentsCreated[0].id],
+      );
+      const selectedBid = swapAfterBids.bids?.find(
+        (b) => b.workerId === worker3.id,
+      );
+      if (!selectedBid) throw new Error("Selected bid not found");
+      await dbUtils.acceptBidOnOpenSwapAs(
+        user1.user_id,
+        swap.id,
+        selectedBid.id,
+      );
+      return user2.user_id;
+    },
+    expectedText: (_name) => /Another bid was selected for the swap of/,
+    expectedUrlPattern: /\/plan\/swaps/,
+  },
+  {
+    type: "swap_ready_for_review",
+    description:
+      "user2 accepts user1's direct swap; user1 (team owner/manager) is notified for review",
+    preferenceKey: "swap_ready_for_review",
+    recipientRole: "user1",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Requester Worker",
+        weeklyHours: 40,
+      });
+      const worker2 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Target Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const r2 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker2.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      });
+      const swap = await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.DIRECT,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: [r2.assignmentsCreated[0].id],
+        targetWorkerId: worker2.id,
+        comment: "",
+      });
+      // Target accepts → swap moves to pending_approval → swap_ready_for_review fires.
+      await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
+      return user1.user_id;
+    },
+    expectedText: (_name) => /is ready for review/,
+    expectedUrlPattern: /\/plan\/swaps/,
+  },
+  {
+    type: "user_validated_swap",
+    description: "user1 (manager) approves the swap; user2 (party) is notified",
+    preferenceKey: "user_validated_swap",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Requester Worker",
+        weeklyHours: 40,
+      });
+      const worker2 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Target Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const r2 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker2.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      });
+      const swap = await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.DIRECT,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: [r2.assignmentsCreated[0].id],
+        targetWorkerId: worker2.id,
+        comment: "",
+      });
+      await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
+      await dbUtils.approveSwapAsUser(swap.id, user1.user_id);
+      return user2.user_id;
+    },
+    expectedText: (_name) => /swap of .* was approved/,
+    expectedUrlPattern: /\/plan\/swaps/,
+  },
+  {
+    type: "user_denied_swap",
+    description: "user1 (manager) denies the swap; user2 (party) is notified",
+    preferenceKey: "user_denied_swap",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Requester Worker",
+        weeklyHours: 40,
+      });
+      const worker2 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Target Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const r2 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker2.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      });
+      const swap = await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.DIRECT,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: [r2.assignmentsCreated[0].id],
+        targetWorkerId: worker2.id,
+        comment: "",
+      });
+      await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
+      await dbUtils.denySwapAs(user1.user_id, swap.id);
+      return user2.user_id;
+    },
+    expectedText: (_name) => /swap request .* was denied/,
+    expectedUrlPattern: /\/plan\/swaps/,
+  },
+  {
+    type: "user_reversed_swap",
+    description:
+      "user1 (manager) reverts a completed swap; user2 (party) is notified",
+    preferenceKey: "user_reversed_swap",
+    recipientRole: "user2",
+    async setup(dbUtils, team, user1, user2) {
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      const worker1 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Requester Worker",
+        weeklyHours: 40,
+      });
+      const worker2 = await dbUtils.createWorker({
+        teamId: team.teamId,
+        name: "Target Worker",
+        weeklyHours: 40,
+      });
+      await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
+      const shift = await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Swap Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
+      });
+      const schedule = await dbUtils.createSchedule(team.teamId);
+      await dbUtils.validateSchedule(schedule.id, team.teamId);
+      const r1 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: shift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      });
+      const r2 = await dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker2.id,
+        shiftId: shift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      });
+      const swap = await dbUtils.createSwapAs(user1.user_id, {
+        teamId: team.teamId,
+        swapType: SwapType.DIRECT,
+        offeredAssignmentIds: [r1.assignmentsCreated[0].id],
+        requestedAssignmentIds: [r2.assignmentsCreated[0].id],
+        targetWorkerId: worker2.id,
+        comment: "",
+      });
+      await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
+      await dbUtils.approveSwapAsUser(swap.id, user1.user_id);
+      await dbUtils.revertSwap(swap.id);
+      return user2.user_id;
+    },
+    expectedText: (_name) => /swap of .* was reversed/,
+    expectedUrlPattern: /\/plan\/swaps/,
   },
 ];
 

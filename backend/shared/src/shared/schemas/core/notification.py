@@ -14,8 +14,6 @@ class NotificationType(str, Enum):
 
     USER_PUBLISHED_SCHEDULE = "user_published_schedule"
     USER_CREATED_REQUEST = "user_created_request"
-    NEW_SWAP_REQUEST = "new_swap_request"
-    SWAP_STATUS_CHANGED = "swap_status_changed"
     USER_ACCEPTED_REQUEST = "user_accepted_request"
     USER_DENIED_REQUEST = "user_denied_request"
     USER_CREATED_ASSIGNMENT = "user_created_assignment"
@@ -25,6 +23,18 @@ class NotificationType(str, Enum):
     USER_ACCEPTED_TEAM_INVITE = "user_accepted_team_invite"
     USER_REMOVED_FROM_TEAM = "user_removed_from_team"
     USER_LEFT_TEAM = "user_left_team"
+    # Swap notification types
+    USER_CREATED_DIRECT_SWAP = "user_created_direct_swap"
+    USER_ACCEPTED_DIRECT_SWAP = "user_accepted_direct_swap"
+    USER_REFUSED_DIRECT_SWAP = "user_refused_direct_swap"
+    USER_CREATED_OPEN_SWAP = "user_created_open_swap"
+    USER_BID_OPEN_SWAP = "user_bid_open_swap"
+    USER_SELECTED_BID_OPEN_SWAP = "user_selected_bid_open_swap"
+    USER_SELECTED_OTHER_BID_OPEN_SWAP = "user_selected_other_bid_open_swap"
+    SWAP_READY_FOR_REVIEW = "swap_ready_for_review"
+    USER_VALIDATED_SWAP = "user_validated_swap"
+    USER_DENIED_SWAP = "user_denied_swap"
+    USER_REVERSED_SWAP = "user_reversed_swap"
 
 
 @dataclass

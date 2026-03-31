@@ -22,16 +22,6 @@ NOTIFICATION_EMAIL_MAP: dict[NotificationType, tuple[str, EmailType, str]] = {
         EmailType.NOTIFICATION_USER_CREATED_REQUEST,
         "/plan/requests",
     ),
-    NotificationType.NEW_SWAP_REQUEST: (
-        "notification_new_swap_request_email",
-        EmailType.NOTIFICATION_SWAP_REQUEST,
-        "/plan/swaps",
-    ),
-    NotificationType.SWAP_STATUS_CHANGED: (
-        "notification_swap_status_changed_email",
-        EmailType.NOTIFICATION_SWAP_STATUS_CHANGED,
-        "/plan/swaps",
-    ),
     NotificationType.USER_ACCEPTED_REQUEST: (
         "notification_user_accepted_request_email",
         EmailType.NOTIFICATION_USER_ACCEPTED_REQUEST,
@@ -77,6 +67,61 @@ NOTIFICATION_EMAIL_MAP: dict[NotificationType, tuple[str, EmailType, str]] = {
         EmailType.NOTIFICATION_USER_LEFT_TEAM,
         "/plan/settings/teams",
     ),
+    NotificationType.USER_CREATED_DIRECT_SWAP: (
+        "notification_user_created_direct_swap_email",
+        EmailType.NOTIFICATION_USER_CREATED_DIRECT_SWAP,
+        "/plan/swaps",
+    ),
+    NotificationType.USER_ACCEPTED_DIRECT_SWAP: (
+        "notification_user_accepted_direct_swap_email",
+        EmailType.NOTIFICATION_USER_ACCEPTED_DIRECT_SWAP,
+        "/plan/swaps",
+    ),
+    NotificationType.USER_REFUSED_DIRECT_SWAP: (
+        "notification_user_refused_direct_swap_email",
+        EmailType.NOTIFICATION_USER_REFUSED_DIRECT_SWAP,
+        "/plan/swaps",
+    ),
+    NotificationType.USER_CREATED_OPEN_SWAP: (
+        "notification_user_created_open_swap_email",
+        EmailType.NOTIFICATION_USER_CREATED_OPEN_SWAP,
+        "/plan/swaps",
+    ),
+    NotificationType.USER_BID_OPEN_SWAP: (
+        "notification_user_bid_open_swap_email",
+        EmailType.NOTIFICATION_USER_BID_OPEN_SWAP,
+        "/plan/swaps",
+    ),
+    NotificationType.USER_SELECTED_BID_OPEN_SWAP: (
+        "notification_user_selected_bid_open_swap_email",
+        EmailType.NOTIFICATION_USER_SELECTED_BID_OPEN_SWAP,
+        "/plan/swaps",
+    ),
+    NotificationType.USER_SELECTED_OTHER_BID_OPEN_SWAP: (
+        "notification_user_selected_other_bid_open_swap_email",
+        EmailType.NOTIFICATION_USER_SELECTED_OTHER_BID_OPEN_SWAP,
+        "/plan/swaps",
+    ),
+    NotificationType.SWAP_READY_FOR_REVIEW: (
+        "notification_swap_ready_for_review_email",
+        EmailType.NOTIFICATION_SWAP_READY_FOR_REVIEW,
+        "/plan/swaps",
+    ),
+    NotificationType.USER_VALIDATED_SWAP: (
+        "notification_user_validated_swap_email",
+        EmailType.NOTIFICATION_USER_VALIDATED_SWAP,
+        "/plan/swaps",
+    ),
+    NotificationType.USER_DENIED_SWAP: (
+        "notification_user_denied_swap_email",
+        EmailType.NOTIFICATION_USER_DENIED_SWAP,
+        "/plan/swaps",
+    ),
+    NotificationType.USER_REVERSED_SWAP: (
+        "notification_user_reversed_swap_email",
+        EmailType.NOTIFICATION_USER_REVERSED_SWAP,
+        "/plan/swaps",
+    ),
 }
 
 # Subjects keyed by (NotificationType, language).
@@ -87,11 +132,6 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         "en",
     ): "Your schedule has been published",
     (NotificationType.USER_CREATED_REQUEST, "en"): "New request received",
-    (NotificationType.NEW_SWAP_REQUEST, "en"): "New swap request",
-    (
-        NotificationType.SWAP_STATUS_CHANGED,
-        "en",
-    ): "Your swap request status changed",
     (
         NotificationType.USER_ACCEPTED_REQUEST,
         "en",
@@ -125,17 +165,57 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         "en",
     ): "You have been removed from a team",
     (NotificationType.USER_LEFT_TEAM, "en"): "A user has left your team",
+    # Swap notification subjects — English
+    (
+        NotificationType.USER_CREATED_DIRECT_SWAP,
+        "en",
+    ): "A new swap request is waiting for you",
+    (
+        NotificationType.USER_ACCEPTED_DIRECT_SWAP,
+        "en",
+    ): "Your swap request was accepted",
+    (
+        NotificationType.USER_REFUSED_DIRECT_SWAP,
+        "en",
+    ): "Your swap request was declined",
+    (
+        NotificationType.USER_CREATED_OPEN_SWAP,
+        "en",
+    ): "A new open swap is available",
+    (
+        NotificationType.USER_BID_OPEN_SWAP,
+        "en",
+    ): "Someone bid on your open swap",
+    (
+        NotificationType.USER_SELECTED_BID_OPEN_SWAP,
+        "en",
+    ): "Your swap bid was selected",
+    (
+        NotificationType.USER_SELECTED_OTHER_BID_OPEN_SWAP,
+        "en",
+    ): "A different bid was selected",
+    (
+        NotificationType.SWAP_READY_FOR_REVIEW,
+        "en",
+    ): "A swap is ready for your review",
+    (
+        NotificationType.USER_VALIDATED_SWAP,
+        "en",
+    ): "Your swap has been approved",
+    (
+        NotificationType.USER_DENIED_SWAP,
+        "en",
+    ): "Your swap has been denied",
+    (
+        NotificationType.USER_REVERSED_SWAP,
+        "en",
+    ): "Your swap has been reversed",
     # Spanish
     (
         NotificationType.USER_PUBLISHED_SCHEDULE,
         "es",
     ): "Tu horario ha sido publicado",
     (NotificationType.USER_CREATED_REQUEST, "es"): "Nueva solicitud recibida",
-    (NotificationType.NEW_SWAP_REQUEST, "es"): "Nueva solicitud de cambio",
-    (
-        NotificationType.SWAP_STATUS_CHANGED,
-        "es",
-    ): "El estado de tu cambio ha cambiado",
     (
         NotificationType.USER_ACCEPTED_REQUEST,
         "es",
@@ -172,17 +252,57 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         NotificationType.USER_LEFT_TEAM,
         "es",
     ): "Un usuario ha abandonado tu equipo",
+    # Swap notification subjects — Spanish
+    (
+        NotificationType.USER_CREATED_DIRECT_SWAP,
+        "es",
+    ): "Una nueva solicitud de cambio te está esperando",
+    (
+        NotificationType.USER_ACCEPTED_DIRECT_SWAP,
+        "es",
+    ): "Tu solicitud de cambio fue aceptada",
+    (
+        NotificationType.USER_REFUSED_DIRECT_SWAP,
+        "es",
+    ): "Tu solicitud de cambio fue rechazada",
+    (
+        NotificationType.USER_CREATED_OPEN_SWAP,
+        "es",
+    ): "Un nuevo cambio abierto está disponible",
+    (
+        NotificationType.USER_BID_OPEN_SWAP,
+        "es",
+    ): "Alguien ofreció un cambio en tu solicitud abierta",
+    (
+        NotificationType.USER_SELECTED_BID_OPEN_SWAP,
+        "es",
+    ): "Tu oferta de cambio fue seleccionada",
+    (
+        NotificationType.USER_SELECTED_OTHER_BID_OPEN_SWAP,
+        "es",
+    ): "Se seleccionó una oferta diferente",
+    (
+        NotificationType.SWAP_READY_FOR_REVIEW,
+        "es",
+    ): "Un cambio está listo para tu revisión",
+    (
+        NotificationType.USER_VALIDATED_SWAP,
+        "es",
+    ): "Tu cambio ha sido aprobado",
+    (
+        NotificationType.USER_DENIED_SWAP,
+        "es",
+    ): "Tu cambio ha sido denegado",
+    (
+        NotificationType.USER_REVERSED_SWAP,
+        "es",
+    ): "Tu cambio ha sido revertido",
     # French
     (
         NotificationType.USER_PUBLISHED_SCHEDULE,
         "fr",
     ): "Votre planning a été publié",
     (NotificationType.USER_CREATED_REQUEST, "fr"): "Nouvelle demande reçue",
-    (NotificationType.NEW_SWAP_REQUEST, "fr"): "Nouvelle demande d'échange",
-    (
-        NotificationType.SWAP_STATUS_CHANGED,
-        "fr",
-    ): "Le statut de votre échange a changé",
     (
         NotificationType.USER_ACCEPTED_REQUEST,
         "fr",
@@ -219,6 +339,51 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         NotificationType.USER_LEFT_TEAM,
         "fr",
     ): "Un utilisateur a quitté votre équipe",
+    # Swap notification subjects — French
+    (
+        NotificationType.USER_CREATED_DIRECT_SWAP,
+        "fr",
+    ): "Une nouvelle demande d'échange vous attend",
+    (
+        NotificationType.USER_ACCEPTED_DIRECT_SWAP,
+        "fr",
+    ): "Votre demande d'échange a été acceptée",
+    (
+        NotificationType.USER_REFUSED_DIRECT_SWAP,
+        "fr",
+    ): "Votre demande d'échange a été refusée",
+    (
+        NotificationType.USER_CREATED_OPEN_SWAP,
+        "fr",
+    ): "Un nouvel échange ouvert est disponible",
+    (
+        NotificationType.USER_BID_OPEN_SWAP,
+        "fr",
+    ): "Quelqu'un a proposé un échange sur votre demande ouverte",
+    (
+        NotificationType.USER_SELECTED_BID_OPEN_SWAP,
+        "fr",
+    ): "Votre proposition d'échange a été sélectionnée",
+    (
+        NotificationType.USER_SELECTED_OTHER_BID_OPEN_SWAP,
+        "fr",
+    ): "Une autre proposition a été sélectionnée",
+    (
+        NotificationType.SWAP_READY_FOR_REVIEW,
+        "fr",
+    ): "Un échange est prêt pour votre examen",
+    (
+        NotificationType.USER_VALIDATED_SWAP,
+        "fr",
+    ): "Votre échange a été approuvé",
+    (
+        NotificationType.USER_DENIED_SWAP,
+        "fr",
+    ): "Votre échange a été refusé",
+    (
+        NotificationType.USER_REVERSED_SWAP,
+        "fr",
+    ): "Votre échange a été annulé",
 }
 
 

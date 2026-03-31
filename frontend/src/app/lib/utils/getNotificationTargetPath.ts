@@ -14,9 +14,6 @@ export function getNotificationTargetPath(
       return `${base}/schedule?scheduleId=${notification.eventData.schedule_id ?? ""}`;
     case "user_created_request":
       return `${base}/requests`;
-    case "new_swap_request":
-    case "swap_status_changed":
-      return `${base}/swaps`;
     case "user_accepted_request":
     case "user_denied_request":
       return `${base}/requests`;
@@ -29,6 +26,20 @@ export function getNotificationTargetPath(
     case "user_removed_from_team":
     case "user_left_team":
       return `${base}/settings/teams`;
+    case "user_created_direct_swap":
+    case "user_accepted_direct_swap":
+    case "user_refused_direct_swap":
+    case "user_created_open_swap":
+    case "user_bid_open_swap":
+    case "user_selected_bid_open_swap":
+    case "user_selected_other_bid_open_swap":
+    case "swap_ready_for_review":
+    case "user_validated_swap":
+    case "user_denied_swap":
+    case "user_reversed_swap": {
+      const swapId = notification.eventData.swap_id;
+      return swapId ? `${base}/swaps?swapId=${swapId}` : `${base}/swaps`;
+    }
     default:
       return `${base}/schedule`;
   }
