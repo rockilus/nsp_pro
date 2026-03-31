@@ -53,9 +53,9 @@ _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
     NotificationType.SWAP_STATUS_CHANGED: NotificationKey.SWAP_REQUESTS,
     NotificationType.USER_ACCEPTED_REQUEST: NotificationKey.USER_ACCEPTED_REQUEST,
     NotificationType.USER_DENIED_REQUEST: NotificationKey.USER_DENIED_REQUEST,
-    NotificationType.USER_CREATED_ASSIGNMENT: NotificationKey.ASSIGNMENT_CHANGES,
-    NotificationType.USER_UPDATED_ASSIGNMENT: NotificationKey.ASSIGNMENT_CHANGES,
-    NotificationType.USER_DELETED_ASSIGNMENT: NotificationKey.ASSIGNMENT_CHANGES,
+    NotificationType.USER_CREATED_ASSIGNMENT: NotificationKey.USER_CREATED_ASSIGNMENT,
+    NotificationType.USER_UPDATED_ASSIGNMENT: NotificationKey.USER_UPDATED_ASSIGNMENT,
+    NotificationType.USER_DELETED_ASSIGNMENT: NotificationKey.USER_DELETED_ASSIGNMENT,
     # fmt: off
     NotificationType.USER_RECEIVED_TEAM_INVITE: (
         NotificationKey.USER_RECEIVED_TEAM_INVITE
@@ -518,9 +518,8 @@ class NotificationService(BaseService):
                 )
                 if target_worker and target_worker.user_id:
                     notify_user_ids.append(target_worker.user_id)
-            memberships = self.collection.team_membership_db.get_team_memberships_by_team_id(
-                swap.team_id
-            )
+            mem_db = self.collection.team_membership_db
+            memberships = mem_db.get_team_memberships_by_team_id(swap.team_id)
             owner_user_ids = [
                 m.user_id
                 for m in memberships
@@ -629,7 +628,8 @@ class NotificationService(BaseService):
             worker_name = worker.name if worker else ""
             team = self.collection.team_db.get_team_by_id(request.team_id)
             team_name = team.name if team else ""
-            memberships = self.collection.team_membership_db.get_team_memberships_by_team_id(
+            mem_db = self.collection.team_membership_db
+            memberships = mem_db.get_team_memberships_by_team_id(
                 request.team_id
             )
             manager_user_ids = [

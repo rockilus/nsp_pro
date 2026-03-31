@@ -37,7 +37,9 @@ export type NotificationKey =
   | "swap_requests"
   | "user_accepted_request"
   | "user_denied_request"
-  | "assignment_changes"
+  | "user_created_assignment"
+  | "user_updated_assignment"
+  | "user_deleted_assignment"
   | "user_received_team_invite"
   | "user_accepted_team_invite"
   | "user_removed_from_team"
@@ -49,7 +51,9 @@ export const NOTIFICATION_KEYS: NotificationKey[] = [
   "swap_requests",
   "user_accepted_request",
   "user_denied_request",
-  "assignment_changes",
+  "user_created_assignment",
+  "user_updated_assignment",
+  "user_deleted_assignment",
   "user_received_team_invite",
   "user_accepted_team_invite",
   "user_removed_from_team",
@@ -75,7 +79,9 @@ export const NOTIFICATION_REGISTRY: Record<
   swap_requests: { category: "requests" },
   user_accepted_request: { category: "requests" },
   user_denied_request: { category: "requests" },
-  assignment_changes: { category: "assignments" },
+  user_created_assignment: { category: "assignments" },
+  user_updated_assignment: { category: "assignments" },
+  user_deleted_assignment: { category: "assignments" },
   user_received_team_invite: { category: "team" },
   user_accepted_team_invite: { category: "team" },
   user_removed_from_team: { category: "team" },

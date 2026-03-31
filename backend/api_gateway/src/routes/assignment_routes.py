@@ -209,9 +209,8 @@ async def bulk_update_assignments(
         ids = [a.id for a in assignments if a.id]
         before_map: dict[str, Assignment] = {}
         if ids:
-            before_list = assignment_service.collection.assignment_db.get_assignments_by_ids(
-                ids
-            )
+            asgn_db = assignment_service.collection.assignment_db
+            before_list = asgn_db.get_assignments_by_ids(ids)
             before_map = {a.id: a for a in before_list}
         ar_result = assignment_service.bulk_update_assignments(assignments)
         ops = [

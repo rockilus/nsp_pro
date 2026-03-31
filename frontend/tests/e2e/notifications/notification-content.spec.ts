@@ -197,7 +197,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     type: "user_created_assignment",
     description:
       "manager creates an assignment in a published schedule; worker (user2) is notified",
-    preferenceKey: "assignment_changes",
+    preferenceKey: "user_created_assignment",
     recipientRole: "user2",
     async setup(dbUtils, team, _user1, user2) {
       await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
@@ -230,7 +230,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     type: "user_updated_assignment",
     description:
       "manager changes the date of an assignment in a published schedule; worker (user2) is notified",
-    preferenceKey: "assignment_changes",
+    preferenceKey: "user_updated_assignment",
     recipientRole: "user2",
     async setup(dbUtils, team, _user1, user2) {
       await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
@@ -266,7 +266,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     type: "user_deleted_assignment",
     description:
       "manager deletes an assignment in a published schedule; worker (user2) is notified",
-    preferenceKey: "assignment_changes",
+    preferenceKey: "user_deleted_assignment",
     recipientRole: "user2",
     async setup(dbUtils, team, _user1, user2) {
       await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");

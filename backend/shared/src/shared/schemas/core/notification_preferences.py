@@ -19,7 +19,9 @@ class NotificationKey(StrEnum):
     SWAP_REQUESTS = "swap_requests"
     USER_ACCEPTED_REQUEST = "user_accepted_request"
     USER_DENIED_REQUEST = "user_denied_request"
-    ASSIGNMENT_CHANGES = "assignment_changes"
+    USER_CREATED_ASSIGNMENT = "user_created_assignment"
+    USER_UPDATED_ASSIGNMENT = "user_updated_assignment"
+    USER_DELETED_ASSIGNMENT = "user_deleted_assignment"
     USER_RECEIVED_TEAM_INVITE = "user_received_team_invite"
     USER_ACCEPTED_TEAM_INVITE = "user_accepted_team_invite"
     USER_REMOVED_FROM_TEAM = "user_removed_from_team"
@@ -51,7 +53,13 @@ NOTIFICATION_REGISTRY: dict[NotificationKey, NotificationKeyMeta] = {
     NotificationKey.USER_DENIED_REQUEST: NotificationKeyMeta(
         category=NotificationCategory.REQUESTS,
     ),
-    NotificationKey.ASSIGNMENT_CHANGES: NotificationKeyMeta(
+    NotificationKey.USER_CREATED_ASSIGNMENT: NotificationKeyMeta(
+        category=NotificationCategory.ASSIGNMENTS,
+    ),
+    NotificationKey.USER_UPDATED_ASSIGNMENT: NotificationKeyMeta(
+        category=NotificationCategory.ASSIGNMENTS,
+    ),
+    NotificationKey.USER_DELETED_ASSIGNMENT: NotificationKeyMeta(
         category=NotificationCategory.ASSIGNMENTS,
     ),
     NotificationKey.USER_RECEIVED_TEAM_INVITE: NotificationKeyMeta(
