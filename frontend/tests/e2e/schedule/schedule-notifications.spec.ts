@@ -293,6 +293,69 @@ test.describe("assignment notifications in published schedule", () => {
     expect(match).toBeDefined();
   });
 
+  test("old worker gets user_deleted_assignment, new worker gets user_created_assignment when workerId changes", async ({}, testInfo) => {
+    const { dbUtils, team, user2 } = getCtx(testInfo);
+
+    const id3 = randomUUID().replace(/-/g, "").slice(0, 24);
+    const user3: TestUser = {
+      user_id: id3,
+      email: `notif-sched-u3-${id3}@example.com`,
+      username: `notif-sched-u3-${id3}`,
+      first_name: "Worker",
+      last_name: "Three",
+    };
+    await dbUtils.createTestUser(user3);
+    await dbUtils.addTeamMember(user3.user_id, team.teamId, "member");
+
+    const worker1 = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker One",
+      weeklyHours: 40,
+    });
+    const worker2 = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker Two",
+      weeklyHours: 40,
+    });
+
+    const schedule = await dbUtils.createSchedule(team.teamId);
+    await dbUtils.validateSchedule(schedule.id, team.teamId);
+    await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+    await dbUtils.attachWorkerToUser(worker1.id, user2.user_id, team.teamId);
+    await dbUtils.attachWorkerToUser(worker2.id, user3.user_id, team.teamId);
+
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
+
+    const result = await dbUtils.createAssignmentAndRecurrence({
+      teamId: team.teamId,
+      workerId: worker1.id,
+      shiftId: workShift.id,
+      date: schedule.startDate,
+      scheduleId: schedule.id,
+    });
+    const assignment = result.assignmentsCreated[0];
+
+    // Clear the create notification before testing the reassignment
+    await dbUtils.resetDatabase({ collections: ["notifications"] });
+
+    await dbUtils.updateAssignment(assignment.id, team.teamId, {
+      workerId: worker2.id,
+    });
+
+    const user2Notifs = await dbUtils.getNotificationsAs(user2.user_id);
+    const user3Notifs = await dbUtils.getNotificationsAs(user3.user_id);
+
+    // Old worker's user receives a deletion notification
+    expect(
+      user2Notifs.find((n) => n.type === "user_deleted_assignment"),
+    ).toBeDefined();
+    // New worker's user receives a creation notification
+    expect(
+      user3Notifs.find((n) => n.type === "user_created_assignment"),
+    ).toBeDefined();
+  });
+
   test("no notification when only fixed flag changes", async ({}, testInfo) => {
     const { dbUtils, team, user2 } = getCtx(testInfo);
     const worker = await dbUtils.createWorker({
@@ -364,6 +427,188 @@ test.describe("suppression for campaign (non-validated) schedule", () => {
       (n) => n.type === "user_created_assignment",
     );
     expect(match).toBeUndefined();
+  });
+
+  test("no notification when assignment is deleted in an unvalidated schedule", async ({}, testInfo) => {
+    const { dbUtils, team, user2 } = getCtx(testInfo);
+    const worker = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker User",
+      weeklyHours: 40,
+    });
+    const schedule = await dbUtils.createSchedule(team.teamId);
+    await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+    await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
+    const result = await dbUtils.createAssignmentAndRecurrence({
+      teamId: team.teamId,
+      workerId: worker.id,
+      shiftId: workShift.id,
+      date: schedule.startDate,
+      scheduleId: schedule.id,
+    });
+    const assignment = result.assignmentsCreated[0];
+    await dbUtils.deleteAssignment(assignment.id, team.teamId);
+
+    const notifications = await dbUtils.getNotificationsAs(user2.user_id);
+    expect(
+      notifications.find((n) => n.type === "user_deleted_assignment"),
+    ).toBeUndefined();
+  });
+
+  test("no notification when assignment date is updated in an unvalidated schedule", async ({}, testInfo) => {
+    const { dbUtils, team, user2 } = getCtx(testInfo);
+    const worker = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker User",
+      weeklyHours: 40,
+    });
+    const schedule = await dbUtils.createSchedule(team.teamId);
+    await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+    await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
+    const result = await dbUtils.createAssignmentAndRecurrence({
+      teamId: team.teamId,
+      workerId: worker.id,
+      shiftId: workShift.id,
+      date: schedule.startDate,
+      scheduleId: schedule.id,
+    });
+    const assignment = result.assignmentsCreated[0];
+    await dbUtils.updateAssignment(assignment.id, team.teamId, {
+      date: schedule.startDate.add(1, "day"),
+    });
+
+    const notifications = await dbUtils.getNotificationsAs(user2.user_id);
+    expect(
+      notifications.find((n) => n.type === "user_updated_assignment"),
+    ).toBeUndefined();
+  });
+
+  test("no notification when assignment shift is updated in an unvalidated schedule", async ({}, testInfo) => {
+    const { dbUtils, team, user2 } = getCtx(testInfo);
+    const worker = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker User",
+      weeklyHours: 40,
+    });
+    const schedule = await dbUtils.createSchedule(team.teamId);
+    await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+    await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const normalShifts = allShifts.filter(
+      (s) => s.shiftType === ShiftType.NORMAL,
+    );
+    test.skip(normalShifts.length < 2, "Team has fewer than 2 normal shifts");
+
+    const result = await dbUtils.createAssignmentAndRecurrence({
+      teamId: team.teamId,
+      workerId: worker.id,
+      shiftId: normalShifts[0].id,
+      date: schedule.startDate,
+      scheduleId: schedule.id,
+    });
+    const assignment = result.assignmentsCreated[0];
+    await dbUtils.updateAssignment(assignment.id, team.teamId, {
+      shiftId: normalShifts[1].id,
+    });
+
+    const notifications = await dbUtils.getNotificationsAs(user2.user_id);
+    expect(
+      notifications.find((n) => n.type === "user_updated_assignment"),
+    ).toBeUndefined();
+  });
+
+  test("no notification for either worker when worker is reassigned in an unvalidated schedule", async ({}, testInfo) => {
+    const { dbUtils, team, user2 } = getCtx(testInfo);
+
+    const id3 = randomUUID().replace(/-/g, "").slice(0, 24);
+    const user3: TestUser = {
+      user_id: id3,
+      email: `notif-sched-u3-${id3}@example.com`,
+      username: `notif-sched-u3-${id3}`,
+      first_name: "Worker",
+      last_name: "Three",
+    };
+    await dbUtils.createTestUser(user3);
+    await dbUtils.addTeamMember(user3.user_id, team.teamId, "member");
+
+    const worker1 = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker One",
+      weeklyHours: 40,
+    });
+    const worker2 = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker Two",
+      weeklyHours: 40,
+    });
+
+    // Schedule is NOT validated
+    const schedule = await dbUtils.createSchedule(team.teamId);
+    await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+    await dbUtils.attachWorkerToUser(worker1.id, user2.user_id, team.teamId);
+    await dbUtils.attachWorkerToUser(worker2.id, user3.user_id, team.teamId);
+
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
+    const result = await dbUtils.createAssignmentAndRecurrence({
+      teamId: team.teamId,
+      workerId: worker1.id,
+      shiftId: workShift.id,
+      date: schedule.startDate,
+      scheduleId: schedule.id,
+    });
+    const assignment = result.assignmentsCreated[0];
+    await dbUtils.updateAssignment(assignment.id, team.teamId, {
+      workerId: worker2.id,
+    });
+
+    const user2Notifs = await dbUtils.getNotificationsAs(user2.user_id);
+    const user3Notifs = await dbUtils.getNotificationsAs(user3.user_id);
+
+    expect(
+      user2Notifs.find((n) => n.type === "user_deleted_assignment"),
+    ).toBeUndefined();
+    expect(
+      user3Notifs.find((n) => n.type === "user_created_assignment"),
+    ).toBeUndefined();
+  });
+
+  test("no notification when fixed flag is toggled in an unvalidated schedule", async ({}, testInfo) => {
+    const { dbUtils, team, user2 } = getCtx(testInfo);
+    const worker = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker User",
+      weeklyHours: 40,
+    });
+    const schedule = await dbUtils.createSchedule(team.teamId);
+    await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+    await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
+    const result = await dbUtils.createAssignmentAndRecurrence({
+      teamId: team.teamId,
+      workerId: worker.id,
+      shiftId: workShift.id,
+      date: schedule.startDate,
+      scheduleId: schedule.id,
+    });
+    const assignment = result.assignmentsCreated[0];
+    await dbUtils.updateAssignment(assignment.id, team.teamId, {
+      fixed: !assignment.fixed,
+    });
+
+    const notifications = await dbUtils.getNotificationsAs(user2.user_id);
+    expect(
+      notifications.find((n) => n.type === "user_updated_assignment"),
+    ).toBeUndefined();
   });
 
   test("notification fires when assignment date is outside any schedule range", async ({}, testInfo) => {
@@ -491,5 +736,226 @@ test.describe("bulk deduplication", () => {
       (n) => n.type === "user_deleted_assignment",
     );
     expect(deleted.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("bulk update date: user_updated_assignment fires for affected assignments", async ({}, testInfo) => {
+    const { dbUtils, team, user2 } = getCtx(testInfo);
+    const worker = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker User",
+      weeklyHours: 40,
+    });
+    const schedule = await dbUtils.createSchedule(team.teamId);
+    await dbUtils.validateSchedule(schedule.id, team.teamId);
+    await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+    await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
+
+    const [r1, r2] = await Promise.all([
+      dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker.id,
+        shiftId: workShift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      }),
+      dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker.id,
+        shiftId: workShift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      }),
+    ]);
+    await dbUtils.resetDatabase({ collections: ["notifications"] });
+
+    await Promise.all([
+      dbUtils.updateAssignment(r1.assignmentsCreated[0].id, team.teamId, {
+        date: schedule.startDate.add(2, "day"),
+      }),
+      dbUtils.updateAssignment(r2.assignmentsCreated[0].id, team.teamId, {
+        date: schedule.startDate.add(3, "day"),
+      }),
+    ]);
+
+    const notifications = await dbUtils.getNotificationsAs(user2.user_id);
+    const updated = notifications.filter(
+      (n) => n.type === "user_updated_assignment",
+    );
+    expect(updated.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("bulk update shift: user_updated_assignment fires for affected assignments", async ({}, testInfo) => {
+    const { dbUtils, team, user2 } = getCtx(testInfo);
+    const worker = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker User",
+      weeklyHours: 40,
+    });
+    const schedule = await dbUtils.createSchedule(team.teamId);
+    await dbUtils.validateSchedule(schedule.id, team.teamId);
+    await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+    await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const normalShifts = allShifts.filter(
+      (s) => s.shiftType === ShiftType.NORMAL,
+    );
+    test.skip(normalShifts.length < 2, "Team has fewer than 2 normal shifts");
+
+    const [r1, r2] = await Promise.all([
+      dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker.id,
+        shiftId: normalShifts[0].id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      }),
+      dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker.id,
+        shiftId: normalShifts[0].id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      }),
+    ]);
+    await dbUtils.resetDatabase({ collections: ["notifications"] });
+
+    await Promise.all([
+      dbUtils.updateAssignment(r1.assignmentsCreated[0].id, team.teamId, {
+        shiftId: normalShifts[1].id,
+      }),
+      dbUtils.updateAssignment(r2.assignmentsCreated[0].id, team.teamId, {
+        shiftId: normalShifts[1].id,
+      }),
+    ]);
+
+    const notifications = await dbUtils.getNotificationsAs(user2.user_id);
+    const updated = notifications.filter(
+      (n) => n.type === "user_updated_assignment",
+    );
+    expect(updated.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("bulk update worker: user_deleted_assignment for old worker, user_created_assignment for new worker", async ({}, testInfo) => {
+    const { dbUtils, team, user2 } = getCtx(testInfo);
+
+    const id3 = randomUUID().replace(/-/g, "").slice(0, 24);
+    const user3: TestUser = {
+      user_id: id3,
+      email: `notif-sched-u3-${id3}@example.com`,
+      username: `notif-sched-u3-${id3}`,
+      first_name: "Worker",
+      last_name: "Three",
+    };
+    await dbUtils.createTestUser(user3);
+    await dbUtils.addTeamMember(user3.user_id, team.teamId, "member");
+
+    const worker1 = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker One",
+      weeklyHours: 40,
+    });
+    const worker2 = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker Two",
+      weeklyHours: 40,
+    });
+
+    const schedule = await dbUtils.createSchedule(team.teamId);
+    await dbUtils.validateSchedule(schedule.id, team.teamId);
+    await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+    await dbUtils.attachWorkerToUser(worker1.id, user2.user_id, team.teamId);
+    await dbUtils.attachWorkerToUser(worker2.id, user3.user_id, team.teamId);
+
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
+
+    const [r1, r2] = await Promise.all([
+      dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: workShift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      }),
+      dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker1.id,
+        shiftId: workShift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      }),
+    ]);
+    await dbUtils.resetDatabase({ collections: ["notifications"] });
+
+    await Promise.all([
+      dbUtils.updateAssignment(r1.assignmentsCreated[0].id, team.teamId, {
+        workerId: worker2.id,
+      }),
+      dbUtils.updateAssignment(r2.assignmentsCreated[0].id, team.teamId, {
+        workerId: worker2.id,
+      }),
+    ]);
+
+    const user2Notifs = await dbUtils.getNotificationsAs(user2.user_id);
+    const user3Notifs = await dbUtils.getNotificationsAs(user3.user_id);
+
+    expect(
+      user2Notifs.find((n) => n.type === "user_deleted_assignment"),
+    ).toBeDefined();
+    expect(
+      user3Notifs.find((n) => n.type === "user_created_assignment"),
+    ).toBeDefined();
+  });
+
+  test("bulk update fixed only: no notification fires for any assignment", async ({}, testInfo) => {
+    const { dbUtils, team, user2 } = getCtx(testInfo);
+    const worker = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: "Worker User",
+      weeklyHours: 40,
+    });
+    const schedule = await dbUtils.createSchedule(team.teamId);
+    await dbUtils.validateSchedule(schedule.id, team.teamId);
+    await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+    await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
+
+    const allShifts = await dbUtils.getAllShifts(team.teamId);
+    const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
+
+    const [r1, r2] = await Promise.all([
+      dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker.id,
+        shiftId: workShift.id,
+        date: schedule.startDate,
+        scheduleId: schedule.id,
+      }),
+      dbUtils.createAssignmentAndRecurrence({
+        teamId: team.teamId,
+        workerId: worker.id,
+        shiftId: workShift.id,
+        date: schedule.startDate.add(1, "day"),
+        scheduleId: schedule.id,
+      }),
+    ]);
+    await dbUtils.resetDatabase({ collections: ["notifications"] });
+
+    await Promise.all([
+      dbUtils.updateAssignment(r1.assignmentsCreated[0].id, team.teamId, {
+        fixed: !r1.assignmentsCreated[0].fixed,
+      }),
+      dbUtils.updateAssignment(r2.assignmentsCreated[0].id, team.teamId, {
+        fixed: !r2.assignmentsCreated[0].fixed,
+      }),
+    ]);
+
+    const notifications = await dbUtils.getNotificationsAs(user2.user_id);
+    expect(
+      notifications.find((n) => n.type === "user_updated_assignment"),
+    ).toBeUndefined();
   });
 });
