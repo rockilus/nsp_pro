@@ -63,20 +63,6 @@ test.describe("Swap notifications", () => {
 
     const dbUtils = new DatabaseTestUtils();
 
-    // Reset all swap-related collections before each test to prevent leakage.
-    await dbUtils.resetDatabase({
-      collections: [
-        "teams",
-        "team_memberships",
-        "notifications",
-        "workers",
-        "swaps",
-        "assignments",
-        "schedules",
-        "users",
-      ],
-    });
-
     // Create unique users per test run to prevent cross-worker notification leakage.
     const ownerId = randomUUID().replace(/-/g, "").slice(0, 24);
     const memberId = randomUUID().replace(/-/g, "").slice(0, 24);

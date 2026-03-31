@@ -17,14 +17,6 @@ test.describe("NotificationBell", () => {
     const runId = testContextMap.initRunId(testInfo);
 
     const dbUtils = new DatabaseTestUtils();
-    await dbUtils.resetDatabase({
-      collections: [
-        "teams",
-        "team_memberships",
-        "team_invitations",
-        "notifications",
-      ],
-    });
 
     const id1 = randomUUID().replace(/-/g, "").slice(0, 24);
     const id2 = randomUUID().replace(/-/g, "").slice(0, 24);

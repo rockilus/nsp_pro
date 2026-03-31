@@ -48,9 +48,6 @@ test.beforeEach(async ({}, testInfo) => {
   (testInfo as any).__runId = runId;
 
   const dbUtils = new DatabaseTestUtils();
-  await dbUtils.resetDatabase({
-    collections: ["teams", "team_memberships", "notifications"],
-  });
 
   const id1 = randomUUID().replace(/-/g, "").slice(0, 24);
   const id2 = randomUUID().replace(/-/g, "").slice(0, 24);
@@ -397,9 +394,6 @@ test.describe("assignment notifications in published schedule", () => {
     });
     const assignment = result.assignmentsCreated[0];
 
-    // Clear the create notification before testing the reassignment
-    await dbUtils.resetDatabase({ collections: ["notifications"] });
-
     await dbUtils.updateAssignment(assignment.id, team.teamId, {
       workerId: worker2.id,
     });
@@ -456,9 +450,6 @@ test.describe("assignment notifications in published schedule", () => {
       scheduleId: schedule.id,
     });
     const assignment = result.assignmentsCreated[0];
-
-    // Clear notifications created by the assignment creation
-    await dbUtils.resetDatabase({ collections: ["notifications"] });
 
     // Toggle the fixed flag — should NOT trigger user_updated_assignment
     await dbUtils.updateAssignment(assignment.id, team.teamId, {
@@ -810,9 +801,6 @@ test.describe("bulk deduplication", () => {
       scheduleId: schedule.id,
     });
 
-    // Reset created notifications so we only count delete notifications
-    await dbUtils.resetDatabase({ collections: ["notifications"] });
-
     await dbUtils.deleteAssignment(
       result1.assignmentsCreated[0].id,
       team.teamId,
@@ -867,7 +855,6 @@ test.describe("bulk deduplication", () => {
         scheduleId: schedule.id,
       }),
     ]);
-    await dbUtils.resetDatabase({ collections: ["notifications"] });
 
     await Promise.all([
       dbUtils.updateAssignment(r1.assignmentsCreated[0].id, team.teamId, {
@@ -926,7 +913,6 @@ test.describe("bulk deduplication", () => {
         scheduleId: schedule.id,
       }),
     ]);
-    await dbUtils.resetDatabase({ collections: ["notifications"] });
 
     await Promise.all([
       dbUtils.updateAssignment(r1.assignmentsCreated[0].id, team.teamId, {
@@ -1001,7 +987,6 @@ test.describe("bulk deduplication", () => {
         scheduleId: schedule.id,
       }),
     ]);
-    await dbUtils.resetDatabase({ collections: ["notifications"] });
 
     await Promise.all([
       dbUtils.updateAssignment(r1.assignmentsCreated[0].id, team.teamId, {
@@ -1071,7 +1056,6 @@ test.describe("bulk deduplication", () => {
         scheduleId: schedule.id,
       }),
     ]);
-    await dbUtils.resetDatabase({ collections: ["notifications"] });
 
     await Promise.all([
       dbUtils.updateAssignment(r1.assignmentsCreated[0].id, team.teamId, {

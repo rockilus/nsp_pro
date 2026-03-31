@@ -50,9 +50,6 @@ test.describe("Notification Settings", () => {
     (testInfo as any).testRunId = testRunId;
 
     const dbUtils = new DatabaseTestUtils();
-    await dbUtils.resetDatabase({
-      collections: ["teams", "team_memberships", "notification_preferences"],
-    });
 
     const team = await dbUtils.createTeam({
       name: `Notif Settings Team ${workerIndex}-${Date.now()}`,

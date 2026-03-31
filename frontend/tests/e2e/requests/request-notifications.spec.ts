@@ -42,15 +42,6 @@ test.describe("Request notifications", () => {
     (testInfo as any).testRunId = testRunId;
 
     const dbUtils = new DatabaseTestUtils();
-    await dbUtils.resetDatabase({
-      collections: [
-        "teams",
-        "team_memberships",
-        "notifications",
-        "workers",
-        "requests",
-      ],
-    });
 
     // Create two unique users per test run to prevent cross-worker leakage.
     const managerId = randomUUID().replace(/-/g, "").slice(0, 24);
