@@ -132,9 +132,9 @@ test.describe("user_published_schedule", () => {
     expect(match!.userId).toBe(user2.user_id);
     expect(match!.teamId).toBe(team.teamId);
     expect(match!.type).toBe("user_published_schedule" as NotificationTypeT);
-    expect(match!.eventData.schedule_id).toBe(schedule.id);
-    expect(match!.eventData.schedule_name).toBeTruthy();
-    expect(match!.eventData.team_name).toBe(team.name);
+    expect(match!.eventData.scheduleId).toBe(schedule.id);
+    expect(match!.eventData.scheduleName).toBeTruthy();
+    expect(match!.eventData.teamName).toBe(team.name);
   });
 
   test("does not notify workers without a linked user", async ({}, testInfo) => {
@@ -174,7 +174,11 @@ test.describe("assignment notifications in published schedule", () => {
     await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
 
     const allShifts = await dbUtils.getAllShifts(team.teamId);
-    const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
+    const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL);
+
+    if (!workShift) {
+      throw new Error("No normal shift found for the team");
+    }
 
     await dbUtils.createAssignmentAndRecurrence({
       teamId: team.teamId,
@@ -192,9 +196,9 @@ test.describe("assignment notifications in published schedule", () => {
     expect(match!.userId).toBe(user2.user_id);
     expect(match!.teamId).toBe(team.teamId);
     expect(match!.type).toBe("user_created_assignment" as NotificationTypeT);
-    expect(match!.eventData.shift_name).toBe(workShift.name);
+    expect(match!.eventData.shiftName).toBe(workShift.name);
     expect(match!.eventData.date).toBe(schedule.startDate.format("YYYY-MM-DD"));
-    expect(match!.eventData.team_name).toBe(team.name);
+    expect(match!.eventData.teamName).toBe(team.name);
   });
 
   test("user_deleted_assignment fires when assignment is deleted", async ({}, testInfo) => {
@@ -229,9 +233,9 @@ test.describe("assignment notifications in published schedule", () => {
     expect(match!.userId).toBe(user2.user_id);
     expect(match!.teamId).toBe(team.teamId);
     expect(match!.type).toBe("user_deleted_assignment" as NotificationTypeT);
-    expect(match!.eventData.shift_name).toBe(workShift.name);
+    expect(match!.eventData.shiftName).toBe(workShift.name);
     expect(match!.eventData.date).toBe(schedule.startDate.format("YYYY-MM-DD"));
-    expect(match!.eventData.team_name).toBe(team.name);
+    expect(match!.eventData.teamName).toBe(team.name);
   });
 
   test("user_updated_assignment fires when date changes", async ({}, testInfo) => {
@@ -268,11 +272,11 @@ test.describe("assignment notifications in published schedule", () => {
     expect(match!.userId).toBe(user2.user_id);
     expect(match!.teamId).toBe(team.teamId);
     expect(match!.type).toBe("user_updated_assignment" as NotificationTypeT);
-    expect(match!.eventData.shift_name).toBe(workShift.name);
+    expect(match!.eventData.shiftName).toBe(workShift.name);
     expect(match!.eventData.date).toBe(
       schedule.startDate.add(1, "day").format("YYYY-MM-DD"),
     );
-    expect(match!.eventData.team_name).toBe(team.name);
+    expect(match!.eventData.teamName).toBe(team.name);
   });
 
   test("user_updated_assignment fires when shift changes", async ({}, testInfo) => {
@@ -314,9 +318,9 @@ test.describe("assignment notifications in published schedule", () => {
     expect(match!.userId).toBe(user2.user_id);
     expect(match!.teamId).toBe(team.teamId);
     expect(match!.type).toBe("user_updated_assignment" as NotificationTypeT);
-    expect(match!.eventData.shift_name).toBe(normalShifts[1].name);
+    expect(match!.eventData.shiftName).toBe(normalShifts[1].name);
     expect(match!.eventData.date).toBe(schedule.startDate.format("YYYY-MM-DD"));
-    expect(match!.eventData.team_name).toBe(team.name);
+    expect(match!.eventData.teamName).toBe(team.name);
   });
 
   test("old worker gets user_deleted_assignment, new worker gets user_created_assignment when workerId changes", async ({}, testInfo) => {
@@ -382,8 +386,8 @@ test.describe("assignment notifications in published schedule", () => {
     expect(deletedNotif!.type).toBe(
       "user_deleted_assignment" as NotificationTypeT,
     );
-    expect(deletedNotif!.eventData.shift_name).toBe(workShift.name);
-    expect(deletedNotif!.eventData.team_name).toBe(team.name);
+    expect(deletedNotif!.eventData.shiftName).toBe(workShift.name);
+    expect(deletedNotif!.eventData.teamName).toBe(team.name);
 
     // New worker's user receives a creation notification
     const createdNotif = user3Notifs.find(
@@ -395,8 +399,8 @@ test.describe("assignment notifications in published schedule", () => {
     expect(createdNotif!.type).toBe(
       "user_created_assignment" as NotificationTypeT,
     );
-    expect(createdNotif!.eventData.shift_name).toBe(workShift.name);
-    expect(createdNotif!.eventData.team_name).toBe(team.name);
+    expect(createdNotif!.eventData.shiftName).toBe(workShift.name);
+    expect(createdNotif!.eventData.teamName).toBe(team.name);
   });
 
   test("no notification when only fixed flag changes", async ({}, testInfo) => {
@@ -684,9 +688,9 @@ test.describe("suppression for campaign (non-validated) schedule", () => {
     expect(match!.userId).toBe(user2.user_id);
     expect(match!.teamId).toBe(team.teamId);
     expect(match!.type).toBe("user_created_assignment" as NotificationTypeT);
-    expect(match!.eventData.shift_name).toBe(workShift.name);
+    expect(match!.eventData.shiftName).toBe(workShift.name);
     expect(match!.eventData.date).toBe(farFutureDate.format("YYYY-MM-DD"));
-    expect(match!.eventData.team_name).toBe(team.name);
+    expect(match!.eventData.teamName).toBe(team.name);
   });
 });
 
@@ -741,8 +745,8 @@ test.describe("bulk deduplication", () => {
     expect(created[0].type).toBe(
       "user_created_assignment" as NotificationTypeT,
     );
-    expect(created[0].eventData.shift_name).toBe(workShift.name);
-    expect(created[0].eventData.team_name).toBe(team.name);
+    expect(created[0].eventData.shiftName).toBe(workShift.name);
+    expect(created[0].eventData.teamName).toBe(team.name);
   });
 
   test("bulk delete: notifications are created for each deleted assignment", async ({}, testInfo) => {
@@ -797,8 +801,8 @@ test.describe("bulk deduplication", () => {
     expect(deleted[0].type).toBe(
       "user_deleted_assignment" as NotificationTypeT,
     );
-    expect(deleted[0].eventData.shift_name).toBe(workShift.name);
-    expect(deleted[0].eventData.team_name).toBe(team.name);
+    expect(deleted[0].eventData.shiftName).toBe(workShift.name);
+    expect(deleted[0].eventData.teamName).toBe(team.name);
   });
 
   test("bulk update date: user_updated_assignment fires for affected assignments", async ({}, testInfo) => {
@@ -853,8 +857,8 @@ test.describe("bulk deduplication", () => {
     expect(updated[0].type).toBe(
       "user_updated_assignment" as NotificationTypeT,
     );
-    expect(updated[0].eventData.shift_name).toBe(workShift.name);
-    expect(updated[0].eventData.team_name).toBe(team.name);
+    expect(updated[0].eventData.shiftName).toBe(workShift.name);
+    expect(updated[0].eventData.teamName).toBe(team.name);
   });
 
   test("bulk update shift: user_updated_assignment fires for affected assignments", async ({}, testInfo) => {
@@ -912,8 +916,8 @@ test.describe("bulk deduplication", () => {
     expect(updated[0].type).toBe(
       "user_updated_assignment" as NotificationTypeT,
     );
-    expect(updated[0].eventData.shift_name).toBe(normalShifts[1].name);
-    expect(updated[0].eventData.team_name).toBe(team.name);
+    expect(updated[0].eventData.shiftName).toBe(normalShifts[1].name);
+    expect(updated[0].eventData.teamName).toBe(team.name);
   });
 
   test("bulk update worker: user_deleted_assignment for old worker, user_created_assignment for new worker", async ({}, testInfo) => {
@@ -989,8 +993,8 @@ test.describe("bulk deduplication", () => {
     expect(bulkDeletedNotif!.type).toBe(
       "user_deleted_assignment" as NotificationTypeT,
     );
-    expect(bulkDeletedNotif!.eventData.shift_name).toBe(workShift.name);
-    expect(bulkDeletedNotif!.eventData.team_name).toBe(team.name);
+    expect(bulkDeletedNotif!.eventData.shiftName).toBe(workShift.name);
+    expect(bulkDeletedNotif!.eventData.teamName).toBe(team.name);
 
     const bulkCreatedNotif = user3Notifs.find(
       (n) => n.type === "user_created_assignment",
@@ -1001,8 +1005,8 @@ test.describe("bulk deduplication", () => {
     expect(bulkCreatedNotif!.type).toBe(
       "user_created_assignment" as NotificationTypeT,
     );
-    expect(bulkCreatedNotif!.eventData.shift_name).toBe(workShift.name);
-    expect(bulkCreatedNotif!.eventData.team_name).toBe(team.name);
+    expect(bulkCreatedNotif!.eventData.shiftName).toBe(workShift.name);
+    expect(bulkCreatedNotif!.eventData.teamName).toBe(team.name);
   });
 
   test("bulk update fixed only: no notification fires for any assignment", async ({}, testInfo) => {
