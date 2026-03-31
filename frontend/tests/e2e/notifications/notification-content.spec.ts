@@ -1083,7 +1083,7 @@ for (const tc of NOTIFICATION_TEST_CASES) {
 
       await navigateToNotificationsAsUser(page, dbUtils, recipient.user_id);
       await expect(
-        page.locator('[data-testid="notification-item"]'),
+        page.locator(`[data-notification-type="${tc.type}"]`),
       ).toHaveCount(0);
     });
   });
