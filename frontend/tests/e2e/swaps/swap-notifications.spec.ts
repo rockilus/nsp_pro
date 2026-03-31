@@ -728,7 +728,7 @@ test.describe("Swap notifications", () => {
     await dbUtils.approveSwapAsUser(swap.id, owner.user_id);
 
     // Owner (manager) reverts the completed swap.
-    await dbUtils.revertSwap(swap.id);
+    await dbUtils.revertSwapAs(owner.user_id, swap.id);
 
     // Both parties should receive user_reversed_swap.
     const memberNotifications = await dbUtils.getNotificationsAs(

@@ -2585,6 +2585,25 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Revert a completed swap acting as a specific user (leader action)
+   */
+  async revertSwapAs(userId: string, swapId: string): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.revertSwap(userClient, swapId);
+      console.log(`✅ Reverted swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to revert swap as user:", error);
+      throw new Error(
+        `Failed to revert swap as user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
    * Delete a swap
    */
   async deleteSwap(swapId: string): Promise<void> {
