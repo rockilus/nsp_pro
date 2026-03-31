@@ -75,12 +75,19 @@ test.beforeEach(async ({}, testInfo) => {
     ownerUserId: user1.user_id,
   });
 
-  // Ensure the team has at least one normal shift for the tests
+  // Ensure the team has at least two normal shifts for the tests
   await dbUtils.createShift({
     teamId: team.teamId,
     name: "Normal Shift",
     startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
     endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+    shiftType: ShiftType.NORMAL,
+  });
+  await dbUtils.createShift({
+    teamId: team.teamId,
+    name: "Normal Shift 2",
+    startTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+    endTime: dayjs.utc().hour(0).minute(0).second(0).millisecond(0),
     shiftType: ShiftType.NORMAL,
   });
 
