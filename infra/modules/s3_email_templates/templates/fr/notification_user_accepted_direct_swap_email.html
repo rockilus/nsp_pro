@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">Demande d'Échange Acceptée</div>
+        <div class="email-body">
+            <p>Bonjour {recipient_name},</p>
+            <p><strong>{target_name}</strong> a accepté votre demande d'échange pour le créneau <strong>{shift_name}</strong> le <strong>{date}</strong> dans l'équipe <strong>{team_name}</strong>.</p>
+            <p>Cliquez sur le bouton ci-dessous pour voir l'échange :</p>
+            <a href="{notification_link}" class="cta-button">Voir les Échanges</a>
+        </div>
+        <div class="email-footer">
+            <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+            <p>Merci,<br>L'Équipe Rockilus</p>
+        </div>
+    </div>
+</body>
+</html>
