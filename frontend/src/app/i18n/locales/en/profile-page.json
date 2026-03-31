@@ -20,5 +20,6 @@
     "send_verification_email": "Send verification email",
     "update_password": "Update password",
     "user_profile": "User profile",
-    "verified": "Verified"
+    "verified": "Verified",
+    "notifications": "Notifications"
 }

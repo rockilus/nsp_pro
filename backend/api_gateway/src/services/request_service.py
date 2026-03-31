@@ -20,6 +20,7 @@ from shared.schemas.core.constraint import SWOIdTypes
 
 from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
+from src.services.notification_service import NotificationService
 
 
 class RequestService(BaseService):
@@ -28,11 +29,13 @@ class RequestService(BaseService):
         self,
         collection: DatabaseCollections,
         assignment_service: AssignmentService,
+        notification_service: NotificationService,
     ):
         super().__init__(collection)
         self.assignment_service = assignment_service
+        self.notification_service = notification_service
 
-    def create_request(
+    async def create_request(
         self, request: Request, author_id: str, team_role: str
     ) -> RequestAugmented:
         if not self.authz_request_team_member(
@@ -48,6 +51,7 @@ class RequestService(BaseService):
         request.status = RequestStatus.PENDING
         request.fulfillment = FulfillmentStatus.UNFULFILLED
         new_request = self.collection.request_db.create_request(request)
+        await self.notification_service.notify_user_created_request(new_request)
         return self._to_request_augmented(new_request)
 
     def get_requests(
@@ -107,7 +111,7 @@ class RequestService(BaseService):
         new_request = self.collection.request_db.update_request(request)
         return self._to_request_augmented(new_request)
 
-    def approve_request(
+    async def approve_request(
         self, request_id: str
     ) -> tuple[RequestAugmented, List[Assignment]]:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
@@ -146,6 +150,8 @@ class RequestService(BaseService):
             request.fulfillment = FulfillmentStatus.FULFILLED
         request.status = RequestStatus.APPROVED
         updated_request = self.collection.request_db.update_request(request)
+        # Notify the worker
+        await self.notification_service.notify_user_accepted_request(updated_request)
         return self._to_request_augmented(updated_request), assignments_created
 
     def _create_assignments_for_single_shift_request(
@@ -198,7 +204,7 @@ class RequestService(BaseService):
                 created_assignments.extend(ar_result.assignments_created)
         return created_assignments
 
-    def deny_request(self, request_id: str) -> RequestAugmented:
+    async def deny_request(self, request_id: str) -> RequestAugmented:
         request = self.collection.request_db.get_request_by_id(request_id=request_id)
         if not request:
             raise ValueError(f"Request with id {request_id} not found")
@@ -207,6 +213,8 @@ class RequestService(BaseService):
         request.status = RequestStatus.DENIED
         request.fulfillment = FulfillmentStatus.UNFULFILLED
         updated_request = self.collection.request_db.update_request(request)
+        # Notify the worker
+        await self.notification_service.notify_user_denied_request(updated_request)
         return self._to_request_augmented(updated_request)
 
     def rescind_request(self, request_id: str) -> tuple[RequestAugmented, List[str]]:

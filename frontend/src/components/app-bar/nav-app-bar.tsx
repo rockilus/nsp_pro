@@ -7,6 +7,7 @@ import Toolbar from "@mui/material/Toolbar";
 // Components
 import AccountMenu from "./account-menu";
 import NavLinks from "./nav-links";
+import NotificationBell from "./notification-bell";
 // Context
 import { useTeam } from "@/context/TeamContext";
 // Styles
@@ -40,7 +41,10 @@ const NavAppBar = ({ lng }: { lng: string }) => {
             height={logoHeight}
           />
           <NavLinks lng={lng} selectedTeam={selectedTeam} />
-          <AccountMenu lng={lng} />
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <NotificationBell lng={lng} />
+            <AccountMenu lng={lng} />
+          </div>
         </div>
       </Toolbar>
     </AppBar>

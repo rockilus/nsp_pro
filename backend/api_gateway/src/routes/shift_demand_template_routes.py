@@ -85,14 +85,14 @@ async def create_template(
     except Exception as e:
         log_info(f"Internal error creating template: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": "internal_error",
-                "operation": "create",
-                "message": "An internal error occurred. Please try again later.",
-            },
-        ) from e
+        # raise HTTPException(
+        #     status_code=500,
+        #     detail={
+        #         "error": "internal_error",
+        #         "operation": "create",
+        #         "message": "An internal error occurred. Please try again later.",
+        #     },
+        # ) from e
 
 
 @router.get("/shift-demand-templates/teams/{team_id}")
@@ -132,7 +132,7 @@ async def get_templates_by_team(
     except Exception as e:
         log_info(f"Failed to get templates for team {team_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get("/shift-demand-templates/{template_id}/teams/{team_id}")
@@ -185,7 +185,7 @@ async def get_template_by_id(
     except Exception as e:
         log_info(f"Failed to get template {template_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.put("/shift-demand-templates/{template_id}/teams/{team_id}")
@@ -254,15 +254,15 @@ async def update_template(
     except Exception as e:
         log_info(f"Internal error updating template {template_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": "internal_error",
-                "operation": "update",
-                "message": "An internal error occurred. Please try again later.",
-                "template_id": template_id,
-            },
-        ) from e
+        # raise HTTPException(
+        #     status_code=500,
+        #     detail={
+        #         "error": "internal_error",
+        #         "operation": "update",
+        #         "message": "An internal error occurred. Please try again later.",
+        #         "template_id": template_id,
+        #     },
+        # ) from e
 
 
 @router.delete("/shift-demand-templates/{template_id}/teams/{team_id}", status_code=204)
@@ -330,7 +330,7 @@ async def delete_template(
     except Exception as e:
         log_info(f"Failed to delete template {template_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.post("/shift-demand-templates/{template_id}/apply-demands/teams/{team_id}")
@@ -419,7 +419,7 @@ async def apply_demands_to_template_week(
     except Exception as e:
         log_info(f"Failed to apply demands to template {template_id}: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.post("/shift-demand-templates/{template_id}/apply-to-range/teams/{team_id}")
@@ -495,4 +495,4 @@ async def apply_template_to_date_range(
     except Exception as e:
         log_info(f"Failed to apply template {template_id} to date range: {str(e)}")
         handle_routes_errors(e)
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        # raise HTTPException(status_code=500, detail="Internal server error") from e

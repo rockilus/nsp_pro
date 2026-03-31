@@ -6,6 +6,11 @@
  */
 
 import { TeamApi } from "../../src/app/lib/api/teamApi";
+import { TeamInvitationApi } from "../../src/app/lib/api/teamInvitationApi";
+import {
+  NotificationApi,
+  NotificationsResponse,
+} from "../../src/app/lib/api/notificationApi";
 import { WorkerApi } from "../../src/app/lib/api/workerApi";
 import { SpecialtyApi } from "../../src/app/lib/api/specialtyApi";
 import { DimensionApi } from "../../src/app/lib/api/dimensionApi";
@@ -20,6 +25,15 @@ import { ConstraintApi } from "../../src/app/lib/api/constraintApi";
 import { SwapApi } from "../../src/app/lib/api/swapApi";
 import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
 import { TeamWithMembership } from "../../src/types/team";
+import {
+  TeamInvitationT,
+  TeamInvitationType,
+  TeamInvitationStatus,
+} from "../../src/types/team-invitation";
+import {
+  NotificationT,
+  NotificationPreferencesT,
+} from "../../src/types/notification";
 import { WorkerT, toWorkerT } from "../../src/types/worker";
 import { SpecialtyT } from "../../src/types/specialty";
 import {
@@ -64,7 +78,7 @@ import {
   AssignmentsRecurrencesResultT,
 } from "@/types/assignment";
 import { LinkShiftApi } from "@/app/lib/api/linkShiftApi";
-import { SwapRequestT, SwapType } from "@/types/swap";
+import { SwapRequestT, SwapType, toSwapRequestT } from "@/types/swap";
 import {
   RecurrenceRuleT,
   RecurrenceUpdateScope,
@@ -666,11 +680,15 @@ export class DatabaseTestUtils {
    */
   async createTeam(teamData: {
     name: string;
+    ownerUserId?: string;
   }): Promise<{ teamId: string; name: string }> {
     try {
+      const client = teamData.ownerUserId
+        ? this.createAuthenticatedClientForUser(teamData.ownerUserId)
+        : this.testApiClient;
       // Use the existing TeamApi with our test client
       const result: TeamWithMembership = await TeamApi.createTeam(
-        this.testApiClient,
+        client,
         teamData.name,
       );
 
@@ -2353,6 +2371,161 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Refuse a direct swap invitation as a specific user (target worker declines)
+   */
+  async refuseDirectSwapAs(
+    userId: string,
+    swapId: string,
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const responseData = await userClient.post<any>(
+        `/swaps/${swapId}/refuse`,
+      );
+      const result = toSwapRequestT(responseData);
+      console.log(`✅ Refused direct swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to refuse direct swap:", error);
+      throw new Error(
+        `Failed to refuse direct swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Deny a swap (leader only) as a specific user
+   */
+  async denySwapAs(userId: string, swapId: string): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.denySwap(userClient, swapId);
+      console.log(`✅ Denied swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to deny swap as user:", error);
+      throw new Error(
+        `Failed to deny swap as user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Create a swap acting as a specific user (e.g., a worker submitting their own swap)
+   */
+  async createSwapAs(
+    userId: string,
+    swapData: {
+      teamId: string;
+      offeredAssignmentIds: string[];
+      requestedAssignmentIds: string[] | null;
+      swapType: SwapType;
+      targetWorkerId: string | null;
+      comment: string;
+    },
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.createSwap(userClient, swapData.teamId, {
+        swapType: swapData.swapType,
+        offeredAssignmentIds: swapData.offeredAssignmentIds,
+        requestedAssignmentIds: swapData.requestedAssignmentIds,
+        targetWorkerId: swapData.targetWorkerId,
+        comment: swapData.comment,
+      });
+      console.log(`✅ Created swap as user ${userId}: ${result.id}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to create swap as user:", error);
+      throw new Error(
+        `Failed to create swap as user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Accept a direct swap invitation as a specific user (target worker accepts)
+   */
+  async acceptDirectSwapAs(
+    userId: string,
+    swapId: string,
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.acceptDirectSwap(userClient, swapId);
+      console.log(`✅ Accepted direct swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to accept direct swap as user:", error);
+      throw new Error(
+        `Failed to accept direct swap as user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Add a bid to an open swap acting as a specific user
+   */
+  async addBidToOpenSwapAs(
+    userId: string,
+    swapId: string,
+    bidderWorkerId: string,
+    offeredAssignmentIds: string[],
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.addBid(
+        userClient,
+        swapId,
+        bidderWorkerId,
+        offeredAssignmentIds,
+      );
+      console.log(`✅ Added bid to swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to add bid to open swap as user:", error);
+      throw new Error(
+        `Failed to add bid to open swap as user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Accept a bid on an open swap acting as a specific user (the swap creator)
+   */
+  async acceptBidOnOpenSwapAs(
+    userId: string,
+    swapId: string,
+    bidId: string,
+  ): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.acceptBid(userClient, swapId, bidId);
+      console.log(
+        `✅ Accepted bid ${bidId} on swap ${swapId} as user ${userId}`,
+      );
+      return result;
+    } catch (error) {
+      console.error("Failed to accept bid on open swap as user:", error);
+      throw new Error(
+        `Failed to accept bid on open swap as user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
    * Approve a swap (leader completes the swap)
    */
   async approveSwap(swapId: string): Promise<SwapRequestT> {
@@ -2405,6 +2578,25 @@ export class DatabaseTestUtils {
       console.error("Failed to revert swap:", error);
       throw new Error(
         `Failed to revert swap: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  /**
+   * Revert a completed swap acting as a specific user (leader action)
+   */
+  async revertSwapAs(userId: string, swapId: string): Promise<SwapRequestT> {
+    try {
+      const userClient = this.createAuthenticatedClientForUser(userId);
+      const result = await SwapApi.revertSwap(userClient, swapId);
+      console.log(`✅ Reverted swap ${swapId} as user ${userId}`);
+      return result;
+    } catch (error) {
+      console.error("Failed to revert swap as user:", error);
+      throw new Error(
+        `Failed to revert swap as user: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       );
@@ -2478,10 +2670,17 @@ export class DatabaseTestUtils {
     updateScope?: RecurrenceUpdateScope | null,
   ): Promise<{ assignments: AssignmentT[] }> {
     try {
-      // First get the current assignment to merge with updates
+      // First get the current assignment to merge with updates.
+      // The backend requires start_date and end_date, so use a wide range
+      // to cover all test assignments (including far-future dates).
+      const wideStart = dayjs().subtract(180, "day");
+      const wideEnd = dayjs().add(180, "day");
       const result = await AssignmentApi.getAssignments(
         this.testApiClient,
         teamId,
+        true, // includeCampaign to catch unvalidated schedules too
+        wideStart,
+        wideEnd,
       );
       const existingAssignment = result.assignmentsRead.find(
         (a) => a.id === assignmentId,
@@ -2644,6 +2843,161 @@ export class DatabaseTestUtils {
         }`,
       );
     }
+  }
+
+  /**
+   * Create a team invitation as a specific user
+   */
+  async createTeamInvitationAs(
+    userId: string,
+    teamId: string,
+    email: string,
+    type: TeamInvitationType = TeamInvitationType.MEMBER,
+  ): Promise<TeamInvitationT> {
+    const client = this.createAuthenticatedClientForUser(userId);
+
+    const invitation = {
+      id: "", // Will be set by backend
+      teamId,
+      firstName: null,
+      lastName: null,
+      email,
+      type,
+      workerId: null,
+      token: "", // Will be set by backend
+      status: TeamInvitationStatus.PENDING,
+      createdBy: null, // Will be set by backend
+      createdAt: dayjs().utc(), // Will be set by backend
+      expiresAt: dayjs().add(7, "day").utc(), // Default expiration (can be overridden by backend)
+      lastSentAt: null,
+    };
+
+    return TeamInvitationApi.createTeamInvitation(client, invitation, teamId);
+  }
+
+  /**
+   * Accept a team invitation as a specific user
+   */
+  async acceptTeamInvitationAs(
+    userId: string,
+    token: string,
+  ): Promise<TeamWithMembership> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return TeamInvitationApi.acceptTeamInvitation(client, token);
+  }
+
+  /**
+   * Leave a team as a specific user
+   */
+  async leaveTeamAs(userId: string, teamId: string): Promise<void> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return TeamApi.leaveTeam(client, teamId);
+  }
+
+  /**
+   * Remove a team member as a specific acting user
+   */
+  async removeTeamMemberAs(
+    actingUserId: string,
+    teamId: string,
+    targetUserId: string,
+  ): Promise<void> {
+    const client = this.createAuthenticatedClientForUser(actingUserId);
+    return TeamApi.removeUserFromTeam(client, teamId, targetUserId);
+  }
+
+  /**
+   * Get notifications for a specific user
+   */
+  async getNotificationsAs(userId: string): Promise<NotificationT[]> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    const response: NotificationsResponse =
+      await NotificationApi.getMyNotifications(client);
+    return response.notifications;
+  }
+
+  /**
+   * Get notification preferences for a specific user
+   */
+  async getNotificationPreferencesAs(
+    userId: string,
+  ): Promise<NotificationPreferencesT> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return NotificationApi.getNotificationPreferences(client);
+  }
+
+  /**
+   * Update notification preferences for a specific user
+   */
+  async setNotificationPreferencesAs(
+    userId: string,
+    prefs: NotificationPreferencesT,
+  ): Promise<NotificationPreferencesT> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return NotificationApi.updateNotificationPreferences(client, prefs);
+  }
+
+  /**
+   * Create a request acting as a specific user (e.g., a worker submitting their own request)
+   */
+  async createRequestAs(
+    userId: string,
+    requestData: {
+      teamId: string;
+      workerId: string;
+      requestType: RequestType;
+      startDate: dayjs.Dayjs;
+      endDate: dayjs.Dayjs;
+      negative?: boolean;
+      shiftId?: string | null;
+      shiftOptions?: ShiftWorkerOptionT[];
+    },
+  ): Promise<any> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    const requestPayload: RequestT = {
+      id: "",
+      teamId: requestData.teamId,
+      requestType: requestData.requestType,
+      workerId: requestData.workerId,
+      startDate: requestData.startDate,
+      endDate: requestData.endDate,
+      shiftId: requestData.shiftId || null,
+      shiftOptions: requestData.shiftOptions || [],
+      negative: requestData.negative || false,
+      hard: true,
+      status: RequestStatus.PENDING,
+      fulfillment: FulfillmentStatus.NOT_PROCESSED,
+      comment: "",
+      createdAt: dayjs(),
+      active: true,
+      shiftTargetIds: [],
+      missingAttributes: [],
+    };
+    return RequestApi.addRequest(client, requestPayload, requestData.teamId);
+  }
+
+  /**
+   * Approve a request acting as a specific user (e.g., a manager)
+   */
+  async approveRequestAs(
+    userId: string,
+    requestId: string,
+    teamId: string,
+  ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return RequestApi.acceptRequest(client, requestId, teamId);
+  }
+
+  /**
+   * Deny a request acting as a specific user (e.g., a manager)
+   */
+  async denyRequestAs(
+    userId: string,
+    requestId: string,
+    teamId: string,
+  ): Promise<RequestT> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    return RequestApi.denyRequest(client, requestId, teamId);
   }
 }
 

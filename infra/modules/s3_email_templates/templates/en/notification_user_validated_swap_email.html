@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">Swap Approved</div>
+        <div class="email-body">
+            <p>Hi {recipient_name},</p>
+            <p>Your swap of shift <strong>{own_shift_name}</strong> on <strong>{own_date}</strong> with shift <strong>{other_shift_name}</strong> on <strong>{other_date}</strong> in team <strong>{team_name}</strong> has been approved.</p>
+            <p>Click the button below to view your schedule:</p>
+            <a href="{notification_link}" class="cta-button">View Swaps</a>
+        </div>
+        <div class="email-footer">
+            <p>If you have any questions, feel free to reach out to us.</p>
+            <p>Thank you,<br>The Rockilus Team</p>
+        </div>
+    </div>
+</body>
+</html>

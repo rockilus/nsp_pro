@@ -189,7 +189,9 @@ async def leave_team(
             raise NotAuthorizedError("You do not have permission to leave the team")
         log_impersonated_action(user_context, "leave_team")
         await team_service.remove_user_from_team(
-            user_id=user_context.effective_user_id, team_id=team_id
+            user_id=user_context.effective_user_id,
+            team_id=team_id,
+            is_self_leave=True,
         )
         return {"message": "Successfully left the team"}
     except Exception as e:

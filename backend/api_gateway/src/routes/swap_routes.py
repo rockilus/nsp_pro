@@ -49,7 +49,7 @@ async def create_swap_request(
         swap_type = SwapType(swap_request.swapType)
 
         # Create the swap request
-        created_swap = swap_service.create_swap_request(
+        created_swap = await swap_service.create_swap_request(
             team_id=team_id,
             created_by_user_id=user_context.effective_user_id,
             swap_type=swap_type,
@@ -207,7 +207,7 @@ async def add_bid_to_swap(
             raise NotAuthorizedError("You do not have permission to bid on swaps")
 
         # Add the bid
-        updated_swap = swap_service.add_bid_to_open_swap(
+        updated_swap = await swap_service.add_bid_to_open_swap(
             swap_id=swap_id,
             bidder_worker_id=bid_request.bidderWorkerId,
             offered_assignment_ids=bid_request.offeredAssignmentIds,
@@ -242,7 +242,7 @@ async def accept_bid(
             raise NotAuthorizedError("You do not have permission to accept bids")
 
         # Accept the bid
-        updated_swap = swap_service.accept_bid_on_open_swap(
+        updated_swap = await swap_service.accept_bid_on_open_swap(
             swap_id=swap_id, bid_id=bid_id
         )
 
@@ -284,6 +284,36 @@ async def cancel_bid_acceptance(
     return response
 
 
+@router.post("/swaps/{swap_id}/refuse")
+async def refuse_direct_swap(
+    swap_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    swap_service: SwapService = Depends(get_swap_service),
+) -> SwapRequestDTO:
+    """Refuse a direct swap invitation (target worker declines)."""
+    try:
+        swap = swap_service.get_swap_by_id(swap_id)
+        if not swap:
+            raise ValueError(f"Swap request {swap_id} not found")
+
+        # Target worker must have create-swap permission (i.e. be a team member)
+        if not await authz_check(
+            user_context.user_id, "create-swap", "team", swap.team_id
+        ):
+            raise NotAuthorizedError("You do not have permission to refuse swaps")
+
+        updated_swap = await swap_service.refuse_direct_swap(
+            swap_id=swap_id,
+            refuser_user_id=user_context.effective_user_id,
+        )
+
+        response = updated_swap.to_dto()
+    except Exception as e:
+        log_info(f"Failed to refuse direct swap: {e}")
+        handle_routes_errors(e)
+    return response
+
+
 @router.post("/swaps/{swap_id}/accept")
 async def accept_direct_swap(
     swap_id: str,
@@ -304,7 +334,7 @@ async def accept_direct_swap(
             raise NotAuthorizedError("You do not have permission to accept swaps")
 
         # Accept the direct swap
-        updated_swap = swap_service.accept_direct_swap(swap_id=swap_id)
+        updated_swap = await swap_service.accept_direct_swap(swap_id=swap_id)
 
         response = updated_swap.to_dto()
     except Exception as e:
@@ -333,7 +363,7 @@ async def approve_swap(
             raise NotAuthorizedError("You do not have permission to approve swaps")
 
         # Approve the swap
-        updated_swap = swap_service.approve_swap(
+        updated_swap = await swap_service.approve_swap(
             swap_id=swap_id,
             approver_user_id=user_context.effective_user_id,
         )
@@ -397,7 +427,7 @@ async def deny_swap(
             raise NotAuthorizedError("You do not have permission to deny this swap")
 
         # Deny the swap
-        updated_swap = swap_service.deny_swap(
+        updated_swap = await swap_service.deny_swap(
             swap_id=swap_id, denier_user_id=user_context.effective_user_id
         )
 
@@ -428,7 +458,7 @@ async def revert_swap(
             raise NotAuthorizedError("You do not have permission to revert this swap")
 
         # Revert the swap
-        updated_swap = swap_service.revert_swap(
+        updated_swap = await swap_service.revert_swap(
             swap_id=swap_id, reverter_user_id=user_context.effective_user_id
         )
 

@@ -16,6 +16,7 @@ from shared.schemas.core import (
 )
 
 from src.services.base_service import BaseService
+from src.services.notification_service import NotificationService
 from src.services.replacement_service import (
     ReplacementService,
 )
@@ -26,11 +27,17 @@ from src.services.replacement_service import (
 class SwapService(BaseService):
     """Service for creating, managing, and executing assignment swaps."""
 
-    def __init__(self, collection, replacement_service: ReplacementService):
+    def __init__(
+        self,
+        collection,
+        replacement_service: ReplacementService,
+        notification_service: NotificationService,
+    ):
         super().__init__(collection)
         self.replacement_service = replacement_service
+        self.notification_service = notification_service
 
-    def create_swap_request(
+    async def create_swap_request(
         self,
         team_id: str,
         created_by_user_id: str,
@@ -118,9 +125,13 @@ class SwapService(BaseService):
 
         # Save to database
         saved_swap = self.collection.swap_db.create_swap_request(swap_request)
+
+        # Notify relevant parties
+        await self.notification_service.notify_swap_created(saved_swap)
+
         return saved_swap
 
-    def add_bid_to_open_swap(
+    async def add_bid_to_open_swap(
         self,
         swap_id: str,
         bidder_worker_id: str,
@@ -197,9 +208,13 @@ class SwapService(BaseService):
 
         # Update in database
         updated_swap = self.collection.swap_db.update_swap_request(swap)
+
+        # Notify swap creator
+        await self.notification_service.notify_bid_added(updated_swap, bidder_worker_id)
+
         return updated_swap
 
-    def accept_bid_on_open_swap(self, swap_id: str, bid_id: str) -> SwapRequest:
+    async def accept_bid_on_open_swap(self, swap_id: str, bid_id: str) -> SwapRequest:
         """
         Accept a bid on an open swap, moving it to PENDING_APPROVAL status.
 
@@ -247,6 +262,10 @@ class SwapService(BaseService):
 
         # Update in database
         updated_swap = self.collection.swap_db.update_swap_request(swap)
+
+        # Notify accepted bidder, other bidders, and managers
+        await self.notification_service.notify_bid_accepted(updated_swap, bid.worker_id)
+
         return updated_swap
 
     def cancel_bid_acceptance(self, swap_id: str) -> SwapRequest:
@@ -341,7 +360,49 @@ class SwapService(BaseService):
         updated_swap = self.collection.swap_db.update_swap_request(swap)
         return updated_swap
 
-    def accept_direct_swap(self, swap_id: str) -> SwapRequest:
+    async def refuse_direct_swap(
+        self, swap_id: str, refuser_user_id: str
+    ) -> SwapRequest:
+        """
+        Refuse a direct swap invitation (target worker declines).
+
+        Sets status to DENIED so the swap is closed without going to review.
+
+        Args:
+            swap_id: Swap request ID
+            refuser_user_id: User ID of the worker refusing the swap
+
+        Returns:
+            Updated SwapRequest with DENIED status
+
+        Raises:
+            ValueError: If validation fails or the refuser is not the target
+        """
+        swap = self.collection.swap_db.get_swap_by_id(swap_id)
+        if not swap:
+            raise ValueError(f"Swap request {swap_id} not found")
+
+        if swap.swap_type != SwapType.DIRECT:
+            raise ValueError("Can only refuse direct swaps")
+        if swap.status != SwapStatus.ACTIVE:
+            raise ValueError(f"Swap is not active (status: {swap.status.value})")
+
+        # Verify the refuser is the target worker
+        if swap.target_worker_id:
+            target_workers = self.collection.worker_db.get_workers_by_team_and_user(
+                team_id=swap.team_id, user_id=refuser_user_id
+            )
+            target_worker_ids = [w.id for w in target_workers]
+            if swap.target_worker_id not in target_worker_ids:
+                raise ValueError("Only the target worker can refuse this swap")
+
+        swap.status = SwapStatus.DENIED
+        updated_swap = self.collection.swap_db.update_swap_request(swap)
+        # Notify creator about refusal
+        await self.notification_service.notify_direct_swap_refused(updated_swap)
+        return updated_swap
+
+    async def accept_direct_swap(self, swap_id: str) -> SwapRequest:
         """
         Accept a direct swap invitation, moving it to PENDING_APPROVAL status.
 
@@ -375,9 +436,13 @@ class SwapService(BaseService):
 
         # Update in database
         updated_swap = self.collection.swap_db.update_swap_request(swap)
+
+        # Notify creator (accepted) and managers (ready for review)
+        await self.notification_service.notify_direct_swap_accepted(updated_swap)
+
         return updated_swap
 
-    def approve_swap(self, swap_id: str, approver_user_id: str) -> SwapRequest:
+    async def approve_swap(self, swap_id: str, approver_user_id: str) -> SwapRequest:
         """
         Approve a swap request and execute the assignment swaps.
 
@@ -417,6 +482,10 @@ class SwapService(BaseService):
 
         # Update in database
         updated_swap = self.collection.swap_db.update_swap_request(swap)
+
+        # Notify both parties
+        await self.notification_service.notify_swap_validated(updated_swap)
+
         return updated_swap
 
     def delete_swap(self, swap_id: str) -> None:
@@ -441,7 +510,7 @@ class SwapService(BaseService):
         # Delete from database
         self.collection.swap_db.delete_swap_request(swap_id)
 
-    def deny_swap(self, swap_id: str, denier_user_id: str) -> SwapRequest:
+    async def deny_swap(self, swap_id: str, denier_user_id: str) -> SwapRequest:
         """
         Deny a swap request (leader only, during pending approval).
 
@@ -474,9 +543,13 @@ class SwapService(BaseService):
 
         # Update in database
         updated_swap = self.collection.swap_db.update_swap_request(swap)
+
+        # Notify both parties
+        await self.notification_service.notify_swap_denied(updated_swap)
+
         return updated_swap
 
-    def revert_swap(self, swap_id: str, reverter_user_id: str) -> SwapRequest:
+    async def revert_swap(self, swap_id: str, reverter_user_id: str) -> SwapRequest:
         """
         Revert a completed swap, restoring assignments to original workers.
 
@@ -543,6 +616,10 @@ class SwapService(BaseService):
 
         # Update in database
         updated_swap = self.collection.swap_db.update_swap_request(swap)
+
+        # Notify both parties
+        await self.notification_service.notify_swap_reversed(updated_swap)
+
         return updated_swap
 
     def get_swaps_for_team(

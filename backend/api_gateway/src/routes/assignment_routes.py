@@ -25,10 +25,15 @@ from src.dependencies import (
     get_replacement_service,
     get_user_context,
 )
+from src.dependencies.notification_service import get_notification_service
 from src.errors import NotAuthorizedError, handle_routes_errors
 from src.integrations.authorization import authz_check
 from src.security.user_context import UserContext
 from src.services.assignment_service import AssignmentService
+from src.services.notification_service import (
+    AssignmentOperation,
+    NotificationService,
+)
 from src.services.replacement_service import ReplacementService
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
@@ -43,6 +48,7 @@ async def create_assignment(
     recurrence: Optional[RecurrenceRuleDTO] = None,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -56,6 +62,11 @@ async def create_assignment(
         if recurrence:
             r_data = RecurrenceRule.from_dto(recurrence)
         ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
+        ops = [
+            AssignmentOperation(before=None, after=a)
+            for a in ar_result.assignments_created
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
@@ -143,6 +154,7 @@ async def bulk_create_assignments(
     body: BulkAssignmentCreateDTO,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -153,6 +165,11 @@ async def bulk_create_assignments(
             )
         assignments = [Assignment.from_dto(a) for a in body.assignments]
         ar_result = assignment_service.bulk_create_assignments(assignments)
+        ops = [
+            AssignmentOperation(before=None, after=a)
+            for a in ar_result.assignments_created
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to bulk create assignments")
@@ -166,6 +183,7 @@ async def bulk_update_assignments(
     body: BulkAssignmentUpdateDTO,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -175,7 +193,22 @@ async def bulk_update_assignments(
                 "You do not have permission to update assignments",
             )
         assignments = [Assignment.from_dto(a) for a in body.assignments]
+        # Pre-fetch "before" state
+        ids = [a.id for a in assignments if a.id]
+        before_map: dict[str, Assignment] = {}
+        if ids:
+            asgn_db = assignment_service.collection.assignment_db
+            before_list = asgn_db.get_assignments_by_ids(ids)
+            before_map = {a.id: a for a in before_list}
         ar_result = assignment_service.bulk_update_assignments(assignments)
+        ops = [
+            AssignmentOperation(
+                before=before_map.get(a.id),
+                after=a,
+            )
+            for a in ar_result.assignments_updated
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to bulk update assignments")
@@ -189,6 +222,7 @@ async def bulk_delete_assignments(
     body: BulkAssignmentDeleteDTO,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -197,7 +231,13 @@ async def bulk_delete_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to delete assignments",
             )
+        # Pre-fetch "before" state
+        before_list = (
+            assignment_service.collection.assignment_db.get_assignments_by_ids(body.ids)
+        )
         ar_result = assignment_service.bulk_delete_assignments(body.ids)
+        ops = [AssignmentOperation(before=a, after=None) for a in before_list]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to bulk delete assignments")
@@ -216,6 +256,7 @@ async def update_assignment(
     ),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -225,6 +266,14 @@ async def update_assignment(
                 "You do not have permission to update an assignment",
             )
         assignment_data = Assignment.from_dto(assignment)
+        # Pre-fetch "before" state
+        before_assignment = (
+            assignment_service.collection.assignment_db.get_assignment_by_id(
+                assignment_data.id
+            )
+            if assignment_data.id
+            else None
+        )
         recurrence_update_scope_data = (
             RecurrenceUpdateScope(recurrence_update_scope)
             if recurrence_update_scope
@@ -236,6 +285,11 @@ async def update_assignment(
             recurrence_update_scope=recurrence_update_scope_data,
             recurrence=recurrence_data,
         )
+        ops = [
+            AssignmentOperation(before=before_assignment, after=a)
+            for a in ar_result.assignments_updated
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to update assignment")
@@ -253,6 +307,7 @@ async def delete_assignment(
     ),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
@@ -261,6 +316,12 @@ async def delete_assignment(
             raise NotAuthorizedError(
                 "You do not have permission to delete an assignment",
             )
+        # Pre-fetch "before" state
+        before_assignment = (
+            assignment_service.collection.assignment_db.get_assignment_by_id(
+                assignment_id
+            )
+        )
         recurrence_update_scope_data = (
             RecurrenceUpdateScope(recurrence_update_scope)
             if recurrence_update_scope
@@ -271,6 +332,8 @@ async def delete_assignment(
             recurrence_id=recurrence_id,
             recurrence_update_scope=recurrence_update_scope_data,
         )
+        ops = [AssignmentOperation(before=before_assignment, after=None)]
+        await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to delete assignment")

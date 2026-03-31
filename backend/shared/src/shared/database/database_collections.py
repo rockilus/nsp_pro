@@ -16,6 +16,10 @@ from shared.database.repositories.model_output import ModelOutputRepository
 from shared.database.repositories.multitasking import (
     MultitaskingGroupRepository,
 )
+from shared.database.repositories.notification import NotificationRepository
+from shared.database.repositories.notification_preferences import (
+    NotificationPreferencesRepository,
+)
 from shared.database.repositories.recurrence import RecurrenceRepository
 from shared.database.repositories.recurrence_exclusion import (
     RecurrenceExclusionRepository,
@@ -82,6 +86,8 @@ class DatabaseCollections:
     team_membership_db: TeamMembershipRepository
     user_db: UserRepository
     worker_db: WorkerRepository
+    notification_db: NotificationRepository
+    notification_preferences_db: NotificationPreferencesRepository
 
     def __init__(self, database_interface: DatabaseInterface):
         """
@@ -127,6 +133,10 @@ class DatabaseCollections:
         self.team_membership_db = TeamMembershipRepository(database_interface)
         self.user_db = UserRepository(database_interface)
         self.worker_db = WorkerRepository(database_interface)
+        self.notification_db = NotificationRepository(database_interface)
+        self.notification_preferences_db = NotificationPreferencesRepository(
+            database_interface
+        )
 
     async def health_check(self) -> bool:
         """Check the health of the database connection."""

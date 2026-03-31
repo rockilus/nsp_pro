@@ -19,6 +19,11 @@ from shared.schemas.core import (
 from src.config import config
 from src.services.base_service import BaseService
 from src.services.email_queue_service import EmailQueueService
+from src.services.notification_builders import (
+    user_accepted_team_invite_event,
+    user_received_team_invite_event,
+)
+from src.services.notification_service import NotificationService
 from src.services.team_membership_service import TeamMembershipService
 
 
@@ -28,10 +33,12 @@ class TeamInvitationService(BaseService):
         collection,
         team_membership_service: TeamMembershipService,
         email_queue_service: EmailQueueService,
+        notification_service: NotificationService,
     ):
         super().__init__(collection)
         self.team_membership_service = team_membership_service
         self.email_queue_service = email_queue_service
+        self.notification_service = notification_service
 
     async def create_team_invitation(
         self, invitation: TeamInvitation, sender_id: str
@@ -68,13 +75,26 @@ class TeamInvitationService(BaseService):
         team = self.collection.team_db.get_team_by_id(team_id=invitation.team_id)
         if not team:
             raise ValueError("Team not found")
-        await self.send_invitation_email(
-            invitation=invitation, sender=sender, team=team
-        )
+        # Only send the transactional invitation email for unregistered users.
+        # Registered users receive a notification email via dispatch() below.
+        if user is None:
+            await self.send_invitation_email(
+                invitation=invitation, sender=sender, team=team
+            )
         invitation.last_sent_at = datetime.now(tz=timezone.utc)
         invitation = self.collection.team_invitation_db.create_invitation(
             invitation=invitation
         )
+        if user is not None and user.id:
+            sender_name = f"{sender.first_name} {sender.last_name}"
+            await self.notification_service.dispatch(
+                user_received_team_invite_event(
+                    team_id=invitation.team_id,
+                    team_name=team.name,
+                    sender_name=sender_name,
+                    invited_user_id=user.id,
+                )
+            )
         return invitation
 
     def get_team_invitations(self, team_id: str) -> list[TeamInvitation]:
@@ -205,6 +225,16 @@ class TeamInvitationService(BaseService):
                 self.collection.worker_db.update_worker(worker)
         invitation.status = TeamInvitationStatus.ACCEPTED
         self.collection.team_invitation_db.update_invitation(invitation)
+        accepted_user_name = f"{user.first_name} {user.last_name}"
+        if invitation.created_by:
+            await self.notification_service.dispatch(
+                user_accepted_team_invite_event(
+                    team_id=invitation.team_id,
+                    team_name=team.name,
+                    accepted_user_name=accepted_user_name,
+                    inviter_user_id=invitation.created_by,
+                )
+            )
         return TeamWithMembership(
             team=team,
             membership=MembershipForTeamWithMembership(

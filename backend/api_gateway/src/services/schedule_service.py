@@ -18,6 +18,7 @@ from shared.schemas.core import (
 from src.config import config
 from src.services.assignment_service import AssignmentService
 from src.services.base_service import BaseService
+from src.services.notification_service import NotificationService
 from src.utils.excel_utils import core_to_excel_schedule
 
 
@@ -27,9 +28,11 @@ class ScheduleService(BaseService):
         self,
         collection: DatabaseCollections,
         assignment_service: AssignmentService,
+        notification_service: NotificationService,
     ) -> None:
         super().__init__(collection)
         self.assignment_service = assignment_service
+        self.notification_service = notification_service
 
     def get_schedule_campaign(self, team_id: str, user_id: str) -> Schedule:
         schedules = self.collection.schedule_db.get_schedules(team_id)
@@ -70,13 +73,15 @@ class ScheduleService(BaseService):
         )
         return campaign_created
 
-    def validate_schedule(self, schedule_id: str) -> Schedule:
+    async def validate_schedule(self, schedule_id: str) -> Schedule:
         schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
         if not schedule:
             raise ValueError(f"Schedule with id {schedule_id} not found")
         schedule.status = ScheduleStatus.VALIDATED
         schedule.updated_at = datetime.now(timezone.utc)
         schedule = self.collection.schedule_db.update_schedule(schedule)
+        # Notify all team workers that the schedule has been published
+        await self.notification_service.notify_schedule_published(schedule)
         return schedule
 
     def update_schedule(self, schedule_new: Schedule) -> Schedule:

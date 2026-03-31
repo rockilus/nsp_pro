@@ -12,6 +12,10 @@ from src.routes.export_routes import router as router_export
 from src.routes.health_routes import router as router_health
 from src.routes.link_shift_routes import router as router_link_shift
 from src.routes.multitasking_routes import router as router_multitasking
+from src.routes.notification_preferences_routes import (
+    router as router_notification_preferences,
+)
+from src.routes.notification_routes import router as router_notification
 from src.routes.request_routes import router as router_request
 from src.routes.schedule_routes import router as router_schedule
 from src.routes.shift_demand_new_routes import router as router_shift_demand_new
@@ -53,6 +57,8 @@ __all__ = [
     "router_specialty",
     "router_sqs_solve",
     "router_stats",
+    "router_notification",
+    "router_notification_preferences",
     "router_swap",
     "router_team_invitation",
     "router_team",

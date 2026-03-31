@@ -77,6 +77,15 @@ from shared.schemas.core.multitasking import (
     ShiftDemandConcurrencyRequest,
     ShiftDemandConcurrencyResponse,
 )
+from shared.schemas.core.notification import (
+    Notification,
+    NotificationDTO,
+    NotificationType,
+)
+from shared.schemas.core.notification_preferences import (
+    NotificationPreferences,
+    NotificationPreferencesDTO,
+)
 from shared.schemas.core.recurrence import (
     FrequencyType,
     MonthRepeatType,
@@ -212,6 +221,11 @@ __all__ = [
     "EmailPriority",
     "EmailQueueMessage",
     "EmailType",
+    "Notification",
+    "NotificationDTO",
+    "NotificationType",
+    "NotificationPreferences",
+    "NotificationPreferencesDTO",
     "Block",
     "BlockNameOptions",
     "BlockTypeOptions",

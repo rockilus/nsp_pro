@@ -6,6 +6,7 @@ import { cognitoAuthConfig } from "../../config/cognito";
 import { AuthContextProvider } from "../../contexts/auth-context";
 import { env } from "@/config/env";
 import { CookiesProvider } from "react-cookie";
+import ReactQueryProvider from "../providers/ReactQueryProvider";
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -19,7 +20,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Development mode: AuthContextProvider handles dev auth internally
     return (
       <CookiesProvider>
-        <AuthContextProvider>{children}</AuthContextProvider>
+        <AuthContextProvider>
+          <ReactQueryProvider>{children}</ReactQueryProvider>
+        </AuthContextProvider>
       </CookiesProvider>
     );
   }
@@ -28,7 +31,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   return (
     <CookiesProvider>
       <OidcAuthProvider {...cognitoAuthConfig}>
-        <AuthContextProvider>{children}</AuthContextProvider>
+        <AuthContextProvider>
+          <ReactQueryProvider>{children}</ReactQueryProvider>
+        </AuthContextProvider>
       </OidcAuthProvider>
     </CookiesProvider>
   );
