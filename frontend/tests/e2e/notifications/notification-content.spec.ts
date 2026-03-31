@@ -994,7 +994,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       });
       await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
       await dbUtils.approveSwapAsUser(swap.id, user1.user_id);
-      await dbUtils.revertSwap(swap.id);
+      await dbUtils.revertSwapAs(user1.user_id, swap.id);
       return user2.user_id;
     },
     expectedText: (_name) =>
