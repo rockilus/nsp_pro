@@ -403,6 +403,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         name: "Target Worker",
         weeklyHours: 40,
       });
+      await dbUtils.attachWorkerToUser(worker1.id, user1.user_id, team.teamId);
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
@@ -460,6 +461,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         name: "Target Worker",
         weeklyHours: 40,
       });
+      await dbUtils.attachWorkerToUser(worker1.id, user1.user_id, team.teamId);
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
@@ -558,6 +560,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         name: "Bidder Worker",
         weeklyHours: 40,
       });
+      await dbUtils.attachWorkerToUser(worker1.id, user1.user_id, team.teamId);
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
