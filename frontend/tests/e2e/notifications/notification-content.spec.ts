@@ -231,7 +231,8 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       });
       return user2.user_id;
     },
-    expectedText: (_name) => /has been added to your schedule/,
+    expectedText: (_name) =>
+      /^A new assignment for .* on \d{4}-\d{2}-\d{2} has been added to your schedule$/,
     expectedUrlPattern: /\/plan\/schedule/,
   },
   {
@@ -246,6 +247,13 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         name: "Worker User",
         weeklyHours: 40,
+      });
+      await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Normal Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
       });
       const schedule = await dbUtils.createSchedule(team.teamId);
       await dbUtils.validateSchedule(schedule.id, team.teamId);
@@ -282,6 +290,13 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         name: "Worker User",
         weeklyHours: 40,
+      });
+      await dbUtils.createShift({
+        teamId: team.teamId,
+        name: "Normal Shift",
+        startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
+        endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
+        shiftType: ShiftType.NORMAL,
       });
       const schedule = await dbUtils.createSchedule(team.teamId);
       await dbUtils.validateSchedule(schedule.id, team.teamId);
