@@ -148,9 +148,7 @@ class NotificationPreferences:
 
     user_id: str
     preferences: dict[NotificationKey, ChannelPreferences] = field(
-        default_factory=lambda: {
-            k: ChannelPreferences() for k in NotificationKey
-        }
+        default_factory=lambda: {k: ChannelPreferences() for k in NotificationKey}
     )
 
     def to_dto(self) -> "NotificationPreferencesDTO":
@@ -163,9 +161,7 @@ class NotificationPreferences:
         )
 
     @classmethod
-    def from_dto(
-        cls, dto: "NotificationPreferencesDTO"
-    ) -> "NotificationPreferences":
+    def from_dto(cls, dto: "NotificationPreferencesDTO") -> "NotificationPreferences":
         valid_keys = {k.value for k in NotificationKey}
         return cls(
             user_id=dto.user_id,

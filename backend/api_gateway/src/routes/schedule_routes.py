@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas.core import DuplicateRequest, Schedule
+from shared.schemas.core import DuplicateRequest, Schedule, ScheduleStatus
 from shared.schemas.dto import (
     DuplicateRequestDTO,
     DuplicateResultDTO,
@@ -133,9 +133,7 @@ async def duplicate_period(
     return response
 
 
-@router.post(
-    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
-)
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -221,7 +219,6 @@ async def get_request_deadline(
                 "You do not have permission to read the request deadline",
             )
         schedules = db_collections.schedule_db.get_schedules(team_id)
-        from shared.schemas.core import ScheduleStatus
 
         campaign = next(
             (s for s in schedules if s.status == ScheduleStatus.CAMPAIGN), None
@@ -258,9 +255,7 @@ async def set_request_deadline(
             raise NotAuthorizedError(
                 "You do not have permission to set the request deadline",
             )
-        deadline_date = datetime.fromtimestamp(
-            body.deadline, tz=timezone.utc
-        ).date()
+        deadline_date = datetime.fromtimestamp(body.deadline, tz=timezone.utc).date()
         schedule = await schedule_service.set_request_deadline(
             schedule_id=schedule_id, deadline_date=deadline_date
         )
