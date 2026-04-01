@@ -6,6 +6,7 @@ import { AuthProvider } from '../components/auth/auth-provider';
 import ThemeRegistry from '../components/providers/ThemeRegistry';
 // Components
 import ImpersonationBanner from '../components/app-bar/impersonation-banner';
+import { Toaster } from '../components/ui/sonner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -26,6 +27,7 @@ export default async function RootLayout({
           <AuthProvider>
             <ImpersonationBanner />
             {children}
+            <Toaster />
           </AuthProvider>
         </body>
       </ThemeRegistry>

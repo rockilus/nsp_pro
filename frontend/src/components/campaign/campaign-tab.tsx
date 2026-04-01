@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../app/i18n/client';
-// MUI
-import Button from '@mui/material/Button';
+// shadcn/ui
+import { Button } from '@/components/ui/button';
 // Components
 import CampaignParametersPanel from './campaign-parameters-panel';
 import ConstraintSelector from './constraint-selector';
@@ -175,17 +175,7 @@ export default function CampaignTab({
             )}
           </div>
         ) : (
-          <Button
-            variant="contained"
-            onClick={handleAddSchedule}
-            sx={{
-              paddingLeft: 0.3,
-              paddingRight: 1,
-              margin: '8px',
-              height: '35px',
-              textTransform: 'none',
-            }}
-          >
+          <Button variant="outline" onClick={handleAddSchedule} className="m-2 h-[35px]">
             {t('start_new_campaign')}
           </Button>
         )}

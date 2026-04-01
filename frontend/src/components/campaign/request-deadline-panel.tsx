@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
+import { toast } from 'sonner';
 import { useTranslation } from '../../app/i18n/client';
-// MUI
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Snackbar from '@mui/material/Snackbar';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
+// shadcn/ui
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Hooks
@@ -44,7 +46,6 @@ export default function RequestDeadlinePanel({
   const [deadlineInput, setDeadlineInput] = useState('');
   const [extendInput, setExtendInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [reminderSnackbarOpen, setReminderSnackbarOpen] = useState(false);
 
   const currentDeadline = scheduleCampaign.requestDeadline;
   const lastReminderSentAt = scheduleCampaign.lastReminderSentAt;
@@ -74,7 +75,7 @@ export default function RequestDeadlinePanel({
   const handleSendReminder = async () => {
     try {
       const updated = await sendReminder(scheduleCampaign.id, scheduleCampaign.teamId);
-      setReminderSnackbarOpen(true);
+      toast.success(t('reminder_sent') || 'Reminder sent');
       onReminderSent(updated);
     } catch (error) {
       console.error('Failed to send reminder:', error);
@@ -105,39 +106,33 @@ export default function RequestDeadlinePanel({
     <>
       <div
         data-testid="request-deadline-panel"
-        className="campaign-info-row"
-        style={{ height: 'auto', minHeight: '45px', alignItems: 'center' }}
+        className="py-0.5 flex min-h-[45px] flex-row items-center"
       >
-        <div className="row-label-container">
-          <span className="row-label">{t('request_deadline')}</span>
+        <div className="flex w-[150px] items-center">
+          <span className="text-sm text-[#3c4043]">{t('request_deadline')}</span>
         </div>
-        <div
-          className="row-value-container"
-          style={{ width: 'auto', flex: 1, gap: '8px', flexWrap: 'wrap' }}
-        >
+        <div className="gap-2 flex flex-1 flex-wrap items-center">
           {currentDeadline ? (
             <>
-              <Typography variant="body2" style={{ fontWeight: 600 }}>
-                {currentDeadline.format('MMM D, YYYY')}
-              </Typography>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <span className="text-sm font-semibold">{currentDeadline.format('MMM D, YYYY')}</span>
+              <div className="flex flex-col items-start">
                 <Button
-                  variant="outlined"
-                  size="small"
+                  variant="outline"
+                  size="sm"
                   data-testid="send-reminder-button"
                   onClick={handleSendReminder}
                 >
                   {t('send_reminder')}
                 </Button>
                 {lastReminderSentAt && (
-                  <Typography variant="caption" color="text.secondary" style={{ marginTop: '2px' }}>
+                  <span className="text-xs mt-0.5 text-muted-foreground">
                     {t('last_sent')}: {lastReminderSentAt.format('MMM D, YYYY')}
-                  </Typography>
+                  </span>
                 )}
               </div>
               <Button
-                variant="outlined"
-                size="small"
+                variant="outline"
+                size="sm"
                 data-testid="extend-deadline-button"
                 onClick={() => setExtendDialogOpen(true)}
               >
@@ -146,8 +141,8 @@ export default function RequestDeadlinePanel({
             </>
           ) : (
             <Button
-              variant="outlined"
-              size="small"
+              variant="outline"
+              size="sm"
               data-testid="set-deadline-button"
               onClick={() => setSetDialogOpen(true)}
             >
@@ -158,70 +153,50 @@ export default function RequestDeadlinePanel({
       </div>
 
       {/* Set deadline dialog */}
-      <Dialog
-        open={setDialogOpen}
-        onClose={() => setSetDialogOpen(false)}
-        data-testid="deadline-dialog"
-      >
-        <DialogTitle>{t('deadline_dialog_title')}</DialogTitle>
-        <DialogContent>
-          <TextField
+      <Dialog open={setDialogOpen} onOpenChange={setSetDialogOpen}>
+        <DialogContent data-testid="deadline-dialog" showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t('deadline_dialog_title')}</DialogTitle>
+          </DialogHeader>
+          <Input
             type="date"
             value={deadlineInput}
+            min={today}
             onChange={(e) => setDeadlineInput(e.target.value)}
-            inputProps={{ min: today }}
-            fullWidth
-            sx={{ mt: 1 }}
           />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSetDialogOpen(false)}>
+              {t('cancel') || 'Cancel'}
+            </Button>
+            <Button onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
+              {t('set_deadline')}
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSetDialogOpen(false)}>{t('cancel') || 'Cancel'}</Button>
-          <Button
-            variant="contained"
-            onClick={handleSetDeadline}
-            disabled={isSaving || !deadlineInput}
-          >
-            {t('set_deadline')}
-          </Button>
-        </DialogActions>
       </Dialog>
 
       {/* Extend deadline dialog */}
-      <Dialog
-        open={extendDialogOpen}
-        onClose={() => setExtendDialogOpen(false)}
-        data-testid="extend-deadline-dialog"
-      >
-        <DialogTitle>{t('extend_deadline_dialog_title')}</DialogTitle>
-        <DialogContent>
-          <TextField
+      <Dialog open={extendDialogOpen} onOpenChange={setExtendDialogOpen}>
+        <DialogContent data-testid="extend-deadline-dialog" showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t('extend_deadline_dialog_title')}</DialogTitle>
+          </DialogHeader>
+          <Input
             type="date"
             value={extendInput}
+            min={minExtend}
             onChange={(e) => setExtendInput(e.target.value)}
-            inputProps={{ min: minExtend }}
-            fullWidth
-            sx={{ mt: 1 }}
           />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExtendDialogOpen(false)}>
+              {t('cancel') || 'Cancel'}
+            </Button>
+            <Button onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
+              {t('extend_deadline')}
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setExtendDialogOpen(false)}>{t('cancel') || 'Cancel'}</Button>
-          <Button
-            variant="contained"
-            onClick={handleExtendDeadline}
-            disabled={isSaving || !extendInput}
-          >
-            {t('extend_deadline')}
-          </Button>
-        </DialogActions>
       </Dialog>
-
-      <Snackbar
-        open={reminderSnackbarOpen}
-        autoHideDuration={4000}
-        onClose={() => setReminderSnackbarOpen(false)}
-        message={t('reminder_sent') || 'Reminder sent'}
-        data-testid="reminder-sent-snackbar"
-      />
     </>
   );
 }

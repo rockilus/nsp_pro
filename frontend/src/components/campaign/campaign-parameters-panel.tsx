@@ -2,14 +2,8 @@ import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../app/i18n/client';
-// MUI
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Components
 import RequestDeadlinePanel from './request-deadline-panel';
-// Styles
-import './schedule-selector.css';
-import '../../styles/text-styles.css';
-
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Constants
@@ -48,22 +42,27 @@ export default function CampaignParametersPanel({
     ? scheduleCampaign.startDate.add(MAX_SCHEDULE_DURATION_MONTHS, 'month')
     : null;
 
+  const dateInputClass =
+    'h-9 w-40 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50';
+
   return (
-    <div className="campaign-info-container">
-      <div className="campaign-info">
-        <span className="title">{t('campaign')}</span>
-        <div className="campaign-info-row">
-          <div className="row-label-container">
-            <span className="row-label">{t('start')}</span>
+    <div className="flex w-full flex-col self-start">
+      <div className="flex w-full flex-col">
+        <span className="text-xl font-semibold mb-1 text-[#3c4043]">{t('campaign')}</span>
+        {/* Start date row */}
+        <div className="py-0.5 flex min-h-[45px] flex-row items-center">
+          <div className="flex w-[150px] items-center">
+            <span className="text-sm text-[#3c4043]">{t('start')}</span>
           </div>
-          <div className="row-value-container">
-            <DatePicker
-              className="custom-date-picker"
-              minDate={minDate}
-              value={scheduleCampaign.startDate}
-              onChange={(newValue) => {
-                if (!newValue) return;
-                const newStart = dayjs.utc(newValue);
+          <div className="flex items-center">
+            <input
+              type="date"
+              className={dateInputClass}
+              value={scheduleCampaign.startDate.format('YYYY-MM-DD')}
+              min={minDate.format('YYYY-MM-DD')}
+              onChange={(e) => {
+                if (!e.target.value) return;
+                const newStart = dayjs.utc(e.target.value);
                 const maxEndForNewStart = newStart.add(MAX_SCHEDULE_DURATION_MONTHS, 'month');
                 const newEnd = scheduleCampaign.endDate.isAfter(maxEndForNewStart)
                   ? maxEndForNewStart
@@ -77,19 +76,21 @@ export default function CampaignParametersPanel({
             />
           </div>
         </div>
-        <div className="campaign-info-row">
-          <div className="row-label-container">
-            <span className="row-label">{t('end')}</span>
+        {/* End date row */}
+        <div className="py-0.5 flex min-h-[45px] flex-row items-center">
+          <div className="flex w-[150px] items-center">
+            <span className="text-sm text-[#3c4043]">{t('end')}</span>
           </div>
-          <div className="row-value-container">
-            <DatePicker
-              className="custom-date-picker"
-              minDate={scheduleCampaign.startDate}
-              maxDate={maxEndFromStart ?? undefined}
-              value={scheduleCampaign.endDate}
-              onChange={(newValue) => {
-                if (!newValue) return;
-                const candidate = dayjs.utc(newValue);
+          <div className="flex items-center">
+            <input
+              type="date"
+              className={dateInputClass}
+              value={scheduleCampaign.endDate.format('YYYY-MM-DD')}
+              min={scheduleCampaign.startDate.format('YYYY-MM-DD')}
+              max={maxEndFromStart?.format('YYYY-MM-DD')}
+              onChange={(e) => {
+                if (!e.target.value) return;
+                const candidate = dayjs.utc(e.target.value);
                 const maxAllowed = scheduleCampaign.startDate.add(
                   MAX_SCHEDULE_DURATION_MONTHS,
                   'month',

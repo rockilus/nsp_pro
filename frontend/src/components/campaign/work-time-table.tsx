@@ -4,7 +4,6 @@ import { useTranslation } from '../../app/i18n/client';
 import './work-time-table.css';
 // Types
 import { WorkTimeTableT } from '../../types/schedule';
-import { log } from 'console';
 
 interface WorkTimeTableProps {
   lng: string;
