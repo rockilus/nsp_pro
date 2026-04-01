@@ -28,6 +28,12 @@ all:
     just typecheck
     just test
 
+all-no-test:
+    just update-shared
+    just format
+    just lint
+    just typecheck
+
 dev:
     echo "Starting development server for api_gateway on port 4000..."
     uv run uvicorn src.main:app --reload --host 127.0.0.1 --port 4000 --env-file .env.development.tests 

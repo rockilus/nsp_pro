@@ -1,49 +1,18 @@
 # Justfile for rockilus backend
 # Usage: cd backend && just <recipe>
 
-format:
-    echo "Running code formatter..."
-    uv run ruff format .
-    uv run ruff check --fix .
-
-lint:
-    echo "Running linter..."
-    uv run ruff check .
-
-typecheck:
-    echo "Running type checker..."
-    uv run python -m mypy .
-
-test:
-    echo "Running tests..."
-    uv run pytest
-
 all:
     echo "Running all checks in shared, api_gateway, and solve_service..."
-    just -C shared all
-    just -C api_gateway all
-    just -C solve_service all
+    cd shared just all
+    cd api_gateway just all
+    cd solve_service just all
 
 all-no-test:
     echo "Running format, lint, typecheck across services (no tests)..."
-    # shared
-    just -C shared format
-    just -C shared lint
-    just -C shared typecheck
-    # api_gateway
-    just -C api_gateway update-shared || true
-    just -C api_gateway format
-    just -C api_gateway lint
-    just -C api_gateway typecheck
-    # solve_service
-    just -C solve_service all-no-test
+    cd shared && just all-no-test
+    cd api_gateway && just all-no-test
+    cd solve_service && just all-no-test
 
-dev:
-    echo "Starting development server on port 8000..."
-    uv run uvicorn main:app --reload --host 127.0.0.1 --port 8000
 
-dev-all:
-    echo "Starting api_gateway and solve_service (backgrounded; Ctrl-C stops this session)..."
-    sh -c 'just -C api_gateway dev & just -C solve_service dev & wait'
 
 

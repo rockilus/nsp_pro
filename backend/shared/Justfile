@@ -22,3 +22,8 @@ all:
     just lint
     just typecheck
     just test
+
+all-no-test:
+    just format
+    just lint
+    just typecheck
