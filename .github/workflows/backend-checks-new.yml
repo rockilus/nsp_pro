@@ -50,7 +50,7 @@ jobs:
 
       - name: Install dependencies for shared
         run: uv sync --locked --all-extras --dev
-        working-directory: ./shared
+        working-directory: backend/shared
 
       - name: Run checks shared
         run: \
@@ -58,7 +58,7 @@ jobs:
           just lint && \
           uv run ruff format --check . && \
           just test
-        working-directory: ./shared
+        working-directory: backend/shared
         env:
           MONGO_URI: mongodb://testuser:testpass@localhost:27017/
 
