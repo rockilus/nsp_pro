@@ -36,4 +36,4 @@ all-no-test:
 
 dev:
     echo "Starting solve_service (SQS consumer)..."
-    uv run python -m src.main
+    uv run python -m src.main --env-file .env.development.tests

@@ -19,13 +19,31 @@ test:
     uv run pytest
 
 all:
-    just format
-    just lint
-    just typecheck
-    just test
+    echo "Running all checks in shared, api_gateway, and solve_service..."
+    just -C shared all
+    just -C api_gateway all
+    just -C solve_service all
+
+all-no-test:
+    echo "Running format, lint, typecheck across services (no tests)..."
+    # shared
+    just -C shared format
+    just -C shared lint
+    just -C shared typecheck
+    # api_gateway
+    just -C api_gateway update-shared || true
+    just -C api_gateway format
+    just -C api_gateway lint
+    just -C api_gateway typecheck
+    # solve_service
+    just -C solve_service all-no-test
 
 dev:
     echo "Starting development server on port 8000..."
     uv run uvicorn main:app --reload --host 127.0.0.1 --port 8000
+
+dev-all:
+    echo "Starting api_gateway and solve_service (backgrounded; Ctrl-C stops this session)..."
+    sh -c 'just -C api_gateway dev & just -C solve_service dev & wait'
 
 
