@@ -80,7 +80,8 @@ class BlockSchema(BaseSchema):
             isinstance(v, ShiftWorkerOption) for v in value
         ):
             value = [
-                ShiftWorkerOptionSchema.from_core(v) for v in value  # type: ignore
+                ShiftWorkerOptionSchema.from_core(v)  # type: ignore
+                for v in value
             ]
         return cls(
             name=block.name.value,

@@ -123,8 +123,7 @@ class AWSConfig(BaseModel):
                 getattr(e, "response", {}).get("Error", {}).get("Code", "Unknown")
             )
             log_error(
-                f"Failed to retrieve AWS credentials from boto3 session: "
-                f"{error_code}"
+                f"Failed to retrieve AWS credentials from boto3 session: {error_code}"
             )
             raise AWSServiceError(
                 "Failed to retrieve AWS credentials from boto3 session",

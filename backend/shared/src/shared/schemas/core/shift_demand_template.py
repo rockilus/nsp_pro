@@ -280,7 +280,7 @@ class ShiftDemandTemplate:
                                 count=entry["count"],
                             )
                         )
-                    except (ValueError, TypeError):
+                    except ValueError, TypeError:
                         # Log the error but continue processing other entries
                         continue
 
@@ -291,7 +291,7 @@ class ShiftDemandTemplate:
                             demands=demand_entries,
                         )
                     )
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     # Log the error but continue processing other weeks
                     continue
 
@@ -419,7 +419,7 @@ def apply_demands_to_template_week(
         raise ValueError(
             f"Target week number {target_week_number} is out of range. "
             f"Template has {len(template.weeks_data)} weeks "
-            f"(0-{len(template.weeks_data)-1})"
+            f"(0-{len(template.weeks_data) - 1})"
         )
 
     # Convert source week demands to DemandEntry format
