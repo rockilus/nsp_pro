@@ -26,7 +26,7 @@ export function useCreateTeamInvitation() {
   const createTeamInvitation = useCallback(
     async (
       invitation: TeamInvitationT,
-      teamId: string
+      teamId: string,
     ): Promise<TeamInvitationT> => {
       if (env.isDevelopment) {
         console.log("🔍 useCreateTeamInvitation called:", {
@@ -60,7 +60,7 @@ export function useCreateTeamInvitation() {
         const result = await TeamInvitationApi.createTeamInvitation(
           apiClient,
           invitation,
-          teamId
+          teamId,
         );
 
         if (env.isDevelopment) {
@@ -76,7 +76,7 @@ export function useCreateTeamInvitation() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createTeamInvitation;
@@ -119,7 +119,7 @@ export function useGetTeamInvitations() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTeamInvitations;
@@ -201,7 +201,7 @@ export function useAcceptTeamInvitation() {
       try {
         const result = await TeamInvitationApi.acceptTeamInvitation(
           apiClient,
-          token
+          token,
         );
 
         if (env.isDevelopment) {
@@ -217,7 +217,7 @@ export function useAcceptTeamInvitation() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return acceptTeamInvitation;
@@ -269,7 +269,7 @@ export function useRejectTeamInvitation() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return rejectTeamInvitation;
@@ -307,7 +307,7 @@ export function useResendTeamInvitationEmail() {
         const result = await TeamInvitationApi.resendTeamInvitationEmail(
           apiClient,
           invitationId,
-          teamId
+          teamId,
         );
 
         if (env.isDevelopment) {
@@ -323,7 +323,7 @@ export function useResendTeamInvitationEmail() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return resendTeamInvitationEmail;
@@ -339,7 +339,7 @@ export function useDeleteTeamInvitation() {
   const deleteTeamInvitation = useCallback(
     async (
       invitationId: string,
-      teamId: string
+      teamId: string,
     ): Promise<{ message: string }> => {
       if (env.isDevelopment) {
         console.log("🔍 useDeleteTeamInvitation called:", {
@@ -364,7 +364,7 @@ export function useDeleteTeamInvitation() {
         const result = await TeamInvitationApi.deleteTeamInvitation(
           apiClient,
           invitationId,
-          teamId
+          teamId,
         );
 
         if (env.isDevelopment) {
@@ -380,7 +380,7 @@ export function useDeleteTeamInvitation() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteTeamInvitation;

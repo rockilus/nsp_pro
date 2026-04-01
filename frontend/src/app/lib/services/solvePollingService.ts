@@ -23,13 +23,13 @@ export class SolvePollingService {
   private isActive = false;
   private retryCount = 0;
   private getSolveStatusFn: (
-    solveId: string
+    solveId: string,
   ) => Promise<SolveTaskStatusResponseT>;
 
   constructor(
     solveId: string,
     getSolveStatusFn: (solveId: string) => Promise<SolveTaskStatusResponseT>,
-    options: PollingOptions = {}
+    options: PollingOptions = {},
   ) {
     this.solveId = solveId;
     this.getSolveStatusFn = getSolveStatusFn;
@@ -62,7 +62,7 @@ export class SolvePollingService {
    */
   stop(): void {
     console.log(
-      "[stop() #1] Stopping polling for solve status (direct call on instance)..."
+      "[stop() #1] Stopping polling for solve status (direct call on instance)...",
     );
 
     if (this.timeoutId) {
@@ -100,7 +100,7 @@ export class SolvePollingService {
       console.log(
         `Current request status: ${status.requestStatus}, ${
           status.requestStatus === "PENDING"
-        },  ${status.requestStatus === SolveRequestStatus.PENDING}`
+        },  ${status.requestStatus === SolveRequestStatus.PENDING}`,
       );
 
       // Reset retry count on successful request
@@ -144,8 +144,8 @@ export class SolvePollingService {
     if (this.retryCount >= this.options.maxRetries) {
       this.options.onError(
         new Error(
-          `Polling failed after ${this.options.maxRetries} retries. Last error: ${error.message}`
-        )
+          `Polling failed after ${this.options.maxRetries} retries. Last error: ${error.message}`,
+        ),
       );
       console.log("[stop() #4] Stopping polling after max retries reached.");
       this.stop();
@@ -158,7 +158,7 @@ export class SolvePollingService {
 
     console.warn(
       `Polling error (retry ${this.retryCount}/${this.options.maxRetries}):`,
-      error.message
+      error.message,
     );
 
     this.timeoutId = setTimeout(() => {

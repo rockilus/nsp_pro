@@ -80,24 +80,24 @@ export const fromAssignmentT = (data: AssignmentT): any => {
 };
 
 export const toAssignmentsRecurrencesResultT = (
-  data: any
+  data: any,
 ): AssignmentsRecurrencesResultT => {
   return {
     assignmentsCreated: data.assignmentsCreated.map((assignment: any) =>
-      toAssignmentT(assignment)
+      toAssignmentT(assignment),
     ),
     assignmentsRead: data.assignmentsRead.map((assignment: any) =>
-      toAssignmentT(assignment)
+      toAssignmentT(assignment),
     ),
     assignmentsUpdated: data.assignmentsUpdated.map((assignment: any) =>
-      toAssignmentT(assignment)
+      toAssignmentT(assignment),
     ),
     assignmentsDeletedIds: data.assignmentsDeletedIds || [],
     recurrenceCreated: data.recurrenceCreated
       ? toRecurrenceRuleT(data.recurrenceCreated)
       : null,
     recurrencesRead: data.recurrencesRead.map((recurrence: any) =>
-      toRecurrenceRuleT(recurrence)
+      toRecurrenceRuleT(recurrence),
     ),
     recurrenceUpdated: data.recurrenceUpdated
       ? toRecurrenceRuleT(data.recurrenceUpdated)

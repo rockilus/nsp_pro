@@ -38,12 +38,12 @@ export default function BlockDisplayList({
           : blockDisplayPlaceholder(
               templateBlock.placeholder,
               error,
-              `constraint-block-placeholder-${index}`
+              `constraint-block-placeholder-${index}`,
             )}
         {blockDisplayName(
           GetBlockNameLabel(lng, templateBlock.name),
           error,
-          `constraint-block-name-${index}`
+          `constraint-block-name-${index}`,
         )}
       </div>
     );

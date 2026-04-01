@@ -142,7 +142,7 @@ function RequestCalendarCell({
     }
     if (canAddRequest) {
       return `Click to create request for ${worker.name} on ${date.format(
-        "MMM D"
+        "MMM D",
       )}`;
     }
     if (canEditRequest && request) {
@@ -151,7 +151,7 @@ function RequestCalendarCell({
         request,
         [],
         shifts,
-        "not"
+        "not",
       );
 
       const periodText = request.startDate.isSame(request.endDate, "day")

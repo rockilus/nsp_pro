@@ -294,11 +294,11 @@ test.describe("Template Toolbar Period", () => {
       // Verify standard type is currently selected
       await expect(toolbarElements.standardTypeButton).toHaveAttribute(
         "aria-pressed",
-        "true"
+        "true",
       );
       await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
         "aria-pressed",
-        "false"
+        "false",
       );
 
       // Click even/odd type
@@ -307,11 +307,11 @@ test.describe("Template Toolbar Period", () => {
       // Should switch immediately without confirmation dialog
       await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
         "aria-pressed",
-        "true"
+        "true",
       );
       await expect(toolbarElements.standardTypeButton).toHaveAttribute(
         "aria-pressed",
-        "false"
+        "false",
       );
 
       // Table headers should show "Even Week" and "Odd Week"
@@ -350,11 +350,11 @@ test.describe("Template Toolbar Period", () => {
       // Type should be switched
       await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
         "aria-pressed",
-        "true"
+        "true",
       );
       await expect(toolbarElements.standardTypeButton).toHaveAttribute(
         "aria-pressed",
-        "false"
+        "false",
       );
 
       // Table headers should show "Even Week" and "Odd Week"
@@ -412,11 +412,11 @@ test.describe("Template Toolbar Period", () => {
       // Type should be switched
       await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
         "aria-pressed",
-        "true"
+        "true",
       );
       await expect(toolbarElements.standardTypeButton).toHaveAttribute(
         "aria-pressed",
-        "false"
+        "false",
       );
 
       // Table headers should show "Even Week" and "Odd Week"
@@ -471,11 +471,11 @@ test.describe("Template Toolbar Period", () => {
       // Type should remain standard
       await expect(toolbarElements.standardTypeButton).toHaveAttribute(
         "aria-pressed",
-        "true"
+        "true",
       );
       await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
         "aria-pressed",
-        "false"
+        "false",
       );
 
       // Table headers should show standard week numbering (visible ones)
@@ -505,7 +505,7 @@ test.describe("Template Toolbar Period", () => {
       // Verify even/odd is active
       await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
         "aria-pressed",
-        "true"
+        "true",
       );
       await expect(page.locator('th:has-text("Even Week")')).toBeVisible();
       await expect(page.locator('th:has-text("Odd Week")')).toBeVisible();
@@ -516,11 +516,11 @@ test.describe("Template Toolbar Period", () => {
       // Should switch immediately
       await expect(toolbarElements.standardTypeButton).toHaveAttribute(
         "aria-pressed",
-        "true"
+        "true",
       );
       await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
         "aria-pressed",
-        "false"
+        "false",
       );
 
       // Table headers should show "Week 1" and "Week 2" (use specific table locator)
@@ -563,7 +563,7 @@ test.describe("Template Toolbar Period", () => {
       await toolbarElements.evenOddTypeButton.click();
       await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
         "aria-pressed",
-        "true"
+        "true",
       );
 
       // Wait for the type switch to complete
@@ -577,7 +577,7 @@ test.describe("Template Toolbar Period", () => {
       await toolbarElements.standardTypeButton.click();
       await expect(toolbarElements.standardTypeButton).toHaveAttribute(
         "aria-pressed",
-        "true"
+        "true",
       );
 
       // Wait for the switch to complete
@@ -592,7 +592,7 @@ test.describe("Template Toolbar Period", () => {
       // Template type should be standard
       await expect(toolbarElements.standardTypeButton).toHaveAttribute(
         "aria-pressed",
-        "true"
+        "true",
       );
     });
 

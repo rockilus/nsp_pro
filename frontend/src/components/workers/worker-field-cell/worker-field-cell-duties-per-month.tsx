@@ -18,7 +18,7 @@ export default function WorkerFieldCellDutiesPerMonth({
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
   const [valueState, setValueState] = useState<number | "">(
-    worker.dutiesPerMonth
+    worker.dutiesPerMonth,
   );
   const [isSaving, setIsSaving] = useState(false);
 

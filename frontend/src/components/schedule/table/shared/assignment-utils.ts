@@ -16,7 +16,7 @@ import {
 
 export const generateOwnerIdDateKey = (
   ownerId: string,
-  date: dayjs.Dayjs
+  date: dayjs.Dayjs,
 ): string => {
   return `${ownerId}-${date.format("YYYY-MM-DD")}`;
 };
@@ -28,7 +28,7 @@ export const buildAssignmentsDataByOwnerAndDate = (
   workers: WorkerT[],
   shifts: ShiftT[],
   breaches: BreachT[],
-  requests: RequestT[]
+  requests: RequestT[],
 ): AssignmentsDictT => {
   const assignmentDict: AssignmentsDictT = {};
 
@@ -83,7 +83,7 @@ export const buildAssignmentsDataByOwnerAndDate = (
     const associatedRequests = (requestMap.get(shift.id) || []).filter(
       (request) =>
         request.startDate.isSameOrBefore(assignment.date, "day") &&
-        request.endDate.isSameOrAfter(assignment.date, "day")
+        request.endDate.isSameOrAfter(assignment.date, "day"),
     );
 
     if (
@@ -91,7 +91,7 @@ export const buildAssignmentsDataByOwnerAndDate = (
       shift.recuperationDutyId
     ) {
       const referenceShift = shifts.find(
-        (s) => s.id === shift.recuperationDutyId
+        (s) => s.id === shift.recuperationDutyId,
       );
       if (
         referenceShift &&
@@ -100,7 +100,7 @@ export const buildAssignmentsDataByOwnerAndDate = (
         const shiftAssignmentStartDate = assignment.date.add(1, "day");
         const nextDayKey = generateOwnerIdDateKey(
           ownerId,
-          shiftAssignmentStartDate
+          shiftAssignmentStartDate,
         );
         if (!assignmentDict[nextDayKey]) {
           assignmentDict[nextDayKey] = [];
@@ -135,7 +135,7 @@ export const buildAssignmentsDataByOwnerAndDate = (
 
 export const buildShiftDemandsDataByShiftAndDate = (
   shiftDemands: ShiftDemandDTO[],
-  shifts: ShiftT[]
+  shifts: ShiftT[],
 ): ShiftDemandsDictT => {
   const shiftDemandDict: ShiftDemandsDictT = {};
 
@@ -151,7 +151,7 @@ export const buildShiftDemandsDataByShiftAndDate = (
 
     const ownerDateKey = generateOwnerIdDateKey(
       shift.id,
-      dayjs.unix(shiftDemand.date)
+      dayjs.unix(shiftDemand.date),
     );
 
     // Since there's only one demand per shift/date now, we can directly assign
@@ -165,7 +165,7 @@ export const buildShiftDemandsDataByShiftAndDate = (
 };
 
 export const buildRequestsByWorkerAndDate = (
-  requests: RequestT[]
+  requests: RequestT[],
 ): { [key: string]: RequestT[] } => {
   const requestDict: { [key: string]: RequestT[] } = {};
 
@@ -175,7 +175,7 @@ export const buildRequestsByWorkerAndDate = (
     while (currentDate.isSameOrBefore(request.endDate, "day")) {
       const ownerDateKey = generateOwnerIdDateKey(
         request.workerId,
-        currentDate
+        currentDate,
       );
 
       if (!requestDict[ownerDateKey]) {
@@ -199,7 +199,7 @@ export const buildScheduleCellDict = (
   requests: RequestT[],
   workers: WorkerT[],
   shifts: ShiftT[],
-  breaches: BreachT[]
+  breaches: BreachT[],
 ): ScheduleCellsDictT => {
   const assignmentDict = buildAssignmentsDataByOwnerAndDate(
     ownerType,
@@ -208,7 +208,7 @@ export const buildScheduleCellDict = (
     workers,
     shifts,
     breaches,
-    requests
+    requests,
   );
 
   let shiftDemandDict: ShiftDemandsDictT = {};

@@ -63,7 +63,7 @@ test.describe("TemplateViewer - Apply Template", () => {
 
       // Verify dialog contains expected elements
       await expect(
-        page.locator("text=Apply Template to Date Range")
+        page.locator("text=Apply Template to Date Range"),
       ).toBeVisible();
 
       const dialogElements =
@@ -126,7 +126,7 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-01-01"
+        "2024-01-01",
       );
 
       // Apply button should still be disabled (no end date)
@@ -136,7 +136,7 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2023-12-31"
+        "2023-12-31",
       );
 
       // Apply button should be disabled (invalid range)
@@ -144,14 +144,14 @@ test.describe("TemplateViewer - Apply Template", () => {
 
       // Verify error message is shown
       await expect(
-        page.locator("text=End date must be after start date")
+        page.locator("text=End date must be after start date"),
       ).toBeVisible();
 
       // Set valid end date
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-01-07"
+        "2024-01-07",
       );
 
       // Apply button should now be enabled
@@ -180,10 +180,10 @@ test.describe("TemplateViewer - Apply Template", () => {
 
       // Verify template information is displayed in the dialog
       await expect(
-        applicationDialog.locator(`text=${standardTemplate.name}`)
+        applicationDialog.locator(`text=${standardTemplate.name}`),
       ).toBeVisible();
       await expect(
-        applicationDialog.getByText("Standard", { exact: true })
+        applicationDialog.getByText("Standard", { exact: true }),
       ).toBeVisible(); // Template type
       await expect(applicationDialog.locator("text=Weeks: 2")).toBeVisible(); // Standard template has 2 weeks
     });
@@ -214,12 +214,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-01-01"
+        "2024-01-01",
       ); // Monday
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-01-28"
+        "2024-01-28",
       ); // Sunday (4 weeks)
 
       // Ensure overwrite is enabled
@@ -249,7 +249,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-01",
-        2
+        2,
       ); // Monday, Week 0
 
       // Week 0, Friday (dayOfWeek=4, index=0): ((4 + 0 + 1) % 5) + 1 = 1
@@ -257,7 +257,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-05",
-        1
+        1,
       ); // Friday, Week 0
 
       // Week 1, Monday (dayOfWeek=0, index=0): ((0 + 0) % 5) + 2 = 2
@@ -265,7 +265,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-08",
-        2
+        2,
       ); // Monday, Week 1
 
       // Week 1, Tuesday (dayOfWeek=1, index=0): ((1 + 0) % 5) + 2 = 3
@@ -273,7 +273,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-09",
-        3
+        3,
       ); // Tuesday, Week 1
 
       // Week 0 repeats - Monday (dayOfWeek=0, index=0): ((0 + 0 + 1) % 5) + 1 = 2
@@ -281,7 +281,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-15",
-        2
+        2,
       ); // Monday, Week 0 (repeated)
 
       // Week 1 repeats - Monday (dayOfWeek=0, index=0): ((0 + 0) % 5) + 2 = 2
@@ -289,7 +289,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-22",
-        2
+        2,
       ); // Monday, Week 1 (repeated)
     });
 
@@ -316,12 +316,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-02-05"
+        "2024-02-05",
       ); // Monday
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-03-10"
+        "2024-03-10",
       ); // Sunday (5 weeks)
 
       // Apply the template
@@ -339,7 +339,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-02-05",
-        2
+        2,
       ); // Week 0 (first cycle)
 
       // Week 1, Monday (dayOfWeek=0, index=0): ((0 + 0) % 5) + 2 = 2
@@ -347,7 +347,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-02-12",
-        2
+        2,
       ); // Week 1 (first cycle)
 
       // Week 0 repeats - Monday
@@ -355,7 +355,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-02-19",
-        2
+        2,
       ); // Week 0 (second cycle)
 
       // Week 1 repeats - Monday
@@ -363,7 +363,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-02-26",
-        2
+        2,
       ); // Week 1 (second cycle)
 
       // Week 0 repeats again - Monday
@@ -371,7 +371,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-03-04",
-        2
+        2,
       ); // Week 0 (third cycle)
     });
 
@@ -398,12 +398,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-01-03"
+        "2024-01-03",
       ); // Wednesday
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-01-09"
+        "2024-01-09",
       ); // Tuesday (1 week)
 
       // Apply the template
@@ -421,7 +421,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-03",
-        4
+        4,
       ); // Wednesday (day 2 of template week 0)
 
       // Week 0, Thursday (dayOfWeek=3, index=0): ((3 + 0 + 1) % 5) + 1 = 5
@@ -429,7 +429,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-04",
-        5
+        5,
       ); // Thursday
 
       // Week 0, Friday (dayOfWeek=4, index=0): ((4 + 0 + 1) % 5) + 1 = 1
@@ -437,7 +437,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-05",
-        1
+        1,
       ); // Friday
 
       // Week 0, Saturday (dayOfWeek=5, index=0): ((5 + 0 + 1) % 5) + 1 = 2
@@ -445,7 +445,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-06",
-        2
+        2,
       ); // Saturday
 
       // Week 0, Sunday (dayOfWeek=6, index=0): ((6 + 0 + 1) % 5) + 1 = 3
@@ -453,7 +453,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-07",
-        3
+        3,
       ); // Sunday
 
       // Week 1, Monday (dayOfWeek=0, index=0): ((0 + 0) % 5) + 2 = 2
@@ -461,7 +461,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-08",
-        2
+        2,
       ); // Monday (start of week 1)
 
       // Week 1, Tuesday (dayOfWeek=1, index=0): ((1 + 0) % 5) + 2 = 3
@@ -469,7 +469,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-01-09",
-        3
+        3,
       ); // Tuesday
     });
   });
@@ -499,12 +499,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-02-05"
+        "2024-02-05",
       ); // Week 6 Monday
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-02-25"
+        "2024-02-25",
       ); // Week 8 Sunday
 
       // Apply the template
@@ -522,7 +522,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-02-05",
-        2
+        2,
       ); // Week 6 Monday (even week = template week 0)
 
       // Week 7 is odd, so it uses Week 1 pattern: Morning shift = 1
@@ -530,7 +530,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-02-12",
-        1
+        1,
       ); // Week 7 Monday (odd week = template week 1)
 
       // Week 8 is even, so it uses Week 0 pattern: Morning shift = 2
@@ -538,7 +538,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-02-19",
-        2
+        2,
       ); // Week 8 Monday (even week = template week 0)
     });
 
@@ -564,12 +564,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-04-08"
+        "2024-04-08",
       ); // Week 15 Monday
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-04-28"
+        "2024-04-28",
       ); // Week 17 Sunday
 
       await templateTestBase.setApplicationDialogOverwrite(page, true);
@@ -587,7 +587,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-04-10",
-        1
+        1,
       ); // Week 15 Wednesday (odd = template week 1, morning shift)
 
       // Week 16 is even, so it uses Week 0 pattern: Morning shift = 2
@@ -596,7 +596,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-04-17",
-        2
+        2,
       ); // Week 16 Wednesday (even = template week 0, morning shift)
 
       // Week 17 is odd, so it uses Week 1 pattern: Morning shift = 1
@@ -605,7 +605,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-04-24",
-        1
+        1,
       ); // Week 17 Wednesday (odd = template week 1, morning shift)
     });
   });
@@ -644,12 +644,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-03-04"
+        "2024-03-04",
       ); // Monday
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-03-10"
+        "2024-03-10",
       ); // Sunday
 
       // Ensure overwrite is enabled (should be default)
@@ -669,14 +669,14 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-03-04",
-        2
+        2,
       ); // Was 100, now 2 (overridden)
       // Week 0, Tuesday (dayOfWeek=1, index=0): ((1 + 0 + 1) % 5) + 1 = 3
       await templateTestBase.verifyShiftDemandValue(
         page,
         morningShiftId,
         "2024-03-05",
-        3
+        3,
       ); // Was 200, now 3 (overridden)
     });
 
@@ -713,12 +713,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-03-11"
+        "2024-03-11",
       ); // Monday
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-03-17"
+        "2024-03-17",
       ); // Sunday
 
       // Disable overwrite (set to additive mode)
@@ -739,7 +739,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-03-11",
-        12
+        12,
       );
       // Week 0, Tuesday (dayOfWeek=1, index=0): ((1 + 0 + 1) % 5) + 1 = 3
       // Existing 10 + template 3 = 13
@@ -747,7 +747,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-03-12",
-        13
+        13,
       );
     });
 
@@ -785,12 +785,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-03-18"
+        "2024-03-18",
       ); // Monday
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-03-24"
+        "2024-03-24",
       ); // Sunday
 
       await templateTestBase.setApplicationDialogOverwrite(page, false);
@@ -810,7 +810,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-03-18",
-        7
+        7,
       );
       // Tuesday: Week 0, dayOfWeek=1: ((1 + 0 + 1) % 5) + 1 = 3
       // No existing, just template = 3
@@ -818,7 +818,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-03-19",
-        3
+        3,
       );
       // Wednesday: Week 0, dayOfWeek=2: ((2 + 0 + 1) % 5) + 1 = 4
       // No existing, just template = 4
@@ -826,7 +826,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-03-20",
-        4
+        4,
       );
       // Thursday: Week 0, dayOfWeek=3: ((3 + 0 + 1) % 5) + 1 = 5
       // Existing 5 + template 5 = 10
@@ -834,7 +834,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-03-21",
-        10
+        10,
       );
     });
   });
@@ -860,12 +860,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2023-12-25"
+        "2023-12-25",
       ); // Week 52 Monday
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-01-07"
+        "2024-01-07",
       ); // Week 1 Sunday of 2024
 
       await templateTestBase.setApplicationDialogOverwrite(page, true);
@@ -883,14 +883,14 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2023-12-25",
-        2
+        2,
       );
       // 2024 Week 1 (odd) = template Week 1 (Morning shift = 1)
       await templateTestBase.verifyShiftDemandValue(
         page,
         morningShiftId,
         "2024-01-01",
-        1
+        1,
       );
     });
 
@@ -912,12 +912,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-04-03"
+        "2024-04-03",
       ); // Wednesday
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-04-03"
+        "2024-04-03",
       ); // Same Wednesday
 
       await templateTestBase.setApplicationDialogOverwrite(page, true);
@@ -935,7 +935,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         page,
         morningShiftId,
         "2024-04-03",
-        4
+        4,
       );
     });
 
@@ -954,12 +954,12 @@ test.describe("TemplateViewer - Apply Template", () => {
       await templateTestBase.setApplicationDialogDate(
         page,
         "start",
-        "2024-05-01"
+        "2024-05-01",
       );
       await templateTestBase.setApplicationDialogDate(
         page,
         "end",
-        "2024-05-07"
+        "2024-05-07",
       );
 
       await templateTestBase.setApplicationDialogOverwrite(page, true);
@@ -980,7 +980,7 @@ test.describe("TemplateViewer - Apply Template", () => {
         };
         localStorage.setItem(
           "nsp_pro_period_state",
-          JSON.stringify(periodState)
+          JSON.stringify(periodState),
         );
       }, targetDate.toISOString());
 
@@ -990,7 +990,7 @@ test.describe("TemplateViewer - Apply Template", () => {
 
       // Wait for the shift demand table to be visible
       const shiftDemandTable = page.locator(
-        '[data-testid="shift-demand-table"]'
+        '[data-testid="shift-demand-table"]',
       );
       await expect(shiftDemandTable).toBeVisible({ timeout: 10000 });
 

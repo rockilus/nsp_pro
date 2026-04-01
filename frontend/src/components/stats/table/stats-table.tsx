@@ -80,7 +80,7 @@ export default function StatsTable({
         acc[statsValue.workerId] += statsValue.value;
         return acc;
       },
-      {} as { [workerId: string]: number }
+      {} as { [workerId: string]: number },
     );
 
     const totals: { [headerId: string]: number } = stats.statsHeaders.reduce(
@@ -90,7 +90,7 @@ export default function StatsTable({
           .reduce((sum, statsValue) => sum + statsValue.value, 0);
         return acc;
       },
-      {} as { [headerId: string]: number }
+      {} as { [headerId: string]: number },
     );
 
     const overall = Object.values(sums).reduce((sum, value) => sum + value, 0);
@@ -253,7 +253,7 @@ export default function StatsTable({
                         }`}
                       >
                         {statsUnitOptions.find(
-                          (u) => u.name === header.statsUnit
+                          (u) => u.name === header.statsUnit,
                         )?.label || header.statsUnit}
                       </span>
                       <span
@@ -263,7 +263,9 @@ export default function StatsTable({
                       >
                         {header.selectedShifts
                           .map((ss) =>
-                            ss.name === "all shifts" ? t("all_shifts") : ss.name
+                            ss.name === "all shifts"
+                              ? t("all_shifts")
+                              : ss.name,
                           )
                           .join(", ")}
                       </span>
@@ -345,7 +347,7 @@ export default function StatsTable({
               {stats.statsHeaders.map((header, headerIndex) => {
                 const statsValue: StatsValueT | null =
                   stats.statsValues.find(
-                    (s) => s.headerId === header.id && s.workerId === worker.id
+                    (s) => s.headerId === header.id && s.workerId === worker.id,
                   ) || null;
 
                 if (!statsValue) return null;
@@ -390,7 +392,7 @@ export default function StatsTable({
                       padding: 0,
                       backgroundColor: getHeatmapColors(
                         workerSums[worker.id],
-                        rowTotalsColorScale
+                        rowTotalsColorScale,
                       ).backgroundColor,
                     }}
                   >
@@ -399,7 +401,7 @@ export default function StatsTable({
                       style={{
                         color: getHeatmapColors(
                           workerSums[worker.id],
-                          rowTotalsColorScale
+                          rowTotalsColorScale,
                         ).color,
                       }}
                     >
@@ -449,7 +451,7 @@ export default function StatsTable({
                 : totalsColorScale;
               const heatmapColors = getHeatmapColors(
                 headerTotals[header.id],
-                scale
+                scale,
               );
 
               return (

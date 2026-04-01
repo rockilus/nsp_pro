@@ -64,23 +64,23 @@ interface TemplateTableProps {
   getDemandValue: (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ) => number;
   handleCellChange: (
     shiftId: string,
     weekNumber: number,
     dayIndex: number,
-    value: string
+    value: string,
   ) => Promise<void>;
   isCellSelected: (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ) => boolean;
   toggleCellSelection: (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ) => void;
   selectAllRowCells: (shiftId: string) => void;
   selectAllColumnCells: (weekNumber: number, dayIndex: number) => void;
@@ -114,12 +114,12 @@ interface TemplateCellProps {
     shiftId: string,
     weekNumber: number,
     dayIndex: number,
-    value: string
+    value: string,
   ) => Promise<void>;
   onToggleSelection: (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ) => void;
 }
 
@@ -360,23 +360,23 @@ interface TemplateRowProps {
   getDemandValue: (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ) => number;
   handleCellChange: (
     shiftId: string,
     weekNumber: number,
     dayIndex: number,
-    value: string
+    value: string,
   ) => Promise<void>;
   isCellSelected: (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ) => boolean;
   toggleCellSelection: (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ) => void;
   selectAllRowCells: (shiftId: string) => void;
   isRowSelected: (shiftId: string) => boolean;
@@ -431,7 +431,7 @@ function TemplateRow({
               isWeekBoundary={isWeekBoundary}
             />
           );
-        })
+        }),
       )}
     </TableRow>
   );
@@ -590,7 +590,7 @@ function TemplateTableHeader({
                 )}
               </TableCell>
             );
-          })
+          }),
         )}
       </TableRow>
     </TableHead>
@@ -607,23 +607,23 @@ interface TemplateTableBodyProps {
   getDemandValue: (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ) => number;
   handleCellChange: (
     shiftId: string,
     weekNumber: number,
     dayIndex: number,
-    value: string
+    value: string,
   ) => Promise<void>;
   isCellSelected: (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ) => boolean;
   toggleCellSelection: (
     shiftId: string,
     weekNumber: number,
-    dayIndex: number
+    dayIndex: number,
   ) => void;
   selectAllRowCells: (shiftId: string) => void;
   isRowSelected: (shiftId: string) => boolean;

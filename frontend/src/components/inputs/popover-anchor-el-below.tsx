@@ -17,7 +17,7 @@ export default function PopoverAnchorElBelow({
   testId?: string;
 }) {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
-    null
+    null,
   );
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {

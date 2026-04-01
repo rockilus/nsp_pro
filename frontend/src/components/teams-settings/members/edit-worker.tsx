@@ -26,14 +26,14 @@ export default function EditWorkerPopover({
   handleAttachUserToWorker: (
     workerId: string,
     userId: string,
-    teamId: string
+    teamId: string,
   ) => Promise<void>;
 }) {
   const { t } = useTranslation(lng, "teams-page");
 
   const userWorker = workers.find((worker) => worker.userId === userId) || null;
   const [workerIdState, setWorkerIdState] = useState<string | null>(
-    userWorker?.id || null
+    userWorker?.id || null,
   );
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 

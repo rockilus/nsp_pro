@@ -6,7 +6,7 @@ import Stack from "@mui/material/Stack";
 export default function ScheduleTableSkeleton() {
   const scheduleSkeletonRow = (
     position: "top" | "middle" | "bottom",
-    key?: React.Key
+    key?: React.Key,
   ) => {
     return (
       <Stack
@@ -55,7 +55,7 @@ export default function ScheduleTableSkeleton() {
     <Stack spacing="2px" sx={{ height: "600px", width: "100%" }}>
       {scheduleSkeletonRow("top", "top")}
       {Array.from({ length: 7 }).map((_, index) =>
-        scheduleSkeletonRow("middle", index)
+        scheduleSkeletonRow("middle", index),
       )}
       {scheduleSkeletonRow("bottom", "bottom")}
     </Stack>

@@ -14,7 +14,7 @@ export const createShiftColumns = (
   dimensions: DimensionT[],
   dimEntries: DimEntryT[],
   shifts: ShiftT[],
-  isRest: boolean
+  isRest: boolean,
 ): ColumnDefinition[] => {
   const baseColumns: ColumnDefinition[] = [
     {
@@ -115,12 +115,12 @@ export const createShiftColumns = (
         getOptions: () => {
           const uniqueValues = [
             ...new Set(
-              shifts.map((s) => s.recuperationTime?.toString() || "0")
+              shifts.map((s) => s.recuperationTime?.toString() || "0"),
             ),
           ];
           return uniqueValues.map((value) => ({ value, label: value }));
         },
-      }
+      },
     );
 
     baseColumns.push({
@@ -157,11 +157,11 @@ export const createShiftColumns = (
                   return "Any";
                 }
                 const specialty = specialties.find(
-                  (sp) => sp.id === st.specialtyId
+                  (sp) => sp.id === st.specialtyId,
                 );
                 return specialty ? specialty.name : "General";
-              })
-            )
+              }),
+            ),
           ),
         ];
         return uniqueSpecialties.map((specialtyName) => ({
@@ -177,7 +177,7 @@ export const createShiftColumns = (
     .filter((dim) =>
       isRest
         ? dim.dimTypes.includes(DimensionType.REST_SHIFT)
-        : dim.dimTypes.includes(DimensionType.SHIFT)
+        : dim.dimTypes.includes(DimensionType.SHIFT),
     )
     .map(
       (dimension): ColumnDefinition => ({
@@ -189,7 +189,7 @@ export const createShiftColumns = (
             : "select",
         getValue: (shift: ShiftT) => {
           const attribute = shift.attributes.find(
-            (attr) => attr.dimensionId === dimension.id
+            (attr) => attr.dimensionId === dimension.id,
           );
           if (dimension.entryType === DimensionEntryType.BOOL) {
             return attribute?.value ? "true" : "false";
@@ -204,7 +204,7 @@ export const createShiftColumns = (
         },
         getDisplayValue: (shift: ShiftT) => {
           const attribute = shift.attributes.find(
-            (attr) => attr.dimensionId === dimension.id
+            (attr) => attr.dimensionId === dimension.id,
           );
           if (!attribute) return "N/A";
           if (dimension.entryType === DimensionEntryType.BOOL) {
@@ -215,7 +215,7 @@ export const createShiftColumns = (
             attribute.dimEntryIds
           ) {
             const entries = dimEntries.filter((entry) =>
-              attribute.dimEntryIds?.includes(entry.id)
+              attribute.dimEntryIds?.includes(entry.id),
             );
             return entries.map((e) => e.name).join(", ") || "N/A";
           }
@@ -228,30 +228,30 @@ export const createShiftColumns = (
                 { value: "false", label: "No" },
               ]
             : dimension.entryType === DimensionEntryType.DIM_ENTRIES
-            ? () =>
-                dimEntries
-                  .filter((entry) => entry.dimensionId === dimension.id)
-                  .map((entry) => ({
-                    value: entry.id,
-                    label: entry.name,
-                  }))
-            : () => {
-                // For STR and INT types, generate options from actual shift data
-                const uniqueValues = [
-                  ...new Set(
-                    shifts
-                      .map((shift) => {
-                        const attribute = shift.attributes.find(
-                          (attr) => attr.dimensionId === dimension.id
-                        );
-                        return attribute?.value?.toString() || "";
-                      })
-                      .filter((value) => value !== "")
-                  ),
-                ];
-                return uniqueValues.map((value) => ({ value, label: value }));
-              },
-      })
+              ? () =>
+                  dimEntries
+                    .filter((entry) => entry.dimensionId === dimension.id)
+                    .map((entry) => ({
+                      value: entry.id,
+                      label: entry.name,
+                    }))
+              : () => {
+                  // For STR and INT types, generate options from actual shift data
+                  const uniqueValues = [
+                    ...new Set(
+                      shifts
+                        .map((shift) => {
+                          const attribute = shift.attributes.find(
+                            (attr) => attr.dimensionId === dimension.id,
+                          );
+                          return attribute?.value?.toString() || "";
+                        })
+                        .filter((value) => value !== ""),
+                    ),
+                  ];
+                  return uniqueValues.map((value) => ({ value, label: value }));
+                },
+      }),
     );
 
   return [...baseColumns, ...dimensionColumns];

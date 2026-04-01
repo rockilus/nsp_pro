@@ -11,7 +11,7 @@ export class LinkShiftApi extends BaseApi {
    */
   static async createLinkShift(
     apiClient: AuthenticatedApiClient,
-    linkShift: LinkShiftT
+    linkShift: LinkShiftT,
   ): Promise<LinkShiftT> {
     // Security: Input validation
     if (!linkShift || !linkShift.teamId) {
@@ -22,7 +22,7 @@ export class LinkShiftApi extends BaseApi {
       apiClient,
       "post",
       `/link-shifts/teams/${linkShift.teamId}`,
-      linkShift
+      linkShift,
     );
     return responseData as LinkShiftT;
   }
@@ -32,7 +32,7 @@ export class LinkShiftApi extends BaseApi {
    */
   static async getLinkShifts(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<LinkShiftT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -42,7 +42,7 @@ export class LinkShiftApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/link-shifts/teams/${teamId}`
+      `/link-shifts/teams/${teamId}`,
     );
     return responseData as LinkShiftT[];
   }
@@ -52,7 +52,7 @@ export class LinkShiftApi extends BaseApi {
    */
   static async updateLinkShift(
     apiClient: AuthenticatedApiClient,
-    linkShift: LinkShiftT
+    linkShift: LinkShiftT,
   ): Promise<LinkShiftT> {
     // Security: Input validation
     if (!linkShift || !linkShift.id || !linkShift.teamId) {
@@ -63,7 +63,7 @@ export class LinkShiftApi extends BaseApi {
       apiClient,
       "put",
       `/link-shifts/${linkShift.id}/teams/${linkShift.teamId}`,
-      linkShift
+      linkShift,
     );
     return responseData as LinkShiftT;
   }
@@ -74,7 +74,7 @@ export class LinkShiftApi extends BaseApi {
   static async deleteLinkShift(
     apiClient: AuthenticatedApiClient,
     linkShiftId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!linkShiftId) {
@@ -87,7 +87,7 @@ export class LinkShiftApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "delete",
-      `/link-shifts/${linkShiftId}/teams/${teamId}`
+      `/link-shifts/${linkShiftId}/teams/${teamId}`,
     );
   }
 }

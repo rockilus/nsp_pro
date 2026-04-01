@@ -34,7 +34,7 @@ export const useLeaveNameDisplayed = ({ lng }: { lng: string }) => {
   };
 
   const getLeaveNameDisplayed = (
-    leaveType: Exclude<ShiftLeaveType, ShiftLeaveType.NONE>
+    leaveType: Exclude<ShiftLeaveType, ShiftLeaveType.NONE>,
   ): string => {
     return leaveShiftDisplayNames[leaveType] || t("unknown_leave_type");
   };
@@ -58,7 +58,7 @@ export const useRestNameDisplayed = ({ lng }: { lng: string }) => {
     restType: Exclude<
       ShiftRestType,
       ShiftRestType.NONE | ShiftRestType.RECUPERATION
-    >
+    >,
   ): string => {
     return restShiftDisplayNames[restType] || t("unknown_rest_type");
   };
@@ -68,7 +68,7 @@ export const useRestNameDisplayed = ({ lng }: { lng: string }) => {
 
 export const filterWorkShifts = (shifts: ShiftT[]): ShiftT[] => {
   return shifts.filter(
-    (s) => s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY
+    (s) => s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY,
   );
 };
 
@@ -95,8 +95,8 @@ export const filterRestShifts = (shifts: ShiftT[]): ShiftT[] => {
     shifts.filter(
       (s) =>
         (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE) &&
-        s.restType !== ShiftRestType.RECUPERATION
-    )
+        s.restType !== ShiftRestType.RECUPERATION,
+    ),
   );
 };
 
@@ -106,7 +106,7 @@ export const filterRestShiftsNonDefault = (shifts: ShiftT[]): ShiftT[] => {
       (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE) &&
       s.leaveType === ShiftLeaveType.NONE &&
       s.restType !== ShiftRestType.OFF &&
-      s.restType !== ShiftRestType.RECUPERATION
+      s.restType !== ShiftRestType.RECUPERATION,
   );
 };
 

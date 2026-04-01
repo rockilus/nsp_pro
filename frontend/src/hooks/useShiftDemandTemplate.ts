@@ -60,7 +60,7 @@ export function useGetTemplates() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTemplates;
@@ -76,7 +76,7 @@ export function useGetTemplate() {
   const getTemplate = useCallback(
     async (
       templateId: string,
-      teamId: string
+      teamId: string,
     ): Promise<ShiftDemandTemplateDTO> => {
       if (env.isDevelopment) {
         console.log("🔍 useGetTemplate called:", {
@@ -101,7 +101,7 @@ export function useGetTemplate() {
         return await ShiftDemandTemplateApi.getTemplate(
           apiClient,
           templateId,
-          teamId
+          teamId,
         );
       } catch (error) {
         console.error("❌ Failed to get template:", {
@@ -111,7 +111,7 @@ export function useGetTemplate() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTemplate;
@@ -127,7 +127,7 @@ export function useCreateTemplate() {
   const createTemplate = useCallback(
     async (
       teamId: string,
-      template: ShiftDemandTemplateCreateDTO
+      template: ShiftDemandTemplateCreateDTO,
     ): Promise<ShiftDemandTemplateDTO> => {
       if (env.isDevelopment) {
         console.log("🔍 useCreateTemplate called:", {
@@ -152,7 +152,7 @@ export function useCreateTemplate() {
         const result = await ShiftDemandTemplateApi.createTemplate(
           apiClient,
           teamId,
-          template
+          template,
         );
 
         if (env.isDevelopment) {
@@ -168,7 +168,7 @@ export function useCreateTemplate() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createTemplate;
@@ -184,7 +184,7 @@ export function useCreateTemplateFromDateRange() {
   const createTemplateFromDateRange = useCallback(
     async (
       teamId: string,
-      template: TemplateFromDemandsDTO
+      template: TemplateFromDemandsDTO,
     ): Promise<ShiftDemandTemplateDTO> => {
       // Security: Validate authentication state
       if (loading) {
@@ -199,7 +199,7 @@ export function useCreateTemplateFromDateRange() {
         return await ShiftDemandTemplateApi.createTemplateFromDateRange(
           apiClient,
           teamId,
-          template
+          template,
         );
       } catch (error) {
         console.error("❌ Failed to create template from date range:", {
@@ -209,7 +209,7 @@ export function useCreateTemplateFromDateRange() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createTemplateFromDateRange;
@@ -226,7 +226,7 @@ export function useUpdateTemplate() {
     async (
       templateId: string,
       teamId: string,
-      update: ShiftDemandTemplateUpdateDTO
+      update: ShiftDemandTemplateUpdateDTO,
     ): Promise<ShiftDemandTemplateDTO> => {
       // Security: Validate authentication state
       if (loading) {
@@ -242,7 +242,7 @@ export function useUpdateTemplate() {
           apiClient,
           templateId,
           teamId,
-          update
+          update,
         );
       } catch (error) {
         console.error("❌ Failed to update template:", {
@@ -252,7 +252,7 @@ export function useUpdateTemplate() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateTemplate;
@@ -280,7 +280,7 @@ export function useDeleteTemplate() {
         await ShiftDemandTemplateApi.deleteTemplate(
           apiClient,
           templateId,
-          teamId
+          teamId,
         );
       } catch (error) {
         console.error("❌ Failed to delete template:", {
@@ -290,7 +290,7 @@ export function useDeleteTemplate() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteTemplate;
@@ -324,7 +324,7 @@ export function useApplyTemplate() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return applyTemplate;
@@ -351,7 +351,7 @@ export function useValidateTemplateApplication() {
       try {
         return await ShiftDemandTemplateApi.validateTemplateApplication(
           apiClient,
-          request
+          request,
         );
       } catch (error) {
         console.error("❌ Failed to validate template application:", {
@@ -361,7 +361,7 @@ export function useValidateTemplateApplication() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return validateTemplateApplication;
@@ -388,7 +388,7 @@ export function useBatchDeleteTemplates() {
       try {
         return await ShiftDemandTemplateApi.batchDeleteTemplates(
           apiClient,
-          templateIds
+          templateIds,
         );
       } catch (error) {
         console.error("❌ Failed to batch delete templates:", {
@@ -398,7 +398,7 @@ export function useBatchDeleteTemplates() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return batchDeleteTemplates;
@@ -413,7 +413,7 @@ export function useGetTemplateAnalytics() {
 
   const getTemplateAnalytics = useCallback(
     async (
-      templateId: string
+      templateId: string,
     ): Promise<{
       usageCount: number;
       lastUsed?: string;
@@ -431,7 +431,7 @@ export function useGetTemplateAnalytics() {
       try {
         return await ShiftDemandTemplateApi.getTemplateAnalytics(
           apiClient,
-          templateId
+          templateId,
         );
       } catch (error) {
         console.error("❌ Failed to get template analytics:", {
@@ -441,7 +441,7 @@ export function useGetTemplateAnalytics() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTemplateAnalytics;
@@ -458,7 +458,7 @@ export function useApplyDemandsToTemplateWeek() {
     async (
       templateId: string,
       teamId: string,
-      request: ApplyDemandsToTemplateWeekDTO
+      request: ApplyDemandsToTemplateWeekDTO,
     ): Promise<ShiftDemandTemplateDTO> => {
       // Security: Validate authentication state
       if (loading) {
@@ -474,7 +474,7 @@ export function useApplyDemandsToTemplateWeek() {
           apiClient,
           templateId,
           teamId,
-          request
+          request,
         );
       } catch (error) {
         console.error("❌ Failed to apply demands to template week:", {
@@ -484,7 +484,7 @@ export function useApplyDemandsToTemplateWeek() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return applyDemandsToTemplateWeek;
@@ -501,7 +501,7 @@ export function useApplyTemplateToDateRange() {
     async (
       templateId: string,
       teamId: string,
-      request: ApplyTemplateToDateRangeDTO
+      request: ApplyTemplateToDateRangeDTO,
     ): Promise<TemplateApplicationResult> => {
       // Security: Validate authentication state
       if (loading) {
@@ -517,7 +517,7 @@ export function useApplyTemplateToDateRange() {
           apiClient,
           templateId,
           teamId,
-          request
+          request,
         );
       } catch (error) {
         console.error("❌ Failed to apply template to date range:", {
@@ -527,7 +527,7 @@ export function useApplyTemplateToDateRange() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return applyTemplateToDateRange;

@@ -21,7 +21,7 @@ export default function DimensionDialog({
   setOpen: (open: boolean) => void;
 }) {
   const [windowWidth, setWindowWidth] = useState<number>(
-    typeof window !== "undefined" ? window.innerWidth : 0
+    typeof window !== "undefined" ? window.innerWidth : 0,
   );
 
   const handleClick = () => {

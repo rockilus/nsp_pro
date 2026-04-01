@@ -45,8 +45,8 @@ export function ShiftDemandActionToolbar({
         backgroundColor: showBulkMode
           ? "primary.50"
           : showMultitaskingMode
-          ? "secondary.50"
-          : "grey.50",
+            ? "secondary.50"
+            : "grey.50",
         borderTop: "1px solid",
         borderColor: "grey.100",
       }}

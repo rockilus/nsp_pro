@@ -24,7 +24,7 @@ export default function AttributeCellDimEntries({
 }) {
   const [open, setOpen] = useState(false);
   const [valueState, setValueState] = useState<DimEntryT[]>(
-    dimEntries.filter((de) => attribute.dimEntryIds.includes(de.id))
+    dimEntries.filter((de) => attribute.dimEntryIds.includes(de.id)),
   );
 
   const handleClose = () => {
@@ -47,7 +47,7 @@ export default function AttributeCellDimEntries({
           ...attribute,
           dimEntryIds: updatedValue.map((v) => v.id),
         },
-        selectedTeamId
+        selectedTeamId,
       );
     } else {
       console.error("Cannot add list value to non-list attribute");
@@ -67,7 +67,7 @@ export default function AttributeCellDimEntries({
           ...attribute,
           dimEntryIds: updatedValue.map((v) => v.id),
         },
-        selectedTeamId
+        selectedTeamId,
       );
     } else {
       console.error("Cannot remove list value from non-list attribute");

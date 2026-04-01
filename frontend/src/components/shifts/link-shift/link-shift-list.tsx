@@ -39,7 +39,7 @@ const LinkShiftList: React.FC<LinkShiftListProps> = ({
                 <span className="ls-item-times">
                   {shift
                     ? `${shift.startTime.format(
-                        "HH:mm"
+                        "HH:mm",
                       )} - ${shift.endTime.format("HH:mm")}`
                     : ""}
                 </span>

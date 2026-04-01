@@ -5,13 +5,13 @@ import { AssignmentT } from "@/types/assignment";
 export const getRelevantWorkers = (
   workers: WorkerT[],
   assignments: AssignmentT[],
-  schedule: ScheduleT | null
+  schedule: ScheduleT | null,
 ): WorkerT[] => {
   const workerIdsInAssignments = new Set(assignments.map((a) => a.workerId));
 
   if (!schedule) {
     return workers.filter(
-      (worker) => workerIdsInAssignments.has(worker.id) || !worker.deleted
+      (worker) => workerIdsInAssignments.has(worker.id) || !worker.deleted,
     );
   }
 
@@ -21,7 +21,7 @@ export const getRelevantWorkers = (
       (!worker.deleted &&
         worker.employmentStartDate.isSameOrBefore(schedule.endDate, "day") &&
         (worker.employmentEndDate === null ||
-          worker.employmentEndDate.isSameOrAfter(schedule.startDate, "day")))
+          worker.employmentEndDate.isSameOrAfter(schedule.startDate, "day"))),
   );
 
   return relevantWorkers;

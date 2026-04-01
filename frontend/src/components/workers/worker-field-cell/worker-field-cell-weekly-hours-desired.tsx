@@ -18,13 +18,13 @@ export default function WorkerFieldCellWeeklyHoursDesired({
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
   const [valueState, setValueState] = useState<number | "">(
-    worker.weeklyHoursDesired
+    worker.weeklyHoursDesired,
   );
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const handleEdit = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const newValue = e.target.value === "" ? "" : Number(e.target.value);
     if (newValue !== "" && newValue < worker.weeklyHours) {

@@ -60,7 +60,7 @@ function sanitizeString(str: string): string {
 
 function loadTableState(
   storageKey: string,
-  columns: ColumnDefinition[]
+  columns: ColumnDefinition[],
 ): TableState {
   try {
     const stored = localStorage.getItem(storageKey);
@@ -103,7 +103,7 @@ function loadTableState(
               Array.isArray(filter.value)
             ) {
               filter.value = filter.value.map((v) =>
-                typeof v === "string" ? sanitizeString(v) : v
+                typeof v === "string" ? sanitizeString(v) : v,
               );
             }
             validFilters.push(filter);
@@ -189,7 +189,7 @@ function saveTableState(storageKey: string, state: TableState): void {
 export function useTableState<T>(
   data: T[],
   columns: ColumnDefinition[],
-  storageKey?: string
+  storageKey?: string,
 ) {
   // Initialize state with persistence if storageKey provided
   const [tableState, setTableState] = useState<TableState>(() => {
@@ -257,7 +257,7 @@ export function useTableState<T>(
               if (Array.isArray(value)) {
                 // Column value is array (e.g., specialties, dim entries)
                 return filter.value.every((filterVal) =>
-                  value.includes(filterVal)
+                  value.includes(filterVal),
                 );
               } else {
                 // Column value is single value
@@ -293,7 +293,7 @@ export function useTableState<T>(
     // Apply sorting
     if (tableState.sort) {
       const column = columns.find(
-        (col) => col.id === tableState.sort!.columnId
+        (col) => col.id === tableState.sort!.columnId,
       );
       if (column) {
         result.sort((a, b) => {

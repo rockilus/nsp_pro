@@ -40,7 +40,7 @@ export default function AddLinkShift({
   const { t } = useTranslation(lng, "shift-page");
 
   const [validationMessage, setValidationMessage] = useState<string | null>(
-    null
+    null,
   );
 
   const validateMessageTranslation = {
@@ -53,7 +53,7 @@ export default function AddLinkShift({
 
   const handleShift1Change = (event: SelectChangeEvent) => {
     const shiftSelected = shifts.find(
-      (shift) => shift.id === event.target.value
+      (shift) => shift.id === event.target.value,
     );
     if (!shiftSelected) {
       return;
@@ -65,7 +65,7 @@ export default function AddLinkShift({
 
   const handleShift2Change = (event: SelectChangeEvent) => {
     const shiftSelected = shifts.find(
-      (shift) => shift.id === event.target.value
+      (shift) => shift.id === event.target.value,
     );
     if (!shiftSelected) {
       return;
@@ -87,13 +87,13 @@ export default function AddLinkShift({
     const validationResult = validateLinkShift(
       newLinkShift,
       shifts.filter((s) => newLinkShift.shiftIds.includes(s.id)),
-      linkShifts
+      linkShifts,
     );
     if (!validationResult.isValid) {
       setValidationMessage(
         validateMessageTranslation[
           validationResult.validationMessage as keyof typeof validateMessageTranslation
-        ] || t("message_unknown_error")
+        ] || t("message_unknown_error"),
       );
       return;
     }
@@ -104,27 +104,30 @@ export default function AddLinkShift({
   };
 
   const shiftsForShift1 = shifts.filter(
-    (shift) => shift.shiftType === ShiftType.NORMAL
+    (shift) => shift.shiftType === ShiftType.NORMAL,
   );
 
   const referenceDate = dayjs.utc().startOf("day");
-  const shiftTimes = shiftsForShift1.reduce((acc, shift) => {
-    const startTime = dayjs
-      .utc(shift.startTime)
-      .set("year", referenceDate.year())
-      .set("month", referenceDate.month())
-      .set("date", referenceDate.date());
-    let endTime = dayjs
-      .utc(shift.endTime)
-      .set("year", referenceDate.year())
-      .set("month", referenceDate.month())
-      .set("date", referenceDate.date());
-    if (endTime.isBefore(startTime)) {
-      endTime = endTime.add(1, "day");
-    }
-    acc[shift.id] = { startTime, endTime };
-    return acc;
-  }, {} as Record<string, { startTime: dayjs.Dayjs; endTime: dayjs.Dayjs }>);
+  const shiftTimes = shiftsForShift1.reduce(
+    (acc, shift) => {
+      const startTime = dayjs
+        .utc(shift.startTime)
+        .set("year", referenceDate.year())
+        .set("month", referenceDate.month())
+        .set("date", referenceDate.date());
+      let endTime = dayjs
+        .utc(shift.endTime)
+        .set("year", referenceDate.year())
+        .set("month", referenceDate.month())
+        .set("date", referenceDate.date());
+      if (endTime.isBefore(startTime)) {
+        endTime = endTime.add(1, "day");
+      }
+      acc[shift.id] = { startTime, endTime };
+      return acc;
+    },
+    {} as Record<string, { startTime: dayjs.Dayjs; endTime: dayjs.Dayjs }>,
+  );
 
   const shiftsForShift2 = shiftSelected1
     ? shiftsForShift1.filter((shift) => {
@@ -160,7 +163,7 @@ export default function AddLinkShift({
                 <span className="ls-shift-times">
                   {shift
                     ? `${shift.startTime.format(
-                        "HH:mm"
+                        "HH:mm",
                       )} - ${shift.endTime.format("HH:mm")}`
                     : ""}
                 </span>
@@ -193,7 +196,7 @@ export default function AddLinkShift({
                 <span className="ls-shift-times">
                   {shift
                     ? `${shift.startTime.format(
-                        "HH:mm"
+                        "HH:mm",
                       )} - ${shift.endTime.format("HH:mm")}`
                     : ""}
                 </span>

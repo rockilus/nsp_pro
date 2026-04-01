@@ -73,7 +73,7 @@ export const MultitaskingConcurrencyDisplay: React.FC<
 
   const formatDateRange = () => {
     return `${startDate.format("YYYY-MM-DD")} - ${endDate.format(
-      "YYYY-MM-DD"
+      "YYYY-MM-DD",
     )}`;
   };
 
@@ -123,7 +123,7 @@ export const MultitaskingConcurrencyDisplay: React.FC<
                           variant="outlined"
                           color="primary"
                         />
-                      )
+                      ),
                     )}
                   </Box>
                 ) : (

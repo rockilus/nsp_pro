@@ -11,7 +11,7 @@ export class BreachApi extends BaseApi {
    */
   static async getBreaches(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<BreachT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -21,7 +21,7 @@ export class BreachApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/breaches/teams/${teamId}`
+      `/breaches/teams/${teamId}`,
     );
     return responseData.map((breach: any) => toBreachT(breach));
   }

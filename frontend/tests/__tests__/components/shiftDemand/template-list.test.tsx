@@ -10,11 +10,11 @@ describe("TemplateList API Centralization", () => {
   const frontendPath = path.resolve(__dirname, "../../../../src");
   const listFile = path.join(
     frontendPath,
-    "components/shiftDemand/templates/TemplateList.tsx"
+    "components/shiftDemand/templates/TemplateList.tsx",
   );
   const windowFile = path.join(
     frontendPath,
-    "components/shiftDemand/templates/TemplateManagementWindow.tsx"
+    "components/shiftDemand/templates/TemplateManagementWindow.tsx",
   );
 
   describe("TemplateList Component", () => {
@@ -36,7 +36,7 @@ describe("TemplateList API Centralization", () => {
 
       const listContent = fs.readFileSync(listFile, "utf8");
       expect(listContent).not.toContain(
-        "ShiftDemandTemplateApi.deleteTemplate"
+        "ShiftDemandTemplateApi.deleteTemplate",
       );
     });
 
@@ -51,7 +51,7 @@ describe("TemplateList API Centralization", () => {
         .split("\n")
         .filter(
           (line) =>
-            line.includes("ShiftDemandTemplateApi") && line.includes("import")
+            line.includes("ShiftDemandTemplateApi") && line.includes("import"),
         );
 
       expect(apiImportLines.length).toBe(0);
@@ -105,7 +105,7 @@ describe("TemplateList API Centralization", () => {
       const hasTemplateUtils = listContent.includes("TemplateUtils");
       if (hasTemplateUtils) {
         console.log(
-          "ℹ️ TemplateList still uses TemplateUtils (for formatting)"
+          "ℹ️ TemplateList still uses TemplateUtils (for formatting)",
         );
       }
     });
@@ -152,7 +152,7 @@ describe("TemplateList API Centralization", () => {
 
       const windowContent = fs.readFileSync(windowFile, "utf8");
       expect(windowContent).toContain(
-        "onDeleteTemplateRequest={handleDeleteTemplateRequest}"
+        "onDeleteTemplateRequest={handleDeleteTemplateRequest}",
       );
     });
 

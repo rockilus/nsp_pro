@@ -108,7 +108,7 @@ export function useUpdateUser() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateUser;
@@ -128,7 +128,7 @@ export function useUpdatePassword() {
         newPassword: string;
         newPasswordConfirm: string;
       },
-      userId: string
+      userId: string,
     ): Promise<void> => {
       // Security: Validate authentication state
       if (loading) {
@@ -150,7 +150,7 @@ export function useUpdatePassword() {
             ...passwordData,
             accessToken,
           },
-          userId
+          userId,
         );
       } catch (error) {
         console.error("❌ Failed to update password:", {
@@ -160,7 +160,7 @@ export function useUpdatePassword() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, accessToken]
+    [apiClient, isAuthenticated, loading, user, accessToken],
   );
 
   return updatePassword;

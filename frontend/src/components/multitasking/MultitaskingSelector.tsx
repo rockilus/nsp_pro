@@ -45,7 +45,7 @@ export const MultitaskingSelector: React.FC<MultitaskingSelectorProps> = ({
   enabled = true,
 }) => {
   const [selectedShiftDemands, setSelectedShiftDemands] = useState<string[]>(
-    []
+    [],
   );
 
   const {
@@ -59,7 +59,7 @@ export const MultitaskingSelector: React.FC<MultitaskingSelectorProps> = ({
   const allShiftDemandIds = useMemo(() => {
     if (!concurrencyList) return [];
     return Array.from(
-      new Set(concurrencyList.map((item) => item.shiftDemandId))
+      new Set(concurrencyList.map((item) => item.shiftDemandId)),
     );
   }, [concurrencyList]);
 
@@ -293,7 +293,7 @@ export const MultitaskingSelector: React.FC<MultitaskingSelectorProps> = ({
                   <Typography variant="h4" color="secondary">
                     {
                       concurrencyList.filter(
-                        (c) => c.concurrentShiftDemandIds.length > 0
+                        (c) => c.concurrentShiftDemandIds.length > 0,
                       ).length
                     }
                   </Typography>
@@ -306,8 +306,8 @@ export const MultitaskingSelector: React.FC<MultitaskingSelectorProps> = ({
                     {Math.round(
                       concurrencyList.reduce(
                         (sum, c) => sum + c.concurrentShiftDemandIds.length,
-                        0
-                      ) / concurrencyList.length
+                        0,
+                      ) / concurrencyList.length,
                     )}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">

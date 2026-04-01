@@ -18,13 +18,13 @@ export class TeamApi extends BaseApi {
    */
   static async createTeam(
     apiClient: AuthenticatedApiClient,
-    teamName: string
+    teamName: string,
   ): Promise<TeamWithMembership> {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "post",
       "/teams",
-      { team_name: teamName }
+      { team_name: teamName },
     );
     return toTeamWithMembership(responseData);
   }
@@ -34,12 +34,12 @@ export class TeamApi extends BaseApi {
    */
   static async getTeamById(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<TeamT> {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "get",
-      `/teams/${teamId}`
+      `/teams/${teamId}`,
     );
     return toTeamtT(responseData);
   }
@@ -48,12 +48,12 @@ export class TeamApi extends BaseApi {
    * Get user's teams with memberships (authenticated)
    */
   static async getUserTeamsWithMemberships(
-    apiClient: AuthenticatedApiClient
+    apiClient: AuthenticatedApiClient,
   ): Promise<TeamWithMembership[]> {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      "/teams/with-memberships"
+      "/teams/with-memberships",
     );
     return responseData.map((team: any) => toTeamWithMembership(team));
   }
@@ -63,12 +63,12 @@ export class TeamApi extends BaseApi {
    */
   static async getTeamUsersWithMemberships(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<UserWithMembership[]> {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/teams/${teamId}/users`
+      `/teams/${teamId}/users`,
     );
     return responseData.map((user: any) => toUserWithMembership(user));
   }
@@ -79,7 +79,7 @@ export class TeamApi extends BaseApi {
   static async updateTeam(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    teamData: TeamT
+    teamData: TeamT,
   ): Promise<TeamT> {
     // Security: Input validation
     if (!teamId) {
@@ -93,7 +93,7 @@ export class TeamApi extends BaseApi {
       apiClient,
       "put",
       `/teams/${teamId}`,
-      fromTeamT(teamData)
+      fromTeamT(teamData),
     );
     return toTeamtT(responseData);
   }
@@ -103,7 +103,7 @@ export class TeamApi extends BaseApi {
    */
   static async leaveTeam(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!teamId) {
@@ -119,7 +119,7 @@ export class TeamApi extends BaseApi {
   static async removeUserFromTeam(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    userId: string
+    userId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!teamId) {
@@ -132,7 +132,7 @@ export class TeamApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "delete",
-      `/teams/${teamId}/users/${userId}`
+      `/teams/${teamId}/users/${userId}`,
     );
   }
 }

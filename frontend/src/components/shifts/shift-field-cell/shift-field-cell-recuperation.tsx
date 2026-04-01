@@ -28,7 +28,7 @@ export default function ShiftFieldCellRecuperation({
   const { t } = useTranslation(lng, "shift-page");
 
   const [valueState, setValueState] = useState<number | "">(
-    shift.recuperationTime
+    shift.recuperationTime,
   );
 
   const handleEditConfirm = () => {
@@ -69,7 +69,7 @@ export default function ShiftFieldCellRecuperation({
               value={valueState}
               onChange={(e) =>
                 setValueState(
-                  e.target.value === "" ? "" : Number(e.target.value)
+                  e.target.value === "" ? "" : Number(e.target.value),
                 )
               }
               onBlur={handleEditConfirm}

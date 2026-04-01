@@ -65,11 +65,11 @@ describe("TimeNavigation", () => {
           {...defaultProps}
           currentPeriodStart={dayjs("2025-01-01")}
           currentPeriodEnd={dayjs("2025-01-31")}
-        />
+        />,
       );
 
       expect(screen.getByTestId("time-nav-label")).toHaveTextContent(
-        "January 2025"
+        "January 2025",
       );
     });
 
@@ -79,11 +79,11 @@ describe("TimeNavigation", () => {
           {...defaultProps}
           currentPeriodStart={dayjs("2025-01-01")}
           currentPeriodEnd={dayjs("2025-02-28")}
-        />
+        />,
       );
 
       expect(screen.getByTestId("time-nav-label")).toHaveTextContent(
-        "Jan - Feb 2025"
+        "Jan - Feb 2025",
       );
     });
 
@@ -93,11 +93,11 @@ describe("TimeNavigation", () => {
           {...defaultProps}
           currentPeriodStart={dayjs("2024-12-01")}
           currentPeriodEnd={dayjs("2025-01-31")}
-        />
+        />,
       );
 
       expect(screen.getByTestId("time-nav-label")).toHaveTextContent(
-        "Dec 2024 - Jan 2025"
+        "Dec 2024 - Jan 2025",
       );
     });
   });
@@ -186,10 +186,10 @@ describe("TimeNavigation", () => {
 
       expect(screen.getByLabelText("Navigate to today")).toBeInTheDocument();
       expect(
-        screen.getByLabelText("Navigate to previous period")
+        screen.getByLabelText("Navigate to previous period"),
       ).toBeInTheDocument();
       expect(
-        screen.getByLabelText("Navigate to next period")
+        screen.getByLabelText("Navigate to next period"),
       ).toBeInTheDocument();
       expect(screen.getByLabelText("Select time frame")).toBeInTheDocument();
     });
@@ -198,7 +198,7 @@ describe("TimeNavigation", () => {
       render(<TimeNavigation {...defaultProps} />);
 
       expect(
-        screen.getByLabelText("Current period: January 2025")
+        screen.getByLabelText("Current period: January 2025"),
       ).toBeInTheDocument();
     });
   });
@@ -226,11 +226,11 @@ describe("TimeNavigation", () => {
           {...defaultProps}
           currentPeriodStart={dayjs("2025-01-15")}
           currentPeriodEnd={dayjs("2025-01-15")}
-        />
+        />,
       );
 
       expect(screen.getByTestId("time-nav-label")).toHaveTextContent(
-        "January 2025"
+        "January 2025",
       );
     });
 
@@ -240,11 +240,11 @@ describe("TimeNavigation", () => {
           {...defaultProps}
           currentPeriodStart={dayjs("2024-12-28")}
           currentPeriodEnd={dayjs("2025-01-03")}
-        />
+        />,
       );
 
       expect(screen.getByTestId("time-nav-label")).toHaveTextContent(
-        "Dec 2024 - Jan 2025"
+        "Dec 2024 - Jan 2025",
       );
     });
   });

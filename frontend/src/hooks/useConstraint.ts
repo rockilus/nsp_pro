@@ -63,7 +63,7 @@ export function useAddConstraint() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addConstraint;
@@ -106,7 +106,7 @@ export function useGetConstraints() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getConstraints;
@@ -133,7 +133,7 @@ export function useUpdateConstraint() {
       try {
         return await ConstraintApi.updateConstraint(
           apiClient,
-          updatedConstraint
+          updatedConstraint,
         );
       } catch (error) {
         console.error("❌ Failed to update constraint:", {
@@ -143,7 +143,7 @@ export function useUpdateConstraint() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateConstraint;
@@ -177,7 +177,7 @@ export function useDeleteConstraint() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteConstraint;
@@ -220,7 +220,7 @@ export function useGetTemplates() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTemplates;
@@ -266,7 +266,7 @@ export function useGetConstraintsTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getConstraintsTabData;

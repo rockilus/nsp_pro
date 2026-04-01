@@ -3,7 +3,7 @@ import { TeamWithMembership } from "@/types/team";
 
 export function canAccessPage(
   route: string,
-  teamWithMembership: TeamWithMembership
+  teamWithMembership: TeamWithMembership,
 ): boolean {
   const rules = routeAccess[route];
   if (!rules) return true;

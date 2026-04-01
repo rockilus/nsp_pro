@@ -61,7 +61,7 @@ export function useAddWorker() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addWorker;
@@ -104,7 +104,7 @@ export function useGetWorkers() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getWorkers;
@@ -147,7 +147,7 @@ export function useGetAllWorkers() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getAllWorkers;
@@ -181,7 +181,7 @@ export function useUpdateWorker() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateWorker;
@@ -198,7 +198,7 @@ export function useAttachUserToWorker() {
     async (
       workerId: string,
       userId: string,
-      teamId: string
+      teamId: string,
     ): Promise<WorkerT> => {
       // Security: Validate authentication state
       if (loading) {
@@ -214,7 +214,7 @@ export function useAttachUserToWorker() {
           apiClient,
           workerId,
           userId,
-          teamId
+          teamId,
         );
       } catch (error) {
         console.error("❌ Failed to attach user to worker:", {
@@ -224,7 +224,7 @@ export function useAttachUserToWorker() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return attachUserToWorker;
@@ -258,7 +258,7 @@ export function useDeleteWorker() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteWorker;
@@ -307,7 +307,7 @@ export function useGetWorkersTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getWorkersTabData;

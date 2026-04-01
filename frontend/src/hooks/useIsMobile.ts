@@ -15,7 +15,7 @@ import { useMediaQuery } from "@mui/material";
 export function useIsMobile(): boolean {
   return useMediaQuery(
     "(max-width:600px), ((max-width:960px) and (orientation:landscape))",
-    { noSsr: true }
+    { noSsr: true },
   );
 }
 

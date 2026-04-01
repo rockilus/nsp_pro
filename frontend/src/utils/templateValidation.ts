@@ -45,7 +45,7 @@ export interface WeekManagementConstraints {
  */
 export const validateTemplateConstraints = (
   templateType: TemplateType,
-  weeksCount: number
+  weeksCount: number,
 ): ValidationResult => {
   const constraints = TEMPLATE_TYPE_CONSTRAINTS[templateType];
 
@@ -74,7 +74,7 @@ export const validateTemplateConstraints = (
 export const validateTemplateForTypeChange = (
   currentType: TemplateType,
   newType: TemplateType,
-  currentWeeks: number
+  currentWeeks: number,
 ): TemplateTypeChangeValidation => {
   const newConstraints = TEMPLATE_TYPE_CONSTRAINTS[newType];
 
@@ -124,7 +124,7 @@ export const validateTemplateForTypeChange = (
  */
 export const getWeekManagementConstraints = (
   templateType: TemplateType,
-  currentWeeks: number
+  currentWeeks: number,
 ): WeekManagementConstraints => {
   const constraints = TEMPLATE_TYPE_CONSTRAINTS[templateType];
 
@@ -158,14 +158,14 @@ export const getWeekManagementConstraints = (
  * Validate template before save operation
  */
 export const validateTemplateBeforeSave = (
-  template: ShiftDemandTemplateDTO
+  template: ShiftDemandTemplateDTO,
 ): ValidationResult => {
   const weeksCount = template.weeksData.length;
 
   // Validate basic constraints
   const constraintsValidation = validateTemplateConstraints(
     template.templateType,
-    weeksCount
+    weeksCount,
   );
 
   if (!constraintsValidation.isValid) {
@@ -186,12 +186,12 @@ export const validateTemplateBeforeSave = (
 export const requiresConfirmationForTypeChange = (
   currentType: TemplateType,
   newType: TemplateType,
-  currentWeeks: number
+  currentWeeks: number,
 ): boolean => {
   const validation = validateTemplateForTypeChange(
     currentType,
     newType,
-    currentWeeks
+    currentWeeks,
   );
   return validation.requiresConfirmation || false;
 };
@@ -202,7 +202,7 @@ export const requiresConfirmationForTypeChange = (
 export const getValidationErrorMessage = (
   error: string,
   templateType?: TemplateType,
-  weeksCount?: number
+  weeksCount?: number,
 ): string => {
   switch (error) {
     case "insufficient_weeks":

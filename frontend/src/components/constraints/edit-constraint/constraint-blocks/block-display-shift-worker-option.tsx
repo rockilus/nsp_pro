@@ -70,7 +70,7 @@ export default function BlockDisplayShiftWorkerOption({
       swo,
       workers,
       shifts,
-      t("not")
+      t("not"),
     );
     return translateOptionName(displayText);
   };
@@ -93,12 +93,12 @@ export default function BlockDisplayShiftWorkerOption({
           : blockDisplayPlaceholder(
               templateBlock.placeholder,
               error,
-              `constraint-block-placeholder-${index}`
+              `constraint-block-placeholder-${index}`,
             )}
         {blockDisplayName(
           GetBlockNameLabel(lng, templateBlock.name),
           error,
-          `constraint-block-name-${index}`
+          `constraint-block-name-${index}`,
         )}
       </div>
     );
@@ -119,7 +119,7 @@ export default function BlockDisplayShiftWorkerOption({
           templateBlock={templateBlock}
           error={error}
           shiftWorkerOptionDict={groupByCategoryName(
-            expandBoolDimOptions(templateBlock.options as ShiftWorkerOptionT[])
+            expandBoolDimOptions(templateBlock.options as ShiftWorkerOptionT[]),
           )}
           handleEditBlock={handleEditBlock}
           handleClose={handleClose}

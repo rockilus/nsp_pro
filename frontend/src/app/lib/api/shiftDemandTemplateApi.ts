@@ -28,20 +28,20 @@ const formatDateForAPI = (date: Date): string => {
  * Client-side validation for template creation (updated for new structure)
  */
 const validateTemplateCreateRequest = (
-  template: ShiftDemandTemplateCreateDTO
+  template: ShiftDemandTemplateCreateDTO,
 ): void => {
   if (
     !template.name ||
     template.name.trim().length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH
   ) {
     throw new Error(
-      `Template name must be at least ${TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH} characters`
+      `Template name must be at least ${TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH} characters`,
     );
   }
 
   if (template.name.length > TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH) {
     throw new Error(
-      `Template name cannot exceed ${TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH} characters`
+      `Template name cannot exceed ${TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH} characters`,
     );
   }
 
@@ -50,7 +50,7 @@ const validateTemplateCreateRequest = (
     template.description.length > TEMPLATE_CONSTRAINTS.MAX_DESCRIPTION_LENGTH
   ) {
     throw new Error(
-      `Description cannot exceed ${TEMPLATE_CONSTRAINTS.MAX_DESCRIPTION_LENGTH} characters`
+      `Description cannot exceed ${TEMPLATE_CONSTRAINTS.MAX_DESCRIPTION_LENGTH} characters`,
     );
   }
 
@@ -80,7 +80,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
    */
   static async getTemplates(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftDemandTemplateDTO[]> {
     // Security: Input validation
     if (!teamId) {
@@ -90,7 +90,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
     const responseData = await this.makeRequest<ShiftDemandTemplateDTO[]>(
       apiClient,
       "get",
-      `/shift-demand-templates/teams/${teamId}`
+      `/shift-demand-templates/teams/${teamId}`,
     );
     return responseData;
   }
@@ -101,7 +101,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
   static async getTemplate(
     apiClient: AuthenticatedApiClient,
     templateId: string,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftDemandTemplateDTO> {
     // Security: Input validation
     if (!templateId) {
@@ -114,7 +114,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
     const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
       apiClient,
       "get",
-      `/shift-demand-templates/${templateId}/teams/${teamId}`
+      `/shift-demand-templates/${templateId}/teams/${teamId}`,
     );
     return responseData;
   }
@@ -125,7 +125,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
   static async createTemplate(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    template: ShiftDemandTemplateCreateDTO
+    template: ShiftDemandTemplateCreateDTO,
   ): Promise<ShiftDemandTemplateDTO> {
     // Security: Input validation
     if (!teamId) {
@@ -137,7 +137,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
       apiClient,
       "post",
       `/shift-demand-templates/teams/${teamId}`,
-      template
+      template,
     );
     return responseData;
   }
@@ -148,7 +148,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
   static async createTemplateFromDateRange(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    template: TemplateFromDemandsDTO
+    template: TemplateFromDemandsDTO,
   ): Promise<ShiftDemandTemplateDTO> {
     // Security: Input validation
     if (!teamId) {
@@ -162,7 +162,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
       apiClient,
       "post",
       `/shift-demand-templates/teams/${teamId}/from-demands`,
-      template
+      template,
     );
     return responseData;
   }
@@ -174,7 +174,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     templateId: string,
     teamId: string,
-    update: ShiftDemandTemplateUpdateDTO
+    update: ShiftDemandTemplateUpdateDTO,
   ): Promise<ShiftDemandTemplateDTO> {
     // Security: Input validation
     if (!templateId) {
@@ -191,7 +191,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
       apiClient,
       "put",
       `/shift-demand-templates/${templateId}/teams/${teamId}`,
-      update
+      update,
     );
     return responseData;
   }
@@ -202,7 +202,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
   static async deleteTemplate(
     apiClient: AuthenticatedApiClient,
     templateId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!templateId) {
@@ -215,7 +215,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "delete",
-      `/shift-demand-templates/${templateId}/teams/${teamId}`
+      `/shift-demand-templates/${templateId}/teams/${teamId}`,
     );
   }
 
@@ -224,7 +224,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
    */
   static async applyTemplate(
     apiClient: AuthenticatedApiClient,
-    request: ApplyTemplateDTO
+    request: ApplyTemplateDTO,
   ): Promise<TemplateApplicationResult> {
     // Security: Input validation
     validateApplyTemplateRequest(request);
@@ -233,7 +233,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
       apiClient,
       "post",
       `/shift-demand-templates/apply`,
-      request
+      request,
     );
     return responseData;
   }
@@ -243,7 +243,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
    */
   static async validateTemplateApplication(
     apiClient: AuthenticatedApiClient,
-    request: ApplyTemplateDTO
+    request: ApplyTemplateDTO,
   ): Promise<TemplateValidationResult> {
     // Security: Input validation
     validateApplyTemplateRequest(request);
@@ -252,7 +252,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
       apiClient,
       "post",
       `/shift-demand-templates/validate`,
-      request
+      request,
     );
     return responseData;
   }
@@ -262,7 +262,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
    */
   static async batchDeleteTemplates(
     apiClient: AuthenticatedApiClient,
-    templateIds: string[]
+    templateIds: string[],
   ): Promise<BatchTemplateOperationResult> {
     // Security: Input validation
     if (!templateIds || templateIds.length === 0) {
@@ -273,7 +273,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
       apiClient,
       "post",
       `/shift-demand-templates/batch-delete`,
-      { templateIds }
+      { templateIds },
     );
     return responseData;
   }
@@ -283,7 +283,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
    */
   static async getTemplateAnalytics(
     apiClient: AuthenticatedApiClient,
-    templateId: string
+    templateId: string,
   ): Promise<{
     usageCount: number;
     lastUsed?: string;
@@ -309,7 +309,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     templateId: string,
     teamId: string,
-    request: ApplyDemandsToTemplateWeekDTO
+    request: ApplyDemandsToTemplateWeekDTO,
   ): Promise<ShiftDemandTemplateDTO> {
     // Security: Input validation
     if (!templateId) {
@@ -326,7 +326,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
       apiClient,
       "post",
       `/shift-demand-templates/${templateId}/apply-demands/teams/${teamId}`,
-      request
+      request,
     );
     return responseData;
   }
@@ -338,7 +338,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     templateId: string,
     teamId: string,
-    request: ApplyTemplateToDateRangeDTO
+    request: ApplyTemplateToDateRangeDTO,
   ): Promise<TemplateApplicationResult> {
     // Security: Input validation
     if (!templateId) {
@@ -355,7 +355,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
       apiClient,
       "post",
       `/shift-demand-templates/${templateId}/apply-to-range/teams/${teamId}`,
-      request
+      request,
     );
     return responseData;
   }
@@ -372,7 +372,7 @@ export const TemplateUtils = {
     return template.weeksData.reduce((totalWeekSum, week) => {
       const weekSum = week.demands.reduce(
         (sum: number, demand) => sum + demand.count,
-        0
+        0,
       );
       return totalWeekSum + weekSum;
     }, 0);
@@ -429,7 +429,7 @@ export const TemplateUtils = {
    */
   formatDateRangeForAPI(
     startDate: any,
-    endDate: any
+    endDate: any,
   ): { startDate: string; endDate: string } {
     return {
       startDate: formatDateForAPI(startDate.toDate()),

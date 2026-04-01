@@ -47,18 +47,18 @@ const statsOptionsSerializer = {
 
 export function useStatsOptions(
   teamId: string,
-  defaultOptions: StatsOptionsT
+  defaultOptions: StatsOptionsT,
 ): [
   StatsOptionsT,
   (updates: Partial<StatsOptionsT>) => void,
-  () => void // reset function
+  () => void, // reset function
 ] {
   const storageKey = `statsOptions_${teamId}`;
 
   const [options, setOptions] = useLocalStorageState(
     storageKey,
     defaultOptions,
-    statsOptionsSerializer
+    statsOptionsSerializer,
   );
 
   const updateOptions = useCallback(
@@ -69,7 +69,7 @@ export function useStatsOptions(
         return validateStatsOptions(newOptions);
       });
     },
-    [setOptions]
+    [setOptions],
   );
 
   const resetOptions = useCallback(() => {

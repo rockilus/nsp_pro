@@ -65,7 +65,7 @@ export function useAddShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addShift;
@@ -108,7 +108,7 @@ export function useGetShifts() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getShifts;
@@ -151,7 +151,7 @@ export function useGetWorkShifts() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getWorkShifts;
@@ -194,7 +194,7 @@ export function useGetAllShifts() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getAllShifts;
@@ -228,7 +228,7 @@ export function useUpdateShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateShift;
@@ -262,7 +262,7 @@ export function useDeleteShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteShift;
@@ -305,7 +305,7 @@ export function useGetShiftsTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getShiftsTabData;

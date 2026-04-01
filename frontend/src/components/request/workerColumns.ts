@@ -11,7 +11,7 @@ import {
 export const createWorkerColumns = (
   t: (key: string) => string,
   workers: WorkerT[] = [],
-  shifts: ShiftT[] = []
+  shifts: ShiftT[] = [],
 ): ColumnDefinition[] => {
   // Generate unique worker identifiers from the actual workers data
   const uniqueWorkers = workers.map((worker) => ({
@@ -70,7 +70,7 @@ export const createWorkerColumns = (
           return request.startDate.format("MMM D, YYYY");
         }
         return `${request.startDate.format("MMM D")} - ${request.endDate.format(
-          "MMM D, YYYY"
+          "MMM D, YYYY",
         )}`;
       },
     },

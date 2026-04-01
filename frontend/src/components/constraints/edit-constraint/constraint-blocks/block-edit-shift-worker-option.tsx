@@ -120,39 +120,39 @@ export default function BlockEditShiftWorkerOption({
     (
       searchQuery: string,
       selectedOptions: ShiftWorkerOptionT[],
-      options: ShiftWorkerOptionT[]
+      options: ShiftWorkerOptionT[],
     ): ShiftWorkerOptionT[] => {
       const selectedArray: string[] = selectedOptions.map((item) =>
-        swoDisplayString(item)
+        swoDisplayString(item),
       );
 
       return searchQuery === ""
         ? options.filter(
-            (option) => !selectedArray.includes(swoDisplayString(option))
+            (option) => !selectedArray.includes(swoDisplayString(option)),
           )
         : options.filter(
             (option) =>
               !selectedArray.includes(swoDisplayString(option)) &&
               swoDisplayString(option)
                 .toLowerCase()
-                .includes(searchQuery.toLowerCase())
+                .includes(searchQuery.toLowerCase()),
           );
     },
-    [swoDisplayString]
+    [swoDisplayString],
   );
 
   const filterOptions = useCallback(
     (
       searchQuery: string,
       selectedOptions: ShiftWorkerOptionT[],
-      options: { [key: string]: ShiftWorkerOptionT[] }
+      options: { [key: string]: ShiftWorkerOptionT[] },
     ): { [key: string]: ShiftWorkerOptionT[] } => {
       let out: { [key: string]: ShiftWorkerOptionT[] } = {};
       for (let key of Object.keys(options)) {
         const filteredKeyOptions = filterOptionsList(
           searchQuery,
           selectedOptions,
-          options[key]
+          options[key],
         );
         if (filteredKeyOptions.length > 0) {
           out[key] = filteredKeyOptions;
@@ -160,7 +160,7 @@ export default function BlockEditShiftWorkerOption({
       }
       return out;
     },
-    [filterOptionsList]
+    [filterOptionsList],
   );
 
   const [valueState, setValueState] =
@@ -192,7 +192,7 @@ export default function BlockEditShiftWorkerOption({
     const newFilteredOptions = filterOptions(
       query,
       valueState,
-      templateOptions
+      templateOptions,
     );
     setFilteredOptions(newFilteredOptions);
     if (Object.keys(newFilteredOptions).length > 0) {
@@ -231,7 +231,7 @@ export default function BlockEditShiftWorkerOption({
       if (selectedOption) {
         handleAddSelectedOption(
           Object.keys(selectedOption)[0],
-          Object.values(selectedOption)[0]
+          Object.values(selectedOption)[0],
         );
       }
     } else if (event.key === "ArrowDown") {
@@ -297,7 +297,7 @@ export default function BlockEditShiftWorkerOption({
 
   const handleAddSelectedOption = (
     newOptionKey: string,
-    newOption: ShiftWorkerOptionT
+    newOption: ShiftWorkerOptionT,
   ) => {
     if (
       newOptionKey in filteredOptions &&
@@ -443,17 +443,17 @@ export default function BlockEditShiftWorkerOption({
                         <ListItem sx={{ padding: "0 16px 0 16px" }}>
                           <ListItemText
                             primary={translateOptionName(
-                              swoDisplayString(option)
+                              swoDisplayString(option),
                             )}
                             style={{ color: ConstraintDefaultColors.shade3 }}
                           />
                         </ListItem>
                       </ListItemButton>
-                    )
+                    ),
                   )}
                 </ul>
               </li>
-            )
+            ),
           )}
         </List>
       </div>

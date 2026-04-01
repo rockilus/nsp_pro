@@ -16,7 +16,7 @@ export const getShiftWorkerOptionDisplayText = (
   swo: ShiftWorkerOptionT,
   workers: WorkerT[] = [],
   shifts: ShiftT[] = [],
-  notTranslation: string = "not"
+  notTranslation: string = "not",
 ): string => {
   // Handle worker type
   if (swo.idType === SWOIdTypes.WORKER) {
@@ -64,7 +64,7 @@ export const getRequestTargetDisplayText = (
   request: RequestT,
   workers: WorkerT[] = [],
   shifts: ShiftT[] = [],
-  notTranslation: string = "not"
+  notTranslation: string = "not",
 ): string => {
   if (request.requestType === RequestType.LEAVE) {
     // For leave requests, show the shift being left (or all day)
@@ -79,7 +79,7 @@ export const getRequestTargetDisplayText = (
     const emoji = request.negative ? "🙅" : "🙋";
     if (request.shiftOptions && request.shiftOptions.length > 0) {
       const optionTexts = request.shiftOptions.map((so) =>
-        getShiftWorkerOptionDisplayText(so, workers, shifts, notTranslation)
+        getShiftWorkerOptionDisplayText(so, workers, shifts, notTranslation),
       );
       return `${emoji} ${optionTexts.join(", ")}`;
     }
@@ -101,11 +101,11 @@ export const getShiftWorkerOptionsDisplayText = (
   workers: WorkerT[] = [],
   shifts: ShiftT[] = [],
   notTranslation: string = "not",
-  separator: string = ", "
+  separator: string = ", ",
 ): string => {
   return swos
     .map((swo) =>
-      getShiftWorkerOptionDisplayText(swo, workers, shifts, notTranslation)
+      getShiftWorkerOptionDisplayText(swo, workers, shifts, notTranslation),
     )
     .join(separator);
 };
@@ -118,7 +118,7 @@ export const getShiftWorkerOptionsDisplayText = (
  */
 export const getShiftColors = (
   request: RequestT | null,
-  shifts: ShiftT[] = []
+  shifts: ShiftT[] = [],
 ): { background: string; sample: string; text: string } | null => {
   if (!request) return null;
 
@@ -171,7 +171,7 @@ export const getShiftColors = (
  * @returns MUI color name for the status
  */
 export const getRequestStatusColor = (
-  status: RequestStatus
+  status: RequestStatus,
 ): "success" | "error" | "warning" | "default" => {
   switch (status) {
     case RequestStatus.APPROVED:
@@ -193,7 +193,7 @@ export const getRequestStatusColor = (
  */
 export const getRequestStatusLabel = (
   status: RequestStatus,
-  t: (key: string) => string
+  t: (key: string) => string,
 ): string => {
   switch (status) {
     case RequestStatus.PENDING:

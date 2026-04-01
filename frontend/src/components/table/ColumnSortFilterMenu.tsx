@@ -41,7 +41,7 @@ export default function ColumnSortFilterMenu({
 }: ColumnSortFilterMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(
-    null
+    null,
   );
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {

@@ -12,7 +12,7 @@ export class AttributeApi extends BaseApi {
   static async updateAttribute(
     apiClient: AuthenticatedApiClient,
     attribute: AttributeT,
-    teamId: string
+    teamId: string,
   ): Promise<AttributeT> {
     // Security: Input validation
     // if (!attribute || !attribute.id) {
@@ -27,7 +27,7 @@ export class AttributeApi extends BaseApi {
       apiClient,
       "put",
       `/attributes/teams/${teamId}`,
-      attribute
+      attribute,
     );
     return toAttributeT(responseData);
   }
@@ -38,7 +38,7 @@ export class AttributeApi extends BaseApi {
   static async getAttributesByOwner(
     apiClient: AuthenticatedApiClient,
     ownerId: string,
-    teamId: string
+    teamId: string,
   ): Promise<AttributeT[]> {
     // Security: Input validation
     if (!ownerId) {
@@ -51,7 +51,7 @@ export class AttributeApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/attributes/teams/${teamId}/owners/${ownerId}`
+      `/attributes/teams/${teamId}/owners/${ownerId}`,
     );
     return responseData.map((attr: any) => toAttributeT(attr));
   }
@@ -62,7 +62,7 @@ export class AttributeApi extends BaseApi {
   static async createAttribute(
     apiClient: AuthenticatedApiClient,
     attribute: Omit<AttributeT, "id">,
-    teamId: string
+    teamId: string,
   ): Promise<AttributeT> {
     // Security: Input validation
     if (!attribute) {
@@ -76,7 +76,7 @@ export class AttributeApi extends BaseApi {
       apiClient,
       "post",
       `/attributes/teams/${teamId}`,
-      { ...attribute, id: "" } // API will assign ID
+      { ...attribute, id: "" }, // API will assign ID
     );
     return toAttributeT(responseData);
   }
@@ -87,7 +87,7 @@ export class AttributeApi extends BaseApi {
   static async deleteAttribute(
     apiClient: AuthenticatedApiClient,
     attributeId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!attributeId) {
@@ -100,7 +100,7 @@ export class AttributeApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "delete",
-      `/attributes/teams/${teamId}/${attributeId}`
+      `/attributes/teams/${teamId}/${attributeId}`,
     );
   }
 }

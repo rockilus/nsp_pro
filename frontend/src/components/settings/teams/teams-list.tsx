@@ -70,8 +70,8 @@ export default function TeamsList({
               setSelectedTeamId(teamWithMembership.team.id);
               router.push(
                 `/${lng}/plan/teams?teamId=${encodeURIComponent(
-                  teamWithMembership.team.id
-                )}`
+                  teamWithMembership.team.id,
+                )}`,
               );
             }}
             sx={{

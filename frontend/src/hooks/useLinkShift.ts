@@ -60,7 +60,7 @@ export function useCreateLinkShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createLinkShift;
@@ -103,7 +103,7 @@ export function useGetLinkShifts() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getLinkShifts;
@@ -137,7 +137,7 @@ export function useUpdateLinkShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateLinkShift;
@@ -171,7 +171,7 @@ export function useDeleteLinkShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteLinkShift;

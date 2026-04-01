@@ -15,7 +15,7 @@ export class SqsSolveApi extends BaseApi {
    */
   static async startSolve(
     apiClient: AuthenticatedApiClient,
-    request: SolveRequestT
+    request: SolveRequestT,
   ): Promise<SolveTaskStatusResponseT> {
     console.log("🔍 SqsSolveApi.startSolve called:", {
       timestamp: new Date().toISOString(),
@@ -26,7 +26,7 @@ export class SqsSolveApi extends BaseApi {
     // Security: Input validation
     if (!request || !request.schedule_id || !request.team_id) {
       throw new Error(
-        "Invalid solve request: schedule_id and team_id are required"
+        "Invalid solve request: schedule_id and team_id are required",
       );
     }
 
@@ -34,7 +34,7 @@ export class SqsSolveApi extends BaseApi {
       apiClient,
       "post",
       "/sqs-solve/start",
-      request
+      request,
     );
     return toSolveTaskStatusResponseT(responseData);
   }
@@ -44,7 +44,7 @@ export class SqsSolveApi extends BaseApi {
    */
   static async getSolveStatus(
     apiClient: AuthenticatedApiClient,
-    solveId: string
+    solveId: string,
   ): Promise<SolveTaskStatusResponseT> {
     // Security: Input validation
     if (!solveId) {
@@ -54,7 +54,7 @@ export class SqsSolveApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "get",
-      `/sqs-solve/${solveId}/status`
+      `/sqs-solve/${solveId}/status`,
     );
     return toSolveTaskStatusResponseT(responseData);
   }
@@ -64,7 +64,7 @@ export class SqsSolveApi extends BaseApi {
    */
   static async cancelSolve(
     apiClient: AuthenticatedApiClient,
-    solveId: string
+    solveId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!solveId) {
@@ -74,7 +74,7 @@ export class SqsSolveApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "post",
-      `/sqs-solve/${solveId}/cancel`
+      `/sqs-solve/${solveId}/cancel`,
     );
   }
 
@@ -83,7 +83,7 @@ export class SqsSolveApi extends BaseApi {
    */
   static async getLatestSolveStatus(
     apiClient: AuthenticatedApiClient,
-    scheduleId: string
+    scheduleId: string,
   ): Promise<SolveTaskStatusResponseT | null> {
     // Security: Input validation
     if (!scheduleId) {
@@ -94,7 +94,7 @@ export class SqsSolveApi extends BaseApi {
       const responseData = await this.makeRequest<any>(
         apiClient,
         "get",
-        `/sqs-solve/schedule/${scheduleId}/latest`
+        `/sqs-solve/schedule/${scheduleId}/latest`,
       );
       return toSolveTaskStatusResponseT(responseData);
     } catch (error) {

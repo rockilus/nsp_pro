@@ -33,10 +33,10 @@ test.describe("Shift Demand - Period Navigation", () => {
     // Check that the view is the current week
     await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
     await expect(
-      shiftDemandTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD")),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, endOfWeek.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(page, endOfWeek.format("YYYY-MM-DD")),
     ).toBeVisible();
 
     // Navigate to the previous week
@@ -46,20 +46,20 @@ test.describe("Shift Demand - Period Navigation", () => {
     await expect(
       shiftDemandTestBase.getDateHeader(
         page,
-        prevWeekStart.format("YYYY-MM-DD")
-      )
+        prevWeekStart.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, prevWeekEnd.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(page, prevWeekEnd.format("YYYY-MM-DD")),
     ).toBeVisible();
 
     // Navigate to the next week (back to current)
     await periodNav.nextButton.click();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD")),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, endOfWeek.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(page, endOfWeek.format("YYYY-MM-DD")),
     ).toBeVisible();
 
     // Navigate to next week, then click Today
@@ -68,13 +68,13 @@ test.describe("Shift Demand - Period Navigation", () => {
     await expect(
       shiftDemandTestBase.getDateHeader(
         page,
-        nextWeekStart.format("YYYY-MM-DD")
-      )
+        nextWeekStart.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
 
     await periodNav.todayButton.click();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD")),
     ).toBeVisible();
   });
 
@@ -93,10 +93,13 @@ test.describe("Shift Demand - Period Navigation", () => {
     // Check that the view is the current month
     await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
     await expect(
-      shiftDemandTestBase.getDateHeader(page, startOfMonth.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(
+        page,
+        startOfMonth.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, endOfMonth.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(page, endOfMonth.format("YYYY-MM-DD")),
     ).toBeVisible();
 
     // Navigate to the previous month
@@ -104,36 +107,45 @@ test.describe("Shift Demand - Period Navigation", () => {
     const prevMonthStart = startOfMonth.subtract(1, "month");
     const prevMonthEnd = prevMonthStart.endOf("month");
     await expect(periodNav.label).toHaveText(
-      prevMonthStart.format("MMMM YYYY")
+      prevMonthStart.format("MMMM YYYY"),
     );
     await expect(
       shiftDemandTestBase.getDateHeader(
         page,
-        prevMonthStart.format("YYYY-MM-DD")
-      )
+        prevMonthStart.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, prevMonthEnd.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(
+        page,
+        prevMonthEnd.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
 
     // Navigate to the next month (back to current)
     await periodNav.nextButton.click();
     await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
     await expect(
-      shiftDemandTestBase.getDateHeader(page, startOfMonth.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(
+        page,
+        startOfMonth.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
 
     // Navigate to next month, then click Today
     await periodNav.nextButton.click();
     const nextMonthStart = startOfMonth.add(1, "month");
     await expect(periodNav.label).toHaveText(
-      nextMonthStart.format("MMMM YYYY")
+      nextMonthStart.format("MMMM YYYY"),
     );
 
     await periodNav.todayButton.click();
     await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
     await expect(
-      shiftDemandTestBase.getDateHeader(page, startOfMonth.format("YYYY-MM-DD"))
+      shiftDemandTestBase.getDateHeader(
+        page,
+        startOfMonth.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
   });
 
@@ -151,7 +163,7 @@ test.describe("Shift Demand - Period Navigation", () => {
     console.log("Start of week:", startOfWeek.format("YYYY-MM-DD"));
     console.log(
       "Month of start of week:",
-      monthOfStartOfWeek.format("YYYY-MM-DD")
+      monthOfStartOfWeek.format("YYYY-MM-DD"),
     );
 
     // Explicitly select week view first
@@ -163,13 +175,13 @@ test.describe("Shift Demand - Period Navigation", () => {
 
     await expect(periodNav.select).toHaveValue("month");
     await expect(periodNav.label).toHaveText(
-      monthOfStartOfWeek.format("MMMM YYYY")
+      monthOfStartOfWeek.format("MMMM YYYY"),
     );
     await expect(
       shiftDemandTestBase.getDateHeader(
         page,
-        monthOfStartOfWeek.format("YYYY-MM-DD")
-      )
+        monthOfStartOfWeek.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
 
     // 2. Switch from month to week
@@ -188,14 +200,14 @@ test.describe("Shift Demand - Period Navigation", () => {
     await expect(
       shiftDemandTestBase.getDateHeader(
         page,
-        weekOfStartOfMonth.format("YYYY-MM-DD")
-      )
+        weekOfStartOfMonth.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
     await expect(
       shiftDemandTestBase.getDateHeader(
         page,
-        endOfWeekOfStartOfMonth.format("YYYY-MM-DD")
-      )
+        endOfWeekOfStartOfMonth.format("YYYY-MM-DD"),
+      ),
     ).toBeVisible();
   });
 });

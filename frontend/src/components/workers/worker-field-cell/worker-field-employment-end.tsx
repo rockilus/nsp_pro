@@ -36,7 +36,7 @@ export default function WorkerFieldEmploymentEnd({
 
   const cellRef = useRef<HTMLTableCellElement>(null);
   const [valueState, setValueState] = useState<dayjs.Dayjs | null>(
-    worker.employmentEndDate
+    worker.employmentEndDate,
   );
   const [datePickerOpen, setDatePickerOpen] = useState<boolean>(false);
 
@@ -73,7 +73,7 @@ export default function WorkerFieldEmploymentEnd({
       }
       setEditing({});
     },
-    [worker, handleUpdateWorker, setEditing]
+    [worker, handleUpdateWorker, setEditing],
   );
 
   const handleClickOutside = useCallback(
@@ -87,7 +87,7 @@ export default function WorkerFieldEmploymentEnd({
         }
       }
     },
-    [cellRef, valueState, datePickerOpen, editing, handleEditConfirm]
+    [cellRef, valueState, datePickerOpen, editing, handleEditConfirm],
   );
 
   const handleKeyDown = useCallback(
@@ -101,7 +101,7 @@ export default function WorkerFieldEmploymentEnd({
         setEditing({});
       }
     },
-    [worker, valueState, editing, handleEditConfirm, setEditing]
+    [worker, valueState, editing, handleEditConfirm, setEditing],
   );
 
   useEffect(() => {

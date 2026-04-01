@@ -64,7 +64,7 @@ export class ShiftDemandDateUtils {
   static getNextPeriod(
     startDate: Date,
     endDate: Date,
-    periodType: PeriodType
+    periodType: PeriodType,
   ): { start: Date; end: Date } {
     const periodLength = endDate.getTime() - startDate.getTime();
 
@@ -96,7 +96,7 @@ export class ShiftDemandDateUtils {
   static getPreviousPeriod(
     startDate: Date,
     endDate: Date,
-    periodType: PeriodType
+    periodType: PeriodType,
   ): { start: Date; end: Date } {
     const periodLength = endDate.getTime() - startDate.getTime();
 

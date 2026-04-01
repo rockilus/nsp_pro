@@ -38,7 +38,7 @@ export default function NewDimensionForm({
   setOpenParent: (open: boolean) => void | null;
   handleAddDimension: (
     newDimension: DimensionT,
-    newDimEntries: DimEntryT[]
+    newDimEntries: DimEntryT[],
   ) => Promise<boolean>;
   handleUpdateDimension: (dimension: DimensionT) => void;
 }) {

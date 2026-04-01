@@ -37,7 +37,7 @@ test.describe("NewDimensionForm Component", () => {
     await expect(popupTitle).toContainText("New property");
 
     console.log(
-      "✅ Popup appears with correct title when clicking Add Property button"
+      "✅ Popup appears with correct title when clicking Add Property button",
     );
   });
 
@@ -110,11 +110,11 @@ test.describe("NewDimensionForm Component", () => {
     // );
     const boolOption = dimensionTestBase.getTypeOption(
       page,
-      DimensionEntryType.BOOL
+      DimensionEntryType.BOOL,
     );
     const tagsOption = dimensionTestBase.getTypeOption(
       page,
-      DimensionEntryType.DIM_ENTRIES
+      DimensionEntryType.DIM_ENTRIES,
     );
 
     // await expect(textOption).toBeVisible();
@@ -129,7 +129,7 @@ test.describe("NewDimensionForm Component", () => {
     await expect(tagsOption).toContainText("Tags");
 
     console.log(
-      "✅ Type select contains all expected options with correct labels"
+      "✅ Type select contains all expected options with correct labels",
     );
   });
 
@@ -153,7 +153,7 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify helper text contains error message
     const helperText = page.locator(
-      '.MuiFormHelperText-root.Mui-error:has-text("Please enter a name")'
+      '.MuiFormHelperText-root.Mui-error:has-text("Please enter a name")',
     );
     await expect(helperText).toBeVisible();
 
@@ -180,7 +180,7 @@ test.describe("NewDimensionForm Component", () => {
     // Verify error appears for type field
     const typeSelect = dimensionTestBase.getTypeSelect(page);
     await expect(typeSelect.locator(".MuiOutlinedInput-root")).toHaveClass(
-      /Mui-error/
+      /Mui-error/,
     );
 
     // Verify type error message appears
@@ -207,17 +207,17 @@ test.describe("NewDimensionForm Component", () => {
     // Verify both fields show errors
     const nameField = dimensionTestBase.getNameTextField(page);
     await expect(nameField.locator(".MuiOutlinedInput-root")).toHaveClass(
-      /Mui-error/
+      /Mui-error/,
     );
 
     const typeSelect = dimensionTestBase.getTypeSelect(page);
     await expect(typeSelect.locator(".MuiOutlinedInput-root")).toHaveClass(
-      /Mui-error/
+      /Mui-error/,
     );
 
     // Verify both error messages appear
     const nameHelperText = page.locator(
-      '.MuiFormHelperText-root.Mui-error:has-text("Please enter a name")'
+      '.MuiFormHelperText-root.Mui-error:has-text("Please enter a name")',
     );
     await expect(nameHelperText).toBeVisible();
 
@@ -356,7 +356,7 @@ test.describe("NewDimensionForm Component", () => {
     await expect(tagsSection).not.toBeVisible();
 
     console.log(
-      "✅ Tags section appears/disappears correctly based on type selection"
+      "✅ Tags section appears/disappears correctly based on type selection",
     );
   });
 
@@ -409,12 +409,12 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify text field for adding tags exists
     const tagInputField = page.locator(
-      '[data-testid="new-dimension-tags-section"] input[type="text"]'
+      '[data-testid="new-dimension-tags-section"] input[type="text"]',
     );
     await expect(tagInputField).toBeVisible();
 
     console.log(
-      "✅ Text field for creating tags appears when tags type is selected"
+      "✅ Text field for creating tags appears when tags type is selected",
     );
   });
 
@@ -438,7 +438,7 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify error message appears for empty tags list
     const tagsErrorMessage = page.locator(
-      '[data-testid="new-dimension-tags-section"] .MuiFormHelperText-root.Mui-error'
+      '[data-testid="new-dimension-tags-section"] .MuiFormHelperText-root.Mui-error',
     );
     await expect(tagsErrorMessage).toBeVisible();
 
@@ -447,7 +447,7 @@ test.describe("NewDimensionForm Component", () => {
     await expect(popup).toBeVisible();
 
     console.log(
-      "✅ Error message appears when trying to add tags property without any tags"
+      "✅ Error message appears when trying to add tags property without any tags",
     );
   });
 
@@ -464,7 +464,7 @@ test.describe("NewDimensionForm Component", () => {
 
     // Get the tag input field
     const tagInputField = page.locator(
-      '[data-testid="new-dimension-tags-section"] input[type="text"]'
+      '[data-testid="new-dimension-tags-section"] input[type="text"]',
     );
     await expect(tagInputField).toBeVisible();
 
@@ -476,7 +476,7 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify tag appears in the tags list
     const tagInList = page.locator(
-      `[data-testid="new-dimension-tags-section"] >> text="${tagName}"`
+      `[data-testid="new-dimension-tags-section"] >> text="${tagName}"`,
     );
     await expect(tagInList).toBeVisible();
 
@@ -484,7 +484,7 @@ test.describe("NewDimensionForm Component", () => {
     await expect(tagInputField).toHaveValue("");
 
     console.log(
-      "✅ New tag is added to list when entering name and pressing enter"
+      "✅ New tag is added to list when entering name and pressing enter",
     );
   });
 
@@ -501,7 +501,7 @@ test.describe("NewDimensionForm Component", () => {
 
     // Get the tag input field and add a tag
     const tagInputField = page.locator(
-      '[data-testid="new-dimension-tags-section"] input[type="text"]'
+      '[data-testid="new-dimension-tags-section"] input[type="text"]',
     );
     const tagName = "Test Tag to Delete";
 
@@ -510,13 +510,13 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify tag appears in the list
     const tagInList = page.locator(
-      `[data-testid="new-dimension-tags-section"] >> text="${tagName}"`
+      `[data-testid="new-dimension-tags-section"] >> text="${tagName}"`,
     );
     await expect(tagInList).toBeVisible();
 
     // Find and click the delete button for this tag
     const deleteButton = page.locator(
-      `[data-testid="new-dimension-tags-section"] >> text="${tagName}" >> .. >> button`
+      `[data-testid="new-dimension-tags-section"] >> text="${tagName}" >> .. >> button`,
     );
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();

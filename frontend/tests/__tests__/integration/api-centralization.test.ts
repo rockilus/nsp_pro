@@ -12,7 +12,7 @@ describe("API Centralization", () => {
   describe("TemplateApplicationToRangeDialog", () => {
     const dialogFile = path.join(
       frontendPath,
-      "components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx"
+      "components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx",
     );
 
     it("should not directly import ShiftDemandTemplateApi", () => {
@@ -60,7 +60,7 @@ describe("API Centralization", () => {
   describe("TemplateManagementWindow", () => {
     const windowFile = path.join(
       frontendPath,
-      "components/shiftDemand/templates/TemplateManagementWindow.tsx"
+      "components/shiftDemand/templates/TemplateManagementWindow.tsx",
     );
 
     it("should have handleApplyTemplateToRange method", () => {
@@ -93,7 +93,7 @@ describe("API Centralization", () => {
 
       const windowContent = fs.readFileSync(windowFile, "utf8");
       expect(windowContent).toContain(
-        "onApplyTemplate={handleApplyTemplateToRange}"
+        "onApplyTemplate={handleApplyTemplateToRange}",
       );
     });
 

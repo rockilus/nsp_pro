@@ -33,7 +33,7 @@ async function globalSetup(config: FullConfig) {
 
     if (!health.test_utilities_available) {
       throw new Error(
-        "Test utilities are not available. Please check environment configuration."
+        "Test utilities are not available. Please check environment configuration.",
       );
     }
     console.log("✅ Test utilities are healthy and available");
@@ -42,7 +42,7 @@ async function globalSetup(config: FullConfig) {
     console.log("🗃️ Performing initial database reset...");
     const resetResult = await dbUtils.resetAllData();
     console.log(
-      `✅ Initial database reset completed: ${resetResult.operation_id}`
+      `✅ Initial database reset completed: ${resetResult.operation_id}`,
     );
     console.log(`   Reset ${resetResult.collections_reset.length} collections`);
 
@@ -74,7 +74,7 @@ async function globalSetup(config: FullConfig) {
     } catch (error) {
       console.error("❌ Failed to create second test user:", error);
       console.warn(
-        "⚠️ Continuing with setup despite second user creation failure"
+        "⚠️ Continuing with setup despite second user creation failure",
       );
     }
 
@@ -100,15 +100,15 @@ async function globalSetup(config: FullConfig) {
     if (error instanceof Error) {
       if (error.message.includes("not ready")) {
         console.error(
-          "💡 Make sure the backend API Gateway is running on http://localhost:8000"
+          "💡 Make sure the backend API Gateway is running on http://localhost:8000",
         );
       } else if (error.message.includes("test utilities")) {
         console.error(
-          "💡 Make sure ENVIRONMENT=test or ENVIRONMENT=development is set"
+          "💡 Make sure ENVIRONMENT=test or ENVIRONMENT=development is set",
         );
       } else if (error.message.includes("Test user creation")) {
         console.error(
-          "💡 Make sure the DEV_API_KEY environment variable is set correctly"
+          "💡 Make sure the DEV_API_KEY environment variable is set correctly",
         );
       }
     }

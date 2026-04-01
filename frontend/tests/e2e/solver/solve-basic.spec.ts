@@ -47,7 +47,7 @@ test.describe("Solver - Basic Coverage", () => {
 
       const scenario = await solverTestBase.navigateToScheduleWithScenario(
         page,
-        scenarioName
+        scenarioName,
       );
 
       expect(scenario.scenario_name).toBe(scenarioName);
@@ -55,7 +55,7 @@ test.describe("Solver - Basic Coverage", () => {
 
       // Find the campaign schedule inside the scenario schedules
       const campaignSchedule = scenario.schedules.find(
-        (s: any) => s.status === ScheduleStatus.CAMPAIGN
+        (s: any) => s.status === ScheduleStatus.CAMPAIGN,
       );
 
       if (!campaignSchedule) {
@@ -72,7 +72,7 @@ test.describe("Solver - Basic Coverage", () => {
         solverTestBase.getTestTeam()!.teamId,
         {
           groupBy: "worker",
-        }
+        },
       );
 
       // Refresh the page to apply settings
@@ -104,7 +104,7 @@ test.describe("Solver - Basic Coverage", () => {
       }
 
       console.log(
-        `✅ All ${employedWorkers.length} employed workers visible in table`
+        `✅ All ${employedWorkers.length} employed workers visible in table`,
       );
 
       // Set schedule view settings to group by shift
@@ -113,7 +113,7 @@ test.describe("Solver - Basic Coverage", () => {
         solverTestBase.getTestTeam()!.teamId,
         {
           groupBy: "shift",
-        }
+        },
       );
 
       // Refresh the page to apply settings
@@ -124,7 +124,7 @@ test.describe("Solver - Basic Coverage", () => {
       const visibleShifts = scenario.shifts.filter(
         (shift: any) =>
           shift.shiftType === ShiftType.NORMAL ||
-          shift.shiftType === ShiftType.DUTY
+          shift.shiftType === ShiftType.DUTY,
       );
 
       for (const shift of visibleShifts) {
@@ -142,7 +142,7 @@ test.describe("Solver - Basic Coverage", () => {
       }
 
       console.log(
-        `✅ All ${visibleShifts.length} NORMAL/DUTY shifts visible in table`
+        `✅ All ${visibleShifts.length} NORMAL/DUTY shifts visible in table`,
       );
     });
   }
@@ -161,7 +161,7 @@ test.describe("Solver - Basic Coverage", () => {
       // Load the scenario
       const scenario = await solverTestBase.navigateToScheduleWithScenario(
         page,
-        scenarioName
+        scenarioName,
       );
 
       // Trigger solve

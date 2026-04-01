@@ -60,7 +60,7 @@ export function useGetStats() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getStats;
@@ -109,7 +109,7 @@ export function useAddHeader() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addHeader;
@@ -157,7 +157,7 @@ export function useDeleteHeader() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteHeader;
@@ -206,7 +206,7 @@ export function useGetShiftOptions() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getShiftOptions;
@@ -250,7 +250,7 @@ export function useGetStatsTabData() {
         const result = {
           scheduleCampaign:
             statsTabData[0].find(
-              (schedule: any) => schedule.status === ScheduleStatus.CAMPAIGN
+              (schedule: any) => schedule.status === ScheduleStatus.CAMPAIGN,
             ) || null,
           shifts: statsTabData[1],
           workers: statsTabData[2],
@@ -270,7 +270,7 @@ export function useGetStatsTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getStatsTabData;

@@ -22,7 +22,7 @@ export interface SerializedStatsOptions {
  * Validates and normalizes stats options
  */
 export function validateStatsOptions(
-  options: Partial<StatsOptionsT>
+  options: Partial<StatsOptionsT>,
 ): StatsOptionsT {
   const now = dayjs.utc();
 
@@ -135,7 +135,7 @@ export function validateStatsOptions(
 }
 
 export function getDefaultStatsOptions(
-  scheduleCampaign?: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs } | null
+  scheduleCampaign?: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs } | null,
 ): StatsOptionsT {
   const now = dayjs.utc();
 

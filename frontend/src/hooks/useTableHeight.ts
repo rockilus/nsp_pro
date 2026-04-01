@@ -19,7 +19,7 @@ export const useTableHeight = (isFilterToolbarActive: boolean) => {
         paddingAndMargins;
       const maxHeight = Math.max(
         300,
-        Math.min(availableHeight, viewportHeight)
+        Math.min(availableHeight, viewportHeight),
       );
 
       setTableHeight(`${maxHeight}px`);

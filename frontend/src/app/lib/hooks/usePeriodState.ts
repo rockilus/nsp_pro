@@ -49,16 +49,16 @@ export function usePeriodState() {
   // If we're running in the browser, consider the hook hydrated on first render.
   // This avoids calling setState inside an effect (which triggers the lint rule).
   const [isHydrated, setIsHydrated] = useState<boolean>(() =>
-    typeof window === "undefined" ? false : true
+    typeof window === "undefined" ? false : true,
   );
 
   // Initialize from storage lazily to avoid calling setState synchronously inside an effect.
   // loadState() handles server-side rendering (returns default when window is undefined).
   const [currentDate, setCurrentDateState] = useState<Dayjs>(() =>
-    dayjs(loadState().currentDate)
+    dayjs(loadState().currentDate),
   );
   const [periodType, setPeriodTypeState] = useState<PeriodType>(
-    () => loadState().periodType
+    () => loadState().periodType,
   );
 
   // No effect needed: isHydrated is set from the environment at initialization.
@@ -68,7 +68,7 @@ export function usePeriodState() {
       setCurrentDateState(date);
       saveState(date, periodType);
     },
-    [periodType]
+    [periodType],
   );
 
   const setPeriodType = useCallback(
@@ -76,7 +76,7 @@ export function usePeriodState() {
       setPeriodTypeState(type);
       saveState(currentDate, type);
     },
-    [currentDate]
+    [currentDate],
   );
 
   return {

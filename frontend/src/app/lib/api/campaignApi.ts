@@ -25,7 +25,7 @@ export class CampaignApi extends BaseApi {
    */
   static async getCampaignTabData(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<CampaignTabData> {
     // Security: Input validation
     if (!teamId) {
@@ -41,11 +41,11 @@ export class CampaignApi extends BaseApi {
 
       const scheduleCampaign =
         schedules.find(
-          (schedule) => schedule.status === ScheduleStatus.CAMPAIGN
+          (schedule) => schedule.status === ScheduleStatus.CAMPAIGN,
         ) || null;
 
       const schedulesValidated = schedules.filter(
-        (schedule) => schedule.status === ScheduleStatus.VALIDATED
+        (schedule) => schedule.status === ScheduleStatus.VALIDATED,
       );
 
       return {
@@ -56,7 +56,7 @@ export class CampaignApi extends BaseApi {
     } catch (error) {
       console.error("Failed to fetch campaign tab data:", error);
       throw new Error(
-        "Failed to fetch campaign tab data, please try again later"
+        "Failed to fetch campaign tab data, please try again later",
       );
     }
   }
@@ -66,7 +66,7 @@ export class CampaignApi extends BaseApi {
    */
   static async getCampaignTabDataNoSolver(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<CampaignTabDataNoSolver> {
     // Security: Input validation
     if (!teamId) {
@@ -78,11 +78,11 @@ export class CampaignApi extends BaseApi {
 
       const scheduleCampaign =
         schedules.find(
-          (schedule) => schedule.status === ScheduleStatus.CAMPAIGN
+          (schedule) => schedule.status === ScheduleStatus.CAMPAIGN,
         ) || null;
 
       const schedulesValidated = schedules.filter(
-        (schedule) => schedule.status === ScheduleStatus.VALIDATED
+        (schedule) => schedule.status === ScheduleStatus.VALIDATED,
       );
 
       return {
@@ -92,7 +92,7 @@ export class CampaignApi extends BaseApi {
     } catch (error) {
       console.error("Failed to fetch campaign tab data:", error);
       throw new Error(
-        "Failed to fetch campaign tab data, please try again later"
+        "Failed to fetch campaign tab data, please try again later",
       );
     }
   }

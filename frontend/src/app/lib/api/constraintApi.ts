@@ -11,7 +11,7 @@ export class ConstraintApi extends BaseApi {
    */
   static async addConstraint(
     apiClient: AuthenticatedApiClient,
-    constraint: ConstraintT
+    constraint: ConstraintT,
   ): Promise<ConstraintT> {
     // Security: Input validation
     if (!constraint || !constraint.teamId) {
@@ -22,7 +22,7 @@ export class ConstraintApi extends BaseApi {
       apiClient,
       "post",
       `/constraints/teams/${constraint.teamId}`,
-      constraint
+      constraint,
     );
     return responseData as ConstraintT;
   }
@@ -32,7 +32,7 @@ export class ConstraintApi extends BaseApi {
    */
   static async getConstraints(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ConstraintT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -42,7 +42,7 @@ export class ConstraintApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/constraints/teams/${teamId}`
+      `/constraints/teams/${teamId}`,
     );
     return responseData as ConstraintT[];
   }
@@ -52,7 +52,7 @@ export class ConstraintApi extends BaseApi {
    */
   static async updateConstraint(
     apiClient: AuthenticatedApiClient,
-    updatedConstraint: ConstraintT
+    updatedConstraint: ConstraintT,
   ): Promise<ConstraintT> {
     // Security: Input validation
     if (
@@ -67,7 +67,7 @@ export class ConstraintApi extends BaseApi {
       apiClient,
       "put",
       `/constraints/${updatedConstraint.id}/teams/${updatedConstraint.teamId}`,
-      updatedConstraint
+      updatedConstraint,
     );
     return responseData as ConstraintT;
   }
@@ -78,7 +78,7 @@ export class ConstraintApi extends BaseApi {
   static async deleteConstraint(
     apiClient: AuthenticatedApiClient,
     constraintId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!constraintId) {
@@ -91,7 +91,7 @@ export class ConstraintApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "delete",
-      `/constraints/${constraintId}/teams/${teamId}`
+      `/constraints/${constraintId}/teams/${teamId}`,
     );
   }
 
@@ -100,7 +100,7 @@ export class ConstraintApi extends BaseApi {
    */
   static async getTemplates(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<TemplateT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -110,7 +110,7 @@ export class ConstraintApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/constraint-templates/teams/${teamId}`
+      `/constraint-templates/teams/${teamId}`,
     );
     return responseData as TemplateT[];
   }

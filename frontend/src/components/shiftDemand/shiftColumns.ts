@@ -3,7 +3,7 @@ import { ShiftT } from "../../types/shift";
 
 export const createShiftColumns = (
   t: (key: string) => string,
-  shifts: ShiftT[] = []
+  shifts: ShiftT[] = [],
 ): ColumnDefinition[] => {
   // Generate unique shift identifiers from the actual shifts data
   const uniqueShifts = shifts.map((shift) => ({

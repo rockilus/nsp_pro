@@ -25,7 +25,7 @@ export class DimensionApi extends BaseApi {
   static async addDimension(
     apiClient: AuthenticatedApiClient,
     dimension: DimensionT,
-    dimEntries: DimEntryT[]
+    dimEntries: DimEntryT[],
   ): Promise<AddDimensionResponse> {
     // Security: Input validation
     if (!dimension || !dimension.teamId) {
@@ -39,7 +39,7 @@ export class DimensionApi extends BaseApi {
       apiClient,
       "post",
       `/dimensions/teams/${dimension.teamId}`,
-      { dimension, dim_entries: dimEntries }
+      { dimension, dim_entries: dimEntries },
     );
     return responseData;
   }
@@ -50,7 +50,7 @@ export class DimensionApi extends BaseApi {
   static async getDimensions(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    dimTypes?: DimensionType[]
+    dimTypes?: DimensionType[],
   ): Promise<GetDimensionsResponse> {
     // Security: Input validation
     if (!teamId) {
@@ -61,7 +61,7 @@ export class DimensionApi extends BaseApi {
     const responseData = await this.makeRequest<GetDimensionsResponse>(
       apiClient,
       "get",
-      `/dimensions/teams/${teamId}${queryParams}`
+      `/dimensions/teams/${teamId}${queryParams}`,
     );
     return responseData;
   }
@@ -71,7 +71,7 @@ export class DimensionApi extends BaseApi {
    */
   static async updateDimension(
     apiClient: AuthenticatedApiClient,
-    updatedDimension: DimensionT
+    updatedDimension: DimensionT,
   ): Promise<DimensionT> {
     // Security: Input validation
     if (!updatedDimension || !updatedDimension.id || !updatedDimension.teamId) {
@@ -82,7 +82,7 @@ export class DimensionApi extends BaseApi {
       apiClient,
       "put",
       `/dimensions/${updatedDimension.id}/teams/${updatedDimension.teamId}`,
-      updatedDimension
+      updatedDimension,
     );
     return responseData;
   }
@@ -93,7 +93,7 @@ export class DimensionApi extends BaseApi {
   static async deleteDimension(
     apiClient: AuthenticatedApiClient,
     dimensionId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!dimensionId) {
@@ -106,7 +106,7 @@ export class DimensionApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "delete",
-      `/dimensions/${dimensionId}/teams/${teamId}`
+      `/dimensions/${dimensionId}/teams/${teamId}`,
     );
   }
 }

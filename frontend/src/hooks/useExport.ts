@@ -61,12 +61,12 @@ export function useExportSchedule() {
         const blob = await ExportApi.exportSchedule(
           apiClient,
           teamId.trim(),
-          exportOptions
+          exportOptions,
         );
 
         // Generate filename with timestamp
         const filename = `schedule_${teamId}_${exportOptions.startDate.format(
-          "YYYY-MM-DD"
+          "YYYY-MM-DD",
         )}_to_${exportOptions.endDate.format("YYYY-MM-DD")}.xlsx`;
 
         ExportApi.downloadBlob(blob, filename);
@@ -82,7 +82,7 @@ export function useExportSchedule() {
         throw error;
       }
     },
-    [isAuthenticated, loading, user, apiClient]
+    [isAuthenticated, loading, user, apiClient],
   );
 
   return exportSchedule;
@@ -132,7 +132,7 @@ export function useExportScheduleBlob() {
         return await ExportApi.exportSchedule(
           apiClient,
           teamId.trim(),
-          exportOptions
+          exportOptions,
         );
       } catch (error) {
         console.error("❌ Failed to export schedule blob:", {
@@ -142,7 +142,7 @@ export function useExportScheduleBlob() {
         throw error;
       }
     },
-    [isAuthenticated, loading, user, apiClient]
+    [isAuthenticated, loading, user, apiClient],
   );
 
   return exportScheduleBlob;

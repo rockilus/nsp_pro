@@ -11,12 +11,12 @@ export class UserApi extends BaseApi {
    * Get current user profile (authenticated)
    */
   static async getCurrentUser(
-    apiClient: AuthenticatedApiClient
+    apiClient: AuthenticatedApiClient,
   ): Promise<UserT> {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "get",
-      "/users/me"
+      "/users/me",
     );
     return toUserT(responseData) as UserT;
   }
@@ -26,7 +26,7 @@ export class UserApi extends BaseApi {
    */
   static async updateUser(
     apiClient: AuthenticatedApiClient,
-    user: UserT
+    user: UserT,
   ): Promise<UserT> {
     // Security: Input validation
     if (!user || !user.id) {
@@ -37,7 +37,7 @@ export class UserApi extends BaseApi {
       apiClient,
       "put",
       `/users/${user.id}`,
-      fromUserT(user)
+      fromUserT(user),
     );
     return toUserT(responseData) as UserT;
   }
@@ -53,7 +53,7 @@ export class UserApi extends BaseApi {
       newPasswordConfirm: string;
       accessToken: string;
     },
-    userId: string
+    userId: string,
   ): Promise<void> {
     // Security: Input validation
     if (
@@ -73,7 +73,7 @@ export class UserApi extends BaseApi {
       apiClient,
       "put",
       `/users/${userId}/change-password`,
-      passwordData
+      passwordData,
     );
   }
 
@@ -83,7 +83,7 @@ export class UserApi extends BaseApi {
    */
   static async getUserWorker(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<WorkerT | null> {
     // Security: Input validation
     if (!teamId) {
@@ -93,7 +93,7 @@ export class UserApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "get",
-      `/users/me/worker/teams/${teamId}`
+      `/users/me/worker/teams/${teamId}`,
     );
 
     // Backend returns null if no worker is associated with the user

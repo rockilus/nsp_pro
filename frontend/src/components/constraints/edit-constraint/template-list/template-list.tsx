@@ -43,7 +43,7 @@ export default function TemplateList({
             .filter(
               (ct) =>
                 ct.constraintType !== ConstraintType.FAI &&
-                ct.constraintType !== ConstraintType.EVE
+                ct.constraintType !== ConstraintType.EVE,
             )
             .map((ct, index) => (
               <ListItemButton

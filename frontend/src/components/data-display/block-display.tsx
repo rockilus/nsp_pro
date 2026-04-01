@@ -23,7 +23,7 @@ export const blockDislayValue = (value: string | number) => {
 export const blockDisplayPlaceholder = (
   placeholder: string | number,
   error: boolean,
-  testId?: string
+  testId?: string,
 ) => {
   return (
     <div
@@ -38,7 +38,7 @@ export const blockDisplayPlaceholder = (
 export const blockDisplayName = (
   name: string,
   error: boolean,
-  testId?: string
+  testId?: string,
 ) => {
   return (
     <div data-testid={testId}>

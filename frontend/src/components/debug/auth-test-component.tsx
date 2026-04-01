@@ -18,7 +18,7 @@ export function AuthTestComponent() {
       setTestResult(`✅ Success: User ${userData.id} fetched`);
     } catch (error) {
       setTestResult(
-        `❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`
+        `❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }, [getUser]);
@@ -40,8 +40,8 @@ export function AuthTestComponent() {
           {loading
             ? "🔄 Loading"
             : isAuthenticated
-            ? "✅ Authenticated"
-            : "❌ Not authenticated"}
+              ? "✅ Authenticated"
+              : "❌ Not authenticated"}
         </div>
         <div>User: {user ? "✅ Present" : "❌ Missing"}</div>
         <div>ID Token: {user?.id_token ? "✅ Present" : "❌ Missing"}</div>
@@ -67,14 +67,14 @@ export function AuthTestComponent() {
             backgroundColor: testResult.includes("✅")
               ? "#d4edda"
               : testResult.includes("❌")
-              ? "#f8d7da"
-              : "#fff3cd",
+                ? "#f8d7da"
+                : "#fff3cd",
             borderRadius: "4px",
             border: testResult.includes("✅")
               ? "1px solid #c3e6cb"
               : testResult.includes("❌")
-              ? "1px solid #f5c6cb"
-              : "1px solid #ffeaa7",
+                ? "1px solid #f5c6cb"
+                : "1px solid #ffeaa7",
           }}
         >
           Result: {testResult || 'Click "Test API Call" to test authentication'}

@@ -30,7 +30,7 @@ const shiftsOverlap = (shifts: ShiftT[]): boolean => {
 const validateLinkShift = (
   lsCandidate: LinkShiftT,
   shiftsLs: ShiftT[],
-  lsOthers: LinkShiftT[]
+  lsOthers: LinkShiftT[],
 ): ValidationResultT => {
   if (lsCandidate.shiftIds.length < 2) {
     return { isValid: false, validationMessage: "missing_shift" };

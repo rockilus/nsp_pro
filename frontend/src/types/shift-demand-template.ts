@@ -303,6 +303,6 @@ export interface TemplateUtils {
    * Group demands by day of week
    */
   groupDemandsByDay: (
-    demands: DemandEntryDTO[]
+    demands: DemandEntryDTO[],
   ) => Record<number, DemandEntryDTO[]>;
 }

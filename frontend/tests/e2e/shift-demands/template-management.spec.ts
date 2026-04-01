@@ -159,7 +159,7 @@ test.describe("Template Management", () => {
     await expect(
       page
         .locator(`[data-testid^="template-list-item-"]`)
-        .filter({ hasText: templateName })
+        .filter({ hasText: templateName }),
     ).toBeVisible({ timeout: 10000 });
   });
 
@@ -244,7 +244,7 @@ test.describe("Template Management", () => {
     // Verify action buttons are present
     const actionButtons = templateTestBase.getTemplateActionButtons(
       page,
-      templateId
+      templateId,
     );
     await expect(actionButtons.apply).toBeVisible();
     await expect(actionButtons.delete).toBeVisible();
@@ -267,7 +267,7 @@ test.describe("Template Management", () => {
     // Click the delete button
     const actionButtons = templateTestBase.getTemplateActionButtons(
       page,
-      templateId
+      templateId,
     );
     await actionButtons.delete.click();
 
@@ -302,7 +302,7 @@ test.describe("Template Management", () => {
     // Click the delete button
     const actionButtons = templateTestBase.getTemplateActionButtons(
       page,
-      templateId
+      templateId,
     );
     await actionButtons.delete.click();
 
@@ -337,7 +337,7 @@ test.describe("Template Management", () => {
     // Click the delete button
     const actionButtons = templateTestBase.getTemplateActionButtons(
       page,
-      templateId
+      templateId,
     );
     await actionButtons.delete.click();
 
@@ -379,11 +379,11 @@ test.describe("Template Management", () => {
     // Verify both templates appear
     const template1Item = templateTestBase.getTemplateListItem(
       page,
-      template1Id
+      template1Id,
     );
     const template2Item = templateTestBase.getTemplateListItem(
       page,
-      template2Id
+      template2Id,
     );
 
     await expect(template1Item).toBeVisible();
@@ -424,7 +424,7 @@ test.describe("Template Management", () => {
     // Click the delete button
     const actionButtons = templateTestBase.getTemplateActionButtons(
       page,
-      templateId
+      templateId,
     );
     await actionButtons.delete.click();
 

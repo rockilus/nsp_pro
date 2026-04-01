@@ -62,7 +62,7 @@ export const DemandEntryEditor: React.FC<DemandEntryEditorProps> = ({
   const handleCountChange = (count: number) => {
     const validCount = Math.max(
       0,
-      Math.min(count, TEMPLATE_CONSTRAINTS.MAX_COUNT_PER_DEMAND)
+      Math.min(count, TEMPLATE_CONSTRAINTS.MAX_COUNT_PER_DEMAND),
     );
     onChange({ ...entry, count: validCount });
   };

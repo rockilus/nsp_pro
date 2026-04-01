@@ -54,7 +54,7 @@ export function useAddDimEntry() {
         const result = await DimEntryApi.addDimEntry(
           apiClient,
           dimEntry,
-          teamId
+          teamId,
         );
 
         if (env.isDevelopment) {
@@ -70,7 +70,7 @@ export function useAddDimEntry() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addDimEntry;
@@ -108,7 +108,7 @@ export function useUpdateDimEntry() {
         return await DimEntryApi.updateDimEntry(
           apiClient,
           updatedDimEntry,
-          teamId
+          teamId,
         );
       } catch (error) {
         console.error("❌ Failed to update dim entry:", {
@@ -118,7 +118,7 @@ export function useUpdateDimEntry() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateDimEntry;
@@ -162,7 +162,7 @@ export function useDeleteDimEntry() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteDimEntry;

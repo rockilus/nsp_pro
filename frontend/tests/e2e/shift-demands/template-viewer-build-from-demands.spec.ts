@@ -70,7 +70,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
 
     // Wait for template viewer to load
     await expect(
-      page.locator('[data-testid="template-viewer-container"]')
+      page.locator('[data-testid="template-viewer-container"]'),
     ).toBeVisible();
   });
 
@@ -103,13 +103,13 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       // Verify dialog contains expected elements - use dialog role to be specific
       await expect(page.getByRole("dialog")).toBeVisible();
       await expect(
-        page.getByRole("heading", { name: /Build from Demands/i })
+        page.getByRole("heading", { name: /Build from Demands/i }),
       ).toBeVisible();
       await expect(
-        page.getByRole("heading", { name: "Source Week" })
+        page.getByRole("heading", { name: "Source Week" }),
       ).toBeVisible();
       await expect(
-        page.getByRole("heading", { name: "Target Week" })
+        page.getByRole("heading", { name: "Target Week" }),
       ).toBeVisible();
     });
 
@@ -127,7 +127,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
 
       // Verify dialog is closed
       await expect(
-        page.getByTestId("build-from-demands-dialog")
+        page.getByTestId("build-from-demands-dialog"),
       ).not.toBeVisible();
     });
 
@@ -144,7 +144,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
 
       // Verify dialog is closed - check our specific dialog
       await expect(
-        page.getByTestId("build-from-demands-dialog")
+        page.getByTestId("build-from-demands-dialog"),
       ).not.toBeVisible();
     });
   });
@@ -208,7 +208,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
         page
           .getByTestId("build-from-demands-dialog")
           .getByText(/find the Monday/i)
-          .first()
+          .first(),
       ).toBeVisible();
     });
   });
@@ -268,7 +268,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
 
       // Should show warning about overwriting data
       await expect(
-        page.locator(":text('overwrite')").or(page.locator(":text('replace')"))
+        page.locator(":text('overwrite')").or(page.locator(":text('replace')")),
       ).toBeVisible();
     });
   });
@@ -423,7 +423,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       // Should briefly show loading state
       // Note: this might be too fast to reliably test in E2E, but we can try
       const loadingIndicator = page.locator("text=Applying").or(
-        formElements.applyButton.locator("svg") // CircularProgress
+        formElements.applyButton.locator("svg"), // CircularProgress
       );
 
       // The loading state might be very brief, so we use a short timeout
@@ -432,7 +432,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       } catch (e) {
         // Loading might be too fast to catch, which is acceptable
         console.log(
-          "Loading state was too fast to detect, which is normal for fast operations"
+          "Loading state was too fast to detect, which is normal for fast operations",
         );
       }
     });
@@ -462,7 +462,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       } catch (e) {
         // Operation might be too fast, which is acceptable
         console.log(
-          "Button disable state was too fast to detect, which is normal for fast operations"
+          "Button disable state was too fast to detect, which is normal for fast operations",
         );
       }
     });
@@ -552,7 +552,7 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       // Template table should be updated
       // The exact verification would depend on having known source data
       await expect(
-        page.locator('[data-testid="template-table"]')
+        page.locator('[data-testid="template-table"]'),
       ).toBeVisible();
     });
 
@@ -563,19 +563,19 @@ test.describe("TemplateViewer - Build From Demands Feature", () => {
       await templateTestBase.applyDemandsFromSourceToTarget(
         page,
         "01/15/2024",
-        0
+        0,
       );
 
       // Second application (should overwrite)
       await templateTestBase.applyDemandsFromSourceToTarget(
         page,
         "01/22/2024",
-        0
+        0,
       );
 
       // Should complete successfully both times
       await expect(
-        page.locator('[data-testid="template-table"]')
+        page.locator('[data-testid="template-table"]'),
       ).toBeVisible();
     });
   });

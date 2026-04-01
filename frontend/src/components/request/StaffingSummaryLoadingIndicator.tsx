@@ -32,7 +32,7 @@ export const StaffingSummaryLoadingIndicator: React.FC<{ days: Dayjs[] }> = ({
             ))}
           </div>
         </div>
-      )
+      ),
     )}
   </>
 );

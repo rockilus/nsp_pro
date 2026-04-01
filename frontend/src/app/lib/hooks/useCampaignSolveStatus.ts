@@ -17,7 +17,7 @@ import { useSqsSolve } from "../contexts/SqsSolveContext";
  * - Returns the current ScheduleSolveStatus
  */
 export function useCampaignSolveStatus(
-  scheduleCampaign: ScheduleT | null
+  scheduleCampaign: ScheduleT | null,
 ): ScheduleSolveStatus {
   const [latestSolveData, setLatestSolveData] =
     useState<SolveTaskStatusResponseT | null>(null);
@@ -39,7 +39,7 @@ export function useCampaignSolveStatus(
     const fetchLatestSolveStatus = async () => {
       try {
         const latestSolveStatus = await getLatestSolveStatus(
-          scheduleCampaign.id
+          scheduleCampaign.id,
         );
 
         if (!isCancelled) {

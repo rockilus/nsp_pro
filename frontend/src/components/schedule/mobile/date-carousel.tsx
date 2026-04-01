@@ -83,7 +83,7 @@ export default function DateCarousel({
         ) {
           const date = allDates[i];
           const monthLabel = date.format(
-            date.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY"
+            date.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
           );
           onVisibleMonthChange(monthLabel);
           break;

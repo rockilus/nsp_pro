@@ -13,7 +13,7 @@ export class RequestApi extends BaseApi {
   static async addRequest(
     apiClient: AuthenticatedApiClient,
     request: RequestT,
-    teamId: string
+    teamId: string,
   ): Promise<RequestT> {
     // Security: Input validation
     if (!request) {
@@ -27,7 +27,7 @@ export class RequestApi extends BaseApi {
       apiClient,
       "post",
       `/requests/teams/${teamId}`,
-      fromRequestT(request)
+      fromRequestT(request),
     );
     return toRequestT(responseData);
   }
@@ -39,7 +39,7 @@ export class RequestApi extends BaseApi {
   static async getRequests(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    workerId?: string
+    workerId?: string,
   ): Promise<RequestT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -52,7 +52,7 @@ export class RequestApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/requests/teams/${teamId}${queryParams}`
+      `/requests/teams/${teamId}${queryParams}`,
     );
     return responseData.map(toRequestT);
   }
@@ -63,7 +63,7 @@ export class RequestApi extends BaseApi {
   static async updateRequest(
     apiClient: AuthenticatedApiClient,
     updatedRequest: RequestT,
-    teamId: string
+    teamId: string,
   ): Promise<RequestT> {
     // Security: Input validation
     if (!updatedRequest || !updatedRequest.id) {
@@ -77,7 +77,7 @@ export class RequestApi extends BaseApi {
       apiClient,
       "put",
       `/requests/${updatedRequest.id}/teams/${teamId}`,
-      fromRequestT(updatedRequest)
+      fromRequestT(updatedRequest),
     );
     return toRequestT(responseData);
   }
@@ -88,7 +88,7 @@ export class RequestApi extends BaseApi {
   static async acceptRequest(
     apiClient: AuthenticatedApiClient,
     requestId: string,
-    teamId: string
+    teamId: string,
   ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     // Security: Input validation
     if (!requestId?.trim()) {
@@ -101,12 +101,12 @@ export class RequestApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "post",
-      `/requests/${requestId}/teams/${teamId}/accept`
+      `/requests/${requestId}/teams/${teamId}/accept`,
     );
     return {
       request: toRequestT(responseData.request),
       assignments: (responseData.assignments || []).map((a: any) =>
-        toAssignmentT(a)
+        toAssignmentT(a),
       ),
     };
   }
@@ -117,7 +117,7 @@ export class RequestApi extends BaseApi {
   static async denyRequest(
     apiClient: AuthenticatedApiClient,
     requestId: string,
-    teamId: string
+    teamId: string,
   ): Promise<RequestT> {
     // Security: Input validation
     if (!requestId?.trim()) {
@@ -130,7 +130,7 @@ export class RequestApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "post",
-      `/requests/${requestId}/teams/${teamId}/deny`
+      `/requests/${requestId}/teams/${teamId}/deny`,
     );
     return toRequestT(responseData);
   }
@@ -141,7 +141,7 @@ export class RequestApi extends BaseApi {
   static async rescindRequest(
     apiClient: AuthenticatedApiClient,
     requestId: string,
-    teamId: string
+    teamId: string,
   ): Promise<{ request: RequestT; assignmentsDeletedIds: string[] }> {
     // Security: Input validation
     if (!requestId?.trim()) {
@@ -154,7 +154,7 @@ export class RequestApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "post",
-      `/requests/${requestId}/teams/${teamId}/rescind`
+      `/requests/${requestId}/teams/${teamId}/rescind`,
     );
     return {
       request: toRequestT(responseData.request),
@@ -168,7 +168,7 @@ export class RequestApi extends BaseApi {
   static async deleteRequest(
     apiClient: AuthenticatedApiClient,
     requestId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!requestId) {
@@ -181,7 +181,7 @@ export class RequestApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "delete",
-      `/requests/${requestId}/teams/${teamId}`
+      `/requests/${requestId}/teams/${teamId}`,
     );
   }
 }

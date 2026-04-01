@@ -31,14 +31,14 @@ export default function AttributeCell({
   className?: string;
 }) {
   const [valueState, setValueState] = useState<string | number | boolean>(
-    attribute.value
+    attribute.value,
   );
 
   const handleEditConfirm = async () => {
     if (valueState !== attribute.value) {
       handleUpdateAttribute(
         { ...attribute, value: valueState },
-        selectedTeamId
+        selectedTeamId,
       );
     }
     setEditing({});
@@ -50,7 +50,7 @@ export default function AttributeCell({
         ...attribute,
         value: !attribute.value,
       },
-      selectedTeamId
+      selectedTeamId,
     );
   };
 

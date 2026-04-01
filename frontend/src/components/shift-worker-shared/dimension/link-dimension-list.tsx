@@ -30,7 +30,7 @@ export default function LinkDimensionList({
 }) {
   const { t } = useTranslation(lng, "shift-page");
   const [selectedDimension, setSelectedDimension] = useState<DimensionT | null>(
-    null
+    null,
   );
 
   const componentTitle = {
@@ -45,7 +45,7 @@ export default function LinkDimensionList({
     (d) =>
       !d.dimTypes.includes(dimensionType) &&
       (d.entryType === DimensionEntryType.DIM_ENTRIES ||
-        d.entryType === DimensionEntryType.BOOL)
+        d.entryType === DimensionEntryType.BOOL),
   );
 
   const handleSelectDimension = (dimension: DimensionT) => {

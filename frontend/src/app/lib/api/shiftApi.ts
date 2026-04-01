@@ -39,7 +39,7 @@ export class ShiftApi extends BaseApi {
    */
   static async addShift(
     apiClient: AuthenticatedApiClient,
-    shift: ShiftT
+    shift: ShiftT,
   ): Promise<ShiftT> {
     // Security: Input validation
     if (!shift || !shift.teamId) {
@@ -50,7 +50,7 @@ export class ShiftApi extends BaseApi {
       apiClient,
       "post",
       `/shifts/teams/${shift.teamId}`,
-      fromShiftT(shift)
+      fromShiftT(shift),
     );
     return toShiftT(responseData);
   }
@@ -60,7 +60,7 @@ export class ShiftApi extends BaseApi {
    */
   static async getShifts(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -70,7 +70,7 @@ export class ShiftApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/shifts/teams/${teamId}`
+      `/shifts/teams/${teamId}`,
     );
     return responseData.map(toShiftT);
   }
@@ -80,7 +80,7 @@ export class ShiftApi extends BaseApi {
    */
   static async getWorkShifts(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -90,7 +90,7 @@ export class ShiftApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/shifts/work/teams/${teamId}`
+      `/shifts/work/teams/${teamId}`,
     );
     return responseData.map(toShiftT);
   }
@@ -100,7 +100,7 @@ export class ShiftApi extends BaseApi {
    */
   static async getAllShifts(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -110,7 +110,7 @@ export class ShiftApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/shifts/all/teams/${teamId}`
+      `/shifts/all/teams/${teamId}`,
     );
     return responseData.map(toShiftT);
   }
@@ -120,7 +120,7 @@ export class ShiftApi extends BaseApi {
    */
   static async updateShift(
     apiClient: AuthenticatedApiClient,
-    updatedShift: ShiftT
+    updatedShift: ShiftT,
   ): Promise<ShiftUpdateResponse> {
     // Security: Input validation
     if (!updatedShift || !updatedShift.id || !updatedShift.teamId) {
@@ -131,7 +131,7 @@ export class ShiftApi extends BaseApi {
       apiClient,
       "put",
       `/shifts/${updatedShift.id}/teams/${updatedShift.teamId}`,
-      fromShiftT(updatedShift)
+      fromShiftT(updatedShift),
     );
 
     return {
@@ -151,7 +151,7 @@ export class ShiftApi extends BaseApi {
   static async deleteShift(
     apiClient: AuthenticatedApiClient,
     shiftId: string,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftDeleteResponse> {
     // Security: Input validation
     if (!shiftId) {
@@ -164,7 +164,7 @@ export class ShiftApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "delete",
-      `/shifts/${shiftId}/teams/${teamId}`
+      `/shifts/${shiftId}/teams/${teamId}`,
     );
 
     return {
@@ -182,7 +182,7 @@ export class ShiftApi extends BaseApi {
    */
   static async getShiftsTabData(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftsTabDataResponse> {
     // Security: Input validation
     if (!teamId) {
@@ -201,7 +201,7 @@ export class ShiftApi extends BaseApi {
         DimensionApi.getDimensions(apiClient, teamId),
         SpecialtyApi.getSpecialties(apiClient, teamId),
         LinkShiftApi.getLinkShifts(apiClient, teamId),
-      ]
+      ],
     );
 
     return {

@@ -6,7 +6,7 @@ export function useLocalStorageState<T>(
   serializer?: {
     serialize: (value: T) => string;
     deserialize: (value: string) => T;
-  }
+  },
 ): [T, (value: T | ((prev: T) => T)) => void] {
   const [state, setState] = useState<T>(() => {
     if (typeof window === "undefined") {
@@ -34,7 +34,7 @@ export function useLocalStorageState<T>(
       } catch (removeError) {
         console.warn(
           `Error removing corrupted localStorage key "${key}":`,
-          removeError
+          removeError,
         );
       }
       return defaultValue;
@@ -61,7 +61,7 @@ export function useLocalStorageState<T>(
         } catch (removeError) {
           console.warn(
             `Error removing localStorage key "${key}":`,
-            removeError
+            removeError,
           );
         }
         // Still update the React state even if localStorage fails
@@ -69,7 +69,7 @@ export function useLocalStorageState<T>(
         setState(valueToStore);
       }
     },
-    [key, state, serializer]
+    [key, state, serializer],
   );
 
   return [state, setValue];

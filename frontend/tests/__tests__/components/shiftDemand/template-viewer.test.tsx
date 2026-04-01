@@ -10,11 +10,11 @@ describe("TemplateViewer API Centralization", () => {
   const frontendPath = path.join(process.cwd(), "src");
   const viewerFile = path.join(
     frontendPath,
-    "components/shiftDemand/templates/TemplateViewer.tsx"
+    "components/shiftDemand/templates/TemplateViewer.tsx",
   );
   const windowFile = path.join(
     frontendPath,
-    "components/shiftDemand/templates/TemplateManagementWindow.tsx"
+    "components/shiftDemand/templates/TemplateManagementWindow.tsx",
   );
 
   describe("TemplateViewer Component", () => {
@@ -26,7 +26,7 @@ describe("TemplateViewer API Centralization", () => {
 
       const viewerContent = fs.readFileSync(viewerFile, "utf8");
       expect(viewerContent).not.toContain(
-        "ShiftDemandTemplateApi.updateTemplate"
+        "ShiftDemandTemplateApi.updateTemplate",
       );
     });
 
@@ -41,7 +41,7 @@ describe("TemplateViewer API Centralization", () => {
         .split("\n")
         .filter(
           (line) =>
-            line.includes("ShiftDemandTemplateApi") && line.includes("import")
+            line.includes("ShiftDemandTemplateApi") && line.includes("import"),
         );
 
       expect(apiImportLines.length).toBe(0);
@@ -65,7 +65,7 @@ describe("TemplateViewer API Centralization", () => {
 
       const viewerContent = fs.readFileSync(viewerFile, "utf8");
       expect(viewerContent).toContain(
-        "onUpdateTemplate: (updates: Partial<ShiftDemandTemplateDTO>) => Promise<void>"
+        "onUpdateTemplate: (updates: Partial<ShiftDemandTemplateDTO>) => Promise<void>",
       );
     });
 
@@ -80,7 +80,7 @@ describe("TemplateViewer API Centralization", () => {
       const hasTemplateUtils = viewerContent.includes("TemplateUtils");
       if (hasTemplateUtils) {
         console.log(
-          "ℹ️ TemplateViewer still uses TemplateUtils (for other functionality)"
+          "ℹ️ TemplateViewer still uses TemplateUtils (for other functionality)",
         );
       }
     });
@@ -105,7 +105,7 @@ describe("TemplateViewer API Centralization", () => {
 
       const windowContent = fs.readFileSync(windowFile, "utf8");
       expect(windowContent).toContain(
-        "onUpdateTemplate={handleUpdateTemplate}"
+        "onUpdateTemplate={handleUpdateTemplate}",
       );
     });
 

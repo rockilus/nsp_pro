@@ -43,7 +43,7 @@ const getMinutesFromMidnight = (time: dayjs.Dayjs): number => {
 // Utility: Calculate assignment grid position
 const calculateAssignmentGridPosition = (
   shift: any,
-  assignmentDate: dayjs.Dayjs
+  assignmentDate: dayjs.Dayjs,
 ): AssignmentPosition => {
   const startTime = dayjs.utc(shift.startTime);
   const endTime = dayjs.utc(shift.endTime);
@@ -108,7 +108,7 @@ const doAssignmentsOverlap = (a1: any, a2: any): boolean => {
 const calculateAssignmentPositions = (
   assignments: any[],
   shifts: any[],
-  date: dayjs.Dayjs
+  date: dayjs.Dayjs,
 ): PositionedAssignment[] => {
   // Get shift data for each assignment
   const assignmentsWithShifts = assignments
@@ -130,7 +130,7 @@ const calculateAssignmentPositions = (
     let trackIndex = 0;
     while (trackIndex < tracks.length) {
       const overlaps = tracks[trackIndex].some((existingItem) =>
-        doAssignmentsOverlap(item, existingItem)
+        doAssignmentsOverlap(item, existingItem),
       );
       if (!overlaps) break;
       trackIndex++;
@@ -194,14 +194,14 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
       setSheetOpen,
       onScroll,
     },
-    ref
+    ref,
   ) => {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     // Expose scrollTop via ref for external control
     useImperativeHandle(
       ref,
-      () => scrollContainerRef.current as HTMLDivElement
+      () => scrollContainerRef.current as HTMLDivElement,
     );
 
     // Generate 7 days for the week
@@ -218,7 +218,7 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
     // Generate hour labels (00:00 - 23:00)
     const hours = useMemo(() => {
       return Array.from({ length: 24 }, (_, i) =>
-        dayjs.utc().hour(i).minute(0).format("HH:mm")
+        dayjs.utc().hour(i).minute(0).format("HH:mm"),
       );
     }, []);
 
@@ -232,7 +232,7 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
         const positioned = calculateAssignmentPositions(
           dayAssignments,
           shifts,
-          day
+          day,
         );
         result.set(dateKey, positioned);
 
@@ -243,12 +243,12 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
         const prevPositioned = calculateAssignmentPositions(
           prevAssignments,
           shifts,
-          prevDay
+          prevDay,
         );
 
         // Add second parts of overnight shifts to current day
         const overnightSecondParts = prevPositioned.filter(
-          (p) => p.isSecondPart
+          (p) => p.isSecondPart,
         );
         if (overnightSecondParts.length > 0) {
           const existing = result.get(dateKey) || [];
@@ -262,7 +262,7 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
     // Render assignment block
     const renderAssignment = (
       positioned: PositionedAssignment,
-      dateKey: string
+      dateKey: string,
     ) => {
       const { assignment, shift, top, height, width, left } = positioned;
       const colors = ShiftColorMappings[shift.color] || {
@@ -437,10 +437,10 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
                     >
                       {(
                         positionedAssignmentsByDay.get(
-                          day.format("YYYY-MM-DD")
+                          day.format("YYYY-MM-DD"),
                         ) || []
                       ).map((positioned) =>
-                        renderAssignment(positioned, day.format("YYYY-MM-DD"))
+                        renderAssignment(positioned, day.format("YYYY-MM-DD")),
                       )}
                     </Box>
                   )}
@@ -451,7 +451,7 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
         </Box>
       </Box>
     );
-  }
+  },
 );
 
 WeekGrid.displayName = "WeekGrid";

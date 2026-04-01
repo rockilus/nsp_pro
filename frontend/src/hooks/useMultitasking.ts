@@ -28,7 +28,7 @@ export function useGetMultitaskingGroups() {
   const getMultitaskingGroups = useCallback(
     async (
       teamId: string,
-      templateId?: string
+      templateId?: string,
     ): Promise<MultitaskingGroup[]> => {
       if (env.isDevelopment) {
         console.log("🔍 useGetMultitaskingGroups called:", {
@@ -53,7 +53,7 @@ export function useGetMultitaskingGroups() {
         return await MultitaskingApi.getMultitaskingGroups(
           apiClient,
           teamId,
-          templateId
+          templateId,
         );
       } catch (error) {
         console.error("❌ Failed to get multitasking groups:", {
@@ -63,7 +63,7 @@ export function useGetMultitaskingGroups() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getMultitaskingGroups;
@@ -78,7 +78,7 @@ export function useCreateMultitaskingGroup() {
 
   const createMultitaskingGroup = useCallback(
     async (
-      data: CreateMultitaskingGroupRequest
+      data: CreateMultitaskingGroupRequest,
     ): Promise<MultitaskingGroup> => {
       if (env.isDevelopment) {
         console.log("🔍 useCreateMultitaskingGroup called:", {
@@ -101,7 +101,7 @@ export function useCreateMultitaskingGroup() {
       try {
         const group = await MultitaskingApi.createMultitaskingGroup(
           apiClient,
-          data
+          data,
         );
 
         if (env.isDevelopment) {
@@ -117,7 +117,7 @@ export function useCreateMultitaskingGroup() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createMultitaskingGroup;
@@ -134,7 +134,7 @@ export function useUpdateMultitaskingGroup() {
     async (
       teamId: string,
       groupId: string,
-      data: UpdateMultitaskingGroupRequest
+      data: UpdateMultitaskingGroupRequest,
     ): Promise<MultitaskingGroup[]> => {
       if (env.isDevelopment) {
         console.log("🔍 useUpdateMultitaskingGroup called:", {
@@ -161,7 +161,7 @@ export function useUpdateMultitaskingGroup() {
           apiClient,
           teamId,
           groupId,
-          data
+          data,
         );
 
         if (env.isDevelopment) {
@@ -177,7 +177,7 @@ export function useUpdateMultitaskingGroup() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateMultitaskingGroup;
@@ -193,7 +193,7 @@ export function useDeleteMultitaskingGroup() {
   const deleteMultitaskingGroup = useCallback(
     async (
       teamId: string,
-      groupId: string
+      groupId: string,
     ): Promise<{ success: boolean; message: string }> => {
       if (env.isDevelopment) {
         console.log("🔍 useDeleteMultitaskingGroup called:", {
@@ -218,7 +218,7 @@ export function useDeleteMultitaskingGroup() {
         const result = await MultitaskingApi.deleteMultitaskingGroup(
           apiClient,
           teamId,
-          groupId
+          groupId,
         );
 
         if (env.isDevelopment) {
@@ -234,7 +234,7 @@ export function useDeleteMultitaskingGroup() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteMultitaskingGroup;
@@ -251,7 +251,7 @@ export function useGetShiftDemandConcurrency() {
     async (
       teamId: string,
       startDate: Dayjs,
-      endDate: Dayjs
+      endDate: Dayjs,
     ): Promise<ShiftDemandConcurrency[]> => {
       if (env.isDevelopment) {
         console.log("🔍 useGetShiftDemandConcurrency called:", {
@@ -278,7 +278,7 @@ export function useGetShiftDemandConcurrency() {
           apiClient,
           teamId,
           startDate,
-          endDate
+          endDate,
         );
       } catch (error) {
         console.error("❌ Failed to get shift demand concurrency:", {
@@ -288,7 +288,7 @@ export function useGetShiftDemandConcurrency() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getShiftDemandConcurrency;

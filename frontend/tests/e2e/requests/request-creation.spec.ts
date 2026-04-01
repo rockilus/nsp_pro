@@ -54,7 +54,7 @@ test.describe("Request Creation", () => {
 
     if (!requestTestBase) {
       console.warn(
-        `No requestTestBase found for testRunId: ${testRunId}, skipping cleanup`
+        `No requestTestBase found for testRunId: ${testRunId}, skipping cleanup`,
       );
       return;
     }
@@ -67,7 +67,7 @@ test.describe("Request Creation", () => {
     } catch (error) {
       console.warn(
         `[Test Run ${testRunId}] Cleanup failed, but continuing:`,
-        error
+        error,
       );
     }
 
@@ -117,7 +117,7 @@ test.describe("Request Creation", () => {
 
     console.log(
       `[${testRunId}] Selected team from localStorage in test:`,
-      selectedTeamFromStorage
+      selectedTeamFromStorage,
     );
 
     const requestTestBase = testBasesMap.get(testRunId)!;
@@ -195,7 +195,7 @@ test.describe("Request Creation", () => {
       workerName: testWorkers[0].name,
       type: "work",
       dateRange: `${startDate.format("YYYY-MM-DD")} to ${endDate.format(
-        "YYYY-MM-DD"
+        "YYYY-MM-DD",
       )}`,
       preference: "positive",
     });
@@ -254,7 +254,7 @@ test.describe("Request Creation", () => {
     const leaveShifts = await requestTestBase.fetchLeaveShiftsForTeam();
     if (leaveShifts.length === 0) {
       throw new Error(
-        "No leave shifts found for the team. Leave shifts should be created by default."
+        "No leave shifts found for the team. Leave shifts should be created by default.",
       );
     }
 
@@ -302,7 +302,7 @@ test.describe("Request Creation", () => {
     const leaveShifts = await requestTestBase.fetchLeaveShiftsForTeam();
     if (leaveShifts.length === 0) {
       throw new Error(
-        "No leave shifts found for the team. Leave shifts should be created by default."
+        "No leave shifts found for the team. Leave shifts should be created by default.",
       );
     }
 
@@ -337,7 +337,7 @@ test.describe("Request Creation", () => {
       workerName: testWorkers[1].name,
       type: "leave",
       dateRange: `${startDate.format("YYYY-MM-DD")} to ${endDate.format(
-        "YYYY-MM-DD"
+        "YYYY-MM-DD",
       )}`,
       shiftName: leaveShift.name,
     });

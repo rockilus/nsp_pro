@@ -54,7 +54,7 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(actionToolbar).toBeVisible();
       await expect(selectButton).toHaveCSS(
         "background-color",
-        "rgb(25, 118, 210)"
+        "rgb(25, 118, 210)",
       ); // Active blue color
 
       // Verify bulk selection elements are visible
@@ -86,7 +86,7 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(actionToolbar).not.toBeVisible();
       await expect(selectButton).not.toHaveCSS(
         "background-color",
-        "rgb(25, 118, 210)"
+        "rgb(25, 118, 210)",
       );
     });
 
@@ -108,7 +108,7 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(actionToolbar).not.toBeVisible();
       await expect(selectButton).not.toHaveCSS(
         "background-color",
-        "rgb(25, 118, 210)"
+        "rgb(25, 118, 210)",
       );
     });
 
@@ -265,7 +265,7 @@ test.describe("Shift Demand - Select Feature", () => {
 
       // Verify some cells in the column are selected (check first few visible shifts)
       const shiftRows = page.locator(
-        '[data-testid^="shift-demand-row-header-"]'
+        '[data-testid^="shift-demand-row-header-"]',
       );
       const shiftCount = Math.min(await shiftRows.count(), 3);
 
@@ -299,7 +299,7 @@ test.describe("Shift Demand - Select Feature", () => {
 
       // Verify row checkboxes are checked
       const shiftRows = page.locator(
-        '[data-testid^="shift-demand-row-header-"]'
+        '[data-testid^="shift-demand-row-header-"]',
       );
       const shiftCount = Math.min(await shiftRows.count(), 2); // Check first 2 rows
 
@@ -433,10 +433,10 @@ test.describe("Shift Demand - Select Feature", () => {
 
       // Verify the shift demand value is updated in the table
       const cell = page.locator(
-        `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`
+        `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`,
       );
       const valueElement = cell.locator(
-        `[data-testid="shift-demand-value-${shiftId}-${testDate}"]`
+        `[data-testid="shift-demand-value-${shiftId}-${testDate}"]`,
       );
 
       await expect(valueElement).toBeVisible();
@@ -465,7 +465,7 @@ test.describe("Shift Demand - Select Feature", () => {
 
       // Create a shift demand first by clicking the cell
       const cell = page.locator(
-        `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`
+        `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`,
       );
 
       // Wait for the cell to be visible before interacting with it
@@ -475,7 +475,7 @@ test.describe("Shift Demand - Select Feature", () => {
 
       // Wait for the shift demand to be created by checking for the value element
       const valueElement = cell.locator(
-        `[data-testid="shift-demand-value-${shiftId}-${testDate}"]`
+        `[data-testid="shift-demand-value-${shiftId}-${testDate}"]`,
       );
       await expect(valueElement).toBeVisible();
 
@@ -498,7 +498,7 @@ test.describe("Shift Demand - Select Feature", () => {
 
       // Verify the cell is back to empty state
       const emptyState = cell.locator(
-        `[data-testid="shift-demand-empty-${shiftId}-${testDate}"]`
+        `[data-testid="shift-demand-empty-${shiftId}-${testDate}"]`,
       );
       await expect(emptyState).toBeVisible();
     });
@@ -578,10 +578,10 @@ test.describe("Shift Demand - Select Feature", () => {
 
       // Verify the shift demand value is updated in the table
       const cell = page.locator(
-        `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`
+        `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`,
       );
       const valueElement = cell.locator(
-        `[data-testid="shift-demand-value-${shiftId}-${testDate}"]`
+        `[data-testid="shift-demand-value-${shiftId}-${testDate}"]`,
       );
 
       await expect(valueElement).toBeVisible();

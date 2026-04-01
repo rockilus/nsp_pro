@@ -178,7 +178,7 @@ export default function WeekCarousel({
   // Generate hour labels (00:00 - 23:00) - shared across all weeks
   const hours = useMemo(() => {
     return Array.from({ length: 24 }, (_, i) =>
-      dayjs.utc().hour(i).minute(0).format("HH:mm")
+      dayjs.utc().hour(i).minute(0).format("HH:mm"),
     );
   }, []);
 

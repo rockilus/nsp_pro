@@ -46,7 +46,7 @@ test.describe("Shift Demand - Table", () => {
     for (let i = 0; i < rowHeaders.length; i++) {
       const header = rowHeaders[i];
       const shiftNameElement = header.locator(
-        '[data-testid^="shift-demand-name-"]'
+        '[data-testid^="shift-demand-name-"]',
       );
       await expect(shiftNameElement).toBeVisible();
 
@@ -96,7 +96,7 @@ test.describe("Shift Demand - Table", () => {
 
     // Wait for the demand to be created and UI to update
     const valueElement = cell.locator(
-      `[data-testid="shift-demand-value-${shiftId}-${dateStr}"]`
+      `[data-testid="shift-demand-value-${shiftId}-${dateStr}"]`,
     );
     await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
@@ -130,7 +130,7 @@ test.describe("Shift Demand - Table", () => {
 
     // Wait for the demand to be created and value element to appear
     const valueElement = cell.locator(
-      `[data-testid="shift-demand-value-${shiftId}-${dateStr}"]`
+      `[data-testid="shift-demand-value-${shiftId}-${dateStr}"]`,
     );
     await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
@@ -140,7 +140,7 @@ test.describe("Shift Demand - Table", () => {
 
     // Verify plus button appears on hover
     const incrementButton = page.locator(
-      `[data-testid="shift-demand-increment-${shiftId}-${dateStr}"]`
+      `[data-testid="shift-demand-increment-${shiftId}-${dateStr}"]`,
     );
     await expect(incrementButton).toBeVisible();
 
@@ -154,7 +154,7 @@ test.describe("Shift Demand - Table", () => {
     await cell.hover();
     await valueElement.hover();
     const decrementButton = page.locator(
-      `[data-testid="shift-demand-decrement-${shiftId}-${dateStr}"]`
+      `[data-testid="shift-demand-decrement-${shiftId}-${dateStr}"]`,
     );
     // Wait for the decrement control and click it
     await expect(decrementButton).toBeVisible({ timeout: 5000 });
@@ -193,7 +193,7 @@ test.describe("Shift Demand - Table", () => {
 
     // Wait for the demand to be created and verify initial value
     const valueElement = cell.locator(
-      `[data-testid="shift-demand-value-${shiftId}-${dateStr}"]`
+      `[data-testid="shift-demand-value-${shiftId}-${dateStr}"]`,
     );
     await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
@@ -203,7 +203,7 @@ test.describe("Shift Demand - Table", () => {
 
     // Locate decrement as a top-level locator (controls may be rendered in a portal)
     const decrementButton = page.locator(
-      `[data-testid="shift-demand-decrement-${shiftId}-${dateStr}"]`
+      `[data-testid="shift-demand-decrement-${shiftId}-${dateStr}"]`,
     );
 
     // Wait for the decrement control to appear and click it. Increase timeout
@@ -233,7 +233,7 @@ test.describe("Shift Demand - Table", () => {
       .getAttribute("data-testid")
       .then((id) => id?.replace("shift-demand-row-header-", ""));
     const cellSelector = `[data-testid="shift-demand-cell-${shiftId}-${testDate.format(
-      "YYYY-MM-DD"
+      "YYYY-MM-DD",
     )}"]`;
     const cell = page.locator(cellSelector);
 
@@ -247,8 +247,8 @@ test.describe("Shift Demand - Table", () => {
     // Wait for the demand to be created and get value element
     const valueElement = cell.locator(
       `[data-testid="shift-demand-value-${shiftId}-${testDate.format(
-        "YYYY-MM-DD"
-      )}"]`
+        "YYYY-MM-DD",
+      )}"]`,
     );
     await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
@@ -258,8 +258,8 @@ test.describe("Shift Demand - Table", () => {
       await cell.hover();
       let incrementButton = page.locator(
         `[data-testid="shift-demand-increment-${shiftId}-${testDate.format(
-          "YYYY-MM-DD"
-        )}"]`
+          "YYYY-MM-DD",
+        )}"]`,
       );
       await expect(incrementButton).toBeVisible();
       const handle = await incrementButton.elementHandle();
@@ -298,13 +298,13 @@ test.describe("Shift Demand - Table", () => {
 
     const cell1 = page.locator(
       `[data-testid="shift-demand-cell-${shiftId1}-${testDate1.format(
-        "YYYY-MM-DD"
-      )}"]`
+        "YYYY-MM-DD",
+      )}"]`,
     );
     const cell2 = page.locator(
       `[data-testid="shift-demand-cell-${shiftId2}-${testDate2.format(
-        "YYYY-MM-DD"
-      )}"]`
+        "YYYY-MM-DD",
+      )}"]`,
     );
 
     // Make sure cells are visible
@@ -318,8 +318,8 @@ test.describe("Shift Demand - Table", () => {
     // Wait for first demand to be created
     let valueElement = cell1.locator(
       `[data-testid="shift-demand-value-${shiftId1}-${testDate1.format(
-        "YYYY-MM-DD"
-      )}"]`
+        "YYYY-MM-DD",
+      )}"]`,
     );
     await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
@@ -331,8 +331,8 @@ test.describe("Shift Demand - Table", () => {
     // Wait for second demand to be created
     valueElement = cell2.locator(
       `[data-testid="shift-demand-value-${shiftId2}-${testDate2.format(
-        "YYYY-MM-DD"
-      )}"]`
+        "YYYY-MM-DD",
+      )}"]`,
     );
     await expect(valueElement).toBeVisible();
     await expect(valueElement).toHaveText("1");
@@ -341,16 +341,16 @@ test.describe("Shift Demand - Table", () => {
     await expect(
       cell1.locator(
         `[data-testid="shift-demand-value-${shiftId1}-${testDate1.format(
-          "YYYY-MM-DD"
-        )}"]`
-      )
+          "YYYY-MM-DD",
+        )}"]`,
+      ),
     ).toHaveText("1");
     await expect(
       cell2.locator(
         `[data-testid="shift-demand-value-${shiftId2}-${testDate2.format(
-          "YYYY-MM-DD"
-        )}"]`
-      )
+          "YYYY-MM-DD",
+        )}"]`,
+      ),
     ).toHaveText("1");
   });
 

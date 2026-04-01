@@ -23,7 +23,7 @@ export class MultitaskingApi extends BaseApi {
   static async getMultitaskingGroups(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    templateId?: string
+    templateId?: string,
   ): Promise<MultitaskingGroup[]> {
     // Security: Input validation
     if (!teamId) {
@@ -42,11 +42,11 @@ export class MultitaskingApi extends BaseApi {
     const responseData = await this.makeRequest<MultitaskingGroupDTO[]>(
       apiClient,
       "get",
-      endpoint
+      endpoint,
     );
 
     return responseData.map((dto: MultitaskingGroupDTO) =>
-      toMultitaskingGroup(dto)
+      toMultitaskingGroup(dto),
     );
   }
 
@@ -55,7 +55,7 @@ export class MultitaskingApi extends BaseApi {
    */
   static async createMultitaskingGroup(
     apiClient: AuthenticatedApiClient,
-    data: CreateMultitaskingGroupRequest
+    data: CreateMultitaskingGroupRequest,
   ): Promise<MultitaskingGroup> {
     // Security: Input validation
     if (!data || !data.teamId) {
@@ -66,7 +66,7 @@ export class MultitaskingApi extends BaseApi {
       apiClient,
       "post",
       "/multitasking/groups",
-      data
+      data,
     );
 
     return toMultitaskingGroup(responseData);
@@ -79,7 +79,7 @@ export class MultitaskingApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     teamId: string,
     groupId: string,
-    data: UpdateMultitaskingGroupRequest
+    data: UpdateMultitaskingGroupRequest,
   ): Promise<MultitaskingGroup[]> {
     // Security: Input validation
     if (!teamId) {
@@ -96,11 +96,11 @@ export class MultitaskingApi extends BaseApi {
       apiClient,
       "put",
       `/multitasking/teams/${teamId}/groups/${groupId}`,
-      data
+      data,
     );
 
     return responseData.map((dto: MultitaskingGroupDTO) =>
-      toMultitaskingGroup(dto)
+      toMultitaskingGroup(dto),
     );
   }
 
@@ -110,7 +110,7 @@ export class MultitaskingApi extends BaseApi {
   static async deleteMultitaskingGroup(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    groupId: string
+    groupId: string,
   ): Promise<{ success: boolean; message: string }> {
     // Security: Input validation
     if (!teamId) {
@@ -135,7 +135,7 @@ export class MultitaskingApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     teamId: string,
     startDate: Dayjs,
-    endDate: Dayjs
+    endDate: Dayjs,
   ): Promise<ShiftDemandConcurrency[]> {
     // Security: Input validation
     if (!teamId) {
@@ -189,7 +189,7 @@ export class MultitaskingApi extends BaseApi {
       if (env.isDevelopment) {
         console.log(
           "MultitaskingApi.getShiftDemandConcurrency response:",
-          concurrencyList
+          concurrencyList,
         );
       }
 

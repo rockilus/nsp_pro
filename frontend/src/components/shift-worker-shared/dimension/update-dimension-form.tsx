@@ -105,7 +105,7 @@ export default function UpdateDimensionForm({
       handleUpdateDimension({
         ...dimension,
         dimTypes: dimension.dimTypes.filter(
-          (dimType) => dimType !== dimensionTypeTable
+          (dimType) => dimType !== dimensionTypeTable,
         ),
       });
     }

@@ -60,7 +60,7 @@ export default function PortraitRequestList({
         }
 
         const weekItems = weekDates.flatMap(
-          (d) => requestsByDate.get(d.utc().format("YYYY-MM-DD")) || []
+          (d) => requestsByDate.get(d.utc().format("YYYY-MM-DD")) || [],
         );
 
         // Check if this week contains today
@@ -83,7 +83,7 @@ export default function PortraitRequestList({
                 week.start.year() === week.end.year()
                   ? `${week.start.format("MMMM D")} - ${week.end.format("D")}`
                   : `${week.start.format("MMMM D")} - ${week.end.format(
-                      "MMMM D"
+                      "MMMM D",
                     )}`}
               </Typography>
             </Box>

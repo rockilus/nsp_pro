@@ -32,7 +32,7 @@ const sortShifts = (shifts: ShiftT[]): ShiftT[] => {
 
 export const getRelevantShifts = (
   shifts: ShiftT[],
-  assignments: AssignmentT[]
+  assignments: AssignmentT[],
 ): ShiftT[] => {
   const shiftIdsInAssignments = new Set(assignments.map((a) => a.shiftId));
 
@@ -40,7 +40,7 @@ export const getRelevantShifts = (
     (shift) =>
       (shiftIdsInAssignments.has(shift.id) || !shift.deleted) &&
       (shift.shiftType === ShiftType.NORMAL ||
-        shift.shiftType === ShiftType.DUTY)
+        shift.shiftType === ShiftType.DUTY),
   );
 
   return sortShifts(relevantShifts);

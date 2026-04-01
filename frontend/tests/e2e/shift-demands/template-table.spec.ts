@@ -82,7 +82,7 @@ test.describe("Template Table", () => {
 
         const shiftNameElement = templateTestBase.getTemplateShiftName(
           page,
-          shiftId
+          shiftId,
         );
         await expect(shiftNameElement).toBeVisible();
 
@@ -128,7 +128,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         weekNumber,
-        dayIndex
+        dayIndex,
       );
       await expect(cell).toBeVisible();
 
@@ -137,7 +137,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         weekNumber,
-        dayIndex
+        dayIndex,
       );
       await expect(emptyState).toBeVisible();
 
@@ -150,7 +150,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         weekNumber,
-        dayIndex
+        dayIndex,
       );
       await expect(valueElement).toBeVisible();
       await expect(valueElement).toHaveText("1");
@@ -172,7 +172,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         weekNumber,
-        dayIndex
+        dayIndex,
       );
 
       // Click to create initial demand
@@ -184,7 +184,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         weekNumber,
-        dayIndex
+        dayIndex,
       );
       await expect(valueElement).toBeVisible();
       await expect(valueElement).toHaveText("1");
@@ -197,7 +197,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         weekNumber,
-        dayIndex
+        dayIndex,
       );
       await expect(incrementButton).toBeVisible();
       await incrementButton.click();
@@ -210,7 +210,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         weekNumber,
-        dayIndex
+        dayIndex,
       );
       await expect(decrementButton).toBeVisible();
       await decrementButton.click();
@@ -227,7 +227,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         weekNumber,
-        dayIndex
+        dayIndex,
       );
       await expect(emptyState).toBeVisible();
     });
@@ -247,7 +247,7 @@ test.describe("Template Table", () => {
           page,
           shiftId!,
           weekNumber,
-          dayIndex
+          dayIndex,
         );
         await cell.hover();
         await cell.click();
@@ -256,7 +256,7 @@ test.describe("Template Table", () => {
           page,
           shiftId!,
           weekNumber,
-          dayIndex
+          dayIndex,
         );
         await expect(valueElement).toBeVisible();
         await expect(valueElement).toHaveText("1");
@@ -268,7 +268,7 @@ test.describe("Template Table", () => {
           page,
           shiftId!,
           weekNumber,
-          dayIndex
+          dayIndex,
         );
         await expect(valueElement).toHaveText("1");
       }
@@ -308,7 +308,7 @@ test.describe("Template Table", () => {
             page,
             shiftId!,
             0,
-            dayIndex
+            dayIndex,
           );
           await cell.hover();
           await cell.click();
@@ -317,7 +317,7 @@ test.describe("Template Table", () => {
             page,
             shiftId!,
             0,
-            dayIndex
+            dayIndex,
           );
           await expect(value).toHaveText("1");
         }
@@ -344,7 +344,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         0,
-        0
+        0,
       );
       await expect(checkbox).toBeVisible();
 
@@ -373,7 +373,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         weekNumber,
-        dayIndex
+        dayIndex,
       );
       await checkbox.click();
       await expect(checkbox).toBeChecked();
@@ -407,7 +407,7 @@ test.describe("Template Table", () => {
       // Click row checkbox
       const rowCheckbox = templateTestBase.getTemplateRowCheckbox(
         page,
-        shiftId!
+        shiftId!,
       );
       await rowCheckbox.click();
 
@@ -422,7 +422,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         0,
-        0
+        0,
       );
       await expect(firstCellCheckbox).toBeChecked();
     });
@@ -442,7 +442,7 @@ test.describe("Template Table", () => {
           page,
           shiftId!,
           0,
-          dayIndex
+          dayIndex,
         );
         await checkbox.click();
       }
@@ -457,7 +457,7 @@ test.describe("Template Table", () => {
           page,
           shiftId!,
           0,
-          dayIndex
+          dayIndex,
         );
         await expect(valueElement).toContainText("3");
       }
@@ -482,7 +482,7 @@ test.describe("Template Table", () => {
         page,
         shiftId!,
         0,
-        5
+        5,
       );
       const sundayCell = templateTestBase.getTemplateCell(page, shiftId!, 0, 6);
 

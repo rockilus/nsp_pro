@@ -28,19 +28,19 @@ export default function SelectFilter({
   currentValue,
 }: SelectFilterProps) {
   const [selectedValues, setSelectedValues] = useState<any[]>(
-    currentValue || []
+    currentValue || [],
   );
 
   const handleToggle = (value: any) => {
     setSelectedValues((prev) =>
-      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
     );
   };
 
   const handleApply = () => {
     if (selectedValues.length > 0) {
       const selectedLabels = selectedValues.map(
-        (val) => options.find((opt) => opt.value === val)?.label || val
+        (val) => options.find((opt) => opt.value === val)?.label || val,
       );
       onApply({
         id: columnId,

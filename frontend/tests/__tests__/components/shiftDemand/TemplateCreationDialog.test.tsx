@@ -75,7 +75,7 @@ describe("TemplateCreationDialog", () => {
     expect(screen.getByLabelText(/Description/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Cancel/ })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Create Template/ })
+      screen.getByRole("button", { name: /Create Template/ }),
     ).toBeInTheDocument();
   });
 
@@ -164,7 +164,7 @@ describe("TemplateCreationDialog", () => {
       <TemplateCreationDialog
         {...mockProps}
         onTemplateCreated={onTemplateCreatedMock}
-      />
+      />,
     );
 
     const nameInput = screen.getByLabelText(/Template Name/);
@@ -187,7 +187,7 @@ describe("TemplateCreationDialog", () => {
     const onCloseMock = jest.fn();
 
     const { rerender } = render(
-      <TemplateCreationDialog {...mockProps} onClose={onCloseMock} />
+      <TemplateCreationDialog {...mockProps} onClose={onCloseMock} />,
     );
 
     const nameInput = screen.getByLabelText(/Template Name/);
@@ -206,14 +206,14 @@ describe("TemplateCreationDialog", () => {
         {...mockProps}
         onClose={onCloseMock}
         open={false}
-      />
+      />,
     );
     rerender(
       <TemplateCreationDialog
         {...mockProps}
         onClose={onCloseMock}
         open={true}
-      />
+      />,
     );
 
     // Form should be reset

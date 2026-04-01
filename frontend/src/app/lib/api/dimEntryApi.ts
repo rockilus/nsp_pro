@@ -13,7 +13,7 @@ export class DimEntryApi extends BaseApi {
   static async addDimEntry(
     apiClient: AuthenticatedApiClient,
     dimEntry: DimEntryT,
-    teamId: string
+    teamId: string,
   ): Promise<DimEntryT> {
     // Security: Input validation
     if (!dimEntry) {
@@ -27,7 +27,7 @@ export class DimEntryApi extends BaseApi {
       apiClient,
       "post",
       `/dim-entries/teams/${teamId}`,
-      dimEntry
+      dimEntry,
     );
     return responseData as DimEntryT;
   }
@@ -38,7 +38,7 @@ export class DimEntryApi extends BaseApi {
   static async updateDimEntry(
     apiClient: AuthenticatedApiClient,
     updatedDimEntry: DimEntryT,
-    teamId: string
+    teamId: string,
   ): Promise<DimEntryT> {
     // Security: Input validation
     if (!updatedDimEntry || !updatedDimEntry.id) {
@@ -52,7 +52,7 @@ export class DimEntryApi extends BaseApi {
       apiClient,
       "put",
       `/dim-entries/${updatedDimEntry.id}/teams/${teamId}`,
-      updatedDimEntry
+      updatedDimEntry,
     );
     return responseData as DimEntryT;
   }
@@ -63,7 +63,7 @@ export class DimEntryApi extends BaseApi {
   static async deleteDimEntry(
     apiClient: AuthenticatedApiClient,
     dimEntryId: string,
-    teamId: string
+    teamId: string,
   ): Promise<AttributeT[]> {
     // Security: Input validation
     if (!dimEntryId) {
@@ -76,7 +76,7 @@ export class DimEntryApi extends BaseApi {
     const responseData = await this.makeRequest<any>(
       apiClient,
       "delete",
-      `/dim-entries/${dimEntryId}/teams/${teamId}`
+      `/dim-entries/${dimEntryId}/teams/${teamId}`,
     );
     return responseData as AttributeT[];
   }

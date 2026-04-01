@@ -63,7 +63,7 @@ export function useStartSolve() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return startSolve;
@@ -106,7 +106,7 @@ export function useGetSolveStatus() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getSolveStatus;
@@ -153,7 +153,7 @@ export function useCancelSolve() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return cancelSolve;
@@ -196,7 +196,7 @@ export function useGetLatestSolveStatus() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getLatestSolveStatus;

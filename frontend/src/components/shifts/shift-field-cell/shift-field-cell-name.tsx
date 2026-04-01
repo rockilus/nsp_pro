@@ -90,8 +90,8 @@ export default function ShiftFieldCellName({
                 shift.restType === ShiftRestType.OFF
                   ? getRestNameDisplayed(shift.restType)
                   : shift.leaveType !== ShiftLeaveType.NONE
-                  ? getLeaveNameDisplayed(shift.leaveType)
-                  : shift.name || "Unnamed Shift"
+                    ? getLeaveNameDisplayed(shift.leaveType)
+                    : shift.name || "Unnamed Shift"
               }
               placement="top"
             >
@@ -99,8 +99,8 @@ export default function ShiftFieldCellName({
                 {shift.restType === ShiftRestType.OFF
                   ? getRestNameDisplayed(shift.restType)
                   : shift.leaveType !== ShiftLeaveType.NONE
-                  ? getLeaveNameDisplayed(shift.leaveType)
-                  : shift.name || "Unnamed Shift"}
+                    ? getLeaveNameDisplayed(shift.leaveType)
+                    : shift.name || "Unnamed Shift"}
               </span>
             </Tooltip>
           </div>

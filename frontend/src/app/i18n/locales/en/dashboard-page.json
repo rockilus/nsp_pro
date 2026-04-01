@@ -1,7 +1,7 @@
 {
-    "actions": "Actions",
-    "email": "Email",
-    "first_name": "First Name",
-    "last_name": "Last Name",
-    "saved": "Saved"
+  "actions": "Actions",
+  "email": "Email",
+  "first_name": "First Name",
+  "last_name": "Last Name",
+  "saved": "Saved"
 }

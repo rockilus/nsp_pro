@@ -46,7 +46,7 @@ test.describe("Template Viewer - Select Feature", () => {
 
     // Wait for template viewer to load
     await expect(
-      page.locator('[data-testid="template-viewer-container"]')
+      page.locator('[data-testid="template-viewer-container"]'),
     ).toBeVisible();
   });
 
@@ -68,7 +68,7 @@ test.describe("Template Viewer - Select Feature", () => {
       await expect(actionToolbar).toBeVisible();
       await expect(selectButton).toHaveCSS(
         "background-color",
-        "rgb(25, 118, 210)"
+        "rgb(25, 118, 210)",
       ); // Active blue color
 
       // Verify bulk selection elements are visible in template context
@@ -101,7 +101,7 @@ test.describe("Template Viewer - Select Feature", () => {
       await expect(actionToolbar).not.toBeVisible();
       await expect(selectButton).not.toHaveCSS(
         "background-color",
-        "rgb(25, 118, 210)"
+        "rgb(25, 118, 210)",
       );
     });
 
@@ -124,7 +124,7 @@ test.describe("Template Viewer - Select Feature", () => {
       await expect(actionToolbar).not.toBeVisible();
       await expect(selectButton).not.toHaveCSS(
         "background-color",
-        "rgb(25, 118, 210)"
+        "rgb(25, 118, 210)",
       );
     });
 
@@ -138,19 +138,19 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Check that cell checkboxes are visible (using a generic selector to verify presence)
       const cellCheckboxes = page.locator(
-        '[data-testid*="template-cell-checkbox"] input'
+        '[data-testid*="template-cell-checkbox"] input',
       );
       await expect(cellCheckboxes.first()).toBeVisible();
 
       // Check that row checkboxes are visible
       const rowCheckboxes = page.locator(
-        '[data-testid*="template-row-checkbox"] input'
+        '[data-testid*="template-row-checkbox"] input',
       );
       await expect(rowCheckboxes.first()).toBeVisible();
 
       // Check that column checkboxes are visible
       const columnCheckboxes = page.locator(
-        '[data-testid*="template-column-checkbox"] input'
+        '[data-testid*="template-column-checkbox"] input',
       );
       await expect(columnCheckboxes.first()).toBeVisible();
     });
@@ -247,7 +247,7 @@ test.describe("Template Viewer - Select Feature", () => {
       // Verify that all cells in the row are now selected
       if (extractedShiftId) {
         const rowCellCheckboxes = page.locator(
-          `[data-testid*="template-cell-checkbox-${extractedShiftId}"] input`
+          `[data-testid*="template-cell-checkbox-${extractedShiftId}"] input`,
         );
         const count = await rowCellCheckboxes.count();
 
@@ -288,7 +288,7 @@ test.describe("Template Viewer - Select Feature", () => {
 
         // Verify that all cells in the column are now selected
         const columnCellCheckboxes = page.locator(
-          `[data-testid*="-${weekNumber}-${dayIndex}"][data-testid*="template-cell-checkbox"] input`
+          `[data-testid*="-${weekNumber}-${dayIndex}"][data-testid*="template-cell-checkbox"] input`,
         );
         const count = await columnCellCheckboxes.count();
 
@@ -318,7 +318,7 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Verify that all cell checkboxes are now selected
       const allCellCheckboxes = page.locator(
-        '[data-testid*="template-cell-checkbox"] input'
+        '[data-testid*="template-cell-checkbox"] input',
       );
       const count = await allCellCheckboxes.count();
 
@@ -413,7 +413,7 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Select a few cells
       const cellCheckboxes = page.locator(
-        '[data-testid*="template-cell-checkbox"] input'
+        '[data-testid*="template-cell-checkbox"] input',
       );
       await cellCheckboxes.first().click();
       await cellCheckboxes.nth(1).click();
@@ -426,13 +426,13 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Wait for operation to complete and select mode to exit
       await expect(
-        templateTestBase.getTemplateActionToolbar(page)
+        templateTestBase.getTemplateActionToolbar(page),
       ).not.toBeVisible();
 
       // Verify select mode is no longer active
       await expect(selectButton).not.toHaveCSS(
         "background-color",
-        "rgb(25, 118, 210)"
+        "rgb(25, 118, 210)",
       );
 
       // Note: In a real test, you might want to verify the actual demand values
@@ -452,7 +452,7 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Select some cells
       const cellCheckboxes = page.locator(
-        '[data-testid*="template-cell-checkbox"] input'
+        '[data-testid*="template-cell-checkbox"] input',
       );
       await cellCheckboxes.first().click();
       await cellCheckboxes.nth(1).click();
@@ -462,7 +462,7 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Confirm deletion in dialog (assuming the BulkSelectionSection handles the confirmation)
       const deleteConfirmButton = page.locator(
-        '[data-testid="bulk-selection-delete-confirm-button"]'
+        '[data-testid="bulk-selection-delete-confirm-button"]',
       );
       if (await deleteConfirmButton.isVisible()) {
         await deleteConfirmButton.click();
@@ -470,13 +470,13 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Wait for operation to complete and select mode to exit
       await expect(
-        templateTestBase.getTemplateActionToolbar(page)
+        templateTestBase.getTemplateActionToolbar(page),
       ).not.toBeVisible();
 
       // Verify select mode is no longer active
       await expect(selectButton).not.toHaveCSS(
         "background-color",
-        "rgb(25, 118, 210)"
+        "rgb(25, 118, 210)",
       );
     });
 
@@ -492,7 +492,7 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Select some cells
       const cellCheckboxes = page.locator(
-        '[data-testid*="template-cell-checkbox"] input'
+        '[data-testid*="template-cell-checkbox"] input',
       );
       await cellCheckboxes.first().click();
 
@@ -507,11 +507,11 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Verify select mode is still active
       await expect(
-        templateTestBase.getTemplateActionToolbar(page)
+        templateTestBase.getTemplateActionToolbar(page),
       ).toBeVisible();
       await expect(selectButton).toHaveCSS(
         "background-color",
-        "rgb(25, 118, 210)"
+        "rgb(25, 118, 210)",
       );
     });
   });
@@ -539,13 +539,13 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Wait for operation to complete and select mode to exit
       await expect(
-        templateTestBase.getTemplateActionToolbar(page)
+        templateTestBase.getTemplateActionToolbar(page),
       ).not.toBeVisible();
 
       // Verify select mode is no longer active
       await expect(selectButton).not.toHaveCSS(
         "background-color",
-        "rgb(25, 118, 210)"
+        "rgb(25, 118, 210)",
       );
     });
 

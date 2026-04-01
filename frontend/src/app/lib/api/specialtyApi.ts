@@ -13,7 +13,7 @@ export class SpecialtyApi extends BaseApi {
   static async addSpecialty(
     apiClient: AuthenticatedApiClient,
     specialty: SpecialtyT,
-    teamId: string
+    teamId: string,
   ): Promise<SpecialtyT> {
     // Security: Input validation
     if (!teamId) {
@@ -27,7 +27,7 @@ export class SpecialtyApi extends BaseApi {
       apiClient,
       "post",
       `/specialties/teams/${teamId}`,
-      specialty
+      specialty,
     );
     return responseData;
   }
@@ -37,7 +37,7 @@ export class SpecialtyApi extends BaseApi {
    */
   static async getSpecialties(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<SpecialtyT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -47,7 +47,7 @@ export class SpecialtyApi extends BaseApi {
     const responseData = await this.makeRequest<SpecialtyT[]>(
       apiClient,
       "get",
-      `/specialties/teams/${teamId}`
+      `/specialties/teams/${teamId}`,
     );
     return responseData;
   }
@@ -58,7 +58,7 @@ export class SpecialtyApi extends BaseApi {
   static async updateSpecialty(
     apiClient: AuthenticatedApiClient,
     updatedSpecialty: SpecialtyT,
-    teamId: string
+    teamId: string,
   ): Promise<SpecialtyT> {
     // Security: Input validation
     if (!teamId) {
@@ -75,7 +75,7 @@ export class SpecialtyApi extends BaseApi {
       apiClient,
       "put",
       `/specialties/${updatedSpecialty.id}/teams/${teamId}`,
-      updatedSpecialty
+      updatedSpecialty,
     );
     return responseData;
   }
@@ -86,7 +86,7 @@ export class SpecialtyApi extends BaseApi {
   static async deleteSpecialty(
     apiClient: AuthenticatedApiClient,
     specialtyId: string,
-    teamId: string
+    teamId: string,
   ): Promise<WorkerT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -99,7 +99,7 @@ export class SpecialtyApi extends BaseApi {
     const responseData = await this.makeRequest<WorkerT[]>(
       apiClient,
       "delete",
-      `/specialties/${specialtyId}/teams/${teamId}`
+      `/specialties/${specialtyId}/teams/${teamId}`,
     );
     return responseData;
   }

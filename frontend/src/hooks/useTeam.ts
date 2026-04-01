@@ -61,7 +61,7 @@ export function useCreateTeam() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createTeam;
@@ -104,7 +104,7 @@ export function useGetTeamById() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTeamById;
@@ -188,7 +188,7 @@ export function useGetTeamUsersWithMemberships() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTeamUsersWithMemberships;
@@ -222,7 +222,7 @@ export function useUpdateTeam() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateTeam;
@@ -256,7 +256,7 @@ export function useLeaveTeam() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return leaveTeam;
@@ -290,7 +290,7 @@ export function useRemoveUserFromTeam() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return removeUserFromTeam;

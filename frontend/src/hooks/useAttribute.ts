@@ -54,7 +54,7 @@ export function useUpdateAttribute() {
         const updatedAttribute = await AttributeApi.updateAttribute(
           apiClient,
           attribute,
-          teamId.trim()
+          teamId.trim(),
         );
 
         if (env.isDevelopment) {
@@ -70,7 +70,7 @@ export function useUpdateAttribute() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateAttribute;
@@ -117,7 +117,7 @@ export function useGetAttributesByOwner() {
         return await AttributeApi.getAttributesByOwner(
           apiClient,
           ownerId.trim(),
-          teamId.trim()
+          teamId.trim(),
         );
       } catch (error) {
         console.error("❌ Failed to get attributes:", {
@@ -127,7 +127,7 @@ export function useGetAttributesByOwner() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getAttributesByOwner;
@@ -143,7 +143,7 @@ export function useCreateAttribute() {
   const createAttribute = useCallback(
     async (
       attribute: Omit<AttributeT, "id">,
-      teamId: string
+      teamId: string,
     ): Promise<AttributeT> => {
       if (env.isDevelopment) {
         console.log("🔍 useCreateAttribute called:", {
@@ -176,7 +176,7 @@ export function useCreateAttribute() {
         const newAttribute = await AttributeApi.createAttribute(
           apiClient,
           attribute,
-          teamId.trim()
+          teamId.trim(),
         );
 
         if (env.isDevelopment) {
@@ -192,7 +192,7 @@ export function useCreateAttribute() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createAttribute;
@@ -239,7 +239,7 @@ export function useDeleteAttribute() {
         await AttributeApi.deleteAttribute(
           apiClient,
           attributeId.trim(),
-          teamId.trim()
+          teamId.trim(),
         );
 
         if (env.isDevelopment) {
@@ -253,7 +253,7 @@ export function useDeleteAttribute() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteAttribute;

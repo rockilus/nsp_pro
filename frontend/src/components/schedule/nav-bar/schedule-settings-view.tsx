@@ -34,7 +34,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
 
   const handleTimeFrameChange = (
     event: React.MouseEvent<HTMLElement>,
-    newTimeFrame: "week" | "month"
+    newTimeFrame: "week" | "month",
   ) => {
     if (newTimeFrame) {
       handleChangeTimeFrame(newTimeFrame);
@@ -43,7 +43,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
 
   const handleGroupByChange = (
     event: React.MouseEvent<HTMLElement>,
-    newGroupBy: "shift" | "worker"
+    newGroupBy: "shift" | "worker",
   ) => {
     if (newGroupBy) {
       updateScheduleViewSettings({
@@ -54,7 +54,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
   };
 
   const handleShowAssignmentsToggle = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     updateScheduleViewSettings({
       ...scheduleViewSettings,
@@ -63,7 +63,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
   };
 
   const handleShowDailyShiftDemandsToggle = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     updateScheduleViewSettings({
       ...scheduleViewSettings,
@@ -72,7 +72,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
   };
 
   const handleShowRequestsToggle = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     updateScheduleViewSettings({
       ...scheduleViewSettings,

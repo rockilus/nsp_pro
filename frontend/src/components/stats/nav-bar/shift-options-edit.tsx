@@ -40,10 +40,10 @@ export default function ShiftOptionsEdit({
     (
       searchQuery: string,
       selectedOptions: ShiftWorkerOptionT[],
-      options: ShiftWorkerOptionT[]
+      options: ShiftWorkerOptionT[],
     ): ShiftWorkerOptionT[] => {
       const selectedArray: string[] = selectedOptions.map((item) =>
-        getShiftWorkerOptionDisplayText(item, workers, shifts, t("not"))
+        getShiftWorkerOptionDisplayText(item, workers, shifts, t("not")),
       );
       return searchQuery === ""
         ? options.filter(
@@ -53,9 +53,9 @@ export default function ShiftOptionsEdit({
                   option,
                   workers,
                   shifts,
-                  t("not")
-                )
-              )
+                  t("not"),
+                ),
+              ),
           )
         : options.filter(
             (option) =>
@@ -64,29 +64,29 @@ export default function ShiftOptionsEdit({
                   option,
                   workers,
                   shifts,
-                  t("not")
-                )
+                  t("not"),
+                ),
               ) &&
               getShiftWorkerOptionDisplayText(option, workers, shifts, t("not"))
                 .toLowerCase()
-                .includes(searchQuery.toLowerCase())
+                .includes(searchQuery.toLowerCase()),
           );
     },
-    [t, workers, shifts]
+    [t, workers, shifts],
   );
 
   const filterOptions = useCallback(
     (
       searchQuery: string,
       selectedOptions: ShiftWorkerOptionT[],
-      options: { [key: string]: ShiftWorkerOptionT[] }
+      options: { [key: string]: ShiftWorkerOptionT[] },
     ): { [key: string]: ShiftWorkerOptionT[] } => {
       let out: { [key: string]: ShiftWorkerOptionT[] } = {};
       for (let key of Object.keys(options)) {
         const filteredKeyOptions = filterOptionsList(
           searchQuery,
           selectedOptions,
-          options[key]
+          options[key],
         );
         if (filteredKeyOptions.length > 0) {
           out[key] = filteredKeyOptions;
@@ -94,7 +94,7 @@ export default function ShiftOptionsEdit({
       }
       return out;
     },
-    [filterOptionsList]
+    [filterOptionsList],
   );
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -112,7 +112,7 @@ export default function ShiftOptionsEdit({
     const newFilteredOptions = filterOptions(
       query,
       selectedShifts,
-      statsShiftOptions
+      statsShiftOptions,
     );
     setFilteredOptions(newFilteredOptions);
     if (Object.keys(newFilteredOptions).length > 0) {
@@ -130,11 +130,11 @@ export default function ShiftOptionsEdit({
   const handleDeleteFromSelected = (optionToDelete: ShiftWorkerOptionT) => {
     if (selectedShifts.includes(optionToDelete)) {
       const newValue = selectedShifts.filter(
-        (option) => option !== optionToDelete
+        (option) => option !== optionToDelete,
       );
       handleEditSelectedShiftsState(newValue);
       setFilteredOptions(
-        filterOptions(searchQuery, newValue, statsShiftOptions)
+        filterOptions(searchQuery, newValue, statsShiftOptions),
       );
     }
     // Update the external state for "selected" here
@@ -151,7 +151,7 @@ export default function ShiftOptionsEdit({
       if (selectedOption) {
         handleAddSelectedOption(
           Object.keys(selectedOption)[0],
-          Object.values(selectedOption)[0]
+          Object.values(selectedOption)[0],
         );
       }
     } else if (event.key === "ArrowDown") {
@@ -217,7 +217,7 @@ export default function ShiftOptionsEdit({
 
   const handleAddSelectedOption = (
     newOptionKey: string,
-    newOption: ShiftWorkerOptionT
+    newOption: ShiftWorkerOptionT,
   ) => {
     if (
       newOptionKey in filteredOptions &&
@@ -275,7 +275,7 @@ export default function ShiftOptionsEdit({
                 option,
                 workers,
                 shifts,
-                t("not")
+                t("not"),
               )}
               onDelete={() => handleDeleteFromSelected(option)}
               deleteIcon={
@@ -362,17 +362,17 @@ export default function ShiftOptionsEdit({
                               option,
                               workers,
                               shifts,
-                              t("not")
+                              t("not"),
                             )}
                             style={{ color: ConstraintDefaultColors.shade3 }}
                           />
                         </ListItem>
                       </ListItemButton>
-                    )
+                    ),
                   )}
                 </ul>
               </li>
-            )
+            ),
           )}
         </List>
       </div>

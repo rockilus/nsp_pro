@@ -20,7 +20,7 @@ export default function WorkerSpecialtyCell({
 }) {
   const [open, setOpen] = useState(false);
   const [valueState, setValueState] = useState<SpecialtyT[]>(
-    specialties.filter((s) => worker.specialtyIds.includes(s.id))
+    specialties.filter((s) => worker.specialtyIds.includes(s.id)),
   );
   const [isUpdating, setIsUpdating] = useState(false);
 

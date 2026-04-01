@@ -25,7 +25,9 @@ export default function DimEntryTypeCellEdit({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<DimEntryT[]>(
-    dimEntries.filter((de) => !selectedDimEntries.some((vs) => vs.id === de.id))
+    dimEntries.filter(
+      (de) => !selectedDimEntries.some((vs) => vs.id === de.id),
+    ),
   );
   const [selectedOption, setSelectedOption] = useState<DimEntryT | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,14 +38,14 @@ export default function DimEntryTypeCellEdit({
     if (query === "") {
       setFilteredOptions(
         dimEntries.filter(
-          (de) => !selectedDimEntries.some((vs) => vs.id === de.id)
-        )
+          (de) => !selectedDimEntries.some((vs) => vs.id === de.id),
+        ),
       );
     } else {
       const newFilteredOptions = dimEntries.filter(
         (de) =>
           !selectedDimEntries.some((vs) => vs.id === de.id) &&
-          de.name.toLowerCase().includes(query.toLowerCase())
+          de.name.toLowerCase().includes(query.toLowerCase()),
       );
       setFilteredOptions(newFilteredOptions);
       if (newFilteredOptions.length > 0) {
@@ -61,8 +63,8 @@ export default function DimEntryTypeCellEdit({
         dimEntries.filter(
           (de) =>
             !selectedDimEntries.some((vs) => vs.id === de.id) ||
-            de.id === deToDelete.id
-        )
+            de.id === deToDelete.id,
+        ),
       );
     }
   };
@@ -84,7 +86,7 @@ export default function DimEntryTypeCellEdit({
           setSelectedOption(filteredOptions[0]);
         } else {
           const index = filteredOptions.findIndex(
-            (option) => option.id === selectedOption.id
+            (option) => option.id === selectedOption.id,
           );
           if (index < filteredOptions.length - 1) {
             setSelectedOption(filteredOptions[index + 1]);
@@ -97,7 +99,7 @@ export default function DimEntryTypeCellEdit({
           setSelectedOption(filteredOptions[filteredOptions.length - 1]);
         } else {
           const index = filteredOptions.findIndex(
-            (option) => option.id === selectedOption.id
+            (option) => option.id === selectedOption.id,
           );
           if (index > 0) {
             setSelectedOption(filteredOptions[index - 1]);
@@ -116,8 +118,8 @@ export default function DimEntryTypeCellEdit({
         dimEntries.filter(
           (de) =>
             !selectedDimEntries.some((vs) => vs.id === de.id) &&
-            de.id !== newDimEntry.id
-        )
+            de.id !== newDimEntry.id,
+        ),
       );
       setSearchQuery("");
     }

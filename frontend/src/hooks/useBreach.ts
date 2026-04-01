@@ -49,7 +49,7 @@ export function useGetBreaches() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getBreaches;

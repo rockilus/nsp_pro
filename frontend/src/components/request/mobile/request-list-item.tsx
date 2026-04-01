@@ -85,7 +85,7 @@ export default function RequestListItem({
   // Get date range text with weekday
   const dateRangeText = isMultiDay
     ? `${request.startDate.format("ddd, MMM D")} - ${request.endDate.format(
-        "ddd, MMM D"
+        "ddd, MMM D",
       )}`
     : null;
 

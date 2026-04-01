@@ -13,7 +13,7 @@ export class StatsApi extends BaseApi {
   static async getStats(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    statsOptions: StatsOptionsT
+    statsOptions: StatsOptionsT,
   ): Promise<StatsT> {
     // Security: Input validation
     if (!teamId) {
@@ -27,7 +27,7 @@ export class StatsApi extends BaseApi {
       apiClient,
       "post",
       `/stats/teams/${teamId}`,
-      statsOptions
+      statsOptions,
     );
     return responseData;
   }
@@ -37,7 +37,7 @@ export class StatsApi extends BaseApi {
    */
   static async addHeader(
     apiClient: AuthenticatedApiClient,
-    header: StatsHeaderT
+    header: StatsHeaderT,
   ): Promise<StatsHeaderT> {
     // Security: Input validation
     if (!header || !header.teamId) {
@@ -48,7 +48,7 @@ export class StatsApi extends BaseApi {
       apiClient,
       "post",
       `/stats/stats-headers/teams/${header.teamId}`,
-      header
+      header,
     );
     return responseData;
   }
@@ -59,7 +59,7 @@ export class StatsApi extends BaseApi {
   static async deleteHeader(
     apiClient: AuthenticatedApiClient,
     headerId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!headerId) {
@@ -72,7 +72,7 @@ export class StatsApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "delete",
-      `/stats/stats-headers/${headerId}/teams/${teamId}`
+      `/stats/stats-headers/${headerId}/teams/${teamId}`,
     );
   }
 
@@ -81,7 +81,7 @@ export class StatsApi extends BaseApi {
    */
   static async getShiftOptions(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftWorkerOptionT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -91,7 +91,7 @@ export class StatsApi extends BaseApi {
     const responseData = await this.makeRequest<ShiftWorkerOptionT[]>(
       apiClient,
       "get",
-      `/stats/shift-options/teams/${teamId}`
+      `/stats/shift-options/teams/${teamId}`,
     );
     return responseData;
   }

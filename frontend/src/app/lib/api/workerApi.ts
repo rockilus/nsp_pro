@@ -12,7 +12,7 @@ export class WorkerApi extends BaseApi {
    */
   static async addWorker(
     apiClient: AuthenticatedApiClient,
-    worker: WorkerT
+    worker: WorkerT,
   ): Promise<WorkerT> {
     // Security: Input validation
     if (!worker || !worker.teamId) {
@@ -23,7 +23,7 @@ export class WorkerApi extends BaseApi {
       apiClient,
       "post",
       `/workers/teams/${worker.teamId}`,
-      fromWorkerT(worker)
+      fromWorkerT(worker),
     );
     return toWorkerT(responseData);
   }
@@ -37,7 +37,7 @@ export class WorkerApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     teamId: string,
     workerId?: string,
-    includeDeleted: boolean = false
+    includeDeleted: boolean = false,
   ): Promise<WorkerT[]> {
     // Security: Input validation
     if (!teamId) {
@@ -57,7 +57,7 @@ export class WorkerApi extends BaseApi {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
       "get",
-      `/workers/teams/${teamId}${queryString ? `?${queryString}` : ""}`
+      `/workers/teams/${teamId}${queryString ? `?${queryString}` : ""}`,
     );
     return responseData.map((worker: any) => toWorkerT(worker));
   }
@@ -68,7 +68,7 @@ export class WorkerApi extends BaseApi {
    */
   static async getAllWorkers(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<WorkerT[]> {
     // Wrapper for backward compatibility - calls getWorkers with include_deleted=true
     return this.getWorkers(apiClient, teamId, undefined, true);
@@ -79,7 +79,7 @@ export class WorkerApi extends BaseApi {
    */
   static async updateWorker(
     apiClient: AuthenticatedApiClient,
-    updatedWorker: WorkerT
+    updatedWorker: WorkerT,
   ): Promise<WorkerT> {
     // Security: Input validation
     if (!updatedWorker || !updatedWorker.id || !updatedWorker.teamId) {
@@ -90,7 +90,7 @@ export class WorkerApi extends BaseApi {
       apiClient,
       "put",
       `/workers/${updatedWorker.id}/teams/${updatedWorker.teamId}`,
-      fromWorkerT(updatedWorker)
+      fromWorkerT(updatedWorker),
     );
     return toWorkerT(responseData);
   }
@@ -102,7 +102,7 @@ export class WorkerApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     workerId: string,
     userId: string,
-    teamId: string
+    teamId: string,
   ): Promise<WorkerT> {
     // Security: Input validation
     if (!workerId) {
@@ -119,7 +119,7 @@ export class WorkerApi extends BaseApi {
       apiClient,
       "post",
       `/workers/${workerId}/attach_user/teams/${teamId}`,
-      { user_id: userId }
+      { user_id: userId },
     );
     return toWorkerT(responseData);
   }
@@ -130,7 +130,7 @@ export class WorkerApi extends BaseApi {
   static async deleteWorker(
     apiClient: AuthenticatedApiClient,
     workerId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!workerId) {
@@ -143,7 +143,7 @@ export class WorkerApi extends BaseApi {
     await this.makeRequest<void>(
       apiClient,
       "delete",
-      `/workers/${workerId}/teams/${teamId}`
+      `/workers/${workerId}/teams/${teamId}`,
     );
   }
 }

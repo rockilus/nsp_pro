@@ -85,7 +85,7 @@ export function getContrastTextColor(backgroundColor: string): string {
  */
 export function getHeatmapColors(
   value: number,
-  scale: ReturnType<typeof createColorScale>
+  scale: ReturnType<typeof createColorScale>,
 ): { backgroundColor: string; color: string } {
   if (!scale) {
     return {

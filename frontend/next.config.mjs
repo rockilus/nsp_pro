@@ -1,10 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'export',
+  output: "export",
   trailingSlash: true,
   images: {
-    unoptimized: true
+    unoptimized: true,
   },
   // Turbopack configuration: explicitly set the workspace root so Next
   // doesn't attempt to infer it (which warns when multiple lockfiles
@@ -13,8 +13,8 @@ const nextConfig = {
   // is defined.
   turbopack: {
     // Use the current package (frontend/) as the workspace root
-    root: '.',
+    root: ".",
   },
-}
+};
 
 export default nextConfig;

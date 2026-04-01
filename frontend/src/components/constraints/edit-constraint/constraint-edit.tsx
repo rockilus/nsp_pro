@@ -80,7 +80,7 @@ function ConstraintEditInner({
   const [errors, setErrors] = useState<number[]>([]);
 
   const initialBlockValue = (
-    templateBlock: TemplateBlockT
+    templateBlock: TemplateBlockT,
   ): string | number | string[] | ShiftWorkerOptionT[] => {
     if (templateBlock.type === BlockTypeOptions.STRING) {
       if (templateBlock.name === BlockNameOptions.TEXT) {
@@ -130,7 +130,7 @@ function ConstraintEditInner({
   // the `key` on the parent), we don't need to call setState inside an
   // effect to sync props -> state.
   const [constraintState, setConstraintState] = useState<ConstraintT>(
-    initialConstraintState
+    initialConstraintState,
   );
 
   const validateConstraint = (): boolean => {
@@ -196,7 +196,7 @@ function ConstraintEditInner({
       setConstraintState({
         ...constraintState,
         blocks: constraintState.blocks.map((b) =>
-          b.name === block.name ? block : b
+          b.name === block.name ? block : b,
         ),
       });
     }

@@ -54,7 +54,7 @@ export function useAddSpecialty() {
         const result = await SpecialtyApi.addSpecialty(
           apiClient,
           specialty,
-          teamId
+          teamId,
         );
 
         if (env.isDevelopment) {
@@ -70,7 +70,7 @@ export function useAddSpecialty() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addSpecialty;
@@ -118,7 +118,7 @@ export function useGetSpecialties() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getSpecialties;
@@ -134,7 +134,7 @@ export function useUpdateSpecialty() {
   const updateSpecialty = useCallback(
     async (
       updatedSpecialty: SpecialtyT,
-      teamId: string
+      teamId: string,
     ): Promise<SpecialtyT> => {
       if (env.isDevelopment) {
         console.log("🔍 useUpdateSpecialty called:", {
@@ -173,7 +173,7 @@ export function useUpdateSpecialty() {
         const result = await SpecialtyApi.updateSpecialty(
           apiClient,
           updatedSpecialty,
-          teamId
+          teamId,
         );
 
         if (env.isDevelopment) {
@@ -189,7 +189,7 @@ export function useUpdateSpecialty() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateSpecialty;
@@ -236,7 +236,7 @@ export function useDeleteSpecialty() {
         const result = await SpecialtyApi.deleteSpecialty(
           apiClient,
           specialtyId,
-          teamId
+          teamId,
         );
 
         if (env.isDevelopment) {
@@ -252,7 +252,7 @@ export function useDeleteSpecialty() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteSpecialty;

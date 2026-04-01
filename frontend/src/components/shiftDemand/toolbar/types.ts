@@ -33,8 +33,7 @@ export interface MultitaskingSelectionProps {
 }
 
 export interface ShiftDemandActionToolbarProps
-  extends FilterSortProps,
-    BulkSelectionProps {
+  extends FilterSortProps, BulkSelectionProps {
   showBulkMode: boolean;
   showFilters: boolean;
   // Multitasking props

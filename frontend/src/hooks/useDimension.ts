@@ -27,7 +27,7 @@ export function useAddDimension() {
   const addDimension = useCallback(
     async (
       dimension: DimensionT,
-      dimEntries: DimEntryT[]
+      dimEntries: DimEntryT[],
     ): Promise<AddDimensionResponse> => {
       if (env.isDevelopment) {
         console.log("🔍 useAddDimension called:", {
@@ -59,7 +59,7 @@ export function useAddDimension() {
         const result = await DimensionApi.addDimension(
           apiClient,
           dimension,
-          dimEntries
+          dimEntries,
         );
 
         if (env.isDevelopment) {
@@ -75,7 +75,7 @@ export function useAddDimension() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addDimension;
@@ -91,7 +91,7 @@ export function useGetDimensions() {
   const getDimensions = useCallback(
     async (
       teamId: string,
-      dimTypes?: DimensionType[]
+      dimTypes?: DimensionType[],
     ): Promise<GetDimensionsResponse> => {
       if (env.isDevelopment) {
         console.log("🔍 useGetDimensions called:", {
@@ -122,7 +122,7 @@ export function useGetDimensions() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getDimensions;
@@ -156,7 +156,7 @@ export function useUpdateDimension() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateDimension;
@@ -190,7 +190,7 @@ export function useDeleteDimension() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteDimension;

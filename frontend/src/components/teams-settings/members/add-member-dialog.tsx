@@ -83,7 +83,7 @@ export default function AddMemberDialog({
   teamId: string;
   workers: WorkerT[];
   handleCreateTeamInvitation: (
-    teamInvitation: TeamInvitationT
+    teamInvitation: TeamInvitationT,
   ) => Promise<void>;
 }) {
   const { t } = useTranslation(lng, "teams-page");
@@ -93,7 +93,7 @@ export default function AddMemberDialog({
   const [helperText, setHelperText] = React.useState("");
   const [showAttachWorker, setShowAttachWorker] = React.useState(false);
   const [selectedWorkerId, setSelectedWorkerId] = React.useState<string | null>(
-    null
+    null,
   );
   const [firstName, setFirstName] = React.useState("");
   const [lastName, setLastName] = React.useState("");
@@ -120,7 +120,7 @@ export default function AddMemberDialog({
   };
 
   const handleFirstNameChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setFirstName(event.target.value);
   };

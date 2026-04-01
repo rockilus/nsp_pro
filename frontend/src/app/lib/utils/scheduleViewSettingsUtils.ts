@@ -20,14 +20,14 @@ export interface SerializedScheduleViewSettings {
  */
 export function computePeriodEndDate(
   periodStartDate: dayjs.Dayjs,
-  timeFrame: "week" | "month"
+  timeFrame: "week" | "month",
 ): dayjs.Dayjs {
   return periodStartDate.endOf(timeFrame === "month" ? "month" : "isoWeek");
 }
 
 export function validateScheduleViewSettings(
   settings: Partial<ScheduleViewSettingsT>,
-  teamUseSolver: boolean
+  teamUseSolver: boolean,
 ): ScheduleViewSettingsT {
   const now = dayjs.utc();
 
@@ -81,7 +81,7 @@ export function validateScheduleViewSettings(
     console.warn(
       `Period start date ${periodStartDate.format("YYYY-MM-DD")} ` +
         `is not aligned with ${timeFrame} boundary. ` +
-        `Adjusting to ${alignedStartDate.format("YYYY-MM-DD")}.`
+        `Adjusting to ${alignedStartDate.format("YYYY-MM-DD")}.`,
     );
     periodStartDate = alignedStartDate;
   }
@@ -91,7 +91,7 @@ export function validateScheduleViewSettings(
 
   // Validate mobile-specific settings
   const mobileSelectedView = ["worker", "team"].includes(
-    settings.mobileSelectedView as string
+    settings.mobileSelectedView as string,
   )
     ? (settings.mobileSelectedView as "worker" | "team")
     : "worker";
@@ -138,7 +138,7 @@ export function validateScheduleViewSettings(
 }
 
 export function getDefaultScheduleViewSettings(
-  teamUseSolver: boolean
+  teamUseSolver: boolean,
 ): ScheduleViewSettingsT {
   const now = dayjs.utc();
 

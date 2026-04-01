@@ -48,7 +48,7 @@ interface ShiftDemandTableProps {
   handleCellChange: (
     shiftId: string,
     date: Dayjs,
-    value: string
+    value: string,
   ) => Promise<void>;
   isCellSelected: (shiftId: string, date: Dayjs) => boolean;
   toggleCellSelection: (shiftId: string, date: Dayjs) => void;
@@ -179,7 +179,7 @@ function ShiftDemandCell({
         <div className={`shift-demand-bulk ${isSelected ? "selected" : ""}`}>
           <Checkbox
             data-testid={`cell-select-checkbox-${shiftId}-${date.format(
-              "YYYY-MM-DD"
+              "YYYY-MM-DD",
             )}`}
             checked={isSelected}
             onChange={() => onToggleSelection(shiftId, date)}
@@ -202,7 +202,7 @@ function ShiftDemandCell({
             <div
               className={`shift-demand-empty ${isHovered ? "hovered" : ""}`}
               data-testid={`shift-demand-empty-${shiftId}-${date.format(
-                "YYYY-MM-DD"
+                "YYYY-MM-DD",
               )}`}
               onClick={!isMultitaskingMode ? handleAddDemand : undefined}
             >
@@ -229,7 +229,7 @@ function ShiftDemandCell({
                   onClick={handleDecrement}
                   className="shift-demand-button decrement"
                   data-testid={`shift-demand-decrement-${shiftId}-${date.format(
-                    "YYYY-MM-DD"
+                    "YYYY-MM-DD",
                   )}`}
                 >
                   <Remove
@@ -243,7 +243,7 @@ function ShiftDemandCell({
               <span
                 className={`shift-demand-value ${isSaving ? "saving" : ""}`}
                 data-testid={`shift-demand-value-${shiftId}-${date.format(
-                  "YYYY-MM-DD"
+                  "YYYY-MM-DD",
                 )}`}
               >
                 {value}
@@ -255,7 +255,7 @@ function ShiftDemandCell({
                   onClick={handleIncrement}
                   className="shift-demand-button increment"
                   data-testid={`shift-demand-increment-${shiftId}-${date.format(
-                    "YYYY-MM-DD"
+                    "YYYY-MM-DD",
                   )}`}
                 >
                   <Add
@@ -378,7 +378,7 @@ interface ShiftDemandRowProps {
   handleCellChange: (
     shiftId: string,
     date: Dayjs,
-    value: string
+    value: string,
   ) => Promise<void>;
   isCellSelected: (shiftId: string, date: Dayjs) => boolean;
   toggleCellSelection: (shiftId: string, date: Dayjs) => void;
@@ -407,7 +407,7 @@ function ShiftDemandRow({
 }: ShiftDemandRowProps) {
   const shiftTotal = dates.reduce(
     (sum, date) => sum + getDemandValue(shift.id, date),
-    0
+    0,
   );
 
   return (
@@ -544,7 +544,7 @@ function ShiftDemandTableHeader({
               {bulkChangeState.isActive && (
                 <Checkbox
                   data-testid={`column-select-checkbox-${date.format(
-                    "YYYY-MM-DD"
+                    "YYYY-MM-DD",
                   )}`}
                   checked={isColumnSelected(date)}
                   onChange={() => selectAllColumnCells(date)}
@@ -587,7 +587,7 @@ interface ShiftDemandTableBodyProps {
   handleCellChange: (
     shiftId: string,
     date: Dayjs,
-    value: string
+    value: string,
   ) => Promise<void>;
   isCellSelected: (shiftId: string, date: Dayjs) => boolean;
   toggleCellSelection: (shiftId: string, date: Dayjs) => void;

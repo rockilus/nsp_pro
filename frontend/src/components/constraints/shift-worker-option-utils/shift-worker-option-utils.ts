@@ -2,7 +2,7 @@ import { ShiftWorkerOptionT } from "../../../types/constraint";
 
 export const getShiftWorkerOptionDisplayName = (
   option: ShiftWorkerOptionT,
-  negString: string
+  negString: string,
 ): string => {
   if (option.isBoolDim && option.name === true) {
     return option.categoryName;
@@ -13,7 +13,7 @@ export const getShiftWorkerOptionDisplayName = (
 };
 
 export const expandBoolDimOptions = (
-  options: ShiftWorkerOptionT[]
+  options: ShiftWorkerOptionT[],
 ): ShiftWorkerOptionT[] => {
   return options.flatMap((option) => {
     if (option.isBoolDim) {
@@ -28,13 +28,16 @@ export const expandBoolDimOptions = (
 };
 
 export const groupByCategoryName = (
-  options: ShiftWorkerOptionT[]
+  options: ShiftWorkerOptionT[],
 ): { [key: string]: ShiftWorkerOptionT[] } => {
-  return options.reduce((acc, option) => {
-    if (!acc[option.categoryName]) {
-      acc[option.categoryName] = [];
-    }
-    acc[option.categoryName].push(option);
-    return acc;
-  }, {} as { [key: string]: ShiftWorkerOptionT[] });
+  return options.reduce(
+    (acc, option) => {
+      if (!acc[option.categoryName]) {
+        acc[option.categoryName] = [];
+      }
+      acc[option.categoryName].push(option);
+      return acc;
+    },
+    {} as { [key: string]: ShiftWorkerOptionT[] },
+  );
 };

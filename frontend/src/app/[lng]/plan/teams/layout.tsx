@@ -45,7 +45,7 @@ export default function Layout({
       } else {
         // Security: Invalid team ID, redirect to team selection
         console.warn(
-          `❌ Invalid team ID: ${teamId}, redirecting to team selection`
+          `❌ Invalid team ID: ${teamId}, redirecting to team selection`,
         );
         router.replace(`/${lng}/plan/settings/teams`);
         return;

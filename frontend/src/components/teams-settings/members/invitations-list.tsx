@@ -67,7 +67,7 @@ export default function InvitationsList({
             setCountdown(
               `${Math.floor(secondsLeft / 60)}:${(secondsLeft % 60)
                 .toString()
-                .padStart(2, "0")}`
+                .padStart(2, "0")}`,
             );
           }
         }, 1000);

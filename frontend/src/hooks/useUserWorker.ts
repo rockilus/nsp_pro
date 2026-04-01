@@ -18,7 +18,7 @@ import { useAuth } from "../contexts/auth-context";
  */
 export function useUserWorker(
   teamId: string | null | undefined,
-  enabled = true
+  enabled = true,
 ) {
   const apiClient = useApiClient();
   const { user, isAuthenticated } = useAuth();

@@ -61,7 +61,7 @@ export function useAddRequest() {
         const newRequest = await RequestApi.addRequest(
           apiClient,
           request,
-          teamId.trim()
+          teamId.trim(),
         );
 
         if (env.isDevelopment) {
@@ -77,7 +77,7 @@ export function useAddRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addRequest;
@@ -120,7 +120,7 @@ export function useGetRequests() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getRequests;
@@ -148,7 +148,7 @@ export function useUpdateRequest() {
         return await RequestApi.updateRequest(
           apiClient,
           updatedRequest,
-          teamId
+          teamId,
         );
       } catch (error) {
         console.error("❌ Failed to update request:", {
@@ -158,7 +158,7 @@ export function useUpdateRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateRequest;
@@ -174,7 +174,7 @@ export function useAcceptRequest() {
   const acceptRequest = useCallback(
     async (
       requestId: string,
-      teamId: string
+      teamId: string,
     ): Promise<{ request: RequestT; assignments: AssignmentT[] }> => {
       // Security: Validate authentication state
       if (loading) {
@@ -195,7 +195,7 @@ export function useAcceptRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return acceptRequest;
@@ -229,7 +229,7 @@ export function useDenyRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return denyRequest;
@@ -245,7 +245,7 @@ export function useRescindRequest() {
   const rescindRequest = useCallback(
     async (
       requestId: string,
-      teamId: string
+      teamId: string,
     ): Promise<{ request: RequestT; assignmentsDeletedIds: string[] }> => {
       // Security: Validate authentication state
       if (loading) {
@@ -266,7 +266,7 @@ export function useRescindRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return rescindRequest;
@@ -300,7 +300,7 @@ export function useDeleteRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteRequest;
@@ -374,7 +374,7 @@ export function useGetRequestsTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, getShiftOptions]
+    [apiClient, isAuthenticated, loading, user, getShiftOptions],
   );
 
   return getRequestsTabData;

@@ -44,7 +44,7 @@ export default function BlockEditList({
     if (
       Array.isArray(templateBlock.options) &&
       (templateBlock.options as any[]).every(
-        (option: unknown) => typeof option === "string"
+        (option: unknown) => typeof option === "string",
       )
     ) {
       return templateBlock.options as string[];
@@ -58,11 +58,11 @@ export default function BlockEditList({
 
   const filteredOptions = useMemo(() => {
     const base = templateOptions.filter(
-      (option) => !valueState.includes(option)
+      (option) => !valueState.includes(option),
     );
     if (searchQuery === "") return base;
     return base.filter((option) =>
-      option.toLowerCase().includes(searchQuery.toLowerCase())
+      option.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [templateOptions, valueState, searchQuery]);
 
@@ -71,7 +71,7 @@ export default function BlockEditList({
     setSearchQuery(query);
     if (query === "") {
       const newFilteredOptions = templateOptions.filter(
-        (option) => !valueState.includes(option)
+        (option) => !valueState.includes(option),
       );
       if (newFilteredOptions.length > 0) {
         setSelectedOption(newFilteredOptions[0]);
@@ -82,7 +82,7 @@ export default function BlockEditList({
       const newFilteredOptions = templateOptions.filter(
         (option) =>
           !valueState.includes(option) &&
-          option.toLowerCase().includes(query.toLowerCase())
+          option.toLowerCase().includes(query.toLowerCase()),
       );
       if (newFilteredOptions.length > 0) {
         setSelectedOption(newFilteredOptions[0]);
@@ -105,7 +105,7 @@ export default function BlockEditList({
         value: valueState.filter((option) => option !== optionToDelete),
       });
       const newFilteredOptions = templateOptions.filter(
-        (option) => !valueState.includes(option) || option === optionToDelete
+        (option) => !valueState.includes(option) || option === optionToDelete,
       );
       if (newFilteredOptions.length > 0) {
         setSelectedOption(newFilteredOptions[0]);
@@ -154,7 +154,7 @@ export default function BlockEditList({
         value: [...valueState, newOption],
       });
       const newFilteredOptions = templateOptions.filter(
-        (option) => !valueState.includes(option) && option !== newOption
+        (option) => !valueState.includes(option) && option !== newOption,
       );
       if (newFilteredOptions.length > 0) {
         setSelectedOption(newFilteredOptions[0]);

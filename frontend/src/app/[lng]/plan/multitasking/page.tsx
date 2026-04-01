@@ -48,10 +48,10 @@ export default function MultitaskingPage() {
   // Form state
   const [teamId, setTeamId] = useState("demo-team-001");
   const [startDate, setStartDate] = useState<Dayjs | null>(
-    dayjs().subtract(7, "day") // 7 days ago
+    dayjs().subtract(7, "day"), // 7 days ago
   );
   const [endDate, setEndDate] = useState<Dayjs | null>(
-    dayjs().add(7, "day") // 7 days from now
+    dayjs().add(7, "day"), // 7 days from now
   );
   const [enableQuery, setEnableQuery] = useState(false);
   const [tabValue, setTabValue] = useState(0);
@@ -92,7 +92,7 @@ export default function MultitaskingPage() {
   };
 
   const isFormValid = Boolean(
-    teamId && startDate && endDate && startDate.isBefore(endDate)
+    teamId && startDate && endDate && startDate.isBefore(endDate),
   );
 
   return (
@@ -239,7 +239,7 @@ export default function MultitaskingPage() {
                           end_date: endDate ? endDate.unix() : null,
                         },
                         null,
-                        2
+                        2,
                       )}
                     </pre>
                   </Paper>

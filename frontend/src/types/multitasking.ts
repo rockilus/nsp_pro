@@ -116,7 +116,7 @@ export interface ShiftDemandConcurrencyResponse {
  * Converts a MultitaskingGroupDTO to a MultitaskingGroup (with dayjs dates and correct field mapping)
  */
 export function toMultitaskingGroup(
-  dto: MultitaskingGroupDTO
+  dto: MultitaskingGroupDTO,
 ): MultitaskingGroup {
   return {
     id: dto.id || "",

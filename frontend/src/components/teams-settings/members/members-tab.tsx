@@ -86,7 +86,7 @@ export default function MembersTab({
       await removeUserFromTeamFn(teamId, userId);
       // If we get here, the removal was successful
       setUsers((prevUsers) =>
-        prevUsers.filter((user) => user.user.id !== userId)
+        prevUsers.filter((user) => user.user.id !== userId),
       );
     } catch (error) {
       console.error("Failed to remove user from team:", error);
@@ -101,13 +101,13 @@ export default function MembersTab({
   const handleAttachUserToWorker = async (
     workerId: string,
     userId: string,
-    teamId: string
+    teamId: string,
   ) => {
     const updatedWorkers = await attachUserToWorkerFn(workerId, userId, teamId);
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) =>
-        worker.id === updatedWorkers.id ? updatedWorkers : worker
-      )
+        worker.id === updatedWorkers.id ? updatedWorkers : worker,
+      ),
     );
   };
 
@@ -129,12 +129,12 @@ export default function MembersTab({
     try {
       const newInvitation = await resendTeamInvitationEmailFn(
         invitationId,
-        teamId
+        teamId,
       );
       setInvitations((prevInvitations) =>
         prevInvitations.map((invitation) =>
-          invitation.id === newInvitation.id ? newInvitation : invitation
-        )
+          invitation.id === newInvitation.id ? newInvitation : invitation,
+        ),
       );
     } catch (error) {
       console.error("Failed to resend team invitation email:", error);
@@ -146,7 +146,7 @@ export default function MembersTab({
     try {
       await deleteTeamInvitationFn(invitationId, teamId);
       setInvitations((prevInvitations) =>
-        prevInvitations.filter((invitation) => invitation.id !== invitationId)
+        prevInvitations.filter((invitation) => invitation.id !== invitationId),
       );
     } catch (error) {
       console.error("Failed to delete team invitation:", error);

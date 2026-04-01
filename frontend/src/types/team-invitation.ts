@@ -62,7 +62,7 @@ export const fromTeamInvitationT = (data: TeamInvitationT): any => {
 };
 
 export const toEnrichedTeamInvitationT = (
-  data: any
+  data: any,
 ): EnrichedTeamInvitationT => {
   return {
     ...data,
@@ -73,7 +73,7 @@ export const toEnrichedTeamInvitationT = (
 };
 
 export const fromEnrichedTeamInvitationT = (
-  data: EnrichedTeamInvitationT
+  data: EnrichedTeamInvitationT,
 ): any => {
   return {
     ...data,

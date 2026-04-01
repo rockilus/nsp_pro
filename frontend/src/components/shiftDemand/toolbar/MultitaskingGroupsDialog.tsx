@@ -57,7 +57,7 @@ function isNextDay(startTime: dayjs.Dayjs, endTime: dayjs.Dayjs): boolean {
 // Utility function to parse related IDs with shift data
 function parseRelatedIdWithShiftData(
   relatedId: string,
-  shifts: ShiftT[]
+  shifts: ShiftT[],
 ): ParsedRelatedId | null {
   const parts = relatedId.split("-");
   if (parts.length < 4) return null; // shiftId-YYYY-MM-DD minimum

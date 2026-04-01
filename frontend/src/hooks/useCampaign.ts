@@ -60,7 +60,7 @@ export function useGetCampaignTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getCampaignTabData;
@@ -96,7 +96,7 @@ export function useGetCampaignTabDataNoSolver() {
       try {
         const result = await CampaignApi.getCampaignTabDataNoSolver(
           apiClient,
-          teamId
+          teamId,
         );
 
         if (env.isDevelopment) {
@@ -112,7 +112,7 @@ export function useGetCampaignTabDataNoSolver() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getCampaignTabDataNoSolver;

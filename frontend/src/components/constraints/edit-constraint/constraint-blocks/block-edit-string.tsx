@@ -57,7 +57,7 @@ export default function BlockEditString({
     if (
       Array.isArray(templateBlock.options) &&
       (templateBlock.options as any[]).every(
-        (option: unknown) => typeof option === "string"
+        (option: unknown) => typeof option === "string",
       )
     ) {
       return templateBlock.options as string[];
@@ -70,7 +70,7 @@ export default function BlockEditString({
     useState<string[]>(templateOptionsCast);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<string[]>(
-    templateOptions.filter((option) => !valueState.includes(option))
+    templateOptions.filter((option) => !valueState.includes(option)),
   );
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -97,13 +97,13 @@ export default function BlockEditString({
     setSearchQuery(query);
     if (query === "") {
       setFilteredOptions(
-        templateOptions.filter((option) => !valueState.includes(option))
+        templateOptions.filter((option) => !valueState.includes(option)),
       );
     } else {
       const newFilteredOptions = templateOptions.filter(
         (option) =>
           !valueState.includes(option) &&
-          option.toLowerCase().includes(query.toLowerCase())
+          option.toLowerCase().includes(query.toLowerCase()),
       );
       setFilteredOptions(newFilteredOptions);
       if (newFilteredOptions.length > 0) {
@@ -146,7 +146,7 @@ export default function BlockEditString({
         value: newOption,
       });
       setFilteredOptions(
-        templateOptions.filter((option) => option !== newOption)
+        templateOptions.filter((option) => option !== newOption),
       );
       setSearchQuery("");
       if (error) {

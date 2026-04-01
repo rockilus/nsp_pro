@@ -24,12 +24,12 @@ if (!isCI) {
     console.warn("Falling back to system environment variables");
   } else {
     console.log(
-      "Test environment configuration loaded successfully from .env.test.local"
+      "Test environment configuration loaded successfully from .env.test.local",
     );
   }
 } else {
   console.log(
-    "Running in CI environment - using environment variables directly"
+    "Running in CI environment - using environment variables directly",
   );
 }
 
@@ -95,11 +95,11 @@ function validateRequiredEnvVars(): void {
   if (missing.length > 0) {
     throw new Error(
       `Missing required test environment variables for ${environment}: ${missing.join(
-        ", "
+        ", ",
       )}\n` +
         `Environment: ${environment}\n` +
         "Please ensure these are set in your .env.test.local file or environment.\n" +
-        "See TEST_AUTH_SETUP.md for configuration instructions."
+        "See TEST_AUTH_SETUP.md for configuration instructions.",
     );
   }
 }
@@ -125,11 +125,11 @@ export function loadTestConfig(): TestConfig {
       process.env.TEST_CONFIRMATION_TOKEN || "test-reset-confirm",
     dbResetTimeoutMs: parseInt(
       process.env.TEST_DB_RESET_TIMEOUT_MS || "30000",
-      10
+      10,
     ),
     apiReadyTimeoutMs: parseInt(
       process.env.TEST_API_READY_TIMEOUT_MS || "10000",
-      10
+      10,
     ),
   };
 

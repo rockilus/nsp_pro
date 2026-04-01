@@ -13,7 +13,7 @@ export const createWorkerColumns = (
   specialties: SpecialtyT[],
   dimensions: DimensionT[],
   dimEntries: DimEntryT[],
-  workers?: WorkerT[] // Optional workers data for dynamic options
+  workers?: WorkerT[], // Optional workers data for dynamic options
 ): ColumnDefinition[] => {
   const baseColumns: ColumnDefinition[] = [
     {
@@ -72,7 +72,7 @@ export const createWorkerColumns = (
       getValue: (worker: WorkerT) => worker.specialtyIds, // Return array instead of string
       getDisplayValue: (worker: WorkerT) => {
         const workerSpecialties = specialties.filter((s) =>
-          worker.specialtyIds.includes(s.id)
+          worker.specialtyIds.includes(s.id),
         );
         return workerSpecialties.map((s) => s.name).join(", ") || "None";
       },
@@ -154,7 +154,7 @@ export const createWorkerColumns = (
             : "select",
         getValue: (worker: WorkerT) => {
           const attribute = worker.attributes.find(
-            (a) => a.dimensionId === dimension.id
+            (a) => a.dimensionId === dimension.id,
           );
           if (dimension.entryType === DimensionEntryType.BOOL) {
             return attribute?.value ? "true" : "false";
@@ -169,7 +169,7 @@ export const createWorkerColumns = (
         },
         getDisplayValue: (worker: WorkerT) => {
           const attribute = worker.attributes.find(
-            (a) => a.dimensionId === dimension.id
+            (a) => a.dimensionId === dimension.id,
           );
           if (!attribute) return "N/A";
           if (dimension.entryType === DimensionEntryType.BOOL) {
@@ -180,7 +180,7 @@ export const createWorkerColumns = (
             attribute.dimEntryIds
           ) {
             const entries = dimEntries.filter((entry) =>
-              attribute.dimEntryIds?.includes(entry.id)
+              attribute.dimEntryIds?.includes(entry.id),
             );
             return entries.map((e) => e.name).join(", ") || "N/A";
           }
@@ -193,31 +193,31 @@ export const createWorkerColumns = (
                 { value: "false", label: "No" },
               ]
             : dimension.entryType === DimensionEntryType.DIM_ENTRIES
-            ? () =>
-                dimEntries
-                  .filter((entry) => entry.dimensionId === dimension.id)
-                  .map((entry) => ({
-                    value: entry.id,
-                    label: entry.name,
-                  }))
-            : () => {
-                // For STR and INT types, generate options from actual worker data
-                if (!workers) return [];
-                const uniqueValues = [
-                  ...new Set(
-                    workers
-                      .map((worker) => {
-                        const attribute = worker.attributes.find(
-                          (a) => a.dimensionId === dimension.id
-                        );
-                        return attribute?.value?.toString() || "";
-                      })
-                      .filter((value) => value !== "")
-                  ),
-                ];
-                return uniqueValues.map((value) => ({ value, label: value }));
-              },
-      })
+              ? () =>
+                  dimEntries
+                    .filter((entry) => entry.dimensionId === dimension.id)
+                    .map((entry) => ({
+                      value: entry.id,
+                      label: entry.name,
+                    }))
+              : () => {
+                  // For STR and INT types, generate options from actual worker data
+                  if (!workers) return [];
+                  const uniqueValues = [
+                    ...new Set(
+                      workers
+                        .map((worker) => {
+                          const attribute = worker.attributes.find(
+                            (a) => a.dimensionId === dimension.id,
+                          );
+                          return attribute?.value?.toString() || "";
+                        })
+                        .filter((value) => value !== ""),
+                    ),
+                  ];
+                  return uniqueValues.map((value) => ({ value, label: value }));
+                },
+      }),
     );
 
   return [...baseColumns, ...dimensionColumns];

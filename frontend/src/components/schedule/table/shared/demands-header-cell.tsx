@@ -111,7 +111,7 @@ export default function DemandsHeaderCell({
   const { t } = useTranslation(lng, "schedule-page");
 
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
-    null
+    null,
   );
 
   const open = Boolean(anchorEl);
@@ -128,7 +128,7 @@ export default function DemandsHeaderCell({
   const shiftsWorkNotDeleted = useMemo(() => {
     return shifts.filter(
       (s) =>
-        [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
+        [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted,
     );
   }, [shifts]);
 

@@ -16,14 +16,14 @@ export default function MissingProperties({
   const { t } = useTranslation(lng, "constraint-page");
 
   const buildString = (
-    missingProperties: MissingAttribute[]
+    missingProperties: MissingAttribute[],
   ): ReactElement<any, any> => {
     const mpValuesStringWorkers: string[] = [];
     const mpValuesStringShifts: string[] = [];
     for (const mp of missingProperties) {
       if (mp.isBool) {
         const newString = mp.attributeValues.map((pv) =>
-          pv ? mp.dimName.toLowerCase() : "no " + mp.dimName.toLowerCase()
+          pv ? mp.dimName.toLowerCase() : "no " + mp.dimName.toLowerCase(),
         );
         if (mp.category === AttributeOwnerType.WORKER) {
           mpValuesStringWorkers.push(...newString);
@@ -32,7 +32,7 @@ export default function MissingProperties({
         }
       } else {
         const newString = mp.attributeValues.map((pv) =>
-          String(pv).toLowerCase()
+          String(pv).toLowerCase(),
         );
         if (mp.category === AttributeOwnerType.WORKER) {
           mpValuesStringWorkers.push(...newString);

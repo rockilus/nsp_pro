@@ -6,7 +6,7 @@ import { UseTranslationOptions, FallbackNs } from "react-i18next";
 
 export function useTranslation<
   Ns extends FlatNamespace,
-  KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined
+  KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined,
 >(ns?: Ns, options?: UseTranslationOptions<KPrefix>) {
   const params = useParams();
   const lng = params.lng as string;
@@ -25,7 +25,7 @@ export function useTranslation<
 // Backward compatibility version that accepts lng parameter
 export function useTranslationCompat<
   Ns extends FlatNamespace,
-  KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined
+  KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined,
 >(lng: string, ns?: Ns, options?: UseTranslationOptions<KPrefix>) {
   const translationResult = useI18nTranslation(ns, options);
 

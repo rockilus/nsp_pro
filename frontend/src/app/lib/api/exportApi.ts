@@ -12,7 +12,7 @@ export class ExportApi extends BaseApi {
   static async exportSchedule(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    exportOptions: ExportOptionsT
+    exportOptions: ExportOptionsT,
   ): Promise<Blob> {
     // Security: Input validation
     if (!apiClient) {
@@ -29,7 +29,7 @@ export class ExportApi extends BaseApi {
       apiClient,
       "post",
       `/export/teams/${teamId}`,
-      fromExportOptionsT(exportOptions)
+      fromExportOptionsT(exportOptions),
     );
   }
 

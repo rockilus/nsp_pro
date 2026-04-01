@@ -26,8 +26,8 @@ export default function ShiftStaffingCellEdit({
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<SpecialtyT[]>(
     specialties.filter(
-      (de) => !selectedSpecialties.some((vs) => vs.id === de.id)
-    )
+      (de) => !selectedSpecialties.some((vs) => vs.id === de.id),
+    ),
   );
   const [selectedOption, setSelectedOption] = useState<SpecialtyT | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,14 +38,14 @@ export default function ShiftStaffingCellEdit({
     if (query === "") {
       setFilteredOptions(
         specialties.filter(
-          (de) => !selectedSpecialties.some((vs) => vs.id === de.id)
-        )
+          (de) => !selectedSpecialties.some((vs) => vs.id === de.id),
+        ),
       );
     } else {
       const newFilteredOptions = specialties.filter(
         (de) =>
           !selectedSpecialties.some((vs) => vs.id === de.id) &&
-          de.name.toLowerCase().includes(query.toLowerCase())
+          de.name.toLowerCase().includes(query.toLowerCase()),
       );
       setFilteredOptions(newFilteredOptions);
       if (newFilteredOptions.length > 0) {
@@ -63,8 +63,8 @@ export default function ShiftStaffingCellEdit({
         specialties.filter(
           (de) =>
             !selectedSpecialties.some((vs) => vs.id === de.id) ||
-            de.id === deToDelete.id
-        )
+            de.id === deToDelete.id,
+        ),
       );
     }
   };
@@ -86,7 +86,7 @@ export default function ShiftStaffingCellEdit({
           setSelectedOption(filteredOptions[0]);
         } else {
           const index = filteredOptions.findIndex(
-            (option) => option.id === selectedOption.id
+            (option) => option.id === selectedOption.id,
           );
           if (index < filteredOptions.length - 1) {
             setSelectedOption(filteredOptions[index + 1]);
@@ -99,7 +99,7 @@ export default function ShiftStaffingCellEdit({
           setSelectedOption(filteredOptions[filteredOptions.length - 1]);
         } else {
           const index = filteredOptions.findIndex(
-            (option) => option.id === selectedOption.id
+            (option) => option.id === selectedOption.id,
           );
           if (index > 0) {
             setSelectedOption(filteredOptions[index - 1]);
@@ -118,8 +118,8 @@ export default function ShiftStaffingCellEdit({
         specialties.filter(
           (de) =>
             !selectedSpecialties.some((vs) => vs.id === de.id) &&
-            de.id !== newSpecialty.id
-        )
+            de.id !== newSpecialty.id,
+        ),
       );
       setSearchQuery("");
     }

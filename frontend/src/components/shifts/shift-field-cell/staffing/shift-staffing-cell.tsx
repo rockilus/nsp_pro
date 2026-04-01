@@ -69,8 +69,8 @@ const StaffingChip = ({
         staffing.specialtyId === null
           ? "Any"
           : specialty
-          ? specialty.name
-          : "Name not found"
+            ? specialty.name
+            : "Name not found"
       }: ${staffing.staffing}`}</span>
       <span className="chip-delete">
         <AdjustStaffingButtons
@@ -164,7 +164,7 @@ export default function ShiftStaffingCell({
     const specialtyIdToRemove =
       specialty.id === "any_specialty_id" ? null : specialty.id;
     const updatedValue = valueState.filter(
-      (v) => v.specialtyId !== specialtyIdToRemove
+      (v) => v.specialtyId !== specialtyIdToRemove,
     );
     setValueState(updatedValue);
     handleUpdateShift({
@@ -175,7 +175,7 @@ export default function ShiftStaffingCell({
 
   const handleIncreaseStaffing = (
     event: React.SyntheticEvent,
-    staffing: StaffingT
+    staffing: StaffingT,
   ) => {
     event.stopPropagation();
     const updatedValue = valueState.map((v) => {
@@ -198,7 +198,7 @@ export default function ShiftStaffingCell({
 
   const handleDecreaseStaffing = (
     event: React.SyntheticEvent,
-    staffing: StaffingT
+    staffing: StaffingT,
   ) => {
     event.stopPropagation();
     const updatedValue = valueState.map((v) => {

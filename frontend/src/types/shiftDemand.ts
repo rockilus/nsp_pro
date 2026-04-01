@@ -141,7 +141,7 @@ export interface UseShiftDemandMutationsResult {
   bulkUpsert: {
     mutate: (demands: Omit<ShiftDemandCreateDTO, "teamId">[]) => void;
     mutateAsync: (
-      demands: Omit<ShiftDemandCreateDTO, "teamId">[]
+      demands: Omit<ShiftDemandCreateDTO, "teamId">[],
     ) => Promise<BulkUpsertResponse>;
     isLoading: boolean;
     error: Error | null;
