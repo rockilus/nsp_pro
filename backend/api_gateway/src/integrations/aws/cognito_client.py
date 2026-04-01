@@ -38,7 +38,7 @@ def get_cognito_client():
 
     log_info(f"Initializing Cognito client for region: {config.aws_region}")
 
-    return boto3.client(**client_kwargs)
+    return boto3.client(**client_kwargs)  # type: ignore
 
 
 async def change_user_password_with_cognito(
