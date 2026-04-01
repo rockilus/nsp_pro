@@ -24,7 +24,6 @@ from src.services.notification_service import NotificationService
 
 
 class RequestService(BaseService):
-
     def __init__(
         self,
         collection: DatabaseCollections,

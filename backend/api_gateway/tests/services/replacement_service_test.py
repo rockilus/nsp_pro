@@ -118,24 +118,24 @@ def assert_candidate(
 
     # Check rank range
     if expected_rank_min is not None:
-        assert (
-            candidate.rank >= expected_rank_min
-        ), f"Expected rank >= {expected_rank_min}, got {candidate.rank}"
+        assert candidate.rank >= expected_rank_min, (
+            f"Expected rank >= {expected_rank_min}, got {candidate.rank}"
+        )
     if expected_rank_max is not None:
-        assert (
-            candidate.rank <= expected_rank_max
-        ), f"Expected rank <= {expected_rank_max}, got {candidate.rank}"
+        assert candidate.rank <= expected_rank_max, (
+            f"Expected rank <= {expected_rank_max}, got {candidate.rank}"
+        )
 
     # CAN'T_DO checks
-    assert (
-        implications.is_employed is is_employed
-    ), f"Expected is_employed={is_employed}, got {implications.is_employed}"
-    assert (
-        implications.has_specialty is has_specialty
-    ), f"Expected has_specialty={has_specialty}, got {implications.has_specialty}"
-    assert (
-        implications.isnt_on_leave is isnt_on_leave
-    ), f"Expected isnt_on_leave={isnt_on_leave}, got {implications.isnt_on_leave}"
+    assert implications.is_employed is is_employed, (
+        f"Expected is_employed={is_employed}, got {implications.is_employed}"
+    )
+    assert implications.has_specialty is has_specialty, (
+        f"Expected has_specialty={has_specialty}, got {implications.has_specialty}"
+    )
+    assert implications.isnt_on_leave is isnt_on_leave, (
+        f"Expected isnt_on_leave={isnt_on_leave}, got {implications.isnt_on_leave}"
+    )
     assert implications.filter_hits.isnt_filtered_out is isnt_filtered_out, (
         f"Expected isnt_filtered_out={isnt_filtered_out}, "
         f"got {implications.filter_hits.isnt_filtered_out}"
@@ -941,9 +941,9 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_breach(
         breach.objective_id
         for breach in test_candidate.replacement_implications.soft_constraint_hits.breaches
     ]
-    assert (
-        constraint_id in breach_constraint_ids
-    ), f"Expected constraint {constraint_id} in breaches, got {breach_constraint_ids}"
+    assert constraint_id in breach_constraint_ids, (
+        f"Expected constraint {constraint_id} in breaches, got {breach_constraint_ids}"
+    )
 
 
 def test_get_replacement_candidates_could_do_worker_soft_constraint_seq_breach(
@@ -1250,9 +1250,9 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_seq_breach(
         breach.objective_id
         for breach in test_candidate.replacement_implications.soft_constraint_hits.breaches
     ]
-    assert (
-        constraint_id in breach_constraint_ids
-    ), f"Expected constraint {constraint_id} in breaches, got {breach_constraint_ids}"
+    assert constraint_id in breach_constraint_ids, (
+        f"Expected constraint {constraint_id} in breaches, got {breach_constraint_ids}"
+    )
 
 
 def test_get_replacement_candidates_could_do_worker_soft_constraint_ord_breach(
@@ -1432,7 +1432,9 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_ord_breach(
             test_candidate_no_breach.replacement_implications.soft_constraint_hits.breaches
         )
         == 0
-    ), "Test worker should have no soft constraint breaches with no night shift on day after"
+    ), (
+        "Test worker should have no soft constraint breaches with no night shift on day after"
+    )
 
     # Now add a night shift assignment on day after target for test worker
     # This will cause a breach: morning on target date -> night on day after
@@ -1492,9 +1494,9 @@ def test_get_replacement_candidates_could_do_worker_soft_constraint_ord_breach(
         breach.objective_id
         for breach in test_candidate.replacement_implications.soft_constraint_hits.breaches
     ]
-    assert (
-        constraint_id in breach_constraint_ids
-    ), f"Expected constraint {constraint_id} in breaches, got {breach_constraint_ids}"
+    assert constraint_id in breach_constraint_ids, (
+        f"Expected constraint {constraint_id} in breaches, got {breach_constraint_ids}"
+    )
 
 
 def test_get_replacement_candidates_could_do_worker_soft_constraint_fil_breach(

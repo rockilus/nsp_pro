@@ -294,8 +294,7 @@ async def bulk_upsert_shift_demands(
                     detail={
                         "error": "bulk_team_id_mismatch",
                         "message": (
-                            f"Demand at index {i}: team ID must match "
-                            "route parameter"
+                            f"Demand at index {i}: team ID must match route parameter"
                         ),
                         "index": i,
                         "path_team_id": team_id,

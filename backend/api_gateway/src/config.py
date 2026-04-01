@@ -176,9 +176,7 @@ class AppConfig(BaseSettings):
                 docdb_secret_name
             )
 
-            log_info(
-                f"Retrieved DocumentDB credentials for host: " f"{credentials.host}"
-            )
+            log_info(f"Retrieved DocumentDB credentials for host: {credentials.host}")
 
             return DatabaseConfig(
                 database_type=DatabaseType.DOCUMENTDB,
@@ -271,24 +269,24 @@ def download_env_file_from_s3(
 def _validate_ca_content(content: bytes) -> bool:
     """Validate that the content contains valid PEM certificates."""
     try:
-        content_str = content.decode('utf-8')
+        content_str = content.decode("utf-8")
         # Basic validation: check for PEM certificate markers
         return (
             "-----BEGIN CERTIFICATE-----" in content_str
             and "-----END CERTIFICATE-----" in content_str
             and len(content_str) > 1000  # Reasonable minimum size
         )
-    except (UnicodeDecodeError, ValueError):
+    except UnicodeDecodeError, ValueError:
         return False
 
 
 def _validate_ca_bundle(ca_bundle_path: str) -> bool:
     """Validate that the CA bundle file exists and contains certificates."""
     try:
-        with open(ca_bundle_path, 'rb') as f:
+        with open(ca_bundle_path, "rb") as f:
             content = f.read()
         return _validate_ca_content(content)
-    except (OSError, IOError):
+    except OSError, IOError:
         return False
 
 
@@ -321,7 +319,7 @@ def download_documentdb_ca_bundle(
         if not os.path.exists(dir_path):
             try:
                 os.makedirs(dir_path, exist_ok=True)
-            except (OSError, PermissionError):
+            except OSError, PermissionError:
                 print(f"Cannot create directory {dir_path}, using temp")
                 ca_bundle_path = os.path.join(
                     tempfile.gettempdir(), "global-bundle.pem"
@@ -339,7 +337,7 @@ def download_documentdb_ca_bundle(
         if not _validate_ca_content(ca_content):
             raise ValueError("Downloaded CA bundle failed validation")
 
-        with open(ca_bundle_path, 'wb') as f:
+        with open(ca_bundle_path, "wb") as f:
             f.write(ca_content)
 
         print(f"DocumentDB CA bundle downloaded and validated: {ca_bundle_path}")

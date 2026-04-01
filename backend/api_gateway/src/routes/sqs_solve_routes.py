@@ -54,7 +54,6 @@ async def submit_solve_request(
         HTTPException: If unauthorized or solve request fails
     """
     try:
-
         # Validate and extract required fields
         schedule_id = body.schedule_id
         team_id = body.team_id

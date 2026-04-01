@@ -267,7 +267,7 @@ class TeamInvitationService(BaseService):
 
         sender_name = f"{sender.first_name} {sender.last_name}"
         invitation_link = (
-            f"{config.client_url}/en/plan/settings/teams" f"?token={invitation.token}"
+            f"{config.client_url}/en/plan/settings/teams?token={invitation.token}"
         )
 
         # Use email queue service to send invitation

@@ -71,10 +71,10 @@ _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
     # fmt: off
     NotificationType.USER_RECEIVED_TEAM_INVITE: (
         NotificationKey.USER_RECEIVED_TEAM_INVITE
-        ),
+    ),
     NotificationType.USER_ACCEPTED_TEAM_INVITE: (
         NotificationKey.USER_ACCEPTED_TEAM_INVITE
-        ),
+    ),
     # fmt: on
     NotificationType.USER_REMOVED_FROM_TEAM: NotificationKey.USER_REMOVED_FROM_TEAM,
     NotificationType.USER_LEFT_TEAM: NotificationKey.USER_LEFT_TEAM,
@@ -710,17 +710,15 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             team_name = team.name if team else ""
             await self._dispatch_swap_party_events(
                 swap=swap,
-                event_factory=lambda pid, os, od, xs, xd: (
-                    user_validated_swap_event(
-                        team_id=swap.team_id,
-                        team_name=team_name,
-                        swap_id=swap.id,
-                        own_shift_name=os,
-                        own_date=od,
-                        other_shift_name=xs,
-                        other_date=xd,
-                        party_user_id=pid,
-                    )
+                event_factory=lambda pid, os, od, xs, xd: user_validated_swap_event(
+                    team_id=swap.team_id,
+                    team_name=team_name,
+                    swap_id=swap.id,
+                    own_shift_name=os,
+                    own_date=od,
+                    other_shift_name=xs,
+                    other_date=xd,
+                    party_user_id=pid,
                 ),
             )
         except Exception as e:  # pylint: disable=broad-except
@@ -753,17 +751,15 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             team_name = team.name if team else ""
             await self._dispatch_swap_party_events(
                 swap=swap,
-                event_factory=lambda pid, os, od, xs, xd: (
-                    user_reversed_swap_event(
-                        team_id=swap.team_id,
-                        team_name=team_name,
-                        swap_id=swap.id,
-                        own_shift_name=os,
-                        own_date=od,
-                        other_shift_name=xs,
-                        other_date=xd,
-                        party_user_id=pid,
-                    )
+                event_factory=lambda pid, os, od, xs, xd: user_reversed_swap_event(
+                    team_id=swap.team_id,
+                    team_name=team_name,
+                    swap_id=swap.id,
+                    own_shift_name=os,
+                    own_date=od,
+                    other_shift_name=xs,
+                    other_date=xd,
+                    party_user_id=pid,
                 ),
             )
         except Exception as e:  # pylint: disable=broad-except

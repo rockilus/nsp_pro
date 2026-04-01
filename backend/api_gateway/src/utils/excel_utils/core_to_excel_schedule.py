@@ -236,7 +236,7 @@ def _apply_fill_and_text(cell: Cell, fill_hex: str, text_hex: str) -> None:
                 raise ValueError("invalid hex length")
             int(fill_argb, 16)
             cell.fill = PatternFill(fgColor=fill_argb, fill_type="solid")
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             logging.getLogger(__name__).warning(
                 "Skipping invalid fill color for cell: %s", fill_hex
             )
@@ -252,7 +252,7 @@ def _apply_fill_and_text(cell: Cell, fill_hex: str, text_hex: str) -> None:
                 raise ValueError("invalid hex length")
             int(text_argb, 16)
             cell.font = Font(color=text_argb)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             logging.getLogger(__name__).warning(
                 "Skipping invalid text color for cell: %s", text_hex
             )
@@ -292,7 +292,7 @@ def _apply_duty_border(cell: Cell, sample_hex: str, position: str = "bottom") ->
                 bottom=getattr(existing, "bottom", None),
             )
         cell.border = new_border
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         logging.getLogger(__name__).warning(
             "Skipping duty border for cell: %s", sample_hex
         )
@@ -651,10 +651,10 @@ def build_legend_worksheet(
     )
 
     # Write headers for shifts (now on header_row)
-    col_acr: Cell = ws[f"{get_column_letter(shifts_cols["acronym"])}{header_row}"]
-    col_name: Cell = ws[f"{get_column_letter(shifts_cols["name"])}{header_row}"]
-    col_start: Cell = ws[f"{get_column_letter(shifts_cols["start"])}{header_row}"]
-    col_end: Cell = ws[f"{get_column_letter(shifts_cols["end"])}{header_row}"]
+    col_acr: Cell = ws[f"{get_column_letter(shifts_cols['acronym'])}{header_row}"]
+    col_name: Cell = ws[f"{get_column_letter(shifts_cols['name'])}{header_row}"]
+    col_start: Cell = ws[f"{get_column_letter(shifts_cols['start'])}{header_row}"]
+    col_end: Cell = ws[f"{get_column_letter(shifts_cols['end'])}{header_row}"]
 
     col_acr.value = "Acronym"
     col_name.value = "Name"
@@ -665,8 +665,8 @@ def build_legend_worksheet(
         cell.alignment = center
 
     # Write headers for workers (now on header_row)
-    wcol_acr: Cell = ws[f"{get_column_letter(workers_cols["acronym"])}{header_row}"]
-    wcol_name: Cell = ws[f"{get_column_letter(workers_cols["name"])}{header_row}"]
+    wcol_acr: Cell = ws[f"{get_column_letter(workers_cols['acronym'])}{header_row}"]
+    wcol_name: Cell = ws[f"{get_column_letter(workers_cols['name'])}{header_row}"]
     wcol_acr.value = "Acronym"
     wcol_name.value = "Name"
     for cell in (wcol_acr, wcol_name):

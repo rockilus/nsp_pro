@@ -42,9 +42,7 @@ class UserService(BaseService):
         existing_user = self.collection.user_db.get_user_by_id(user_id)
         if existing_user is not None:
             # Log for audit purposes
-            log_info(
-                f"User with id {user_id} already exists, " f"returning existing user"
-            )
+            log_info(f"User with id {user_id} already exists, returning existing user")
             return existing_user
 
         user_language = language if language else "fr"

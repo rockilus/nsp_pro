@@ -36,9 +36,9 @@ def assert_swap_valid(
         result: The swap validation result to check
         expected_key: Expected validation key
     """
-    assert (
-        result.is_valid is True
-    ), f"Expected swap to be valid, but got key: {result.validation_key}"
+    assert result.is_valid is True, (
+        f"Expected swap to be valid, but got key: {result.validation_key}"
+    )
     assert result.validation_key == expected_key
     assert result.worker_a_info is not None
     assert result.worker_b_info is not None
@@ -58,7 +58,7 @@ def assert_swap_invalid(
     assert result.is_valid is False, "Expected swap to be invalid, but it was valid"
     if expected_key:
         assert result.validation_key == expected_key, (
-            f"Expected key '{expected_key}', " f"got: {result.validation_key}"
+            f"Expected key '{expected_key}', got: {result.validation_key}"
         )
 
 
@@ -70,28 +70,28 @@ def assert_worker_can_do_swap(info: SwapAssignmentInfo) -> None:
     """
     for i, ai in enumerate(info.post_swap):
         impl = ai.implications
-        assert (
-            impl.is_employed
-        ), f"Worker {info.worker_name} post-swap assignment {i}: not employed"
-        assert (
-            impl.has_specialty
-        ), f"Worker {info.worker_name} post-swap assignment {i}: lacks specialty"
-        assert (
-            impl.isnt_on_leave
-        ), f"Worker {info.worker_name} post-swap assignment {i}: on leave"
-        assert (
-            impl.filter_hits.isnt_filtered_out
-        ), f"Worker {info.worker_name} post-swap assignment {i}: filtered out"
-        assert (
-            impl.overlap_hits.hasnt_overlap
-        ), f"Worker {info.worker_name} post-swap assignment {i}: has overlap"
+        assert impl.is_employed, (
+            f"Worker {info.worker_name} post-swap assignment {i}: not employed"
+        )
+        assert impl.has_specialty, (
+            f"Worker {info.worker_name} post-swap assignment {i}: lacks specialty"
+        )
+        assert impl.isnt_on_leave, (
+            f"Worker {info.worker_name} post-swap assignment {i}: on leave"
+        )
+        assert impl.filter_hits.isnt_filtered_out, (
+            f"Worker {info.worker_name} post-swap assignment {i}: filtered out"
+        )
+        assert impl.overlap_hits.hasnt_overlap, (
+            f"Worker {info.worker_name} post-swap assignment {i}: has overlap"
+        )
         assert impl.hard_constraint_hits.meets_constraints, (
             f"Worker {info.worker_name} post-swap assignment {i}: "
             f"hard constraint violation"
         )
-        assert (
-            impl.request_hits.has_no_request_conflict
-        ), f"Worker {info.worker_name} post-swap assignment {i}: request conflict"
+        assert impl.request_hits.has_no_request_conflict, (
+            f"Worker {info.worker_name} post-swap assignment {i}: request conflict"
+        )
 
 
 def assert_worker_cannot_do_swap(
@@ -131,13 +131,13 @@ def assert_worker_cannot_do_swap(
             has_failure = True
             failure_types.append("request")
 
-    assert (
-        has_failure
-    ), f"Expected worker {info.worker_name} to fail swap, but all constraints passed"
+    assert has_failure, (
+        f"Expected worker {info.worker_name} to fail swap, but all constraints passed"
+    )
 
     if expected_failure:
         assert expected_failure in failure_types, (
-            f"Expected failure type '{expected_failure}', " f"but got: {failure_types}"
+            f"Expected failure type '{expected_failure}', but got: {failure_types}"
         )
 
 

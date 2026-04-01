@@ -1,0 +1,23 @@
+Metadata-Version: 2.4
+Name: shared
+Version: 0.1.403
+Author: Felipe Kharaba
+Requires-Python: >=3.14
+Description-Content-Type: text/markdown
+Requires-Dist: loguru<0.8.0,>=0.7.2
+Requires-Dist: mongo-types<0.16.0,>=0.15.1
+Requires-Dist: mypy<2.0.0,>=1.13.0
+Requires-Dist: flake8<8.0.0,>=7.1.1
+Requires-Dist: autoflake<3.0.0,>=2.3.1
+Requires-Dist: fastapi<0.116.0,>=0.115.6
+Requires-Dist: pylint<4.0.0,>=3.3.2
+Requires-Dist: black<26.0.0,>=25.1.0
+Requires-Dist: pytest<9.0.0,>=8.3.5
+Requires-Dist: dotenv<1.0.0,>=0.9.9
+Requires-Dist: isort<7.0.0,>=6.0.1
+Requires-Dist: pymongo[aws]<5.0.0,>=4.11.3
+Requires-Dist: pyhumps<4.0.0,>=3.8.0
+Requires-Dist: pydantic<3.0.0,>=2.11.7
+Requires-Dist: boto3<2.0.0,>=1.35.0
+Requires-Dist: botocore<2.0.0,>=1.35.0
+Requires-Dist: pytest-asyncio<2.0.0,>=1.1.0

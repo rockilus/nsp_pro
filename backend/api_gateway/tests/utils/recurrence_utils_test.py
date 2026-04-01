@@ -1196,7 +1196,6 @@ def test_generate_recurring_dates_calls_correct_handler():
         "src.utils.recurrence_utils.handle_daily_frequency",
         return_value=[date(2025, 1, 1)],
     ) as mock_handler:
-
         result = generate_recurring_dates(period_dates, recurrence_rule, exclusions)
 
         mock_handler.assert_called_once_with(

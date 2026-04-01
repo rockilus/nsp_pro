@@ -274,8 +274,8 @@ class MultitaskingService(BaseService):
         - They share at least one specialty
         """
         if (
-            demand1.demand.id == '684adfd99963edcada794b45'
-            and demand2.demand.id == '684adfd99963edcada794b46'
+            demand1.demand.id == "684adfd99963edcada794b45"
+            and demand2.demand.id == "684adfd99963edcada794b46"
         ):
             print("stop here")
         # 1. Check time overlap

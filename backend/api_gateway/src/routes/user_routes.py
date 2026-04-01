@@ -49,9 +49,7 @@ async def onboard_new_user(
             language=user_input.language,
         )
 
-        log_info(
-            f"Successfully processed onboard request for user " f"{user_input.email}"
-        )
+        log_info(f"Successfully processed onboard request for user {user_input.email}")
         return {"status": "success", "message": "User onboarded successfully"}
 
     except Exception as e:

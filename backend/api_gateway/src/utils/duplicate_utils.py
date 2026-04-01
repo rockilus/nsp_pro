@@ -45,19 +45,19 @@ def validate_duplicate_lists(
 ) -> None:
     source_ids = list(set(source_ids))
     target_ids = list(set(target_ids))
-    assert len(set(source_duplicate_ids)) == len(
-        source_duplicate_ids
-    ), "Duplicate IDs in list of assignments to duplicate"
-    assert len(set(target_keep_ids)) == len(
-        target_keep_ids
-    ), "Duplicate IDs in list of assignments to keep"
-    assert len(set(target_delete_ids)) == len(
-        target_delete_ids
-    ), "Duplicate IDs in list of assignments to delete"
+    assert len(set(source_duplicate_ids)) == len(source_duplicate_ids), (
+        "Duplicate IDs in list of assignments to duplicate"
+    )
+    assert len(set(target_keep_ids)) == len(target_keep_ids), (
+        "Duplicate IDs in list of assignments to keep"
+    )
+    assert len(set(target_delete_ids)) == len(target_delete_ids), (
+        "Duplicate IDs in list of assignments to delete"
+    )
 
-    assert len(source_duplicate_ids) + len(target_keep_ids) == len(
-        source_ids
-    ), "Mismatch in number of assignments to duplicate+keep and source"
+    assert len(source_duplicate_ids) + len(target_keep_ids) == len(source_ids), (
+        "Mismatch in number of assignments to duplicate+keep and source"
+    )
     assert sorted(list(set(target_keep_ids + target_delete_ids))) == sorted(
         target_ids
     ), "Mismatch in target assignments to keep+delete and target"

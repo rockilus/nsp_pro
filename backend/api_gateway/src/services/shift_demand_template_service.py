@@ -153,7 +153,7 @@ class ShiftDemandTemplateService:
             existing = self.template_repo.get_template_by_name_and_team(name, team_id)
             if existing:
                 raise ValueError(
-                    f"Template with name '{name}' already exists " f"for team {team_id}"
+                    f"Template with name '{name}' already exists for team {team_id}"
                 )
 
             # Create template using helper function

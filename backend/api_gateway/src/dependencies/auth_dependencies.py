@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 async def verify_service_authentication(
-    x_api_key: Optional[str] = Header(None, alias="X-API-Key")
+    x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
 ) -> bool:
     """
     FastAPI dependency to verify service authentication from API Gateway.
