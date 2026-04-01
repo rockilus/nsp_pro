@@ -280,7 +280,7 @@ class ShiftDemandTemplate:
                                 count=entry["count"],
                             )
                         )
-                    except ValueError, TypeError:
+                    except (ValueError, TypeError):
                         # Log the error but continue processing other entries
                         continue
 
@@ -291,7 +291,7 @@ class ShiftDemandTemplate:
                             demands=demand_entries,
                         )
                     )
-                except ValueError, TypeError:
+                except (ValueError, TypeError):
                     # Log the error but continue processing other weeks
                     continue
 

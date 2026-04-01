@@ -94,7 +94,7 @@ async def start_impersonation(
             token=token,
             expires_in=config.impersonation_token_ttl_seconds,
         )
-    except NotAuthorizedError, HTTPException:
+    except (NotAuthorizedError, HTTPException):
         raise
     except Exception as e:
         log_info("Failed to start impersonation")
@@ -127,7 +127,7 @@ async def stop_impersonation(
         log_info(f"Admin {admin_user_id} stopped impersonation")
 
         response = {"message": "Impersonation stopped"}
-    except NotAuthorizedError, HTTPException:
+    except (NotAuthorizedError, HTTPException):
         raise
     except Exception as e:
         log_info("Failed to stop impersonation")
@@ -153,7 +153,7 @@ async def list_all_users(
             )
         users = db_collections.user_db.get_users()
         response = [u.to_dto() for u in users]
-    except NotAuthorizedError, HTTPException:
+    except (NotAuthorizedError, HTTPException):
         raise
     except Exception as e:
         log_info("Failed to list all users")

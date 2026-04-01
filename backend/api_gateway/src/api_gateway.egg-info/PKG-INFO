@@ -2,7 +2,7 @@ Metadata-Version: 2.4
 Name: api_gateway
 Version: 0.1.0
 Author-email: FelipeKha <felipe.kharaba@icloud.com>
-Requires-Python: >=3.14
+Requires-Python: <=3.14,>=3.13
 Description-Content-Type: text/markdown
 Requires-Dist: flask<3.0.0,>=2.3.2
 Requires-Dist: flask-jwt-extended<5.0.0,>=4.4.4
