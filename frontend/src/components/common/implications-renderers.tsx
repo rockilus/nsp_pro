@@ -1,27 +1,16 @@
-import React from "react";
-import { Box, Typography, Tooltip } from "@mui/material";
-import {
-  ReplacementImplicationsT,
-  ConstraintHitsT,
-} from "../../types/replacement";
+import React from 'react';
+import { Box, Typography, Tooltip } from '@mui/material';
+import { ReplacementImplicationsT, ConstraintHitsT } from '../../types/replacement';
 
 export const renderBoolean = (value: boolean): React.JSX.Element => {
   return (
-    <span style={{ color: value ? "green" : "red", fontWeight: "bold" }}>
-      {value ? "✓" : "✗"}
-    </span>
+    <span style={{ color: value ? 'green' : 'red', fontWeight: 'bold' }}>{value ? '✓' : '✗'}</span>
   );
 };
 
-export const renderWeeklyTime = (
-  implications: ReplacementImplicationsT,
-): React.JSX.Element => {
-  const hours = Math.round(
-    implications.newWeeklyTime.newWeeklyWorkedMinutes / 60,
-  );
-  const delta = Math.round(
-    implications.newWeeklyTime.newWeeklyTimeDeltaMinutes / 60,
-  );
+export const renderWeeklyTime = (implications: ReplacementImplicationsT): React.JSX.Element => {
+  const hours = Math.round(implications.newWeeklyTime.newWeeklyWorkedMinutes / 60);
+  const delta = Math.round(implications.newWeeklyTime.newWeeklyTimeDeltaMinutes / 60);
 
   return (
     <Box>
@@ -30,10 +19,10 @@ export const renderWeeklyTime = (
         <Typography
           variant="caption"
           sx={{
-            color: delta > 0 ? "error.main" : "success.main",
+            color: delta > 0 ? 'error.main' : 'success.main',
           }}
         >
-          ({delta > 0 ? "+" : ""}
+          ({delta > 0 ? '+' : ''}
           {delta}h)
         </Typography>
       )}
@@ -41,9 +30,7 @@ export const renderWeeklyTime = (
   );
 };
 
-export const renderMonthlyDuties = (
-  implications: ReplacementImplicationsT,
-): React.JSX.Element => {
+export const renderMonthlyDuties = (implications: ReplacementImplicationsT): React.JSX.Element => {
   const count = implications.newMonthlyDuties.newNumberMonthlyDuties;
   const delta = implications.newMonthlyDuties.newMonthlyDutiesDelta;
 
@@ -54,10 +41,10 @@ export const renderMonthlyDuties = (
         <Typography
           variant="caption"
           sx={{
-            color: delta > 0 ? "error.main" : "success.main",
+            color: delta > 0 ? 'error.main' : 'success.main',
           }}
         >
-          ({delta > 0 ? "+" : ""}
+          ({delta > 0 ? '+' : ''}
           {delta})
         </Typography>
       )}
@@ -65,18 +52,15 @@ export const renderMonthlyDuties = (
   );
 };
 
-export const renderConstraintHit = (
-  hit: ConstraintHitsT,
-  type: string,
-): React.JSX.Element => {
+export const renderConstraintHit = (hit: ConstraintHitsT, type: string): React.JSX.Element => {
   if (hit.meetsConstraints) {
     return renderBoolean(true);
   }
 
   const tooltipText =
     hit.breaches.length > 0
-      ? `${hit.breaches.length} violation(s): ${hit.breaches.map((b) => b.description).join(", ")}`
-      : "Constraint violated";
+      ? `${hit.breaches.length} violation(s): ${hit.breaches.map((b) => b.description).join(', ')}`
+      : 'Constraint violated';
 
   return (
     <Tooltip title={tooltipText} arrow>
@@ -85,9 +69,7 @@ export const renderConstraintHit = (
   );
 };
 
-export const renderOverlapHit = (
-  implications: ReplacementImplicationsT,
-): React.JSX.Element => {
+export const renderOverlapHit = (implications: ReplacementImplicationsT): React.JSX.Element => {
   const hasNoOverlap = implications.overlapHits.hasntOverlap;
 
   if (hasNoOverlap) {
@@ -103,9 +85,7 @@ export const renderOverlapHit = (
   );
 };
 
-export const renderFilterHit = (
-  implications: ReplacementImplicationsT,
-): React.JSX.Element => {
+export const renderFilterHit = (implications: ReplacementImplicationsT): React.JSX.Element => {
   const passesFilters = implications.filterHits.isntFilteredOut;
 
   if (passesFilters) {
@@ -114,8 +94,8 @@ export const renderFilterHit = (
 
   const tooltipText =
     implications.filterHits.filterLabels.length > 0
-      ? `Violated filters: ${implications.filterHits.filterLabels.join(", ")}`
-      : "Filtered out";
+      ? `Violated filters: ${implications.filterHits.filterLabels.join(', ')}`
+      : 'Filtered out';
 
   return (
     <Tooltip title={tooltipText} arrow>
@@ -124,9 +104,7 @@ export const renderFilterHit = (
   );
 };
 
-export const renderRequestHit = (
-  implications: ReplacementImplicationsT,
-): React.JSX.Element => {
+export const renderRequestHit = (implications: ReplacementImplicationsT): React.JSX.Element => {
   const noConflict = implications.requestHits.hasNoRequestConflict;
 
   if (noConflict) {

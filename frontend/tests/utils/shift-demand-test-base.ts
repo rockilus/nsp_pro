@@ -2,13 +2,13 @@
  * Shared base functionality for Shift Demand E2E tests
  */
 
-import { Page, expect } from "@playwright/test";
-import { testConfig } from "./test-config";
-import { DatabaseTestUtils } from "./database-utils";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import { ShiftType, ShiftRestType } from "../../src/types/shift";
+import { Page, expect } from '@playwright/test';
+import { testConfig } from './test-config';
+import { DatabaseTestUtils } from './database-utils';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { ShiftType, ShiftRestType } from '../../src/types/shift';
 
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
@@ -27,10 +27,10 @@ export class ShiftDemandTestBase {
    * - Creates a test team
    */
   async setupShiftDemandTests(): Promise<void> {
-    console.log("🚀 Setting up shift demand tests...");
+    console.log('🚀 Setting up shift demand tests...');
     // Create a test team
     this.testTeam = await this.dbUtils.createTeam({
-      name: "Shift Demand Test Team",
+      name: 'Shift Demand Test Team',
     });
     if (this.testTeam) {
       console.log(`✅ Test team created: ${this.testTeam.name}`);
@@ -38,33 +38,33 @@ export class ShiftDemandTestBase {
       // Create shifts for the tests
       await this.dbUtils.createShift({
         teamId: this.testTeam.teamId,
-        name: "Morning Shift",
-        startTime: dayjs.utc("2023-01-01T08:00:00"),
-        endTime: dayjs.utc("2023-01-01T12:00:00"),
+        name: 'Morning Shift',
+        startTime: dayjs.utc('2023-01-01T08:00:00'),
+        endTime: dayjs.utc('2023-01-01T12:00:00'),
         shiftType: ShiftType.NORMAL,
       });
       await this.dbUtils.createShift({
         teamId: this.testTeam.teamId,
-        name: "Afternoon Shift",
-        startTime: dayjs.utc("2023-01-01T14:00:00"),
-        endTime: dayjs.utc("2023-01-01T18:00:00"),
+        name: 'Afternoon Shift',
+        startTime: dayjs.utc('2023-01-01T14:00:00'),
+        endTime: dayjs.utc('2023-01-01T18:00:00'),
         shiftType: ShiftType.NORMAL,
       });
       await this.dbUtils.createShift({
         teamId: this.testTeam.teamId,
-        name: "Duty 1",
-        startTime: dayjs.utc("2023-01-01T08:00:00"),
-        endTime: dayjs.utc("2023-01-02T08:00:00"),
+        name: 'Duty 1',
+        startTime: dayjs.utc('2023-01-01T08:00:00'),
+        endTime: dayjs.utc('2023-01-02T08:00:00'),
         shiftType: ShiftType.DUTY,
       });
       await this.dbUtils.createShift({
         teamId: this.testTeam.teamId,
-        name: "Duty 2",
-        startTime: dayjs.utc("2023-01-01T08:00:00"),
-        endTime: dayjs.utc("2023-01-02T08:00:00"),
+        name: 'Duty 2',
+        startTime: dayjs.utc('2023-01-01T08:00:00'),
+        endTime: dayjs.utc('2023-01-02T08:00:00'),
         shiftType: ShiftType.DUTY,
       });
-      console.log("✅ Created 4 test shifts");
+      console.log('✅ Created 4 test shifts');
     }
   }
 
@@ -73,9 +73,7 @@ export class ShiftDemandTestBase {
    */
   async navigateToShiftDemandsPage(page: Page): Promise<void> {
     if (!this.testTeam) {
-      throw new Error(
-        "Test team not created. Call setupShiftDemandTests first.",
-      );
+      throw new Error('Test team not created. Call setupShiftDemandTests first.');
     }
 
     // Set authentication headers before any navigation
@@ -86,20 +84,18 @@ export class ShiftDemandTestBase {
 
     // Now set the selected team in localStorage with proper document context
     await page.evaluate((teamId) => {
-      localStorage.setItem("selectedTeamId", teamId);
+      localStorage.setItem('selectedTeamId', teamId);
     }, this.testTeam.teamId);
 
     // Reload the page to apply the localStorage changes
     await page.reload();
 
     // Wait for the page to load and the team context to initialize
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
 
     // Wait for the main content to be visible using the data-testid attribute
-    await expect(
-      page.locator('[data-testid="shift-demand-tab"]'),
-    ).toBeVisible();
-    console.log("✅ Navigated to shift demands page");
+    await expect(page.locator('[data-testid="shift-demand-tab"]')).toBeVisible();
+    console.log('✅ Navigated to shift demands page');
   }
 
   /**
@@ -131,10 +127,10 @@ export class ShiftDemandTestBase {
 
     let currentMonthText = await currentMonthLabel.textContent();
     // Use strict parsing (third parameter = true) to avoid parsing issues
-    let currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY", true);
+    let currentMonth = dayjs.utc(currentMonthText, 'MMMM YYYY', true);
 
-    while (!currentMonth.isSame(targetMonth, "month")) {
-      if (currentMonth.isBefore(targetMonth, "month")) {
+    while (!currentMonth.isSame(targetMonth, 'month')) {
+      if (currentMonth.isBefore(targetMonth, 'month')) {
         await periodNav.nextButton.click();
       } else {
         await periodNav.previousButton.click();
@@ -151,7 +147,7 @@ export class ShiftDemandTestBase {
       );
       currentMonthText = await currentMonthLabel.textContent();
       // Use strict parsing (third parameter = true) to avoid parsing issues
-      currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY", true);
+      currentMonth = dayjs.utc(currentMonthText, 'MMMM YYYY', true);
     }
   }
 
@@ -184,18 +180,10 @@ export class ShiftDemandTestBase {
   getBulkSelectionElements(page: Page) {
     return {
       input: page.locator('[data-testid="bulk-selection-input"] input'),
-      deleteButton: page.locator(
-        '[data-testid="bulk-selection-delete-button"]',
-      ),
-      confirmButton: page.locator(
-        '[data-testid="bulk-selection-confirm-button"]',
-      ),
-      cancelButton: page.locator(
-        '[data-testid="bulk-selection-cancel-button"]',
-      ),
-      deleteConfirmButton: page.locator(
-        '[data-testid="bulk-selection-delete-confirm-button"]',
-      ),
+      deleteButton: page.locator('[data-testid="bulk-selection-delete-button"]'),
+      confirmButton: page.locator('[data-testid="bulk-selection-confirm-button"]'),
+      cancelButton: page.locator('[data-testid="bulk-selection-cancel-button"]'),
+      deleteConfirmButton: page.locator('[data-testid="bulk-selection-delete-confirm-button"]'),
     };
   }
 
@@ -210,30 +198,22 @@ export class ShiftDemandTestBase {
       columnSelect: (date: string) =>
         page.locator(`[data-testid="column-select-checkbox-${date}"] input`),
       cellSelect: (shiftId: string, date: string) =>
-        page.locator(
-          `[data-testid="cell-select-checkbox-${shiftId}-${date}"] input`,
-        ),
+        page.locator(`[data-testid="cell-select-checkbox-${shiftId}-${date}"] input`),
     };
   }
 
   /**
    * Creates shift demands via API for testing
    */
-  async createShiftDemandViaAPI(
-    shiftId: string,
-    date: string,
-    count: number,
-  ): Promise<void> {
+  async createShiftDemandViaAPI(shiftId: string, date: string, count: number): Promise<void> {
     if (!this.testTeam) {
-      throw new Error(
-        "Test team not created. Call setupShiftDemandTests first.",
-      );
+      throw new Error('Test team not created. Call setupShiftDemandTests first.');
     }
 
     await this.dbUtils.createShiftDemand({
       teamId: this.testTeam.teamId,
       shiftId,
-      date: dayjs.utc(date, "YYYY-MM-DD"),
+      date: dayjs.utc(date, 'YYYY-MM-DD'),
       count,
     });
   }
@@ -243,13 +223,11 @@ export class ShiftDemandTestBase {
    */
   async getTestShiftIds(): Promise<string[]> {
     if (!this.testTeam) {
-      throw new Error(
-        "Test team not created. Call setupShiftDemandTests first.",
-      );
+      throw new Error('Test team not created. Call setupShiftDemandTests first.');
     }
 
     // In a real implementation, we would fetch shift IDs from the API or database
     // For now, we'll return mock IDs that correspond to the shifts created in setupShiftDemandTests
-    return ["shift1", "shift2", "shift3", "shift4"];
+    return ['shift1', 'shift2', 'shift3', 'shift4'];
   }
 }

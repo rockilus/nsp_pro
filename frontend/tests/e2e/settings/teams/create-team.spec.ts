@@ -1,24 +1,22 @@
-import { test, expect } from "@playwright/test";
-import { DatabaseTestUtils } from "../../../utils/database-utils";
-import { testConfig } from "../../../utils/test-config";
+import { test, expect } from '@playwright/test';
+import { DatabaseTestUtils } from '../../../utils/database-utils';
+import { testConfig } from '../../../utils/test-config';
 
 const dbUtils = new DatabaseTestUtils();
 
-test.describe("Teams Settings Page with Database Reset", () => {
+test.describe('Teams Settings Page with Database Reset', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the page using config
     await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
     // Wait for the page to be loaded
-    await expect(
-      page.locator('[data-testid="teams-page-heading"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="teams-page-heading"]')).toBeVisible();
   });
 
   test('should open the team creation form when the "New Team" button is pressed', async ({
     page,
   }) => {
     // Find the button using the recommended getByRole method
-    const createTeamButton = page.getByRole("button", { name: "New Team" });
+    const createTeamButton = page.getByRole('button', { name: 'New Team' });
 
     // Use an assertion to wait for the button to be ready before clicking it
     await expect(createTeamButton).toBeEnabled();
@@ -27,18 +25,16 @@ test.describe("Teams Settings Page with Database Reset", () => {
     await createTeamButton.click();
 
     // Add an assertion to verify the expected result, like a modal appearing
-    const modalTitle = page.getByRole("heading", { name: "New team" });
+    const modalTitle = page.getByRole('heading', { name: 'New team' });
     await expect(modalTitle).toBeVisible();
   });
 
-  test('should create a new team when the "Create" button is pressed', async ({
-    page,
-  }) => {
+  test('should create a new team when the "Create" button is pressed', async ({ page }) => {
     // Open the team creation form
-    await page.getByRole("button", { name: "New Team" }).click();
+    await page.getByRole('button', { name: 'New Team' }).click();
 
     // Fill in the team name
-    const teamNameInput = page.getByRole("textbox", { name: "Team name" });
+    const teamNameInput = page.getByRole('textbox', { name: 'Team name' });
     const uniqueTeamName = `Test Team ${test.info().workerIndex}-${Date.now()}`;
     await teamNameInput.fill(uniqueTeamName);
 
@@ -47,14 +43,14 @@ test.describe("Teams Settings Page with Database Reset", () => {
       page.waitForResponse(
         (response) =>
           response.url().includes(`${testConfig.apiUrl}/teams`) &&
-          response.request().method() === "POST" &&
+          response.request().method() === 'POST' &&
           response.status() === 200,
       ),
-      page.getByRole("button", { name: "Create" }).click(),
+      page.getByRole('button', { name: 'Create' }).click(),
     ]);
 
     // Wait for the modal to close (indicates creation completed)
-    const modalTitle = page.getByRole("heading", { name: "New team" });
+    const modalTitle = page.getByRole('heading', { name: 'New team' });
     await expect(modalTitle).not.toBeVisible();
 
     // Verify that the new team appears in the list
@@ -71,9 +67,7 @@ test.describe("Teams Settings Page with Database Reset", () => {
 
     // Refresh the page to load the newly created team
     await page.reload();
-    await expect(
-      page.locator('[data-testid="teams-page-heading"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="teams-page-heading"]')).toBeVisible();
 
     // Wait for the team to appear in the UI
     const teamElement = page.getByText(testTeam.name, { exact: true });
@@ -89,12 +83,12 @@ test.describe("Teams Settings Page with Database Reset", () => {
     await expect(page).toHaveURL(`${testConfig.frontendUrl}/en/plan/schedule/`);
   });
 
-  test("should create a new team and select it", async ({ page }) => {
+  test('should create a new team and select it', async ({ page }) => {
     // Open the team creation form
-    await page.getByRole("button", { name: "New Team" }).click();
+    await page.getByRole('button', { name: 'New Team' }).click();
 
     // Fill in the team name
-    const teamNameInput = page.getByRole("textbox", { name: "Team name" });
+    const teamNameInput = page.getByRole('textbox', { name: 'Team name' });
     const uniqueTeamName = `Test Team ${test.info().workerIndex}-${Date.now()}`;
     await teamNameInput.fill(uniqueTeamName);
 
@@ -103,14 +97,14 @@ test.describe("Teams Settings Page with Database Reset", () => {
       page.waitForResponse(
         (response) =>
           response.url().includes(`${testConfig.apiUrl}/teams`) &&
-          response.request().method() === "POST" &&
+          response.request().method() === 'POST' &&
           response.status() === 200,
       ),
-      page.getByRole("button", { name: "Create" }).click(),
+      page.getByRole('button', { name: 'Create' }).click(),
     ]);
 
     // Wait for the modal to close (indicates creation completed)
-    const modalTitle = page.getByRole("heading", { name: "New team" });
+    const modalTitle = page.getByRole('heading', { name: 'New team' });
     await expect(modalTitle).not.toBeVisible();
 
     // Verify that the new team appears in the list
@@ -131,15 +125,11 @@ test.describe("Teams Settings Page with Database Reset", () => {
     await expect(scheduleNavLink).toBeVisible();
 
     // Verify that the no assignments display for owner is visible
-    const noAssignmentsDisplay = page.locator(
-      '[data-testid="no-assignments-display-owner"]',
-    );
+    const noAssignmentsDisplay = page.locator('[data-testid="no-assignments-display-owner"]');
     await expect(noAssignmentsDisplay).toBeVisible();
   });
 
-  test('should open the team settings when the "Settings" button is pressed', async ({
-    page,
-  }) => {
+  test('should open the team settings when the "Settings" button is pressed', async ({ page }) => {
     // Create a team via API instead of UI
     // Create a unique team name per browser worker
     const uniqueTeamName = `Test Team ${test.info().workerIndex}-${Date.now()}`;
@@ -147,27 +137,25 @@ test.describe("Teams Settings Page with Database Reset", () => {
 
     // Refresh the page to load the newly created team
     await page.reload();
-    await expect(
-      page.locator('[data-testid="teams-page-heading"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="teams-page-heading"]')).toBeVisible();
 
     // Wait for the team to appear in the UI
     const teamElement = page.getByText(testTeam.name, { exact: true });
     await expect(teamElement).toBeVisible();
 
     // Scope the Settings button to the correct team list item
-    const teamListItem = page.locator(".teams-list-item").filter({
+    const teamListItem = page.locator('.teams-list-item').filter({
       has: teamElement,
     });
-    const settingsButton = teamListItem.getByRole("button", {
-      name: "Settings",
+    const settingsButton = teamListItem.getByRole('button', {
+      name: 'Settings',
     });
     await Promise.all([
       page.waitForURL(
         new RegExp(
           `${testConfig.frontendUrl.replace(
             /[.*+?^${}()|[\]\\]/g,
-            "\\$&",
+            '\\$&',
           )}/en/plan/teams/general/\\?teamId=[a-f0-9]+`,
         ),
       ),
@@ -179,14 +167,14 @@ test.describe("Teams Settings Page with Database Reset", () => {
       new RegExp(
         `${testConfig.frontendUrl.replace(
           /[.*+?^${}()|[\]\\]/g,
-          "\\$&",
+          '\\$&',
         )}/en/plan/teams/general/\\?teamId=[a-f0-9]+`,
       ),
     );
 
     // Optional: Verify the team ID in URL matches the created team
     const url = page.url();
-    const teamIdFromUrl = new URL(url).searchParams.get("teamId");
+    const teamIdFromUrl = new URL(url).searchParams.get('teamId');
     expect(teamIdFromUrl).toBe(testTeam.teamId);
   });
 
@@ -212,45 +200,37 @@ test.describe("Teams Settings Page with Database Reset", () => {
   //   await expect(heading).toBeVisible();
   // });
 
-  test("should redirect to teams page if selected team id is invalid and user tries to access schedule", async ({
+  test('should redirect to teams page if selected team id is invalid and user tries to access schedule', async ({
     page,
   }) => {
     // Set an invalid team ID in localStorage
-    await page.evaluate(() =>
-      localStorage.setItem("selectedTeamId", "invalid-team-id"),
-    );
+    await page.evaluate(() => localStorage.setItem('selectedTeamId', 'invalid-team-id'));
 
     // Attempt to navigate directly to the schedule page
     await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
 
     // Verify that we are redirected to the teams settings page
-    await expect(page).toHaveURL(
-      `${testConfig.frontendUrl}/en/plan/settings/teams/`,
-    );
+    await expect(page).toHaveURL(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
 
     // Verify that the teams page heading is visible
-    const heading = page.getByTestId("teams-page-heading");
+    const heading = page.getByTestId('teams-page-heading');
     await expect(heading).toBeVisible();
   });
 
-  test("should redirect to teams page if no team correspond to selected team id", async ({
+  test('should redirect to teams page if no team correspond to selected team id', async ({
     page,
   }) => {
     // Set an invalid team ID in localStorage
-    await page.evaluate(() =>
-      localStorage.setItem("selectedTeamId", "6997559c394575f0483cc827"),
-    );
+    await page.evaluate(() => localStorage.setItem('selectedTeamId', '6997559c394575f0483cc827'));
 
     // Attempt to navigate directly to the schedule page
     await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
 
     // Verify that we are redirected to the teams settings page
-    await expect(page).toHaveURL(
-      `${testConfig.frontendUrl}/en/plan/settings/teams/`,
-    );
+    await expect(page).toHaveURL(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
 
     // Verify that the teams page heading is visible
-    const heading = page.getByTestId("teams-page-heading");
+    const heading = page.getByTestId('teams-page-heading');
     await expect(heading).toBeVisible();
   });
 

@@ -94,8 +94,8 @@ function UserProfile() {
 ### Direct API Usage (When not in React context)
 
 ```typescript
-import { UserApi } from "@/app/lib/api/userApi";
-import { useApiClient } from "@/app/lib/api-client";
+import { UserApi } from '@/app/lib/api/userApi';
+import { useApiClient } from '@/app/lib/api-client';
 
 // This must be called within a React component or hook
 function MyComponent() {
@@ -107,7 +107,7 @@ function MyComponent() {
       const updatedUser = await UserApi.updateUser(apiClient, userData);
       await UserApi.updatePassword(apiClient, passwordData, userId);
     } catch (error) {
-      console.error("API call failed:", error);
+      console.error('API call failed:', error);
     }
   };
 }
@@ -119,7 +119,7 @@ function MyComponent() {
 
 ```typescript
 // OLD - Direct fetch calls (deprecated)
-import { getUser, updateUser } from "@/app/lib/user";
+import { getUser, updateUser } from '@/app/lib/user';
 const user = await getUser(); // ⚠️ No authentication handling
 ```
 
@@ -127,7 +127,7 @@ const user = await getUser(); // ⚠️ No authentication handling
 
 ```typescript
 // NEW - Authenticated hooks
-import { useGetUser, useUpdateUser } from "@/hooks/useUser";
+import { useGetUser, useUpdateUser } from '@/hooks/useUser';
 const getUser = useGetUser();
 const updateUser = useUpdateUser();
 const user = await getUser(); // ✅ Full authentication handling
@@ -146,19 +146,19 @@ These components have been successfully migrated to use the new hooks:
 ### Recommended (New)
 
 ```typescript
-import { useGetUser, useUpdateUser, useUpdatePassword } from "@/hooks/useUser";
+import { useGetUser, useUpdateUser, useUpdatePassword } from '@/hooks/useUser';
 ```
 
 ### Also Works (Legacy Re-export)
 
 ```typescript
-import { useGetUser, useUpdateUser, useUpdatePassword } from "@/app/lib/user";
+import { useGetUser, useUpdateUser, useUpdatePassword } from '@/app/lib/user';
 ```
 
 ### Direct API (Advanced)
 
 ```typescript
-import { UserApi } from "@/app/lib/api/userApi";
+import { UserApi } from '@/app/lib/api/userApi';
 ```
 
 ## API Methods
@@ -168,13 +168,8 @@ import { UserApi } from "@/app/lib/api/userApi";
 ```typescript
 class UserApi extends BaseApi {
   // Authenticated methods (preferred)
-  static async getCurrentUser(
-    apiClient: AuthenticatedApiClient,
-  ): Promise<UserT>;
-  static async updateUser(
-    apiClient: AuthenticatedApiClient,
-    user: UserT,
-  ): Promise<UserT>;
+  static async getCurrentUser(apiClient: AuthenticatedApiClient): Promise<UserT>;
+  static async updateUser(apiClient: AuthenticatedApiClient, user: UserT): Promise<UserT>;
   static async updatePassword(
     apiClient: AuthenticatedApiClient,
     passwordData: PasswordData,
@@ -192,18 +187,12 @@ class UserApi extends BaseApi {
 // Authentication-aware hooks
 export function useGetUser(): () => Promise<UserT>;
 export function useUpdateUser(): (userData: UserT) => Promise<UserT>;
-export function useUpdatePassword(): (
-  passwordData: PasswordData,
-  userId: string,
-) => Promise<void>;
+export function useUpdatePassword(): (passwordData: PasswordData, userId: string) => Promise<void>;
 
 // Legacy functions (deprecated)
 export async function getUser(): Promise<UserT>; // @deprecated
 export async function updateUser(user: UserT): Promise<UserT>; // @deprecated
-export async function updatePassword(
-  passwordData: PasswordData,
-  userId: string,
-): Promise<void>; // @deprecated
+export async function updatePassword(passwordData: PasswordData, userId: string): Promise<void>; // @deprecated
 ```
 
 ## Error Handling
@@ -245,14 +234,14 @@ The new architecture provides consistent error handling:
 // Future: teamApi.ts
 export class TeamApi extends BaseApi {
   static async getTeams(apiClient: AuthenticatedApiClient): Promise<TeamT[]> {
-    return this.makeRequest<TeamT[]>(apiClient, "get", "/teams");
+    return this.makeRequest<TeamT[]>(apiClient, 'get', '/teams');
   }
 
   static async createTeam(
     apiClient: AuthenticatedApiClient,
     teamData: CreateTeamT,
   ): Promise<TeamT> {
-    return this.makeRequest<TeamT>(apiClient, "post", "/teams", teamData);
+    return this.makeRequest<TeamT>(apiClient, 'post', '/teams', teamData);
   }
 }
 
@@ -262,7 +251,7 @@ export function useGetTeams() {
   const { isAuthenticated, loading } = useAuth();
 
   return useCallback(async () => {
-    if (loading || !isAuthenticated) throw new Error("Not authenticated");
+    if (loading || !isAuthenticated) throw new Error('Not authenticated');
     return TeamApi.getTeams(apiClient);
   }, [apiClient, isAuthenticated, loading]);
 }

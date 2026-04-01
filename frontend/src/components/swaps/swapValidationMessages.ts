@@ -1,5 +1,5 @@
-import { TFunction } from "i18next";
-import { SwapAssignmentInfoT } from "../../types/swapValidation";
+import { TFunction } from 'i18next';
+import { SwapAssignmentInfoT } from '../../types/swapValidation';
 
 /**
  * Build localized swap validation message based on validation key
@@ -16,15 +16,15 @@ export function buildSwapValidationMessage(
   t: TFunction,
 ): string {
   switch (validationKey) {
-    case "swap_valid_both":
-      return t("swap_valid_both");
-    case "swap_invalid_both":
-      return t("swap_invalid_both");
-    case "swap_invalid_worker_a":
-      return t("swap_invalid_worker", { workerName: workerAInfo.workerName });
-    case "swap_invalid_worker_b":
-      return t("swap_invalid_worker", { workerName: workerBInfo.workerName });
+    case 'swap_valid_both':
+      return t('swap_valid_both');
+    case 'swap_invalid_both':
+      return t('swap_invalid_both');
+    case 'swap_invalid_worker_a':
+      return t('swap_invalid_worker', { workerName: workerAInfo.workerName });
+    case 'swap_invalid_worker_b':
+      return t('swap_invalid_worker', { workerName: workerBInfo.workerName });
     default:
-      return t("swap_validation_unknown");
+      return t('swap_validation_unknown');
   }
 }

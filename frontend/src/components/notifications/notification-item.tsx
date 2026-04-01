@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { useTranslation } from "@/app/i18n/client";
-import { NotificationT } from "@/types/notification";
-import { getNotificationTargetPath } from "@/app/lib/utils/getNotificationTargetPath";
-import dayjs, { Dayjs } from "dayjs";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useTranslation } from '@/app/i18n/client';
+import { NotificationT } from '@/types/notification';
+import { getNotificationTargetPath } from '@/app/lib/utils/getNotificationTargetPath';
+import dayjs, { Dayjs } from 'dayjs';
 // MUI
-import IconButton from "@mui/material/IconButton";
-import ListItemText from "@mui/material/ListItemText";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
+import IconButton from '@mui/material/IconButton';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 interface NotificationItemProps {
   notification: NotificationT;
@@ -23,74 +23,74 @@ interface NotificationItemProps {
   compact?: boolean;
 }
 
-function getMessageKey(type: NotificationT["type"]): string {
+function getMessageKey(type: NotificationT['type']): string {
   switch (type) {
-    case "user_published_schedule":
-      return "user_published_schedule";
-    case "user_accepted_request":
-      return "user_accepted_request";
-    case "user_denied_request":
-      return "user_denied_request";
-    case "user_created_request":
-      return "user_created_request";
-    case "user_created_assignment":
-      return "user_created_assignment";
-    case "user_updated_assignment":
-      return "user_updated_assignment";
-    case "user_deleted_assignment":
-      return "user_deleted_assignment";
-    case "user_received_team_invite":
-      return "user_received_team_invite";
-    case "user_accepted_team_invite":
-      return "user_accepted_team_invite";
-    case "user_removed_from_team":
-      return "user_removed_from_team";
-    case "user_left_team":
-      return "user_left_team";
-    case "user_created_direct_swap":
-      return "user_created_direct_swap";
-    case "user_accepted_direct_swap":
-      return "user_accepted_direct_swap";
-    case "user_refused_direct_swap":
-      return "user_refused_direct_swap";
-    case "user_created_open_swap":
-      return "user_created_open_swap";
-    case "user_bid_open_swap":
-      return "user_bid_open_swap";
-    case "user_selected_bid_open_swap":
-      return "user_selected_bid_open_swap";
-    case "user_selected_other_bid_open_swap":
-      return "user_selected_other_bid_open_swap";
-    case "swap_ready_for_review":
-      return "swap_ready_for_review";
-    case "user_validated_swap":
-      return "user_validated_swap";
-    case "user_denied_swap":
-      return "user_denied_swap";
-    case "user_reversed_swap":
-      return "user_reversed_swap";
-    case "campaign_request_deadline_set":
-      return "campaign_request_deadline_set";
-    case "campaign_request_deadline_reminder":
-      return "campaign_request_deadline_reminder";
-    case "campaign_request_deadline_extended":
-      return "campaign_request_deadline_extended";
+    case 'user_published_schedule':
+      return 'user_published_schedule';
+    case 'user_accepted_request':
+      return 'user_accepted_request';
+    case 'user_denied_request':
+      return 'user_denied_request';
+    case 'user_created_request':
+      return 'user_created_request';
+    case 'user_created_assignment':
+      return 'user_created_assignment';
+    case 'user_updated_assignment':
+      return 'user_updated_assignment';
+    case 'user_deleted_assignment':
+      return 'user_deleted_assignment';
+    case 'user_received_team_invite':
+      return 'user_received_team_invite';
+    case 'user_accepted_team_invite':
+      return 'user_accepted_team_invite';
+    case 'user_removed_from_team':
+      return 'user_removed_from_team';
+    case 'user_left_team':
+      return 'user_left_team';
+    case 'user_created_direct_swap':
+      return 'user_created_direct_swap';
+    case 'user_accepted_direct_swap':
+      return 'user_accepted_direct_swap';
+    case 'user_refused_direct_swap':
+      return 'user_refused_direct_swap';
+    case 'user_created_open_swap':
+      return 'user_created_open_swap';
+    case 'user_bid_open_swap':
+      return 'user_bid_open_swap';
+    case 'user_selected_bid_open_swap':
+      return 'user_selected_bid_open_swap';
+    case 'user_selected_other_bid_open_swap':
+      return 'user_selected_other_bid_open_swap';
+    case 'swap_ready_for_review':
+      return 'swap_ready_for_review';
+    case 'user_validated_swap':
+      return 'user_validated_swap';
+    case 'user_denied_swap':
+      return 'user_denied_swap';
+    case 'user_reversed_swap':
+      return 'user_reversed_swap';
+    case 'campaign_request_deadline_set':
+      return 'campaign_request_deadline_set';
+    case 'campaign_request_deadline_reminder':
+      return 'campaign_request_deadline_reminder';
+    case 'campaign_request_deadline_extended':
+      return 'campaign_request_deadline_extended';
     default:
-      return "user_published_schedule";
+      return 'user_published_schedule';
   }
 }
 
 function getRelativeTime(createdAt: Dayjs): string {
   const now = dayjs();
-  const minutes = now.diff(createdAt, "minute");
+  const minutes = now.diff(createdAt, 'minute');
   if (minutes < 60) return `${minutes}m`;
-  const hours = now.diff(createdAt, "hour");
+  const hours = now.diff(createdAt, 'hour');
   if (hours < 24) return `${hours}h`;
-  const days = now.diff(createdAt, "day");
+  const days = now.diff(createdAt, 'day');
   if (days < 7) return `${days}d`;
-  const weeks = now.diff(createdAt, "week");
+  const weeks = now.diff(createdAt, 'week');
   if (weeks < 4) return `${weeks}w`;
-  return createdAt.format("DD MMM YYYY");
+  return createdAt.format('DD MMM YYYY');
 }
 
 export default function NotificationItem({
@@ -100,16 +100,14 @@ export default function NotificationItem({
   onDelete,
   compact = false,
 }: NotificationItemProps) {
-  const { t } = useTranslation(lng, "notifications");
+  const { t } = useTranslation(lng, 'notifications');
   const targetPath = getNotificationTargetPath(notification, lng);
   const messageKey = getMessageKey(notification.type);
   let eventData: Record<string, string> = notification.eventData;
-  if (notification.type === "user_published_schedule") {
+  if (notification.type === 'user_published_schedule') {
     eventData = { ...eventData };
-    if (eventData.startDate)
-      eventData.startDate = dayjs(eventData.startDate).format("DD/MM/YYYY");
-    if (eventData.endDate)
-      eventData.endDate = dayjs(eventData.endDate).format("DD/MM/YYYY");
+    if (eventData.startDate) eventData.startDate = dayjs(eventData.startDate).format('DD/MM/YYYY');
+    if (eventData.endDate) eventData.endDate = dayjs(eventData.endDate).format('DD/MM/YYYY');
   }
   const message = t(messageKey, eventData as any) as string;
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -133,25 +131,23 @@ export default function NotificationItem({
       data-read={String(notification.read)}
       data-notification-type={notification.type}
       sx={{
-        display: "flex",
-        alignItems: "flex-start",
+        display: 'flex',
+        alignItems: 'flex-start',
         gap: 1,
         px: compact ? 1 : 2,
         py: 1,
-        backgroundColor: notification.read
-          ? "transparent"
-          : "rgba(25,118,210,0.05)",
-        "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
+        backgroundColor: notification.read ? 'transparent' : 'rgba(25,118,210,0.05)',
+        '&:hover': { backgroundColor: 'rgba(0,0,0,0.03)' },
       }}
     >
       <Link
         href={targetPath}
         onClick={handleClick}
-        style={{ flexGrow: 1, textDecoration: "none", color: "inherit" }}
+        style={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}
       >
         <Typography
           data-testid="notification-message"
-          variant={compact ? "body2" : "body1"}
+          variant={compact ? 'body2' : 'body1'}
           fontWeight={notification.read ? 400 : 600}
           sx={{ lineHeight: 1.4 }}
         >
@@ -160,18 +156,14 @@ export default function NotificationItem({
       </Link>
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
           ml: 1,
         }}
       >
-        <Typography
-          data-testid="notification-time-since"
-          variant="caption"
-          color="text.secondary"
-        >
+        <Typography data-testid="notification-time-since" variant="caption" color="text.secondary">
           {getRelativeTime(notification.createdAt)}
         </Typography>
         {!compact && (onRead || onDelete) && (
@@ -188,8 +180,8 @@ export default function NotificationItem({
               anchorEl={menuAnchorEl}
               open={menuOpen}
               onClose={handleMenuClose}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
               {onRead && (
                 <MenuItem
@@ -199,7 +191,7 @@ export default function NotificationItem({
                     handleMenuClose();
                   }}
                 >
-                  <ListItemText>{t("mark_as_read")}</ListItemText>
+                  <ListItemText>{t('mark_as_read')}</ListItemText>
                 </MenuItem>
               )}
               {onDelete && (
@@ -211,7 +203,7 @@ export default function NotificationItem({
                     handleMenuClose();
                   }}
                 >
-                  <ListItemText>{t("delete")}</ListItemText>
+                  <ListItemText>{t('delete')}</ListItemText>
                 </MenuItem>
               )}
             </Menu>

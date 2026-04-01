@@ -1,8 +1,8 @@
-import React from "react";
-import { Box, Button, Chip } from "@mui/material";
-import { Clear as ClearIcon, Sort as SortIcon } from "@mui/icons-material";
-import { useTranslation } from "../../../app/i18n/client";
-import { FilterSortProps } from "./types";
+import React from 'react';
+import { Box, Button, Chip } from '@mui/material';
+import { Clear as ClearIcon, Sort as SortIcon } from '@mui/icons-material';
+import { useTranslation } from '../../../app/i18n/client';
+import { FilterSortProps } from './types';
 
 export function FilterSortSection({
   lng,
@@ -12,7 +12,7 @@ export function FilterSortSection({
   onRemoveSort,
   onResetAll,
 }: FilterSortProps) {
-  const { t } = useTranslation(lng, "shift-demands");
+  const { t } = useTranslation(lng, 'shift-demands');
 
   const hasFiltersOrSort = filters.length > 0 || sort !== null;
 
@@ -25,7 +25,7 @@ export function FilterSortSection({
       {sort && (
         <Chip
           icon={<SortIcon />}
-          label={`Sort: ${sort.label} ${sort.direction === "asc" ? "↑" : "↓"}`}
+          label={`Sort: ${sort.label} ${sort.direction === 'asc' ? '↑' : '↓'}`}
           onDelete={onRemoveSort}
           variant="outlined"
           color="primary"
@@ -44,13 +44,8 @@ export function FilterSortSection({
         />
       ))}
 
-      <Button
-        size="small"
-        onClick={onResetAll}
-        startIcon={<ClearIcon />}
-        sx={{ ml: 1 }}
-      >
-        {t("reset")}
+      <Button size="small" onClick={onResetAll} startIcon={<ClearIcon />} sx={{ ml: 1 }}>
+        {t('reset')}
       </Button>
     </Box>
   );

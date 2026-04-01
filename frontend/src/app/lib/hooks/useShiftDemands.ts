@@ -3,8 +3,8 @@
  * Provides data fetching, caching, and mutation capabilities
  */
 
-import { useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ShiftDemandDTO,
   ShiftDemandCreateDTO,
@@ -14,53 +14,48 @@ import {
   BulkUpsertResponse,
   UseShiftDemandsResult,
   UseShiftDemandMutationsResult,
-} from "../../../types/shiftDemand";
-import { ShiftDemandApi } from "../api/shiftDemandApi";
-import { useApiClient } from "../api-client";
-import { useAuth } from "../../../contexts/auth-context";
-import dayjs from "dayjs";
+} from '../../../types/shiftDemand';
+import { ShiftDemandApi } from '../api/shiftDemandApi';
+import { useApiClient } from '../api-client';
+import { useAuth } from '../../../contexts/auth-context';
+import dayjs from 'dayjs';
 /**
  * Query key factory for shift demands
  */
 export const shiftDemandKeys = {
-  all: ["shift-demands"] as const,
-  teams: (teamId: string) => [...shiftDemandKeys.all, "team", teamId] as const,
+  all: ['shift-demands'] as const,
+  teams: (teamId: string) => [...shiftDemandKeys.all, 'team', teamId] as const,
   period: (teamId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
     [
       ...shiftDemandKeys.teams(teamId),
-      "period",
+      'period',
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
   matrix: (teamId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
     [
       ...shiftDemandKeys.teams(teamId),
-      "matrix",
+      'matrix',
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
   summary: (teamId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
     [
       ...shiftDemandKeys.teams(teamId),
-      "summary",
+      'summary',
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
-  shift: (
-    teamId: string,
-    shiftId: string,
-    startDate: dayjs.Dayjs,
-    endDate: dayjs.Dayjs,
-  ) =>
+  shift: (teamId: string, shiftId: string, startDate: dayjs.Dayjs, endDate: dayjs.Dayjs) =>
     [
       ...shiftDemandKeys.teams(teamId),
-      "shift",
+      'shift',
       shiftId,
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
   source: (teamId: string, source: ShiftDemandSource, sourceId?: string) =>
-    [...shiftDemandKeys.teams(teamId), "source", source, sourceId] as const,
+    [...shiftDemandKeys.teams(teamId), 'source', source, sourceId] as const,
 };
 
 /**
@@ -113,13 +108,7 @@ export const useShiftDemandsMatrix = (
 
   return useQuery({
     queryKey: shiftDemandKeys.matrix(teamId, startDate, endDate),
-    queryFn: () =>
-      ShiftDemandApi.getShiftDemandsMatrix(
-        apiClient,
-        teamId,
-        startDate,
-        endDate,
-      ),
+    queryFn: () => ShiftDemandApi.getShiftDemandsMatrix(apiClient, teamId, startDate, endDate),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     enabled: options?.enabled !== false && isAuthenticated && !!user?.id_token,
@@ -140,18 +129,8 @@ export const useShiftDemands = (
     enabled?: boolean;
   },
 ): UseShiftDemandsResult => {
-  const demandsQuery = useShiftDemandsByPeriod(
-    teamId,
-    startDate,
-    endDate,
-    options,
-  );
-  const matrixQuery = useShiftDemandsMatrix(
-    teamId,
-    startDate,
-    endDate,
-    options,
-  );
+  const demandsQuery = useShiftDemandsByPeriod(teamId, startDate, endDate, options);
+  const matrixQuery = useShiftDemandsMatrix(teamId, startDate, endDate, options);
 
   const demands = useMemo(() => demandsQuery.data || [], [demandsQuery.data]);
 
@@ -161,9 +140,7 @@ export const useShiftDemands = (
     demands.forEach((demand) => {
       if (demand.id) {
         // Use shiftId-date combination as key for cell lookups
-        const dateStr = new Date(demand.date * 1000)
-          .toISOString()
-          .split("T")[0];
+        const dateStr = new Date(demand.date * 1000).toISOString().split('T')[0];
         const key = `${demand.shiftId}-${dateStr}`;
         map.set(key, demand);
       }
@@ -183,9 +160,7 @@ export const useShiftDemands = (
 /**
  * Enhanced hook for shift demand mutations with proper error handling and optimistic updates
  */
-export const useShiftDemandMutations = (
-  teamId: string,
-): UseShiftDemandMutationsResult => {
+export const useShiftDemandMutations = (teamId: string): UseShiftDemandMutationsResult => {
   const queryClient = useQueryClient();
   const apiClient = useApiClient();
   const { isAuthenticated, user } = useAuth();
@@ -196,11 +171,9 @@ export const useShiftDemandMutations = (
 
   // Create mutation with optimistic updates
   const create = useMutation({
-    mutationFn: async (params: {
-      demand: Omit<ShiftDemandCreateDTO, "teamId">;
-    }) => {
+    mutationFn: async (params: { demand: Omit<ShiftDemandCreateDTO, 'teamId'> }) => {
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
       return ShiftDemandApi.createShiftDemand(apiClient, teamId, params.demand);
     },
@@ -211,9 +184,7 @@ export const useShiftDemandMutations = (
       });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData(
-        shiftDemandKeys.teams(teamId),
-      );
+      const previousData = queryClient.getQueryData(shiftDemandKeys.teams(teamId));
 
       // Optimistically update the cache
       const optimisticDemand: ShiftDemandDTO = {
@@ -238,12 +209,9 @@ export const useShiftDemandMutations = (
     onError: (err, variables, context) => {
       // Rollback on error
       if (context?.previousData) {
-        queryClient.setQueryData(
-          shiftDemandKeys.teams(teamId),
-          context.previousData,
-        );
+        queryClient.setQueryData(shiftDemandKeys.teams(teamId), context.previousData);
       }
-      console.error("Failed to create shift demand:", err);
+      console.error('Failed to create shift demand:', err);
     },
     onSettled: () => {
       // Always refetch after error or success
@@ -253,29 +221,19 @@ export const useShiftDemandMutations = (
 
   // Update mutation with optimistic updates and zero count handling
   const update = useMutation({
-    mutationFn: async (params: {
-      demandId: string;
-      demand: ShiftDemandUpdateDTO;
-    }) => {
+    mutationFn: async (params: { demandId: string; demand: ShiftDemandUpdateDTO }) => {
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
-      return ShiftDemandApi.updateShiftDemand(
-        apiClient,
-        teamId,
-        params.demandId,
-        params.demand,
-      );
+      return ShiftDemandApi.updateShiftDemand(apiClient, teamId, params.demandId, params.demand);
     },
     onMutate: async (variables) => {
       await queryClient.cancelQueries({
         queryKey: shiftDemandKeys.teams(teamId),
       });
 
-      const previousData = queryClient.getQueryData(
-        shiftDemandKeys.teams(teamId),
-      );
+      const previousData = queryClient.getQueryData(shiftDemandKeys.teams(teamId));
 
       // Handle zero count differently in optimistic updates
       if (variables.demand.count === 0) {
@@ -312,12 +270,9 @@ export const useShiftDemandMutations = (
     },
     onError: (err, variables, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(
-          shiftDemandKeys.teams(teamId),
-          context.previousData,
-        );
+        queryClient.setQueryData(shiftDemandKeys.teams(teamId), context.previousData);
       }
-      console.error("Failed to update shift demand:", err);
+      console.error('Failed to update shift demand:', err);
     },
     onSettled: () => {
       invalidateQueries();
@@ -328,7 +283,7 @@ export const useShiftDemandMutations = (
   const deleteMutation = useMutation({
     mutationFn: async (demandId: string) => {
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
       await ShiftDemandApi.deleteShiftDemand(apiClient, teamId, demandId);
     },
@@ -348,7 +303,7 @@ export const useShiftDemandMutations = (
       });
     },
     onError: (error: Error) => {
-      console.error("Failed to delete shift demand:", error);
+      console.error('Failed to delete shift demand:', error);
     },
     onSettled: () => {
       invalidateQueries();
@@ -357,9 +312,9 @@ export const useShiftDemandMutations = (
 
   // Bulk upsert mutation (for bulk operations)
   const bulkUpsert = useMutation({
-    mutationFn: async (demands: Omit<ShiftDemandCreateDTO, "teamId">[]) => {
+    mutationFn: async (demands: Omit<ShiftDemandCreateDTO, 'teamId'>[]) => {
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
       return ShiftDemandApi.bulkUpsertShiftDemands(apiClient, teamId, demands);
     },
@@ -367,7 +322,7 @@ export const useShiftDemandMutations = (
       invalidateQueries();
     },
     onError: (error: Error) => {
-      console.error("Failed to bulk upsert shift demands:", error);
+      console.error('Failed to bulk upsert shift demands:', error);
     },
   });
 

@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useParams } from "next/navigation";
+import React from 'react';
+import { useParams } from 'next/navigation';
 // Components
-import SwapTab from "../../../../components/swaps/SwapTab";
-import { AccessGuard } from "@/components/access/access-guard";
-import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
+import SwapTab from '../../../../components/swaps/SwapTab';
+import { AccessGuard } from '@/components/access/access-guard';
+import ReactQueryProvider from '@/components/providers/ReactQueryProvider';
 // Context
-import { useTeam } from "@/context/TeamContext";
-import { useUser } from "@/context/UserContext";
+import { useTeam } from '@/context/TeamContext';
+import { useUser } from '@/context/UserContext';
 
 export default function SwapsPage() {
   const params = useParams();
-  const lng = (params as any)?.lng || "en";
+  const lng = (params as any)?.lng || 'en';
   const { selectedTeam } = useTeam();
   const { user } = useUser();
 
@@ -21,11 +21,7 @@ export default function SwapsPage() {
     user && (
       <AccessGuard route="/swaps" teamWithMembership={selectedTeam}>
         <ReactQueryProvider>
-          <SwapTab
-            teamWithMembership={selectedTeam}
-            currentUserId={user.id}
-            lng={lng}
-          />
+          <SwapTab teamWithMembership={selectedTeam} currentUserId={user.id} lng={lng} />
         </ReactQueryProvider>
       </AccessGuard>
     )

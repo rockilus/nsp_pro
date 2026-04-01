@@ -1,13 +1,10 @@
-import { test, expect } from "@playwright/test";
-import { DimensionTestBase } from "../../../utils/dimension-test-base";
-import {
-  DimensionEntryType,
-  DimensionType,
-} from "../../../../src/types/dimension";
+import { test, expect } from '@playwright/test';
+import { DimensionTestBase } from '../../../utils/dimension-test-base';
+import { DimensionEntryType, DimensionType } from '../../../../src/types/dimension';
 
 const dimensionTestBase = new DimensionTestBase();
 
-test.describe("NewDimensionForm Component", () => {
+test.describe('NewDimensionForm Component', () => {
   test.beforeAll(async () => {
     // Setup the common dimension test environment
     await dimensionTestBase.setupDimensionTests(test.info().workerIndex);
@@ -34,16 +31,12 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify popup title
     const popupTitle = dimensionTestBase.getPopupTitle(page);
-    await expect(popupTitle).toContainText("New property");
+    await expect(popupTitle).toContainText('New property');
 
-    console.log(
-      "✅ Popup appears with correct title when clicking Add Property button",
-    );
+    console.log('✅ Popup appears with correct title when clicking Add Property button');
   });
 
-  test("should close dialog when clicking on the close icon", async ({
-    page,
-  }) => {
+  test('should close dialog when clicking on the close icon', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
@@ -61,10 +54,10 @@ test.describe("NewDimensionForm Component", () => {
     // Verify popup is no longer visible
     await expect(popup).not.toBeVisible();
 
-    console.log("✅ Popup closes when clicking close icon");
+    console.log('✅ Popup closes when clicking close icon');
   });
 
-  test("should contain a name text field", async ({ page }) => {
+  test('should contain a name text field', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
@@ -74,19 +67,17 @@ test.describe("NewDimensionForm Component", () => {
     await expect(nameField).toBeVisible();
 
     // Verify it's a text input - target the input element within the TextField
-    const nameInput = nameField.locator("input");
-    await expect(nameInput).toHaveAttribute("type", "text");
+    const nameInput = nameField.locator('input');
+    await expect(nameInput).toHaveAttribute('type', 'text');
 
     // Verify the label
     const nameFieldLabel = page.locator('label:has-text("Name")');
     await expect(nameFieldLabel).toBeVisible();
 
-    console.log("✅ Name text field is present and properly labeled");
+    console.log('✅ Name text field is present and properly labeled');
   });
 
-  test("should contain a type select with correct options", async ({
-    page,
-  }) => {
+  test('should contain a type select with correct options', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
@@ -108,14 +99,8 @@ test.describe("NewDimensionForm Component", () => {
     //   page,
     //   DimensionEntryType.INT
     // );
-    const boolOption = dimensionTestBase.getTypeOption(
-      page,
-      DimensionEntryType.BOOL,
-    );
-    const tagsOption = dimensionTestBase.getTypeOption(
-      page,
-      DimensionEntryType.DIM_ENTRIES,
-    );
+    const boolOption = dimensionTestBase.getTypeOption(page, DimensionEntryType.BOOL);
+    const tagsOption = dimensionTestBase.getTypeOption(page, DimensionEntryType.DIM_ENTRIES);
 
     // await expect(textOption).toBeVisible();
     // await expect(numberOption).toBeVisible();
@@ -125,17 +110,13 @@ test.describe("NewDimensionForm Component", () => {
     // Verify option text content
     // await expect(textOption).toContainText("Text");
     // await expect(numberOption).toContainText("Number");
-    await expect(boolOption).toContainText("True/False");
-    await expect(tagsOption).toContainText("Tags");
+    await expect(boolOption).toContainText('True/False');
+    await expect(tagsOption).toContainText('Tags');
 
-    console.log(
-      "✅ Type select contains all expected options with correct labels",
-    );
+    console.log('✅ Type select contains all expected options with correct labels');
   });
 
-  test("should return error when clicking add button with empty name", async ({
-    page,
-  }) => {
+  test('should return error when clicking add button with empty name', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
@@ -148,8 +129,8 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify error appears for name field
     const nameField = dimensionTestBase.getNameTextField(page);
-    const nameInput = nameField.locator("input");
-    await expect(nameInput).toHaveAttribute("aria-invalid", "true");
+    const nameInput = nameField.locator('input');
+    await expect(nameInput).toHaveAttribute('aria-invalid', 'true');
 
     // Verify helper text contains error message
     const helperText = page.locator(
@@ -161,27 +142,23 @@ test.describe("NewDimensionForm Component", () => {
     const popup = dimensionTestBase.getNewDimensionPopup(page);
     await expect(popup).toBeVisible();
 
-    console.log("✅ Error message appears when name is empty");
+    console.log('✅ Error message appears when name is empty');
   });
 
-  test("should return error when clicking add button with empty type", async ({
-    page,
-  }) => {
+  test('should return error when clicking add button with empty type', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
 
     // Fill name field, leave type empty
-    await dimensionTestBase.fillNameField(page, "Test Property");
+    await dimensionTestBase.fillNameField(page, 'Test Property');
 
     // Click add button without selecting a type
     await dimensionTestBase.clickAddButton(page);
 
     // Verify error appears for type field
     const typeSelect = dimensionTestBase.getTypeSelect(page);
-    await expect(typeSelect.locator(".MuiOutlinedInput-root")).toHaveClass(
-      /Mui-error/,
-    );
+    await expect(typeSelect.locator('.MuiOutlinedInput-root')).toHaveClass(/Mui-error/);
 
     // Verify type error message appears
     const typeErrorMessage = dimensionTestBase.getTypeErrorMessage(page);
@@ -191,10 +168,10 @@ test.describe("NewDimensionForm Component", () => {
     const popup = dimensionTestBase.getNewDimensionPopup(page);
     await expect(popup).toBeVisible();
 
-    console.log("✅ Error message appears when type is not selected");
+    console.log('✅ Error message appears when type is not selected');
   });
 
-  test("should return error when clicking add button with both name and type empty", async ({
+  test('should return error when clicking add button with both name and type empty', async ({
     page,
   }) => {
     // Open the popup
@@ -206,14 +183,10 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify both fields show errors
     const nameField = dimensionTestBase.getNameTextField(page);
-    await expect(nameField.locator(".MuiOutlinedInput-root")).toHaveClass(
-      /Mui-error/,
-    );
+    await expect(nameField.locator('.MuiOutlinedInput-root')).toHaveClass(/Mui-error/);
 
     const typeSelect = dimensionTestBase.getTypeSelect(page);
-    await expect(typeSelect.locator(".MuiOutlinedInput-root")).toHaveClass(
-      /Mui-error/,
-    );
+    await expect(typeSelect.locator('.MuiOutlinedInput-root')).toHaveClass(/Mui-error/);
 
     // Verify both error messages appear
     const nameHelperText = page.locator(
@@ -228,17 +201,15 @@ test.describe("NewDimensionForm Component", () => {
     const popup = dimensionTestBase.getNewDimensionPopup(page);
     await expect(popup).toBeVisible();
 
-    console.log("✅ Both error messages appear when both fields are empty");
+    console.log('✅ Both error messages appear when both fields are empty');
   });
 
-  test("should close dialog when form is submitted with valid data", async ({
-    page,
-  }) => {
+  test('should close dialog when form is submitted with valid data', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
 
-    const propertyName = "Test Property";
+    const propertyName = 'Test Property';
 
     // Fill in valid data
     await dimensionTestBase.fillNameField(page, propertyName);
@@ -254,10 +225,10 @@ test.describe("NewDimensionForm Component", () => {
     const popup = dimensionTestBase.getNewDimensionPopup(page);
     await expect(popup).not.toBeVisible();
 
-    console.log("✅ Popup closes when form is submitted with valid data");
+    console.log('✅ Popup closes when form is submitted with valid data');
   });
 
-  test("should close dialog when pressing escape", async ({ page }) => {
+  test('should close dialog when pressing escape', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
@@ -275,10 +246,10 @@ test.describe("NewDimensionForm Component", () => {
     // Verify popup is no longer visible
     await expect(popup).not.toBeVisible();
 
-    console.log("✅ Popup closes when pressing Escape");
+    console.log('✅ Popup closes when pressing Escape');
   });
 
-  test("should close dialog when clicking away", async ({ page }) => {
+  test('should close dialog when clicking away', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
@@ -296,24 +267,22 @@ test.describe("NewDimensionForm Component", () => {
     // Verify popup is no longer visible
     await expect(popup).not.toBeVisible();
 
-    console.log("✅ Popup closes when clicking away");
+    console.log('✅ Popup closes when clicking away');
   });
 
-  test("should clear all fields when closing and reopening dialog", async ({
-    page,
-  }) => {
+  test('should clear all fields when closing and reopening dialog', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
 
     // Fill in some data
-    await dimensionTestBase.fillNameField(page, "Test Property");
+    await dimensionTestBase.fillNameField(page, 'Test Property');
     await dimensionTestBase.selectType(page, DimensionEntryType.BOOL);
 
     // Verify fields have values
     const nameField = dimensionTestBase.getNameTextField(page);
-    const nameInput = nameField.locator("input");
-    await expect(nameInput).toHaveValue("Test Property");
+    const nameInput = nameField.locator('input');
+    await expect(nameInput).toHaveValue('Test Property');
 
     // Close the popup
     await dimensionTestBase.closePopupViaCloseButton(page);
@@ -325,19 +294,17 @@ test.describe("NewDimensionForm Component", () => {
 
     // Verify fields are cleared
     const nameFieldAfterReopen = dimensionTestBase.getNameTextField(page);
-    const nameInputAfterReopen = nameFieldAfterReopen.locator("input");
-    await expect(nameInputAfterReopen).toHaveValue("");
+    const nameInputAfterReopen = nameFieldAfterReopen.locator('input');
+    await expect(nameInputAfterReopen).toHaveValue('');
 
     // Verify type select is cleared (should show placeholder)
     const typeSelectAfterReopen = dimensionTestBase.getTypeSelectDropdown(page);
-    await expect(typeSelectAfterReopen).toHaveText("");
+    await expect(typeSelectAfterReopen).toHaveText('');
 
-    console.log("✅ All fields are cleared when popup is reopened");
+    console.log('✅ All fields are cleared when popup is reopened');
   });
 
-  test("should show tags section when type 'tags' is selected", async ({
-    page,
-  }) => {
+  test("should show tags section when type 'tags' is selected", async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
@@ -355,18 +322,14 @@ test.describe("NewDimensionForm Component", () => {
     // Verify tags section disappears
     await expect(tagsSection).not.toBeVisible();
 
-    console.log(
-      "✅ Tags section appears/disappears correctly based on type selection",
-    );
+    console.log('✅ Tags section appears/disappears correctly based on type selection');
   });
 
-  test("should handle different dimension types correctly", async ({
-    page,
-  }) => {
+  test('should handle different dimension types correctly', async ({ page }) => {
     const types = [
       // { type: DimensionEntryType.STR, name: "Text Property" },
       // { type: DimensionEntryType.INT, name: "Number Property" },
-      { type: DimensionEntryType.BOOL, name: "Boolean Property" },
+      { type: DimensionEntryType.BOOL, name: 'Boolean Property' },
     ];
 
     for (const { type, name } of types) {
@@ -387,10 +350,10 @@ test.describe("NewDimensionForm Component", () => {
       await dimensionTestBase.waitForPopupHidden(page);
     }
 
-    console.log("✅ Form handles different dimension types correctly");
+    console.log('✅ Form handles different dimension types correctly');
   });
 
-  test("should show new text field to create tags when selecting dimension type tags", async ({
+  test('should show new text field to create tags when selecting dimension type tags', async ({
     page,
   }) => {
     // Open the popup
@@ -413,20 +376,16 @@ test.describe("NewDimensionForm Component", () => {
     );
     await expect(tagInputField).toBeVisible();
 
-    console.log(
-      "✅ Text field for creating tags appears when tags type is selected",
-    );
+    console.log('✅ Text field for creating tags appears when tags type is selected');
   });
 
-  test("should show error message when clicking add before entering any tag", async ({
-    page,
-  }) => {
+  test('should show error message when clicking add before entering any tag', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
 
     // Fill name field and select tags type
-    await dimensionTestBase.fillNameField(page, "Test Tags Property");
+    await dimensionTestBase.fillNameField(page, 'Test Tags Property');
     await dimensionTestBase.selectType(page, DimensionEntryType.DIM_ENTRIES);
 
     // Verify tags section is visible
@@ -446,20 +405,16 @@ test.describe("NewDimensionForm Component", () => {
     const popup = dimensionTestBase.getNewDimensionPopup(page);
     await expect(popup).toBeVisible();
 
-    console.log(
-      "✅ Error message appears when trying to add tags property without any tags",
-    );
+    console.log('✅ Error message appears when trying to add tags property without any tags');
   });
 
-  test("should add new tag to list when entering tag name and pressing enter", async ({
-    page,
-  }) => {
+  test('should add new tag to list when entering tag name and pressing enter', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
 
     // Fill name field and select tags type
-    await dimensionTestBase.fillNameField(page, "Test Tags Property");
+    await dimensionTestBase.fillNameField(page, 'Test Tags Property');
     await dimensionTestBase.selectType(page, DimensionEntryType.DIM_ENTRIES);
 
     // Get the tag input field
@@ -468,11 +423,11 @@ test.describe("NewDimensionForm Component", () => {
     );
     await expect(tagInputField).toBeVisible();
 
-    const tagName = "Test Tag";
+    const tagName = 'Test Tag';
 
     // Type tag name and press enter
     await tagInputField.fill(tagName);
-    await tagInputField.press("Enter");
+    await tagInputField.press('Enter');
 
     // Verify tag appears in the tags list
     const tagInList = page.locator(
@@ -481,32 +436,28 @@ test.describe("NewDimensionForm Component", () => {
     await expect(tagInList).toBeVisible();
 
     // Verify input field is cleared after adding tag
-    await expect(tagInputField).toHaveValue("");
+    await expect(tagInputField).toHaveValue('');
 
-    console.log(
-      "✅ New tag is added to list when entering name and pressing enter",
-    );
+    console.log('✅ New tag is added to list when entering name and pressing enter');
   });
 
-  test("should remove tag from list when clicking delete cross", async ({
-    page,
-  }) => {
+  test('should remove tag from list when clicking delete cross', async ({ page }) => {
     // Open the popup
     await dimensionTestBase.openNewDimensionPopup(page);
     await dimensionTestBase.waitForPopupVisible(page);
 
     // Fill name field and select tags type
-    await dimensionTestBase.fillNameField(page, "Test Tags Property");
+    await dimensionTestBase.fillNameField(page, 'Test Tags Property');
     await dimensionTestBase.selectType(page, DimensionEntryType.DIM_ENTRIES);
 
     // Get the tag input field and add a tag
     const tagInputField = page.locator(
       '[data-testid="new-dimension-tags-section"] input[type="text"]',
     );
-    const tagName = "Test Tag to Delete";
+    const tagName = 'Test Tag to Delete';
 
     await tagInputField.fill(tagName);
-    await tagInputField.press("Enter");
+    await tagInputField.press('Enter');
 
     // Verify tag appears in the list
     const tagInList = page.locator(
@@ -524,6 +475,6 @@ test.describe("NewDimensionForm Component", () => {
     // Verify tag is removed from the list
     await expect(tagInList).not.toBeVisible();
 
-    console.log("✅ Tag is removed from list when clicking delete cross");
+    console.log('✅ Tag is removed from list when clicking delete cross');
   });
 });

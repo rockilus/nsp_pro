@@ -9,18 +9,18 @@
  * - Period type selector (week/month)
  */
 
-"use client";
+'use client';
 
-import React from "react";
-import dayjs, { Dayjs } from "dayjs";
+import React from 'react';
+import dayjs, { Dayjs } from 'dayjs';
 import {
   NavigateBefore as NavigateBeforeIcon,
   NavigateNext as NavigateNextIcon,
-} from "@mui/icons-material";
-import { useTranslation } from "@/app/i18n/client";
-import styles from "./TimeNavigation.module.css";
+} from '@mui/icons-material';
+import { useTranslation } from '@/app/i18n/client';
+import styles from './TimeNavigation.module.css';
 
-export type TimeFrame = "week" | "month";
+export type TimeFrame = 'week' | 'month';
 
 interface TimeNavigationProps {
   // Language code for translations
@@ -61,14 +61,14 @@ export function formatPeriodLabel(
 ): string {
   // Helper: short month (3 letters), remove dots and capitalize
   const shortMonth = (d: Dayjs) => {
-    const raw = d.locale(lng).format("MMM").replace(/\./g, "");
+    const raw = d.locale(lng).format('MMM').replace(/\./g, '');
     const short = raw.slice(0, 3);
     return short.charAt(0).toUpperCase() + short.slice(1);
   };
 
   // Both week and month views use the same formatting logic
   if (start.month() === end.month() && start.year() === end.year()) {
-    const full = start.locale(lng).format("MMMM YYYY");
+    const full = start.locale(lng).format('MMMM YYYY');
     return full.charAt(0).toUpperCase() + full.slice(1);
   } else if (start.month() !== end.month() && start.year() === end.year()) {
     return `${shortMonth(start)} - ${shortMonth(end)} ${end.year()}`;
@@ -88,12 +88,11 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
   onTimeFrameChange,
   isLoading = false,
 }) => {
-  const { t } = useTranslation(lng, "common");
+  const { t } = useTranslation(lng, 'common');
 
-  const todayTooltip = dayjs().format("DD/MM/YYYY");
-  const previousTooltip =
-    timeFrame === "week" ? t("previous_week") : t("previous_month");
-  const nextTooltip = timeFrame === "week" ? t("next_week") : t("next_month");
+  const todayTooltip = dayjs().format('DD/MM/YYYY');
+  const previousTooltip = timeFrame === 'week' ? t('previous_week') : t('previous_month');
+  const nextTooltip = timeFrame === 'week' ? t('next_week') : t('next_month');
 
   return (
     <div className={styles.container}>
@@ -106,7 +105,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         aria-label="Navigate to today"
         title={todayTooltip}
       >
-        {t("today")}
+        {t('today')}
       </button>
 
       {/* Previous Period Button */}
@@ -144,12 +143,7 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
           lng,
         )}`}
       >
-        {formatPeriodLabel(
-          currentPeriodStart,
-          currentPeriodEnd,
-          timeFrame,
-          lng,
-        )}
+        {formatPeriodLabel(currentPeriodStart, currentPeriodEnd, timeFrame, lng)}
       </span>
 
       {/* Period Type Selector */}
@@ -161,8 +155,8 @@ export const TimeNavigation: React.FC<TimeNavigationProps> = ({
         data-testid="time-nav-select"
         aria-label="Select time frame"
       >
-        <option value="week">{t("week")}</option>
-        <option value="month">{t("month")}</option>
+        <option value="week">{t('week')}</option>
+        <option value="month">{t('month')}</option>
       </select>
     </div>
   );

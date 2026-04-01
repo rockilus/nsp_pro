@@ -1,14 +1,14 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { Dispatch, SetStateAction, useState } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import TableCell from "@mui/material/TableCell";
-import TextField from "@mui/material/TextField";
+import TableCell from '@mui/material/TableCell';
+import TextField from '@mui/material/TextField';
 // Styles
-import "./shift-field-cell-recuperation.css";
+import './shift-field-cell-recuperation.css';
 // Types
-import { ShiftT, ShiftType } from "../../../types/shift";
+import { ShiftT, ShiftType } from '../../../types/shift';
 
 dayjs.extend(utc);
 
@@ -25,16 +25,14 @@ export default function ShiftFieldCellRecuperation({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateShift: (updatedShift: ShiftT) => void;
 }) {
-  const { t } = useTranslation(lng, "shift-page");
+  const { t } = useTranslation(lng, 'shift-page');
 
-  const [valueState, setValueState] = useState<number | "">(
-    shift.recuperationTime,
-  );
+  const [valueState, setValueState] = useState<number | ''>(shift.recuperationTime);
 
   const handleEditConfirm = () => {
-    if (valueState !== shift.recuperationTime && valueState !== "") {
+    if (valueState !== shift.recuperationTime && valueState !== '') {
       handleUpdateShift({ ...shift, recuperationTime: valueState });
-    } else if (valueState === "") {
+    } else if (valueState === '') {
       setValueState(shift.recuperationTime);
     }
     setEditing({});
@@ -50,13 +48,12 @@ export default function ShiftFieldCellRecuperation({
       component="th"
       scope="row"
       onClick={() =>
-        shift.shiftType === ShiftType.DUTY &&
-        setEditing({ [shift.id]: "recuperation" })
+        shift.shiftType === ShiftType.DUTY && setEditing({ [shift.id]: 'recuperation' })
       }
       sx={{
         paddingY: 0,
-        textAlign: "center",
-        cursor: shift.shiftType === ShiftType.DUTY ? "pointer" : "default",
+        textAlign: 'center',
+        cursor: shift.shiftType === ShiftType.DUTY ? 'pointer' : 'default',
       }}
     >
       <div className="cell-content-container">
@@ -67,16 +64,12 @@ export default function ShiftFieldCellRecuperation({
               type="number"
               name="Staffing"
               value={valueState}
-              onChange={(e) =>
-                setValueState(
-                  e.target.value === "" ? "" : Number(e.target.value),
-                )
-              }
+              onChange={(e) => setValueState(e.target.value === '' ? '' : Number(e.target.value))}
               onBlur={handleEditConfirm}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === 'Enter') {
                   handleEditConfirm();
-                } else if (e.key === "Escape") {
+                } else if (e.key === 'Escape') {
                   handleEditCancel();
                 }
               }}
@@ -86,7 +79,7 @@ export default function ShiftFieldCellRecuperation({
             shift.recuperationTime
           )
         ) : (
-          <span className="not-applicable-label">{t("not_applicable")}</span>
+          <span className="not-applicable-label">{t('not_applicable')}</span>
         )}
       </div>
     </TableCell>

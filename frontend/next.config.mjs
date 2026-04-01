@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: "export",
+  output: 'export',
   trailingSlash: true,
   images: {
     unoptimized: true,
@@ -13,7 +13,7 @@ const nextConfig = {
   // is defined.
   turbopack: {
     // Use the current package (frontend/) as the workspace root
-    root: ".",
+    root: '.',
   },
 };
 

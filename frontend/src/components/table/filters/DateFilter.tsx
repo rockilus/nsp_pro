@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { TextField, Button, Box, Typography } from "@mui/material";
-import { ColumnFilter } from "../../../types/filter";
+import React, { useState } from 'react';
+import { TextField, Button, Box, Typography } from '@mui/material';
+import { ColumnFilter } from '../../../types/filter';
 
 interface DateFilterProps {
   onApply: (filter: ColumnFilter) => void;
@@ -17,14 +17,14 @@ export default function DateFilter({
   label,
   currentValue,
 }: DateFilterProps) {
-  const [startDate, setStartDate] = useState(currentValue?.start || "");
-  const [endDate, setEndDate] = useState(currentValue?.end || "");
+  const [startDate, setStartDate] = useState(currentValue?.start || '');
+  const [endDate, setEndDate] = useState(currentValue?.end || '');
 
   const handleApply = () => {
     if (startDate || endDate) {
       onApply({
         id: columnId,
-        type: "date",
+        type: 'date',
         value: { start: startDate, end: endDate },
         label: `${label} between ${startDate} and ${endDate}`,
       });
@@ -37,7 +37,7 @@ export default function DateFilter({
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
         Filter {label}
       </Typography>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <TextField
           type="date"
           size="small"
@@ -57,7 +57,7 @@ export default function DateFilter({
           data-testid={`filter-end-date-${columnId}`}
         />
       </Box>
-      <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
         <Button
           onClick={handleApply}
           variant="contained"
@@ -66,11 +66,7 @@ export default function DateFilter({
         >
           Apply
         </Button>
-        <Button
-          onClick={onClose}
-          size="small"
-          data-testid={`filter-cancel-${columnId}`}
-        >
+        <Button onClick={onClose} size="small" data-testid={`filter-cancel-${columnId}`}>
           Cancel
         </Button>
       </Box>

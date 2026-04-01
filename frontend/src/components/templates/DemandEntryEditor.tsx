@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 import {
   Box,
   TextField,
@@ -11,21 +11,18 @@ import {
   InputLabel,
   Typography,
   Chip,
-} from "@mui/material";
-import { Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
-import {
-  DemandEntryDTO,
-  TEMPLATE_CONSTRAINTS,
-} from "@/types/shift-demand-template";
+} from '@mui/material';
+import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+import { DemandEntryDTO, TEMPLATE_CONSTRAINTS } from '@/types/shift-demand-template';
 
 const DAYS_OF_WEEK = [
-  { value: 0, label: "Monday", short: "Mon" },
-  { value: 1, label: "Tuesday", short: "Tue" },
-  { value: 2, label: "Wednesday", short: "Wed" },
-  { value: 3, label: "Thursday", short: "Thu" },
-  { value: 4, label: "Friday", short: "Fri" },
-  { value: 5, label: "Saturday", short: "Sat" },
-  { value: 6, label: "Sunday", short: "Sun" },
+  { value: 0, label: 'Monday', short: 'Mon' },
+  { value: 1, label: 'Tuesday', short: 'Tue' },
+  { value: 2, label: 'Wednesday', short: 'Wed' },
+  { value: 3, label: 'Thursday', short: 'Thu' },
+  { value: 4, label: 'Friday', short: 'Fri' },
+  { value: 5, label: 'Saturday', short: 'Sat' },
+  { value: 6, label: 'Sunday', short: 'Sun' },
 ];
 
 interface Shift {
@@ -60,28 +57,25 @@ export const DemandEntryEditor: React.FC<DemandEntryEditorProps> = ({
   };
 
   const handleCountChange = (count: number) => {
-    const validCount = Math.max(
-      0,
-      Math.min(count, TEMPLATE_CONSTRAINTS.MAX_COUNT_PER_DEMAND),
-    );
+    const validCount = Math.max(0, Math.min(count, TEMPLATE_CONSTRAINTS.MAX_COUNT_PER_DEMAND));
     onChange({ ...entry, count: validCount });
   };
 
   return (
     <Box
       sx={{
-        display: "flex",
+        display: 'flex',
         gap: 2,
-        alignItems: "center",
+        alignItems: 'center',
         p: 2,
-        border: "1px solid",
-        borderColor: "divider",
+        border: '1px solid',
+        borderColor: 'divider',
         borderRadius: 1,
         mb: 1,
-        bgcolor: "background.paper",
-        "&:hover": {
-          borderColor: "primary.main",
-          bgcolor: "action.hover",
+        bgcolor: 'background.paper',
+        '&:hover': {
+          borderColor: 'primary.main',
+          bgcolor: 'action.hover',
         },
       }}
     >
@@ -134,24 +128,12 @@ export const DemandEntryEditor: React.FC<DemandEntryEditorProps> = ({
         helperText={`Max ${TEMPLATE_CONSTRAINTS.MAX_COUNT_PER_DEMAND}`}
       />
 
-      <Box
-        sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 120 }}
-      >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 120 }}>
         {selectedShift && (
-          <Chip
-            label={selectedShift.name}
-            size="small"
-            color="primary"
-            variant="outlined"
-          />
+          <Chip label={selectedShift.name} size="small" color="primary" variant="outlined" />
         )}
         {selectedDay && (
-          <Chip
-            label={selectedDay.short}
-            size="small"
-            color="secondary"
-            variant="outlined"
-          />
+          <Chip label={selectedDay.short} size="small" color="secondary" variant="outlined" />
         )}
       </Box>
 
@@ -161,7 +143,7 @@ export const DemandEntryEditor: React.FC<DemandEntryEditorProps> = ({
           color="error"
           size="small"
           aria-label="Delete demand entry"
-          sx={{ ml: "auto" }}
+          sx={{ ml: 'auto' }}
         >
           <DeleteIcon />
         </IconButton>
@@ -181,7 +163,7 @@ export const DemandEntryList: React.FC<DemandEntryListProps> = ({
   demands,
   shifts,
   onChange,
-  title = "Demand Entries",
+  title = 'Demand Entries',
 }) => {
   const handleEntryChange = (index: number, entry: DemandEntryDTO) => {
     const newDemands = [...demands];
@@ -196,7 +178,7 @@ export const DemandEntryList: React.FC<DemandEntryListProps> = ({
 
   const handleAddEntry = () => {
     const newEntry: DemandEntryDTO = {
-      shiftId: shifts[0]?.id || "",
+      shiftId: shifts[0]?.id || '',
       dayOfWeek: 0, // Monday
       count: 1,
     };
@@ -209,9 +191,9 @@ export const DemandEntryList: React.FC<DemandEntryListProps> = ({
     <Box>
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: 2,
         }}
       >
@@ -225,19 +207,14 @@ export const DemandEntryList: React.FC<DemandEntryListProps> = ({
             />
           )}
         </Typography>
-        <IconButton
-          onClick={handleAddEntry}
-          color="primary"
-          disabled={shifts.length === 0}
-        >
+        <IconButton onClick={handleAddEntry} color="primary" disabled={shifts.length === 0}>
           <AddIcon />
         </IconButton>
       </Box>
 
       {shifts.length === 0 && (
         <Typography color="text.secondary" sx={{ p: 2 }}>
-          No shifts available. Please create shifts first before adding demand
-          entries.
+          No shifts available. Please create shifts first before adding demand entries.
         </Typography>
       )}
 

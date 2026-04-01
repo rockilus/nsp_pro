@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Box,
   Button,
@@ -9,19 +9,16 @@ import {
   ListItemText,
   Typography,
   Divider,
-} from "@mui/material";
-import { useTranslation } from "../../../../app/i18n/client";
-import {
-  ReplacementCandidateT,
-  MostConstrainingReasonT,
-} from "../../../../types/replacement";
+} from '@mui/material';
+import { useTranslation } from '../../../../app/i18n/client';
+import { ReplacementCandidateT, MostConstrainingReasonT } from '../../../../types/replacement';
 import {
   getCategoryEmoji,
   getReasonLabel,
   formatWeeklyTime,
   formatMonthlyDuties,
-} from "../../../../utils/replacementHelpers";
-import { useIsMobile } from "@/hooks/useIsMobile";
+} from '../../../../utils/replacementHelpers';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 interface ReplacementCandidatesListProps {
   lng: string;
@@ -50,7 +47,7 @@ export function ReplacementCandidatesList({
   isSubmitting,
   isCheckingReplacement,
 }: ReplacementCandidatesListProps) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
   const isMobile = useIsMobile();
 
   return (
@@ -63,24 +60,24 @@ export function ReplacementCandidatesList({
           disabled={isCheckingReplacement}
           // fullWidth
           data-testid="check-replacement-button"
-          sx={{ mt: "16px", mb: "16px", textTransform: "none" }}
+          sx={{ mt: '16px', mb: '16px', textTransform: 'none' }}
         >
           {isCheckingReplacement ? (
             <>
               <CircularProgress size={16} sx={{ mr: 1 }} />
-              {t("checking")}
+              {t('checking')}
             </>
           ) : (
-            t("analyze_replacement")
+            t('analyze_replacement')
           )}
         </Button>
       )}
 
       {isOpen && candidates && candidates.length > 0 && (
         <>
-          <Divider sx={{ mb: "8px", mt: "16px" }} />
-          <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 1 }}>
-            {t("replacement_candidates")}{" "}
+          <Divider sx={{ mb: '8px', mt: '16px' }} />
+          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+            {t('replacement_candidates')}{' '}
           </Typography>
           {!isMobile && (
             <Button
@@ -90,13 +87,13 @@ export function ReplacementCandidatesList({
                 // Open dialog with all candidates for comparison
                 if (candidates.length > 0) onViewDetails(candidates[0]);
               }}
-              sx={{ textTransform: "none", mb: 1, ml: "auto" }}
+              sx={{ textTransform: 'none', mb: 1, ml: 'auto' }}
               data-testid="see-details-button"
             >
-              {t("see_details")}
+              {t('see_details')}
             </Button>
           )}
-          <List sx={{ maxHeight: 400, overflow: "auto", p: 0 }}>
+          <List sx={{ maxHeight: 400, overflow: 'auto', p: 0 }}>
             {candidates
               .filter((candidate) => candidate.rank !== 0)
               .map((candidate) => (
@@ -121,8 +118,8 @@ export function ReplacementCandidatesList({
                           <Box
                             component="span"
                             sx={{
-                              display: "inline-block",
-                              fontSize: "1.1rem",
+                              display: 'inline-block',
+                              fontSize: '1.1rem',
                             }}
                           >
                             {getCategoryEmoji(candidate.replacementCategory)}
@@ -140,16 +137,15 @@ export function ReplacementCandidatesList({
                           }}
                           disabled={isSubmitting}
                           data-testid={`replace-button-${candidate.workerId}`}
-                          sx={{ ml: "auto", textTransform: "none" }}
+                          sx={{ ml: 'auto', textTransform: 'none' }}
                         >
-                          {isSubmitting &&
-                          selectedCandidateId === candidate.workerId ? (
+                          {isSubmitting && selectedCandidateId === candidate.workerId ? (
                             <>
                               <CircularProgress size={12} sx={{ mr: 0.5 }} />
-                              {t("selecting")}
+                              {t('selecting')}
                             </>
                           ) : (
-                            t("replace")
+                            t('replace')
                           )}
                         </Button>
                       </Box>
@@ -162,18 +158,14 @@ export function ReplacementCandidatesList({
                         sx={{ mt: 0.25 }}
                       >
                         {formatWeeklyTime(
-                          candidate.replacementImplications.newWeeklyTime
-                            .newWeeklyWorkedMinutes,
-                          candidate.replacementImplications.newWeeklyTime
-                            .newWeeklyTimeDeltaMinutes,
-                        )}{" "}
-                        |{" "}
+                          candidate.replacementImplications.newWeeklyTime.newWeeklyWorkedMinutes,
+                          candidate.replacementImplications.newWeeklyTime.newWeeklyTimeDeltaMinutes,
+                        )}{' '}
+                        |{' '}
                         {formatMonthlyDuties(
-                          candidate.replacementImplications.newMonthlyDuties
-                            .newNumberMonthlyDuties,
-                          candidate.replacementImplications.newMonthlyDuties
-                            .newMonthlyDutiesDelta,
-                        )}{" "}
+                          candidate.replacementImplications.newMonthlyDuties.newNumberMonthlyDuties,
+                          candidate.replacementImplications.newMonthlyDuties.newMonthlyDutiesDelta,
+                        )}{' '}
                         | {getReasonLabel(candidate.mostConstrainingReason, t)}
                       </Typography>
                     }
@@ -181,18 +173,18 @@ export function ReplacementCandidatesList({
                 </ListItem>
               ))}
           </List>
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="outlined"
               color="primary"
               onClick={onCancel}
               data-testid="cancel-replacement-button"
-              sx={{ textTransform: "none" }}
+              sx={{ textTransform: 'none' }}
             >
-              {t("cancel")}
+              {t('cancel')}
             </Button>
           </Box>
-          <Divider sx={{ mt: "8px", mb: "12px" }} />{" "}
+          <Divider sx={{ mt: '8px', mb: '12px' }} />{' '}
         </>
       )}
     </Box>

@@ -2,9 +2,9 @@
  * API client for stats operations
  */
 
-import { StatsT, StatsHeaderT, StatsOptionsT } from "../../../types/stats";
-import { ShiftWorkerOptionT } from "../../../types/constraint";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { StatsT, StatsHeaderT, StatsOptionsT } from '../../../types/stats';
+import { ShiftWorkerOptionT } from '../../../types/constraint';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class StatsApi extends BaseApi {
   /**
@@ -17,15 +17,15 @@ export class StatsApi extends BaseApi {
   ): Promise<StatsT> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!statsOptions) {
-      throw new Error("Stats options are required");
+      throw new Error('Stats options are required');
     }
 
     const responseData = await this.makeRequest<StatsT>(
       apiClient,
-      "post",
+      'post',
       `/stats/teams/${teamId}`,
       statsOptions,
     );
@@ -41,12 +41,12 @@ export class StatsApi extends BaseApi {
   ): Promise<StatsHeaderT> {
     // Security: Input validation
     if (!header || !header.teamId) {
-      throw new Error("Invalid header data provided");
+      throw new Error('Invalid header data provided');
     }
 
     const responseData = await this.makeRequest<StatsHeaderT>(
       apiClient,
-      "post",
+      'post',
       `/stats/stats-headers/teams/${header.teamId}`,
       header,
     );
@@ -63,15 +63,15 @@ export class StatsApi extends BaseApi {
   ): Promise<void> {
     // Security: Input validation
     if (!headerId) {
-      throw new Error("Header ID is required");
+      throw new Error('Header ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     await this.makeRequest<void>(
       apiClient,
-      "delete",
+      'delete',
       `/stats/stats-headers/${headerId}/teams/${teamId}`,
     );
   }
@@ -85,12 +85,12 @@ export class StatsApi extends BaseApi {
   ): Promise<ShiftWorkerOptionT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<ShiftWorkerOptionT[]>(
       apiClient,
-      "get",
+      'get',
       `/stats/shift-options/teams/${teamId}`,
     );
     return responseData;

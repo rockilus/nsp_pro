@@ -1,31 +1,31 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../app/i18n/client";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { useTranslation } from '../../app/i18n/client';
 // Mobile
-import { useIsMobile } from "../../hooks/useIsMobile";
-import MobileStatsTab from "./mobile/mobile-stats-tab";
+import { useIsMobile } from '../../hooks/useIsMobile';
+import MobileStatsTab from './mobile/mobile-stats-tab';
 // Components
-import StatsTable from "./table/stats-table";
-import StatsNavBar from "./nav-bar/stats-nav-bar";
+import StatsTable from './table/stats-table';
+import StatsNavBar from './nav-bar/stats-nav-bar';
 // Skeletons
-import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
-import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
+import ScheduleSelectorSkeleton from '../skeletons/schedule-selector-skeleton';
+import ScheduleTableSkeleton from '../skeletons/schedule-table-skeleton';
 // Hooks
 import {
   useGetStatsTabData,
   useGetStats,
   useAddHeader,
   useDeleteHeader,
-} from "../../hooks/useStats";
-import { useStatsOptions } from "../../app/lib/hooks/useStatsOptions";
-import { getDefaultStatsOptions } from "../../app/lib/utils/statsOptionsUtils";
+} from '../../hooks/useStats';
+import { useStatsOptions } from '../../app/lib/hooks/useStatsOptions';
+import { getDefaultStatsOptions } from '../../app/lib/utils/statsOptionsUtils';
 // Styles
-import "../../styles/tab-container-styles.css";
-import "./stats-tab.css";
+import '../../styles/tab-container-styles.css';
+import './stats-tab.css';
 // Types
-import { ShiftT } from "../../types/shift";
-import { WorkerT } from "../../types/worker";
+import { ShiftT } from '../../types/shift';
+import { WorkerT } from '../../types/worker';
 import {
   StatsHeaderT,
   StatsT,
@@ -33,9 +33,9 @@ import {
   StatsUnitOptions,
   StatsTimeFrameOptions,
   HeaderUnitOptions,
-} from "../../types/stats";
-import { ShiftWorkerOptionT, SWOIdTypes } from "../../types/constraint";
-import { ScheduleT } from "../../types/schedule";
+} from '../../types/stats';
+import { ShiftWorkerOptionT, SWOIdTypes } from '../../types/constraint';
+import { ScheduleT } from '../../types/schedule';
 
 dayjs.extend(utc);
 
@@ -46,7 +46,7 @@ export default function StatsTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
-  const { t } = useTranslation(lng, "stats-page");
+  const { t } = useTranslation(lng, 'stats-page');
 
   // Stats hooks
   const getStatsTabData = useGetStatsTabData();
@@ -57,9 +57,7 @@ export default function StatsTab({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingStats, setIsLoadingStats] = useState<boolean>(false);
   const [stats, setStats] = useState<StatsT | null>(null);
-  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
-    null,
-  );
+  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(null);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
@@ -68,7 +66,7 @@ export default function StatsTab({
   const defaultOptions = getDefaultStatsOptions();
 
   const [statsOptions, updateStatsOptions, resetStatsOptions] = useStatsOptions(
-    selectedTeamId || "",
+    selectedTeamId || '',
     defaultOptions,
   );
 
@@ -84,38 +82,38 @@ export default function StatsTab({
   }[] = [
     {
       name: StatsUnitOptions.NB_DAYS_WORKED,
-      label: t("stats_unit_nb_days_worked"),
-      description: t("stats_description_nb_days_worked"),
+      label: t('stats_unit_nb_days_worked'),
+      description: t('stats_description_nb_days_worked'),
     },
     {
       name: StatsUnitOptions.TIME_WORKED,
-      label: t("stats_unit_time_worked"),
-      description: t("stats_description_time_worked"),
+      label: t('stats_unit_time_worked'),
+      description: t('stats_description_time_worked'),
     },
     {
       name: StatsUnitOptions.NB_SHIFTS_WORKED,
-      label: t("stats_unit_nb_shifts_worked"),
-      description: t("stats_description_nb_shifts_worked"),
+      label: t('stats_unit_nb_shifts_worked'),
+      description: t('stats_description_nb_shifts_worked'),
     },
     {
       name: StatsUnitOptions.NB_REST_DAYS,
-      label: t("stats_unit_nb_rest_days"),
-      description: t("stats_description_nb_rest_days"),
+      label: t('stats_unit_nb_rest_days'),
+      description: t('stats_description_nb_rest_days'),
     },
     {
       name: StatsUnitOptions.NB_REST_SHIFTS,
-      label: t("stats_unit_nb_rest_shifts"),
-      description: t("stats_description_nb_rest_shifts"),
+      label: t('stats_unit_nb_rest_shifts'),
+      description: t('stats_description_nb_rest_shifts'),
     },
     {
       name: StatsUnitOptions.NB_TIMES_SHIFT,
-      label: t("stats_unit_nb_time_shift"),
-      description: t("stats_description_nb_time_shift"),
+      label: t('stats_unit_nb_time_shift'),
+      description: t('stats_description_nb_time_shift'),
     },
     {
       name: StatsUnitOptions.NB_TIMES_REST,
-      label: t("stats_unit_nb_time_rest"),
-      description: t("stats_description_nb_time_rest"),
+      label: t('stats_unit_nb_time_rest'),
+      description: t('stats_description_nb_time_rest'),
     },
   ];
 
@@ -125,7 +123,7 @@ export default function StatsTab({
 
   const handleGetStats = async (statsOptions: StatsOptionsT) => {
     if (!selectedTeamId) {
-      throw new Error("No team selected");
+      throw new Error('No team selected');
     }
     const newStats = await getStats(selectedTeamId, statsOptions);
     setStats(newStats);
@@ -145,9 +143,7 @@ export default function StatsTab({
   const handleAddHeader = async (header: StatsHeaderT) => {
     const newHeader = await addHeader(header);
     setStats((prev) => ({
-      statsHeaders:
-        prev?.statsHeaders.map((h) => (h.id === header.id ? newHeader : h)) ||
-        [],
+      statsHeaders: prev?.statsHeaders.map((h) => (h.id === header.id ? newHeader : h)) || [],
       statsValues:
         prev?.statsValues.map((v) =>
           v.headerId === header.id ? { ...v, headerId: newHeader.id } : v,
@@ -157,14 +153,12 @@ export default function StatsTab({
 
   const handleDeleteHeader = async (headerId: string) => {
     if (!selectedTeamId) {
-      throw new Error("No team selected");
+      throw new Error('No team selected');
     }
     await deleteHeader(headerId, selectedTeamId);
     setStats((prev) => ({
       statsHeaders:
-        prev?.statsHeaders.map((h) =>
-          h.id === headerId ? { ...h, isFavorite: false } : h,
-        ) || [],
+        prev?.statsHeaders.map((h) => (h.id === headerId ? { ...h, isFavorite: false } : h)) || [],
       statsValues: prev?.statsValues || [],
     }));
   };
@@ -198,10 +192,7 @@ export default function StatsTab({
         hasInitialized.current = true;
 
         // If there's a campaign and the current options are not set to campaign, update them
-        if (
-          fetchedScheduleCampaign &&
-          statsOptions.timeFrame !== StatsTimeFrameOptions.CAMPAING
-        ) {
+        if (fetchedScheduleCampaign && statsOptions.timeFrame !== StatsTimeFrameOptions.CAMPAING) {
           const campaignOptions: StatsOptionsT = {
             ...statsOptions,
             timeFrame: StatsTimeFrameOptions.CAMPAING,

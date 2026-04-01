@@ -1,8 +1,8 @@
-import dayjs from "dayjs";
-import { RequestCalendarViewSettingsT } from "@/types/request";
+import dayjs from 'dayjs';
+import { RequestCalendarViewSettingsT } from '@/types/request';
 
 export interface SerializedRequestCalendarViewSettings {
-  timeFrame: "week" | "month";
+  timeFrame: 'week' | 'month';
   periodStartDate: string; // ISO string
 }
 
@@ -11,9 +11,9 @@ export interface SerializedRequestCalendarViewSettings {
  */
 export function computePeriodEndDate(
   periodStartDate: dayjs.Dayjs,
-  timeFrame: "week" | "month",
+  timeFrame: 'week' | 'month',
 ): dayjs.Dayjs {
-  return periodStartDate.endOf(timeFrame === "month" ? "month" : "isoWeek");
+  return periodStartDate.endOf(timeFrame === 'month' ? 'month' : 'isoWeek');
 }
 
 /**
@@ -25,51 +25,45 @@ export function validateRequestCalendarViewSettings(
   const now = dayjs.utc();
 
   // Validate timeFrame
-  const timeFrame = ["week", "month"].includes(settings.timeFrame as string)
-    ? (settings.timeFrame as "week" | "month")
-    : "month";
+  const timeFrame = ['week', 'month'].includes(settings.timeFrame as string)
+    ? (settings.timeFrame as 'week' | 'month')
+    : 'month';
 
   // Validate periodStartDate - ensure it's valid and not too far in the past/future
   let periodStartDate: dayjs.Dayjs;
 
   // Check if periodStartDate is a valid dayjs object
-  if (
-    dayjs.isDayjs(settings.periodStartDate) &&
-    settings.periodStartDate.isValid()
-  ) {
+  if (dayjs.isDayjs(settings.periodStartDate) && settings.periodStartDate.isValid()) {
     // Ensure it's UTC
     periodStartDate = settings.periodStartDate.utc();
   } else {
     // Try to parse as string if it's not a dayjs object
     try {
       const parsed = dayjs.utc(settings.periodStartDate);
-      periodStartDate = parsed.isValid() ? parsed : now.startOf("month");
+      periodStartDate = parsed.isValid() ? parsed : now.startOf('month');
     } catch {
-      periodStartDate = now.startOf("month");
+      periodStartDate = now.startOf('month');
     }
   }
 
   // Ensure dates are reasonable (not more than 2 years in past/future)
-  const twoYearsAgo = now.subtract(2, "years");
-  const twoYearsFromNow = now.add(2, "years");
+  const twoYearsAgo = now.subtract(2, 'years');
+  const twoYearsFromNow = now.add(2, 'years');
 
-  if (
-    periodStartDate.isBefore(twoYearsAgo) ||
-    periodStartDate.isAfter(twoYearsFromNow)
-  ) {
-    periodStartDate = now.startOf(timeFrame === "month" ? "month" : "isoWeek");
+  if (periodStartDate.isBefore(twoYearsAgo) || periodStartDate.isAfter(twoYearsFromNow)) {
+    periodStartDate = now.startOf(timeFrame === 'month' ? 'month' : 'isoWeek');
   }
 
   // Validate that periodStartDate aligns with the timeFrame boundary
-  const expectedStartBoundary = timeFrame === "month" ? "month" : "isoWeek";
+  const expectedStartBoundary = timeFrame === 'month' ? 'month' : 'isoWeek';
   const alignedStartDate = periodStartDate.startOf(expectedStartBoundary).utc();
 
   // If the periodStartDate is not at the correct boundary, adjust it
-  if (!periodStartDate.isSame(alignedStartDate, "day")) {
+  if (!periodStartDate.isSame(alignedStartDate, 'day')) {
     console.warn(
-      `Period start date ${periodStartDate.format("YYYY-MM-DD")} ` +
+      `Period start date ${periodStartDate.format('YYYY-MM-DD')} ` +
         `is not aligned with ${timeFrame} boundary. ` +
-        `Adjusting to ${alignedStartDate.format("YYYY-MM-DD")}.`,
+        `Adjusting to ${alignedStartDate.format('YYYY-MM-DD')}.`,
     );
     periodStartDate = alignedStartDate;
   }
@@ -90,7 +84,7 @@ export function getDefaultRequestCalendarViewSettings(): RequestCalendarViewSett
   const now = dayjs.utc();
 
   return {
-    timeFrame: "month",
-    periodStartDate: now.startOf("month"),
+    timeFrame: 'month',
+    periodStartDate: now.startOf('month'),
   };
 }

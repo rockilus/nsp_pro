@@ -1,10 +1,7 @@
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // Types
-import {
-  MembershipForTeamWithMembership,
-  TeamMembershipRole,
-} from "@/types/team";
+import { MembershipForTeamWithMembership, TeamMembershipRole } from '@/types/team';
 
 dayjs.extend(utc);
 
@@ -35,8 +32,7 @@ export const toUserT = (data: any): UserT => {
 export const fromUserT = (data: UserT): any => {
   // Omit systemRole — the self-update endpoint only accepts
   // firstName, lastName, email, and language.
-  const { systemRole, impersonatingUserId, signUpAt, id, ...updateFields } =
-    data;
+  const { systemRole, impersonatingUserId, signUpAt, id, ...updateFields } = data;
   return {
     ...updateFields,
     signUpAt: signUpAt.unix(),

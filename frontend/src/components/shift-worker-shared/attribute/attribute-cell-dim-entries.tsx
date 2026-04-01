@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // MUI
-import Chip from "@mui/material/Chip";
+import Chip from '@mui/material/Chip';
 // Components
-import DimEntryTypeCellEdit from "./dim-entry-type-cell-edit";
-import PopoverAnchorElOver from "../../inputs/popover-anchor-el-over";
+import DimEntryTypeCellEdit from './dim-entry-type-cell-edit';
+import PopoverAnchorElOver from '../../inputs/popover-anchor-el-over';
 // Types
-import { DimensionEntryType, DimensionT } from "../../../types/dimension";
-import { DimEntryT } from "@/types/dim-entry";
-import { AttributeT } from "@/types/attribute";
+import { DimensionEntryType, DimensionT } from '../../../types/dimension';
+import { DimEntryT } from '@/types/dim-entry';
+import { AttributeT } from '@/types/attribute';
 
 export default function AttributeCellDimEntries({
   selectedTeamId,
@@ -32,14 +32,11 @@ export default function AttributeCellDimEntries({
   };
 
   const handleAddDimEntry = (dimEntry: DimEntryT) => {
-    if (
-      dimension.entryType === DimensionEntryType.DIM_ENTRIES &&
-      Array.isArray(valueState)
-    ) {
+    if (dimension.entryType === DimensionEntryType.DIM_ENTRIES && Array.isArray(valueState)) {
       const updatedValue = [...valueState, dimEntry];
       setValueState(updatedValue);
       if (!selectedTeamId) {
-        console.error("No team selected");
+        console.error('No team selected');
         return;
       }
       handleUpdateAttribute(
@@ -50,7 +47,7 @@ export default function AttributeCellDimEntries({
         selectedTeamId,
       );
     } else {
-      console.error("Cannot add list value to non-list attribute");
+      console.error('Cannot add list value to non-list attribute');
     }
   };
 
@@ -59,7 +56,7 @@ export default function AttributeCellDimEntries({
       const updatedValue = valueState.filter((v) => v.id !== dimEntry.id);
       setValueState(updatedValue);
       if (!selectedTeamId) {
-        console.error("No team selected");
+        console.error('No team selected');
         return;
       }
       handleUpdateAttribute(
@@ -70,7 +67,7 @@ export default function AttributeCellDimEntries({
         selectedTeamId,
       );
     } else {
-      console.error("Cannot remove list value from non-list attribute");
+      console.error('Cannot remove list value from non-list attribute');
     }
   };
 
@@ -79,8 +76,8 @@ export default function AttributeCellDimEntries({
       buttonContent={attribute.dimEntryIds.map((deId, index) => (
         <Chip
           key={deId}
-          label={dimEntries.find((de) => de.id === deId)?.name || ""}
-          sx={{ cursor: "pointer" }}
+          label={dimEntries.find((de) => de.id === deId)?.name || ''}
+          sx={{ cursor: 'pointer' }}
         />
       ))}
       content={

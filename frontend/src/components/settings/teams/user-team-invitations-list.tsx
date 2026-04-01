@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { useTranslation } from "../../../app/i18n/client";
-import dayjs, { Dayjs } from "dayjs";
-import duration from "dayjs/plugin/duration";
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
+import dayjs, { Dayjs } from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 // MUI
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import IconButton from "@mui/material/IconButton";
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
 // Styles
-import "./user-team-invitations-list.css";
+import './user-team-invitations-list.css';
 // Types
-import { EnrichedTeamInvitationT } from "@/types/team-invitation";
+import { EnrichedTeamInvitationT } from '@/types/team-invitation';
 
 dayjs.extend(duration);
 
@@ -24,15 +24,15 @@ export default function UserTeamInvitationsList({
   handleAcceptInvitation: (token: string) => void;
   handleRejectInvitation: (token: string) => void;
 }) {
-  const { t } = useTranslation(lng, "teams-page");
+  const { t } = useTranslation(lng, 'teams-page');
 
   const getExpirationStatus = (expiresAt: Dayjs): string => {
     const now = dayjs().utc();
     if (now.isAfter(expiresAt)) {
-      return t("expired");
+      return t('expired');
     }
-    const days = expiresAt.diff(now, "day");
-    return `${days} ${t("days").toLocaleLowerCase()}`;
+    const days = expiresAt.diff(now, 'day');
+    return `${days} ${t('days').toLocaleLowerCase()}`;
   };
 
   const InvitationsListItem = ({
@@ -43,21 +43,14 @@ export default function UserTeamInvitationsList({
     isFirstItem?: boolean;
   }) => {
     return (
-      <div
-        key={invitation.id}
-        className={`invites-list-item ${isFirstItem ? "first-item" : ""}`}
-      >
+      <div key={invitation.id} className={`invites-list-item ${isFirstItem ? 'first-item' : ''}`}>
         <div className="team-list-item-description">
-          <strong className="invites-list-item-name">
-            {invitation.teamName}
-          </strong>
+          <strong className="invites-list-item-name">{invitation.teamName}</strong>
         </div>
         <div className="invites-list-item-info-container">
           {invitation.creatorName && (
             <>
-              <span className="invites-list-item-info">
-                {invitation.creatorName}
-              </span>
+              <span className="invites-list-item-info">{invitation.creatorName}</span>
               <span className="invites-list-item-info-divider">|</span>
             </>
           )}
@@ -73,7 +66,7 @@ export default function UserTeamInvitationsList({
               handleRejectInvitation(invitation.token);
             }}
             sx={{
-              border: "1px solid #0000008a",
+              border: '1px solid #0000008a',
             }}
           >
             <CloseIcon color="action" fontSize="small" />
@@ -85,8 +78,8 @@ export default function UserTeamInvitationsList({
               handleAcceptInvitation(invitation.token);
             }}
             sx={{
-              border: "1px solid #1976d2",
-              marginLeft: "8px",
+              border: '1px solid #1976d2',
+              marginLeft: '8px',
             }}
           >
             <CheckIcon color="primary" fontSize="small" />

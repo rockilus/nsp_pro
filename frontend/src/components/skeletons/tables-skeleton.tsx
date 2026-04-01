@@ -1,9 +1,9 @@
-import * as React from "react";
+import * as React from 'react';
 // MUI
-import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
 // Components
-import BaseTableSkeleton from "./base-table-skeleton";
+import BaseTableSkeleton from './base-table-skeleton';
 
 export default function TablesSkeleton({
   numTables,

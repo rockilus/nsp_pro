@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useMediaQuery } from "@mui/material";
+import { useMediaQuery } from '@mui/material';
 
 /**
  * Custom hook to detect if the current viewport is considered mobile.
@@ -13,10 +13,9 @@ import { useMediaQuery } from "@mui/material";
  * @returns {boolean} true if mobile, false otherwise
  */
 export function useIsMobile(): boolean {
-  return useMediaQuery(
-    "(max-width:600px), ((max-width:960px) and (orientation:landscape))",
-    { noSsr: true },
-  );
+  return useMediaQuery('(max-width:600px), ((max-width:960px) and (orientation:landscape))', {
+    noSsr: true,
+  });
 }
 
 /**
@@ -26,5 +25,5 @@ export function useIsMobile(): boolean {
  * @returns {boolean} true if landscape orientation, false otherwise
  */
 export function useIsLandscape(): boolean {
-  return useMediaQuery("(orientation: landscape)", { noSsr: true });
+  return useMediaQuery('(orientation: landscape)', { noSsr: true });
 }

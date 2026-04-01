@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import dayjs from "dayjs";
+import React, { useState } from 'react';
+import dayjs from 'dayjs';
 import {
   Dialog,
   DialogTitle,
@@ -15,16 +15,16 @@ import {
   Chip,
   Divider,
   Alert,
-} from "@mui/material";
+} from '@mui/material';
 import {
   Close as CloseIcon,
   Delete as DeleteIcon,
   CalendarToday as DateIcon,
   Work as ShiftIcon,
   Schedule as TimeIcon,
-} from "@mui/icons-material";
-import { MultitaskingGroup } from "../../../types/multitasking";
-import { ShiftT } from "../../../types/shift";
+} from '@mui/icons-material';
+import { MultitaskingGroup } from '../../../types/multitasking';
+import { ShiftT } from '../../../types/shift';
 
 interface ParsedRelatedId {
   shiftId: string;
@@ -46,7 +46,7 @@ interface MultitaskingGroupsDialogProps {
 
 // Utility function to format time from dayjs to display format
 function formatTime(time: dayjs.Dayjs): string {
-  return time.format("h:mm A");
+  return time.format('h:mm A');
 }
 
 // Check if shift ends the next day
@@ -55,15 +55,12 @@ function isNextDay(startTime: dayjs.Dayjs, endTime: dayjs.Dayjs): boolean {
 }
 
 // Utility function to parse related IDs with shift data
-function parseRelatedIdWithShiftData(
-  relatedId: string,
-  shifts: ShiftT[],
-): ParsedRelatedId | null {
-  const parts = relatedId.split("-");
+function parseRelatedIdWithShiftData(relatedId: string, shifts: ShiftT[]): ParsedRelatedId | null {
+  const parts = relatedId.split('-');
   if (parts.length < 4) return null; // shiftId-YYYY-MM-DD minimum
 
-  const date = parts.slice(-3).join("-"); // Last 3 parts are YYYY-MM-DD
-  const shiftId = parts.slice(0, -3).join("-"); // Everything before date
+  const date = parts.slice(-3).join('-'); // Last 3 parts are YYYY-MM-DD
+  const shiftId = parts.slice(0, -3).join('-'); // Everything before date
 
   // Find shift details
   const shift = shifts.find((s) => s.id === shiftId);
@@ -71,7 +68,7 @@ function parseRelatedIdWithShiftData(
   return {
     shiftId,
     date,
-    shiftName: shift?.name || "Unknown Shift",
+    shiftName: shift?.name || 'Unknown Shift',
     startTime: shift ? formatTime(shift.startTime) : undefined,
     endTime: shift ? formatTime(shift.endTime) : undefined,
     endsNextDay: shift ? isNextDay(shift.startTime, shift.endTime) : false,
@@ -109,22 +106,17 @@ function MultitaskingGroupItem({
   return (
     <ListItem
       sx={{
-        flexDirection: "column",
-        alignItems: "stretch",
+        flexDirection: 'column',
+        alignItems: 'stretch',
         border: 1,
-        borderColor: "divider",
+        borderColor: 'divider',
         borderRadius: 1,
         mb: 1,
-        bgcolor: "background.paper",
+        bgcolor: 'background.paper',
       }}
     >
       {/* Group Header */}
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        width="100%"
-      >
+      <Box display="flex" alignItems="center" justifyContent="space-between" width="100%">
         <Typography variant="subtitle2" fontWeight="bold">
           Group {index + 1}
         </Typography>
@@ -152,15 +144,15 @@ function MultitaskingGroupItem({
                 color="error"
                 onClick={onDelete}
                 disabled={isDeleting}
-                sx={{ minWidth: "auto", px: 1 }}
+                sx={{ minWidth: 'auto', px: 1 }}
               >
-                {isDeleting ? "Deleting..." : "Delete"}
+                {isDeleting ? 'Deleting...' : 'Delete'}
               </Button>
               <Button
                 size="small"
                 variant="outlined"
                 onClick={() => setDeleteConfirm(false)}
-                sx={{ minWidth: "auto", px: 1 }}
+                sx={{ minWidth: 'auto', px: 1 }}
               >
                 Cancel
               </Button>
@@ -183,18 +175,10 @@ function MultitaskingGroupItem({
           }}
         >
           {processedGroup.parsedRelatedIds.map((item, idx) => (
-            <ListItem
-              key={`${item.shiftId}-${item.date}-${idx}`}
-              sx={{ py: 0.5 }}
-            >
+            <ListItem key={`${item.shiftId}-${item.date}-${idx}`} sx={{ py: 0.5 }}>
               <ListItemText
                 primary={
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    gap={1}
-                    flexWrap="wrap"
-                  >
+                  <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
                     {/* Date */}
                     <Chip
                       size="small"
@@ -219,20 +203,14 @@ function MultitaskingGroupItem({
                         size="small"
                         icon={<TimeIcon fontSize="small" />}
                         label={`${item.startTime} - ${item.endTime}${
-                          item.endsNextDay ? " +1" : ""
+                          item.endsNextDay ? ' +1' : ''
                         }`}
                         variant="outlined"
                         sx={{
-                          bgcolor: item.endsNextDay
-                            ? "warning.light"
-                            : "transparent",
-                          color: item.endsNextDay
-                            ? "warning.contrastText"
-                            : "inherit",
-                          "& .MuiChip-icon": {
-                            color: item.endsNextDay
-                              ? "warning.contrastText"
-                              : "inherit",
+                          bgcolor: item.endsNextDay ? 'warning.light' : 'transparent',
+                          color: item.endsNextDay ? 'warning.contrastText' : 'inherit',
+                          '& .MuiChip-icon': {
+                            color: item.endsNextDay ? 'warning.contrastText' : 'inherit',
                           },
                         }}
                       />
@@ -291,7 +269,7 @@ export function MultitaskingGroupsDialog({
       maxWidth="md"
       fullWidth
       PaperProps={{
-        sx: { minHeight: "400px" },
+        sx: { minHeight: '400px' },
       }}
     >
       <DialogTitle>
@@ -306,13 +284,13 @@ export function MultitaskingGroupsDialog({
       <DialogContent>
         {!hasGroups ? (
           <Alert severity="info" sx={{ mt: 2 }}>
-            No multitasking groups have been created yet. Select shift demands
-            and click &quot;Create&quot; to make your first group.
+            No multitasking groups have been created yet. Select shift demands and click
+            &quot;Create&quot; to make your first group.
           </Alert>
         ) : (
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              {groups.length} group{groups.length !== 1 ? "s" : ""} created
+              {groups.length} group{groups.length !== 1 ? 's' : ''} created
             </Typography>
             <List sx={{ mt: 2 }}>
               {groups.map((group, index) => (

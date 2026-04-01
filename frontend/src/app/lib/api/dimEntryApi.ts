@@ -2,9 +2,9 @@
  * API client for dim entry operations
  */
 
-import { DimEntryT } from "../../../types/dim-entry";
-import { AttributeT } from "../../../types/attribute";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { DimEntryT } from '../../../types/dim-entry';
+import { AttributeT } from '../../../types/attribute';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class DimEntryApi extends BaseApi {
   /**
@@ -17,15 +17,15 @@ export class DimEntryApi extends BaseApi {
   ): Promise<DimEntryT> {
     // Security: Input validation
     if (!dimEntry) {
-      throw new Error("Dim entry data is required");
+      throw new Error('Dim entry data is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/dim-entries/teams/${teamId}`,
       dimEntry,
     );
@@ -42,15 +42,15 @@ export class DimEntryApi extends BaseApi {
   ): Promise<DimEntryT> {
     // Security: Input validation
     if (!updatedDimEntry || !updatedDimEntry.id) {
-      throw new Error("Invalid dim entry data provided");
+      throw new Error('Invalid dim entry data provided');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "put",
+      'put',
       `/dim-entries/${updatedDimEntry.id}/teams/${teamId}`,
       updatedDimEntry,
     );
@@ -67,15 +67,15 @@ export class DimEntryApi extends BaseApi {
   ): Promise<AttributeT[]> {
     // Security: Input validation
     if (!dimEntryId) {
-      throw new Error("Dim entry ID is required");
+      throw new Error('Dim entry ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "delete",
+      'delete',
       `/dim-entries/${dimEntryId}/teams/${teamId}`,
     );
     return responseData as AttributeT[];

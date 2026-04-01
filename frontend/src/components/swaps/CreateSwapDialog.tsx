@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -24,18 +24,18 @@ import {
   Paper,
   MobileStepper,
   useMediaQuery,
-} from "@mui/material";
-import dayjs from "dayjs";
-import { SwapRequestT, SwapType } from "../../types/swap";
-import { WorkerT } from "../../types/worker";
-import { AssignmentDataDictT } from "../../types/assignment";
-import { LinkShiftT } from "../../types/shift";
-import { TeamMembershipRole } from "../../types/team";
-import AssignmentSelector from "./AssignmentSelector";
-import SwapDetailContent from "./SwapDetailContent";
-import { RoleBased } from "../access/role-based";
-import { useTheme } from "@mui/material/styles";
-import { useTranslation } from "../../app/i18n/client";
+} from '@mui/material';
+import dayjs from 'dayjs';
+import { SwapRequestT, SwapType } from '../../types/swap';
+import { WorkerT } from '../../types/worker';
+import { AssignmentDataDictT } from '../../types/assignment';
+import { LinkShiftT } from '../../types/shift';
+import { TeamMembershipRole } from '../../types/team';
+import AssignmentSelector from './AssignmentSelector';
+import SwapDetailContent from './SwapDetailContent';
+import { RoleBased } from '../access/role-based';
+import { useTheme } from '@mui/material/styles';
+import { useTranslation } from '../../app/i18n/client';
 
 interface CreateSwapDialogProps {
   open: boolean;
@@ -58,11 +58,11 @@ interface CreateSwapDialogProps {
 }
 
 const STEP_KEYS = [
-  "step_select_offered",
-  "step_choose_type",
-  "step_target_details",
-  "step_add_comment",
-  "step_review_submit",
+  'step_select_offered',
+  'step_choose_type',
+  'step_target_details',
+  'step_add_comment',
+  'step_review_submit',
 ] as const;
 
 export default function CreateSwapDialog({
@@ -78,7 +78,7 @@ export default function CreateSwapDialog({
   linkShifts,
   lng,
 }: CreateSwapDialogProps) {
-  const { t } = useTranslation(lng, "swap-page");
+  const { t } = useTranslation(lng, 'swap-page');
   const steps = STEP_KEYS.map((key) => t(key));
 
   const [activeStep, setActiveStep] = useState(0);
@@ -86,20 +86,16 @@ export default function CreateSwapDialog({
   const [error, setError] = useState<string | null>(null);
 
   // Form state
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string>("");
-  const [offeredAssignmentIds, setOfferedAssignmentIds] = useState<string[]>(
-    [],
-  );
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string>('');
+  const [offeredAssignmentIds, setOfferedAssignmentIds] = useState<string[]>([]);
   const [swapType, setSwapType] = useState<SwapType>(SwapType.DIRECT);
-  const [targetWorkerId, setTargetWorkerId] = useState<string>("");
-  const [requestedAssignmentIds, setRequestedAssignmentIds] = useState<
-    string[]
-  >([]);
-  const [comment, setComment] = useState<string>("");
+  const [targetWorkerId, setTargetWorkerId] = useState<string>('');
+  const [requestedAssignmentIds, setRequestedAssignmentIds] = useState<string[]>([]);
+  const [comment, setComment] = useState<string>('');
 
   // Responsive: show compact stepper on small screens
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Initialize selected worker
   useEffect(() => {
@@ -110,16 +106,12 @@ export default function CreateSwapDialog({
 
   // Filter assignment details for review step
   const offeredAssignments = useMemo(() => {
-    return assignments.filter((a) =>
-      offeredAssignmentIds.includes(a.assignment.id),
-    );
+    return assignments.filter((a) => offeredAssignmentIds.includes(a.assignment.id));
   }, [assignments, offeredAssignmentIds]);
 
   const requestedAssignments = useMemo(() => {
     if (swapType === SwapType.DIRECT && requestedAssignmentIds.length > 0) {
-      return assignments.filter((a) =>
-        requestedAssignmentIds.includes(a.assignment.id),
-      );
+      return assignments.filter((a) => requestedAssignmentIds.includes(a.assignment.id));
     }
     return [];
   }, [assignments, requestedAssignmentIds, swapType]);
@@ -128,22 +120,22 @@ export default function CreateSwapDialog({
     // Validation before moving to next step
     if (activeStep === 0) {
       if (!selectedWorkerId) {
-        setError(t("error_select_worker"));
+        setError(t('error_select_worker'));
         return;
       }
       if (offeredAssignmentIds.length === 0) {
-        setError(t("error_select_offered"));
+        setError(t('error_select_offered'));
         return;
       }
     }
 
     if (activeStep === 2 && swapType === SwapType.DIRECT) {
       if (!targetWorkerId) {
-        setError(t("error_select_target"));
+        setError(t('error_select_target'));
         return;
       }
       if (requestedAssignmentIds.length === 0) {
-        setError(t("error_select_requested"));
+        setError(t('error_select_requested'));
         return;
       }
     }
@@ -174,8 +166,7 @@ export default function CreateSwapDialog({
 
       await onSubmit({
         offeredAssignmentIds,
-        requestedAssignmentIds:
-          swapType === SwapType.DIRECT ? requestedAssignmentIds : null,
+        requestedAssignmentIds: swapType === SwapType.DIRECT ? requestedAssignmentIds : null,
         swapType,
         targetWorkerId: swapType === SwapType.DIRECT ? targetWorkerId : null,
         comment,
@@ -183,8 +174,8 @@ export default function CreateSwapDialog({
 
       handleClose();
     } catch (err) {
-      console.error("Failed to create swap:", err);
-      setError(err instanceof Error ? err.message : t("error_create_swap"));
+      console.error('Failed to create swap:', err);
+      setError(err instanceof Error ? err.message : t('error_create_swap'));
     } finally {
       setLoading(false);
     }
@@ -193,12 +184,12 @@ export default function CreateSwapDialog({
   const handleClose = () => {
     // Reset form
     setActiveStep(0);
-    setSelectedWorkerId("");
+    setSelectedWorkerId('');
     setOfferedAssignmentIds([]);
     setSwapType(SwapType.DIRECT);
-    setTargetWorkerId("");
+    setTargetWorkerId('');
     setRequestedAssignmentIds([]);
-    setComment("");
+    setComment('');
     setError(null);
     onClose();
   };
@@ -211,10 +202,10 @@ export default function CreateSwapDialog({
           <Box>
             <RoleBased role={role} allowedRoles={[TeamMembershipRole.OWNER]}>
               <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>{t("label_select_worker")}</InputLabel>
+                <InputLabel>{t('label_select_worker')}</InputLabel>
                 <Select
                   value={selectedWorkerId}
-                  label={t("label_select_worker")}
+                  label={t('label_select_worker')}
                   onChange={(e) => {
                     setSelectedWorkerId(e.target.value);
                     setOfferedAssignmentIds([]); // Reset selections
@@ -237,7 +228,7 @@ export default function CreateSwapDialog({
             {selectedWorkerId && (
               <Box data-testid="assignment-selector">
                 <Typography variant="subtitle2" gutterBottom>
-                  {t("label_select_offered")}
+                  {t('label_select_offered')}
                 </Typography>
                 <AssignmentSelector
                   selectedAssignmentIds={offeredAssignmentIds}
@@ -245,7 +236,7 @@ export default function CreateSwapDialog({
                   assignments={assignments.filter(
                     (a) =>
                       a.assignment.workerId === selectedWorkerId &&
-                      a.assignment.date.isAfter(dayjs(), "day"),
+                      a.assignment.date.isAfter(dayjs(), 'day'),
                   )}
                   linkShifts={linkShifts}
                   allowMultiple={true}
@@ -272,7 +263,7 @@ export default function CreateSwapDialog({
               onChange={(e) => {
                 setSwapType(e.target.value as SwapType);
                 // Reset step 3 data when changing type
-                setTargetWorkerId("");
+                setTargetWorkerId('');
                 setRequestedAssignmentIds([]);
               }}
               data-testid="swap-type-radio-group"
@@ -284,10 +275,10 @@ export default function CreateSwapDialog({
                   label={
                     <Box>
                       <Typography variant="body1" fontWeight="medium">
-                        {t("type_direct")}
+                        {t('type_direct')}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {t("type_direct_desc")}
+                        {t('type_direct_desc')}
                       </Typography>
                     </Box>
                   }
@@ -300,10 +291,10 @@ export default function CreateSwapDialog({
                   label={
                     <Box>
                       <Typography variant="body1" fontWeight="medium">
-                        {t("type_open")}
+                        {t('type_open')}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {t("type_open_desc")}
+                        {t('type_open_desc')}
                       </Typography>
                     </Box>
                   }
@@ -316,16 +307,16 @@ export default function CreateSwapDialog({
       case 2:
         // Step 3: Target details (only for direct swap)
         if (swapType === SwapType.OPEN) {
-          return <Alert severity="info">{t("open_swap_info")}</Alert>;
+          return <Alert severity="info">{t('open_swap_info')}</Alert>;
         }
 
         return (
           <Box>
             <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel>{t("label_target_worker")}</InputLabel>
+              <InputLabel>{t('label_target_worker')}</InputLabel>
               <Select
                 value={targetWorkerId}
-                label={t("label_target_worker")}
+                label={t('label_target_worker')}
                 onChange={(e) => {
                   setTargetWorkerId(e.target.value);
                   setRequestedAssignmentIds([]); // Reset selections
@@ -348,7 +339,7 @@ export default function CreateSwapDialog({
             {targetWorkerId && (
               <>
                 <Typography variant="subtitle2" gutterBottom>
-                  {t("label_requested_assignments")}
+                  {t('label_requested_assignments')}
                 </Typography>
                 <AssignmentSelector
                   selectedAssignmentIds={requestedAssignmentIds}
@@ -356,7 +347,7 @@ export default function CreateSwapDialog({
                   assignments={assignments.filter(
                     (a) =>
                       a.assignment.workerId === targetWorkerId &&
-                      a.assignment.date.isAfter(dayjs(), "day"),
+                      a.assignment.date.isAfter(dayjs(), 'day'),
                   )}
                   linkShifts={linkShifts}
                   allowMultiple={true}
@@ -373,7 +364,7 @@ export default function CreateSwapDialog({
           <Box>
             {!isMobile && (
               <Typography variant="subtitle2" gutterBottom>
-                {t("label_add_comment")}
+                {t('label_add_comment')}
               </Typography>
             )}
             <TextField
@@ -382,7 +373,7 @@ export default function CreateSwapDialog({
               fullWidth
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder={t("placeholder_comment")}
+              placeholder={t('placeholder_comment')}
               variant="outlined"
             />
           </Box>
@@ -392,17 +383,16 @@ export default function CreateSwapDialog({
         // Step 5: Review - using SwapDetailContent for preview
         // Create a mock swap object for preview
         const mockSwap: SwapRequestT = {
-          id: "preview",
+          id: 'preview',
           teamId: teamId,
           swapType: swapType,
           offeredAssignmentIds: offeredAssignmentIds,
-          requestedAssignmentIds:
-            swapType === SwapType.DIRECT ? requestedAssignmentIds : null,
+          requestedAssignmentIds: swapType === SwapType.DIRECT ? requestedAssignmentIds : null,
           targetWorkerId: swapType === SwapType.DIRECT ? targetWorkerId : null,
-          offeringWorkerId: "",
+          offeringWorkerId: '',
           createdByUserId: currentUserId,
           comment: comment,
-          status: "ACTIVE" as any,
+          status: 'ACTIVE' as any,
           bids: [],
           auditData: [],
           createdAt: dayjs(),
@@ -440,16 +430,16 @@ export default function CreateSwapDialog({
       fullWidth
       data-testid="create-swap-dialog"
     >
-      <DialogTitle>{t("dialog_title_create")}</DialogTitle>
+      <DialogTitle>{t('dialog_title_create')}</DialogTitle>
       <DialogContent>
         <Box>
           {isMobile ? (
             <Box
               sx={{
-                mb: "8px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                mb: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
               }}
             >
               <Typography variant="subtitle2">
@@ -460,7 +450,7 @@ export default function CreateSwapDialog({
                 steps={steps.length}
                 position="static"
                 activeStep={activeStep}
-                sx={{ bgcolor: "transparent", width: "auto" }}
+                sx={{ bgcolor: 'transparent', width: 'auto' }}
                 backButton={<></>}
                 nextButton={<></>}
               />
@@ -485,20 +475,12 @@ export default function CreateSwapDialog({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={handleClose}
-          disabled={loading}
-          data-testid="cancel-button"
-        >
-          {t("btn_cancel")}
+        <Button onClick={handleClose} disabled={loading} data-testid="cancel-button">
+          {t('btn_cancel')}
         </Button>
         {activeStep > 0 && (
-          <Button
-            onClick={handleBack}
-            disabled={loading}
-            data-testid="back-button"
-          >
-            {t("btn_back")}
+          <Button onClick={handleBack} disabled={loading} data-testid="back-button">
+            {t('btn_back')}
           </Button>
         )}
         {activeStep < steps.length - 1 ? (
@@ -508,7 +490,7 @@ export default function CreateSwapDialog({
             disabled={loading}
             data-testid="next-button"
           >
-            {t("btn_next")}
+            {t('btn_next')}
           </Button>
         ) : (
           <Button
@@ -518,7 +500,7 @@ export default function CreateSwapDialog({
             disabled={loading}
             data-testid="submit-button"
           >
-            {loading ? t("btn_creating") : t("btn_create_swap")}
+            {loading ? t('btn_creating') : t('btn_create_swap')}
           </Button>
         )}
       </DialogActions>

@@ -9,38 +9,27 @@
  * - Switch between user contexts (owner/member)
  */
 
-import { Page } from "@playwright/test";
-import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from "./database-utils";
-import { testConfig } from "./test-config";
-import { ShiftType } from "../../src/types/shift";
-import { WorkerT } from "../../src/types/worker";
-import { ShiftT, ShiftRestType, ShiftLeaveType } from "../../src/types/shift";
-import { RequestT, RequestType, RequestStatus } from "../../src/types/request";
-import { ScheduleT } from "../../src/types/schedule";
-import {
-  AssignmentT,
-  AssignmentsRecurrencesResultT,
-} from "../../src/types/assignment";
-import { RecurrenceRuleT } from "../../src/types/recurrence";
-import { SWOIdTypes } from "../../src/types/constraint";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { ShiftDemandDTO } from "@/types/shiftDemand";
-import {
-  ConstraintT,
-  ConstraintType,
-  BlockT,
-} from "../../src/types/constraint";
-import {
-  DimensionEntryType,
-  DimensionType,
-  DimensionT,
-} from "../../src/types/dimension";
-import { DimEntryT } from "../../src/types/dim-entry";
-import { AttributeOwnerType, AttributeT } from "../../src/types/attribute";
-import { AddDimensionResponse } from "../../src/app/lib/api/dimensionApi";
-import { SpecialtyT } from "../../src/types/specialty";
-import { ReplacementCandidateT } from "@/types/replacement";
+import { Page } from '@playwright/test';
+import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from './database-utils';
+import { testConfig } from './test-config';
+import { ShiftType } from '../../src/types/shift';
+import { WorkerT } from '../../src/types/worker';
+import { ShiftT, ShiftRestType, ShiftLeaveType } from '../../src/types/shift';
+import { RequestT, RequestType, RequestStatus } from '../../src/types/request';
+import { ScheduleT } from '../../src/types/schedule';
+import { AssignmentT, AssignmentsRecurrencesResultT } from '../../src/types/assignment';
+import { RecurrenceRuleT } from '../../src/types/recurrence';
+import { SWOIdTypes } from '../../src/types/constraint';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { ShiftDemandDTO } from '@/types/shiftDemand';
+import { ConstraintT, ConstraintType, BlockT } from '../../src/types/constraint';
+import { DimensionEntryType, DimensionType, DimensionT } from '../../src/types/dimension';
+import { DimEntryT } from '../../src/types/dim-entry';
+import { AttributeOwnerType, AttributeT } from '../../src/types/attribute';
+import { AddDimensionResponse } from '../../src/app/lib/api/dimensionApi';
+import { SpecialtyT } from '../../src/types/specialty';
+import { ReplacementCandidateT } from '@/types/replacement';
 
 dayjs.extend(utc);
 
@@ -89,17 +78,14 @@ export class ScheduleTestBase {
    * @param workerIndex - For unique naming (from test.info().workerIndex)
    * @param options - Configuration for test scenario. Use `options.numberOfWorkers` to set how many workers to create (minimum 2).
    */
-  async setupScheduleTests(
-    workerIndex: number,
-    options: ScheduleSetupOptions,
-  ): Promise<void> {
+  async setupScheduleTests(workerIndex: number, options: ScheduleSetupOptions): Promise<void> {
     // 1. Wait for API to be ready
     await this.dbUtils.waitForApiReady();
 
     // 2. Check health
     const health = await this.dbUtils.checkHealth();
     if (!health.test_utilities_available) {
-      throw new Error("Test utilities not available");
+      throw new Error('Test utilities not available');
     }
 
     // 3. Create test team (TEST_USER becomes owner automatically)
@@ -108,7 +94,7 @@ export class ScheduleTestBase {
     console.log(`✅ Created test team: ${this.testTeam.name}`);
 
     // 4. Add TEST_USER_2 as member (do not create user - exists from global setup)
-    await this.dbUtils.addSecondUserToTeam(this.testTeam.teamId, "member");
+    await this.dbUtils.addSecondUserToTeam(this.testTeam.teamId, 'member');
     console.log(`✅ Added TEST_USER_2 as member to team`);
 
     // 5. Create test workers (minimum 2; create additional workers if requested)
@@ -140,22 +126,22 @@ export class ScheduleTestBase {
 
     // 7. Create work shifts (at least 2)
     const morningShift = await this.createShift({
-      name: "Morning Shift",
+      name: 'Morning Shift',
       startTime: dayjs.utc().hour(8).minute(0).second(0),
       endTime: dayjs.utc().hour(14).minute(0).second(0),
       shiftType: ShiftType.NORMAL,
-      acronym: "MS",
-      color: "#4CAF50",
+      acronym: 'MS',
+      color: '#4CAF50',
     });
     this.testShifts.push(morningShift);
 
     const afternoonShift = await this.createShift({
-      name: "Afternoon Shift",
+      name: 'Afternoon Shift',
       startTime: dayjs.utc().hour(14).minute(0).second(0),
       endTime: dayjs.utc().hour(22).minute(0).second(0),
       shiftType: ShiftType.NORMAL,
-      acronym: "AS",
-      color: "#2196F3",
+      acronym: 'AS',
+      color: '#2196F3',
     });
     this.testShifts.push(afternoonShift);
     console.log(`✅ Created ${this.testShifts.length} test shifts`);
@@ -163,26 +149,26 @@ export class ScheduleTestBase {
     const createDuty = options.createDutyAndRecuperation === true;
     if (createDuty) {
       const dutyShift = await this.createShift({
-        name: "Duty Shift",
+        name: 'Duty Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0),
-        endTime: dayjs.utc().add(1, "day").hour(8).minute(0).second(0),
+        endTime: dayjs.utc().add(1, 'day').hour(8).minute(0).second(0),
         shiftType: ShiftType.DUTY,
-        acronym: "DS",
-        color: "#FF5722",
+        acronym: 'DS',
+        color: '#FF5722',
         recuperationTime: 24,
       });
       this.testShifts.push(dutyShift);
 
       // Create recuperation shift (linked to duty shift)
       const recuperationShift = await this.createShift({
-        name: "Recuperation Shift",
+        name: 'Recuperation Shift',
         startTime: dutyShift.endTime,
-        endTime: dutyShift.endTime.add(dutyShift.recuperationTime, "hour"),
+        endTime: dutyShift.endTime.add(dutyShift.recuperationTime, 'hour'),
         shiftType: ShiftType.REST,
         restType: ShiftRestType.RECUPERATION,
         recuperationDutyId: dutyShift.id,
-        acronym: "RS",
-        color: "#9E9E9E",
+        acronym: 'RS',
+        color: '#9E9E9E',
       });
       this.testShifts.push(recuperationShift);
       console.log(
@@ -199,8 +185,8 @@ export class ScheduleTestBase {
         shiftId: morningShift.id,
         date: options.referenceDate,
         count: 2,
-        notes: "Test demand for morning shift",
-        source: "manual",
+        notes: 'Test demand for morning shift',
+        source: 'manual',
       });
 
       await this.dbUtils.createShiftDemand({
@@ -208,8 +194,8 @@ export class ScheduleTestBase {
         shiftId: afternoonShift.id,
         date: options.referenceDate,
         count: 1,
-        notes: "Test demand for afternoon shift",
-        source: "manual",
+        notes: 'Test demand for afternoon shift',
+        source: 'manual',
       });
       console.log(`✅ Created shift demands for reference date`);
     } else {
@@ -226,7 +212,7 @@ export class ScheduleTestBase {
         endDate: options.referenceDate,
         status: RequestStatus.PENDING,
         negative: false,
-        comment: "Test work demand request",
+        comment: 'Test work demand request',
         shiftId: null,
         shiftOptions: [
           {
@@ -234,7 +220,7 @@ export class ScheduleTestBase {
             id: morningShift.id,
             idType: SWOIdTypes.SHIFT,
             isBoolDim: false,
-            categoryName: "Shifts",
+            categoryName: 'Shifts',
           },
         ],
       });
@@ -246,10 +232,7 @@ export class ScheduleTestBase {
 
     // 10. Create campaign schedule if dates provided (before creating assignments)
     if (options.campaignDates) {
-      await this.createCampaignSchedule(
-        options.campaignDates.start,
-        options.campaignDates.end,
-      );
+      await this.createCampaignSchedule(options.campaignDates.start, options.campaignDates.end);
       console.log(
         `✅ Created campaign schedule: ${options.campaignDates.start} to ${options.campaignDates.end}`,
       );
@@ -264,15 +247,9 @@ export class ScheduleTestBase {
   /**
    * Create test assignments for reference date and random dates in following month
    */
-  private async createTestAssignments(
-    referenceDate: dayjs.Dayjs,
-  ): Promise<void> {
-    if (
-      !this.testTeam ||
-      this.testWorkers.length === 0 ||
-      this.testShifts.length === 0
-    ) {
-      throw new Error("Test team, workers, and shifts must be created first");
+  private async createTestAssignments(referenceDate: dayjs.Dayjs): Promise<void> {
+    if (!this.testTeam || this.testWorkers.length === 0 || this.testShifts.length === 0) {
+      throw new Error('Test team, workers, and shifts must be created first');
     }
 
     const assignments = [];
@@ -283,11 +260,11 @@ export class ScheduleTestBase {
       shiftId: this.testShifts[0].id,
       date: referenceDate,
       fixed: false,
-      comment: "Test assignment on reference date",
+      comment: 'Test assignment on reference date',
     });
 
     // Create assignments for random dates in following month
-    const nextMonth = referenceDate.add(1, "month");
+    const nextMonth = referenceDate.add(1, 'month');
     const randomDates = [
       nextMonth.date(5),
       nextMonth.date(12),
@@ -296,17 +273,15 @@ export class ScheduleTestBase {
     ];
 
     for (const date of randomDates) {
-      const randomWorker =
-        this.testWorkers[Math.floor(Math.random() * this.testWorkers.length)];
-      const randomShift =
-        this.testShifts[Math.floor(Math.random() * this.testShifts.length)];
+      const randomWorker = this.testWorkers[Math.floor(Math.random() * this.testWorkers.length)];
+      const randomShift = this.testShifts[Math.floor(Math.random() * this.testShifts.length)];
 
       assignments.push({
         workerId: randomWorker.id,
         shiftId: randomShift.id,
         date: date,
         fixed: false,
-        comment: "Test assignment in next month",
+        comment: 'Test assignment in next month',
       });
     }
 
@@ -342,7 +317,7 @@ export class ScheduleTestBase {
     employmentEndDate?: Date | null;
   }): Promise<WorkerT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
+      throw new Error('Test team not created. Call setupScheduleTests first.');
     }
 
     return await this.dbUtils.createWorker({
@@ -372,7 +347,7 @@ export class ScheduleTestBase {
     leaveType?: ShiftLeaveType;
   }): Promise<ShiftT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created");
+      throw new Error('Test team not created');
     }
 
     return await this.dbUtils.createShift({
@@ -401,18 +376,16 @@ export class ScheduleTestBase {
    */
   async updateShift(updatedShift: ShiftT): Promise<any> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
     // Ensure the shift belongs to the current test team for safety
     if (updatedShift.teamId !== this.testTeam.teamId) {
-      throw new Error("Shift teamId does not match the current test team");
+      throw new Error('Shift teamId does not match the current test team');
     }
 
     const result = await this.dbUtils.updateShift(updatedShift);
-    console.log(
-      `✅ Updated shift ${updatedShift.id} for team ${this.testTeam.name}`,
-    );
+    console.log(`✅ Updated shift ${updatedShift.id} for team ${this.testTeam.name}`);
     return result;
   }
 
@@ -426,7 +399,7 @@ export class ScheduleTestBase {
     notes?: string;
   }): Promise<any> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
+      throw new Error('Test team not created. Call setupScheduleTests first.');
     }
 
     return await this.dbUtils.createShiftDemand({
@@ -435,7 +408,7 @@ export class ScheduleTestBase {
       date: options.date,
       count: options.count,
       notes: options.notes,
-      source: "manual",
+      source: 'manual',
     });
   }
 
@@ -454,7 +427,7 @@ export class ScheduleTestBase {
     shiftOptions?: any[];
   }): Promise<RequestT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
+      throw new Error('Test team not created. Call setupScheduleTests first.');
     }
 
     return await this.dbUtils.createRequest({
@@ -478,7 +451,7 @@ export class ScheduleTestBase {
     requestId: string,
   ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
+      throw new Error('Test team not created. Call setupScheduleTests first.');
     }
 
     return await this.dbUtils.approveRequest(requestId, this.testTeam.teamId);
@@ -487,12 +460,9 @@ export class ScheduleTestBase {
   /**
    * Create a campaign schedule for testing
    */
-  async createCampaignSchedule(
-    startDate: dayjs.Dayjs,
-    endDate: dayjs.Dayjs,
-  ): Promise<ScheduleT> {
+  async createCampaignSchedule(startDate: dayjs.Dayjs, endDate: dayjs.Dayjs): Promise<ScheduleT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
+      throw new Error('Test team not created. Call setupScheduleTests first.');
     }
 
     console.log(`📅 Creating campaign schedule: ${startDate} to ${endDate}`);
@@ -516,15 +486,12 @@ export class ScheduleTestBase {
    */
   async validateSchedule(scheduleId: string): Promise<ScheduleT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
+      throw new Error('Test team not created. Call setupScheduleTests first.');
     }
 
     console.log(`✅ Validating schedule: ${scheduleId}`);
 
-    const validatedSchedule = await this.dbUtils.validateSchedule(
-      scheduleId,
-      this.testTeam.teamId,
-    );
+    const validatedSchedule = await this.dbUtils.validateSchedule(scheduleId, this.testTeam.teamId);
 
     return validatedSchedule;
   }
@@ -534,27 +501,25 @@ export class ScheduleTestBase {
    */
   async navigateToSchedulePage(page: Page): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupScheduleTests first.");
+      throw new Error('Test team not created. Call setupScheduleTests first.');
     }
 
     // Authentication should be set before calling this (via actAsOwner or actAsMember)
 
     // Navigate to schedule page to establish origin
     await page.goto(`${testConfig.frontendUrl}/en/plan/schedule/`);
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState('domcontentloaded');
 
     // Set selected team in localStorage
     await page.evaluate((teamId) => {
-      localStorage.setItem("selectedTeamId", teamId);
+      localStorage.setItem('selectedTeamId', teamId);
     }, this.testTeam.teamId);
 
     // Reload to apply localStorage changes
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
 
-    console.log(
-      `✅ Navigated to schedule page for team: ${this.testTeam.name}`,
-    );
+    console.log(`✅ Navigated to schedule page for team: ${this.testTeam.name}`);
   }
 
   /**
@@ -597,7 +562,7 @@ export class ScheduleTestBase {
    */
   async getAllShifts(): Promise<ShiftT[]> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
     return await this.dbUtils.getAllShifts(this.testTeam.teamId);
@@ -629,7 +594,7 @@ export class ScheduleTestBase {
    */
   async getSchedules(): Promise<ScheduleT[]> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
     return await this.dbUtils.getSchedules(this.testTeam.teamId);
@@ -645,7 +610,7 @@ export class ScheduleTestBase {
     workerId?: string,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
     const result = await this.dbUtils.getAssignmentsAndRecurrences(
       this.testTeam.teamId,
@@ -672,7 +637,7 @@ export class ScheduleTestBase {
     recurrence?: RecurrenceRuleT | null,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
     const result = await this.dbUtils.createAssignmentAndRecurrence(
@@ -689,7 +654,7 @@ export class ScheduleTestBase {
     );
 
     console.log(
-      `✅ Created assignment${recurrence ? " with recurrence" : ""} for worker ${data.workerId}`,
+      `✅ Created assignment${recurrence ? ' with recurrence' : ''} for worker ${data.workerId}`,
     );
 
     return result;
@@ -698,16 +663,11 @@ export class ScheduleTestBase {
   /**
    * Delete an assignment by ID
    */
-  async deleteAssignment(
-    assignmentId: string,
-  ): Promise<AssignmentsRecurrencesResultT> {
+  async deleteAssignment(assignmentId: string): Promise<AssignmentsRecurrencesResultT> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
-    return await this.dbUtils.deleteAssignment(
-      assignmentId,
-      this.testTeam.teamId,
-    );
+    return await this.dbUtils.deleteAssignment(assignmentId, this.testTeam.teamId);
   }
 
   /**
@@ -715,7 +675,7 @@ export class ScheduleTestBase {
    */
   async setMobileViewport(page: Page): Promise<void> {
     await page.setViewportSize({ width: 375, height: 667 });
-    console.log("📱 Set mobile viewport (375x667)");
+    console.log('📱 Set mobile viewport (375x667)');
   }
 
   /**
@@ -723,7 +683,7 @@ export class ScheduleTestBase {
    */
   async setDesktopViewport(page: Page): Promise<void> {
     await page.setViewportSize({ width: 1280, height: 720 });
-    console.log("🖥️ Set desktop viewport (1280x720)");
+    console.log('🖥️ Set desktop viewport (1280x720)');
   }
 
   /**
@@ -734,13 +694,9 @@ export class ScheduleTestBase {
     endDate: dayjs.Dayjs,
   ): Promise<ShiftDemandDTO[]> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
-    return await this.dbUtils.getShiftDemandsByPeriod(
-      this.testTeam.teamId,
-      startDate,
-      endDate,
-    );
+    return await this.dbUtils.getShiftDemandsByPeriod(this.testTeam.teamId, startDate, endDate);
   }
 
   /**
@@ -756,21 +712,21 @@ export class ScheduleTestBase {
     page: Page,
     options?: {
       targetDate?: dayjs.Dayjs;
-      timeFrame?: "week" | "month";
-      groupBy?: "shift" | "worker";
+      timeFrame?: 'week' | 'month';
+      groupBy?: 'shift' | 'worker';
       showBreaches?: boolean;
       showAssignments?: boolean;
       showDailyShiftDemands?: boolean;
       showRequests?: boolean;
       periodStartDate?: dayjs.Dayjs;
-      mobileSelectedView?: "worker" | "team";
+      mobileSelectedView?: 'worker' | 'team';
       mobileSelectedWorkerId?: string | null;
       mobileWeekStart?: string | null;
     },
     reload: boolean = true,
   ): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team must be created first");
+      throw new Error('Test team must be created first');
     }
 
     const storageKey = `scheduleViewSettings_${this.testTeam.teamId}`;
@@ -789,16 +745,14 @@ export class ScheduleTestBase {
       updates.periodStartDate = options.periodStartDate.utc().toISOString();
     } else if (options?.targetDate && options?.timeFrame) {
       let calculatedDate: dayjs.Dayjs;
-      if (options.timeFrame === "week") {
+      if (options.timeFrame === 'week') {
         // Start of the week (Monday). day(): Sunday=0, Monday=1, ...
         const dow = options.targetDate.day();
         const daysToSubtract = (dow + 6) % 7; // 0 for Monday, 6 for Sunday
-        calculatedDate = options.targetDate
-          .startOf("day")
-          .subtract(daysToSubtract, "day");
+        calculatedDate = options.targetDate.startOf('day').subtract(daysToSubtract, 'day');
       } else {
         // Start of the month
-        calculatedDate = options.targetDate.startOf("month");
+        calculatedDate = options.targetDate.startOf('month');
       }
       updates.periodStartDate = calculatedDate.utc().toISOString();
     }
@@ -806,20 +760,16 @@ export class ScheduleTestBase {
     // Add other optional fields
     if (options?.timeFrame !== undefined) updates.timeFrame = options.timeFrame;
     if (options?.groupBy !== undefined) updates.groupBy = options.groupBy;
-    if (options?.showBreaches !== undefined)
-      updates.showBreaches = options.showBreaches;
-    if (options?.showAssignments !== undefined)
-      updates.showAssignments = options.showAssignments;
+    if (options?.showBreaches !== undefined) updates.showBreaches = options.showBreaches;
+    if (options?.showAssignments !== undefined) updates.showAssignments = options.showAssignments;
     if (options?.showDailyShiftDemands !== undefined)
       updates.showDailyShiftDemands = options.showDailyShiftDemands;
-    if (options?.showRequests !== undefined)
-      updates.showRequests = options.showRequests;
+    if (options?.showRequests !== undefined) updates.showRequests = options.showRequests;
     if (options?.mobileSelectedView !== undefined)
       updates.mobileSelectedView = options.mobileSelectedView;
     if (options?.mobileSelectedWorkerId !== undefined)
       updates.mobileSelectedWorkerId = options.mobileSelectedWorkerId;
-    if (options?.mobileWeekStart !== undefined)
-      updates.mobileWeekStart = options.mobileWeekStart;
+    if (options?.mobileWeekStart !== undefined) updates.mobileWeekStart = options.mobileWeekStart;
 
     // Merge with existing settings
     const settings = {
@@ -835,23 +785,21 @@ export class ScheduleTestBase {
       { key: storageKey, value: settings },
     );
 
-    const logParts = ["✅ Set schedule view settings:"];
+    const logParts = ['✅ Set schedule view settings:'];
     if (updates.timeFrame) logParts.push(`${updates.timeFrame} view`);
     if (updates.periodStartDate) {
-      logParts.push(
-        `starting ${dayjs(updates.periodStartDate).format("YYYY-MM-DD")}`,
-      );
+      logParts.push(`starting ${dayjs(updates.periodStartDate).format('YYYY-MM-DD')}`);
     }
     if (Object.keys(updates).length === 0) {
-      logParts.push("(no changes)");
+      logParts.push('(no changes)');
     }
-    console.log(logParts.join(" "));
+    console.log(logParts.join(' '));
 
     // Reload page to apply localStorage changes
     if (reload) {
       await page.reload();
-      await page.waitForLoadState("networkidle");
-      console.log("  ↻ Reloaded page to apply settings");
+      await page.waitForLoadState('networkidle');
+      console.log('  ↻ Reloaded page to apply settings');
     }
   }
 
@@ -869,7 +817,7 @@ export class ScheduleTestBase {
     active: boolean;
   }): Promise<ConstraintT> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
     return await this.dbUtils.createConstraint({
       ...constraintData,
@@ -887,7 +835,7 @@ export class ScheduleTestBase {
     dimEntries?: DimEntryT[];
   }): Promise<AddDimensionResponse> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
     return await this.dbUtils.createDimension({
@@ -910,7 +858,7 @@ export class ScheduleTestBase {
     dimEntryIds?: string[];
   }): Promise<AttributeT> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
     return await this.dbUtils.createAttribute({
@@ -928,7 +876,7 @@ export class ScheduleTestBase {
    */
   async createSpecialty(specialtyData: { name: string }): Promise<SpecialtyT> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
     return await this.dbUtils.createSpecialty({
@@ -955,28 +903,19 @@ export class ScheduleTestBase {
     },
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
-    return await this.dbUtils.updateWorker(
-      workerId,
-      this.testTeam.teamId,
-      updates,
-    );
+    return await this.dbUtils.updateWorker(workerId, this.testTeam.teamId, updates);
   }
 
   /**
    * Get replacement candidates for an assignment using DatabaseTestUtils
    */
-  async getReplacementCandidates(
-    assignmentId: string,
-  ): Promise<ReplacementCandidateT[]> {
+  async getReplacementCandidates(assignmentId: string): Promise<ReplacementCandidateT[]> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
-    return await this.dbUtils.getReplacementCandidates(
-      assignmentId,
-      this.testTeam.teamId,
-    );
+    return await this.dbUtils.getReplacementCandidates(assignmentId, this.testTeam.teamId);
   }
 }

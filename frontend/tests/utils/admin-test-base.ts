@@ -15,10 +15,10 @@
  * TEST_USER_2 is the non-admin user, created fresh in each test's beforeEach.
  */
 
-import { Page } from "@playwright/test";
-import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from "./database-utils";
-import { testConfig } from "./test-config";
-import { UserT } from "../../src/types/user";
+import { Page } from '@playwright/test';
+import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from './database-utils';
+import { testConfig } from './test-config';
+import { UserT } from '../../src/types/user';
 
 export class AdminTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -43,7 +43,7 @@ export class AdminTestBase {
     // 2. Check health
     const health = await this.dbUtils.checkHealth();
     if (!health.test_utilities_available) {
-      throw new Error("Test utilities not available");
+      throw new Error('Test utilities not available');
     }
 
     // Create the non-admin test user
@@ -98,21 +98,19 @@ export class AdminTestBase {
    * Throws on non-2xx responses — catch the error to inspect status.
    */
   async makeAdminRequest<T>(
-    method: "GET" | "POST" | "PUT" | "DELETE",
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     endpoint: string,
     data?: any,
   ): Promise<T> {
-    const client = this.dbUtils.createAuthenticatedClientForUser(
-      TEST_USER.user_id,
-    );
+    const client = this.dbUtils.createAuthenticatedClientForUser(TEST_USER.user_id);
     switch (method) {
-      case "GET":
+      case 'GET':
         return client.get<T>(endpoint);
-      case "POST":
+      case 'POST':
         return client.post<T>(endpoint, data);
-      case "PUT":
+      case 'PUT':
         return client.put<T>(endpoint, data);
-      case "DELETE":
+      case 'DELETE':
         return client.delete<T>(endpoint);
     }
   }
@@ -122,21 +120,19 @@ export class AdminTestBase {
    * Throws on non-2xx responses — catch the error to test for 403s.
    */
   async makeNonAdminRequest<T>(
-    method: "GET" | "POST" | "PUT" | "DELETE",
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     endpoint: string,
     data?: any,
   ): Promise<T> {
-    const client = this.dbUtils.createAuthenticatedClientForUser(
-      TEST_USER_2.user_id,
-    );
+    const client = this.dbUtils.createAuthenticatedClientForUser(TEST_USER_2.user_id);
     switch (method) {
-      case "GET":
+      case 'GET':
         return client.get<T>(endpoint);
-      case "POST":
+      case 'POST':
         return client.post<T>(endpoint, data);
-      case "PUT":
+      case 'PUT':
         return client.put<T>(endpoint, data);
-      case "DELETE":
+      case 'DELETE':
         return client.delete<T>(endpoint);
     }
   }
@@ -146,7 +142,7 @@ export class AdminTestBase {
    * Useful for verifying DB state independently of the UI.
    */
   async getAdminUsersViaApi(): Promise<UserT[]> {
-    return this.makeAdminRequest<UserT[]>("GET", "/admin/users");
+    return this.makeAdminRequest<UserT[]>('GET', '/admin/users');
   }
 
   /**

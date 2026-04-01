@@ -1,4 +1,4 @@
-import { WorkerT } from "../types/worker";
+import { WorkerT } from '../types/worker';
 
 /**
  * Get worker name by worker ID
@@ -8,7 +8,7 @@ import { WorkerT } from "../types/worker";
  */
 export function getWorkerName(workerId: string, workers: WorkerT[]): string {
   const worker = workers.find((w) => w.id === workerId);
-  return worker ? worker.name : "Unknown Worker";
+  return worker ? worker.name : 'Unknown Worker';
 }
 
 /**
@@ -17,10 +17,7 @@ export function getWorkerName(workerId: string, workers: WorkerT[]): string {
  * @param workers - Array of workers
  * @returns Worker object or undefined if not found
  */
-export function getWorkerById(
-  workerId: string,
-  workers: WorkerT[],
-): WorkerT | undefined {
+export function getWorkerById(workerId: string, workers: WorkerT[]): WorkerT | undefined {
   return workers.find((w) => w.id === workerId);
 }
 
@@ -30,9 +27,6 @@ export function getWorkerById(
  * @param workers - Array of workers
  * @returns Worker object or undefined if not found
  */
-export function getWorkerByUserId(
-  userId: string,
-  workers: WorkerT[],
-): WorkerT | undefined {
+export function getWorkerByUserId(userId: string, workers: WorkerT[]): WorkerT | undefined {
   return workers.find((w) => w.userId === userId);
 }

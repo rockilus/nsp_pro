@@ -4,12 +4,12 @@
  * useAdminImpersonation.ts can import from here without creating a circular
  * dependency.
  */
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(utc);
 
-export const IMPERSONATION_SESSION_KEY = "admin_impersonation_target";
+export const IMPERSONATION_SESSION_KEY = 'admin_impersonation_target';
 
 export interface StoredImpersonationTarget {
   userId: string;
@@ -25,7 +25,7 @@ export interface StoredImpersonationTarget {
  * Safe to call from server components — returns null on the server.
  */
 export function getImpersonationTarget(): StoredImpersonationTarget | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === 'undefined') return null;
   try {
     const raw = sessionStorage.getItem(IMPERSONATION_SESSION_KEY);
     return raw ? (JSON.parse(raw) as StoredImpersonationTarget) : null;
@@ -51,13 +51,11 @@ export function isImpersonationTokenExpired(): boolean {
   const token = getImpersonationToken();
   if (!token) return true;
   try {
-    const payloadBase64 = token.split(".")[1];
+    const payloadBase64 = token.split('.')[1];
     if (!payloadBase64) return true;
-    const payload = JSON.parse(
-      atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/")),
-    );
+    const payload = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
     const exp: number | undefined = payload.exp;
-    if (typeof exp !== "number") return true;
+    if (typeof exp !== 'number') return true;
     // Add a 10-second buffer so we don't issue a request that expires in flight.
     // Use dayjs.utc() to match the UTC-based exp claim set by the backend.
     return dayjs.utc().unix() >= exp - 10;
@@ -70,6 +68,6 @@ export function isImpersonationTokenExpired(): boolean {
  * Removes the impersonation session key from sessionStorage.
  */
 export function clearImpersonationTarget(): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   sessionStorage.removeItem(IMPERSONATION_SESSION_KEY);
 }

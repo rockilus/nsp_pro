@@ -1,23 +1,20 @@
-"use client";
+'use client';
 
-import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Box, CircularProgress } from "@mui/material";
-import { useUser } from "@/context/UserContext";
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Box, CircularProgress } from '@mui/material';
+import { useUser } from '@/context/UserContext';
 
 interface SuperAdminGuardProps {
   children: React.ReactNode;
   lng: string;
 }
 
-export default function SuperAdminGuard({
-  children,
-  lng,
-}: SuperAdminGuardProps) {
+export default function SuperAdminGuard({ children, lng }: SuperAdminGuardProps) {
   const { user, loading } = useUser();
   const router = useRouter();
 
-  const isSuperAdmin = user?.systemRole === "super_admin";
+  const isSuperAdmin = user?.systemRole === 'super_admin';
 
   useEffect(() => {
     if (!loading && !isSuperAdmin) {
@@ -27,12 +24,7 @@ export default function SuperAdminGuard({
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-      >
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
         <CircularProgress />
       </Box>
     );

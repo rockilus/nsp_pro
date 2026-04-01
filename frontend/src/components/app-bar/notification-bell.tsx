@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { useTranslation } from "@/app/i18n/client";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useTranslation } from '@/app/i18n/client';
 import {
   useUnseenNotificationCount,
   useNotifications,
@@ -11,25 +11,25 @@ import {
   useMarkAllNotificationsSeen,
   useReadSeenBefore,
   SEEN_GRACE_PERIOD_HOURS,
-} from "@/app/lib/hooks/useNotifications";
-import NotificationItem from "@/components/notifications/notification-item";
+} from '@/app/lib/hooks/useNotifications';
+import NotificationItem from '@/components/notifications/notification-item';
 // MUI
-import Badge from "@mui/material/Badge";
-import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
-import ListItemText from "@mui/material/ListItemText";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import Popover from "@mui/material/Popover";
-import Typography from "@mui/material/Typography";
+import Badge from '@mui/material/Badge';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import Popover from '@mui/material/Popover';
+import Typography from '@mui/material/Typography';
 
 const POPOVER_LIMIT = 5;
 
 export default function NotificationBell({ lng }: { lng: string }) {
-  const { t } = useTranslation(lng, "notifications");
+  const { t } = useTranslation(lng, 'notifications');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -52,10 +52,7 @@ export default function NotificationBell({ lng }: { lng: string }) {
       Date.now() - SEEN_GRACE_PERIOD_HOURS * 60 * 60 * 1000,
     ).toISOString();
     const hasOldSeen = data.notifications.some(
-      (n) =>
-        n.seenAt !== null &&
-        !n.read &&
-        n.seenAt.toDate() <= new Date(graceCutoff),
+      (n) => n.seenAt !== null && !n.read && n.seenAt.toDate() <= new Date(graceCutoff),
     );
     if (hasOldSeen) {
       readSeenBefore.mutate(graceCutoff);
@@ -92,7 +89,7 @@ export default function NotificationBell({ lng }: { lng: string }) {
       <IconButton
         color="inherit"
         onClick={handleOpen}
-        aria-label={t("title")}
+        aria-label={t('title')}
         data-testid="notification-bell-button"
       >
         <Badge
@@ -101,10 +98,10 @@ export default function NotificationBell({ lng }: { lng: string }) {
           invisible={unreadCount === 0}
           max={99}
           slotProps={{
-            badge: { "data-testid": "notification-badge-count" } as any,
+            badge: { 'data-testid': 'notification-badge-count' } as any,
           }}
         >
-          <NotificationsIcon sx={{ color: "text.secondary" }} />
+          <NotificationsIcon sx={{ color: 'text.secondary' }} />
         </Badge>
       </IconButton>
 
@@ -112,27 +109,27 @@ export default function NotificationBell({ lng }: { lng: string }) {
         open={open}
         anchorEl={anchorEl}
         onClose={handleClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         slotProps={{
           paper: {
             sx: { width: 360, maxHeight: 480 },
-            "data-testid": "notification-bell-popover",
+            'data-testid': 'notification-bell-popover',
           } as any,
         }}
       >
         {/* Header */}
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
             px: 2,
             py: 1.5,
           }}
         >
           <Typography variant="subtitle1" fontWeight={600}>
-            {t("title")}
+            {t('title')}
           </Typography>
           <IconButton
             size="small"
@@ -146,14 +143,11 @@ export default function NotificationBell({ lng }: { lng: string }) {
             anchorEl={menuAnchorEl}
             open={menuOpen}
             onClose={handleMenuClose}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
           >
-            <MenuItem
-              onClick={handleMarkAll}
-              data-testid="notification-bell-mark-all-read"
-            >
-              <ListItemText>{t("mark_all_read")}</ListItemText>
+            <MenuItem onClick={handleMarkAll} data-testid="notification-bell-mark-all-read">
+              <ListItemText>{t('mark_all_read')}</ListItemText>
             </MenuItem>
             <MenuItem
               component={Link}
@@ -164,7 +158,7 @@ export default function NotificationBell({ lng }: { lng: string }) {
               }}
               data-testid="notification-bell-open-settings"
             >
-              <ListItemText>{t("notification_settings")}</ListItemText>
+              <ListItemText>{t('notification_settings')}</ListItemText>
             </MenuItem>
             <MenuItem
               component={Link}
@@ -175,7 +169,7 @@ export default function NotificationBell({ lng }: { lng: string }) {
               }}
               data-testid="notification-bell-open-notifications"
             >
-              <ListItemText>{t("open_notifications")}</ListItemText>
+              <ListItemText>{t('open_notifications')}</ListItemText>
             </MenuItem>
           </Menu>
         </Box>
@@ -183,40 +177,31 @@ export default function NotificationBell({ lng }: { lng: string }) {
 
         {/* Notification list */}
         {notifications.length === 0 ? (
-          <Box sx={{ px: 2, py: 3, textAlign: "center" }}>
+          <Box sx={{ px: 2, py: 3, textAlign: 'center' }}>
             <Typography
               variant="body2"
               color="text.secondary"
               data-testid="notification-bell-empty"
             >
-              {t("no_notifications")}
+              {t('no_notifications')}
             </Typography>
           </Box>
         ) : (
           notifications.map((n) => (
-            <NotificationItem
-              key={n.id}
-              notification={n}
-              lng={lng}
-              onRead={handleRead}
-              compact
-            />
+            <NotificationItem key={n.id} notification={n} lng={lng} onRead={handleRead} compact />
           ))
         )}
 
         <Divider />
         {/* See all link */}
-        <Box
-          sx={{ px: 2, py: 1, textAlign: "center" }}
-          data-testid="notification-bell-see-all"
-        >
+        <Box sx={{ px: 2, py: 1, textAlign: 'center' }} data-testid="notification-bell-see-all">
           <Link
             href={`/${lng}/plan/notifications`}
             onClick={handleClose}
-            style={{ textDecoration: "none" }}
+            style={{ textDecoration: 'none' }}
           >
             <Typography variant="body2" color="primary">
-              {t("see_all")}
+              {t('see_all')}
             </Typography>
           </Link>
         </Box>

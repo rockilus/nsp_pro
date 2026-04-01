@@ -1,29 +1,22 @@
-import React, { useState } from "react";
-import Link from "next/link";
-import dayjs from "dayjs";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import dayjs from 'dayjs';
+import { useTranslation } from '../../../app/i18n/client';
 // Components
-import DataViewSelector from "./data-view-selector";
-import { TimeNavigation } from "../../common/TimeNavigation";
-import CampaignInfo from "./campaign-info";
-import ScheduleSettings from "./schedule-settings";
-import { RoleBased } from "../../access/role-based";
+import DataViewSelector from './data-view-selector';
+import { TimeNavigation } from '../../common/TimeNavigation';
+import CampaignInfo from './campaign-info';
+import ScheduleSettings from './schedule-settings';
+import { RoleBased } from '../../access/role-based';
 // Types
-import {
-  ScheduleT,
-  DuplicateRequestT,
-  ScheduleViewSettingsT,
-} from "../../../types/schedule";
-import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
-import { SolveTaskStatusResponseT } from "../../../types/solveTaskStatus";
-import { SolveScopeType } from "../../../types/solveTaskStatus";
-import { BreachT } from "../../../types/breach";
-import { WorkerT } from "../../../types/worker";
-import { ShiftT } from "../../../types/shift";
-import {
-  ScheduleSelectionState,
-  SelectedScheduleCell,
-} from "../../../types/scheduleSelection";
+import { ScheduleT, DuplicateRequestT, ScheduleViewSettingsT } from '../../../types/schedule';
+import { TeamMembershipRole, TeamWithMembership } from '../../../types/team';
+import { SolveTaskStatusResponseT } from '../../../types/solveTaskStatus';
+import { SolveScopeType } from '../../../types/solveTaskStatus';
+import { BreachT } from '../../../types/breach';
+import { WorkerT } from '../../../types/worker';
+import { ShiftT } from '../../../types/shift';
+import { ScheduleSelectionState, SelectedScheduleCell } from '../../../types/scheduleSelection';
 
 export default function ScheduleNavBar({
   lng,
@@ -46,7 +39,7 @@ export default function ScheduleNavBar({
   workers = [],
   shifts = [],
   selectionState,
-  selectedSolveScope = "FULL",
+  selectedSolveScope = 'FULL',
   onSolveOptionChange,
   workerSolveCells = [],
   shiftSolveCells = [],
@@ -68,7 +61,7 @@ export default function ScheduleNavBar({
     teamId: string,
   ) => void;
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
-  handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
+  handleChangeTimeFrame: (newTimeFrame: 'week' | 'month') => void;
   useSqsWorkflow?: boolean;
   onSqsSolveComplete?: (result: SolveTaskStatusResponseT) => void;
   onToggleSelectionMode?: () => void;
@@ -80,19 +73,18 @@ export default function ScheduleNavBar({
   workerSolveCells?: SelectedScheduleCell[];
   shiftSolveCells?: SelectedScheduleCell[];
 }) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
-  const [isHoveredCreateCampaign, setIsHoveredCreateCampaign] =
-    useState<boolean>(false);
+  const [isHoveredCreateCampaign, setIsHoveredCreateCampaign] = useState<boolean>(false);
 
   return (
     <div
       data-testid="schedule-nav-bar"
       style={{
-        width: "100%",
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "3px 16px",
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: '3px 16px',
       }}
     >
       <TimeNavigation
@@ -149,31 +141,29 @@ export default function ScheduleNavBar({
           ) : (
             <div
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-end",
-                width: "470px",
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                width: '470px',
               }}
             >
               <Link href={`/${lng}/plan/campaign`}>
                 <button
                   data-testid="nav-bar-create-campaign-button"
                   style={{
-                    borderRadius: "4px",
-                    border: "1px solid #e5e7eb",
-                    height: "35px",
-                    padding: "0 15px",
-                    fontSize: "0.9rem",
+                    borderRadius: '4px',
+                    border: '1px solid #e5e7eb',
+                    height: '35px',
+                    padding: '0 15px',
+                    fontSize: '0.9rem',
                     fontWeight: 550,
-                    color: "#616161",
-                    backgroundColor: isHoveredCreateCampaign
-                      ? "#f0f0f0"
-                      : "white",
+                    color: '#616161',
+                    backgroundColor: isHoveredCreateCampaign ? '#f0f0f0' : 'white',
                   }}
                   onMouseEnter={() => setIsHoveredCreateCampaign(true)}
                   onMouseLeave={() => setIsHoveredCreateCampaign(false)}
                 >
-                  {t("create_campaign")}
+                  {t('create_campaign')}
                 </button>
               </Link>
             </div>

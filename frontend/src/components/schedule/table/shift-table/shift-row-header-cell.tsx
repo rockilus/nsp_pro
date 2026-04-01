@@ -1,25 +1,25 @@
-import React from "react";
-import { useTranslation } from "../../../../app/i18n/client";
-import { Sparkle } from "lucide-react";
+import React from 'react';
+import { useTranslation } from '../../../../app/i18n/client';
+import { Sparkle } from 'lucide-react';
 // MUI
-import Checkbox from "@mui/material/Checkbox";
-import IconButton from "@mui/material/IconButton";
-import TableCell from "@mui/material/TableCell";
-import Tooltip from "@mui/material/Tooltip";
+import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
+import TableCell from '@mui/material/TableCell';
+import Tooltip from '@mui/material/Tooltip';
 // Components
-import { countShiftsTotalPeriod } from "../shared/assignment-count-methods";
-import { RoleBased } from "@/components/access/role-based";
+import { countShiftsTotalPeriod } from '../shared/assignment-count-methods';
+import { RoleBased } from '@/components/access/role-based';
 // Styles
-import "./shift-row-header-cell.css";
+import './shift-row-header-cell.css';
 // Types
-import { ShiftT, ShiftType } from "../../../../types/shift";
-import { ScheduleT } from "../../../../types/schedule";
-import { ShiftDemandDTO } from "@/types/shiftDemand";
-import { AssignmentT } from "@/types/assignment";
-import { TeamMembershipRole } from "@/types/team";
+import { ShiftT, ShiftType } from '../../../../types/shift';
+import { ScheduleT } from '../../../../types/schedule';
+import { ShiftDemandDTO } from '@/types/shiftDemand';
+import { AssignmentT } from '@/types/assignment';
+import { TeamMembershipRole } from '@/types/team';
 // Constants
-import { ShiftColorMappings } from "../../../../constants/constants";
-import { TeamWithMembership } from "@/types/team";
+import { ShiftColorMappings } from '../../../../constants/constants';
+import { TeamWithMembership } from '@/types/team';
 
 export default function ShiftRowHeaderCell({
   lng,
@@ -52,32 +52,31 @@ export default function ShiftRowHeaderCell({
   isRowCustomIndeterminate?: boolean;
   onCustomRowSelect?: () => void;
 }) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
   const { background, sample, text } = ShiftColorMappings[shift.color] || {
-    background: "#f5f5f5",
-    sample: "#9e9e9e",
-    text: "#212121",
+    background: '#f5f5f5',
+    sample: '#9e9e9e',
+    text: '#212121',
   };
 
-  const { countActual: shiftCountActual, countTarget: shiftCountTarget } =
-    scheduleCampaign
-      ? countShiftsTotalPeriod(
-          [shift],
-          assignments,
-          shiftDemands,
-          scheduleCampaign.startDate,
-          scheduleCampaign.endDate,
-        )
-      : { countActual: 0, countTarget: 0 };
+  const { countActual: shiftCountActual, countTarget: shiftCountTarget } = scheduleCampaign
+    ? countShiftsTotalPeriod(
+        [shift],
+        assignments,
+        shiftDemands,
+        scheduleCampaign.startDate,
+        scheduleCampaign.endDate,
+      )
+    : { countActual: 0, countTarget: 0 };
 
   return (
     <TableCell
       data-testid={`shift-row-header-${shift.id}`}
       sx={{
-        position: "sticky",
+        position: 'sticky',
         left: 0,
-        backgroundColor: "#FFFFFF",
-        borderRight: "1px solid #e0e0e07d",
+        backgroundColor: '#FFFFFF',
+        borderRight: '1px solid #e0e0e07d',
         padding: 0,
       }}
     >
@@ -90,7 +89,7 @@ export default function ShiftRowHeaderCell({
             onChange={onRowSelect}
             onClick={(e) => e.stopPropagation()}
             data-testid={`shift-row-checkbox-${shift.id}`}
-            sx={{ padding: "2px", flexShrink: 0 }}
+            sx={{ padding: '2px', flexShrink: 0 }}
           />
         )}
         {isCustomSolveModeActive && (
@@ -102,26 +101,21 @@ export default function ShiftRowHeaderCell({
             }}
             data-testid={`shift-row-custom-select-${shift.id}`}
             sx={{
-              padding: "2px",
+              padding: '2px',
               flexShrink: 0,
               color: isRowCustomSelected
-                ? "#1976d2"
+                ? '#1976d2'
                 : isRowCustomIndeterminate
-                  ? "#42a5f5"
-                  : "#9e9e9e",
+                  ? '#42a5f5'
+                  : '#9e9e9e',
             }}
           >
-            <Sparkle
-              size={14}
-              fill={isRowCustomSelected ? "currentColor" : "none"}
-            />
+            <Sparkle size={14} fill={isRowCustomSelected ? 'currentColor' : 'none'} />
           </IconButton>
         )}
         <div
-          className={`shift-type-marker ${
-            shift.shiftType === ShiftType.DUTY ? "duty" : "other"
-          }`}
-          style={{ "--bg-color": sample } as React.CSSProperties}
+          className={`shift-type-marker ${shift.shiftType === ShiftType.DUTY ? 'duty' : 'other'}`}
+          style={{ '--bg-color': sample } as React.CSSProperties}
         ></div>
         <div className="shift-row-header-cell-left">
           <span
@@ -133,10 +127,10 @@ export default function ShiftRowHeaderCell({
             allowedRoles={[TeamMembershipRole.OWNER]}
           >
             {teamWithMembership.team.useSolver && scheduleCampaign && (
-              <Tooltip title={t("shift_count_tooltip")} placement="right" arrow>
+              <Tooltip title={t('shift_count_tooltip')} placement="right" arrow>
                 <span
                   className={`shift-stats-total ${
-                    shiftCountActual !== shiftCountTarget && "breach"
+                    shiftCountActual !== shiftCountTarget && 'breach'
                   }`}
                   data-testid={`shift-count-${shift.id}`}
                 >
@@ -147,18 +141,12 @@ export default function ShiftRowHeaderCell({
           </RoleBased>
         </div>
         <div className="shift-row-header-cell-right">
-          <span
-            className="shift-time"
-            data-testid={`shift-time-start-${shift.id}`}
-          >
-            {shift.startTime.format("HH:mm")}
+          <span className="shift-time" data-testid={`shift-time-start-${shift.id}`}>
+            {shift.startTime.format('HH:mm')}
           </span>
-          <span
-            className="shift-time"
-            data-testid={`shift-time-end-${shift.id}`}
-          >
-            {shift.endTime.format("HH:mm")}
-            {!shift.endTime.isSame(shift.startTime, "day") && <sup>+1</sup>}
+          <span className="shift-time" data-testid={`shift-time-end-${shift.id}`}>
+            {shift.endTime.format('HH:mm')}
+            {!shift.endTime.isSame(shift.startTime, 'day') && <sup>+1</sup>}
           </span>
         </div>
       </div>

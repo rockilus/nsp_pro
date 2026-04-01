@@ -5,14 +5,10 @@
  * reducing duplication across multiple attribute test files.
  */
 
-import { Page } from "@playwright/test";
-import { DimensionTestBase } from "./dimension-test-base";
-import {
-  DimensionT,
-  DimensionType,
-  DimensionEntryType,
-} from "../../src/types/dimension";
-import { AttributeT, AttributeOwnerType } from "../../src/types/attribute";
+import { Page } from '@playwright/test';
+import { DimensionTestBase } from './dimension-test-base';
+import { DimensionT, DimensionType, DimensionEntryType } from '../../src/types/dimension';
+import { AttributeT, AttributeOwnerType } from '../../src/types/attribute';
 
 export class AttributeTestBase extends DimensionTestBase {
   constructor() {
@@ -32,17 +28,13 @@ export class AttributeTestBase extends DimensionTestBase {
     // Verify test utilities are available
     const health = await this.dbUtils.checkHealth();
     if (!health.test_utilities_available) {
-      throw new Error(
-        "Test utilities are not available - check environment configuration",
-      );
+      throw new Error('Test utilities are not available - check environment configuration');
     }
 
     // Create a test team for attribute tests
     const uniqueTeamName = `Attribute Test Team ${workerIndex}-${Date.now()}`;
     this.testTeam = await this.dbUtils.createTeam({ name: uniqueTeamName });
-    console.log(
-      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`,
-    );
+    console.log(`Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`);
   }
 
   /**
@@ -56,9 +48,7 @@ export class AttributeTestBase extends DimensionTestBase {
     dimEntryIds?: string[];
   }): Promise<AttributeT> {
     if (!this.testTeam) {
-      throw new Error(
-        "Test team not created. Call setupAttributeTests() first.",
-      );
+      throw new Error('Test team not created. Call setupAttributeTests() first.');
     }
 
     return this.dbUtils.createAttribute({
@@ -82,16 +72,10 @@ export class AttributeTestBase extends DimensionTestBase {
     },
   ): Promise<AttributeT> {
     if (!this.testTeam) {
-      throw new Error(
-        "Test team not created. Call setupAttributeTests() first.",
-      );
+      throw new Error('Test team not created. Call setupAttributeTests() first.');
     }
 
-    return this.dbUtils.updateAttribute(
-      attributeId,
-      this.testTeam.teamId,
-      updates,
-    );
+    return this.dbUtils.updateAttribute(attributeId, this.testTeam.teamId, updates);
   }
 
   /**
@@ -99,9 +83,7 @@ export class AttributeTestBase extends DimensionTestBase {
    */
   async deleteTestAttribute(attributeId: string): Promise<void> {
     if (!this.testTeam) {
-      throw new Error(
-        "Test team not created. Call setupAttributeTests() first.",
-      );
+      throw new Error('Test team not created. Call setupAttributeTests() first.');
     }
 
     return this.dbUtils.deleteAttribute(attributeId, this.testTeam.teamId);
@@ -112,9 +94,7 @@ export class AttributeTestBase extends DimensionTestBase {
    */
   async getTestAttributesByOwner(ownerId: string): Promise<AttributeT[]> {
     if (!this.testTeam) {
-      throw new Error(
-        "Test team not created. Call setupAttributeTests() first.",
-      );
+      throw new Error('Test team not created. Call setupAttributeTests() first.');
     }
 
     return this.dbUtils.getAttributesByOwner(ownerId, this.testTeam.teamId);
@@ -128,73 +108,48 @@ export class AttributeTestBase extends DimensionTestBase {
    * Get the attribute cell for a specific dimension and owner
    */
   getAttributeCell(page: Page, dimensionId: string, ownerId: string) {
-    return page.locator(
-      `[data-testid="attribute-cell-${ownerId}-${dimensionId}"]`,
-    );
+    return page.locator(`[data-testid="attribute-cell-${ownerId}-${dimensionId}"]`);
   }
 
   /**
    * Get the attribute text field when editing
    */
   getAttributeTextField(page: Page, dimensionId: string, ownerId: string) {
-    return page.locator(
-      `[data-testid="attribute-text-field-${ownerId}-${dimensionId}"]`,
-    );
+    return page.locator(`[data-testid="attribute-text-field-${ownerId}-${dimensionId}"]`);
   }
 
   /**
    * Get the attribute number field when editing
    */
   getAttributeNumberField(page: Page, dimensionId: string, ownerId: string) {
-    return page.locator(
-      `[data-testid="attribute-number-field-${ownerId}-${dimensionId}"]`,
-    );
+    return page.locator(`[data-testid="attribute-number-field-${ownerId}-${dimensionId}"]`);
   }
 
   /**
    * Get the attribute checkbox for boolean type
    */
   getAttributeCheckbox(page: Page, dimensionId: string, ownerId: string) {
-    return page.locator(
-      `[data-testid="attribute-checkbox-${ownerId}-${dimensionId}"]`,
-    );
+    return page.locator(`[data-testid="attribute-checkbox-${ownerId}-${dimensionId}"]`);
   }
 
   /**
    * Get the attribute dim entries popup
    */
-  getAttributeDimEntriesPopup(
-    page: Page,
-    dimensionId: string,
-    ownerId: string,
-  ) {
-    return page.locator(
-      `[data-testid="attribute-dim-entries-popup-${ownerId}-${dimensionId}"]`,
-    );
+  getAttributeDimEntriesPopup(page: Page, dimensionId: string, ownerId: string) {
+    return page.locator(`[data-testid="attribute-dim-entries-popup-${ownerId}-${dimensionId}"]`);
   }
 
   /**
    * Get the attribute dim entries search input
    */
-  getAttributeDimEntriesSearchInput(
-    page: Page,
-    dimensionId: string,
-    ownerId: string,
-  ) {
-    return page.locator(
-      `[data-testid="attribute-dim-entries-search-${ownerId}-${dimensionId}"]`,
-    );
+  getAttributeDimEntriesSearchInput(page: Page, dimensionId: string, ownerId: string) {
+    return page.locator(`[data-testid="attribute-dim-entries-search-${ownerId}-${dimensionId}"]`);
   }
 
   /**
    * Get a specific dim entry option in the attribute popup
    */
-  getAttributeDimEntryOption(
-    page: Page,
-    dimensionId: string,
-    ownerId: string,
-    dimEntryId: string,
-  ) {
+  getAttributeDimEntryOption(page: Page, dimensionId: string, ownerId: string, dimEntryId: string) {
     return page.locator(
       `[data-testid="attribute-dim-entry-option-${ownerId}-${dimensionId}-${dimEntryId}"]`,
     );
@@ -235,11 +190,7 @@ export class AttributeTestBase extends DimensionTestBase {
   /**
    * Click on an attribute cell to start editing
    */
-  async clickAttributeCell(
-    page: Page,
-    dimensionId: string,
-    ownerId: string,
-  ): Promise<void> {
+  async clickAttributeCell(page: Page, dimensionId: string, ownerId: string): Promise<void> {
     const cell = this.getAttributeCell(page, dimensionId, ownerId);
     await cell.click();
   }
@@ -266,22 +217,14 @@ export class AttributeTestBase extends DimensionTestBase {
     ownerId: string,
     value: string,
   ): Promise<void> {
-    const numberField = this.getAttributeNumberField(
-      page,
-      dimensionId,
-      ownerId,
-    );
+    const numberField = this.getAttributeNumberField(page, dimensionId, ownerId);
     await numberField.fill(value);
   }
 
   /**
    * Toggle an attribute checkbox
    */
-  async toggleAttributeCheckbox(
-    page: Page,
-    dimensionId: string,
-    ownerId: string,
-  ): Promise<void> {
+  async toggleAttributeCheckbox(page: Page, dimensionId: string, ownerId: string): Promise<void> {
     const checkbox = this.getAttributeCheckbox(page, dimensionId, ownerId);
     await checkbox.click();
   }
@@ -295,7 +238,7 @@ export class AttributeTestBase extends DimensionTestBase {
     ownerId: string,
   ): Promise<void> {
     const cell = this.getAttributeCell(page, dimensionId, ownerId);
-    await cell.press("Enter");
+    await cell.press('Enter');
   }
 
   /**
@@ -307,7 +250,7 @@ export class AttributeTestBase extends DimensionTestBase {
     ownerId: string,
   ): Promise<void> {
     const cell = this.getAttributeCell(page, dimensionId, ownerId);
-    await cell.press("Escape");
+    await cell.press('Escape');
   }
 
   /**
@@ -354,7 +297,7 @@ export class AttributeTestBase extends DimensionTestBase {
 
     // Wait for popup to appear
     const popup = this.getAttributeDimEntriesPopup(page, dimensionId, ownerId);
-    await popup.waitFor({ state: "visible" });
+    await popup.waitFor({ state: 'visible' });
   }
 
   /**
@@ -374,12 +317,7 @@ export class AttributeTestBase extends DimensionTestBase {
     ownerId: string,
     dimEntryId: string,
   ): Promise<void> {
-    const option = this.getAttributeDimEntryOption(
-      page,
-      dimensionId,
-      ownerId,
-      dimEntryId,
-    );
+    const option = this.getAttributeDimEntryOption(page, dimensionId, ownerId, dimEntryId);
     await option.click();
   }
 
@@ -410,11 +348,7 @@ export class AttributeTestBase extends DimensionTestBase {
     ownerId: string,
     searchTerm: string,
   ): Promise<void> {
-    const searchInput = this.getAttributeDimEntriesSearchInput(
-      page,
-      dimensionId,
-      ownerId,
-    );
+    const searchInput = this.getAttributeDimEntriesSearchInput(page, dimensionId, ownerId);
     await searchInput.fill(searchTerm);
   }
 }

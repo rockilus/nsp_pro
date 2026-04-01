@@ -1,29 +1,25 @@
-import React from "react";
-import { Sparkle } from "lucide-react";
+import React from 'react';
+import { Sparkle } from 'lucide-react';
 // MUI
-import AddCircleIcon from "@mui/icons-material/AddCircle";
-import Checkbox from "@mui/material/Checkbox";
-import IconButton from "@mui/material/IconButton";
-import TableCell from "@mui/material/TableCell";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
+import TableCell from '@mui/material/TableCell';
 // Components
-import AssignmentCell from "../shared/assignment-cell";
-import RequestCell from "../shared/request-cell";
-import { RoleBased } from "@/components/access/role-based";
+import AssignmentCell from '../shared/assignment-cell';
+import RequestCell from '../shared/request-cell';
+import { RoleBased } from '@/components/access/role-based';
 // Styles
-import "./worker-cell.css";
+import './worker-cell.css';
 // Types
-import { WorkerT } from "../../../../types/worker";
-import { ShiftT } from "../../../../types/shift";
-import {
-  periodDateT,
-  ScheduleViewSettingsT,
-  ScheduleCellDataT,
-} from "../../../../types/schedule";
-import { CreateAssignmentT } from "@/types/assignment";
-import { AssignmentDataDictT } from "@/types/assignment";
-import { RequestT } from "../../../../types/request";
-import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
-import { ScheduleSelectionState } from "@/types/scheduleSelection";
+import { WorkerT } from '../../../../types/worker';
+import { ShiftT } from '../../../../types/shift';
+import { periodDateT, ScheduleViewSettingsT, ScheduleCellDataT } from '../../../../types/schedule';
+import { CreateAssignmentT } from '@/types/assignment';
+import { AssignmentDataDictT } from '@/types/assignment';
+import { RequestT } from '../../../../types/request';
+import { TeamMembershipRole, TeamWithMembership } from '@/types/team';
+import { ScheduleSelectionState } from '@/types/scheduleSelection';
 
 export default function WorkerCell({
   periodDate,
@@ -53,11 +49,7 @@ export default function WorkerCell({
   handleRequestSelection?: (request: RequestT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
   selectionState: ScheduleSelectionState;
-  handleCellSelect: (
-    rowId: string,
-    date: string,
-    scheduleId: string | null,
-  ) => void;
+  handleCellSelect: (rowId: string, date: string, scheduleId: string | null) => void;
   handleAssignmentSelect: (assignmentId: string) => void;
   isCustomSolveModeActive?: boolean;
   isCustomCellSelected?: boolean;
@@ -65,43 +57,39 @@ export default function WorkerCell({
   isDateInCampaign?: boolean;
 }) {
   const isSelectionActive = !!selectionState?.isActive;
-  const dateStr = periodDate.date.format("YYYY-MM-DD");
+  const dateStr = periodDate.date.format('YYYY-MM-DD');
   const isCellSelected =
-    selectionState?.selectedCells.some(
-      (c) => c.rowId === worker.id && c.date === dateStr,
-    ) ?? false;
+    selectionState?.selectedCells.some((c) => c.rowId === worker.id && c.date === dateStr) ?? false;
   const hasAssignments =
-    scheduleViewSettings.showAssignments &&
-    !!scheduleCellData?.assignmentsData?.length;
-  const hasRequests =
-    scheduleViewSettings.showRequests && !!scheduleCellData?.requests?.length;
+    scheduleViewSettings.showAssignments && !!scheduleCellData?.assignmentsData?.length;
+  const hasRequests = scheduleViewSettings.showRequests && !!scheduleCellData?.requests?.length;
   const hasOtherComponents = hasAssignments || hasRequests || isSelectionActive;
 
   const sparkleStyle: React.CSSProperties = hasOtherComponents
     ? {
-        position: "absolute",
+        position: 'absolute',
         bottom: 4,
-        left: "50%",
-        transform: "translateX(-50%)",
-        background: "none",
-        border: "none",
-        cursor: "pointer",
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
         padding: 0,
         lineHeight: 1,
-        color: isCustomCellSelected ? "#1976d2" : "#9e9e9e",
+        color: isCustomCellSelected ? '#1976d2' : '#9e9e9e',
         zIndex: 11,
       }
     : {
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        background: "none",
-        border: "none",
-        cursor: "pointer",
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
         padding: 0,
         lineHeight: 1,
-        color: isCustomCellSelected ? "#1976d2" : "#9e9e9e",
+        color: isCustomCellSelected ? '#1976d2' : '#9e9e9e',
         zIndex: 11,
       };
 
@@ -110,24 +98,20 @@ export default function WorkerCell({
       className="cell-hover-container"
       data-testid={`worker-cell-${worker.id}-${dateStr}`}
       sx={{
-        align: "center",
-        borderRight: "1px solid #e0e0e07d",
+        align: 'center',
+        borderRight: '1px solid #e0e0e07d',
         padding: 0,
-        position: "relative",
-        backgroundColor: isCellSelected
-          ? "rgba(25, 118, 210, 0.08)"
-          : undefined,
-        outline: isCellSelected ? "2px solid #1976d2" : undefined,
-        outlineOffset: isCellSelected ? "-2px" : undefined,
+        position: 'relative',
+        backgroundColor: isCellSelected ? 'rgba(25, 118, 210, 0.08)' : undefined,
+        outline: isCellSelected ? '2px solid #1976d2' : undefined,
+        outlineOffset: isCellSelected ? '-2px' : undefined,
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         {scheduleViewSettings.showAssignments &&
           scheduleCellData?.assignmentsData.map((aData) => {
             const isAssignmentSelected =
-              selectionState?.selectedAssignmentIds.includes(
-                aData.assignment.id,
-              ) ?? false;
+              selectionState?.selectedAssignmentIds.includes(aData.assignment.id) ?? false;
             return (
               <AssignmentCell
                 key={aData.assignment.id}
@@ -137,9 +121,7 @@ export default function WorkerCell({
                 teamWithMembership={teamWithMembership}
                 isSelectionActive={isSelectionActive}
                 isSelected={isAssignmentSelected}
-                onAssignmentSelect={() =>
-                  handleAssignmentSelect?.(aData.assignment.id)
-                }
+                onAssignmentSelect={() => handleAssignmentSelect?.(aData.assignment.id)}
               />
             );
           })}
@@ -162,24 +144,22 @@ export default function WorkerCell({
         {isSelectionActive && (
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
               flexGrow: hasAssignments ? 0 : 1,
-              padding: hasAssignments ? "2px 0" : 0,
+              padding: hasAssignments ? '2px 0' : 0,
             }}
           >
             <Checkbox
               size="small"
               checked={isCellSelected}
-              onChange={() =>
-                handleCellSelect?.(worker.id, dateStr, periodDate.scheduleId)
-              }
+              onChange={() => handleCellSelect?.(worker.id, dateStr, periodDate.scheduleId)}
               onClick={(e) => e.stopPropagation()}
               data-testid={`worker-cell-checkbox-${worker.id}-${dateStr}`}
               sx={{
-                padding: "1px",
-                "& .MuiSvgIcon-root": { fontSize: 16 },
+                padding: '1px',
+                '& .MuiSvgIcon-root': { fontSize: 16 },
               }}
             />
           </div>
@@ -193,15 +173,15 @@ export default function WorkerCell({
           <IconButton
             className="add-icon-button"
             sx={{
-              position: "absolute",
+              position: 'absolute',
               bottom: -12,
-              right: "50%",
-              transform: "translateX(50%)",
+              right: '50%',
+              transform: 'translateX(50%)',
               opacity: 0,
-              transition: "opacity 0.3s",
+              transition: 'opacity 0.3s',
               padding: 0,
               zIndex: 10,
-              pointerEvents: "auto",
+              pointerEvents: 'auto',
             }}
             onClick={() =>
               handleOpenCreateAssignment({
@@ -226,10 +206,7 @@ export default function WorkerCell({
           data-testid={`worker-cell-custom-select-${worker.id}-${dateStr}`}
           style={sparkleStyle}
         >
-          <Sparkle
-            size={14}
-            fill={isCustomCellSelected ? "currentColor" : "none"}
-          />
+          <Sparkle size={14} fill={isCustomCellSelected ? 'currentColor' : 'none'} />
         </button>
       )}
     </TableCell>

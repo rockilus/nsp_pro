@@ -5,23 +5,22 @@
  * including calendar navigation, cell interactions, and request management.
  */
 
-import { test, expect } from "@playwright/test";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { RequestTestBase } from "../../utils/request-test-base";
-import { RequestType, RequestStatus } from "../../../src/types/request";
-import { randomUUID } from "crypto";
+import { test, expect } from '@playwright/test';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { RequestTestBase } from '../../utils/request-test-base';
+import { RequestType, RequestStatus } from '../../../src/types/request';
+import { randomUUID } from 'crypto';
 
 dayjs.extend(utc);
 
-test.describe("Request Calendar", () => {
+test.describe('Request Calendar', () => {
   // Store the request test base per test run
   const testBasesMap = new Map<string, RequestTestBase>();
 
   test.beforeEach(async ({ page }, testInfo) => {
     // Ensure workerIndex has a safe fallback (0) so parallel/serial runs are stable
-    const workerIndex =
-      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
 
     // Generate a unique ID for this specific test run
     // Combines worker index, test title, and UUID for absolute uniqueness
@@ -37,22 +36,16 @@ test.describe("Request Calendar", () => {
 
     // Determine if this test needs pre-created requests
     const needsPreCreatedRequests =
-      testInfo.title.includes("should show existing requests") ||
-      testInfo.title.includes("should open edit request panel") ||
-      testInfo.title.includes("should delete request when clicking delete") ||
-      testInfo.title.includes(
-        "should approve request when clicking checkmark",
-      ) ||
-      testInfo.title.includes("should rescind approved request") ||
-      testInfo.title.includes("should reject request when clicking close");
+      testInfo.title.includes('should show existing requests') ||
+      testInfo.title.includes('should open edit request panel') ||
+      testInfo.title.includes('should delete request when clicking delete') ||
+      testInfo.title.includes('should approve request when clicking checkmark') ||
+      testInfo.title.includes('should rescind approved request') ||
+      testInfo.title.includes('should reject request when clicking close');
 
     // Setup the common request test environment (includes workers and shifts)
     // Create test requests if this test needs them
-    await requestTestBase.setupRequestTests(
-      workerIndex,
-      testRunId,
-      needsPreCreatedRequests,
-    );
+    await requestTestBase.setupRequestTests(workerIndex, testRunId, needsPreCreatedRequests);
 
     // Navigate to the requests page
     await requestTestBase.navigateToRequestsPage(page);
@@ -63,16 +56,14 @@ test.describe("Request Calendar", () => {
     console.log(`[Test Run ${testRunId}] Starting cleanup...`);
 
     if (!testRunId) {
-      console.warn("No testRunId found, skipping cleanup");
+      console.warn('No testRunId found, skipping cleanup');
       return;
     }
 
     const requestTestBase = testBasesMap.get(testRunId);
 
     if (!requestTestBase) {
-      console.warn(
-        `No requestTestBase found for testRunId: ${testRunId}, skipping cleanup`,
-      );
+      console.warn(`No requestTestBase found for testRunId: ${testRunId}, skipping cleanup`);
       return;
     }
 
@@ -82,10 +73,7 @@ test.describe("Request Calendar", () => {
     try {
       await requestTestBase.cleanupTestData(testRunId);
     } catch (error) {
-      console.warn(
-        `[Test Run ${testRunId}] Cleanup failed, but continuing:`,
-        error,
-      );
+      console.warn(`[Test Run ${testRunId}] Cleanup failed, but continuing:`, error);
     }
 
     // Clean up the maps to prevent memory leaks
@@ -94,7 +82,7 @@ test.describe("Request Calendar", () => {
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
-  test("should show request calendar when clicking on the calendar tab", async ({
+  test('should show request calendar when clicking on the calendar tab', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -121,14 +109,10 @@ test.describe("Request Calendar", () => {
     const nextButton = requestTestBase.getNextMonthButton(page);
     await expect(nextButton).toBeVisible();
 
-    console.log(
-      "✅ Request calendar shows correctly when clicking calendar tab",
-    );
+    console.log('✅ Request calendar shows correctly when clicking calendar tab');
   });
 
-  test("should do nothing when clicking on a past date cell", async ({
-    page,
-  }, testInfo) => {
+  test('should do nothing when clicking on a past date cell', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
@@ -137,19 +121,15 @@ test.describe("Request Calendar", () => {
     await requestTestBase.navigateToCalendarTab(page);
 
     // Use yesterday as a past date
-    const pastDate = dayjs.utc().subtract(1, "day");
+    const pastDate = dayjs.utc().subtract(1, 'day');
 
     // Verify that clicking on a past date does nothing
-    await requestTestBase.verifyPastDateClick(
-      page,
-      testWorkers[0].id,
-      pastDate,
-    );
+    await requestTestBase.verifyPastDateClick(page, testWorkers[0].id, pastDate);
 
-    console.log("✅ Clicking on past date does nothing");
+    console.log('✅ Clicking on past date does nothing');
   });
 
-  test("should open create request panel when clicking on today or future date cell", async ({
+  test('should open create request panel when clicking on today or future date cell', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -161,47 +141,35 @@ test.describe("Request Calendar", () => {
 
     // Use a date in the near future (5 days from now) to avoid edge cases with "today"
     // This ensures the date is definitely in a visible month
-    const futureDate1 = dayjs.utc().add(5, "days");
+    const futureDate1 = dayjs.utc().add(5, 'days');
 
     // Click on empty cell for future date
-    await requestTestBase.clickEmptyCalendarCell(
-      page,
-      testWorkers[0].id,
-      futureDate1,
-    );
+    await requestTestBase.clickEmptyCalendarCell(page, testWorkers[0].id, futureDate1);
 
     // Verify request panel opens
     const requestPanel = requestTestBase.getRequestPanelDialog(page);
     await expect(requestPanel).toBeVisible();
 
     // Close the panel
-    const closeButton = page.getByTestId("close-request-dialog-button");
+    const closeButton = page.getByTestId('close-request-dialog-button');
     await closeButton.click();
     await expect(requestPanel).not.toBeVisible();
 
-    console.log(
-      "✅ Create request panel opens when clicking on near future date",
-    );
+    console.log('✅ Create request panel opens when clicking on near future date');
 
     // Test with another future date
-    const futureDate2 = dayjs.utc().add(7, "days");
+    const futureDate2 = dayjs.utc().add(7, 'days');
 
     // Click on empty cell for future date
-    await requestTestBase.clickEmptyCalendarCell(
-      page,
-      testWorkers[0].id,
-      futureDate2,
-    );
+    await requestTestBase.clickEmptyCalendarCell(page, testWorkers[0].id, futureDate2);
 
     // Verify request panel opens again
     await expect(requestPanel).toBeVisible();
 
-    console.log("✅ Create request panel opens when clicking on future date");
+    console.log('✅ Create request panel opens when clicking on future date');
   });
 
-  test("should create a new request and show it in the calendar", async ({
-    page,
-  }, testInfo) => {
+  test('should create a new request and show it in the calendar', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const requestTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = requestTestBase.getTestWorkers(testRunId);
@@ -210,21 +178,17 @@ test.describe("Request Calendar", () => {
     await requestTestBase.navigateToCalendarTab(page);
 
     // Use tomorrow as test date
-    const tomorrow = dayjs.utc().add(1, "day");
+    const tomorrow = dayjs.utc().add(1, 'day');
 
     // Click on empty cell to create request
-    await requestTestBase.clickEmptyCalendarCell(
-      page,
-      testWorkers[0].id,
-      tomorrow,
-    );
+    await requestTestBase.clickEmptyCalendarCell(page, testWorkers[0].id, tomorrow);
 
     // Verify request panel opens
     const requestPanel = requestTestBase.getRequestPanelDialog(page);
     await expect(requestPanel).toBeVisible();
 
     // Select work request type (should be default)
-    await requestTestBase.selectRequestType(page, "work");
+    await requestTestBase.selectRequestType(page, 'work');
 
     // Verify worker is pre-filled (should be pre-populated from calendar cell click)
     const workerSelect = requestTestBase.getWorkerSelect(page);
@@ -234,7 +198,7 @@ test.describe("Request Calendar", () => {
     // Note: We don't need to set the date as it's already set by the calendar cell click
 
     // Set positive preference (do the shift)
-    await requestTestBase.setRequestPreference(page, "positive");
+    await requestTestBase.setRequestPreference(page, 'positive');
 
     // Select shift options (required for work requests)
     await requestTestBase.selectShiftOptions(page);
@@ -246,7 +210,7 @@ test.describe("Request Calendar", () => {
     // Wait for a cell with a request ID suffix to appear (pattern: calendar-cell-{workerId}-{date}-request-{requestId})
     const cellPattern = `calendar-cell-${
       testWorkers[0].id
-    }-${tomorrow.format("YYYY-MM-DD")}-request-`;
+    }-${tomorrow.format('YYYY-MM-DD')}-request-`;
     const calendarCell = page.locator(`[data-testid^="${cellPattern}"]`);
 
     // Wait for the cell to be visible and have the request styling
@@ -257,12 +221,10 @@ test.describe("Request Calendar", () => {
       timeout: 5000,
     });
 
-    console.log(
-      "✅ Work request for single date created successfully and appears in calendar",
-    );
+    console.log('✅ Work request for single date created successfully and appears in calendar');
   });
 
-  test("should show existing requests in the calendar (past and future)", async ({
+  test('should show existing requests in the calendar (past and future)', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -276,40 +238,40 @@ test.describe("Request Calendar", () => {
     console.log(`📋 Test has ${testRequests.length} requests:`);
     testRequests.forEach((req, idx) => {
       console.log(
-        `  ${idx + 1}. Worker: ${req.workerId}, Date: ${req.startDate.format("YYYY-MM-DD")}, Status: ${req.status}`,
+        `  ${idx + 1}. Worker: ${req.workerId}, Date: ${req.startDate.format('YYYY-MM-DD')}, Status: ${req.status}`,
       );
     });
 
-    const today = dayjs.utc().startOf("day");
-    console.log(`📅 Today is: ${today.format("YYYY-MM-DD")}`);
+    const today = dayjs.utc().startOf('day');
+    console.log(`📅 Today is: ${today.format('YYYY-MM-DD')}`);
 
     // Navigate to calendar view
-    console.log("🔧 Navigating to calendar tab...");
+    console.log('🔧 Navigating to calendar tab...');
     await requestTestBase.navigateToCalendarTab(page);
     const requestCalendar = page.locator('[data-testid="request-calendar"]');
     await expect(requestCalendar).toBeVisible();
-    console.log("✅ Calendar tab is visible");
+    console.log('✅ Calendar tab is visible');
 
     // First request should be a future pending work request for worker 2
     const futureRequest = testRequests.find((r) => r.startDate.isAfter(today));
     expect(futureRequest).toBeDefined();
 
     if (!futureRequest) {
-      throw new Error("Expected a future request, but none found");
+      throw new Error('Expected a future request, but none found');
     }
 
     console.log(
-      `🔮 Future request: Worker ${futureRequest.workerId}, Date: ${futureRequest.startDate.format("YYYY-MM-DD")}`,
+      `🔮 Future request: Worker ${futureRequest.workerId}, Date: ${futureRequest.startDate.format('YYYY-MM-DD')}`,
     );
     expect(futureRequest.workerId).toBe(testWorkers[1].id);
     expect(futureRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(futureRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to the month of the future request
-    console.log("🔧 Navigating to future request month...");
+    console.log('🔧 Navigating to future request month...');
     await requestTestBase.navigateToMonth(page, futureRequest.startDate);
     await expect(requestCalendar).toBeVisible();
-    console.log("✅ Navigated to future request month");
+    console.log('✅ Navigated to future request month');
 
     // Verify the future request is visible in the calendar
     const futureRequestCell = requestTestBase.getCalendarCellWithRequest(
@@ -319,28 +281,28 @@ test.describe("Request Calendar", () => {
       futureRequest.id,
     );
     await expect(futureRequestCell).toBeVisible({ timeout: 5000 });
-    console.log("✅ Future request is visible in calendar");
+    console.log('✅ Future request is visible in calendar');
 
     // Second request should be a past pending work request for worker 1
     const pastRequest = testRequests.find((r) => r.startDate.isBefore(today));
     expect(pastRequest).toBeDefined();
 
     if (!pastRequest) {
-      throw new Error("Expected a past request, but none found");
+      throw new Error('Expected a past request, but none found');
     }
 
     console.log(
-      `⏮️ Past request: Worker ${pastRequest.workerId}, Date: ${pastRequest.startDate.format("YYYY-MM-DD")}`,
+      `⏮️ Past request: Worker ${pastRequest.workerId}, Date: ${pastRequest.startDate.format('YYYY-MM-DD')}`,
     );
     expect(pastRequest.workerId).toBe(testWorkers[0].id);
     expect(pastRequest.requestType).toBe(RequestType.WORK_DEMAND);
     expect(pastRequest.status).toBe(RequestStatus.PENDING);
 
     // Navigate to the month of the past request
-    console.log("🔧 Navigating to past request month...");
+    console.log('🔧 Navigating to past request month...');
     await requestTestBase.navigateToMonth(page, pastRequest.startDate);
     await expect(requestCalendar).toBeVisible();
-    console.log("✅ Navigated to past request month");
+    console.log('✅ Navigated to past request month');
 
     // Verify the past request is visible in the calendar
     const pastRequestCell = requestTestBase.getCalendarCellWithRequest(
@@ -350,12 +312,12 @@ test.describe("Request Calendar", () => {
       pastRequest.id,
     );
     await expect(pastRequestCell).toBeVisible({ timeout: 5000 });
-    console.log("✅ Past request is visible in calendar");
+    console.log('✅ Past request is visible in calendar');
 
-    console.log("✅ Existing requests (past and future) are shown in calendar");
+    console.log('✅ Existing requests (past and future) are shown in calendar');
   });
 
-  test("should open edit request panel when clicking on existing request", async ({
+  test('should open edit request panel when clicking on existing request', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -389,12 +351,10 @@ test.describe("Request Calendar", () => {
     const deleteButton = page.locator('[data-testid="delete-request-button"]');
     await expect(deleteButton).toBeVisible();
 
-    console.log(
-      "✅ Edit request panel opens when clicking on existing request",
-    );
+    console.log('✅ Edit request panel opens when clicking on existing request');
   });
 
-  test("should delete request when clicking delete button in edit panel", async ({
+  test('should delete request when clicking delete button in edit panel', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -438,10 +398,10 @@ test.describe("Request Calendar", () => {
       futureRequest.startDate,
     );
 
-    console.log("✅ Request deleted successfully from calendar");
+    console.log('✅ Request deleted successfully from calendar');
   });
 
-  test("should approve request when clicking checkmark button in edit panel", async ({
+  test('should approve request when clicking checkmark button in edit panel', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -471,10 +431,7 @@ test.describe("Request Calendar", () => {
     await expect(requestPanel).toBeVisible();
 
     // Click approve button (checkmark)
-    const approveButton = requestTestBase.getApproveRequestButton(
-      page,
-      pendingRequest.id,
-    );
+    const approveButton = requestTestBase.getApproveRequestButton(page, pendingRequest.id);
     await expect(approveButton).toBeVisible();
     await approveButton.click();
 
@@ -484,7 +441,7 @@ test.describe("Request Calendar", () => {
     await expect(statusChip).toHaveText(/approved/i);
 
     // Close the panel
-    const closeButton = page.getByTestId("close-request-dialog-button");
+    const closeButton = page.getByTestId('close-request-dialog-button');
     await closeButton.click();
     await expect(requestPanel).not.toBeVisible();
 
@@ -497,12 +454,10 @@ test.describe("Request Calendar", () => {
       { status: RequestStatus.APPROVED },
     );
 
-    console.log(
-      "✅ Request approved successfully and status updated in calendar",
-    );
+    console.log('✅ Request approved successfully and status updated in calendar');
   });
 
-  test("should rescind approved request when clicking rescind button", async ({
+  test('should rescind approved request when clicking rescind button', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -532,10 +487,7 @@ test.describe("Request Calendar", () => {
     await expect(requestPanel).toBeVisible();
 
     // Click rescind button
-    const rescindButton = requestTestBase.getRescindRequestButton(
-      page,
-      approvedRequest.id,
-    );
+    const rescindButton = requestTestBase.getRescindRequestButton(page, approvedRequest.id);
     await expect(rescindButton).toBeVisible();
     await rescindButton.click();
 
@@ -545,7 +497,7 @@ test.describe("Request Calendar", () => {
     await expect(statusChip).toHaveText(/pending/i);
 
     // Close the panel
-    const closeButton = page.getByTestId("close-request-dialog-button");
+    const closeButton = page.getByTestId('close-request-dialog-button');
     await closeButton.click();
     await expect(requestPanel).not.toBeVisible();
 
@@ -558,12 +510,10 @@ test.describe("Request Calendar", () => {
       { status: RequestStatus.PENDING },
     );
 
-    console.log(
-      "✅ Request rescinded successfully and status reverted to pending",
-    );
+    console.log('✅ Request rescinded successfully and status reverted to pending');
   });
 
-  test("should reject request when clicking close icon button in edit panel", async ({
+  test('should reject request when clicking close icon button in edit panel', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -593,10 +543,7 @@ test.describe("Request Calendar", () => {
     await expect(requestPanel).toBeVisible();
 
     // Click reject button (close icon)
-    const rejectButton = requestTestBase.getRejectRequestButton(
-      page,
-      pendingRequest.id,
-    );
+    const rejectButton = requestTestBase.getRejectRequestButton(page, pendingRequest.id);
     await expect(rejectButton).toBeVisible();
     await rejectButton.click();
 
@@ -606,7 +553,7 @@ test.describe("Request Calendar", () => {
     await expect(statusChip).toHaveText(/declined/i);
 
     // Close the panel
-    const closeButton = page.getByTestId("close-request-dialog-button");
+    const closeButton = page.getByTestId('close-request-dialog-button');
     await closeButton.click();
     await expect(requestPanel).not.toBeVisible();
 
@@ -619,8 +566,6 @@ test.describe("Request Calendar", () => {
       { status: RequestStatus.DENIED },
     );
 
-    console.log(
-      "✅ Request rejected successfully and status updated in calendar",
-    );
+    console.log('✅ Request rejected successfully and status updated in calendar');
   });
 });

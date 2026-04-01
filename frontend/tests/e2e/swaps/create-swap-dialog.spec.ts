@@ -8,20 +8,20 @@
  * - Role-based access differences
  */
 
-import { test, expect } from "@playwright/test";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { SwapTestBase } from "../../utils/swap-test-base";
-import { ScheduleStatus } from "@/types/schedule";
-import { LinkShiftT } from "@/types/shift";
+import { test, expect } from '@playwright/test';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import { SwapTestBase } from '../../utils/swap-test-base';
+import { ScheduleStatus } from '@/types/schedule';
+import { LinkShiftT } from '@/types/shift';
 
 dayjs.extend(utc);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
-test.describe("CreateSwapDialog - Owner Tests", () => {
+test.describe('CreateSwapDialog - Owner Tests', () => {
   const swapTestBase = new SwapTestBase();
 
   test.beforeAll(async () => {
@@ -47,23 +47,21 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     });
   });
 
-  test.describe("Worker Selection", () => {
-    test("should display worker selection dropdown for team leaders", async ({
-      page,
-    }) => {
+  test.describe('Worker Selection', () => {
+    test('should display worker selection dropdown for team leaders', async ({ page }) => {
       // Verify worker selection dropdown is visible
       const workerSelect = page.locator('[data-testid="worker-select"]');
       await expect(workerSelect).toBeVisible();
 
-      console.log("✅ Worker selection dropdown visible for team leader");
+      console.log('✅ Worker selection dropdown visible for team leader');
     });
 
-    test("should list all workers in the dropdown", async ({ page }) => {
+    test('should list all workers in the dropdown', async ({ page }) => {
       // Click on the worker selection dropdown
       await page.click('[data-testid="worker-select"]');
 
       // Wait for the MUI menu to open
-      await page.waitForSelector('[role="listbox"]', { state: "visible" });
+      await page.waitForSelector('[role="listbox"]', { state: 'visible' });
 
       // Get all workers from test data
       const testWorkers = swapTestBase.getTestWorkers();
@@ -71,47 +69,37 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
 
       // Verify each worker appears in the dropdown
       for (const worker of testWorkers) {
-        const workerOption = page.locator(
-          `[data-testid="worker-option-${worker.id}"]`,
-        );
+        const workerOption = page.locator(`[data-testid="worker-option-${worker.id}"]`);
         await expect(workerOption).toBeVisible();
       }
 
       console.log(`✅ All ${testWorkers.length} workers listed in dropdown`);
     });
 
-    test("should show assignments only after selecting a worker", async ({
-      page,
-    }) => {
+    test('should show assignments only after selecting a worker', async ({ page }) => {
       // Initially, no assignment selector should be visible
-      const assignmentSelectorBefore = page.locator(
-        '[data-testid="assignment-selector"]',
-      );
+      const assignmentSelectorBefore = page.locator('[data-testid="assignment-selector"]');
       await expect(assignmentSelectorBefore).not.toBeVisible();
 
       // Select first worker
       await page.click('[data-testid="worker-select"]');
 
       // Wait for the MUI menu to open
-      await page.waitForSelector('[role="listbox"]', { state: "visible" });
+      await page.waitForSelector('[role="listbox"]', { state: 'visible' });
 
       const testWorkers = swapTestBase.getTestWorkers();
       await page.click(`[data-testid="worker-option-${testWorkers[0].id}"]`);
 
       // Now assignment selector should be visible
-      const assignmentSelectorAfter = page.locator(
-        '[data-testid="assignment-selector"]',
-      );
+      const assignmentSelectorAfter = page.locator('[data-testid="assignment-selector"]');
       await expect(assignmentSelectorAfter).toBeVisible();
 
-      console.log("✅ Assignments appear after worker selection");
+      console.log('✅ Assignments appear after worker selection');
     });
   });
 
-  test.describe("Assignment Visibility and Filtering", () => {
-    test("should show assignments not associated with any schedule", async ({
-      page,
-    }) => {
+  test.describe('Assignment Visibility and Filtering', () => {
+    test('should show assignments not associated with any schedule', async ({ page }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
       const testWorkerId = testWorkers[0].id;
@@ -122,30 +110,24 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.waitForTimeout(1000);
 
       // Get assignments not associated with schedule
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
       const noScheduleAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === testWorkerId)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
         .filter((a) => a.scheduleId === null); // No schedule
       expect(noScheduleAssignments.length).toBeGreaterThan(0);
 
       // Verify these assignments are visible
       for (const assignment of noScheduleAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).toBeVisible();
       }
 
-      console.log(
-        `✅ ${noScheduleAssignments.length} assignments without schedule visible`,
-      );
+      console.log(`✅ ${noScheduleAssignments.length} assignments without schedule visible`);
     });
 
-    test("should show assignments associated with validated schedule", async ({
-      page,
-    }) => {
+    test('should show assignments associated with validated schedule', async ({ page }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
       const testWorkerId = testWorkers[0].id;
@@ -162,34 +144,24 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       expect(validatedScheduleIds.length).toBeGreaterThan(0);
 
       // Get assignments associated with validated schedule
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
       const validatedAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === testWorkerId)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
-        .filter(
-          (a) =>
-            a.scheduleId !== null &&
-            validatedScheduleIds.includes(a.scheduleId),
-        ); // Validated schedule
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
+        .filter((a) => a.scheduleId !== null && validatedScheduleIds.includes(a.scheduleId)); // Validated schedule
       expect(validatedAssignments.length).toBeGreaterThan(0);
 
       // Verify these assignments are visible
       for (const assignment of validatedAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).toBeVisible();
       }
 
-      console.log(
-        `✅ ${validatedAssignments.length} validated schedule assignments visible`,
-      );
+      console.log(`✅ ${validatedAssignments.length} validated schedule assignments visible`);
     });
 
-    test("should NOT show assignments associated with campaign schedule", async ({
-      page,
-    }) => {
+    test('should NOT show assignments associated with campaign schedule', async ({ page }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
       const testWorkerId = testWorkers[0].id;
@@ -206,22 +178,17 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       expect(campaignScheduleIds.length).toBeGreaterThan(0);
 
       // Get assignments associated with campaign schedule
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
       const campaignAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === testWorkerId)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
-        .filter(
-          (a) =>
-            a.scheduleId !== null && campaignScheduleIds.includes(a.scheduleId),
-        ); // Campaign schedule
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
+        .filter((a) => a.scheduleId !== null && campaignScheduleIds.includes(a.scheduleId)); // Campaign schedule
       expect(campaignAssignments.length).toBeGreaterThan(0);
 
       // Verify these assignments are NOT visible
       for (const assignment of campaignAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).not.toBeVisible();
       }
 
@@ -230,9 +197,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       );
     });
 
-    test("should only show assignments from tomorrow onward", async ({
-      page,
-    }) => {
+    test('should only show assignments from tomorrow onward', async ({ page }) => {
       // Select first worker
       const testWorkers = swapTestBase.getTestWorkers();
       const testWorkerId = testWorkers[0].id;
@@ -247,16 +212,13 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
         .getTestAssignments()
         .filter(
           (a) =>
-            a.workerId === testWorkerId &&
-            dayjs.utc(a.date).isSameOrBefore(dayjs.utc(), "day"),
+            a.workerId === testWorkerId && dayjs.utc(a.date).isSameOrBefore(dayjs.utc(), 'day'),
         );
       expect(todayAssignments.length).toBeGreaterThan(0);
 
       // Verify today's assignments are NOT visible
       for (const assignment of todayAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).not.toBeVisible();
       }
 
@@ -268,24 +230,17 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
 
       const futureAssignments = swapTestBase
         .getTestAssignments()
-        .filter(
-          (a) =>
-            a.workerId === testWorkerId &&
-            dayjs.utc(a.date).isAfter(dayjs.utc(), "day"),
-        )
+        .filter((a) => a.workerId === testWorkerId && dayjs.utc(a.date).isAfter(dayjs.utc(), 'day'))
         .filter(
           (a) =>
             a.scheduleId === null ||
-            (a.scheduleId !== null &&
-              !campaignScheduleIds.includes(a.scheduleId)),
+            (a.scheduleId !== null && !campaignScheduleIds.includes(a.scheduleId)),
         );
       expect(futureAssignments.length).toBeGreaterThan(0);
 
       // Verify future assignments ARE visible
       for (const assignment of futureAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).toBeVisible();
       }
 
@@ -294,12 +249,10 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       );
     });
 
-    test("should filter assignments when switching workers", async ({
-      page,
-    }) => {
+    test('should filter assignments when switching workers', async ({ page }) => {
       const testWorkers = swapTestBase.getTestWorkers();
       if (testWorkers.length < 2) {
-        test.skip(true, "Need at least 2 workers for this test");
+        test.skip(true, 'Need at least 2 workers for this test');
       }
       const testWorkerId1 = testWorkers[0].id;
       const testWorkerId2 = testWorkers[1].id;
@@ -317,23 +270,20 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       expect(campaignScheduleIds.length).toBeGreaterThan(0);
 
       // Get assignments associated with campaign schedule
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
       const firstWorkerAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === testWorkerId1)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
         .filter(
           (a) =>
             a.scheduleId === null ||
-            (a.scheduleId !== null &&
-              !campaignScheduleIds.includes(a.scheduleId)),
+            (a.scheduleId !== null && !campaignScheduleIds.includes(a.scheduleId)),
         ); // Not campaign schedule
       expect(firstWorkerAssignments.length).toBeGreaterThan(0);
 
       for (const assignment of firstWorkerAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).toBeVisible();
       }
 
@@ -346,19 +296,16 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       const secondWorkerAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === testWorkerId2)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
         .filter(
           (a) =>
             a.scheduleId === null ||
-            (a.scheduleId !== null &&
-              !campaignScheduleIds.includes(a.scheduleId)),
+            (a.scheduleId !== null && !campaignScheduleIds.includes(a.scheduleId)),
         ); // Not campaign schedule
       expect(secondWorkerAssignments.length).toBeGreaterThan(0);
 
       for (const assignment of secondWorkerAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).toBeVisible();
       }
 
@@ -378,7 +325,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     testAssignments: any[],
     workerId: string,
   ): { linkShift: LinkShiftT; assignments: any[] } | null => {
-    const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+    const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
 
     // Try each link shift configuration
     for (const linkShift of testLinkShifts) {
@@ -387,7 +334,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Find assignments for this worker with shifts from this link
       const linkedShiftAssignments = testAssignments
         .filter((a) => a.workerId === workerId)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
         .filter((a) => linkShift.shiftIds.includes(a.shiftId));
 
       // Group assignments by date
@@ -395,7 +342,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
         [key: string]: typeof linkedShiftAssignments;
       } = {};
       linkedShiftAssignments.forEach((a) => {
-        const dateKey = dayjs.utc(a.date).format("YYYY-MM-DD");
+        const dateKey = dayjs.utc(a.date).format('YYYY-MM-DD');
         if (!assignmentsByDate[dateKey]) {
           assignmentsByDate[dateKey] = [];
         }
@@ -403,12 +350,10 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       });
 
       // Find a date with both linked shifts assigned
-      const dateWithBothShifts = Object.entries(assignmentsByDate).find(
-        ([_, assignments]) => {
-          const shiftIds = new Set(assignments.map((a) => a.shiftId));
-          return linkShift.shiftIds.every((sid: string) => shiftIds.has(sid));
-        },
-      );
+      const dateWithBothShifts = Object.entries(assignmentsByDate).find(([_, assignments]) => {
+        const shiftIds = new Set(assignments.map((a) => a.shiftId));
+        return linkShift.shiftIds.every((sid: string) => shiftIds.has(sid));
+      });
 
       if (dateWithBothShifts) {
         return {
@@ -421,8 +366,8 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
     return null;
   };
 
-  test.describe("Linked Shift Suggestions", () => {
-    test("should show linked shift suggestion when selecting one shift from a linked pair", async ({
+  test.describe('Linked Shift Suggestions', () => {
+    test('should show linked shift suggestion when selecting one shift from a linked pair', async ({
       page,
     }) => {
       const testWorkers = swapTestBase.getTestWorkers();
@@ -438,10 +383,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       );
 
       if (!result) {
-        test.skip(
-          true,
-          "Need assignments with both linked shifts on same date",
-        );
+        test.skip(true, 'Need assignments with both linked shifts on same date');
       }
 
       const { linkShift, assignments: assignmentsOnDate } = result!;
@@ -450,9 +392,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.click('[data-testid="worker-select"]');
       await page.click(`[data-testid="worker-option-${testWorkerId}"]`);
       await page.waitForTimeout(1000);
-      let linkedShiftSuggestion = page.locator(
-        '[data-testid="linked-shift-suggestion"]',
-      );
+      let linkedShiftSuggestion = page.locator('[data-testid="linked-shift-suggestion"]');
       await expect(linkedShiftSuggestion).not.toBeVisible();
 
       // Select the first linked shift assignment
@@ -461,15 +401,13 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.waitForTimeout(500);
 
       // Now the linked shift suggestion should appear
-      linkedShiftSuggestion = page.locator(
-        '[data-testid="linked-shift-suggestion"]',
-      );
+      linkedShiftSuggestion = page.locator('[data-testid="linked-shift-suggestion"]');
       await expect(linkedShiftSuggestion).toBeVisible();
 
       // Verify the suggestion mentions the linked shift
       const suggestionText = await linkedShiftSuggestion.textContent();
-      expect(suggestionText).toContain("Linked shift assignments available");
-      expect(suggestionText).toContain("linked shift assignment");
+      expect(suggestionText).toContain('Linked shift assignments available');
+      expect(suggestionText).toContain('linked shift assignment');
 
       // Find the other linked shift name
       const otherShiftId = linkShift.shiftIds.find(
@@ -479,14 +417,10 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       expect(otherShift).toBeDefined();
       expect(suggestionText).toContain(otherShift!.name);
 
-      console.log(
-        "✅ Linked shift suggestion appears when selecting one shift from linked pair",
-      );
+      console.log('✅ Linked shift suggestion appears when selecting one shift from linked pair');
     });
 
-    test("should add all linked shifts when clicking 'Add All' button", async ({
-      page,
-    }) => {
+    test("should add all linked shifts when clicking 'Add All' button", async ({ page }) => {
       const testWorkers = swapTestBase.getTestWorkers();
       const testWorkerId = testWorkers[0].id;
       const testLinkShifts = swapTestBase.getTestLinkShifts();
@@ -500,36 +434,31 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.waitForTimeout(1000);
 
       // Find assignments with both linked shifts on same date
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
       const linkedShiftAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === testWorkerId)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
         .filter((a) => linkShift.shiftIds.includes(a.shiftId));
 
       const assignmentsByDate: {
         [key: string]: typeof linkedShiftAssignments;
       } = {};
       linkedShiftAssignments.forEach((a) => {
-        const dateKey = dayjs.utc(a.date).format("YYYY-MM-DD");
+        const dateKey = dayjs.utc(a.date).format('YYYY-MM-DD');
         if (!assignmentsByDate[dateKey]) {
           assignmentsByDate[dateKey] = [];
         }
         assignmentsByDate[dateKey].push(a);
       });
 
-      const dateWithBothShifts = Object.entries(assignmentsByDate).find(
-        ([_, assignments]) => {
-          const shiftIds = new Set(assignments.map((a) => a.shiftId));
-          return linkShift.shiftIds.every((sid: string) => shiftIds.has(sid));
-        },
-      );
+      const dateWithBothShifts = Object.entries(assignmentsByDate).find(([_, assignments]) => {
+        const shiftIds = new Set(assignments.map((a) => a.shiftId));
+        return linkShift.shiftIds.every((sid: string) => shiftIds.has(sid));
+      });
 
       if (!dateWithBothShifts) {
-        test.skip(
-          true,
-          "Need assignments with both linked shifts on same date",
-        );
+        test.skip(true, 'Need assignments with both linked shifts on same date');
       }
 
       const [dateKey, assignmentsOnDate] = dateWithBothShifts!;
@@ -540,24 +469,18 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.waitForTimeout(500);
 
       // Verify suggestion appears
-      const linkedShiftSuggestion = page.locator(
-        '[data-testid="linked-shift-suggestion"]',
-      );
+      const linkedShiftSuggestion = page.locator('[data-testid="linked-shift-suggestion"]');
       await expect(linkedShiftSuggestion).toBeVisible();
 
       // Click the "Add All" button
-      const addAllButton = page.locator(
-        '[data-testid="add-all-linked-shifts"]',
-      );
+      const addAllButton = page.locator('[data-testid="add-all-linked-shifts"]');
       await expect(addAllButton).toBeVisible();
       await addAllButton.click();
       await page.waitForTimeout(500);
 
       // Verify all linked shift assignments are now selected (checkboxes checked)
       for (const assignment of assignmentsOnDate) {
-        const assignmentRow = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentRow = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         const checkbox = assignmentRow.locator('input[type="checkbox"]');
         await expect(checkbox).toBeChecked();
       }
@@ -565,12 +488,10 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       // Suggestion should disappear after all are selected
       await expect(linkedShiftSuggestion).not.toBeVisible();
 
-      console.log(
-        "✅ 'Add All' button successfully adds all linked shift assignments",
-      );
+      console.log("✅ 'Add All' button successfully adds all linked shift assignments");
     });
 
-    test("should not show suggestion if linked shift assignment not available", async ({
+    test('should not show suggestion if linked shift assignment not available', async ({
       page,
     }) => {
       const testWorkers = swapTestBase.getTestWorkers();
@@ -586,18 +507,18 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.waitForTimeout(1000);
 
       // Find a date where worker has only ONE of the linked shifts
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
       const linkedShiftAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === testWorkerId)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
         .filter((a) => linkShift.shiftIds.includes(a.shiftId));
 
       const assignmentsByDate: {
         [key: string]: typeof linkedShiftAssignments;
       } = {};
       linkedShiftAssignments.forEach((a) => {
-        const dateKey = dayjs.utc(a.date).format("YYYY-MM-DD");
+        const dateKey = dayjs.utc(a.date).format('YYYY-MM-DD');
         if (!assignmentsByDate[dateKey]) {
           assignmentsByDate[dateKey] = [];
         }
@@ -605,15 +526,13 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       });
 
       // Find a date with only ONE of the linked shifts
-      const dateWithOnlyOneShift = Object.entries(assignmentsByDate).find(
-        ([_, assignments]) => {
-          const shiftIds = new Set(assignments.map((a) => a.shiftId));
-          return shiftIds.size === 1; // Only one unique shift ID
-        },
-      );
+      const dateWithOnlyOneShift = Object.entries(assignmentsByDate).find(([_, assignments]) => {
+        const shiftIds = new Set(assignments.map((a) => a.shiftId));
+        return shiftIds.size === 1; // Only one unique shift ID
+      });
 
       if (!dateWithOnlyOneShift) {
-        test.skip(true, "Need assignment with only one of the linked shifts");
+        test.skip(true, 'Need assignment with only one of the linked shifts');
       }
 
       const [dateKey, assignmentsOnDate] = dateWithOnlyOneShift!;
@@ -624,21 +543,15 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.waitForTimeout(500);
 
       // Linked shift suggestion should NOT appear
-      const linkedShiftSuggestion = page.locator(
-        '[data-testid="linked-shift-suggestion"]',
-      );
+      const linkedShiftSuggestion = page.locator('[data-testid="linked-shift-suggestion"]');
       await expect(linkedShiftSuggestion).not.toBeVisible();
 
-      console.log(
-        "✅ No linked shift suggestion when other shift not available on that date",
-      );
+      console.log('✅ No linked shift suggestion when other shift not available on that date');
     });
   });
 
-  test.describe("Multi-step Form Navigation", () => {
-    test("should validate worker selection before proceeding", async ({
-      page,
-    }) => {
+  test.describe('Multi-step Form Navigation', () => {
+    test('should validate worker selection before proceeding', async ({ page }) => {
       // Try to click Next without selecting worker
       await page.click('[data-testid="next-button"]');
 
@@ -646,12 +559,10 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       const errorMessage = page.locator('text="Please select a worker"');
       await expect(errorMessage).toBeVisible();
 
-      console.log("✅ Validation prevents proceeding without worker selection");
+      console.log('✅ Validation prevents proceeding without worker selection');
     });
 
-    test("should validate assignment selection before proceeding", async ({
-      page,
-    }) => {
+    test('should validate assignment selection before proceeding', async ({ page }) => {
       // Select worker but no assignments
       const testWorkers = swapTestBase.getTestWorkers();
       await page.click('[data-testid="worker-select"]');
@@ -661,17 +572,13 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.click('[data-testid="next-button"]');
 
       // Should show error message
-      const errorMessage = page.locator(
-        'text="Please select at least one assignment to offer"',
-      );
+      const errorMessage = page.locator('text="Please select at least one assignment to offer"');
       await expect(errorMessage).toBeVisible();
 
-      console.log(
-        "✅ Validation prevents proceeding without assignment selection",
-      );
+      console.log('✅ Validation prevents proceeding without assignment selection');
     });
 
-    test("should proceed to swap type selection when worker and assignments are selected", async ({
+    test('should proceed to swap type selection when worker and assignments are selected', async ({
       page,
     }) => {
       // Select worker
@@ -684,7 +591,7 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await page.waitForTimeout(1000);
 
       // Get a valid future assignment
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
       const testSchedules = swapTestBase.getTestSchedules();
       const campaignScheduleIds = testSchedules
         .filter((s) => s.status === ScheduleStatus.CAMPAIGN)
@@ -693,12 +600,11 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       const validAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === testWorkerId)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
         .filter(
           (a) =>
             a.scheduleId === null ||
-            (a.scheduleId !== null &&
-              !campaignScheduleIds.includes(a.scheduleId)),
+            (a.scheduleId !== null && !campaignScheduleIds.includes(a.scheduleId)),
         );
 
       expect(validAssignments.length).toBeGreaterThan(0);
@@ -719,19 +625,15 @@ test.describe("CreateSwapDialog - Owner Tests", () => {
       await expect(openSwapRadio).toBeVisible();
 
       // Verify step title/content
-      const swapTypeHeading = page.locator(
-        '[data-testid="swap-type-radio-group"]',
-      );
+      const swapTypeHeading = page.locator('[data-testid="swap-type-radio-group"]');
       await expect(swapTypeHeading).toBeVisible();
 
-      console.log(
-        "✅ Successfully proceeded to swap type selection after valid input",
-      );
+      console.log('✅ Successfully proceeded to swap type selection after valid input');
     });
   });
 });
 
-test.describe("CreateSwapDialog - Member Tests", () => {
+test.describe('CreateSwapDialog - Member Tests', () => {
   const swapTestBase = new SwapTestBase();
 
   test.beforeAll(async () => {
@@ -757,34 +659,26 @@ test.describe("CreateSwapDialog - Member Tests", () => {
     });
   });
 
-  test.describe("Worker Selection", () => {
-    test("should NOT display worker selection dropdown for members", async ({
-      page,
-    }) => {
+  test.describe('Worker Selection', () => {
+    test('should NOT display worker selection dropdown for members', async ({ page }) => {
       // Verify worker selection dropdown is NOT visible
       const workerSelect = page.locator('[data-testid="worker-select"]');
       await expect(workerSelect).not.toBeVisible();
 
-      console.log("✅ Worker selection hidden for team members");
+      console.log('✅ Worker selection hidden for team members');
     });
 
-    test("should automatically show assignments for member's worker", async ({
-      page,
-    }) => {
+    test("should automatically show assignments for member's worker", async ({ page }) => {
       // Assignment selector should be visible immediately
-      const assignmentSelector = page.locator(
-        '[data-testid="assignment-selector"]',
-      );
+      const assignmentSelector = page.locator('[data-testid="assignment-selector"]');
       await expect(assignmentSelector).toBeVisible();
 
       console.log("✅ Assignments automatically shown for member's worker");
     });
   });
 
-  test.describe("Assignment Visibility for Member", () => {
-    test("should only show member's own worker assignments", async ({
-      page,
-    }) => {
+  test.describe('Assignment Visibility for Member', () => {
+    test("should only show member's own worker assignments", async ({ page }) => {
       // Wait for assignments to load
       await page.waitForTimeout(1000);
 
@@ -792,7 +686,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       expect(memberWorker).not.toBeNull();
 
       // Get assignments for member's worker using explicit filtering
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
       const testSchedules = swapTestBase.getTestSchedules();
       const campaignScheduleIds = testSchedules
         .filter((s) => s.status === ScheduleStatus.CAMPAIGN)
@@ -801,31 +695,24 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       const memberAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === memberWorker!.id)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
         .filter(
           (a) =>
             a.scheduleId === null ||
-            (a.scheduleId !== null &&
-              !campaignScheduleIds.includes(a.scheduleId)),
+            (a.scheduleId !== null && !campaignScheduleIds.includes(a.scheduleId)),
         );
       expect(memberAssignments.length).toBeGreaterThan(0);
 
       // Verify only member's assignments are visible
       for (const assignment of memberAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).toBeVisible();
       }
 
-      console.log(
-        `✅ Member sees only their own ${memberAssignments.length} assignments`,
-      );
+      console.log(`✅ Member sees only their own ${memberAssignments.length} assignments`);
     });
 
-    test("should apply same filtering rules (no campaign, future only)", async ({
-      page,
-    }) => {
+    test('should apply same filtering rules (no campaign, future only)', async ({ page }) => {
       // Wait for assignments to load
       await page.waitForTimeout(1000);
 
@@ -839,21 +726,16 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       expect(campaignScheduleIds.length).toBeGreaterThan(0);
 
       // Should not show campaign assignments
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
       const campaignAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === memberWorker!.id)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
-        .filter(
-          (a) =>
-            a.scheduleId !== null && campaignScheduleIds.includes(a.scheduleId),
-        );
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
+        .filter((a) => a.scheduleId !== null && campaignScheduleIds.includes(a.scheduleId));
       expect(campaignAssignments.length).toBeGreaterThan(0);
 
       for (const assignment of campaignAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).not.toBeVisible();
       }
 
@@ -862,15 +744,12 @@ test.describe("CreateSwapDialog - Member Tests", () => {
         .getTestAssignments()
         .filter(
           (a) =>
-            a.workerId === memberWorker!.id &&
-            dayjs.utc(a.date).isSameOrBefore(dayjs.utc(), "day"),
+            a.workerId === memberWorker!.id && dayjs.utc(a.date).isSameOrBefore(dayjs.utc(), 'day'),
         );
       expect(todayAssignments.length).toBeGreaterThan(0);
 
       for (const assignment of todayAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).not.toBeVisible();
       }
 
@@ -878,48 +757,37 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       const futureAssignments = swapTestBase
         .getTestAssignments()
         .filter(
-          (a) =>
-            a.workerId === memberWorker!.id &&
-            dayjs.utc(a.date).isAfter(dayjs.utc(), "day"),
+          (a) => a.workerId === memberWorker!.id && dayjs.utc(a.date).isAfter(dayjs.utc(), 'day'),
         )
         .filter(
           (a) =>
             a.scheduleId === null ||
-            (a.scheduleId !== null &&
-              !campaignScheduleIds.includes(a.scheduleId)),
+            (a.scheduleId !== null && !campaignScheduleIds.includes(a.scheduleId)),
         );
       expect(futureAssignments.length).toBeGreaterThan(0);
 
       for (const assignment of futureAssignments) {
-        const assignmentElement = page.locator(
-          `[data-testid="assignment-${assignment.id}"]`,
-        );
+        const assignmentElement = page.locator(`[data-testid="assignment-${assignment.id}"]`);
         await expect(assignmentElement).toBeVisible();
       }
 
-      console.log(
-        "✅ Same filtering rules apply for member (no campaign, future only)",
-      );
+      console.log('✅ Same filtering rules apply for member (no campaign, future only)');
     });
   });
 
-  test.describe("Form Validation for Member", () => {
-    test("should validate assignment selection before proceeding", async ({
-      page,
-    }) => {
+  test.describe('Form Validation for Member', () => {
+    test('should validate assignment selection before proceeding', async ({ page }) => {
       // Try to click Next without selecting assignments
       await page.click('[data-testid="next-button"]');
 
       // Should show error message
-      const errorMessage = page.locator(
-        'text="Please select at least one assignment to offer"',
-      );
+      const errorMessage = page.locator('text="Please select at least one assignment to offer"');
       await expect(errorMessage).toBeVisible();
 
-      console.log("✅ Member must also select assignments to proceed");
+      console.log('✅ Member must also select assignments to proceed');
     });
 
-    test("should proceed to swap type selection when assignments are selected", async ({
+    test('should proceed to swap type selection when assignments are selected', async ({
       page,
     }) => {
       // Wait for assignments to load
@@ -929,7 +797,7 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       const memberWorker = swapTestBase.getMemberWorker();
       expect(memberWorker).not.toBeNull();
 
-      const tomorrow = dayjs.utc().add(1, "day").startOf("day");
+      const tomorrow = dayjs.utc().add(1, 'day').startOf('day');
       const testSchedules = swapTestBase.getTestSchedules();
       const campaignScheduleIds = testSchedules
         .filter((s) => s.status === ScheduleStatus.CAMPAIGN)
@@ -938,12 +806,11 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       const validAssignments = swapTestBase
         .getTestAssignments()
         .filter((a) => a.workerId === memberWorker!.id)
-        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, "day"))
+        .filter((a) => dayjs.utc(a.date).isSameOrAfter(tomorrow, 'day'))
         .filter(
           (a) =>
             a.scheduleId === null ||
-            (a.scheduleId !== null &&
-              !campaignScheduleIds.includes(a.scheduleId)),
+            (a.scheduleId !== null && !campaignScheduleIds.includes(a.scheduleId)),
         );
 
       expect(validAssignments.length).toBeGreaterThan(0);
@@ -963,13 +830,11 @@ test.describe("CreateSwapDialog - Member Tests", () => {
       await expect(openSwapRadio).toBeVisible();
 
       // Verify step title/content
-      const swapTypeHeading = page.locator(
-        '[data-testid="swap-type-radio-group"]',
-      );
+      const swapTypeHeading = page.locator('[data-testid="swap-type-radio-group"]');
       await expect(swapTypeHeading).toBeVisible();
 
       console.log(
-        "✅ Member successfully proceeded to swap type selection after selecting assignments",
+        '✅ Member successfully proceeded to swap type selection after selecting assignments',
       );
     });
   });

@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo } from "react";
-import dayjs from "dayjs";
+import React, { useEffect, useMemo } from 'react';
+import dayjs from 'dayjs';
 // Local components
-import PortraitScheduleList from "./portrait-schedule-list";
-import LandscapeWeeklyCalendar from "./landscape-weekly-calendar";
+import PortraitScheduleList from './portrait-schedule-list';
+import LandscapeWeeklyCalendar from './landscape-weekly-calendar';
 
 interface MobileWorkerScheduleProps {
   weeks: { start: dayjs.Dayjs; end: dayjs.Dayjs }[];
@@ -75,7 +75,7 @@ export default function MobileWorkerSchedule({
         const week = weeksRef.current[i];
         if (week) {
           const newMonth = week.start.format(
-            week.start.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
+            week.start.year() === dayjs.utc().year() ? 'MMMM' : 'MMM YYYY',
           );
           onVisibleMonthChange(newMonth);
         }
@@ -88,30 +88,28 @@ export default function MobileWorkerSchedule({
   const handleScrollToToday = React.useCallback(() => {
     if (isLandscape) {
       // Landscape: update state to jump to today's week
-      const todayWeekStart = today.startOf("isoWeek");
+      const todayWeekStart = today.startOf('isoWeek');
       updateScheduleViewSettings({
         ...scheduleViewSettings,
-        timeFrame: "week",
+        timeFrame: 'week',
         periodStartDate: todayWeekStart,
       });
       // Update visible month label
       const monthLabel = todayWeekStart.format(
-        todayWeekStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
+        todayWeekStart.year() === dayjs.utc().year() ? 'MMMM' : 'MMM YYYY',
       );
       onVisibleMonthChange(monthLabel);
     } else {
       // Portrait: existing scroll behavior
       const idx = weeks.findIndex(
-        (w) =>
-          today.isSameOrAfter(w.start, "day") &&
-          today.isSameOrBefore(w.end, "day"),
+        (w) => today.isSameOrAfter(w.start, 'day') && today.isSameOrBefore(w.end, 'day'),
       );
       const target = weekRefs.current[idx >= 0 ? idx : 0];
       if (target && containerRef.current) {
         const container = containerRef.current as HTMLElement;
         const targetEl = target as HTMLElement;
         const top = targetEl.offsetTop - container.offsetTop;
-        container.scrollTo({ top, behavior: "smooth" });
+        container.scrollTo({ top, behavior: 'smooth' });
       }
     }
   }, [
@@ -132,9 +130,7 @@ export default function MobileWorkerSchedule({
   useEffect(() => {
     if (hasScrolledRef.current) return;
     const idx = weeks.findIndex(
-      (w) =>
-        today.isSameOrAfter(w.start, "day") &&
-        today.isSameOrBefore(w.end, "day"),
+      (w) => today.isSameOrAfter(w.start, 'day') && today.isSameOrBefore(w.end, 'day'),
     );
     const target = weekRefs.current[idx >= 0 ? idx : 0];
     if (target && containerRef.current) {
@@ -142,7 +138,7 @@ export default function MobileWorkerSchedule({
         const container = containerRef.current as HTMLElement;
         const targetEl = target as HTMLElement;
         const top = targetEl.offsetTop - container.offsetTop;
-        container.scrollTo({ top, behavior: "auto" });
+        container.scrollTo({ top, behavior: 'auto' });
         hasScrolledRef.current = true;
         // Update visible month after initial scroll
         setTimeout(() => handleScroll(), 100);
@@ -152,7 +148,7 @@ export default function MobileWorkerSchedule({
         const targetTop = target.getBoundingClientRect().top;
         containerRef.current.scrollTo({
           top: containerRef.current.scrollTop + (targetTop - containerTop),
-          behavior: "auto",
+          behavior: 'auto',
         });
         hasScrolledRef.current = true;
         // Update visible month after initial scroll
@@ -166,27 +162,22 @@ export default function MobileWorkerSchedule({
     (direction: number) => {
       // Navigate by whole weeks and ensure the settings use a week boundary so
       // validation doesn't snap the date to a month start.
-      const newPeriodStart = periodStart.add(direction, "week");
-      const aligned = newPeriodStart.startOf("isoWeek");
+      const newPeriodStart = periodStart.add(direction, 'week');
+      const aligned = newPeriodStart.startOf('isoWeek');
 
       updateScheduleViewSettings({
         ...scheduleViewSettings,
-        timeFrame: "week",
+        timeFrame: 'week',
         periodStartDate: aligned,
       });
 
       // Update visible month label based on the new week start
       const monthLabel = aligned.format(
-        aligned.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
+        aligned.year() === dayjs.utc().year() ? 'MMMM' : 'MMM YYYY',
       );
       onVisibleMonthChange(monthLabel);
     },
-    [
-      periodStart,
-      updateScheduleViewSettings,
-      scheduleViewSettings,
-      onVisibleMonthChange,
-    ],
+    [periodStart, updateScheduleViewSettings, scheduleViewSettings, onVisibleMonthChange],
   );
 
   if (!isLandscape) {

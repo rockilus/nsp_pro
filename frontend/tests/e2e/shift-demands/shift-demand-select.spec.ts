@@ -9,19 +9,19 @@
  * - UI state management during select mode
  */
 
-import { test, expect } from "@playwright/test";
-import dayjs from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
-import isBetween from "dayjs/plugin/isBetween";
-import utc from "dayjs/plugin/utc";
-import { ShiftDemandTestBase } from "../../utils/shift-demand-test-base";
+import { test, expect } from '@playwright/test';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import isBetween from 'dayjs/plugin/isBetween';
+import utc from 'dayjs/plugin/utc';
+import { ShiftDemandTestBase } from '../../utils/shift-demand-test-base';
 
 // Extend dayjs with the required plugins
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 dayjs.extend(utc);
 
-test.describe("Shift Demand - Select Feature", () => {
+test.describe('Shift Demand - Select Feature', () => {
   let shiftDemandTestBase: ShiftDemandTestBase;
 
   test.beforeAll(async () => {
@@ -33,13 +33,11 @@ test.describe("Shift Demand - Select Feature", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the page and wait for it to load
     await shiftDemandTestBase.navigateToShiftDemandsPage(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
   });
 
-  test.describe("Select Mode Activation/Deactivation", () => {
-    test("should activate select mode when clicking the select button", async ({
-      page,
-    }) => {
+  test.describe('Select Mode Activation/Deactivation', () => {
+    test('should activate select mode when clicking the select button', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
       const actionToolbar = shiftDemandTestBase.getActionToolbar(page);
 
@@ -52,10 +50,7 @@ test.describe("Shift Demand - Select Feature", () => {
 
       // Verify select mode is activated
       await expect(actionToolbar).toBeVisible();
-      await expect(selectButton).toHaveCSS(
-        "background-color",
-        "rgb(25, 118, 210)",
-      ); // Active blue color
+      await expect(selectButton).toHaveCSS('background-color', 'rgb(25, 118, 210)'); // Active blue color
 
       // Verify bulk selection elements are visible
       const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
@@ -69,7 +64,7 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(checkboxes.selectAll).toBeVisible();
     });
 
-    test("should deactivate select mode when clicking the select button again", async ({
+    test('should deactivate select mode when clicking the select button again', async ({
       page,
     }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
@@ -84,15 +79,10 @@ test.describe("Shift Demand - Select Feature", () => {
 
       // Verify select mode is deactivated
       await expect(actionToolbar).not.toBeVisible();
-      await expect(selectButton).not.toHaveCSS(
-        "background-color",
-        "rgb(25, 118, 210)",
-      );
+      await expect(selectButton).not.toHaveCSS('background-color', 'rgb(25, 118, 210)');
     });
 
-    test("should deactivate select mode when clicking the cancel button", async ({
-      page,
-    }) => {
+    test('should deactivate select mode when clicking the cancel button', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
       const actionToolbar = shiftDemandTestBase.getActionToolbar(page);
       const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
@@ -106,29 +96,22 @@ test.describe("Shift Demand - Select Feature", () => {
 
       // Verify select mode is deactivated
       await expect(actionToolbar).not.toBeVisible();
-      await expect(selectButton).not.toHaveCSS(
-        "background-color",
-        "rgb(25, 118, 210)",
-      );
+      await expect(selectButton).not.toHaveCSS('background-color', 'rgb(25, 118, 210)');
     });
 
-    test("should show checkboxes in table cells when select mode is active", async ({
-      page,
-    }) => {
+    test('should show checkboxes in table cells when select mode is active', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
 
       // Get first shift row header to extract shift ID
-      const firstRowHeader = page
-        .locator('[data-testid^="shift-demand-row-header-"]')
-        .first();
+      const firstRowHeader = page.locator('[data-testid^="shift-demand-row-header-"]').first();
       await expect(firstRowHeader).toBeVisible();
 
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("shift-demand-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('shift-demand-row-header-', ''));
 
       const today = dayjs.utc();
-      const testDate = today.format("YYYY-MM-DD");
+      const testDate = today.format('YYYY-MM-DD');
 
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
 
@@ -143,23 +126,21 @@ test.describe("Shift Demand - Select Feature", () => {
     });
   });
 
-  test.describe("Individual Cell Selection", () => {
-    test("should select and deselect individual cells", async ({ page }) => {
+  test.describe('Individual Cell Selection', () => {
+    test('should select and deselect individual cells', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
 
       // Activate select mode
       await selectButton.click();
 
       // Get first shift and today's date
-      const firstRowHeader = page
-        .locator('[data-testid^="shift-demand-row-header-"]')
-        .first();
+      const firstRowHeader = page.locator('[data-testid^="shift-demand-row-header-"]').first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("shift-demand-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('shift-demand-row-header-', ''));
 
       const today = dayjs.utc();
-      const testDate = today.format("YYYY-MM-DD");
+      const testDate = today.format('YYYY-MM-DD');
 
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
       const cellCheckbox = checkboxes.cellSelect(shiftId!, testDate);
@@ -176,9 +157,7 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(cellCheckbox).not.toBeChecked();
     });
 
-    test("should show selection count when cells are selected", async ({
-      page,
-    }) => {
+    test('should show selection count when cells are selected', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
       const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
 
@@ -186,15 +165,13 @@ test.describe("Shift Demand - Select Feature", () => {
       await selectButton.click();
 
       // Get first shift and today's date
-      const firstRowHeader = page
-        .locator('[data-testid^="shift-demand-row-header-"]')
-        .first();
+      const firstRowHeader = page.locator('[data-testid^="shift-demand-row-header-"]').first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("shift-demand-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('shift-demand-row-header-', ''));
 
       const today = dayjs.utc();
-      const testDate = today.format("YYYY-MM-DD");
+      const testDate = today.format('YYYY-MM-DD');
 
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
       const cellCheckbox = checkboxes.cellSelect(shiftId!, testDate);
@@ -208,22 +185,18 @@ test.describe("Shift Demand - Select Feature", () => {
     });
   });
 
-  test.describe("Row and Column Selection", () => {
-    test("should select all cells in a row when clicking row checkbox", async ({
-      page,
-    }) => {
+  test.describe('Row and Column Selection', () => {
+    test('should select all cells in a row when clicking row checkbox', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
 
       // Activate select mode
       await selectButton.click();
 
       // Get first shift
-      const firstRowHeader = page
-        .locator('[data-testid^="shift-demand-row-header-"]')
-        .first();
+      const firstRowHeader = page.locator('[data-testid^="shift-demand-row-header-"]').first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("shift-demand-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('shift-demand-row-header-', ''));
 
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
       const rowCheckbox = checkboxes.rowSelect(shiftId!);
@@ -235,7 +208,7 @@ test.describe("Shift Demand - Select Feature", () => {
       // Verify some cells in the row are selected (check first few visible dates)
       const today = dayjs.utc();
       for (let i = 0; i < 3; i++) {
-        const testDate = today.add(i, "day").format("YYYY-MM-DD");
+        const testDate = today.add(i, 'day').format('YYYY-MM-DD');
         const cellCheckbox = checkboxes.cellSelect(shiftId!, testDate);
 
         // Only check if the cell is visible (it might not be if outside the current period)
@@ -245,16 +218,14 @@ test.describe("Shift Demand - Select Feature", () => {
       }
     });
 
-    test("should select all cells in a column when clicking column checkbox", async ({
-      page,
-    }) => {
+    test('should select all cells in a column when clicking column checkbox', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
 
       // Activate select mode
       await selectButton.click();
 
       const today = dayjs.utc();
-      const testDate = today.format("YYYY-MM-DD");
+      const testDate = today.format('YYYY-MM-DD');
 
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
       const columnCheckbox = checkboxes.columnSelect(testDate);
@@ -264,16 +235,14 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(columnCheckbox).toBeChecked();
 
       // Verify some cells in the column are selected (check first few visible shifts)
-      const shiftRows = page.locator(
-        '[data-testid^="shift-demand-row-header-"]',
-      );
+      const shiftRows = page.locator('[data-testid^="shift-demand-row-header-"]');
       const shiftCount = Math.min(await shiftRows.count(), 3);
 
       for (let i = 0; i < shiftCount; i++) {
         const shiftHeader = shiftRows.nth(i);
         const shiftId = await shiftHeader
-          .getAttribute("data-testid")
-          .then((id) => id?.replace("shift-demand-row-header-", ""));
+          .getAttribute('data-testid')
+          .then((id) => id?.replace('shift-demand-row-header-', ''));
 
         const cellCheckbox = checkboxes.cellSelect(shiftId!, testDate);
         if (await cellCheckbox.isVisible()) {
@@ -282,9 +251,7 @@ test.describe("Shift Demand - Select Feature", () => {
       }
     });
 
-    test("should select all cells when clicking select all checkbox", async ({
-      page,
-    }) => {
+    test('should select all cells when clicking select all checkbox', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
 
       // Activate select mode
@@ -298,16 +265,14 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(selectAllCheckbox).toBeChecked();
 
       // Verify row checkboxes are checked
-      const shiftRows = page.locator(
-        '[data-testid^="shift-demand-row-header-"]',
-      );
+      const shiftRows = page.locator('[data-testid^="shift-demand-row-header-"]');
       const shiftCount = Math.min(await shiftRows.count(), 2); // Check first 2 rows
 
       for (let i = 0; i < shiftCount; i++) {
         const shiftHeader = shiftRows.nth(i);
         const shiftId = await shiftHeader
-          .getAttribute("data-testid")
-          .then((id) => id?.replace("shift-demand-row-header-", ""));
+          .getAttribute('data-testid')
+          .then((id) => id?.replace('shift-demand-row-header-', ''));
 
         const rowCheckbox = checkboxes.rowSelect(shiftId!);
         if (await rowCheckbox.isVisible()) {
@@ -317,10 +282,8 @@ test.describe("Shift Demand - Select Feature", () => {
     });
   });
 
-  test.describe("Button States", () => {
-    test("should disable action buttons when no cells are selected", async ({
-      page,
-    }) => {
+  test.describe('Button States', () => {
+    test('should disable action buttons when no cells are selected', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
       const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
 
@@ -333,9 +296,7 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(bulkElements.input).toBeDisabled();
     });
 
-    test("should enable action buttons when cells are selected", async ({
-      page,
-    }) => {
+    test('should enable action buttons when cells are selected', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
       const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
 
@@ -343,15 +304,13 @@ test.describe("Shift Demand - Select Feature", () => {
       await selectButton.click();
 
       // Get first shift and select a cell
-      const firstRowHeader = page
-        .locator('[data-testid^="shift-demand-row-header-"]')
-        .first();
+      const firstRowHeader = page.locator('[data-testid^="shift-demand-row-header-"]').first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("shift-demand-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('shift-demand-row-header-', ''));
 
       const today = dayjs.utc();
-      const testDate = today.format("YYYY-MM-DD");
+      const testDate = today.format('YYYY-MM-DD');
 
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
       await checkboxes.cellSelect(shiftId!, testDate).click();
@@ -361,13 +320,11 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(bulkElements.input).toBeEnabled();
 
       // Add value to input to enable confirm button
-      await bulkElements.input.fill("2");
+      await bulkElements.input.fill('2');
       await expect(bulkElements.confirmButton).toBeEnabled();
     });
 
-    test("should disable confirm button when input is empty", async ({
-      page,
-    }) => {
+    test('should disable confirm button when input is empty', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
       const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
 
@@ -375,15 +332,13 @@ test.describe("Shift Demand - Select Feature", () => {
       await selectButton.click();
 
       // Select a cell
-      const firstRowHeader = page
-        .locator('[data-testid^="shift-demand-row-header-"]')
-        .first();
+      const firstRowHeader = page.locator('[data-testid^="shift-demand-row-header-"]').first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("shift-demand-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('shift-demand-row-header-', ''));
 
       const today = dayjs.utc();
-      const testDate = today.format("YYYY-MM-DD");
+      const testDate = today.format('YYYY-MM-DD');
 
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
       await checkboxes.cellSelect(shiftId!, testDate).click();
@@ -396,10 +351,8 @@ test.describe("Shift Demand - Select Feature", () => {
     });
   });
 
-  test.describe("Bulk Operations", () => {
-    test("should create/update shift demands when confirming bulk selection", async ({
-      page,
-    }) => {
+  test.describe('Bulk Operations', () => {
+    test('should create/update shift demands when confirming bulk selection', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
       const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
 
@@ -407,15 +360,13 @@ test.describe("Shift Demand - Select Feature", () => {
       await selectButton.click();
 
       // Select a cell
-      const firstRowHeader = page
-        .locator('[data-testid^="shift-demand-row-header-"]')
-        .first();
+      const firstRowHeader = page.locator('[data-testid^="shift-demand-row-header-"]').first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("shift-demand-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('shift-demand-row-header-', ''));
 
-      const tomorrow = dayjs.utc().add(1, "day");
-      const testDate = tomorrow.format("YYYY-MM-DD");
+      const tomorrow = dayjs.utc().add(1, 'day');
+      const testDate = tomorrow.format('YYYY-MM-DD');
 
       // Navigate to the correct month before selecting the cell
       await shiftDemandTestBase.navigateToMonth(page, tomorrow);
@@ -424,7 +375,7 @@ test.describe("Shift Demand - Select Feature", () => {
       await checkboxes.cellSelect(shiftId!, testDate).click();
 
       // Set value and confirm
-      await bulkElements.input.fill("3");
+      await bulkElements.input.fill('3');
       await bulkElements.confirmButton.click();
 
       // Verify select mode is exited (wait for action toolbar to become invisible)
@@ -432,41 +383,33 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(actionToolbar).not.toBeVisible();
 
       // Verify the shift demand value is updated in the table
-      const cell = page.locator(
-        `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`,
-      );
+      const cell = page.locator(`[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`);
       const valueElement = cell.locator(
         `[data-testid="shift-demand-value-${shiftId}-${testDate}"]`,
       );
 
       await expect(valueElement).toBeVisible();
-      await expect(valueElement).toHaveText("3");
+      await expect(valueElement).toHaveText('3');
     });
 
-    test("should delete shift demands when confirming bulk deletion", async ({
-      page,
-    }) => {
+    test('should delete shift demands when confirming bulk deletion', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
       const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
 
       // First, create a shift demand to delete
-      const firstRowHeader = page
-        .locator('[data-testid^="shift-demand-row-header-"]')
-        .first();
+      const firstRowHeader = page.locator('[data-testid^="shift-demand-row-header-"]').first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("shift-demand-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('shift-demand-row-header-', ''));
 
-      const tomorrow = dayjs.utc().add(1, "day");
-      const testDate = tomorrow.format("YYYY-MM-DD");
+      const tomorrow = dayjs.utc().add(1, 'day');
+      const testDate = tomorrow.format('YYYY-MM-DD');
 
       // Navigate to the correct month before creating the shift demand
       await shiftDemandTestBase.navigateToMonth(page, tomorrow);
 
       // Create a shift demand first by clicking the cell
-      const cell = page.locator(
-        `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`,
-      );
+      const cell = page.locator(`[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`);
 
       // Wait for the cell to be visible before interacting with it
       await expect(cell).toBeVisible();
@@ -497,15 +440,11 @@ test.describe("Shift Demand - Select Feature", () => {
       await expect(actionToolbar).not.toBeVisible();
 
       // Verify the cell is back to empty state
-      const emptyState = cell.locator(
-        `[data-testid="shift-demand-empty-${shiftId}-${testDate}"]`,
-      );
+      const emptyState = cell.locator(`[data-testid="shift-demand-empty-${shiftId}-${testDate}"]`);
       await expect(emptyState).toBeVisible();
     });
 
-    test("should cancel deletion when clicking cancel in confirmation dialog", async ({
-      page,
-    }) => {
+    test('should cancel deletion when clicking cancel in confirmation dialog', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
       const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
 
@@ -513,15 +452,13 @@ test.describe("Shift Demand - Select Feature", () => {
       await selectButton.click();
 
       // Select a cell
-      const firstRowHeader = page
-        .locator('[data-testid^="shift-demand-row-header-"]')
-        .first();
+      const firstRowHeader = page.locator('[data-testid^="shift-demand-row-header-"]').first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("shift-demand-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('shift-demand-row-header-', ''));
 
       const today = dayjs.utc();
-      const testDate = today.format("YYYY-MM-DD");
+      const testDate = today.format('YYYY-MM-DD');
 
       const checkboxes = shiftDemandTestBase.getSelectionCheckboxes(page);
       await checkboxes.cellSelect(shiftId!, testDate).click();
@@ -541,10 +478,8 @@ test.describe("Shift Demand - Select Feature", () => {
     });
   });
 
-  test.describe("Keyboard Shortcuts", () => {
-    test("should apply bulk change when pressing Enter in input field", async ({
-      page,
-    }) => {
+  test.describe('Keyboard Shortcuts', () => {
+    test('should apply bulk change when pressing Enter in input field', async ({ page }) => {
       const selectButton = shiftDemandTestBase.getSelectButton(page);
       const bulkElements = shiftDemandTestBase.getBulkSelectionElements(page);
 
@@ -552,15 +487,13 @@ test.describe("Shift Demand - Select Feature", () => {
       await selectButton.click();
 
       // Select a cell
-      const firstRowHeader = page
-        .locator('[data-testid^="shift-demand-row-header-"]')
-        .first();
+      const firstRowHeader = page.locator('[data-testid^="shift-demand-row-header-"]').first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("shift-demand-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('shift-demand-row-header-', ''));
 
-      const tomorrow = dayjs.utc().add(1, "day");
-      const testDate = tomorrow.format("YYYY-MM-DD");
+      const tomorrow = dayjs.utc().add(1, 'day');
+      const testDate = tomorrow.format('YYYY-MM-DD');
 
       // Navigate to the correct month before selecting the cell
       await shiftDemandTestBase.navigateToMonth(page, tomorrow);
@@ -569,23 +502,21 @@ test.describe("Shift Demand - Select Feature", () => {
       await checkboxes.cellSelect(shiftId!, testDate).click();
 
       // Type value and press Enter
-      await bulkElements.input.fill("5");
-      await bulkElements.input.press("Enter");
+      await bulkElements.input.fill('5');
+      await bulkElements.input.press('Enter');
 
       // Verify select mode is exited
       const actionToolbar = shiftDemandTestBase.getActionToolbar(page);
       await expect(actionToolbar).not.toBeVisible();
 
       // Verify the shift demand value is updated in the table
-      const cell = page.locator(
-        `[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`,
-      );
+      const cell = page.locator(`[data-testid="shift-demand-cell-${shiftId}-${testDate}"]`);
       const valueElement = cell.locator(
         `[data-testid="shift-demand-value-${shiftId}-${testDate}"]`,
       );
 
       await expect(valueElement).toBeVisible();
-      await expect(valueElement).toHaveText("5");
+      await expect(valueElement).toHaveText('5');
     });
 
     // test("should cancel select mode when pressing Escape in input field", async ({

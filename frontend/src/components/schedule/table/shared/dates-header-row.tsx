@@ -1,24 +1,19 @@
-import React from "react";
-import dayjs from "dayjs";
+import React from 'react';
+import dayjs from 'dayjs';
 // MUI
-import TableRow from "@mui/material/TableRow";
+import TableRow from '@mui/material/TableRow';
 // Components
-import DateHeaderCell from "./date-header-cell";
-import ExportCell from "./export-cell";
+import DateHeaderCell from './date-header-cell';
+import ExportCell from './export-cell';
 // Types
-import {
-  ExportOptionsT,
-  ScheduleT,
-  ScheduleStatus,
-  periodDateT,
-} from "../../../../types/schedule";
-import { TeamWithMembership } from "@/types/team";
+import { ExportOptionsT, ScheduleT, ScheduleStatus, periodDateT } from '../../../../types/schedule';
+import { TeamWithMembership } from '@/types/team';
 import {
   ScheduleSelectionState,
   SelectedScheduleCell,
   SelectionScope,
-} from "../../../../types/scheduleSelection";
-import { AssignmentT } from "@/types/assignment";
+} from '../../../../types/scheduleSelection';
+import { AssignmentT } from '@/types/assignment';
 
 export default function DatesHeaderRow({
   lng,
@@ -47,11 +42,7 @@ export default function DatesHeaderRow({
   selectionState: ScheduleSelectionState;
   rowIds: string[];
   selectionScope: SelectionScope;
-  handleColumnSelect: (
-    date: string,
-    rowIds: string[],
-    scope: SelectionScope,
-  ) => void;
+  handleColumnSelect: (date: string, rowIds: string[], scope: SelectionScope) => void;
   handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
   assignments: AssignmentT[];
   isCustomSolveModeActive?: boolean;
@@ -62,8 +53,8 @@ export default function DatesHeaderRow({
   return (
     <TableRow
       style={{
-        backgroundColor: "white",
-        boxShadow: "1px 1px 0px 0px rgba(224, 224, 224, 1)",
+        backgroundColor: 'white',
+        boxShadow: '1px 1px 0px 0px rgba(224, 224, 224, 1)',
       }}
       data-testid="dates-header-row"
     >
@@ -82,22 +73,18 @@ export default function DatesHeaderRow({
         handleCustomSelectAll={handleCustomSelectAll}
       />
       {periodDates.map((pDate, dateIndex) => {
-        const dateStr = pDate.date.format("YYYY-MM-DD");
+        const dateStr = pDate.date.format('YYYY-MM-DD');
         const isCustomColumnSelected =
           isCustomSolveModeActive &&
           rowIds.length > 0 &&
           rowIds.every((rowId) =>
-            customSolveSelectedCells.some(
-              (c) => c.rowId === rowId && c.date === dateStr,
-            ),
+            customSolveSelectedCells.some((c) => c.rowId === rowId && c.date === dateStr),
           );
         const isCustomColumnIndeterminate =
           isCustomSolveModeActive &&
           !isCustomColumnSelected &&
           rowIds.some((rowId) =>
-            customSolveSelectedCells.some(
-              (c) => c.rowId === rowId && c.date === dateStr,
-            ),
+            customSolveSelectedCells.some((c) => c.rowId === rowId && c.date === dateStr),
           );
         return (
           <DateHeaderCell
@@ -117,8 +104,8 @@ export default function DatesHeaderRow({
             isCustomColumnIndeterminate={isCustomColumnIndeterminate}
             isDateInCampaign={
               scheduleCampaign
-                ? !pDate.date.isBefore(scheduleCampaign.startDate, "day") &&
-                  !pDate.date.isAfter(scheduleCampaign.endDate, "day")
+                ? !pDate.date.isBefore(scheduleCampaign.startDate, 'day') &&
+                  !pDate.date.isAfter(scheduleCampaign.endDate, 'day')
                 : false
             }
           />

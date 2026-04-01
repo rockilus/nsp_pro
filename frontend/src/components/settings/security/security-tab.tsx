@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import React, { useState, useRef, useEffect } from "react";
-import { useTranslation } from "../../../app/i18n/client";
-import { useRouter } from "next/navigation";
+import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
+import { useRouter } from 'next/navigation';
 // Components
-import ChangePasswordDialog from "../profile/change-password-dialog";
-import UserProfileRow from "../profile/user-profile-row";
-import NavigationHeader from "@/components/common/navigation-header";
+import ChangePasswordDialog from '../profile/change-password-dialog';
+import UserProfileRow from '../profile/user-profile-row';
+import NavigationHeader from '@/components/common/navigation-header';
 // Skeletons
-import TablesSkeleton from "../../skeletons/tables-skeleton";
+import TablesSkeleton from '../../skeletons/tables-skeleton';
 // Hooks
-import { useIsMobile, useIsLandscape } from "../../../hooks/useIsMobile";
+import { useIsMobile, useIsLandscape } from '../../../hooks/useIsMobile';
 // Actions
-import { useGetUser, useUpdatePassword } from "../../../hooks/useUser";
+import { useGetUser, useUpdatePassword } from '../../../hooks/useUser';
 // Styles
-import "../../../styles/text-styles.css";
-import "../../../styles/tab-container-styles.css";
-import "../profile/user-profile-tab.css";
+import '../../../styles/text-styles.css';
+import '../../../styles/tab-container-styles.css';
+import '../profile/user-profile-tab.css';
 // Types
-import { UserT } from "../../../types/user";
+import { UserT } from '../../../types/user';
 
 export default function SecurityTab({ lng }: { lng: string }) {
-  const { t } = useTranslation(lng, "profile-page");
+  const { t } = useTranslation(lng, 'profile-page');
   const router = useRouter();
   const isMobile = useIsMobile();
   const isLandscape = useIsLandscape();
@@ -44,7 +44,7 @@ export default function SecurityTab({ lng }: { lng: string }) {
     newPasswordConfirm: string;
   }) => {
     if (!user) {
-      throw new Error("User not found");
+      throw new Error('User not found');
     }
     await updatePassword(passwordData, user.id);
   };
@@ -63,7 +63,7 @@ export default function SecurityTab({ lng }: { lng: string }) {
         const userData = await getUser();
         setUser(userData);
       } catch (error) {
-        console.error("Failed to fetch user data:", error);
+        console.error('Failed to fetch user data:', error);
         // Reset flag on error to allow retry
         hasFetched.current = false;
       } finally {
@@ -79,34 +79,28 @@ export default function SecurityTab({ lng }: { lng: string }) {
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={2} />
       ) : (
-        <div
-          className="user-profile-container"
-          data-testid="security-page-heading"
-        >
+        <div className="user-profile-container" data-testid="security-page-heading">
           <NavigationHeader
-            title={t("security_and_sign_in")}
+            title={t('security_and_sign_in')}
             onBack={() => router.push(`/${lng}/plan/settings`)}
             showBackButton={isMobile && !isLandscape}
           />
           {user ? (
             <div className="user-profile">
               <UserProfileRow
-                label={t("password")}
+                label={t('password')}
                 value={<span>●●●●●●●●●</span>}
                 valueEditing={<></>}
                 editing={false}
                 editButton={
-                  <ChangePasswordDialog
-                    lng={lng}
-                    handleUpdatePassword={handleUpdatePassword}
-                  />
+                  <ChangePasswordDialog lng={lng} handleUpdatePassword={handleUpdatePassword} />
                 }
                 handleEditConfirm={() => {}}
                 handleEditCancel={() => {}}
               />
             </div>
           ) : (
-            <div>{t("no_user_found")}</div>
+            <div>{t('no_user_found')}</div>
           )}
         </div>
       )}

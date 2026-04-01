@@ -1,19 +1,14 @@
-import React from "react";
+import React from 'react';
 // Styles
-import "./request-cell.css";
+import './request-cell.css';
 // Types
-import {
-  RequestT,
-  RequestType,
-  RequestStatus,
-  FulfillmentStatus,
-} from "../../../../types/request";
-import { ShiftT } from "../../../../types/shift";
+import { RequestT, RequestType, RequestStatus, FulfillmentStatus } from '../../../../types/request';
+import { ShiftT } from '../../../../types/shift';
 // Utils
 import {
   getRequestTargetDisplayText,
   getShiftColors,
-} from "../../../../utils/shift-worker-option-display";
+} from '../../../../utils/shift-worker-option-display';
 
 export default function RequestCell({
   request,
@@ -38,9 +33,9 @@ export default function RequestCell({
     // Work request type indicator (negative vs positive)
     if (request.requestType === RequestType.WORK_DEMAND) {
       if (request.negative) {
-        emojis.push("🙅"); // Person gesturing no
+        emojis.push('🙅'); // Person gesturing no
       } else {
-        emojis.push("🙋"); // Person raising one hand
+        emojis.push('🙋'); // Person raising one hand
       }
     }
 
@@ -48,15 +43,15 @@ export default function RequestCell({
     if (request.status === RequestStatus.APPROVED) {
       switch (request.fulfillment) {
         case FulfillmentStatus.FULFILLED:
-          emojis.push("✅"); // Check mark
+          emojis.push('✅'); // Check mark
           break;
         case FulfillmentStatus.UNFULFILLED:
-          emojis.push("❌"); // Cross mark
+          emojis.push('❌'); // Cross mark
           break;
       }
     }
 
-    return emojis.join(" ");
+    return emojis.join(' ');
   };
 
   const requestEmojis = getRequestEmojis();
@@ -65,46 +60,46 @@ export default function RequestCell({
   const getStatusClass = () => {
     switch (request.status) {
       case RequestStatus.PENDING:
-        return " rc-container--status-pending";
+        return ' rc-container--status-pending';
       case RequestStatus.DENIED:
-        return " rc-container--status-denied";
+        return ' rc-container--status-denied';
       case RequestStatus.APPROVED:
       default:
-        return "";
+        return '';
     }
   };
 
   // Build the tooltip content
   const getTitle = () => {
-    const targetText = getRequestTargetDisplayText(request, [], shifts, "not");
+    const targetText = getRequestTargetDisplayText(request, [], shifts, 'not');
 
-    const periodText = request.startDate.isSame(request.endDate, "day")
-      ? request.startDate.format("DD MMM").toLowerCase()
-      : `${request.startDate.format("DD MMM").toLowerCase()} - ${request.endDate
-          .format("DD MMM")
+    const periodText = request.startDate.isSame(request.endDate, 'day')
+      ? request.startDate.format('DD MMM').toLowerCase()
+      : `${request.startDate.format('DD MMM').toLowerCase()} - ${request.endDate
+          .format('DD MMM')
           .toLowerCase()}`;
 
     const statusEmoji = (() => {
       switch (request.status) {
         case RequestStatus.PENDING:
-          return "🟠";
+          return '🟠';
         case RequestStatus.APPROVED:
-          return "🟢";
+          return '🟢';
         case RequestStatus.DENIED:
-          return "🔴";
+          return '🔴';
         default:
-          return "";
+          return '';
       }
     })();
 
     const fulfillmentEmoji = (() => {
       switch (request.fulfillment) {
         case FulfillmentStatus.FULFILLED:
-          return "✅";
+          return '✅';
         case FulfillmentStatus.UNFULFILLED:
-          return "❌";
+          return '❌';
         default:
-          return "";
+          return '';
       }
     })();
 
@@ -129,13 +124,13 @@ export default function RequestCell({
       style={
         {
           ...(shiftColors && {
-            "--shift-bg-color": shiftColors.background,
-            "--shift-sample-color": shiftColors.sample,
-            "--shift-text-color": shiftColors.text,
+            '--shift-bg-color': shiftColors.background,
+            '--shift-sample-color': shiftColors.sample,
+            '--shift-text-color': shiftColors.text,
             background: shiftColors.background,
             color: shiftColors.text,
           }),
-          cursor: handleRequestSelection ? "pointer" : "default",
+          cursor: handleRequestSelection ? 'pointer' : 'default',
         } as React.CSSProperties
       }
       title={getTitle()}

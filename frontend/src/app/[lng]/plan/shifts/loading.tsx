@@ -1,7 +1,7 @@
 // Skeletons
-import TablesSkeleton from "../../../../components/skeletons/tables-skeleton";
+import TablesSkeleton from '../../../../components/skeletons/tables-skeleton';
 // Styles
-import "../../../../styles/tab-container-styles.css";
+import '../../../../styles/tab-container-styles.css';
 
 export default function Loading() {
   return (

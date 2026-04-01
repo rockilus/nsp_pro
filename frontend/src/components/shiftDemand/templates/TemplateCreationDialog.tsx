@@ -4,7 +4,7 @@
  * Currently implements basic template creation with name and description
  */
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -16,14 +16,14 @@ import {
   Box,
   Alert,
   CircularProgress,
-} from "@mui/material";
-import { useTranslation } from "../../../app/i18n/client";
-import { ShiftT } from "../../../types/shift";
+} from '@mui/material';
+import { useTranslation } from '../../../app/i18n/client';
+import { ShiftT } from '../../../types/shift';
 import {
   ShiftDemandTemplateCreateDTO,
   TemplateType,
   TEMPLATE_CONSTRAINTS,
-} from "../../../types/shift-demand-template";
+} from '../../../types/shift-demand-template';
 
 interface TemplateCreationDialogProps {
   lng: string;
@@ -58,28 +58,26 @@ export function TemplateCreationDialog({
   onTemplateCreated,
   onError,
 }: TemplateCreationDialogProps) {
-  const { t } = useTranslation(lng, "shift-demand-templates");
+  const { t } = useTranslation(lng, 'shift-demand-templates');
 
   const [formData, setFormData] = useState<FormData>({
-    name: "",
-    description: "",
+    name: '',
+    description: '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [submitError, setSubmitError] = useState<string>("");
+  const [submitError, setSubmitError] = useState<string>('');
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = t("template_name_required");
-    } else if (
-      formData.name.trim().length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH
-    ) {
-      newErrors.name = t("template_name_too_short");
+      newErrors.name = t('template_name_required');
+    } else if (formData.name.trim().length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH) {
+      newErrors.name = t('template_name_too_short');
     } else if (formData.name.length > TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH) {
-      newErrors.name = t("template_name_too_long");
+      newErrors.name = t('template_name_too_long');
     }
 
     setErrors(newErrors);
@@ -103,7 +101,7 @@ export function TemplateCreationDialog({
 
       // Clear submit error when user makes changes
       if (submitError) {
-        setSubmitError("");
+        setSubmitError('');
       }
     };
 
@@ -113,7 +111,7 @@ export function TemplateCreationDialog({
     }
 
     setIsLoading(true);
-    setSubmitError("");
+    setSubmitError('');
 
     try {
       // Create basic template data - backend will handle creating default week data
@@ -126,8 +124,7 @@ export function TemplateCreationDialog({
       onTemplateCreated(templateData);
       handleClose();
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t("error_creating_template");
+      const errorMessage = error instanceof Error ? error.message : t('error_creating_template');
       setSubmitError(errorMessage);
       onError(errorMessage);
     } finally {
@@ -137,9 +134,9 @@ export function TemplateCreationDialog({
 
   const handleClose = () => {
     // Reset form state when closing
-    setFormData({ name: "", description: "" });
+    setFormData({ name: '', description: '' });
     setErrors({});
-    setSubmitError("");
+    setSubmitError('');
     setIsLoading(false);
     onClose();
   };
@@ -157,7 +154,7 @@ export function TemplateCreationDialog({
       fullWidth
       data-testid="template-creation-dialog"
     >
-      <DialogTitle>{t("create_new_template")}</DialogTitle>
+      <DialogTitle>{t('create_new_template')}</DialogTitle>
       <DialogContent>
         <Box sx={{ pt: 2 }}>
           {submitError && (
@@ -171,13 +168,12 @@ export function TemplateCreationDialog({
             autoFocus
             required
             fullWidth
-            label={t("template_name")}
+            label={t('template_name')}
             value={formData.name}
-            onChange={handleInputChange("name")}
+            onChange={handleInputChange('name')}
             error={!!errors.name}
             helperText={
-              errors.name ||
-              `${formData.name.length}/${TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH}`
+              errors.name || `${formData.name.length}/${TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH}`
             }
             disabled={isLoading}
             sx={{ mb: 2 }}
@@ -191,10 +187,10 @@ export function TemplateCreationDialog({
             fullWidth
             multiline
             rows={3}
-            label={t("template_description")}
-            placeholder={t("template_description_placeholder")}
+            label={t('template_description')}
+            placeholder={t('template_description_placeholder')}
             value={formData.description}
-            onChange={handleInputChange("description")}
+            onChange={handleInputChange('description')}
             disabled={isLoading}
             helperText={`${formData.description.length}/${TEMPLATE_CONSTRAINTS.MAX_DESCRIPTION_LENGTH}`}
             inputProps={{
@@ -209,7 +205,7 @@ export function TemplateCreationDialog({
           onClick={handleClose}
           disabled={isLoading}
         >
-          {t("cancel")}
+          {t('cancel')}
         </Button>
         <Button
           data-testid="template-creation-create-button"
@@ -218,7 +214,7 @@ export function TemplateCreationDialog({
           disabled={isLoading || !isFormValid}
           startIcon={isLoading ? <CircularProgress size={20} /> : undefined}
         >
-          {isLoading ? t("creating") : t("create_template")}
+          {isLoading ? t('creating') : t('create_template')}
         </Button>
       </DialogActions>
     </Dialog>

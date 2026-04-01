@@ -1,36 +1,33 @@
-"use client";
+'use client';
 
-import { Box, Card, CardContent, Chip, Typography } from "@mui/material";
-import { SwapRequestT, SwapStatus, SwapType } from "../../types/swap";
-import { AssignmentDataDictT } from "../../types/assignment";
-import { WorkerT } from "../../types/worker";
-import AssignmentOfferItem from "./AssignmentOfferItem";
-import { getEarliestAssignment } from "../../utils/assignmentSort";
-import { formatSwapTitleDate } from "../../utils/swapHelpers";
-import { useTranslation } from "../../app/i18n/client";
+import { Box, Card, CardContent, Chip, Typography } from '@mui/material';
+import { SwapRequestT, SwapStatus, SwapType } from '../../types/swap';
+import { AssignmentDataDictT } from '../../types/assignment';
+import { WorkerT } from '../../types/worker';
+import AssignmentOfferItem from './AssignmentOfferItem';
+import { getEarliestAssignment } from '../../utils/assignmentSort';
+import { formatSwapTitleDate } from '../../utils/swapHelpers';
+import { useTranslation } from '../../app/i18n/client';
 
-const statusColors: Record<
-  SwapStatus,
-  "default" | "warning" | "success" | "error"
-> = {
-  [SwapStatus.ACTIVE]: "warning",
-  [SwapStatus.PENDING_APPROVAL]: "default",
-  [SwapStatus.COMPLETED]: "success",
-  [SwapStatus.DENIED]: "error",
-  [SwapStatus.REVERTED]: "warning",
+const statusColors: Record<SwapStatus, 'default' | 'warning' | 'success' | 'error'> = {
+  [SwapStatus.ACTIVE]: 'warning',
+  [SwapStatus.PENDING_APPROVAL]: 'default',
+  [SwapStatus.COMPLETED]: 'success',
+  [SwapStatus.DENIED]: 'error',
+  [SwapStatus.REVERTED]: 'warning',
 };
 
 const statusLabels: Record<SwapStatus, string> = {
-  [SwapStatus.ACTIVE]: "Active",
-  [SwapStatus.PENDING_APPROVAL]: "Pending Approval",
-  [SwapStatus.COMPLETED]: "Completed",
-  [SwapStatus.DENIED]: "Denied",
-  [SwapStatus.REVERTED]: "Reverted",
+  [SwapStatus.ACTIVE]: 'Active',
+  [SwapStatus.PENDING_APPROVAL]: 'Pending Approval',
+  [SwapStatus.COMPLETED]: 'Completed',
+  [SwapStatus.DENIED]: 'Denied',
+  [SwapStatus.REVERTED]: 'Reverted',
 };
 
 const swapTypeLabels: Record<SwapType, string> = {
-  [SwapType.DIRECT]: "Direct Swap",
-  [SwapType.OPEN]: "Open Swap",
+  [SwapType.DIRECT]: 'Direct Swap',
+  [SwapType.OPEN]: 'Open Swap',
 };
 
 interface SwapCardProps {
@@ -50,34 +47,25 @@ export default function SwapCard({
   onClick,
   lng,
 }: SwapCardProps) {
-  const { t } = useTranslation(lng, "swap-page");
+  const { t } = useTranslation(lng, 'swap-page');
   const createdAtLabel =
-    swap.createdAt && typeof (swap as any).createdAt?.format === "function"
-      ? (swap as any).createdAt.format("MMM D, YYYY")
-      : String(swap.createdAt ?? "");
+    swap.createdAt && typeof (swap as any).createdAt?.format === 'function'
+      ? (swap as any).createdAt.format('MMM D, YYYY')
+      : String(swap.createdAt ?? '');
 
   // Determine earliest offered assignment for title
   const earliestOffered = getEarliestAssignment(offeredAssignments);
 
-  const titleDate = earliestOffered
-    ? earliestOffered.assignment.date
-    : swap.createdAt || null;
+  const titleDate = earliestOffered ? earliestOffered.assignment.date : swap.createdAt || null;
   const { dayNumber, monthWeekday } = formatSwapTitleDate(titleDate, lng);
 
-  const titleShiftName = earliestOffered ? earliestOffered.shift.name : "";
+  const titleShiftName = earliestOffered ? earliestOffered.shift.name : '';
 
   const MAX_DISPLAYED_ASSIGNMENTS = 3;
-  const displayedOffered = offeredAssignments.slice(
-    0,
-    MAX_DISPLAYED_ASSIGNMENTS,
-  );
-  const remainingOfferedCount = Math.max(
-    0,
-    offeredAssignments.length - MAX_DISPLAYED_ASSIGNMENTS,
-  );
+  const displayedOffered = offeredAssignments.slice(0, MAX_DISPLAYED_ASSIGNMENTS);
+  const remainingOfferedCount = Math.max(0, offeredAssignments.length - MAX_DISPLAYED_ASSIGNMENTS);
 
-  const displayedRequested =
-    requestedAssignments?.slice(0, MAX_DISPLAYED_ASSIGNMENTS) || [];
+  const displayedRequested = requestedAssignments?.slice(0, MAX_DISPLAYED_ASSIGNMENTS) || [];
   const remainingRequestedCount = Math.max(
     0,
     (requestedAssignments?.length || 0) - MAX_DISPLAYED_ASSIGNMENTS,
@@ -89,49 +77,45 @@ export default function SwapCard({
       onClick={() => onClick(swap)}
       sx={{
         mb: 2,
-        cursor: "pointer",
-        transition: "all 0.2s ease-in-out",
+        cursor: 'pointer',
+        transition: 'all 0.2s ease-in-out',
         // backgroundColor: "#1976d20a",
-        boxShadow: "none",
-        border: "1px solid #e0e0e0",
-        borderRadius: "8px",
-        "&:hover": {
+        boxShadow: 'none',
+        border: '1px solid #e0e0e0',
+        borderRadius: '8px',
+        '&:hover': {
           //   backgroundColor: "#1976d214", //1976d214
         },
       }}
       data-testid={`swap-card-${swap.id}`}
     >
-      <CardContent sx={{ "&:last-child": { pb: "16px" } }}>
+      <CardContent sx={{ '&:last-child': { pb: '16px' } }}>
         {/* Title: earliest offered date (big day) + shift name; status chip on right */}
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             mb: 1.5,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box
               sx={{
-                display: "flex",
-                flexDirection: isMobile ? "column" : "row",
-                alignItems: isMobile ? "flex-start" : "baseline",
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                alignItems: isMobile ? 'flex-start' : 'baseline',
                 mr: 2,
               }}
             >
               <Typography
                 variant="h5"
                 component="div"
-                sx={{ lineHeight: 1, mr: isMobile ? 0 : "5px" }}
+                sx={{ lineHeight: 1, mr: isMobile ? 0 : '5px' }}
               >
                 {dayNumber}
               </Typography>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ whiteSpace: "nowrap" }}
-              >
+              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
                 {monthWeekday}
               </Typography>
             </Box>
@@ -139,7 +123,7 @@ export default function SwapCard({
             <Box
               sx={{
                 minWidth: 0,
-                alignSelf: isMobile ? "flex-start" : "center",
+                alignSelf: isMobile ? 'flex-start' : 'center',
               }}
             >
               <Typography
@@ -147,13 +131,13 @@ export default function SwapCard({
                 component="div"
                 fontWeight={700}
                 sx={{
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 }}
               >
                 {titleShiftName}
-                {offeredAssignments.length > 1 ? "..." : ""}
+                {offeredAssignments.length > 1 ? '...' : ''}
               </Typography>
               {/* <Typography variant="caption" color="text.secondary">
                 {swapTypeLabels[swap.swapType]}
@@ -175,9 +159,9 @@ export default function SwapCard({
           {displayedOffered.length > 0 ? (
             <Box
               sx={{
-                display: isMobile ? "block" : "flex",
-                flexDirection: isMobile ? "column" : "row",
-                flexWrap: isMobile ? "nowrap" : "wrap",
+                display: isMobile ? 'block' : 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                flexWrap: isMobile ? 'nowrap' : 'wrap',
                 gap: isMobile ? 0 : 1,
               }}
             >
@@ -200,7 +184,7 @@ export default function SwapCard({
           )}
           {remainingOfferedCount > 0 && (
             <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
-              {t("card_more", { count: remainingOfferedCount })}
+              {t('card_more', { count: remainingOfferedCount })}
             </Typography>
           )}
         </Box>
@@ -211,22 +195,19 @@ export default function SwapCard({
             <>
               <Box>
                 <Typography variant="body2" color="text.primary" sx={{ mb: 1 }}>
-                  {t("card_requesting")}
+                  {t('card_requesting')}
                 </Typography>
                 {displayedRequested.length > 0 ? (
                   <Box
                     sx={{
-                      display: isMobile ? "block" : "flex",
-                      flexDirection: isMobile ? "column" : "row",
-                      flexWrap: isMobile ? "nowrap" : "wrap",
+                      display: isMobile ? 'block' : 'flex',
+                      flexDirection: isMobile ? 'column' : 'row',
+                      flexWrap: isMobile ? 'nowrap' : 'wrap',
                       gap: isMobile ? 0 : 1,
                     }}
                   >
                     {displayedRequested.map((data) => (
-                      <Box
-                        key={data.assignment.id}
-                        sx={{ mb: isMobile ? 1 : 0 }}
-                      >
+                      <Box key={data.assignment.id} sx={{ mb: isMobile ? 1 : 0 }}>
                         <AssignmentOfferItem
                           data={data}
                           showTimes={true}
@@ -238,21 +219,13 @@ export default function SwapCard({
                     ))}
                   </Box>
                 ) : (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ pl: 1 }}
-                  >
+                  <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
                     {requestedAssignments.length} assignment(s)
                   </Typography>
                 )}
                 {remainingRequestedCount > 0 && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ pl: 1 }}
-                  >
-                    {t("card_more", { count: remainingRequestedCount })}
+                  <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
+                    {t('card_more', { count: remainingRequestedCount })}
                   </Typography>
                 )}
               </Box>
@@ -264,12 +237,8 @@ export default function SwapCard({
             {creatorWorker?.name || "Unknown"}
           </Typography> */}
           {swap.swapType === SwapType.OPEN && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              display="block"
-            >
-              {t("card_bid_count", { count: swap.bids.length })}
+            <Typography variant="caption" color="text.secondary" display="block">
+              {t('card_bid_count', { count: swap.bids.length })}
             </Typography>
           )}
         </Box>

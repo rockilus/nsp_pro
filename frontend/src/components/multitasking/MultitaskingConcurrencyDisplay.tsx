@@ -5,8 +5,8 @@
  * Shows which shifts can be worked concurrently by the same worker.
  */
 
-import React from "react";
-import dayjs, { Dayjs } from "dayjs";
+import React from 'react';
+import dayjs, { Dayjs } from 'dayjs';
 import {
   Box,
   Card,
@@ -17,8 +17,8 @@ import {
   Chip,
   Grid,
   Paper,
-} from "@mui/material";
-import { useShiftDemandConcurrency } from "@/app/lib/hooks/useMultitasking";
+} from '@mui/material';
+import { useShiftDemandConcurrency } from '@/app/lib/hooks/useMultitasking';
 
 interface MultitaskingConcurrencyDisplayProps {
   teamId: string;
@@ -27,9 +27,12 @@ interface MultitaskingConcurrencyDisplayProps {
   enabled?: boolean;
 }
 
-export const MultitaskingConcurrencyDisplay: React.FC<
-  MultitaskingConcurrencyDisplayProps
-> = ({ teamId, startDate, endDate, enabled = true }) => {
+export const MultitaskingConcurrencyDisplay: React.FC<MultitaskingConcurrencyDisplayProps> = ({
+  teamId,
+  startDate,
+  endDate,
+  enabled = true,
+}) => {
   const {
     data: concurrencyList,
     isLoading,
@@ -53,7 +56,7 @@ export const MultitaskingConcurrencyDisplay: React.FC<
       <Alert severity="error" sx={{ m: 2 }}>
         <Typography variant="h6">Error loading concurrency data</Typography>
         <Typography variant="body2">
-          {error instanceof Error ? error.message : "Unknown error occurred"}
+          {error instanceof Error ? error.message : 'Unknown error occurred'}
         </Typography>
       </Alert>
     );
@@ -64,17 +67,14 @@ export const MultitaskingConcurrencyDisplay: React.FC<
       <Alert severity="info" sx={{ m: 2 }}>
         <Typography variant="h6">No concurrency data found</Typography>
         <Typography variant="body2">
-          No shift demands found for the selected period, or no concurrent
-          shifts available.
+          No shift demands found for the selected period, or no concurrent shifts available.
         </Typography>
       </Alert>
     );
   }
 
   const formatDateRange = () => {
-    return `${startDate.format("YYYY-MM-DD")} - ${endDate.format(
-      "YYYY-MM-DD",
-    )}`;
+    return `${startDate.format('YYYY-MM-DD')} - ${endDate.format('YYYY-MM-DD')}`;
   };
 
   return (
@@ -88,9 +88,8 @@ export const MultitaskingConcurrencyDisplay: React.FC<
       </Typography>
 
       <Typography variant="body2" sx={{ mb: 3 }}>
-        Showing {concurrencyList.length} shift demands with concurrency
-        information. Shifts that can be worked simultaneously are grouped
-        together.
+        Showing {concurrencyList.length} shift demands with concurrency information. Shifts that can
+        be worked simultaneously are grouped together.
       </Typography>
 
       <Grid container spacing={2}>
@@ -102,29 +101,21 @@ export const MultitaskingConcurrencyDisplay: React.FC<
                   {concurrency.shiftDemandId}
                 </Typography>
 
-                <Typography
-                  variant="subtitle2"
-                  color="text.secondary"
-                  gutterBottom
-                >
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                   Can work concurrently with:
                 </Typography>
 
                 {concurrency.concurrentShiftDemandIds.length > 0 ? (
-                  <Box
-                    sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}
-                  >
-                    {concurrency.concurrentShiftDemandIds.map(
-                      (concurrentId) => (
-                        <Chip
-                          key={concurrentId}
-                          label={concurrentId}
-                          size="small"
-                          variant="outlined"
-                          color="primary"
-                        />
-                      ),
-                    )}
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                    {concurrency.concurrentShiftDemandIds.map((concurrentId) => (
+                      <Chip
+                        key={concurrentId}
+                        label={concurrentId}
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                      />
+                    ))}
                   </Box>
                 ) : (
                   <Paper
@@ -132,8 +123,8 @@ export const MultitaskingConcurrencyDisplay: React.FC<
                     sx={{
                       p: 2,
                       mt: 1,
-                      bgcolor: "grey.50",
-                      textAlign: "center",
+                      bgcolor: 'grey.50',
+                      textAlign: 'center',
                     }}
                   >
                     <Typography variant="body2" color="text.secondary">
@@ -145,10 +136,9 @@ export const MultitaskingConcurrencyDisplay: React.FC<
                 <Typography
                   variant="caption"
                   color="text.secondary"
-                  sx={{ mt: 1, display: "block" }}
+                  sx={{ mt: 1, display: 'block' }}
                 >
-                  {concurrency.concurrentShiftDemandIds.length} concurrent
-                  shift(s)
+                  {concurrency.concurrentShiftDemandIds.length} concurrent shift(s)
                 </Typography>
               </CardContent>
             </Card>
@@ -156,11 +146,11 @@ export const MultitaskingConcurrencyDisplay: React.FC<
         ))}
       </Grid>
 
-      <Box sx={{ mt: 3, p: 2, bgcolor: "info.main", borderRadius: 1 }}>
+      <Box sx={{ mt: 3, p: 2, bgcolor: 'info.main', borderRadius: 1 }}>
         <Typography variant="body2" color="info.contrastText">
-          <strong>💡 Tip:</strong> Workers can be assigned to multiple shifts
-          that appear in the same concurrency group. This helps optimize
-          scheduling by identifying compatible shift combinations.
+          <strong>💡 Tip:</strong> Workers can be assigned to multiple shifts that appear in the
+          same concurrency group. This helps optimize scheduling by identifying compatible shift
+          combinations.
         </Typography>
       </Box>
     </Box>

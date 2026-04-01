@@ -1,45 +1,41 @@
-import { test, expect } from "@playwright/test";
-import { randomUUID } from "crypto";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { DatabaseTestUtils, TestUser } from "../../utils/database-utils";
-import { RequestType } from "@/types/request";
-import { ShiftType } from "@/types/shift";
-import { SwapType } from "@/types/swap";
+import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { DatabaseTestUtils, TestUser } from '../../utils/database-utils';
+import { RequestType } from '@/types/request';
+import { ShiftType } from '@/types/shift';
+import { SwapType } from '@/types/swap';
 import {
   NotifTestContext,
   NotificationTestCase,
   NotificationTestContextMap,
   navigateToNotificationsAsUser,
-} from "./helpers/notification-test-helpers";
+} from './helpers/notification-test-helpers';
 
 dayjs.extend(utc);
 
 // Future date computed at runtime to avoid hardcoded values rotting over time.
-const REQUEST_DATE = dayjs.utc().add(2, "month").format("YYYY-MM-DD");
+const REQUEST_DATE = dayjs.utc().add(2, 'month').format('YYYY-MM-DD');
 
 const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
   {
-    type: "user_received_team_invite",
-    description: "invite sent to TEST_USER_2",
-    preferenceKey: "user_received_team_invite",
-    recipientRole: "user2",
+    type: 'user_received_team_invite',
+    description: 'invite sent to TEST_USER_2',
+    preferenceKey: 'user_received_team_invite',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.createTeamInvitationAs(
-        user1.user_id,
-        team.teamId,
-        user2.email,
-      );
+      await dbUtils.createTeamInvitationAs(user1.user_id, team.teamId, user2.email);
       return user2.user_id;
     },
     expectedText: (name) => `Test User invited you to join ${name}`,
     expectedUrlPattern: /\/plan\/settings\/teams/,
   },
   {
-    type: "user_accepted_team_invite",
-    description: "TEST_USER_2 accepts invite sent by TEST_USER",
-    preferenceKey: "user_accepted_team_invite",
-    recipientRole: "user1",
+    type: 'user_accepted_team_invite',
+    description: 'TEST_USER_2 accepts invite sent by TEST_USER',
+    preferenceKey: 'user_accepted_team_invite',
+    recipientRole: 'user1',
     async setup(dbUtils, team, user1, user2) {
       const invitation = await dbUtils.createTeamInvitationAs(
         user1.user_id,
@@ -53,29 +49,25 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/settings\/teams/,
   },
   {
-    type: "user_removed_from_team",
-    description: "TEST_USER removes TEST_USER_2 from team",
-    preferenceKey: "user_removed_from_team",
-    recipientRole: "user2",
+    type: 'user_removed_from_team',
+    description: 'TEST_USER removes TEST_USER_2 from team',
+    preferenceKey: 'user_removed_from_team',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
-      await dbUtils.removeTeamMemberAs(
-        user1.user_id,
-        team.teamId,
-        user2.user_id,
-      );
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
+      await dbUtils.removeTeamMemberAs(user1.user_id, team.teamId, user2.user_id);
       return user2.user_id;
     },
     expectedText: (name) => `You have been removed from team ${name}`,
     expectedUrlPattern: /\/plan\/settings\/teams/,
   },
   {
-    type: "user_left_team",
-    description: "TEST_USER_2 leaves team",
-    preferenceKey: "user_left_team",
-    recipientRole: "user1",
+    type: 'user_left_team',
+    description: 'TEST_USER_2 leaves team',
+    preferenceKey: 'user_left_team',
+    recipientRole: 'user1',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       await dbUtils.leaveTeamAs(user2.user_id, team.teamId);
       return user1.user_id;
     },
@@ -83,15 +75,15 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/settings\/teams/,
   },
   {
-    type: "user_created_request",
-    description: "user2 creates a request, team manager (user1) is notified",
-    preferenceKey: "user_created_request",
-    recipientRole: "user1",
+    type: 'user_created_request',
+    description: 'user2 creates a request, team manager (user1) is notified',
+    preferenceKey: 'user_created_request',
+    recipientRole: 'user1',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2!.user_id, team.teamId, 'member');
       const worker = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Worker User",
+        name: 'Worker User',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker.id, user2!.user_id, team.teamId);
@@ -107,21 +99,19 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       });
       return user1!.user_id;
     },
-    expectedText: (_name) =>
-      `Worker User created a new request for ${REQUEST_DATE}`,
+    expectedText: (_name) => `Worker User created a new request for ${REQUEST_DATE}`,
     expectedUrlPattern: /\/plan\/requests/,
   },
   {
-    type: "user_accepted_request",
-    description:
-      "user2 creates a request, user1 approves it, user2 is notified",
-    preferenceKey: "user_accepted_request",
-    recipientRole: "user2",
+    type: 'user_accepted_request',
+    description: 'user2 creates a request, user1 approves it, user2 is notified',
+    preferenceKey: 'user_accepted_request',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2!.user_id, team.teamId, 'member');
       const worker = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Worker User",
+        name: 'Worker User',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker.id, user2!.user_id, team.teamId);
@@ -139,20 +129,19 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       return user2!.user_id;
     },
     // shift_name can be dynamic (e.g. "Vacation"); accept any name
-    expectedText: (_name) =>
-      new RegExp(`^Your request for .* on ${REQUEST_DATE} was approved$`),
+    expectedText: (_name) => new RegExp(`^Your request for .* on ${REQUEST_DATE} was approved$`),
     expectedUrlPattern: /\/plan\/requests/,
   },
   {
-    type: "user_denied_request",
-    description: "user2 creates a request, user1 denies it, user2 is notified",
-    preferenceKey: "user_denied_request",
-    recipientRole: "user2",
+    type: 'user_denied_request',
+    description: 'user2 creates a request, user1 denies it, user2 is notified',
+    preferenceKey: 'user_denied_request',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2!.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2!.user_id, team.teamId, 'member');
       const worker = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Worker User",
+        name: 'Worker User',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker.id, user2!.user_id, team.teamId);
@@ -169,21 +158,19 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.denyRequestAs(user1!.user_id, request.id, team.teamId);
       return user2!.user_id;
     },
-    expectedText: (_name) =>
-      new RegExp(`^Your request for .* on ${REQUEST_DATE} was denied$`),
+    expectedText: (_name) => new RegExp(`^Your request for .* on ${REQUEST_DATE} was denied$`),
     expectedUrlPattern: /\/plan\/requests/,
   },
   {
-    type: "user_published_schedule",
-    description:
-      "user1 validates a schedule; user2 (linked worker) is notified",
-    preferenceKey: "user_published_schedule",
-    recipientRole: "user2",
+    type: 'user_published_schedule',
+    description: 'user1 validates a schedule; user2 (linked worker) is notified',
+    preferenceKey: 'user_published_schedule',
+    recipientRole: 'user2',
     async setup(dbUtils, team, _user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Worker User",
+        name: 'Worker User',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
@@ -196,21 +183,21 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/schedule/,
   },
   {
-    type: "user_created_assignment",
+    type: 'user_created_assignment',
     description:
-      "manager creates an assignment in a published schedule; worker (user2) is notified",
-    preferenceKey: "user_created_assignment",
-    recipientRole: "user2",
+      'manager creates an assignment in a published schedule; worker (user2) is notified',
+    preferenceKey: 'user_created_assignment',
+    recipientRole: 'user2',
     async setup(dbUtils, team, _user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Worker User",
+        name: 'Worker User',
         weeklyHours: 40,
       });
       await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Normal Shift",
+        name: 'Normal Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -220,9 +207,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.validateSchedule(schedule.id, team.teamId);
       await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
       const allShifts = await dbUtils.getAllShifts(team.teamId);
-      const workShift = allShifts.find(
-        (s) => s.shiftType === ShiftType.NORMAL,
-      )!;
+      const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
       await dbUtils.createAssignmentAndRecurrence({
         teamId: team.teamId,
         workerId: worker.id,
@@ -237,21 +222,21 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/schedule/,
   },
   {
-    type: "user_updated_assignment",
+    type: 'user_updated_assignment',
     description:
-      "manager changes the date of an assignment in a published schedule; worker (user2) is notified",
-    preferenceKey: "user_updated_assignment",
-    recipientRole: "user2",
+      'manager changes the date of an assignment in a published schedule; worker (user2) is notified',
+    preferenceKey: 'user_updated_assignment',
+    recipientRole: 'user2',
     async setup(dbUtils, team, _user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Worker User",
+        name: 'Worker User',
         weeklyHours: 40,
       });
       await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Normal Shift",
+        name: 'Normal Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -259,9 +244,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       const schedule = await dbUtils.createSchedule(team.teamId);
       await dbUtils.validateSchedule(schedule.id, team.teamId);
       const allShifts = await dbUtils.getAllShifts(team.teamId);
-      const workShift = allShifts.find(
-        (s) => s.shiftType === ShiftType.NORMAL,
-      )!;
+      const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
       // Create the assignment BEFORE attaching user2 so that the implicit
       // user_created_assignment notification is not delivered to user2,
       // preventing a side-effect notification from leaking into this test.
@@ -275,7 +258,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
       const assignment = result.assignmentsCreated[0];
       await dbUtils.updateAssignment(assignment.id, team.teamId, {
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
       });
       return user2.user_id;
     },
@@ -283,21 +266,21 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/schedule/,
   },
   {
-    type: "user_deleted_assignment",
+    type: 'user_deleted_assignment',
     description:
-      "manager deletes an assignment in a published schedule; worker (user2) is notified",
-    preferenceKey: "user_deleted_assignment",
-    recipientRole: "user2",
+      'manager deletes an assignment in a published schedule; worker (user2) is notified',
+    preferenceKey: 'user_deleted_assignment',
+    recipientRole: 'user2',
     async setup(dbUtils, team, _user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Worker User",
+        name: 'Worker User',
         weeklyHours: 40,
       });
       await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Normal Shift",
+        name: 'Normal Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -305,9 +288,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       const schedule = await dbUtils.createSchedule(team.teamId);
       await dbUtils.validateSchedule(schedule.id, team.teamId);
       const allShifts = await dbUtils.getAllShifts(team.teamId);
-      const workShift = allShifts.find(
-        (s) => s.shiftType === ShiftType.NORMAL,
-      )!;
+      const workShift = allShifts.find((s) => s.shiftType === ShiftType.NORMAL)!;
       // Create the assignment BEFORE attaching user2 so that the implicit
       // user_created_assignment notification is not delivered to user2,
       // preventing a side-effect notification from leaking into this test.
@@ -330,27 +311,26 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
   // Swap notifications (11 types)
   // ---------------------------------------------------------------------------
   {
-    type: "user_created_direct_swap",
-    description:
-      "user1 creates a direct swap targeting user2; user2 (target) is notified",
-    preferenceKey: "user_created_direct_swap",
-    recipientRole: "user2",
+    type: 'user_created_direct_swap',
+    description: 'user1 creates a direct swap targeting user2; user2 (target) is notified',
+    preferenceKey: 'user_created_direct_swap',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Requester Worker",
+        name: 'Requester Worker',
         weeklyHours: 40,
       });
       const worker2 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Target Worker",
+        name: 'Target Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -368,7 +348,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         workerId: worker2.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
         scheduleId: schedule.id,
       });
       await dbUtils.createSwapAs(user1.user_id, {
@@ -377,7 +357,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: [r2.assignmentsCreated[0].id],
         targetWorkerId: worker2.id,
-        comment: "",
+        comment: '',
       });
       return user2.user_id;
     },
@@ -386,28 +366,27 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "user_accepted_direct_swap",
-    description:
-      "user2 (target) accepts user1's direct swap; user1 (requester) is notified",
-    preferenceKey: "user_accepted_direct_swap",
-    recipientRole: "user1",
+    type: 'user_accepted_direct_swap',
+    description: "user2 (target) accepts user1's direct swap; user1 (requester) is notified",
+    preferenceKey: 'user_accepted_direct_swap',
+    recipientRole: 'user1',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Requester Worker",
+        name: 'Requester Worker',
         weeklyHours: 40,
       });
       const worker2 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Target Worker",
+        name: 'Target Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker1.id, user1.user_id, team.teamId);
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -425,7 +404,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         workerId: worker2.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
         scheduleId: schedule.id,
       });
       const swap = await dbUtils.createSwapAs(user1.user_id, {
@@ -434,7 +413,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: [r2.assignmentsCreated[0].id],
         targetWorkerId: worker2.id,
-        comment: "",
+        comment: '',
       });
       await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
       return user1.user_id;
@@ -444,28 +423,27 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "user_refused_direct_swap",
-    description:
-      "user2 (target) refuses user1's direct swap; user1 (requester) is notified",
-    preferenceKey: "user_refused_direct_swap",
-    recipientRole: "user1",
+    type: 'user_refused_direct_swap',
+    description: "user2 (target) refuses user1's direct swap; user1 (requester) is notified",
+    preferenceKey: 'user_refused_direct_swap',
+    recipientRole: 'user1',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Requester Worker",
+        name: 'Requester Worker',
         weeklyHours: 40,
       });
       const worker2 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Target Worker",
+        name: 'Target Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker1.id, user1.user_id, team.teamId);
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -483,7 +461,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         workerId: worker2.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
         scheduleId: schedule.id,
       });
       const swap = await dbUtils.createSwapAs(user1.user_id, {
@@ -492,7 +470,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: [r2.assignmentsCreated[0].id],
         targetWorkerId: worker2.id,
-        comment: "",
+        comment: '',
       });
       await dbUtils.refuseDirectSwapAs(user2.user_id, swap.id);
       return user1.user_id;
@@ -502,20 +480,20 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "user_created_open_swap",
-    description: "user1 creates an open swap; user2 (team member) is notified",
-    preferenceKey: "user_created_open_swap",
-    recipientRole: "user2",
+    type: 'user_created_open_swap',
+    description: 'user1 creates an open swap; user2 (team member) is notified',
+    preferenceKey: 'user_created_open_swap',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Requester Worker",
+        name: 'Requester Worker',
         weeklyHours: 40,
       });
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -535,7 +513,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: null,
         targetWorkerId: null,
-        comment: "",
+        comment: '',
       });
       return user2.user_id;
     },
@@ -544,27 +522,27 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "user_bid_open_swap",
+    type: 'user_bid_open_swap',
     description: "user2 bids on user1's open swap; user1 (creator) is notified",
-    preferenceKey: "user_bid_open_swap",
-    recipientRole: "user1",
+    preferenceKey: 'user_bid_open_swap',
+    recipientRole: 'user1',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Creator Worker",
+        name: 'Creator Worker',
         weeklyHours: 40,
       });
       const worker2 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Bidder Worker",
+        name: 'Bidder Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker1.id, user1.user_id, team.teamId);
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -582,7 +560,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         workerId: worker2.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
         scheduleId: schedule.id,
       });
       const swap = await dbUtils.createSwapAs(user1.user_id, {
@@ -591,7 +569,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: null,
         targetWorkerId: null,
-        comment: "",
+        comment: '',
       });
       await dbUtils.addBidToOpenSwapAs(user2.user_id, swap.id, worker2.id, [
         r2.assignmentsCreated[0].id,
@@ -603,26 +581,26 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "user_selected_bid_open_swap",
+    type: 'user_selected_bid_open_swap',
     description: "user2's bid is accepted; user2 (accepted bidder) is notified",
-    preferenceKey: "user_selected_bid_open_swap",
-    recipientRole: "user2",
+    preferenceKey: 'user_selected_bid_open_swap',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Creator Worker",
+        name: 'Creator Worker',
         weeklyHours: 40,
       });
       const worker2 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Bidder Worker",
+        name: 'Bidder Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -640,7 +618,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         workerId: worker2.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
         scheduleId: schedule.id,
       });
       const swap = await dbUtils.createSwapAs(user1.user_id, {
@@ -649,16 +627,13 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: null,
         targetWorkerId: null,
-        comment: "",
+        comment: '',
       });
-      const swapWithBid = await dbUtils.addBidToOpenSwapAs(
-        user2.user_id,
-        swap.id,
-        worker2.id,
-        [r2.assignmentsCreated[0].id],
-      );
+      const swapWithBid = await dbUtils.addBidToOpenSwapAs(user2.user_id, swap.id, worker2.id, [
+        r2.assignmentsCreated[0].id,
+      ]);
       const bid = swapWithBid.bids?.[0];
-      if (!bid) throw new Error("Bid not found on swap");
+      if (!bid) throw new Error('Bid not found on swap');
       await dbUtils.acceptBidOnOpenSwapAs(user1.user_id, swap.id, bid.id);
       return user2.user_id;
     },
@@ -667,49 +642,44 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "user_selected_other_bid_open_swap",
-    description:
-      "user2's bid is not selected; user2 (non-selected bidder) is notified",
-    preferenceKey: "user_selected_other_bid_open_swap",
-    recipientRole: "user2",
+    type: 'user_selected_other_bid_open_swap',
+    description: "user2's bid is not selected; user2 (non-selected bidder) is notified",
+    preferenceKey: 'user_selected_other_bid_open_swap',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       // Create a 3rd user whose bid WILL be selected.
-      const thirdId = randomUUID().replace(/-/g, "").slice(0, 24);
+      const thirdId = randomUUID().replace(/-/g, '').slice(0, 24);
       const thirdUser: TestUser = {
         user_id: thirdId,
         email: `third-${thirdId}@example.com`,
         username: `third-${thirdId}`,
-        first_name: "Selected",
-        last_name: "Bidder",
+        first_name: 'Selected',
+        last_name: 'Bidder',
       };
       await dbUtils.createTestUser(thirdUser);
-      await dbUtils.addTeamMember(thirdUser.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(thirdUser.user_id, team.teamId, 'member');
 
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Creator Worker",
+        name: 'Creator Worker',
         weeklyHours: 40,
       });
       const worker2 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Rejected Bidder Worker",
+        name: 'Rejected Bidder Worker',
         weeklyHours: 40,
       });
       const worker3 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Selected Bidder Worker",
+        name: 'Selected Bidder Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
-      await dbUtils.attachWorkerToUser(
-        worker3.id,
-        thirdUser.user_id,
-        team.teamId,
-      );
+      await dbUtils.attachWorkerToUser(worker3.id, thirdUser.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -727,14 +697,14 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         workerId: worker2.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
         scheduleId: schedule.id,
       });
       const r3 = await dbUtils.createAssignmentAndRecurrence({
         teamId: team.teamId,
         workerId: worker3.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(2, "day"),
+        date: schedule.startDate.add(2, 'day'),
         scheduleId: schedule.id,
       });
       const swap = await dbUtils.createSwapAs(user1.user_id, {
@@ -743,7 +713,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: null,
         targetWorkerId: null,
-        comment: "",
+        comment: '',
       });
       // Both bid; user2 will be rejected.
       await dbUtils.addBidToOpenSwapAs(user2.user_id, swap.id, worker2.id, [
@@ -755,15 +725,9 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         worker3.id,
         [r3.assignmentsCreated[0].id],
       );
-      const selectedBid = swapAfterBids.bids?.find(
-        (b) => b.workerId === worker3.id,
-      );
-      if (!selectedBid) throw new Error("Selected bid not found");
-      await dbUtils.acceptBidOnOpenSwapAs(
-        user1.user_id,
-        swap.id,
-        selectedBid.id,
-      );
+      const selectedBid = swapAfterBids.bids?.find((b) => b.workerId === worker3.id);
+      if (!selectedBid) throw new Error('Selected bid not found');
+      await dbUtils.acceptBidOnOpenSwapAs(user1.user_id, swap.id, selectedBid.id);
       return user2.user_id;
     },
     expectedText: (_name) =>
@@ -771,27 +735,27 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "swap_ready_for_review",
+    type: 'swap_ready_for_review',
     description:
       "user2 accepts user1's direct swap; user1 (team owner/manager) is notified for review",
-    preferenceKey: "swap_ready_for_review",
-    recipientRole: "user1",
+    preferenceKey: 'swap_ready_for_review',
+    recipientRole: 'user1',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Requester Worker",
+        name: 'Requester Worker',
         weeklyHours: 40,
       });
       const worker2 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Target Worker",
+        name: 'Target Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -809,7 +773,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         workerId: worker2.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
         scheduleId: schedule.id,
       });
       const swap = await dbUtils.createSwapAs(user1.user_id, {
@@ -818,7 +782,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: [r2.assignmentsCreated[0].id],
         targetWorkerId: worker2.id,
-        comment: "",
+        comment: '',
       });
       // Target accepts → swap moves to pending_approval → swap_ready_for_review fires.
       await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
@@ -829,26 +793,26 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "user_validated_swap",
-    description: "user1 (manager) approves the swap; user2 (party) is notified",
-    preferenceKey: "user_validated_swap",
-    recipientRole: "user2",
+    type: 'user_validated_swap',
+    description: 'user1 (manager) approves the swap; user2 (party) is notified',
+    preferenceKey: 'user_validated_swap',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Requester Worker",
+        name: 'Requester Worker',
         weeklyHours: 40,
       });
       const worker2 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Target Worker",
+        name: 'Target Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -866,7 +830,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         workerId: worker2.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
         scheduleId: schedule.id,
       });
       const swap = await dbUtils.createSwapAs(user1.user_id, {
@@ -875,7 +839,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: [r2.assignmentsCreated[0].id],
         targetWorkerId: worker2.id,
-        comment: "",
+        comment: '',
       });
       await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
       await dbUtils.approveSwapAsUser(swap.id, user1.user_id);
@@ -886,26 +850,26 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "user_denied_swap",
-    description: "user1 (manager) denies the swap; user2 (party) is notified",
-    preferenceKey: "user_denied_swap",
-    recipientRole: "user2",
+    type: 'user_denied_swap',
+    description: 'user1 (manager) denies the swap; user2 (party) is notified',
+    preferenceKey: 'user_denied_swap',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Requester Worker",
+        name: 'Requester Worker',
         weeklyHours: 40,
       });
       const worker2 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Target Worker",
+        name: 'Target Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -923,7 +887,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         workerId: worker2.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
         scheduleId: schedule.id,
       });
       const swap = await dbUtils.createSwapAs(user1.user_id, {
@@ -932,38 +896,36 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: [r2.assignmentsCreated[0].id],
         targetWorkerId: worker2.id,
-        comment: "",
+        comment: '',
       });
       await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
       await dbUtils.denySwapAs(user1.user_id, swap.id);
       return user2.user_id;
     },
-    expectedText: (_name) =>
-      /^Your swap request for Swap Shift on \d{4}-\d{2}-\d{2} was denied$/,
+    expectedText: (_name) => /^Your swap request for Swap Shift on \d{4}-\d{2}-\d{2} was denied$/,
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "user_reversed_swap",
-    description:
-      "user1 (manager) reverts a completed swap; user2 (party) is notified",
-    preferenceKey: "user_reversed_swap",
-    recipientRole: "user2",
+    type: 'user_reversed_swap',
+    description: 'user1 (manager) reverts a completed swap; user2 (party) is notified',
+    preferenceKey: 'user_reversed_swap',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker1 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Requester Worker",
+        name: 'Requester Worker',
         weeklyHours: 40,
       });
       const worker2 = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Target Worker",
+        name: 'Target Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker2.id, user2.user_id, team.teamId);
       const shift = await dbUtils.createShift({
         teamId: team.teamId,
-        name: "Swap Shift",
+        name: 'Swap Shift',
         startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
         shiftType: ShiftType.NORMAL,
@@ -981,7 +943,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         teamId: team.teamId,
         workerId: worker2.id,
         shiftId: shift.id,
-        date: schedule.startDate.add(1, "day"),
+        date: schedule.startDate.add(1, 'day'),
         scheduleId: schedule.id,
       });
       const swap = await dbUtils.createSwapAs(user1.user_id, {
@@ -990,7 +952,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
         offeredAssignmentIds: [r1.assignmentsCreated[0].id],
         requestedAssignmentIds: [r2.assignmentsCreated[0].id],
         targetWorkerId: worker2.id,
-        comment: "",
+        comment: '',
       });
       await dbUtils.acceptDirectSwapAs(user2.user_id, swap.id);
       await dbUtils.approveSwapAsUser(swap.id, user1.user_id);
@@ -1002,90 +964,71 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/swaps/,
   },
   {
-    type: "campaign_request_deadline_set",
-    description: "owner sets request deadline; member is notified",
-    preferenceKey: "campaign_request_deadline_set",
-    recipientRole: "user2",
+    type: 'campaign_request_deadline_set',
+    description: 'owner sets request deadline; member is notified',
+    preferenceKey: 'campaign_request_deadline_set',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Member Worker",
+        name: 'Member Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
       const schedule = await dbUtils.createSchedule(team.teamId);
       const deadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      await dbUtils.setRequestDeadlineAs(
-        user1.user_id,
-        schedule.id,
-        team.teamId,
-        deadline,
-      );
+      await dbUtils.setRequestDeadlineAs(user1.user_id, schedule.id, team.teamId, deadline);
       return user2.user_id;
     },
     expectedText: (name) =>
       new RegExp(
-        `has set a request deadline of .+ for team ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
+        `has set a request deadline of .+ for team ${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
       ),
     expectedUrlPattern: /\/plan\/requests/,
   },
   {
-    type: "campaign_request_deadline_reminder",
-    description: "owner sends deadline reminder; member is notified",
-    preferenceKey: "campaign_request_deadline_reminder",
-    recipientRole: "user2",
+    type: 'campaign_request_deadline_reminder',
+    description: 'owner sends deadline reminder; member is notified',
+    preferenceKey: 'campaign_request_deadline_reminder',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Member Worker",
+        name: 'Member Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
       const schedule = await dbUtils.createSchedule(team.teamId);
       const deadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      await dbUtils.setRequestDeadlineAs(
-        user1.user_id,
-        schedule.id,
-        team.teamId,
-        deadline,
-      );
-      await dbUtils.sendRequestDeadlineReminderAs(
-        user1.user_id,
-        schedule.id,
-        team.teamId,
-      );
+      await dbUtils.setRequestDeadlineAs(user1.user_id, schedule.id, team.teamId, deadline);
+      await dbUtils.sendRequestDeadlineReminderAs(user1.user_id, schedule.id, team.teamId);
       return user2.user_id;
     },
     expectedText: (name) =>
       new RegExp(
-        `Reminder: Please submit your requests for team ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} before .+`,
+        `Reminder: Please submit your requests for team ${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} before .+`,
       ),
     expectedUrlPattern: /\/plan\/requests/,
   },
   {
-    type: "campaign_request_deadline_extended",
-    description: "owner extends deadline; member is notified",
-    preferenceKey: "campaign_request_deadline_extended",
-    recipientRole: "user2",
+    type: 'campaign_request_deadline_extended',
+    description: 'owner extends deadline; member is notified',
+    preferenceKey: 'campaign_request_deadline_extended',
+    recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
-      await dbUtils.addTeamMember(user2.user_id, team.teamId, "member");
+      await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
       const worker = await dbUtils.createWorker({
         teamId: team.teamId,
-        name: "Member Worker",
+        name: 'Member Worker',
         weeklyHours: 40,
       });
       await dbUtils.attachWorkerToUser(worker.id, user2.user_id, team.teamId);
       const schedule = await dbUtils.createSchedule(team.teamId);
       const initialDeadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       const extendedDeadline = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-      await dbUtils.setRequestDeadlineAs(
-        user1.user_id,
-        schedule.id,
-        team.teamId,
-        initialDeadline,
-      );
+      await dbUtils.setRequestDeadlineAs(user1.user_id, schedule.id, team.teamId, initialDeadline);
       await dbUtils.extendRequestDeadlineAs(
         user1.user_id,
         schedule.id,
@@ -1096,7 +1039,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     },
     expectedText: (name) =>
       new RegExp(
-        `The request deadline for team ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} has been extended to .+`,
+        `The request deadline for team ${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} has been extended to .+`,
       ),
     expectedUrlPattern: /\/plan\/requests/,
   },
@@ -1114,21 +1057,21 @@ test.beforeEach(async ({}, testInfo) => {
   // Use unique users per test run to prevent cross-worker notification leakage.
   // Notifications are shown for all teams a user belongs to, so different tests
   // sharing the same user IDs see each other's notifications when run in parallel.
-  const id1 = randomUUID().replace(/-/g, "").slice(0, 24);
-  const id2 = randomUUID().replace(/-/g, "").slice(0, 24);
+  const id1 = randomUUID().replace(/-/g, '').slice(0, 24);
+  const id2 = randomUUID().replace(/-/g, '').slice(0, 24);
   const user1: TestUser = {
     user_id: id1,
     email: `testuser-${id1}@example.com`,
     username: `testuser-${id1}`,
-    first_name: "Test",
-    last_name: "User",
+    first_name: 'Test',
+    last_name: 'User',
   };
   const user2: TestUser = {
     user_id: id2,
     email: `testuser2-${id2}@example.com`,
     username: `testuser2-${id2}`,
-    first_name: "Test",
-    last_name: "User2",
+    first_name: 'Test',
+    last_name: 'User2',
   };
   await dbUtils.createTestUser(user1);
   await dbUtils.createTestUser(user2);
@@ -1145,10 +1088,8 @@ test.afterEach(async ({}, testInfo) => {
 
 for (const tc of NOTIFICATION_TEST_CASES) {
   test.describe(tc.type, () => {
-    test("shows correct notification message", async ({ page }, testInfo) => {
-      const { dbUtils, team, user1, user2 } = ctxMap.get(
-        ctxMap.getRunId(testInfo),
-      );
+    test('shows correct notification message', async ({ page }, testInfo) => {
+      const { dbUtils, team, user1, user2 } = ctxMap.get(ctxMap.getRunId(testInfo));
       const recipientId = await tc.setup(dbUtils, team, user1!, user2!);
       await navigateToNotificationsAsUser(page, dbUtils, recipientId);
 
@@ -1163,27 +1104,19 @@ for (const tc of NOTIFICATION_TEST_CASES) {
       }
     });
 
-    test("does not appear on page when inApp is disabled", async ({
-      page,
-    }, testInfo) => {
-      const { dbUtils, team, user1, user2 } = ctxMap.get(
-        ctxMap.getRunId(testInfo),
-      );
-      const recipient = tc.recipientRole === "user1" ? user1! : user2!;
+    test('does not appear on page when inApp is disabled', async ({ page }, testInfo) => {
+      const { dbUtils, team, user1, user2 } = ctxMap.get(ctxMap.getRunId(testInfo));
+      const recipient = tc.recipientRole === 'user1' ? user1! : user2!;
 
       // Disable inApp before the event fires
-      const prefs = await dbUtils.getNotificationPreferencesAs(
-        recipient.user_id,
-      );
+      const prefs = await dbUtils.getNotificationPreferencesAs(recipient.user_id);
       prefs.preferences[tc.preferenceKey].inApp = false;
       await dbUtils.setNotificationPreferencesAs(recipient.user_id, prefs);
 
       await tc.setup(dbUtils, team, user1!, user2!);
 
       await navigateToNotificationsAsUser(page, dbUtils, recipient.user_id);
-      await expect(
-        page.locator(`[data-notification-type="${tc.type}"]`),
-      ).toHaveCount(0);
+      await expect(page.locator(`[data-notification-type="${tc.type}"]`)).toHaveCount(0);
     });
   });
 }

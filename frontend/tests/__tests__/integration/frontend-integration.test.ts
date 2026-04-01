@@ -1,21 +1,18 @@
-import { describe, it, expect } from "@jest/globals";
-import fs from "fs";
-import path from "path";
+import { describe, it, expect } from '@jest/globals';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Test suite for frontend integration of template application to date ranges
  * Verifies that types, API client, and components are properly integrated
  */
-describe("Frontend Template Application Integration", () => {
-  const frontendPath = path.join(process.cwd(), "src");
+describe('Frontend Template Application Integration', () => {
+  const frontendPath = path.join(process.cwd(), 'src');
 
-  describe("Type Definitions", () => {
-    const typesFile = path.join(frontendPath, "types/shift-demand-template.ts");
+  describe('Type Definitions', () => {
+    const typesFile = path.join(frontendPath, 'types/shift-demand-template.ts');
 
-    const requiredTypes = [
-      "ApplyTemplateToDateRangeDTO",
-      "TemplateApplicationResult",
-    ];
+    const requiredTypes = ['ApplyTemplateToDateRangeDTO', 'TemplateApplicationResult'];
 
     requiredTypes.forEach((type) => {
       it(`should define ${type} type`, () => {
@@ -24,39 +21,35 @@ describe("Frontend Template Application Integration", () => {
           return;
         }
 
-        const typesContent = fs.readFileSync(typesFile, "utf8");
+        const typesContent = fs.readFileSync(typesFile, 'utf8');
         const hasType =
-          typesContent.includes(`interface ${type}`) ||
-          typesContent.includes(`type ${type}`);
+          typesContent.includes(`interface ${type}`) || typesContent.includes(`type ${type}`);
         expect(hasType).toBe(true);
       });
     });
   });
 
-  describe("API Client", () => {
-    const apiFile = path.join(
-      frontendPath,
-      "app/lib/api/shiftDemandTemplateApi.ts",
-    );
+  describe('API Client', () => {
+    const apiFile = path.join(frontendPath, 'app/lib/api/shiftDemandTemplateApi.ts');
 
-    it("should have applyTemplateToDateRange method", () => {
+    it('should have applyTemplateToDateRange method', () => {
       if (!fs.existsSync(apiFile)) {
         console.warn(`API file not found: ${apiFile}`);
         return;
       }
 
-      const apiContent = fs.readFileSync(apiFile, "utf8");
-      expect(apiContent).toContain("applyTemplateToDateRange");
+      const apiContent = fs.readFileSync(apiFile, 'utf8');
+      expect(apiContent).toContain('applyTemplateToDateRange');
     });
   });
 
-  describe("Dialog Component", () => {
+  describe('Dialog Component', () => {
     const dialogFile = path.join(
       frontendPath,
-      "components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx",
+      'components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx',
     );
 
-    it("should exist as a component file", () => {
+    it('should exist as a component file', () => {
       expect(fs.existsSync(dialogFile)).toBe(true);
     });
 
@@ -64,38 +57,35 @@ describe("Frontend Template Application Integration", () => {
       fs.existsSync(
         path.join(
           frontendPath,
-          "components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx",
+          'components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx',
         ),
       )
     ) {
-      const requiredFeatures = [
-        "DatePicker",
-        "TemplateApplicationToRangeDialogProps",
-      ];
+      const requiredFeatures = ['DatePicker', 'TemplateApplicationToRangeDialogProps'];
 
       requiredFeatures.forEach((feature) => {
         it(`should include ${feature}`, () => {
           const dialogFile = path.join(
             frontendPath,
-            "components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx",
+            'components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx',
           );
-          const dialogContent = fs.readFileSync(dialogFile, "utf8");
+          const dialogContent = fs.readFileSync(dialogFile, 'utf8');
           expect(dialogContent).toContain(feature);
         });
       });
     }
   });
 
-  describe("Management Window Integration", () => {
+  describe('Management Window Integration', () => {
     const windowFile = path.join(
       frontendPath,
-      "components/shiftDemand/templates/TemplateManagementWindow.tsx",
+      'components/shiftDemand/templates/TemplateManagementWindow.tsx',
     );
 
     const integrationFeatures = [
-      "TemplateApplicationToRangeDialog",
-      "showRangeApplicationDialog",
-      "handleRangeApplicationComplete",
+      'TemplateApplicationToRangeDialog',
+      'showRangeApplicationDialog',
+      'handleRangeApplicationComplete',
     ];
 
     integrationFeatures.forEach((feature) => {
@@ -105,40 +95,31 @@ describe("Frontend Template Application Integration", () => {
           return;
         }
 
-        const windowContent = fs.readFileSync(windowFile, "utf8");
+        const windowContent = fs.readFileSync(windowFile, 'utf8');
         expect(windowContent).toContain(feature);
       });
     });
   });
 
-  describe("Overall Integration", () => {
-    it("should have complete feature implementation", () => {
+  describe('Overall Integration', () => {
+    it('should have complete feature implementation', () => {
       const dialogFile = path.join(
         frontendPath,
-        "components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx",
+        'components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx',
       );
       console.log(`Checking dialog file: ${dialogFile}`);
 
       const windowFile = path.join(
         frontendPath,
-        "components/shiftDemand/templates/TemplateManagementWindow.tsx",
+        'components/shiftDemand/templates/TemplateManagementWindow.tsx',
       );
-      const typesFile = path.join(
-        frontendPath,
-        "types/shift-demand-template.ts",
-      );
-      const apiFile = path.join(
-        frontendPath,
-        "app/lib/api/shiftDemandTemplateApi.ts",
-      );
+      const typesFile = path.join(frontendPath, 'types/shift-demand-template.ts');
+      const apiFile = path.join(frontendPath, 'app/lib/api/shiftDemandTemplateApi.ts');
 
       // Check if key files exist
-      const coreFilesExist = [
-        dialogFile,
-        windowFile,
-        typesFile,
-        apiFile,
-      ].filter((file) => fs.existsSync(file));
+      const coreFilesExist = [dialogFile, windowFile, typesFile, apiFile].filter((file) =>
+        fs.existsSync(file),
+      );
 
       // At least some core files should exist for integration
       expect(coreFilesExist.length).toBeGreaterThan(0);

@@ -1,23 +1,19 @@
-import React from "react";
-import dayjs, { Dayjs } from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
-import "./request-calendar.css";
-import { RequestT, RequestViewSettingsT } from "../../types/request";
-import { WorkerT } from "../../types/worker";
-import RequestPanel from "./request-panel";
-import { RequestCalendarToolbar } from "./RequestCalendarToolbar";
-import { ShiftDemandDTO } from "../../types/shiftDemand";
-import { ShiftT } from "../../types/shift";
-import {
-  RequestType,
-  RequestStatus,
-  FulfillmentStatus,
-} from "../../types/request";
-import RequestCalendarTable from "./RequestCalendarTable";
-import { useTableState } from "../../hooks/useTableState";
-import { createWorkerColumns } from "./workerColumns";
-import TableFilterBar from "../table/TableFilterBar";
-import { ColumnFilter } from "../../types/filter";
+import React from 'react';
+import dayjs, { Dayjs } from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import './request-calendar.css';
+import { RequestT, RequestViewSettingsT } from '../../types/request';
+import { WorkerT } from '../../types/worker';
+import RequestPanel from './request-panel';
+import { RequestCalendarToolbar } from './RequestCalendarToolbar';
+import { ShiftDemandDTO } from '../../types/shiftDemand';
+import { ShiftT } from '../../types/shift';
+import { RequestType, RequestStatus, FulfillmentStatus } from '../../types/request';
+import RequestCalendarTable from './RequestCalendarTable';
+import { useTableState } from '../../hooks/useTableState';
+import { createWorkerColumns } from './workerColumns';
+import TableFilterBar from '../table/TableFilterBar';
+import { ColumnFilter } from '../../types/filter';
 
 dayjs.extend(isoWeek);
 
@@ -52,9 +48,9 @@ interface RequestCalendarProps {
 function getDaysInPeriod(start: Dayjs, end: Dayjs) {
   const days = [];
   let current = start;
-  while (!current.isAfter(end, "day")) {
+  while (!current.isAfter(end, 'day')) {
     days.push(current);
-    current = current.add(1, "day");
+    current = current.add(1, 'day');
   }
   return days;
 }
@@ -83,11 +79,8 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     workerId: string;
     date: Dayjs;
   } | null>(null);
-  const [selectedRequest, setSelectedRequest] = React.useState<RequestT | null>(
-    null,
-  );
-  const [staffingSummary, setStaffingSummary] =
-    React.useState<StaffingSummary | null>(null);
+  const [selectedRequest, setSelectedRequest] = React.useState<RequestT | null>(null);
+  const [staffingSummary, setStaffingSummary] = React.useState<StaffingSummary | null>(null);
   const [isCalculating, setIsCalculating] = React.useState(false);
 
   // Column definitions for filtering (matching request table)
@@ -115,16 +108,12 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   React.useEffect(() => {
     // Only update if different to avoid infinite loops
     const filtersChanged =
-      JSON.stringify(viewSettings.filters) !==
-      JSON.stringify(tableState.filters);
-    const sortChanged =
-      JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
+      JSON.stringify(viewSettings.filters) !== JSON.stringify(tableState.filters);
+    const sortChanged = JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
 
     if (filtersChanged || sortChanged) {
       // Reset and apply all filters from viewSettings
-      viewSettings.filters.forEach((filter: ColumnFilter) =>
-        addFilterInternal(filter),
-      );
+      viewSettings.filters.forEach((filter: ColumnFilter) => addFilterInternal(filter));
       if (viewSettings.sort !== tableState.sort) {
         updateSortInternal(viewSettings.sort);
       }
@@ -143,12 +132,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     (filter: ColumnFilter) => {
       addFilterInternal(filter);
       onUpdateViewSettings({
-        filters: [
-          ...viewSettings.filters.filter(
-            (f: ColumnFilter) => f.id !== filter.id,
-          ),
-          filter,
-        ],
+        filters: [...viewSettings.filters.filter((f: ColumnFilter) => f.id !== filter.id), filter],
       });
     },
     [addFilterInternal, onUpdateViewSettings, viewSettings.filters],
@@ -158,9 +142,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     (filterId: string) => {
       removeFilterInternal(filterId);
       onUpdateViewSettings({
-        filters: viewSettings.filters.filter(
-          (f: ColumnFilter) => f.id !== filterId,
-        ),
+        filters: viewSettings.filters.filter((f: ColumnFilter) => f.id !== filterId),
       });
     },
     [removeFilterInternal, onUpdateViewSettings, viewSettings.filters],
@@ -184,17 +166,15 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     let result = [...workers];
 
     // Apply worker filter
-    const workerFilter = tableState.filters.find((f) =>
-      f.id.startsWith("workerId"),
-    );
+    const workerFilter = tableState.filters.find((f) => f.id.startsWith('workerId'));
     if (workerFilter) {
       const filterValues = workerFilter.value as string[];
       result = result.filter((worker) => filterValues.includes(worker.id));
     }
 
     // Apply sorting if sort is on workerId column
-    if (tableState.sort && tableState.sort.columnId === "workerId") {
-      const workerColumn = columns.find((col) => col.id === "workerId");
+    if (tableState.sort && tableState.sort.columnId === 'workerId') {
+      const workerColumn = columns.find((col) => col.id === 'workerId');
       if (workerColumn) {
         result.sort((a, b) => {
           const aValue = workerColumn.getValue(a);
@@ -204,9 +184,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           if (aValue < bValue) comparison = -1;
           if (aValue > bValue) comparison = 1;
 
-          return tableState.sort!.direction === "desc"
-            ? -comparison
-            : comparison;
+          return tableState.sort!.direction === 'desc' ? -comparison : comparison;
         });
       }
     }
@@ -216,15 +194,15 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
   // Calculate current period
   const currentPeriod = React.useMemo(() => {
-    if (viewSettings.timeFrame === "month") {
+    if (viewSettings.timeFrame === 'month') {
       return {
-        start: viewSettings.periodStartDate.startOf("month"),
-        end: viewSettings.periodStartDate.endOf("month"),
+        start: viewSettings.periodStartDate.startOf('month'),
+        end: viewSettings.periodStartDate.endOf('month'),
       };
     } else {
       return {
-        start: viewSettings.periodStartDate.startOf("isoWeek"),
-        end: viewSettings.periodStartDate.endOf("isoWeek"),
+        start: viewSettings.periodStartDate.startOf('isoWeek'),
+        end: viewSettings.periodStartDate.endOf('isoWeek'),
       };
     }
   }, [viewSettings.periodStartDate, viewSettings.timeFrame]);
@@ -241,8 +219,8 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       demands.filter((d) => {
         const demandDate = dayjs.unix(d.date).utc();
         return (
-          !demandDate.isBefore(currentPeriod.start, "day") &&
-          !demandDate.isAfter(currentPeriod.end, "day")
+          !demandDate.isBefore(currentPeriod.start, 'day') &&
+          !demandDate.isAfter(currentPeriod.end, 'day')
         );
       }),
     [demands, currentPeriod],
@@ -272,35 +250,31 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         for (const worker of workers) {
           const workerReqs = requestsByWorker[worker.id] || [];
           for (const req of workerReqs) {
-            if (req.requestType === "leave" && req.status === "approved") {
+            if (req.requestType === 'leave' && req.status === 'approved') {
               let current = dayjs.max(req.startDate, currentPeriod.start);
               const lastDay = dayjs.min(req.endDate, currentPeriod.end);
-              while (!current.isAfter(lastDay, "day")) {
-                const dateKey = current.format("YYYY-MM-DD");
+              while (!current.isAfter(lastDay, 'day')) {
+                const dateKey = current.format('YYYY-MM-DD');
                 if (!workerLeaves[worker.id]) workerLeaves[worker.id] = {};
                 workerLeaves[worker.id][dateKey] = true;
-                current = current.add(1, "day");
+                current = current.add(1, 'day');
               }
             }
           }
         }
         for (const day of days) {
-          const dateKey = day.format("YYYY-MM-DD");
+          const dateKey = day.format('YYYY-MM-DD');
           // Demand calculation
           let totalDemand = 0;
           for (const shift of shifts) {
             const demandsForShift = periodDemands.filter((d) => {
               const demandDate = dayjs.unix(d.date).utc();
-              return demandDate.isSame(day, "day") && d.shiftId === shift.id;
+              return demandDate.isSame(day, 'day') && d.shiftId === shift.id;
             });
 
-            const demandCount = demandsForShift.reduce(
-              (sum, d) => sum + d.count,
-              0,
-            );
+            const demandCount = demandsForShift.reduce((sum, d) => sum + d.count, 0);
             const shiftStaffing = shift.staffing.reduce(
-              (sum, s) =>
-                sum + (typeof s.staffing === "number" ? s.staffing : 0),
+              (sum, s) => sum + (typeof s.staffing === 'number' ? s.staffing : 0),
               0,
             );
             totalDemand += demandCount * shiftStaffing;
@@ -330,15 +304,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       cancelled = true;
       clearTimeout(timerId);
     };
-  }, [
-    currentPeriod,
-    workers,
-    shifts,
-    demands,
-    requestsByWorker,
-    days,
-    periodDemands,
-  ]);
+  }, [currentPeriod, workers, shifts, demands, requestsByWorker, days, periodDemands]);
 
   // Helper functions for filtering - no longer needed since we use table state filters
   // Keeping them for reference but they're not used anymore
@@ -352,8 +318,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
       return (
         reqs.find((r) => {
           // Check date range
-          const inRange =
-            !day.isBefore(r.startDate, "day") && !day.isAfter(r.endDate, "day");
+          const inRange = !day.isBefore(r.startDate, 'day') && !day.isAfter(r.endDate, 'day');
           if (!inRange) return false;
 
           // Apply filters from tableState
@@ -362,22 +327,18 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
             if (!column) continue;
 
             // Skip workerId filter (already applied to rows)
-            if (filter.id.startsWith("workerId")) continue;
+            if (filter.id.startsWith('workerId')) continue;
 
             const value = column.getValue(r);
 
             switch (filter.type) {
-              case "text":
-                if (
-                  !String(value)
-                    .toLowerCase()
-                    .includes(String(filter.value).toLowerCase())
-                ) {
+              case 'text':
+                if (!String(value).toLowerCase().includes(String(filter.value).toLowerCase())) {
                   return false;
                 }
                 break;
 
-              case "select":
+              case 'select':
                 if (Array.isArray(filter.value)) {
                   if (!filter.value.includes(value)) {
                     return false;
@@ -389,7 +350,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                 }
                 break;
 
-              case "date":
+              case 'date':
                 const filterValue = filter.value as {
                   start?: string;
                   end?: string;
@@ -403,7 +364,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
                 }
                 break;
 
-              case "boolean":
+              case 'boolean':
                 if (value !== filter.value) {
                   return false;
                 }
@@ -424,10 +385,10 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     onUpdateViewSettings({ periodStartDate: start });
   };
 
-  const handleTimeFrameChange = (newTimeFrame: "week" | "month") => {
+  const handleTimeFrameChange = (newTimeFrame: 'week' | 'month') => {
     // When changing time frame, ensure the period start is aligned to the new boundary
     const alignedStart = viewSettings.periodStartDate.startOf(
-      newTimeFrame === "month" ? "month" : "isoWeek",
+      newTimeFrame === 'month' ? 'month' : 'isoWeek',
     );
     onUpdateViewSettings({
       timeFrame: newTimeFrame,
@@ -438,7 +399,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
   const handleCellClick = (workerId: string, date: Dayjs) => {
     const existingRequest = getRequestForDay(workerId, date);
 
-    if (!existingRequest && date.isBefore(dayjs().utc(), "day")) {
+    if (!existingRequest && date.isBefore(dayjs().utc(), 'day')) {
       return;
     }
 
@@ -453,12 +414,9 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     }
   };
 
-  const createPrePopulatedRequest = (
-    workerId: string,
-    date: Dayjs,
-  ): RequestT => ({
-    id: "",
-    teamId: teamId || "",
+  const createPrePopulatedRequest = (workerId: string, date: Dayjs): RequestT => ({
+    id: '',
+    teamId: teamId || '',
     requestType: RequestType.WORK_DEMAND,
     workerId: workerId,
     startDate: date,
@@ -469,7 +427,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
     hard: true,
     status: RequestStatus.PENDING,
     fulfillment: FulfillmentStatus.NOT_PROCESSED,
-    comment: "",
+    comment: '',
     createdAt: dayjs.utc(),
     active: true,
     shiftTargetIds: [],
@@ -533,15 +491,11 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
         teamId={teamId}
         onCellClick={handleCellClick}
         onRequestClick={handleRequestClick}
-        staffingSummary={
-          demands.length > 0 && shifts.length > 0 ? staffingSummary : null
-        }
+        staffingSummary={demands.length > 0 && shifts.length > 0 ? staffingSummary : null}
         isCalculating={isCalculating}
         // Worker filter/sort props
         currentSort={tableState.sort || undefined}
-        currentFilter={tableState.filters.find((f) =>
-          f.id.startsWith("workerId"),
-        )}
+        currentFilter={tableState.filters.find((f) => f.id.startsWith('workerId'))}
         onSort={updateSort}
         onFilter={addFilter}
         workerColumn={columns[0]}
@@ -553,10 +507,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
           lng={lng}
           teamId={teamId}
           isEdit={false}
-          request={createPrePopulatedRequest(
-            selectedCell.workerId,
-            selectedCell.date,
-          )}
+          request={createPrePopulatedRequest(selectedCell.workerId, selectedCell.date)}
           workers={workers.filter((w) => !w.deleted)}
           shifts={shifts}
           shiftOptions={shiftOptions}

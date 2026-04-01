@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useAuth } from "../../contexts/auth-context";
-import { isNetworkError } from "../../config/cognito";
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../contexts/auth-context';
+import { isNetworkError } from '../../config/cognito';
 import {
   Box,
   CircularProgress,
@@ -11,17 +11,14 @@ import {
   Container,
   Alert,
   AlertTitle,
-} from "@mui/material";
+} from '@mui/material';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAuth?: boolean;
 }
 
-export default function ProtectedRoute({
-  children,
-  requireAuth = true,
-}: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, requireAuth = true }: ProtectedRouteProps) {
   const { isAuthenticated, loading, error, signIn } = useAuth();
   const [networkRetrying, setNetworkRetrying] = useState(false);
   const [showManualSignIn, setShowManualSignIn] = useState(false);
@@ -39,7 +36,7 @@ export default function ProtectedRoute({
     const loadingTimeout = setTimeout(() => {
       if (loading) {
         console.warn(
-          "⚠️ Auth loading timed out after 6s — forcing sign-in redirect (mobile Safari / ITP guard)",
+          '⚠️ Auth loading timed out after 6s — forcing sign-in redirect (mobile Safari / ITP guard)',
         );
         setLoadingTimedOut(true);
       }
@@ -64,7 +61,7 @@ export default function ProtectedRoute({
       // Immediate redirect (no delay) for better mobile Safari compatibility
       const timer = setTimeout(() => {
         if (!isAuthenticated && !loading && !error) {
-          console.log("🔐 ProtectedRoute: Initiating sign-in redirect");
+          console.log('🔐 ProtectedRoute: Initiating sign-in redirect');
           signIn();
         }
       }, 100); // Minimal 100ms delay to ensure component is mounted
@@ -72,9 +69,7 @@ export default function ProtectedRoute({
       // Show manual sign-in button after 2 seconds as fallback
       const fallbackTimer = setTimeout(() => {
         if (!isAuthenticated && !loading && !error) {
-          console.log(
-            "⚠️ Automatic redirect may have failed, showing manual sign-in button",
-          );
+          console.log('⚠️ Automatic redirect may have failed, showing manual sign-in button');
           setShowManualSignIn(true);
         }
       }, 2000);
@@ -88,17 +83,17 @@ export default function ProtectedRoute({
     // Handle specific refresh token rotation errors
     if (error?.message) {
       const isRotationError =
-        error.message.includes("invalid_grant") ||
-        error.message.includes("refresh token") ||
-        error.message.includes("Token is not valid") ||
-        error.message.includes("rotation conflict");
+        error.message.includes('invalid_grant') ||
+        error.message.includes('refresh token') ||
+        error.message.includes('Token is not valid') ||
+        error.message.includes('rotation conflict');
 
       // Terminal callback errors: the code/state are unusable — auto-redirect
       // to a fresh sign-in rather than leaving the user on a frozen spinner.
       const isTerminalCallbackError =
-        error.message.includes("No matching state") ||
-        error.message.includes("No state in response") ||
-        error.message.includes("Invalid state");
+        error.message.includes('No matching state') ||
+        error.message.includes('No state in response') ||
+        error.message.includes('Invalid state');
 
       const isNetworkIssue = isNetworkError(error);
 
@@ -113,20 +108,17 @@ export default function ProtectedRoute({
       if (isTerminalCallbackError) {
         // Auto-redirect after a brief delay so the user sees something is
         // happening rather than a sudden redirect with no feedback.
-        console.warn(
-          "🔄 Terminal callback error — auto-redirecting to sign-in:",
-          error.message,
-        );
+        console.warn('🔄 Terminal callback error — auto-redirecting to sign-in:', error.message);
         autoRedirectTimer = setTimeout(() => {
           if (!isAuthenticated) {
             signIn();
           }
         }, 2000);
       } else if (isRotationError && !isNetworkIssue) {
-        console.warn("🔄 Refresh token rotation error detected");
+        console.warn('🔄 Refresh token rotation error detected');
         manualSignInTimer = setTimeout(() => setShowManualSignIn(true), 0);
       } else if (isNetworkIssue) {
-        console.warn("🌐 Network error detected, allowing retry");
+        console.warn('🌐 Network error detected, allowing retry');
 
         // Start network-retrying state on a short-scheduled task to avoid
         // triggering synchronous state update warnings.
@@ -175,9 +167,7 @@ export default function ProtectedRoute({
           <Alert severity="warning" sx={{ mb: 2 }}>
             <AlertTitle>Network Connectivity Issue</AlertTitle>
             Having trouble connecting to authentication services.
-            {networkRetrying
-              ? " Retrying..."
-              : " Please check your connection."}
+            {networkRetrying ? ' Retrying...' : ' Please check your connection.'}
           </Alert>
 
           {networkRetrying ? (
@@ -242,7 +232,7 @@ export default function ProtectedRoute({
         >
           <Alert severity="error" sx={{ mb: 2 }}>
             <AlertTitle>Authentication Error</AlertTitle>
-            {error.message || "An authentication error occurred"}
+            {error.message || 'An authentication error occurred'}
           </Alert>
 
           {showManualSignIn ? (
@@ -280,12 +270,7 @@ export default function ProtectedRoute({
               Please click the button below to sign in to NSP Pro.
             </Alert>
 
-            <Button
-              variant="contained"
-              onClick={signIn}
-              disabled={loading}
-              size="large"
-            >
+            <Button variant="contained" onClick={signIn} disabled={loading} size="large">
               Sign In to NSP Pro
             </Button>
 
@@ -293,11 +278,7 @@ export default function ProtectedRoute({
               Automatic redirect didn&apos;t work? Click the button above.
             </Typography>
 
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              textAlign="center"
-            >
+            <Typography variant="body2" color="text.secondary" textAlign="center">
               NSP Pro Healthcare Scheduling Platform
             </Typography>
           </Box>

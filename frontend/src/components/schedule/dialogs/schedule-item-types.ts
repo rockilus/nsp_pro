@@ -1,28 +1,24 @@
-import { Dayjs } from "dayjs";
-import { AssignmentT } from "@/types/assignment";
-import { ShiftDemandDTO } from "@/types/shiftDemand";
-import { RequestT } from "@/types/request";
-import { WorkerT } from "@/types/worker";
-import { ShiftT } from "@/types/shift";
-import {
-  ScheduleT,
-  AssignmentDataT,
-  ScheduleCellDataT,
-} from "@/types/schedule";
-import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
-import { SpecialtyT } from "@/types/specialty";
-import { ShiftWorkerOptionT } from "@/types/constraint";
-import { TeamMembershipRole } from "@/types/team";
+import { Dayjs } from 'dayjs';
+import { AssignmentT } from '@/types/assignment';
+import { ShiftDemandDTO } from '@/types/shiftDemand';
+import { RequestT } from '@/types/request';
+import { WorkerT } from '@/types/worker';
+import { ShiftT } from '@/types/shift';
+import { ScheduleT, AssignmentDataT, ScheduleCellDataT } from '@/types/schedule';
+import { RecurrenceRuleT, RecurrenceUpdateScope } from '@/types/recurrence';
+import { SpecialtyT } from '@/types/specialty';
+import { ShiftWorkerOptionT } from '@/types/constraint';
+import { TeamMembershipRole } from '@/types/team';
 
 export enum ScheduleItemType {
-  ASSIGNMENT = "assignment",
-  DEMAND = "demand",
-  REQUEST = "request",
+  ASSIGNMENT = 'assignment',
+  DEMAND = 'demand',
+  REQUEST = 'request',
 }
 
 export enum DialogMode {
-  CREATE = "create",
-  EDIT = "edit",
+  CREATE = 'create',
+  EDIT = 'edit',
 }
 
 // Data needed to create a new assignment

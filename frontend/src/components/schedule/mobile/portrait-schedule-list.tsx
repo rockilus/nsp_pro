@@ -1,8 +1,8 @@
-import React from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import AssignmentListItem from "./assignment-list-item";
-import { useTranslation } from "../../../app/i18n/client";
+import React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import AssignmentListItem from './assignment-list-item';
+import { useTranslation } from '../../../app/i18n/client';
 
 type Props = {
   weeks: { start: any; end: any }[];
@@ -31,36 +31,36 @@ export default function PortraitScheduleList({
   onScroll,
   lng,
 }: Props) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   return (
     <Box
       ref={containerRef}
       onScroll={onScroll}
       sx={{
-        maxHeight: "calc(100vh - 65px)",
-        overflowY: "auto",
+        maxHeight: 'calc(100vh - 65px)',
+        overflowY: 'auto',
         pb: 8,
       }}
     >
       {weeks.map((week, wi) => {
         const weekDates: any[] = [];
         let cur = week.start;
-        while (cur.isBefore(week.end) || cur.isSame(week.end, "day")) {
+        while (cur.isBefore(week.end) || cur.isSame(week.end, 'day')) {
           weekDates.push(cur);
-          cur = cur.add(1, "day");
+          cur = cur.add(1, 'day');
         }
 
         const weekItems = weekDates.flatMap(
-          (d) => assignmentsByDate.get(d.utc().format("YYYY-MM-DD")) || [],
+          (d) => assignmentsByDate.get(d.utc().format('YYYY-MM-DD')) || [],
         );
         // Show week if it has items OR if it contains today's date
-        const weekContainsToday = weekDates.some((d) => d.isSame(today, "day"));
+        const weekContainsToday = weekDates.some((d) => d.isSame(today, 'day'));
         if (weekItems.length === 0 && !weekContainsToday) return null;
 
         return (
           <Box
-            key={week.start.utc().format("YYYY-MM-DD")}
+            key={week.start.utc().format('YYYY-MM-DD')}
             ref={(el: HTMLDivElement | null) => {
               weekRefs.current[wi] = el;
             }}
@@ -68,18 +68,15 @@ export default function PortraitScheduleList({
           >
             <Box sx={{ mb: 1 }}>
               <Typography variant="subtitle1">
-                {week.start.month() === week.end.month() &&
-                week.start.year() === week.end.year()
-                  ? `${week.start.format("MMMM D")} - ${week.end.format("D")}`
-                  : `${week.start.format("MMMM D")} - ${week.end.format(
-                      "MMMM D",
-                    )}`}
+                {week.start.month() === week.end.month() && week.start.year() === week.end.year()
+                  ? `${week.start.format('MMMM D')} - ${week.end.format('D')}`
+                  : `${week.start.format('MMMM D')} - ${week.end.format('MMMM D')}`}
               </Typography>
             </Box>
 
             {weekDates.map((d) => {
-              const isToday = d.isSame(today, "day");
-              const key = d.utc().format("YYYY-MM-DD");
+              const isToday = d.isSame(today, 'day');
+              const key = d.utc().format('YYYY-MM-DD');
               const items = assignmentsByDate.get(key) || [];
 
               if (items.length === 0 && !isToday) return null;
@@ -89,8 +86,8 @@ export default function PortraitScheduleList({
                   <Box key={key} sx={{ mb: 1 }}>
                     <Box
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: 1,
                         mb: 1,
                       }}
@@ -98,32 +95,30 @@ export default function PortraitScheduleList({
                       <Box
                         sx={{
                           width: 64,
-                          textAlign: "center",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
+                          textAlign: 'center',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
                         }}
                       >
-                        <Typography variant="caption" sx={{ color: "#1a73e8" }}>
-                          {d.format("ddd")}
+                        <Typography variant="caption" sx={{ color: '#1a73e8' }}>
+                          {d.format('ddd')}
                         </Typography>
                         <Typography
                           variant="h6"
                           sx={{
                             width: 32,
                             height: 32,
-                            borderRadius: "50%",
-                            backgroundColor: "#1a73e8",
-                            color: "#fff",
+                            borderRadius: '50%',
+                            backgroundColor: '#1a73e8',
+                            color: '#fff',
                           }}
                         >
-                          {d.format("D")}
+                          {d.format('D')}
                         </Typography>
                       </Box>
                       <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2">
-                          {t("nothing_planned")}
-                        </Typography>
+                        <Typography variant="body2">{t('nothing_planned')}</Typography>
                       </Box>
                     </Box>
                   </Box>
@@ -147,8 +142,8 @@ export default function PortraitScheduleList({
                     <Box
                       key={a.id}
                       sx={{
-                        display: "flex",
-                        alignItems: "center",
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: 1,
                         mb: 1,
                       }}
@@ -156,33 +151,31 @@ export default function PortraitScheduleList({
                       <Box
                         sx={{
                           width: 64,
-                          textAlign: "center",
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
+                          textAlign: 'center',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
                         }}
                       >
                         {idx === 0 ? (
                           <>
                             <Typography
                               variant="caption"
-                              sx={{ color: isToday ? "#1a73e8" : undefined }}
+                              sx={{ color: isToday ? '#1a73e8' : undefined }}
                             >
-                              {d.format("ddd")}
+                              {d.format('ddd')}
                             </Typography>
                             <Typography
                               variant="h6"
                               sx={{
                                 width: 32,
                                 height: 32,
-                                borderRadius: isToday ? "50%" : undefined,
-                                backgroundColor: isToday
-                                  ? "#1a73e8"
-                                  : undefined,
-                                color: isToday ? "#fff" : undefined,
+                                borderRadius: isToday ? '50%' : undefined,
+                                backgroundColor: isToday ? '#1a73e8' : undefined,
+                                color: isToday ? '#fff' : undefined,
                               }}
                             >
-                              {d.format("D")}
+                              {d.format('D')}
                             </Typography>
                           </>
                         ) : (

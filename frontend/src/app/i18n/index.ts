@@ -1,8 +1,8 @@
-import { createInstance, Namespace, FlatNamespace, KeyPrefix } from "i18next";
-import resourcesToBackend from "i18next-resources-to-backend";
-import { initReactI18next } from "react-i18next/initReactI18next";
-import { FallbackNs } from "react-i18next";
-import { getOptions } from "@/app/i18n/settings";
+import { createInstance, Namespace, FlatNamespace, KeyPrefix } from 'i18next';
+import resourcesToBackend from 'i18next-resources-to-backend';
+import { initReactI18next } from 'react-i18next/initReactI18next';
+import { FallbackNs } from 'react-i18next';
+import { getOptions } from '@/app/i18n/settings';
 
 const initI18next = async (lng: string, ns: string | string[]) => {
   // on server side we create a new instance for each render, because during compilation everything seems to be executed in parallel
@@ -11,8 +11,7 @@ const initI18next = async (lng: string, ns: string | string[]) => {
     .use(initReactI18next)
     .use(
       resourcesToBackend(
-        (language: string, namespace: string) =>
-          import(`./locales/${language}/${namespace}.json`),
+        (language: string, namespace: string) => import(`./locales/${language}/${namespace}.json`),
       ),
     )
     .init(getOptions(lng, ns));

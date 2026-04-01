@@ -1,35 +1,35 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import isoWeek from "dayjs/plugin/isoWeek";
-import { useTranslation } from "../../app/i18n/client";
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import { useTranslation } from '../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import MobileScheduleTab from "./mobile/mobile-schedule-tab";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import MobileScheduleTab from './mobile/mobile-schedule-tab';
 // Hooks
-import { useIsMobile } from "@/hooks/useIsMobile";
+import { useIsMobile } from '@/hooks/useIsMobile';
 // Components
-import ScheduleDisplay from "./table/schedule-display";
-import ScheduleNavBar from "./nav-bar/schedule-nav-bar";
-import ScheduleItemDialog from "./dialogs/schedule-item-dialog";
+import ScheduleDisplay from './table/schedule-display';
+import ScheduleNavBar from './nav-bar/schedule-nav-bar';
+import ScheduleItemDialog from './dialogs/schedule-item-dialog';
 import {
   ScheduleItemType,
   DialogMode,
   ScheduleItemDialogData,
   CreateAssignmentData,
-} from "./dialogs/schedule-item-types";
-import NoAssignmentsDisplay from "./no-assignments-display";
-import { getPeriodStartEndDates } from "./schedule-utils";
-import { computePeriodEndDate } from "../../app/lib/utils/scheduleViewSettingsUtils";
-import { ScheduleActionToolbar } from "./toolbar/ScheduleActionToolbar";
+} from './dialogs/schedule-item-types';
+import NoAssignmentsDisplay from './no-assignments-display';
+import { getPeriodStartEndDates } from './schedule-utils';
+import { computePeriodEndDate } from '../../app/lib/utils/scheduleViewSettingsUtils';
+import { ScheduleActionToolbar } from './toolbar/ScheduleActionToolbar';
 // Skeletons
-import ScheduleSelectorSkeleton from "../skeletons/schedule-selector-skeleton";
-import ScheduleTableSkeleton from "../skeletons/schedule-table-skeleton";
+import ScheduleSelectorSkeleton from '../skeletons/schedule-selector-skeleton';
+import ScheduleTableSkeleton from '../skeletons/schedule-table-skeleton';
 // Actions
-import { useGetBreaches } from "../../hooks/useBreach";
-import { useGetSpecialties } from "../../hooks/useSpecialty";
+import { useGetBreaches } from '../../hooks/useBreach';
+import { useGetSpecialties } from '../../hooks/useSpecialty';
 // Assignment Hooks
 import {
   useAddAssignmentAndRecurrence,
@@ -38,15 +38,9 @@ import {
   useBulkCreateAssignments,
   useBulkUpdateAssignments,
   useBulkDeleteAssignments,
-} from "../../hooks/useAssignment";
-import {
-  useAssignmentsByPeriod,
-  assignmentsQueryKeys,
-} from "../../app/lib/hooks/useAssignments";
-import {
-  calculateBufferMonths,
-  shouldFetchMore,
-} from "../../app/lib/utils/assignmentBufferUtils";
+} from '../../hooks/useAssignment';
+import { useAssignmentsByPeriod, assignmentsQueryKeys } from '../../app/lib/hooks/useAssignments';
+import { calculateBufferMonths, shouldFetchMore } from '../../app/lib/utils/assignmentBufferUtils';
 // Request Hooks
 import {
   useGetRequests,
@@ -56,7 +50,7 @@ import {
   useRescindRequest,
   useAcceptRequest,
   useDenyRequest,
-} from "../../hooks/useRequest";
+} from '../../hooks/useRequest';
 // Hooks
 import {
   useValidateSchedule,
@@ -64,16 +58,16 @@ import {
   useGetSchedules,
   useGetScheduleEntities,
   useDuplicatePeriod,
-} from "../../hooks/useSchedule";
-import { useExportSchedule } from "../../hooks/useExport";
-import { useUserWorker } from "../../hooks/useUserWorker";
-import NoWorkerAssigned from "../common/NoWorkerAssigned";
+} from '../../hooks/useSchedule';
+import { useExportSchedule } from '../../hooks/useExport';
+import { useUserWorker } from '../../hooks/useUserWorker';
+import NoWorkerAssigned from '../common/NoWorkerAssigned';
 // Styles
-import "../../styles/tab-container-styles.css";
-import "./schedule-tab.css";
+import '../../styles/tab-container-styles.css';
+import './schedule-tab.css';
 // Types
-import { ShiftT } from "../../types/shift";
-import { WorkerT } from "../../types/worker";
+import { ShiftT } from '../../types/shift';
+import { WorkerT } from '../../types/worker';
 import {
   ScheduleT,
   ExportOptionsT,
@@ -83,40 +77,34 @@ import {
   AssignmentDataT,
   ScheduleCellDataT,
   DuplicateResultT,
-} from "../../types/schedule";
-import { BreachT } from "@/types/breach";
-import { TeamMembershipRole } from "@/types/team";
-import {
-  ShiftDemandCreateDTO,
-  ShiftDemandUpdateDTO,
-} from "@/types/shiftDemand";
+} from '../../types/schedule';
+import { BreachT } from '@/types/breach';
+import { TeamMembershipRole } from '@/types/team';
+import { ShiftDemandCreateDTO, ShiftDemandUpdateDTO } from '@/types/shiftDemand';
 import {
   AssignmentT,
   AssignmentSource,
   AssignmentsRecurrencesResultT,
   CreateAssignmentT,
-} from "@/types/assignment";
-import { RequestT } from "../../types/request";
-import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
-import { SpecialtyT } from "@/types/specialty";
-import { TeamWithMembership } from "@/types/team";
-import { SolveTaskStatusResponseT } from "@/types/solveTaskStatus";
-import {
-  useShiftDemands,
-  useShiftDemandMutations,
-} from "../../app/lib/hooks/useShiftDemands";
-import { useScheduleViewSettings } from "../../app/lib/hooks/useScheduleViewSettings";
-import { getDefaultScheduleViewSettings } from "../../app/lib/utils/scheduleViewSettingsUtils";
+} from '@/types/assignment';
+import { RequestT } from '../../types/request';
+import { RecurrenceRuleT, RecurrenceUpdateScope } from '@/types/recurrence';
+import { SpecialtyT } from '@/types/specialty';
+import { TeamWithMembership } from '@/types/team';
+import { SolveTaskStatusResponseT } from '@/types/solveTaskStatus';
+import { useShiftDemands, useShiftDemandMutations } from '../../app/lib/hooks/useShiftDemands';
+import { useScheduleViewSettings } from '../../app/lib/hooks/useScheduleViewSettings';
+import { getDefaultScheduleViewSettings } from '../../app/lib/utils/scheduleViewSettingsUtils';
 import {
   useGenerationSelection,
   clearGenerationSelection,
-} from "../../app/lib/hooks/useGenerationSelection";
+} from '../../app/lib/hooks/useGenerationSelection';
 import {
   ScheduleSelectionState,
   SelectedScheduleCell,
   SelectionScope,
-} from "../../types/scheduleSelection";
-import { SolveScopeType } from "../../types/solveTaskStatus";
+} from '../../types/scheduleSelection';
+import { SolveScopeType } from '../../types/solveTaskStatus';
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -128,7 +116,7 @@ export default function ScheduleTab({
   lng: string;
   teamWithMembership: TeamWithMembership;
 }) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   // Query client for manual cache operations (prefetching)
   const queryClient = useQueryClient();
@@ -184,22 +172,15 @@ export default function ScheduleTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [requests, setRequests] = useState<RequestT[]>([]);
   const [schedulesValidated, setSchedulesValidated] = useState<ScheduleT[]>([]);
-  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
-    null,
-  );
+  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(null);
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
 
   // Use persistent schedule view settings
-  const defaultSettings = getDefaultScheduleViewSettings(
-    teamWithMembership.team.useSolver,
-  );
+  const defaultSettings = getDefaultScheduleViewSettings(teamWithMembership.team.useSolver);
 
-  const [
-    scheduleViewSettings,
-    updateScheduleViewSettings,
-    resetScheduleViewSettings,
-  ] = useScheduleViewSettings(teamWithMembership.team.id, defaultSettings);
+  const [scheduleViewSettings, updateScheduleViewSettings, resetScheduleViewSettings] =
+    useScheduleViewSettings(teamWithMembership.team.id, defaultSettings);
 
   // resetScheduleViewSettings can be called to reset all settings to defaults
   // Example: resetScheduleViewSettings() - useful for settings reset UI
@@ -210,15 +191,11 @@ export default function ScheduleTab({
       scheduleViewSettings.periodStartDate,
       scheduleViewSettings.timeFrame,
     );
-    return calculateBufferMonths(
-      scheduleViewSettings.periodStartDate,
-      periodEnd,
-    );
+    return calculateBufferMonths(scheduleViewSettings.periodStartDate, periodEnd);
   }, [scheduleViewSettings.periodStartDate, scheduleViewSettings.timeFrame]);
 
   // Determine if user should see campaign assignments (owners/leaders only)
-  const includeCampaign =
-    teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+  const includeCampaign = teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
 
   // React Query hook for assignments with smart buffering
   const {
@@ -248,10 +225,7 @@ export default function ScheduleTab({
   } = useShiftDemands(
     teamWithMembership.team.id,
     scheduleViewSettings.periodStartDate,
-    computePeriodEndDate(
-      scheduleViewSettings.periodStartDate,
-      scheduleViewSettings.timeFrame,
-    ),
+    computePeriodEndDate(scheduleViewSettings.periodStartDate, scheduleViewSettings.timeFrame),
     {
       enabled:
         teamWithMembership.team.useSolver &&
@@ -261,24 +235,20 @@ export default function ScheduleTab({
   );
 
   // Mutation hooks for shift demands
-  const shiftDemandMutations = useShiftDemandMutations(
-    teamWithMembership.team.id,
-  );
+  const shiftDemandMutations = useShiftDemandMutations(teamWithMembership.team.id);
 
   const getScheduleFromDate = useCallback(
     (date: dayjs.Dayjs) => {
       if (scheduleCampaign) {
         if (
-          date.isSameOrBefore(scheduleCampaign.endDate, "day") &&
-          date.isSameOrAfter(scheduleCampaign.startDate, "day")
+          date.isSameOrBefore(scheduleCampaign.endDate, 'day') &&
+          date.isSameOrAfter(scheduleCampaign.startDate, 'day')
         ) {
           return scheduleCampaign;
         }
       }
       const validatedSchedule = schedulesValidated.find(
-        (s) =>
-          date.isSameOrBefore(s.endDate, "day") &&
-          date.isSameOrAfter(s.startDate, "day"),
+        (s) => date.isSameOrBefore(s.endDate, 'day') && date.isSameOrAfter(s.startDate, 'day'),
       );
       if (validatedSchedule) {
         return validatedSchedule;
@@ -293,17 +263,14 @@ export default function ScheduleTab({
       const dates: periodDateT[] = [];
       let currentDate = startDate;
 
-      while (
-        currentDate.isBefore(endDate) ||
-        currentDate.isSame(endDate, "day")
-      ) {
+      while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, 'day')) {
         const schedule = getScheduleFromDate(currentDate);
         dates.push({
           date: currentDate,
           scheduleId: schedule ? schedule.id : null,
           scheduleStatus: schedule ? schedule.status : null,
         });
-        currentDate = currentDate.add(1, "day");
+        currentDate = currentDate.add(1, 'day');
       }
       return dates;
     },
@@ -315,24 +282,15 @@ export default function ScheduleTab({
     () =>
       buildDates(
         scheduleViewSettings.periodStartDate,
-        computePeriodEndDate(
-          scheduleViewSettings.periodStartDate,
-          scheduleViewSettings.timeFrame,
-        ),
+        computePeriodEndDate(scheduleViewSettings.periodStartDate, scheduleViewSettings.timeFrame),
       ),
-    [
-      scheduleViewSettings.periodStartDate,
-      scheduleViewSettings.timeFrame,
-      buildDates,
-    ],
+    [scheduleViewSettings.periodStartDate, scheduleViewSettings.timeFrame, buildDates],
   );
 
   // Unified dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<DialogMode>(DialogMode.CREATE);
-  const [dialogType, setDialogType] = useState<ScheduleItemType>(
-    ScheduleItemType.ASSIGNMENT,
-  );
+  const [dialogType, setDialogType] = useState<ScheduleItemType>(ScheduleItemType.ASSIGNMENT);
   const [dialogData, setDialogData] = useState<ScheduleItemDialogData>(null);
 
   // Selection mode state (OWNER only, desktop only)
@@ -341,7 +299,7 @@ export default function ScheduleTab({
     selectedCells: [],
     selectedAssignmentIds: [],
   });
-  const [selectionScope, setSelectionScope] = useState<SelectionScope>("view");
+  const [selectionScope, setSelectionScope] = useState<SelectionScope>('view');
 
   // Custom solve mode state - persisted alongside selected cells in localStorage
   const [
@@ -353,7 +311,7 @@ export default function ScheduleTab({
     setSelectedSolveScope,
   ] = useGenerationSelection(scheduleCampaign?.id ?? null);
 
-  const isCustomSolveModeActive = selectedSolveScope === "CUSTOM";
+  const isCustomSolveModeActive = selectedSolveScope === 'CUSTOM';
 
   const isMobile = useIsMobile();
 
@@ -364,9 +322,7 @@ export default function ScheduleTab({
     setDialogData({ assignmentData: selectedAssignment });
   };
 
-  const handleDemandSelection = (
-    selectedScheduleCellData: ScheduleCellDataT,
-  ) => {
+  const handleDemandSelection = (selectedScheduleCellData: ScheduleCellDataT) => {
     setDialogOpen(true);
     setDialogMode(DialogMode.EDIT);
     setDialogType(ScheduleItemType.DEMAND);
@@ -394,32 +350,22 @@ export default function ScheduleTab({
   const handleCustomRowSelect = useCallback(
     (rowId: string) => {
       if (!scheduleCampaign) return;
-      const campaignDates = buildDates(
-        scheduleCampaign.startDate,
-        scheduleCampaign.endDate,
-      );
+      const campaignDates = buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate);
       const updateFn =
-        scheduleViewSettings.groupBy === "worker"
-          ? updateWorkerSolveCells
-          : updateShiftSolveCells;
+        scheduleViewSettings.groupBy === 'worker' ? updateWorkerSolveCells : updateShiftSolveCells;
       updateFn((prev) => {
         const isFullySelected = campaignDates.every((pd) =>
-          prev.some(
-            (c) => c.rowId === rowId && c.date === pd.date.format("YYYY-MM-DD"),
-          ),
+          prev.some((c) => c.rowId === rowId && c.date === pd.date.format('YYYY-MM-DD')),
         );
         if (isFullySelected) {
           return prev.filter((c) => c.rowId !== rowId);
         }
         const existingKeys = new Set(prev.map((c) => `${c.rowId}-${c.date}`));
         const toAdd: SelectedScheduleCell[] = campaignDates
-          .filter(
-            (pd) =>
-              !existingKeys.has(`${rowId}-${pd.date.format("YYYY-MM-DD")}`),
-          )
+          .filter((pd) => !existingKeys.has(`${rowId}-${pd.date.format('YYYY-MM-DD')}`))
           .map((pd) => ({
             rowId,
-            date: pd.date.format("YYYY-MM-DD"),
+            date: pd.date.format('YYYY-MM-DD'),
             scheduleId: pd.scheduleId,
           }));
         return [...prev, ...toAdd];
@@ -439,21 +385,17 @@ export default function ScheduleTab({
       if (!scheduleCampaign) return;
       const scheduleId =
         buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate).find(
-          (pd) => pd.date.format("YYYY-MM-DD") === date,
+          (pd) => pd.date.format('YYYY-MM-DD') === date,
         )?.scheduleId ?? null;
       const updateFn =
-        scheduleViewSettings.groupBy === "worker"
-          ? updateWorkerSolveCells
-          : updateShiftSolveCells;
+        scheduleViewSettings.groupBy === 'worker' ? updateWorkerSolveCells : updateShiftSolveCells;
       updateFn((prev) => {
         const rowIdSet = new Set(rowIds);
         const isFullySelected = rowIds.every((rowId) =>
           prev.some((c) => c.rowId === rowId && c.date === date),
         );
         if (isFullySelected) {
-          return prev.filter(
-            (c) => !(rowIdSet.has(c.rowId) && c.date === date),
-          );
+          return prev.filter((c) => !(rowIdSet.has(c.rowId) && c.date === date));
         }
         const existingKeys = new Set(prev.map((c) => `${c.rowId}-${c.date}`));
         const toAdd: SelectedScheduleCell[] = rowIds
@@ -474,9 +416,7 @@ export default function ScheduleTab({
   const handleCustomCellSelect = useCallback(
     (rowId: string, date: string, scheduleId: string | null) => {
       const updateFn =
-        scheduleViewSettings.groupBy === "worker"
-          ? updateWorkerSolveCells
-          : updateShiftSolveCells;
+        scheduleViewSettings.groupBy === 'worker' ? updateWorkerSolveCells : updateShiftSolveCells;
       updateFn((prev) => {
         const exists = prev.some((c) => c.rowId === rowId && c.date === date);
         return exists
@@ -484,26 +424,18 @@ export default function ScheduleTab({
           : [...prev, { rowId, date, scheduleId }];
       });
     },
-    [
-      scheduleViewSettings.groupBy,
-      updateWorkerSolveCells,
-      updateShiftSolveCells,
-    ],
+    [scheduleViewSettings.groupBy, updateWorkerSolveCells, updateShiftSolveCells],
   );
 
   const handleCustomSelectAll = useCallback(
     (cells: SelectedScheduleCell[]) => {
-      if (scheduleViewSettings.groupBy === "worker") {
+      if (scheduleViewSettings.groupBy === 'worker') {
         updateWorkerSolveCells(cells);
       } else {
         updateShiftSolveCells(cells);
       }
     },
-    [
-      scheduleViewSettings.groupBy,
-      updateWorkerSolveCells,
-      updateShiftSolveCells,
-    ],
+    [scheduleViewSettings.groupBy, updateWorkerSolveCells, updateShiftSolveCells],
   );
 
   //////////////////////////
@@ -518,25 +450,18 @@ export default function ScheduleTab({
     }));
   }, []);
 
-  const handleCellSelect = useCallback(
-    (rowId: string, date: string, scheduleId: string | null) => {
-      setSelectionState((prev) => {
-        const key = `${rowId}-${date}`;
-        const exists = prev.selectedCells.some(
-          (c) => c.rowId === rowId && c.date === date,
-        );
-        return {
-          ...prev,
-          selectedCells: exists
-            ? prev.selectedCells.filter(
-                (c) => !(c.rowId === rowId && c.date === date),
-              )
-            : [...prev.selectedCells, { rowId, date, scheduleId }],
-        };
-      });
-    },
-    [],
-  );
+  const handleCellSelect = useCallback((rowId: string, date: string, scheduleId: string | null) => {
+    setSelectionState((prev) => {
+      const key = `${rowId}-${date}`;
+      const exists = prev.selectedCells.some((c) => c.rowId === rowId && c.date === date);
+      return {
+        ...prev,
+        selectedCells: exists
+          ? prev.selectedCells.filter((c) => !(c.rowId === rowId && c.date === date))
+          : [...prev.selectedCells, { rowId, date, scheduleId }],
+      };
+    });
+  }, []);
 
   const handleAssignmentSelect = useCallback((assignmentId: string) => {
     setSelectionState((prev) => {
@@ -553,28 +478,24 @@ export default function ScheduleTab({
   const handleRowSelect = useCallback(
     (rowId: string, scope: SelectionScope) => {
       const dates =
-        scope === "campaign" && scheduleCampaign
+        scope === 'campaign' && scheduleCampaign
           ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
           : periodDates;
-      const datestrs = dates.map((pd) => pd.date.format("YYYY-MM-DD"));
+      const datestrs = dates.map((pd) => pd.date.format('YYYY-MM-DD'));
       const dateSet = new Set(datestrs);
 
-      const isWorkerView = scheduleViewSettings.groupBy === "worker";
+      const isWorkerView = scheduleViewSettings.groupBy === 'worker';
       const rowAssignmentIds = assignments
         .filter((a) => {
-          const rowMatch = isWorkerView
-            ? a.workerId === rowId
-            : a.shiftId === rowId;
-          return rowMatch && dateSet.has(a.date.format("YYYY-MM-DD"));
+          const rowMatch = isWorkerView ? a.workerId === rowId : a.shiftId === rowId;
+          return rowMatch && dateSet.has(a.date.format('YYYY-MM-DD'));
         })
         .map((a) => a.id);
 
       // All assignment IDs for this row regardless of scope — used when deselecting
       const allRowAssignmentIdSet = new Set(
         assignments
-          .filter((a) =>
-            isWorkerView ? a.workerId === rowId : a.shiftId === rowId,
-          )
+          .filter((a) => (isWorkerView ? a.workerId === rowId : a.shiftId === rowId))
           .map((a) => a.id),
       );
 
@@ -591,17 +512,12 @@ export default function ScheduleTab({
             ),
           };
         }
-        const existingKeys = new Set(
-          prev.selectedCells.map((c) => `${c.rowId}-${c.date}`),
-        );
+        const existingKeys = new Set(prev.selectedCells.map((c) => `${c.rowId}-${c.date}`));
         const toAdd = dates
-          .filter(
-            (pd) =>
-              !existingKeys.has(`${rowId}-${pd.date.format("YYYY-MM-DD")}`),
-          )
+          .filter((pd) => !existingKeys.has(`${rowId}-${pd.date.format('YYYY-MM-DD')}`))
           .map((pd) => ({
             rowId,
-            date: pd.date.format("YYYY-MM-DD"),
+            date: pd.date.format('YYYY-MM-DD'),
             scheduleId: pd.scheduleId,
           }));
         const newAssignmentIds = rowAssignmentIds.filter(
@@ -610,46 +526,34 @@ export default function ScheduleTab({
         return {
           ...prev,
           selectedCells: [...prev.selectedCells, ...toAdd],
-          selectedAssignmentIds: [
-            ...prev.selectedAssignmentIds,
-            ...newAssignmentIds,
-          ],
+          selectedAssignmentIds: [...prev.selectedAssignmentIds, ...newAssignmentIds],
         };
       });
     },
-    [
-      scheduleCampaign,
-      periodDates,
-      buildDates,
-      assignments,
-      scheduleViewSettings.groupBy,
-    ],
+    [scheduleCampaign, periodDates, buildDates, assignments, scheduleViewSettings.groupBy],
   );
 
   const handleColumnSelect = useCallback(
     (date: string, rowIds: string[], scope: SelectionScope) => {
       const allDates =
-        scope === "campaign" && scheduleCampaign
+        scope === 'campaign' && scheduleCampaign
           ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
           : periodDates;
       const targetDates = [
         {
           date,
           scheduleId:
-            allDates.find((pd) => pd.date.format("YYYY-MM-DD") === date)
-              ?.scheduleId ?? null,
+            allDates.find((pd) => pd.date.format('YYYY-MM-DD') === date)?.scheduleId ?? null,
         },
       ];
 
-      const isWorkerView = scheduleViewSettings.groupBy === "worker";
+      const isWorkerView = scheduleViewSettings.groupBy === 'worker';
       const targetDateSet = new Set(targetDates.map((td) => td.date));
       const rowIdSet = new Set(rowIds);
       const colAssignmentIds = assignments
         .filter((a) => {
-          const rowMatch = isWorkerView
-            ? rowIdSet.has(a.workerId)
-            : rowIdSet.has(a.shiftId);
-          return rowMatch && targetDateSet.has(a.date.format("YYYY-MM-DD"));
+          const rowMatch = isWorkerView ? rowIdSet.has(a.workerId) : rowIdSet.has(a.shiftId);
+          return rowMatch && targetDateSet.has(a.date.format('YYYY-MM-DD'));
         })
         .map((a) => a.id);
 
@@ -671,9 +575,7 @@ export default function ScheduleTab({
             ),
           };
         }
-        const existingKeys = new Set(
-          prev.selectedCells.map((c) => `${c.rowId}-${c.date}`),
-        );
+        const existingKeys = new Set(prev.selectedCells.map((c) => `${c.rowId}-${c.date}`));
         const newCells: SelectedScheduleCell[] = [];
         for (const rowId of rowIds) {
           for (const { date: d, scheduleId } of targetDates) {
@@ -689,26 +591,17 @@ export default function ScheduleTab({
         return {
           ...prev,
           selectedCells: [...prev.selectedCells, ...newCells],
-          selectedAssignmentIds: [
-            ...prev.selectedAssignmentIds,
-            ...newAssignmentIds,
-          ],
+          selectedAssignmentIds: [...prev.selectedAssignmentIds, ...newAssignmentIds],
         };
       });
     },
-    [
-      scheduleCampaign,
-      periodDates,
-      buildDates,
-      assignments,
-      scheduleViewSettings.groupBy,
-    ],
+    [scheduleCampaign, periodDates, buildDates, assignments, scheduleViewSettings.groupBy],
   );
 
   const handleSelectAll = useCallback(
     (rowIds: string[], scope: SelectionScope) => {
       const dates =
-        scope === "campaign" && scheduleCampaign
+        scope === 'campaign' && scheduleCampaign
           ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
           : periodDates;
       const newCells: SelectedScheduleCell[] = [];
@@ -716,21 +609,19 @@ export default function ScheduleTab({
         for (const pd of dates) {
           newCells.push({
             rowId,
-            date: pd.date.format("YYYY-MM-DD"),
+            date: pd.date.format('YYYY-MM-DD'),
             scheduleId: pd.scheduleId,
           });
         }
       }
 
-      const isWorkerView = scheduleViewSettings.groupBy === "worker";
+      const isWorkerView = scheduleViewSettings.groupBy === 'worker';
       const rowIdSet = new Set(rowIds);
       const dateSet = new Set(newCells.map((c) => c.date));
       const newAssignmentIds = assignments
         .filter((a) => {
-          const rowMatch = isWorkerView
-            ? rowIdSet.has(a.workerId)
-            : rowIdSet.has(a.shiftId);
-          return rowMatch && dateSet.has(a.date.format("YYYY-MM-DD"));
+          const rowMatch = isWorkerView ? rowIdSet.has(a.workerId) : rowIdSet.has(a.shiftId);
+          return rowMatch && dateSet.has(a.date.format('YYYY-MM-DD'));
         })
         .map((a) => a.id);
 
@@ -740,13 +631,7 @@ export default function ScheduleTab({
         selectedAssignmentIds: newAssignmentIds,
       }));
     },
-    [
-      scheduleCampaign,
-      periodDates,
-      buildDates,
-      assignments,
-      scheduleViewSettings.groupBy,
-    ],
+    [scheduleCampaign, periodDates, buildDates, assignments, scheduleViewSettings.groupBy],
   );
 
   //////////////////////////
@@ -758,23 +643,20 @@ export default function ScheduleTab({
       const newSchedule = await updateSchedule(schedule);
       setScheduleCampaign(newSchedule);
     } catch (error) {
-      console.error("Failed to update schedule:", error);
+      console.error('Failed to update schedule:', error);
       // Handle error appropriately
     }
   };
 
   const handleValidateSchedule = async (scheduleId: string) => {
     try {
-      const newSchedule = await validateSchedule(
-        scheduleId,
-        teamWithMembership.team.id,
-      );
+      const newSchedule = await validateSchedule(scheduleId, teamWithMembership.team.id);
       clearGenerationSelection(scheduleId);
       setScheduleCampaign(null);
       setSchedulesValidated([...schedulesValidated, newSchedule]);
       setBreaches([]);
     } catch (error) {
-      console.error("Failed to validate schedule:", error);
+      console.error('Failed to validate schedule:', error);
       // Handle error appropriately
     }
   };
@@ -793,17 +675,13 @@ export default function ScheduleTab({
     teamId: string,
   ) => {
     try {
-      const duplicateResult = await duplicatePeriod(
-        request,
-        campaignId,
-        teamId,
-      );
+      const duplicateResult = await duplicatePeriod(request, campaignId, teamId);
       handleDuplicateResult(duplicateResult);
-      const newPeriodStart = request.targetPeriod.startDate.startOf("isoWeek");
-      const newPeriodEnd = request.targetPeriod.startDate.endOf("isoWeek");
+      const newPeriodStart = request.targetPeriod.startDate.startOf('isoWeek');
+      const newPeriodEnd = request.targetPeriod.startDate.endOf('isoWeek');
       updateSelectedPeriod(newPeriodStart, newPeriodEnd);
     } catch (error) {
-      console.error("Failed to duplicate period:", error);
+      console.error('Failed to duplicate period:', error);
       // Handle error appropriately
     }
   };
@@ -813,19 +691,14 @@ export default function ScheduleTab({
   //////////////////////////
 
   const handleCreateShiftDemand = useCallback(
-    async (
-      shiftId: string,
-      date: dayjs.Dayjs,
-      count: number,
-      notes?: string,
-    ) => {
+    async (shiftId: string, date: dayjs.Dayjs, count: number, notes?: string) => {
       try {
-        const demandData: Omit<ShiftDemandCreateDTO, "teamId"> = {
+        const demandData: Omit<ShiftDemandCreateDTO, 'teamId'> = {
           shiftId,
           date: date.unix(),
           count,
           notes: notes || null,
-          source: "manual",
+          source: 'manual',
           sourceId: null,
         };
 
@@ -834,7 +707,7 @@ export default function ScheduleTab({
         // Note: React Query will handle state updates automatically
         // No need to manually update local state
       } catch (error) {
-        console.error("Failed to create shift demand:", error);
+        console.error('Failed to create shift demand:', error);
         // Error handling will be managed by React Query
       }
     },
@@ -845,13 +718,12 @@ export default function ScheduleTab({
     async (demandId: string, updates: Partial<ShiftDemandUpdateDTO>) => {
       try {
         // Get the updated shift demand from the mutation response
-        const updatedShiftDemand =
-          await shiftDemandMutations.update.mutateAsync({
-            demandId,
-            demand: updates,
-          });
+        const updatedShiftDemand = await shiftDemandMutations.update.mutateAsync({
+          demandId,
+          demand: updates,
+        });
       } catch (error) {
-        console.error("Failed to update shift demand:", error);
+        console.error('Failed to update shift demand:', error);
       }
     },
     [shiftDemandMutations],
@@ -862,7 +734,7 @@ export default function ScheduleTab({
       try {
         await shiftDemandMutations.delete.mutateAsync(demandId);
       } catch (error) {
-        console.error("Failed to delete shift demand:", error);
+        console.error('Failed to delete shift demand:', error);
       }
     },
     [shiftDemandMutations],
@@ -875,13 +747,10 @@ export default function ScheduleTab({
   const handleAddRequest = useCallback(
     async (request: RequestT) => {
       try {
-        const newRequest = await addRequest(
-          request,
-          teamWithMembership.team.id,
-        );
+        const newRequest = await addRequest(request, teamWithMembership.team.id);
         setRequests([...requests, newRequest]);
       } catch (error) {
-        console.error("Failed to add request:", error);
+        console.error('Failed to add request:', error);
       }
     },
     [addRequest, teamWithMembership.team.id, requests],
@@ -890,17 +759,10 @@ export default function ScheduleTab({
   const handleUpdateRequest = useCallback(
     async (request: RequestT) => {
       try {
-        const updatedRequest = await updateRequest(
-          request,
-          teamWithMembership.team.id,
-        );
-        setRequests(
-          requests.map((r) =>
-            r.id === updatedRequest.id ? updatedRequest : r,
-          ),
-        );
+        const updatedRequest = await updateRequest(request, teamWithMembership.team.id);
+        setRequests(requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)));
       } catch (error) {
-        console.error("Failed to update request:", error);
+        console.error('Failed to update request:', error);
       }
     },
     [updateRequest, teamWithMembership.team.id, requests],
@@ -912,7 +774,7 @@ export default function ScheduleTab({
         await deleteRequest(requestId, teamWithMembership.team.id);
         setRequests(requests.filter((r) => r.id !== requestId));
       } catch (error) {
-        console.error("Failed to delete request:", error);
+        console.error('Failed to delete request:', error);
       }
     },
     [deleteRequest, teamWithMembership.team.id, requests],
@@ -921,22 +783,17 @@ export default function ScheduleTab({
   const handleRescindRequest = useCallback(
     async (requestId: string) => {
       try {
-        const result = await rescindRequest(
-          requestId,
-          teamWithMembership.team.id,
-        );
+        const result = await rescindRequest(requestId, teamWithMembership.team.id);
         const rescindedRequest = result.request;
         const assignmentsDeletedIds = result.assignmentsDeletedIds || [];
 
         setRequests((prev) =>
-          prev.map((r) =>
-            r.id === rescindedRequest.id ? rescindedRequest : r,
-          ),
+          prev.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r)),
         );
 
         // React Query cache invalidation in the mutation hook handles assignment updates
       } catch (error) {
-        console.error("Failed to rescind request:", error);
+        console.error('Failed to rescind request:', error);
       }
     },
     [rescindRequest, teamWithMembership.team.id],
@@ -945,21 +802,16 @@ export default function ScheduleTab({
   const handleAcceptRequest = useCallback(
     async (requestId: string) => {
       try {
-        const result = await acceptRequest(
-          requestId,
-          teamWithMembership.team.id,
-        );
+        const result = await acceptRequest(requestId, teamWithMembership.team.id);
         const acceptedRequest = result.request;
         const newAssignments = result.assignments || [];
 
         // Update requests list
-        setRequests((prev) =>
-          prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r)),
-        );
+        setRequests((prev) => prev.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r)));
 
         // React Query cache invalidation in the mutation hook handles assignment updates
       } catch (error) {
-        console.error("Failed to accept request:", error);
+        console.error('Failed to accept request:', error);
       }
     },
     [acceptRequest, teamWithMembership.team.id],
@@ -968,15 +820,10 @@ export default function ScheduleTab({
   const handleDenyRequest = useCallback(
     async (requestId: string) => {
       try {
-        const deniedRequest = await denyRequest(
-          requestId,
-          teamWithMembership.team.id,
-        );
-        setRequests(
-          requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)),
-        );
+        const deniedRequest = await denyRequest(requestId, teamWithMembership.team.id);
+        setRequests(requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)));
       } catch (error) {
-        console.error("Failed to deny request:", error);
+        console.error('Failed to deny request:', error);
       }
     },
     [denyRequest, teamWithMembership.team.id, requests],
@@ -1005,8 +852,7 @@ export default function ScheduleTab({
         shiftId: createAssignmentData.shiftId,
         date: createAssignmentData.date,
         addDemandActive:
-          !createAssignmentData.haveDemand &&
-          scheduleViewSettings.groupBy === "shift",
+          !createAssignmentData.haveDemand && scheduleViewSettings.groupBy === 'shift',
       } as CreateAssignmentData);
     },
     [scheduleViewSettings.groupBy],
@@ -1018,10 +864,7 @@ export default function ScheduleTab({
   }, []);
 
   const handleCreateAssignment = useCallback(
-    async (
-      assignment: AssignmentT,
-      recurrence: RecurrenceRuleT | null = null,
-    ) => {
+    async (assignment: AssignmentT, recurrence: RecurrenceRuleT | null = null) => {
       await addAssignmentAndRecurrence(assignment, recurrence);
       // React Query cache invalidation in the mutation hook handles updates automatically
     },
@@ -1064,11 +907,7 @@ export default function ScheduleTab({
       );
       updateAssignmentsAndRecurrencesStates(ARResult);
     },
-    [
-      deleteAssignment,
-      teamWithMembership.team.id,
-      updateAssignmentsAndRecurrencesStates,
-    ],
+    [deleteAssignment, teamWithMembership.team.id, updateAssignmentsAndRecurrencesStates],
   );
 
   //////////////////////////
@@ -1078,25 +917,21 @@ export default function ScheduleTab({
   const handleBulkCreateAssignments = useCallback(
     async (id: string) => {
       // id is workerId (shift view) or shiftId (worker view)
-      const isShiftView = scheduleViewSettings.groupBy === "shift";
-      const assignmentsToCreate: AssignmentT[] =
-        selectionState.selectedCells.map((cell) => ({
-          id: "",
-          teamId: teamWithMembership.team.id,
-          scheduleId: cell.scheduleId,
-          workerId: isShiftView ? id : cell.rowId,
-          shiftId: isShiftView ? cell.rowId : id,
-          date: dayjs.utc(cell.date),
-          fixed: false,
-          source: AssignmentSource.MANUAL,
-          referenceAssignmentId: null,
-          sourceId: null,
-        }));
+      const isShiftView = scheduleViewSettings.groupBy === 'shift';
+      const assignmentsToCreate: AssignmentT[] = selectionState.selectedCells.map((cell) => ({
+        id: '',
+        teamId: teamWithMembership.team.id,
+        scheduleId: cell.scheduleId,
+        workerId: isShiftView ? id : cell.rowId,
+        shiftId: isShiftView ? cell.rowId : id,
+        date: dayjs.utc(cell.date),
+        fixed: false,
+        source: AssignmentSource.MANUAL,
+        referenceAssignmentId: null,
+        sourceId: null,
+      }));
       if (assignmentsToCreate.length === 0) return;
-      await bulkCreateAssignments(
-        assignmentsToCreate,
-        teamWithMembership.team.id,
-      );
+      await bulkCreateAssignments(assignmentsToCreate, teamWithMembership.team.id);
       setSelectionState((prev) => ({ ...prev, selectedCells: [] }));
     },
     [
@@ -1110,7 +945,7 @@ export default function ScheduleTab({
   const handleBulkUpdateAssignments = useCallback(
     async (id: string) => {
       // id is workerId (shift view) or shiftId (worker view)
-      const isShiftView = scheduleViewSettings.groupBy === "shift";
+      const isShiftView = scheduleViewSettings.groupBy === 'shift';
       const assignmentsToUpdate: AssignmentT[] = assignments
         .filter((a) => selectionState.selectedAssignmentIds.includes(a.id))
         .map((a) => ({
@@ -1119,10 +954,7 @@ export default function ScheduleTab({
           shiftId: isShiftView ? a.shiftId : id,
         }));
       if (assignmentsToUpdate.length === 0) return;
-      await bulkUpdateAssignments(
-        assignmentsToUpdate,
-        teamWithMembership.team.id,
-      );
+      await bulkUpdateAssignments(assignmentsToUpdate, teamWithMembership.team.id);
       setSelectionState((prev) => ({ ...prev, selectedAssignmentIds: [] }));
     },
     [
@@ -1136,39 +968,23 @@ export default function ScheduleTab({
 
   const handleBulkDeleteAssignments = useCallback(async () => {
     if (selectionState.selectedAssignmentIds.length === 0) return;
-    await bulkDeleteAssignments(
-      selectionState.selectedAssignmentIds,
-      teamWithMembership.team.id,
-    );
+    await bulkDeleteAssignments(selectionState.selectedAssignmentIds, teamWithMembership.team.id);
     setSelectionState((prev) => ({ ...prev, selectedAssignmentIds: [] }));
-  }, [
-    selectionState.selectedAssignmentIds,
-    teamWithMembership.team.id,
-    bulkDeleteAssignments,
-  ]);
+  }, [selectionState.selectedAssignmentIds, teamWithMembership.team.id, bulkDeleteAssignments]);
 
   const handleScopeChange = useCallback(
     (newScope: SelectionScope) => {
       const validDates =
-        newScope === "campaign" && scheduleCampaign
+        newScope === 'campaign' && scheduleCampaign
           ? buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate)
           : periodDates;
-      const validDateSet = new Set(
-        validDates.map((pd) => pd.date.format("YYYY-MM-DD")),
-      );
+      const validDateSet = new Set(validDates.map((pd) => pd.date.format('YYYY-MM-DD')));
       setSelectionState((prev) => {
-        const newSelectedCells = prev.selectedCells.filter((c) =>
-          validDateSet.has(c.date),
-        );
-        const newSelectedAssignmentIds = prev.selectedAssignmentIds.filter(
-          (id) => {
-            const assignment = assignments.find((a) => a.id === id);
-            return (
-              assignment &&
-              validDateSet.has(assignment.date.format("YYYY-MM-DD"))
-            );
-          },
-        );
+        const newSelectedCells = prev.selectedCells.filter((c) => validDateSet.has(c.date));
+        const newSelectedAssignmentIds = prev.selectedAssignmentIds.filter((id) => {
+          const assignment = assignments.find((a) => a.id === id);
+          return assignment && validDateSet.has(assignment.date.format('YYYY-MM-DD'));
+        });
         return {
           ...prev,
           selectedCells: newSelectedCells,
@@ -1185,10 +1001,7 @@ export default function ScheduleTab({
       .filter((a) => selectionState.selectedAssignmentIds.includes(a.id))
       .map((a) => ({ ...a, fixed: !a.fixed }));
     if (assignmentsToUpdate.length === 0) return;
-    await bulkUpdateAssignments(
-      assignmentsToUpdate,
-      teamWithMembership.team.id,
-    );
+    await bulkUpdateAssignments(assignmentsToUpdate, teamWithMembership.team.id);
   }, [
     selectionState.selectedAssignmentIds,
     assignments,
@@ -1196,10 +1009,7 @@ export default function ScheduleTab({
     bulkUpdateAssignments,
   ]);
 
-  const updateSelectedPeriod = (
-    newPeriodStart: dayjs.Dayjs,
-    newPeriodEnd: dayjs.Dayjs,
-  ) => {
+  const updateSelectedPeriod = (newPeriodStart: dayjs.Dayjs, newPeriodEnd: dayjs.Dayjs) => {
     updateScheduleViewSettings({
       periodStartDate: newPeriodStart,
     });
@@ -1208,30 +1018,27 @@ export default function ScheduleTab({
 
   const handleToday = async () => {
     const newPeriodStart =
-      scheduleViewSettings.timeFrame === "week"
-        ? dayjs.utc().startOf("isoWeek")
-        : scheduleViewSettings.timeFrame === "month"
-          ? dayjs.utc().startOf("month")
+      scheduleViewSettings.timeFrame === 'week'
+        ? dayjs.utc().startOf('isoWeek')
+        : scheduleViewSettings.timeFrame === 'month'
+          ? dayjs.utc().startOf('month')
           : dayjs.utc(); // Default to current time if neither "week" nor "month"
     const newPeriodEnd =
-      scheduleViewSettings.timeFrame === "week"
-        ? dayjs.utc().endOf("isoWeek")
-        : scheduleViewSettings.timeFrame === "month"
-          ? dayjs.utc().endOf("month")
+      scheduleViewSettings.timeFrame === 'week'
+        ? dayjs.utc().endOf('isoWeek')
+        : scheduleViewSettings.timeFrame === 'month'
+          ? dayjs.utc().endOf('month')
           : dayjs.utc(); // Default to current time if neither "week" nor "month"
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
   };
 
   const handlePreviousPeriod = async () => {
-    const isMonth = scheduleViewSettings.timeFrame === "month";
+    const isMonth = scheduleViewSettings.timeFrame === 'month';
     const newPeriodStart = scheduleViewSettings.periodStartDate.subtract(
       1,
-      isMonth ? "month" : "week",
+      isMonth ? 'month' : 'week',
     );
-    const newPeriodEnd = computePeriodEndDate(
-      newPeriodStart,
-      scheduleViewSettings.timeFrame,
-    );
+    const newPeriodEnd = computePeriodEndDate(newPeriodStart, scheduleViewSettings.timeFrame);
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
 
     // Prefetch data for extended buffer if approaching edge
@@ -1251,15 +1058,9 @@ export default function ScheduleTab({
   };
 
   const handleNextPeriod = async () => {
-    const isMonth = scheduleViewSettings.timeFrame === "month";
-    const newPeriodStart = scheduleViewSettings.periodStartDate.add(
-      1,
-      isMonth ? "month" : "week",
-    );
-    const newPeriodEnd = computePeriodEndDate(
-      newPeriodStart,
-      scheduleViewSettings.timeFrame,
-    );
+    const isMonth = scheduleViewSettings.timeFrame === 'month';
+    const newPeriodStart = scheduleViewSettings.periodStartDate.add(1, isMonth ? 'month' : 'week');
+    const newPeriodEnd = computePeriodEndDate(newPeriodStart, scheduleViewSettings.timeFrame);
     updateSelectedPeriod(newPeriodStart, newPeriodEnd);
 
     // Prefetch data for extended buffer if approaching edge
@@ -1278,31 +1079,24 @@ export default function ScheduleTab({
     }
   };
 
-  const handleChangeTimeFrame = async (newTimeFrame: "week" | "month") => {
-    console.log("Changing time frame to:", newTimeFrame);
+  const handleChangeTimeFrame = async (newTimeFrame: 'week' | 'month') => {
+    console.log('Changing time frame to:', newTimeFrame);
 
     // When switching time frames, we need an appropriate endDate range to
     // determine overlap with the current week/month. If switching TO week
     // from a month view, use the current month's end so the week-selection
     // logic can decide to show the current week when the month contains today.
     const endDateForComputation =
-      newTimeFrame === "week"
-        ? computePeriodEndDate(
-            scheduleViewSettings.periodStartDate,
-            scheduleViewSettings.timeFrame,
-          )
-        : computePeriodEndDate(
-            scheduleViewSettings.periodStartDate,
-            newTimeFrame,
-          );
+      newTimeFrame === 'week'
+        ? computePeriodEndDate(scheduleViewSettings.periodStartDate, scheduleViewSettings.timeFrame)
+        : computePeriodEndDate(scheduleViewSettings.periodStartDate, newTimeFrame);
 
     // Step 1: Get the new period dates using the NEW timeFrame
-    const { firstDate: newPeriodStart, lastDate: newPeriodEnd } =
-      getPeriodStartEndDates(
-        newTimeFrame,
-        scheduleViewSettings.periodStartDate,
-        endDateForComputation,
-      );
+    const { firstDate: newPeriodStart, lastDate: newPeriodEnd } = getPeriodStartEndDates(
+      newTimeFrame,
+      scheduleViewSettings.periodStartDate,
+      endDateForComputation,
+    );
 
     // Step 2: Update schedule view settings with both new timeFrame and new start date
     updateScheduleViewSettings({
@@ -1319,7 +1113,7 @@ export default function ScheduleTab({
     try {
       await exportSchedule(teamWithMembership.team.id, exportOptions);
     } catch (error) {
-      console.error("Failed to export schedule:", error);
+      console.error('Failed to export schedule:', error);
       // Handle error appropriately
     }
   };
@@ -1330,7 +1124,7 @@ export default function ScheduleTab({
 
   const handleSqsSolveComplete = useCallback(
     (result: SolveTaskStatusResponseT) => {
-      console.log("SQS Solve completed, updating schedule data...");
+      console.log('SQS Solve completed, updating schedule data...');
 
       if (result.result) {
         const {
@@ -1366,9 +1160,7 @@ export default function ScheduleTab({
         // Update requests
         if (newRequests) {
           setRequests((prev) =>
-            prev.map(
-              (r) => newRequests.find((nr: RequestT) => nr.id === r.id) || r,
-            ),
+            prev.map((r) => newRequests.find((nr: RequestT) => nr.id === r.id) || r),
           );
         }
       }
@@ -1382,8 +1174,9 @@ export default function ScheduleTab({
 
       try {
         // Fetch entities (shifts and workers) - assignments now loaded via React Query
-        const { workers: fetchedWorkers, shifts: fetchedShifts } =
-          await getScheduleEntities(teamWithMembership.team.id);
+        const { workers: fetchedWorkers, shifts: fetchedShifts } = await getScheduleEntities(
+          teamWithMembership.team.id,
+        );
         setWorkers(fetchedWorkers);
         setShifts(fetchedShifts);
 
@@ -1393,46 +1186,38 @@ export default function ScheduleTab({
 
         // Fetch owner-only data (schedules, breaches, specialties) — not available to members
         if (teamWithMembership.membership.role !== TeamMembershipRole.MEMBER) {
-          const [schedulesResult, breachesResult, specialtiesResult] =
-            await Promise.allSettled([
-              getSchedules(teamWithMembership.team.id),
-              getBreaches(teamWithMembership.team.id),
-              getSpecialties(teamWithMembership.team.id),
-            ]);
+          const [schedulesResult, breachesResult, specialtiesResult] = await Promise.allSettled([
+            getSchedules(teamWithMembership.team.id),
+            getBreaches(teamWithMembership.team.id),
+            getSpecialties(teamWithMembership.team.id),
+          ]);
 
-          if (schedulesResult.status === "fulfilled") {
+          if (schedulesResult.status === 'fulfilled') {
             const fetchedSchedule = schedulesResult.value;
             setScheduleCampaign(
-              fetchedSchedule.find(
-                (s: ScheduleT) => s.status === ScheduleStatus.CAMPAIGN,
-              ) || null,
+              fetchedSchedule.find((s: ScheduleT) => s.status === ScheduleStatus.CAMPAIGN) || null,
             );
             setSchedulesValidated(
-              fetchedSchedule.filter(
-                (s: ScheduleT) => s.status === ScheduleStatus.VALIDATED,
-              ),
+              fetchedSchedule.filter((s: ScheduleT) => s.status === ScheduleStatus.VALIDATED),
             );
           } else {
-            console.error("Failed to fetch schedules:", schedulesResult.reason);
+            console.error('Failed to fetch schedules:', schedulesResult.reason);
           }
 
-          if (breachesResult.status === "fulfilled") {
+          if (breachesResult.status === 'fulfilled') {
             setBreaches(breachesResult.value);
           } else {
-            console.error("Failed to fetch breaches:", breachesResult.reason);
+            console.error('Failed to fetch breaches:', breachesResult.reason);
           }
 
-          if (specialtiesResult.status === "fulfilled") {
+          if (specialtiesResult.status === 'fulfilled') {
             setSpecialties(specialtiesResult.value);
           } else {
-            console.error(
-              "Failed to fetch specialties:",
-              specialtiesResult.reason,
-            );
+            console.error('Failed to fetch specialties:', specialtiesResult.reason);
           }
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       } finally {
         setIsLoadingSchedule(false);
       }
@@ -1449,27 +1234,19 @@ export default function ScheduleTab({
   ]);
 
   if (isMobile) {
-    return (
-      <MobileScheduleTab lng={lng} teamWithMembership={teamWithMembership} />
-    );
+    return <MobileScheduleTab lng={lng} teamWithMembership={teamWithMembership} />;
   }
 
   if (memberHasNoWorker) {
     return (
-      <div
-        className="tab-container-ultrawide"
-        data-testid="schedule-page-heading"
-      >
-        <NoWorkerAssigned message={t("error_no_worker_assigned")} />
+      <div className="tab-container-ultrawide" data-testid="schedule-page-heading">
+        <NoWorkerAssigned message={t('error_no_worker_assigned')} />
       </div>
     );
   }
 
   return (
-    <div
-      className="tab-container-ultrawide"
-      data-testid="schedule-page-heading"
-    >
+    <div className="tab-container-ultrawide" data-testid="schedule-page-heading">
       <div>
         {isLoadingSchedule ? (
           <div className="container-schedule-selector-skeleton">
@@ -1538,13 +1315,10 @@ export default function ScheduleTab({
               )}
           </>
         )}
-        <div style={{ display: "flex", flexDirection: "row" }}>
-          {isLoadingAssignments ||
-          (teamWithMembership.team.useSolver && isLoadingShiftDemands) ? (
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          {isLoadingAssignments || (teamWithMembership.team.useSolver && isLoadingShiftDemands) ? (
             <ScheduleTableSkeleton />
-          ) : assignments.length === 0 &&
-            requests.length === 0 &&
-            shiftDemands.length === 0 ? (
+          ) : assignments.length === 0 && requests.length === 0 && shiftDemands.length === 0 ? (
             <NoAssignmentsDisplay
               lng={lng}
               teamWithMembership={teamWithMembership}
@@ -1582,9 +1356,7 @@ export default function ScheduleTab({
               handleSelectAll={handleSelectAll}
               isCustomSolveModeActive={isCustomSolveModeActive}
               customSolveSelectedCells={
-                scheduleViewSettings.groupBy === "worker"
-                  ? workerSolveCells
-                  : shiftSolveCells
+                scheduleViewSettings.groupBy === 'worker' ? workerSolveCells : shiftSolveCells
               }
               handleCustomRowSelect={handleCustomRowSelect}
               handleCustomColumnSelect={handleCustomColumnSelect}
@@ -1605,10 +1377,7 @@ export default function ScheduleTab({
           scheduleId={scheduleCampaign?.id ?? null}
           workers={workers.filter((w) => !w.deleted)}
           shifts={shifts.filter((s) => !s.deleted)}
-          schedules={[
-            ...(scheduleCampaign ? [scheduleCampaign] : []),
-            ...schedulesValidated,
-          ]}
+          schedules={[...(scheduleCampaign ? [scheduleCampaign] : []), ...schedulesValidated]}
           specialties={specialties}
           shiftOptions={[]}
           userWorkerId={null}

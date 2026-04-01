@@ -2,8 +2,8 @@
  * API client for admin operations
  */
 
-import { UserT, toUserT } from "../../../types/user";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { UserT, toUserT } from '../../../types/user';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export interface ImpersonationTokenResponse {
   token: string;
@@ -15,11 +15,7 @@ export class AdminApi extends BaseApi {
    * List all users in the system (admin only)
    */
   static async listUsers(apiClient: AuthenticatedApiClient): Promise<UserT[]> {
-    const responseData = await this.makeRequest<any[]>(
-      apiClient,
-      "get",
-      "/admin/users",
-    );
+    const responseData = await this.makeRequest<any[]>(apiClient, 'get', '/admin/users');
     return responseData.map((u) => toUserT(u) as UserT);
   }
 
@@ -32,11 +28,11 @@ export class AdminApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     targetUserId: string,
   ): Promise<ImpersonationTokenResponse> {
-    if (!targetUserId) throw new Error("Target user ID is required");
+    if (!targetUserId) throw new Error('Target user ID is required');
 
     return this.makeRequest<ImpersonationTokenResponse>(
       apiClient,
-      "post",
+      'post',
       `/admin/users/${targetUserId}/impersonate`,
     );
   }
@@ -45,13 +41,7 @@ export class AdminApi extends BaseApi {
    * Stop impersonating and restore the admin's own session.
    * The server has no state to clear — the frontend simply discards the token.
    */
-  static async stopImpersonation(
-    apiClient: AuthenticatedApiClient,
-  ): Promise<void> {
-    await this.makeRequest<void>(
-      apiClient,
-      "delete",
-      "/admin/users/impersonate",
-    );
+  static async stopImpersonation(apiClient: AuthenticatedApiClient): Promise<void> {
+    await this.makeRequest<void>(apiClient, 'delete', '/admin/users/impersonate');
   }
 }

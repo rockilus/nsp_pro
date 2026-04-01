@@ -1,20 +1,17 @@
-import { useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import dayjs from "dayjs";
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 // Types
-import {
-  AssignmentT,
-  AssignmentsRecurrencesResultT,
-} from "../types/assignment";
-import { RecurrenceRuleT, RecurrenceUpdateScope } from "../types/recurrence";
-import { ReplacementCandidateT } from "../types/replacement";
+import { AssignmentT, AssignmentsRecurrencesResultT } from '../types/assignment';
+import { RecurrenceRuleT, RecurrenceUpdateScope } from '../types/recurrence';
+import { ReplacementCandidateT } from '../types/replacement';
 // API Client
-import { AssignmentApi } from "../app/lib/api/assignmentApi";
-import { useApiClient } from "../app/lib/api-client";
+import { AssignmentApi } from '../app/lib/api/assignmentApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
-import { assignmentsQueryKeys } from "../app/lib/hooks/useAssignments";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
+import { assignmentsQueryKeys } from '../app/lib/hooks/useAssignments';
 
 //////////////////////////
 // Authenticated Assignment Hooks //
@@ -36,30 +33,30 @@ export function useGetAssignments() {
       workerId?: string,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetAssignments called:", {
+        console.log('🔍 useGetAssignments called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
           teamId,
           includeCampaign,
-          startDate: startDate?.format("YYYY-MM-DD"),
-          endDate: endDate?.format("YYYY-MM-DD"),
+          startDate: startDate?.format('YYYY-MM-DD'),
+          endDate: endDate?.format('YYYY-MM-DD'),
           workerId,
         });
       }
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!teamId) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
@@ -73,13 +70,13 @@ export function useGetAssignments() {
         );
 
         if (env.isDevelopment) {
-          console.log("✅ Assignments retrieved successfully");
+          console.log('✅ Assignments retrieved successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to get assignments:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get assignments:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -105,7 +102,7 @@ export function useAddAssignmentAndRecurrence() {
       recurrence: RecurrenceRuleT | null = null,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAddAssignmentAndRecurrence called:", {
+        console.log('🔍 useAddAssignmentAndRecurrence called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -117,16 +114,16 @@ export function useAddAssignmentAndRecurrence() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!assignment || !assignment.teamId) {
-        throw new Error("Assignment and team ID are required");
+        throw new Error('Assignment and team ID are required');
       }
 
       try {
@@ -142,13 +139,13 @@ export function useAddAssignmentAndRecurrence() {
         });
 
         if (env.isDevelopment) {
-          console.log("✅ Assignment added successfully");
+          console.log('✅ Assignment added successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to add assignment:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to add assignment:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -177,11 +174,11 @@ export function useUpdateAssignmentAndRecurrence() {
     ): Promise<AssignmentsRecurrencesResultT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -200,8 +197,8 @@ export function useUpdateAssignmentAndRecurrence() {
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to update assignment:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update assignment:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -230,11 +227,11 @@ export function useDeleteAssignment() {
     ): Promise<AssignmentsRecurrencesResultT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -253,8 +250,8 @@ export function useDeleteAssignment() {
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to delete assignment:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete assignment:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -274,12 +271,9 @@ export function useGetReplacementCandidates() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const getReplacementCandidates = useCallback(
-    async (
-      assignmentId: string,
-      teamId: string,
-    ): Promise<ReplacementCandidateT[]> => {
+    async (assignmentId: string, teamId: string): Promise<ReplacementCandidateT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetReplacementCandidates called:", {
+        console.log('🔍 useGetReplacementCandidates called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -290,16 +284,16 @@ export function useGetReplacementCandidates() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Validate required parameters
       if (!assignmentId || !teamId) {
-        throw new Error("Assignment ID and team ID are required");
+        throw new Error('Assignment ID and team ID are required');
       }
 
       try {
@@ -310,7 +304,7 @@ export function useGetReplacementCandidates() {
         );
 
         if (env.isDevelopment) {
-          console.log("✅ Replacement candidates retrieved successfully:", {
+          console.log('✅ Replacement candidates retrieved successfully:', {
             timestamp: new Date().toISOString(),
             count: result.length,
           });
@@ -318,7 +312,7 @@ export function useGetReplacementCandidates() {
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to get replacement candidates:", error);
+        console.error('❌ Failed to get replacement candidates:', error);
         throw error;
       }
     },
@@ -337,20 +331,12 @@ export function useBulkCreateAssignments() {
   const queryClient = useQueryClient();
 
   const bulkCreateAssignments = useCallback(
-    async (
-      assignments: AssignmentT[],
-      teamId: string,
-    ): Promise<AssignmentsRecurrencesResultT> => {
-      if (loading)
-        throw new Error("Authentication still loading - please wait");
+    async (assignments: AssignmentT[], teamId: string): Promise<AssignmentsRecurrencesResultT> => {
+      if (loading) throw new Error('Authentication still loading - please wait');
       if (!isAuthenticated || !user?.id_token)
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
 
-      const result = await AssignmentApi.bulkCreateAssignments(
-        apiClient,
-        assignments,
-        teamId,
-      );
+      const result = await AssignmentApi.bulkCreateAssignments(apiClient, assignments, teamId);
       queryClient.invalidateQueries({
         queryKey: assignmentsQueryKeys.teams(teamId),
       });
@@ -371,20 +357,12 @@ export function useBulkUpdateAssignments() {
   const queryClient = useQueryClient();
 
   const bulkUpdateAssignments = useCallback(
-    async (
-      assignments: AssignmentT[],
-      teamId: string,
-    ): Promise<AssignmentsRecurrencesResultT> => {
-      if (loading)
-        throw new Error("Authentication still loading - please wait");
+    async (assignments: AssignmentT[], teamId: string): Promise<AssignmentsRecurrencesResultT> => {
+      if (loading) throw new Error('Authentication still loading - please wait');
       if (!isAuthenticated || !user?.id_token)
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
 
-      const result = await AssignmentApi.bulkUpdateAssignments(
-        apiClient,
-        assignments,
-        teamId,
-      );
+      const result = await AssignmentApi.bulkUpdateAssignments(apiClient, assignments, teamId);
       queryClient.invalidateQueries({
         queryKey: assignmentsQueryKeys.teams(teamId),
       });
@@ -405,20 +383,12 @@ export function useBulkDeleteAssignments() {
   const queryClient = useQueryClient();
 
   const bulkDeleteAssignments = useCallback(
-    async (
-      assignmentIds: string[],
-      teamId: string,
-    ): Promise<AssignmentsRecurrencesResultT> => {
-      if (loading)
-        throw new Error("Authentication still loading - please wait");
+    async (assignmentIds: string[], teamId: string): Promise<AssignmentsRecurrencesResultT> => {
+      if (loading) throw new Error('Authentication still loading - please wait');
       if (!isAuthenticated || !user?.id_token)
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
 
-      const result = await AssignmentApi.bulkDeleteAssignments(
-        apiClient,
-        assignmentIds,
-        teamId,
-      );
+      const result = await AssignmentApi.bulkDeleteAssignments(apiClient, assignmentIds, teamId);
       queryClient.invalidateQueries({
         queryKey: assignmentsQueryKeys.teams(teamId),
       });

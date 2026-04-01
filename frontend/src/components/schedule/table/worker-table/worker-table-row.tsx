@@ -1,31 +1,27 @@
-import React from "react";
+import React from 'react';
 // MUI
-import TableRow from "@mui/material/TableRow";
+import TableRow from '@mui/material/TableRow';
 // Components
-import WorkerRowHeaderCell from "./worker-row-header-cell";
-import WorkerCell from "./worker-cell";
-import { generateOwnerIdDateKey } from "../shared/assignment-utils";
+import WorkerRowHeaderCell from './worker-row-header-cell';
+import WorkerCell from './worker-cell';
+import { generateOwnerIdDateKey } from '../shared/assignment-utils';
 // Types
-import { ShiftT } from "../../../../types/shift";
-import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from '../../../../types/shift';
+import { WorkerT } from '../../../../types/worker';
 import {
   ScheduleT,
   periodDateT,
   ScheduleViewSettingsT,
   ScheduleCellsDictT,
-} from "../../../../types/schedule";
-import {
-  AssignmentT,
-  AssignmentDataDictT,
-  CreateAssignmentT,
-} from "@/types/assignment";
-import { RequestT } from "../../../../types/request";
-import { TeamWithMembership } from "@/types/team";
+} from '../../../../types/schedule';
+import { AssignmentT, AssignmentDataDictT, CreateAssignmentT } from '@/types/assignment';
+import { RequestT } from '../../../../types/request';
+import { TeamWithMembership } from '@/types/team';
 import {
   ScheduleSelectionState,
   SelectedScheduleCell,
   SelectionScope,
-} from "@/types/scheduleSelection";
+} from '@/types/scheduleSelection';
 
 export default function WorkerTableRow({
   lng,
@@ -64,28 +60,17 @@ export default function WorkerTableRow({
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
   selectionState: ScheduleSelectionState;
   selectionScope: SelectionScope;
-  handleCellSelect: (
-    rowId: string,
-    date: string,
-    scheduleId: string | null,
-  ) => void;
+  handleCellSelect: (rowId: string, date: string, scheduleId: string | null) => void;
   handleAssignmentSelect: (assignmentId: string) => void;
   handleRowSelect: (rowId: string, scope: SelectionScope) => void;
   isCustomSolveModeActive?: boolean;
   customSolveSelectedCells?: SelectedScheduleCell[];
   handleCustomRowSelect?: (rowId: string) => void;
-  handleCustomCellSelect?: (
-    rowId: string,
-    date: string,
-    scheduleId: string | null,
-  ) => void;
+  handleCustomCellSelect?: (rowId: string, date: string, scheduleId: string | null) => void;
 }) {
   // Derive custom solve row state
-  const workerCustomCells = customSolveSelectedCells.filter(
-    (c) => c.rowId === worker.id,
-  );
-  const isRowCustomSelected =
-    isCustomSolveModeActive && workerCustomCells.length > 0;
+  const workerCustomCells = customSolveSelectedCells.filter((c) => c.rowId === worker.id);
+  const isRowCustomSelected = isCustomSolveModeActive && workerCustomCells.length > 0;
   const isRowCustomIndeterminate = false; // row sparkle is checked when any cell selected
 
   return (
@@ -103,9 +88,7 @@ export default function WorkerTableRow({
           periodDates.length > 0 &&
           periodDates.every((pd) =>
             selectionState.selectedCells.some(
-              (c) =>
-                c.rowId === worker.id &&
-                c.date === pd.date.format("YYYY-MM-DD"),
+              (c) => c.rowId === worker.id && c.date === pd.date.format('YYYY-MM-DD'),
             ),
           )
         }
@@ -113,37 +96,27 @@ export default function WorkerTableRow({
           !!selectionState?.isActive &&
           !periodDates.every((pd) =>
             selectionState.selectedCells.some(
-              (c) =>
-                c.rowId === worker.id &&
-                c.date === pd.date.format("YYYY-MM-DD"),
+              (c) => c.rowId === worker.id && c.date === pd.date.format('YYYY-MM-DD'),
             ),
           ) &&
           (periodDates.some((pd) =>
             selectionState.selectedCells.some(
-              (c) =>
-                c.rowId === worker.id &&
-                c.date === pd.date.format("YYYY-MM-DD"),
+              (c) => c.rowId === worker.id && c.date === pd.date.format('YYYY-MM-DD'),
             ),
           ) ||
             assignments.some(
               (a) =>
-                a.workerId === worker.id &&
-                selectionState.selectedAssignmentIds.includes(a.id),
+                a.workerId === worker.id && selectionState.selectedAssignmentIds.includes(a.id),
             ))
         }
-        onRowSelect={() =>
-          handleRowSelect?.(worker.id, selectionScope ?? "view")
-        }
+        onRowSelect={() => handleRowSelect?.(worker.id, selectionScope ?? 'view')}
         isCustomSolveModeActive={isCustomSolveModeActive}
         isRowCustomSelected={isRowCustomSelected}
         isRowCustomIndeterminate={isRowCustomIndeterminate}
         onCustomRowSelect={() => handleCustomRowSelect?.(worker.id)}
       />
       {periodDates.map((pDate, dateIndex) => {
-        const scheduleCellDataKey = generateOwnerIdDateKey(
-          worker.id,
-          pDate.date,
-        );
+        const scheduleCellDataKey = generateOwnerIdDateKey(worker.id, pDate.date);
         const scheduleCellData = scheduleCellsDict[scheduleCellDataKey] || null;
         return (
           <WorkerCell
@@ -162,21 +135,15 @@ export default function WorkerTableRow({
             handleAssignmentSelect={handleAssignmentSelect}
             isCustomSolveModeActive={isCustomSolveModeActive}
             isCustomCellSelected={customSolveSelectedCells.some(
-              (c) =>
-                c.rowId === worker.id &&
-                c.date === pDate.date.format("YYYY-MM-DD"),
+              (c) => c.rowId === worker.id && c.date === pDate.date.format('YYYY-MM-DD'),
             )}
             onCustomCellSelect={() =>
-              handleCustomCellSelect?.(
-                worker.id,
-                pDate.date.format("YYYY-MM-DD"),
-                pDate.scheduleId,
-              )
+              handleCustomCellSelect?.(worker.id, pDate.date.format('YYYY-MM-DD'), pDate.scheduleId)
             }
             isDateInCampaign={
               scheduleCampaign
-                ? !pDate.date.isBefore(scheduleCampaign.startDate, "day") &&
-                  !pDate.date.isAfter(scheduleCampaign.endDate, "day")
+                ? !pDate.date.isBefore(scheduleCampaign.startDate, 'day') &&
+                  !pDate.date.isAfter(scheduleCampaign.endDate, 'day')
                 : false
             }
           />

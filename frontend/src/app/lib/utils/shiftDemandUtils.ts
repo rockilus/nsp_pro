@@ -3,7 +3,7 @@
  * Provides date manipulation, validation, and calculation helpers
  */
 
-import { PeriodType } from "@/types/shiftDemand";
+import { PeriodType } from '@/types/shiftDemand';
 
 /**
  * Date utility functions for shift demand management
@@ -69,18 +69,18 @@ export class ShiftDemandDateUtils {
     const periodLength = endDate.getTime() - startDate.getTime();
 
     switch (periodType) {
-      case "week":
+      case 'week':
         return {
           start: new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000),
           end: new Date(endDate.getTime() + 7 * 24 * 60 * 60 * 1000),
         };
-      case "month":
+      case 'month':
         const nextStart = new Date(startDate);
         nextStart.setMonth(nextStart.getMonth() + 1);
         const nextEnd = new Date(endDate);
         nextEnd.setMonth(nextEnd.getMonth() + 1);
         return { start: nextStart, end: nextEnd };
-      case "custom":
+      case 'custom':
         return {
           start: new Date(startDate.getTime() + periodLength),
           end: new Date(endDate.getTime() + periodLength),
@@ -101,18 +101,18 @@ export class ShiftDemandDateUtils {
     const periodLength = endDate.getTime() - startDate.getTime();
 
     switch (periodType) {
-      case "week":
+      case 'week':
         return {
           start: new Date(startDate.getTime() - 7 * 24 * 60 * 60 * 1000),
           end: new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000),
         };
-      case "month":
+      case 'month':
         const prevStart = new Date(startDate);
         prevStart.setMonth(prevStart.getMonth() - 1);
         const prevEnd = new Date(endDate);
         prevEnd.setMonth(prevEnd.getMonth() - 1);
         return { start: prevStart, end: prevEnd };
-      case "custom":
+      case 'custom':
         return {
           start: new Date(startDate.getTime() - periodLength),
           end: new Date(endDate.getTime() - periodLength),
@@ -126,7 +126,7 @@ export class ShiftDemandDateUtils {
    * Format date for display (e.g., "Mon 15")
    */
   static formatDateShort(date: Date): string {
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     return `${days[date.getDay()]} ${date.getDate()}`;
   }
 
@@ -134,7 +134,7 @@ export class ShiftDemandDateUtils {
    * Format date for API (YYYY-MM-DD)
    */
   static formatDateForAPI(date: Date): string {
-    return date.toISOString().split("T")[0];
+    return date.toISOString().split('T')[0];
   }
 
   /**

@@ -2,10 +2,7 @@
  * Polling service for monitoring SQS solve status
  */
 
-import {
-  SolveTaskStatusResponseT,
-  SolveRequestStatus,
-} from "@/types/solveTaskStatus";
+import { SolveTaskStatusResponseT, SolveRequestStatus } from '@/types/solveTaskStatus';
 
 export interface PollingOptions {
   interval?: number; // polling interval in milliseconds (default: 2000)
@@ -22,9 +19,7 @@ export class SolvePollingService {
   private timeoutId: NodeJS.Timeout | null = null;
   private isActive = false;
   private retryCount = 0;
-  private getSolveStatusFn: (
-    solveId: string,
-  ) => Promise<SolveTaskStatusResponseT>;
+  private getSolveStatusFn: (solveId: string) => Promise<SolveTaskStatusResponseT>;
 
   constructor(
     solveId: string,
@@ -48,7 +43,7 @@ export class SolvePollingService {
    */
   start(): void {
     if (this.isActive) {
-      console.warn("Polling is already active");
+      console.warn('Polling is already active');
       return;
     }
 
@@ -61,9 +56,7 @@ export class SolvePollingService {
    * Stop polling
    */
   stop(): void {
-    console.log(
-      "[stop() #1] Stopping polling for solve status (direct call on instance)...",
-    );
+    console.log('[stop() #1] Stopping polling for solve status (direct call on instance)...');
 
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
@@ -88,7 +81,7 @@ export class SolvePollingService {
   }
 
   private async poll(): Promise<void> {
-    console.log("Polling for solve status...", this.isActive);
+    console.log('Polling for solve status...', this.isActive);
 
     if (!this.isActive) {
       return;
@@ -99,7 +92,7 @@ export class SolvePollingService {
       console.log(`Polling status for solve ID ${this.solveId}:`, status);
       console.log(
         `Current request status: ${status.requestStatus}, ${
-          status.requestStatus === "PENDING"
+          status.requestStatus === 'PENDING'
         },  ${status.requestStatus === SolveRequestStatus.PENDING}`,
       );
 
@@ -112,14 +105,14 @@ export class SolvePollingService {
       // Check if we should continue polling
       if (status.requestStatus === SolveRequestStatus.COMPLETED) {
         this.options.onComplete(status);
-        console.log("[stop() #2] Stopping polling after COMPLETED status.");
+        console.log('[stop() #2] Stopping polling after COMPLETED status.');
         this.stop();
         return;
       }
 
       if (status.requestStatus === SolveRequestStatus.FAILED) {
-        this.options.onFailed(status.errorMessage || "Solve failed");
-        console.log("[stop() #3] Stopping polling after FAILED status.");
+        this.options.onFailed(status.errorMessage || 'Solve failed');
+        console.log('[stop() #3] Stopping polling after FAILED status.');
         this.stop();
         return;
       }
@@ -129,7 +122,7 @@ export class SolvePollingService {
         status.requestStatus === SolveRequestStatus.PENDING ||
         status.requestStatus === SolveRequestStatus.IN_PROGRESS
       ) {
-        console.log("Scheduling next poll...");
+        console.log('Scheduling next poll...');
 
         this.scheduleNextPoll();
       }
@@ -147,14 +140,13 @@ export class SolvePollingService {
           `Polling failed after ${this.options.maxRetries} retries. Last error: ${error.message}`,
         ),
       );
-      console.log("[stop() #4] Stopping polling after max retries reached.");
+      console.log('[stop() #4] Stopping polling after max retries reached.');
       this.stop();
       return;
     }
 
     // Exponential backoff: increase interval on retries
-    const backoffInterval =
-      this.options.interval * Math.pow(2, this.retryCount - 1);
+    const backoffInterval = this.options.interval * Math.pow(2, this.retryCount - 1);
 
     console.warn(
       `Polling error (retry ${this.retryCount}/${this.options.maxRetries}):`,
@@ -167,7 +159,7 @@ export class SolvePollingService {
   }
 
   private scheduleNextPoll(): void {
-    console.log("Scheduling next poll timeout to:", this.options.interval);
+    console.log('Scheduling next poll timeout to:', this.options.interval);
 
     this.timeoutId = setTimeout(() => {
       this.poll();

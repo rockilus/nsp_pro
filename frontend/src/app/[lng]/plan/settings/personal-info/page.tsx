@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 // Components
-import UserProfileTab from "../../../../../components/settings/profile/user-profile-tab";
+import UserProfileTab from '../../../../../components/settings/profile/user-profile-tab';
 // Styles
-import "../../../../../styles/page.css";
+import '../../../../../styles/page.css';
 
 export default function Page({ params }: { params: Promise<{ lng: string }> }) {
   const { lng } = React.use(params as Promise<{ lng: string }>);

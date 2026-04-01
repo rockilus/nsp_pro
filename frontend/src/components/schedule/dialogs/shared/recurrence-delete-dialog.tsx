@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogActions,
@@ -9,8 +9,8 @@ import {
   Radio,
   RadioGroup,
   Button,
-} from "@mui/material";
-import { RecurrenceUpdateScope } from "../../../../types/recurrence";
+} from '@mui/material';
+import { RecurrenceUpdateScope } from '../../../../types/recurrence';
 
 interface RecurrenceDeleteDialogProps {
   open: boolean;
@@ -38,9 +38,7 @@ const RecurrenceDeleteDialog: React.FC<RecurrenceDeleteDialogProps> = ({
         <FormControl component="fieldset">
           <RadioGroup
             value={selectedScope}
-            onChange={(e) =>
-              setSelectedScope(Number(e.target.value) as RecurrenceUpdateScope)
-            }
+            onChange={(e) => setSelectedScope(Number(e.target.value) as RecurrenceUpdateScope)}
           >
             <FormControlLabel
               value={RecurrenceUpdateScope.SINGLE}
@@ -61,11 +59,7 @@ const RecurrenceDeleteDialog: React.FC<RecurrenceDeleteDialogProps> = ({
         </FormControl>
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={onClose}
-          color="secondary"
-          data-testid="recurrence-delete-cancel-button"
-        >
+        <Button onClick={onClose} color="secondary" data-testid="recurrence-delete-cancel-button">
           Cancel
         </Button>
         <Button

@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { useTranslation } from "../../../app/i18n/client";
-import dayjs, { Dayjs } from "dayjs";
-import duration from "dayjs/plugin/duration";
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
+import dayjs, { Dayjs } from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 // MUI
-import Button from "@mui/material/Button";
-import DeleteIcon from "@mui/icons-material/Delete";
+import Button from '@mui/material/Button';
+import DeleteIcon from '@mui/icons-material/Delete';
 // Styles
-import "./invitations-list.css";
+import './invitations-list.css';
 // Types
-import { WorkerT } from "@/types/worker";
-import { TeamInvitationT } from "@/types/team-invitation";
+import { WorkerT } from '@/types/worker';
+import { TeamInvitationT } from '@/types/team-invitation';
 
 dayjs.extend(duration);
 
@@ -26,15 +26,15 @@ export default function InvitationsList({
   handleResendTeamInvitationEmail: (invitationId: string) => Promise<void>;
   handleDeleteTeamInvitation: (invitationId: string) => Promise<void>;
 }) {
-  const { t } = useTranslation(lng, "teams-page");
+  const { t } = useTranslation(lng, 'teams-page');
 
   const getExpirationStatus = (expiresAt: Dayjs): string => {
     const now = dayjs().utc();
     if (now.isAfter(expiresAt)) {
-      return t("expired");
+      return t('expired');
     }
-    const days = expiresAt.diff(now, "day");
-    return `${days} ${t("days").toLocaleLowerCase()}`;
+    const days = expiresAt.diff(now, 'day');
+    return `${days} ${t('days').toLocaleLowerCase()}`;
   };
 
   const InvitationsListItem = ({
@@ -49,25 +49,18 @@ export default function InvitationsList({
 
     useEffect(() => {
       const now = dayjs().utc();
-      if (
-        invitation.lastSentAt &&
-        now.diff(invitation.lastSentAt, "minute") < 2
-      ) {
+      if (invitation.lastSentAt && now.diff(invitation.lastSentAt, 'minute') < 2) {
         setIsResendDisabled(true);
-        const remainingSeconds =
-          120 - now.diff(invitation.lastSentAt, "second");
+        const remainingSeconds = 120 - now.diff(invitation.lastSentAt, 'second');
         const interval = setInterval(() => {
-          const secondsLeft =
-            remainingSeconds - dayjs().utc().diff(now, "second");
+          const secondsLeft = remainingSeconds - dayjs().utc().diff(now, 'second');
           if (secondsLeft <= 0) {
             setIsResendDisabled(false);
             setCountdown(null);
             clearInterval(interval);
           } else {
             setCountdown(
-              `${Math.floor(secondsLeft / 60)}:${(secondsLeft % 60)
-                .toString()
-                .padStart(2, "0")}`,
+              `${Math.floor(secondsLeft / 60)}:${(secondsLeft % 60).toString().padStart(2, '0')}`,
             );
           }
         }, 1000);
@@ -80,14 +73,10 @@ export default function InvitationsList({
     };
 
     const worker =
-      invitation.workerId &&
-      workers.find((worker) => worker.id === invitation.workerId);
+      invitation.workerId && workers.find((worker) => worker.id === invitation.workerId);
 
     return (
-      <div
-        key={invitation.id}
-        className={`invites-list-item ${isFirstItem ? "first-item" : ""}`}
-      >
+      <div key={invitation.id} className={`invites-list-item ${isFirstItem ? 'first-item' : ''}`}>
         <div className="team-list-item-description">
           <strong className="invites-list-item-name">{`${invitation.firstName} ${invitation.lastName}`}</strong>
         </div>
@@ -96,9 +85,7 @@ export default function InvitationsList({
           <span className="invites-list-item-info-divider">|</span>
           {worker && (
             <>
-              <span className="invites-list-item-info">
-                {worker.name || ""}
-              </span>
+              <span className="invites-list-item-info">{worker.name || ''}</span>
               <span className="invites-list-item-info-divider">|</span>
             </>
           )}
@@ -113,17 +100,17 @@ export default function InvitationsList({
               onClick={handleResendInvitation}
               disabled={isResendDisabled}
               sx={{
-                textTransform: "none",
-                marginRight: "8px",
-                fontSize: "12px",
-                padding: "3px 12px",
+                textTransform: 'none',
+                marginRight: '8px',
+                fontSize: '12px',
+                padding: '3px 12px',
               }}
             >
-              {t("resend_invite")}
+              {t('resend_invite')}
             </Button>
             {countdown && (
               <span className="resend-countdown">
-                {t("available_in")}: {countdown}
+                {t('available_in')}: {countdown}
               </span>
             )}
           </div>
@@ -132,10 +119,10 @@ export default function InvitationsList({
             onClick={() => handleDeleteTeamInvitation(invitation.id)}
             color="error"
             sx={{
-              textTransform: "none",
-              fontSize: "12px",
-              padding: "3px 0",
-              height: "100%",
+              textTransform: 'none',
+              fontSize: '12px',
+              padding: '3px 0',
+              height: '100%',
             }}
           >
             <DeleteIcon fontSize="small" />

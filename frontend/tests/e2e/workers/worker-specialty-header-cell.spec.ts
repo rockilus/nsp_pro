@@ -1,9 +1,9 @@
-import { test, expect, Page } from "@playwright/test";
-import { WorkerTestBase } from "../../utils/worker-test-base";
+import { test, expect, Page } from '@playwright/test';
+import { WorkerTestBase } from '../../utils/worker-test-base';
 
 const workerTestBase = new WorkerTestBase();
 
-test.describe("Worker Specialty Header Cell", () => {
+test.describe('Worker Specialty Header Cell', () => {
   let testWorker: { id: string; name: string; teamId: string };
   let testSpecialties: { id: string; name: string; teamId: string }[];
 
@@ -32,11 +32,7 @@ test.describe("Worker Specialty Header Cell", () => {
     testSpecialties.push(specialty1, specialty2);
 
     console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
-    console.log(
-      `Created test specialties: ${testSpecialties
-        .map((s) => s.name)
-        .join(", ")}`,
-    );
+    console.log(`Created test specialties: ${testSpecialties.map((s) => s.name).join(', ')}`);
 
     // Navigate to the workers page
     await workerTestBase.navigateToWorkersPage(page);
@@ -73,9 +69,7 @@ test.describe("Worker Specialty Header Cell", () => {
     page,
   }) => {
     // Find the specialties header cell
-    const specialtyHeaderCell = page.locator(
-      '[data-testid="worker-specialty-header-cell"]',
-    );
+    const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await expect(specialtyHeaderCell).toBeVisible();
 
     // Click on the specialties header
@@ -88,20 +82,14 @@ test.describe("Worker Specialty Header Cell", () => {
     // Verify the popup has the correct title
     const title = page.locator('[data-testid="update-specialties-title"]');
     await expect(title).toBeVisible();
-    await expect(title).toContainText("Update specialties");
+    await expect(title).toContainText('Update specialties');
 
-    console.log(
-      "✅ Popup with 'Update specialties' title appears when clicking header",
-    );
+    console.log("✅ Popup with 'Update specialties' title appears when clicking header");
   });
 
-  test("should add new specialty when entering name and pressing enter", async ({
-    page,
-  }) => {
+  test('should add new specialty when entering name and pressing enter', async ({ page }) => {
     // Click on the specialties header to open popup
-    const specialtyHeaderCell = page.locator(
-      '[data-testid="worker-specialty-header-cell"]',
-    );
+    const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await specialtyHeaderCell.click();
 
     // Wait for the popup to appear
@@ -109,40 +97,34 @@ test.describe("Worker Specialty Header Cell", () => {
     await expect(popup).toBeVisible();
 
     // Find the input field for new specialty
-    const newSpecialtyInput = page.locator(
-      '[data-testid="new-specialty-input"]',
-    );
+    const newSpecialtyInput = page.locator('[data-testid="new-specialty-input"]');
     await expect(newSpecialtyInput).toBeVisible();
 
     // Type a new specialty name
-    const newSpecialtyName = `Orthopedics ${
-      test.info().workerIndex
-    }-${Date.now()}`;
+    const newSpecialtyName = `Orthopedics ${test.info().workerIndex}-${Date.now()}`;
     await newSpecialtyInput.fill(newSpecialtyName);
 
     // Press Enter to add the specialty
-    await newSpecialtyInput.press("Enter");
+    await newSpecialtyInput.press('Enter');
 
     // Wait for the specialty to be added to the list (smarter wait)
     const specialtiesList = page.locator('[data-testid="specialties-list"]');
     await expect(specialtiesList).toContainText(newSpecialtyName);
 
     // Verify the input field is cleared
-    await expect(newSpecialtyInput).toHaveValue("");
+    await expect(newSpecialtyInput).toHaveValue('');
 
     console.log(`✅ New specialty "${newSpecialtyName}" added successfully`);
   });
 
-  test("should show edit input when clicking edit button next to existing specialty", async ({
+  test('should show edit input when clicking edit button next to existing specialty', async ({
     page,
   }) => {
     // Use one of our pre-created test specialties
     const testSpecialty = testSpecialties[0];
 
     // Click on the specialties header to open popup
-    const specialtyHeaderCell = page.locator(
-      '[data-testid="worker-specialty-header-cell"]',
-    );
+    const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await specialtyHeaderCell.click();
 
     // Wait for the popup to appear
@@ -150,22 +132,16 @@ test.describe("Worker Specialty Header Cell", () => {
     await expect(popup).toBeVisible();
 
     // Find the specialty in the list
-    const specialtyItem = page.locator(
-      `[data-testid="specialty-item-${testSpecialty.id}"]`,
-    );
+    const specialtyItem = page.locator(`[data-testid="specialty-item-${testSpecialty.id}"]`);
     await expect(specialtyItem).toBeVisible();
 
     // Find and click the edit button
-    const editButton = page.locator(
-      `[data-testid="specialty-edit-button-${testSpecialty.id}"]`,
-    );
+    const editButton = page.locator(`[data-testid="specialty-edit-button-${testSpecialty.id}"]`);
     await expect(editButton).toBeVisible();
     await editButton.click();
 
     // Verify the edit input appears with the current specialty name
-    const editInput = page.locator(
-      `[data-testid="specialty-edit-input-${testSpecialty.id}"]`,
-    );
+    const editInput = page.locator(`[data-testid="specialty-edit-input-${testSpecialty.id}"]`);
     await expect(editInput).toBeVisible();
     await expect(editInput).toHaveValue(testSpecialty.name);
 
@@ -173,25 +149,19 @@ test.describe("Worker Specialty Header Cell", () => {
     const confirmButton = page.locator(
       `[data-testid="specialty-confirm-edit-${testSpecialty.id}"]`,
     );
-    const cancelButton = page.locator(
-      `[data-testid="specialty-cancel-edit-${testSpecialty.id}"]`,
-    );
+    const cancelButton = page.locator(`[data-testid="specialty-cancel-edit-${testSpecialty.id}"]`);
     await expect(confirmButton).toBeVisible();
     await expect(cancelButton).toBeVisible();
 
     console.log(`✅ Edit mode activated for specialty "${testSpecialty.name}"`);
   });
 
-  test("should update specialty name when editing and clicking checkmark", async ({
-    page,
-  }) => {
+  test('should update specialty name when editing and clicking checkmark', async ({ page }) => {
     // Use one of our pre-created test specialties
     const testSpecialty = testSpecialties[0];
 
     // Click on the specialties header to open popup
-    const specialtyHeaderCell = page.locator(
-      '[data-testid="worker-specialty-header-cell"]',
-    );
+    const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await specialtyHeaderCell.click();
 
     // Wait for the popup to appear
@@ -199,15 +169,11 @@ test.describe("Worker Specialty Header Cell", () => {
     await expect(popup).toBeVisible();
 
     // Click the edit button for the specialty
-    const editButton = page.locator(
-      `[data-testid="specialty-edit-button-${testSpecialty.id}"]`,
-    );
+    const editButton = page.locator(`[data-testid="specialty-edit-button-${testSpecialty.id}"]`);
     await editButton.click();
 
     // Find the edit input and change the name
-    const editInput = page.locator(
-      `[data-testid="specialty-edit-input-${testSpecialty.id}"]`,
-    );
+    const editInput = page.locator(`[data-testid="specialty-edit-input-${testSpecialty.id}"]`);
     await expect(editInput).toBeVisible();
 
     const newName = `Updated ${testSpecialty.name}`;
@@ -220,33 +186,23 @@ test.describe("Worker Specialty Header Cell", () => {
     await confirmButton.click();
 
     // Wait for the edit input to disappear (indicating update completed)
-    const editInputAfter = page.locator(
-      `[data-testid="specialty-edit-input-${testSpecialty.id}"]`,
-    );
+    const editInputAfter = page.locator(`[data-testid="specialty-edit-input-${testSpecialty.id}"]`);
     await expect(editInputAfter).not.toBeVisible();
 
     // Verify the specialty name is updated in the display
-    const specialtyName = page.locator(
-      `[data-testid="specialty-name-${testSpecialty.id}"]`,
-    );
+    const specialtyName = page.locator(`[data-testid="specialty-name-${testSpecialty.id}"]`);
     await expect(specialtyName).toContainText(newName);
 
-    console.log(
-      `✅ Specialty name updated from "${testSpecialty.name}" to "${newName}"`,
-    );
+    console.log(`✅ Specialty name updated from "${testSpecialty.name}" to "${newName}"`);
   });
 
-  test("should cancel editing and keep original name when clicking cross", async ({
-    page,
-  }) => {
+  test('should cancel editing and keep original name when clicking cross', async ({ page }) => {
     // Use one of our pre-created test specialties
     const testSpecialty = testSpecialties[0];
     const originalName = testSpecialty.name;
 
     // Click on the specialties header to open popup
-    const specialtyHeaderCell = page.locator(
-      '[data-testid="worker-specialty-header-cell"]',
-    );
+    const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await specialtyHeaderCell.click();
 
     // Wait for the popup to appear
@@ -254,53 +210,37 @@ test.describe("Worker Specialty Header Cell", () => {
     await expect(popup).toBeVisible();
 
     // Click the edit button for the specialty
-    const editButton = page.locator(
-      `[data-testid="specialty-edit-button-${testSpecialty.id}"]`,
-    );
+    const editButton = page.locator(`[data-testid="specialty-edit-button-${testSpecialty.id}"]`);
     await editButton.click();
 
     // Find the edit input and change the name
-    const editInput = page.locator(
-      `[data-testid="specialty-edit-input-${testSpecialty.id}"]`,
-    );
+    const editInput = page.locator(`[data-testid="specialty-edit-input-${testSpecialty.id}"]`);
     await expect(editInput).toBeVisible();
 
     const tempName = `Temp Changed ${testSpecialty.name}`;
     await editInput.fill(tempName);
 
     // Click the cancel button (cross)
-    const cancelButton = page.locator(
-      `[data-testid="specialty-cancel-edit-${testSpecialty.id}"]`,
-    );
+    const cancelButton = page.locator(`[data-testid="specialty-cancel-edit-${testSpecialty.id}"]`);
     await cancelButton.click();
 
     // Wait for edit mode to end (edit input disappears)
-    const editInputAfter = page.locator(
-      `[data-testid="specialty-edit-input-${testSpecialty.id}"]`,
-    );
+    const editInputAfter = page.locator(`[data-testid="specialty-edit-input-${testSpecialty.id}"]`);
     await expect(editInputAfter).not.toBeVisible();
 
     // Verify the original specialty name is still displayed
-    const specialtyName = page.locator(
-      `[data-testid="specialty-name-${testSpecialty.id}"]`,
-    );
+    const specialtyName = page.locator(`[data-testid="specialty-name-${testSpecialty.id}"]`);
     await expect(specialtyName).toContainText(originalName);
 
-    console.log(
-      `✅ Edit cancelled successfully, name remains "${originalName}"`,
-    );
+    console.log(`✅ Edit cancelled successfully, name remains "${originalName}"`);
   });
 
-  test("should remove specialty from list when clicking delete button", async ({
-    page,
-  }) => {
+  test('should remove specialty from list when clicking delete button', async ({ page }) => {
     // Use one of our pre-created test specialties
     const testSpecialty = testSpecialties[0];
 
     // Click on the specialties header to open popup
-    const specialtyHeaderCell = page.locator(
-      '[data-testid="worker-specialty-header-cell"]',
-    );
+    const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await specialtyHeaderCell.click();
 
     // Wait for the popup to appear
@@ -308,9 +248,7 @@ test.describe("Worker Specialty Header Cell", () => {
     await expect(popup).toBeVisible();
 
     // Verify the specialty is initially visible
-    const specialtyItem = page.locator(
-      `[data-testid="specialty-item-${testSpecialty.id}"]`,
-    );
+    const specialtyItem = page.locator(`[data-testid="specialty-item-${testSpecialty.id}"]`);
     await expect(specialtyItem).toBeVisible();
 
     // Find and click the delete button
@@ -332,14 +270,12 @@ test.describe("Worker Specialty Header Cell", () => {
     }
   });
 
-  test("should handle keyboard interactions in edit mode", async ({ page }) => {
+  test('should handle keyboard interactions in edit mode', async ({ page }) => {
     // Use one of our pre-created test specialties
     const testSpecialty = testSpecialties[0];
 
     // Click on the specialties header to open popup
-    const specialtyHeaderCell = page.locator(
-      '[data-testid="worker-specialty-header-cell"]',
-    );
+    const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await specialtyHeaderCell.click();
 
     // Wait for the popup to appear
@@ -347,29 +283,23 @@ test.describe("Worker Specialty Header Cell", () => {
     await expect(popup).toBeVisible();
 
     // Click the edit button for the specialty
-    const editButton = page.locator(
-      `[data-testid="specialty-edit-button-${testSpecialty.id}"]`,
-    );
+    const editButton = page.locator(`[data-testid="specialty-edit-button-${testSpecialty.id}"]`);
     await editButton.click();
 
     // Find the edit input
-    const editInput = page.locator(
-      `[data-testid="specialty-edit-input-${testSpecialty.id}"]`,
-    );
+    const editInput = page.locator(`[data-testid="specialty-edit-input-${testSpecialty.id}"]`);
     await expect(editInput).toBeVisible();
 
     // Test Enter key to confirm edit
     const newName = `Keyboard Updated ${testSpecialty.name}`;
     await editInput.fill(newName);
-    await editInput.press("Enter");
+    await editInput.press('Enter');
 
     // Wait for edit mode to end and update to complete
     await expect(editInput).not.toBeVisible();
 
     // Verify the specialty name is updated
-    const specialtyName = page.locator(
-      `[data-testid="specialty-name-${testSpecialty.id}"]`,
-    );
+    const specialtyName = page.locator(`[data-testid="specialty-name-${testSpecialty.id}"]`);
     await expect(specialtyName).toContainText(newName);
 
     console.log(`✅ Enter key successfully updated specialty to "${newName}"`);
@@ -404,11 +334,9 @@ test.describe("Worker Specialty Header Cell", () => {
     // }
   });
 
-  test("should close popup when clicking save button", async ({ page }) => {
+  test('should close popup when clicking save button', async ({ page }) => {
     // Click on the specialties header to open popup
-    const specialtyHeaderCell = page.locator(
-      '[data-testid="worker-specialty-header-cell"]',
-    );
+    const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await specialtyHeaderCell.click();
 
     // Wait for the popup to appear
@@ -423,6 +351,6 @@ test.describe("Worker Specialty Header Cell", () => {
     // Wait for the popup to close
     await expect(popup).not.toBeVisible();
 
-    console.log("✅ Popup closed successfully when clicking save button");
+    console.log('✅ Popup closed successfully when clicking save button');
   });
 });

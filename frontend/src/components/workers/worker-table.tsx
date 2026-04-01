@@ -1,38 +1,34 @@
-import React, { useState, useMemo } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import React, { useState, useMemo } from 'react';
+import { useTranslation } from '../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Tooltip from "@mui/material/Tooltip";
-import TextField from "@mui/material/TextField";
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
+import TextField from '@mui/material/TextField';
 // Components
-import DimensionCell from "../shift-worker-shared/dimension/dimension-cell";
-import AttributeCell from "../shift-worker-shared/attribute/attribute-cell";
-import WorkerFieldCell from "./worker-field-cell/worker-field-cell";
-import WorkerSpecialtyHeaderCell from "./worker-field-cell/specialties/worker-specialty-header-cell";
-import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
+import DimensionCell from '../shift-worker-shared/dimension/dimension-cell';
+import AttributeCell from '../shift-worker-shared/attribute/attribute-cell';
+import WorkerFieldCell from './worker-field-cell/worker-field-cell';
+import WorkerSpecialtyHeaderCell from './worker-field-cell/specialties/worker-specialty-header-cell';
+import ColumnSortFilterMenu from '../table/ColumnSortFilterMenu';
 // Styles
-import "../../styles/text-styles.css";
-import "../../styles/table-styles.css";
-import "./WorkerTable.css";
+import '../../styles/text-styles.css';
+import '../../styles/table-styles.css';
+import './WorkerTable.css';
 // Types
-import { WorkerT } from "../../types/worker";
-import {
-  DimensionT,
-  DimensionType,
-  DimensionEntryType,
-} from "../../types/dimension";
-import { DimEntryT } from "@/types/dim-entry";
-import { AttributeT, AttributeOwnerType } from "../../types/attribute";
-import { SpecialtyT } from "@/types/specialty";
-import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
+import { WorkerT } from '../../types/worker';
+import { DimensionT, DimensionType, DimensionEntryType } from '../../types/dimension';
+import { DimEntryT } from '@/types/dim-entry';
+import { AttributeT, AttributeOwnerType } from '../../types/attribute';
+import { SpecialtyT } from '@/types/specialty';
+import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
 
 export default function WorkerTable({
   lng,
@@ -42,7 +38,7 @@ export default function WorkerTable({
   workers,
   specialties,
   defaultWorkerFields,
-  tableHeight = "70vh",
+  tableHeight = '70vh',
   // New props for sorting/filtering
   workerColumns,
   currentSort,
@@ -62,14 +58,13 @@ export default function WorkerTable({
   handleUpdateSpecialty,
   handleDeleteSpecialty,
 }: WorkerTableProps) {
-  const { t } = useTranslation(lng, "worker-page");
+  const { t } = useTranslation(lng, 'worker-page');
 
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
 
   // Memoize filtered dimensions for performance
   const dimensionsDisplayed = useMemo(
-    () =>
-      dimensions.filter((dim) => dim.dimTypes.includes(DimensionType.WORKER)),
+    () => dimensions.filter((dim) => dim.dimTypes.includes(DimensionType.WORKER)),
     [dimensions],
   );
 
@@ -77,7 +72,7 @@ export default function WorkerTable({
     <div>
       <TableContainer
         className="worker-table-container"
-        sx={{ height: tableHeight, overflow: "auto" }}
+        sx={{ height: tableHeight, overflow: 'auto' }}
       >
         <Table className="worker-table" aria-label="worker table">
           <WorkerTableHeader
@@ -122,12 +117,10 @@ export default function WorkerTable({
             {workers.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={
-                    defaultWorkerFields.length + dimensionsDisplayed.length + 1
-                  }
-                  sx={{ textAlign: "center", py: 4, color: "text.secondary" }}
+                  colSpan={defaultWorkerFields.length + dimensionsDisplayed.length + 1}
+                  sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}
                 >
-                  {t("no_workers_found")}
+                  {t('no_workers_found')}
                 </TableCell>
               </TableRow>
             )}
@@ -156,10 +149,7 @@ interface WorkerTableProps {
   handleAddWorker: () => void;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
   handleDeleteWorker: (workerId: string) => void;
-  handleAddDimension: (
-    newDimension: DimensionT,
-    dimEntries: DimEntryT[],
-  ) => Promise<boolean>;
+  handleAddDimension: (newDimension: DimensionT, dimEntries: DimEntryT[]) => Promise<boolean>;
   handleUpdateDimension: (dimension: DimensionT) => void;
   handleDeleteDimension: (dimensionId: string) => void;
   handleAddDimEntry: (dimEntry: DimEntryT) => void;
@@ -202,9 +192,7 @@ interface WorkerTableRowProps {
   dimensionsDisplayed: DimensionT[];
   dimEntries: DimEntryT[];
   bodyEditing: { [key: string]: string };
-  setBodyEditing: React.Dispatch<
-    React.SetStateAction<{ [key: string]: string }>
-  >;
+  setBodyEditing: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
   handleDeleteWorker: (workerId: string) => void;
   handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
@@ -213,9 +201,7 @@ interface WorkerTableRowProps {
 interface WorkerNameCellProps {
   worker: WorkerT;
   bodyEditing: { [key: string]: string };
-  setBodyEditing: React.Dispatch<
-    React.SetStateAction<{ [key: string]: string }>
-  >;
+  setBodyEditing: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }
 
@@ -227,7 +213,7 @@ function WorkerNameCell({
   handleUpdateWorker,
 }: WorkerNameCellProps) {
   const [valueState, setValueState] = useState<string>(worker.name);
-  const editing = bodyEditing[worker.id] === "name";
+  const editing = bodyEditing[worker.id] === 'name';
 
   const handleEditConfirm = async () => {
     if (valueState !== worker.name) {
@@ -247,8 +233,8 @@ function WorkerNameCell({
   return (
     <TableCell
       className="worker-table-first-column"
-      onClick={() => !editing && setBodyEditing({ [worker.id]: "name" })}
-      sx={{ cursor: editing ? "default" : "pointer" }}
+      onClick={() => !editing && setBodyEditing({ [worker.id]: 'name' })}
+      sx={{ cursor: editing ? 'default' : 'pointer' }}
       data-testid="worker-name-cell"
       data-worker-id={worker.id}
     >
@@ -262,9 +248,9 @@ function WorkerNameCell({
             onChange={(e) => setValueState(e.target.value)}
             onBlur={handleEditConfirm}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === 'Enter') {
                 handleEditConfirm();
-              } else if (e.key === "Escape") {
+              } else if (e.key === 'Escape') {
                 handleEditCancel();
               }
             }}
@@ -272,8 +258,8 @@ function WorkerNameCell({
             size="small"
             variant="standard"
             inputProps={{
-              "data-testid": `worker-name-input-${worker.id}`,
-              "data-state": "editing",
+              'data-testid': `worker-name-input-${worker.id}`,
+              'data-state': 'editing',
             }}
           />
         ) : (
@@ -281,10 +267,10 @@ function WorkerNameCell({
             className="worker-name-text"
             data-testid={`worker-name-display-${worker.id}`}
             data-state="display"
-            data-worker-name={worker.name || "Unnamed Worker"}
+            data-worker-name={worker.name || 'Unnamed Worker'}
           >
-            <Tooltip title={worker.name || "Unnamed Worker"} placement="top">
-              <span>{worker.name || "Unnamed Worker"}</span>
+            <Tooltip title={worker.name || 'Unnamed Worker'} placement="top">
+              <span>{worker.name || 'Unnamed Worker'}</span>
             </Tooltip>
           </div>
         )}
@@ -315,7 +301,7 @@ function WorkerTableHeader({
   handleUpdateDimEntry,
   handleDeleteDimEntry,
 }: WorkerTableHeaderProps) {
-  const { t } = useTranslation(lng, "worker-page");
+  const { t } = useTranslation(lng, 'worker-page');
 
   return (
     <TableHead className="worker-table-header">
@@ -325,23 +311,21 @@ function WorkerTableHeader({
           className="worker-table-first-header-cell"
           data-testid="worker-name-header-cell"
           sx={{
-            textAlign: "left !important",
-            paddingLeft: "16px !important",
-            "& .table-header-default": {
-              justifyContent: "flex-start !important",
+            textAlign: 'left !important',
+            paddingLeft: '16px !important',
+            '& .table-header-default': {
+              justifyContent: 'flex-start !important',
             },
           }}
         >
           <div className="flex items-center justify-between">
-            <Tooltip title={t("name_tooltip")} placement="top">
-              <span className="table-header-default">{t("name")}</span>
+            <Tooltip title={t('name_tooltip')} placement="top">
+              <span className="table-header-default">{t('name')}</span>
             </Tooltip>
             {onSort && onFilter && (
               <ColumnSortFilterMenu
-                column={workerColumns.find((col) => col.id === "name")!}
-                currentSort={
-                  currentSort?.columnId === "name" ? currentSort : undefined
-                }
+                column={workerColumns.find((col) => col.id === 'name')!}
+                currentSort={currentSort?.columnId === 'name' ? currentSort : undefined}
                 currentFilter={undefined}
                 onSort={onSort}
                 onFilter={onFilter}
@@ -352,19 +336,15 @@ function WorkerTableHeader({
 
         {/* Default worker fields */}
         {defaultWorkerFields.slice(1).map((field, index) =>
-          field.name === "specialties" ? (
+          field.name === 'specialties' ? (
             <WorkerSpecialtyHeaderCell
               key={index}
               lng={lng}
               teamId={selectedTeamId}
               specialties={specialties}
               // Add sorting/filtering props
-              column={workerColumns.find((col) => col.id === "specialties")}
-              currentSort={
-                currentSort?.columnId === "specialties"
-                  ? currentSort
-                  : undefined
-              }
+              column={workerColumns.find((col) => col.id === 'specialties')}
+              currentSort={currentSort?.columnId === 'specialties' ? currentSort : undefined}
               onSort={onSort}
               onFilter={onFilter}
               handleAddSpecialty={handleAddSpecialty}
@@ -384,11 +364,7 @@ function WorkerTableHeader({
                 {onSort && onFilter && (
                   <ColumnSortFilterMenu
                     column={workerColumns.find((col) => col.id === field.name)!}
-                    currentSort={
-                      currentSort?.columnId === field.name
-                        ? currentSort
-                        : undefined
-                    }
+                    currentSort={currentSort?.columnId === field.name ? currentSort : undefined}
                     currentFilter={undefined}
                     onSort={onSort}
                     onFilter={onFilter}
@@ -409,14 +385,8 @@ function WorkerTableHeader({
             dimension={dim}
             dimEntries={dimEntries.filter((de) => de.dimensionId === dim.id)}
             // Add sorting/filtering props
-            column={workerColumns.find(
-              (col) => col.id === `dimension_${dim.id}`,
-            )}
-            currentSort={
-              currentSort?.columnId === `dimension_${dim.id}`
-                ? currentSort
-                : undefined
-            }
+            column={workerColumns.find((col) => col.id === `dimension_${dim.id}`)}
+            currentSort={currentSort?.columnId === `dimension_${dim.id}` ? currentSort : undefined}
             onSort={onSort}
             onFilter={onFilter}
             handleUpdateDimension={handleUpdateDimension}
@@ -425,9 +395,7 @@ function WorkerTableHeader({
             handleUpdateDimEntry={handleUpdateDimEntry}
             handleDeleteDimEntry={handleDeleteDimEntry}
             className={`custom-column ${
-              dIndex === 0 && dimensionsDisplayed.length > 0
-                ? "first-custom-column"
-                : ""
+              dIndex === 0 && dimensionsDisplayed.length > 0 ? 'first-custom-column' : ''
             }`.trim()}
           />
         ))}
@@ -457,13 +425,10 @@ function WorkerTableRow({
   handleDeleteWorker,
   handleUpdateAttribute,
 }: WorkerTableRowProps) {
-  const { t } = useTranslation(lng, "worker-page");
+  const { t } = useTranslation(lng, 'worker-page');
 
   return (
-    <TableRow
-      className="worker-table-row"
-      data-testid={`worker-row-${worker.id}`}
-    >
+    <TableRow className="worker-table-row" data-testid={`worker-row-${worker.id}`}>
       {/* First column - Worker name */}
       <WorkerNameCell
         worker={worker}
@@ -488,9 +453,7 @@ function WorkerTableRow({
 
       {/* Dynamic dimensions */}
       {dimensionsDisplayed.map((dim, dIndex) => {
-        const attribute = worker.attributes.find(
-          (a) => a.dimensionId === dim.id,
-        );
+        const attribute = worker.attributes.find((a) => a.dimensionId === dim.id);
         return (
           <AttributeCell
             key={dIndex}
@@ -499,12 +462,11 @@ function WorkerTableRow({
               attribute
                 ? attribute
                 : {
-                    id: "",
+                    id: '',
                     ownerType: AttributeOwnerType.WORKER,
                     ownerId: worker.id,
                     dimensionId: dim.id,
-                    value:
-                      dim.entryType === DimensionEntryType.BOOL ? false : "",
+                    value: dim.entryType === DimensionEntryType.BOOL ? false : '',
                     dimEntryIds: [],
                   }
             }
@@ -513,26 +475,19 @@ function WorkerTableRow({
             editing={bodyEditing[worker.id] === dim.id}
             setEditing={setBodyEditing}
             handleUpdateAttribute={handleUpdateAttribute}
-            className={
-              dIndex === 0 && dimensionsDisplayed.length > 0
-                ? "first-custom-column"
-                : ""
-            }
+            className={dIndex === 0 && dimensionsDisplayed.length > 0 ? 'first-custom-column' : ''}
           />
         );
       })}
 
       {/* Actions column */}
-      <TableCell
-        className="worker-table-actions"
-        data-testid="worker-actions-cell"
-      >
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
-          <Tooltip title={t("delete_member_tooltip")}>
+      <TableCell className="worker-table-actions" data-testid="worker-actions-cell">
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Tooltip title={t('delete_member_tooltip')}>
             <Button
               onClick={() => handleDeleteWorker(worker.id)}
               size="small"
-              sx={{ minWidth: "auto", p: 0.5 }}
+              sx={{ minWidth: 'auto', p: 0.5 }}
               data-testid={`worker-delete-button-${worker.id}`}
             >
               <DeleteIcon fontSize="small" />

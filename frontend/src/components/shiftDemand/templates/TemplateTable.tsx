@@ -10,7 +10,7 @@
  * - Weekend styling
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -23,23 +23,19 @@ import {
   CircularProgress,
   Typography,
   Tooltip,
-} from "@mui/material";
-import { Add, Remove } from "@mui/icons-material";
-import { useTranslation } from "../../../app/i18n/client";
-import { ShiftT, ShiftType } from "../../../types/shift";
+} from '@mui/material';
+import { Add, Remove } from '@mui/icons-material';
+import { useTranslation } from '../../../app/i18n/client';
+import { ShiftT, ShiftType } from '../../../types/shift';
 import {
   ShiftDemandTemplateDTO,
   DemandEntryDTO,
   TemplateType,
-} from "../../../types/shift-demand-template";
-import {
-  ColumnDefinition,
-  ColumnFilter,
-  TableSort,
-} from "../../../types/filter";
-import { ShiftColorMappings } from "../../../constants/constants";
-import ColumnSortFilterMenu from "../../table/ColumnSortFilterMenu";
-import "./TemplateTable.css";
+} from '../../../types/shift-demand-template';
+import { ColumnDefinition, ColumnFilter, TableSort } from '../../../types/filter';
+import { ShiftColorMappings } from '../../../constants/constants';
+import ColumnSortFilterMenu from '../../table/ColumnSortFilterMenu';
+import './TemplateTable.css';
 
 // Types
 interface SelectedCell {
@@ -61,27 +57,15 @@ interface TemplateTableProps {
   displayedWeeks: number[];
   templateType: TemplateType;
   bulkChangeState: BulkChangeState;
-  getDemandValue: (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) => number;
+  getDemandValue: (shiftId: string, weekNumber: number, dayIndex: number) => number;
   handleCellChange: (
     shiftId: string,
     weekNumber: number,
     dayIndex: number,
     value: string,
   ) => Promise<void>;
-  isCellSelected: (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) => boolean;
-  toggleCellSelection: (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) => void;
+  isCellSelected: (shiftId: string, weekNumber: number, dayIndex: number) => boolean;
+  toggleCellSelection: (shiftId: string, weekNumber: number, dayIndex: number) => void;
   selectAllRowCells: (shiftId: string) => void;
   selectAllColumnCells: (weekNumber: number, dayIndex: number) => void;
   selectAllCells: () => void;
@@ -116,11 +100,7 @@ interface TemplateCellProps {
     dayIndex: number,
     value: string,
   ) => Promise<void>;
-  onToggleSelection: (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) => void;
+  onToggleSelection: (shiftId: string, weekNumber: number, dayIndex: number) => void;
 }
 
 function TemplateCell({
@@ -141,14 +121,14 @@ function TemplateCell({
 
   // Get shift colors from the mapping
   const { background, sample, text } = ShiftColorMappings[shift.color] || {
-    background: "#f5f5f5",
-    sample: "#9e9e9e",
-    text: "#212121",
+    background: '#f5f5f5',
+    sample: '#9e9e9e',
+    text: '#212121',
   };
 
   const handleAddDemand = async () => {
     if (isSaving) return;
-    await onCellChange(shiftId, weekNumber, dayIndex, "1");
+    await onCellChange(shiftId, weekNumber, dayIndex, '1');
   };
 
   const handleIncrement = async (e: React.MouseEvent) => {
@@ -167,19 +147,19 @@ function TemplateCell({
   return (
     <TableCell
       data-testid={`template-cell-${shiftId}-${weekNumber}-${dayIndex}`}
-      className={`template-cell ${isWeekend ? "weekend" : ""} ${
-        isWeekBoundary ? "week-boundary" : ""
+      className={`template-cell ${isWeekend ? 'weekend' : ''} ${
+        isWeekBoundary ? 'week-boundary' : ''
       }`}
       style={
         {
-          "--shift-bg-color": background,
-          "--shift-sample-color": sample,
-          "--shift-text-color": text,
+          '--shift-bg-color': background,
+          '--shift-sample-color': sample,
+          '--shift-text-color': text,
         } as React.CSSProperties
       }
     >
       {isBulkMode ? (
-        <div className={`template-bulk ${isSelected ? "selected" : ""}`}>
+        <div className={`template-bulk ${isSelected ? 'selected' : ''}`}>
           <Checkbox
             data-testid={`template-cell-checkbox-${shiftId}-${weekNumber}-${dayIndex}`}
             checked={isSelected}
@@ -189,7 +169,7 @@ function TemplateCell({
         </div>
       ) : (
         <div
-          className={`template-cell-content ${value === 0 ? "clickable" : ""}`}
+          className={`template-cell-content ${value === 0 ? 'clickable' : ''}`}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
@@ -197,7 +177,7 @@ function TemplateCell({
             // Empty state with shift color theming
             <div
               data-testid={`template-empty-${shiftId}-${weekNumber}-${dayIndex}`}
-              className={`template-empty ${isHovered ? "hovered" : ""}`}
+              className={`template-empty ${isHovered ? 'hovered' : ''}`}
               onClick={handleAddDemand}
             >
               {isSaving ? (
@@ -209,13 +189,11 @@ function TemplateCell({
           ) : (
             // Demand state with shift color theming
             <div
-              className={`template-content ${isHovered ? "hovered" : ""} ${
-                isSaving ? "saving" : ""
+              className={`template-content ${isHovered ? 'hovered' : ''} ${
+                isSaving ? 'saving' : ''
               }`}
             >
-              {isSaving && (
-                <CircularProgress size={16} className="template-loading" />
-              )}
+              {isSaving && <CircularProgress size={16} className="template-loading" />}
 
               {/* Decrement button */}
               {isHovered && !isSaving && (
@@ -224,17 +202,14 @@ function TemplateCell({
                   onClick={handleDecrement}
                   className="template-button decrement"
                 >
-                  <Remove
-                    className="template-button-icon"
-                    sx={{ fontSize: "14px" }}
-                  />
+                  <Remove className="template-button-icon" sx={{ fontSize: '14px' }} />
                 </button>
               )}
 
               {/* Value display */}
               <span
                 data-testid={`template-value-${shiftId}-${weekNumber}-${dayIndex}`}
-                className={`template-value ${isSaving ? "saving" : ""}`}
+                className={`template-value ${isSaving ? 'saving' : ''}`}
               >
                 {value}
               </span>
@@ -246,10 +221,7 @@ function TemplateCell({
                   onClick={handleIncrement}
                   className="template-button increment"
                 >
-                  <Add
-                    className="template-button-icon"
-                    sx={{ fontSize: "14px" }}
-                  />
+                  <Add className="template-button-icon" sx={{ fontSize: '14px' }} />
                 </button>
               )}
             </div>
@@ -275,12 +247,12 @@ function TemplateRowHeader({
   onSelectRow,
 }: TemplateRowHeaderProps) {
   const { background, sample, text } = ShiftColorMappings[shift.color] || {
-    background: "#f5f5f5",
-    sample: "#9e9e9e",
-    text: "#212121",
+    background: '#f5f5f5',
+    sample: '#9e9e9e',
+    text: '#212121',
   };
 
-  const isNextDay = !shift.endTime.isSame(shift.startTime, "day");
+  const isNextDay = !shift.endTime.isSame(shift.startTime, 'day');
   const isDutyShift = shift.shiftType === ShiftType.DUTY;
 
   return (
@@ -291,16 +263,14 @@ function TemplateRowHeader({
         padding: 0,
         minWidth: 80,
         maxWidth: 120,
-        position: "relative",
+        position: 'relative',
       }}
     >
       <div className="template-row-header-container">
         {/* Shift type marker for duty shifts, placeholder for non-duty shifts */}
         <div
-          className={`template-type-marker ${
-            isDutyShift ? "duty" : "placeholder"
-          }`}
-          style={{ "--bg-color": sample } as React.CSSProperties}
+          className={`template-type-marker ${isDutyShift ? 'duty' : 'placeholder'}`}
+          style={{ '--bg-color': sample } as React.CSSProperties}
         />
 
         {/* Bulk mode checkbox */}
@@ -310,7 +280,7 @@ function TemplateRowHeader({
             checked={isRowSelected}
             onChange={() => onSelectRow(shift.id)}
             size="small"
-            sx={{ position: "absolute", left: 2, top: "50%", mt: "-12px" }}
+            sx={{ position: 'absolute', left: 2, top: '50%', mt: '-12px' }}
           />
         )}
 
@@ -321,7 +291,7 @@ function TemplateRowHeader({
               data-testid={`template-shift-name-${shift.id}`}
               variant="body2"
               className="template-name"
-              sx={{ fontSize: "0.875rem", fontWeight: 550 }}
+              sx={{ fontSize: '0.875rem', fontWeight: 550 }}
             >
               {shift.name || shift.acronym}
             </Typography>
@@ -333,16 +303,16 @@ function TemplateRowHeader({
           <Typography
             variant="caption"
             className="template-time"
-            sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+            sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
           >
-            {shift.startTime.format("HH:mm")}
+            {shift.startTime.format('HH:mm')}
           </Typography>
           <Typography
             variant="caption"
             className="template-time"
-            sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+            sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
           >
-            {shift.endTime.format("HH:mm")}
+            {shift.endTime.format('HH:mm')}
             {isNextDay && <sup>+1</sup>}
           </Typography>
         </div>
@@ -357,27 +327,15 @@ interface TemplateRowProps {
   displayedWeeks: number[];
   templateType: TemplateType;
   bulkChangeState: BulkChangeState;
-  getDemandValue: (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) => number;
+  getDemandValue: (shiftId: string, weekNumber: number, dayIndex: number) => number;
   handleCellChange: (
     shiftId: string,
     weekNumber: number,
     dayIndex: number,
     value: string,
   ) => Promise<void>;
-  isCellSelected: (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) => boolean;
-  toggleCellSelection: (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) => void;
+  isCellSelected: (shiftId: string, weekNumber: number, dayIndex: number) => boolean;
+  toggleCellSelection: (shiftId: string, weekNumber: number, dayIndex: number) => void;
   selectAllRowCells: (shiftId: string) => void;
   isRowSelected: (shiftId: string) => boolean;
   savingCells: Set<string>;
@@ -470,46 +428,39 @@ function TemplateTableHeader({
   onFilter,
   shiftColumn,
 }: TemplateTableHeaderProps) {
-  const { t } = useTranslation(lng, "shift-demand-templates");
+  const { t } = useTranslation(lng, 'shift-demand-templates');
 
   // Day names (Monday to Sunday)
   const dayNames = [
-    t("monday_short", "Mon"),
-    t("tuesday_short", "Tue"),
-    t("wednesday_short", "Wed"),
-    t("thursday_short", "Thu"),
-    t("friday_short", "Fri"),
-    t("saturday_short", "Sat"),
-    t("sunday_short", "Sun"),
+    t('monday_short', 'Mon'),
+    t('tuesday_short', 'Tue'),
+    t('wednesday_short', 'Wed'),
+    t('thursday_short', 'Thu'),
+    t('friday_short', 'Fri'),
+    t('saturday_short', 'Sat'),
+    t('sunday_short', 'Sun'),
   ];
 
   return (
     <TableHead>
       {/* Week header row */}
       <TableRow>
-        <TableCell
-          className="template-header-corner"
-          rowSpan={2}
-          sx={{ position: "relative" }}
-        >
+        <TableCell className="template-header-corner" rowSpan={2} sx={{ position: 'relative' }}>
           <div className="template-header-content">
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {bulkChangeState.isActive ? (
                 <>
                   <Checkbox
                     data-testid="template-select-all-checkbox"
                     checked={isAllSelected()}
-                    indeterminate={
-                      bulkChangeState.selectedCells.length > 0 &&
-                      !isAllSelected()
-                    }
+                    indeterminate={bulkChangeState.selectedCells.length > 0 && !isAllSelected()}
                     onChange={selectAllCells}
                     size="small"
                   />
-                  <Typography variant="body2">{t("shift", "Shift")}</Typography>
+                  <Typography variant="body2">{t('shift', 'Shift')}</Typography>
                 </>
               ) : (
-                <Typography variant="body2">{t("shift", "Shift")}</Typography>
+                <Typography variant="body2">{t('shift', 'Shift')}</Typography>
               )}
             </div>
 
@@ -529,9 +480,9 @@ function TemplateTableHeader({
           const weekLabel =
             templateType === TemplateType.EVEN_ODD
               ? weekNumber === 0
-                ? t("even_week", "Even Week")
-                : t("odd_week", "Odd Week")
-              : t("week_number", "Week {{number}}", { number: weekNumber + 1 });
+                ? t('even_week', 'Even Week')
+                : t('odd_week', 'Odd Week')
+              : t('week_number', 'Week {{number}}', { number: weekNumber + 1 });
 
           // Add week boundary class for weeks 2, 3, etc.
           const isWeekBoundary = weekIndex > 0;
@@ -541,12 +492,8 @@ function TemplateTableHeader({
               key={`week-${weekNumber}`}
               data-testid={`template-table-week-header-${weekNumber}`}
               className={`template-week-header ${
-                templateType === TemplateType.EVEN_ODD
-                  ? weekNumber === 0
-                    ? "even"
-                    : "odd"
-                  : ""
-              } ${isWeekBoundary ? "week-boundary" : ""}`}
+                templateType === TemplateType.EVEN_ODD ? (weekNumber === 0 ? 'even' : 'odd') : ''
+              } ${isWeekBoundary ? 'week-boundary' : ''}`}
               colSpan={7}
               align="center"
             >
@@ -568,8 +515,8 @@ function TemplateTableHeader({
             return (
               <TableCell
                 key={`${weekNumber}-${dayIndex}`}
-                className={`template-day-header ${isWeekend ? "weekend" : ""} ${
-                  isWeekBoundary ? "week-boundary" : ""
+                className={`template-day-header ${isWeekend ? 'weekend' : ''} ${
+                  isWeekBoundary ? 'week-boundary' : ''
                 }`}
                 align="center"
               >
@@ -578,9 +525,7 @@ function TemplateTableHeader({
                     <Checkbox
                       data-testid={`template-column-checkbox-${weekNumber}-${dayIndex}`}
                       checked={isSelected}
-                      onChange={() =>
-                        selectAllColumnCells(weekNumber, dayIndex)
-                      }
+                      onChange={() => selectAllColumnCells(weekNumber, dayIndex)}
                       size="small"
                     />
                     <span className="template-day-name">{dayName}</span>
@@ -604,27 +549,15 @@ interface TemplateTableBodyProps {
   displayedWeeks: number[];
   templateType: TemplateType;
   bulkChangeState: BulkChangeState;
-  getDemandValue: (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) => number;
+  getDemandValue: (shiftId: string, weekNumber: number, dayIndex: number) => number;
   handleCellChange: (
     shiftId: string,
     weekNumber: number,
     dayIndex: number,
     value: string,
   ) => Promise<void>;
-  isCellSelected: (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) => boolean;
-  toggleCellSelection: (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) => void;
+  isCellSelected: (shiftId: string, weekNumber: number, dayIndex: number) => boolean;
+  toggleCellSelection: (shiftId: string, weekNumber: number, dayIndex: number) => void;
   selectAllRowCells: (shiftId: string) => void;
   isRowSelected: (shiftId: string) => boolean;
   savingCells: Set<string>;
@@ -685,54 +618,51 @@ export default function TemplateTable({
   isColumnSelected,
   isAllSelected,
   savingCells,
-  maxHeight = "70vh",
+  maxHeight = '70vh',
   currentSort,
   currentFilter,
   onSort,
   onFilter,
   shiftColumn,
 }: TemplateTableProps) {
-  console.log("displayedWeeks:", displayedWeeks);
+  console.log('displayedWeeks:', displayedWeeks);
 
   return (
     <TableContainer
       data-testid="template-table"
       sx={{
         maxHeight: maxHeight,
-        overflowY: "auto",
-        overflowX: "auto",
-        scrollBehavior: "smooth",
-        border: "1px solid",
-        borderColor: "divider",
+        overflowY: 'auto',
+        overflowX: 'auto',
+        scrollBehavior: 'smooth',
+        border: '1px solid',
+        borderColor: 'divider',
         borderRadius: 1,
-        "& .MuiTableHead-root": {
-          position: "sticky",
+        '& .MuiTableHead-root': {
+          position: 'sticky',
           top: 0,
           zIndex: 2,
-          backgroundColor: "background.paper",
+          backgroundColor: 'background.paper',
         },
-        "& .MuiTableHead-root::after": {
+        '& .MuiTableHead-root::after': {
           content: '""',
-          position: "absolute",
+          position: 'absolute',
           bottom: -1,
           left: 0,
           right: 0,
-          height: "1px",
-          background:
-            "linear-gradient(to right, transparent, rgba(0,0,0,0.1), transparent)",
+          height: '1px',
+          background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.1), transparent)',
           opacity: 0,
-          transition: "opacity 0.2s ease-in-out",
+          transition: 'opacity 0.2s ease-in-out',
         },
-        "&.scrolled .MuiTableHead-root::after": {
+        '&.scrolled .MuiTableHead-root::after': {
           opacity: 1,
         },
       }}
       onScroll={(e) => {
         const target = e.target as HTMLElement;
         const isScrolled = target.scrollTop > 0;
-        target
-          .closest(".MuiTableContainer-root")
-          ?.classList.toggle("scrolled", isScrolled);
+        target.closest('.MuiTableContainer-root')?.classList.toggle('scrolled', isScrolled);
       }}
     >
       <Table stickyHeader>

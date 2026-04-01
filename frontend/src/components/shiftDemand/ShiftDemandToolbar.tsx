@@ -1,14 +1,14 @@
-import React from "react";
-import { useTranslation } from "../../app/i18n/client";
-import dayjs, { Dayjs } from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
+import React from 'react';
+import { useTranslation } from '../../app/i18n/client';
+import dayjs, { Dayjs } from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
 // MUI
-import { Box, Paper, Button, Tooltip } from "@mui/material";
-import { Description, Group } from "@mui/icons-material";
+import { Box, Paper, Button, Tooltip } from '@mui/material';
+import { Description, Group } from '@mui/icons-material';
 // Components
-import { TimeNavigation } from "../common/TimeNavigation";
+import { TimeNavigation } from '../common/TimeNavigation';
 // Types
-import { PeriodType } from "../../types/shiftDemand";
+import { PeriodType } from '../../types/shiftDemand';
 
 dayjs.extend(isoWeek);
 
@@ -44,7 +44,7 @@ export function ShiftDemandToolbar({
   onToggleMultitaskingMode,
   onOpenTemplates,
 }: ShiftDemandToolbarProps) {
-  const { t } = useTranslation(lng, "shift-demands");
+  const { t } = useTranslation(lng, 'shift-demands');
 
   // Handlers for TimeNavigation
   const handleToday = () => {
@@ -52,17 +52,17 @@ export function ShiftDemandToolbar({
     const today = dayjs();
     let start: Dayjs, end: Dayjs;
 
-    if (periodType === "week") {
-      start = today.startOf("isoWeek");
-      end = today.endOf("isoWeek");
-    } else if (periodType === "month") {
-      start = today.startOf("month");
-      end = today.endOf("month");
+    if (periodType === 'week') {
+      start = today.startOf('isoWeek');
+      end = today.endOf('isoWeek');
+    } else if (periodType === 'month') {
+      start = today.startOf('month');
+      end = today.endOf('month');
     } else {
       // For custom periods, keep current period length
       const periodLength = currentPeriod.end.diff(currentPeriod.start);
       start = today;
-      end = today.add(periodLength, "millisecond");
+      end = today.add(periodLength, 'millisecond');
     }
 
     onPeriodChange(start, end);
@@ -73,17 +73,17 @@ export function ShiftDemandToolbar({
 
     let start: Dayjs, end: Dayjs;
 
-    if (periodType === "week") {
-      start = currentPeriod.start.subtract(1, "week");
-      end = currentPeriod.end.subtract(1, "week");
-    } else if (periodType === "month") {
-      start = currentPeriod.start.subtract(1, "month").startOf("month");
-      end = currentPeriod.start.subtract(1, "month").endOf("month");
+    if (periodType === 'week') {
+      start = currentPeriod.start.subtract(1, 'week');
+      end = currentPeriod.end.subtract(1, 'week');
+    } else if (periodType === 'month') {
+      start = currentPeriod.start.subtract(1, 'month').startOf('month');
+      end = currentPeriod.start.subtract(1, 'month').endOf('month');
     } else {
       // Custom period - maintain the same length
       const periodLength = currentPeriod.end.diff(currentPeriod.start);
-      start = currentPeriod.start.subtract(periodLength, "millisecond");
-      end = currentPeriod.end.subtract(periodLength, "millisecond");
+      start = currentPeriod.start.subtract(periodLength, 'millisecond');
+      end = currentPeriod.end.subtract(periodLength, 'millisecond');
     }
 
     onPeriodChange(start, end);
@@ -94,35 +94,35 @@ export function ShiftDemandToolbar({
 
     let start: Dayjs, end: Dayjs;
 
-    if (periodType === "week") {
-      start = currentPeriod.start.add(1, "week");
-      end = currentPeriod.end.add(1, "week");
-    } else if (periodType === "month") {
-      start = currentPeriod.start.add(1, "month").startOf("month");
-      end = currentPeriod.start.add(1, "month").endOf("month");
+    if (periodType === 'week') {
+      start = currentPeriod.start.add(1, 'week');
+      end = currentPeriod.end.add(1, 'week');
+    } else if (periodType === 'month') {
+      start = currentPeriod.start.add(1, 'month').startOf('month');
+      end = currentPeriod.start.add(1, 'month').endOf('month');
     } else {
       // Custom period - maintain the same length
       const periodLength = currentPeriod.end.diff(currentPeriod.start);
-      start = currentPeriod.start.add(periodLength, "millisecond");
-      end = currentPeriod.end.add(periodLength, "millisecond");
+      start = currentPeriod.start.add(periodLength, 'millisecond');
+      end = currentPeriod.end.add(periodLength, 'millisecond');
     }
 
     onPeriodChange(start, end);
   };
 
-  const handleTimeFrameChange = (newType: "week" | "month") => {
+  const handleTimeFrameChange = (newType: 'week' | 'month') => {
     // Map TimeNavigation's TimeFrame to PeriodType
     onPeriodTypeChange(newType as PeriodType);
 
     // Adjust current period to match new type
     let start: Dayjs, end: Dayjs;
 
-    if (newType === "week") {
-      start = currentPeriod.start.startOf("isoWeek");
-      end = currentPeriod.start.endOf("isoWeek");
-    } else if (newType === "month") {
-      start = currentPeriod.start.startOf("month");
-      end = currentPeriod.start.endOf("month");
+    if (newType === 'week') {
+      start = currentPeriod.start.startOf('isoWeek');
+      end = currentPeriod.start.endOf('isoWeek');
+    } else if (newType === 'month') {
+      start = currentPeriod.start.startOf('month');
+      end = currentPeriod.start.endOf('month');
     } else {
       start = currentPeriod.start;
       end = currentPeriod.end;
@@ -137,13 +137,13 @@ export function ShiftDemandToolbar({
       sx={{
         p: 2,
         mb: 1,
-        width: "100%",
+        width: '100%',
         margin: 0,
-        padding: "3px 24px",
-        position: "sticky",
+        padding: '3px 24px',
+        position: 'sticky',
         top: 0,
         zIndex: 10,
-        backgroundColor: "background.paper",
+        backgroundColor: 'background.paper',
       }}
     >
       <Box
@@ -158,7 +158,7 @@ export function ShiftDemandToolbar({
           lng={lng}
           currentPeriodStart={currentPeriod.start}
           currentPeriodEnd={currentPeriod.end}
-          timeFrame={periodType === "custom" ? "week" : periodType}
+          timeFrame={periodType === 'custom' ? 'week' : periodType}
           onToday={handleToday}
           onPreviousPeriod={handlePreviousPeriod}
           onNextPeriod={handleNextPeriod}
@@ -168,8 +168,8 @@ export function ShiftDemandToolbar({
 
         {/* Right side - Template Management, Bulk Select, Multitasking */}
         <Box display="flex" gap={1} alignItems="center">
-          <Tooltip title={t("templates_tooltip")}>
-            <span style={{ display: "inline-block" }}>
+          <Tooltip title={t('templates_tooltip')}>
+            <span style={{ display: 'inline-block' }}>
               <Button
                 data-testid="shift-demand-template-button"
                 variant="outlined"
@@ -177,58 +177,51 @@ export function ShiftDemandToolbar({
                 onClick={onOpenTemplates}
                 disabled={isLoading}
                 sx={{
-                  height: "35px",
-                  fontSize: "0.9rem",
+                  height: '35px',
+                  fontSize: '0.9rem',
                   fontWeight: 550,
-                  textTransform: "none",
-                  minWidth: "auto",
+                  textTransform: 'none',
+                  minWidth: 'auto',
                   px: 2,
                 }}
               >
-                {t("templates")}
+                {t('templates')}
               </Button>
             </span>
           </Tooltip>
 
           {/* Bulk Select Button */}
-          <Tooltip title={t("select_tooltip")}>
-            <span style={{ display: "inline-block" }}>
+          <Tooltip title={t('select_tooltip')}>
+            <span style={{ display: 'inline-block' }}>
               <button
                 data-testid="shift-demand-select-button"
                 onClick={onToggleBulkMode}
                 disabled={isLoading || multitaskingModeActive}
                 style={{
-                  borderRadius: "4px",
-                  border: "1px solid #e5e7eb",
-                  height: "35px",
-                  padding: "0 15px",
-                  fontSize: "0.9rem",
+                  borderRadius: '4px',
+                  border: '1px solid #e5e7eb',
+                  height: '35px',
+                  padding: '0 15px',
+                  fontSize: '0.9rem',
                   fontWeight: 550,
-                  color: bulkModeActive ? "white" : "#616161",
-                  backgroundColor: bulkModeActive ? "#1976d2" : "white",
-                  cursor:
-                    isLoading || multitaskingModeActive
-                      ? "not-allowed"
-                      : "pointer",
-                  transition: "background-color 0.2s ease",
+                  color: bulkModeActive ? 'white' : '#616161',
+                  backgroundColor: bulkModeActive ? '#1976d2' : 'white',
+                  cursor: isLoading || multitaskingModeActive ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s ease',
                   opacity: multitaskingModeActive ? 0.5 : 1,
                 }}
                 onMouseEnter={(e) => {
-                  if (
-                    !isLoading &&
-                    !bulkModeActive &&
-                    !multitaskingModeActive
-                  ) {
-                    e.currentTarget.style.backgroundColor = "#f0f0f0";
+                  if (!isLoading && !bulkModeActive && !multitaskingModeActive) {
+                    e.currentTarget.style.backgroundColor = '#f0f0f0';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!bulkModeActive && !multitaskingModeActive) {
-                    e.currentTarget.style.backgroundColor = "white";
+                    e.currentTarget.style.backgroundColor = 'white';
                   }
                 }}
               >
-                {t("select")}
+                {t('select')}
               </button>
             </span>
           </Tooltip>

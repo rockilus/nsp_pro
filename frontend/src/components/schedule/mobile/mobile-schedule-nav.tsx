@@ -1,11 +1,11 @@
-import React from "react";
-import dayjs from "dayjs";
+import React from 'react';
+import dayjs from 'dayjs';
 // MUI
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import Button from "@mui/material/Button";
-import TuneIcon from "@mui/icons-material/Tune";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import TuneIcon from '@mui/icons-material/Tune';
 
 interface MobileScheduleNavProps {
   visibleMonth: string;
@@ -23,21 +23,18 @@ export default function MobileScheduleNav({
   return (
     <Box
       sx={{
-        display: "flex",
-        alignItems: "center",
+        display: 'flex',
+        alignItems: 'center',
         gap: 1,
         flex: 1,
-        justifyContent: "space-between",
+        justifyContent: 'space-between',
       }}
     >
-      <Typography
-        variant="subtitle1"
-        sx={{ fontWeight: 600, color: "text.secondary" }}
-      >
+      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.secondary' }}>
         {visibleMonth}
       </Typography>
 
-      <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
         <IconButton
           data-testid="mobile-schedule-settings-button"
           onClick={onSettingsClick}
@@ -51,17 +48,17 @@ export default function MobileScheduleNav({
             minWidth: 30,
             height: 30,
             // Rounded-square (not fully circular) for a friendlier look
-            borderRadius: "6px",
+            borderRadius: '6px',
             padding: 0,
-            color: "text.secondary",
+            color: 'text.secondary',
             // Slightly heavier border to visually match the month label weight
             border: (theme) => `2px solid ${theme.palette.text.secondary}`,
-            backgroundColor: "transparent",
+            backgroundColor: 'transparent',
             // Match the month label font weight
             fontWeight: 600,
           }}
         >
-          {dayjs.utc().format("D")}
+          {dayjs.utc().format('D')}
         </Button>
       </Box>
     </Box>

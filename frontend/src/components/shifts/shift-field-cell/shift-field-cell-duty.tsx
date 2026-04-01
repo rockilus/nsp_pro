@@ -1,14 +1,9 @@
-import React from "react";
+import React from 'react';
 // MUI
-import Checkbox from "@mui/material/Checkbox";
-import TableCell from "@mui/material/TableCell";
+import Checkbox from '@mui/material/Checkbox';
+import TableCell from '@mui/material/TableCell';
 // Types
-import {
-  ShiftT,
-  ShiftLeaveType,
-  ShiftRestType,
-  ShiftType,
-} from "../../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType, ShiftType } from '../../../types/shift';
 
 export default function ShiftFieldCellDuty({
   shift,
@@ -31,18 +26,14 @@ export default function ShiftFieldCellDuty({
       scope="row"
       sx={{
         paddingY: 0,
-        textAlign: "center",
+        textAlign: 'center',
         cursor:
-          shift.leaveType === ShiftLeaveType.NONE &&
-          shift.restType !== ShiftRestType.OFF
-            ? "pointer"
-            : "default",
+          shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF
+            ? 'pointer'
+            : 'default',
       }}
     >
-      <Checkbox
-        checked={shift.shiftType === ShiftType.DUTY}
-        onChange={handleEditConfirm}
-      />
+      <Checkbox checked={shift.shiftType === ShiftType.DUTY} onChange={handleEditConfirm} />
     </TableCell>
   );
 }

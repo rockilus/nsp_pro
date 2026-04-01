@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // MUI
-import TableCell from "@mui/material/TableCell";
+import TableCell from '@mui/material/TableCell';
 // Components
-import ShiftStaffingCellEdit from "./shift-staffing-cell-edit";
-import PopoverAnchorElOver from "../../../inputs/popover-anchor-el-over";
+import ShiftStaffingCellEdit from './shift-staffing-cell-edit';
+import PopoverAnchorElOver from '../../../inputs/popover-anchor-el-over';
 // Styles
-import "./shift-staffing-cell.css";
+import './shift-staffing-cell.css';
 // Types
-import { SpecialtyT } from "@/types/specialty";
-import { ShiftT, StaffingT } from "../../../../types/shift";
+import { SpecialtyT } from '@/types/specialty';
+import { ShiftT, StaffingT } from '../../../../types/shift';
 
 type AdjustStaffingButtonsProps = {
   staffing: StaffingT;
@@ -29,7 +29,7 @@ const AdjustStaffingButtons = ({
         className="adjust-button adjust-button-top"
         onClick={(e) => onIncrease(e, staffing)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") onIncrease(e, staffing);
+          if (e.key === 'Enter' || e.key === ' ') onIncrease(e, staffing);
         }}
       >
         +
@@ -40,7 +40,7 @@ const AdjustStaffingButtons = ({
         className="adjust-button adjust-button-bottom"
         onClick={(e) => onDecrease(e, staffing)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") onDecrease(e, staffing);
+          if (e.key === 'Enter' || e.key === ' ') onDecrease(e, staffing);
         }}
       >
         –
@@ -56,21 +56,12 @@ type StaffingChipProps = {
   onDecrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
 };
 
-const StaffingChip = ({
-  staffing,
-  specialties,
-  onIncrease,
-  onDecrease,
-}: StaffingChipProps) => {
+const StaffingChip = ({ staffing, specialties, onIncrease, onDecrease }: StaffingChipProps) => {
   const specialty = specialties.find((s) => s.id === staffing.specialtyId);
   return (
     <div className="chip">
       <span className="chip-label">{`${
-        staffing.specialtyId === null
-          ? "Any"
-          : specialty
-            ? specialty.name
-            : "Name not found"
+        staffing.specialtyId === null ? 'Any' : specialty ? specialty.name : 'Name not found'
       }: ${staffing.staffing}`}</span>
       <span className="chip-delete">
         <AdjustStaffingButtons
@@ -124,9 +115,9 @@ export default function ShiftStaffingCell({
   const [valueState, setValueState] = useState<StaffingT[]>(shift.staffing);
 
   const specialtyAny: SpecialtyT = {
-    id: "any_specialty_id",
-    teamId: "",
-    name: "Any",
+    id: 'any_specialty_id',
+    teamId: '',
+    name: 'Any',
     deleted: false,
   };
 
@@ -149,7 +140,7 @@ export default function ShiftStaffingCell({
     const updatedValue = [
       ...valueState,
       {
-        specialtyId: specialty.id === "any_specialty_id" ? null : specialty.id,
+        specialtyId: specialty.id === 'any_specialty_id' ? null : specialty.id,
         staffing: 1,
       },
     ];
@@ -161,11 +152,8 @@ export default function ShiftStaffingCell({
   };
 
   const handleRemoveStaffing = (specialty: SpecialtyT) => {
-    const specialtyIdToRemove =
-      specialty.id === "any_specialty_id" ? null : specialty.id;
-    const updatedValue = valueState.filter(
-      (v) => v.specialtyId !== specialtyIdToRemove,
-    );
+    const specialtyIdToRemove = specialty.id === 'any_specialty_id' ? null : specialty.id;
+    const updatedValue = valueState.filter((v) => v.specialtyId !== specialtyIdToRemove);
     setValueState(updatedValue);
     handleUpdateShift({
       ...shift,
@@ -173,10 +161,7 @@ export default function ShiftStaffingCell({
     });
   };
 
-  const handleIncreaseStaffing = (
-    event: React.SyntheticEvent,
-    staffing: StaffingT,
-  ) => {
+  const handleIncreaseStaffing = (event: React.SyntheticEvent, staffing: StaffingT) => {
     event.stopPropagation();
     const updatedValue = valueState.map((v) => {
       if (v.specialtyId === staffing.specialtyId) {
@@ -196,10 +181,7 @@ export default function ShiftStaffingCell({
     });
   };
 
-  const handleDecreaseStaffing = (
-    event: React.SyntheticEvent,
-    staffing: StaffingT,
-  ) => {
+  const handleDecreaseStaffing = (event: React.SyntheticEvent, staffing: StaffingT) => {
     event.stopPropagation();
     const updatedValue = valueState.map((v) => {
       if (v.specialtyId === staffing.specialtyId) {
@@ -226,7 +208,7 @@ export default function ShiftStaffingCell({
       scope="row"
       sx={{
         paddingY: 0,
-        cursor: "pointer",
+        cursor: 'pointer',
       }}
     >
       <PopoverAnchorElOver

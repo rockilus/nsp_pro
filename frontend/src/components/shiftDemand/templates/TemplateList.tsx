@@ -8,7 +8,7 @@
  * - Create new template button
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -18,23 +18,13 @@ import {
   Alert,
   CircularProgress,
   Chip,
-} from "@mui/material";
-import {
-  Add,
-  PlayArrow,
-  Delete,
-  Description,
-  DateRange,
-  Person,
-} from "@mui/icons-material";
-import dayjs from "dayjs";
-import { useTranslation } from "../../../app/i18n/client";
-import {
-  TemplateListItem,
-  TemplateType,
-} from "../../../types/shift-demand-template";
-import { TemplateUtils } from "../../../app/lib/api/shiftDemandTemplateApi";
-import { ConfirmationDialog } from "../../common/ConfirmationDialog";
+} from '@mui/material';
+import { Add, PlayArrow, Delete, Description, DateRange, Person } from '@mui/icons-material';
+import dayjs from 'dayjs';
+import { useTranslation } from '../../../app/i18n/client';
+import { TemplateListItem, TemplateType } from '../../../types/shift-demand-template';
+import { TemplateUtils } from '../../../app/lib/api/shiftDemandTemplateApi';
+import { ConfirmationDialog } from '../../common/ConfirmationDialog';
 
 interface TemplateListProps {
   lng: string;
@@ -48,10 +38,7 @@ interface TemplateListProps {
   onError: (error: string) => void;
   onTemplatesLoaded: (templates: TemplateListItem[]) => void;
   onLoadTemplates: () => Promise<void>;
-  onDeleteTemplateRequest: (
-    templateId: string,
-    templateName: string,
-  ) => Promise<void>;
+  onDeleteTemplateRequest: (templateId: string, templateName: string) => Promise<void>;
 }
 
 export function TemplateList({
@@ -68,7 +55,7 @@ export function TemplateList({
   onLoadTemplates,
   onDeleteTemplateRequest,
 }: TemplateListProps) {
-  const { t } = useTranslation(lng, "shift-demand-templates");
+  const { t } = useTranslation(lng, 'shift-demand-templates');
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
 
@@ -79,21 +66,18 @@ export function TemplateList({
     templateName: string;
   }>({
     open: false,
-    templateId: "",
-    templateName: "",
+    templateId: '',
+    templateName: '',
   });
 
   // Load templates on mount
   useEffect(() => {
-    console.log("🔄 Loading templates for team:", teamId);
+    console.log('🔄 Loading templates for team:', teamId);
 
     onLoadTemplates();
   }, [teamId, onLoadTemplates]);
 
-  const handleDeleteTemplate = async (
-    templateId: string,
-    templateName: string,
-  ) => {
+  const handleDeleteTemplate = async (templateId: string, templateName: string) => {
     setConfirmDialog({
       open: true,
       templateId,
@@ -107,18 +91,16 @@ export function TemplateList({
     try {
       await onDeleteTemplateRequest(templateId, templateName);
     } catch (error) {
-      console.error("Failed to delete template:", error);
-      onError(
-        error instanceof Error ? error.message : "Failed to delete template",
-      );
+      console.error('Failed to delete template:', error);
+      onError(error instanceof Error ? error.message : 'Failed to delete template');
     } finally {
       setDeleteLoading(null);
-      setConfirmDialog({ open: false, templateId: "", templateName: "" });
+      setConfirmDialog({ open: false, templateId: '', templateName: '' });
     }
   };
 
   const handleCancelDelete = () => {
-    setConfirmDialog({ open: false, templateId: "", templateName: "" });
+    setConfirmDialog({ open: false, templateId: '', templateName: '' });
   };
 
   const formatTemplateType = (type: TemplateType) => {
@@ -126,7 +108,7 @@ export function TemplateList({
   };
 
   const formatDate = (date: dayjs.Dayjs) => {
-    return date.format("MMM D, YYYY");
+    return date.format('MMM D, YYYY');
   };
 
   if (isLoading) {
@@ -134,7 +116,7 @@ export function TemplateList({
       <Box className="template-loading">
         <CircularProgress size={24} />
         <Typography variant="body2" sx={{ ml: 2 }}>
-          {t("loading_templates")}
+          {t('loading_templates')}
         </Typography>
       </Box>
     );
@@ -151,9 +133,9 @@ export function TemplateList({
           onClick={onCreateTemplate}
           className="template-list-create-button"
           fullWidth
-          sx={{ textTransform: "none" }}
+          sx={{ textTransform: 'none' }}
         >
-          {t("create_template")}
+          {t('create_template')}
         </Button>
       </Box>
 
@@ -163,10 +145,10 @@ export function TemplateList({
           <Box className="template-list-empty">
             <Description className="template-list-empty-icon" />
             <Typography variant="h6" gutterBottom>
-              {t("no_templates")}
+              {t('no_templates')}
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              {t("no_templates_description")}
+              {t('no_templates_description')}
             </Typography>
           </Box>
         ) : (
@@ -175,7 +157,7 @@ export function TemplateList({
               key={template.id}
               data-testid={`template-list-item-${template.id}`}
               className={`template-list-item ${
-                selectedTemplateId === template.id ? "selected" : ""
+                selectedTemplateId === template.id ? 'selected' : ''
               }`}
               onClick={() => onSelectTemplate(template)}
             >
@@ -190,7 +172,7 @@ export function TemplateList({
                     {template.name}
                   </Typography>
                   <Box className="template-list-item-actions">
-                    <Tooltip title={t("apply_template")}>
+                    <Tooltip title={t('apply_template')}>
                       <IconButton
                         data-testid={`template-apply-button-${template.id}`}
                         size="small"
@@ -202,7 +184,7 @@ export function TemplateList({
                         <PlayArrow fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title={t("delete_template")}>
+                    <Tooltip title={t('delete_template')}>
                       <IconButton
                         data-testid={`template-delete-button-${template.id}`}
                         size="small"
@@ -228,20 +210,15 @@ export function TemplateList({
                   <Chip
                     label={formatTemplateType(template.templateType)}
                     size="small"
-                    className={`template-list-item-type ${template.templateType.replace(
-                      "_",
-                      "-",
-                    )}`}
+                    className={`template-list-item-type ${template.templateType.replace('_', '-')}`}
                   />
 
                   {/* Stats */}
                   <Box className="template-list-item-stats">
                     <Typography variant="caption">
-                      {t("total_demands", { count: template.totalDemands })}
+                      {t('total_demands', { count: template.totalDemands })}
                     </Typography>
-                    <Typography variant="caption">
-                      {formatDate(template.createdAt)}
-                    </Typography>
+                    <Typography variant="caption">{formatDate(template.createdAt)}</Typography>
                   </Box>
                 </Box>
 
@@ -266,12 +243,12 @@ export function TemplateList({
         open={confirmDialog.open}
         onClose={handleCancelDelete}
         onConfirm={handleConfirmDelete}
-        title={t("delete_template")}
-        content={t("confirm_delete_template", {
+        title={t('delete_template')}
+        content={t('confirm_delete_template', {
           name: confirmDialog.templateName,
         })}
-        confirmText={t("delete")}
-        cancelText={t("cancel")}
+        confirmText={t('delete')}
+        cancelText={t('cancel')}
         confirmColor="error"
         showIcon={true}
         testId="template-delete-confirmation-dialog"

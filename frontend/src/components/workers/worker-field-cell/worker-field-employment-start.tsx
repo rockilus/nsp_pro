@@ -1,18 +1,11 @@
-import React, {
-  Dispatch,
-  SetStateAction,
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import React, { Dispatch, SetStateAction, useState, useRef, useEffect, useCallback } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // MUI
-import TableCell from "@mui/material/TableCell";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import TableCell from '@mui/material/TableCell';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Types
-import { WorkerT } from "../../../types/worker";
+import { WorkerT } from '../../../types/worker';
 
 dayjs.extend(utc);
 
@@ -28,9 +21,7 @@ export default function WorkerFieldEmploymentStart({
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
   const cellRef = useRef<HTMLTableCellElement>(null);
-  const [valueState, setValueState] = useState<dayjs.Dayjs>(
-    worker.employmentStartDate,
-  );
+  const [valueState, setValueState] = useState<dayjs.Dayjs>(worker.employmentStartDate);
   const [datePickerOpen, setDatePickerOpen] = useState<boolean>(false);
 
   const handleUpdateState = (newValue: dayjs.Dayjs | null) => {
@@ -73,9 +64,9 @@ export default function WorkerFieldEmploymentStart({
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (!editing) return;
-      if (event.key === "Enter") {
+      if (event.key === 'Enter') {
         handleEditConfirm(valueState);
-      } else if (event.key === "Escape") {
+      } else if (event.key === 'Escape') {
         setValueState(worker.employmentStartDate);
         setDatePickerOpen(false);
         setEditing({});
@@ -85,12 +76,12 @@ export default function WorkerFieldEmploymentStart({
   );
 
   useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [handleClickOutside, handleKeyDown, editing]);
 
@@ -98,11 +89,11 @@ export default function WorkerFieldEmploymentStart({
     <TableCell
       component="th"
       scope="row"
-      sx={{ paddingY: 0, textAlign: "center" }}
+      sx={{ paddingY: 0, textAlign: 'center' }}
       data-testid="worker-employment-start-cell"
     >
       {editing ? (
-        <div style={{ display: "flex", justifyContent: "center" }}>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
           <DatePicker
             className="custom-date-picker"
             value={valueState}
@@ -112,7 +103,7 @@ export default function WorkerFieldEmploymentStart({
             slotProps={{
               textField: {
                 inputProps: {
-                  "data-testid": `worker-employment-start-input-${worker.id}`,
+                  'data-testid': `worker-employment-start-input-${worker.id}`,
                   id: `worker-employment-start-input-${worker.id}`,
                 },
               },
@@ -121,16 +112,16 @@ export default function WorkerFieldEmploymentStart({
         </div>
       ) : (
         <div
-          onClick={() => setEditing({ [worker.id]: "employmentStartDate" })}
+          onClick={() => setEditing({ [worker.id]: 'employmentStartDate' })}
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             minHeight: 45,
           }}
           data-testid={`worker-employment-start-display-${worker.id}`}
         >
-          <span>{worker.employmentStartDate.format("DD/MM/YYYY")}</span>
+          <span>{worker.employmentStartDate.format('DD/MM/YYYY')}</span>
         </div>
       )}
     </TableCell>

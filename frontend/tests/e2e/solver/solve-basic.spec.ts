@@ -5,22 +5,22 @@
  * for various scenarios with different complexity levels.
  */
 
-import { test, expect } from "@playwright/test";
-import { SolverTestBase } from "../../utils/solver-test-base";
-import { ScheduleStatus } from "@/types/schedule";
-import { ShiftType } from "@/types/shift";
+import { test, expect } from '@playwright/test';
+import { SolverTestBase } from '../../utils/solver-test-base';
+import { ScheduleStatus } from '@/types/schedule';
+import { ShiftType } from '@/types/shift';
 
 // Hardcoded list of test scenarios
 // This list is used across multiple tests to ensure consistency
 const TEST_SCENARIOS = [
-  "basic_coverage",
-  "benoit_scenario_0",
-  "benoit_scenario_1",
-  "benoit_scenario_2",
+  'basic_coverage',
+  'benoit_scenario_0',
+  'benoit_scenario_1',
+  'benoit_scenario_2',
 ] as const;
 
-test.describe("Solver - Basic Coverage", () => {
-  test("should list available solver test scenarios", async ({}, testInfo) => {
+test.describe('Solver - Basic Coverage', () => {
+  test('should list available solver test scenarios', async ({}, testInfo) => {
     const solverTestBase = new SolverTestBase();
     await solverTestBase.setupSolverTests(testInfo.workerIndex);
 
@@ -39,16 +39,11 @@ test.describe("Solver - Basic Coverage", () => {
 
   // Parameterized test - runs individually for each scenario in UI mode
   for (const scenarioName of TEST_SCENARIOS) {
-    test(`should load ${scenarioName} scenario successfully`, async ({
-      page,
-    }, testInfo) => {
+    test(`should load ${scenarioName} scenario successfully`, async ({ page }, testInfo) => {
       const solverTestBase = new SolverTestBase();
       await solverTestBase.setupSolverTests(testInfo.workerIndex);
 
-      const scenario = await solverTestBase.navigateToScheduleWithScenario(
-        page,
-        scenarioName,
-      );
+      const scenario = await solverTestBase.navigateToScheduleWithScenario(page, scenarioName);
 
       expect(scenario.scenario_name).toBe(scenarioName);
       expect(scenario.workers.length).toBeGreaterThan(0);
@@ -59,7 +54,7 @@ test.describe("Solver - Basic Coverage", () => {
       );
 
       if (!campaignSchedule) {
-        throw new Error("No campaign schedule found in scenario.schedules");
+        throw new Error('No campaign schedule found in scenario.schedules');
       }
 
       console.log(`✅ Loaded ${scenarioName} scenario:`);
@@ -67,25 +62,20 @@ test.describe("Solver - Basic Coverage", () => {
       console.log(`   - ${scenario.shifts.length} shifts created`);
 
       // Set schedule view settings to group by worker
-      await solverTestBase.setScheduleViewSettings(
-        page,
-        solverTestBase.getTestTeam()!.teamId,
-        {
-          groupBy: "worker",
-        },
-      );
+      await solverTestBase.setScheduleViewSettings(page, solverTestBase.getTestTeam()!.teamId, {
+        groupBy: 'worker',
+      });
 
       // Refresh the page to apply settings
       await page.reload();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState('networkidle');
 
       // Check that employed workers appear in the table row headers
       const employedWorkers = scenario.workers.filter((worker: any) => {
         // Employed if start <= campaignEndDate and (no end or end >= campaignStartDate)
         return (
           worker.startDate <= campaignSchedule.endDate &&
-          (worker.endDate === null ||
-            worker.endDate >= campaignSchedule.startDate)
+          (worker.endDate === null || worker.endDate >= campaignSchedule.startDate)
         );
       });
 
@@ -103,28 +93,20 @@ test.describe("Solver - Basic Coverage", () => {
         expect(workerNameText).toContain(worker.acronym);
       }
 
-      console.log(
-        `✅ All ${employedWorkers.length} employed workers visible in table`,
-      );
+      console.log(`✅ All ${employedWorkers.length} employed workers visible in table`);
 
       // Set schedule view settings to group by shift
-      await solverTestBase.setScheduleViewSettings(
-        page,
-        solverTestBase.getTestTeam()!.teamId,
-        {
-          groupBy: "shift",
-        },
-      );
+      await solverTestBase.setScheduleViewSettings(page, solverTestBase.getTestTeam()!.teamId, {
+        groupBy: 'shift',
+      });
 
       // Refresh the page to apply settings
       await page.reload();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState('networkidle');
 
       // Check that only NORMAL and DUTY shifts appear in the table row headers
       const visibleShifts = scenario.shifts.filter(
-        (shift: any) =>
-          shift.shiftType === ShiftType.NORMAL ||
-          shift.shiftType === ShiftType.DUTY,
+        (shift: any) => shift.shiftType === ShiftType.NORMAL || shift.shiftType === ShiftType.DUTY,
       );
 
       for (const shift of visibleShifts) {
@@ -141,17 +123,13 @@ test.describe("Solver - Basic Coverage", () => {
         expect(shiftNameText).toContain(shift.acronym);
       }
 
-      console.log(
-        `✅ All ${visibleShifts.length} NORMAL/DUTY shifts visible in table`,
-      );
+      console.log(`✅ All ${visibleShifts.length} NORMAL/DUTY shifts visible in table`);
     });
   }
 
   // Parameterized test - runs individually for each scenario in UI mode
   for (const scenarioName of TEST_SCENARIOS) {
-    test(`should solve ${scenarioName} scenario successfully`, async ({
-      page,
-    }, testInfo) => {
+    test(`should solve ${scenarioName} scenario successfully`, async ({ page }, testInfo) => {
       const testTimeout = 120000;
       test.setTimeout(testTimeout);
 
@@ -159,10 +137,7 @@ test.describe("Solver - Basic Coverage", () => {
       await solverTestBase.setupSolverTests(testInfo.workerIndex);
 
       // Load the scenario
-      const scenario = await solverTestBase.navigateToScheduleWithScenario(
-        page,
-        scenarioName,
-      );
+      const scenario = await solverTestBase.navigateToScheduleWithScenario(page, scenarioName);
 
       // Trigger solve
       await solverTestBase.triggerSolveAndWait(page, testTimeout);

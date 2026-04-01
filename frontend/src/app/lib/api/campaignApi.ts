@@ -2,11 +2,11 @@
  * API client for campaign operations
  */
 
-import { ScheduleT, ScheduleStatus } from "../../../types/schedule";
-import { ConstraintT } from "../../../types/constraint";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
-import { ScheduleApi } from "./scheduleApi";
-import { ConstraintApi } from "./constraintApi";
+import { ScheduleT, ScheduleStatus } from '../../../types/schedule';
+import { ConstraintT } from '../../../types/constraint';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
+import { ScheduleApi } from './scheduleApi';
+import { ConstraintApi } from './constraintApi';
 
 export interface CampaignTabData {
   scheduleCampaign: ScheduleT | null;
@@ -29,7 +29,7 @@ export class CampaignApi extends BaseApi {
   ): Promise<CampaignTabData> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     try {
@@ -40,9 +40,7 @@ export class CampaignApi extends BaseApi {
       ]);
 
       const scheduleCampaign =
-        schedules.find(
-          (schedule) => schedule.status === ScheduleStatus.CAMPAIGN,
-        ) || null;
+        schedules.find((schedule) => schedule.status === ScheduleStatus.CAMPAIGN) || null;
 
       const schedulesValidated = schedules.filter(
         (schedule) => schedule.status === ScheduleStatus.VALIDATED,
@@ -54,10 +52,8 @@ export class CampaignApi extends BaseApi {
         constraints,
       };
     } catch (error) {
-      console.error("Failed to fetch campaign tab data:", error);
-      throw new Error(
-        "Failed to fetch campaign tab data, please try again later",
-      );
+      console.error('Failed to fetch campaign tab data:', error);
+      throw new Error('Failed to fetch campaign tab data, please try again later');
     }
   }
 
@@ -70,16 +66,14 @@ export class CampaignApi extends BaseApi {
   ): Promise<CampaignTabDataNoSolver> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     try {
       const schedules = await ScheduleApi.getSchedules(apiClient, teamId);
 
       const scheduleCampaign =
-        schedules.find(
-          (schedule) => schedule.status === ScheduleStatus.CAMPAIGN,
-        ) || null;
+        schedules.find((schedule) => schedule.status === ScheduleStatus.CAMPAIGN) || null;
 
       const schedulesValidated = schedules.filter(
         (schedule) => schedule.status === ScheduleStatus.VALIDATED,
@@ -90,10 +84,8 @@ export class CampaignApi extends BaseApi {
         schedulesValidated,
       };
     } catch (error) {
-      console.error("Failed to fetch campaign tab data:", error);
-      throw new Error(
-        "Failed to fetch campaign tab data, please try again later",
-      );
+      console.error('Failed to fetch campaign tab data:', error);
+      throw new Error('Failed to fetch campaign tab data, please try again later');
     }
   }
 }

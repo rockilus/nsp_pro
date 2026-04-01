@@ -1,28 +1,28 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from 'react';
 // Mobile
-import { useIsMobile } from "../../hooks/useIsMobile";
-import MobileConstraintTab from "./mobile/mobile-constraint-tab";
+import { useIsMobile } from '../../hooks/useIsMobile';
+import MobileConstraintTab from './mobile/mobile-constraint-tab';
 // Components
-import ConstraintList from "./constraint-list/constraint-list";
-import NewConstraint from "./edit-constraint/new-constraint";
-import TableAddButton from "../buttons/table-add-button";
+import ConstraintList from './constraint-list/constraint-list';
+import NewConstraint from './edit-constraint/new-constraint';
+import TableAddButton from '../buttons/table-add-button';
 // Skeletons
-import TablesSkeleton from "../skeletons/tables-skeleton";
+import TablesSkeleton from '../skeletons/tables-skeleton';
 // New hooks (authenticated)
 import {
   useGetConstraintsTabData,
   useAddConstraint,
   useUpdateConstraint,
   useDeleteConstraint,
-} from "../../hooks/useConstraint";
+} from '../../hooks/useConstraint';
 // Styles
-import "../../styles/tab-container-styles.css";
-import "./constraint-tab.css";
+import '../../styles/tab-container-styles.css';
+import './constraint-tab.css';
 // Types
-import { ConstraintT, TemplateT } from "../../types/constraint";
-import { WorkerT } from "../../types/worker";
-import { ShiftT } from "../../types/shift";
-import { useTranslation } from "../../app/i18n/client";
+import { ConstraintT, TemplateT } from '../../types/constraint';
+import { WorkerT } from '../../types/worker';
+import { ShiftT } from '../../types/shift';
+import { useTranslation } from '../../app/i18n/client';
 
 export default function ConstraintTab({
   lng,
@@ -31,7 +31,7 @@ export default function ConstraintTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
-  const { t } = useTranslation(lng, "constraint-page");
+  const { t } = useTranslation(lng, 'constraint-page');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [templates, setTemplates] = useState<TemplateT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
@@ -65,7 +65,7 @@ export default function ConstraintTab({
       setWorkers(data.workers);
       setShifts(data.shifts);
     } catch (error) {
-      console.error("Failed to load constraints data:", error);
+      console.error('Failed to load constraints data:', error);
       // TODO: Add error handling/notification
     } finally {
       setIsLoading(false);
@@ -82,7 +82,7 @@ export default function ConstraintTab({
       setConstraints([...constraints, newConstraint]);
       setAddingConstraint(false);
     } catch (error) {
-      console.error("Failed to add constraint:", error);
+      console.error('Failed to add constraint:', error);
       // TODO: Add error handling/notification
     }
   };
@@ -97,7 +97,7 @@ export default function ConstraintTab({
       );
       setAddingConstraint(false);
     } catch (error) {
-      console.error("Failed to update constraint:", error);
+      console.error('Failed to update constraint:', error);
       // TODO: Add error handling/notification
     }
   };
@@ -111,7 +111,7 @@ export default function ConstraintTab({
         prevConstraints.filter((constraint) => constraint.id !== constraintId),
       );
     } catch (error) {
-      console.error("Failed to delete constraint:", error);
+      console.error('Failed to delete constraint:', error);
       // TODO: Add error handling/notification
     }
   };
@@ -137,13 +137,10 @@ export default function ConstraintTab({
         <div>Please select a team</div>
       ) : (
         <div className="tab-container" data-testid="constraint-tab">
-          <div
-            className="title-container"
-            data-testid="constraints-page-heading"
-          >
-            <span className="title">{t("constraints")}</span>
+          <div className="title-container" data-testid="constraints-page-heading">
+            <span className="title">{t('constraints')}</span>
             <TableAddButton
-              text={t("constraint")}
+              text={t('constraint')}
               handleClick={handleOpenAddConstraint}
               dataTestId="add-constraint-button"
             />

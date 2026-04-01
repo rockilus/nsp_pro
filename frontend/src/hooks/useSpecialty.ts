@@ -1,13 +1,13 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { SpecialtyT } from "../types/specialty";
-import { WorkerT } from "../types/worker";
+import { SpecialtyT } from '../types/specialty';
+import { WorkerT } from '../types/worker';
 // API Client
-import { SpecialtyApi } from "../app/lib/api/specialtyApi";
-import { useApiClient } from "../app/lib/api-client";
+import { SpecialtyApi } from '../app/lib/api/specialtyApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Specialty Hooks //
@@ -23,7 +23,7 @@ export function useAddSpecialty() {
   const addSpecialty = useCallback(
     async (specialty: SpecialtyT, teamId: string): Promise<SpecialtyT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAddSpecialty called:", {
+        console.log('🔍 useAddSpecialty called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -34,37 +34,33 @@ export function useAddSpecialty() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!specialty?.name?.trim()) {
-        throw new Error("Specialty name is required");
+        throw new Error('Specialty name is required');
       }
 
       if (!teamId?.trim()) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
-        const result = await SpecialtyApi.addSpecialty(
-          apiClient,
-          specialty,
-          teamId,
-        );
+        const result = await SpecialtyApi.addSpecialty(apiClient, specialty, teamId);
 
         if (env.isDevelopment) {
-          console.log("✅ Specialty added successfully");
+          console.log('✅ Specialty added successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to add specialty:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to add specialty:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -86,7 +82,7 @@ export function useGetSpecialties() {
   const getSpecialties = useCallback(
     async (teamId: string): Promise<SpecialtyT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetSpecialties called:", {
+        console.log('🔍 useGetSpecialties called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -96,23 +92,23 @@ export function useGetSpecialties() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!teamId?.trim()) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
         return await SpecialtyApi.getSpecialties(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get specialties:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get specialties:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -132,12 +128,9 @@ export function useUpdateSpecialty() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const updateSpecialty = useCallback(
-    async (
-      updatedSpecialty: SpecialtyT,
-      teamId: string,
-    ): Promise<SpecialtyT> => {
+    async (updatedSpecialty: SpecialtyT, teamId: string): Promise<SpecialtyT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useUpdateSpecialty called:", {
+        console.log('🔍 useUpdateSpecialty called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -149,41 +142,37 @@ export function useUpdateSpecialty() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!updatedSpecialty || !updatedSpecialty.id) {
-        throw new Error("Valid specialty with ID is required");
+        throw new Error('Valid specialty with ID is required');
       }
 
       if (!updatedSpecialty.name?.trim()) {
-        throw new Error("Specialty name is required");
+        throw new Error('Specialty name is required');
       }
 
       if (!teamId?.trim()) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
-        const result = await SpecialtyApi.updateSpecialty(
-          apiClient,
-          updatedSpecialty,
-          teamId,
-        );
+        const result = await SpecialtyApi.updateSpecialty(apiClient, updatedSpecialty, teamId);
 
         if (env.isDevelopment) {
-          console.log("✅ Specialty updated successfully");
+          console.log('✅ Specialty updated successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to update specialty:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update specialty:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -205,7 +194,7 @@ export function useDeleteSpecialty() {
   const deleteSpecialty = useCallback(
     async (specialtyId: string, teamId: string): Promise<WorkerT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useDeleteSpecialty called:", {
+        console.log('🔍 useDeleteSpecialty called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -216,37 +205,33 @@ export function useDeleteSpecialty() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!specialtyId?.trim()) {
-        throw new Error("Specialty ID is required");
+        throw new Error('Specialty ID is required');
       }
 
       if (!teamId?.trim()) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
-        const result = await SpecialtyApi.deleteSpecialty(
-          apiClient,
-          specialtyId,
-          teamId,
-        );
+        const result = await SpecialtyApi.deleteSpecialty(apiClient, specialtyId, teamId);
 
         if (env.isDevelopment) {
-          console.log("✅ Specialty deleted successfully");
+          console.log('✅ Specialty deleted successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to delete specialty:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete specialty:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;

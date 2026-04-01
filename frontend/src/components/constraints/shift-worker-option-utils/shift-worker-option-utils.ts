@@ -1,4 +1,4 @@
-import { ShiftWorkerOptionT } from "../../../types/constraint";
+import { ShiftWorkerOptionT } from '../../../types/constraint';
 
 export const getShiftWorkerOptionDisplayName = (
   option: ShiftWorkerOptionT,
@@ -12,9 +12,7 @@ export const getShiftWorkerOptionDisplayName = (
   return option.name as string;
 };
 
-export const expandBoolDimOptions = (
-  options: ShiftWorkerOptionT[],
-): ShiftWorkerOptionT[] => {
+export const expandBoolDimOptions = (options: ShiftWorkerOptionT[]): ShiftWorkerOptionT[] => {
   return options.flatMap((option) => {
     if (option.isBoolDim) {
       return [

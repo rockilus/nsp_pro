@@ -2,19 +2,18 @@
  * React Query hooks for notification management
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { NotificationApi } from "../api/notificationApi";
-import { NotificationPreferencesT } from "../../../types/notification";
-import { useApiClient } from "../api-client";
-import { useAuth } from "../../../contexts/auth-context";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { NotificationApi } from '../api/notificationApi';
+import { NotificationPreferencesT } from '../../../types/notification';
+import { useApiClient } from '../api-client';
+import { useAuth } from '../../../contexts/auth-context';
 
 export const notificationKeys = {
-  all: ["notifications"] as const,
-  myList: (limit: number, skip: number) =>
-    [...notificationKeys.all, "list", limit, skip] as const,
-  unreadCount: () => [...notificationKeys.all, "unread-count"] as const,
-  unseenCount: () => [...notificationKeys.all, "unseen-count"] as const,
-  preferences: () => [...notificationKeys.all, "preferences"] as const,
+  all: ['notifications'] as const,
+  myList: (limit: number, skip: number) => [...notificationKeys.all, 'list', limit, skip] as const,
+  unreadCount: () => [...notificationKeys.all, 'unread-count'] as const,
+  unseenCount: () => [...notificationKeys.all, 'unseen-count'] as const,
+  preferences: () => [...notificationKeys.all, 'preferences'] as const,
 };
 
 export const SEEN_GRACE_PERIOD_HOURS = 1;
@@ -104,8 +103,7 @@ export function useReadSeenBefore() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (before: string) =>
-      NotificationApi.readSeenBefore(apiClient, before),
+    mutationFn: (before: string) => NotificationApi.readSeenBefore(apiClient, before),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: notificationKeys.all });
     },
@@ -117,8 +115,7 @@ export function useDeleteNotification() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) =>
-      NotificationApi.deleteNotification(apiClient, id),
+    mutationFn: (id: string) => NotificationApi.deleteNotification(apiClient, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: notificationKeys.all });
     },

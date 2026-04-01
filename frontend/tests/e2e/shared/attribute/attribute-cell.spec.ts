@@ -1,14 +1,11 @@
-import { test, expect } from "@playwright/test";
-import { AttributeTestBase } from "../../../utils/attribute-test-base";
-import {
-  DimensionEntryType,
-  DimensionType,
-} from "../../../../src/types/dimension";
-import { AttributeOwnerType } from "../../../../src/types/attribute";
+import { test, expect } from '@playwright/test';
+import { AttributeTestBase } from '../../../utils/attribute-test-base';
+import { DimensionEntryType, DimensionType } from '../../../../src/types/dimension';
+import { AttributeOwnerType } from '../../../../src/types/attribute';
 
 const attributeTestBase = new AttributeTestBase();
 
-test.describe("AttributeCell Component", () => {
+test.describe('AttributeCell Component', () => {
   let testWorker: { id: string; name: string; teamId: string };
   let testDimensions: {
     text: { id: string; name: string; teamId: string };
@@ -57,9 +54,9 @@ test.describe("AttributeCell Component", () => {
       entryType: DimensionEntryType.DIM_ENTRIES,
       dimensionType: DimensionType.WORKER,
       dimEntries: [
-        { id: "", name: "Entry 1", dimensionId: "", deleted: false },
-        { id: "", name: "Entry 2", dimensionId: "", deleted: false },
-        { id: "", name: "Entry 3", dimensionId: "", deleted: false },
+        { id: '', name: 'Entry 1', dimensionId: '', deleted: false },
+        { id: '', name: 'Entry 2', dimensionId: '', deleted: false },
+        { id: '', name: 'Entry 3', dimensionId: '', deleted: false },
       ],
     });
 
@@ -74,7 +71,7 @@ test.describe("AttributeCell Component", () => {
     console.log(
       `Created test dimensions: ${Object.values(testDimensions)
         .map((d) => d.name)
-        .join(", ")}`,
+        .join(', ')}`,
     );
 
     // Navigate to the workers page
@@ -113,10 +110,8 @@ test.describe("AttributeCell Component", () => {
     }
   });
 
-  test.describe("Text Dimension Type", () => {
-    test("should open text field when clicking on attribute cell", async ({
-      page,
-    }) => {
+  test.describe('Text Dimension Type', () => {
+    test('should open text field when clicking on attribute cell', async ({ page }) => {
       // Click on the text attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.text.id}"]`,
@@ -128,13 +123,11 @@ test.describe("AttributeCell Component", () => {
       await expect(textField).toBeVisible();
       await expect(textField).toBeFocused();
 
-      console.log("✅ Text field opens when clicking on text attribute cell");
+      console.log('✅ Text field opens when clicking on text attribute cell');
     });
 
-    test("should save attribute value when pressing enter", async ({
-      page,
-    }) => {
-      const testValue = "Test Text Value";
+    test('should save attribute value when pressing enter', async ({ page }) => {
+      const testValue = 'Test Text Value';
 
       // Click on the text attribute cell
       const attributeCell = page.locator(
@@ -147,16 +140,16 @@ test.describe("AttributeCell Component", () => {
       await textField.fill(testValue);
 
       // Press Enter to save
-      await textField.press("Enter");
+      await textField.press('Enter');
 
       // Verify the value is saved and displayed
       await expect(attributeCell).toContainText(testValue);
 
-      console.log("✅ Text attribute value saved when pressing Enter");
+      console.log('✅ Text attribute value saved when pressing Enter');
     });
 
-    test("should save attribute value when clicking away", async ({ page }) => {
-      const testValue = "Click Away Value";
+    test('should save attribute value when clicking away', async ({ page }) => {
+      const testValue = 'Click Away Value';
 
       // Click on the text attribute cell
       const attributeCell = page.locator(
@@ -174,14 +167,12 @@ test.describe("AttributeCell Component", () => {
       // Verify the value is saved and displayed
       await expect(attributeCell).toContainText(testValue);
 
-      console.log("✅ Text attribute value saved when clicking away");
+      console.log('✅ Text attribute value saved when clicking away');
     });
 
-    test("should cancel attribute change when pressing escape", async ({
-      page,
-    }) => {
-      const originalValue = "Original Value";
-      const changedValue = "Changed Value";
+    test('should cancel attribute change when pressing escape', async ({ page }) => {
+      const originalValue = 'Original Value';
+      const changedValue = 'Changed Value';
 
       // First, set an original value
       const attributeCell = page.locator(
@@ -190,7 +181,7 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
       const textField = attributeCell.locator('input[type="text"]');
       await textField.fill(originalValue);
-      await textField.press("Enter");
+      await textField.press('Enter');
       await expect(attributeCell).toContainText(originalValue);
 
       // Now try to change it and cancel
@@ -198,19 +189,17 @@ test.describe("AttributeCell Component", () => {
       await textField.fill(changedValue);
 
       // Press Escape to cancel
-      await textField.press("Escape");
+      await textField.press('Escape');
 
       // Verify the original value is still there
       await expect(attributeCell).toContainText(originalValue);
 
-      console.log("✅ Text attribute change cancelled when pressing Escape");
+      console.log('✅ Text attribute change cancelled when pressing Escape');
     });
   });
 
-  test.describe("Number Dimension Type", () => {
-    test("should open number field when clicking on attribute cell", async ({
-      page,
-    }) => {
+  test.describe('Number Dimension Type', () => {
+    test('should open number field when clicking on attribute cell', async ({ page }) => {
       // Click on the number attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.number.id}"]`,
@@ -222,15 +211,11 @@ test.describe("AttributeCell Component", () => {
       await expect(numberField).toBeVisible();
       await expect(numberField).toBeFocused();
 
-      console.log(
-        "✅ Number field opens when clicking on number attribute cell",
-      );
+      console.log('✅ Number field opens when clicking on number attribute cell');
     });
 
-    test("should save numeric attribute value when pressing enter", async ({
-      page,
-    }) => {
-      const testValue = "42";
+    test('should save numeric attribute value when pressing enter', async ({ page }) => {
+      const testValue = '42';
 
       // Click on the number attribute cell
       const attributeCell = page.locator(
@@ -243,18 +228,16 @@ test.describe("AttributeCell Component", () => {
       await numberField.fill(testValue);
 
       // Press Enter to save
-      await numberField.press("Enter");
+      await numberField.press('Enter');
 
       // Verify the value is saved and displayed
       await expect(attributeCell).toContainText(testValue);
 
-      console.log("✅ Number attribute value saved when pressing Enter");
+      console.log('✅ Number attribute value saved when pressing Enter');
     });
 
-    test("should save numeric attribute value when clicking away", async ({
-      page,
-    }) => {
-      const testValue = "123";
+    test('should save numeric attribute value when clicking away', async ({ page }) => {
+      const testValue = '123';
 
       // Click on the number attribute cell
       const attributeCell = page.locator(
@@ -272,14 +255,12 @@ test.describe("AttributeCell Component", () => {
       // Verify the value is saved and displayed
       await expect(attributeCell).toContainText(testValue);
 
-      console.log("✅ Number attribute value saved when clicking away");
+      console.log('✅ Number attribute value saved when clicking away');
     });
 
-    test("should cancel numeric attribute change when pressing escape", async ({
-      page,
-    }) => {
-      const originalValue = "10";
-      const changedValue = "20";
+    test('should cancel numeric attribute change when pressing escape', async ({ page }) => {
+      const originalValue = '10';
+      const changedValue = '20';
 
       // First, set an original value
       const attributeCell = page.locator(
@@ -288,7 +269,7 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
       const numberField = attributeCell.locator('input[type="number"]');
       await numberField.fill(originalValue);
-      await numberField.press("Enter");
+      await numberField.press('Enter');
       await expect(attributeCell).toContainText(originalValue);
 
       // Now try to change it and cancel
@@ -296,16 +277,16 @@ test.describe("AttributeCell Component", () => {
       await numberField.fill(changedValue);
 
       // Press Escape to cancel
-      await numberField.press("Escape");
+      await numberField.press('Escape');
 
       // Verify the original value is still there
       await expect(attributeCell).toContainText(originalValue);
 
-      console.log("✅ Number attribute change cancelled when pressing Escape");
+      console.log('✅ Number attribute change cancelled when pressing Escape');
     });
 
-    test("should only accept numeric values", async ({ page, browserName }) => {
-      const validValue = "456";
+    test('should only accept numeric values', async ({ page, browserName }) => {
+      const validValue = '456';
 
       // Click on the number attribute cell
       const attributeCell = page.locator(
@@ -316,41 +297,39 @@ test.describe("AttributeCell Component", () => {
       const numberField = attributeCell.locator('input[type="number"]');
 
       // Verify that the input field has type="number" (browser validation)
-      await expect(numberField).toHaveAttribute("type", "number");
+      await expect(numberField).toHaveAttribute('type', 'number');
 
       // Try to type non-numeric characters using keyboard input
       // This should be prevented by the browser's native validation
       await numberField.clear();
-      await numberField.pressSequentially("abc123df");
+      await numberField.pressSequentially('abc123df');
 
       // Only the numeric part should be accepted
       const fieldValue = await numberField.inputValue();
       // expect(fieldValue).toBe("123"); // Only numeric characters should remain
 
-      if (browserName === "chromium") {
+      if (browserName === 'chromium') {
         // Chromium accepts numeric characters typed into a number input in this app
-        expect(fieldValue).toBe("123");
+        expect(fieldValue).toBe('123');
       } else {
         // Firefox / WebKit may reject non-numeric input and leave the field empty
-        expect(fieldValue).toBe("");
+        expect(fieldValue).toBe('');
       }
 
       // Clear and enter a valid numeric value
       await numberField.clear();
       await numberField.fill(validValue);
-      await numberField.press("Enter");
+      await numberField.press('Enter');
 
       // Verify the valid value is saved
       await expect(attributeCell).toContainText(validValue);
 
-      console.log("✅ Number field only accepts numeric values");
+      console.log('✅ Number field only accepts numeric values');
     });
   });
 
-  test.describe("Boolean Dimension Type", () => {
-    test("should toggle checkbox when clicking on it - unchecked to checked", async ({
-      page,
-    }) => {
+  test.describe('Boolean Dimension Type', () => {
+    test('should toggle checkbox when clicking on it - unchecked to checked', async ({ page }) => {
       // Click on the boolean attribute cell (should contain a checkbox)
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.bool.id}"]`,
@@ -369,12 +348,10 @@ test.describe("AttributeCell Component", () => {
       // Verify it's now checked
       await expect(checkbox).toBeChecked();
 
-      console.log("✅ Boolean attribute toggled from unchecked to checked");
+      console.log('✅ Boolean attribute toggled from unchecked to checked');
     });
 
-    test("should toggle checkbox when clicking on it - checked to unchecked", async ({
-      page,
-    }) => {
+    test('should toggle checkbox when clicking on it - checked to unchecked', async ({ page }) => {
       // Click on the boolean attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.bool.id}"]`,
@@ -394,12 +371,10 @@ test.describe("AttributeCell Component", () => {
       // Verify it's now unchecked
       await expect(checkbox).not.toBeChecked();
 
-      console.log("✅ Boolean attribute toggled from checked to unchecked");
+      console.log('✅ Boolean attribute toggled from checked to unchecked');
     });
 
-    test("should immediately save boolean changes without confirmation", async ({
-      page,
-    }) => {
+    test('should immediately save boolean changes without confirmation', async ({ page }) => {
       // Click on the boolean attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.bool.id}"]`,
@@ -430,14 +405,12 @@ test.describe("AttributeCell Component", () => {
         checked: !initiallyChecked,
       });
 
-      console.log("✅ Boolean attribute changes are saved immediately");
+      console.log('✅ Boolean attribute changes are saved immediately');
     });
   });
 
-  test.describe("Dim Entries Type", () => {
-    test("should show popup when clicking on the dim entries attribute cell", async ({
-      page,
-    }) => {
+  test.describe('Dim Entries Type', () => {
+    test('should show popup when clicking on the dim entries attribute cell', async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
@@ -445,17 +418,13 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
 
       // Wait for the popup to appear
-      const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]',
-      );
+      const popup = page.locator('[data-testid="dim-entry-type-cell-edit-popup"]');
       await expect(popup).toBeVisible();
 
-      console.log(
-        "✅ Popup appears when clicking on dim entries attribute cell",
-      );
+      console.log('✅ Popup appears when clicking on dim entries attribute cell');
     });
 
-    test("should list all dim entries in the popup", async ({ page }) => {
+    test('should list all dim entries in the popup', async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
@@ -463,38 +432,26 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
 
       // Wait for the popup to appear
-      const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]',
-      );
+      const popup = page.locator('[data-testid="dim-entry-type-cell-edit-popup"]');
       await expect(popup).toBeVisible();
 
       // Verify all dim entries are listed
-      const optionsList = page.locator(
-        '[data-testid="dim-entry-options-list"]',
-      );
+      const optionsList = page.locator('[data-testid="dim-entry-options-list"]');
       await expect(optionsList).toBeVisible();
 
       // Check for the three entries we created
-      const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
-      );
-      const entry2Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 2")',
-      );
-      const entry3Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 3")',
-      );
+      const entry1Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 1")');
+      const entry2Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 2")');
+      const entry3Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 3")');
 
       await expect(entry1Option).toBeVisible();
       await expect(entry2Option).toBeVisible();
       await expect(entry3Option).toBeVisible();
 
-      console.log("✅ All dim entries are listed in the popup");
+      console.log('✅ All dim entries are listed in the popup');
     });
 
-    test("should add dim entry as chip when clicking on it in the list", async ({
-      page,
-    }) => {
+    test('should add dim entry as chip when clicking on it in the list', async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
@@ -502,15 +459,11 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
 
       // Wait for the popup to appear
-      const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]',
-      );
+      const popup = page.locator('[data-testid="dim-entry-type-cell-edit-popup"]');
       await expect(popup).toBeVisible();
 
       // Click on the first entry to select it
-      const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
-      );
+      const entry1Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 1")');
       await entry1Option.click();
 
       // Verify the entry appears as a selected chip
@@ -519,12 +472,10 @@ test.describe("AttributeCell Component", () => {
       );
       await expect(selectedChip).toBeVisible();
 
-      console.log("✅ Dim entry added as chip when clicked");
+      console.log('✅ Dim entry added as chip when clicked');
     });
 
-    test("should remove selected dim entry when clicking delete cross", async ({
-      page,
-    }) => {
+    test('should remove selected dim entry when clicking delete cross', async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
@@ -532,15 +483,11 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
 
       // Wait for the popup to appear
-      const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]',
-      );
+      const popup = page.locator('[data-testid="dim-entry-type-cell-edit-popup"]');
       await expect(popup).toBeVisible();
 
       // Select an entry first
-      const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
-      );
+      const entry1Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 1")');
       await entry1Option.click();
 
       // Verify the chip is there
@@ -550,20 +497,16 @@ test.describe("AttributeCell Component", () => {
       await expect(selectedChip).toBeVisible();
 
       // Click the delete button on the chip
-      const deleteButton = selectedChip.locator(
-        '[data-testid*="remove-dim-entry-"]',
-      );
+      const deleteButton = selectedChip.locator('[data-testid*="remove-dim-entry-"]');
       await deleteButton.click();
 
       // Verify the chip is removed
       await expect(selectedChip).not.toBeVisible();
 
-      console.log("✅ Dim entry removed via delete cross");
+      console.log('✅ Dim entry removed via delete cross');
     });
 
-    test("should filter dim entries when typing in search input", async ({
-      page,
-    }) => {
+    test('should filter dim entries when typing in search input', async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
@@ -571,39 +514,27 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
 
       // Wait for the popup to appear
-      const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]',
-      );
+      const popup = page.locator('[data-testid="dim-entry-type-cell-edit-popup"]');
       await expect(popup).toBeVisible();
 
       // Type in the search input to filter
-      const searchInput = page.locator(
-        '[data-testid="dim-entry-search-input"]',
-      );
-      await searchInput.fill("Entry 1");
+      const searchInput = page.locator('[data-testid="dim-entry-search-input"]');
+      await searchInput.fill('Entry 1');
 
       // Verify only Entry 1 appears in the filtered list
-      const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
-      );
+      const entry1Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 1")');
       await expect(entry1Option).toBeVisible();
 
       // Verify other entries are not visible
-      const entry2Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 2")',
-      );
-      const entry3Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 3")',
-      );
+      const entry2Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 2")');
+      const entry3Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 3")');
       await expect(entry2Option).not.toBeVisible();
       await expect(entry3Option).not.toBeVisible();
 
-      console.log("✅ Search input filters dim entries correctly");
+      console.log('✅ Search input filters dim entries correctly');
     });
 
-    test("should not show selected dim entry in available options", async ({
-      page,
-    }) => {
+    test('should not show selected dim entry in available options', async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
@@ -611,15 +542,11 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
 
       // Wait for the popup to appear
-      const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]',
-      );
+      const popup = page.locator('[data-testid="dim-entry-type-cell-edit-popup"]');
       await expect(popup).toBeVisible();
 
       // Select an entry
-      const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
-      );
+      const entry1Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 1")');
       await entry1Option.click();
 
       // Verify the entry appears as selected
@@ -631,10 +558,10 @@ test.describe("AttributeCell Component", () => {
       // Verify the entry no longer appears in the options list
       await expect(entry1Option).not.toBeVisible();
 
-      console.log("✅ Selected dim entry no longer appears in options");
+      console.log('✅ Selected dim entry no longer appears in options');
     });
 
-    test("should close popup when clicking away", async ({ page }) => {
+    test('should close popup when clicking away', async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
@@ -642,19 +569,17 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
 
       // Wait for the popup to appear
-      const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]',
-      );
+      const popup = page.locator('[data-testid="dim-entry-type-cell-edit-popup"]');
       await expect(popup).toBeVisible();
 
       // Click away from popup to close it
       await page.mouse.click(100, 100);
       await expect(popup).not.toBeVisible();
 
-      console.log("✅ Popup closes when clicking away");
+      console.log('✅ Popup closes when clicking away');
     });
 
-    test("should close popup when pressing escape", async ({ page }) => {
+    test('should close popup when pressing escape', async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
@@ -662,27 +587,21 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
 
       // Wait for the popup to appear
-      const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]',
-      );
+      const popup = page.locator('[data-testid="dim-entry-type-cell-edit-popup"]');
       await expect(popup).toBeVisible();
 
       // Press escape in the search input
-      const searchInput = page.locator(
-        '[data-testid="dim-entry-search-input"]',
-      );
+      const searchInput = page.locator('[data-testid="dim-entry-search-input"]');
       await searchInput.focus();
-      await searchInput.press("Escape");
+      await searchInput.press('Escape');
 
       // Verify the popup is closed
       await expect(popup).not.toBeVisible();
 
-      console.log("✅ Popup closes when pressing escape");
+      console.log('✅ Popup closes when pressing escape');
     });
 
-    test("should reflect changes in attribute cell after closing popup", async ({
-      page,
-    }) => {
+    test('should reflect changes in attribute cell after closing popup', async ({ page }) => {
       // Click on the dim entries attribute cell
       const attributeCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.dimEntries.id}"]`,
@@ -690,18 +609,12 @@ test.describe("AttributeCell Component", () => {
       await attributeCell.click();
 
       // Wait for the popup to appear
-      const popup = page.locator(
-        '[data-testid="dim-entry-type-cell-edit-popup"]',
-      );
+      const popup = page.locator('[data-testid="dim-entry-type-cell-edit-popup"]');
       await expect(popup).toBeVisible();
 
       // Select multiple entries
-      const entry1Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 1")',
-      );
-      const entry2Option = page.locator(
-        '[data-testid*="dim-entry-option-"]:has-text("Entry 2")',
-      );
+      const entry1Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 1")');
+      const entry2Option = page.locator('[data-testid*="dim-entry-option-"]:has-text("Entry 2")');
 
       await entry1Option.click();
       await entry2Option.click();
@@ -711,17 +624,15 @@ test.describe("AttributeCell Component", () => {
       await expect(popup).not.toBeVisible();
 
       // Verify the attribute cell shows the selected entries
-      await expect(attributeCell).toContainText("Entry 1");
-      await expect(attributeCell).toContainText("Entry 2");
+      await expect(attributeCell).toContainText('Entry 1');
+      await expect(attributeCell).toContainText('Entry 2');
 
-      console.log("✅ Attribute cell reflects changes after closing popup");
+      console.log('✅ Attribute cell reflects changes after closing popup');
     });
   });
 
-  test.describe("General Attribute Cell Behavior", () => {
-    test("should handle multiple attribute types in the same row", async ({
-      page,
-    }) => {
+  test.describe('General Attribute Cell Behavior', () => {
+    test('should handle multiple attribute types in the same row', async ({ page }) => {
       // Test that we can interact with different attribute types for the same worker
       const textCell = page.locator(
         `[data-testid="attribute-cell-${testWorker.id}-${testDimensions.text.id}"]`,
@@ -736,31 +647,29 @@ test.describe("AttributeCell Component", () => {
       // Set values for each type
       // Text
       await textCell.click();
-      await textCell.locator('input[type="text"]').fill("Test Text");
-      await textCell.locator('input[type="text"]').press("Enter");
+      await textCell.locator('input[type="text"]').fill('Test Text');
+      await textCell.locator('input[type="text"]').press('Enter');
 
       // Number
       await numberCell.click();
-      await numberCell.locator('input[type="number"]').fill("123");
-      await numberCell.locator('input[type="number"]').press("Enter");
+      await numberCell.locator('input[type="number"]').fill('123');
+      await numberCell.locator('input[type="number"]').press('Enter');
 
       // Boolean
       const checkbox = boolCell.locator('input[type="checkbox"]');
       await checkbox.click();
 
       // Verify all values are set correctly
-      await expect(textCell).toContainText("Test Text");
-      await expect(numberCell).toContainText("123");
+      await expect(textCell).toContainText('Test Text');
+      await expect(numberCell).toContainText('123');
       await expect(checkbox).toBeChecked();
 
-      console.log("✅ Multiple attribute types work correctly in the same row");
+      console.log('✅ Multiple attribute types work correctly in the same row');
     });
 
-    test("should maintain attribute values after page refresh", async ({
-      page,
-    }) => {
-      const testTextValue = "Persistent Text";
-      const testNumberValue = "456";
+    test('should maintain attribute values after page refresh', async ({ page }) => {
+      const testTextValue = 'Persistent Text';
+      const testNumberValue = '456';
 
       // Set text attribute
       const textCell = page.locator(
@@ -768,7 +677,7 @@ test.describe("AttributeCell Component", () => {
       );
       await textCell.click();
       await textCell.locator('input[type="text"]').fill(testTextValue);
-      await textCell.locator('input[type="text"]').press("Enter");
+      await textCell.locator('input[type="text"]').press('Enter');
 
       // Set number attribute
       const numberCell = page.locator(
@@ -776,7 +685,7 @@ test.describe("AttributeCell Component", () => {
       );
       await numberCell.click();
       await numberCell.locator('input[type="number"]').fill(testNumberValue);
-      await numberCell.locator('input[type="number"]').press("Enter");
+      await numberCell.locator('input[type="number"]').press('Enter');
 
       // Set boolean attribute
       const boolCell = page.locator(
@@ -804,7 +713,7 @@ test.describe("AttributeCell Component", () => {
       await expect(numberCellAfterReload).toContainText(testNumberValue);
       await expect(checkboxAfterReload).toBeChecked();
 
-      console.log("✅ Attribute values persist after page refresh");
+      console.log('✅ Attribute values persist after page refresh');
     });
   });
 });

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
-import { canAccessPage } from "@/app/lib/access-control/check-access";
-import { TeamWithMembership } from "@/types/team";
+import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import { canAccessPage } from '@/app/lib/access-control/check-access';
+import { TeamWithMembership } from '@/types/team';
 
 type AccessGuardProps = {
   route: string; // route name used in access map
@@ -45,20 +45,16 @@ export function AccessGuard({
   teamWithMembership,
   children,
   fallback = null,
-  redirectTo = "/plan/schedule",
+  redirectTo = '/plan/schedule',
   showToast = true,
 }: AccessGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   // Extract language prefix from the current path (e.g. "/en" from "/en/plan/workers/")
-  const lngPrefix = pathname
-    ? `/${pathname.replace(/^\//, "").split("/")[0]}`
-    : "/en";
+  const lngPrefix = pathname ? `/${pathname.replace(/^\//, '').split('/')[0]}` : '/en';
 
-  const allowed = teamWithMembership
-    ? canAccessPage(route, teamWithMembership)
-    : false;
+  const allowed = teamWithMembership ? canAccessPage(route, teamWithMembership) : false;
 
   // Set snackbar state based on access status and showToast flag
   const [snackbarOpen, setSnackbarOpen] = useState(!allowed && showToast);
@@ -70,11 +66,8 @@ export function AccessGuard({
     }
   }, [allowed, lngPrefix, redirectTo, router]);
 
-  const handleSnackbarClose = (
-    event?: React.SyntheticEvent | Event,
-    reason?: string,
-  ) => {
-    if (reason === "clickaway") {
+  const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
       return;
     }
     setSnackbarOpen(false);
@@ -93,13 +86,9 @@ export function AccessGuard({
           open={snackbarOpen}
           autoHideDuration={6000}
           onClose={handleSnackbarClose}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         >
-          <Alert
-            onClose={handleSnackbarClose}
-            severity="error"
-            sx={{ width: "100%" }}
-          >
+          <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
             You do not have permission to access this page
           </Alert>
         </Snackbar>

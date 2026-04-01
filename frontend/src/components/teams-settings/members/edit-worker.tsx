@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Popover from "@mui/material/Popover";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import Button from "@mui/material/Button";
+import Popover from '@mui/material/Popover';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Button from '@mui/material/Button';
 // Styles
-import "./edit-worker.css";
+import './edit-worker.css';
 // Types
-import { WorkerT } from "@/types/worker";
+import { WorkerT } from '@/types/worker';
 
 export default function EditWorkerPopover({
   lng,
@@ -23,18 +23,12 @@ export default function EditWorkerPopover({
   teamId: string;
   userId: string;
   workers: WorkerT[];
-  handleAttachUserToWorker: (
-    workerId: string,
-    userId: string,
-    teamId: string,
-  ) => Promise<void>;
+  handleAttachUserToWorker: (workerId: string, userId: string, teamId: string) => Promise<void>;
 }) {
-  const { t } = useTranslation(lng, "teams-page");
+  const { t } = useTranslation(lng, 'teams-page');
 
   const userWorker = workers.find((worker) => worker.userId === userId) || null;
-  const [workerIdState, setWorkerIdState] = useState<string | null>(
-    userWorker?.id || null,
-  );
+  const [workerIdState, setWorkerIdState] = useState<string | null>(userWorker?.id || null);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -60,7 +54,7 @@ export default function EditWorkerPopover({
   };
 
   const open = Boolean(anchorEl);
-  const id = open ? "simple-popover" : undefined;
+  const id = open ? 'simple-popover' : undefined;
 
   return (
     <div>
@@ -69,21 +63,21 @@ export default function EditWorkerPopover({
         variant="contained"
         onClick={handleClick}
         sx={{
-          textTransform: "none",
-          backgroundColor: "transparent",
-          boxShadow: "none",
-          color: "#616161",
-          fontSize: "0.75rem",
+          textTransform: 'none',
+          backgroundColor: 'transparent',
+          boxShadow: 'none',
+          color: '#616161',
+          fontSize: '0.75rem',
           frontWeight: 500,
-          marginRight: "10px",
-          "&:hover": {
-            textDecoration: "underline",
-            backgroundColor: "transparent",
-            boxShadow: "none",
+          marginRight: '10px',
+          '&:hover': {
+            textDecoration: 'underline',
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
           },
         }}
       >
-        {userWorker?.name || t("no_worker")}
+        {userWorker?.name || t('no_worker')}
       </Button>
       <Popover
         id={id}
@@ -91,13 +85,13 @@ export default function EditWorkerPopover({
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
+          vertical: 'bottom',
+          horizontal: 'left',
         }}
         slotProps={{
           paper: {
             style: {
-              boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+              boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
               padding: 20,
               width: 350,
             },
@@ -105,20 +99,16 @@ export default function EditWorkerPopover({
         }}
       >
         <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">{t("worker")}</InputLabel>
+          <InputLabel id="demo-simple-select-label">{t('worker')}</InputLabel>
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
-            value={workerIdState || ""}
+            value={workerIdState || ''}
             label="Worker"
             onChange={handleChange}
           >
             {workers.map((worker) => (
-              <MenuItem
-                key={worker.id}
-                value={worker.id}
-                disabled={worker.userId !== null}
-              >
+              <MenuItem key={worker.id} value={worker.id} disabled={worker.userId !== null}>
                 {worker.name}
               </MenuItem>
             ))}
@@ -131,10 +121,10 @@ export default function EditWorkerPopover({
             disabled={!workerIdState}
             onClick={handleSave}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
             }}
           >
-            {t("save")}
+            {t('save')}
           </Button>
         </div>
       </Popover>

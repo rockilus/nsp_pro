@@ -4,7 +4,7 @@
  * Reusable confirmation dialog with customizable content and actions.
  */
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,8 +13,8 @@ import {
   Button,
   Typography,
   CircularProgress,
-} from "@mui/material";
-import { Warning } from "@mui/icons-material";
+} from '@mui/material';
+import { Warning } from '@mui/icons-material';
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -24,14 +24,8 @@ interface ConfirmationDialogProps {
   content: string;
   confirmText?: string;
   cancelText?: string;
-  confirmVariant?: "text" | "outlined" | "contained";
-  confirmColor?:
-    | "primary"
-    | "secondary"
-    | "error"
-    | "warning"
-    | "info"
-    | "success";
+  confirmVariant?: 'text' | 'outlined' | 'contained';
+  confirmColor?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
   showIcon?: boolean;
   testId?: string;
 }
@@ -42,12 +36,12 @@ export function ConfirmationDialog({
   onConfirm,
   title,
   content,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
-  confirmVariant = "contained",
-  confirmColor = "primary",
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  confirmVariant = 'contained',
+  confirmColor = 'primary',
   showIcon = false,
-  testId = "confirmation-dialog",
+  testId = 'confirmation-dialog',
 }: ConfirmationDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,7 +51,7 @@ export function ConfirmationDialog({
       await onConfirm();
       onClose();
     } catch (error) {
-      console.error("Confirmation action failed:", error);
+      console.error('Confirmation action failed:', error);
       // Don't close dialog on error, let the parent handle it
     } finally {
       setIsLoading(false);
@@ -71,14 +65,8 @@ export function ConfirmationDialog({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="xs"
-      fullWidth
-      data-testid={testId}
-    >
-      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth data-testid={testId}>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         {showIcon && <Warning color="warning" />}
         {title}
       </DialogTitle>
@@ -86,11 +74,7 @@ export function ConfirmationDialog({
         <Typography>{content}</Typography>
       </DialogContent>
       <DialogActions>
-        <Button
-          data-testid={`${testId}-cancel-button`}
-          onClick={handleClose}
-          disabled={isLoading}
-        >
+        <Button data-testid={`${testId}-cancel-button`} onClick={handleClose} disabled={isLoading}>
           {cancelText}
         </Button>
         <Button
@@ -101,7 +85,7 @@ export function ConfirmationDialog({
           disabled={isLoading}
           startIcon={isLoading ? <CircularProgress size={20} /> : undefined}
         >
-          {isLoading ? "Processing..." : confirmText}
+          {isLoading ? 'Processing...' : confirmText}
         </Button>
       </DialogActions>
     </Dialog>

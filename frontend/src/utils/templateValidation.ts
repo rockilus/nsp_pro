@@ -7,7 +7,7 @@ import {
   TemplateType,
   ShiftDemandTemplateDTO,
   TEMPLATE_TYPE_CONSTRAINTS,
-} from "../types/shift-demand-template";
+} from '../types/shift-demand-template';
 
 /**
  * Validation result interface
@@ -52,7 +52,7 @@ export const validateTemplateConstraints = (
   if (weeksCount < constraints.minWeeks) {
     return {
       isValid: false,
-      error: "insufficient_weeks",
+      error: 'insufficient_weeks',
       message: `${templateType} templates require at least ${constraints.minWeeks} weeks`,
     };
   }
@@ -60,7 +60,7 @@ export const validateTemplateConstraints = (
   if (weeksCount > constraints.maxWeeks) {
     return {
       isValid: false,
-      error: "too_many_weeks",
+      error: 'too_many_weeks',
       message: `${templateType} templates cannot have more than ${constraints.maxWeeks} weeks`,
     };
   }
@@ -134,8 +134,8 @@ export const getWeekManagementConstraints = (
       canRemoveWeek: false,
       maxWeeksReached: true,
       templateTypeRestricted: true,
-      addButtonDisabledReason: "even_odd_weeks_fixed",
-      removeButtonDisabledReason: "even_odd_weeks_fixed",
+      addButtonDisabledReason: 'even_odd_weeks_fixed',
+      removeButtonDisabledReason: 'even_odd_weeks_fixed',
     };
   }
 
@@ -147,26 +147,19 @@ export const getWeekManagementConstraints = (
     canRemoveWeek,
     maxWeeksReached: currentWeeks >= constraints.maxWeeks,
     templateTypeRestricted: false,
-    addButtonDisabledReason: canAddWeek ? undefined : "max_weeks_reached",
-    removeButtonDisabledReason: canRemoveWeek
-      ? undefined
-      : "min_weeks_required",
+    addButtonDisabledReason: canAddWeek ? undefined : 'max_weeks_reached',
+    removeButtonDisabledReason: canRemoveWeek ? undefined : 'min_weeks_required',
   };
 };
 
 /**
  * Validate template before save operation
  */
-export const validateTemplateBeforeSave = (
-  template: ShiftDemandTemplateDTO,
-): ValidationResult => {
+export const validateTemplateBeforeSave = (template: ShiftDemandTemplateDTO): ValidationResult => {
   const weeksCount = template.weeksData.length;
 
   // Validate basic constraints
-  const constraintsValidation = validateTemplateConstraints(
-    template.templateType,
-    weeksCount,
-  );
+  const constraintsValidation = validateTemplateConstraints(template.templateType, weeksCount);
 
   if (!constraintsValidation.isValid) {
     return constraintsValidation;
@@ -188,11 +181,7 @@ export const requiresConfirmationForTypeChange = (
   newType: TemplateType,
   currentWeeks: number,
 ): boolean => {
-  const validation = validateTemplateForTypeChange(
-    currentType,
-    newType,
-    currentWeeks,
-  );
+  const validation = validateTemplateForTypeChange(currentType, newType, currentWeeks);
   return validation.requiresConfirmation || false;
 };
 
@@ -205,23 +194,23 @@ export const getValidationErrorMessage = (
   weeksCount?: number,
 ): string => {
   switch (error) {
-    case "insufficient_weeks":
+    case 'insufficient_weeks':
       return templateType === TemplateType.EVEN_ODD
-        ? "Even/Odd templates require exactly 2 weeks"
-        : "Template must have at least 1 week";
+        ? 'Even/Odd templates require exactly 2 weeks'
+        : 'Template must have at least 1 week';
 
-    case "too_many_weeks":
+    case 'too_many_weeks':
       return templateType === TemplateType.EVEN_ODD
-        ? "Even/Odd templates can only have 2 weeks"
-        : "Template cannot have more than 8 weeks";
+        ? 'Even/Odd templates can only have 2 weeks'
+        : 'Template cannot have more than 8 weeks';
 
-    case "insufficient_weeks_for_even_odd":
-      return "Cannot convert to Even/Odd: template needs at least 2 weeks. Please add a week first.";
+    case 'insufficient_weeks_for_even_odd':
+      return 'Cannot convert to Even/Odd: template needs at least 2 weeks. Please add a week first.';
 
-    case "even_odd_requires_two_weeks":
-      return "Even/Odd templates must have exactly 2 weeks";
+    case 'even_odd_requires_two_weeks':
+      return 'Even/Odd templates must have exactly 2 weeks';
 
     default:
-      return "Template validation failed";
+      return 'Template validation failed';
   }
 };

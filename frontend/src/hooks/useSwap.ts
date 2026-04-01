@@ -1,15 +1,15 @@
-import { useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 // Types
-import { SwapRequestT, SwapStatus, SwapType } from "../types/swap";
-import { SwapValidationResultT } from "../types/swapValidation";
+import { SwapRequestT, SwapStatus, SwapType } from '../types/swap';
+import { SwapValidationResultT } from '../types/swapValidation';
 // API Client
-import { SwapApi } from "../app/lib/api/swapApi";
-import { useApiClient } from "../app/lib/api-client";
+import { SwapApi } from '../app/lib/api/swapApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
-import { assignmentsQueryKeys } from "../app/lib/hooks/useAssignments";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
+import { assignmentsQueryKeys } from '../app/lib/hooks/useAssignments';
 
 //////////////////////////
 // Authenticated Swap Hooks //
@@ -25,7 +25,7 @@ export function useGetSwaps() {
   const getSwaps = useCallback(
     async (teamId: string, status?: SwapStatus): Promise<SwapRequestT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetSwaps called:", {
+        console.log('🔍 useGetSwaps called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -36,18 +36,18 @@ export function useGetSwaps() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SwapApi.getSwapsForTeam(apiClient, teamId, status);
       } catch (error) {
-        console.error("❌ Failed to get swaps:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get swaps:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -69,7 +69,7 @@ export function useGetSwapById() {
   const getSwapById = useCallback(
     async (swapId: string): Promise<SwapRequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetSwapById called:", {
+        console.log('🔍 useGetSwapById called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -79,18 +79,18 @@ export function useGetSwapById() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SwapApi.getSwapById(apiClient, swapId);
       } catch (error) {
-        console.error("❌ Failed to get swap by id:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get swap by id:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -121,7 +121,7 @@ export function useCreateSwap() {
       },
     ): Promise<SwapRequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useCreateSwap called:", {
+        console.log('🔍 useCreateSwap called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -131,18 +131,18 @@ export function useCreateSwap() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SwapApi.createSwap(apiClient, teamId, swapData);
       } catch (error) {
-        console.error("❌ Failed to create swap:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to create swap:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -168,7 +168,7 @@ export function useAddBid() {
       bidAssignmentIds: string[],
     ): Promise<SwapRequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAddBid called:", {
+        console.log('🔍 useAddBid called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -178,23 +178,18 @@ export function useAddBid() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await SwapApi.addBid(
-          apiClient,
-          swapId,
-          bidderWorkerId,
-          bidAssignmentIds,
-        );
+        return await SwapApi.addBid(apiClient, swapId, bidderWorkerId, bidAssignmentIds);
       } catch (error) {
-        console.error("❌ Failed to add bid:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to add bid:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -216,7 +211,7 @@ export function useAcceptBid() {
   const acceptBid = useCallback(
     async (swapId: string, bidId: string): Promise<SwapRequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAcceptBid called:", {
+        console.log('🔍 useAcceptBid called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -227,18 +222,18 @@ export function useAcceptBid() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SwapApi.acceptBid(apiClient, swapId, bidId);
       } catch (error) {
-        console.error("❌ Failed to accept bid:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to accept bid:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -260,7 +255,7 @@ export function useCancelBidAcceptance() {
   const cancelBidAcceptance = useCallback(
     async (swapId: string): Promise<SwapRequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useCancelBidAcceptance called:", {
+        console.log('🔍 useCancelBidAcceptance called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -270,18 +265,18 @@ export function useCancelBidAcceptance() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SwapApi.cancelBidAcceptance(apiClient, swapId);
       } catch (error) {
-        console.error("❌ Failed to cancel bid acceptance:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to cancel bid acceptance:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -303,7 +298,7 @@ export function useAcceptDirectSwap() {
   const acceptDirectSwap = useCallback(
     async (swapId: string): Promise<SwapRequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAcceptDirectSwap called:", {
+        console.log('🔍 useAcceptDirectSwap called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -313,18 +308,18 @@ export function useAcceptDirectSwap() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SwapApi.acceptDirectSwap(apiClient, swapId);
       } catch (error) {
-        console.error("❌ Failed to accept direct swap:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to accept direct swap:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -347,7 +342,7 @@ export function useApproveSwap() {
   const approveSwap = useCallback(
     async (swapId: string): Promise<SwapRequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useApproveSwap called:", {
+        console.log('🔍 useApproveSwap called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -357,11 +352,11 @@ export function useApproveSwap() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -374,8 +369,8 @@ export function useApproveSwap() {
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to approve swap:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to approve swap:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -397,7 +392,7 @@ export function useDeleteSwap() {
   const deleteSwap = useCallback(
     async (swapId: string): Promise<void> => {
       if (env.isDevelopment) {
-        console.log("🔍 useDeleteSwap called:", {
+        console.log('🔍 useDeleteSwap called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -407,18 +402,18 @@ export function useDeleteSwap() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         await SwapApi.deleteSwap(apiClient, swapId);
       } catch (error) {
-        console.error("❌ Failed to delete swap:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete swap:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -440,7 +435,7 @@ export function useDenySwap() {
   const denySwap = useCallback(
     async (swapId: string): Promise<SwapRequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useDenySwap called:", {
+        console.log('🔍 useDenySwap called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -450,18 +445,18 @@ export function useDenySwap() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SwapApi.denySwap(apiClient, swapId);
       } catch (error) {
-        console.error("❌ Failed to deny swap:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to deny swap:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -484,7 +479,7 @@ export function useRevertSwap() {
   const revertSwap = useCallback(
     async (swapId: string): Promise<SwapRequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useRevertSwap called:", {
+        console.log('🔍 useRevertSwap called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -494,11 +489,11 @@ export function useRevertSwap() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -511,8 +506,8 @@ export function useRevertSwap() {
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to revert swap:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to revert swap:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -534,7 +529,7 @@ export function useValidateSwap() {
   const validateSwap = useCallback(
     async (swapId: string): Promise<SwapValidationResultT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useValidateSwap called:", {
+        console.log('🔍 useValidateSwap called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -544,18 +539,18 @@ export function useValidateSwap() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SwapApi.validateSwap(apiClient, swapId);
       } catch (error) {
-        console.error("❌ Failed to validate swap:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to validate swap:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -577,7 +572,7 @@ export function useDeleteBid() {
   const deleteBid = useCallback(
     async (swapId: string, bidId: string): Promise<SwapRequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useDeleteBid called:", {
+        console.log('🔍 useDeleteBid called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -588,18 +583,18 @@ export function useDeleteBid() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SwapApi.deleteBid(apiClient, swapId, bidId);
       } catch (error) {
-        console.error("❌ Failed to delete bid:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete bid:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;

@@ -4,7 +4,7 @@
  * error handling and validation aligned with backend DTOs
  */
 
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 import {
   ShiftDemandDTO,
   ShiftDemandCreateDTO,
@@ -13,14 +13,14 @@ import {
   BulkUpsertResponse,
   ShiftDemandErrorResponse,
   SHIFT_DEMAND_CONSTRAINTS,
-} from "../../../types/shiftDemand";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+} from '../../../types/shiftDemand';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 /**
  * Utility function to format dates for API calls
  */
 const formatDateForAPI = (date: Date): string => {
-  return date.toISOString().split("T")[0]; // YYYY-MM-DD format
+  return date.toISOString().split('T')[0]; // YYYY-MM-DD format
 };
 
 /**
@@ -28,33 +28,26 @@ const formatDateForAPI = (date: Date): string => {
  */
 const validateCreateRequest = (demand: ShiftDemandCreateDTO): void => {
   if (!SHIFT_DEMAND_CONSTRAINTS.OBJECTID_PATTERN.test(demand.shiftId)) {
-    throw new Error("Invalid shift ID format");
+    throw new Error('Invalid shift ID format');
   }
 
   if (!SHIFT_DEMAND_CONSTRAINTS.OBJECTID_PATTERN.test(demand.teamId)) {
-    throw new Error("Invalid team ID format");
+    throw new Error('Invalid team ID format');
   }
 
   if (demand.count < 0 || demand.count > SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT) {
-    throw new Error(
-      `Count must be between 0 and ${SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT}`,
-    );
+    throw new Error(`Count must be between 0 and ${SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT}`);
   }
 
   if (
     demand.date < SHIFT_DEMAND_CONSTRAINTS.MIN_DATE ||
     demand.date > SHIFT_DEMAND_CONSTRAINTS.MAX_DATE
   ) {
-    throw new Error("Date is outside valid range");
+    throw new Error('Date is outside valid range');
   }
 
-  if (
-    demand.notes &&
-    demand.notes.length > SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH
-  ) {
-    throw new Error(
-      `Notes cannot exceed ${SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH} characters`,
-    );
+  if (demand.notes && demand.notes.length > SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH) {
+    throw new Error(`Notes cannot exceed ${SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH} characters`);
   }
 };
 
@@ -62,27 +55,19 @@ const validateCreateRequest = (demand: ShiftDemandCreateDTO): void => {
  * Client-side validation for update requests
  */
 const validateUpdateRequest = (demand: ShiftDemandUpdateDTO): void => {
-  if (
-    demand.shiftId &&
-    !SHIFT_DEMAND_CONSTRAINTS.OBJECTID_PATTERN.test(demand.shiftId)
-  ) {
-    throw new Error("Invalid shift ID format");
+  if (demand.shiftId && !SHIFT_DEMAND_CONSTRAINTS.OBJECTID_PATTERN.test(demand.shiftId)) {
+    throw new Error('Invalid shift ID format');
   }
 
-  if (
-    demand.teamId &&
-    !SHIFT_DEMAND_CONSTRAINTS.OBJECTID_PATTERN.test(demand.teamId)
-  ) {
-    throw new Error("Invalid team ID format");
+  if (demand.teamId && !SHIFT_DEMAND_CONSTRAINTS.OBJECTID_PATTERN.test(demand.teamId)) {
+    throw new Error('Invalid team ID format');
   }
 
   if (
     demand.count !== undefined &&
     (demand.count < 0 || demand.count > SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT)
   ) {
-    throw new Error(
-      `Count must be between 0 and ${SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT}`,
-    );
+    throw new Error(`Count must be between 0 and ${SHIFT_DEMAND_CONSTRAINTS.MAX_COUNT}`);
   }
 
   if (
@@ -90,16 +75,11 @@ const validateUpdateRequest = (demand: ShiftDemandUpdateDTO): void => {
     (demand.date < SHIFT_DEMAND_CONSTRAINTS.MIN_DATE ||
       demand.date > SHIFT_DEMAND_CONSTRAINTS.MAX_DATE)
   ) {
-    throw new Error("Date is outside valid range");
+    throw new Error('Date is outside valid range');
   }
 
-  if (
-    demand.notes &&
-    demand.notes.length > SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH
-  ) {
-    throw new Error(
-      `Notes cannot exceed ${SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH} characters`,
-    );
+  if (demand.notes && demand.notes.length > SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH) {
+    throw new Error(`Notes cannot exceed ${SHIFT_DEMAND_CONSTRAINTS.MAX_NOTES_LENGTH} characters`);
   }
 };
 
@@ -119,18 +99,18 @@ export class ShiftDemandApi extends BaseApi {
   ): Promise<ShiftDemandDTO[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const params = new URLSearchParams({
-      start_date: startDate.format("YYYY-MM-DD"),
-      end_date: endDate.format("YYYY-MM-DD"),
+      start_date: startDate.format('YYYY-MM-DD'),
+      end_date: endDate.format('YYYY-MM-DD'),
       buffer_days: bufferDays.toString(),
     });
 
     const endpoint = `/shift-demands-new/teams/${teamId}/period?${params}`;
 
-    return this.makeRequest<ShiftDemandDTO[]>(apiClient, "get", endpoint);
+    return this.makeRequest<ShiftDemandDTO[]>(apiClient, 'get', endpoint);
   }
 
   /**
@@ -144,17 +124,17 @@ export class ShiftDemandApi extends BaseApi {
   ): Promise<ShiftDemandMatrix> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const params = new URLSearchParams({
-      start_date: startDate.format("YYYY-MM-DD"),
-      end_date: endDate.format("YYYY-MM-DD"),
+      start_date: startDate.format('YYYY-MM-DD'),
+      end_date: endDate.format('YYYY-MM-DD'),
     });
 
     const endpoint = `/shift-demands-new/teams/${teamId}/matrix?${params}`;
 
-    return this.makeRequest<ShiftDemandMatrix>(apiClient, "get", endpoint);
+    return this.makeRequest<ShiftDemandMatrix>(apiClient, 'get', endpoint);
   }
 
   /**
@@ -163,11 +143,11 @@ export class ShiftDemandApi extends BaseApi {
   static async createShiftDemand(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    demand: Omit<ShiftDemandCreateDTO, "teamId">,
+    demand: Omit<ShiftDemandCreateDTO, 'teamId'>,
   ): Promise<ShiftDemandDTO> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const demandWithTeam: ShiftDemandCreateDTO = {
@@ -180,12 +160,7 @@ export class ShiftDemandApi extends BaseApi {
 
     const endpoint = `/shift-demands-new/teams/${teamId}`;
 
-    return this.makeRequest<ShiftDemandDTO>(
-      apiClient,
-      "post",
-      endpoint,
-      demandWithTeam,
-    );
+    return this.makeRequest<ShiftDemandDTO>(apiClient, 'post', endpoint, demandWithTeam);
   }
 
   /**
@@ -199,10 +174,10 @@ export class ShiftDemandApi extends BaseApi {
   ): Promise<ShiftDemandDTO | null> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!demandId) {
-      throw new Error("Demand ID is required");
+      throw new Error('Demand ID is required');
     }
 
     // Client-side validation
@@ -220,12 +195,7 @@ export class ShiftDemandApi extends BaseApi {
 
     const endpoint = `/shift-demands-new/${demandId}/teams/${teamId}`;
 
-    return this.makeRequest<ShiftDemandDTO>(
-      apiClient,
-      "put",
-      endpoint,
-      updateBody,
-    );
+    return this.makeRequest<ShiftDemandDTO>(apiClient, 'put', endpoint, updateBody);
   }
 
   /**
@@ -238,15 +208,15 @@ export class ShiftDemandApi extends BaseApi {
   ): Promise<void> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!demandId) {
-      throw new Error("Demand ID is required");
+      throw new Error('Demand ID is required');
     }
 
     const endpoint = `/shift-demands-new/${demandId}/teams/${teamId}`;
 
-    await this.makeRequest<void>(apiClient, "delete", endpoint);
+    await this.makeRequest<void>(apiClient, 'delete', endpoint);
   }
 
   /**
@@ -255,14 +225,14 @@ export class ShiftDemandApi extends BaseApi {
   static async bulkUpsertShiftDemands(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    demands: Omit<ShiftDemandCreateDTO, "teamId">[],
+    demands: Omit<ShiftDemandCreateDTO, 'teamId'>[],
   ): Promise<BulkUpsertResponse> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!demands || demands.length === 0) {
-      throw new Error("At least one demand is required");
+      throw new Error('At least one demand is required');
     }
 
     const demandsWithTeam: ShiftDemandCreateDTO[] = demands.map((demand) => ({
@@ -275,22 +245,14 @@ export class ShiftDemandApi extends BaseApi {
       try {
         validateCreateRequest(demand);
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Unknown validation error";
-        throw new Error(
-          `Validation failed for demand at index ${index}: ${errorMessage}`,
-        );
+        const errorMessage = error instanceof Error ? error.message : 'Unknown validation error';
+        throw new Error(`Validation failed for demand at index ${index}: ${errorMessage}`);
       }
     });
 
     const endpoint = `/shift-demands-new/teams/${teamId}/bulk-upsert`;
 
-    const result = await this.makeRequest<any>(
-      apiClient,
-      "post",
-      endpoint,
-      demandsWithTeam,
-    );
+    const result = await this.makeRequest<any>(apiClient, 'post', endpoint, demandsWithTeam);
 
     // Transform backend response to match frontend interface
     return {

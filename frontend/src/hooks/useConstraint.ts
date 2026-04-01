@@ -1,14 +1,14 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { ConstraintT, TemplateT } from "../types/constraint";
+import { ConstraintT, TemplateT } from '../types/constraint';
 // API Client
-import { ConstraintApi } from "../app/lib/api/constraintApi";
-import { WorkerApi } from "../app/lib/api/workerApi";
-import { ShiftApi } from "../app/lib/api/shiftApi";
-import { useApiClient } from "../app/lib/api-client";
+import { ConstraintApi } from '../app/lib/api/constraintApi';
+import { WorkerApi } from '../app/lib/api/workerApi';
+import { ShiftApi } from '../app/lib/api/shiftApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Constraint Hooks //
@@ -24,7 +24,7 @@ export function useAddConstraint() {
   const addConstraint = useCallback(
     async (constraint: ConstraintT): Promise<ConstraintT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAddConstraint called:", {
+        console.log('🔍 useAddConstraint called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -35,29 +35,29 @@ export function useAddConstraint() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!constraint || !constraint.teamId) {
-        throw new Error("Invalid constraint data provided");
+        throw new Error('Invalid constraint data provided');
       }
 
       try {
         const result = await ConstraintApi.addConstraint(apiClient, constraint);
 
         if (env.isDevelopment) {
-          console.log("✅ Constraint added successfully");
+          console.log('✅ Constraint added successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to add constraint:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to add constraint:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -79,7 +79,7 @@ export function useGetConstraints() {
   const getConstraints = useCallback(
     async (teamId: string): Promise<ConstraintT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetConstraints called:", {
+        console.log('🔍 useGetConstraints called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -89,18 +89,18 @@ export function useGetConstraints() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ConstraintApi.getConstraints(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get constraints:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get constraints:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -123,21 +123,18 @@ export function useUpdateConstraint() {
     async (updatedConstraint: ConstraintT): Promise<ConstraintT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ConstraintApi.updateConstraint(
-          apiClient,
-          updatedConstraint,
-        );
+        return await ConstraintApi.updateConstraint(apiClient, updatedConstraint);
       } catch (error) {
-        console.error("❌ Failed to update constraint:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update constraint:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -160,18 +157,18 @@ export function useDeleteConstraint() {
     async (constraintId: string, teamId: string): Promise<void> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         await ConstraintApi.deleteConstraint(apiClient, constraintId, teamId);
       } catch (error) {
-        console.error("❌ Failed to delete constraint:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete constraint:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -193,7 +190,7 @@ export function useGetTemplates() {
   const getTemplates = useCallback(
     async (teamId: string): Promise<TemplateT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetTemplates called:", {
+        console.log('🔍 useGetTemplates called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -203,18 +200,18 @@ export function useGetTemplates() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ConstraintApi.getTemplates(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get templates:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get templates:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -237,11 +234,11 @@ export function useGetConstraintsTabData() {
     async (teamId: string) => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -259,8 +256,8 @@ export function useGetConstraintsTabData() {
           shifts: constraintsTabData[3],
         };
       } catch (error) {
-        console.error("❌ Failed to get constraints tab data:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get constraints tab data:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;

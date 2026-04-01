@@ -2,8 +2,8 @@
  * API client for attribute operations
  */
 
-import { AttributeT, toAttributeT } from "@/types/attribute";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { AttributeT, toAttributeT } from '@/types/attribute';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class AttributeApi extends BaseApi {
   /**
@@ -17,15 +17,15 @@ export class AttributeApi extends BaseApi {
     // Security: Input validation
     // if (!attribute || !attribute.id) {
     if (!attribute) {
-      throw new Error("Invalid attribute data provided");
+      throw new Error('Invalid attribute data provided');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "put",
+      'put',
       `/attributes/teams/${teamId}`,
       attribute,
     );
@@ -42,15 +42,15 @@ export class AttributeApi extends BaseApi {
   ): Promise<AttributeT[]> {
     // Security: Input validation
     if (!ownerId) {
-      throw new Error("Owner ID is required");
+      throw new Error('Owner ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any[]>(
       apiClient,
-      "get",
+      'get',
       `/attributes/teams/${teamId}/owners/${ownerId}`,
     );
     return responseData.map((attr: any) => toAttributeT(attr));
@@ -61,22 +61,22 @@ export class AttributeApi extends BaseApi {
    */
   static async createAttribute(
     apiClient: AuthenticatedApiClient,
-    attribute: Omit<AttributeT, "id">,
+    attribute: Omit<AttributeT, 'id'>,
     teamId: string,
   ): Promise<AttributeT> {
     // Security: Input validation
     if (!attribute) {
-      throw new Error("Attribute data is required");
+      throw new Error('Attribute data is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/attributes/teams/${teamId}`,
-      { ...attribute, id: "" }, // API will assign ID
+      { ...attribute, id: '' }, // API will assign ID
     );
     return toAttributeT(responseData);
   }
@@ -91,16 +91,12 @@ export class AttributeApi extends BaseApi {
   ): Promise<void> {
     // Security: Input validation
     if (!attributeId) {
-      throw new Error("Attribute ID is required");
+      throw new Error('Attribute ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
-    await this.makeRequest<void>(
-      apiClient,
-      "delete",
-      `/attributes/teams/${teamId}/${attributeId}`,
-    );
+    await this.makeRequest<void>(apiClient, 'delete', `/attributes/teams/${teamId}/${attributeId}`);
   }
 }

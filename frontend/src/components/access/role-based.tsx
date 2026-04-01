@@ -1,5 +1,5 @@
 // Types
-import { TeamMembershipRole } from "@/types/team";
+import { TeamMembershipRole } from '@/types/team';
 
 type RoleBasedProps = {
   role: TeamMembershipRole | null;

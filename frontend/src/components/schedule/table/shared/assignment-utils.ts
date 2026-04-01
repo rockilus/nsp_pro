@@ -1,24 +1,17 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 // Types
-import { BreachT } from "@/types/breach";
-import { AssignmentT } from "@/types/assignment";
-import { WorkerT } from "../../../../types/worker";
-import { ShiftT, ShiftRestType } from "../../../../types/shift";
-import { RequestT } from "../../../../types/request";
-import { AttributeOwnerType } from "../../../../types/attribute";
-import { RecurrenceRuleT } from "@/types/recurrence";
-import { ShiftDemandDTO } from "@/types/shiftDemand";
-import {
-  AssignmentsDictT,
-  ShiftDemandsDictT,
-  ScheduleCellsDictT,
-} from "@/types/schedule";
+import { BreachT } from '@/types/breach';
+import { AssignmentT } from '@/types/assignment';
+import { WorkerT } from '../../../../types/worker';
+import { ShiftT, ShiftRestType } from '../../../../types/shift';
+import { RequestT } from '../../../../types/request';
+import { AttributeOwnerType } from '../../../../types/attribute';
+import { RecurrenceRuleT } from '@/types/recurrence';
+import { ShiftDemandDTO } from '@/types/shiftDemand';
+import { AssignmentsDictT, ShiftDemandsDictT, ScheduleCellsDictT } from '@/types/schedule';
 
-export const generateOwnerIdDateKey = (
-  ownerId: string,
-  date: dayjs.Dayjs,
-): string => {
-  return `${ownerId}-${date.format("YYYY-MM-DD")}`;
+export const generateOwnerIdDateKey = (ownerId: string, date: dayjs.Dayjs): string => {
+  return `${ownerId}-${date.format('YYYY-MM-DD')}`;
 };
 
 export const buildAssignmentsDataByOwnerAndDate = (
@@ -42,7 +35,7 @@ export const buildAssignmentsDataByOwnerAndDate = (
   const breachMap = new Map<string, BreachT[]>();
   breaches.forEach((breach) => {
     breach.variables.forEach((variable) => {
-      const key = `${variable.shiftId}-${variable.date.format("YYYY-MM-DD")}`;
+      const key = `${variable.shiftId}-${variable.date.format('YYYY-MM-DD')}`;
       if (!breachMap.has(key)) {
         breachMap.set(key, []);
       }
@@ -66,42 +59,28 @@ export const buildAssignmentsDataByOwnerAndDate = (
     const shift = shifts.find((s) => s.id === assignment.shiftId);
     if (!worker || !shift) return;
 
-    const ownerId =
-      ownerType === AttributeOwnerType.WORKER ? worker.id : shift.id;
+    const ownerId = ownerType === AttributeOwnerType.WORKER ? worker.id : shift.id;
     const ownerDateKey = generateOwnerIdDateKey(ownerId, assignment.date);
 
     // Get the recurrence for the assignment
-    const recurrence = assignment.sourceId
-      ? recurrenceMap.get(assignment.sourceId) || null
-      : null;
+    const recurrence = assignment.sourceId ? recurrenceMap.get(assignment.sourceId) || null : null;
 
     // Get associated breaches using the precomputed map
-    const breachKey = `${shift.id}-${assignment.date.format("YYYY-MM-DD")}`;
+    const breachKey = `${shift.id}-${assignment.date.format('YYYY-MM-DD')}`;
     const associatedBreaches = breachMap.get(breachKey) || [];
 
     // Get associated requests using the precomputed map
     const associatedRequests = (requestMap.get(shift.id) || []).filter(
       (request) =>
-        request.startDate.isSameOrBefore(assignment.date, "day") &&
-        request.endDate.isSameOrAfter(assignment.date, "day"),
+        request.startDate.isSameOrBefore(assignment.date, 'day') &&
+        request.endDate.isSameOrAfter(assignment.date, 'day'),
     );
 
-    if (
-      shift.restType === ShiftRestType.RECUPERATION &&
-      shift.recuperationDutyId
-    ) {
-      const referenceShift = shifts.find(
-        (s) => s.id === shift.recuperationDutyId,
-      );
-      if (
-        referenceShift &&
-        !referenceShift.startTime.isSame(referenceShift.endTime, "day")
-      ) {
-        const shiftAssignmentStartDate = assignment.date.add(1, "day");
-        const nextDayKey = generateOwnerIdDateKey(
-          ownerId,
-          shiftAssignmentStartDate,
-        );
+    if (shift.restType === ShiftRestType.RECUPERATION && shift.recuperationDutyId) {
+      const referenceShift = shifts.find((s) => s.id === shift.recuperationDutyId);
+      if (referenceShift && !referenceShift.startTime.isSame(referenceShift.endTime, 'day')) {
+        const shiftAssignmentStartDate = assignment.date.add(1, 'day');
+        const nextDayKey = generateOwnerIdDateKey(ownerId, shiftAssignmentStartDate);
         if (!assignmentDict[nextDayKey]) {
           assignmentDict[nextDayKey] = [];
         }
@@ -149,10 +128,7 @@ export const buildShiftDemandsDataByShiftAndDate = (
     const shift = shiftMap.get(shiftDemand.shiftId);
     if (!shift) return;
 
-    const ownerDateKey = generateOwnerIdDateKey(
-      shift.id,
-      dayjs.unix(shiftDemand.date),
-    );
+    const ownerDateKey = generateOwnerIdDateKey(shift.id, dayjs.unix(shiftDemand.date));
 
     // Since there's only one demand per shift/date now, we can directly assign
     shiftDemandDict[ownerDateKey] = {
@@ -172,18 +148,15 @@ export const buildRequestsByWorkerAndDate = (
   requests.forEach((request) => {
     let currentDate = request.startDate;
 
-    while (currentDate.isSameOrBefore(request.endDate, "day")) {
-      const ownerDateKey = generateOwnerIdDateKey(
-        request.workerId,
-        currentDate,
-      );
+    while (currentDate.isSameOrBefore(request.endDate, 'day')) {
+      const ownerDateKey = generateOwnerIdDateKey(request.workerId, currentDate);
 
       if (!requestDict[ownerDateKey]) {
         requestDict[ownerDateKey] = [];
       }
       requestDict[ownerDateKey].push(request);
 
-      currentDate = currentDate.add(1, "day");
+      currentDate = currentDate.add(1, 'day');
     }
   });
 

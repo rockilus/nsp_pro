@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 // Components
-import BlockDisplay from "./constraint-blocks/block-display";
+import BlockDisplay from './constraint-blocks/block-display';
 // Types
 import {
   ConstraintT,
@@ -14,9 +14,9 @@ import {
   ShiftWorkerOptionT,
   BlockNameOptions,
   BlockTypeOptions,
-} from "../../../types/constraint";
-import { WorkerT } from "../../../types/worker";
-import { ShiftT } from "../../../types/shift";
+} from '../../../types/constraint';
+import { WorkerT } from '../../../types/worker';
+import { ShiftT } from '../../../types/shift';
 
 export default function ConstraintEdit({
   lng,
@@ -26,7 +26,7 @@ export default function ConstraintEdit({
   template,
   handleAddConstraint,
   handleUpdateConstraint,
-  "data-testid": dataTestId,
+  'data-testid': dataTestId,
 }: {
   lng: string;
   workers: WorkerT[];
@@ -35,7 +35,7 @@ export default function ConstraintEdit({
   template: TemplateT | null;
   handleAddConstraint: (constraint: ConstraintT) => void;
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
-  "data-testid"?: string;
+  'data-testid'?: string;
 }) {
   // Use a key based on incoming props so the inner component remounts
   // whenever `constraint` or `template` change. This avoids calling
@@ -65,7 +65,7 @@ function ConstraintEditInner({
   template,
   handleAddConstraint,
   handleUpdateConstraint,
-  "data-testid": dataTestId,
+  'data-testid': dataTestId,
 }: {
   lng: string;
   workers: WorkerT[];
@@ -74,9 +74,9 @@ function ConstraintEditInner({
   template: TemplateT | null;
   handleAddConstraint: (constraint: ConstraintT) => void;
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
-  "data-testid"?: string;
+  'data-testid'?: string;
 }) {
-  const { t } = useTranslation(lng, "constraint-page");
+  const { t } = useTranslation(lng, 'constraint-page');
   const [errors, setErrors] = useState<number[]>([]);
 
   const initialBlockValue = (
@@ -86,29 +86,23 @@ function ConstraintEditInner({
       if (templateBlock.name === BlockNameOptions.TEXT) {
         return templateBlock.placeholder;
       } else {
-        return "";
+        return '';
       }
     } else if (templateBlock.type === BlockTypeOptions.SHIFT_WORKER_OPTION) {
       return [];
     } else {
-      if (
-        templateBlock.options.length === 0 &&
-        templateBlock.type !== BlockTypeOptions.NUMBER
-      ) {
+      if (templateBlock.options.length === 0 && templateBlock.type !== BlockTypeOptions.NUMBER) {
         return templateBlock.placeholder;
-      } else if (
-        Array.isArray(templateBlock.options) &&
-        templateBlock.options.length === 1
-      ) {
+      } else if (Array.isArray(templateBlock.options) && templateBlock.options.length === 1) {
         return templateBlock.options[0] as string;
       } else {
-        return templateBlock.type === BlockTypeOptions.LIST ? [] : "";
+        return templateBlock.type === BlockTypeOptions.LIST ? [] : '';
       }
     }
   };
 
   const initialConstraintState = useCallback((): ConstraintT => {
-    if (constraint.id === "") {
+    if (constraint.id === '') {
       const blocks: BlockT[] = [];
       if (template && template.blocks) {
         for (let block of template.blocks) {
@@ -129,9 +123,7 @@ function ConstraintEditInner({
   // component is remounted when `constraint` or `template` change (via
   // the `key` on the parent), we don't need to call setState inside an
   // effect to sync props -> state.
-  const [constraintState, setConstraintState] = useState<ConstraintT>(
-    initialConstraintState,
-  );
+  const [constraintState, setConstraintState] = useState<ConstraintT>(initialConstraintState);
 
   const validateConstraint = (): boolean => {
     const updatedErrors: number[] = [];
@@ -152,7 +144,7 @@ function ConstraintEditInner({
           block.type === BlockTypeOptions.STRING ||
           block.type === BlockTypeOptions.NUMBER
         ) {
-          if (value === "") {
+          if (value === '') {
             updatedErrors.push(index);
           }
         }
@@ -174,7 +166,7 @@ function ConstraintEditInner({
     if (!valid) {
       return;
     }
-    if (constraint.id === "") {
+    if (constraint.id === '') {
       handleAddConstraint(constraintState);
     } else {
       handleUpdateConstraint(constraintState);
@@ -195,9 +187,7 @@ function ConstraintEditInner({
     } else {
       setConstraintState({
         ...constraintState,
-        blocks: constraintState.blocks.map((b) =>
-          b.name === block.name ? block : b,
-        ),
+        blocks: constraintState.blocks.map((b) => (b.name === block.name ? block : b)),
       });
     }
   };
@@ -205,22 +195,22 @@ function ConstraintEditInner({
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        width: "100%",
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
       }}
-      data-testid={dataTestId || "constraint-edit-form"}
+      data-testid={dataTestId || 'constraint-edit-form'}
     >
-      <div style={{ display: "flex", flexDirection: "row" }}>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
         {template?.blocks.map((templateBlock, index) => (
           <div
             key={index}
             style={{
-              display: "flex",
-              alignItems: "center",
-              marginRight: "5px",
+              display: 'flex',
+              alignItems: 'center',
+              marginRight: '5px',
             }}
             data-testid={`constraint-block-${index}`}
           >
@@ -241,10 +231,10 @@ function ConstraintEditInner({
       <Button
         variant="contained"
         onClick={handleSaveConstraint}
-        sx={{ textTransform: "none", height: 35, width: 60 }}
+        sx={{ textTransform: 'none', height: 35, width: 60 }}
         data-testid="save-constraint-button"
       >
-        {constraint.id === "" ? t("add") : t("save")}
+        {constraint.id === '' ? t('add') : t('save')}
       </Button>
     </Box>
   );

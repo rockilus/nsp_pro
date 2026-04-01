@@ -1,18 +1,18 @@
-import { useCallback } from "react";
-import dayjs, { Dayjs } from "dayjs";
+import { useCallback } from 'react';
+import dayjs, { Dayjs } from 'dayjs';
 // Types
 import {
   MultitaskingGroup,
   CreateMultitaskingGroupRequest,
   UpdateMultitaskingGroupRequest,
   ShiftDemandConcurrency,
-} from "../types/multitasking";
+} from '../types/multitasking';
 // API Client
-import { MultitaskingApi } from "../app/lib/api/multitaskingApi";
-import { useApiClient } from "../app/lib/api-client";
+import { MultitaskingApi } from '../app/lib/api/multitaskingApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Multitasking Hooks //
@@ -26,12 +26,9 @@ export function useGetMultitaskingGroups() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const getMultitaskingGroups = useCallback(
-    async (
-      teamId: string,
-      templateId?: string,
-    ): Promise<MultitaskingGroup[]> => {
+    async (teamId: string, templateId?: string): Promise<MultitaskingGroup[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetMultitaskingGroups called:", {
+        console.log('🔍 useGetMultitaskingGroups called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -42,22 +39,18 @@ export function useGetMultitaskingGroups() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await MultitaskingApi.getMultitaskingGroups(
-          apiClient,
-          teamId,
-          templateId,
-        );
+        return await MultitaskingApi.getMultitaskingGroups(apiClient, teamId, templateId);
       } catch (error) {
-        console.error("❌ Failed to get multitasking groups:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get multitasking groups:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -77,11 +70,9 @@ export function useCreateMultitaskingGroup() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const createMultitaskingGroup = useCallback(
-    async (
-      data: CreateMultitaskingGroupRequest,
-    ): Promise<MultitaskingGroup> => {
+    async (data: CreateMultitaskingGroupRequest): Promise<MultitaskingGroup> => {
       if (env.isDevelopment) {
-        console.log("🔍 useCreateMultitaskingGroup called:", {
+        console.log('🔍 useCreateMultitaskingGroup called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -91,27 +82,24 @@ export function useCreateMultitaskingGroup() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        const group = await MultitaskingApi.createMultitaskingGroup(
-          apiClient,
-          data,
-        );
+        const group = await MultitaskingApi.createMultitaskingGroup(apiClient, data);
 
         if (env.isDevelopment) {
-          console.log("✅ Multitasking group created successfully");
+          console.log('✅ Multitasking group created successfully');
         }
 
         return group;
       } catch (error) {
-        console.error("❌ Failed to create multitasking group:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to create multitasking group:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -137,7 +125,7 @@ export function useUpdateMultitaskingGroup() {
       data: UpdateMultitaskingGroupRequest,
     ): Promise<MultitaskingGroup[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useUpdateMultitaskingGroup called:", {
+        console.log('🔍 useUpdateMultitaskingGroup called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -149,11 +137,11 @@ export function useUpdateMultitaskingGroup() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -165,13 +153,13 @@ export function useUpdateMultitaskingGroup() {
         );
 
         if (env.isDevelopment) {
-          console.log("✅ Multitasking group updated successfully");
+          console.log('✅ Multitasking group updated successfully');
         }
 
         return groups;
       } catch (error) {
-        console.error("❌ Failed to update multitasking group:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update multitasking group:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -191,12 +179,9 @@ export function useDeleteMultitaskingGroup() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const deleteMultitaskingGroup = useCallback(
-    async (
-      teamId: string,
-      groupId: string,
-    ): Promise<{ success: boolean; message: string }> => {
+    async (teamId: string, groupId: string): Promise<{ success: boolean; message: string }> => {
       if (env.isDevelopment) {
-        console.log("🔍 useDeleteMultitaskingGroup called:", {
+        console.log('🔍 useDeleteMultitaskingGroup called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -207,28 +192,24 @@ export function useDeleteMultitaskingGroup() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        const result = await MultitaskingApi.deleteMultitaskingGroup(
-          apiClient,
-          teamId,
-          groupId,
-        );
+        const result = await MultitaskingApi.deleteMultitaskingGroup(apiClient, teamId, groupId);
 
         if (env.isDevelopment) {
-          console.log("✅ Multitasking group deleted successfully");
+          console.log('✅ Multitasking group deleted successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to delete multitasking group:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete multitasking group:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -248,13 +229,9 @@ export function useGetShiftDemandConcurrency() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const getShiftDemandConcurrency = useCallback(
-    async (
-      teamId: string,
-      startDate: Dayjs,
-      endDate: Dayjs,
-    ): Promise<ShiftDemandConcurrency[]> => {
+    async (teamId: string, startDate: Dayjs, endDate: Dayjs): Promise<ShiftDemandConcurrency[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetShiftDemandConcurrency called:", {
+        console.log('🔍 useGetShiftDemandConcurrency called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -266,11 +243,11 @@ export function useGetShiftDemandConcurrency() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -281,8 +258,8 @@ export function useGetShiftDemandConcurrency() {
           endDate,
         );
       } catch (error) {
-        console.error("❌ Failed to get shift demand concurrency:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get shift demand concurrency:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;

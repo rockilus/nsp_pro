@@ -1,18 +1,18 @@
-import React, { useMemo } from "react";
-import { useTranslation } from "../../../../app/i18n/client";
+import React, { useMemo } from 'react';
+import { useTranslation } from '../../../../app/i18n/client';
 // MUI
-import TableCell from "@mui/material/TableCell";
-import TableRow from "@mui/material/TableRow";
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 // Components
-import DemandsHeaderCell from "./demands-header-cell";
-import { countShifts, countStaffings } from "./assignment-count-methods";
+import DemandsHeaderCell from './demands-header-cell';
+import { countShifts, countStaffings } from './assignment-count-methods';
 // Styles
-import "./daily-shift-demand-row.css";
+import './daily-shift-demand-row.css';
 // Types
-import { ShiftT } from "../../../../types/shift";
-import { periodDateT, ScheduleViewSettingsT } from "../../../../types/schedule";
-import { ShiftDemandDTO } from "@/types/shiftDemand";
-import { AssignmentT } from "@/types/assignment";
+import { ShiftT } from '../../../../types/shift';
+import { periodDateT, ScheduleViewSettingsT } from '../../../../types/schedule';
+import { ShiftDemandDTO } from '@/types/shiftDemand';
+import { AssignmentT } from '@/types/assignment';
 
 export default function DailyShiftDemandRow({
   lng,
@@ -29,7 +29,7 @@ export default function DailyShiftDemandRow({
   periodDates: periodDateT[];
   scheduleViewSettings: ScheduleViewSettingsT;
 }) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   const counts = useMemo<{
     [date: string]: {
@@ -45,7 +45,7 @@ export default function DailyShiftDemandRow({
       };
     };
   }>(() => {
-    return scheduleViewSettings.groupBy === "shift"
+    return scheduleViewSettings.groupBy === 'shift'
       ? countShifts(shifts, assignments, shiftDemands, periodDates)
       : countStaffings(shifts, assignments, shiftDemands, periodDates);
   }, [shifts, assignments, shiftDemands, periodDates, scheduleViewSettings]);
@@ -53,32 +53,30 @@ export default function DailyShiftDemandRow({
   return (
     <TableRow
       style={{
-        backgroundColor: "white",
-        boxShadow: "1px 1px 0px 0px rgba(224, 224, 224, 1)",
+        backgroundColor: 'white',
+        boxShadow: '1px 1px 0px 0px rgba(224, 224, 224, 1)',
       }}
       data-testid="shift-count-row"
     >
       <TableCell
         sx={{
-          position: "sticky",
+          position: 'sticky',
           left: 0,
-          backgroundColor: "#FFFFFF",
-          borderRight: "1px solid #e0e0e07d",
+          backgroundColor: '#FFFFFF',
+          borderRight: '1px solid #e0e0e07d',
           padding: 0,
-          width: "100px",
+          width: '100px',
         }}
         data-testid="shift-count-row-label"
       >
         <div className="dsd-row-label-container">
           <span className="dsd-row-label">
-            {scheduleViewSettings.groupBy === "shift"
-              ? t("shift_count")
-              : t("worker_count")}
+            {scheduleViewSettings.groupBy === 'shift' ? t('shift_count') : t('worker_count')}
           </span>
         </div>
       </TableCell>
       {periodDates.map((pDate, dateIndex) => {
-        const dateStr = pDate.date.format("YYYY-MM-DD");
+        const dateStr = pDate.date.format('YYYY-MM-DD');
         return (
           <DemandsHeaderCell
             key={dateIndex}

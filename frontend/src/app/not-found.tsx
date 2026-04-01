@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Root Not-Found Page
@@ -18,18 +18,18 @@
  * a static S3 object are handled by the inline script in public/404.html.
  */
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { detectLanguage } from "@/app/lib/language-detection";
-import { languages } from "@/app/i18n/settings";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { detectLanguage } from '@/app/lib/language-detection';
+import { languages } from '@/app/i18n/settings';
 
 function parsePathParts() {
-  if (typeof window === "undefined") return { firstSegment: "", rest: [] };
+  if (typeof window === 'undefined') return { firstSegment: '', rest: [] };
   const parts = window.location.pathname
-    .replace(/^\/|\/$/g, "")
-    .split("/")
+    .replace(/^\/|\/$/g, '')
+    .split('/')
     .filter(Boolean);
-  return { firstSegment: parts[0] ?? "", rest: parts.slice(1) };
+  return { firstSegment: parts[0] ?? '', rest: parts.slice(1) };
 }
 
 export default function NotFound() {
@@ -50,8 +50,7 @@ export default function NotFound() {
     const { rest } = parsePathParts();
     const lang = detectLanguage();
     // Drop the bad first segment; keep the rest of the path.
-    const newPath =
-      "/" + lang + "/" + (rest.length ? rest.join("/") + "/" : "");
+    const newPath = '/' + lang + '/' + (rest.length ? rest.join('/') + '/' : '');
     router.replace(newPath);
   }, [isRedirecting, router]);
 
@@ -59,12 +58,12 @@ export default function NotFound() {
     return (
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100vh",
-          fontFamily: "inherit",
-          color: "#64748b",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          fontFamily: 'inherit',
+          color: '#64748b',
         }}
       >
         Redirecting…
@@ -76,53 +75,46 @@ export default function NotFound() {
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        color: "#1e293b",
-        gap: "1rem",
-        padding: "1.5rem",
-        textAlign: "center",
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        color: '#1e293b',
+        gap: '1rem',
+        padding: '1.5rem',
+        textAlign: 'center',
       }}
     >
-      <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "#2563eb" }}>
-        Rockilus
-      </div>
-      <h1 style={{ fontSize: "1.05rem", fontWeight: 600, margin: 0 }}>
-        Page not found
-      </h1>
-      <p style={{ color: "#64748b", fontSize: "0.9rem", margin: 0 }}>
+      <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#2563eb' }}>Rockilus</div>
+      <h1 style={{ fontSize: '1.05rem', fontWeight: 600, margin: 0 }}>Page not found</h1>
+      <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0 }}>
         The page you requested could not be found.
       </p>
-      <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem" }}>
+      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
         {[
-          { href: "/en/", flag: "🇬🇧", label: "English" },
-          { href: "/fr/", flag: "🇫🇷", label: "Français" },
-          { href: "/es/", flag: "🇪🇸", label: "Español" },
+          { href: '/en/', flag: '🇬🇧', label: 'English' },
+          { href: '/fr/', flag: '🇫🇷', label: 'Français' },
+          { href: '/es/', flag: '🇪🇸', label: 'Español' },
         ].map(({ href, flag, label }) => (
           <a
             key={href}
             href={href}
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              padding: "0.65rem 1rem",
-              border: "1.5px solid #e2e8f0",
-              borderRadius: "8px",
-              textDecoration: "none",
-              fontSize: "0.9rem",
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              padding: '0.65rem 1rem',
+              border: '1.5px solid #e2e8f0',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontSize: '0.9rem',
               fontWeight: 500,
-              color: "#1e293b",
+              color: '#1e293b',
             }}
           >
-            <span style={{ fontSize: "1.4rem", marginBottom: "0.2rem" }}>
-              {flag}
-            </span>
+            <span style={{ fontSize: '1.4rem', marginBottom: '0.2rem' }}>{flag}</span>
             {label}
           </a>
         ))}

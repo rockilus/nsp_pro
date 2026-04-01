@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
-import { useIsMobile, useIsLandscape } from "./useIsMobile";
+import { usePathname } from 'next/navigation';
+import { useIsMobile, useIsLandscape } from './useIsMobile';
 
 interface ResponsiveSettingsReturn {
   isMobile: boolean;

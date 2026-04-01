@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
 // Actions
-import { useGetUser } from "./useUser";
+import { useGetUser } from './useUser';
 // Types
-import { UserT } from "@/types/user";
+import { UserT } from '@/types/user';
 
 export function useUserSelector() {
   const getUser = useGetUser();
@@ -30,8 +30,8 @@ export function useUserSelector() {
         const userData = await getUser();
         setUser(userData);
       } catch (err) {
-        console.error("Failed to fetch user:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch user");
+        console.error('Failed to fetch user:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch user');
         // Reset the flag on error to allow retry
         hasFetched.current = false;
       } finally {

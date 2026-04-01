@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Typography from "@mui/material/Typography";
-import AdminUsersTable from "./admin-users-table";
-import { useAdminUsers } from "@/hooks/useAdminUsers";
-import { useStartImpersonationWithTarget } from "@/hooks/useAdminImpersonation";
+import React, { useState } from 'react';
+import Typography from '@mui/material/Typography';
+import AdminUsersTable from './admin-users-table';
+import { useAdminUsers } from '@/hooks/useAdminUsers';
+import { useStartImpersonationWithTarget } from '@/hooks/useAdminImpersonation';
 // MUI
-import CircularProgress from "@mui/material/CircularProgress";
-import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 // Types
-import { UserT } from "@/types/user";
+import { UserT } from '@/types/user';
 
 interface AdminUsersTabProps {
   lng: string;
@@ -35,10 +35,8 @@ export default function AdminUsersTab({ lng }: AdminUsersTabProps) {
         language: target.language,
       });
     } catch (err) {
-      console.error("Failed to access account:", err);
-      setAccessError(
-        err instanceof Error ? err.message : "Failed to access account",
-      );
+      console.error('Failed to access account:', err);
+      setAccessError(err instanceof Error ? err.message : 'Failed to access account');
     }
   };
 

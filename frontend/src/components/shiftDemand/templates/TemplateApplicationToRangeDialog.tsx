@@ -8,7 +8,7 @@
  * - Warning messages about overwriting
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -21,12 +21,12 @@ import {
   Switch,
   Alert,
   CircularProgress,
-} from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs, { Dayjs } from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import { useTranslation } from "../../../app/i18n/client";
+} from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs, { Dayjs } from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import { useTranslation } from '../../../app/i18n/client';
 
 // Configure dayjs for UTC handling
 dayjs.extend(utc);
@@ -36,7 +36,7 @@ import {
   ApplyTemplateToDateRangeDTO,
   TemplateApplicationResult,
   TemplateType,
-} from "../../../types/shift-demand-template";
+} from '../../../types/shift-demand-template';
 
 interface TemplateApplicationToRangeDialogProps {
   lng: string;
@@ -46,9 +46,7 @@ interface TemplateApplicationToRangeDialogProps {
   teamId: string;
   onApplicationComplete: (result: TemplateApplicationResult) => void;
   onError: (error: string) => void;
-  onApplyTemplate: (
-    request: ApplyTemplateToDateRangeDTO,
-  ) => Promise<TemplateApplicationResult>;
+  onApplyTemplate: (request: ApplyTemplateToDateRangeDTO) => Promise<TemplateApplicationResult>;
 }
 
 export default function TemplateApplicationToRangeDialog({
@@ -61,11 +59,11 @@ export default function TemplateApplicationToRangeDialog({
   onError,
   onApplyTemplate,
 }: TemplateApplicationToRangeDialogProps) {
-  const { t } = useTranslation(lng, "shift-demand-templates");
+  const { t } = useTranslation(lng, 'shift-demand-templates');
 
   // State management
   // Default start date one month from today (UTC) and end date defaults to same
-  const defaultStart = dayjs.utc().add(1, "month").startOf("day");
+  const defaultStart = dayjs.utc().add(1, 'month').startOf('day');
   const [startDate, setStartDate] = useState<Dayjs | null>(defaultStart);
   const [endDate, setEndDate] = useState<Dayjs | null>(defaultStart);
   const [overwriteExisting, setOverwriteExisting] = useState(true);
@@ -76,20 +74,20 @@ export default function TemplateApplicationToRangeDialog({
     const errors: string[] = [];
 
     if (!startDate || !endDate) {
-      errors.push(t("date_range_required"));
+      errors.push(t('date_range_required'));
     } else {
       if (endDate.isBefore(startDate)) {
-        errors.push(t("end_date_before_start_date"));
+        errors.push(t('end_date_before_start_date'));
       }
 
       // Start date must not be in the past (compare to UTC start of today)
-      if (startDate.isBefore(dayjs.utc().startOf("day"))) {
-        errors.push(t("start_date_in_past"));
+      if (startDate.isBefore(dayjs.utc().startOf('day'))) {
+        errors.push(t('start_date_in_past'));
       }
 
-      const daysDiff = endDate.diff(startDate, "days") + 1;
+      const daysDiff = endDate.diff(startDate, 'days') + 1;
       if (daysDiff > 365) {
-        errors.push(t("date_range_too_long"));
+        errors.push(t('date_range_too_long'));
       }
     }
 
@@ -102,7 +100,7 @@ export default function TemplateApplicationToRangeDialog({
   const previewData = useMemo(() => {
     if (!startDate || !endDate || !validation.isValid) return null;
 
-    const totalDays = endDate.diff(startDate, "days") + 1;
+    const totalDays = endDate.diff(startDate, 'days') + 1;
     const weekCount = Math.ceil(totalDays / 7);
 
     return {
@@ -110,15 +108,14 @@ export default function TemplateApplicationToRangeDialog({
       weekCount,
       templateWeeks: template.weeksData.length,
       templateType: template.templateType,
-      estimatedDemands:
-        Math.ceil(totalDays / 7) * template.weeksData.length * 2, // Rough estimate
+      estimatedDemands: Math.ceil(totalDays / 7) * template.weeksData.length * 2, // Rough estimate
     };
   }, [startDate, endDate, template, validation.isValid]);
 
   // Event handlers
   const handleStartDateChange = (newDate: Dayjs | null) => {
     // Always work in UTC to avoid timezone issues
-    const utcDate = newDate ? dayjs.utc(newDate.format("YYYY-MM-DD")) : null;
+    const utcDate = newDate ? dayjs.utc(newDate.format('YYYY-MM-DD')) : null;
     setStartDate(utcDate);
     // Auto-adjust end date if it becomes invalid
     if (utcDate && endDate && endDate.isBefore(utcDate)) {
@@ -129,7 +126,7 @@ export default function TemplateApplicationToRangeDialog({
 
   const handleEndDateChange = (newDate: Dayjs | null) => {
     // Always work in UTC to avoid timezone issues
-    const utcDate = newDate ? dayjs.utc(newDate.format("YYYY-MM-DD")) : null;
+    const utcDate = newDate ? dayjs.utc(newDate.format('YYYY-MM-DD')) : null;
     setEndDate(utcDate);
   };
 
@@ -140,13 +137,13 @@ export default function TemplateApplicationToRangeDialog({
     try {
       const request: ApplyTemplateToDateRangeDTO = {
         templateId: template.id,
-        startDate: startDate.startOf("day").valueOf(), // Already UTC, so just get start of day
-        endDate: endDate.endOf("day").valueOf(), // Already UTC, so just get end of day
+        startDate: startDate.startOf('day').valueOf(), // Already UTC, so just get start of day
+        endDate: endDate.endOf('day').valueOf(), // Already UTC, so just get end of day
         overwriteExisting,
       };
 
       // Debug logging for timezone verification
-      console.log("Template Application - UTC Dates:", {
+      console.log('Template Application - UTC Dates:', {
         startDateISO: startDate.toISOString(),
         endDateISO: endDate.toISOString(),
         startTimestamp: request.startDate,
@@ -160,12 +157,8 @@ export default function TemplateApplicationToRangeDialog({
       onApplicationComplete(result);
       onClose();
     } catch (error) {
-      console.error("Failed to apply template to date range:", error);
-      onError(
-        error instanceof Error
-          ? error.message
-          : t("template_application_failed"),
-      );
+      console.error('Failed to apply template to date range:', error);
+      onError(error instanceof Error ? error.message : t('template_application_failed'));
     } finally {
       setLoading(false);
     }
@@ -180,9 +173,9 @@ export default function TemplateApplicationToRangeDialog({
   const formatTemplateType = (type: TemplateType): string => {
     switch (type) {
       case TemplateType.STANDARD:
-        return t("template_type_standard");
+        return t('template_type_standard');
       case TemplateType.EVEN_ODD:
-        return t("template_type_even_odd");
+        return t('template_type_even_odd');
       default:
         return type;
     }
@@ -196,27 +189,26 @@ export default function TemplateApplicationToRangeDialog({
       maxWidth="md"
       fullWidth
       PaperProps={{
-        sx: { minHeight: "500px" },
+        sx: { minHeight: '500px' },
       }}
     >
       <DialogTitle>
-        <Typography variant="h6">{t("apply_template")}</Typography>
+        <Typography variant="h6">{t('apply_template')}</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          {t("template_name")}: <strong>{template.name}</strong> •{" "}
-          {t("template_type")}:{" "}
-          <strong>{formatTemplateType(template.templateType)}</strong> •{" "}
-          {t("weeks")}: <strong>{template.weeksData.length}</strong>
+          {t('template_name')}: <strong>{template.name}</strong> • {t('template_type')}:{' '}
+          <strong>{formatTemplateType(template.templateType)}</strong> • {t('weeks')}:{' '}
+          <strong>{template.weeksData.length}</strong>
         </Typography>
       </DialogTitle>
 
       <DialogContent>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Preview */}
           {previewData && (
             <Box>
               {template.templateType === TemplateType.STANDARD && (
                 <Typography variant="body2" color="text.secondary">
-                  {t("standard_template_range_explanation", {
+                  {t('standard_template_range_explanation', {
                     weeks: template.weeksData.length,
                   })}
                 </Typography>
@@ -224,34 +216,34 @@ export default function TemplateApplicationToRangeDialog({
 
               {template.templateType === TemplateType.EVEN_ODD && (
                 <Typography variant="body2" color="text.secondary">
-                  {t("even_odd_template_range_explanation")}
+                  {t('even_odd_template_range_explanation')}
                 </Typography>
               )}
             </Box>
           )}
           {/* Date Range Selection */}
           <Box>
-            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <DatePicker
-                label={t("start_date")}
+                label={t('start_date')}
                 value={startDate}
                 onChange={handleStartDateChange}
                 timezone="UTC"
-                minDate={dayjs.utc().startOf("day")}
+                minDate={dayjs.utc().startOf('day')}
                 slotProps={{
                   textField: {
                     error: validation.errors.some(
-                      (e) => e.includes("required") || e.includes("before"),
+                      (e) => e.includes('required') || e.includes('before'),
                     ),
                     sx: { minWidth: 200 },
                     inputProps: {
-                      "data-testid": "template-application-start-date",
+                      'data-testid': 'template-application-start-date',
                     },
                   },
                 }}
               />
               <DatePicker
-                label={t("end_date")}
+                label={t('end_date')}
                 value={endDate}
                 onChange={handleEndDateChange}
                 minDate={startDate || undefined}
@@ -259,11 +251,11 @@ export default function TemplateApplicationToRangeDialog({
                 slotProps={{
                   textField: {
                     error: validation.errors.some(
-                      (e) => e.includes("required") || e.includes("before"),
+                      (e) => e.includes('required') || e.includes('before'),
                     ),
                     sx: { minWidth: 200 },
                     inputProps: {
-                      "data-testid": "template-application-end-date",
+                      'data-testid': 'template-application-end-date',
                     },
                   },
                 }}
@@ -282,12 +274,12 @@ export default function TemplateApplicationToRangeDialog({
                   color="warning"
                 />
               }
-              label={t("overwrite_existing_demands")}
+              label={t('overwrite_existing_demands')}
             />
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               {overwriteExisting
-                ? t("overwrite_range_warning")
-                : t("merge_template_with_existing_warning")}
+                ? t('overwrite_range_warning')
+                : t('merge_template_with_existing_warning')}
             </Typography>
           </Box>
 
@@ -310,7 +302,7 @@ export default function TemplateApplicationToRangeDialog({
           onClick={handleClose}
           disabled={loading}
         >
-          {t("cancel")}
+          {t('cancel')}
         </Button>
         <Button
           data-testid="template-application-apply-button"
@@ -319,7 +311,7 @@ export default function TemplateApplicationToRangeDialog({
           disabled={!validation.isValid || loading}
           startIcon={loading ? <CircularProgress size={16} /> : null}
         >
-          {loading ? t("applying") : t("apply")}
+          {loading ? t('applying') : t('apply')}
         </Button>
       </DialogActions>
     </Dialog>

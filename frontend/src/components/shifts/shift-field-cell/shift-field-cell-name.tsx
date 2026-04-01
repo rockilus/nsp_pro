@@ -1,15 +1,12 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from 'react';
 // MUI
-import TableCell from "@mui/material/TableCell";
-import TextField from "@mui/material/TextField";
-import Tooltip from "@mui/material/Tooltip";
+import TableCell from '@mui/material/TableCell';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 // Components
-import {
-  useLeaveNameDisplayed,
-  useRestNameDisplayed,
-} from "../shift-utils/shift-utils";
+import { useLeaveNameDisplayed, useRestNameDisplayed } from '../shift-utils/shift-utils';
 // Types
-import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from '../../../types/shift';
 
 export default function ShiftFieldCellName({
   lng,
@@ -52,15 +49,14 @@ export default function ShiftFieldCellName({
       onClick={() =>
         shift.leaveType === ShiftLeaveType.NONE &&
         shift.restType !== ShiftRestType.OFF &&
-        setEditing({ [shift.id]: "name" })
+        setEditing({ [shift.id]: 'name' })
       }
       sx={{
         paddingY: 0,
         cursor:
-          shift.leaveType === ShiftLeaveType.NONE &&
-          shift.restType !== ShiftRestType.OFF
-            ? "pointer"
-            : "default",
+          shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF
+            ? 'pointer'
+            : 'default',
       }}
     >
       <div className="shift-name-cell">
@@ -73,9 +69,9 @@ export default function ShiftFieldCellName({
             onChange={(e) => setValueState(e.target.value)}
             onBlur={handleEditConfirm}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === 'Enter') {
                 handleEditConfirm();
-              } else if (e.key === "Escape") {
+              } else if (e.key === 'Escape') {
                 handleEditCancel();
               }
             }}
@@ -91,7 +87,7 @@ export default function ShiftFieldCellName({
                   ? getRestNameDisplayed(shift.restType)
                   : shift.leaveType !== ShiftLeaveType.NONE
                     ? getLeaveNameDisplayed(shift.leaveType)
-                    : shift.name || "Unnamed Shift"
+                    : shift.name || 'Unnamed Shift'
               }
               placement="top"
             >
@@ -100,7 +96,7 @@ export default function ShiftFieldCellName({
                   ? getRestNameDisplayed(shift.restType)
                   : shift.leaveType !== ShiftLeaveType.NONE
                     ? getLeaveNameDisplayed(shift.leaveType)
-                    : shift.name || "Unnamed Shift"}
+                    : shift.name || 'Unnamed Shift'}
               </span>
             </Tooltip>
           </div>

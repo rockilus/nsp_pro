@@ -1,15 +1,15 @@
-import { test, expect } from "@playwright/test";
-import { ShiftDemandTestBase } from "../../utils/shift-demand-test-base";
-import dayjs from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
-import isBetween from "dayjs/plugin/isBetween";
-import utc from "dayjs/plugin/utc";
+import { test, expect } from '@playwright/test';
+import { ShiftDemandTestBase } from '../../utils/shift-demand-test-base';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import isBetween from 'dayjs/plugin/isBetween';
+import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 dayjs.extend(utc);
 
-test.describe("Shift Demand - Period Navigation", () => {
+test.describe('Shift Demand - Period Navigation', () => {
   let shiftDemandTestBase: ShiftDemandTestBase;
 
   test.beforeEach(async ({ page }) => {
@@ -18,196 +18,155 @@ test.describe("Shift Demand - Period Navigation", () => {
     await shiftDemandTestBase.navigateToShiftDemandsPage(page);
   });
 
-  test("should navigate weeks in week view", async ({ page }) => {
+  test('should navigate weeks in week view', async ({ page }) => {
     const periodNav = shiftDemandTestBase.getPeriodNav(page);
     const today = dayjs.utc();
-    const startOfWeek = today.startOf("isoWeek");
-    const endOfWeek = today.endOf("isoWeek");
+    const startOfWeek = today.startOf('isoWeek');
+    const endOfWeek = today.endOf('isoWeek');
 
     // Explicitly select week view
-    await periodNav.select.selectOption("week");
+    await periodNav.select.selectOption('week');
 
     // Set a known starting point by clicking "Today"
     await periodNav.todayButton.click();
 
     // Check that the view is the current week
-    await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
+    await expect(periodNav.label).toHaveText(today.format('MMMM YYYY'));
     await expect(
-      shiftDemandTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD")),
+      shiftDemandTestBase.getDateHeader(page, startOfWeek.format('YYYY-MM-DD')),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, endOfWeek.format("YYYY-MM-DD")),
+      shiftDemandTestBase.getDateHeader(page, endOfWeek.format('YYYY-MM-DD')),
     ).toBeVisible();
 
     // Navigate to the previous week
     await periodNav.previousButton.click();
-    const prevWeekStart = startOfWeek.subtract(1, "week");
-    const prevWeekEnd = endOfWeek.subtract(1, "week");
+    const prevWeekStart = startOfWeek.subtract(1, 'week');
+    const prevWeekEnd = endOfWeek.subtract(1, 'week');
     await expect(
-      shiftDemandTestBase.getDateHeader(
-        page,
-        prevWeekStart.format("YYYY-MM-DD"),
-      ),
+      shiftDemandTestBase.getDateHeader(page, prevWeekStart.format('YYYY-MM-DD')),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, prevWeekEnd.format("YYYY-MM-DD")),
+      shiftDemandTestBase.getDateHeader(page, prevWeekEnd.format('YYYY-MM-DD')),
     ).toBeVisible();
 
     // Navigate to the next week (back to current)
     await periodNav.nextButton.click();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD")),
+      shiftDemandTestBase.getDateHeader(page, startOfWeek.format('YYYY-MM-DD')),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, endOfWeek.format("YYYY-MM-DD")),
+      shiftDemandTestBase.getDateHeader(page, endOfWeek.format('YYYY-MM-DD')),
     ).toBeVisible();
 
     // Navigate to next week, then click Today
     await periodNav.nextButton.click();
-    const nextWeekStart = startOfWeek.add(1, "week");
+    const nextWeekStart = startOfWeek.add(1, 'week');
     await expect(
-      shiftDemandTestBase.getDateHeader(
-        page,
-        nextWeekStart.format("YYYY-MM-DD"),
-      ),
+      shiftDemandTestBase.getDateHeader(page, nextWeekStart.format('YYYY-MM-DD')),
     ).toBeVisible();
 
     await periodNav.todayButton.click();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, startOfWeek.format("YYYY-MM-DD")),
+      shiftDemandTestBase.getDateHeader(page, startOfWeek.format('YYYY-MM-DD')),
     ).toBeVisible();
   });
 
-  test("should navigate months in month view", async ({ page }) => {
+  test('should navigate months in month view', async ({ page }) => {
     const periodNav = shiftDemandTestBase.getPeriodNav(page);
     const today = dayjs.utc();
-    const startOfMonth = today.startOf("month");
-    const endOfMonth = today.endOf("month");
+    const startOfMonth = today.startOf('month');
+    const endOfMonth = today.endOf('month');
 
     // Switch to month view
-    await periodNav.select.selectOption("month");
+    await periodNav.select.selectOption('month');
 
     // Set a known starting point by clicking "Today"
     await periodNav.todayButton.click();
 
     // Check that the view is the current month
-    await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
+    await expect(periodNav.label).toHaveText(today.format('MMMM YYYY'));
     await expect(
-      shiftDemandTestBase.getDateHeader(
-        page,
-        startOfMonth.format("YYYY-MM-DD"),
-      ),
+      shiftDemandTestBase.getDateHeader(page, startOfMonth.format('YYYY-MM-DD')),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(page, endOfMonth.format("YYYY-MM-DD")),
+      shiftDemandTestBase.getDateHeader(page, endOfMonth.format('YYYY-MM-DD')),
     ).toBeVisible();
 
     // Navigate to the previous month
     await periodNav.previousButton.click();
-    const prevMonthStart = startOfMonth.subtract(1, "month");
-    const prevMonthEnd = prevMonthStart.endOf("month");
-    await expect(periodNav.label).toHaveText(
-      prevMonthStart.format("MMMM YYYY"),
-    );
+    const prevMonthStart = startOfMonth.subtract(1, 'month');
+    const prevMonthEnd = prevMonthStart.endOf('month');
+    await expect(periodNav.label).toHaveText(prevMonthStart.format('MMMM YYYY'));
     await expect(
-      shiftDemandTestBase.getDateHeader(
-        page,
-        prevMonthStart.format("YYYY-MM-DD"),
-      ),
+      shiftDemandTestBase.getDateHeader(page, prevMonthStart.format('YYYY-MM-DD')),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(
-        page,
-        prevMonthEnd.format("YYYY-MM-DD"),
-      ),
+      shiftDemandTestBase.getDateHeader(page, prevMonthEnd.format('YYYY-MM-DD')),
     ).toBeVisible();
 
     // Navigate to the next month (back to current)
     await periodNav.nextButton.click();
-    await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
+    await expect(periodNav.label).toHaveText(today.format('MMMM YYYY'));
     await expect(
-      shiftDemandTestBase.getDateHeader(
-        page,
-        startOfMonth.format("YYYY-MM-DD"),
-      ),
+      shiftDemandTestBase.getDateHeader(page, startOfMonth.format('YYYY-MM-DD')),
     ).toBeVisible();
 
     // Navigate to next month, then click Today
     await periodNav.nextButton.click();
-    const nextMonthStart = startOfMonth.add(1, "month");
-    await expect(periodNav.label).toHaveText(
-      nextMonthStart.format("MMMM YYYY"),
-    );
+    const nextMonthStart = startOfMonth.add(1, 'month');
+    await expect(periodNav.label).toHaveText(nextMonthStart.format('MMMM YYYY'));
 
     await periodNav.todayButton.click();
-    await expect(periodNav.label).toHaveText(today.format("MMMM YYYY"));
+    await expect(periodNav.label).toHaveText(today.format('MMMM YYYY'));
     await expect(
-      shiftDemandTestBase.getDateHeader(
-        page,
-        startOfMonth.format("YYYY-MM-DD"),
-      ),
+      shiftDemandTestBase.getDateHeader(page, startOfMonth.format('YYYY-MM-DD')),
     ).toBeVisible();
   });
 
-  test("should correctly switch between week and month views", async ({
-    page,
-  }) => {
+  test('should correctly switch between week and month views', async ({ page }) => {
     const periodNav = shiftDemandTestBase.getPeriodNav(page);
 
     // 1. Switch from week to month
     const today = dayjs.utc();
-    const startOfMonthTest = today.startOf("month");
-    const startOfWeek = startOfMonthTest.startOf("isoWeek");
-    const monthOfStartOfWeek = startOfWeek.startOf("month");
+    const startOfMonthTest = today.startOf('month');
+    const startOfWeek = startOfMonthTest.startOf('isoWeek');
+    const monthOfStartOfWeek = startOfWeek.startOf('month');
 
-    console.log("Start of week:", startOfWeek.format("YYYY-MM-DD"));
-    console.log(
-      "Month of start of week:",
-      monthOfStartOfWeek.format("YYYY-MM-DD"),
-    );
+    console.log('Start of week:', startOfWeek.format('YYYY-MM-DD'));
+    console.log('Month of start of week:', monthOfStartOfWeek.format('YYYY-MM-DD'));
 
     // Explicitly select week view first
-    await periodNav.select.selectOption("week");
-    await expect(periodNav.select).toHaveValue("week");
+    await periodNav.select.selectOption('week');
+    await expect(periodNav.select).toHaveValue('week');
 
     // Switch to month view
-    await periodNav.select.selectOption("month");
+    await periodNav.select.selectOption('month');
 
-    await expect(periodNav.select).toHaveValue("month");
-    await expect(periodNav.label).toHaveText(
-      monthOfStartOfWeek.format("MMMM YYYY"),
-    );
+    await expect(periodNav.select).toHaveValue('month');
+    await expect(periodNav.label).toHaveText(monthOfStartOfWeek.format('MMMM YYYY'));
     await expect(
-      shiftDemandTestBase.getDateHeader(
-        page,
-        monthOfStartOfWeek.format("YYYY-MM-DD"),
-      ),
+      shiftDemandTestBase.getDateHeader(page, monthOfStartOfWeek.format('YYYY-MM-DD')),
     ).toBeVisible();
 
     // 2. Switch from month to week
-    const startOfMonth = monthOfStartOfWeek.add(1, "month").startOf("month");
+    const startOfMonth = monthOfStartOfWeek.add(1, 'month').startOf('month');
     await periodNav.nextButton.click(); // Go to next month
-    await expect(periodNav.label).toHaveText(startOfMonth.format("MMMM YYYY"));
+    await expect(periodNav.label).toHaveText(startOfMonth.format('MMMM YYYY'));
 
     // Explicitly confirm we're in month view, then switch to week
-    await expect(periodNav.select).toHaveValue("month");
-    await periodNav.select.selectOption("week");
-    const weekOfStartOfMonth = startOfMonth.startOf("isoWeek");
-    const endOfWeekOfStartOfMonth = startOfMonth.endOf("isoWeek");
+    await expect(periodNav.select).toHaveValue('month');
+    await periodNav.select.selectOption('week');
+    const weekOfStartOfMonth = startOfMonth.startOf('isoWeek');
+    const endOfWeekOfStartOfMonth = startOfMonth.endOf('isoWeek');
 
-    await expect(periodNav.select).toHaveValue("week");
+    await expect(periodNav.select).toHaveValue('week');
     // The label might span two months, so we check the dates are visible
     await expect(
-      shiftDemandTestBase.getDateHeader(
-        page,
-        weekOfStartOfMonth.format("YYYY-MM-DD"),
-      ),
+      shiftDemandTestBase.getDateHeader(page, weekOfStartOfMonth.format('YYYY-MM-DD')),
     ).toBeVisible();
     await expect(
-      shiftDemandTestBase.getDateHeader(
-        page,
-        endOfWeekOfStartOfMonth.format("YYYY-MM-DD"),
-      ),
+      shiftDemandTestBase.getDateHeader(page, endOfWeekOfStartOfMonth.format('YYYY-MM-DD')),
     ).toBeVisible();
   });
 });

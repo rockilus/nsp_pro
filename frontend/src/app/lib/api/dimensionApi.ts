@@ -2,10 +2,10 @@
  * API client for dimension operations
  */
 
-import { DimensionT, DimensionType } from "../../../types/dimension";
-import { DimEntryT } from "../../../types/dim-entry";
-import { AttributeT } from "../../../types/attribute";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { DimensionT, DimensionType } from '../../../types/dimension';
+import { DimEntryT } from '../../../types/dim-entry';
+import { AttributeT } from '../../../types/attribute';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export interface AddDimensionResponse {
   newDimension: DimensionT;
@@ -29,15 +29,15 @@ export class DimensionApi extends BaseApi {
   ): Promise<AddDimensionResponse> {
     // Security: Input validation
     if (!dimension || !dimension.teamId) {
-      throw new Error("Invalid dimension data provided");
+      throw new Error('Invalid dimension data provided');
     }
     if (!dimEntries || !Array.isArray(dimEntries)) {
-      throw new Error("Invalid dimension entries provided");
+      throw new Error('Invalid dimension entries provided');
     }
 
     const responseData = await this.makeRequest<AddDimensionResponse>(
       apiClient,
-      "post",
+      'post',
       `/dimensions/teams/${dimension.teamId}`,
       { dimension, dim_entries: dimEntries },
     );
@@ -54,13 +54,13 @@ export class DimensionApi extends BaseApi {
   ): Promise<GetDimensionsResponse> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
-    const queryParams = dimTypes ? `?dim_types=${dimTypes.join(",")}` : "";
+    const queryParams = dimTypes ? `?dim_types=${dimTypes.join(',')}` : '';
     const responseData = await this.makeRequest<GetDimensionsResponse>(
       apiClient,
-      "get",
+      'get',
       `/dimensions/teams/${teamId}${queryParams}`,
     );
     return responseData;
@@ -75,12 +75,12 @@ export class DimensionApi extends BaseApi {
   ): Promise<DimensionT> {
     // Security: Input validation
     if (!updatedDimension || !updatedDimension.id || !updatedDimension.teamId) {
-      throw new Error("Invalid dimension data provided");
+      throw new Error('Invalid dimension data provided');
     }
 
     const responseData = await this.makeRequest<DimensionT>(
       apiClient,
-      "put",
+      'put',
       `/dimensions/${updatedDimension.id}/teams/${updatedDimension.teamId}`,
       updatedDimension,
     );
@@ -97,16 +97,12 @@ export class DimensionApi extends BaseApi {
   ): Promise<void> {
     // Security: Input validation
     if (!dimensionId) {
-      throw new Error("Dimension ID is required");
+      throw new Error('Dimension ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
-    await this.makeRequest<void>(
-      apiClient,
-      "delete",
-      `/dimensions/${dimensionId}/teams/${teamId}`,
-    );
+    await this.makeRequest<void>(apiClient, 'delete', `/dimensions/${dimensionId}/teams/${teamId}`);
   }
 }

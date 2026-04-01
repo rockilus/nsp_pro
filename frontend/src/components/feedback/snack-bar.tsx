@@ -1,7 +1,7 @@
-import React from "react";
+import React from 'react';
 // MUI
-import Alert from "@mui/material/Alert";
-import Snackbar from "@mui/material/Snackbar";
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 
 export default function SnackBarComponent({
   message,
@@ -10,7 +10,7 @@ export default function SnackBarComponent({
   handleClose,
 }: {
   message: string;
-  severity: "success" | "error" | "warning" | "info";
+  severity: 'success' | 'error' | 'warning' | 'info';
   open: boolean;
   handleClose: () => void;
 }) {
@@ -26,7 +26,7 @@ export default function SnackBarComponent({
         onClose={handleClose}
         severity={severity}
         variant="filled"
-        sx={{ width: "100%" }}
+        sx={{ width: '100%' }}
       >
         {message}
       </Alert>

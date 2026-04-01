@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import MobileNavAppBar from "@/components/app-bar/mobile-nav-app-bar";
+import * as React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import MobileNavAppBar from '@/components/app-bar/mobile-nav-app-bar';
 
 export default function MobileConstraintTab({
   lng,
@@ -17,11 +17,11 @@ export default function MobileConstraintTab({
       <MobileNavAppBar lng={lng} />
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "calc(100vh - 64px)",
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: 'calc(100vh - 64px)',
           padding: 3,
         }}
       >

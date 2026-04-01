@@ -9,18 +9,18 @@
  * - UI state consistency after toolbar operations
  */
 
-import { test, expect } from "@playwright/test";
-import dayjs from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
-import isBetween from "dayjs/plugin/isBetween";
-import utc from "dayjs/plugin/utc";
-import { TemplateTestBase } from "../../utils/template-test-base";
+import { test, expect } from '@playwright/test';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import isBetween from 'dayjs/plugin/isBetween';
+import utc from 'dayjs/plugin/utc';
+import { TemplateTestBase } from '../../utils/template-test-base';
 
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 dayjs.extend(utc);
 
-test.describe("Template Toolbar Period", () => {
+test.describe('Template Toolbar Period', () => {
   let templateTestBase: TemplateTestBase;
 
   test.beforeAll(async () => {
@@ -34,8 +34,8 @@ test.describe("Template Toolbar Period", () => {
     await templateTestBase.navigateToShiftDemandsPage(page);
   });
 
-  test.describe("Week Management", () => {
-    test("should add a week when clicking the add button", async ({ page }) => {
+  test.describe('Week Management', () => {
+    test('should add a week when clicking the add button', async ({ page }) => {
       // Create a template to work with
       const templateName = `Test Template Add Week ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
@@ -62,12 +62,10 @@ test.describe("Template Toolbar Period", () => {
       await expect(updatedWeeks).toHaveCount(2);
 
       // Verify week display updated to show 2 weeks total
-      await expect(toolbarElements.weekDisplay).toContainText("/2");
+      await expect(toolbarElements.weekDisplay).toContainText('/2');
     });
 
-    test("should remove a week when clicking remove button and confirming", async ({
-      page,
-    }) => {
+    test('should remove a week when clicking remove button and confirming', async ({ page }) => {
       // Create a template with 1 week
       const templateName = `Test Template Remove Week ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
@@ -99,7 +97,7 @@ test.describe("Template Toolbar Period", () => {
       expect(finalWeeks).toBe(2);
     });
 
-    test("should cancel week removal when clicking cancel in confirmation dialog", async ({
+    test('should cancel week removal when clicking cancel in confirmation dialog', async ({
       page,
     }) => {
       // Create a template with 1 week
@@ -125,9 +123,7 @@ test.describe("Template Toolbar Period", () => {
       await expect(weeks).toHaveCount(2);
     });
 
-    test("should disable remove button when only one week exists", async ({
-      page,
-    }) => {
+    test('should disable remove button when only one week exists', async ({ page }) => {
       // Create a template with 1 week
       const templateName = `Test Template Single Week ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
@@ -150,10 +146,8 @@ test.describe("Template Toolbar Period", () => {
     });
   });
 
-  test.describe("Week Navigation", () => {
-    test("should disable navigation buttons when 2 weeks or less", async ({
-      page,
-    }) => {
+  test.describe('Week Navigation', () => {
+    test('should disable navigation buttons when 2 weeks or less', async ({ page }) => {
       // Create a template with 1 week
       const templateName = `Test Template Navigation 1 Week ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
@@ -180,9 +174,7 @@ test.describe("Template Toolbar Period", () => {
       await expect(toolbarElements.nextWeekButton).toBeDisabled();
     });
 
-    test("should enable navigation buttons when more than 2 weeks exist", async ({
-      page,
-    }) => {
+    test('should enable navigation buttons when more than 2 weeks exist', async ({ page }) => {
       // Create a template with 1 week, will add more via UI
       const templateName = `Test Template Navigation Multi Week ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
@@ -227,7 +219,7 @@ test.describe("Template Toolbar Period", () => {
       await expect(toolbarElements.nextWeekButton).toBeDisabled(); // At last week
     });
 
-    test("should update week display when navigating", async ({ page }) => {
+    test('should update week display when navigating', async ({ page }) => {
       // Create a template with 1 week, will add more via UI
       const templateName = `Test Template Week Display ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
@@ -248,30 +240,30 @@ test.describe("Template Toolbar Period", () => {
       }
 
       // Initial display should show total of 4 weeks
-      await expect(toolbarElements.weekDisplay).toContainText("/4");
+      await expect(toolbarElements.weekDisplay).toContainText('/4');
 
       // Navigate forward
       await toolbarElements.nextWeekButton.click();
 
       // Should still show total of 4 weeks
-      await expect(toolbarElements.weekDisplay).toContainText("/4");
+      await expect(toolbarElements.weekDisplay).toContainText('/4');
 
       // Navigate forward again
       await toolbarElements.nextWeekButton.click();
 
       // Should still show total of 4 weeks (showing last position)
-      await expect(toolbarElements.weekDisplay).toContainText("/4");
+      await expect(toolbarElements.weekDisplay).toContainText('/4');
 
       // Navigate back
       await toolbarElements.previousWeekButton.click();
 
       // Should still show total of 4 weeks
-      await expect(toolbarElements.weekDisplay).toContainText("/4");
+      await expect(toolbarElements.weekDisplay).toContainText('/4');
     });
   });
 
-  test.describe("Template Type Switching", () => {
-    test("should switch to even/odd immediately when template has 2 or fewer weeks", async ({
+  test.describe('Template Type Switching', () => {
+    test('should switch to even/odd immediately when template has 2 or fewer weeks', async ({
       page,
     }) => {
       // Create a template with 2 weeks
@@ -292,34 +284,22 @@ test.describe("Template Toolbar Period", () => {
       await templateTestBase.waitForTemplateTableUpdate(page, 2);
 
       // Verify standard type is currently selected
-      await expect(toolbarElements.standardTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
-      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "false",
-      );
+      await expect(toolbarElements.standardTypeButton).toHaveAttribute('aria-pressed', 'true');
+      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute('aria-pressed', 'false');
 
       // Click even/odd type
       await toolbarElements.evenOddTypeButton.click();
 
       // Should switch immediately without confirmation dialog
-      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
-      await expect(toolbarElements.standardTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "false",
-      );
+      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute('aria-pressed', 'true');
+      await expect(toolbarElements.standardTypeButton).toHaveAttribute('aria-pressed', 'false');
 
       // Table headers should show "Even Week" and "Odd Week"
       await expect(page.locator('th:has-text("Even Week")')).toBeVisible();
       await expect(page.locator('th:has-text("Odd Week")')).toBeVisible();
     });
 
-    test("should switch to even/odd immediately and add week when template has 1 week", async ({
+    test('should switch to even/odd immediately and add week when template has 1 week', async ({
       page,
     }) => {
       // Create a template with 1 week
@@ -348,21 +328,15 @@ test.describe("Template Toolbar Period", () => {
       await expect(weeks).toHaveCount(2);
 
       // Type should be switched
-      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
-      await expect(toolbarElements.standardTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "false",
-      );
+      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute('aria-pressed', 'true');
+      await expect(toolbarElements.standardTypeButton).toHaveAttribute('aria-pressed', 'false');
 
       // Table headers should show "Even Week" and "Odd Week"
       await expect(page.locator('th:has-text("Even Week")')).toBeVisible();
       await expect(page.locator('th:has-text("Odd Week")')).toBeVisible();
     });
 
-    test("should show confirmation dialog when switching to even/odd with more than 2 weeks", async ({
+    test('should show confirmation dialog when switching to even/odd with more than 2 weeks', async ({
       page,
     }) => {
       // Create a template with 1 week, will add more via UI
@@ -392,11 +366,10 @@ test.describe("Template Toolbar Period", () => {
       await toolbarElements.evenOddTypeButton.click();
 
       // Confirmation dialog should appear
-      const conversionDialogElements =
-        templateTestBase.getEvenOddConversionDialogElements(page);
+      const conversionDialogElements = templateTestBase.getEvenOddConversionDialogElements(page);
       await expect(conversionDialogElements.dialog).toBeVisible();
-      await expect(conversionDialogElements.dialog).toContainText("Week 3");
-      await expect(conversionDialogElements.dialog).toContainText("Week 4");
+      await expect(conversionDialogElements.dialog).toContainText('Week 3');
+      await expect(conversionDialogElements.dialog).toContainText('Week 4');
 
       // Confirm the conversion
       await conversionDialogElements.confirmButton.click();
@@ -410,21 +383,15 @@ test.describe("Template Toolbar Period", () => {
       expect(finalWeeks).toBe(2);
 
       // Type should be switched
-      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
-      await expect(toolbarElements.standardTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "false",
-      );
+      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute('aria-pressed', 'true');
+      await expect(toolbarElements.standardTypeButton).toHaveAttribute('aria-pressed', 'false');
 
       // Table headers should show "Even Week" and "Odd Week"
       await expect(page.locator('th:has-text("Even Week")')).toBeVisible();
       await expect(page.locator('th:has-text("Odd Week")')).toBeVisible();
     });
 
-    test("should cancel even/odd conversion when clicking cancel in confirmation dialog", async ({
+    test('should cancel even/odd conversion when clicking cancel in confirmation dialog', async ({
       page,
     }) => {
       // Create a template with 1 week, will add more via UI
@@ -454,8 +421,7 @@ test.describe("Template Toolbar Period", () => {
       await toolbarElements.evenOddTypeButton.click();
 
       // Confirmation dialog should appear
-      const conversionDialogElements =
-        templateTestBase.getEvenOddConversionDialogElements(page);
+      const conversionDialogElements = templateTestBase.getEvenOddConversionDialogElements(page);
       await expect(conversionDialogElements.dialog).toBeVisible();
 
       // Cancel the conversion
@@ -469,14 +435,8 @@ test.describe("Template Toolbar Period", () => {
       expect(finalWeeks).toBe(3);
 
       // Type should remain standard
-      await expect(toolbarElements.standardTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
-      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "false",
-      );
+      await expect(toolbarElements.standardTypeButton).toHaveAttribute('aria-pressed', 'true');
+      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute('aria-pressed', 'false');
 
       // Table headers should show standard week numbering (visible ones)
       await expect(page.locator('th:has-text("Week 1")')).toBeVisible();
@@ -484,7 +444,7 @@ test.describe("Template Toolbar Period", () => {
       // Week 3 exists but may not be visible due to 2-week display limit
     });
 
-    test("should switch back from even/odd to standard", async ({ page }) => {
+    test('should switch back from even/odd to standard', async ({ page }) => {
       // Create a template with 1 week and convert to even/odd first
       const templateName = `Test Template Standard Switch ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
@@ -503,10 +463,7 @@ test.describe("Template Toolbar Period", () => {
       await templateTestBase.waitForTemplateTableUpdate(page, 2);
 
       // Verify even/odd is active
-      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
+      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute('aria-pressed', 'true');
       await expect(page.locator('th:has-text("Even Week")')).toBeVisible();
       await expect(page.locator('th:has-text("Odd Week")')).toBeVisible();
 
@@ -514,14 +471,8 @@ test.describe("Template Toolbar Period", () => {
       await toolbarElements.standardTypeButton.click();
 
       // Should switch immediately
-      await expect(toolbarElements.standardTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
-      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "false",
-      );
+      await expect(toolbarElements.standardTypeButton).toHaveAttribute('aria-pressed', 'true');
+      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute('aria-pressed', 'false');
 
       // Table headers should show "Week 1" and "Week 2" (use specific table locator)
       await expect(page.locator('th:has-text("Week 1")')).toBeVisible();
@@ -532,10 +483,8 @@ test.describe("Template Toolbar Period", () => {
     });
   });
 
-  test.describe("UI State Consistency", () => {
-    test("should maintain consistent button states after multiple operations", async ({
-      page,
-    }) => {
+  test.describe('UI State Consistency', () => {
+    test('should maintain consistent button states after multiple operations', async ({ page }) => {
       // Create a template
       const templateName = `Test Template Consistency ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
@@ -561,10 +510,7 @@ test.describe("Template Toolbar Period", () => {
 
       // 2. Switch to even/odd (this locks the template at 2 weeks)
       await toolbarElements.evenOddTypeButton.click();
-      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
+      await expect(toolbarElements.evenOddTypeButton).toHaveAttribute('aria-pressed', 'true');
 
       // Wait for the type switch to complete
       await templateTestBase.waitForTemplateTableUpdate(page, 2);
@@ -575,10 +521,7 @@ test.describe("Template Toolbar Period", () => {
 
       // 3. Switch back to standard (unlocks the template)
       await toolbarElements.standardTypeButton.click();
-      await expect(toolbarElements.standardTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
+      await expect(toolbarElements.standardTypeButton).toHaveAttribute('aria-pressed', 'true');
 
       // Wait for the switch to complete
       await templateTestBase.waitForTemplateTableUpdate(page, 2);
@@ -590,15 +533,10 @@ test.describe("Template Toolbar Period", () => {
       await expect(toolbarElements.nextWeekButton).toBeDisabled();
 
       // Template type should be standard
-      await expect(toolbarElements.standardTypeButton).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
+      await expect(toolbarElements.standardTypeButton).toHaveAttribute('aria-pressed', 'true');
     });
 
-    test("should show correct week numbers in display after operations", async ({
-      page,
-    }) => {
+    test('should show correct week numbers in display after operations', async ({ page }) => {
       // Create a template
       const templateName = `Test Template Week Numbers ${Date.now()}`;
       const templateId = await templateTestBase.createTemplateWithWeeks({
@@ -622,29 +560,28 @@ test.describe("Template Toolbar Period", () => {
       }
 
       // Should display "Week 1, 2/5" (showing first 2 of 5)
-      await expect(toolbarElements.weekDisplay).toContainText("1, 2");
-      await expect(toolbarElements.weekDisplay).toContainText("/5");
+      await expect(toolbarElements.weekDisplay).toContainText('1, 2');
+      await expect(toolbarElements.weekDisplay).toContainText('/5');
 
       // Navigate to middle
       await toolbarElements.nextWeekButton.click();
-      await expect(toolbarElements.weekDisplay).toContainText("2, 3");
-      await expect(toolbarElements.weekDisplay).toContainText("/5");
+      await expect(toolbarElements.weekDisplay).toContainText('2, 3');
+      await expect(toolbarElements.weekDisplay).toContainText('/5');
 
       // Navigate to end
       await toolbarElements.nextWeekButton.click();
       await toolbarElements.nextWeekButton.click();
-      await expect(toolbarElements.weekDisplay).toContainText("4, 5");
-      await expect(toolbarElements.weekDisplay).toContainText("/5");
+      await expect(toolbarElements.weekDisplay).toContainText('4, 5');
+      await expect(toolbarElements.weekDisplay).toContainText('/5');
 
       // Remove a week (5 -> 4 weeks)
       await toolbarElements.removeWeekButton.click();
-      const deleteDialogElements =
-        templateTestBase.getDeleteWeekDialogElements(page);
+      const deleteDialogElements = templateTestBase.getDeleteWeekDialogElements(page);
       await deleteDialogElements.confirmButton.click();
       await templateTestBase.waitForTemplateTableUpdate(page, 4);
 
       // Should now display total count of 4 weeks (adjusted to valid range)
-      await expect(toolbarElements.weekDisplay).toContainText("/4");
+      await expect(toolbarElements.weekDisplay).toContainText('/4');
       const finalWeekCount = await templateTestBase.getTotalWeekCount(page);
       expect(finalWeekCount).toBe(4);
     });

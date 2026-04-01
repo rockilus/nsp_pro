@@ -5,28 +5,18 @@
  * reducing duplication across multiple request test files.
  */
 
-import { Page, expect } from "@playwright/test";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import isoWeek from "dayjs/plugin/isoWeek";
-import { randomUUID } from "crypto";
-import { DatabaseTestUtils } from "./database-utils";
-import {
-  ShiftT,
-  ShiftType,
-  ShiftRestType,
-  ShiftLeaveType,
-} from "../../src/types/shift";
-import { WorkerT } from "@/types/worker";
-import { SWOIdTypes } from "../../src/types/constraint";
-import {
-  RequestT,
-  RequestStatus,
-  RequestType,
-  FulfillmentStatus,
-} from "../../src/types/request";
-import { AssignmentT } from "@/types/assignment";
+import { Page, expect } from '@playwright/test';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import { randomUUID } from 'crypto';
+import { DatabaseTestUtils } from './database-utils';
+import { ShiftT, ShiftType, ShiftRestType, ShiftLeaveType } from '../../src/types/shift';
+import { WorkerT } from '@/types/worker';
+import { SWOIdTypes } from '../../src/types/constraint';
+import { RequestT, RequestStatus, RequestType, FulfillmentStatus } from '../../src/types/request';
+import { AssignmentT } from '@/types/assignment';
 
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
@@ -66,9 +56,7 @@ export class RequestTestBase {
     testId?: string,
     createRequests: boolean = false,
   ): Promise<void> {
-    console.log(
-      `[${testId || "legacy"}] Setting up request test environment...`,
-    );
+    console.log(`[${testId || 'legacy'}] Setting up request test environment...`);
 
     // Ensure API is ready
     await this.dbUtils.waitForApiReady();
@@ -76,7 +64,7 @@ export class RequestTestBase {
     // Check test utilities are available
     const health = await this.dbUtils.checkHealth();
     if (!health.test_utilities_available) {
-      throw new Error("Test utilities not available for request tests");
+      throw new Error('Test utilities not available for request tests');
     }
 
     // Create test team
@@ -85,23 +73,21 @@ export class RequestTestBase {
     });
 
     console.log(
-      `[${testId || "legacy"}] Created test team: ${this.testTeam.name} (${
-        this.testTeam.teamId
-      })`,
+      `[${testId || 'legacy'}] Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`,
     );
 
     if (!this.testTeam) {
-      throw new Error("Failed to create test team for request tests");
+      throw new Error('Failed to create test team for request tests');
     }
 
     // Create test workers with employment start date before any past requests
     // Past requests are created 2 days ago, so we set employment start date 7 days ago
-    const employmentStartDate = dayjs.utc().subtract(7, "days").toDate();
+    const employmentStartDate = dayjs.utc().subtract(7, 'days').toDate();
 
     const testWorkersData = [
       {
         name: `Test Worker 1 ${workerIndex}-${testId || randomUUID()}`,
-        acronym: "TW1",
+        acronym: 'TW1',
         weeklyHours: 40,
         weeklyHoursDesired: 40,
         dutiesPerMonth: 8,
@@ -110,7 +96,7 @@ export class RequestTestBase {
       },
       {
         name: `Test Worker 2 ${workerIndex}-${testId || randomUUID()}`,
-        acronym: "TW2",
+        acronym: 'TW2',
         weeklyHours: 35,
         weeklyHoursDesired: 35,
         dutiesPerMonth: 6,
@@ -139,16 +125,16 @@ export class RequestTestBase {
         startTime: dayjs.utc().hour(8).minute(0).second(0),
         endTime: dayjs.utc().hour(16).minute(0).second(0),
         shiftType: ShiftType.NORMAL,
-        color: "#4caf50",
-        acronym: "DAY",
+        color: '#4caf50',
+        acronym: 'DAY',
       },
       {
         name: `Night Shift ${workerIndex}-${testId || randomUUID()}`,
         startTime: dayjs.utc().hour(20).minute(0).second(0),
-        endTime: dayjs.utc().hour(8).minute(0).second(0).add(1, "day"),
+        endTime: dayjs.utc().hour(8).minute(0).second(0).add(1, 'day'),
         shiftType: ShiftType.DUTY,
-        color: "#2196f3",
-        acronym: "NIGHT",
+        color: '#2196f3',
+        acronym: 'NIGHT',
       },
     ];
 
@@ -166,7 +152,7 @@ export class RequestTestBase {
     }
 
     console.log(
-      `[${testId || "legacy"}] Created ${testWorkers.length} test workers and ${
+      `[${testId || 'legacy'}] Created ${testWorkers.length} test workers and ${
         testShifts.length
       } test shifts`,
     );
@@ -175,9 +161,7 @@ export class RequestTestBase {
     if (createRequests) {
       // Prefer using one of the shifts we just created for this test (keeps tests isolated)
       // Look up shifts created for this testId (or legacy array)
-      const createdShifts = testId
-        ? this.testShiftsMap.get(testId) || []
-        : this.testShifts;
+      const createdShifts = testId ? this.testShiftsMap.get(testId) || [] : this.testShifts;
 
       // Prefer a shift to use for work request shiftOptions. Prefer a leave-type only if explicitly desired
       let selectedShift: ShiftT | undefined = createdShifts.find(
@@ -200,9 +184,7 @@ export class RequestTestBase {
 
       if (!selectedShift) {
         throw new Error(
-          `Failed to find or fetch a shift for request test setup (${
-            testId || "legacy"
-          })`,
+          `Failed to find or fetch a shift for request test setup (${testId || 'legacy'})`,
         );
       }
 
@@ -213,9 +195,7 @@ export class RequestTestBase {
       );
 
       if (!selectedLeaveShift) {
-        console.warn(
-          `[${testId || "legacy"}] No leave shift found for leave request`,
-        );
+        console.warn(`[${testId || 'legacy'}] No leave shift found for leave request`);
       }
 
       // Create work requests that reference the created test shifts via shiftOptions
@@ -225,8 +205,8 @@ export class RequestTestBase {
         {
           workerId: testWorkers[1].id,
           requestType: RequestType.WORK_DEMAND,
-          startDate: dayjs.utc().add(3, "days"),
-          endDate: dayjs.utc().add(3, "days"),
+          startDate: dayjs.utc().add(3, 'days'),
+          endDate: dayjs.utc().add(3, 'days'),
           status: RequestStatus.PENDING,
           negative: false,
           shiftOptions: [
@@ -235,7 +215,7 @@ export class RequestTestBase {
               id: selectedShift.id,
               idType: SWOIdTypes.SHIFT,
               isBoolDim: false,
-              categoryName: "Shifts",
+              categoryName: 'Shifts',
             },
           ],
         },
@@ -243,8 +223,8 @@ export class RequestTestBase {
         {
           workerId: testWorkers[0].id,
           requestType: RequestType.WORK_DEMAND,
-          startDate: dayjs.utc().subtract(2, "days"),
-          endDate: dayjs.utc().subtract(2, "days"),
+          startDate: dayjs.utc().subtract(2, 'days'),
+          endDate: dayjs.utc().subtract(2, 'days'),
           status: RequestStatus.PENDING,
           negative: false,
           shiftOptions: [
@@ -253,7 +233,7 @@ export class RequestTestBase {
               id: selectedShift.id,
               idType: SWOIdTypes.SHIFT,
               isBoolDim: false,
-              categoryName: "Shifts",
+              categoryName: 'Shifts',
             },
           ],
         },
@@ -261,8 +241,8 @@ export class RequestTestBase {
         {
           workerId: testWorkers[0].id,
           requestType: RequestType.WORK_DEMAND,
-          startDate: dayjs.utc().add(1, "day"),
-          endDate: dayjs.utc().add(1, "day"),
+          startDate: dayjs.utc().add(1, 'day'),
+          endDate: dayjs.utc().add(1, 'day'),
           status: RequestStatus.PENDING,
           negative: false,
           shiftOptions: [
@@ -271,7 +251,7 @@ export class RequestTestBase {
               id: selectedShift.id,
               idType: SWOIdTypes.SHIFT,
               isBoolDim: false,
-              categoryName: "Shifts",
+              categoryName: 'Shifts',
             },
           ],
         },
@@ -282,15 +262,15 @@ export class RequestTestBase {
         testRequestsData.push({
           workerId: testWorkers[0].id,
           requestType: RequestType.LEAVE,
-          startDate: dayjs.utc().add(5, "days"),
-          endDate: dayjs.utc().add(5, "days"),
+          startDate: dayjs.utc().add(5, 'days'),
+          endDate: dayjs.utc().add(5, 'days'),
           status: RequestStatus.PENDING,
           negative: false,
           shiftId: selectedLeaveShift.id,
         });
 
         console.log(
-          `[${testId || "legacy"}] Will create leave request with shift: ${
+          `[${testId || 'legacy'}] Will create leave request with shift: ${
             selectedLeaveShift.name
           }`,
         );
@@ -300,8 +280,8 @@ export class RequestTestBase {
       testRequestsData.push({
         workerId: testWorkers[0].id,
         requestType: RequestType.WORK_DEMAND,
-        startDate: dayjs.utc().add(7, "days"),
-        endDate: dayjs.utc().add(7, "days"),
+        startDate: dayjs.utc().add(7, 'days'),
+        endDate: dayjs.utc().add(7, 'days'),
         status: RequestStatus.PENDING,
         negative: false,
         shiftOptions: [
@@ -310,7 +290,7 @@ export class RequestTestBase {
             id: selectedShift.id,
             idType: SWOIdTypes.SHIFT,
             isBoolDim: false,
-            categoryName: "Shifts",
+            categoryName: 'Shifts',
           },
         ],
       });
@@ -323,26 +303,18 @@ export class RequestTestBase {
 
       // Approve the third request (index 2) for the rescind test
       if (testRequests.length >= 3) {
-        console.log(
-          `[${testId || "legacy"}] Approving third request for rescind test`,
-        );
+        console.log(`[${testId || 'legacy'}] Approving third request for rescind test`);
         // approveTestRequest returns { request: RequestT, assignments: AssignmentT[] }
         // we only want to keep the RequestT in our testRequests array
-        const approvedResponse = await this.approveTestRequest(
-          testRequests[2].id,
-        );
+        const approvedResponse = await this.approveTestRequest(testRequests[2].id);
         testRequests[2] = approvedResponse.request;
       }
 
       // Deny the last request for status filter tests
       const lastIndex = testRequests.length - 1;
       if (lastIndex >= 0) {
-        console.log(
-          `[${testId || "legacy"}] Denying last request for status filter test`,
-        );
-        const deniedRequest = await this.denyTestRequest(
-          testRequests[lastIndex].id,
-        );
+        console.log(`[${testId || 'legacy'}] Denying last request for status filter test`);
+        const deniedRequest = await this.denyTestRequest(testRequests[lastIndex].id);
         testRequests[lastIndex] = deniedRequest;
       }
 
@@ -353,9 +325,7 @@ export class RequestTestBase {
         this.testRequests = testRequests;
       }
 
-      console.log(
-        `[${testId || "legacy"}] Created ${testRequests.length} test requests`,
-      );
+      console.log(`[${testId || 'legacy'}] Created ${testRequests.length} test requests`);
     }
   }
 
@@ -365,19 +335,19 @@ export class RequestTestBase {
    */
   async navigateToRequestsPageDirect(page: Page): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupRequestTests first.");
+      throw new Error('Test team not created. Call setupRequestTests first.');
     }
 
     // Set authentication headers before any navigation
     await this.dbUtils.authenticatePageAsTestUser(page);
 
     // Disable caching to prevent cross-test contamination
-    await page.route("**/*", (route) => {
+    await page.route('**/*', (route) => {
       const headers = {
         ...route.request().headers(),
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        Pragma: "no-cache",
-        Expires: "0",
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
       };
       route.continue({ headers });
     });
@@ -386,8 +356,8 @@ export class RequestTestBase {
     await page.addInitScript((teamData) => {
       localStorage.clear(); // Clear any existing data to prevent cross-test contamination
       sessionStorage.clear(); // Also clear session storage
-      localStorage.setItem("selectedTeam", JSON.stringify(teamData));
-      localStorage.setItem("selectedTeamId", teamData.teamId);
+      localStorage.setItem('selectedTeam', JSON.stringify(teamData));
+      localStorage.setItem('selectedTeamId', teamData.teamId);
       // Note: This console.log runs in browser context, not visible in terminal
       // console.log("🔧 [addInitScript] Setting selectedTeam in localStorage:", teamDataStr);
     }, this.testTeam);
@@ -396,7 +366,7 @@ export class RequestTestBase {
     await page.goto(`http://localhost:3000/en/plan/requests`);
 
     // Force a hard refresh to ensure clean state and prevent API caching issues
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: 'networkidle' });
 
     // Wait for the page to load and render
     await page.waitForSelector('[data-testid="request-tab"]', {
@@ -434,7 +404,7 @@ export class RequestTestBase {
     testId?: string,
   ): Promise<WorkerT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupRequestTests first.");
+      throw new Error('Test team not created. Call setupRequestTests first.');
     }
 
     return await this.dbUtils.createWorker({
@@ -462,7 +432,7 @@ export class RequestTestBase {
     testId?: string,
   ): Promise<ShiftT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupRequestTests first.");
+      throw new Error('Test team not created. Call setupRequestTests first.');
     }
 
     return await this.dbUtils.createShift({
@@ -476,7 +446,7 @@ export class RequestTestBase {
    */
   async deleteTestWorker(workerId: string): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupRequestTests first.");
+      throw new Error('Test team not created. Call setupRequestTests first.');
     }
 
     await this.dbUtils.deleteWorker(workerId, this.testTeam.teamId);
@@ -528,16 +498,16 @@ export class RequestTestBase {
    */
   async fetchAllShiftsForTeam(): Promise<ShiftT[]> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupRequestTests first.");
+      throw new Error('Test team not created. Call setupRequestTests first.');
     }
 
     try {
       return await this.dbUtils.getAllShifts(this.testTeam.teamId);
     } catch (error) {
-      console.error("Failed to fetch all shifts for team:", error);
+      console.error('Failed to fetch all shifts for team:', error);
       throw new Error(
         `Failed to fetch all shifts for team: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -620,9 +590,7 @@ export class RequestTestBase {
     testId?: string,
   ): Promise<RequestT> {
     if (!this.testTeam) {
-      throw new Error(
-        "Test team not initialized. Call setupRequestTests first.",
-      );
+      throw new Error('Test team not initialized. Call setupRequestTests first.');
     }
 
     const apiResponse = await this.dbUtils.createRequest({
@@ -633,7 +601,7 @@ export class RequestTestBase {
       endDate: requestData.endDate,
       status: requestData.status ? requestData.status : RequestStatus.PENDING,
       negative: requestData.negative || false,
-      comment: requestData.comment || "",
+      comment: requestData.comment || '',
       shiftId: requestData.shiftId,
       shiftOptions: requestData.shiftOptions,
     });
@@ -648,7 +616,7 @@ export class RequestTestBase {
    */
   async deleteTestRequest(requestId: string): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupRequestTests first.");
+      throw new Error('Test team not created. Call setupRequestTests first.');
     }
 
     await this.dbUtils.deleteRequest(requestId, this.testTeam.teamId);
@@ -663,7 +631,7 @@ export class RequestTestBase {
     requestId: string,
   ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupRequestTests first.");
+      throw new Error('Test team not created. Call setupRequestTests first.');
     }
 
     return await this.dbUtils.approveRequest(requestId, this.testTeam.teamId);
@@ -676,7 +644,7 @@ export class RequestTestBase {
    */
   async denyTestRequest(requestId: string): Promise<RequestT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupRequestTests first.");
+      throw new Error('Test team not created. Call setupRequestTests first.');
     }
 
     return await this.dbUtils.denyRequest(requestId, this.testTeam.teamId);
@@ -878,14 +846,14 @@ export class RequestTestBase {
    * Gets the calendar tab button
    */
   getCalendarTab(page: Page) {
-    return page.getByTestId("calendar-tab");
+    return page.getByTestId('calendar-tab');
   }
 
   /**
    * Gets the request calendar component
    */
   getRequestCalendar(page: Page) {
-    return page.getByTestId("request-calendar");
+    return page.getByTestId('request-calendar');
   }
 
   /**
@@ -947,24 +915,15 @@ export class RequestTestBase {
    * Gets a specific calendar cell by worker ID and date
    */
   getCalendarCell(page: Page, workerId: string, date: dayjs.Dayjs) {
-    return page.getByTestId(
-      `calendar-cell-${workerId}-${date.format("YYYY-MM-DD")}`,
-    );
+    return page.getByTestId(`calendar-cell-${workerId}-${date.format('YYYY-MM-DD')}`);
   }
 
   /**
    * Gets a specific calendar cell with an existing request
    */
-  getCalendarCellWithRequest(
-    page: Page,
-    workerId: string,
-    date: dayjs.Dayjs,
-    requestId: string,
-  ) {
+  getCalendarCellWithRequest(page: Page, workerId: string, date: dayjs.Dayjs, requestId: string) {
     return page.getByTestId(
-      `calendar-cell-${workerId}-${date.format(
-        "YYYY-MM-DD",
-      )}-request-${requestId}`,
+      `calendar-cell-${workerId}-${date.format('YYYY-MM-DD')}-request-${requestId}`,
     );
   }
 
@@ -972,21 +931,21 @@ export class RequestTestBase {
    * Gets the pending status legend button
    */
   getShowPendingButton(page: Page) {
-    return page.getByTestId("calendar-show-pending-button");
+    return page.getByTestId('calendar-show-pending-button');
   }
 
   /**
    * Gets the accepted not fulfilled status legend button
    */
   getShowAcceptedNotFulfilledButton(page: Page) {
-    return page.getByTestId("calendar-show-accepted-not-fulfilled-button");
+    return page.getByTestId('calendar-show-accepted-not-fulfilled-button');
   }
 
   /**
    * Gets the fulfilled status legend button
    */
   getShowFulfilledButton(page: Page) {
-    return page.getByTestId("calendar-show-fulfilled-button");
+    return page.getByTestId('calendar-show-fulfilled-button');
   }
 
   /**
@@ -1033,19 +992,19 @@ export class RequestTestBase {
    */
   async openNewRequestPopover(page: Page): Promise<void> {
     const newRequestButton = this.getNewRequestButton(page);
-    await newRequestButton.waitFor({ state: "visible" });
+    await newRequestButton.waitFor({ state: 'visible' });
     await newRequestButton.click();
 
     // Wait for popover to open
     const popover = this.getRequestPanelDialog(page);
-    await popover.waitFor({ state: "visible" });
+    await popover.waitFor({ state: 'visible' });
   }
 
   /**
    * Selects a request type (work or leave)
    */
-  async selectRequestType(page: Page, type: "work" | "leave"): Promise<void> {
-    if (type === "work") {
+  async selectRequestType(page: Page, type: 'work' | 'leave'): Promise<void> {
+    if (type === 'work') {
       await this.getWorkRequestTypeButton(page).click();
     } else {
       await this.getLeaveRequestTypeButton(page).click();
@@ -1062,7 +1021,7 @@ export class RequestTestBase {
 
     // Wait for dropdown options to appear and select the worker
     const workerOption = page.locator(`text="${workerName}"`);
-    await workerOption.waitFor({ state: "visible" });
+    await workerOption.waitFor({ state: 'visible' });
     await workerOption.click();
   }
 
@@ -1076,7 +1035,7 @@ export class RequestTestBase {
 
     // Wait for dropdown options to appear and select the shift
     const shiftOption = page.locator(`text="${shiftName}"`);
-    await shiftOption.waitFor({ state: "visible" });
+    await shiftOption.waitFor({ state: 'visible' });
     await shiftOption.click();
   }
 
@@ -1085,18 +1044,18 @@ export class RequestTestBase {
    */
   async setStartDate(page: Page, date: dayjs.Dayjs): Promise<void> {
     const startDatePicker = this.getStartDatePicker(page);
-    const value = date.format("DD/MM/YYYY");
+    const value = date.format('DD/MM/YYYY');
 
     // Wait for the input to be visible
-    await startDatePicker.waitFor({ state: "visible" });
+    await startDatePicker.waitFor({ state: 'visible' });
 
     // For MUI date pickers with complex internal structure, we need to use fill with force
-    await startDatePicker.fill("", { force: true }); // Clear first
+    await startDatePicker.fill('', { force: true }); // Clear first
     await page.waitForTimeout(100);
     await startDatePicker.fill(value, { force: true }); // Then fill
 
     // Press Enter to confirm the value
-    await startDatePicker.press("Enter");
+    await startDatePicker.press('Enter');
 
     // Give the app time to process the change
     await page.waitForTimeout(300);
@@ -1107,24 +1066,21 @@ export class RequestTestBase {
   /**
    * Enables date range and sets end date
    */
-  async enableDateRangeAndSetEndDate(
-    page: Page,
-    endDate: dayjs.Dayjs,
-  ): Promise<void> {
+  async enableDateRangeAndSetEndDate(page: Page, endDate: dayjs.Dayjs): Promise<void> {
     // Enable date range
     const dateRangeCheckbox = this.getDateRangeCheckbox(page);
     await dateRangeCheckbox.click();
 
     // Set end date
     const endDatePicker = this.getEndDatePicker(page);
-    await endDatePicker.waitFor({ state: "visible" });
+    await endDatePicker.waitFor({ state: 'visible' });
 
-    const value = endDate.format("DD/MM/YYYY");
+    const value = endDate.format('DD/MM/YYYY');
     // Set value directly on the end date input to avoid opening the overlay
     await endDatePicker.evaluate((el: HTMLInputElement, v: string) => {
       el.value = v;
-      el.dispatchEvent(new Event("input", { bubbles: true }));
-      el.dispatchEvent(new Event("change", { bubbles: true }));
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
     }, value);
 
     await page.waitForTimeout(30);
@@ -1133,11 +1089,8 @@ export class RequestTestBase {
   /**
    * Sets the request preference (positive or negative for work requests)
    */
-  async setRequestPreference(
-    page: Page,
-    preference: "positive" | "negative",
-  ): Promise<void> {
-    if (preference === "positive") {
+  async setRequestPreference(page: Page, preference: 'positive' | 'negative'): Promise<void> {
+    if (preference === 'positive') {
       await this.getPositiveRequestButton(page).click();
     } else {
       await this.getNegativeRequestButton(page).click();
@@ -1151,12 +1104,12 @@ export class RequestTestBase {
   async selectShiftOptions(page: Page): Promise<void> {
     // Click on the shift options display block to open the popover
     const shiftOptionsBlock = this.getShiftOptionsDisplayBlock(page);
-    await shiftOptionsBlock.waitFor({ state: "visible" });
+    await shiftOptionsBlock.waitFor({ state: 'visible' });
     await shiftOptionsBlock.click();
 
     // Wait for the popover to open
     const shiftOptionsPopover = this.getShiftOptionsPopover(page);
-    await shiftOptionsPopover.waitFor({ state: "visible" });
+    await shiftOptionsPopover.waitFor({ state: 'visible' });
 
     // Look for the first available shift option using the test ID pattern
     // Pattern: swo-option-{categoryName}-{id}-{isBoolDim}
@@ -1166,7 +1119,7 @@ export class RequestTestBase {
       .first();
 
     // Wait for the option to be visible and click it
-    await shiftOption.waitFor({ state: "visible", timeout: 5000 });
+    await shiftOption.waitFor({ state: 'visible', timeout: 5000 });
     await shiftOption.click();
 
     // Wait a bit for the selection to register
@@ -1178,14 +1131,10 @@ export class RequestTestBase {
     await expect(shiftOption).not.toBeVisible();
 
     // Wait for the popover to close (with a reasonable timeout)
-    await shiftOptionsPopover
-      .waitFor({ state: "hidden", timeout: 5000 })
-      .catch(() => {
-        // If it doesn't close, try clicking outside one more time
-        console.log(
-          "Popover didn't close automatically, attempting to close manually",
-        );
-      });
+    await shiftOptionsPopover.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {
+      // If it doesn't close, try clicking outside one more time
+      console.log("Popover didn't close automatically, attempting to close manually");
+    });
   }
 
   /**
@@ -1197,7 +1146,7 @@ export class RequestTestBase {
 
     // Wait for popover to close
     const popover = this.getRequestPanelDialog(page);
-    await popover.waitFor({ state: "hidden" });
+    await popover.waitFor({ state: 'hidden' });
   }
 
   /**
@@ -1207,15 +1156,15 @@ export class RequestTestBase {
     page: Page,
     expectedRequest: {
       workerName: string;
-      type: "work" | "leave";
+      type: 'work' | 'leave';
       date?: string;
       dateRange?: string;
-      preference?: "positive" | "negative";
+      preference?: 'positive' | 'negative';
       shiftName?: string;
     },
   ): Promise<void> {
     const requestTable = this.getRequestTable(page);
-    await requestTable.waitFor({ state: "visible" });
+    await requestTable.waitFor({ state: 'visible' });
 
     // Wait a bit for the table to update after request creation
     await page.waitForTimeout(500);
@@ -1227,7 +1176,7 @@ export class RequestTestBase {
       );
 
       // Find rows with the worker name
-      const workerRows = page.locator("tbody tr").filter({
+      const workerRows = page.locator('tbody tr').filter({
         hasText: expectedRequest.workerName,
       });
 
@@ -1243,14 +1192,14 @@ export class RequestTestBase {
       // Try multiple date formats that might be used in the table
       // Based on the code, the format is "MMM D" for dates in the current year
       const dateFormats = [
-        dayjs(expectedRequest.date).format("MMM D"), // "Jan 15" - this is the actual format used in the table!
-        dayjs(expectedRequest.date).format("MMM DD"), // "Jan 15" with leading zero
-        dayjs(expectedRequest.date).format("MMM D, YYYY"), // "Jan 15, 2026"
-        dayjs(expectedRequest.date).format("MMM DD, YYYY"), // "Jan 15, 2026" with leading zero
-        dayjs(expectedRequest.date).format("DD MMM YYYY"), // "15 Jan 2026"
-        dayjs(expectedRequest.date).format("D MMM YYYY"), // "15 Jan 2026" without leading zero
-        dayjs(expectedRequest.date).format("DD/MM/YYYY"), // "15/01/2026"
-        dayjs(expectedRequest.date).format("YYYY-MM-DD"), // "2026-01-15"
+        dayjs(expectedRequest.date).format('MMM D'), // "Jan 15" - this is the actual format used in the table!
+        dayjs(expectedRequest.date).format('MMM DD'), // "Jan 15" with leading zero
+        dayjs(expectedRequest.date).format('MMM D, YYYY'), // "Jan 15, 2026"
+        dayjs(expectedRequest.date).format('MMM DD, YYYY'), // "Jan 15, 2026" with leading zero
+        dayjs(expectedRequest.date).format('DD MMM YYYY'), // "15 Jan 2026"
+        dayjs(expectedRequest.date).format('D MMM YYYY'), // "15 Jan 2026" without leading zero
+        dayjs(expectedRequest.date).format('DD/MM/YYYY'), // "15/01/2026"
+        dayjs(expectedRequest.date).format('YYYY-MM-DD'), // "2026-01-15"
       ];
 
       // Try to find a row with any of the date formats
@@ -1260,7 +1209,7 @@ export class RequestTestBase {
         const count = await rowWithDate.count();
         if (count > 0) {
           console.log(`✅ Found row with date format: ${dateFormat}`);
-          await rowWithDate.first().waitFor({ state: "visible" });
+          await rowWithDate.first().waitFor({ state: 'visible' });
           found = true;
           break;
         } else {
@@ -1270,23 +1219,17 @@ export class RequestTestBase {
 
       if (!found) {
         // If no specific date match, just verify the worker name exists
-        console.log(
-          `⚠️ Could not find specific date format, verifying worker exists`,
-        );
-        await workerRows.first().waitFor({ state: "visible" });
+        console.log(`⚠️ Could not find specific date format, verifying worker exists`);
+        await workerRows.first().waitFor({ state: 'visible' });
       }
     } else {
       // If no date provided, just look for the worker name
-      const workerCell = page
-        .locator(`text="${expectedRequest.workerName}"`)
-        .first();
-      await workerCell.waitFor({ state: "visible" });
+      const workerCell = page.locator(`text="${expectedRequest.workerName}"`).first();
+      await workerCell.waitFor({ state: 'visible' });
     }
 
     // Additional verifications can be added here based on the specific request details
-    console.log(
-      `✅ Verified request for ${expectedRequest.workerName} appears in table`,
-    );
+    console.log(`✅ Verified request for ${expectedRequest.workerName} appears in table`);
   }
 
   //////////////////////////
@@ -1296,11 +1239,7 @@ export class RequestTestBase {
   /**
    * Clicks on an empty calendar cell to create a new request
    */
-  async clickEmptyCalendarCell(
-    page: Page,
-    workerId: string,
-    date: dayjs.Dayjs,
-  ): Promise<void> {
+  async clickEmptyCalendarCell(page: Page, workerId: string, date: dayjs.Dayjs): Promise<void> {
     // Navigate to the correct month first
     await this.navigateToMonth(page, date);
 
@@ -1321,12 +1260,7 @@ export class RequestTestBase {
     // Navigate to the correct month first
     await this.navigateToMonth(page, date);
 
-    const cell = this.getCalendarCellWithRequest(
-      page,
-      workerId,
-      date,
-      requestId,
-    );
+    const cell = this.getCalendarCellWithRequest(page, workerId, date, requestId);
     await expect(cell).toBeVisible();
     await cell.click();
   }
@@ -1342,18 +1276,14 @@ export class RequestTestBase {
    * - Month view, different months, same year: "Jan - Feb 2026"
    * - Month view, different years: "Dec 2025 - Jan 2026"
    */
-  formatPeriodLabel(
-    start: dayjs.Dayjs,
-    end: dayjs.Dayjs,
-    timeFrame: "week" | "month",
-  ): string {
+  formatPeriodLabel(start: dayjs.Dayjs, end: dayjs.Dayjs, timeFrame: 'week' | 'month'): string {
     // Both week and month views use the same formatting logic
     if (start.month() === end.month() && start.year() === end.year()) {
-      return start.format("MMMM YYYY");
+      return start.format('MMMM YYYY');
     } else if (start.month() !== end.month() && start.year() === end.year()) {
-      return start.format("MMM") + " - " + end.format("MMM YYYY");
+      return start.format('MMM') + ' - ' + end.format('MMM YYYY');
     } else {
-      return start.format("MMM YYYY") + " - " + end.format("MMM YYYY");
+      return start.format('MMM YYYY') + ' - ' + end.format('MMM YYYY');
     }
   }
 
@@ -1366,7 +1296,7 @@ export class RequestTestBase {
   async navigateToPeriod(
     page: Page,
     targetDate: dayjs.Dayjs,
-    timeFrame: "week" | "month",
+    timeFrame: 'week' | 'month',
   ): Promise<void> {
     const periodNav = this.getPeriodNav(page);
 
@@ -1381,29 +1311,24 @@ export class RequestTestBase {
 
     // Calculate target period boundaries
     const targetStart =
-      timeFrame === "week"
-        ? targetDate.startOf("isoWeek")
-        : targetDate.startOf("month");
+      timeFrame === 'week' ? targetDate.startOf('isoWeek') : targetDate.startOf('month');
 
     // Get the target date header to check visibility
-    const targetDateStr = targetStart.format("YYYY-MM-DD");
+    const targetDateStr = targetStart.format('YYYY-MM-DD');
     const targetDateHeader = this.getDateHeader(page, targetDateStr);
 
     // Check if already on the correct period
-    const isAlreadyVisible = await targetDateHeader
-      .isVisible()
-      .catch(() => false);
+    const isAlreadyVisible = await targetDateHeader.isVisible().catch(() => false);
     if (isAlreadyVisible) {
       return;
     }
 
     // Navigate to the target period using the today button or navigation buttons
     const now = dayjs.utc();
-    const nowStart =
-      timeFrame === "week" ? now.startOf("isoWeek") : now.startOf("month");
+    const nowStart = timeFrame === 'week' ? now.startOf('isoWeek') : now.startOf('month');
 
     // If target period is the current period, use Today button
-    if (targetStart.isSame(nowStart, "day")) {
+    if (targetStart.isSame(nowStart, 'day')) {
       await periodNav.todayButton.click();
       await page.waitForTimeout(300);
       await expect(targetDateHeader).toBeVisible({ timeout: 5000 });
@@ -1449,7 +1374,7 @@ export class RequestTestBase {
 
     // Wait for the first day of the month to be rendered in the calendar
     // This ensures the calendar data has fully loaded
-    const firstDayOfMonth = targetMonth.startOf("month").format("YYYY-MM-DD");
+    const firstDayOfMonth = targetMonth.startOf('month').format('YYYY-MM-DD');
     const firstDateHeader = this.getDateHeader(page, firstDayOfMonth);
     await expect(firstDateHeader)
       .toBeVisible({ timeout: 5000 })
@@ -1459,10 +1384,10 @@ export class RequestTestBase {
 
     let currentMonthText = await currentMonthLabel.textContent();
     // Use strict parsing (third parameter = true) to avoid parsing issues
-    let currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY", true);
+    let currentMonth = dayjs.utc(currentMonthText, 'MMMM YYYY', true);
 
-    while (!currentMonth.isSame(targetMonth, "month")) {
-      if (currentMonth.isBefore(targetMonth, "month")) {
+    while (!currentMonth.isSame(targetMonth, 'month')) {
+      if (currentMonth.isBefore(targetMonth, 'month')) {
         await this.getNextMonthButton(page).click();
       } else {
         await this.getPrevMonthButton(page).click();
@@ -1479,7 +1404,7 @@ export class RequestTestBase {
       );
       currentMonthText = await currentMonthLabel.textContent();
       // Use strict parsing (third parameter = true) to avoid parsing issues
-      currentMonth = dayjs.utc(currentMonthText, "MMMM YYYY", true);
+      currentMonth = dayjs.utc(currentMonthText, 'MMMM YYYY', true);
     }
   }
 
@@ -1493,12 +1418,7 @@ export class RequestTestBase {
     requestId: string,
     timeout: number = 5000,
   ): Promise<void> {
-    const cell = this.getCalendarCellWithRequest(
-      page,
-      workerId,
-      date,
-      requestId,
-    );
+    const cell = this.getCalendarCellWithRequest(page, workerId, date, requestId);
     await expect(cell).toBeVisible({ timeout });
   }
 
@@ -1512,23 +1432,14 @@ export class RequestTestBase {
     requestId: string,
     timeout: number = 5000,
   ): Promise<void> {
-    const cell = this.getCalendarCellWithRequest(
-      page,
-      workerId,
-      date,
-      requestId,
-    );
+    const cell = this.getCalendarCellWithRequest(page, workerId, date, requestId);
     await expect(cell).not.toBeVisible({ timeout });
   }
 
   /**
    * Verifies that a calendar cell is empty (no request)
    */
-  async verifyCalendarCellIsEmpty(
-    page: Page,
-    workerId: string,
-    date: dayjs.Dayjs,
-  ): Promise<void> {
+  async verifyCalendarCellIsEmpty(page: Page, workerId: string, date: dayjs.Dayjs): Promise<void> {
     // Navigate to the correct month first
     await this.navigateToMonth(page, date);
 
@@ -1537,7 +1448,7 @@ export class RequestTestBase {
 
     // Check that it doesn't have the request class
     const hasRequestClass = await cell.evaluate((el: Element) =>
-      el.classList.contains("calendar-cell--leave"),
+      el.classList.contains('calendar-cell--leave'),
     );
     expect(hasRequestClass).toBe(false);
   }
@@ -1558,17 +1469,12 @@ export class RequestTestBase {
     // Navigate to the correct month first
     await this.navigateToMonth(page, date);
 
-    const cell = this.getCalendarCellWithRequest(
-      page,
-      workerId,
-      date,
-      requestId,
-    );
+    const cell = this.getCalendarCellWithRequest(page, workerId, date, requestId);
     await expect(cell).toBeVisible();
 
     // Check that it has the request class
     const hasRequestClass = await cell.evaluate((el: Element) =>
-      el.classList.contains("calendar-cell--leave"),
+      el.classList.contains('calendar-cell--leave'),
     );
     expect(hasRequestClass).toBe(true);
 
@@ -1585,11 +1491,7 @@ export class RequestTestBase {
   /**
    * Verifies that clicking on a past date does nothing
    */
-  async verifyPastDateClick(
-    page: Page,
-    workerId: string,
-    pastDate: dayjs.Dayjs,
-  ): Promise<void> {
+  async verifyPastDateClick(page: Page, workerId: string, pastDate: dayjs.Dayjs): Promise<void> {
     // Navigate to the correct month first
     await this.navigateToMonth(page, pastDate);
 
@@ -1598,7 +1500,7 @@ export class RequestTestBase {
 
     // Verify the cell has the past class
     const hasPastClass = await cell.evaluate((el: Element) =>
-      el.classList.contains("calendar-cell--past"),
+      el.classList.contains('calendar-cell--past'),
     );
     expect(hasPastClass).toBe(true);
 
@@ -1615,17 +1517,17 @@ export class RequestTestBase {
    */
   async toggleStatusFilter(
     page: Page,
-    status: "pending" | "accepted-not-fulfilled" | "fulfilled",
+    status: 'pending' | 'accepted-not-fulfilled' | 'fulfilled',
   ): Promise<void> {
     let button;
     switch (status) {
-      case "pending":
+      case 'pending':
         button = this.getShowPendingButton(page);
         break;
-      case "accepted-not-fulfilled":
+      case 'accepted-not-fulfilled':
         button = this.getShowAcceptedNotFulfilledButton(page);
         break;
-      case "fulfilled":
+      case 'fulfilled':
         button = this.getShowFulfilledButton(page);
         break;
     }
@@ -1652,7 +1554,7 @@ export class RequestTestBase {
 
     // Select request type if needed
     if (requestType === RequestType.LEAVE) {
-      await this.selectRequestType(page, "leave");
+      await this.selectRequestType(page, 'leave');
     }
 
     // Save the request
@@ -1663,7 +1565,7 @@ export class RequestTestBase {
 
     // Note: In a real test, you'd need to get the created request ID
     // For now, return a placeholder
-    return "created-request-id";
+    return 'created-request-id';
   }
 
   //////////////////////////
@@ -1674,14 +1576,14 @@ export class RequestTestBase {
    * Gets the work request filter button
    */
   getWorkRequestFilterButton(page: Page) {
-    return page.getByTestId("request-calendar-filter-work");
+    return page.getByTestId('request-calendar-filter-work');
   }
 
   /**
    * Gets the leave request filter button
    */
   getLeaveRequestFilterButton(page: Page) {
-    return page.getByTestId("request-calendar-filter-leave");
+    return page.getByTestId('request-calendar-filter-leave');
   }
 
   /**
@@ -1719,10 +1621,7 @@ export class RequestTestBase {
   /**
    * Verifies that work requests are visible in the calendar
    */
-  async verifyWorkRequestsVisible(
-    page: Page,
-    expectedCount?: number,
-  ): Promise<void> {
+  async verifyWorkRequestsVisible(page: Page, expectedCount?: number): Promise<void> {
     const workRequestCells = this.getVisibleWorkRequestCells(page);
     const count = await workRequestCells.count();
 
@@ -1736,10 +1635,7 @@ export class RequestTestBase {
   /**
    * Verifies that leave requests are visible in the calendar
    */
-  async verifyLeaveRequestsVisible(
-    page: Page,
-    expectedCount?: number,
-  ): Promise<void> {
+  async verifyLeaveRequestsVisible(page: Page, expectedCount?: number): Promise<void> {
     const leaveRequestCells = this.getVisibleLeaveRequestCells(page);
     const count = await leaveRequestCells.count();
 
@@ -1776,21 +1672,21 @@ export class RequestTestBase {
    * Gets the pending request status filter button
    */
   getPendingStatusFilterButton(page: Page) {
-    return page.getByTestId("request-calendar-filter-pending");
+    return page.getByTestId('request-calendar-filter-pending');
   }
 
   /**
    * Gets the accepted request status filter button
    */
   getAcceptedStatusFilterButton(page: Page) {
-    return page.getByTestId("request-calendar-filter-accepted");
+    return page.getByTestId('request-calendar-filter-accepted');
   }
 
   /**
    * Gets the denied request status filter button
    */
   getDeniedStatusFilterButton(page: Page) {
-    return page.getByTestId("request-calendar-filter-denied");
+    return page.getByTestId('request-calendar-filter-denied');
   }
 
   /**
@@ -1844,10 +1740,7 @@ export class RequestTestBase {
   /**
    * Verifies that pending requests are visible in the calendar
    */
-  async verifyPendingRequestsVisible(
-    page: Page,
-    expectedCount?: number,
-  ): Promise<void> {
+  async verifyPendingRequestsVisible(page: Page, expectedCount?: number): Promise<void> {
     const pendingRequestCells = this.getVisiblePendingRequestCells(page);
     const count = await pendingRequestCells.count();
 
@@ -1861,10 +1754,7 @@ export class RequestTestBase {
   /**
    * Verifies that approved requests are visible in the calendar
    */
-  async verifyApprovedRequestsVisible(
-    page: Page,
-    expectedCount?: number,
-  ): Promise<void> {
+  async verifyApprovedRequestsVisible(page: Page, expectedCount?: number): Promise<void> {
     const approvedRequestCells = this.getVisibleApprovedRequestCells(page);
     const count = await approvedRequestCells.count();
 
@@ -1878,10 +1768,7 @@ export class RequestTestBase {
   /**
    * Verifies that denied requests are visible in the calendar
    */
-  async verifyDeniedRequestsVisible(
-    page: Page,
-    expectedCount?: number,
-  ): Promise<void> {
+  async verifyDeniedRequestsVisible(page: Page, expectedCount?: number): Promise<void> {
     const deniedRequestCells = this.getVisibleDeniedRequestCells(page);
     const count = await deniedRequestCells.count();
 
@@ -1927,11 +1814,11 @@ export class RequestTestBase {
    * Opens the calendar filter menu
    */
   async openCalendarFilterMenu(page: Page): Promise<void> {
-    const filterButton = page.getByTestId("calendar-filter-menu-button");
+    const filterButton = page.getByTestId('calendar-filter-menu-button');
     await expect(filterButton).toBeVisible();
     await filterButton.click();
     // Wait for the column list to appear
-    await expect(page.getByTestId("filter-column-list")).toBeVisible();
+    await expect(page.getByTestId('filter-column-list')).toBeVisible();
   }
 
   /**
@@ -1949,13 +1836,9 @@ export class RequestTestBase {
    * @param columnId - The column ID to filter (e.g., "shiftId", "requestType", "status")
    * @param values - Array of values to select
    */
-  async applySelectFilter(
-    page: Page,
-    columnId: string,
-    values: string[],
-  ): Promise<void> {
+  async applySelectFilter(page: Page, columnId: string, values: string[]): Promise<void> {
     // Open filter menu if not already open
-    const filterList = page.getByTestId("filter-column-list");
+    const filterList = page.getByTestId('filter-column-list');
     const isMenuOpen = await filterList.isVisible().catch(() => false);
     if (!isMenuOpen) {
       await this.openCalendarFilterMenu(page);
@@ -1982,7 +1865,7 @@ export class RequestTestBase {
     await applyButton.click();
 
     // Wait for filter bar to show the applied filter
-    await expect(page.getByTestId("table-filter-bar")).toBeVisible();
+    await expect(page.getByTestId('table-filter-bar')).toBeVisible();
   }
 
   /**
@@ -1999,7 +1882,7 @@ export class RequestTestBase {
     endDate: string,
   ): Promise<void> {
     // Open filter menu if not already open
-    const filterList = page.getByTestId("filter-column-list");
+    const filterList = page.getByTestId('filter-column-list');
     const isMenuOpen = await filterList.isVisible().catch(() => false);
     if (!isMenuOpen) {
       await this.openCalendarFilterMenu(page);
@@ -2020,7 +1903,7 @@ export class RequestTestBase {
     await applyButton.click();
 
     // Wait for filter bar to show the applied filter
-    await expect(page.getByTestId("table-filter-bar")).toBeVisible();
+    await expect(page.getByTestId('table-filter-bar')).toBeVisible();
   }
 
   /**
@@ -2045,25 +1928,25 @@ export class RequestTestBase {
    * Resets all filters and sorting
    */
   async resetAllFilters(page: Page): Promise<void> {
-    const resetButton = page.getByTestId("reset-all-filters-button");
+    const resetButton = page.getByTestId('reset-all-filters-button');
     await expect(resetButton).toBeVisible();
     await resetButton.click();
     // Wait for filter bar to disappear
-    await expect(page.getByTestId("table-filter-bar")).not.toBeVisible();
+    await expect(page.getByTestId('table-filter-bar')).not.toBeVisible();
   }
 
   /**
    * Verifies that the filter bar is not visible (no active filters)
    */
   async verifyNoActiveFilters(page: Page): Promise<void> {
-    await expect(page.getByTestId("table-filter-bar")).not.toBeVisible();
+    await expect(page.getByTestId('table-filter-bar')).not.toBeVisible();
   }
 
   /**
    * Opens the worker column sort/filter menu
    */
   async openWorkerColumnMenu(page: Page): Promise<void> {
-    const menuButton = page.getByTestId("column-menu-workerId");
+    const menuButton = page.getByTestId('column-menu-workerId');
     await expect(menuButton).toBeVisible();
     await menuButton.click();
   }
@@ -2073,13 +1956,13 @@ export class RequestTestBase {
    * @param page - The Playwright page
    * @param direction - Sort direction ("asc" or "desc")
    */
-  async sortByWorker(page: Page, direction: "asc" | "desc"): Promise<void> {
+  async sortByWorker(page: Page, direction: 'asc' | 'desc'): Promise<void> {
     await this.openWorkerColumnMenu(page);
     const sortButton = page.getByTestId(`sort-${direction}-workerId`);
     await expect(sortButton).toBeVisible();
     await sortButton.click();
     // Wait for sort chip to appear
-    await expect(page.getByTestId("sort-chip")).toBeVisible();
+    await expect(page.getByTestId('sort-chip')).toBeVisible();
   }
 
   /**
@@ -2087,7 +1970,7 @@ export class RequestTestBase {
    */
   async removeWorkerSort(page: Page): Promise<void> {
     await this.openWorkerColumnMenu(page);
-    const removeSortButton = page.getByTestId("remove-sort-workerId");
+    const removeSortButton = page.getByTestId('remove-sort-workerId');
     await expect(removeSortButton).toBeVisible();
     await removeSortButton.click();
   }
@@ -2101,12 +1984,12 @@ export class RequestTestBase {
     await this.openWorkerColumnMenu(page);
 
     // Click filter menu item
-    const filterMenuItem = page.getByTestId("filter-menu-workerId");
+    const filterMenuItem = page.getByTestId('filter-menu-workerId');
     await expect(filterMenuItem).toBeVisible();
     await filterMenuItem.click();
 
     // Wait for filter to appear
-    await expect(page.getByTestId("select-filter-workerId")).toBeVisible();
+    await expect(page.getByTestId('select-filter-workerId')).toBeVisible();
 
     // Select the workers
     for (const workerId of workerIds) {
@@ -2119,18 +2002,18 @@ export class RequestTestBase {
     }
 
     // Apply the filter
-    const applyButton = page.getByTestId("filter-apply-workerId");
+    const applyButton = page.getByTestId('filter-apply-workerId');
     await applyButton.click();
 
     // Wait for filter bar to show the applied filter
-    await expect(page.getByTestId("table-filter-bar")).toBeVisible();
+    await expect(page.getByTestId('table-filter-bar')).toBeVisible();
   }
 
   /**
    * Verifies that the sort chip is visible in the filter bar
    */
   async verifySortChipVisible(page: Page): Promise<void> {
-    await expect(page.getByTestId("sort-chip")).toBeVisible();
+    await expect(page.getByTestId('sort-chip')).toBeVisible();
   }
 
   /**
@@ -2138,10 +2021,7 @@ export class RequestTestBase {
    * @param page - The Playwright page
    * @param requestIds - Array of request IDs that should be visible
    */
-  async verifyRequestsVisibleByIds(
-    page: Page,
-    requestIds: string[],
-  ): Promise<void> {
+  async verifyRequestsVisibleByIds(page: Page, requestIds: string[]): Promise<void> {
     for (const requestId of requestIds) {
       const requestCell = page.locator(`[data-request-id="${requestId}"]`);
       await expect(requestCell).toBeVisible();
@@ -2153,10 +2033,7 @@ export class RequestTestBase {
    * @param page - The Playwright page
    * @param requestIds - Array of request IDs that should not be visible
    */
-  async verifyRequestsNotVisibleByIds(
-    page: Page,
-    requestIds: string[],
-  ): Promise<void> {
+  async verifyRequestsNotVisibleByIds(page: Page, requestIds: string[]): Promise<void> {
     for (const requestId of requestIds) {
       const requestCell = page.locator(`[data-request-id="${requestId}"]`);
       await expect(requestCell).not.toBeVisible();
@@ -2167,7 +2044,7 @@ export class RequestTestBase {
    * Counts visible request cells in the calendar
    */
   async countVisibleRequests(page: Page): Promise<number> {
-    const requestCells = page.locator("[data-request-id]");
+    const requestCells = page.locator('[data-request-id]');
     return await requestCells.count();
   }
 
@@ -2191,26 +2068,24 @@ export class RequestTestBase {
   async setRequestCalendarViewSettings(
     page: Page,
     options?: {
-      selectedTab?: "table" | "calendar";
+      selectedTab?: 'table' | 'calendar';
       targetDate?: dayjs.Dayjs;
-      timeFrame?: "week" | "month";
+      timeFrame?: 'week' | 'month';
       periodStartDate?: dayjs.Dayjs;
       filters?: Array<{
         id: string;
-        type: "text" | "select" | "date" | "boolean";
+        type: 'text' | 'select' | 'date' | 'boolean';
         value: any;
       }>;
       sort?: {
         columnId: string;
-        direction: "asc" | "desc";
+        direction: 'asc' | 'desc';
       } | null;
     },
     reload: boolean = true,
   ): Promise<void> {
     if (!this.testTeam) {
-      throw new Error(
-        "Test team not initialized. Call setupRequestTests first.",
-      );
+      throw new Error('Test team not initialized. Call setupRequestTests first.');
     }
 
     // Use team-scoped storage key
@@ -2232,17 +2107,15 @@ export class RequestTestBase {
 
     // Handle periodStartDate calculation or direct setting
     if (options?.periodStartDate) {
-      stateUpdates.periodStartDate = options.periodStartDate
-        .utc()
-        .toISOString();
+      stateUpdates.periodStartDate = options.periodStartDate.utc().toISOString();
     } else if (options?.targetDate && options?.timeFrame) {
       let calculatedDate: dayjs.Dayjs;
-      if (options.timeFrame === "week") {
+      if (options.timeFrame === 'week') {
         // Start of ISO week (Monday)
-        calculatedDate = options.targetDate.startOf("isoWeek");
+        calculatedDate = options.targetDate.startOf('isoWeek');
       } else {
         // Start of the month
-        calculatedDate = options.targetDate.startOf("month");
+        calculatedDate = options.targetDate.startOf('month');
       }
 
       stateUpdates.periodStartDate = calculatedDate.utc().toISOString();
@@ -2264,13 +2137,12 @@ export class RequestTestBase {
     // Merge with existing settings using new flat structure
     // Ensure all required fields have defaults
     const settings = {
-      selectedTab: existingSettings?.selectedTab || "table",
+      selectedTab: existingSettings?.selectedTab || 'table',
       filters: existingSettings?.filters || [],
       sort: existingSettings?.sort || null,
-      timeFrame: existingSettings?.timeFrame || "month",
+      timeFrame: existingSettings?.timeFrame || 'month',
       periodStartDate:
-        existingSettings?.periodStartDate ||
-        dayjs().utc().startOf("month").toISOString(),
+        existingSettings?.periodStartDate || dayjs().utc().startOf('month').toISOString(),
       ...stateUpdates, // Apply updates on top
     };
 
@@ -2282,7 +2154,7 @@ export class RequestTestBase {
       { key: storageKey, value: settings },
     );
 
-    const logParts = ["✅ Set request view settings (team-scoped):"];
+    const logParts = ['✅ Set request view settings (team-scoped):'];
     if (stateUpdates.selectedTab !== undefined) {
       logParts.push(`tab ${stateUpdates.selectedTab}`);
     }
@@ -2290,21 +2162,19 @@ export class RequestTestBase {
       logParts.push(`${stateUpdates.timeFrame} view`);
     }
     if (stateUpdates.periodStartDate) {
-      logParts.push(
-        `starting ${dayjs(stateUpdates.periodStartDate).format("YYYY-MM-DD")}`,
-      );
+      logParts.push(`starting ${dayjs(stateUpdates.periodStartDate).format('YYYY-MM-DD')}`);
     }
     if (Object.keys(stateUpdates).length === 0) {
-      logParts.push("(no changes)");
+      logParts.push('(no changes)');
     }
-    console.log(logParts.join(" "));
+    console.log(logParts.join(' '));
 
     // Navigate to requests page to apply localStorage changes
     // This is more reliable than reload() because it re-runs the addInitScript for team selection
     if (reload) {
       // Navigate to the requests page
       await page.goto(`http://localhost:3000/en/plan/requests`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState('networkidle');
 
       // Wait for the requests page to load
       await page.waitForSelector('[data-testid="request-tab"]', {

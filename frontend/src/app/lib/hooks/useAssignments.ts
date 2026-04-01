@@ -3,26 +3,22 @@
  * Provides data fetching, caching, and smart buffering capabilities
  */
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import dayjs from "dayjs";
-import {
-  AssignmentT,
-  AssignmentsRecurrencesResultT,
-} from "../../../types/assignment";
-import { RecurrenceRuleT } from "../../../types/recurrence";
-import { AssignmentApi } from "../api/assignmentApi";
-import { useApiClient } from "../api-client";
-import { useAuth } from "../../../contexts/auth-context";
-import { env } from "@/config/env";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
+import { AssignmentT, AssignmentsRecurrencesResultT } from '../../../types/assignment';
+import { RecurrenceRuleT } from '../../../types/recurrence';
+import { AssignmentApi } from '../api/assignmentApi';
+import { useApiClient } from '../api-client';
+import { useAuth } from '../../../contexts/auth-context';
+import { env } from '@/config/env';
 
 /**
  * Query key factory for assignments
  * Provides consistent query keys for cache management
  */
 export const assignmentsQueryKeys = {
-  all: ["assignments"] as const,
-  teams: (teamId: string) =>
-    [...assignmentsQueryKeys.all, "team", teamId] as const,
+  all: ['assignments'] as const,
+  teams: (teamId: string) => [...assignmentsQueryKeys.all, 'team', teamId] as const,
   byPeriod: (
     teamId: string,
     startDate: dayjs.Dayjs,
@@ -33,12 +29,12 @@ export const assignmentsQueryKeys = {
   ) =>
     [
       ...assignmentsQueryKeys.teams(teamId),
-      "period",
-      startDate.format("YYYY-MM-DD"),
-      endDate.format("YYYY-MM-DD"),
+      'period',
+      startDate.format('YYYY-MM-DD'),
+      endDate.format('YYYY-MM-DD'),
       includeCampaign,
       workerId,
-      shiftTypes ? shiftTypes.slice().sort().join(",") : undefined,
+      shiftTypes ? shiftTypes.slice().sort().join(',') : undefined,
     ] as const,
 };
 
@@ -91,10 +87,10 @@ export const useAssignmentsByPeriod = (
     ),
     queryFn: async (): Promise<AssignmentsRecurrencesResultT> => {
       if (env.isDevelopment) {
-        console.log("🔍 Fetching assignments:", {
+        console.log('🔍 Fetching assignments:', {
           teamId,
-          startDate: startDate.format("YYYY-MM-DD"),
-          endDate: endDate.format("YYYY-MM-DD"),
+          startDate: startDate.format('YYYY-MM-DD'),
+          endDate: endDate.format('YYYY-MM-DD'),
           includeCampaign,
           workerId,
         });
@@ -102,7 +98,7 @@ export const useAssignmentsByPeriod = (
 
       // Validate authentication state
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       const result = await AssignmentApi.getAssignments(
@@ -116,7 +112,7 @@ export const useAssignmentsByPeriod = (
       );
 
       if (env.isDevelopment) {
-        console.log("✅ Assignments fetched:", {
+        console.log('✅ Assignments fetched:', {
           assignmentCount: result.assignmentsRead.length,
           recurrenceCount: result.recurrencesRead.length,
         });
@@ -127,11 +123,7 @@ export const useAssignmentsByPeriod = (
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes cache time
     refetchInterval: options?.refetchInterval,
-    enabled:
-      options?.enabled !== false &&
-      !loading &&
-      isAuthenticated &&
-      !!user?.id_token,
+    enabled: options?.enabled !== false && !loading && isAuthenticated && !!user?.id_token,
     refetchOnWindowFocus: false,
     // Keep previous data while fetching new data (smoother UX during navigation)
     placeholderData: (previousData) => previousData,
@@ -214,13 +206,7 @@ export const useAssignmentsQueryClient = () => {
       workerId?: string,
     ): AssignmentsRecurrencesResultT | undefined => {
       return queryClient.getQueryData(
-        assignmentsQueryKeys.byPeriod(
-          teamId,
-          startDate,
-          endDate,
-          includeCampaign,
-          workerId,
-        ),
+        assignmentsQueryKeys.byPeriod(teamId, startDate, endDate, includeCampaign, workerId),
       );
     },
   };

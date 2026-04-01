@@ -1,9 +1,9 @@
-import * as React from "react";
+import * as React from 'react';
 // MUI
-import AddIcon from "@mui/icons-material/Add";
-import Tooltip from "@mui/material/Tooltip";
+import AddIcon from '@mui/icons-material/Add';
+import Tooltip from '@mui/material/Tooltip';
 // Styles
-import "./table-add-button.css";
+import './table-add-button.css';
 
 const TableAddButton = ({
   text,
@@ -24,7 +24,7 @@ const TableAddButton = ({
       onClick={() => handleClick && handleClick()}
       data-testid={dataTestId ?? `add-${text.toLowerCase()}-button`}
     >
-      {showIcon && <AddIcon sx={{ height: "17px" }} />}
+      {showIcon && <AddIcon sx={{ height: '17px' }} />}
       {text}
     </button>
   );

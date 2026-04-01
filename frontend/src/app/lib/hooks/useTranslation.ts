@@ -1,8 +1,8 @@
-import React from "react";
-import { useTranslation as useI18nTranslation } from "react-i18next";
-import { useParams } from "next/navigation";
-import { FlatNamespace, KeyPrefix } from "i18next";
-import { UseTranslationOptions, FallbackNs } from "react-i18next";
+import React from 'react';
+import { useTranslation as useI18nTranslation } from 'react-i18next';
+import { useParams } from 'next/navigation';
+import { FlatNamespace, KeyPrefix } from 'i18next';
+import { UseTranslationOptions, FallbackNs } from 'react-i18next';
 
 export function useTranslation<
   Ns extends FlatNamespace,

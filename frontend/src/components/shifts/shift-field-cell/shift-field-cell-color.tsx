@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // MUI
-import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
-import Menu from "@mui/material/Menu";
-import TableCell from "@mui/material/TableCell";
-import Popover from "@mui/material/Popover";
-import Button from "@mui/material/Button";
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Menu from '@mui/material/Menu';
+import TableCell from '@mui/material/TableCell';
+import Popover from '@mui/material/Popover';
+import Button from '@mui/material/Button';
 // Types
-import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from '../../../types/shift';
 // Constants
-import { ShiftColorMappings } from "../../../constants/constants";
+import { ShiftColorMappings } from '../../../constants/constants';
 
 export default function ShiftFieldCellColor({
   shift,
@@ -22,10 +22,7 @@ export default function ShiftFieldCellColor({
   const open = Boolean(anchorEl);
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (
-      shift.leaveType === ShiftLeaveType.NONE &&
-      shift.restType !== ShiftRestType.OFF
-    ) {
+    if (shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF) {
       setAnchorEl(event.currentTarget);
     }
   };
@@ -41,26 +38,24 @@ export default function ShiftFieldCellColor({
 
   return (
     <TableCell component="th" scope="row" sx={{ width: 30, paddingY: 0 }}>
-      <Box style={{ width: "100%" }}>
+      <Box style={{ width: '100%' }}>
         <Box
           onClick={handleClick}
           sx={{
-            display: "inline-flex",
+            display: 'inline-flex',
             minWidth: 0,
             cursor:
-              shift.leaveType === ShiftLeaveType.NONE &&
-              shift.restType !== ShiftRestType.OFF
-                ? "pointer"
-                : "default",
+              shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF
+                ? 'pointer'
+                : 'default',
           }}
         >
           <Chip
             label=""
             style={{
-              width: "30px",
-              height: "22px",
-              backgroundColor:
-                ShiftColorMappings[shift.color]?.sample || "#ccc",
+              width: '30px',
+              height: '22px',
+              backgroundColor: ShiftColorMappings[shift.color]?.sample || '#ccc',
             }}
           />
         </Box>
@@ -70,11 +65,11 @@ export default function ShiftFieldCellColor({
           anchorEl={anchorEl}
           onClose={handleClose}
           anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
+            vertical: 'bottom',
+            horizontal: 'left',
           }}
         >
-          <Box sx={{ display: "flex", flexWrap: "wrap", padding: 1 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', padding: 1 }}>
             {Object.keys(ShiftColorMappings).map((colorKey) => (
               <Button
                 key={colorKey}
@@ -85,9 +80,9 @@ export default function ShiftFieldCellColor({
                   height: 30,
                   minWidth: 0,
                   margin: 0.5,
-                  borderRadius: "50%",
+                  borderRadius: '50%',
                   // border: "1px solid #ccc",
-                  "&:hover": {
+                  '&:hover': {
                     backgroundColor: ShiftColorMappings[colorKey].text,
                   },
                 }}

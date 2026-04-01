@@ -5,7 +5,7 @@
  * with more than 2 weeks
  */
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -20,9 +20,9 @@ import {
   ListItemIcon,
   ListItemText,
   CircularProgress,
-} from "@mui/material";
-import { Warning, Delete } from "@mui/icons-material";
-import { useTranslation } from "../../../../app/i18n/client";
+} from '@mui/material';
+import { Warning, Delete } from '@mui/icons-material';
+import { useTranslation } from '../../../../app/i18n/client';
 
 interface ConfirmEvenOddDialogProps {
   open: boolean;
@@ -43,7 +43,7 @@ export function ConfirmEvenOddDialog({
   lng,
   templateName,
 }: ConfirmEvenOddDialogProps) {
-  const { t } = useTranslation(lng, "shift-demand-templates");
+  const { t } = useTranslation(lng, 'shift-demand-templates');
   const [isConfirming, setIsConfirming] = useState(false);
 
   const handleConfirm = async () => {
@@ -52,7 +52,7 @@ export function ConfirmEvenOddDialog({
       await onConfirm();
       onClose();
     } catch (error) {
-      console.error("Failed to convert template type:", error);
+      console.error('Failed to convert template type:', error);
       // Error handling is done in parent component
     } finally {
       setIsConfirming(false);
@@ -76,31 +76,29 @@ export function ConfirmEvenOddDialog({
         sx: { minHeight: 300 },
       }}
     >
-      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Warning color="warning" />
-        {t("confirm_even_odd_conversion")}
+        {t('confirm_even_odd_conversion')}
       </DialogTitle>
 
       <DialogContent>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Main warning message */}
           <Alert severity="warning" sx={{ mb: 2 }}>
-            <Typography variant="body2">
-              {t("even_odd_conversion_warning")}
-            </Typography>
+            <Typography variant="body2">{t('even_odd_conversion_warning')}</Typography>
           </Alert>
 
           {/* Template information */}
           {templateName && (
             <Box>
               <Typography variant="body2" color="textSecondary">
-                {t("template")}: <strong>{templateName}</strong>
+                {t('template')}: <strong>{templateName}</strong>
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                {t("current_weeks")}: {currentWeeks}
+                {t('current_weeks')}: {currentWeeks}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                {t("target_weeks")}: 2
+                {t('target_weeks')}: 2
               </Typography>
             </Box>
           )}
@@ -109,17 +107,17 @@ export function ConfirmEvenOddDialog({
           {weeksToDelete.length > 0 && (
             <Box>
               <Typography variant="subtitle2" gutterBottom>
-                {t("weeks_will_be_deleted")}
+                {t('weeks_will_be_deleted')}
               </Typography>
-              <List dense sx={{ bgcolor: "background.paper", borderRadius: 1 }}>
+              <List dense sx={{ bgcolor: 'background.paper', borderRadius: 1 }}>
                 {weeksToDelete.map((weekNumber) => (
                   <ListItem key={weekNumber}>
                     <ListItemIcon>
                       <Delete color="error" fontSize="small" />
                     </ListItemIcon>
                     <ListItemText
-                      primary={`${t("week")} ${weekNumber + 1}`}
-                      secondary={t("week_delete_warning")}
+                      primary={`${t('week')} ${weekNumber + 1}`}
+                      secondary={t('week_delete_warning')}
                     />
                   </ListItem>
                 ))}
@@ -130,7 +128,7 @@ export function ConfirmEvenOddDialog({
           {/* Additional information */}
           <Box>
             <Typography variant="body2" color="textSecondary">
-              {t("even_odd_template_explanation")}
+              {t('even_odd_template_explanation')}
             </Typography>
           </Box>
         </Box>
@@ -143,7 +141,7 @@ export function ConfirmEvenOddDialog({
           disabled={isConfirming}
           color="inherit"
         >
-          {t("cancel")}
+          {t('cancel')}
         </Button>
         <Button
           data-testid="template-toolbar-even-odd-confirm-button"
@@ -151,11 +149,9 @@ export function ConfirmEvenOddDialog({
           color="warning"
           variant="contained"
           disabled={isConfirming}
-          startIcon={
-            isConfirming ? <CircularProgress size={16} /> : <Warning />
-          }
+          startIcon={isConfirming ? <CircularProgress size={16} /> : <Warning />}
         >
-          {isConfirming ? t("converting") : t("convert_to_even_odd")}
+          {isConfirming ? t('converting') : t('convert_to_even_odd')}
         </Button>
       </DialogActions>
     </Dialog>

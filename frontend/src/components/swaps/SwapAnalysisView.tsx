@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Box,
@@ -11,22 +11,19 @@ import {
   ListItemText,
   useTheme,
   useMediaQuery,
-} from "@mui/material";
-import {
-  SwapValidationResultT,
-  AssignmentImplicationT,
-} from "../../types/swapValidation";
-import { AssignmentDataDictT } from "../../types/assignment";
+} from '@mui/material';
+import { SwapValidationResultT, AssignmentImplicationT } from '../../types/swapValidation';
+import { AssignmentDataDictT } from '../../types/assignment';
 import {
   getCategoryEmoji,
   getReasonLabel,
   formatShiftTimeRange,
   formatWeeklyTime,
   formatMonthlyDuties,
-} from "../../utils/replacementHelpers";
-import dayjs from "dayjs";
-import { useTranslation } from "../../app/i18n/client";
-import { buildSwapValidationMessage } from "./swapValidationMessages";
+} from '../../utils/replacementHelpers';
+import dayjs from 'dayjs';
+import { useTranslation } from '../../app/i18n/client';
+import { buildSwapValidationMessage } from './swapValidationMessages';
 
 interface SwapAnalysisViewProps {
   validationResult: SwapValidationResultT;
@@ -41,12 +38,12 @@ export default function SwapAnalysisView({
   onViewDetails,
   lng,
 }: SwapAnalysisViewProps) {
-  const { t } = useTranslation(lng, "swap-page");
+  const { t } = useTranslation(lng, 'swap-page');
   const workerAInfo = validationResult.workerAInfo;
   const workerBInfo = validationResult.workerBInfo;
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const validationMessage = buildSwapValidationMessage(
     validationResult.validationKey,
@@ -59,10 +56,7 @@ export default function SwapAnalysisView({
     return assignments.find((a) => a.assignment.id === assignmentId);
   };
 
-  const renderWorkerAnalysis = (
-    workerName: string,
-    postSwap: AssignmentImplicationT[],
-  ) => {
+  const renderWorkerAnalysis = (workerName: string, postSwap: AssignmentImplicationT[]) => {
     return (
       <Paper elevation={2} sx={{ p: 2 }}>
         <Typography variant="h6" gutterBottom>
@@ -70,76 +64,58 @@ export default function SwapAnalysisView({
         </Typography>
 
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-          {t("analysis_will_receive", { count: postSwap.length })}
+          {t('analysis_will_receive', { count: postSwap.length })}
         </Typography>
 
         <List dense>
           {postSwap.map((assignmentImplication, idx) => {
             const isLast = idx === postSwap.length - 1;
-            const assignmentData = getAssignmentData(
-              assignmentImplication.assignmentId,
-            );
-            const emoji = getCategoryEmoji(
-              assignmentImplication.replacementCategory,
-            );
-            const reason = getReasonLabel(
-              assignmentImplication.mostConstrainingReason,
-              t,
-            );
+            const assignmentData = getAssignmentData(assignmentImplication.assignmentId);
+            const emoji = getCategoryEmoji(assignmentImplication.replacementCategory);
+            const reason = getReasonLabel(assignmentImplication.mostConstrainingReason, t);
 
             const shift = assignmentData?.shift;
             const assignment = assignmentData?.assignment;
-            const dateLabel = assignment?.date
-              ? dayjs(assignment.date).format("D MMM, ddd")
-              : "";
-            const timeRange = formatShiftTimeRange(
-              shift?.startTime,
-              shift?.endTime,
-            );
+            const dateLabel = assignment?.date ? dayjs(assignment.date).format('D MMM, ddd') : '';
+            const timeRange = formatShiftTimeRange(shift?.startTime, shift?.endTime);
 
             const weeklyMinutes =
-              assignmentImplication.implications.newWeeklyTime
-                .newWeeklyWorkedMinutes;
+              assignmentImplication.implications.newWeeklyTime.newWeeklyWorkedMinutes;
             const weeklyDelta =
-              assignmentImplication.implications.newWeeklyTime
-                .newWeeklyTimeDeltaMinutes;
+              assignmentImplication.implications.newWeeklyTime.newWeeklyTimeDeltaMinutes;
             const totalDuties =
-              assignmentImplication.implications.newMonthlyDuties
-                .newNumberMonthlyDuties;
+              assignmentImplication.implications.newMonthlyDuties.newNumberMonthlyDuties;
             const dutiesDelta =
-              assignmentImplication.implications.newMonthlyDuties
-                .newMonthlyDutiesDelta;
+              assignmentImplication.implications.newMonthlyDuties.newMonthlyDutiesDelta;
 
             return (
               <ListItem
                 key={assignmentImplication.assignmentId}
                 sx={{
-                  border: "1px solid #ddd",
+                  border: '1px solid #ddd',
                   borderRadius: 1,
                   mb: isLast ? 0 : 1,
-                  bgcolor: "background.paper",
+                  bgcolor: 'background.paper',
                 }}
               >
                 <ListItemText
                   slotProps={{
-                    primary: { component: "div" },
-                    secondary: { component: "div" },
+                    primary: { component: 'div' },
+                    secondary: { component: 'div' },
                   }}
                   primary={
                     isMobile ? (
                       <Box>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Typography variant="body2">{emoji}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {shift?.name || "—"}
+                            {shift?.name || '—'}
                           </Typography>
                         </Box>
                         <Box
                           sx={{
-                            display: "flex",
-                            alignItems: "center",
+                            display: 'flex',
+                            alignItems: 'center',
                             gap: 1,
                             mt: 0.5,
                           }}
@@ -148,29 +124,23 @@ export default function SwapAnalysisView({
                           {timeRange && (
                             <>
                               <Typography variant="body2">⋅</Typography>
-                              <Typography variant="caption">
-                                {timeRange}
-                              </Typography>
+                              <Typography variant="caption">{timeRange}</Typography>
                             </>
                           )}
                         </Box>
                       </Box>
                     ) : (
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography variant="body2">{emoji}</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {shift?.name || "—"}
+                          {shift?.name || '—'}
                         </Typography>
                         <Typography variant="body2">⋅</Typography>
                         <Typography variant="body2">{dateLabel}</Typography>
                         {timeRange && (
                           <>
                             <Typography variant="body2">⋅</Typography>
-                            <Typography variant="caption">
-                              {timeRange}
-                            </Typography>
+                            <Typography variant="caption">{timeRange}</Typography>
                           </>
                         )}
                       </Box>
@@ -183,7 +153,7 @@ export default function SwapAnalysisView({
                       component="div"
                       sx={{ mt: 0.25 }}
                     >
-                      {formatWeeklyTime(weeklyMinutes, weeklyDelta)} |{" "}
+                      {formatWeeklyTime(weeklyMinutes, weeklyDelta)} |{' '}
                       {formatMonthlyDuties(totalDuties, dutiesDelta)} | {reason}
                     </Typography>
                   }
@@ -201,28 +171,28 @@ export default function SwapAnalysisView({
       {/* Title and Details Button */}
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: 2,
         }}
       >
         <Typography variant="subtitle2" color="text.secondary">
-          {t("analysis_subtitle")}
+          {t('analysis_subtitle')}
         </Typography>
         <Button
           variant="contained"
           onClick={onViewDetails}
-          sx={{ textTransform: "none" }}
+          sx={{ textTransform: 'none' }}
           data-testid="view-analysis-details-button"
         >
-          {t("btn_see_details")}
+          {t('btn_see_details')}
         </Button>
       </Box>
 
       {/* Validation Status */}
       <Alert
-        severity={validationResult.isValid ? "success" : "warning"}
+        severity={validationResult.isValid ? 'success' : 'warning'}
         sx={{ mb: 2 }}
         data-testid="validation-status-alert"
       >
@@ -232,8 +202,8 @@ export default function SwapAnalysisView({
       {/* Worker Analyses */}
       <Box
         sx={{
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
           gap: 2,
         }}
       >

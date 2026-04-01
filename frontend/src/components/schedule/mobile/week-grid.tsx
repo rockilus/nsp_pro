@@ -1,10 +1,10 @@
-import React, { useMemo, forwardRef, useImperativeHandle, useRef } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import { ShiftColorMappings } from "../../../constants/constants";
-import { ShiftType } from "../../../types/shift";
+import React, { useMemo, forwardRef, useImperativeHandle, useRef } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { ShiftColorMappings } from '../../../constants/constants';
+import { ShiftType } from '../../../types/shift';
 
 dayjs.extend(utc);
 
@@ -53,9 +53,7 @@ const calculateAssignmentGridPosition = (
 
   // Check if shift ends on next day
   const endsNextDay =
-    endTime.isBefore(startTime) ||
-    !endTime.isSame(startTime, "day") ||
-    endMinutes < startMinutes;
+    endTime.isBefore(startTime) || !endTime.isSame(startTime, 'day') || endMinutes < startMinutes;
 
   if (endsNextDay) {
     // For overnight shifts, calculate as ending at midnight
@@ -185,24 +183,13 @@ const calculateAssignmentPositions = (
 
 const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
   (
-    {
-      week,
-      assignmentsByDate,
-      shifts,
-      today,
-      setActiveAssignment,
-      setSheetOpen,
-      onScroll,
-    },
+    { week, assignmentsByDate, shifts, today, setActiveAssignment, setSheetOpen, onScroll },
     ref,
   ) => {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     // Expose scrollTop via ref for external control
-    useImperativeHandle(
-      ref,
-      () => scrollContainerRef.current as HTMLDivElement,
-    );
+    useImperativeHandle(ref, () => scrollContainerRef.current as HTMLDivElement);
 
     // Generate 7 days for the week
     const weekDays = useMemo(() => {
@@ -210,16 +197,14 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
       let current = week.start;
       for (let i = 0; i < 7; i++) {
         days.push(current);
-        current = current.add(1, "day");
+        current = current.add(1, 'day');
       }
       return days;
     }, [week]);
 
     // Generate hour labels (00:00 - 23:00)
     const hours = useMemo(() => {
-      return Array.from({ length: 24 }, (_, i) =>
-        dayjs.utc().hour(i).minute(0).format("HH:mm"),
-      );
+      return Array.from({ length: 24 }, (_, i) => dayjs.utc().hour(i).minute(0).format('HH:mm'));
     }, []);
 
     // Calculate positioned assignments for each day
@@ -227,29 +212,19 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
       const result: Map<string, PositionedAssignment[]> = new Map();
 
       weekDays.forEach((day) => {
-        const dateKey = day.format("YYYY-MM-DD");
+        const dateKey = day.format('YYYY-MM-DD');
         const dayAssignments = assignmentsByDate.get(dateKey) || [];
-        const positioned = calculateAssignmentPositions(
-          dayAssignments,
-          shifts,
-          day,
-        );
+        const positioned = calculateAssignmentPositions(dayAssignments, shifts, day);
         result.set(dateKey, positioned);
 
         // Also check for overnight assignments from the previous day
-        const prevDay = day.subtract(1, "day");
-        const prevDateKey = prevDay.format("YYYY-MM-DD");
+        const prevDay = day.subtract(1, 'day');
+        const prevDateKey = prevDay.format('YYYY-MM-DD');
         const prevAssignments = assignmentsByDate.get(prevDateKey) || [];
-        const prevPositioned = calculateAssignmentPositions(
-          prevAssignments,
-          shifts,
-          prevDay,
-        );
+        const prevPositioned = calculateAssignmentPositions(prevAssignments, shifts, prevDay);
 
         // Add second parts of overnight shifts to current day
-        const overnightSecondParts = prevPositioned.filter(
-          (p) => p.isSecondPart,
-        );
+        const overnightSecondParts = prevPositioned.filter((p) => p.isSecondPart);
         if (overnightSecondParts.length > 0) {
           const existing = result.get(dateKey) || [];
           result.set(dateKey, [...existing, ...overnightSecondParts]);
@@ -260,23 +235,18 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
     }, [weekDays, assignmentsByDate, shifts]);
 
     // Render assignment block
-    const renderAssignment = (
-      positioned: PositionedAssignment,
-      dateKey: string,
-    ) => {
+    const renderAssignment = (positioned: PositionedAssignment, dateKey: string) => {
       const { assignment, shift, top, height, width, left } = positioned;
       const colors = ShiftColorMappings[shift.color] || {
-        background: "#f5f5f5",
-        sample: "#9e9e9e",
-        text: "#212121",
+        background: '#f5f5f5',
+        sample: '#9e9e9e',
+        text: '#212121',
       };
 
       const isDuty = shift.shiftType === ShiftType.DUTY;
-      const startTime = dayjs.utc(shift.startTime).format("HH:mm");
-      const endTime = dayjs.utc(shift.endTime).format("HH:mm");
-      const endsNextDay = !dayjs
-        .utc(shift.endTime)
-        .isSame(dayjs.utc(shift.startTime), "day");
+      const startTime = dayjs.utc(shift.startTime).format('HH:mm');
+      const endTime = dayjs.utc(shift.endTime).format('HH:mm');
+      const endsNextDay = !dayjs.utc(shift.endTime).isSame(dayjs.utc(shift.startTime), 'day');
 
       // Use acronym if block is too small (< 60px height)
       // Assuming 24 hours fills viewport height, height % maps roughly to pixels
@@ -284,31 +254,29 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
 
       return (
         <Box
-          key={`${assignment.id}-${
-            positioned.isSecondPart ? "part2" : "part1"
-          }`}
+          key={`${assignment.id}-${positioned.isSecondPart ? 'part2' : 'part1'}`}
           onClick={() => {
             setActiveAssignment(assignment);
             setSheetOpen(true);
           }}
           sx={{
-            position: "absolute",
+            position: 'absolute',
             top: `${top}%`,
             height: `${height}%`,
             left: `${left}%`,
             width: `${width}%`,
             backgroundColor: colors.background,
             color: colors.text,
-            borderLeft: isDuty ? `6px solid ${colors.sample}` : "none",
+            borderLeft: isDuty ? `6px solid ${colors.sample}` : 'none',
             borderRadius: 1,
             padding: 0.5,
-            cursor: "pointer",
-            overflow: "hidden",
-            minHeight: "30px",
-            fontSize: "0.75rem",
-            display: "flex",
-            flexDirection: "column",
-            "&:hover": {
+            cursor: 'pointer',
+            overflow: 'hidden',
+            minHeight: '30px',
+            fontSize: '0.75rem',
+            display: 'flex',
+            flexDirection: 'column',
+            '&:hover': {
               opacity: 0.9,
             },
           }}
@@ -317,11 +285,11 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
             variant="caption"
             sx={{
               fontWeight: 600,
-              fontSize: "0.7rem",
+              fontSize: '0.7rem',
               lineHeight: 1.2,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             {useAcronym ? shift.acronym : shift.name}
@@ -330,7 +298,7 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
             <Typography
               variant="caption"
               sx={{
-                fontSize: "0.65rem",
+                fontSize: '0.65rem',
                 lineHeight: 1.1,
                 color: colors.text,
                 opacity: 0.9,
@@ -347,44 +315,44 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
     return (
       <Box
         sx={{
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          width: "100%",
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          width: '100%',
         }}
       >
         {/* Day headers row - just the 7 days without time column */}
         <Box
           sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-            borderBottom: "2px solid #e0e0e0",
-            backgroundColor: "#fff",
-            position: "sticky",
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, 1fr)',
+            borderBottom: '2px solid #e0e0e0',
+            backgroundColor: '#fff',
+            position: 'sticky',
             top: 0,
             zIndex: 10,
-            width: "100%",
+            width: '100%',
           }}
         >
           {weekDays.map((day) => {
-            const isToday = day.isSame(today, "day");
+            const isToday = day.isSame(today, 'day');
             return (
               <Box
-                key={day.format("YYYY-MM-DD")}
+                key={day.format('YYYY-MM-DD')}
                 sx={{
                   padding: 1,
-                  textAlign: "center",
-                  backgroundColor: isToday ? "#2196f3" : "transparent",
-                  color: isToday ? "#fff" : "text.primary",
+                  textAlign: 'center',
+                  backgroundColor: isToday ? '#2196f3' : 'transparent',
+                  color: isToday ? '#fff' : 'text.primary',
                   borderRadius: isToday ? 1 : 0,
                 }}
               >
                 <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                  {day.format("ddd")}
+                  {day.format('ddd')}
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {day.format("D")}
+                  {day.format('D')}
                 </Typography>
               </Box>
             );
@@ -401,11 +369,11 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
           }}
           sx={{
             flex: 1,
-            overflowY: "auto",
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-            position: "relative",
-            width: "100%",
+            overflowY: 'auto',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, 1fr)',
+            position: 'relative',
+            width: '100%',
           }}
         >
           {/* Grid lines and assignments for each day */}
@@ -413,34 +381,30 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
             <React.Fragment key={hour}>
               {weekDays.map((day, dayIndex) => (
                 <Box
-                  key={`${day.format("YYYY-MM-DD")}-${hour}`}
+                  key={`${day.format('YYYY-MM-DD')}-${hour}`}
                   sx={{
                     gridColumn: dayIndex + 1,
                     gridRow: index + 1,
-                    borderTop: "1px solid #e0e0e0",
-                    borderLeft: dayIndex === 0 ? "1px solid #e0e0e0" : "none",
-                    borderRight: "1px solid #e0e0e0",
-                    height: "60px",
-                    position: "relative",
+                    borderTop: '1px solid #e0e0e0',
+                    borderLeft: dayIndex === 0 ? '1px solid #e0e0e0' : 'none',
+                    borderRight: '1px solid #e0e0e0',
+                    height: '60px',
+                    position: 'relative',
                   }}
                 >
                   {/* Render assignments for this day (positioned absolutely within the day column) */}
                   {index === 0 && ( // Only render once per day column
                     <Box
                       sx={{
-                        position: "absolute",
+                        position: 'absolute',
                         top: 0,
                         left: 0,
                         right: 0,
-                        height: "1440px", // 24 hours * 60px per hour
+                        height: '1440px', // 24 hours * 60px per hour
                       }}
                     >
-                      {(
-                        positionedAssignmentsByDay.get(
-                          day.format("YYYY-MM-DD"),
-                        ) || []
-                      ).map((positioned) =>
-                        renderAssignment(positioned, day.format("YYYY-MM-DD")),
+                      {(positionedAssignmentsByDay.get(day.format('YYYY-MM-DD')) || []).map(
+                        (positioned) => renderAssignment(positioned, day.format('YYYY-MM-DD')),
                       )}
                     </Box>
                   )}
@@ -454,6 +418,6 @@ const WeekGrid = forwardRef<HTMLDivElement, WeekGridProps>(
   },
 );
 
-WeekGrid.displayName = "WeekGrid";
+WeekGrid.displayName = 'WeekGrid';
 
 export default React.memo(WeekGrid);

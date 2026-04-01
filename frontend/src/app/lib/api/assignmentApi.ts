@@ -2,25 +2,22 @@
  * API client for assignment operations
  */
 
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import {
   AssignmentT,
   fromAssignmentT,
   toAssignmentT,
   AssignmentsRecurrencesResultT,
   toAssignmentsRecurrencesResultT,
-} from "../../../types/assignment";
+} from '../../../types/assignment';
 import {
   fromRecurrenceRuleT,
   RecurrenceRuleT,
   RecurrenceUpdateScope,
-} from "../../../types/recurrence";
-import {
-  ReplacementCandidateT,
-  toReplacementCandidateT,
-} from "../../../types/replacement";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+} from '../../../types/recurrence';
+import { ReplacementCandidateT, toReplacementCandidateT } from '../../../types/replacement';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 dayjs.extend(utc);
 
@@ -35,12 +32,12 @@ export class AssignmentApi extends BaseApi {
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!assignment || !assignment.teamId) {
-      throw new Error("Assignment and team ID are required");
+      throw new Error('Assignment and team ID are required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/assignments/teams/${assignment.teamId}`,
       {
         assignment: fromAssignmentT(assignment),
@@ -64,37 +61,33 @@ export class AssignmentApi extends BaseApi {
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
-    const startDateStr = startDate ? startDate.format("YYYY-MM-DD") : null;
-    const endDateStr = endDate ? endDate.format("YYYY-MM-DD") : null;
+    const startDateStr = startDate ? startDate.format('YYYY-MM-DD') : null;
+    const endDateStr = endDate ? endDate.format('YYYY-MM-DD') : null;
 
     let endpoint = `/assignments/teams/${teamId}`;
     const params = new URLSearchParams();
     if (startDateStr && endDateStr) {
-      params.append("start_date", startDateStr);
-      params.append("end_date", endDateStr);
+      params.append('start_date', startDateStr);
+      params.append('end_date', endDateStr);
     }
     if (includeCampaign) {
-      params.append("include_campaign", "true");
+      params.append('include_campaign', 'true');
     }
     if (workerId) {
-      params.append("worker_id", workerId);
+      params.append('worker_id', workerId);
     }
     if (shiftTypes && shiftTypes.length > 0) {
-      shiftTypes.forEach((t) => params.append("shift_type", String(t)));
+      shiftTypes.forEach((t) => params.append('shift_type', String(t)));
     }
 
     if (params.toString()) {
       endpoint += `?${params.toString()}`;
     }
 
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "get",
-      endpoint,
-    );
+    const responseData = await this.makeRequest<any>(apiClient, 'get', endpoint);
     return toAssignmentsRecurrencesResultT(responseData);
   }
 
@@ -110,10 +103,10 @@ export class AssignmentApi extends BaseApi {
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!assignment || !assignment.id) {
-      throw new Error("Assignment with ID is required");
+      throw new Error('Assignment with ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     let endpoint = `/assignments/${assignment.id}/teams/${teamId}`;
@@ -121,16 +114,11 @@ export class AssignmentApi extends BaseApi {
       endpoint += `?recurrence_update_scope=${recurrenceUpdateScope.toString()}`;
     }
 
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "put",
-      endpoint,
-      {
-        assignment: fromAssignmentT(assignment),
-        recurrence: recurrenceRule ? fromRecurrenceRuleT(recurrenceRule) : null,
-        recurrence_update_scope: recurrenceUpdateScope,
-      },
-    );
+    const responseData = await this.makeRequest<any>(apiClient, 'put', endpoint, {
+      assignment: fromAssignmentT(assignment),
+      recurrence: recurrenceRule ? fromRecurrenceRuleT(recurrenceRule) : null,
+      recurrence_update_scope: recurrenceUpdateScope,
+    });
     return toAssignmentsRecurrencesResultT(responseData);
   }
 
@@ -146,21 +134,18 @@ export class AssignmentApi extends BaseApi {
   ): Promise<AssignmentsRecurrencesResultT> {
     // Security: Input validation
     if (!assignmentId) {
-      throw new Error("Assignment ID is required");
+      throw new Error('Assignment ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const params = new URLSearchParams();
     if (recurrenceId) {
-      params.append("recurrence_id", recurrenceId);
+      params.append('recurrence_id', recurrenceId);
     }
     if (recurrenceUpdateScope !== null) {
-      params.append(
-        "recurrence_update_scope",
-        recurrenceUpdateScope.toString(),
-      );
+      params.append('recurrence_update_scope', recurrenceUpdateScope.toString());
     }
 
     let endpoint = `/assignments/${assignmentId}/teams/${teamId}`;
@@ -168,11 +153,7 @@ export class AssignmentApi extends BaseApi {
       endpoint += `?${params.toString()}`;
     }
 
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "delete",
-      endpoint,
-    );
+    const responseData = await this.makeRequest<any>(apiClient, 'delete', endpoint);
     return toAssignmentsRecurrencesResultT(responseData);
   }
 
@@ -186,20 +167,14 @@ export class AssignmentApi extends BaseApi {
   ): Promise<ReplacementCandidateT[]> {
     // Security: Input validation
     if (!assignmentId || !teamId) {
-      throw new Error("Assignment ID and team ID are required");
+      throw new Error('Assignment ID and team ID are required');
     }
 
     const endpoint = `/assignments/${assignmentId}/replacement-candidates/teams/${teamId}`;
 
-    const responseData = await this.makeRequest<any[]>(
-      apiClient,
-      "get",
-      endpoint,
-    );
+    const responseData = await this.makeRequest<any[]>(apiClient, 'get', endpoint);
 
-    return responseData.map((candidate: any) =>
-      toReplacementCandidateT(candidate),
-    );
+    return responseData.map((candidate: any) => toReplacementCandidateT(candidate));
   }
 
   /**
@@ -211,12 +186,12 @@ export class AssignmentApi extends BaseApi {
     teamId: string,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/assignments/bulk/teams/${teamId}`,
       { assignments: assignments.map(fromAssignmentT) },
     );
@@ -232,12 +207,12 @@ export class AssignmentApi extends BaseApi {
     teamId: string,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "put",
+      'put',
       `/assignments/bulk/teams/${teamId}`,
       { assignments: assignments.map(fromAssignmentT) },
     );
@@ -253,12 +228,12 @@ export class AssignmentApi extends BaseApi {
     teamId: string,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "delete",
+      'delete',
       `/assignments/bulk/teams/${teamId}`,
       { ids: assignmentIds },
     );

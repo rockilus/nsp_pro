@@ -1,8 +1,8 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { WorkerT } from "../types/worker";
-import { UserApi } from "../app/lib/api/userApi";
-import { useApiClient } from "../app/lib/api-client";
-import { useAuth } from "../contexts/auth-context";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { WorkerT } from '../types/worker';
+import { UserApi } from '../app/lib/api/userApi';
+import { useApiClient } from '../app/lib/api-client';
+import { useAuth } from '../contexts/auth-context';
 
 /**
  * React Query hook for fetching and caching the authenticated user's worker for a specific team.
@@ -16,16 +16,13 @@ import { useAuth } from "../contexts/auth-context";
  * @example
  * const { data: userWorker, isLoading, error } = useUserWorker(teamId);
  */
-export function useUserWorker(
-  teamId: string | null | undefined,
-  enabled = true,
-) {
+export function useUserWorker(teamId: string | null | undefined, enabled = true) {
   const apiClient = useApiClient();
   const { user, isAuthenticated } = useAuth();
   const userId = user?.profile?.sub;
 
   return useQuery<WorkerT | null, Error>({
-    queryKey: ["userWorker", teamId, userId],
+    queryKey: ['userWorker', teamId, userId],
     queryFn: async () => {
       if (!teamId) {
         return null;
@@ -56,12 +53,12 @@ export function useInvalidateUserWorker() {
     if (teamId) {
       // Invalidate specific team's user worker
       await queryClient.invalidateQueries({
-        queryKey: ["userWorker", teamId],
+        queryKey: ['userWorker', teamId],
       });
     } else {
       // Invalidate all user worker queries
       await queryClient.invalidateQueries({
-        queryKey: ["userWorker"],
+        queryKey: ['userWorker'],
       });
     }
   };

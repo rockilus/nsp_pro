@@ -1,21 +1,17 @@
-import React, { useState } from "react";
-import { useTranslation } from "../../../../app/i18n/client";
+import React, { useState } from 'react';
+import { useTranslation } from '../../../../app/i18n/client';
 // MUI
-import TableCell from "@mui/material/TableCell";
-import Tooltip from "@mui/material/Tooltip";
+import TableCell from '@mui/material/TableCell';
+import Tooltip from '@mui/material/Tooltip';
 // Components
-import PopoverAnchorElBelow from "../../../inputs/popover-anchor-el-below";
-import UpdateSpecialtiesForm from "./update-specialties-form";
-import ColumnSortFilterMenu from "../../../table/ColumnSortFilterMenu";
+import PopoverAnchorElBelow from '../../../inputs/popover-anchor-el-below';
+import UpdateSpecialtiesForm from './update-specialties-form';
+import ColumnSortFilterMenu from '../../../table/ColumnSortFilterMenu';
 // Styles
-import "../../../../styles/table-styles.css";
+import '../../../../styles/table-styles.css';
 //Types
-import { SpecialtyT } from "@/types/specialty";
-import {
-  ColumnDefinition,
-  ColumnFilter,
-  TableSort,
-} from "../../../../types/filter";
+import { SpecialtyT } from '@/types/specialty';
+import { ColumnDefinition, ColumnFilter, TableSort } from '../../../../types/filter';
 
 interface WorkerSpecialtyHeaderCellProps {
   lng: string;
@@ -43,16 +39,16 @@ export default function WorkerSpecialtyHeaderCell({
   handleUpdateSpecialty,
   handleDeleteSpecialty,
 }: WorkerSpecialtyHeaderCellProps) {
-  const { t } = useTranslation(lng, "worker-page");
+  const { t } = useTranslation(lng, 'worker-page');
 
   const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);
 
   const cellContent = () => (
     <div className="table-header-default flex items-center justify-between">
-      <Tooltip title={t("specialties_tooltip")} placement="top">
-        <span>{t("specialties")}</span>
+      <Tooltip title={t('specialties_tooltip')} placement="top">
+        <span>{t('specialties')}</span>
       </Tooltip>
-      <div className="flex items-center gap-1">
+      <div className="gap-1 flex items-center">
         {onSort && onFilter && column && (
           <div onClick={(e) => e.stopPropagation()}>
             <ColumnSortFilterMenu
@@ -77,12 +73,12 @@ export default function WorkerSpecialtyHeaderCell({
       data-testid="worker-specialty-header-cell"
       sx={{
         paddingY: 0,
-        padding: "6px 8px",
-        height: "36px",
-        fontSize: "0.8rem",
+        padding: '6px 8px',
+        height: '36px',
+        fontSize: '0.8rem',
         fontWeight: 500,
-        backgroundColor: "#fafafa",
-        borderBottom: "1px solid #e0e0e0",
+        backgroundColor: '#fafafa',
+        borderBottom: '1px solid #e0e0e0',
       }}
     >
       <PopoverAnchorElBelow

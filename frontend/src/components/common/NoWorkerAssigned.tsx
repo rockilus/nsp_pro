@@ -1,6 +1,6 @@
-import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface NoWorkerAssignedProps {
   message: string;
@@ -9,25 +9,18 @@ interface NoWorkerAssignedProps {
   minHeight?: string;
 }
 
-export default function NoWorkerAssigned({
-  message,
-  minHeight = "400px",
-}: NoWorkerAssignedProps) {
+export default function NoWorkerAssigned({ message, minHeight = '400px' }: NoWorkerAssignedProps) {
   return (
     <Box
       sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         minHeight,
         p: 4,
       }}
     >
-      <Alert
-        severity="info"
-        data-testid="no-worker-alert"
-        sx={{ maxWidth: "600px" }}
-      >
+      <Alert severity="info" data-testid="no-worker-alert" sx={{ maxWidth: '600px' }}>
         <Typography variant="body1">{message}</Typography>
       </Alert>
     </Box>

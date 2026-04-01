@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { languages, cookieName, fallbackLng } from "@/app/i18n/settings";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { languages, cookieName, fallbackLng } from '@/app/i18n/settings';
 
 interface LanguageContextType {
   language: string;
@@ -17,10 +17,7 @@ interface LanguageProviderProps {
   initialLanguage: string;
 }
 
-export function LanguageProvider({
-  children,
-  initialLanguage,
-}: LanguageProviderProps) {
+export function LanguageProvider({ children, initialLanguage }: LanguageProviderProps) {
   const [language, setLang] = useState(initialLanguage);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -28,7 +25,7 @@ export function LanguageProvider({
 
   useEffect(() => {
     // Store language preference
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       localStorage.setItem(cookieName, language);
     }
   }, [language]);
@@ -40,7 +37,7 @@ export function LanguageProvider({
     setLang(lng);
 
     // Update URL to new language
-    const currentPath = pathname.split("/").slice(2).join("/"); // Remove current language from path
+    const currentPath = pathname.split('/').slice(2).join('/'); // Remove current language from path
     const newPath = `/${lng}/${currentPath}`;
 
     router.push(newPath);
@@ -57,7 +54,7 @@ export function LanguageProvider({
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error("useLanguage must be used within LanguageProvider");
+    throw new Error('useLanguage must be used within LanguageProvider');
   }
   return context;
 }

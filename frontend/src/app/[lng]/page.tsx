@@ -1,18 +1,14 @@
 // Force static export for this page
-export const dynamic = "force-static";
+export const dynamic = 'force-static';
 
-import { redirect } from "next/navigation";
-import { fallbackLng, languages } from "@/app/i18n/settings";
+import { redirect } from 'next/navigation';
+import { fallbackLng, languages } from '@/app/i18n/settings';
 
 export async function generateStaticParams() {
   return languages.map((lng) => ({ lng }));
 }
 
-export default async function Home({
-  params,
-}: {
-  params: Promise<{ lng: string }>;
-}) {
+export default async function Home({ params }: { params: Promise<{ lng: string }> }) {
   // Await params — required in Next.js 15 where params is a Promise.
   const { lng } = await params;
 

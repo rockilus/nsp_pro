@@ -1,19 +1,19 @@
-import { ReactNode } from "react";
-import dayjs from "dayjs";
+import { ReactNode } from 'react';
+import dayjs from 'dayjs';
 // Types
-import { ShiftT } from "./shift";
-import { RequestT } from "./request";
+import { ShiftT } from './shift';
+import { RequestT } from './request';
 import {
   AssignmentT,
   AssignmentsRecurrencesResultT,
   toAssignmentsRecurrencesResultT,
-} from "./assignment";
-import { BreachT } from "./breach";
-import { DemandsResultT } from "./shiftDemand";
-import { ShiftDemandDTO } from "./shiftDemand";
-import { WorkerT } from "./worker";
-import { RecurrenceRuleT } from "./recurrence";
-import { MAX_SCHEDULE_DURATION_MONTHS } from "../constants/constants";
+} from './assignment';
+import { BreachT } from './breach';
+import { DemandsResultT } from './shiftDemand';
+import { ShiftDemandDTO } from './shiftDemand';
+import { WorkerT } from './worker';
+import { RecurrenceRuleT } from './recurrence';
+import { MAX_SCHEDULE_DURATION_MONTHS } from '../constants/constants';
 
 // Schedule
 export type QuickStaffingT = {
@@ -147,15 +147,15 @@ export type ScheduleCellsDictT = {
 };
 
 export type ScheduleViewSettingsT = {
-  timeFrame: "week" | "month";
-  groupBy: "shift" | "worker";
+  timeFrame: 'week' | 'month';
+  groupBy: 'shift' | 'worker';
   showBreaches: boolean;
   showAssignments: boolean;
   showDailyShiftDemands: boolean;
   showRequests: boolean;
   periodStartDate: dayjs.Dayjs;
   // Mobile-specific settings
-  mobileSelectedView?: "worker" | "team";
+  mobileSelectedView?: 'worker' | 'team';
   mobileSelectedWorkerId?: string | null;
   mobileWeekStart?: string | null; // ISO date string for landscape week start
 };
@@ -176,9 +176,7 @@ export const toScheduleT = (data: any): ScheduleT => {
     createdAt: dayjs.unix(data.createdAt).utc(),
     updatedAt: dayjs.unix(data.updatedAt).utc(),
     requestDeadline:
-      data.requestDeadline != null
-        ? dayjs.unix(data.requestDeadline).utc()
-        : undefined,
+      data.requestDeadline != null ? dayjs.unix(data.requestDeadline).utc() : undefined,
   };
 };
 
@@ -187,9 +185,7 @@ export const fromScheduleT = (data: ScheduleT): any => {
     ...data,
     startDate: data.startDate.unix(),
     endDate: data.endDate.unix(),
-    missingCoverageDates: data.missingCoverageDates.map((date: dayjs.Dayjs) =>
-      date.unix(),
-    ),
+    missingCoverageDates: data.missingCoverageDates.map((date: dayjs.Dayjs) => date.unix()),
     createdAt: data.createdAt.unix(),
     updatedAt: data.updatedAt.unix(),
     requestDeadline: data.requestDeadline?.unix() ?? null,
@@ -202,8 +198,7 @@ export type RequestDeadlineT = {
 
 export const toRequestDeadlineT = (data: any): RequestDeadlineT => {
   return {
-    deadlineDate:
-      data.deadlineDate != null ? dayjs.unix(data.deadlineDate).utc() : null,
+    deadlineDate: data.deadlineDate != null ? dayjs.unix(data.deadlineDate).utc() : null,
   };
 };
 
@@ -233,9 +228,7 @@ export const fromDuplicateRequestT = (data: DuplicateRequestT): any => {
 
 export const toDuplicateResultT = (data: any): DuplicateResultT => {
   return {
-    assignments: data.assignments
-      ? toAssignmentsRecurrencesResultT(data.assignments)
-      : null,
+    assignments: data.assignments ? toAssignmentsRecurrencesResultT(data.assignments) : null,
     demands: data.demands ? data.demands : null,
   };
 };
@@ -245,11 +238,9 @@ export const toDuplicateResultT = (data: any): DuplicateResultT => {
  * Throws an Error when invalid.
  */
 export const validateScheduleDuration = (schedule: ScheduleT): void => {
-  const maxEnd = schedule.startDate.add(MAX_SCHEDULE_DURATION_MONTHS, "month");
+  const maxEnd = schedule.startDate.add(MAX_SCHEDULE_DURATION_MONTHS, 'month');
   if (schedule.endDate.isAfter(maxEnd)) {
-    throw new Error(
-      `Schedule duration must be at most ${MAX_SCHEDULE_DURATION_MONTHS} months`,
-    );
+    throw new Error(`Schedule duration must be at most ${MAX_SCHEDULE_DURATION_MONTHS} months`);
   }
 };
 

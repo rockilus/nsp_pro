@@ -1,5 +1,5 @@
-import React from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
 import {
   FormControlLabel,
@@ -7,20 +7,20 @@ import {
   ToggleButtonGroup,
   Checkbox,
   FormGroup,
-} from "@mui/material";
+} from '@mui/material';
 // Styles
-import "./schedule-settings-view.css";
-import "../../../styles/text-styles.css";
+import './schedule-settings-view.css';
+import '../../../styles/text-styles.css';
 // Types
-import { ScheduleViewSettingsT } from "../../../types/schedule";
-import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
+import { ScheduleViewSettingsT } from '../../../types/schedule';
+import { TeamMembershipRole, TeamWithMembership } from '../../../types/team';
 
 interface ScheduleSettingsViewProps {
   lng: string;
   teamWithMembership: TeamWithMembership;
   scheduleViewSettings: ScheduleViewSettingsT;
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
-  handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
+  handleChangeTimeFrame: (newTimeFrame: 'week' | 'month') => void;
 }
 
 const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
@@ -30,11 +30,11 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
   updateScheduleViewSettings,
   handleChangeTimeFrame,
 }) => {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   const handleTimeFrameChange = (
     event: React.MouseEvent<HTMLElement>,
-    newTimeFrame: "week" | "month",
+    newTimeFrame: 'week' | 'month',
   ) => {
     if (newTimeFrame) {
       handleChangeTimeFrame(newTimeFrame);
@@ -43,7 +43,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
 
   const handleGroupByChange = (
     event: React.MouseEvent<HTMLElement>,
-    newGroupBy: "shift" | "worker",
+    newGroupBy: 'shift' | 'worker',
   ) => {
     if (newGroupBy) {
       updateScheduleViewSettings({
@@ -53,27 +53,21 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
     }
   };
 
-  const handleShowAssignmentsToggle = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleShowAssignmentsToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateScheduleViewSettings({
       ...scheduleViewSettings,
       showAssignments: event.target.checked,
     });
   };
 
-  const handleShowDailyShiftDemandsToggle = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleShowDailyShiftDemandsToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateScheduleViewSettings({
       ...scheduleViewSettings,
       showDailyShiftDemands: event.target.checked,
     });
   };
 
-  const handleShowRequestsToggle = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleShowRequestsToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateScheduleViewSettings({
       ...scheduleViewSettings,
       showRequests: event.target.checked,
@@ -85,80 +79,80 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
       <h4
         className="subtitle settings-view-title"
         style={{
-          margin: "0 0 8px 0",
+          margin: '0 0 8px 0',
         }}
       >
-        {t("view")}
+        {t('view')}
       </h4>
       <div className="settings-view-line">
-        <span className="settings-view-line-label">{t("time_frame")}:</span>
+        <span className="settings-view-line-label">{t('time_frame')}:</span>
         <ToggleButtonGroup
           color="primary"
           value={scheduleViewSettings.timeFrame}
           exclusive
           onChange={handleTimeFrameChange}
           size="small"
-          style={{ marginLeft: "8px" }}
+          style={{ marginLeft: '8px' }}
         >
           <ToggleButton
             data-testid="settings-timeframe-week"
             value="week"
             sx={{
-              textTransform: "none",
-              height: "25px",
-              width: "60px",
-              fontSize: "0.8rem",
+              textTransform: 'none',
+              height: '25px',
+              width: '60px',
+              fontSize: '0.8rem',
             }}
           >
-            {t("week")}
+            {t('week')}
           </ToggleButton>
           <ToggleButton
             data-testid="settings-timeframe-month"
             value="month"
             sx={{
-              textTransform: "none",
-              height: "25px",
-              width: "60px",
-              fontSize: "0.8rem",
+              textTransform: 'none',
+              height: '25px',
+              width: '60px',
+              fontSize: '0.8rem',
             }}
           >
-            {t("month")}
+            {t('month')}
           </ToggleButton>
         </ToggleButtonGroup>
       </div>
       <div className="settings-view-line">
-        <span className="settings-view-line-label">{t("group_by")}:</span>
+        <span className="settings-view-line-label">{t('group_by')}:</span>
         <ToggleButtonGroup
           color="primary"
           value={scheduleViewSettings.groupBy}
           exclusive
           onChange={handleGroupByChange}
           size="small"
-          style={{ marginLeft: "8px" }}
+          style={{ marginLeft: '8px' }}
         >
           <ToggleButton
             data-testid="settings-groupby-shift"
             value="shift"
             sx={{
-              textTransform: "none",
-              height: "25px",
-              width: "60px",
-              fontSize: "0.8rem",
+              textTransform: 'none',
+              height: '25px',
+              width: '60px',
+              fontSize: '0.8rem',
             }}
           >
-            {t("shift")}
+            {t('shift')}
           </ToggleButton>
           <ToggleButton
             data-testid="settings-groupby-worker"
             value="worker"
             sx={{
-              textTransform: "none",
-              height: "25px",
-              width: "60px",
-              fontSize: "0.8rem",
+              textTransform: 'none',
+              height: '25px',
+              width: '60px',
+              fontSize: '0.8rem',
             }}
           >
-            {t("worker")}
+            {t('worker')}
           </ToggleButton>
         </ToggleButtonGroup>
       </div>
@@ -173,11 +167,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
                 size="small"
               />
             }
-            label={
-              <span className="settings-view-line-label">
-                {t("assignment")}
-              </span>
-            }
+            label={<span className="settings-view-line-label">{t('assignment')}</span>}
           />
           {teamWithMembership.team.useSolver && (
             <FormControlLabel
@@ -189,9 +179,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
                   size="small"
                 />
               }
-              label={
-                <span className="settings-view-line-label">{t("demand")}</span>
-              }
+              label={<span className="settings-view-line-label">{t('demand')}</span>}
             />
           )}
           <FormControlLabel
@@ -203,9 +191,7 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
                 size="small"
               />
             }
-            label={
-              <span className="settings-view-line-label">{t("request")}</span>
-            }
+            label={<span className="settings-view-line-label">{t('request')}</span>}
           />
         </FormGroup>
       )}

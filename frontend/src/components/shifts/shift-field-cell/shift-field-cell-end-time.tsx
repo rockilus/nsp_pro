@@ -1,14 +1,14 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import React, { Dispatch, SetStateAction, useState } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // MUI
-import Box from "@mui/material/Box";
-import FormControl from "@mui/material/FormControl";
-import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
-import TableCell from "@mui/material/TableCell";
+import Box from '@mui/material/Box';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TableCell from '@mui/material/TableCell';
 // Types
-import { ShiftT, ShiftLeaveType, ShiftRestType } from "../../../types/shift";
+import { ShiftT, ShiftLeaveType, ShiftRestType } from '../../../types/shift';
 
 dayjs.extend(utc);
 
@@ -28,10 +28,10 @@ export default function ShiftFieldCellEndTime({
   const buildTimeSlots = (): dayjs.Dayjs[] => {
     const timeSlots: dayjs.Dayjs[] = [];
     let firstSlot = shift.startTime;
-    const lastSlot = dayjs.utc(firstSlot).add(24, "hour");
+    const lastSlot = dayjs.utc(firstSlot).add(24, 'hour');
     while (firstSlot.isBefore(lastSlot) || firstSlot.isSame(lastSlot)) {
       timeSlots.push(firstSlot);
-      firstSlot = firstSlot.add(15, "minute");
+      firstSlot = firstSlot.add(15, 'minute');
     }
     return timeSlots;
   };
@@ -55,19 +55,19 @@ export default function ShiftFieldCellEndTime({
             onChange={(e) => setValueState(dayjs.utc(e.target.value))}
             onBlur={handleEditConfirm}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === 'Enter') {
                 handleEditConfirm();
-              } else if (e.key === "Escape") {
+              } else if (e.key === 'Escape') {
                 handleEditCancel();
               }
             }}
           >
             {timeSlots.map((time) => (
               <MenuItem key={time.valueOf()} value={time.valueOf()}>
-                {time.format("HH:mm")}
-                {" ("}
-                {time.diff(shift.startTime, "minute") / 60}
-                {"h)"}
+                {time.format('HH:mm')}
+                {' ('}
+                {time.diff(shift.startTime, 'minute') / 60}
+                {'h)'}
               </MenuItem>
             ))}
           </Select>
@@ -88,24 +88,23 @@ export default function ShiftFieldCellEndTime({
       onClick={() =>
         shift.leaveType === ShiftLeaveType.NONE &&
         shift.restType !== ShiftRestType.OFF &&
-        setEditing({ [shift.id]: "end_time" })
+        setEditing({ [shift.id]: 'end_time' })
       }
       sx={{
         paddingY: 0,
-        textAlign: "center",
+        textAlign: 'center',
         cursor:
-          shift.leaveType === ShiftLeaveType.NONE &&
-          shift.restType !== ShiftRestType.OFF
-            ? "pointer"
-            : "default",
+          shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF
+            ? 'pointer'
+            : 'default',
       }}
     >
       {editing ? (
         selectEndTime()
       ) : (
         <>
-          {shift.endTime.format("HH:mm")}
-          {!shift.endTime.isSame(shift.startTime, "day") && <sup>+1</sup>}
+          {shift.endTime.format('HH:mm')}
+          {!shift.endTime.isSame(shift.startTime, 'day') && <sup>+1</sup>}
         </>
       )}
     </TableCell>

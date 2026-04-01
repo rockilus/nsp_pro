@@ -2,26 +2,23 @@
  * API client for worker operations
  */
 
-import { WorkerT, toWorkerT, fromWorkerT } from "../../../types/worker";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { WorkerT, toWorkerT, fromWorkerT } from '../../../types/worker';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 export class WorkerApi extends BaseApi {
   // Conversion functions are provided from the shared type module
 
   /**
    * Add a new worker (authenticated)
    */
-  static async addWorker(
-    apiClient: AuthenticatedApiClient,
-    worker: WorkerT,
-  ): Promise<WorkerT> {
+  static async addWorker(apiClient: AuthenticatedApiClient, worker: WorkerT): Promise<WorkerT> {
     // Security: Input validation
     if (!worker || !worker.teamId) {
-      throw new Error("Invalid worker data provided");
+      throw new Error('Invalid worker data provided');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/workers/teams/${worker.teamId}`,
       fromWorkerT(worker),
     );
@@ -41,23 +38,23 @@ export class WorkerApi extends BaseApi {
   ): Promise<WorkerT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     // Build query parameters
     const params = new URLSearchParams();
     if (workerId) {
-      params.append("worker_id", workerId);
+      params.append('worker_id', workerId);
     }
     if (includeDeleted) {
-      params.append("include_deleted", "true");
+      params.append('include_deleted', 'true');
     }
     const queryString = params.toString();
 
     const responseData = await this.makeRequest<any[]>(
       apiClient,
-      "get",
-      `/workers/teams/${teamId}${queryString ? `?${queryString}` : ""}`,
+      'get',
+      `/workers/teams/${teamId}${queryString ? `?${queryString}` : ''}`,
     );
     return responseData.map((worker: any) => toWorkerT(worker));
   }
@@ -83,12 +80,12 @@ export class WorkerApi extends BaseApi {
   ): Promise<WorkerT> {
     // Security: Input validation
     if (!updatedWorker || !updatedWorker.id || !updatedWorker.teamId) {
-      throw new Error("Invalid worker data provided");
+      throw new Error('Invalid worker data provided');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "put",
+      'put',
       `/workers/${updatedWorker.id}/teams/${updatedWorker.teamId}`,
       fromWorkerT(updatedWorker),
     );
@@ -106,18 +103,18 @@ export class WorkerApi extends BaseApi {
   ): Promise<WorkerT> {
     // Security: Input validation
     if (!workerId) {
-      throw new Error("Worker ID is required");
+      throw new Error('Worker ID is required');
     }
     if (!userId) {
-      throw new Error("User ID is required");
+      throw new Error('User ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/workers/${workerId}/attach_user/teams/${teamId}`,
       { user_id: userId },
     );
@@ -134,16 +131,12 @@ export class WorkerApi extends BaseApi {
   ): Promise<void> {
     // Security: Input validation
     if (!workerId) {
-      throw new Error("Worker ID is required");
+      throw new Error('Worker ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
-    await this.makeRequest<void>(
-      apiClient,
-      "delete",
-      `/workers/${workerId}/teams/${teamId}`,
-    );
+    await this.makeRequest<void>(apiClient, 'delete', `/workers/${workerId}/teams/${teamId}`);
   }
 }

@@ -1,24 +1,24 @@
-import React, { useState } from "react";
-import dayjs from "dayjs";
-import { useTranslation } from "../../app/i18n/client";
+import React, { useState } from 'react';
+import dayjs from 'dayjs';
+import { useTranslation } from '../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import Snackbar from "@mui/material/Snackbar";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Snackbar from '@mui/material/Snackbar';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 // Types
-import { ScheduleT } from "../../types/schedule";
+import { ScheduleT } from '../../types/schedule';
 // Hooks
 import {
   useSetRequestDeadline,
   useSendRequestDeadlineReminder,
   useExtendRequestDeadline,
-} from "../../hooks/useSchedule";
+} from '../../hooks/useSchedule';
 
 interface RequestDeadlinePanelProps {
   scheduleCampaign: ScheduleT;
@@ -35,23 +35,21 @@ export default function RequestDeadlinePanel({
   onReminderSent,
   lng,
 }: RequestDeadlinePanelProps) {
-  const { t } = useTranslation(lng, "campaign-page");
+  const { t } = useTranslation(lng, 'campaign-page');
   const setRequestDeadline = useSetRequestDeadline();
   const sendReminder = useSendRequestDeadlineReminder();
   const extendRequestDeadline = useExtendRequestDeadline();
 
   const [setDialogOpen, setSetDialogOpen] = useState(false);
   const [extendDialogOpen, setExtendDialogOpen] = useState(false);
-  const [deadlineInput, setDeadlineInput] = useState("");
-  const [extendInput, setExtendInput] = useState("");
+  const [deadlineInput, setDeadlineInput] = useState('');
+  const [extendInput, setExtendInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [reminderSnackbarOpen, setReminderSnackbarOpen] = useState(false);
 
   const currentDeadline = scheduleCampaign.requestDeadline;
-  const today = dayjs().utc().format("YYYY-MM-DD");
-  const minExtend = currentDeadline
-    ? currentDeadline.add(1, "day").format("YYYY-MM-DD")
-    : today;
+  const today = dayjs().utc().format('YYYY-MM-DD');
+  const minExtend = currentDeadline ? currentDeadline.add(1, 'day').format('YYYY-MM-DD') : today;
 
   const handleSetDeadline = async () => {
     if (!deadlineInput) return;
@@ -65,9 +63,9 @@ export default function RequestDeadlinePanel({
       );
       onDeadlineSet(updated);
       setSetDialogOpen(false);
-      setDeadlineInput("");
+      setDeadlineInput('');
     } catch (error) {
-      console.error("Failed to set request deadline:", error);
+      console.error('Failed to set request deadline:', error);
     } finally {
       setIsSaving(false);
     }
@@ -79,7 +77,7 @@ export default function RequestDeadlinePanel({
       setReminderSnackbarOpen(true);
       onReminderSent();
     } catch (error) {
-      console.error("Failed to send reminder:", error);
+      console.error('Failed to send reminder:', error);
     }
   };
 
@@ -95,9 +93,9 @@ export default function RequestDeadlinePanel({
       );
       onDeadlineExtended(updated);
       setExtendDialogOpen(false);
-      setExtendInput("");
+      setExtendInput('');
     } catch (error) {
-      console.error("Failed to extend deadline:", error);
+      console.error('Failed to extend deadline:', error);
     } finally {
       setIsSaving(false);
     }
@@ -108,15 +106,14 @@ export default function RequestDeadlinePanel({
       {currentDeadline ? (
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
+            display: 'flex',
+            alignItems: 'center',
             gap: 2,
-            flexWrap: "wrap",
+            flexWrap: 'wrap',
           }}
         >
           <Typography variant="body2" color="text.secondary">
-            {t("current_deadline")}:{" "}
-            <strong>{currentDeadline.format("MMM D, YYYY")}</strong>
+            {t('current_deadline')}: <strong>{currentDeadline.format('MMM D, YYYY')}</strong>
           </Typography>
           <Button
             variant="outlined"
@@ -124,7 +121,7 @@ export default function RequestDeadlinePanel({
             data-testid="send-reminder-button"
             onClick={handleSendReminder}
           >
-            {t("send_reminder")}
+            {t('send_reminder')}
           </Button>
           <Button
             variant="outlined"
@@ -132,13 +129,13 @@ export default function RequestDeadlinePanel({
             data-testid="extend-deadline-button"
             onClick={() => setExtendDialogOpen(true)}
           >
-            {t("extend_deadline")}
+            {t('extend_deadline')}
           </Button>
         </Box>
       ) : (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            {t("no_deadline_set")}
+            {t('no_deadline_set')}
           </Typography>
           <Button
             variant="outlined"
@@ -146,7 +143,7 @@ export default function RequestDeadlinePanel({
             data-testid="set-deadline-button"
             onClick={() => setSetDialogOpen(true)}
           >
-            {t("set_deadline")}
+            {t('set_deadline')}
           </Button>
         </Box>
       )}
@@ -157,7 +154,7 @@ export default function RequestDeadlinePanel({
         onClose={() => setSetDialogOpen(false)}
         data-testid="deadline-dialog"
       >
-        <DialogTitle>{t("deadline_dialog_title")}</DialogTitle>
+        <DialogTitle>{t('deadline_dialog_title')}</DialogTitle>
         <DialogContent>
           <TextField
             type="date"
@@ -169,15 +166,13 @@ export default function RequestDeadlinePanel({
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSetDialogOpen(false)}>
-            {t("cancel") || "Cancel"}
-          </Button>
+          <Button onClick={() => setSetDialogOpen(false)}>{t('cancel') || 'Cancel'}</Button>
           <Button
             variant="contained"
             onClick={handleSetDeadline}
             disabled={isSaving || !deadlineInput}
           >
-            {t("set_deadline")}
+            {t('set_deadline')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -188,7 +183,7 @@ export default function RequestDeadlinePanel({
         onClose={() => setExtendDialogOpen(false)}
         data-testid="extend-deadline-dialog"
       >
-        <DialogTitle>{t("extend_deadline_dialog_title")}</DialogTitle>
+        <DialogTitle>{t('extend_deadline_dialog_title')}</DialogTitle>
         <DialogContent>
           <TextField
             type="date"
@@ -200,15 +195,13 @@ export default function RequestDeadlinePanel({
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setExtendDialogOpen(false)}>
-            {t("cancel") || "Cancel"}
-          </Button>
+          <Button onClick={() => setExtendDialogOpen(false)}>{t('cancel') || 'Cancel'}</Button>
           <Button
             variant="contained"
             onClick={handleExtendDeadline}
             disabled={isSaving || !extendInput}
           >
-            {t("extend_deadline")}
+            {t('extend_deadline')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -217,7 +210,7 @@ export default function RequestDeadlinePanel({
         open={reminderSnackbarOpen}
         autoHideDuration={4000}
         onClose={() => setReminderSnackbarOpen(false)}
-        message={t("reminder_sent") || "Reminder sent"}
+        message={t('reminder_sent') || 'Reminder sent'}
         data-testid="reminder-sent-snackbar"
       />
     </Box>

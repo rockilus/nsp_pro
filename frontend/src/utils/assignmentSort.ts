@@ -1,11 +1,8 @@
-import dayjs from "dayjs";
-import type { AssignmentDataDictT } from "../types/assignment";
+import dayjs from 'dayjs';
+import type { AssignmentDataDictT } from '../types/assignment';
 
 // Comparator for AssignmentDataDictT: by assignment.date then shift.startTime
-export function compareAssignmentData(
-  a: AssignmentDataDictT,
-  b: AssignmentDataDictT,
-): number {
+export function compareAssignmentData(a: AssignmentDataDictT, b: AssignmentDataDictT): number {
   const aDate = a?.assignment?.date?.valueOf?.() ?? Number.POSITIVE_INFINITY;
   const bDate = b?.assignment?.date?.valueOf?.() ?? Number.POSITIVE_INFINITY;
 
@@ -18,8 +15,8 @@ export function compareAssignmentData(
   if (aStart < bStart) return -1;
   if (aStart > bStart) return 1;
 
-  const aId = a?.assignment?.id ?? "";
-  const bId = b?.assignment?.id ?? "";
+  const aId = a?.assignment?.id ?? '';
+  const bId = b?.assignment?.id ?? '';
   if (aId < bId) return -1;
   if (aId > bId) return 1;
   return 0;

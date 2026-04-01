@@ -23,23 +23,23 @@ export function getSettingsLinks(
 ): SettingsLink[] {
   return [
     {
-      name: "personal-info",
-      label: t("personal_info"),
+      name: 'personal-info',
+      label: t('personal_info'),
       href: `/${lng}/plan/settings/personal-info`,
     },
     {
-      name: "security",
-      label: t("security_and_sign_in"),
+      name: 'security',
+      label: t('security_and_sign_in'),
       href: `/${lng}/plan/settings/security`,
     },
     {
-      name: "teams",
-      label: tAppBar("teams"),
+      name: 'teams',
+      label: tAppBar('teams'),
       href: `/${lng}/plan/settings/teams`,
     },
     {
-      name: "notifications",
-      label: t("notifications"),
+      name: 'notifications',
+      label: t('notifications'),
       href: `/${lng}/plan/settings/notifications`,
     },
   ];

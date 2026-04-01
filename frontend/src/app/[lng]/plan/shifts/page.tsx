@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 // Components
-import ShiftTab from "../../../../components/shifts/shift-tab";
-import { AccessGuard } from "@/components/access/access-guard";
+import ShiftTab from '../../../../components/shifts/shift-tab';
+import { AccessGuard } from '@/components/access/access-guard';
 // Context
-import { useTeam } from "@/context/TeamContext";
+import { useTeam } from '@/context/TeamContext';
 // Styles
-import "../../../../styles/page.css";
+import '../../../../styles/page.css';
 
 export default function Page({ params }: { params: Promise<{ lng: string }> }) {
   const { selectedTeam } = useTeam();

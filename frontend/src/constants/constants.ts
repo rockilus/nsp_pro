@@ -16,24 +16,24 @@ import {
   red,
   teal,
   yellow,
-} from "@mui/material/colors";
-import { ConstraintColorsT } from "../types/constraint";
+} from '@mui/material/colors';
+import { ConstraintColorsT } from '../types/constraint';
 
 // General
 export const NumDayWeek = 7;
 export const WeekDays = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
 ];
 export const NumHoursInDay = 24;
 export const NumQuarterHoursInHour = 4;
-export const PostSignInRoute = "/plan/workers";
-export const PostSignUpRoute = "/auth/verify-email";
+export const PostSignInRoute = '/plan/workers';
+export const PostSignUpRoute = '/auth/verify-email';
 
 export const TrafficLightColorMappings: Record<
   string,
@@ -136,62 +136,62 @@ export const ShiftColorMappings: Record<
 };
 
 export const DefaultProperties: Record<string, string | boolean | string[]> = {
-  str: "",
-  int: "",
+  str: '',
+  int: '',
   bool: false,
   list: [],
 };
 
 // Constraints
-export const PriorityLevels: string[] = ["low", "medium", "high"];
+export const PriorityLevels: string[] = ['low', 'medium', 'high'];
 export const ConstraintDefaultColors: ConstraintColorsT = {
-  shade0: "#f0efed",
-  shade1: "#DFDFDF",
-  shade2: "#808080",
-  shade3: "#000000", // rgb(0, 0, 0), black
+  shade0: '#f0efed',
+  shade1: '#DFDFDF',
+  shade2: '#808080',
+  shade3: '#000000', // rgb(0, 0, 0), black
 };
-export const ConstraintColorActiveBack: string = "#ffffff";
-export const ConstraintColorInactiveBack: string = "#f0efed";
-export const ConstraintColorActiveText: string = "#000000";
-export const ConstraintColorInactiveText: string = "#808080";
+export const ConstraintColorActiveBack: string = '#ffffff';
+export const ConstraintColorInactiveBack: string = '#f0efed';
+export const ConstraintColorActiveText: string = '#000000';
+export const ConstraintColorInactiveText: string = '#808080';
 
 // Schedule Options
 export const coverageSelectorColumns: string[] = [
-  "Full period",
-  "Start date",
-  "End date",
-  "Coverage",
+  'Full period',
+  'Start date',
+  'End date',
+  'Coverage',
 ];
 
 //Schedules
 export const SolveStatusList: string[] = [
-  "Not solved",
-  "Solved",
-  "No solution",
-  "Soft breached",
-  "Hard breached",
+  'Not solved',
+  'Solved',
+  'No solution',
+  'Soft breached',
+  'Hard breached',
 ];
 export const SolveStatusColors: Record<string, string> = {
-  NOT_SOLVED: "default",
-  SOLVED_NO_BREACH: "success",
-  SOLVED_HARD_BREACHED: "error",
-  SOLVED_SOFT_BREACHED: "warning",
-  NO_SOLUTION: "error",
+  NOT_SOLVED: 'default',
+  SOLVED_NO_BREACH: 'success',
+  SOLVED_HARD_BREACHED: 'error',
+  SOLVED_SOFT_BREACHED: 'warning',
+  NO_SOLUTION: 'error',
 };
-export const ColorNoCoverage: string = "#E0E0E0";
-export const ColorPast: string = "#D5A8DC";
-export const ColorValidated: string = "#AFDCA8";
+export const ColorNoCoverage: string = '#E0E0E0';
+export const ColorPast: string = '#D5A8DC';
+export const ColorValidated: string = '#AFDCA8';
 
 // Maximum schedule/campaign duration in months (frontend mirror of shared)
 export const MAX_SCHEDULE_DURATION_MONTHS = 3;
 
 // User
-export const SignInGrantType: string = "password";
+export const SignInGrantType: string = 'password';
 
 export const languages: Record<string, string> = {
-  en: "English",
-  es: "Español",
-  fr: "Français",
+  en: 'English',
+  es: 'Español',
+  fr: 'Français',
 };
 
 // Style

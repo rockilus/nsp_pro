@@ -1,9 +1,9 @@
-import { test, expect } from "@playwright/test";
-import { WorkerTestBase } from "../../utils/worker-test-base";
+import { test, expect } from '@playwright/test';
+import { WorkerTestBase } from '../../utils/worker-test-base';
 
 const workerTestBase = new WorkerTestBase();
 
-test.describe("Worker Specialty Cell", () => {
+test.describe('Worker Specialty Cell', () => {
   let testWorker: { id: string; name: string; teamId: string };
   let testSpecialties: { id: string; name: string; teamId: string }[];
 
@@ -35,11 +35,7 @@ test.describe("Worker Specialty Cell", () => {
     testSpecialties.push(specialty1, specialty2, specialty3);
 
     console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
-    console.log(
-      `Created test specialties: ${testSpecialties
-        .map((s) => s.name)
-        .join(", ")}`,
-    );
+    console.log(`Created test specialties: ${testSpecialties.map((s) => s.name).join(', ')}`);
 
     // Navigate to the workers page
     await workerTestBase.navigateToWorkersPage(page);
@@ -70,9 +66,7 @@ test.describe("Worker Specialty Cell", () => {
     }
   });
 
-  test("should show popup when clicking on the specialty cell", async ({
-    page,
-  }) => {
+  test('should show popup when clicking on the specialty cell', async ({ page }) => {
     // Find the specialty cell
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await expect(specialtyCell).toBeVisible();
@@ -84,10 +78,10 @@ test.describe("Worker Specialty Cell", () => {
     const popup = page.locator('[data-testid="worker-specialty-edit-popup"]');
     await expect(popup).toBeVisible();
 
-    console.log("✅ Popup appears when clicking on specialty cell");
+    console.log('✅ Popup appears when clicking on specialty cell');
   });
 
-  test("should list all specialties in the popup", async ({ page }) => {
+  test('should list all specialties in the popup', async ({ page }) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -101,19 +95,15 @@ test.describe("Worker Specialty Cell", () => {
     await expect(optionsList).toBeVisible();
 
     for (const specialty of testSpecialties) {
-      const option = page.locator(
-        `[data-testid="specialty-option-${specialty.id}"]`,
-      );
+      const option = page.locator(`[data-testid="specialty-option-${specialty.id}"]`);
       await expect(option).toBeVisible();
       await expect(option).toContainText(specialty.name);
     }
 
-    console.log("✅ All specialties are listed in the popup");
+    console.log('✅ All specialties are listed in the popup');
   });
 
-  test("should add specialty as chip when clicking on it in the list", async ({
-    page,
-  }) => {
+  test('should add specialty as chip when clicking on it in the list', async ({ page }) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -124,24 +114,18 @@ test.describe("Worker Specialty Cell", () => {
 
     // Click on a specialty to select it
     const specialty = testSpecialties[0];
-    const option = page.locator(
-      `[data-testid="specialty-option-${specialty.id}"]`,
-    );
+    const option = page.locator(`[data-testid="specialty-option-${specialty.id}"]`);
     await option.click();
 
     // Verify the specialty appears as a selected chip
-    const selectedChip = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty.id}"]`,
-    );
+    const selectedChip = page.locator(`[data-testid="selected-specialty-chip-${specialty.id}"]`);
     await expect(selectedChip).toBeVisible();
     await expect(selectedChip).toContainText(specialty.name);
 
     console.log(`✅ Specialty "${specialty.name}" added as chip`);
   });
 
-  test("should remove selected specialty when clicking delete cross", async ({
-    page,
-  }) => {
+  test('should remove selected specialty when clicking delete cross', async ({ page }) => {
     // First, add a specialty to the worker
     await workerTestBase.updateTestWorker(testWorker.id, {
       name: testWorker.name,
@@ -166,15 +150,11 @@ test.describe("Worker Specialty Cell", () => {
     await expect(popup).toBeVisible();
 
     // Verify the specialty is selected
-    const selectedChip = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty.id}"]`,
-    );
+    const selectedChip = page.locator(`[data-testid="selected-specialty-chip-${specialty.id}"]`);
     await expect(selectedChip).toBeVisible();
 
     // Click the delete cross
-    const deleteButton = page.locator(
-      `[data-testid="remove-specialty-${specialty.id}"]`,
-    );
+    const deleteButton = page.locator(`[data-testid="remove-specialty-${specialty.id}"]`);
     await deleteButton.click();
 
     // Verify the chip is removed
@@ -183,9 +163,7 @@ test.describe("Worker Specialty Cell", () => {
     console.log(`✅ Specialty "${specialty.name}" removed via delete cross`);
   });
 
-  test("should filter specialties when typing in search input", async ({
-    page,
-  }) => {
+  test('should filter specialties when typing in search input', async ({ page }) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -196,7 +174,7 @@ test.describe("Worker Specialty Cell", () => {
 
     // Type in the search input to filter
     const searchInput = page.locator('[data-testid="specialty-search-input"]');
-    await searchInput.fill("Card");
+    await searchInput.fill('Card');
 
     // Verify only Cardiology appears in the filtered list
     const cardiologyOption = page.locator(
@@ -210,12 +188,10 @@ test.describe("Worker Specialty Cell", () => {
     );
     await expect(neurologyOption).not.toBeVisible();
 
-    console.log("✅ Search input filters specialties correctly");
+    console.log('✅ Search input filters specialties correctly');
   });
 
-  test("should not show selected specialty in available options", async ({
-    page,
-  }) => {
+  test('should not show selected specialty in available options', async ({ page }) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -226,26 +202,20 @@ test.describe("Worker Specialty Cell", () => {
 
     // Select a specialty
     const specialty = testSpecialties[0];
-    const option = page.locator(
-      `[data-testid="specialty-option-${specialty.id}"]`,
-    );
+    const option = page.locator(`[data-testid="specialty-option-${specialty.id}"]`);
     await option.click();
 
     // Verify the specialty appears as selected
-    const selectedChip = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty.id}"]`,
-    );
+    const selectedChip = page.locator(`[data-testid="selected-specialty-chip-${specialty.id}"]`);
     await expect(selectedChip).toBeVisible();
 
     // Verify the specialty no longer appears in the options list
     await expect(option).not.toBeVisible();
 
-    console.log(
-      `✅ Selected specialty "${specialty.name}" no longer appears in options`,
-    );
+    console.log(`✅ Selected specialty "${specialty.name}" no longer appears in options`);
   });
 
-  test("should remove last selected specialty when pressing backspace in empty input", async ({
+  test('should remove last selected specialty when pressing backspace in empty input', async ({
     page,
   }) => {
     // Click on the specialty cell to open popup
@@ -260,40 +230,32 @@ test.describe("Worker Specialty Cell", () => {
     const specialty1 = testSpecialties[0];
     const specialty2 = testSpecialties[1];
 
-    const option1 = page.locator(
-      `[data-testid="specialty-option-${specialty1.id}"]`,
-    );
-    const option2 = page.locator(
-      `[data-testid="specialty-option-${specialty2.id}"]`,
-    );
+    const option1 = page.locator(`[data-testid="specialty-option-${specialty1.id}"]`);
+    const option2 = page.locator(`[data-testid="specialty-option-${specialty2.id}"]`);
 
     await option1.click();
     await option2.click();
 
     // Verify both are selected
-    const selectedChip1 = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty1.id}"]`,
-    );
-    const selectedChip2 = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty2.id}"]`,
-    );
+    const selectedChip1 = page.locator(`[data-testid="selected-specialty-chip-${specialty1.id}"]`);
+    const selectedChip2 = page.locator(`[data-testid="selected-specialty-chip-${specialty2.id}"]`);
     await expect(selectedChip1).toBeVisible();
     await expect(selectedChip2).toBeVisible();
 
     // Focus on search input, clear it, and press backspace
     const searchInput = page.locator('[data-testid="specialty-search-input"]');
     await searchInput.focus();
-    await searchInput.fill(""); // Make sure input is empty
-    await searchInput.press("Backspace");
+    await searchInput.fill(''); // Make sure input is empty
+    await searchInput.press('Backspace');
 
     // Verify the last selected specialty (specialty2) is removed
     await expect(selectedChip2).not.toBeVisible();
     await expect(selectedChip1).toBeVisible();
 
-    console.log("✅ Last selected specialty removed with backspace");
+    console.log('✅ Last selected specialty removed with backspace');
   });
 
-  test("should close popup when clicking away", async ({ page }) => {
+  test('should close popup when clicking away', async ({ page }) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -306,10 +268,10 @@ test.describe("Worker Specialty Cell", () => {
     await page.mouse.click(100, 100);
     await expect(popup).not.toBeVisible();
 
-    console.log("✅ Popup closes when clicking away");
+    console.log('✅ Popup closes when clicking away');
   });
 
-  test("should close popup when pressing escape", async ({ page }) => {
+  test('should close popup when pressing escape', async ({ page }) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -321,17 +283,15 @@ test.describe("Worker Specialty Cell", () => {
     // Press escape in the search input
     const searchInput = page.locator('[data-testid="specialty-search-input"]');
     await searchInput.focus();
-    await searchInput.press("Escape");
+    await searchInput.press('Escape');
 
     // Verify the popup is closed
     await expect(popup).not.toBeVisible();
 
-    console.log("✅ Popup closes when pressing escape");
+    console.log('✅ Popup closes when pressing escape');
   });
 
-  test("should show selected specialties in the specialty cell", async ({
-    page,
-  }) => {
+  test('should show selected specialties in the specialty cell', async ({ page }) => {
     // Update worker with specialties
     const specialty1 = testSpecialties[0];
     const specialty2 = testSpecialties[1];
@@ -344,24 +304,18 @@ test.describe("Worker Specialty Cell", () => {
     await page.waitForSelector('[aria-label="worker table"]');
 
     // Verify the specialties appear as chips in the cell
-    const chip1 = page.locator(
-      `[data-testid="specialty-chip-${specialty1.id}"]`,
-    );
-    const chip2 = page.locator(
-      `[data-testid="specialty-chip-${specialty2.id}"]`,
-    );
+    const chip1 = page.locator(`[data-testid="specialty-chip-${specialty1.id}"]`);
+    const chip2 = page.locator(`[data-testid="specialty-chip-${specialty2.id}"]`);
 
     await expect(chip1).toBeVisible();
     await expect(chip1).toContainText(specialty1.name);
     await expect(chip2).toBeVisible();
     await expect(chip2).toContainText(specialty2.name);
 
-    console.log("✅ Selected specialties appear in specialty cell");
+    console.log('✅ Selected specialties appear in specialty cell');
   });
 
-  test("should reflect changes in specialty cell after closing popup", async ({
-    page,
-  }) => {
+  test('should reflect changes in specialty cell after closing popup', async ({ page }) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -372,9 +326,7 @@ test.describe("Worker Specialty Cell", () => {
 
     // Add a specialty
     const specialty = testSpecialties[0];
-    const option = page.locator(
-      `[data-testid="specialty-option-${specialty.id}"]`,
-    );
+    const option = page.locator(`[data-testid="specialty-option-${specialty.id}"]`);
     await option.click();
 
     // Close popup by clicking away (using coordinate-based click)
@@ -388,12 +340,10 @@ test.describe("Worker Specialty Cell", () => {
     await expect(chip).toBeVisible();
     await expect(chip).toContainText(specialty.name);
 
-    console.log("✅ Added specialty appears in cell after closing popup");
+    console.log('✅ Added specialty appears in cell after closing popup');
   });
 
-  test("should reflect removal of specialty in cell after closing popup", async ({
-    page,
-  }) => {
+  test('should reflect removal of specialty in cell after closing popup', async ({ page }) => {
     // First, add a specialty to the worker
     const specialty = testSpecialties[0];
     await workerTestBase.updateTestWorker(testWorker.id, {
@@ -417,9 +367,7 @@ test.describe("Worker Specialty Cell", () => {
     await expect(popup).toBeVisible();
 
     // Remove the specialty by clicking its delete button
-    const deleteButton = page.locator(
-      `[data-testid="remove-specialty-${specialty.id}"]`,
-    );
+    const deleteButton = page.locator(`[data-testid="remove-specialty-${specialty.id}"]`);
     await deleteButton.click();
 
     // Close popup by clicking away (using coordinate-based click)
@@ -431,12 +379,10 @@ test.describe("Worker Specialty Cell", () => {
     // Wait for the specialty chip to be removed from the cell (indicating update is complete)
     await expect(chip).not.toBeVisible();
 
-    console.log(
-      "✅ Removed specialty no longer appears in cell after closing popup",
-    );
+    console.log('✅ Removed specialty no longer appears in cell after closing popup');
   });
 
-  test("should allow selecting specialty with Enter key", async ({ page }) => {
+  test('should allow selecting specialty with Enter key', async ({ page }) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -447,24 +393,20 @@ test.describe("Worker Specialty Cell", () => {
 
     // Type to filter to a specific specialty
     const searchInput = page.locator('[data-testid="specialty-search-input"]');
-    await searchInput.fill("Card");
+    await searchInput.fill('Card');
 
     // Press Enter to select the first filtered option
-    await searchInput.press("Enter");
+    await searchInput.press('Enter');
 
     // Verify the specialty is selected
     const specialty = testSpecialties[0]; // Cardiology should be the first
-    const selectedChip = page.locator(
-      `[data-testid="selected-specialty-chip-${specialty.id}"]`,
-    );
+    const selectedChip = page.locator(`[data-testid="selected-specialty-chip-${specialty.id}"]`);
     await expect(selectedChip).toBeVisible();
 
-    console.log("✅ Specialty selected with Enter key");
+    console.log('✅ Specialty selected with Enter key');
   });
 
-  test("should show empty specialty cell when no specialties are assigned", async ({
-    page,
-  }) => {
+  test('should show empty specialty cell when no specialties are assigned', async ({ page }) => {
     // Verify the specialty cell is visible but empty (no chips)
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await expect(specialtyCell).toBeVisible();
@@ -473,10 +415,10 @@ test.describe("Worker Specialty Cell", () => {
     const anyChip = page.locator('[data-testid^="specialty-chip-"]');
     await expect(anyChip).toHaveCount(0);
 
-    console.log("✅ Empty specialty cell displayed correctly");
+    console.log('✅ Empty specialty cell displayed correctly');
   });
 
-  test("should navigate through options with arrow keys", async ({ page }) => {
+  test('should navigate through options with arrow keys', async ({ page }) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -490,29 +432,25 @@ test.describe("Worker Specialty Cell", () => {
     await searchInput.focus();
 
     // Press down arrow to select first option
-    await searchInput.press("ArrowDown");
+    await searchInput.press('ArrowDown');
 
     // Verify first option is highlighted (selected state)
-    const firstOption = page.locator(
-      `[data-testid="specialty-option-${testSpecialties[0].id}"]`,
-    );
+    const firstOption = page.locator(`[data-testid="specialty-option-${testSpecialties[0].id}"]`);
     await expect(firstOption).toHaveClass(/Mui-selected/);
 
     // Press down arrow again to move to second option
-    await searchInput.press("ArrowDown");
+    await searchInput.press('ArrowDown');
 
     // Verify second option is highlighted
-    const secondOption = page.locator(
-      `[data-testid="specialty-option-${testSpecialties[1].id}"]`,
-    );
+    const secondOption = page.locator(`[data-testid="specialty-option-${testSpecialties[1].id}"]`);
     await expect(secondOption).toHaveClass(/Mui-selected/);
 
     // Press up arrow to go back to first option
-    await searchInput.press("ArrowUp");
+    await searchInput.press('ArrowUp');
 
     // Verify first option is highlighted again
     await expect(firstOption).toHaveClass(/Mui-selected/);
 
-    console.log("✅ Arrow key navigation works correctly");
+    console.log('✅ Arrow key navigation works correctly');
   });
 });

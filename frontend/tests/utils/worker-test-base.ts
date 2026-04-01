@@ -5,11 +5,11 @@
  * reducing duplication across multiple worker test files.
  */
 
-import { Page, expect } from "@playwright/test";
-import { DatabaseTestUtils } from "./database-utils";
-import { testConfig } from "./test-config";
-import { SpecialtyT } from "../../src/types/specialty";
-import { WorkerT } from "../../src/types/worker";
+import { Page, expect } from '@playwright/test';
+import { DatabaseTestUtils } from './database-utils';
+import { testConfig } from './test-config';
+import { SpecialtyT } from '../../src/types/specialty';
+import { WorkerT } from '../../src/types/worker';
 
 export class WorkerTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -33,17 +33,13 @@ export class WorkerTestBase {
     // Verify test utilities are available
     const health = await this.dbUtils.checkHealth();
     if (!health.test_utilities_available) {
-      throw new Error(
-        "Test utilities are not available - check environment configuration",
-      );
+      throw new Error('Test utilities are not available - check environment configuration');
     }
 
     // Create a test team for worker tests
     const uniqueTeamName = `Worker Test Team ${workerIndex}-${Date.now()}`;
     this.testTeam = await this.dbUtils.createTeam({ name: uniqueTeamName });
-    console.log(
-      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`,
-    );
+    console.log(`Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`);
   }
 
   /**
@@ -52,7 +48,7 @@ export class WorkerTestBase {
    */
   async navigateToWorkersPageDirect(page: Page): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupWorkerTests() first.");
+      throw new Error('Test team not created. Call setupWorkerTests() first.');
     }
 
     // Set authentication headers before any navigation
@@ -66,29 +62,27 @@ export class WorkerTestBase {
 
     // Now set the selected team in localStorage with proper document context
     await page.evaluate((teamId) => {
-      localStorage.setItem("selectedTeamId", teamId);
+      localStorage.setItem('selectedTeamId', teamId);
     }, this.testTeam.teamId);
 
     // Reload the page to apply the localStorage changes
     await page.reload();
 
     // Wait for the page to load and the team context to initialize
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
     // await page.waitForLoadState("domcontentloaded");
 
     // Verify we're on the workers page and the correct team is selected
-    await expect(
-      page.locator('[data-testid="workers-page-heading"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="workers-page-heading"]')).toBeVisible();
 
     // Brief wait to ensure team context has fully initialized
     // and no redirect to teams page occurs
     // await page.waitForTimeout(500);
 
     const currentUrl = page.url();
-    if (currentUrl.includes("/plan/settings/teams")) {
+    if (currentUrl.includes('/plan/settings/teams')) {
       throw new Error(
-        "Navigation failed: redirected to teams page. Team context may not have initialized properly.",
+        'Navigation failed: redirected to teams page. Team context may not have initialized properly.',
       );
     }
   }
@@ -99,21 +93,17 @@ export class WorkerTestBase {
    */
   async navigateToWorkersPageViaUI(page: Page): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupWorkerTests() first.");
+      throw new Error('Test team not created. Call setupWorkerTests() first.');
     }
 
     // Step 1: Navigate to teams page
     await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
-    await expect(
-      page.locator('[data-testid="teams-page-heading"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="teams-page-heading"]')).toBeVisible();
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
 
     // Step 2: Wait for our test team to appear in the UI using team ID
-    const teamElement = page.locator(
-      `[data-testid="team-name-${this.testTeam.teamId}"]`,
-    );
+    const teamElement = page.locator(`[data-testid="team-name-${this.testTeam.teamId}"]`);
     await expect(teamElement).toBeVisible();
 
     // Step 3: Click on the team name to select it (this navigates to schedule page)
@@ -124,7 +114,7 @@ export class WorkerTestBase {
 
     // Wait for client-side navigation to finish and network to be idle
     // This prevents a detached main frame (NS_BINDING_ABORTED) when calling goto
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
 
     // Step 4: Navigate to workers page by clicking the workers link in NavLinks
     const workersLink = page.locator('[data-testid="nav-link-workers"]');
@@ -135,14 +125,12 @@ export class WorkerTestBase {
 
     // Wait for all content on the workers page to be loaded
     // Wait for network to be idle to ensure all API calls are complete
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
 
     // Wait for DOM content to be fully loaded
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState('domcontentloaded');
 
-    await expect(
-      page.locator('[data-testid="workers-page-heading"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="workers-page-heading"]')).toBeVisible();
   }
 
   /**
@@ -167,7 +155,7 @@ export class WorkerTestBase {
     annualLeave?: number;
   }): Promise<WorkerT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupWorkerTests() first.");
+      throw new Error('Test team not created. Call setupWorkerTests() first.');
     }
 
     return this.dbUtils.createWorker({
@@ -197,7 +185,7 @@ export class WorkerTestBase {
     },
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupWorkerTests() first.");
+      throw new Error('Test team not created. Call setupWorkerTests() first.');
     }
 
     return this.dbUtils.updateWorker(workerId, this.testTeam.teamId, updates);
@@ -211,14 +199,10 @@ export class WorkerTestBase {
     newName: string,
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupWorkerTests() first.");
+      throw new Error('Test team not created. Call setupWorkerTests() first.');
     }
 
-    return this.dbUtils.updateWorkerName(
-      workerId,
-      this.testTeam.teamId,
-      newName,
-    );
+    return this.dbUtils.updateWorkerName(workerId, this.testTeam.teamId, newName);
   }
 
   /**
@@ -226,7 +210,7 @@ export class WorkerTestBase {
    */
   async deleteTestWorker(workerId: string): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupWorkerTests() first.");
+      throw new Error('Test team not created. Call setupWorkerTests() first.');
     }
 
     return this.dbUtils.deleteWorker(workerId, this.testTeam.teamId);
@@ -236,8 +220,8 @@ export class WorkerTestBase {
    * Creates a worker via the UI by clicking the +Worker button
    */
   async createWorkerViaUI(page: Page): Promise<void> {
-    const addWorkerButton = page.getByRole("button", {
-      name: "Worker",
+    const addWorkerButton = page.getByRole('button', {
+      name: 'Worker',
       exact: true,
     });
     await expect(addWorkerButton).toBeEnabled();
@@ -260,7 +244,7 @@ export class WorkerTestBase {
    * Gets all worker rows from the table
    */
   getWorkerRows(page: Page) {
-    return this.getWorkerTable(page).locator("tbody tr");
+    return this.getWorkerTable(page).locator('tbody tr');
   }
 
   /**
@@ -289,7 +273,7 @@ export class WorkerTestBase {
 
     // Prioritize the table cell itself for interaction, not the inner elements
     const byCellTestId = row.locator('[data-testid="worker-acronym-cell"]');
-    const secondCell = row.locator("td, th").nth(1);
+    const secondCell = row.locator('td, th').nth(1);
 
     return byCellTestId.or(secondCell);
   }
@@ -317,11 +301,9 @@ export class WorkerTestBase {
     const row = this.getWorkerRow(page, rowIndex);
 
     // Prioritize the table cell itself for interaction
-    const byCellTestId = row.locator(
-      '[data-testid="worker-employment-start-cell"]',
-    );
+    const byCellTestId = row.locator('[data-testid="worker-employment-start-cell"]');
     // Fallback to finding by column position if data-testid is not available
-    const byColumnPosition = row.locator("td, th").nth(2); // Assuming employment start is 3rd column
+    const byColumnPosition = row.locator('td, th').nth(2); // Assuming employment start is 3rd column
 
     return byCellTestId.or(byColumnPosition);
   }
@@ -349,11 +331,9 @@ export class WorkerTestBase {
     const row = this.getWorkerRow(page, rowIndex);
 
     // Prioritize the table cell itself for interaction
-    const byCellTestId = row.locator(
-      '[data-testid="worker-employment-end-cell"]',
-    );
+    const byCellTestId = row.locator('[data-testid="worker-employment-end-cell"]');
     // Fallback to finding by column position if data-testid is not available
-    const byColumnPosition = row.locator("td, th").nth(3); // Assuming employment end is 4th column
+    const byColumnPosition = row.locator('td, th').nth(3); // Assuming employment end is 4th column
 
     return byCellTestId.or(byColumnPosition);
   }
@@ -387,9 +367,7 @@ export class WorkerTestBase {
    */
   getWorkerEmploymentEndDatePickerInput(page: Page, rowIndex: number = 0) {
     const row = this.getWorkerRow(page, rowIndex);
-    return row.locator(
-      '[data-testid^="worker-employment-end-datepicker-input-"]',
-    );
+    return row.locator('[data-testid^="worker-employment-end-datepicker-input-"]');
   }
 
   /**
@@ -397,18 +375,13 @@ export class WorkerTestBase {
    */
   getWorkerEmploymentEndPermanentCheckbox(page: Page, rowIndex: number = 0) {
     const row = this.getWorkerRow(page, rowIndex);
-    return row.locator(
-      '[data-testid^="worker-employment-end-permanent-checkbox-input-"]',
-    );
+    return row.locator('[data-testid^="worker-employment-end-permanent-checkbox-input-"]');
   }
 
   /**
    * Gets the employment end date permanent checkbox label element
    */
-  getWorkerEmploymentEndPermanentCheckboxLabel(
-    page: Page,
-    rowIndex: number = 0,
-  ) {
+  getWorkerEmploymentEndPermanentCheckboxLabel(page: Page, rowIndex: number = 0) {
     const row = this.getWorkerRow(page, rowIndex);
     // Look for the label specifically, excluding the input
     return row.locator(
@@ -423,12 +396,10 @@ export class WorkerTestBase {
     const row = this.getWorkerRow(page, rowIndex);
 
     // Prioritize the table cell itself for interaction
-    const byCellTestId = row.locator(
-      '[data-testid="worker-weekly-hours-cell"]',
-    );
+    const byCellTestId = row.locator('[data-testid="worker-weekly-hours-cell"]');
     // Fallback to finding by column position - weeklyHours is the 6th column (index 5)
     // Column order: name(0), acronym(1), employmentStart(2), employmentEnd(3), specialties(4), weeklyHours(5)
-    const byColumnPosition = row.locator("td, th").nth(5);
+    const byColumnPosition = row.locator('td, th').nth(5);
 
     return byCellTestId.or(byColumnPosition);
   }
@@ -456,12 +427,10 @@ export class WorkerTestBase {
     const row = this.getWorkerRow(page, rowIndex);
 
     // Prioritize the table cell itself for interaction
-    const byCellTestId = row.locator(
-      '[data-testid="worker-weekly-hours-desired-cell"]',
-    );
+    const byCellTestId = row.locator('[data-testid="worker-weekly-hours-desired-cell"]');
     // Fallback to finding by column position - weeklyHoursDesired is the 7th column (index 6)
     // Column order: name(0), acronym(1), employmentStart(2), employmentEnd(3), specialties(4), weeklyHours(5), weeklyHoursDesired(6)
-    const byColumnPosition = row.locator("td, th").nth(6);
+    const byColumnPosition = row.locator('td, th').nth(6);
 
     return byCellTestId.or(byColumnPosition);
   }
@@ -502,14 +471,12 @@ export class WorkerTestBase {
 
     // Wait for the cell to be in display state (not saving) - but be flexible about the attribute
     try {
-      await expect(cell).toHaveAttribute("data-state", "display", {
+      await expect(cell).toHaveAttribute('data-state', 'display', {
         timeout: 2000,
       });
     } catch (error) {
       // If data-state is not available, just continue - the component might not have it yet
-      console.log(
-        "data-state attribute not found, continuing with other checks",
-      );
+      console.log('data-state attribute not found, continuing with other checks');
     }
 
     // Wait for the display to show the expected value
@@ -525,11 +492,7 @@ export class WorkerTestBase {
    * @param expectedValue - The expected value to appear in the display
    * @param rowIndex - The row index (default: 0)
    */
-  async waitForWeeklyHoursUpdate(
-    page: Page,
-    expectedValue: string | number,
-    rowIndex: number = 0,
-  ) {
+  async waitForWeeklyHoursUpdate(page: Page, expectedValue: string | number, rowIndex: number = 0) {
     const cell = this.getWorkerWeeklyHoursCell(page, rowIndex);
     const display = this.getWorkerWeeklyHoursDisplay(page, rowIndex);
     const input = this.getWorkerWeeklyHoursInput(page, rowIndex);
@@ -539,14 +502,12 @@ export class WorkerTestBase {
 
     // Wait for the cell to be in display state (not saving) - but be flexible about the attribute
     try {
-      await expect(cell).toHaveAttribute("data-state", "display", {
+      await expect(cell).toHaveAttribute('data-state', 'display', {
         timeout: 2000,
       });
     } catch (error) {
       // If data-state is not available, just continue - the component might not have it yet
-      console.log(
-        "data-state attribute not found, continuing with other checks",
-      );
+      console.log('data-state attribute not found, continuing with other checks');
     }
 
     // Wait for the display to show the expected value
@@ -563,11 +524,9 @@ export class WorkerTestBase {
     const row = this.getWorkerRow(page, rowIndex);
 
     // Prioritize the table cell itself for interaction
-    const byCellTestId = row.locator(
-      '[data-testid="worker-duties-per-month-cell"]',
-    );
+    const byCellTestId = row.locator('[data-testid="worker-duties-per-month-cell"]');
     // Fallback to finding by column position if data-testid is not available
-    const byColumnPosition = row.locator("td, th").nth(7); // Assuming duties per month is 8th column
+    const byColumnPosition = row.locator('td, th').nth(7); // Assuming duties per month is 8th column
 
     return byCellTestId.or(byColumnPosition);
   }
@@ -600,10 +559,10 @@ export class WorkerTestBase {
     const input = this.getWorkerDutiesPerMonthInput(page, rowIndex);
 
     // Wait for the input to disappear (editing to finish)
-    await input.waitFor({ state: "detached", timeout: 5000 });
+    await input.waitFor({ state: 'detached', timeout: 5000 });
 
     // Wait for the display to appear and show the expected value
-    await display.waitFor({ state: "visible", timeout: 5000 });
+    await display.waitFor({ state: 'visible', timeout: 5000 });
     await page.waitForFunction(
       ({ expectedValue, testId }) => {
         const element = document.querySelector(`[data-testid^="${testId}"]`);
@@ -611,7 +570,7 @@ export class WorkerTestBase {
         const actualValue = element.textContent?.trim();
         return actualValue === expectedValue.toString();
       },
-      { expectedValue, testId: "worker-duties-per-month-display-" },
+      { expectedValue, testId: 'worker-duties-per-month-display-' },
       { timeout: 5000 },
     );
   }
@@ -623,11 +582,9 @@ export class WorkerTestBase {
     const row = this.getWorkerRow(page, rowIndex);
 
     // Prioritize the table cell itself for interaction
-    const byCellTestId = row.locator(
-      '[data-testid="worker-annual-leave-cell"]',
-    );
+    const byCellTestId = row.locator('[data-testid="worker-annual-leave-cell"]');
     // Fallback to finding by column position if data-testid is not available
-    const byColumnPosition = row.locator("td, th").nth(8); // Assuming annual leave is 9th column
+    const byColumnPosition = row.locator('td, th').nth(8); // Assuming annual leave is 9th column
 
     return byCellTestId.or(byColumnPosition);
   }
@@ -651,11 +608,7 @@ export class WorkerTestBase {
   /**
    * Waits for the annual leave update to complete
    */
-  async waitForAnnualLeaveUpdateComplete(
-    page: Page,
-    expectedValue: string,
-    rowIndex: number = 0,
-  ) {
+  async waitForAnnualLeaveUpdateComplete(page: Page, expectedValue: string, rowIndex: number = 0) {
     const display = this.getWorkerAnnualLeaveDisplay(page, rowIndex);
     const input = this.getWorkerAnnualLeaveInput(page, rowIndex);
 
@@ -745,14 +698,14 @@ export class WorkerTestBase {
     await deleteButton.click();
 
     // Wait for the specific worker row to be removed from DOM
-    await expect(
-      page.locator(`[data-testid="worker-row-${workerId}"]`),
-    ).not.toBeVisible({ timeout: 1000 });
+    await expect(page.locator(`[data-testid="worker-row-${workerId}"]`)).not.toBeVisible({
+      timeout: 1000,
+    });
 
     // Wait for the table to reflect the correct state
     if (initialCount === 1) {
       // Last worker being deleted - wait for empty state
-      await expect(page.locator("text=no_workers_found")).toBeVisible({
+      await expect(page.locator('text=no_workers_found')).toBeVisible({
         timeout: 1000,
       });
     } else {
@@ -766,10 +719,7 @@ export class WorkerTestBase {
   /**
    * Deletes a worker via the UI by clicking the delete button at specific row index
    */
-  async deleteWorkerViaUIByIndex(
-    page: Page,
-    rowIndex: number = 0,
-  ): Promise<void> {
+  async deleteWorkerViaUIByIndex(page: Page, rowIndex: number = 0): Promise<void> {
     const deleteButton = this.getWorkerDeleteButtonByIndex(page, rowIndex);
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
@@ -797,11 +747,9 @@ export class WorkerTestBase {
   /**
    * Creates a test specialty using the API
    */
-  async createTestSpecialty(specialtyData: {
-    name: string;
-  }): Promise<SpecialtyT> {
+  async createTestSpecialty(specialtyData: { name: string }): Promise<SpecialtyT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupWorkerTests() first.");
+      throw new Error('Test team not created. Call setupWorkerTests() first.');
     }
 
     return this.dbUtils.createSpecialty({
@@ -820,14 +768,10 @@ export class WorkerTestBase {
     },
   ): Promise<SpecialtyT> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupWorkerTests() first.");
+      throw new Error('Test team not created. Call setupWorkerTests() first.');
     }
 
-    return this.dbUtils.updateSpecialty(
-      specialtyId,
-      this.testTeam.teamId,
-      updates,
-    );
+    return this.dbUtils.updateSpecialty(specialtyId, this.testTeam.teamId, updates);
   }
 
   /**
@@ -835,7 +779,7 @@ export class WorkerTestBase {
    */
   async deleteTestSpecialty(specialtyId: string): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupWorkerTests() first.");
+      throw new Error('Test team not created. Call setupWorkerTests() first.');
     }
 
     return this.dbUtils.deleteSpecialty(specialtyId, this.testTeam.teamId);
@@ -846,7 +790,7 @@ export class WorkerTestBase {
    */
   async getTestSpecialties(): Promise<SpecialtyT[]> {
     if (!this.testTeam) {
-      throw new Error("Test team not created. Call setupWorkerTests() first.");
+      throw new Error('Test team not created. Call setupWorkerTests() first.');
     }
 
     return this.dbUtils.getSpecialties(this.testTeam.teamId);
@@ -859,11 +803,7 @@ export class WorkerTestBase {
    * @param date - The date string in DD/MM/YYYY format
    * @param rowIndex - The row index (default: 0)
    */
-  async setEmploymentEndDate(
-    page: Page,
-    date: string,
-    rowIndex: number = 0,
-  ): Promise<void> {
+  async setEmploymentEndDate(page: Page, date: string, rowIndex: number = 0): Promise<void> {
     const input = this.getWorkerEmploymentEndDatePickerInput(page, rowIndex);
 
     // Wait for the input to be visible and enabled before interacting
@@ -884,7 +824,7 @@ export class WorkerTestBase {
       // Get the native setter to bypass React's value property
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
         window.HTMLInputElement.prototype,
-        "value",
+        'value',
       )?.set;
 
       if (nativeInputValueSetter) {
@@ -894,8 +834,8 @@ export class WorkerTestBase {
       }
 
       // Dispatch input event to trigger React's onChange handler
-      el.dispatchEvent(new Event("input", { bubbles: true }));
-      el.dispatchEvent(new Event("change", { bubbles: true }));
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
 
       // Blur the input to ensure validation runs
       el.blur();
@@ -912,11 +852,7 @@ export class WorkerTestBase {
    * @param date - The date string in DD/MM/YYYY format
    * @param rowIndex - The row index (default: 0)
    */
-  async setEmploymentStartDate(
-    page: Page,
-    date: string,
-    rowIndex: number = 0,
-  ): Promise<void> {
+  async setEmploymentStartDate(page: Page, date: string, rowIndex: number = 0): Promise<void> {
     const input = this.getWorkerEmploymentStartInput(page, rowIndex);
 
     // Wait for the input to be visible and enabled before interacting
@@ -937,7 +873,7 @@ export class WorkerTestBase {
       // Get the native setter to bypass React's value property
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
         window.HTMLInputElement.prototype,
-        "value",
+        'value',
       )?.set;
 
       if (nativeInputValueSetter) {
@@ -947,8 +883,8 @@ export class WorkerTestBase {
       }
 
       // Dispatch input event to trigger React's onChange handler
-      el.dispatchEvent(new Event("input", { bubbles: true }));
-      el.dispatchEvent(new Event("change", { bubbles: true }));
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
 
       // Blur the input to ensure validation runs
       el.blur();

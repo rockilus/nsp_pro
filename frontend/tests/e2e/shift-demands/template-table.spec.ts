@@ -9,19 +9,19 @@
  * - Week-based table layout (vs date-based for shift demands)
  */
 
-import { test, expect } from "@playwright/test";
-import { TemplateTestBase } from "../../utils/template-test-base";
-import dayjs from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
-import isBetween from "dayjs/plugin/isBetween";
-import utc from "dayjs/plugin/utc";
+import { test, expect } from '@playwright/test';
+import { TemplateTestBase } from '../../utils/template-test-base';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import isBetween from 'dayjs/plugin/isBetween';
+import utc from 'dayjs/plugin/utc';
 
 // Extend dayjs with the required plugins
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 dayjs.extend(utc);
 
-test.describe("Template Table", () => {
+test.describe('Template Table', () => {
   let templateTestBase: TemplateTestBase;
   let testTemplateId: string;
 
@@ -32,8 +32,8 @@ test.describe("Template Table", () => {
 
     // Create a test template for table testing
     testTemplateId = await templateTestBase.createTemplateViaAPI({
-      name: "Test Template for Table",
-      description: "Template created for testing table functionality",
+      name: 'Test Template for Table',
+      description: 'Template created for testing table functionality',
     });
   });
 
@@ -44,10 +44,8 @@ test.describe("Template Table", () => {
     await templateTestBase.selectTemplateAndWaitForTable(page, testTemplateId);
   });
 
-  test.describe("Table Display", () => {
-    test("should display template table with proper structure", async ({
-      page,
-    }) => {
+  test.describe('Table Display', () => {
+    test('should display template table with proper structure', async ({ page }) => {
       const templateTable = templateTestBase.getTemplateTable(page);
       await expect(templateTable).toBeVisible();
 
@@ -61,7 +59,7 @@ test.describe("Template Table", () => {
       await expect(firstWeekHeader).toBeVisible();
     });
 
-    test("should display all shifts in the row headers", async ({ page }) => {
+    test('should display all shifts in the row headers', async ({ page }) => {
       // Wait for the template table to load
       await templateTestBase.waitForTemplateTableLoaded(page);
 
@@ -80,10 +78,7 @@ test.describe("Template Table", () => {
         const header = templateTestBase.getTemplateRowHeader(page, shiftId);
         await expect(header).toBeVisible();
 
-        const shiftNameElement = templateTestBase.getTemplateShiftName(
-          page,
-          shiftId,
-        );
+        const shiftNameElement = templateTestBase.getTemplateShiftName(page, shiftId);
         await expect(shiftNameElement).toBeVisible();
 
         const shiftName = await shiftNameElement.textContent();
@@ -92,9 +87,7 @@ test.describe("Template Table", () => {
       }
     });
 
-    test("should display week-based headers instead of date-based headers", async ({
-      page,
-    }) => {
+    test('should display week-based headers instead of date-based headers', async ({ page }) => {
       // Template tables should show "Week 1", "Week 2", etc., not specific dates
       const weekHeaders = templateTestBase.getTemplateWeekHeaders(page);
       const firstWeekHeader = weekHeaders.first();
@@ -106,10 +99,8 @@ test.describe("Template Table", () => {
     });
   });
 
-  test.describe("Cell Interactions", () => {
-    test("should create a template demand when clicking on an empty cell", async ({
-      page,
-    }) => {
+  test.describe('Cell Interactions', () => {
+    test('should create a template demand when clicking on an empty cell', async ({ page }) => {
       // Wait for the template table to load
       await templateTestBase.waitForTemplateTableLoaded(page);
 
@@ -117,19 +108,14 @@ test.describe("Template Table", () => {
       const rowHeaders = templateTestBase.getTemplateRowHeaders(page);
       const firstRowHeader = rowHeaders.first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("template-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('template-row-header-', ''));
       expect(shiftId).toBeTruthy();
 
       // Find a cell for week 0, day 0 (Monday)
       const weekNumber = 0;
       const dayIndex = 0; // Monday
-      const cell = templateTestBase.getTemplateCell(
-        page,
-        shiftId!,
-        weekNumber,
-        dayIndex,
-      );
+      const cell = templateTestBase.getTemplateCell(page, shiftId!, weekNumber, dayIndex);
       await expect(cell).toBeVisible();
 
       // Verify it's initially empty (should show empty state)
@@ -146,48 +132,33 @@ test.describe("Template Table", () => {
       await cell.click();
 
       // Wait for the demand to be created and UI to update
-      const valueElement = templateTestBase.getTemplateValue(
-        page,
-        shiftId!,
-        weekNumber,
-        dayIndex,
-      );
+      const valueElement = templateTestBase.getTemplateValue(page, shiftId!, weekNumber, dayIndex);
       await expect(valueElement).toBeVisible();
-      await expect(valueElement).toHaveText("1");
+      await expect(valueElement).toHaveText('1');
     });
 
-    test("should show plus and minus buttons on hover and handle increment/decrement", async ({
+    test('should show plus and minus buttons on hover and handle increment/decrement', async ({
       page,
     }) => {
       // First, create a template demand by clicking an empty cell
       const rowHeaders = templateTestBase.getTemplateRowHeaders(page);
       const firstRowHeader = rowHeaders.first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("template-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('template-row-header-', ''));
 
       const weekNumber = 0;
       const dayIndex = 1; // Tuesday
-      const cell = templateTestBase.getTemplateCell(
-        page,
-        shiftId!,
-        weekNumber,
-        dayIndex,
-      );
+      const cell = templateTestBase.getTemplateCell(page, shiftId!, weekNumber, dayIndex);
 
       // Click to create initial demand
       await cell.hover();
       await cell.click();
 
       // Wait for value to appear
-      const valueElement = templateTestBase.getTemplateValue(
-        page,
-        shiftId!,
-        weekNumber,
-        dayIndex,
-      );
+      const valueElement = templateTestBase.getTemplateValue(page, shiftId!, weekNumber, dayIndex);
       await expect(valueElement).toBeVisible();
-      await expect(valueElement).toHaveText("1");
+      await expect(valueElement).toHaveText('1');
 
       // Hover over the cell to show increment/decrement buttons
       await cell.hover();
@@ -203,7 +174,7 @@ test.describe("Template Table", () => {
       await incrementButton.click();
 
       // Check that value increased
-      await expect(valueElement).toHaveText("2");
+      await expect(valueElement).toHaveText('2');
 
       // Test decrement
       const decrementButton = templateTestBase.getTemplateDecrementButton(
@@ -216,7 +187,7 @@ test.describe("Template Table", () => {
       await decrementButton.click();
 
       // Check that value decreased
-      await expect(valueElement).toHaveText("1");
+      await expect(valueElement).toHaveText('1');
 
       // Test decrement to zero (should return to empty state)
       await decrementButton.click();
@@ -232,23 +203,18 @@ test.describe("Template Table", () => {
       await expect(emptyState).toBeVisible();
     });
 
-    test("should handle multiple cells in the same row", async ({ page }) => {
+    test('should handle multiple cells in the same row', async ({ page }) => {
       const rowHeaders = templateTestBase.getTemplateRowHeaders(page);
       const firstRowHeader = rowHeaders.first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("template-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('template-row-header-', ''));
 
       const weekNumber = 0;
 
       // Create demands for multiple days of the week
       for (let dayIndex = 0; dayIndex < 3; dayIndex++) {
-        const cell = templateTestBase.getTemplateCell(
-          page,
-          shiftId!,
-          weekNumber,
-          dayIndex,
-        );
+        const cell = templateTestBase.getTemplateCell(page, shiftId!, weekNumber, dayIndex);
         await cell.hover();
         await cell.click();
 
@@ -259,7 +225,7 @@ test.describe("Template Table", () => {
           dayIndex,
         );
         await expect(valueElement).toBeVisible();
-        await expect(valueElement).toHaveText("1");
+        await expect(valueElement).toHaveText('1');
       }
 
       // Verify all three cells now have values
@@ -270,16 +236,16 @@ test.describe("Template Table", () => {
           weekNumber,
           dayIndex,
         );
-        await expect(valueElement).toHaveText("1");
+        await expect(valueElement).toHaveText('1');
       }
     });
 
-    test("should handle cells across different weeks", async ({ page }) => {
+    test('should handle cells across different weeks', async ({ page }) => {
       const rowHeaders = templateTestBase.getTemplateRowHeaders(page);
       const firstRowHeader = rowHeaders.first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("template-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('template-row-header-', ''));
 
       // Create demands in week 0 and week 1 (if week 1 is visible)
       const weekHeaders = templateTestBase.getTemplateWeekHeaders(page);
@@ -292,7 +258,7 @@ test.describe("Template Table", () => {
         await cell1.click();
 
         const value1 = templateTestBase.getTemplateValue(page, shiftId!, 0, 0);
-        await expect(value1).toHaveText("1");
+        await expect(value1).toHaveText('1');
 
         // Test week 1, day 0 (if displayed)
         const cell2 = templateTestBase.getTemplateCell(page, shiftId!, 1, 0);
@@ -300,35 +266,23 @@ test.describe("Template Table", () => {
         await cell2.click();
 
         const value2 = templateTestBase.getTemplateValue(page, shiftId!, 1, 0);
-        await expect(value2).toHaveText("1");
+        await expect(value2).toHaveText('1');
       } else {
         // If only one week is visible, test multiple days in that week
         for (let dayIndex = 0; dayIndex < 2; dayIndex++) {
-          const cell = templateTestBase.getTemplateCell(
-            page,
-            shiftId!,
-            0,
-            dayIndex,
-          );
+          const cell = templateTestBase.getTemplateCell(page, shiftId!, 0, dayIndex);
           await cell.hover();
           await cell.click();
 
-          const value = templateTestBase.getTemplateValue(
-            page,
-            shiftId!,
-            0,
-            dayIndex,
-          );
-          await expect(value).toHaveText("1");
+          const value = templateTestBase.getTemplateValue(page, shiftId!, 0, dayIndex);
+          await expect(value).toHaveText('1');
         }
       }
     });
   });
 
-  test.describe("Bulk Selection Mode", () => {
-    test("should activate bulk selection mode when clicking select button", async ({
-      page,
-    }) => {
+  test.describe('Bulk Selection Mode', () => {
+    test('should activate bulk selection mode when clicking select button', async ({ page }) => {
       // Find and click the select button (this would be in the template toolbar)
       const selectButton = templateTestBase.getTemplateSelectButton(page);
       await selectButton.click();
@@ -337,15 +291,10 @@ test.describe("Template Table", () => {
       const rowHeaders = templateTestBase.getTemplateRowHeaders(page);
       const firstRowHeader = rowHeaders.first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("template-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('template-row-header-', ''));
 
-      const checkbox = templateTestBase.getTemplateCellCheckbox(
-        page,
-        shiftId!,
-        0,
-        0,
-      );
+      const checkbox = templateTestBase.getTemplateCellCheckbox(page, shiftId!, 0, 0);
       await expect(checkbox).toBeVisible();
 
       // Verify action toolbar appears
@@ -353,17 +302,15 @@ test.describe("Template Table", () => {
       await expect(actionToolbar).toBeVisible();
     });
 
-    test("should select and deselect individual cells in bulk mode", async ({
-      page,
-    }) => {
+    test('should select and deselect individual cells in bulk mode', async ({ page }) => {
       // Activate bulk mode
       await templateTestBase.activateTemplateSelectMode(page);
 
       const rowHeaders = templateTestBase.getTemplateRowHeaders(page);
       const firstRowHeader = rowHeaders.first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("template-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('template-row-header-', ''));
 
       const weekNumber = 0;
       const dayIndex = 0;
@@ -379,8 +326,7 @@ test.describe("Template Table", () => {
       await expect(checkbox).toBeChecked();
 
       // Verify action buttons are enabled when cells are selected
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
       await expect(bulkElements.deleteButton).toBeEnabled();
       await expect(bulkElements.confirmButton).toBeEnabled();
 
@@ -393,97 +339,69 @@ test.describe("Template Table", () => {
       await expect(bulkElements.confirmButton).toBeDisabled();
     });
 
-    test("should select all cells in a row when clicking row checkbox", async ({
-      page,
-    }) => {
+    test('should select all cells in a row when clicking row checkbox', async ({ page }) => {
       await templateTestBase.activateTemplateSelectMode(page);
 
       const rowHeaders = templateTestBase.getTemplateRowHeaders(page);
       const firstRowHeader = rowHeaders.first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("template-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('template-row-header-', ''));
 
       // Click row checkbox
-      const rowCheckbox = templateTestBase.getTemplateRowCheckbox(
-        page,
-        shiftId!,
-      );
+      const rowCheckbox = templateTestBase.getTemplateRowCheckbox(page, shiftId!);
       await rowCheckbox.click();
 
       // Verify that action buttons are enabled (indicating cells are selected)
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
       await expect(bulkElements.deleteButton).toBeEnabled();
       await expect(bulkElements.confirmButton).toBeEnabled();
 
       // Verify that individual cells in the row are checked
-      const firstCellCheckbox = templateTestBase.getTemplateCellCheckbox(
-        page,
-        shiftId!,
-        0,
-        0,
-      );
+      const firstCellCheckbox = templateTestBase.getTemplateCellCheckbox(page, shiftId!, 0, 0);
       await expect(firstCellCheckbox).toBeChecked();
     });
 
-    test("should apply bulk changes to selected cells", async ({ page }) => {
+    test('should apply bulk changes to selected cells', async ({ page }) => {
       await templateTestBase.activateTemplateSelectMode(page);
 
       const rowHeaders = templateTestBase.getTemplateRowHeaders(page);
       const firstRowHeader = rowHeaders.first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("template-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('template-row-header-', ''));
 
       // Select a few cells
       for (let dayIndex = 0; dayIndex < 2; dayIndex++) {
-        const checkbox = templateTestBase.getTemplateCellCheckbox(
-          page,
-          shiftId!,
-          0,
-          dayIndex,
-        );
+        const checkbox = templateTestBase.getTemplateCellCheckbox(page, shiftId!, 0, dayIndex);
         await checkbox.click();
       }
 
       // Apply bulk change with value "3"
       // Note: This will automatically exit bulk mode
-      await templateTestBase.applyTemplateBulkChange(page, "3");
+      await templateTestBase.applyTemplateBulkChange(page, '3');
 
       // Verify the values were set (bulk mode has already exited after applying changes)
       for (let dayIndex = 0; dayIndex < 2; dayIndex++) {
-        const valueElement = templateTestBase.getTemplateValue(
-          page,
-          shiftId!,
-          0,
-          dayIndex,
-        );
-        await expect(valueElement).toContainText("3");
+        const valueElement = templateTestBase.getTemplateValue(page, shiftId!, 0, dayIndex);
+        await expect(valueElement).toContainText('3');
       }
     });
   });
 
-  test.describe("Weekend Styling", () => {
-    test("should apply weekend styling to Saturday and Sunday columns", async ({
-      page,
-    }) => {
+  test.describe('Weekend Styling', () => {
+    test('should apply weekend styling to Saturday and Sunday columns', async ({ page }) => {
       // Wait for table to load
       await templateTestBase.waitForTemplateTableLoaded(page);
 
       const rowHeaders = templateTestBase.getTemplateRowHeaders(page);
       const firstRowHeader = rowHeaders.first();
       const shiftId = await firstRowHeader
-        .getAttribute("data-testid")
-        .then((id) => id?.replace("template-row-header-", ""));
+        .getAttribute('data-testid')
+        .then((id) => id?.replace('template-row-header-', ''));
 
       // Check Saturday (dayIndex 5) and Sunday (dayIndex 6) cells have weekend styling
-      const saturdayCell = templateTestBase.getTemplateCell(
-        page,
-        shiftId!,
-        0,
-        5,
-      );
+      const saturdayCell = templateTestBase.getTemplateCell(page, shiftId!, 0, 5);
       const sundayCell = templateTestBase.getTemplateCell(page, shiftId!, 0, 6);
 
       // Check that weekend cells have the weekend class

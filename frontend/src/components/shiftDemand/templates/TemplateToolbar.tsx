@@ -9,7 +9,7 @@
  * - Build from demands button
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -27,23 +27,23 @@ import {
   DialogActions,
   CircularProgress,
   Paper,
-} from "@mui/material";
-import { NavigateBefore, NavigateNext, Add, Remove } from "@mui/icons-material";
-import { useTranslation } from "../../../app/i18n/client";
+} from '@mui/material';
+import { NavigateBefore, NavigateNext, Add, Remove } from '@mui/icons-material';
+import { useTranslation } from '../../../app/i18n/client';
 import {
   ShiftDemandTemplateDTO,
   TemplateType,
   TemplateWeekDataDTO,
-} from "../../../types/shift-demand-template";
+} from '../../../types/shift-demand-template';
 import {
   getWeekManagementConstraints,
   validateTemplateForTypeChange,
   getValidationErrorMessage,
-} from "../../../utils/templateValidation";
-import { ConfirmEvenOddDialog } from "./dialogs/ConfirmEvenOddDialog";
-import styles from "./TemplateToolbar.module.css";
+} from '../../../utils/templateValidation';
+import { ConfirmEvenOddDialog } from './dialogs/ConfirmEvenOddDialog';
+import styles from './TemplateToolbar.module.css';
 
-type WeeksToShow = 1 | 2 | "all";
+type WeeksToShow = 1 | 2 | 'all';
 
 interface TemplateToolbarProps {
   lng: string;
@@ -85,21 +85,18 @@ export function TemplateToolbar({
   onToggleBulkMode,
   updateLoading = false,
 }: TemplateToolbarProps) {
-  const { t } = useTranslation(lng, "shift-demand-templates");
+  const { t } = useTranslation(lng, 'shift-demand-templates');
 
   // Loading states
   const [addWeekLoading, setAddWeekLoading] = useState(false);
-  const [deleteWeekLoading, setDeleteWeekLoading] = useState<
-    Map<number, boolean>
-  >(new Map());
+  const [deleteWeekLoading, setDeleteWeekLoading] = useState<Map<number, boolean>>(new Map());
   // Remove typeToggleLoading - use updateLoading from parent
 
   // Confirmation dialogs
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [weekToDelete, setWeekToDelete] = useState<number | null>(null);
   const [confirmEvenOddOpen, setConfirmEvenOddOpen] = useState(false);
-  const [pendingTemplateType, setPendingTemplateType] =
-    useState<TemplateType | null>(null);
+  const [pendingTemplateType, setPendingTemplateType] = useState<TemplateType | null>(null);
 
   // Calculate week management constraints based on template type
   const weekConstraints = useMemo(() => {
@@ -108,12 +105,12 @@ export function TemplateToolbar({
 
   // Navigation logic
   const canNavigatePrevious = useMemo(() => {
-    if (weeksToShow === "all") return false;
+    if (weeksToShow === 'all') return false;
     return currentWeek > 0;
   }, [currentWeek, weeksToShow]);
 
   const canNavigateNext = useMemo(() => {
-    if (weeksToShow === "all") return false;
+    if (weeksToShow === 'all') return false;
     const maxStartWeek = totalWeeks - (weeksToShow === 2 ? 2 : 1);
     return currentWeek < Math.max(0, maxStartWeek);
   }, [currentWeek, weeksToShow, totalWeeks]);
@@ -137,8 +134,8 @@ export function TemplateToolbar({
     try {
       await onAddWeek();
     } catch (error) {
-      console.error("Failed to add week:", error);
-      onError(error instanceof Error ? error.message : "Failed to add week");
+      console.error('Failed to add week:', error);
+      onError(error instanceof Error ? error.message : 'Failed to add week');
     } finally {
       setAddWeekLoading(false);
     }
@@ -160,8 +157,8 @@ export function TemplateToolbar({
       setDeleteConfirmOpen(false);
       setWeekToDelete(null);
     } catch (error) {
-      console.error("Failed to delete week:", error);
-      onError(error instanceof Error ? error.message : "Failed to delete week");
+      console.error('Failed to delete week:', error);
+      onError(error instanceof Error ? error.message : 'Failed to delete week');
     } finally {
       setDeleteWeekLoading((prev) => {
         const newMap = new Map(prev);
@@ -195,15 +192,11 @@ export function TemplateToolbar({
     }
 
     // For non-EVEN_ODD conversions, proceed with validation
-    const validation = validateTemplateForTypeChange(
-      templateType,
-      newType,
-      totalWeeks,
-    );
+    const validation = validateTemplateForTypeChange(templateType, newType, totalWeeks);
 
     if (!validation.isValid) {
       const errorMessage = getValidationErrorMessage(
-        validation.error || "unknown_error",
+        validation.error || 'unknown_error',
         newType,
         totalWeeks,
       );
@@ -220,12 +213,8 @@ export function TemplateToolbar({
     try {
       await onTemplateTypeChange(newType);
     } catch (error) {
-      console.error("Failed to update template type:", error);
-      onError(
-        error instanceof Error
-          ? error.message
-          : "Failed to update template type",
-      );
+      console.error('Failed to update template type:', error);
+      onError(error instanceof Error ? error.message : 'Failed to update template type');
     }
   };
 
@@ -246,13 +235,13 @@ export function TemplateToolbar({
 
   // Format displayed weeks
   const formatDisplayedWeeks = () => {
-    if (weeksToShow === "all") {
-      return t("all_weeks");
+    if (weeksToShow === 'all') {
+      return t('all_weeks');
     }
     if (displayedWeeks.length === 1) {
       return displayedWeeks[0] + 1;
     }
-    return displayedWeeks.map((w) => w + 1).join(", ");
+    return displayedWeeks.map((w) => w + 1).join(', ');
   };
 
   return (
@@ -262,7 +251,7 @@ export function TemplateToolbar({
         <div className={styles.leftSection}>
           {/* Week Navigator */}
           <div className={styles.weekNavigation}>
-            <Tooltip title={t("previous_week")}>
+            <Tooltip title={t('previous_week')}>
               <span>
                 <button
                   data-testid="template-toolbar-previous-week-button"
@@ -274,7 +263,7 @@ export function TemplateToolbar({
                 </button>
               </span>
             </Tooltip>
-            <Tooltip title={t("next_week")}>
+            <Tooltip title={t('next_week')}>
               <span>
                 <button
                   data-testid="template-toolbar-next-week-button"
@@ -293,16 +282,12 @@ export function TemplateToolbar({
                 fontWeight={500}
                 data-testid="template-toolbar-week-display"
               >
-                {weeksToShow === "all" ? (
+                {weeksToShow === 'all' ? (
                   formatDisplayedWeeks()
                 ) : (
                   <>
-                    {t("week")} {formatDisplayedWeeks()}
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      color="textSecondary"
-                    >
+                    {t('week')} {formatDisplayedWeeks()}
+                    <Typography component="span" variant="caption" color="textSecondary">
                       /{totalWeeks}
                     </Typography>
                   </>
@@ -316,7 +301,7 @@ export function TemplateToolbar({
                 title={
                   weekConstraints.removeButtonDisabledReason
                     ? t(weekConstraints.removeButtonDisabledReason)
-                    : t("remove_week")
+                    : t('remove_week')
                 }
               >
                 <span>
@@ -324,11 +309,10 @@ export function TemplateToolbar({
                     data-testid="template-toolbar-remove-week-button"
                     onClick={() => handleDeleteWeekClick(totalWeeks - 1)}
                     disabled={
-                      !weekConstraints.canRemoveWeek ||
-                      deleteWeekLoading.get(totalWeeks - 1)
+                      !weekConstraints.canRemoveWeek || deleteWeekLoading.get(totalWeeks - 1)
                     }
                     className={styles.iconButton}
-                    style={{ marginRight: "4px" }}
+                    style={{ marginRight: '4px' }}
                   >
                     {deleteWeekLoading.get(totalWeeks - 1) ? (
                       <CircularProgress size={16} />
@@ -342,7 +326,7 @@ export function TemplateToolbar({
                 title={
                   weekConstraints.addButtonDisabledReason
                     ? t(weekConstraints.addButtonDisabledReason)
-                    : t("add_week")
+                    : t('add_week')
                 }
               >
                 <span>
@@ -352,11 +336,7 @@ export function TemplateToolbar({
                     disabled={!weekConstraints.canAddWeek || addWeekLoading}
                     className={styles.iconButton}
                   >
-                    {addWeekLoading ? (
-                      <CircularProgress size={16} />
-                    ) : (
-                      <Add fontSize="small" />
-                    )}
+                    {addWeekLoading ? <CircularProgress size={16} /> : <Add fontSize="small" />}
                   </button>
                 </span>
               </Tooltip>
@@ -392,77 +372,75 @@ export function TemplateToolbar({
               size="small"
               disabled={updateLoading}
             >
-              <Tooltip title={t("standard_template_tooltip")}>
+              <Tooltip title={t('standard_template_tooltip')}>
                 <span>
                   <ToggleButton
                     data-testid="template-toolbar-standard-type-button"
                     value={TemplateType.STANDARD}
                   >
-                    {t("standard")}
+                    {t('standard')}
                   </ToggleButton>
                 </span>
               </Tooltip>
-              <Tooltip title={t("even_odd_template_tooltip")}>
+              <Tooltip title={t('even_odd_template_tooltip')}>
                 <span>
                   <ToggleButton
                     data-testid="template-toolbar-even-odd-type-button"
                     value={TemplateType.EVEN_ODD}
                   >
-                    {t("even_odd")}
+                    {t('even_odd')}
                   </ToggleButton>
                 </span>
               </Tooltip>
             </ToggleButtonGroup>
-            {updateLoading && (
-              <CircularProgress size={16} style={{ marginLeft: "8px" }} />
-            )}
+            {updateLoading && <CircularProgress size={16} style={{ marginLeft: '8px' }} />}
           </div>
         </div>
 
         {/* Third Group: Select Button and From Demands Button */}
         <div className={styles.rightSection}>
-          <Tooltip title={t("import_template_from_existing_coverage")}>
+          <Tooltip title={t('import_template_from_existing_coverage')}>
             <span>
               <button
                 data-testid="template-toolbar-from-demands-button"
                 onClick={onBuildFromDemands}
                 className={styles.standardButton}
               >
-                {t("import")}
+                {t('import')}
               </button>
             </span>
           </Tooltip>
 
-          <Tooltip title={t("select_tooltip")}>
+          <Tooltip title={t('select_tooltip')}>
             <span>
               <button
                 data-testid="template-toolbar-select-button"
                 onClick={onToggleBulkMode}
                 style={{
-                  borderRadius: "4px",
-                  border: "1px solid #e5e7eb",
-                  height: "35px",
-                  padding: "0 15px",
-                  fontSize: "0.9rem",
+                  borderRadius: '4px',
+                  border: '1px solid #e5e7eb',
+                  height: '35px',
+                  padding: '0 15px',
+                  fontSize: '0.9rem',
                   fontWeight: 550,
-                  color: bulkModeActive ? "white" : "#616161",
-                  backgroundColor: bulkModeActive ? "#1976d2" : "white",
-                  cursor: "pointer",
-                  transition: "background-color 0.2s ease",
-                  marginLeft: "8px",
+                  color: bulkModeActive ? 'white' : '#616161',
+                  backgroundColor: bulkModeActive ? '#1976d2' : 'white',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease',
+                  marginLeft: '8px',
                 }}
                 onMouseEnter={(e) => {
                   if (!bulkModeActive) {
-                    e.currentTarget.style.backgroundColor = "#f0f0f0";
+                    e.currentTarget.style.backgroundColor = '#f0f0f0';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!bulkModeActive) {
-                    e.currentTarget.style.backgroundColor = "white";
+                    e.currentTarget.style.backgroundColor = 'white';
                   }
                 }}
               >
-                {t("select", "Select")}
+                {t('select', 'Select')}
               </button>
             </span>
           </Tooltip>
@@ -477,11 +455,11 @@ export function TemplateToolbar({
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>{t("confirm_delete_week")}</DialogTitle>
+        <DialogTitle>{t('confirm_delete_week')}</DialogTitle>
         <DialogContent>
           <Typography>
-            {t("confirm_delete_week_message", {
-              week: weekToDelete !== null ? weekToDelete + 1 : "",
+            {t('confirm_delete_week_message', {
+              week: weekToDelete !== null ? weekToDelete + 1 : '',
             })}
           </Typography>
         </DialogContent>
@@ -490,21 +468,19 @@ export function TemplateToolbar({
             data-testid="template-toolbar-delete-week-cancel-button"
             onClick={() => setDeleteConfirmOpen(false)}
           >
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             data-testid="template-toolbar-delete-week-confirm-button"
             onClick={handleDeleteWeekConfirm}
             color="error"
             variant="contained"
-            disabled={
-              weekToDelete !== null && deleteWeekLoading.get(weekToDelete)
-            }
+            disabled={weekToDelete !== null && deleteWeekLoading.get(weekToDelete)}
           >
             {weekToDelete !== null && deleteWeekLoading.get(weekToDelete) ? (
               <CircularProgress size={20} />
             ) : (
-              t("delete")
+              t('delete')
             )}
           </Button>
         </DialogActions>
@@ -517,9 +493,7 @@ export function TemplateToolbar({
         onConfirm={handleEvenOddConfirm}
         currentWeeks={totalWeeks}
         weeksToDelete={
-          totalWeeks > 2
-            ? Array.from({ length: totalWeeks - 2 }, (_, i) => i + 2)
-            : []
+          totalWeeks > 2 ? Array.from({ length: totalWeeks - 2 }, (_, i) => i + 2) : []
         }
         lng={lng}
         templateName={template.name}

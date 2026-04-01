@@ -7,10 +7,10 @@
  * - Testing mobile-specific UI elements and interactions
  */
 
-import { test, expect } from "@playwright/test";
-import { ScheduleTestBase } from "../../utils/schedule-test-base";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import { test, expect } from '@playwright/test';
+import { ScheduleTestBase } from '../../utils/schedule-test-base';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(utc);
 
@@ -20,7 +20,7 @@ test.use({
   isMobile: true,
 });
 
-test.describe("Mobile Schedule Page - Member without Worker Profile", () => {
+test.describe('Mobile Schedule Page - Member without Worker Profile', () => {
   const scheduleTestBase = new ScheduleTestBase();
 
   test.beforeAll(async () => {
@@ -40,9 +40,7 @@ test.describe("Mobile Schedule Page - Member without Worker Profile", () => {
     await scheduleTestBase.navigateToSchedulePage(page);
   });
 
-  test("should display error message when member has no worker profile", async ({
-    page,
-  }) => {
+  test('should display error message when member has no worker profile', async ({ page }) => {
     // Wait for the mobile schedule page to render
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
@@ -55,12 +53,10 @@ test.describe("Mobile Schedule Page - Member without Worker Profile", () => {
     // Verify the alert has info severity
     await expect(alert).toHaveClass(/MuiAlert-standardInfo/);
 
-    console.log(
-      "✅ Error message displayed correctly for mobile member without worker profile",
-    );
+    console.log('✅ Error message displayed correctly for mobile member without worker profile');
   });
 
-  test("should not display schedule content when member has no worker profile", async ({
+  test('should not display schedule content when member has no worker profile', async ({
     page,
   }) => {
     // Wait for the page to fully load
@@ -69,59 +65,43 @@ test.describe("Mobile Schedule Page - Member without Worker Profile", () => {
     });
 
     // Verify that worker schedule is NOT present
-    const workerSchedule = page.locator(
-      '[data-testid="mobile-worker-schedule"]',
-    );
+    const workerSchedule = page.locator('[data-testid="mobile-worker-schedule"]');
     await expect(workerSchedule).not.toBeVisible();
 
     // Verify that team schedule is NOT present
     const teamSchedule = page.locator('[data-testid="mobile-team-schedule"]');
     await expect(teamSchedule).not.toBeVisible();
 
-    console.log(
-      "✅ Schedule content correctly hidden for mobile member without worker profile",
-    );
+    console.log('✅ Schedule content correctly hidden for mobile member without worker profile');
   });
 
-  test("should not display FAB button when member has no worker profile", async ({
-    page,
-  }) => {
+  test('should not display FAB button when member has no worker profile', async ({ page }) => {
     // Wait for the page to fully load
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
     });
 
     // Verify that the FAB (Floating Action Button) is NOT visible
-    const fabButton = page.locator(
-      '[data-testid="mobile-create-assignment-fab"]',
-    );
+    const fabButton = page.locator('[data-testid="mobile-create-assignment-fab"]');
     await expect(fabButton).not.toBeVisible();
 
-    console.log(
-      "✅ FAB button correctly hidden for mobile member without worker profile",
-    );
+    console.log('✅ FAB button correctly hidden for mobile member without worker profile');
   });
 
-  test("should display settings button when member has no worker profile", async ({
-    page,
-  }) => {
+  test('should display settings button when member has no worker profile', async ({ page }) => {
     // Wait for the page to fully load
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
     });
 
     // Verify that the settings button is NOT visible in the nav
-    const settingsButton = page.locator(
-      '[data-testid="mobile-schedule-settings-button"]',
-    );
+    const settingsButton = page.locator('[data-testid="mobile-schedule-settings-button"]');
     await expect(settingsButton).toBeVisible();
 
-    console.log(
-      "✅ Settings button correctly hidden for mobile member without worker profile",
-    );
+    console.log('✅ Settings button correctly hidden for mobile member without worker profile');
   });
 
-  test("should display error message in landscape mode when member has no worker profile", async ({
+  test('should display error message in landscape mode when member has no worker profile', async ({
     page,
   }) => {
     // Set landscape viewport
@@ -140,18 +120,16 @@ test.describe("Mobile Schedule Page - Member without Worker Profile", () => {
     await expect(alert).toBeVisible();
 
     // Verify that schedule content is NOT visible
-    const workerSchedule = page.locator(
-      '[data-testid="mobile-worker-schedule"]',
-    );
+    const workerSchedule = page.locator('[data-testid="mobile-worker-schedule"]');
     await expect(workerSchedule).not.toBeVisible();
 
     console.log(
-      "✅ Error message displayed correctly in landscape mode for member without worker profile",
+      '✅ Error message displayed correctly in landscape mode for member without worker profile',
     );
   });
 });
 
-test.describe("Mobile Schedule Page - Owner without Assignments", () => {
+test.describe('Mobile Schedule Page - Owner without Assignments', () => {
   const scheduleTestBase = new ScheduleTestBase();
 
   test.beforeAll(async () => {
@@ -169,9 +147,7 @@ test.describe("Mobile Schedule Page - Owner without Assignments", () => {
     await scheduleTestBase.navigateToSchedulePage(page);
   });
 
-  test("should display schedule content for owner even without assignments", async ({
-    page,
-  }) => {
+  test('should display schedule content for owner even without assignments', async ({ page }) => {
     // Wait for the mobile schedule page to render
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
@@ -184,69 +160,53 @@ test.describe("Mobile Schedule Page - Owner without Assignments", () => {
     );
     await expect(scheduleViews.first()).toBeVisible();
 
-    console.log(
-      "✅ Schedule content displayed correctly for mobile owner without assignments",
-    );
+    console.log('✅ Schedule content displayed correctly for mobile owner without assignments');
   });
 
-  test("should display FAB button for owner without assignments", async ({
-    page,
-  }) => {
+  test('should display FAB button for owner without assignments', async ({ page }) => {
     // Wait for the mobile schedule page to render
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
     });
 
     // Verify that the FAB is visible
-    const fabButton = page.locator(
-      '[data-testid="mobile-create-assignment-fab"]',
-    );
+    const fabButton = page.locator('[data-testid="mobile-create-assignment-fab"]');
     await expect(fabButton).toBeVisible();
 
-    console.log("✅ FAB button displayed correctly for mobile owner");
+    console.log('✅ FAB button displayed correctly for mobile owner');
   });
 
-  test("should display settings button for owner", async ({ page }) => {
+  test('should display settings button for owner', async ({ page }) => {
     // Wait for the mobile schedule page to render
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
     });
 
     // Verify that the settings button is visible
-    const settingsButton = page.locator(
-      '[data-testid="mobile-schedule-settings-button"]',
-    );
+    const settingsButton = page.locator('[data-testid="mobile-schedule-settings-button"]');
     await expect(settingsButton).toBeVisible();
 
-    console.log("✅ Settings button displayed correctly for mobile owner");
+    console.log('✅ Settings button displayed correctly for mobile owner');
   });
 
-  test("should open settings dialog when settings button is clicked", async ({
-    page,
-  }) => {
+  test('should open settings dialog when settings button is clicked', async ({ page }) => {
     // Wait for the mobile schedule page to render
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
     });
 
     // Click the settings button
-    const settingsButton = page.locator(
-      '[data-testid="mobile-schedule-settings-button"]',
-    );
+    const settingsButton = page.locator('[data-testid="mobile-schedule-settings-button"]');
     await settingsButton.click();
 
     // Verify that the settings dialog/drawer is visible
-    const settingsDialog = page.locator(
-      '[data-testid="mobile-schedule-settings-dialog"]',
-    );
+    const settingsDialog = page.locator('[data-testid="mobile-schedule-settings-dialog"]');
     await expect(settingsDialog).toBeVisible({ timeout: 5000 });
 
-    console.log("✅ Settings dialog opened correctly from mobile");
+    console.log('✅ Settings dialog opened correctly from mobile');
   });
 
-  test("should not show member error for owner even without data", async ({
-    page,
-  }) => {
+  test('should not show member error for owner even without data', async ({ page }) => {
     // Wait for the page to fully load
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
@@ -256,12 +216,10 @@ test.describe("Mobile Schedule Page - Owner without Assignments", () => {
     const alert = page.locator('[data-testid="no-worker-alert"]');
     await expect(alert).not.toBeVisible();
 
-    console.log("✅ Mobile owner does not see worker profile error");
+    console.log('✅ Mobile owner does not see worker profile error');
   });
 
-  test("should display weekly schedule in landscape mode for owner", async ({
-    page,
-  }) => {
+  test('should display weekly schedule in landscape mode for owner', async ({ page }) => {
     // Set landscape viewport
     await page.setViewportSize({ width: 667, height: 375 });
 
@@ -279,12 +237,10 @@ test.describe("Mobile Schedule Page - Owner without Assignments", () => {
     );
     await expect(scheduleViews.first()).toBeVisible();
 
-    console.log(
-      "✅ Weekly schedule displayed correctly in landscape mode for owner",
-    );
+    console.log('✅ Weekly schedule displayed correctly in landscape mode for owner');
   });
 
-  test("should display FAB in landscape mode for owner", async ({ page }) => {
+  test('should display FAB in landscape mode for owner', async ({ page }) => {
     // Set landscape viewport
     await page.setViewportSize({ width: 667, height: 375 });
 
@@ -297,18 +253,14 @@ test.describe("Mobile Schedule Page - Owner without Assignments", () => {
     });
 
     // Verify that the FAB is visible in landscape
-    const fabButton = page.locator(
-      '[data-testid="mobile-create-assignment-fab"]',
-    );
+    const fabButton = page.locator('[data-testid="mobile-create-assignment-fab"]');
     await expect(fabButton).toBeVisible();
 
-    console.log(
-      "✅ FAB button displayed correctly in landscape mode for owner",
-    );
+    console.log('✅ FAB button displayed correctly in landscape mode for owner');
   });
 });
 
-test.describe("Mobile Schedule Page - Member with Worker Profile but No Assignments", () => {
+test.describe('Mobile Schedule Page - Member with Worker Profile but No Assignments', () => {
   const scheduleTestBase = new ScheduleTestBase();
 
   test.beforeAll(async () => {
@@ -327,9 +279,7 @@ test.describe("Mobile Schedule Page - Member with Worker Profile but No Assignme
     await scheduleTestBase.navigateToSchedulePage(page);
   });
 
-  test("should display schedule content for member with worker profile", async ({
-    page,
-  }) => {
+  test('should display schedule content for member with worker profile', async ({ page }) => {
     // Wait for the mobile schedule page to render
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
@@ -341,52 +291,36 @@ test.describe("Mobile Schedule Page - Member with Worker Profile but No Assignme
     );
     await expect(scheduleViews.first()).toBeVisible();
 
-    console.log(
-      "✅ Schedule content displayed correctly for mobile member with worker profile",
-    );
+    console.log('✅ Schedule content displayed correctly for mobile member with worker profile');
   });
 
-  test("should display FAB button for member with worker profile", async ({
-    page,
-  }) => {
+  test('should display FAB button for member with worker profile', async ({ page }) => {
     // Wait for the mobile schedule page to render
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
     });
 
     // Verify that the FAB is NOT visible for members
-    const fabButton = page.locator(
-      '[data-testid="mobile-create-assignment-fab"]',
-    );
+    const fabButton = page.locator('[data-testid="mobile-create-assignment-fab"]');
     await expect(fabButton).not.toBeVisible();
 
-    console.log(
-      "✅ FAB button correctly hidden for mobile member with worker profile",
-    );
+    console.log('✅ FAB button correctly hidden for mobile member with worker profile');
   });
 
-  test("should display settings button for member with worker profile", async ({
-    page,
-  }) => {
+  test('should display settings button for member with worker profile', async ({ page }) => {
     // Wait for the mobile schedule page to render
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
     });
 
     // Verify that the settings button is visible
-    const settingsButton = page.locator(
-      '[data-testid="mobile-schedule-settings-button"]',
-    );
+    const settingsButton = page.locator('[data-testid="mobile-schedule-settings-button"]');
     await expect(settingsButton).toBeVisible();
 
-    console.log(
-      "✅ Settings button displayed correctly for mobile member with worker profile",
-    );
+    console.log('✅ Settings button displayed correctly for mobile member with worker profile');
   });
 
-  test("should NOT display error message for member with worker profile", async ({
-    page,
-  }) => {
+  test('should NOT display error message for member with worker profile', async ({ page }) => {
     // Wait for the page to fully load
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
@@ -396,31 +330,23 @@ test.describe("Mobile Schedule Page - Member with Worker Profile but No Assignme
     const alert = page.locator('[data-testid="no-worker-alert"]');
     await expect(alert).not.toBeVisible();
 
-    console.log(
-      "✅ Mobile member with worker profile does not see error message",
-    );
+    console.log('✅ Mobile member with worker profile does not see error message');
   });
 
-  test("should be able to create assignment via FAB button", async ({
-    page,
-  }) => {
+  test('should be able to create assignment via FAB button', async ({ page }) => {
     // Wait for the mobile schedule page to render
     await page.waitForSelector('[data-testid="mobile-schedule-container"]', {
       timeout: 10000,
     });
 
     // Members cannot create assignments - FAB should not be visible
-    const fabButton = page.locator(
-      '[data-testid="mobile-create-assignment-fab"]',
-    );
+    const fabButton = page.locator('[data-testid="mobile-create-assignment-fab"]');
     await expect(fabButton).not.toBeVisible();
 
-    console.log(
-      "✅ FAB button correctly hidden - members cannot create assignments",
-    );
+    console.log('✅ FAB button correctly hidden - members cannot create assignments');
   });
 
-  test("should display weekly schedule in landscape mode for member with worker", async ({
+  test('should display weekly schedule in landscape mode for member with worker', async ({
     page,
   }) => {
     // Set landscape viewport
@@ -440,14 +366,10 @@ test.describe("Mobile Schedule Page - Member with Worker Profile but No Assignme
     );
     await expect(scheduleViews.first()).toBeVisible();
 
-    console.log(
-      "✅ Weekly schedule displayed correctly in landscape mode for member with worker",
-    );
+    console.log('✅ Weekly schedule displayed correctly in landscape mode for member with worker');
   });
 
-  test("should NOT display FAB in landscape mode for member", async ({
-    page,
-  }) => {
+  test('should NOT display FAB in landscape mode for member', async ({ page }) => {
     // Set landscape viewport
     await page.setViewportSize({ width: 667, height: 375 });
 
@@ -460,11 +382,9 @@ test.describe("Mobile Schedule Page - Member with Worker Profile but No Assignme
     });
 
     // Verify that the FAB is NOT visible for members in landscape
-    const fabButton = page.locator(
-      '[data-testid="mobile-create-assignment-fab"]',
-    );
+    const fabButton = page.locator('[data-testid="mobile-create-assignment-fab"]');
     await expect(fabButton).not.toBeVisible();
 
-    console.log("✅ FAB button correctly hidden in landscape mode for member");
+    console.log('✅ FAB button correctly hidden in landscape mode for member');
   });
 });

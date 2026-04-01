@@ -11,28 +11,28 @@
  * - Integrated with shift demands data
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../app/i18n/client";
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { useTranslation } from '../../app/i18n/client';
 // MUI
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Alert from "@mui/material/Alert";
-import NoWorkerAssigned from "../common/NoWorkerAssigned";
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
+import NoWorkerAssigned from '../common/NoWorkerAssigned';
 // Components
-import RequestPanel from "./request-panel";
-import RequestTable from "./request-table";
-import { RequestCalendar } from "./request-calendar";
-import MobileRequestTab from "./mobile/mobile-request-tab";
+import RequestPanel from './request-panel';
+import RequestTable from './request-table';
+import { RequestCalendar } from './request-calendar';
+import MobileRequestTab from './mobile/mobile-request-tab';
 // Hooks
-import { useIsMobile } from "../../hooks/useIsMobile";
-import { useShiftDemands } from "../../app/lib/hooks/useShiftDemands";
-import { useRequestViewSettings } from "../../app/lib/hooks/useRequestCalendarViewSettings";
+import { useIsMobile } from '../../hooks/useIsMobile';
+import { useShiftDemands } from '../../app/lib/hooks/useShiftDemands';
+import { useRequestViewSettings } from '../../app/lib/hooks/useRequestCalendarViewSettings';
 import {
   useAddRequest,
   useUpdateRequest,
@@ -41,23 +41,23 @@ import {
   useAcceptRequest,
   useDenyRequest,
   useGetRequestsTabData,
-} from "../../hooks/useRequest";
-import { useUserWorker } from "../../hooks/useUserWorker";
-import { useGetShiftOptions } from "../../hooks/useStats";
-import { useApiClient } from "../../app/lib/api-client";
-import { useGetRequestDeadline } from "../../hooks/useSchedule";
+} from '../../hooks/useRequest';
+import { useUserWorker } from '../../hooks/useUserWorker';
+import { useGetShiftOptions } from '../../hooks/useStats';
+import { useApiClient } from '../../app/lib/api-client';
+import { useGetRequestDeadline } from '../../hooks/useSchedule';
 // API clients
-import { RequestApi } from "../../app/lib/api/requestApi";
-import { ShiftApi } from "../../app/lib/api/shiftApi";
+import { RequestApi } from '../../app/lib/api/requestApi';
+import { ShiftApi } from '../../app/lib/api/shiftApi';
 // Styles
-import "../../styles/tab-container-styles.css";
-import "../../styles/text-styles.css";
+import '../../styles/tab-container-styles.css';
+import '../../styles/text-styles.css';
 // Types
-import { RequestT } from "../../types/request";
-import { ShiftT } from "../../types/shift";
-import { WorkerT } from "../../types/worker";
-import { TeamMembershipRole } from "@/types/team";
-import { ShiftWorkerOptionT } from "@/types/constraint";
+import { RequestT } from '../../types/request';
+import { ShiftT } from '../../types/shift';
+import { WorkerT } from '../../types/worker';
+import { TeamMembershipRole } from '@/types/team';
+import { ShiftWorkerOptionT } from '@/types/constraint';
 
 dayjs.extend(utc);
 
@@ -72,7 +72,7 @@ export default function RequestTab({
   userId: string;
   userTeamRole: TeamMembershipRole;
 }) {
-  const { t } = useTranslation(lng, "request-page");
+  const { t } = useTranslation(lng, 'request-page');
   const isMobile = useIsMobile();
   const apiClient = useApiClient();
 
@@ -102,14 +102,11 @@ export default function RequestTab({
   const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
   const [showPastRequests, setShowPastRequests] = useState<boolean>(false);
-  const [deadlineBannerDate, setDeadlineBannerDate] =
-    useState<dayjs.Dayjs | null>(null);
+  const [deadlineBannerDate, setDeadlineBannerDate] = useState<dayjs.Dayjs | null>(null);
 
   // Check if member has no worker association
   const memberHasNoWorker =
-    userTeamRole === TeamMembershipRole.MEMBER &&
-    !isLoadingUserWorker &&
-    userWorker === null;
+    userTeamRole === TeamMembershipRole.MEMBER && !isLoadingUserWorker && userWorker === null;
 
   // React Query hooks for shift demands - use broader date range for requests calendar
   // Only fetch shift demands for team owners
@@ -121,8 +118,8 @@ export default function RequestTab({
     error: shiftDemandError,
   } = useShiftDemands(
     teamId,
-    dayjs().utc().startOf("year"), // Start of current year
-    dayjs().utc().add(1, "year").endOf("year"), // End of next year
+    dayjs().utc().startOf('year'), // Start of current year
+    dayjs().utc().add(1, 'year').endOf('year'), // End of next year
     {
       enabled: userTeamRole !== TeamMembershipRole.MEMBER,
       bufferDays: 0, // No buffer needed for requests view
@@ -136,7 +133,7 @@ export default function RequestTab({
     const past: RequestT[] = [];
 
     requests.forEach((request) => {
-      if (request.endDate.isBefore(now, "day")) {
+      if (request.endDate.isBefore(now, 'day')) {
         past.push(request);
       } else {
         current.push(request);
@@ -160,7 +157,7 @@ export default function RequestTab({
         const newRequest = await addRequest(request, teamId);
         setRequests([...requests, newRequest]);
       } catch (error) {
-        console.error("Failed to add request:", error);
+        console.error('Failed to add request:', error);
         // Handle error appropriately (could show a toast notification)
       }
     },
@@ -171,13 +168,9 @@ export default function RequestTab({
     async (request: RequestT) => {
       try {
         const updatedRequest = await updateRequest(request, teamId);
-        setRequests(
-          requests.map((r) =>
-            r.id === updatedRequest.id ? updatedRequest : r,
-          ),
-        );
+        setRequests(requests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)));
       } catch (error) {
-        console.error("Failed to update request:", error);
+        console.error('Failed to update request:', error);
         // Handle error appropriately
       }
     },
@@ -190,7 +183,7 @@ export default function RequestTab({
         await deleteRequest(requestId, teamId);
         setRequests(requests.filter((r) => r.id !== requestId));
       } catch (error) {
-        console.error("Failed to delete request:", error);
+        console.error('Failed to delete request:', error);
         // Handle error appropriately
       }
     },
@@ -202,13 +195,9 @@ export default function RequestTab({
       try {
         const result = await rescindRequest(requestId, teamId);
         const rescindedRequest = result.request;
-        setRequests(
-          requests.map((r) =>
-            r.id === rescindedRequest.id ? rescindedRequest : r,
-          ),
-        );
+        setRequests(requests.map((r) => (r.id === rescindedRequest.id ? rescindedRequest : r)));
       } catch (error) {
-        console.error("Failed to rescind request:", error);
+        console.error('Failed to rescind request:', error);
         // Handle error appropriately
       }
     },
@@ -221,13 +210,9 @@ export default function RequestTab({
         const result = await acceptRequest(requestId, teamId);
         // result contains { request, assignments }
         const acceptedRequest = result.request;
-        setRequests(
-          requests.map((r) =>
-            r.id === acceptedRequest.id ? acceptedRequest : r,
-          ),
-        );
+        setRequests(requests.map((r) => (r.id === acceptedRequest.id ? acceptedRequest : r)));
       } catch (error) {
-        console.error("Failed to accept request:", error);
+        console.error('Failed to accept request:', error);
         // Handle error appropriately
       }
     },
@@ -238,11 +223,9 @@ export default function RequestTab({
     async (requestId: string) => {
       try {
         const deniedRequest = await denyRequest(requestId, teamId);
-        setRequests(
-          requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)),
-        );
+        setRequests(requests.map((r) => (r.id === deniedRequest.id ? deniedRequest : r)));
       } catch (error) {
-        console.error("Failed to deny request:", error);
+        console.error('Failed to deny request:', error);
         // Handle error appropriately
       }
     },
@@ -261,9 +244,7 @@ export default function RequestTab({
           // For members, pass userWorker.id to filter requests
           // For owners, pass undefined to fetch all requests
           const filterByWorkerId =
-            userTeamRole === TeamMembershipRole.MEMBER
-              ? userWorker?.id
-              : undefined;
+            userTeamRole === TeamMembershipRole.MEMBER ? userWorker?.id : undefined;
 
           // For members, we already have userWorker from cache - no need to fetch all workers
           // For owners, fetch all workers for the UI
@@ -292,7 +273,7 @@ export default function RequestTab({
             setShiftOptions(fetchedShiftOptions);
           }
         } catch (error) {
-          console.error("Failed to fetch requests tab data:", error);
+          console.error('Failed to fetch requests tab data:', error);
           // Handle error appropriately
         }
       }
@@ -327,8 +308,7 @@ export default function RequestTab({
   }, [getRequestDeadline]);
 
   // Use persistent settings for request view (includes selectedTab, filters, sort, calendar settings)
-  const [requestViewSettings, updateRequestViewSettings] =
-    useRequestViewSettings(teamId);
+  const [requestViewSettings, updateRequestViewSettings] = useRequestViewSettings(teamId);
 
   // Render mobile version if on mobile device
   if (isMobile) {
@@ -356,54 +336,47 @@ export default function RequestTab({
   return (
     <div className="tab-container-wide" data-testid="request-tab">
       {memberHasNoWorker ? (
-        <NoWorkerAssigned message={t("error_no_worker_assigned")} />
+        <NoWorkerAssigned message={t('error_no_worker_assigned')} />
       ) : (
         <div>
           {deadlineBannerDate && (
-            <Alert
-              severity="info"
-              sx={{ mx: 2, mt: 1 }}
-              data-testid="request-deadline-banner"
-            >
-              {t("request_deadline_banner", {
-                date: deadlineBannerDate.format("MMM D, YYYY"),
+            <Alert severity="info" sx={{ mx: 2, mt: 1 }} data-testid="request-deadline-banner">
+              {t('request_deadline_banner', {
+                date: deadlineBannerDate.format('MMM D, YYYY'),
               })}
             </Alert>
           )}
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               marginBottom: 2,
             }}
           >
             <Tabs
-              value={requestViewSettings.selectedTab === "calendar" ? 1 : 0}
+              value={requestViewSettings.selectedTab === 'calendar' ? 1 : 0}
               onChange={(_e, v) =>
                 updateRequestViewSettings({
-                  selectedTab: v === 1 ? "calendar" : "table",
+                  selectedTab: v === 1 ? 'calendar' : 'table',
                 })
               }
               sx={{
                 marginLeft: 2,
-                "& .MuiTab-root": {
-                  textTransform: "none",
+                '& .MuiTab-root': {
+                  textTransform: 'none',
                 },
               }}
               aria-label="Request Tabs"
               data-testid="request-tabs"
             >
-              <Tab label={t("list") || "List"} data-testid="requests-tab" />
-              <Tab
-                label={t("calendar") || "Calendar"}
-                data-testid="calendar-tab"
-              />
+              <Tab label={t('list') || 'List'} data-testid="requests-tab" />
+              <Tab label={t('calendar') || 'Calendar'} data-testid="calendar-tab" />
             </Tabs>
 
-            <div className="flex items-center gap-4">
-              {requestViewSettings.selectedTab === "table" && (
-                <div className="flex items-center gap-2">
+            <div className="gap-4 flex items-center">
+              {requestViewSettings.selectedTab === 'table' && (
+                <div className="gap-2 flex items-center">
                   <FormControlLabel
                     control={
                       <Switch
@@ -416,7 +389,7 @@ export default function RequestTab({
                     }
                     label={
                       <Typography variant="body2" className="text-gray-600">
-                        {t("show_past") || "Show Past"}
+                        {t('show_past') || 'Show Past'}
                       </Typography>
                     }
                   />
@@ -441,7 +414,7 @@ export default function RequestTab({
               />
             </div>
           </div>
-          {requestViewSettings.selectedTab === "table" && (
+          {requestViewSettings.selectedTab === 'table' && (
             <RequestTable
               lng={lng}
               teamId={teamId}
@@ -460,13 +433,11 @@ export default function RequestTab({
               viewSettings={requestViewSettings}
               onUpdateViewSettings={updateRequestViewSettings}
               requestDeadline={
-                deadlineBannerDate
-                  ? { deadlineDate: deadlineBannerDate }
-                  : undefined
+                deadlineBannerDate ? { deadlineDate: deadlineBannerDate } : undefined
               }
             />
           )}
-          {requestViewSettings.selectedTab === "calendar" && (
+          {requestViewSettings.selectedTab === 'calendar' && (
             <RequestCalendar
               workers={workers}
               requests={requests}
@@ -477,9 +448,7 @@ export default function RequestTab({
               shiftOptions={shiftOptions}
               userTeamRole={userTeamRole}
               viewSettings={requestViewSettings}
-              onUpdateViewSettings={(updates) =>
-                updateRequestViewSettings(updates)
-              }
+              onUpdateViewSettings={(updates) => updateRequestViewSettings(updates)}
               handleAddRequest={handleAddRequest}
               handleUpdateRequest={handleUpdateRequest}
               handleDeleteRequest={handleDeleteRequest}

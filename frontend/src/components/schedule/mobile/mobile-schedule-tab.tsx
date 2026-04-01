@@ -1,42 +1,42 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import isoWeek from "dayjs/plugin/isoWeek";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
-import Fab from "@mui/material/Fab";
-import CircularProgress from "@mui/material/CircularProgress";
-import AddIcon from "@mui/icons-material/Add";
-import NoWorkerAssigned from "../../common/NoWorkerAssigned";
+import Box from '@mui/material/Box';
+import Fab from '@mui/material/Fab';
+import CircularProgress from '@mui/material/CircularProgress';
+import AddIcon from '@mui/icons-material/Add';
+import NoWorkerAssigned from '../../common/NoWorkerAssigned';
 // Hooks
-import { useIsLandscape } from "@/hooks/useIsMobile";
-import { useGetScheduleEntities } from "../../../hooks/useSchedule";
-import { useAssignmentsByPeriod } from "../../../app/lib/hooks/useAssignments";
-import { useScheduleViewSettings } from "../../../app/lib/hooks/useScheduleViewSettings";
-import { getDefaultScheduleViewSettings } from "../../../app/lib/utils/scheduleViewSettingsUtils";
-import { computePeriodEndDate } from "../../../app/lib/utils/scheduleViewSettingsUtils";
-import { calculateMobileBufferMonths } from "../../../app/lib/utils/assignmentBufferUtils";
+import { useIsLandscape } from '@/hooks/useIsMobile';
+import { useGetScheduleEntities } from '../../../hooks/useSchedule';
+import { useAssignmentsByPeriod } from '../../../app/lib/hooks/useAssignments';
+import { useScheduleViewSettings } from '../../../app/lib/hooks/useScheduleViewSettings';
+import { getDefaultScheduleViewSettings } from '../../../app/lib/utils/scheduleViewSettingsUtils';
+import { computePeriodEndDate } from '../../../app/lib/utils/scheduleViewSettingsUtils';
+import { calculateMobileBufferMonths } from '../../../app/lib/utils/assignmentBufferUtils';
 import {
   useAddAssignmentAndRecurrence,
   useUpdateAssignmentAndRecurrence,
   useDeleteAssignment,
-} from "../../../hooks/useAssignment";
+} from '../../../hooks/useAssignment';
 // Types
-import { TeamWithMembership, TeamMembershipRole } from "@/types/team";
-import { ShiftRestType } from "@/types/shift";
-import { AssignmentT, AssignmentsRecurrencesResultT } from "@/types/assignment";
-import { RecurrenceRuleT, RecurrenceUpdateScope } from "@/types/recurrence";
+import { TeamWithMembership, TeamMembershipRole } from '@/types/team';
+import { ShiftRestType } from '@/types/shift';
+import { AssignmentT, AssignmentsRecurrencesResultT } from '@/types/assignment';
+import { RecurrenceRuleT, RecurrenceUpdateScope } from '@/types/recurrence';
 // Local components
-import ScheduleItemDialog from "../dialogs/schedule-item-dialog";
-import { ScheduleItemType, DialogMode } from "../dialogs/schedule-item-types";
-import MobileNavAppBar from "../../app-bar/mobile-nav-app-bar";
-import MobileScheduleNav from "./mobile-schedule-nav";
-import MobileScheduleSettings from "./mobile-schedule-settings";
-import MobileWorkerSchedule from "./mobile-worker-schedule";
-import MobileTeamSchedule from "./mobile-team-schedule";
-import { useUserWorker } from "../../../hooks/useUserWorker";
-import { RoleBased } from "../../access/role-based";
+import ScheduleItemDialog from '../dialogs/schedule-item-dialog';
+import { ScheduleItemType, DialogMode } from '../dialogs/schedule-item-types';
+import MobileNavAppBar from '../../app-bar/mobile-nav-app-bar';
+import MobileScheduleNav from './mobile-schedule-nav';
+import MobileScheduleSettings from './mobile-schedule-settings';
+import MobileWorkerSchedule from './mobile-worker-schedule';
+import MobileTeamSchedule from './mobile-team-schedule';
+import { useUserWorker } from '../../../hooks/useUserWorker';
+import { RoleBased } from '../../access/role-based';
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
@@ -48,14 +48,14 @@ export default function MobileScheduleTab({
   lng: string;
   teamWithMembership: TeamWithMembership;
 }) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
-  const defaultSettings = getDefaultScheduleViewSettings(
-    teamWithMembership.team.useSolver,
+  const defaultSettings = getDefaultScheduleViewSettings(teamWithMembership.team.useSolver);
+
+  const [scheduleViewSettings, updateScheduleViewSettings] = useScheduleViewSettings(
+    teamWithMembership.team.id,
+    defaultSettings,
   );
-
-  const [scheduleViewSettings, updateScheduleViewSettings] =
-    useScheduleViewSettings(teamWithMembership.team.id, defaultSettings);
 
   const getScheduleEntities = useGetScheduleEntities();
 
@@ -89,8 +89,7 @@ export default function MobileScheduleTab({
   }, [scheduleViewSettings.periodStartDate]);
 
   // Determine if user should see campaign assignments (owners/leaders only)
-  const includeCampaign =
-    teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
+  const includeCampaign = teamWithMembership.membership.role !== TeamMembershipRole.MEMBER;
 
   // React Query hook for assignments with smart buffering
   const {
@@ -104,7 +103,7 @@ export default function MobileScheduleTab({
     bufferRange.start,
     bufferRange.end,
     includeCampaign,
-    scheduleViewSettings.mobileSelectedView === "worker"
+    scheduleViewSettings.mobileSelectedView === 'worker'
       ? scheduleViewSettings.mobileSelectedWorkerId || undefined
       : undefined, // Only filter by worker in worker view; team view shows all
     {
@@ -119,7 +118,7 @@ export default function MobileScheduleTab({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [activeAssignment, setActiveAssignment] = useState<any | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [visibleMonth, setVisibleMonth] = useState<string>("");
+  const [visibleMonth, setVisibleMonth] = useState<string>('');
 
   const isLandscape = useIsLandscape();
 
@@ -142,9 +141,7 @@ export default function MobileScheduleTab({
         }
 
         // Fetch entities (shifts and workers) - assignments now loaded via React Query
-        const { workers, shifts } = await getScheduleEntities(
-          teamWithMembership.team.id,
-        );
+        const { workers, shifts } = await getScheduleEntities(teamWithMembership.team.id);
         if (!mounted) return;
         setWorkers(workers);
         setShifts(shifts);
@@ -153,17 +150,12 @@ export default function MobileScheduleTab({
         if (
           workers.length > 0 &&
           (!scheduleViewSettings.mobileSelectedWorkerId ||
-            !workers.find(
-              (w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId,
-            ))
+            !workers.find((w: any) => w.id === scheduleViewSettings.mobileSelectedWorkerId))
         ) {
           // If member, try to preselect user's worker
           const userId = (teamWithMembership as any).membership?.userId || null;
-          const memberWorker = userId
-            ? workers.find((w: any) => w.userId === userId)
-            : null;
-          const defaultWorkerId =
-            (memberWorker && memberWorker.id) || workers[0].id;
+          const memberWorker = userId ? workers.find((w: any) => w.userId === userId) : null;
+          const defaultWorkerId = (memberWorker && memberWorker.id) || workers[0].id;
           updateScheduleViewSettings({
             mobileSelectedWorkerId: defaultWorkerId,
           });
@@ -194,12 +186,12 @@ export default function MobileScheduleTab({
 
   // Build multiple weeks around the current period so the user can scroll across months
   const weeks = useMemo(() => {
-    const center = periodStart.startOf("isoWeek");
+    const center = periodStart.startOf('isoWeek');
     const result: { start: dayjs.Dayjs; end: dayjs.Dayjs }[] = [];
     const range = 8; // weeks before and after
     for (let i = -range; i <= range; i++) {
-      const start = center.add(i, "week");
-      const end = start.add(6, "day");
+      const start = center.add(i, 'week');
+      const end = start.add(6, 'day');
       result.push({ start, end });
     }
     return result;
@@ -211,9 +203,9 @@ export default function MobileScheduleTab({
   const periodDates = useMemo(() => {
     const dates: dayjs.Dayjs[] = [];
     let current = periodStart;
-    while (current.isBefore(periodEnd) || current.isSame(periodEnd, "day")) {
+    while (current.isBefore(periodEnd) || current.isSame(periodEnd, 'day')) {
       dates.push(current);
-      current = current.add(1, "day");
+      current = current.add(1, 'day');
     }
     return dates;
   }, [periodStart, periodEnd]);
@@ -223,7 +215,7 @@ export default function MobileScheduleTab({
   React.useEffect(() => {
     if (hasInitializedMonthRef.current) return;
     const monthLabel = periodStart.format(
-      periodStart.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
+      periodStart.year() === dayjs.utc().year() ? 'MMMM' : 'MMM YYYY',
     );
     setVisibleMonth(monthLabel);
     hasInitializedMonthRef.current = true;
@@ -239,7 +231,7 @@ export default function MobileScheduleTab({
       const shift = shifts.find((s: any) => s.id === a.shiftId);
       if (!shift || shift.restType === ShiftRestType.RECUPERATION) continue; // skip if shift not found or recuperation
 
-      const key = dayjs(a.date).utc().format("YYYY-MM-DD");
+      const key = dayjs(a.date).utc().format('YYYY-MM-DD');
       const arr = map.get(key) || [];
       arr.push(a);
       map.set(key, arr);
@@ -253,8 +245,7 @@ export default function MobileScheduleTab({
     return (
       weeks.find(
         (w) =>
-          periodStart.isSameOrAfter(w.start, "day") &&
-          periodStart.isSameOrBefore(w.end, "day"),
+          periodStart.isSameOrAfter(w.start, 'day') && periodStart.isSameOrBefore(w.end, 'day'),
       ) || weeks[0]
     );
   }, [weeks, periodStart]);
@@ -271,10 +262,7 @@ export default function MobileScheduleTab({
   //////////////////////////
 
   const handleCreateAssignment = useCallback(
-    async (
-      assignment: AssignmentT,
-      recurrence: RecurrenceRuleT | null = null,
-    ) => {
+    async (assignment: AssignmentT, recurrence: RecurrenceRuleT | null = null) => {
       await addAssignmentAndRecurrence(assignment, recurrence);
       // React Query cache invalidation in the mutation hook handles updates automatically
     },
@@ -327,8 +315,7 @@ export default function MobileScheduleTab({
     [teamWithMembership.membership.role],
   );
 
-  const canEdit =
-    teamWithMembership.membership.role === TeamMembershipRole.OWNER;
+  const canEdit = teamWithMembership.membership.role === TeamMembershipRole.OWNER;
 
   // Build mobile navigation content that fills space between hamburger and avatar
   const scheduleMobileNav = (
@@ -344,7 +331,7 @@ export default function MobileScheduleTab({
     return (
       <>
         <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
-        <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
           <CircularProgress />
         </Box>
       </>
@@ -357,7 +344,7 @@ export default function MobileScheduleTab({
         <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
         <Box data-testid="mobile-schedule-container">
           <NoWorkerAssigned
-            message={t("error_no_worker_assigned")}
+            message={t('error_no_worker_assigned')}
             minHeight="calc(100vh - 128px)"
           />
         </Box>
@@ -370,18 +357,16 @@ export default function MobileScheduleTab({
       <MobileNavAppBar lng={lng} mobileContent={scheduleMobileNav} />
       <Box
         data-testid="mobile-schedule-container"
-        sx={{ padding: "0 8px", height: "calc(100vh - 64px)" }}
+        sx={{ padding: '0 8px', height: 'calc(100vh - 64px)' }}
       >
-        {scheduleViewSettings.mobileSelectedView === "worker" ? (
+        {scheduleViewSettings.mobileSelectedView === 'worker' ? (
           <MobileWorkerSchedule
             weeks={weeks}
             currentWeek={currentWeek}
             assignmentsByDate={assignmentsByDate}
             periodDates={periodDates}
             shifts={shifts}
-            selectedWorkerId={
-              scheduleViewSettings.mobileSelectedWorkerId ?? null
-            }
+            selectedWorkerId={scheduleViewSettings.mobileSelectedWorkerId ?? null}
             today={today}
             isLandscape={isLandscape}
             onAssignmentClick={handleAssignmentClick}
@@ -420,7 +405,7 @@ export default function MobileScheduleTab({
             data-testid="mobile-create-assignment-fab"
             color="primary"
             aria-label="create-assignment"
-            sx={{ position: "fixed", bottom: 16, right: 16 }}
+            sx={{ position: 'fixed', bottom: 16, right: 16 }}
             onClick={() => {
               setActiveAssignment(null);
               setSheetOpen(true);
@@ -441,12 +426,8 @@ export default function MobileScheduleTab({
               ? {
                   assignmentData: {
                     assignment: activeAssignment,
-                    worker:
-                      workers.find((w) => w.id === activeAssignment.workerId) ||
-                      null,
-                    shift:
-                      shifts.find((s) => s.id === activeAssignment.shiftId) ||
-                      null,
+                    worker: workers.find((w) => w.id === activeAssignment.workerId) || null,
+                    shift: shifts.find((s) => s.id === activeAssignment.shiftId) || null,
                     breaches: [],
                     requests: [],
                     recurrence: null,
@@ -483,10 +464,8 @@ export default function MobileScheduleTab({
         onWorkerChange={(workerId) =>
           updateScheduleViewSettings({ mobileSelectedWorkerId: workerId })
         }
-        selectedView={scheduleViewSettings.mobileSelectedView || "worker"}
-        onViewChange={(view) =>
-          updateScheduleViewSettings({ mobileSelectedView: view })
-        }
+        selectedView={scheduleViewSettings.mobileSelectedView || 'worker'}
+        onViewChange={(view) => updateScheduleViewSettings({ mobileSelectedView: view })}
         lng={lng}
         userRole={teamWithMembership.membership.role}
       />

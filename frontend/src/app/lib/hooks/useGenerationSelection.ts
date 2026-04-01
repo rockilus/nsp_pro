@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
-import { SelectedScheduleCell } from "../../../types/scheduleSelection";
-import { SolveScopeType } from "../../../types/solveTaskStatus";
+import { useState, useCallback } from 'react';
+import { SelectedScheduleCell } from '../../../types/scheduleSelection';
+import { SolveScopeType } from '../../../types/solveTaskStatus';
 
 interface GenerationSelectionState {
   workerCells: SelectedScheduleCell[];
@@ -11,11 +11,11 @@ interface GenerationSelectionState {
 const DEFAULT_STATE: GenerationSelectionState = {
   workerCells: [],
   shiftCells: [],
-  scopeType: "FULL",
+  scopeType: 'FULL',
 };
 
 function loadFromStorage(campaignId: string): GenerationSelectionState {
-  if (typeof window === "undefined") return DEFAULT_STATE;
+  if (typeof window === 'undefined') return DEFAULT_STATE;
   try {
     const item = localStorage.getItem(`generateSelection_${campaignId}`);
     if (!item) return DEFAULT_STATE;
@@ -25,7 +25,7 @@ function loadFromStorage(campaignId: string): GenerationSelectionState {
       return {
         workerCells: parsed as SelectedScheduleCell[],
         shiftCells: [],
-        scopeType: "FULL",
+        scopeType: 'FULL',
       };
     }
     // Handle previous single-array format with `cells` key (map to workerCells)
@@ -33,37 +33,31 @@ function loadFromStorage(campaignId: string): GenerationSelectionState {
       return {
         workerCells: parsed.cells,
         shiftCells: [],
-        scopeType: parsed.scopeType ?? "FULL",
+        scopeType: parsed.scopeType ?? 'FULL',
       };
     }
     return {
       workerCells: Array.isArray(parsed.workerCells) ? parsed.workerCells : [],
       shiftCells: Array.isArray(parsed.shiftCells) ? parsed.shiftCells : [],
-      scopeType: parsed.scopeType ?? "FULL",
+      scopeType: parsed.scopeType ?? 'FULL',
     };
   } catch {
     return DEFAULT_STATE;
   }
 }
 
-function saveToStorage(
-  campaignId: string,
-  state: GenerationSelectionState,
-): void {
-  if (typeof window === "undefined") return;
+function saveToStorage(campaignId: string, state: GenerationSelectionState): void {
+  if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(
-      `generateSelection_${campaignId}`,
-      JSON.stringify(state),
-    );
+    localStorage.setItem(`generateSelection_${campaignId}`, JSON.stringify(state));
   } catch (error) {
-    console.warn("Error saving generation selection to localStorage:", error);
+    console.warn('Error saving generation selection to localStorage:', error);
   }
 }
 
 /** Removes the generation selection entry for a campaign from localStorage. */
 export function clearGenerationSelection(campaignId: string): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
   localStorage.removeItem(`generateSelection_${campaignId}`);
 }
 
@@ -82,15 +76,11 @@ export function useGenerationSelection(
 ): [
   SelectedScheduleCell[],
   (
-    update:
-      | SelectedScheduleCell[]
-      | ((prev: SelectedScheduleCell[]) => SelectedScheduleCell[]),
+    update: SelectedScheduleCell[] | ((prev: SelectedScheduleCell[]) => SelectedScheduleCell[]),
   ) => void,
   SelectedScheduleCell[],
   (
-    update:
-      | SelectedScheduleCell[]
-      | ((prev: SelectedScheduleCell[]) => SelectedScheduleCell[]),
+    update: SelectedScheduleCell[] | ((prev: SelectedScheduleCell[]) => SelectedScheduleCell[]),
   ) => void,
   SolveScopeType,
   (scope: SolveScopeType) => void,
@@ -108,13 +98,10 @@ export function useGenerationSelection(
 
   const updateWorkerCells = useCallback(
     (
-      update:
-        | SelectedScheduleCell[]
-        | ((prev: SelectedScheduleCell[]) => SelectedScheduleCell[]),
+      update: SelectedScheduleCell[] | ((prev: SelectedScheduleCell[]) => SelectedScheduleCell[]),
     ) => {
       setState((prev) => {
-        const newCells =
-          typeof update === "function" ? update(prev.workerCells) : update;
+        const newCells = typeof update === 'function' ? update(prev.workerCells) : update;
         const newState = { ...prev, workerCells: newCells };
         if (campaignId) saveToStorage(campaignId, newState);
         return newState;
@@ -125,13 +112,10 @@ export function useGenerationSelection(
 
   const updateShiftCells = useCallback(
     (
-      update:
-        | SelectedScheduleCell[]
-        | ((prev: SelectedScheduleCell[]) => SelectedScheduleCell[]),
+      update: SelectedScheduleCell[] | ((prev: SelectedScheduleCell[]) => SelectedScheduleCell[]),
     ) => {
       setState((prev) => {
-        const newCells =
-          typeof update === "function" ? update(prev.shiftCells) : update;
+        const newCells = typeof update === 'function' ? update(prev.shiftCells) : update;
         const newState = { ...prev, shiftCells: newCells };
         if (campaignId) saveToStorage(campaignId, newState);
         return newState;

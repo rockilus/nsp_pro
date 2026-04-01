@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // MUI
-import Chip from "@mui/material/Chip";
-import TableCell from "@mui/material/TableCell";
+import Chip from '@mui/material/Chip';
+import TableCell from '@mui/material/TableCell';
 // Components
-import WorkerSpecialtyCellEdit from "./worker-specialty-cell-edit";
-import PopoverAnchorElOver from "../../../inputs/popover-anchor-el-over";
+import WorkerSpecialtyCellEdit from './worker-specialty-cell-edit';
+import PopoverAnchorElOver from '../../../inputs/popover-anchor-el-over';
 // Types
-import { SpecialtyT } from "@/types/specialty";
-import { WorkerT } from "../../../../types/worker";
+import { SpecialtyT } from '@/types/specialty';
+import { WorkerT } from '../../../../types/worker';
 
 export default function WorkerSpecialtyCell({
   worker,
@@ -60,7 +60,7 @@ export default function WorkerSpecialtyCell({
       data-updating={isUpdating}
       sx={{
         paddingY: 0,
-        cursor: "pointer",
+        cursor: 'pointer',
       }}
     >
       <PopoverAnchorElOver
@@ -68,8 +68,8 @@ export default function WorkerSpecialtyCell({
           <Chip
             key={sId}
             data-testid={`specialty-chip-${sId}`}
-            label={specialties.find((s) => s.id === sId)?.name || ""}
-            sx={{ cursor: "pointer" }}
+            label={specialties.find((s) => s.id === sId)?.name || ''}
+            sx={{ cursor: 'pointer' }}
           />
         ))}
         content={

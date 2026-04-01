@@ -2,17 +2,9 @@
  * API client for swap operations
  */
 
-import {
-  SwapRequestT,
-  SwapStatus,
-  toSwapRequestT,
-  fromSwapRequestT,
-} from "../../../types/swap";
-import {
-  SwapValidationResultT,
-  toSwapValidationResultT,
-} from "../../../types/swapValidation";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { SwapRequestT, SwapStatus, toSwapRequestT, fromSwapRequestT } from '../../../types/swap';
+import { SwapValidationResultT, toSwapValidationResultT } from '../../../types/swapValidation';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class SwapApi extends BaseApi {
   /**
@@ -24,7 +16,7 @@ export class SwapApi extends BaseApi {
     swap: Partial<SwapRequestT>,
   ): Promise<SwapRequestT> {
     if (!teamId || !swap.offeredAssignmentIds) {
-      throw new Error("Team ID and offered assignments are required");
+      throw new Error('Team ID and offered assignments are required');
     }
 
     // Send only the fields needed for creation (not the full swap object)
@@ -33,12 +25,12 @@ export class SwapApi extends BaseApi {
       offeredAssignmentIds: swap.offeredAssignmentIds,
       requestedAssignmentIds: swap.requestedAssignmentIds || null,
       targetWorkerId: swap.targetWorkerId || null,
-      comment: swap.comment || "",
+      comment: swap.comment || '',
     };
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/swaps/teams/${teamId}`,
       createPayload,
     );
@@ -54,7 +46,7 @@ export class SwapApi extends BaseApi {
     status?: SwapStatus,
   ): Promise<SwapRequestT[]> {
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     let endpoint = `/swaps/teams/${teamId}`;
@@ -62,11 +54,7 @@ export class SwapApi extends BaseApi {
       endpoint += `?status=${status}`;
     }
 
-    const responseData = await this.makeRequest<any[]>(
-      apiClient,
-      "get",
-      endpoint,
-    );
+    const responseData = await this.makeRequest<any[]>(apiClient, 'get', endpoint);
     return responseData.map(toSwapRequestT);
   }
 
@@ -78,14 +66,10 @@ export class SwapApi extends BaseApi {
     swapId: string,
   ): Promise<SwapRequestT> {
     if (!swapId) {
-      throw new Error("Swap ID is required");
+      throw new Error('Swap ID is required');
     }
 
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "get",
-      `/swaps/${swapId}`,
-    );
+    const responseData = await this.makeRequest<any>(apiClient, 'get', `/swaps/${swapId}`);
     return toSwapRequestT(responseData);
   }
 
@@ -99,18 +83,13 @@ export class SwapApi extends BaseApi {
     offeredAssignmentIds: string[],
   ): Promise<SwapRequestT> {
     if (!swapId || !bidderWorkerId || !offeredAssignmentIds?.length) {
-      throw new Error("Swap ID, bidder, and offered assignments are required");
+      throw new Error('Swap ID, bidder, and offered assignments are required');
     }
 
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "post",
-      `/swaps/${swapId}/bids`,
-      {
-        bidderWorkerId,
-        offeredAssignmentIds,
-      },
-    );
+    const responseData = await this.makeRequest<any>(apiClient, 'post', `/swaps/${swapId}/bids`, {
+      bidderWorkerId,
+      offeredAssignmentIds,
+    });
     return toSwapRequestT(responseData);
   }
 
@@ -123,12 +102,12 @@ export class SwapApi extends BaseApi {
     bidId: string,
   ): Promise<SwapRequestT> {
     if (!swapId || !bidId) {
-      throw new Error("Swap ID and bid ID are required");
+      throw new Error('Swap ID and bid ID are required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/swaps/${swapId}/accept-bid/${bidId}`,
     );
     return toSwapRequestT(responseData);
@@ -142,12 +121,12 @@ export class SwapApi extends BaseApi {
     swapId: string,
   ): Promise<SwapRequestT> {
     if (!swapId) {
-      throw new Error("Swap ID is required");
+      throw new Error('Swap ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/swaps/${swapId}/cancel-bid-acceptance`,
     );
     return toSwapRequestT(responseData);
@@ -161,14 +140,10 @@ export class SwapApi extends BaseApi {
     swapId: string,
   ): Promise<SwapRequestT> {
     if (!swapId) {
-      throw new Error("Swap ID is required");
+      throw new Error('Swap ID is required');
     }
 
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "post",
-      `/swaps/${swapId}/accept`,
-    );
+    const responseData = await this.makeRequest<any>(apiClient, 'post', `/swaps/${swapId}/accept`);
     return toSwapRequestT(responseData);
   }
 
@@ -180,33 +155,22 @@ export class SwapApi extends BaseApi {
     swapId: string,
   ): Promise<SwapRequestT> {
     if (!swapId) {
-      throw new Error("Swap ID is required");
+      throw new Error('Swap ID is required');
     }
 
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "post",
-      `/swaps/${swapId}/approve`,
-    );
+    const responseData = await this.makeRequest<any>(apiClient, 'post', `/swaps/${swapId}/approve`);
     return toSwapRequestT(responseData);
   }
 
   /**
    * Deny a swap request (leader only)
    */
-  static async denySwap(
-    apiClient: AuthenticatedApiClient,
-    swapId: string,
-  ): Promise<SwapRequestT> {
+  static async denySwap(apiClient: AuthenticatedApiClient, swapId: string): Promise<SwapRequestT> {
     if (!swapId) {
-      throw new Error("Swap ID is required");
+      throw new Error('Swap ID is required');
     }
 
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "post",
-      `/swaps/${swapId}/deny`,
-    );
+    const responseData = await this.makeRequest<any>(apiClient, 'post', `/swaps/${swapId}/deny`);
     return toSwapRequestT(responseData);
   }
 
@@ -218,14 +182,10 @@ export class SwapApi extends BaseApi {
     swapId: string,
   ): Promise<SwapRequestT> {
     if (!swapId) {
-      throw new Error("Swap ID is required");
+      throw new Error('Swap ID is required');
     }
 
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "post",
-      `/swaps/${swapId}/revert`,
-    );
+    const responseData = await this.makeRequest<any>(apiClient, 'post', `/swaps/${swapId}/revert`);
     return toSwapRequestT(responseData);
   }
 
@@ -237,12 +197,12 @@ export class SwapApi extends BaseApi {
     swapId: string,
   ): Promise<SwapValidationResultT> {
     if (!swapId) {
-      throw new Error("Swap ID is required");
+      throw new Error('Swap ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/swaps/${swapId}/validate`,
     );
     return toSwapValidationResultT(responseData);
@@ -251,15 +211,12 @@ export class SwapApi extends BaseApi {
   /**
    * Delete a swap request
    */
-  static async deleteSwap(
-    apiClient: AuthenticatedApiClient,
-    swapId: string,
-  ): Promise<void> {
+  static async deleteSwap(apiClient: AuthenticatedApiClient, swapId: string): Promise<void> {
     if (!swapId) {
-      throw new Error("Swap ID is required");
+      throw new Error('Swap ID is required');
     }
 
-    await this.makeRequest<void>(apiClient, "delete", `/swaps/${swapId}`);
+    await this.makeRequest<void>(apiClient, 'delete', `/swaps/${swapId}`);
   }
 
   /**
@@ -271,12 +228,12 @@ export class SwapApi extends BaseApi {
     bidId: string,
   ): Promise<SwapRequestT> {
     if (!swapId || !bidId) {
-      throw new Error("Swap ID and bid ID are required");
+      throw new Error('Swap ID and bid ID are required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "delete",
+      'delete',
       `/swaps/${swapId}/bids/${bidId}`,
     );
     return toSwapRequestT(responseData);

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * OAuth Callback Page
@@ -19,8 +19,8 @@
  * app has just been redeployed and old cached HTML references stale chunk hashes.
  */
 
-import { use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { use, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Box,
   CircularProgress,
@@ -29,10 +29,10 @@ import {
   Container,
   Alert,
   AlertTitle,
-} from "@mui/material";
-import { useAuth } from "../../../contexts/auth-context";
-import { fallbackLng, languages } from "../../i18n/settings";
-import { env } from "../../../config/env";
+} from '@mui/material';
+import { useAuth } from '../../../contexts/auth-context';
+import { fallbackLng, languages } from '../../i18n/settings';
+import { env } from '../../../config/env';
 
 interface CallbackPageProps {
   // Next.js 15: params is a Promise even for client components.
@@ -54,7 +54,7 @@ export default function CallbackPage({ params }: CallbackPageProps) {
     if (!isAuthenticated) return;
 
     const updateNewUserLanguageAndRedirect = async () => {
-      const storedLocale = localStorage.getItem("rockilus_signup_locale");
+      const storedLocale = localStorage.getItem('rockilus_signup_locale');
 
       if (storedLocale && accessToken) {
         try {
@@ -69,9 +69,9 @@ export default function CallbackPage({ params }: CallbackPageProps) {
 
             if (isNewUser && userData.language !== storedLocale) {
               await fetch(`${env.apiUrl}/users/${userData.id}`, {
-                method: "PUT",
+                method: 'PUT',
                 headers: {
-                  "Content-Type": "application/json",
+                  'Content-Type': 'application/json',
                   Authorization: `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify({
@@ -83,9 +83,9 @@ export default function CallbackPage({ params }: CallbackPageProps) {
             }
           }
         } catch (err) {
-          console.error("Failed to update new user language:", err);
+          console.error('Failed to update new user language:', err);
         } finally {
-          localStorage.removeItem("rockilus_signup_locale");
+          localStorage.removeItem('rockilus_signup_locale');
         }
       }
 
@@ -100,8 +100,7 @@ export default function CallbackPage({ params }: CallbackPageProps) {
   useEffect(() => {
     if (!error) return;
     const t = setTimeout(
-      () =>
-        setCallbackError(error.message ?? "An authentication error occurred."),
+      () => setCallbackError(error.message ?? 'An authentication error occurred.'),
       0,
     );
     return () => clearTimeout(t);

@@ -1,11 +1,11 @@
-import dayjs from "dayjs";
-import { useCallback, useMemo } from "react";
-import { ScheduleViewSettingsT } from "@/types/schedule";
-import { useLocalStorageState } from "./useLocalStorageState";
+import dayjs from 'dayjs';
+import { useCallback, useMemo } from 'react';
+import { ScheduleViewSettingsT } from '@/types/schedule';
+import { useLocalStorageState } from './useLocalStorageState';
 import {
   SerializedScheduleViewSettings,
   validateScheduleViewSettings,
-} from "../utils/scheduleViewSettingsUtils";
+} from '../utils/scheduleViewSettingsUtils';
 
 const scheduleViewSettingsSerializer = {
   serialize: (settings: ScheduleViewSettingsT): string => {
@@ -17,7 +17,7 @@ const scheduleViewSettingsSerializer = {
       };
       return JSON.stringify(serialized);
     } catch (error) {
-      console.warn("Error serializing schedule view settings:", error);
+      console.warn('Error serializing schedule view settings:', error);
       // Return empty object as fallback - will use defaults on deserialize
       return JSON.stringify({});
     }
@@ -30,18 +30,13 @@ const scheduleViewSettingsSerializer = {
       // Convert back to UTC dayjs object if it exists
       const settings: Partial<ScheduleViewSettingsT> = {
         ...parsed,
-        periodStartDate: parsed.periodStartDate
-          ? dayjs.utc(parsed.periodStartDate)
-          : undefined,
+        periodStartDate: parsed.periodStartDate ? dayjs.utc(parsed.periodStartDate) : undefined,
       };
 
       // Validation will be done in the hook, just return the parsed settings
       return settings as ScheduleViewSettingsT;
     } catch (error) {
-      console.warn(
-        "Error deserializing schedule view settings, using defaults:",
-        error,
-      );
+      console.warn('Error deserializing schedule view settings, using defaults:', error);
       // Return partial object - validation will fill in defaults
       return {} as ScheduleViewSettingsT;
     }
@@ -69,10 +64,7 @@ export function useScheduleViewSettings(
       setSettings((prev) => {
         const newSettings = { ...prev, ...updates };
         // Validate before saving to ensure consistency
-        return validateScheduleViewSettings(
-          newSettings,
-          defaultSettings.showDailyShiftDemands,
-        );
+        return validateScheduleViewSettings(newSettings, defaultSettings.showDailyShiftDemands);
       });
     },
     [setSettings, defaultSettings.showDailyShiftDemands],
@@ -85,11 +77,7 @@ export function useScheduleViewSettings(
   // Ensure the current settings are always valid
   // Memoize to prevent creating new objects on every render
   const validatedSettings = useMemo(
-    () =>
-      validateScheduleViewSettings(
-        settings,
-        defaultSettings.showDailyShiftDemands,
-      ),
+    () => validateScheduleViewSettings(settings, defaultSettings.showDailyShiftDemands),
     [settings, defaultSettings.showDailyShiftDemands],
   );
 

@@ -1,17 +1,17 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { DimensionT, DimensionType } from "../types/dimension";
-import { DimEntryT } from "../types/dim-entry";
+import { DimensionT, DimensionType } from '../types/dimension';
+import { DimEntryT } from '../types/dim-entry';
 // API Client
 import {
   DimensionApi,
   AddDimensionResponse,
   GetDimensionsResponse,
-} from "../app/lib/api/dimensionApi";
-import { useApiClient } from "../app/lib/api-client";
+} from '../app/lib/api/dimensionApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Dimension Hooks //
@@ -25,12 +25,9 @@ export function useAddDimension() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const addDimension = useCallback(
-    async (
-      dimension: DimensionT,
-      dimEntries: DimEntryT[],
-    ): Promise<AddDimensionResponse> => {
+    async (dimension: DimensionT, dimEntries: DimEntryT[]): Promise<AddDimensionResponse> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAddDimension called:", {
+        console.log('🔍 useAddDimension called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -40,36 +37,32 @@ export function useAddDimension() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!dimension || !dimension.teamId) {
-        throw new Error("Invalid dimension data provided");
+        throw new Error('Invalid dimension data provided');
       }
       if (!dimEntries || !Array.isArray(dimEntries)) {
-        throw new Error("Invalid dimension entries provided");
+        throw new Error('Invalid dimension entries provided');
       }
 
       try {
-        const result = await DimensionApi.addDimension(
-          apiClient,
-          dimension,
-          dimEntries,
-        );
+        const result = await DimensionApi.addDimension(apiClient, dimension, dimEntries);
 
         if (env.isDevelopment) {
-          console.log("✅ Dimension added successfully");
+          console.log('✅ Dimension added successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to add dimension:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to add dimension:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -89,12 +82,9 @@ export function useGetDimensions() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const getDimensions = useCallback(
-    async (
-      teamId: string,
-      dimTypes?: DimensionType[],
-    ): Promise<GetDimensionsResponse> => {
+    async (teamId: string, dimTypes?: DimensionType[]): Promise<GetDimensionsResponse> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetDimensions called:", {
+        console.log('🔍 useGetDimensions called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -105,18 +95,18 @@ export function useGetDimensions() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await DimensionApi.getDimensions(apiClient, teamId, dimTypes);
       } catch (error) {
-        console.error("❌ Failed to get dimensions:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get dimensions:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -139,18 +129,18 @@ export function useUpdateDimension() {
     async (updatedDimension: DimensionT): Promise<DimensionT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await DimensionApi.updateDimension(apiClient, updatedDimension);
       } catch (error) {
-        console.error("❌ Failed to update dimension:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update dimension:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -173,18 +163,18 @@ export function useDeleteDimension() {
     async (dimensionId: string, teamId: string): Promise<void> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         await DimensionApi.deleteDimension(apiClient, dimensionId, teamId);
       } catch (error) {
-        console.error("❌ Failed to delete dimension:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete dimension:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;

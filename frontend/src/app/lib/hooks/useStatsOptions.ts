@@ -1,11 +1,8 @@
-import dayjs from "dayjs";
-import { useCallback } from "react";
-import { StatsOptionsT } from "@/types/stats";
-import { useLocalStorageState } from "./useLocalStorageState";
-import {
-  SerializedStatsOptions,
-  validateStatsOptions,
-} from "../utils/statsOptionsUtils";
+import dayjs from 'dayjs';
+import { useCallback } from 'react';
+import { StatsOptionsT } from '@/types/stats';
+import { useLocalStorageState } from './useLocalStorageState';
+import { SerializedStatsOptions, validateStatsOptions } from '../utils/statsOptionsUtils';
 
 const statsOptionsSerializer = {
   serialize: (options: StatsOptionsT): string => {
@@ -18,7 +15,7 @@ const statsOptionsSerializer = {
       };
       return JSON.stringify(serialized);
     } catch (error) {
-      console.warn("Error serializing stats options:", error);
+      console.warn('Error serializing stats options:', error);
       // Return empty object as fallback - will use defaults on deserialize
       return JSON.stringify({});
     }
@@ -38,7 +35,7 @@ const statsOptionsSerializer = {
       // Validation will be done in the hook, just return the parsed options
       return options as StatsOptionsT;
     } catch (error) {
-      console.warn("Error deserializing stats options, using defaults:", error);
+      console.warn('Error deserializing stats options, using defaults:', error);
       // Return partial object - validation will fill in defaults
       return {} as StatsOptionsT;
     }

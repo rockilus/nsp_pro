@@ -1,4 +1,4 @@
-import { languages, fallbackLng, cookieName } from "@/app/i18n/settings";
+import { languages, fallbackLng, cookieName } from '@/app/i18n/settings';
 
 function safeLocalStorageGet(key: string): string | null {
   try {
@@ -20,9 +20,9 @@ function safeLocalStorageSet(key: string, value: string): void {
 function safeCookieGet(name: string): string | null {
   try {
     const match = document.cookie
-      .split(";")
+      .split(';')
       .map((c) => c.trim())
-      .find((c) => c.startsWith(name + "="));
+      .find((c) => c.startsWith(name + '='));
     return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
   } catch {
     return null;
@@ -30,7 +30,7 @@ function safeCookieGet(name: string): string | null {
 }
 
 export function detectLanguage(): string {
-  if (typeof window === "undefined") return fallbackLng;
+  if (typeof window === 'undefined') return fallbackLng;
 
   // 1. Check localStorage (explicit user preference set by the app)
   const stored = safeLocalStorageGet(cookieName);
@@ -45,7 +45,7 @@ export function detectLanguage(): string {
   }
 
   // 3. Check browser language
-  const browserLang = navigator.language.split("-")[0];
+  const browserLang = navigator.language.split('-')[0];
   if (languages.includes(browserLang)) {
     return browserLang;
   }
@@ -55,7 +55,7 @@ export function detectLanguage(): string {
 }
 
 export function setLanguagePreference(lng: string) {
-  if (typeof window !== "undefined") {
+  if (typeof window !== 'undefined') {
     safeLocalStorageSet(cookieName, lng);
   }
 }

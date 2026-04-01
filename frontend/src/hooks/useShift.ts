@@ -1,16 +1,16 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { ShiftT } from "../types/shift";
+import { ShiftT } from '../types/shift';
 import {
   ShiftApi,
   ShiftUpdateResponse,
   ShiftDeleteResponse,
   ShiftsTabDataResponse,
-} from "../app/lib/api/shiftApi";
-import { useApiClient } from "../app/lib/api-client";
+} from '../app/lib/api/shiftApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Shift Hooks //
@@ -26,7 +26,7 @@ export function useAddShift() {
   const addShift = useCallback(
     async (shift: ShiftT): Promise<ShiftT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAddShift called:", {
+        console.log('🔍 useAddShift called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -37,29 +37,29 @@ export function useAddShift() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!shift || !shift.teamId) {
-        throw new Error("Invalid shift data provided");
+        throw new Error('Invalid shift data provided');
       }
 
       try {
         const result = await ShiftApi.addShift(apiClient, shift);
 
         if (env.isDevelopment) {
-          console.log("✅ Shift added successfully");
+          console.log('✅ Shift added successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to add shift:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to add shift:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -81,7 +81,7 @@ export function useGetShifts() {
   const getShifts = useCallback(
     async (teamId: string): Promise<ShiftT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetShifts called:", {
+        console.log('🔍 useGetShifts called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -91,18 +91,18 @@ export function useGetShifts() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ShiftApi.getShifts(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get shifts:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get shifts:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -124,7 +124,7 @@ export function useGetWorkShifts() {
   const getWorkShifts = useCallback(
     async (teamId: string): Promise<ShiftT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetWorkShifts called:", {
+        console.log('🔍 useGetWorkShifts called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -134,18 +134,18 @@ export function useGetWorkShifts() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ShiftApi.getWorkShifts(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get work shifts:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get work shifts:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -167,7 +167,7 @@ export function useGetAllShifts() {
   const getAllShifts = useCallback(
     async (teamId: string): Promise<ShiftT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetAllShifts called:", {
+        console.log('🔍 useGetAllShifts called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -177,18 +177,18 @@ export function useGetAllShifts() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ShiftApi.getAllShifts(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get all shifts:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get all shifts:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -211,18 +211,18 @@ export function useUpdateShift() {
     async (updatedShift: ShiftT): Promise<ShiftUpdateResponse> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ShiftApi.updateShift(apiClient, updatedShift);
       } catch (error) {
-        console.error("❌ Failed to update shift:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update shift:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -245,18 +245,18 @@ export function useDeleteShift() {
     async (shiftId: string, teamId: string): Promise<ShiftDeleteResponse> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ShiftApi.deleteShift(apiClient, shiftId, teamId);
       } catch (error) {
-        console.error("❌ Failed to delete shift:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete shift:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -278,7 +278,7 @@ export function useGetShiftsTabData() {
   const getShiftsTabData = useCallback(
     async (teamId: string): Promise<ShiftsTabDataResponse> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetShiftsTabData called:", {
+        console.log('🔍 useGetShiftsTabData called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -288,18 +288,18 @@ export function useGetShiftsTabData() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ShiftApi.getShiftsTabData(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get shifts tab data:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get shifts tab data:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;

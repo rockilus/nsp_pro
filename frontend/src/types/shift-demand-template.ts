@@ -3,20 +3,20 @@
  * Updated to match new backend DTO structure
  */
 
-import { Dayjs } from "dayjs";
+import { Dayjs } from 'dayjs';
 
 /**
  * Core template types matching backend enums
  */
 export enum TemplateType {
-  STANDARD = "standard",
-  EVEN_ODD = "even_odd",
+  STANDARD = 'standard',
+  EVEN_ODD = 'even_odd',
 }
 
 /**
  * UI view modes for template management
  */
-export type TemplateViewMode = "list" | "view" | "edit";
+export type TemplateViewMode = 'list' | 'view' | 'edit';
 
 /**
  * Individual demand entry structure (new format)
@@ -178,8 +178,8 @@ export interface TemplatePreview {
  * Template creation methods (updated)
  */
 export enum TemplateCreationMethod {
-  FROM_SCRATCH = "from_scratch",
-  FROM_DATE_RANGE = "from_date_range", // Updated from FROM_PERIOD
+  FROM_SCRATCH = 'from_scratch',
+  FROM_DATE_RANGE = 'from_date_range', // Updated from FROM_PERIOD
 }
 
 export interface TemplateCreationOptions {
@@ -267,13 +267,13 @@ export interface TemplateErrorResponse {
 }
 
 export type TemplateError =
-  | "validation_error"
-  | "template_not_found"
-  | "authorization_error"
-  | "duplicate_name"
-  | "template_limit_exceeded"
-  | "invalid_date_range"
-  | "internal_error";
+  | 'validation_error'
+  | 'template_not_found'
+  | 'authorization_error'
+  | 'duplicate_name'
+  | 'template_limit_exceeded'
+  | 'invalid_date_range'
+  | 'internal_error';
 
 /**
  * Utility functions for template data transformation
@@ -302,7 +302,5 @@ export interface TemplateUtils {
   /**
    * Group demands by day of week
    */
-  groupDemandsByDay: (
-    demands: DemandEntryDTO[],
-  ) => Record<number, DemandEntryDTO[]>;
+  groupDemandsByDay: (demands: DemandEntryDTO[]) => Record<number, DemandEntryDTO[]>;
 }

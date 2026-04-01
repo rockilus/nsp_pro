@@ -1,13 +1,13 @@
-import React from "react";
+import React from 'react';
 // MUI
-import Box from "@mui/material/Box";
-import Menu from "@mui/material/Menu";
+import Box from '@mui/material/Box';
+import Menu from '@mui/material/Menu';
 // Components
-import ConstraintEdit from "../edit-constraint/constraint-edit";
+import ConstraintEdit from '../edit-constraint/constraint-edit';
 // Types
-import { ConstraintT, TemplateT } from "../../../types/constraint";
-import { WorkerT } from "../../../types/worker";
-import { ShiftT } from "../../../types/shift";
+import { ConstraintT, TemplateT } from '../../../types/constraint';
+import { WorkerT } from '../../../types/worker';
+import { ShiftT } from '../../../types/shift';
 
 export default function ConstraintButton({
   lng,
@@ -49,8 +49,8 @@ export default function ConstraintButton({
   };
 
   return (
-    <Box style={{ width: "100%" }}>
-      <Box onClick={handleClick} sx={{ display: "inline-flex", minWidth: 0 }}>
+    <Box style={{ width: '100%' }}>
+      <Box onClick={handleClick} sx={{ display: 'inline-flex', minWidth: 0 }}>
         {buttonElement}
       </Box>
       <Menu
@@ -59,12 +59,12 @@ export default function ConstraintButton({
         open={open}
         onClose={handleClose}
         MenuListProps={{
-          "aria-labelledby": "basic-button",
+          'aria-labelledby': 'basic-button',
         }}
         slotProps={{
           paper: {
             style: {
-              width: "95%",
+              width: '95%',
             },
           },
         }}

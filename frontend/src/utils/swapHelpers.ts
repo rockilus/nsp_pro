@@ -1,8 +1,8 @@
-import { AssignmentDataDictT } from "../types/assignment";
-import { sortAssignmentsByDateThenShiftStart } from "./assignmentSort";
-import "dayjs/locale/en-gb";
-import "dayjs/locale/fr";
-import "dayjs/locale/es";
+import { AssignmentDataDictT } from '../types/assignment';
+import { sortAssignmentsByDateThenShiftStart } from './assignmentSort';
+import 'dayjs/locale/en-gb';
+import 'dayjs/locale/fr';
+import 'dayjs/locale/es';
 
 /**
  * Get assignments for given assignment IDs, filtered and sorted
@@ -19,8 +19,7 @@ export function getAssignmentsForIds(
   );
 }
 
-export const getDayjsLocaleFromLng = (lng: string): string =>
-  lng === "en" ? "en-gb" : lng;
+export const getDayjsLocaleFromLng = (lng: string): string => (lng === 'en' ? 'en-gb' : lng);
 
 export const formatSwapTitleDate = (
   titleDate: any,
@@ -28,19 +27,17 @@ export const formatSwapTitleDate = (
 ): { dayNumber: string; monthWeekday: string } => {
   const dayjsLocale = getDayjsLocaleFromLng(lng);
   const localizedTitleDate =
-    titleDate && typeof titleDate.locale === "function"
-      ? titleDate.locale(dayjsLocale)
-      : titleDate;
+    titleDate && typeof titleDate.locale === 'function' ? titleDate.locale(dayjsLocale) : titleDate;
 
   const dayNumber =
-    localizedTitleDate && typeof localizedTitleDate.format === "function"
-      ? localizedTitleDate.format("D")
-      : "";
+    localizedTitleDate && typeof localizedTitleDate.format === 'function'
+      ? localizedTitleDate.format('D')
+      : '';
 
   const monthWeekday =
-    localizedTitleDate && typeof localizedTitleDate.format === "function"
-      ? localizedTitleDate.format("MMM, ddd")
-      : "";
+    localizedTitleDate && typeof localizedTitleDate.format === 'function'
+      ? localizedTitleDate.format('MMM, ddd')
+      : '';
 
   return {
     dayNumber,
@@ -49,15 +46,13 @@ export const formatSwapTitleDate = (
 };
 
 export const formatSwapDateTime = (dateValue: any, lng: string): string => {
-  if (!dateValue || typeof dateValue.format !== "function") {
-    return "";
+  if (!dateValue || typeof dateValue.format !== 'function') {
+    return '';
   }
 
   const dayjsLocale = getDayjsLocaleFromLng(lng);
   const localizedDateValue =
-    typeof dateValue.locale === "function"
-      ? dateValue.locale(dayjsLocale)
-      : dateValue;
+    typeof dateValue.locale === 'function' ? dateValue.locale(dayjsLocale) : dateValue;
 
-  return localizedDateValue.format("MMM D, YYYY HH:mm");
+  return localizedDateValue.format('MMM D, YYYY HH:mm');
 };

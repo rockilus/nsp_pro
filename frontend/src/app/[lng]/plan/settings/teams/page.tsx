@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React from "react";
+import React from 'react';
 // Components
-import TeamsTab from "../../../../../components/settings/teams/teams-tab";
+import TeamsTab from '../../../../../components/settings/teams/teams-tab';
 // Context
-import { useTeam } from "@/context/TeamContext";
-import { useUser } from "@/context/UserContext";
+import { useTeam } from '@/context/TeamContext';
+import { useUser } from '@/context/UserContext';
 // Styles
-import "../../../../../styles/page.css";
+import '../../../../../styles/page.css';
 
 export default function Page({ params }: { params: Promise<{ lng: string }> }) {
   const { selectedTeam } = useTeam();

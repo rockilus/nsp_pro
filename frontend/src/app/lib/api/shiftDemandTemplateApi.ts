@@ -14,26 +14,21 @@ import {
   TemplateValidationResult,
   BatchTemplateOperationResult,
   TEMPLATE_CONSTRAINTS,
-} from "../../../types/shift-demand-template";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+} from '../../../types/shift-demand-template';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 /**
  * Utility function to format dates for API calls
  */
 const formatDateForAPI = (date: Date): string => {
-  return date.toISOString().split("T")[0]; // YYYY-MM-DD format
+  return date.toISOString().split('T')[0]; // YYYY-MM-DD format
 };
 
 /**
  * Client-side validation for template creation (updated for new structure)
  */
-const validateTemplateCreateRequest = (
-  template: ShiftDemandTemplateCreateDTO,
-): void => {
-  if (
-    !template.name ||
-    template.name.trim().length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH
-  ) {
+const validateTemplateCreateRequest = (template: ShiftDemandTemplateCreateDTO): void => {
+  if (!template.name || template.name.trim().length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH) {
     throw new Error(
       `Template name must be at least ${TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH} characters`,
     );
@@ -65,7 +60,7 @@ const validateApplyTemplateRequest = (request: ApplyTemplateDTO): void => {
   const startDate = new Date(request.startDate);
 
   if (isNaN(startDate.getTime())) {
-    throw new Error("Invalid start date provided");
+    throw new Error('Invalid start date provided');
   }
 
   // Additional validation can be added here as needed
@@ -84,12 +79,12 @@ export class ShiftDemandTemplateApi extends BaseApi {
   ): Promise<ShiftDemandTemplateDTO[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<ShiftDemandTemplateDTO[]>(
       apiClient,
-      "get",
+      'get',
       `/shift-demand-templates/teams/${teamId}`,
     );
     return responseData;
@@ -105,15 +100,15 @@ export class ShiftDemandTemplateApi extends BaseApi {
   ): Promise<ShiftDemandTemplateDTO> {
     // Security: Input validation
     if (!templateId) {
-      throw new Error("Template ID is required");
+      throw new Error('Template ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
       apiClient,
-      "get",
+      'get',
       `/shift-demand-templates/${templateId}/teams/${teamId}`,
     );
     return responseData;
@@ -129,13 +124,13 @@ export class ShiftDemandTemplateApi extends BaseApi {
   ): Promise<ShiftDemandTemplateDTO> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     validateTemplateCreateRequest(template);
 
     const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
       apiClient,
-      "post",
+      'post',
       `/shift-demand-templates/teams/${teamId}`,
       template,
     );
@@ -152,15 +147,15 @@ export class ShiftDemandTemplateApi extends BaseApi {
   ): Promise<ShiftDemandTemplateDTO> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!template || !template.name) {
-      throw new Error("Invalid template data provided");
+      throw new Error('Invalid template data provided');
     }
 
     const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
       apiClient,
-      "post",
+      'post',
       `/shift-demand-templates/teams/${teamId}/from-demands`,
       template,
     );
@@ -178,18 +173,18 @@ export class ShiftDemandTemplateApi extends BaseApi {
   ): Promise<ShiftDemandTemplateDTO> {
     // Security: Input validation
     if (!templateId) {
-      throw new Error("Template ID is required");
+      throw new Error('Template ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!update) {
-      throw new Error("Update data is required");
+      throw new Error('Update data is required');
     }
 
     const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
       apiClient,
-      "put",
+      'put',
       `/shift-demand-templates/${templateId}/teams/${teamId}`,
       update,
     );
@@ -206,15 +201,15 @@ export class ShiftDemandTemplateApi extends BaseApi {
   ): Promise<void> {
     // Security: Input validation
     if (!templateId) {
-      throw new Error("Template ID is required");
+      throw new Error('Template ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     await this.makeRequest<void>(
       apiClient,
-      "delete",
+      'delete',
       `/shift-demand-templates/${templateId}/teams/${teamId}`,
     );
   }
@@ -231,7 +226,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
 
     const responseData = await this.makeRequest<TemplateApplicationResult>(
       apiClient,
-      "post",
+      'post',
       `/shift-demand-templates/apply`,
       request,
     );
@@ -250,7 +245,7 @@ export class ShiftDemandTemplateApi extends BaseApi {
 
     const responseData = await this.makeRequest<TemplateValidationResult>(
       apiClient,
-      "post",
+      'post',
       `/shift-demand-templates/validate`,
       request,
     );
@@ -266,12 +261,12 @@ export class ShiftDemandTemplateApi extends BaseApi {
   ): Promise<BatchTemplateOperationResult> {
     // Security: Input validation
     if (!templateIds || templateIds.length === 0) {
-      throw new Error("Template IDs are required");
+      throw new Error('Template IDs are required');
     }
 
     const responseData = await this.makeRequest<BatchTemplateOperationResult>(
       apiClient,
-      "post",
+      'post',
       `/shift-demand-templates/batch-delete`,
       { templateIds },
     );
@@ -291,14 +286,14 @@ export class ShiftDemandTemplateApi extends BaseApi {
   }> {
     // Security: Input validation
     if (!templateId) {
-      throw new Error("Template ID is required");
+      throw new Error('Template ID is required');
     }
 
     const responseData = await this.makeRequest<{
       usageCount: number;
       lastUsed?: string;
       averageDemandsGenerated: number;
-    }>(apiClient, "get", `/shift-demand-templates/${templateId}/analytics`);
+    }>(apiClient, 'get', `/shift-demand-templates/${templateId}/analytics`);
     return responseData;
   }
 
@@ -313,18 +308,18 @@ export class ShiftDemandTemplateApi extends BaseApi {
   ): Promise<ShiftDemandTemplateDTO> {
     // Security: Input validation
     if (!templateId) {
-      throw new Error("Template ID is required");
+      throw new Error('Template ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!request) {
-      throw new Error("Request data is required");
+      throw new Error('Request data is required');
     }
 
     const responseData = await this.makeRequest<ShiftDemandTemplateDTO>(
       apiClient,
-      "post",
+      'post',
       `/shift-demand-templates/${templateId}/apply-demands/teams/${teamId}`,
       request,
     );
@@ -342,18 +337,18 @@ export class ShiftDemandTemplateApi extends BaseApi {
   ): Promise<TemplateApplicationResult> {
     // Security: Input validation
     if (!templateId) {
-      throw new Error("Template ID is required");
+      throw new Error('Template ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!request) {
-      throw new Error("Request data is required");
+      throw new Error('Request data is required');
     }
 
     const responseData = await this.makeRequest<TemplateApplicationResult>(
       apiClient,
-      "post",
+      'post',
       `/shift-demand-templates/${templateId}/apply-to-range/teams/${teamId}`,
       request,
     );
@@ -370,10 +365,7 @@ export const TemplateUtils = {
    */
   calculateTotalDemands(template: ShiftDemandTemplateDTO): number {
     return template.weeksData.reduce((totalWeekSum, week) => {
-      const weekSum = week.demands.reduce(
-        (sum: number, demand) => sum + demand.count,
-        0,
-      );
+      const weekSum = week.demands.reduce((sum: number, demand) => sum + demand.count, 0);
       return totalWeekSum + weekSum;
     }, 0);
   },
@@ -383,10 +375,10 @@ export const TemplateUtils = {
    */
   formatTemplateType(templateType: string): string {
     switch (templateType) {
-      case "standard":
-        return "Standard";
-      case "even_odd":
-        return "Even/Odd Week";
+      case 'standard':
+        return 'Standard';
+      case 'even_odd':
+        return 'Even/Odd Week';
       default:
         return templateType;
     }
@@ -427,10 +419,7 @@ export const TemplateUtils = {
   /**
    * Convert Dayjs dates to API format
    */
-  formatDateRangeForAPI(
-    startDate: any,
-    endDate: any,
-  ): { startDate: string; endDate: string } {
+  formatDateRangeForAPI(startDate: any, endDate: any): { startDate: string; endDate: string } {
     return {
       startDate: formatDateForAPI(startDate.toDate()),
       endDate: formatDateForAPI(endDate.toDate()),

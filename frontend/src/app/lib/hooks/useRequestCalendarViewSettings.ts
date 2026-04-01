@@ -1,18 +1,18 @@
-import dayjs from "dayjs";
-import { useCallback, useMemo } from "react";
-import { RequestViewSettingsT } from "@/types/request";
-import { useLocalStorageState } from "./useLocalStorageState";
+import dayjs from 'dayjs';
+import { useCallback, useMemo } from 'react';
+import { RequestViewSettingsT } from '@/types/request';
+import { useLocalStorageState } from './useLocalStorageState';
 import {
   validateRequestCalendarViewSettings,
   getDefaultRequestCalendarViewSettings,
-} from "../utils/requestCalendarViewSettingsUtils";
+} from '../utils/requestCalendarViewSettingsUtils';
 
 // Serialized version includes all request view settings with periodStartDate as ISO string
 interface SerializedRequestViewSettings {
-  selectedTab: "table" | "calendar";
+  selectedTab: 'table' | 'calendar';
   filters: any[];
   sort: any;
-  timeFrame: "week" | "month";
+  timeFrame: 'week' | 'month';
   periodStartDate: string; // ISO string
 }
 
@@ -29,7 +29,7 @@ const requestViewSettingsSerializer = {
       };
       return JSON.stringify(serialized);
     } catch (error) {
-      console.warn("Error serializing request view settings:", error);
+      console.warn('Error serializing request view settings:', error);
       // Return empty object as fallback - will use defaults on deserialize
       return JSON.stringify({});
     }
@@ -41,7 +41,7 @@ const requestViewSettingsSerializer = {
 
       // Get defaults to fill in any missing fields
       const defaults = {
-        selectedTab: "table" as const,
+        selectedTab: 'table' as const,
         filters: [],
         sort: null,
         ...getDefaultRequestCalendarViewSettings(),
@@ -50,15 +50,13 @@ const requestViewSettingsSerializer = {
       // Merge parsed values with defaults
       const settings: RequestViewSettingsT = {
         selectedTab:
-          parsed.selectedTab === "table" || parsed.selectedTab === "calendar"
+          parsed.selectedTab === 'table' || parsed.selectedTab === 'calendar'
             ? parsed.selectedTab
             : defaults.selectedTab,
-        filters: Array.isArray(parsed.filters)
-          ? parsed.filters
-          : defaults.filters,
+        filters: Array.isArray(parsed.filters) ? parsed.filters : defaults.filters,
         sort: parsed.sort !== undefined ? parsed.sort : defaults.sort,
         timeFrame:
-          parsed.timeFrame === "week" || parsed.timeFrame === "month"
+          parsed.timeFrame === 'week' || parsed.timeFrame === 'month'
             ? parsed.timeFrame
             : defaults.timeFrame,
         periodStartDate: parsed.periodStartDate
@@ -68,13 +66,10 @@ const requestViewSettingsSerializer = {
 
       return settings;
     } catch (error) {
-      console.warn(
-        "Error deserializing request view settings, using defaults:",
-        error,
-      );
+      console.warn('Error deserializing request view settings, using defaults:', error);
       // Return complete defaults on error
       return {
-        selectedTab: "table",
+        selectedTab: 'table',
         filters: [],
         sort: null,
         ...getDefaultRequestCalendarViewSettings(),
@@ -93,16 +88,12 @@ const requestViewSettingsSerializer = {
  */
 export function useRequestViewSettings(
   teamId: string,
-): [
-  RequestViewSettingsT,
-  (updates: Partial<RequestViewSettingsT>) => void,
-  () => void,
-] {
+): [RequestViewSettingsT, (updates: Partial<RequestViewSettingsT>) => void, () => void] {
   const storageKey = `requestViewSettings_${teamId}`;
 
   const defaultSettings = useMemo<RequestViewSettingsT>(
     () => ({
-      selectedTab: "table",
+      selectedTab: 'table',
       filters: [],
       sort: null,
       ...getDefaultRequestCalendarViewSettings(),
@@ -122,10 +113,7 @@ export function useRequestViewSettings(
         const newSettings = { ...prev, ...updates };
 
         // Validate calendar settings if they're being updated
-        if (
-          updates.timeFrame !== undefined ||
-          updates.periodStartDate !== undefined
-        ) {
+        if (updates.timeFrame !== undefined || updates.periodStartDate !== undefined) {
           const validatedCalendar = validateRequestCalendarViewSettings({
             timeFrame: newSettings.timeFrame,
             periodStartDate: newSettings.periodStartDate,

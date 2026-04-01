@@ -1,10 +1,10 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useState } from 'react';
 // MUI
-import Box from "@mui/material/Box";
-import TableCell from "@mui/material/TableCell";
-import TextField from "@mui/material/TextField";
+import Box from '@mui/material/Box';
+import TableCell from '@mui/material/TableCell';
+import TextField from '@mui/material/TextField';
 // Types
-import { WorkerT } from "../../../types/worker";
+import { WorkerT } from '../../../types/worker';
 
 export default function WorkerFieldCellAnnualLeave({
   worker,
@@ -18,7 +18,7 @@ export default function WorkerFieldCellAnnualLeave({
   // handleUpdateWorker may return a Promise when the parent performs async updates
   handleUpdateWorker: (updatedWorker: WorkerT) => void | Promise<unknown>;
 }) {
-  const [valueState, setValueState] = useState<number | "">(worker.annualLeave);
+  const [valueState, setValueState] = useState<number | ''>(worker.annualLeave);
   const [isUpdating, setIsUpdating] = useState(false);
 
   // NOTE:
@@ -30,7 +30,7 @@ export default function WorkerFieldCellAnnualLeave({
   // effects.
 
   const handleEditConfirm = async () => {
-    if (valueState !== worker.annualLeave && valueState !== "") {
+    if (valueState !== worker.annualLeave && valueState !== '') {
       setIsUpdating(true);
       const result = handleUpdateWorker({
         ...worker,
@@ -39,7 +39,7 @@ export default function WorkerFieldCellAnnualLeave({
 
       // If the handler returns a Promise, wait for it to settle before
       // clearing the updating flag. Otherwise, clear immediately.
-      if (result && typeof (result as Promise<unknown>).then === "function") {
+      if (result && typeof (result as Promise<unknown>).then === 'function') {
         try {
           await (result as Promise<unknown>);
         } finally {
@@ -48,7 +48,7 @@ export default function WorkerFieldCellAnnualLeave({
       } else {
         setIsUpdating(false);
       }
-    } else if (valueState === "") {
+    } else if (valueState === '') {
       setValueState(worker.annualLeave);
     }
     setEditing({});
@@ -68,13 +68,13 @@ export default function WorkerFieldCellAnnualLeave({
           // Initialize local input state when starting to edit so the input
           // always reflects the current persisted value.
           setValueState(worker.annualLeave);
-          setEditing({ [worker.id]: "annualLeave" });
+          setEditing({ [worker.id]: 'annualLeave' });
         }
       }}
       sx={{
         paddingY: 0,
-        textAlign: "center",
-        cursor: editing || isUpdating ? "default" : "pointer",
+        textAlign: 'center',
+        cursor: editing || isUpdating ? 'default' : 'pointer',
       }}
       data-testid="worker-annual-leave-cell"
       data-updating={isUpdating}
@@ -85,32 +85,30 @@ export default function WorkerFieldCellAnnualLeave({
           type="number"
           name="Annual Leave"
           value={valueState}
-          onChange={(e) =>
-            setValueState(e.target.value === "" ? "" : Number(e.target.value))
-          }
+          onChange={(e) => setValueState(e.target.value === '' ? '' : Number(e.target.value))}
           onBlur={handleEditConfirm}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               handleEditConfirm();
-            } else if (e.key === "Escape") {
+            } else if (e.key === 'Escape') {
               handleEditCancel();
             }
           }}
           autoFocus
           disabled={isUpdating}
           inputProps={{
-            style: { textAlign: "center" },
-            "data-testid": `worker-annual-leave-input-${worker.id}`,
-            "data-updating": isUpdating,
+            style: { textAlign: 'center' },
+            'data-testid': `worker-annual-leave-input-${worker.id}`,
+            'data-updating': isUpdating,
           }}
         />
       ) : (
         <Box
           sx={{
             minHeight: 45,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           data-testid={`worker-annual-leave-display-${worker.id}`}
           data-updating={isUpdating}

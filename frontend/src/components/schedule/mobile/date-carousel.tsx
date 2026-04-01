@@ -1,8 +1,8 @@
-import React, { useMemo, useEffect, useRef } from "react";
-import dayjs from "dayjs";
+import React, { useMemo, useEffect, useRef } from 'react';
+import dayjs from 'dayjs';
 // MUI
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface DateCarouselProps {
   weeks: { start: dayjs.Dayjs; end: dayjs.Dayjs }[];
@@ -30,9 +30,9 @@ export default function DateCarousel({
     const dates: dayjs.Dayjs[] = [];
     weeks.forEach((week) => {
       let cur = week.start;
-      while (cur.isBefore(week.end) || cur.isSame(week.end, "day")) {
+      while (cur.isBefore(week.end) || cur.isSame(week.end, 'day')) {
         dates.push(cur);
-        cur = cur.add(1, "day");
+        cur = cur.add(1, 'day');
       }
     });
     return dates;
@@ -40,19 +40,18 @@ export default function DateCarousel({
 
   // Find today's index
   const todayIndex = useMemo(() => {
-    return allDates.findIndex((d) => d.isSame(today, "day"));
+    return allDates.findIndex((d) => d.isSame(today, 'day'));
   }, [allDates, today]);
 
   // Scroll to today on mount
   useEffect(() => {
-    if (hasScrolledRef.current || todayIndex === -1 || !carouselRef.current)
-      return;
+    if (hasScrolledRef.current || todayIndex === -1 || !carouselRef.current) return;
 
     const todayElement = dateRefs.current[todayIndex];
     if (todayElement) {
       todayElement.scrollIntoView({
-        inline: "center",
-        behavior: "instant",
+        inline: 'center',
+        behavior: 'instant',
       });
       hasScrolledRef.current = true;
     }
@@ -82,20 +81,18 @@ export default function DateCarousel({
           rect.right > centerX
         ) {
           const date = allDates[i];
-          const monthLabel = date.format(
-            date.year() === dayjs.utc().year() ? "MMMM" : "MMM YYYY",
-          );
+          const monthLabel = date.format(date.year() === dayjs.utc().year() ? 'MMMM' : 'MMM YYYY');
           onVisibleMonthChange(monthLabel);
           break;
         }
       }
     };
 
-    container.addEventListener("scroll", handleScroll);
+    container.addEventListener('scroll', handleScroll);
     // Trigger once on mount
     handleScroll();
 
-    return () => container.removeEventListener("scroll", handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
   }, [allDates, onVisibleMonthChange]);
 
   // Implement scroll-to-today handler
@@ -105,8 +102,8 @@ export default function DateCarousel({
     const todayElement = dateRefs.current[todayIndex];
     if (todayElement) {
       todayElement.scrollIntoView({
-        inline: "center",
-        behavior: "smooth",
+        inline: 'center',
+        behavior: 'smooth',
       });
       // Also select today's date
       if (onDateSelect) {
@@ -124,23 +121,23 @@ export default function DateCarousel({
     <Box
       ref={carouselRef}
       sx={{
-        display: "flex",
-        overflowX: "auto",
+        display: 'flex',
+        overflowX: 'auto',
         gap: 2,
         py: 2,
         px: 1,
         mb: 2,
-        scrollSnapType: "x mandatory",
-        "&::-webkit-scrollbar": {
-          display: "none",
+        scrollSnapType: 'x mandatory',
+        '&::-webkit-scrollbar': {
+          display: 'none',
         },
-        scrollbarWidth: "none",
+        scrollbarWidth: 'none',
       }}
     >
       {allDates.map((date, index) => {
-        const isToday = date.isSame(today, "day");
-        const isSelected = selectedDate?.isSame(date, "day");
-        const key = date.format("YYYY-MM-DD");
+        const isToday = date.isSame(today, 'day');
+        const isSelected = selectedDate?.isSame(date, 'day');
+        const key = date.format('YYYY-MM-DD');
 
         return (
           <Box
@@ -151,37 +148,34 @@ export default function DateCarousel({
             onClick={() => onDateSelect?.(date)}
             sx={{
               minWidth: 64,
-              textAlign: "center",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              scrollSnapAlign: "center",
-              cursor: "pointer",
-              backgroundColor: isSelected ? "#e3f2fd" : "transparent",
-              borderRadius: isSelected ? "24px" : undefined,
-              transition: "background-color 0.2s",
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              scrollSnapAlign: 'center',
+              cursor: 'pointer',
+              backgroundColor: isSelected ? '#e3f2fd' : 'transparent',
+              borderRadius: isSelected ? '24px' : undefined,
+              transition: 'background-color 0.2s',
             }}
           >
-            <Typography
-              variant="caption"
-              sx={{ color: isToday ? "#1a73e8" : undefined }}
-            >
-              {date.format("ddd")}
+            <Typography variant="caption" sx={{ color: isToday ? '#1a73e8' : undefined }}>
+              {date.format('ddd')}
             </Typography>
             <Typography
               variant="h6"
               sx={{
                 width: 32,
                 height: 32,
-                borderRadius: isToday ? "50%" : undefined,
-                backgroundColor: isToday ? "#1a73e8" : undefined,
-                color: isToday ? "#fff" : undefined,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                borderRadius: isToday ? '50%' : undefined,
+                backgroundColor: isToday ? '#1a73e8' : undefined,
+                color: isToday ? '#fff' : undefined,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
-              {date.format("D")}
+              {date.format('D')}
             </Typography>
           </Box>
         );

@@ -1,10 +1,7 @@
-import { routeAccess } from "./route-access";
-import { TeamWithMembership } from "@/types/team";
+import { routeAccess } from './route-access';
+import { TeamWithMembership } from '@/types/team';
 
-export function canAccessPage(
-  route: string,
-  teamWithMembership: TeamWithMembership,
-): boolean {
+export function canAccessPage(route: string, teamWithMembership: TeamWithMembership): boolean {
   const rules = routeAccess[route];
   if (!rules) return true;
 
@@ -15,7 +12,7 @@ export function canAccessPage(
   let featuresOk = true;
   if (features) {
     featuresOk = features.every((feature) => {
-      if (feature === "use_solver") return teamWithMembership.team.useSolver;
+      if (feature === 'use_solver') return teamWithMembership.team.useSolver;
     });
   }
 

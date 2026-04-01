@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
-import AddIcon from "@mui/icons-material/Add";
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import AddIcon from '@mui/icons-material/Add';
 // Styles
-import "../../../styles/text-styles.css";
-import "./link-dimension-list.css";
+import '../../../styles/text-styles.css';
+import './link-dimension-list.css';
 // Types
-import { DimensionType } from "@/types/dimension";
-import { DimensionEntryType } from "@/types/dimension";
-import { DimEntryT } from "@/types/dim-entry";
-import { DimensionT } from "@/types/dimension";
+import { DimensionType } from '@/types/dimension';
+import { DimensionEntryType } from '@/types/dimension';
+import { DimEntryT } from '@/types/dim-entry';
+import { DimensionT } from '@/types/dimension';
 
 export default function LinkDimensionList({
   lng,
@@ -28,24 +28,21 @@ export default function LinkDimensionList({
   setOpenParent: (open: boolean) => void | null;
   handleUpdateDimension: (dimension: DimensionT) => void;
 }) {
-  const { t } = useTranslation(lng, "shift-page");
-  const [selectedDimension, setSelectedDimension] = useState<DimensionT | null>(
-    null,
-  );
+  const { t } = useTranslation(lng, 'shift-page');
+  const [selectedDimension, setSelectedDimension] = useState<DimensionT | null>(null);
 
   const componentTitle = {
-    [DimensionType.WORKER]: t("link_to_shifts"),
-    [DimensionType.SHIFT]: t("link_to_workers_or_rests"),
-    [DimensionType.REST_SHIFT]: t("link_to_workers_or_shifts"),
+    [DimensionType.WORKER]: t('link_to_shifts'),
+    [DimensionType.SHIFT]: t('link_to_workers_or_rests'),
+    [DimensionType.REST_SHIFT]: t('link_to_workers_or_shifts'),
   };
 
-  console.log("dimensions", dimensions);
+  console.log('dimensions', dimensions);
 
   const dimensionsLink = dimensions.filter(
     (d) =>
       !d.dimTypes.includes(dimensionType) &&
-      (d.entryType === DimensionEntryType.DIM_ENTRIES ||
-        d.entryType === DimensionEntryType.BOOL),
+      (d.entryType === DimensionEntryType.DIM_ENTRIES || d.entryType === DimensionEntryType.BOOL),
   );
 
   const handleSelectDimension = (dimension: DimensionT) => {
@@ -73,7 +70,7 @@ export default function LinkDimensionList({
           key={dimension.id}
           onClick={() => handleSelectDimension(dimension)}
           className={`link-dimension-list-item ${
-            selectedDimension?.id === dimension.id ? "selected" : ""
+            selectedDimension?.id === dimension.id ? 'selected' : ''
           }`}
         >
           <div>

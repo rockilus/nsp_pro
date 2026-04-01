@@ -1,25 +1,22 @@
-import React from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import React from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // MUI
-import Checkbox from "@mui/material/Checkbox";
-import TableCell from "@mui/material/TableCell";
-import Tooltip from "@mui/material/Tooltip";
-import { useTranslation } from "../../../../app/i18n/client";
+import Checkbox from '@mui/material/Checkbox';
+import TableCell from '@mui/material/TableCell';
+import Tooltip from '@mui/material/Tooltip';
+import { useTranslation } from '../../../../app/i18n/client';
 // Components
-import { RoleBased } from "../../../access/role-based";
+import { RoleBased } from '../../../access/role-based';
 // lucide-react
-import { Sparkle } from "lucide-react";
+import { Sparkle } from 'lucide-react';
 // Styles
-import "./date-header-cell.css";
+import './date-header-cell.css';
 // Types
-import { ScheduleStatus, periodDateT } from "../../../../types/schedule";
-import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
-import {
-  ScheduleSelectionState,
-  SelectionScope,
-} from "../../../../types/scheduleSelection";
-import { AssignmentT } from "@/types/assignment";
+import { ScheduleStatus, periodDateT } from '../../../../types/schedule';
+import { TeamMembershipRole, TeamWithMembership } from '@/types/team';
+import { ScheduleSelectionState, SelectionScope } from '../../../../types/scheduleSelection';
+import { AssignmentT } from '@/types/assignment';
 
 dayjs.extend(utc);
 type ScheduleStatusLogoProps = {
@@ -27,34 +24,31 @@ type ScheduleStatusLogoProps = {
   lng: string;
 };
 
-const ScheduleStatusLogo: React.FC<ScheduleStatusLogoProps> = ({
-  scheduleStatus,
-  lng,
-}) => {
-  const { t } = useTranslation(lng, "schedule-page");
+const ScheduleStatusLogo: React.FC<ScheduleStatusLogoProps> = ({ scheduleStatus, lng }) => {
+  const { t } = useTranslation(lng, 'schedule-page');
 
   if (scheduleStatus === null) return null;
 
   const containerClass =
     scheduleStatus === ScheduleStatus.VALIDATED
-      ? "validated"
+      ? 'validated'
       : scheduleStatus === ScheduleStatus.CAMPAIGN
-        ? "campaign"
-        : "";
+        ? 'campaign'
+        : '';
 
   const isPublished = scheduleStatus === ScheduleStatus.VALIDATED;
 
   const content = isPublished
-    ? t("schedule_status_published_short") || "p"
+    ? t('schedule_status_published_short') || 'p'
     : scheduleStatus === ScheduleStatus.CAMPAIGN
-      ? t("schedule_status_campaign_short") || "c"
-      : "";
+      ? t('schedule_status_campaign_short') || 'c'
+      : '';
 
   const tooltipTitle = isPublished
-    ? t("schedule_status_published_tooltip") || "Published"
+    ? t('schedule_status_published_tooltip') || 'Published'
     : scheduleStatus === ScheduleStatus.CAMPAIGN
-      ? t("schedule_status_campaign_tooltip") || "Campaign"
-      : "";
+      ? t('schedule_status_campaign_tooltip') || 'Campaign'
+      : '';
 
   return (
     <Tooltip title={tooltipTitle}>
@@ -91,11 +85,7 @@ export default function DateHeaderCell({
   selectionState?: ScheduleSelectionState;
   rowIds?: string[];
   selectionScope?: SelectionScope;
-  onColumnSelect?: (
-    date: string,
-    rowIds: string[],
-    scope: SelectionScope,
-  ) => void;
+  onColumnSelect?: (date: string, rowIds: string[], scope: SelectionScope) => void;
   assignments?: AssignmentT[];
   isCustomSolveModeActive?: boolean;
   onCustomColumnSelect?: (date: string, rowIds: string[]) => void;
@@ -103,17 +93,15 @@ export default function DateHeaderCell({
   isCustomColumnIndeterminate?: boolean;
   isDateInCampaign?: boolean;
 }) {
-  const today = dayjs.utc().startOf("day");
-  const isToday = periodDate.date.isSame(today, "day");
-  const dateStr = periodDate.date.format("YYYY-MM-DD");
+  const today = dayjs.utc().startOf('day');
+  const isToday = periodDate.date.isSame(today, 'day');
+  const dateStr = periodDate.date.format('YYYY-MM-DD');
 
   const isColumnSelected =
     !!isSelectionActive &&
     !!rowIds?.length &&
     rowIds.every((rowId) =>
-      selectionState?.selectedCells.some(
-        (c) => c.rowId === rowId && c.date === dateStr,
-      ),
+      selectionState?.selectedCells.some((c) => c.rowId === rowId && c.date === dateStr),
     );
 
   const rowIdSet = new Set(rowIds ?? []);
@@ -121,7 +109,7 @@ export default function DateHeaderCell({
     .filter(
       (a) =>
         (rowIdSet.has(a.workerId) || rowIdSet.has(a.shiftId)) &&
-        a.date.format("YYYY-MM-DD") === dateStr,
+        a.date.format('YYYY-MM-DD') === dateStr,
     )
     .map((a) => a.id);
 
@@ -129,33 +117,27 @@ export default function DateHeaderCell({
     !!isSelectionActive &&
     !isColumnSelected &&
     (!!rowIds?.some((rowId) =>
-      selectionState?.selectedCells.some(
-        (c) => c.rowId === rowId && c.date === dateStr,
-      ),
+      selectionState?.selectedCells.some((c) => c.rowId === rowId && c.date === dateStr),
     ) ||
-      columnAssignmentIds.some((id) =>
-        selectionState?.selectedAssignmentIds.includes(id),
-      ));
+      columnAssignmentIds.some((id) => selectionState?.selectedAssignmentIds.includes(id)));
 
   return (
     <TableCell
       sx={{
         padding: 0,
       }}
-      data-testid={`date-header-cell-${periodDate.date.format("YYYY-MM-DD")}`}
+      data-testid={`date-header-cell-${periodDate.date.format('YYYY-MM-DD')}`}
     >
       <div className="date-header-container">
-        <span className={`weekday ${isToday && "today"}`}>
-          {periodDate.date.locale(lng).format("ddd").slice(0, 3)}
+        <span className={`weekday ${isToday && 'today'}`}>
+          {periodDate.date.locale(lng).format('ddd').slice(0, 3)}
         </span>
-        <div className={`month-day-container ${isToday && "today"}`}>
+        <div className={`month-day-container ${isToday && 'today'}`}>
           <span
-            className={`month-day ${isToday && "today"}`}
-            data-testid={`date-header-day-${periodDate.date.format(
-              "YYYY-MM-DD",
-            )}`}
+            className={`month-day ${isToday && 'today'}`}
+            data-testid={`date-header-day-${periodDate.date.format('YYYY-MM-DD')}`}
           >
-            {periodDate.date.format("DD")}
+            {periodDate.date.format('DD')}
           </span>
         </div>
         <RoleBased
@@ -163,10 +145,7 @@ export default function DateHeaderCell({
           allowedRoles={[TeamMembershipRole.OWNER]}
         >
           {periodDate.scheduleStatus !== null && (
-            <ScheduleStatusLogo
-              scheduleStatus={periodDate.scheduleStatus}
-              lng={lng}
-            />
+            <ScheduleStatusLogo scheduleStatus={periodDate.scheduleStatus} lng={lng} />
           )}
         </RoleBased>
         {isSelectionActive && (
@@ -174,12 +153,10 @@ export default function DateHeaderCell({
             size="small"
             checked={isColumnSelected}
             indeterminate={isColumnIndeterminate}
-            onChange={() =>
-              onColumnSelect?.(dateStr, rowIds ?? [], selectionScope ?? "view")
-            }
+            onChange={() => onColumnSelect?.(dateStr, rowIds ?? [], selectionScope ?? 'view')}
             onClick={(e) => e.stopPropagation()}
             data-testid={`date-column-checkbox-${dateStr}`}
-            sx={{ padding: "2px", display: "block", margin: "0 auto" }}
+            sx={{ padding: '2px', display: 'block', margin: '0 auto' }}
           />
         )}
         {isCustomSolveModeActive && isDateInCampaign && (
@@ -191,25 +168,23 @@ export default function DateHeaderCell({
                 onCustomColumnSelect?.(dateStr, rowIds ?? []);
               }}
               style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                display: "block",
-                margin: "0 auto",
-                padding: "2px",
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'block',
+                margin: '0 auto',
+                padding: '2px',
                 color: isCustomColumnSelected
-                  ? "#1976d2"
+                  ? '#1976d2'
                   : isCustomColumnIndeterminate
-                    ? "#42a5f5"
-                    : "#9e9e9e",
+                    ? '#42a5f5'
+                    : '#9e9e9e',
               }}
             >
               <Sparkle
                 size={14}
                 fill={
-                  isCustomColumnSelected || isCustomColumnIndeterminate
-                    ? "currentColor"
-                    : "none"
+                  isCustomColumnSelected || isCustomColumnIndeterminate ? 'currentColor' : 'none'
                 }
               />
             </button>

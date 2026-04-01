@@ -7,21 +7,21 @@
  * - Team leader approval (complete swap, verify assignment changes)
  */
 
-import { test, expect } from "@playwright/test";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { SwapTestBase } from "../../utils/swap-test-base";
-import { SwapStatus } from "../../../src/types/swap";
-import { TEST_USER, TEST_USER_2 } from "../../utils/database-utils";
-import type { AssignmentT } from "../../../src/types/assignment";
-import { ShiftType } from "../../../src/types/shift";
-import { ShiftRestType } from "../../../src/types/shift";
+import { test, expect } from '@playwright/test';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import { SwapTestBase } from '../../utils/swap-test-base';
+import { SwapStatus } from '../../../src/types/swap';
+import { TEST_USER, TEST_USER_2 } from '../../utils/database-utils';
+import type { AssignmentT } from '../../../src/types/assignment';
+import { ShiftType } from '../../../src/types/shift';
+import { ShiftRestType } from '../../../src/types/shift';
 
 dayjs.extend(utc);
 dayjs.extend(isSameOrBefore);
 
-test.describe("Direct Swap Detail - Swap Creator Tests", () => {
+test.describe('Direct Swap Detail - Swap Creator Tests', () => {
   const swapTestBase = new SwapTestBase();
 
   test.beforeAll(async () => {
@@ -40,9 +40,7 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     await swapTestBase.selectMySwapsTab(page);
   });
 
-  test("should display swap details when clicking view details", async ({
-    page,
-  }) => {
+  test('should display swap details when clicking view details', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     expect(swaps.length).toBeGreaterThan(0);
 
@@ -63,16 +61,16 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
 
     // Verify swap type chip shows "Direct Swap"
     const swapTypeChip = page.locator('[data-testid="swap-type-chip"]');
-    await expect(swapTypeChip).toHaveText("Direct Swap");
+    await expect(swapTypeChip).toHaveText('Direct Swap');
 
     // Verify status chip is visible
     const statusChip = page.locator('[data-testid="swap-status-chip"]');
     await expect(statusChip).toBeVisible();
 
-    console.log("✅ Swap details dialog displayed correctly");
+    console.log('✅ Swap details dialog displayed correctly');
   });
 
-  test("should show offered assignments section", async ({ page }) => {
+  test('should show offered assignments section', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -81,9 +79,7 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify offered assignments section exists
-    const offeredSection = page.locator(
-      '[data-testid="offered-assignments-section"]',
-    );
+    const offeredSection = page.locator('[data-testid="offered-assignments-section"]');
     await expect(offeredSection).toBeVisible();
 
     // Verify offered assignments are displayed
@@ -94,14 +90,10 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
       await expect(assignmentCard).toBeVisible();
     }
 
-    console.log(
-      `✅ All ${testSwap.offeredAssignmentIds.length} offered assignments displayed`,
-    );
+    console.log(`✅ All ${testSwap.offeredAssignmentIds.length} offered assignments displayed`);
   });
 
-  test("should show requested assignments section for direct swap", async ({
-    page,
-  }) => {
+  test('should show requested assignments section for direct swap', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -110,9 +102,7 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify requested assignments section exists
-    const requestedSection = page.locator(
-      '[data-testid="requested-assignments-section"]',
-    );
+    const requestedSection = page.locator('[data-testid="requested-assignments-section"]');
     await expect(requestedSection).toBeVisible();
 
     // Verify target worker name is displayed
@@ -134,7 +124,7 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     }
   });
 
-  test("should show delete button for swap creator", async ({ page }) => {
+  test('should show delete button for swap creator', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -146,17 +136,15 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
     const deleteButton = page.locator('[data-testid="delete-swap-button"]');
     await expect(deleteButton).toBeVisible();
 
-    console.log("✅ Delete button visible for swap creator");
+    console.log('✅ Delete button visible for swap creator');
   });
 
-  test("should be able to delete swap", async ({ page }) => {
+  test('should be able to delete swap', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
     // Count initial swap cards
-    const initialSwapCards = await page
-      .locator('[data-testid^="swap-card-"]')
-      .count();
+    const initialSwapCards = await page.locator('[data-testid^="swap-card-"]').count();
 
     // Open first swap
     await page.click(`[data-testid="swap-card-${testSwap.id}"]`);
@@ -168,27 +156,23 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
 
     // Wait for dialog to close
     await page.waitForSelector('[data-testid="swap-detail-dialog"]', {
-      state: "hidden",
+      state: 'hidden',
       timeout: 10000,
     });
 
-    console.log("✅ SwapDetailDialog closed after delete");
+    console.log('✅ SwapDetailDialog closed after delete');
 
     // Wait for the swap list to refresh
     await page.waitForTimeout(1000);
 
     // Verify swap is no longer visible in SwapTab
-    const deletedSwapCard = await page.locator(
-      `[data-testid="swap-card-${testSwap.id}"]`,
-    );
+    const deletedSwapCard = await page.locator(`[data-testid="swap-card-${testSwap.id}"]`);
     expect(deletedSwapCard).toHaveCount(0);
 
-    console.log("✅ Deleted swap no longer visible in SwapTab");
+    console.log('✅ Deleted swap no longer visible in SwapTab');
   });
 
-  test("should show target worker acceptance status (before acceptance)", async ({
-    page,
-  }) => {
+  test('should show target worker acceptance status (before acceptance)', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -198,19 +182,17 @@ test.describe("Direct Swap Detail - Swap Creator Tests", () => {
 
     // Status should be ACTIVE (not yet accepted by target)
     const statusChip = page.locator('[data-testid="swap-status-chip"]');
-    await expect(statusChip).toContainText("active");
+    await expect(statusChip).toContainText('active');
 
     // Should NOT show accept button (only target worker can accept)
-    const acceptButton = page.locator(
-      '[data-testid="accept-direct-swap-button"]',
-    );
+    const acceptButton = page.locator('[data-testid="accept-direct-swap-button"]');
     await expect(acceptButton).not.toBeVisible();
 
-    console.log("✅ Status correctly shows ACTIVE before target acceptance");
+    console.log('✅ Status correctly shows ACTIVE before target acceptance');
   });
 });
 
-test.describe("Direct Swap Detail - Target Worker Tests", () => {
+test.describe('Direct Swap Detail - Target Worker Tests', () => {
   const swapTestBase = new SwapTestBase();
 
   test.beforeAll(async () => {
@@ -230,7 +212,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     await swapTestBase.selectMySwapsTab(page);
   });
 
-  test("should NOT show delete button for target worker", async ({ page }) => {
+  test('should NOT show delete button for target worker', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -242,12 +224,10 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     const deleteButton = page.locator('[data-testid="delete-swap-button"]');
     await expect(deleteButton).not.toBeVisible();
 
-    console.log("✅ Delete button correctly hidden for target worker");
+    console.log('✅ Delete button correctly hidden for target worker');
   });
 
-  test("should show accept button for target worker when swap is active", async ({
-    page,
-  }) => {
+  test('should show accept button for target worker when swap is active', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -256,15 +236,13 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Verify accept button is visible
-    const acceptButton = page.locator(
-      '[data-testid="accept-direct-swap-button"]',
-    );
+    const acceptButton = page.locator('[data-testid="accept-direct-swap-button"]');
     await expect(acceptButton).toBeVisible();
 
-    console.log("✅ Accept button visible for target worker");
+    console.log('✅ Accept button visible for target worker');
   });
 
-  test("should be able to accept direct swap", async ({ page }) => {
+  test('should be able to accept direct swap', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -273,9 +251,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     await page.waitForSelector('[data-testid="swap-detail-dialog"]');
 
     // Click accept button
-    const acceptButton = page.locator(
-      '[data-testid="accept-direct-swap-button"]',
-    );
+    const acceptButton = page.locator('[data-testid="accept-direct-swap-button"]');
     await acceptButton.click();
 
     // Wait for the accept action to complete (button might be disabled during loading)
@@ -285,12 +261,10 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
     const updatedSwap = await swapTestBase.getSwapById(testSwap.id);
     expect(updatedSwap.status).toBe(SwapStatus.PENDING_APPROVAL);
 
-    console.log("✅ Direct swap accepted, status changed to PENDING_APPROVAL");
+    console.log('✅ Direct swap accepted, status changed to PENDING_APPROVAL');
   });
 
-  test("should show pending approval status after acceptance", async ({
-    page,
-  }) => {
+  test('should show pending approval status after acceptance', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -299,7 +273,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
 
     // Reload page to see updated status
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
     await swapTestBase.selectMySwapsTab(page);
 
     // Open swap
@@ -308,18 +282,16 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
 
     // Status should show PENDING_APPROVAL
     const statusChip = page.locator('[data-testid="swap-status-chip"]');
-    await expect(statusChip).toContainText("pending_approval");
+    await expect(statusChip).toContainText('pending_approval');
 
     // Accept button should no longer be visible
-    const acceptButton = page.locator(
-      '[data-testid="accept-direct-swap-button"]',
-    );
+    const acceptButton = page.locator('[data-testid="accept-direct-swap-button"]');
     await expect(acceptButton).not.toBeVisible();
 
-    console.log("✅ Status correctly shows PENDING_APPROVAL after acceptance");
+    console.log('✅ Status correctly shows PENDING_APPROVAL after acceptance');
   });
 
-  test("should NOT show approve button for member even when swap is pending approval", async ({
+  test('should NOT show approve button for member even when swap is pending approval', async ({
     page,
   }) => {
     const swaps = swapTestBase.getTestSwaps();
@@ -330,7 +302,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
 
     // Reload page to see updated status
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
     await swapTestBase.selectMySwapsTab(page);
 
     // Open swap
@@ -339,15 +311,13 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
 
     // Verify status is PENDING_APPROVAL
     const statusChip = page.locator('[data-testid="swap-status-chip"]');
-    await expect(statusChip).toContainText("pending_approval");
+    await expect(statusChip).toContainText('pending_approval');
 
     // Approve button should NOT be visible for member user
     const approveButton = page.locator('[data-testid="approve-swap-button"]');
     await expect(approveButton).not.toBeVisible();
 
-    console.log(
-      "✅ Approve button correctly hidden for member even when swap is PENDING_APPROVAL",
-    );
+    console.log('✅ Approve button correctly hidden for member even when swap is PENDING_APPROVAL');
   });
 
   //   test("should NOT allow member to approve swap via API", async ({ page }) => {
@@ -378,7 +348,7 @@ test.describe("Direct Swap Detail - Target Worker Tests", () => {
   //   });
 });
 
-test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
+test.describe('Direct Swap Detail - Team Leader Approval Tests', () => {
   const swapTestBase = new SwapTestBase();
 
   test.beforeAll(async () => {
@@ -397,9 +367,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     await swapTestBase.selectAllSwapsTab(page);
   });
 
-  test("should NOT show approve button when swap is still active", async ({
-    page,
-  }) => {
+  test('should NOT show approve button when swap is still active', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -411,10 +379,10 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const approveButton = page.locator('[data-testid="approve-swap-button"]');
     await expect(approveButton).not.toBeVisible();
 
-    console.log("✅ Approve button correctly hidden when swap is ACTIVE");
+    console.log('✅ Approve button correctly hidden when swap is ACTIVE');
   });
 
-  test("should show approve button when both parties accepted (pending approval)", async ({
+  test('should show approve button when both parties accepted (pending approval)', async ({
     page,
   }) => {
     const swaps = swapTestBase.getTestSwaps();
@@ -425,7 +393,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
 
     // Reload page to see updated status
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
     await swapTestBase.selectAllSwapsTab(page);
 
     // Open swap
@@ -436,14 +404,10 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const approveButton = page.locator('[data-testid="approve-swap-button"]');
     await expect(approveButton).toBeVisible();
 
-    console.log(
-      "✅ Approve button visible when swap is in PENDING_APPROVAL state",
-    );
+    console.log('✅ Approve button visible when swap is in PENDING_APPROVAL state');
   });
 
-  test("should complete swap and update status when approved", async ({
-    page,
-  }) => {
+  test('should complete swap and update status when approved', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -452,7 +416,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
 
     // Reload page
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
     await swapTestBase.selectAllSwapsTab(page);
 
     // Open swap
@@ -470,12 +434,10 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const completedSwap = await swapTestBase.getSwapById(testSwap.id);
     expect(completedSwap.status).toBe(SwapStatus.COMPLETED);
 
-    console.log("✅ Swap status changed to COMPLETED after approval");
+    console.log('✅ Swap status changed to COMPLETED after approval');
   });
 
-  test("should update completedAt timestamp when swap is completed", async ({
-    page,
-  }) => {
+  test('should update completedAt timestamp when swap is completed', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -490,15 +452,13 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     // Verify it's a recent timestamp (within last minute)
     const now = dayjs.utc();
     const completedTime = completedSwap.completedAt!;
-    const diffSeconds = now.diff(completedTime, "second");
+    const diffSeconds = now.diff(completedTime, 'second');
     expect(diffSeconds).toBeLessThan(60);
 
-    console.log("✅ completedAt timestamp correctly set");
+    console.log('✅ completedAt timestamp correctly set');
   });
 
-  test("should set completedByUserId to team leader when approved", async ({
-    page,
-  }) => {
+  test('should set completedByUserId to team leader when approved', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -509,12 +469,10 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     // Verify completedByUserId is set to the team leader (TEST_USER)
     expect(completedSwap.completedByUserId).toBe(TEST_USER.user_id);
 
-    console.log("✅ completedByUserId correctly set to team leader");
+    console.log('✅ completedByUserId correctly set to team leader');
   });
 
-  test("should populate auditData with original assignment information", async ({
-    page,
-  }) => {
+  test('should populate auditData with original assignment information', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -534,7 +492,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
           id: assignment.id,
           workerId: assignment.workerId,
           shiftId: assignment.shiftId,
-          dateIso: assignment.date.format("YYYY-MM-DD"),
+          dateIso: assignment.date.format('YYYY-MM-DD'),
         });
       }
     }
@@ -562,9 +520,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     }
 
     // Verify auditData contains only the offered and requested assignments
-    const auditAssignmentIds = completedSwap.auditData.map(
-      (a) => a.assignmentId,
-    );
+    const auditAssignmentIds = completedSwap.auditData.map((a) => a.assignmentId);
     expect(auditAssignmentIds.sort()).toEqual(swapAssignmentIds.sort());
 
     console.log(
@@ -572,9 +528,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     );
   });
 
-  test("should swap assignments correctly between workers", async ({
-    page,
-  }) => {
+  test('should swap assignments correctly between workers', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
     const workers = swapTestBase.getTestWorkers();
@@ -595,35 +549,29 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     // Fetch all assignments after swap using AssignmentApi
     const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const allAssignments = ARResult.assignmentsRead;
 
     // Verify offered assignments now belong to worker2
     for (const offeredAssignmentId of originalOfferedAssignments) {
-      const assignment = allAssignments.find(
-        (a) => a.id === offeredAssignmentId,
-      );
+      const assignment = allAssignments.find((a) => a.id === offeredAssignmentId);
       expect(assignment).toBeDefined();
       expect(assignment!.workerId).toBe(worker2Id);
     }
 
     // Verify requested assignments now belong to worker1
     for (const requestedAssignmentId of originalRequestedAssignments) {
-      const assignment = allAssignments.find(
-        (a) => a.id === requestedAssignmentId,
-      );
+      const assignment = allAssignments.find((a) => a.id === requestedAssignmentId);
       expect(assignment).toBeDefined();
       expect(assignment!.workerId).toBe(worker1Id);
     }
 
-    console.log("✅ Assignments successfully swapped between workers");
+    console.log('✅ Assignments successfully swapped between workers');
   });
 
-  test("should verify assignments maintain their shift and date after swap", async ({
-    page,
-  }) => {
+  test('should verify assignments maintain their shift and date after swap', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
     const teamId = swapTestBase.getTestTeam()!.teamId;
@@ -631,8 +579,8 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     // Get original assignment details using AssignmentApi
     const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const assignmentsBefore = ARResult.assignmentsRead;
 
@@ -646,7 +594,7 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
       if (assignment) {
         originalData.set(assignmentId, {
           shiftId: assignment.shiftId,
-          date: assignment.date.format("YYYY-MM-DD"),
+          date: assignment.date.format('YYYY-MM-DD'),
         });
       }
     }
@@ -658,36 +606,30 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     // Fetch assignments after swap using AssignmentApi
     const ARResultAfter = await swapTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const assignmentsAfter = ARResultAfter.assignmentsRead;
 
     // Verify each assignment kept its original shift and date
     for (const [assignmentId, original] of originalData.entries()) {
-      const assignmentAfter = assignmentsAfter.find(
-        (a) => a.id === assignmentId,
-      );
+      const assignmentAfter = assignmentsAfter.find((a) => a.id === assignmentId);
       expect(assignmentAfter).toBeDefined();
       expect(assignmentAfter!.shiftId).toBe(original.shiftId);
-      expect(assignmentAfter!.date.format("YYYY-MM-DD")).toBe(original.date);
+      expect(assignmentAfter!.date.format('YYYY-MM-DD')).toBe(original.date);
     }
 
-    console.log(
-      "✅ Assignments maintained their shift and date after swap (only worker changed)",
-    );
+    console.log('✅ Assignments maintained their shift and date after swap (only worker changed)');
   });
 
-  test("should correctly swap 2 normal shifts for 1 duty shift", async ({
-    page,
-  }) => {
+  test('should correctly swap 2 normal shifts for 1 duty shift', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
 
     // Find the duty swap (second swap in the array)
-    const dutySwap = swaps.find((s) => s.comment?.includes("duty swap"));
+    const dutySwap = swaps.find((s) => s.comment?.includes('duty swap'));
 
     if (!dutySwap) {
-      console.log("⏭️  Duty swap not found, skipping test");
+      console.log('⏭️  Duty swap not found, skipping test');
       return;
     }
 
@@ -710,25 +652,21 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     // Fetch all assignments after swap using AssignmentApi
     const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const allAssignments = ARResult.assignmentsRead;
 
     // Verify the 2 normal shifts (morning + afternoon) now belong to worker2
     for (const offeredAssignmentId of dutySwap.offeredAssignmentIds) {
-      const assignment = allAssignments.find(
-        (a: any) => a.id === offeredAssignmentId,
-      );
+      const assignment = allAssignments.find((a: any) => a.id === offeredAssignmentId);
       expect(assignment).toBeDefined();
       expect(assignment!.workerId).toBe(worker2Id);
     }
 
     // Verify the 1 duty shift now belongs to worker1
     for (const requestedAssignmentId of dutySwap.requestedAssignmentIds!) {
-      const assignment = allAssignments.find(
-        (a: any) => a.id === requestedAssignmentId,
-      );
+      const assignment = allAssignments.find((a: any) => a.id === requestedAssignmentId);
       expect(assignment).toBeDefined();
       expect(assignment!.workerId).toBe(worker1Id);
     }
@@ -737,13 +675,11 @@ test.describe("Direct Swap Detail - Team Leader Approval Tests", () => {
     const completedDutySwap = await swapTestBase.getSwapById(dutySwap.id);
     expect(completedDutySwap.auditData.length).toBe(3);
 
-    console.log(
-      "✅ Duty swap completed successfully: 2 normal shifts swapped for 1 duty shift",
-    );
+    console.log('✅ Duty swap completed successfully: 2 normal shifts swapped for 1 duty shift');
   });
 });
 
-test.describe("Direct Swap Detail - Reversion Tests", () => {
+test.describe('Direct Swap Detail - Reversion Tests', () => {
   const swapTestBase = new SwapTestBase();
   let completedSwapId: string;
 
@@ -764,7 +700,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     await swapTestBase.selectCompletedSwapsTab(page);
   });
 
-  test("should allow leader to revert a completed swap", async ({ page }) => {
+  test('should allow leader to revert a completed swap', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     expect(swaps.length).toBeGreaterThan(0);
 
@@ -784,12 +720,10 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Verify swap status changed to REVERTED
     expect(revertedSwap.status).toBe(SwapStatus.REVERTED);
 
-    console.log("✅ Swap successfully reverted");
+    console.log('✅ Swap successfully reverted');
   });
 
-  test("should set revertedAt timestamp when swap is reverted", async ({
-    page,
-  }) => {
+  test('should set revertedAt timestamp when swap is reverted', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -809,21 +743,13 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
 
     // Check that revertedAt is after the start time and not in the future
     const afterRevert = dayjs.utc();
-    expect(
-      revertedSwap.revertedAt!.isSameOrAfter(
-        beforeRevert.subtract(10, "second"),
-      ),
-    ).toBe(true);
-    expect(
-      revertedSwap.revertedAt!.isSameOrBefore(afterRevert.add(10, "second")),
-    ).toBe(true);
+    expect(revertedSwap.revertedAt!.isSameOrAfter(beforeRevert.subtract(10, 'second'))).toBe(true);
+    expect(revertedSwap.revertedAt!.isSameOrBefore(afterRevert.add(10, 'second'))).toBe(true);
 
-    console.log("✅ revertedAt timestamp correctly set");
+    console.log('✅ revertedAt timestamp correctly set');
   });
 
-  test("should set revertedByUserId to leader when reverted", async ({
-    page,
-  }) => {
+  test('should set revertedByUserId to leader when reverted', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -837,10 +763,10 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Verify revertedByUserId is set to TEST_USER (owner/leader)
     expect(revertedSwap.revertedByUserId).toBe(TEST_USER.user_id);
 
-    console.log("✅ revertedByUserId correctly set to leader");
+    console.log('✅ revertedByUserId correctly set to leader');
   });
 
-  test("should preserve audit data after reversion", async ({ page }) => {
+  test('should preserve audit data after reversion', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
@@ -859,10 +785,10 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     expect(revertedSwap.auditData.length).toBe(originalAuditData.length);
     expect(revertedSwap.auditData).toEqual(originalAuditData);
 
-    console.log("✅ Audit data preserved after reversion");
+    console.log('✅ Audit data preserved after reversion');
   });
 
-  test("should restore offered assignments to original worker after reversion", async ({
+  test('should restore offered assignments to original worker after reversion', async ({
     page,
   }) => {
     const swaps = swapTestBase.getTestSwaps();
@@ -873,8 +799,8 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Get original assignments before swap
     const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       true,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const assignmentsBeforeSwap = ARResult.assignmentsRead;
 
@@ -882,9 +808,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     const offeredAssignmentsBefore = assignmentsBeforeSwap.filter((a) =>
       testSwap.offeredAssignmentIds.includes(a.id),
     );
-    expect(
-      offeredAssignmentsBefore.every((a) => a.workerId === creatorWorker.id),
-    ).toBe(true);
+    expect(offeredAssignmentsBefore.every((a) => a.workerId === creatorWorker.id)).toBe(true);
 
     // Accept, approve, and revert swap
     await swapTestBase.acceptDirectSwap(testSwap.id);
@@ -894,8 +818,8 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Get assignments after reversion
     const ARResultAfter = await swapTestBase.getAssignmentsAndRecurrences(
       true,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const assignmentsAfterRevert = ARResultAfter.assignmentsRead;
 
@@ -913,7 +837,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     );
   });
 
-  test("should restore requested assignments to original worker after reversion", async ({
+  test('should restore requested assignments to original worker after reversion', async ({
     page,
   }) => {
     const swaps = swapTestBase.getTestSwaps();
@@ -924,20 +848,16 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Get original assignments before swap
     const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       true,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const assignmentsBeforeSwap = ARResult.assignmentsRead;
 
     // Find requested assignments and verify they belong to target worker
     const requestedAssignmentsBefore = assignmentsBeforeSwap.filter(
-      (a) =>
-        testSwap.requestedAssignmentIds &&
-        testSwap.requestedAssignmentIds.includes(a.id),
+      (a) => testSwap.requestedAssignmentIds && testSwap.requestedAssignmentIds.includes(a.id),
     );
-    expect(
-      requestedAssignmentsBefore.every((a) => a.workerId === targetWorker.id),
-    ).toBe(true);
+    expect(requestedAssignmentsBefore.every((a) => a.workerId === targetWorker.id)).toBe(true);
 
     // Accept, approve, and revert swap
     await swapTestBase.acceptDirectSwap(testSwap.id);
@@ -947,16 +867,14 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Get assignments after reversion
     const ARResultAfter = await swapTestBase.getAssignmentsAndRecurrences(
       true,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const assignmentsAfterRevert = ARResultAfter.assignmentsRead;
 
     // Verify requested assignments are back to original worker
     const requestedAssignmentsAfter = assignmentsAfterRevert.filter(
-      (a) =>
-        testSwap.requestedAssignmentIds &&
-        testSwap.requestedAssignmentIds.includes(a.id),
+      (a) => testSwap.requestedAssignmentIds && testSwap.requestedAssignmentIds.includes(a.id),
     );
 
     for (const assignment of requestedAssignmentsAfter) {
@@ -968,36 +886,29 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     );
   });
 
-  test("should maintain shift and date for assignments after reversion", async ({
-    page,
-  }) => {
+  test('should maintain shift and date for assignments after reversion', async ({ page }) => {
     const swaps = swapTestBase.getTestSwaps();
     const testSwap = swaps[0];
 
     // Get assignments before swap
     const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       true,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const assignmentsBeforeSwap = ARResult.assignmentsRead;
 
     // Map assignment IDs to their shift/date info
-    const assignmentDetails = new Map<
-      string,
-      { shiftId: string; date: string }
-    >();
+    const assignmentDetails = new Map<string, { shiftId: string; date: string }>();
     for (const assignmentId of [
       ...testSwap.offeredAssignmentIds,
       ...(testSwap.requestedAssignmentIds || []),
     ]) {
-      const assignment = assignmentsBeforeSwap.find(
-        (a) => a.id === assignmentId,
-      );
+      const assignment = assignmentsBeforeSwap.find((a) => a.id === assignmentId);
       if (assignment) {
         assignmentDetails.set(assignment.id, {
           shiftId: assignment.shiftId,
-          date: assignment.date.format("YYYY-MM-DD"),
+          date: assignment.date.format('YYYY-MM-DD'),
         });
       }
     }
@@ -1010,27 +921,23 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Get assignments after reversion
     const ARResultAfter = await swapTestBase.getAssignmentsAndRecurrences(
       true,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const assignmentsAfterRevert = ARResultAfter.assignmentsRead;
 
     // Verify shift and date remain unchanged
     for (const [assignmentId, originalDetails] of assignmentDetails) {
-      const assignment = assignmentsAfterRevert.find(
-        (a) => a.id === assignmentId,
-      );
+      const assignment = assignmentsAfterRevert.find((a) => a.id === assignmentId);
       expect(assignment).toBeDefined();
       expect(assignment!.shiftId).toBe(originalDetails.shiftId);
-      expect(assignment!.date.format("YYYY-MM-DD")).toBe(originalDetails.date);
+      expect(assignment!.date.format('YYYY-MM-DD')).toBe(originalDetails.date);
     }
 
-    console.log(
-      "✅ All assignments maintained their shift and date after reversion",
-    );
+    console.log('✅ All assignments maintained their shift and date after reversion');
   });
 
-  test("should restore recuperation assignments when reverting DUTY shift swap", async ({
+  test('should restore recuperation assignments when reverting DUTY shift swap', async ({
     page,
   }) => {
     const swaps = swapTestBase.getTestSwaps();
@@ -1040,7 +947,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Find a swap involving a DUTY shift
     const dutyShift = shifts.find((s) => s.shiftType === ShiftType.DUTY);
     if (!dutyShift) {
-      console.log("⚠️ No DUTY shift found, skipping test");
+      console.log('⚠️ No DUTY shift found, skipping test');
       return;
     }
 
@@ -1053,7 +960,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     );
 
     if (!recupShift) {
-      console.log("⚠️ No recuperation shift found, skipping test");
+      console.log('⚠️ No recuperation shift found, skipping test');
       return;
     }
 
@@ -1062,21 +969,17 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     for (const swap of swaps) {
       const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
         true,
-        dayjs.utc().subtract(2, "month"),
-        dayjs.utc().add(2, "month"),
+        dayjs.utc().subtract(2, 'month'),
+        dayjs.utc().add(2, 'month'),
       );
       const assignments = ARResult.assignmentsRead;
       const hasOfferedDuty = assignments.some(
-        (a) =>
-          swap.offeredAssignmentIds.includes(a.id) &&
-          a.shiftId === dutyShift.id,
+        (a) => swap.offeredAssignmentIds.includes(a.id) && a.shiftId === dutyShift.id,
       );
       const hasRequestedDuty =
         swap.requestedAssignmentIds &&
         assignments.some(
-          (a) =>
-            swap.requestedAssignmentIds!.includes(a.id) &&
-            a.shiftId === dutyShift.id,
+          (a) => swap.requestedAssignmentIds!.includes(a.id) && a.shiftId === dutyShift.id,
         );
 
       if (hasOfferedDuty || hasRequestedDuty) {
@@ -1086,25 +989,21 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     }
 
     if (!dutySwap) {
-      console.log("⚠️ No swap with DUTY shift found, skipping test");
+      console.log('⚠️ No swap with DUTY shift found, skipping test');
       return;
     }
 
     // Get all assignments before swap (including recuperation)
     const ARResult = await swapTestBase.getAssignmentsAndRecurrences(
       true,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const assignmentsBeforeSwap = ARResult.assignmentsRead;
 
     // Find duty assignments and their linked recuperation assignments
-    const dutyAssignments = assignmentsBeforeSwap.filter(
-      (a) => a.shiftId === dutyShift.id,
-    );
-    const recupAssignments = assignmentsBeforeSwap.filter(
-      (a) => a.shiftId === recupShift.id,
-    );
+    const dutyAssignments = assignmentsBeforeSwap.filter((a) => a.shiftId === dutyShift.id);
+    const recupAssignments = assignmentsBeforeSwap.filter((a) => a.shiftId === recupShift.id);
 
     // Map duty assignments to their recuperation assignments
     const dutyToRecupMap = new Map<string, AssignmentT>();
@@ -1112,7 +1011,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
       const recupAssignment = recupAssignments.find(
         (r) =>
           r.workerId === dutyAssignment.workerId &&
-          r.date.isSame(dutyAssignment.date.add(1, "day"), "day"),
+          r.date.isSame(dutyAssignment.date.add(1, 'day'), 'day'),
       );
       if (recupAssignment) {
         dutyToRecupMap.set(dutyAssignment.id, recupAssignment);
@@ -1127,16 +1026,14 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
     // Get assignments after reversion
     const ARResultAfter = await swapTestBase.getAssignmentsAndRecurrences(
       true,
-      dayjs.utc().subtract(2, "month"),
-      dayjs.utc().add(2, "month"),
+      dayjs.utc().subtract(2, 'month'),
+      dayjs.utc().add(2, 'month'),
     );
     const assignmentsAfterRevert = ARResultAfter.assignmentsRead;
 
     // Verify duty assignments and their recuperation assignments are restored
     for (const [dutyAssignmentId, originalRecupAssignment] of dutyToRecupMap) {
-      const dutyAssignmentAfter = assignmentsAfterRevert.find(
-        (a) => a.id === dutyAssignmentId,
-      );
+      const dutyAssignmentAfter = assignmentsAfterRevert.find((a) => a.id === dutyAssignmentId);
       const recupAssignmentAfter = assignmentsAfterRevert.find(
         (a) => a.id === originalRecupAssignment.id,
       );
@@ -1146,9 +1043,7 @@ test.describe("Direct Swap Detail - Reversion Tests", () => {
       expect(recupAssignmentAfter).toBeDefined();
 
       // Both should have the same worker (restored)
-      expect(dutyAssignmentAfter!.workerId).toBe(
-        recupAssignmentAfter!.workerId,
-      );
+      expect(dutyAssignmentAfter!.workerId).toBe(recupAssignmentAfter!.workerId);
     }
 
     console.log(

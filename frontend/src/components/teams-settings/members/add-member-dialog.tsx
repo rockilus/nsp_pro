@@ -1,28 +1,24 @@
-import * as React from "react";
-import { useTranslation } from "../../../app/i18n/client";
-import dayjs from "dayjs";
+import * as React from 'react';
+import { useTranslation } from '../../../app/i18n/client';
+import dayjs from 'dayjs';
 // MUI
-import CloseIcon from "@mui/icons-material/Close";
-import IconButton from "@mui/material/IconButton";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 // Styles
-import "./add-member-dialog.css";
+import './add-member-dialog.css';
 // Types
-import {
-  TeamInvitationT,
-  TeamInvitationType,
-  TeamInvitationStatus,
-} from "@/types/team-invitation";
-import { WorkerT } from "@/types/worker";
+import { TeamInvitationT, TeamInvitationType, TeamInvitationStatus } from '@/types/team-invitation';
+import { WorkerT } from '@/types/worker';
 
 type AttachWorkerSelectProps = {
   workers: WorkerT[];
@@ -46,16 +42,12 @@ export function AttachWorkerSelect({
         <Select
           labelId="attach-worker-select-label"
           id="attach-worker-select"
-          value={selectedWorkerId || ""}
+          value={selectedWorkerId || ''}
           label={workerLabel}
           onChange={onChange}
         >
           {workers.map((worker) => (
-            <MenuItem
-              key={worker.id}
-              value={worker.id}
-              disabled={worker.userId !== null}
-            >
+            <MenuItem key={worker.id} value={worker.id} disabled={worker.userId !== null}>
               {worker.name}
             </MenuItem>
           ))}
@@ -64,7 +56,7 @@ export function AttachWorkerSelect({
       <IconButton
         onClick={onCancel}
         sx={{
-          marginLeft: "10px",
+          marginLeft: '10px',
         }}
       >
         <CloseIcon fontSize="small" />
@@ -82,21 +74,17 @@ export default function AddMemberDialog({
   lng: string;
   teamId: string;
   workers: WorkerT[];
-  handleCreateTeamInvitation: (
-    teamInvitation: TeamInvitationT,
-  ) => Promise<void>;
+  handleCreateTeamInvitation: (teamInvitation: TeamInvitationT) => Promise<void>;
 }) {
-  const { t } = useTranslation(lng, "teams-page");
+  const { t } = useTranslation(lng, 'teams-page');
 
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState(false);
-  const [helperText, setHelperText] = React.useState("");
+  const [helperText, setHelperText] = React.useState('');
   const [showAttachWorker, setShowAttachWorker] = React.useState(false);
-  const [selectedWorkerId, setSelectedWorkerId] = React.useState<string | null>(
-    null,
-  );
-  const [firstName, setFirstName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
+  const [selectedWorkerId, setSelectedWorkerId] = React.useState<string | null>(null);
+  const [firstName, setFirstName] = React.useState('');
+  const [lastName, setLastName] = React.useState('');
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -109,7 +97,7 @@ export default function AddMemberDialog({
 
   const handleClose = () => {
     setError(false);
-    setHelperText("");
+    setHelperText('');
     setShowAttachWorker(false);
     setSelectedWorkerId(null);
     setOpen(false);
@@ -119,9 +107,7 @@ export default function AddMemberDialog({
     setSelectedWorkerId(event.target.value as string);
   };
 
-  const handleFirstNameChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFirstNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFirstName(event.target.value);
   };
 
@@ -137,37 +123,37 @@ export default function AddMemberDialog({
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!email || email.trim() === "") {
+    if (!email || email.trim() === '') {
       setError(true);
-      setHelperText(t("team_name_required"));
+      setHelperText(t('team_name_required'));
       return;
     }
 
     if (!emailRegex.test(email)) {
       setError(true);
-      setHelperText(t("invalid_email"));
+      setHelperText(t('invalid_email'));
       return;
     }
 
     if (!firstName.trim() || !lastName.trim()) {
       setError(true);
-      setHelperText(t("first_last_name_required"));
+      setHelperText(t('first_last_name_required'));
       return;
     }
 
     const teamInvitation: TeamInvitationT = {
-      id: "",
+      id: '',
       teamId,
       firstName,
       lastName,
       email,
       type: TeamInvitationType.MEMBER,
       workerId: selectedWorkerId,
-      token: "",
+      token: '',
       status: TeamInvitationStatus.PENDING,
       createdBy: null,
       createdAt: dayjs(),
-      expiresAt: dayjs().add(7, "day"),
+      expiresAt: dayjs().add(7, 'day'),
       lastSentAt: null,
     };
 
@@ -182,28 +168,28 @@ export default function AddMemberDialog({
         variant="contained"
         onClick={handleClickOpen}
         sx={{
-          textTransform: "none",
-          fontSize: "12px",
-          padding: "3px 12px",
+          textTransform: 'none',
+          fontSize: '12px',
+          padding: '3px 12px',
         }}
       >
-        {t("add_member")}
+        {t('add_member')}
       </Button>
       <Dialog
         open={open}
         onClose={handleClose}
         PaperProps={{
-          component: "form",
+          component: 'form',
           onSubmit: handleSubmit,
         }}
         sx={{
-          "& .MuiDialog-paper": {
-            width: "100%",
-            maxWidth: "500px",
+          '& .MuiDialog-paper': {
+            width: '100%',
+            maxWidth: '500px',
           },
         }}
       >
-        <DialogTitle>{t("add_member")}</DialogTitle>
+        <DialogTitle>{t('add_member')}</DialogTitle>
         <DialogContent>
           <div className="add-member-dialog-name">
             <TextField
@@ -211,7 +197,7 @@ export default function AddMemberDialog({
               margin="dense"
               id="firstName"
               name="firstName"
-              label={t("first_name")}
+              label={t('first_name')}
               type="text"
               fullWidth
               variant="standard"
@@ -223,7 +209,7 @@ export default function AddMemberDialog({
               margin="dense"
               id="lastName"
               name="lastName"
-              label={t("last_name")}
+              label={t('last_name')}
               type="text"
               fullWidth
               variant="standard"
@@ -237,7 +223,7 @@ export default function AddMemberDialog({
             margin="dense"
             id="name"
             name="email"
-            label={t("member_email")}
+            label={t('member_email')}
             type="email"
             fullWidth
             variant="standard"
@@ -250,14 +236,14 @@ export default function AddMemberDialog({
               selectedWorkerId={selectedWorkerId}
               onChange={handleChange}
               onCancel={handleCancelAttachWorker}
-              workerLabel={t("worker")}
+              workerLabel={t('worker')}
             />
           ) : (
             <button
               className="attach-worker-button"
               onClick={() => setShowAttachWorker(!showAttachWorker)}
             >
-              {t("attach_worker")}
+              {t('attach_worker')}
             </button>
           )}
         </DialogContent>
@@ -265,19 +251,19 @@ export default function AddMemberDialog({
           <Button
             onClick={handleClose}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
             }}
           >
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             variant="contained"
             type="submit"
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
             }}
           >
-            {t("add")}
+            {t('add')}
           </Button>
         </DialogActions>
       </Dialog>

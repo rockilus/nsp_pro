@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState, useMemo } from "react";
+import { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,18 +13,18 @@ import {
   IconButton,
   useTheme,
   useMediaQuery,
-} from "@mui/material";
-import { Close as CloseIcon } from "@mui/icons-material";
-import { SwapRequestT, SwapType, SwapStatus } from "../../types/swap";
-import { SwapValidationResultT } from "../../types/swapValidation";
-import { AssignmentDataDictT } from "../../types/assignment";
-import { WorkerT } from "../../types/worker";
-import { LinkShiftT } from "../../types/shift";
-import SwapDetailContent from "./SwapDetailContent";
-import SwapAnalysisDialog from "./SwapAnalysisDialog";
-import { getEarliestAssignment } from "../../utils/assignmentSort";
-import { getAssignmentsForIds } from "../../utils/swapHelpers";
-import { useTranslation } from "../../app/i18n/client";
+} from '@mui/material';
+import { Close as CloseIcon } from '@mui/icons-material';
+import { SwapRequestT, SwapType, SwapStatus } from '../../types/swap';
+import { SwapValidationResultT } from '../../types/swapValidation';
+import { AssignmentDataDictT } from '../../types/assignment';
+import { WorkerT } from '../../types/worker';
+import { LinkShiftT } from '../../types/shift';
+import SwapDetailContent from './SwapDetailContent';
+import SwapAnalysisDialog from './SwapAnalysisDialog';
+import { getEarliestAssignment } from '../../utils/assignmentSort';
+import { getAssignmentsForIds } from '../../utils/swapHelpers';
+import { useTranslation } from '../../app/i18n/client';
 
 interface SwapDetailDialogProps {
   open: boolean;
@@ -83,8 +83,8 @@ export default function SwapDetailDialog({
   lng,
 }: SwapDetailDialogProps) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { t } = useTranslation(lng, "swap-page");
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { t } = useTranslation(lng, 'swap-page');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -102,19 +102,15 @@ export default function SwapDetailDialog({
   // Sort bids - current user's bid first (hook moved above any early returns)
   const sortedBids = useMemo(() => {
     if (!swap || !swap.bids || !currentUserWorker) return swap?.bids ?? [];
-    const userBids = swap.bids.filter(
-      (bid) => bid.workerId === currentUserWorker.id,
-    );
-    const otherBids = swap.bids.filter(
-      (bid) => bid.workerId !== currentUserWorker.id,
-    );
+    const userBids = swap.bids.filter((bid) => bid.workerId === currentUserWorker.id);
+    const otherBids = swap.bids.filter((bid) => bid.workerId !== currentUserWorker.id);
     return [...userBids, ...otherBids];
   }, [currentUserWorker, swap]);
 
   const handleAddBid = async () => {
     if (!onAddBid || bidAssignmentIds.length === 0 || !currentUserWorker) {
       if (!currentUserWorker) {
-        setError(t("error_worker_not_found"));
+        setError(t('error_worker_not_found'));
       }
       return;
     }
@@ -126,8 +122,8 @@ export default function SwapDetailDialog({
       setShowAddBid(false);
       setBidAssignmentIds([]);
     } catch (err) {
-      console.error("Failed to add bid:", err);
-      setError(err instanceof Error ? err.message : t("error_add_bid"));
+      console.error('Failed to add bid:', err);
+      setError(err instanceof Error ? err.message : t('error_add_bid'));
     } finally {
       setLoading(false);
     }
@@ -141,8 +137,8 @@ export default function SwapDetailDialog({
       setError(null);
       await onDeleteBid(bidId);
     } catch (err) {
-      console.error("Failed to delete bid:", err);
-      setError(err instanceof Error ? err.message : t("error_delete_bid"));
+      console.error('Failed to delete bid:', err);
+      setError(err instanceof Error ? err.message : t('error_delete_bid'));
     } finally {
       setLoading(false);
     }
@@ -156,8 +152,8 @@ export default function SwapDetailDialog({
       setError(null);
       await onAcceptBid(bidId);
     } catch (err) {
-      console.error("Failed to accept bid:", err);
-      setError(err instanceof Error ? err.message : t("error_accept_bid"));
+      console.error('Failed to accept bid:', err);
+      setError(err instanceof Error ? err.message : t('error_accept_bid'));
     } finally {
       setLoading(false);
     }
@@ -171,8 +167,8 @@ export default function SwapDetailDialog({
       setError(null);
       await onAcceptDirectSwap();
     } catch (err) {
-      console.error("Failed to accept swap:", err);
-      setError(err instanceof Error ? err.message : t("error_accept_swap"));
+      console.error('Failed to accept swap:', err);
+      setError(err instanceof Error ? err.message : t('error_accept_swap'));
     } finally {
       setLoading(false);
     }
@@ -187,8 +183,8 @@ export default function SwapDetailDialog({
       await onApprove();
       onClose();
     } catch (err) {
-      console.error("Failed to approve swap:", err);
-      setError(err instanceof Error ? err.message : t("error_approve_swap"));
+      console.error('Failed to approve swap:', err);
+      setError(err instanceof Error ? err.message : t('error_approve_swap'));
     } finally {
       setLoading(false);
     }
@@ -202,8 +198,8 @@ export default function SwapDetailDialog({
       setError(null);
       await onDeny();
     } catch (err) {
-      console.error("Failed to deny swap:", err);
-      setError(err instanceof Error ? err.message : t("error_deny_swap"));
+      console.error('Failed to deny swap:', err);
+      setError(err instanceof Error ? err.message : t('error_deny_swap'));
     } finally {
       setLoading(false);
     }
@@ -216,10 +212,8 @@ export default function SwapDetailDialog({
       setError(null);
       await onCancelBidAcceptance();
     } catch (err) {
-      console.error("Failed to cancel bid acceptance:", err);
-      setError(
-        err instanceof Error ? err.message : t("error_cancel_acceptance"),
-      );
+      console.error('Failed to cancel bid acceptance:', err);
+      setError(err instanceof Error ? err.message : t('error_cancel_acceptance'));
     } finally {
       setLoading(false);
     }
@@ -232,8 +226,8 @@ export default function SwapDetailDialog({
       setError(null);
       await onRevert();
     } catch (err) {
-      console.error("Failed to revert swap:", err);
-      setError(err instanceof Error ? err.message : t("error_revert_swap"));
+      console.error('Failed to revert swap:', err);
+      setError(err instanceof Error ? err.message : t('error_revert_swap'));
     } finally {
       setLoading(false);
     }
@@ -248,8 +242,8 @@ export default function SwapDetailDialog({
       await onDelete();
       onClose();
     } catch (err) {
-      console.error("Failed to delete swap:", err);
-      setError(err instanceof Error ? err.message : t("error_delete_swap"));
+      console.error('Failed to delete swap:', err);
+      setError(err instanceof Error ? err.message : t('error_delete_swap'));
     } finally {
       setLoading(false);
     }
@@ -261,18 +255,14 @@ export default function SwapDetailDialog({
 
   // Get title data (same as SwapCard)
   const earliestOffered = getEarliestAssignment(offeredAssignments);
-  const titleDate = earliestOffered
-    ? earliestOffered.assignment.date
-    : swap.createdAt || null;
+  const titleDate = earliestOffered ? earliestOffered.assignment.date : swap.createdAt || null;
   const dayNumber =
-    titleDate && typeof (titleDate as any).format === "function"
-      ? titleDate.format("D")
-      : "";
+    titleDate && typeof (titleDate as any).format === 'function' ? titleDate.format('D') : '';
   const monthWeekday =
-    titleDate && typeof (titleDate as any).format === "function"
-      ? titleDate.format("MMM, ddd")
-      : "";
-  const titleShiftName = earliestOffered ? earliestOffered.shift.name : "";
+    titleDate && typeof (titleDate as any).format === 'function'
+      ? titleDate.format('MMM, ddd')
+      : '';
+  const titleShiftName = earliestOffered ? earliestOffered.shift.name : '';
 
   // Creator worker
   const creatorWorker =
@@ -282,8 +272,7 @@ export default function SwapDetailDialog({
 
   // Determine available actions based on role and swap state
   const userHasExistingBid =
-    currentUserWorker &&
-    swap.bids.some((bid) => bid.workerId === currentUserWorker.id);
+    currentUserWorker && swap.bids.some((bid) => bid.workerId === currentUserWorker.id);
 
   const canAddBid =
     !reviewMode &&
@@ -308,19 +297,15 @@ export default function SwapDetailDialog({
     currentUserWorker !== undefined &&
     swap.targetWorkerId === currentUserWorker.id;
 
-  const canApprove =
-    !reviewMode && swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
+  const canApprove = !reviewMode && swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
 
-  const canDeny =
-    !reviewMode && swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
+  const canDeny = !reviewMode && swap.status === SwapStatus.PENDING_APPROVAL && isLeader;
 
-  const canRevert =
-    !reviewMode && swap.status === SwapStatus.COMPLETED && isLeader;
+  const canRevert = !reviewMode && swap.status === SwapStatus.COMPLETED && isLeader;
 
   const canDelete =
     !reviewMode &&
-    (swap.status === SwapStatus.ACTIVE ||
-      swap.status === SwapStatus.PENDING_APPROVAL) &&
+    (swap.status === SwapStatus.ACTIVE || swap.status === SwapStatus.PENDING_APPROVAL) &&
     (isLeader || swap.createdByUserId === currentUserId);
 
   const canCancelBidAcceptance =
@@ -341,52 +326,39 @@ export default function SwapDetailDialog({
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           {/* Title matching SwapCard format */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Box
               sx={{
-                display: "flex",
-                flexDirection: isMobile ? "column" : "row",
-                alignItems: isMobile ? "flex-start" : "baseline",
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                alignItems: isMobile ? 'flex-start' : 'baseline',
                 mr: 2,
               }}
             >
               <Typography
                 variant="h5"
                 component="div"
-                sx={{ lineHeight: 1, mr: isMobile ? 0 : "5px" }}
+                sx={{ lineHeight: 1, mr: isMobile ? 0 : '5px' }}
               >
                 {dayNumber}
               </Typography>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ whiteSpace: "nowrap" }}
-              >
+              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
                 {monthWeekday}
               </Typography>
             </Box>
             <Typography variant="h6" component="div" fontWeight={700}>
               {titleShiftName}
-              {offeredAssignments.length > 1 ? "..." : ""}
+              {offeredAssignments.length > 1 ? '...' : ''}
             </Typography>
           </Box>
-          <IconButton
-            onClick={onClose}
-            size="small"
-            data-testid="close-dialog-button"
-          >
+          <IconButton onClick={onClose} size="small" data-testid="close-dialog-button">
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent>
         {loading && !swap ? (
-          <Box
-            display="flex"
-            justifyContent="center"
-            p={3}
-            data-testid="loading-indicator"
-          >
+          <Box display="flex" justifyContent="center" p={3} data-testid="loading-indicator">
             <CircularProgress />
           </Box>
         ) : (
@@ -408,17 +380,13 @@ export default function SwapDetailDialog({
             onSubmitBid={handleAddBid}
             onDeleteBid={onDeleteBid ? handleDeleteBid : undefined}
             onAcceptBid={handleAcceptBid}
-            onCancelBidAcceptance={
-              onCancelBidAcceptance ? handleCancelBidAcceptance : undefined
-            }
+            onCancelBidAcceptance={onCancelBidAcceptance ? handleCancelBidAcceptance : undefined}
             currentUserWorker={currentUserWorker}
             canAddBid={canAddBid}
             canAcceptBid={canAcceptBid}
             canCancelBidAcceptance={canCancelBidAcceptance}
             sortedBids={sortedBids}
-            onAnalyzeSwap={
-              onAnalyzeSwap && swap ? () => onAnalyzeSwap(swap.id) : undefined
-            }
+            onAnalyzeSwap={onAnalyzeSwap && swap ? () => onAnalyzeSwap(swap.id) : undefined}
             isAnalyzing={isAnalyzing}
             validationResult={validationResult}
             onViewAnalysisDetails={onViewAnalysisDetails}
@@ -433,7 +401,7 @@ export default function SwapDetailDialog({
             justifyContent="space-between"
             width="100%"
             px={1}
-            flexDirection={isMobile ? "column" : "row"}
+            flexDirection={isMobile ? 'column' : 'row'}
             gap={1}
           >
             <Box display="flex" gap={1} flexWrap="wrap">
@@ -443,9 +411,9 @@ export default function SwapDetailDialog({
                   color="error"
                   disabled={loading}
                   data-testid="delete-swap-button"
-                  size={isMobile ? "small" : "medium"}
+                  size={isMobile ? 'small' : 'medium'}
                 >
-                  {t("btn_delete_swap")}
+                  {t('btn_delete_swap')}
                 </Button>
               )}
               {canDeny && (
@@ -454,9 +422,9 @@ export default function SwapDetailDialog({
                   color="error"
                   disabled={loading}
                   data-testid="deny-swap-button"
-                  size={isMobile ? "small" : "medium"}
+                  size={isMobile ? 'small' : 'medium'}
                 >
-                  {t("btn_deny_swap")}
+                  {t('btn_deny_swap')}
                 </Button>
               )}
               {canRevert && (
@@ -465,9 +433,9 @@ export default function SwapDetailDialog({
                   color="warning"
                   disabled={loading}
                   data-testid="revert-swap-button"
-                  size={isMobile ? "small" : "medium"}
+                  size={isMobile ? 'small' : 'medium'}
                 >
-                  {t("btn_revert_swap")}
+                  {t('btn_revert_swap')}
                 </Button>
               )}
             </Box>
@@ -476,9 +444,9 @@ export default function SwapDetailDialog({
                 onClick={onClose}
                 disabled={loading}
                 data-testid="close-button"
-                size={isMobile ? "small" : "medium"}
+                size={isMobile ? 'small' : 'medium'}
               >
-                {t("btn_close")}
+                {t('btn_close')}
               </Button>
               {canAcceptDirectSwap && (
                 <Button
@@ -487,9 +455,9 @@ export default function SwapDetailDialog({
                   color="primary"
                   disabled={loading}
                   data-testid="accept-direct-swap-button"
-                  size={isMobile ? "small" : "medium"}
+                  size={isMobile ? 'small' : 'medium'}
                 >
-                  {t("btn_accept_swap")}
+                  {t('btn_accept_swap')}
                 </Button>
               )}
               {canApprove && (
@@ -499,9 +467,9 @@ export default function SwapDetailDialog({
                   color="success"
                   disabled={loading}
                   data-testid="approve-swap-button"
-                  size={isMobile ? "small" : "medium"}
+                  size={isMobile ? 'small' : 'medium'}
                 >
-                  {t("btn_approve_swap")}
+                  {t('btn_approve_swap')}
                 </Button>
               )}
             </Box>

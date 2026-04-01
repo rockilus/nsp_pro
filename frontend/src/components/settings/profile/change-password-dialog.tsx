@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Alert from "@mui/material/Alert";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import EditIcon from "@mui/icons-material/Edit";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import EditIcon from '@mui/icons-material/Edit';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
 
 export default function ChangePasswordDialog({
   lng,
@@ -28,27 +28,25 @@ export default function ChangePasswordDialog({
     newPasswordConfirm: string;
   }) => void;
 }) {
-  const { t } = useTranslation(lng, "profile-page");
+  const { t } = useTranslation(lng, 'profile-page');
 
   const [passwordData, setPasswordData] = useState<{
     currentPassword: string;
     newPassword: string;
     newPasswordConfirm: string;
   }>({
-    currentPassword: "",
-    newPassword: "",
-    newPasswordConfirm: "",
+    currentPassword: '',
+    newPassword: '',
+    newPasswordConfirm: '',
   });
   const [open, setOpen] = useState<boolean>(false);
-  const [currentPasswordError, setCurrentPasswordError] =
-    useState<boolean>(false);
+  const [currentPasswordError, setCurrentPasswordError] = useState<boolean>(false);
   const [newPasswordError, setNewPasswordError] = useState<boolean>(false);
-  const [newPasswordConfirmError, setNewPasswordConfirmError] =
-    useState<boolean>(false);
+  const [newPasswordConfirmError, setNewPasswordConfirmError] = useState<boolean>(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showNewPasswordConfirm, setShowNewPasswordConfirm] = useState(false);
-  const [alertMessage, setAlertMessage] = useState<string>("");
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -56,9 +54,9 @@ export default function ChangePasswordDialog({
 
   const handleClose = () => {
     setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      newPasswordConfirm: "",
+      currentPassword: '',
+      newPassword: '',
+      newPasswordConfirm: '',
     });
     setCurrentPasswordError(false);
     setNewPasswordError(false);
@@ -67,11 +65,11 @@ export default function ChangePasswordDialog({
   };
 
   const handleUpdatePasswordClick = async () => {
-    if (passwordData.currentPassword === "") {
+    if (passwordData.currentPassword === '') {
       setCurrentPasswordError(true);
       return;
     }
-    if (passwordData.newPassword === "") {
+    if (passwordData.newPassword === '') {
       setNewPasswordError(true);
       return;
     }
@@ -94,32 +92,26 @@ export default function ChangePasswordDialog({
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {t("change_password")}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">{t('change_password')}</DialogTitle>
         <DialogContent>
           <Box
             component="form"
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              "& .MuiTextField-root": { m: 1, width: "25ch" },
+              display: 'flex',
+              flexDirection: 'column',
+              '& .MuiTextField-root': { m: 1, width: '25ch' },
             }}
             noValidate
             autoComplete="off"
           >
             <TextField
               id="outlined-password-input"
-              label={t("current_password")}
-              type={showCurrentPassword ? "text" : "password"}
+              label={t('current_password')}
+              type={showCurrentPassword ? 'text' : 'password'}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() =>
-                        setShowCurrentPassword(!showCurrentPassword)
-                      }
-                    >
+                    <IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
                       {showCurrentPassword ? <Visibility /> : <VisibilityOff />}
                     </IconButton>
                   </InputAdornment>
@@ -132,25 +124,23 @@ export default function ChangePasswordDialog({
                   ...passwordData,
                   currentPassword: e.target.value,
                 });
-                if (e.target.value === "") {
+                if (e.target.value === '') {
                   setCurrentPasswordError(true);
                 } else {
                   setCurrentPasswordError(false);
                 }
               }}
               error={currentPasswordError}
-              helperText={currentPasswordError ? t("password_empty_error") : ""}
+              helperText={currentPasswordError ? t('password_empty_error') : ''}
             />
             <TextField
               id="outlined-password-input"
-              label={t("new_password")}
-              type={showNewPassword ? "text" : "password"}
+              label={t('new_password')}
+              type={showNewPassword ? 'text' : 'password'}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                    >
+                    <IconButton onClick={() => setShowNewPassword(!showNewPassword)}>
                       {showNewPassword ? <Visibility /> : <VisibilityOff />}
                     </IconButton>
                   </InputAdornment>
@@ -163,32 +153,24 @@ export default function ChangePasswordDialog({
                   ...passwordData,
                   newPassword: e.target.value,
                 });
-                if (e.target.value === "") {
+                if (e.target.value === '') {
                   setNewPasswordError(true);
                 } else {
                   setNewPasswordError(false);
                 }
               }}
               error={newPasswordError}
-              helperText={newPasswordError ? t("password_empty_error") : ""}
+              helperText={newPasswordError ? t('password_empty_error') : ''}
             />
             <TextField
               id="outlined-password-input"
-              label={t("new_password_confirm")}
-              type={showNewPasswordConfirm ? "text" : "password"}
+              label={t('new_password_confirm')}
+              type={showNewPasswordConfirm ? 'text' : 'password'}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() =>
-                        setShowNewPasswordConfirm(!showNewPasswordConfirm)
-                      }
-                    >
-                      {showNewPasswordConfirm ? (
-                        <Visibility />
-                      ) : (
-                        <VisibilityOff />
-                      )}
+                    <IconButton onClick={() => setShowNewPasswordConfirm(!showNewPasswordConfirm)}>
+                      {showNewPasswordConfirm ? <Visibility /> : <VisibilityOff />}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -207,16 +189,14 @@ export default function ChangePasswordDialog({
                 }
               }}
               error={newPasswordConfirmError}
-              helperText={
-                newPasswordConfirmError ? t("password_match_error") : ""
-              }
+              helperText={newPasswordConfirmError ? t('password_match_error') : ''}
             />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>{t("cancel")}</Button>
+          <Button onClick={handleClose}>{t('cancel')}</Button>
           <Button onClick={handleUpdatePasswordClick} autoFocus>
-            {t("update_password")}
+            {t('update_password')}
           </Button>
         </DialogActions>
       </Dialog>

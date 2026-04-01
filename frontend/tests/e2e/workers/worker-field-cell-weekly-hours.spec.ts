@@ -1,9 +1,9 @@
-import { test, expect } from "@playwright/test";
-import { WorkerTestBase } from "../../utils/worker-test-base";
+import { test, expect } from '@playwright/test';
+import { WorkerTestBase } from '../../utils/worker-test-base';
 
 const workerTestBase = new WorkerTestBase();
 
-test.describe("Worker Weekly Hours Field Cell", () => {
+test.describe('Worker Weekly Hours Field Cell', () => {
   let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
   let initialWeeklyHours: number;
@@ -56,23 +56,19 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     }
   });
 
-  test("should display weekly hours value in the cell", async ({ page }) => {
+  test('should display weekly hours value in the cell', async ({ page }) => {
     // Get the weekly hours cell and display elements
     const weeklyHoursCell = workerTestBase.getWorkerWeeklyHoursCell(page);
     const weeklyHoursDisplay = workerTestBase.getWorkerWeeklyHoursDisplay(page);
 
     // Verify the cell is visible and displays the initial weekly hours
     await expect(weeklyHoursCell).toBeVisible();
-    await expect(weeklyHoursDisplay).toContainText(
-      initialWeeklyHours.toString(),
-    );
+    await expect(weeklyHoursDisplay).toContainText(initialWeeklyHours.toString());
 
-    console.log(
-      `✅ Weekly hours cell displays initial value: ${initialWeeklyHours}`,
-    );
+    console.log(`✅ Weekly hours cell displays initial value: ${initialWeeklyHours}`);
   });
 
-  test("should show text field when clicking on the cell", async ({ page }) => {
+  test('should show text field when clicking on the cell', async ({ page }) => {
     // Get the weekly hours cell and elements
     const weeklyHoursCell = workerTestBase.getWorkerWeeklyHoursCell(page);
     const weeklyHoursDisplay = workerTestBase.getWorkerWeeklyHoursDisplay(page);
@@ -90,12 +86,10 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     await expect(weeklyHoursInput).toHaveValue(initialWeeklyHours.toString());
     await expect(weeklyHoursDisplay).not.toBeVisible();
 
-    console.log("✅ Text field appears when clicking on the cell");
+    console.log('✅ Text field appears when clicking on the cell');
   });
 
-  test("should only accept numeric input in the text field", async ({
-    page,
-  }) => {
+  test('should only accept numeric input in the text field', async ({ page }) => {
     // Get the weekly hours cell and input
     const weeklyHoursCell = workerTestBase.getWorkerWeeklyHoursCell(page);
     const weeklyHoursInput = workerTestBase.getWorkerWeeklyHoursInput(page);
@@ -106,14 +100,14 @@ test.describe("Worker Weekly Hours Field Cell", () => {
 
     // Clear the input and try to enter non-numeric text
     await weeklyHoursInput.clear();
-    await weeklyHoursInput.type("abc");
+    await weeklyHoursInput.type('abc');
 
     // The input should be empty because non-numeric characters are not accepted
-    await expect(weeklyHoursInput).toHaveValue("");
+    await expect(weeklyHoursInput).toHaveValue('');
 
     // Try entering a mix of numbers and letters
     await weeklyHoursInput.clear();
-    await weeklyHoursInput.type("123abc456");
+    await weeklyHoursInput.type('123abc456');
 
     // Should only contain the numeric parts (behavior may vary based on implementation)
     const inputValue = await weeklyHoursInput.inputValue();
@@ -122,15 +116,13 @@ test.describe("Worker Weekly Hours Field Cell", () => {
 
     // Enter a valid number
     await weeklyHoursInput.clear();
-    await weeklyHoursInput.type("35");
-    await expect(weeklyHoursInput).toHaveValue("35");
+    await weeklyHoursInput.type('35');
+    await expect(weeklyHoursInput).toHaveValue('35');
 
-    console.log("✅ Text field only accepts numeric input");
+    console.log('✅ Text field only accepts numeric input');
   });
 
-  test("should update value when clicking away (blur event)", async ({
-    page,
-  }) => {
+  test('should update value when clicking away (blur event)', async ({ page }) => {
     // Get the weekly hours elements
     const weeklyHoursCell = workerTestBase.getWorkerWeeklyHoursCell(page);
     const weeklyHoursDisplay = workerTestBase.getWorkerWeeklyHoursDisplay(page);
@@ -147,7 +139,7 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     await expect(weeklyHoursInput).toHaveValue(newWeeklyHours.toString());
 
     // Click on the page title "Workers" to trigger blur event
-    const pageTitle = page.getByRole("heading", { name: "Workers" });
+    const pageTitle = page.getByRole('heading', { name: 'Workers' });
     await pageTitle.click();
 
     // Wait for the update to complete
@@ -156,7 +148,7 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     console.log(`✅ Weekly hours updated to ${newWeeklyHours} via blur event`);
   });
 
-  test("should update value when pressing Enter", async ({ page }) => {
+  test('should update value when pressing Enter', async ({ page }) => {
     // Get the weekly hours elements
     const weeklyHoursCell = workerTestBase.getWorkerWeeklyHoursCell(page);
     const weeklyHoursDisplay = workerTestBase.getWorkerWeeklyHoursDisplay(page);
@@ -173,7 +165,7 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     await expect(weeklyHoursInput).toHaveValue(newWeeklyHours.toString());
 
     // Press Enter to save
-    await weeklyHoursInput.press("Enter");
+    await weeklyHoursInput.press('Enter');
 
     // Wait for the update to complete
     await workerTestBase.waitForWeeklyHoursUpdate(page, newWeeklyHours);
@@ -181,18 +173,14 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     console.log(`✅ Weekly hours updated to ${newWeeklyHours} via Enter key`);
   });
 
-  test("should cancel edit and revert value when pressing Escape", async ({
-    page,
-  }) => {
+  test('should cancel edit and revert value when pressing Escape', async ({ page }) => {
     // Get the weekly hours elements
     const weeklyHoursCell = workerTestBase.getWorkerWeeklyHoursCell(page);
     const weeklyHoursDisplay = workerTestBase.getWorkerWeeklyHoursDisplay(page);
     const weeklyHoursInput = workerTestBase.getWorkerWeeklyHoursInput(page);
 
     // Verify initial value
-    await expect(weeklyHoursDisplay).toContainText(
-      initialWeeklyHours.toString(),
-    );
+    await expect(weeklyHoursDisplay).toContainText(initialWeeklyHours.toString());
 
     // Click on the cell to edit
     await weeklyHoursCell.click();
@@ -206,24 +194,18 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     await expect(weeklyHoursInput).toHaveValue(tempWeeklyHours.toString());
 
     // Press Escape to cancel editing
-    await weeklyHoursInput.press("Escape");
+    await weeklyHoursInput.press('Escape');
 
     // Wait for the cancel operation to complete (should revert to original value)
     await workerTestBase.waitForWeeklyHoursUpdate(page, initialWeeklyHours);
 
     // Verify the display does not contain the temporary value
-    await expect(weeklyHoursDisplay).not.toContainText(
-      tempWeeklyHours.toString(),
-    );
+    await expect(weeklyHoursDisplay).not.toContainText(tempWeeklyHours.toString());
 
-    console.log(
-      `✅ Weekly hours edit canceled, reverted to original: ${initialWeeklyHours}`,
-    );
+    console.log(`✅ Weekly hours edit canceled, reverted to original: ${initialWeeklyHours}`);
   });
 
-  test("should handle empty input by reverting to original value", async ({
-    page,
-  }) => {
+  test('should handle empty input by reverting to original value', async ({ page }) => {
     // Get the weekly hours elements
     const weeklyHoursCell = workerTestBase.getWorkerWeeklyHoursCell(page);
     const weeklyHoursDisplay = workerTestBase.getWorkerWeeklyHoursDisplay(page);
@@ -235,17 +217,15 @@ test.describe("Worker Weekly Hours Field Cell", () => {
 
     // Clear the input (make it empty)
     await weeklyHoursInput.clear();
-    await expect(weeklyHoursInput).toHaveValue("");
+    await expect(weeklyHoursInput).toHaveValue('');
 
     // Press Enter to save the empty value
-    await weeklyHoursInput.press("Enter");
+    await weeklyHoursInput.press('Enter');
 
     // Wait for the operation to complete (should revert to original value)
     await workerTestBase.waitForWeeklyHoursUpdate(page, initialWeeklyHours);
 
-    console.log(
-      `✅ Empty input reverted to original value: ${initialWeeklyHours}`,
-    );
+    console.log(`✅ Empty input reverted to original value: ${initialWeeklyHours}`);
   });
 
   //   test("should handle decimal numbers correctly", async ({ page }) => {
@@ -282,16 +262,14 @@ test.describe("Worker Weekly Hours Field Cell", () => {
   //     );
   //   });
 
-  test("should not update value when no change is made", async ({ page }) => {
+  test('should not update value when no change is made', async ({ page }) => {
     // Get the weekly hours elements
     const weeklyHoursCell = workerTestBase.getWorkerWeeklyHoursCell(page);
     const weeklyHoursDisplay = workerTestBase.getWorkerWeeklyHoursDisplay(page);
     const weeklyHoursInput = workerTestBase.getWorkerWeeklyHoursInput(page);
 
     // Verify initial value
-    await expect(weeklyHoursDisplay).toContainText(
-      initialWeeklyHours.toString(),
-    );
+    await expect(weeklyHoursDisplay).toContainText(initialWeeklyHours.toString());
 
     // Click on the cell to edit
     await weeklyHoursCell.click();
@@ -299,7 +277,7 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     await expect(weeklyHoursInput).toHaveValue(initialWeeklyHours.toString());
 
     // Don't change the value, just press Enter
-    await weeklyHoursInput.press("Enter");
+    await weeklyHoursInput.press('Enter');
 
     // Wait for the operation to complete (value should remain unchanged)
     await workerTestBase.waitForWeeklyHoursUpdate(page, initialWeeklyHours);
@@ -307,7 +285,7 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     console.log(`✅ No update when value unchanged: ${initialWeeklyHours}`);
   });
 
-  test("should handle large numbers correctly", async ({ page }) => {
+  test('should handle large numbers correctly', async ({ page }) => {
     // Get the weekly hours elements
     const weeklyHoursCell = workerTestBase.getWorkerWeeklyHoursCell(page);
     const weeklyHoursDisplay = workerTestBase.getWorkerWeeklyHoursDisplay(page);
@@ -318,13 +296,13 @@ test.describe("Worker Weekly Hours Field Cell", () => {
     await expect(weeklyHoursInput).toBeVisible();
 
     // Enter a large number
-    const largeWeeklyHours = "168"; // Maximum hours in a week
+    const largeWeeklyHours = '168'; // Maximum hours in a week
     await weeklyHoursInput.clear();
     await weeklyHoursInput.type(largeWeeklyHours);
     await expect(weeklyHoursInput).toHaveValue(largeWeeklyHours);
 
     // Press Enter to save
-    await weeklyHoursInput.press("Enter");
+    await weeklyHoursInput.press('Enter');
 
     // Wait for the update to complete
     await workerTestBase.waitForWeeklyHoursUpdate(page, largeWeeklyHours);

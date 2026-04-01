@@ -7,10 +7,10 @@
  * - Interactive shift selection and compatibility testing
  */
 
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import dayjs, { Dayjs } from "dayjs";
+import React, { useState } from 'react';
+import dayjs, { Dayjs } from 'dayjs';
 import {
   Container,
   Typography,
@@ -24,11 +24,8 @@ import {
   Tab,
   Tabs,
   Paper,
-} from "@mui/material";
-import {
-  MultitaskingConcurrencyDisplay,
-  MultitaskingSelector,
-} from "@/components/multitasking";
+} from '@mui/material';
+import { MultitaskingConcurrencyDisplay, MultitaskingSelector } from '@/components/multitasking';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -38,20 +35,18 @@ interface TabPanelProps {
 
 function TabPanel({ children, value, index }: TabPanelProps) {
   return (
-    <div hidden={value !== index}>
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-    </div>
+    <div hidden={value !== index}>{value === index && <Box sx={{ pt: 3 }}>{children}</Box>}</div>
   );
 }
 
 export default function MultitaskingPage() {
   // Form state
-  const [teamId, setTeamId] = useState("demo-team-001");
+  const [teamId, setTeamId] = useState('demo-team-001');
   const [startDate, setStartDate] = useState<Dayjs | null>(
-    dayjs().subtract(7, "day"), // 7 days ago
+    dayjs().subtract(7, 'day'), // 7 days ago
   );
   const [endDate, setEndDate] = useState<Dayjs | null>(
-    dayjs().add(7, "day"), // 7 days from now
+    dayjs().add(7, 'day'), // 7 days from now
   );
   const [enableQuery, setEnableQuery] = useState(false);
   const [tabValue, setTabValue] = useState(0);
@@ -59,8 +54,8 @@ export default function MultitaskingPage() {
 
   // Helper functions to convert between Date and string
   const formatDateForInput = (date: Dayjs | null): string => {
-    if (!date) return "";
-    return date.format("YYYY-MM-DD");
+    if (!date) return '';
+    return date.format('YYYY-MM-DD');
   };
 
   const parseDateFromInput = (dateString: string): Dayjs | null => {
@@ -91,9 +86,7 @@ export default function MultitaskingPage() {
     setSelectedShifts([]);
   };
 
-  const isFormValid = Boolean(
-    teamId && startDate && endDate && startDate.isBefore(endDate),
-  );
+  const isFormValid = Boolean(teamId && startDate && endDate && startDate.isBefore(endDate));
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -102,9 +95,9 @@ export default function MultitaskingPage() {
       </Typography>
 
       <Typography variant="body1" color="text.secondary" paragraph>
-        Analyze which shift demands can be worked concurrently by the same
-        worker. This helps optimize scheduling by identifying compatible shift
-        combinations and enabling multitasking assignments.
+        Analyze which shift demands can be worked concurrently by the same worker. This helps
+        optimize scheduling by identifying compatible shift combinations and enabling multitasking
+        assignments.
       </Typography>
 
       {/* Configuration Form */}
@@ -154,7 +147,7 @@ export default function MultitaskingPage() {
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <Box sx={{ display: "flex", gap: 1 }}>
+              <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
                   variant="contained"
                   onClick={handleSubmit}
@@ -163,11 +156,7 @@ export default function MultitaskingPage() {
                 >
                   Analyze
                 </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handleReset}
-                  disabled={!enableQuery}
-                >
+                <Button variant="outlined" onClick={handleReset} disabled={!enableQuery}>
                   Reset
                 </Button>
               </Box>
@@ -185,7 +174,7 @@ export default function MultitaskingPage() {
       {/* Results Section */}
       {enableQuery && teamId && startDate && endDate && (
         <Paper elevation={1} sx={{ borderRadius: 2 }}>
-          <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
               value={tabValue}
               onChange={(_, newValue) => setTabValue(newValue)}
@@ -229,7 +218,7 @@ export default function MultitaskingPage() {
                   </Typography>
                   <Paper
                     variant="outlined"
-                    sx={{ p: 2, bgcolor: "grey.50", fontFamily: "monospace" }}
+                    sx={{ p: 2, bgcolor: 'grey.50', fontFamily: 'monospace' }}
                   >
                     <pre>
                       {JSON.stringify(
@@ -251,7 +240,7 @@ export default function MultitaskingPage() {
                   </Typography>
                   <Paper
                     variant="outlined"
-                    sx={{ p: 2, bgcolor: "grey.50", fontFamily: "monospace" }}
+                    sx={{ p: 2, bgcolor: 'grey.50', fontFamily: 'monospace' }}
                   >
                     POST /multitasking/shift-demand-concurrency
                   </Paper>
@@ -261,11 +250,11 @@ export default function MultitaskingPage() {
                   </Typography>
                   <Paper
                     variant="outlined"
-                    sx={{ p: 2, bgcolor: "grey.50", fontFamily: "monospace" }}
+                    sx={{ p: 2, bgcolor: 'grey.50', fontFamily: 'monospace' }}
                   >
                     {selectedShifts.length > 0
                       ? JSON.stringify(selectedShifts, null, 2)
-                      : "No shifts selected"}
+                      : 'No shifts selected'}
                   </Paper>
                 </Grid>
               </Grid>
@@ -294,22 +283,20 @@ export default function MultitaskingPage() {
             How to Use
           </Typography>
           <Typography variant="body2" paragraph>
-            1. <strong>Configure:</strong> Enter a team ID and select a date
-            range for analysis
+            1. <strong>Configure:</strong> Enter a team ID and select a date range for analysis
           </Typography>
           <Typography variant="body2" paragraph>
-            2. <strong>Analyze:</strong> Click &ldquo;Analyze&rdquo; to fetch
-            concurrency data from the backend
+            2. <strong>Analyze:</strong> Click &ldquo;Analyze&rdquo; to fetch concurrency data from
+            the backend
           </Typography>
           <Typography variant="body2" paragraph>
-            3. <strong>Explore:</strong> Use the tabs to view different
-            perspectives: • Overview shows all concurrency relationships •
-            Selector allows interactive exploration of compatible shifts • API
-            Details shows technical implementation details
+            3. <strong>Explore:</strong> Use the tabs to view different perspectives: • Overview
+            shows all concurrency relationships • Selector allows interactive exploration of
+            compatible shifts • API Details shows technical implementation details
           </Typography>
           <Typography variant="body2">
-            4. <strong>Apply:</strong> Use the insights to create multitasking
-            assignments in your scheduling workflow
+            4. <strong>Apply:</strong> Use the insights to create multitasking assignments in your
+            scheduling workflow
           </Typography>
         </CardContent>
       </Card>
