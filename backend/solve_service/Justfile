@@ -1,0 +1,28 @@
+# Justfile for backend solve_service
+
+format:
+    echo "Formatting solve_service..."
+    uv run ruff format .
+    uv run ruff check --fix .
+
+lint:
+    echo "Running linter for solve_service..."
+    uv run ruff check .
+
+typecheck:
+    echo "Running type checker for solve_service..."
+    uv run python -m mypy .
+
+test:
+    echo "Running tests for solve_service..."
+    uv run pytest
+
+all:
+    just format
+    just lint
+    just typecheck
+    just test
+
+dev:
+    echo "Starting solve_service (SQS consumer)..."
+    uv run python -m src.main

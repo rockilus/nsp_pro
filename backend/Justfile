@@ -1,0 +1,31 @@
+# Justfile for rockilus backend
+# Usage: cd backend && just <recipe>
+
+format:
+    echo "Running code formatter..."
+    uv run ruff format .
+    uv run ruff check --fix .
+
+lint:
+    echo "Running linter..."
+    uv run ruff check .
+
+typecheck:
+    echo "Running type checker..."
+    uv run python -m mypy .
+
+test:
+    echo "Running tests..."
+    uv run pytest
+
+all:
+    just format
+    just lint
+    just typecheck
+    just test
+
+dev:
+    echo "Starting development server on port 8000..."
+    uv run uvicorn main:app --reload --host 127.0.0.1 --port 8000
+
+
