@@ -53,7 +53,7 @@ jobs:
         working-directory: backend/shared
 
       - name: Run checks shared
-        run: \
+        run: |
           just typecheck && \
           just lint && \
           uv run ruff format --check . && \
@@ -64,10 +64,10 @@ jobs:
 
       - name: Install dependencies for api_gateway
         run: uv sync --locked --all-extras --dev
-        working-directory: ./api_gateway
+        working-directory: backend/api_gateway
 
       - name: Run checks api_gateway
-        run: \
+        run: |
           just typecheck && \
           just lint && \
           uv run ruff format --check . && \
@@ -76,7 +76,7 @@ jobs:
 
       - name: Install dependencies for solve_service
         run: uv sync --locked --all-extras --dev
-        working-directory: ./solve_service
+        working-directory: backend/solve_service
 
       - name: Run checks solve_service
         run: \
