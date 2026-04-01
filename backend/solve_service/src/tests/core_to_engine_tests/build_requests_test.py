@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta, timezone
-from typing import Callable, List
+from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from shared.augment.r_to_r_augmented import r_to_r_augmented
@@ -37,7 +37,7 @@ class TestBuildRequests:
     @pytest.fixture
     def build_engine_requests_fixture(
         self,
-    ) -> Callable[[List[Request], EngineInputsAugmented], List[RequestEngine]]:
+    ) -> Callable[[list[Request], EngineInputsAugmented], list[RequestEngine]]:
         """
         Fixture to build engine requests from a list of requests and sample data.
         Inputs:
@@ -48,13 +48,13 @@ class TestBuildRequests:
         """
 
         def _build_engine_requests(
-            requests: List[Request], sample_data: EngineInputsAugmented
-        ) -> List[RequestEngine]:
-            shifts: List[Shift] = sample_data.shifts
-            workers: List[Worker] = sample_data.workers
+            requests: list[Request], sample_data: EngineInputsAugmented
+        ) -> list[RequestEngine]:
+            shifts: list[Shift] = sample_data.shifts
+            workers: list[Worker] = sample_data.workers
             schedule: Schedule = sample_data.schedule
 
-            rs_augmented: List[RequestAugmented] = []
+            rs_augmented: list[RequestAugmented] = []
             for r in requests:
                 worker = next((w for w in workers if w.id == r.worker_id), None)
                 assert worker is not None, "Worker not found in sample data"
@@ -99,13 +99,13 @@ class TestBuildRequests:
         self,
         sample_data: EngineInputsAugmented,
         build_engine_requests_fixture: Callable[
-            [List[Request], EngineInputsAugmented], List[RequestEngine]
+            [list[Request], EngineInputsAugmented], list[RequestEngine]
         ],
     ) -> None:
-        shifts: List[Shift] = sample_data.shifts
+        shifts: list[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data.workers
+        workers: list[Worker] = sample_data.workers
         target_worker = workers[0]
 
         schedule: Schedule = sample_data.schedule
@@ -133,7 +133,7 @@ class TestBuildRequests:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             )
         ]
 
@@ -161,13 +161,13 @@ class TestBuildRequests:
         self,
         sample_data: EngineInputsAugmented,
         build_engine_requests_fixture: Callable[
-            [List[Request], EngineInputsAugmented], List[RequestEngine]
+            [list[Request], EngineInputsAugmented], list[RequestEngine]
         ],
     ) -> None:
-        shifts: List[Shift] = sample_data.shifts
+        shifts: list[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data.workers
+        workers: list[Worker] = sample_data.workers
         target_worker = workers[0]
 
         schedule: Schedule = sample_data.schedule
@@ -195,7 +195,7 @@ class TestBuildRequests:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             )
         ]
 
@@ -223,13 +223,13 @@ class TestBuildRequests:
         self,
         sample_data: EngineInputsAugmented,
         build_engine_requests_fixture: Callable[
-            [List[Request], EngineInputsAugmented], List[RequestEngine]
+            [list[Request], EngineInputsAugmented], list[RequestEngine]
         ],
     ) -> None:
-        shifts: List[Shift] = sample_data.shifts
+        shifts: list[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data.workers
+        workers: list[Worker] = sample_data.workers
         target_worker = workers[0]
 
         schedule: Schedule = sample_data.schedule
@@ -257,7 +257,7 @@ class TestBuildRequests:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             )
         ]
 
@@ -285,7 +285,7 @@ class TestBuildRequests:
         self,
         sample_data: EngineInputsAugmented,
         build_engine_requests_fixture: Callable[
-            [List[Request], EngineInputsAugmented], List[RequestEngine]
+            [list[Request], EngineInputsAugmented], list[RequestEngine]
         ],
     ) -> None:
         schedule: Schedule = sample_data.schedule
@@ -330,7 +330,7 @@ class TestBuildRequests:
         sample_data.shifts.append(target_shift)
         sample_data.shift_demands += dsds_target_shift
 
-        workers: List[Worker] = sample_data.workers
+        workers: list[Worker] = sample_data.workers
         target_worker = workers[0]
 
         requests = [
@@ -356,7 +356,7 @@ class TestBuildRequests:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             )
         ]
 

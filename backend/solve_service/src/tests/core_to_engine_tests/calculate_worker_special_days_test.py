@@ -1,5 +1,5 @@
 # pylint: disable=too-many-lines
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from shared.schemas.core import (
@@ -518,7 +518,7 @@ class TestCalculateWorkerSpecialDays:
                 request_type=RequestType.LEAVE,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             )
             for d in dates_target
         ]

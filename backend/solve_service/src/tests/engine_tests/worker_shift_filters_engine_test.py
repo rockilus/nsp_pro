@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pytest
 from shared.schemas.core import (
@@ -528,8 +528,8 @@ class TestWorkerShiftFiltersEngine:
                 name="Recup Shift 2",
                 acronym="RS2",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 18, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 18, tzinfo=timezone.utc),
+                start_time=datetime(2025, 1, 1, 18, tzinfo=UTC),
+                end_time=datetime(2025, 1, 2, 18, tzinfo=UTC),
                 staffing=[],
                 color="#ffffff",
                 shift_type=ShiftType.REST,

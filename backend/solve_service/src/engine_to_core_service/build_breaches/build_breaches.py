@@ -1,5 +1,3 @@
-from typing import List
-
 from shared.schemas.core import (
     Assignment,
     Breach,
@@ -14,9 +12,8 @@ from shared.schemas.core import (
 )
 
 from engine import Breach as BreachEngine
-from engine import Inputs
+from engine import Inputs, ProcessingCache
 from engine import Outputs as OutputsEngine
-from engine import ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches_debug import (
     debug_breaches,
 )
@@ -34,18 +31,18 @@ from engine_to_core_service.build_breaches.build_breaches_model import (
 # pylint: disable=too-many-arguments, R0801
 def build_breaches(
     schedule: Schedule,
-    workers: List[Worker],
-    shifts: List[Shift],
-    link_shifts: List[LinkShift],
-    daily_shift_demand: List[ShiftDemandNew],
-    assignments: List[Assignment],
-    requests: List[RequestAugmented],
-    breaches_engine: List[BreachEngine],
+    workers: list[Worker],
+    shifts: list[Shift],
+    link_shifts: list[LinkShift],
+    daily_shift_demand: list[ShiftDemandNew],
+    assignments: list[Assignment],
+    requests: list[RequestAugmented],
+    breaches_engine: list[BreachEngine],
     processing_cache: ProcessingCache,
     outputs: OutputsEngine | None = None,
     engine_inputs: EngineInputsAugmented | None = None,
     inputs: Inputs | None = None,
-) -> List[Breach]:
+) -> list[Breach]:
     breaches_model, breaches_parsed = build_breaches_model(
         schedule,
         workers,

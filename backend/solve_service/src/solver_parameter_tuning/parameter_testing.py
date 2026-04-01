@@ -2,8 +2,8 @@ import copy
 import json
 import os
 import time
+from collections.abc import Callable
 from dataclasses import asdict
-from typing import Callable, Dict, List, Tuple, Type
 
 # pylint: disable=R0801
 from shared.schemas.core import (
@@ -14,26 +14,25 @@ from shared.schemas.core import (
     SolverParams,
 )
 
-from engine import Engine
+from engine import Engine, ProcessingCache, SolverRun
 from engine import Inputs as InputsEngine
-from engine import ProcessingCache, SolverRun
 
 
 # pylint: disable=too-many-locals, too-many-arguments
 def test_solver_parameters(
     inputs: InputsEngine,
-    engine_cls: Type[Engine],
+    engine_cls: type[Engine],
     dir_path_output: str = "solver_parameter_tuning/parameter_test_output",
     num_runs: int = 1,
     run_base_case: bool = True,
     run_param_tests: bool = True,
-) -> Dict[str, SolverRun]:
+) -> dict[str, SolverRun]:
     # Create output directory if it doesn't exist
     os.makedirs(dir_path_output, exist_ok=True)
 
     # Define parameter variations to test
     # pylint: disable=R0801
-    parameter_tests: Dict[str, List] = {
+    parameter_tests: dict[str, list] = {
         "linearization_level": [0, 1, 2],
         "cut_level": [0, 1, 2],
         "use_strong_propagation_in_disjunctive": [True, False],
@@ -110,7 +109,7 @@ def test_solver_parameters(
     }
 
     base_params = inputs.model_config.solver_params
-    results: Dict[str, SolverRun] = {}
+    results: dict[str, SolverRun] = {}
     if run_base_case:
         test_name = "base_case"
         for i in range(num_runs):
@@ -175,7 +174,7 @@ def test_solver_parameters(
 # pylint: disable=too-many-arguments
 def run_solver_with_params(
     inputs: InputsEngine,
-    engine_cls: Type[Engine],
+    engine_cls: type[Engine],
     params: SolverParams,
     test_name: str,
     iter_num: int = 1,
@@ -203,7 +202,7 @@ def save_run_results(run: SolverRun, filepath: str):
 
 
 def build_base_engine_inputs(file_path: str) -> EngineInputs:
-    with open(file_path, "r", encoding="utf-8") as file:
+    with open(file_path, encoding="utf-8") as file:
         data = json.load(file)
     return EngineInputs.from_dict(data)
 
@@ -211,9 +210,9 @@ def build_base_engine_inputs(file_path: str) -> EngineInputs:
 # pylint: disable=too-many-arguments
 def run_parameter_tests(
     core_to_engine_inputs_func: Callable[
-        [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+        [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
     ],
-    engine_cls: Type[Engine],
+    engine_cls: type[Engine],
     penalties: Penalties,
     model_config: ModelConfig,
     file_path_test_data: str,

@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from copy import deepcopy
-from datetime import date, datetime, timezone
-from typing import Callable, Tuple
+from datetime import UTC, date, datetime
 
 from shared.augment import requests_to_requests_augmented
 from shared.schemas.core import (
@@ -32,7 +32,7 @@ class TestConstraintSeq:
     def test_constraint_seq_hard(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_seq_with_expected_output: Tuple[
+        constraint_seq_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -68,7 +68,7 @@ class TestConstraintSeq:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
         engine_inputs.requests_work = requests_to_requests_augmented(
             requests=[request],
@@ -170,7 +170,7 @@ class TestConstraintSeq:
     def test_constraint_seq_soft(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_seq_with_expected_output: Tuple[
+        constraint_seq_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -208,7 +208,7 @@ class TestConstraintSeq:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
         engine_inputs.requests_work = requests_to_requests_augmented(
             requests=[request],
@@ -311,7 +311,7 @@ class TestConstraintSeq:
     def test_constraint_seq_hard_soft_conflict(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_seq_with_expected_output: Tuple[
+        constraint_seq_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -320,7 +320,7 @@ class TestConstraintSeq:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -350,7 +350,7 @@ class TestConstraintSeq:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
         engine_inputs.requests_work = requests_to_requests_augmented(
             requests=[request],
@@ -523,7 +523,7 @@ class TestConstraintSeq:
     def test_constraint_seq_hard_hard_conflic_obj_value(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_seq_with_expected_output: Tuple[
+        constraint_seq_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -532,7 +532,7 @@ class TestConstraintSeq:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -562,7 +562,7 @@ class TestConstraintSeq:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
         engine_inputs.requests_work = requests_to_requests_augmented(
             requests=[request],

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from shared.schemas.core import EngineInputsAugmented
 from shared.schemas.core.solve_task_status import SolveScope
 
@@ -10,7 +8,7 @@ from engine.engine import Engine, Outputs
 # pylint: disable=R0801
 def engine_solve_engine_inputs(
     engine_inputs: EngineInputsAugmented,
-    solve_scope: Optional[SolveScope] = None,
+    solve_scope: SolveScope | None = None,
 ) -> Outputs:
     inputs, _ = core_to_engine_inputs(engine_inputs, solve_scope)
     engine = Engine()

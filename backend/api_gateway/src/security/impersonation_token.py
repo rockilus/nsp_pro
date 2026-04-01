@@ -1,7 +1,7 @@
 """
 Utilities for creating and verifying short-lived impersonation JWTs.
 
-Uses PyJWT with HS256, independent of the Cognito / python-jose stack.
+Uses PyJWT with HS256, independent of the Cognito stack.
 
 Token claims
 ------------

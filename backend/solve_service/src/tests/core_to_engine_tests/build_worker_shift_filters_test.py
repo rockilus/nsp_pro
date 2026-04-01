@@ -1,5 +1,4 @@
-from datetime import date, datetime, timezone
-from typing import Dict, List, Set, Tuple
+from datetime import UTC, date, datetime
 
 from shared.schemas.core import (
     Attribute,
@@ -23,8 +22,8 @@ from core_to_engine_service.build_worker_shift_filter import (
 
 
 def _make_worker_dates(
-    workers: List[Worker], campaign_date: date
-) -> Dict[str, WorkerDates]:
+    workers: list[Worker], campaign_date: date
+) -> dict[str, WorkerDates]:
     return {
         w.id: WorkerDates(dates_hist=[], dates_campaign=[campaign_date])
         for w in workers
@@ -32,19 +31,19 @@ def _make_worker_dates(
 
 
 def _to_set(
-    tuples_list: List[Tuple[str, str, str]],
-) -> Set[Tuple[str, str, str]]:
+    tuples_list: list[tuple[str, str, str]],
+) -> set[tuple[str, str, str]]:
     return set(tuples_list)
 
 
 # pylint: disable=R0801
-def test_no_shared_dimensions_returns_empty(workers_10: List[Worker]):
+def test_no_shared_dimensions_returns_empty(workers_10: list[Worker]):
     # dimensions contain only worker-only or shift-only in the conftest fixture
-    dimensions: List[Dimension] = []
-    attributes: List[Attribute] = []
+    dimensions: list[Dimension] = []
+    attributes: list[Attribute] = []
     workers = workers_10
     # use a small shifts list consistent with the worker fixture shape
-    shifts: List[Shift] = []
+    shifts: list[Shift] = []
     worker_dates = _make_worker_dates(workers, date(2025, 1, 1))
 
     out, penalty = build_worker_shift_filters(
@@ -62,7 +61,7 @@ def test_no_shared_dimensions_returns_empty(workers_10: List[Worker]):
 
 
 def test_shared_dimension_but_no_attributes_returns_empty(
-    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+    workers_10: list[Worker], shifts_3n_2d: list[Shift]
 ):
     # One shared dimension but no attributes provided
     dim_shared = Dimension(
@@ -96,7 +95,7 @@ def test_shared_dimension_but_no_attributes_returns_empty(
 
 
 def test_shared_dimension_attributes_only_for_one_worker(
-    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+    workers_10: list[Worker], shifts_3n_2d: list[Shift]
 ):
     # shared dimension; one worker has an attribute, no shift attributes
     dim = Dimension(
@@ -143,7 +142,7 @@ def test_shared_dimension_attributes_only_for_one_worker(
 
 
 def test_shared_dimension_attributes_only_for_one_shift(
-    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+    workers_10: list[Worker], shifts_3n_2d: list[Shift]
 ):
     # shared dimension; one shift has an attribute, no worker attributes
     dim = Dimension(
@@ -190,7 +189,7 @@ def test_shared_dimension_attributes_only_for_one_shift(
 
 
 def test_shared_dimension_worker_and_shift_match(
-    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+    workers_10: list[Worker], shifts_3n_2d: list[Shift]
 ):
     # shared dimension; worker0 has de_m, shift0 has de_m (match), shift1 has de_n
     dim = Dimension(
@@ -263,7 +262,7 @@ def test_shared_dimension_worker_and_shift_match(
 
 
 def test_shared_dimension_all_workers_and_shifts_no_filtering(
-    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+    workers_10: list[Worker], shifts_3n_2d: list[Shift]
 ):
     # All workers and all shifts share the same dim entry -> no invalid combinations
     dim = Dimension(
@@ -319,7 +318,7 @@ def test_shared_dimension_all_workers_and_shifts_no_filtering(
 
 
 def test_shared_bool_attributes_only_for_one_worker(
-    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+    workers_10: list[Worker], shifts_3n_2d: list[Shift]
 ):
     # shared boolean dimension; one worker has an attribute True, no shift attrs
     dim = Dimension(
@@ -366,7 +365,7 @@ def test_shared_bool_attributes_only_for_one_worker(
 
 
 def test_shared_bool_attributes_only_for_one_shift(
-    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+    workers_10: list[Worker], shifts_3n_2d: list[Shift]
 ):
     # shared boolean dimension; one shift has attribute True, no worker attrs
     dim = Dimension(
@@ -413,7 +412,7 @@ def test_shared_bool_attributes_only_for_one_shift(
 
 
 def test_shared_bool_worker_and_shift_match(
-    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+    workers_10: list[Worker], shifts_3n_2d: list[Shift]
 ):
     # shared boolean dimension; worker0 True, shift0 True (match), shift1 False
     dim = Dimension(
@@ -483,7 +482,7 @@ def test_shared_bool_worker_and_shift_match(
 
 
 def test_shared_bool_all_workers_and_shifts_no_filtering(
-    workers_10: List[Worker], shifts_3n_2d: List[Shift]
+    workers_10: list[Worker], shifts_3n_2d: list[Shift]
 ):
     # All workers and all shifts share the same boolean value True -> no invalid
     # combinations
@@ -540,7 +539,7 @@ def test_shared_bool_all_workers_and_shifts_no_filtering(
 
 def test_duties_zero_prevents_duty_shifts() -> None:
     # Build two workers: w0 with 0 duties, w1 with >0 duties
-    workers: List[Worker] = []
+    workers: list[Worker] = []
     for i, duties in enumerate((0, 5)):
         workers.append(
             Worker(
@@ -561,15 +560,15 @@ def test_duties_zero_prevents_duty_shifts() -> None:
         )
 
     # Create one NORMAL and one DUTY shift
-    shifts: List[Shift] = [
+    shifts: list[Shift] = [
         Shift(
             id="sh_normal",
             team_id="t0",
             name="Normal",
             acronym="N",
             acronym_custom=False,
-            start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
+            start_time=datetime(2025, 1, 1, tzinfo=UTC),
+            end_time=datetime(2025, 1, 1, 8, tzinfo=UTC),
             staffing=[Staffing(specialty_id=None, staffing=1)],
             color="#000",
             shift_type=ShiftType.NORMAL,
@@ -585,8 +584,8 @@ def test_duties_zero_prevents_duty_shifts() -> None:
             name="Duty",
             acronym="D",
             acronym_custom=False,
-            start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2025, 1, 2, tzinfo=timezone.utc),
+            start_time=datetime(2025, 1, 1, tzinfo=UTC),
+            end_time=datetime(2025, 1, 2, tzinfo=UTC),
             staffing=[Staffing(specialty_id=None, staffing=1)],
             color="#111",
             shift_type=ShiftType.DUTY,
@@ -600,7 +599,7 @@ def test_duties_zero_prevents_duty_shifts() -> None:
 
     # Single campaign date
     campaign_date = date(2025, 1, 1)
-    worker_dates: Dict[str, WorkerDates] = {
+    worker_dates: dict[str, WorkerDates] = {
         w.id: WorkerDates(dates_hist=[], dates_campaign=[campaign_date])
         for w in workers
     }

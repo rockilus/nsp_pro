@@ -1,5 +1,4 @@
 import time
-from typing import List, Optional, Tuple
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -27,8 +26,8 @@ def save_engine_outputs(
     engine_outputs: EngineOutputs,
     processing_cache: ProcessingCache,
     collections: DatabaseCollections,
-    solve_scope: Optional[SolveScope],
-) -> Tuple[ScheduleSolveStatus, List[Assignment], List[Breach], SolverOutputMetadata]:
+    solve_scope: SolveScope | None,
+) -> tuple[ScheduleSolveStatus, list[Assignment], list[Breach], SolverOutputMetadata]:
     start_time_update_db = time.time()
     assignments_saved = save_assignments(
         assignments=engine_outputs.assignments,

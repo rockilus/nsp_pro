@@ -41,9 +41,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
             constraint_build_ids=[],
             quick_staffings=[],
             created_by="64e9b7f1e13e4a1a9c8b4567",
-            created_at=datetime.datetime(
-                2026, 3, 15, 18, 1, 50, tzinfo=datetime.timezone.utc
-            ),
+            created_at=datetime.datetime(2026, 3, 15, 18, 1, 50, tzinfo=datetime.UTC),
             updated_at=datetime.datetime(
                 2026,
                 3,
@@ -52,7 +50,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 1,
                 50,
                 177441,
-                tzinfo=datetime.timezone.utc,
+                tzinfo=datetime.UTC,
             ),
         ),
         workers=[
@@ -224,12 +222,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Off",
                 acronym="O",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.REST,
@@ -245,12 +239,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Vacation",
                 acronym="V",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -266,12 +256,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Vacation morning",
                 acronym="V-m",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -287,12 +273,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Vacation afternoon",
                 acronym="V-a",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -308,12 +290,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Sick leave",
                 acronym="SL",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -329,12 +307,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Sick leave morning",
                 acronym="SL-m",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -350,12 +324,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Sick leave afternoon",
                 acronym="SL-a",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -371,12 +341,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Unpaid leave",
                 acronym="UL",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -392,12 +358,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Unpaid leave morning",
                 acronym="UL-m",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -413,12 +375,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Unpaid leave afternoon",
                 acronym="UL-a",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -434,12 +392,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Parental leave",
                 acronym="PL",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -455,12 +409,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Parental leave morning",
                 acronym="PL-m",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -476,12 +426,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Parental leave afternoon",
                 acronym="PL-a",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -497,12 +443,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Training leave",
                 acronym="TL",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -518,12 +460,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Training leave morning",
                 acronym="TL-m",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -539,12 +477,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Training leave afternoon",
                 acronym="TL-a",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -560,12 +494,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Other",
                 acronym="O-2",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -581,12 +511,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Other morning",
                 acronym="O-2-m",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 0, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 0, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -602,12 +528,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Other afternoon",
                 acronym="O-2-a",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 3, 15, 12, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 3, 16, 0, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 3, 15, 12, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 3, 16, 0, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="grey",
                 shift_type=ShiftType.LEAVE,
@@ -623,12 +545,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Morning",
                 acronym="MOR",
                 acronym_custom=True,
-                start_time=datetime.datetime(
-                    2026, 5, 1, 7, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 5, 1, 15, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 5, 1, 7, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 5, 1, 15, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="#FFFFFF",
                 shift_type=ShiftType.NORMAL,
@@ -644,12 +562,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Afternoon",
                 acronym="AFT",
                 acronym_custom=True,
-                start_time=datetime.datetime(
-                    2026, 5, 1, 15, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 5, 1, 23, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 5, 1, 15, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 5, 1, 23, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="#FFFFFF",
                 shift_type=ShiftType.NORMAL,
@@ -665,12 +579,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Duty",
                 acronym="DUT",
                 acronym_custom=True,
-                start_time=datetime.datetime(
-                    2026, 5, 1, 8, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 5, 2, 8, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 5, 1, 8, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 5, 2, 8, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="#FFFFFF",
                 shift_type=ShiftType.DUTY,
@@ -686,12 +596,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Duty recuperation",
                 acronym="DR",
                 acronym_custom=False,
-                start_time=datetime.datetime(
-                    2026, 5, 1, 8, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 5, 2, 8, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 5, 1, 8, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 5, 2, 8, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="#EDBB99",
                 shift_type=ShiftType.REST,
@@ -707,12 +613,8 @@ def build_ei_coverage() -> EngineInputsAugmented:
                 name="Recuperation",
                 acronym="REC",
                 acronym_custom=True,
-                start_time=datetime.datetime(
-                    2026, 5, 1, 8, 0, tzinfo=datetime.timezone.utc
-                ),
-                end_time=datetime.datetime(
-                    2026, 5, 2, 8, 0, tzinfo=datetime.timezone.utc
-                ),
+                start_time=datetime.datetime(2026, 5, 1, 8, 0, tzinfo=datetime.UTC),
+                end_time=datetime.datetime(2026, 5, 2, 8, 0, tzinfo=datetime.UTC),
                 staffing=[],
                 color="#FFFFFF",
                 shift_type=ShiftType.REST,
@@ -1013,7 +915,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     30731,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1023,7 +925,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     30731,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fb6",
             ),
@@ -1043,7 +945,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     43027,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1053,7 +955,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     43027,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fb7",
             ),
@@ -1073,7 +975,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     43907,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1083,7 +985,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     43907,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fb8",
             ),
@@ -1103,7 +1005,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     45804,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1113,7 +1015,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     45804,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fb9",
             ),
@@ -1133,7 +1035,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     46545,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1143,7 +1045,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     46545,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fba",
             ),
@@ -1163,7 +1065,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     47209,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1173,7 +1075,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     47209,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fbb",
             ),
@@ -1193,7 +1095,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     48077,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1203,7 +1105,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     48077,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fbc",
             ),
@@ -1223,7 +1125,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     48845,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1233,7 +1135,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     48845,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fbd",
             ),
@@ -1253,7 +1155,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     49614,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1263,7 +1165,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     49614,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fbe",
             ),
@@ -1283,7 +1185,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     53968,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1293,7 +1195,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     53968,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fbf",
             ),
@@ -1313,7 +1215,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     64113,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1323,7 +1225,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     64113,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fc0",
             ),
@@ -1343,7 +1245,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     65298,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1353,7 +1255,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     65298,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fc1",
             ),
@@ -1373,7 +1275,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     66401,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1383,7 +1285,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     66401,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fc2",
             ),
@@ -1403,7 +1305,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     70290,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1413,7 +1315,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     70290,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fc3",
             ),
@@ -1433,7 +1335,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     72213,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1443,7 +1345,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     72213,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fc4",
             ),
@@ -1463,7 +1365,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     82957,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1473,7 +1375,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     82957,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fc5",
             ),
@@ -1493,7 +1395,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     90734,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1503,7 +1405,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     90734,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fc6",
             ),
@@ -1523,7 +1425,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     94483,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1533,7 +1435,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     94483,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fc7",
             ),
@@ -1553,7 +1455,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     96216,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1563,7 +1465,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     96216,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fc8",
             ),
@@ -1583,7 +1485,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     97188,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1593,7 +1495,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     97188,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fc9",
             ),
@@ -1613,7 +1515,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     97948,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1623,7 +1525,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     97948,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fca",
             ),
@@ -1643,7 +1545,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     98601,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1653,7 +1555,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     98601,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fcb",
             ),
@@ -1673,7 +1575,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     99211,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1683,7 +1585,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     99211,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fcc",
             ),
@@ -1703,7 +1605,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     99822,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1713,7 +1615,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     99822,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fcd",
             ),
@@ -1733,7 +1635,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     100399,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1743,7 +1645,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     100399,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fce",
             ),
@@ -1763,7 +1665,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     101533,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1773,7 +1675,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     101533,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fcf",
             ),
@@ -1793,7 +1695,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     102695,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1803,7 +1705,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     102695,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fd0",
             ),
@@ -1823,7 +1725,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     103870,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1833,7 +1735,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     103870,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fd1",
             ),
@@ -1853,7 +1755,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     104712,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1863,7 +1765,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     104712,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fd2",
             ),
@@ -1883,7 +1785,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     105509,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1893,7 +1795,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     105509,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fd3",
             ),
@@ -1913,7 +1815,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     106312,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1923,7 +1825,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     106312,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fd4",
             ),
@@ -1943,7 +1845,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     107186,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1953,7 +1855,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     107186,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fd5",
             ),
@@ -1973,7 +1875,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     107959,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -1983,7 +1885,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     107959,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fd6",
             ),
@@ -2003,7 +1905,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     108767,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2013,7 +1915,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     108767,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fd7",
             ),
@@ -2033,7 +1935,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     111317,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2043,7 +1945,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     111317,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fd8",
             ),
@@ -2063,7 +1965,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     116058,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2073,7 +1975,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     116058,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fd9",
             ),
@@ -2093,7 +1995,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     116949,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2103,7 +2005,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     116949,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fda",
             ),
@@ -2123,7 +2025,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     117779,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2133,7 +2035,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     117779,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fdb",
             ),
@@ -2153,7 +2055,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     118677,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2163,7 +2065,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     118677,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fdc",
             ),
@@ -2183,7 +2085,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     122871,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2193,7 +2095,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     122871,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fdd",
             ),
@@ -2213,7 +2115,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     123686,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2223,7 +2125,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     123686,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fde",
             ),
@@ -2243,7 +2145,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     124436,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2253,7 +2155,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     124436,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fdf",
             ),
@@ -2273,7 +2175,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     125115,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2283,7 +2185,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     125115,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fe0",
             ),
@@ -2303,7 +2205,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     125799,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2313,7 +2215,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     125799,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fe1",
             ),
@@ -2333,7 +2235,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     126531,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2343,7 +2245,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     126531,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fe2",
             ),
@@ -2363,7 +2265,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     127189,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2373,7 +2275,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     127189,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fe3",
             ),
@@ -2393,7 +2295,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     127888,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2403,7 +2305,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     127888,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fe4",
             ),
@@ -2423,7 +2325,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     128560,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2433,7 +2335,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     128560,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fe5",
             ),
@@ -2453,7 +2355,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     129216,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2463,7 +2365,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     129216,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fe6",
             ),
@@ -2483,7 +2385,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     129861,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2493,7 +2395,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     129861,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fe7",
             ),
@@ -2513,7 +2415,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     130460,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2523,7 +2425,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     130460,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fe8",
             ),
@@ -2543,7 +2445,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     131084,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2553,7 +2455,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     131084,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fe9",
             ),
@@ -2573,7 +2475,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     131678,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2583,7 +2485,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     131678,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fea",
             ),
@@ -2603,7 +2505,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     132276,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2613,7 +2515,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     132276,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7feb",
             ),
@@ -2633,7 +2535,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     132902,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2643,7 +2545,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     132902,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fec",
             ),
@@ -2663,7 +2565,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     134622,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2673,7 +2575,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     134622,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fed",
             ),
@@ -2693,7 +2595,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     135407,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2703,7 +2605,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     135407,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fee",
             ),
@@ -2723,7 +2625,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     138450,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2733,7 +2635,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     138450,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7fef",
             ),
@@ -2753,7 +2655,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     139400,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2763,7 +2665,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     139400,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ff0",
             ),
@@ -2783,7 +2685,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     140283,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2793,7 +2695,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     140283,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ff1",
             ),
@@ -2813,7 +2715,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     141178,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2823,7 +2725,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     141178,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ff2",
             ),
@@ -2843,7 +2745,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     142045,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2853,7 +2755,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     142045,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ff3",
             ),
@@ -2873,7 +2775,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     143010,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2883,7 +2785,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     143010,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ff4",
             ),
@@ -2903,7 +2805,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     143822,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2913,7 +2815,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     143822,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ff5",
             ),
@@ -2933,7 +2835,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     144605,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2943,7 +2845,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     144605,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ff6",
             ),
@@ -2963,7 +2865,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     145387,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -2973,7 +2875,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     145387,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ff7",
             ),
@@ -2993,7 +2895,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     147428,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -3003,7 +2905,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     147428,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ff8",
             ),
@@ -3023,7 +2925,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     148285,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -3033,7 +2935,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     148285,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ff9",
             ),
@@ -3053,7 +2955,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     149231,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -3063,7 +2965,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     149231,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ffa",
             ),
@@ -3083,7 +2985,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     150172,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -3093,7 +2995,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     150172,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ffb",
             ),
@@ -3113,7 +3015,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     151031,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -3123,7 +3025,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     151031,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ffc",
             ),
@@ -3143,7 +3045,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     152080,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -3153,7 +3055,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     152080,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ffd",
             ),
@@ -3173,7 +3075,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     153445,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 updated_at=datetime.datetime(
                     2026,
@@ -3183,7 +3085,7 @@ def build_ei_coverage() -> EngineInputsAugmented:
                     1,
                     50,
                     153445,
-                    tzinfo=datetime.timezone.utc,
+                    tzinfo=datetime.UTC,
                 ),
                 id="69b6f40edf44902fd7fa7ffe",
             ),

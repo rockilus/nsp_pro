@@ -1,5 +1,5 @@
 from dataclasses import asdict
-from typing import Dict, List, Tuple, cast
+from typing import cast
 
 from shared.schemas.core import (
     Assignment,
@@ -33,8 +33,8 @@ from engine.types import (
 
 # pylint: disable=R0801
 def convert_assignments_engine_to_core(
-    as_engine: List[AssignmentEngine], schedule: Schedule
-) -> List[Assignment]:
+    as_engine: list[AssignmentEngine], schedule: Schedule
+) -> list[Assignment]:
     """Convert engine Assignment objects to shared Assignment objects.
 
     This helper is useful when calculating objective values in tests or
@@ -58,7 +58,7 @@ def convert_assignments_engine_to_core(
 # pylint: disable=too-many-statements
 def calculate_breach_penalty_fil(
     breach: Breach,
-    assignments: List[Assignment],
+    assignments: list[Assignment],
     penalty: int,
 ) -> int:
     breach_coords = {
@@ -81,7 +81,7 @@ def calculate_breach_penalty_fil(
 
 def calculate_breach_penalty_seq(
     breach: Breach,
-    assignments: List[Assignment],
+    assignments: list[Assignment],
     penalty: int,
     constraint: ConstraintSeq | None = None,
 ) -> int:
@@ -124,7 +124,7 @@ def calculate_breach_penalty_seq(
 
 def calculate_breach_penalty_sum(
     breach: Breach,
-    assignments: List[Assignment],
+    assignments: list[Assignment],
     penalty: int,
     constraint: ConstraintSum | None = None,
 ) -> int:
@@ -174,7 +174,7 @@ def calculate_breach_penalty_sum(
 
 
 def calculate_breach_penalty_work_time_week_target(
-    assignments: List[Assignment],
+    assignments: list[Assignment],
     group_dur: GroupsAssignmentsDurationsTargetConstraint,
 ) -> int:
     excesses = []
@@ -203,7 +203,7 @@ def calculate_breach_penalty_work_time_week_target(
 
 
 def calculate_breach_penalty_nb_duties_target(
-    assignments: List[Assignment],
+    assignments: list[Assignment],
     group: GroupsAssignmentsTargetConstraint,
     objective_category: ObjectiveCategory,
 ) -> int:
@@ -229,7 +229,7 @@ def calculate_breach_penalty_nb_duties_target(
 
 
 def calculate_breach_penalty_max_weekly_nb_duties_primary(
-    assignments: List[Assignment],
+    assignments: list[Assignment],
     max_weekly_nb_duties: tuple,
 ) -> tuple:
     """Calculate the primary (global max) penalty for weekly duties.
@@ -258,9 +258,9 @@ def calculate_breach_penalty_max_weekly_nb_duties_primary(
 
 
 def calculate_breach_penalty_max_weekly_nb_duties_stepped(
-    assignments: List[Assignment],
+    assignments: list[Assignment],
     max_weekly_nb_duties: tuple,
-    breach_vars: List[Variable] | None = None,
+    breach_vars: list[Variable] | None = None,
 ) -> tuple:
     """Calculate the secondary (stepped) penalties for weekly duties.
 
@@ -331,8 +331,8 @@ def calculate_breach_penalty_max_weekly_nb_duties_stepped(
 
 def debug_breaches(
     outputs: Outputs,
-    breaches: List[Breach],
-    assignments: List[Assignment],
+    breaches: list[Breach],
+    assignments: list[Assignment],
     engine_inputs: EngineInputsAugmented,
     inputs: Inputs,
 ) -> None:
@@ -343,7 +343,7 @@ def debug_breaches(
     produced them and calls the appropriate penalty calculators above.
     """
     # Build lookups
-    constraints_by_id: Dict[str, object] = {}
+    constraints_by_id: dict[str, object] = {}
     c = inputs.user_constraints
     lists = (
         getattr(c, "sum", []),
@@ -360,24 +360,24 @@ def debug_breaches(
                 # ignore unexpected items
                 pass
 
-    shift_demands_by_id: Dict[str, ShiftDemandNew] = {
+    shift_demands_by_id: dict[str, ShiftDemandNew] = {
         sd.id: sd for sd in engine_inputs.shift_demands if sd.id is not None
     }
-    shifts_by_id: Dict[str, Shift] = {s.id: s for s in engine_inputs.shifts}
+    shifts_by_id: dict[str, Shift] = {s.id: s for s in engine_inputs.shifts}
     # workers_by_spe_id: Dict[str, List[Worker]] = {}
     # for w in engine_inputs.workers:
     #     for spe in w.specialty_ids:
     #         workers_by_spe_id.setdefault(spe, []).append(w)
-    requests_by_id: Dict[str, Request] = {
+    requests_by_id: dict[str, Request] = {
         r.id: r for r in engine_inputs.requests_leave + engine_inputs.requests_work
     }
 
     # Accumulators
-    stats: Dict[str, Dict[str, float]] = {}
+    stats: dict[str, dict[str, float]] = {}
     # Per-constraint-type breakdown for ObjectiveCategory.CONSTRAINT
-    constraint_stats: Dict[str, Dict[str, float]] = {}
+    constraint_stats: dict[str, dict[str, float]] = {}
     # Special (max-week / max-week-day) breakdowns
-    special_stats: Dict[str, Dict[str, float]] = {}
+    special_stats: dict[str, dict[str, float]] = {}
     total_calc = 0
     for b in breaches:
         # track concrete constraint type when objective category is CONSTRAINT
@@ -667,7 +667,7 @@ def debug_breaches(
     # (max-week / max-week-day penalties are now handled inline above)
 
     # Print table
-    rows: List[Tuple[str, int, float, float]] = []
+    rows: list[tuple[str, int, float, float]] = []
     for k, v in sorted(stats.items()):
         cnt = int(v["count"])
         tot = float(v["total"])
@@ -708,7 +708,7 @@ def debug_breaches(
 
     # Second table: breakdown by concrete constraint type for CONSTRAINT category
     if constraint_stats:
-        rows_c: List[Tuple[str, int, float, float]] = []
+        rows_c: list[tuple[str, int, float, float]] = []
         for k, v in sorted(constraint_stats.items()):
             cnt = int(v["count"])
             tot = float(v["total"])
@@ -740,7 +740,7 @@ def debug_breaches(
 
     # Third table: breakdown for max-weekly / max-weekday penalties
     if special_stats:
-        rows_s: List[Tuple[str, int, float, float]] = []
+        rows_s: list[tuple[str, int, float, float]] = []
         for k, v in sorted(special_stats.items()):
             cnt = int(v["count"])
             tot = float(v["total"])

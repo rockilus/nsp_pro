@@ -9,7 +9,6 @@ import asyncio
 import signal
 import sys
 from contextlib import asynccontextmanager
-from typing import Optional
 
 from loguru import logger
 from shared.aws.config import create_aws_config
@@ -34,10 +33,10 @@ class SolveService:
     """
 
     def __init__(self) -> None:
-        self.consumer: Optional[SQSSolveConsumer] = None
-        self.collections: Optional[DatabaseCollections] = None
+        self.consumer: SQSSolveConsumer | None = None
+        self.collections: DatabaseCollections | None = None
         self.shutdown_event = asyncio.Event()
-        self._consumer_task: Optional[asyncio.Task] = None
+        self._consumer_task: asyncio.Task | None = None
 
     @asynccontextmanager
     async def database_lifespan(self):
@@ -136,7 +135,7 @@ class SolveService:
             try:
                 await asyncio.wait_for(self._consumer_task, timeout=30.0)
                 logger.info("Consumer stopped gracefully")
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.warning("Consumer shutdown timed out, forcing stop")
                 self._consumer_task.cancel()
 

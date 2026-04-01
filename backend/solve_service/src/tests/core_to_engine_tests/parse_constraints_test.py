@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from collections.abc import Callable
 
 import pytest
 from shared.constraint_parser import (
@@ -78,7 +78,7 @@ class TestParseConstraints:
     def test_parse_constraints(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_with_expected_output: Tuple[
+        constraint_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil

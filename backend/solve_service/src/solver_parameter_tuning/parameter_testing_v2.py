@@ -4,20 +4,18 @@ import os
 import random
 import time
 from dataclasses import asdict
-from typing import Dict, List, Type
 
 from shared.schemas.core import SolverParams
 
-from engine import Engine
+from engine import Engine, SolverRun
 from engine import Inputs as InputsEngine
-from engine import SolverRun
 
 
 class SolverParameterTester:
     def __init__(
         self,
         inputs: InputsEngine,
-        engine_cls: Type[Engine],
+        engine_cls: type[Engine],
         dir_path_output: str = "solver_parameter_tuning/parameter_test_output",
         num_runs: int = 1,
     ):
@@ -44,11 +42,11 @@ class SolverParameterTester:
     # pylint: disable=too-many-locals
     def test_solver_parameters(
         self,
-        parameter_tests: Dict[str, List] | None = None,
-        solver_params_list: List[SolverParams] | None = None,
+        parameter_tests: dict[str, list] | None = None,
+        solver_params_list: list[SolverParams] | None = None,
         run_base_case: bool = True,
         run_default_case: bool = True,
-    ) -> Dict[str, SolverRun]:
+    ) -> dict[str, SolverRun]:
         results = {}
         base_params = self.inputs.model_config.solver_params
         default_params = SolverParams(
@@ -118,13 +116,13 @@ class SolverParameterTester:
 # pylint: disable=too-many-arguments
 def run_parameter_tests(
     inputs: InputsEngine,
-    engine_cls: Type[Engine],
+    engine_cls: type[Engine],
     dir_path_output: str,
     num_runs: int = 1,
     run_base_case: bool = True,
     run_default_case: bool = True,
-    parameter_tests: Dict[str, List] | None = None,
-    solver_params_list: List[SolverParams] | None = None,
+    parameter_tests: dict[str, list] | None = None,
+    solver_params_list: list[SolverParams] | None = None,
 ) -> None:
     start_time = time.time()
     tester = SolverParameterTester(inputs, engine_cls, dir_path_output, num_runs)

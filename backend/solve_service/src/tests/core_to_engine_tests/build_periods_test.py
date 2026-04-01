@@ -1,6 +1,5 @@
 import calendar
 from datetime import date, timedelta
-from typing import List
 
 import pytest
 from shared.schemas.core import EngineInputsAugmented
@@ -21,7 +20,7 @@ class TestBuildPeriods:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         # Call the method under test
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
@@ -51,7 +50,7 @@ class TestBuildPeriods:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         # Call the method under test
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
@@ -84,7 +83,7 @@ class TestBuildPeriods:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         # Call the method under test
         periods_yearly = build_periods_yearly(dates_hist, dates_campaign)

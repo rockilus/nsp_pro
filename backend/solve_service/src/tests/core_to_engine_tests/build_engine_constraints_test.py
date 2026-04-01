@@ -1,6 +1,5 @@
 import random
 from datetime import timedelta
-from typing import List
 
 import pytest
 from shared.schemas.core import (
@@ -30,10 +29,10 @@ class TestBuildQuickStaffingConstraints:
     ) -> None:
         target = random.randint(1, 3)
 
-        shifts: List[Shift] = sample_data.shifts
+        shifts: list[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data.workers
+        workers: list[Worker] = sample_data.workers
         target_worker = workers[0]
 
         schedule: Schedule = sample_data.schedule

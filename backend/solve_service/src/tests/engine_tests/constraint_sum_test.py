@@ -1,7 +1,7 @@
 import random
+from collections.abc import Callable
 from copy import deepcopy
 from datetime import date, timedelta
-from typing import Callable, List, Tuple
 
 import pytest
 from shared.schemas.core import (
@@ -52,10 +52,10 @@ class TestConstraintSumQuickStaffing:
     ) -> None:
         target = random.randint(1, 3)
 
-        shifts: List[Shift] = sample_data.shifts
+        shifts: list[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data.workers
+        workers: list[Worker] = sample_data.workers
         target_worker = workers[0]
 
         schedule: Schedule = sample_data.schedule
@@ -84,8 +84,8 @@ class TestConstraintSumQuickStaffing:
     def test_build_quick_staffing_constraints_no_staffing(
         self, sample_data: EngineInputsAugmented
     ) -> None:
-        shifts: List[Shift] = sample_data.shifts
-        workers: List[Worker] = sample_data.workers
+        shifts: list[Shift] = sample_data.shifts
+        workers: list[Worker] = sample_data.workers
         target_worker = workers[0]
 
         schedule: Schedule = sample_data.schedule
@@ -118,7 +118,7 @@ class TestConstraintSum:
     def test_constraint_sum_hard(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_sum_with_expected_output: Tuple[
+        constraint_sum_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -167,7 +167,7 @@ class TestConstraintSum:
     def test_constraint_sum_soft(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_sum_with_expected_output: Tuple[
+        constraint_sum_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -217,7 +217,7 @@ class TestConstraintSum:
     def test_constraint_sum_hard_soft_conflict(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_sum_with_expected_output: Tuple[
+        constraint_sum_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -226,7 +226,7 @@ class TestConstraintSum:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -314,7 +314,7 @@ class TestConstraintSum:
     def test_constraint_sum_hard_hard_conflic_obj_value(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_sum_with_expected_output: Tuple[
+        constraint_sum_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -323,7 +323,7 @@ class TestConstraintSum:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -614,7 +614,7 @@ class TestConstraintSumRunParsedScenario:
                 )
 
         # Create shift demands for all 15 days
-        shift_demands: List[ShiftDemandNew] = []
+        shift_demands: list[ShiftDemandNew] = []
         for day in range(1, 16):
             shift_demands.append(
                 ShiftDemandNew(
@@ -670,7 +670,7 @@ class TestConstraintSumRunParsedScenario:
                 pass
 
         # Create shift demands for all 3 days
-        shift_demands: List[ShiftDemandNew] = []
+        shift_demands: list[ShiftDemandNew] = []
         for day in range(1, 4):
             shift_demands.append(
                 ShiftDemandNew(

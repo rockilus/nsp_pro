@@ -1,5 +1,4 @@
 from dataclasses import asdict
-from typing import List
 
 from shared.schemas.core import Assignment, AssignmentSource, Schedule
 
@@ -7,8 +6,8 @@ from engine import Assignment as AssignmentEngine
 
 
 def build_campaign_assignments(
-    schedule: Schedule, as_engine: List[AssignmentEngine]
-) -> List[Assignment]:
+    schedule: Schedule, as_engine: list[AssignmentEngine]
+) -> list[Assignment]:
     return [
         Assignment(
             **asdict(a),

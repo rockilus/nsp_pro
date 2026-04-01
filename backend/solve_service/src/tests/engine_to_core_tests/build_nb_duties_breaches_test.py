@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from typing import Callable, List, Tuple
 
 import pytest
 from shared.schemas.core import (
@@ -347,7 +347,7 @@ class TestTargetWorkTimeConstraints:
         self,
         ei_nb_duties: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -372,7 +372,7 @@ class TestTargetWorkTimeConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
         assignments = build_campaign_assignments(schedule, engine_out.assignments)
 
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)

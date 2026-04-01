@@ -28,6 +28,12 @@ all:
     just typecheck
     just test
 
+all-no-test:
+    just update-shared
+    just format
+    just lint
+    just typecheck
+
 dev:
     echo "Starting solve_service (SQS consumer)..."
     uv run python -m src.main

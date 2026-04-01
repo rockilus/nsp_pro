@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta, timezone
-from typing import List
+from datetime import UTC, datetime, timedelta
 
 from shared.augment import requests_to_requests_augmented
 from shared.schemas.core import (
@@ -101,7 +100,7 @@ class TestDutyRecupConstraint:
         date_target = schedule.start_date
         shift_target_0_id = "s0"
         shift_target_1_id = "s1"
-        requests: List[Request] = [
+        requests: list[Request] = [
             Request(
                 id="r0",
                 team_id="t0",
@@ -124,7 +123,7 @@ class TestDutyRecupConstraint:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             ),
             Request(
                 id="r0",
@@ -148,7 +147,7 @@ class TestDutyRecupConstraint:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             ),
         ]
         sample_data_fixture.requests_work = requests_to_requests_augmented(
@@ -235,7 +234,7 @@ class TestDutyRecupConstraint:
             assert count_actual == 1
 
         # Check output contains expected breach
-        breaches: List[Breach] = _parse_breaches_engine(schedule, outputs.breaches)
+        breaches: list[Breach] = _parse_breaches_engine(schedule, outputs.breaches)
         assert len(breaches) == 1
         breaches_expected = [
             Breach(

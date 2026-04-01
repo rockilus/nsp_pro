@@ -1,7 +1,6 @@
 # import json
 # import os
 import time
-from typing import Optional, Tuple
 
 from shared.schemas.core import (
     EngineInputs,
@@ -20,8 +19,8 @@ from solve_service.penalties import penalties
 # pylint: disable=too-many-locals
 def solve_schedule(
     engine_inputs: EngineInputs,
-    solve_scope: Optional[SolveScope] = None,
-) -> Tuple[EngineOutputs, ProcessingCache]:
+    solve_scope: SolveScope | None = None,
+) -> tuple[EngineOutputs, ProcessingCache]:
     # current_path = os.path.dirname(os.path.realpath(__file__))
     # inputs_file_path = os.path.join(current_path, "engine_inputs.json")
     # with open(inputs_file_path, "w", encoding="utf-8") as inputs_file:

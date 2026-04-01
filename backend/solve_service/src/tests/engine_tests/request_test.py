@@ -1,6 +1,6 @@
 import random
-from datetime import date, datetime, timedelta, timezone
-from typing import Callable, List, Tuple
+from collections.abc import Callable
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from shared.augment.r_to_r_augmented import requests_to_requests_augmented
@@ -24,9 +24,8 @@ from shared.schemas.core import (
     Worker,
 )
 
-from engine import Assignment
+from engine import Assignment, Outputs, ProcessingCache
 from engine import Inputs as InputsEngine
-from engine import Outputs, ProcessingCache
 from engine import Request as RequestEngine
 from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
@@ -34,9 +33,11 @@ from engine_to_core_service.build_breaches.build_breaches_model import (
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
 # pylint: disable=unused-import
-from tests.sample_data import sample_data_benoit_case_fixture  # noqa: F401
-from tests.sample_data import sample_data_fixture  # noqa: F401
-from tests.sample_data import test_data_set_2
+from tests.sample_data import (
+    sample_data_benoit_case_fixture,  # noqa: F401
+    sample_data_fixture,  # noqa: F401
+    test_data_set_2,
+)
 
 
 # pylint: disable=too-few-public-methods, R0801
@@ -46,10 +47,10 @@ class TestRequestDeferred:
         self,
         sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
-        shifts: List[Shift] = sample_data_fixture.shifts
+        shifts: list[Shift] = sample_data_fixture.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data_fixture.workers
+        workers: list[Worker] = sample_data_fixture.workers
         target_worker_index = random.randint(0, len(workers) - 1)
         target_worker = workers[target_worker_index]
 
@@ -78,7 +79,7 @@ class TestRequestDeferred:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             )
         ]
 
@@ -93,7 +94,7 @@ class TestRequestDeferred:
 
         outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
 
-        assignments: List[Assignment] = outputs.assignments
+        assignments: list[Assignment] = outputs.assignments
         a_target = next(
             (
                 a
@@ -111,10 +112,10 @@ class TestRequestDeferred:
         self,
         sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
-        shifts: List[Shift] = sample_data_fixture.shifts
+        shifts: list[Shift] = sample_data_fixture.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data_fixture.workers
+        workers: list[Worker] = sample_data_fixture.workers
         target_worker_index = random.randint(0, len(workers) - 1)
         target_worker = workers[target_worker_index]
 
@@ -143,7 +144,7 @@ class TestRequestDeferred:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             )
         ]
 
@@ -158,7 +159,7 @@ class TestRequestDeferred:
 
         outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
 
-        assignments: List[Assignment] = outputs.assignments
+        assignments: list[Assignment] = outputs.assignments
         a_target = next(
             (
                 a
@@ -175,10 +176,10 @@ class TestRequestDeferred:
     def test_request_one_day_negative_hard(
         self, sample_data: EngineInputsAugmented
     ) -> None:
-        shifts: List[Shift] = sample_data.shifts
+        shifts: list[Shift] = sample_data.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data.workers
+        workers: list[Worker] = sample_data.workers
         target_worker_index = random.randint(0, len(workers) - 1)
         target_worker = workers[target_worker_index]
 
@@ -207,7 +208,7 @@ class TestRequestDeferred:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             )
         ]
 
@@ -222,7 +223,7 @@ class TestRequestDeferred:
 
         outputs: Outputs = engine_solve_engine_inputs(sample_data)
 
-        assignments: List[Assignment] = outputs.assignments
+        assignments: list[Assignment] = outputs.assignments
         a_target = next(
             (
                 a
@@ -281,7 +282,7 @@ class TestRequestDeferred:
         sample_data.shifts.append(target_shift)
         sample_data.shift_demands += dsds_target_shift
 
-        workers: List[Worker] = sample_data.workers
+        workers: list[Worker] = sample_data.workers
         target_worker_index = random.randint(0, len(workers) - 1)
         target_worker = workers[target_worker_index]
 
@@ -308,7 +309,7 @@ class TestRequestDeferred:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             )
         ]
 
@@ -323,7 +324,7 @@ class TestRequestDeferred:
 
         outputs: Outputs = engine_solve_engine_inputs(sample_data)
 
-        assignments: List[Assignment] = outputs.assignments
+        assignments: list[Assignment] = outputs.assignments
         for d in dates_campaign:
             a_target = next(
                 (
@@ -347,7 +348,7 @@ class TestRequestDeferred:
         assert outputs is not None
 
         assignments = outputs.assignments
-        breaches: List[Breach] = _parse_breaches_engine(
+        breaches: list[Breach] = _parse_breaches_engine(
             sample_data_benoit_case_fixture.schedule, outputs.breaches
         )
         for r in sample_data_benoit_case_fixture.requests_work:
@@ -380,7 +381,7 @@ class TestRequestDeferred:
         self,
         engine_inputs: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -407,7 +408,7 @@ class TestRequestDeferred:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
         request_soft = Request(
             id="req_soft",
@@ -431,7 +432,7 @@ class TestRequestDeferred:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
         engine_inputs.requests_work = requests_to_requests_augmented(
             requests=[request_hard, request_soft],
@@ -507,7 +508,7 @@ class TestRequestDeferred:
         self,
         engine_inputs: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -534,7 +535,7 @@ class TestRequestDeferred:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
         request_hard_2 = Request(
             id="req_hard_2",
@@ -558,7 +559,7 @@ class TestRequestDeferred:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
         engine_inputs.requests_work = requests_to_requests_augmented(
             requests=[request_hard_1, request_hard_2],
@@ -616,10 +617,10 @@ class TestRequestApproved:
         Test that an APPROVED positive work demand request is satisfied
         even when there's a conflicting DEFERRED negative request.
         """
-        shifts: List[Shift] = sample_data_fixture.shifts
+        shifts: list[Shift] = sample_data_fixture.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data_fixture.workers
+        workers: list[Worker] = sample_data_fixture.workers
         target_worker = workers[0]
 
         schedule: Schedule = sample_data_fixture.schedule
@@ -647,7 +648,7 @@ class TestRequestApproved:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
 
         # Create conflicting DEFERRED negative request
@@ -673,7 +674,7 @@ class TestRequestApproved:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
 
         sample_data_fixture.requests_work = requests_to_requests_augmented(
@@ -688,7 +689,7 @@ class TestRequestApproved:
         outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
 
         # Check that the approved request is satisfied
-        assignments: List[Assignment] = outputs.assignments
+        assignments: list[Assignment] = outputs.assignments
         a_target = next(
             (
                 a
@@ -702,7 +703,7 @@ class TestRequestApproved:
         assert a_target is not None, "Approved positive work demand must be satisfied"
 
         # Check that there's a breach for the deferred negative request
-        breaches: List[Breach] = _parse_breaches_engine(
+        breaches: list[Breach] = _parse_breaches_engine(
             sample_data_fixture.schedule, outputs.breaches
         )
         deferred_breach = next(
@@ -722,10 +723,10 @@ class TestRequestApproved:
         Test that an APPROVED negative work demand request is respected
         even when there's a conflicting DEFERRED positive request.
         """
-        shifts: List[Shift] = sample_data_fixture.shifts
+        shifts: list[Shift] = sample_data_fixture.shifts
         target_shift = shifts[0]
 
-        workers: List[Worker] = sample_data_fixture.workers
+        workers: list[Worker] = sample_data_fixture.workers
         target_worker = workers[0]
 
         schedule: Schedule = sample_data_fixture.schedule
@@ -753,7 +754,7 @@ class TestRequestApproved:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
 
         # Create conflicting DEFERRED positive request
@@ -779,7 +780,7 @@ class TestRequestApproved:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
 
         sample_data_fixture.requests_work = requests_to_requests_augmented(
@@ -794,7 +795,7 @@ class TestRequestApproved:
         outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
 
         # Check that the approved negative request is respected
-        assignments: List[Assignment] = outputs.assignments
+        assignments: list[Assignment] = outputs.assignments
         a_target = next(
             (
                 a
@@ -811,7 +812,7 @@ class TestRequestApproved:
         )
 
         # Check that there's a breach for the deferred positive request
-        breaches: List[Breach] = _parse_breaches_engine(
+        breaches: list[Breach] = _parse_breaches_engine(
             sample_data_fixture.schedule, outputs.breaches
         )
         deferred_breach = next(
@@ -831,13 +832,13 @@ class TestRequestApproved:
         Test that an APPROVED leave request is satisfied
         even when there's a conflicting DEFERRED work demand request.
         """
-        shifts: List[Shift] = sample_data_fixture.shifts
+        shifts: list[Shift] = sample_data_fixture.shifts
 
         # Find a normal work shift
         work_shift = next((s for s in shifts if s.shift_type == ShiftType.NORMAL), None)
         assert work_shift is not None, "Test requires a normal work shift"
 
-        workers: List[Worker] = sample_data_fixture.workers
+        workers: list[Worker] = sample_data_fixture.workers
         target_worker = workers[0]
 
         schedule: Schedule = sample_data_fixture.schedule
@@ -877,7 +878,7 @@ class TestRequestApproved:
             request_type=RequestType.LEAVE,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
 
         # Create conflicting DEFERRED work demand request
@@ -903,7 +904,7 @@ class TestRequestApproved:
             request_type=RequestType.WORK_DEMAND,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
 
         # Add leave request to requests_leave (which expects List[Request])
@@ -923,7 +924,7 @@ class TestRequestApproved:
         outputs: Outputs = engine_solve_engine_inputs(sample_data_fixture)
 
         # Check that the approved leave request is satisfied
-        assignments: List[Assignment] = outputs.assignments
+        assignments: list[Assignment] = outputs.assignments
         leave_assignment = next(
             (
                 a
@@ -953,7 +954,7 @@ class TestRequestApproved:
         )
 
         # Check that there's a breach for the deferred work demand
-        breaches: List[Breach] = _parse_breaches_engine(
+        breaches: list[Breach] = _parse_breaches_engine(
             sample_data_fixture.schedule, outputs.breaches
         )
         deferred_breach = next(

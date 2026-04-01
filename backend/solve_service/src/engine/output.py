@@ -1,6 +1,6 @@
 import re
-from datetime import date, datetime, timezone
-from typing import Any, Dict, List
+from datetime import UTC, date, datetime
+from typing import Any
 
 from ortools.sat.python import cp_model  # type: ignore
 
@@ -59,7 +59,7 @@ class Output:
             solver_run=solver_run,
         )
 
-    def build_solution(self) -> List[Assignment]:
+    def build_solution(self) -> list[Assignment]:
         assignments = []
         for variable, bool_var in self.model.variables.items():
             if self.model.solver.BooleanValue(bool_var):
@@ -80,7 +80,7 @@ class Output:
 
         return assignments
 
-    def build_constraint_breaches(self) -> List[Breach]:
+    def build_constraint_breaches(self) -> list[Breach]:
         out = []
         # var_debug = {k: v for k, v in self.model.variables.items()}
         for var in self.model.obj.bool_vars:
@@ -107,13 +107,13 @@ class Output:
 
     @staticmethod
     def parse_response_stats(
-        response_stats_str: str, params: Dict[str, str], log_output: str
+        response_stats_str: str, params: dict[str, str], log_output: str
     ) -> SolverRun:
         # Regular expression pattern for extracting key-value pairs
         pattern = re.compile(r"(\w+): (.+)")
 
         # Dictionary to store extracted values
-        extracted_values: Dict[str, Any] = {}
+        extracted_values: dict[str, Any] = {}
 
         for match in pattern.finditer(response_stats_str):
             key = match.group(1)
@@ -152,7 +152,7 @@ class Output:
 
         # Create SolverRun instance
         return SolverRun(
-            run_timestamp=datetime.now(timezone.utc).timestamp(),
+            run_timestamp=datetime.now(UTC).timestamp(),
             status=str(extracted_values.get("status", "")),
             objective=extracted_values.get("objective", 0),
             best_bound=extracted_values.get("best_bound", 0),

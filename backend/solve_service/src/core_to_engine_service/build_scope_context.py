@@ -5,8 +5,6 @@ Scope pre-processing for partial campaign solves.
 `apply_scope_mutations` applies the derived ScopeContext to engine_inputs in-place.
 """
 
-from typing import Dict, List, Set, Tuple
-
 from shared.schemas.core import (
     Assignment,
     Shift,
@@ -24,27 +22,27 @@ from engine import ScopeContext
 
 
 # Type alias for the 3-tuple (worker_id, date_iso, shift_id)
-_Variables = Set[Tuple[str, str, str]]
+_Variables = set[tuple[str, str, str]]
 
 
-def _expand_to_workers(pairs: Set[Tuple[str, str]], W: Set[str]) -> _Variables:
+def _expand_to_workers(pairs: set[tuple[str, str]], W: set[str]) -> _Variables:
     """Return {(w, date, shift) for w in W for (shift, date) in pairs}."""
     return {(w, date_iso, shift_id) for shift_id, date_iso in pairs for w in W}
 
 
 def _duties_variables(
-    raw_demand_pairs: Set[Tuple[str, str]],
-    shifts_not_deleted: List[Shift],
-    W: Set[str],
+    raw_demand_pairs: set[tuple[str, str]],
+    shifts_not_deleted: list[Shift],
+    W: set[str],
 ) -> _Variables:
     duty_ids = {s.id for s in shifts_not_deleted if s.shift_type == ShiftType.DUTY}
     return _expand_to_workers({(s, d) for s, d in raw_demand_pairs if s in duty_ids}, W)
 
 
 def _non_duties_variables(
-    raw_demand_pairs: Set[Tuple[str, str]],
-    shifts_not_deleted: List[Shift],
-    W: Set[str],
+    raw_demand_pairs: set[tuple[str, str]],
+    shifts_not_deleted: list[Shift],
+    W: set[str],
 ) -> _Variables:
     non_duty_ids = {
         s.id
@@ -61,8 +59,8 @@ def _non_duties_variables(
 
 def _custom_shift_view_variables(
     scope: SolveScope,
-    raw_demand_pairs: Set[Tuple[str, str]],
-    W: Set[str],
+    raw_demand_pairs: set[tuple[str, str]],
+    W: set[str],
 ) -> _Variables:
     c1: _Variables = set()
     if scope.shift_ids is not None:
@@ -87,9 +85,9 @@ def _custom_shift_view_variables(
 
 def _effective_worker_view_variables(
     variables: _Variables,
-    raw_demand_pairs: Set[Tuple[str, str]],
-    demands: List[ShiftDemandNew],
-    as_campaign: List[Assignment],
+    raw_demand_pairs: set[tuple[str, str]],
+    demands: list[ShiftDemandNew],
+    as_campaign: list[Assignment],
 ) -> _Variables:
     """Return demand pairs not yet fully satisfied by out-of-scope fixed assignments.
 
@@ -97,14 +95,14 @@ def _effective_worker_view_variables(
     the solving scope meets or exceeds the demand count for that (shift, date).
     """
     scoped_worker_ids = {w for (w, _, _) in variables}
-    demand_count: Dict[Tuple[str, str], int] = {}
+    demand_count: dict[tuple[str, str], int] = {}
     for demand in demands:
         pair = (demand.shift_id, demand.date.isoformat())
         if pair in raw_demand_pairs:
             if pair not in demand_count:
                 demand_count[pair] = 0
             demand_count[pair] += demand.count
-    out_scope_count: Dict[Tuple[str, str], int] = {}
+    out_scope_count: dict[tuple[str, str], int] = {}
     for a in as_campaign:
         if a.worker_id in scoped_worker_ids:
             continue
@@ -124,10 +122,10 @@ def _effective_worker_view_variables(
 
 def _custom_worker_view_variables(
     scope: SolveScope,
-    raw_demand_pairs: Set[Tuple[str, str]],
-    W: Set[str],
-    demands: List[ShiftDemandNew],
-    as_campaign: List[Assignment],
+    raw_demand_pairs: set[tuple[str, str]],
+    W: set[str],
+    demands: list[ShiftDemandNew],
+    as_campaign: list[Assignment],
 ) -> _Variables:
     c1: _Variables = set()
     if scope.worker_ids is not None:
@@ -161,7 +159,7 @@ def _custom_worker_view_variables(
 
 
 def _build_scope_context(
-    variables: _Variables, demands: List[ShiftDemandNew]
+    variables: _Variables, demands: list[ShiftDemandNew]
 ) -> ScopeContext:
     dates = {d for (_, d, _) in variables}
     shift_ids = {s for (_, _, s) in variables}
@@ -183,11 +181,11 @@ def _build_scope_context(
 
 def preprocess_scope(
     scope: SolveScope,
-    workers_not_deleted: List[Worker],
-    shifts_not_deleted: List[Shift],
-    demands: List[ShiftDemandNew],
-    var_model: List[Tuple[str, str, str]],
-    as_campaign: List[Assignment],
+    workers_not_deleted: list[Worker],
+    shifts_not_deleted: list[Shift],
+    demands: list[ShiftDemandNew],
+    var_model: list[tuple[str, str, str]],
+    as_campaign: list[Assignment],
 ) -> ScopeContext:
     """
     Compute the full set of (worker_id, date_iso, shift_id) variables in scope
@@ -201,10 +199,10 @@ def preprocess_scope(
     if scope.scope_type == SolveScopeType.CUSTOM and scope.solve_view is None:
         raise ValueError("solve_view must be set when scope_type is CUSTOM")
 
-    raw_demand_pairs: Set[Tuple[str, str]] = {
+    raw_demand_pairs: set[tuple[str, str]] = {
         (sd.shift_id, sd.date.isoformat()) for sd in demands
     }
-    W: Set[str] = {w.id for w in workers_not_deleted}
+    W: set[str] = {w.id for w in workers_not_deleted}
 
     if scope.scope_type == SolveScopeType.DUTIES:
         variables = _duties_variables(raw_demand_pairs, shifts_not_deleted, W)

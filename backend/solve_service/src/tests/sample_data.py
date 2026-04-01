@@ -1,9 +1,8 @@
 import json
 import os
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from enum import Enum
-from typing import Dict, List
 
 import pytest
 from shared.schemas.core import (
@@ -249,10 +248,10 @@ def sample_data_fixture() -> EngineInputsAugmented:
             )
             current_date += timedelta(days=1)
 
-    dimensions: List[Dimension] = []
-    dim_entries: List[DimEntry] = []
-    attributes: List[Attribute] = []
-    cbs_augmented: List[ConstraintBuildAugmented] = []
+    dimensions: list[Dimension] = []
+    dim_entries: list[DimEntry] = []
+    attributes: list[Attribute] = []
+    cbs_augmented: list[ConstraintBuildAugmented] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
@@ -476,10 +475,10 @@ def sample_data() -> EngineInputsAugmented:
             )
             current_date += timedelta(days=1)
 
-    dimensions: List[Dimension] = []
-    dim_entries: List[DimEntry] = []
-    attributes: List[Attribute] = []
-    cbs_augmented: List[ConstraintBuildAugmented] = []
+    dimensions: list[Dimension] = []
+    dim_entries: list[DimEntry] = []
+    attributes: list[Attribute] = []
+    cbs_augmented: list[ConstraintBuildAugmented] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
@@ -631,10 +630,10 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
             )
             current_date += timedelta(days=1)
 
-    dimensions: List[Dimension] = []
-    dim_entries: List[DimEntry] = []
-    attributes: List[Attribute] = []
-    cbs_augmented: List[ConstraintBuildAugmented] = []
+    dimensions: list[Dimension] = []
+    dim_entries: list[DimEntry] = []
+    attributes: list[Attribute] = []
+    cbs_augmented: list[ConstraintBuildAugmented] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
@@ -657,10 +656,10 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
     )
 
 
-def load_json_from_file(filename: str) -> Dict:
+def load_json_from_file(filename: str) -> dict:
     current_folder = os.path.dirname(__file__)
     file_path = os.path.join(current_folder, filename)
-    with open(file_path, "r", encoding="utf-8") as file:
+    with open(file_path, encoding="utf-8") as file:
         data = json.load(file)
     return data
 
@@ -683,7 +682,7 @@ class DailyShiftDemand:
     count: int
 
     @classmethod
-    def from_dict(cls, data: Dict) -> "DailyShiftDemand":
+    def from_dict(cls, data: dict) -> "DailyShiftDemand":
         return cls(
             id=data["id"],
             team_id=data["team_id"],
@@ -691,7 +690,7 @@ class DailyShiftDemand:
             shift_demand_id=data["shift_demand_id"],
             coverage_selector_id=data["coverage_selector_id"],
             source_type=DSDSourceType(data["source_type"]),
-            date=datetime.fromtimestamp(data["date"], tz=timezone.utc).date(),
+            date=datetime.fromtimestamp(data["date"], tz=UTC).date(),
             shift_id=data["shift_id"],
             count=data["count"],
         )

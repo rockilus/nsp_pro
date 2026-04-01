@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import Dict, List
 
 from shared.constraint_parser.parse_selected_shifts import (
     parse_selected_shifts,
@@ -16,15 +15,15 @@ from engine import Request as RequestEngine
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
 def build_engine_requests(
-    worker_not_deleted_ids: List[str],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shift_not_deleted_ids: List[str],
-    shifts: List[Shift],
-    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]],
-    requests: List[RequestAugmented],
+    worker_not_deleted_ids: list[str],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shift_not_deleted_ids: list[str],
+    shifts: list[Shift],
+    dim_to_attr_value_to_shift: dict[str, dict[str | int | float | bool, list[str]]],
+    requests: list[RequestAugmented],
     r_penalty: Penalty,
-) -> List[RequestEngine]:
-    out: List[RequestEngine] = []
+) -> list[RequestEngine]:
+    out: list[RequestEngine] = []
     for r in requests:
         dates_request = [
             r.start_date + timedelta(days=x)

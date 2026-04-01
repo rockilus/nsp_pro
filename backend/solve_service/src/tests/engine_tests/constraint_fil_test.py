@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from copy import deepcopy
 from datetime import date, timedelta
-from typing import Callable, Tuple
 
 from shared.schemas.core import (
     ConstraintBuildAugmented,
@@ -27,7 +27,7 @@ class TestConstraintFil:
     def test_constraint_fil_hard(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_fil_with_expected_output: Tuple[
+        constraint_fil_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -66,7 +66,7 @@ class TestConstraintFil:
     def test_constraint_fil_soft(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_fil_with_expected_output: Tuple[
+        constraint_fil_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -108,7 +108,7 @@ class TestConstraintFil:
     def test_constraint_fil_hard_soft_conflict(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_fil_with_expected_output: Tuple[
+        constraint_fil_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -117,7 +117,7 @@ class TestConstraintFil:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -252,7 +252,7 @@ class TestConstraintFil:
     def test_constraint_fil_hard_hard_conflic_obj_value(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_fil_with_expected_output: Tuple[
+        constraint_fil_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil
@@ -261,7 +261,7 @@ class TestConstraintFil:
             | ConstraintSum,
         ],
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:

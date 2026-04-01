@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from typing import List
 
 from shared.schemas.core import (
     EngineInputsAugmented,
@@ -108,7 +107,7 @@ class TestBuildLinkShiftPairs:
         self,
         sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
-        workers: List[Worker] = []
+        workers: list[Worker] = []
         shifts = sample_data_fixture.shifts
         schedule = sample_data_fixture.schedule
         fixed_assignments = (
@@ -157,7 +156,7 @@ class TestBuildLinkShiftPairs:
         sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
-        shifts: List[Shift] = sample_data_fixture.shifts
+        shifts: list[Shift] = sample_data_fixture.shifts
         schedule = sample_data_fixture.schedule
         fixed_assignments = (
             sample_data_fixture.as_hist + sample_data_fixture.as_campaign_fixed

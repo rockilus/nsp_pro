@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from typing import List
 
 import pytest
 from shared.schemas.core import (
@@ -120,7 +119,7 @@ class TestBuildEngineVariables:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_workers(self, sample_data: EngineInputsAugmented) -> None:
-        workers: List[Worker] = []
+        workers: list[Worker] = []
         shifts = sample_data.shifts
         schedule = sample_data.schedule
         fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
@@ -153,7 +152,7 @@ class TestBuildEngineVariables:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_shifts(self, sample_data: EngineInputsAugmented) -> None:
         workers = sample_data.workers
-        shifts: List[Shift] = []
+        shifts: list[Shift] = []
         schedule = sample_data.schedule
         fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 

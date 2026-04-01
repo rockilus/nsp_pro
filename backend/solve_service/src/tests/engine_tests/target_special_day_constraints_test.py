@@ -1,7 +1,7 @@
 # pylint: disable=too-many-lines
+from collections.abc import Callable
 from copy import deepcopy
-from datetime import date, datetime, timedelta, timezone
-from typing import Callable, List, Tuple
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from shared.schemas.core import (
@@ -57,8 +57,8 @@ class TestSpecialDayConstraints:
             constraint_build_ids=[],
             quick_staffings=[],
             created_by="user1",
-            created_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
-            updated_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
+            created_at=datetime(2025, 1, 1, tzinfo=UTC),
+            updated_at=datetime(2025, 1, 1, tzinfo=UTC),
         )
 
         # 16 workers
@@ -92,8 +92,8 @@ class TestSpecialDayConstraints:
                 name="Night Morning Shift",
                 acronym="NMS",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 1, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 3, 0, tzinfo=timezone.utc),  # 2 hours
+                start_time=datetime(2025, 1, 1, 1, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 1, 3, 0, tzinfo=UTC),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.NORMAL,
@@ -109,8 +109,8 @@ class TestSpecialDayConstraints:
                 name="Morning Shift",
                 acronym="MS",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 10, 0, tzinfo=timezone.utc),  # 2 hours
+                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 1, 10, 0, tzinfo=UTC),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="blue",
                 shift_type=ShiftType.NORMAL,
@@ -126,8 +126,8 @@ class TestSpecialDayConstraints:
                 name="Afternoon Shift",
                 acronym="AS",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 13, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 15, 0, tzinfo=timezone.utc),  # 2 hours
+                start_time=datetime(2025, 1, 1, 13, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 1, 15, 0, tzinfo=UTC),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="green",
                 shift_type=ShiftType.NORMAL,
@@ -143,8 +143,8 @@ class TestSpecialDayConstraints:
                 name="Night Shift",
                 acronym="NS",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 18, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 1, 20, 0, tzinfo=timezone.utc),  # 2 hours
+                start_time=datetime(2025, 1, 1, 18, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 1, 20, 0, tzinfo=UTC),  # 2 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.NORMAL,
@@ -162,8 +162,8 @@ class TestSpecialDayConstraints:
                 name="Duty 1",
                 acronym="D1",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=UTC),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -179,8 +179,8 @@ class TestSpecialDayConstraints:
                 name="RC Duty 1",
                 acronym="RC1",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=UTC),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -196,8 +196,8 @@ class TestSpecialDayConstraints:
                 name="Duty 2",
                 acronym="D2",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=UTC),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -213,8 +213,8 @@ class TestSpecialDayConstraints:
                 name="RC Duty 2",
                 acronym="RC2",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=UTC),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -230,8 +230,8 @@ class TestSpecialDayConstraints:
                 name="Duty 3",
                 acronym="D3",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=UTC),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -247,8 +247,8 @@ class TestSpecialDayConstraints:
                 name="RC Duty 3",
                 acronym="RC3",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=UTC),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -264,8 +264,8 @@ class TestSpecialDayConstraints:
                 name="Duty 4",
                 acronym="D4",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=UTC),  # 24 hours
                 staffing=[Staffing(specialty_id=None, staffing=1)],
                 color="purple",
                 shift_type=ShiftType.DUTY,
@@ -281,8 +281,8 @@ class TestSpecialDayConstraints:
                 name="RC Duty 4",
                 acronym="RC4",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 8, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 2, 8, 0, tzinfo=UTC),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.REST,
@@ -300,8 +300,8 @@ class TestSpecialDayConstraints:
                 name="Vacation",
                 acronym="V",
                 acronym_custom=False,
-                start_time=datetime(2025, 1, 1, 0, 0, tzinfo=timezone.utc),
-                end_time=datetime(2025, 1, 2, 0, 0, tzinfo=timezone.utc),  # 24 hours
+                start_time=datetime(2025, 1, 1, 0, 0, tzinfo=UTC),
+                end_time=datetime(2025, 1, 2, 0, 0, tzinfo=UTC),  # 24 hours
                 staffing=[],
                 color="purple",
                 shift_type=ShiftType.LEAVE,
@@ -366,7 +366,7 @@ class TestSpecialDayConstraints:
         self,
         engine_inputs_special_days: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -426,7 +426,7 @@ class TestSpecialDayConstraints:
         self,
         engine_inputs_special_days: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -512,9 +512,9 @@ class TestSpecialDayConstraints:
             # fmt: on
         )
 
-        deltas: List[List[int]] = []
+        deltas: list[list[int]] = []
         for constraint in gatc:
-            deltas_constraint: List[int] = []
+            deltas_constraint: list[int] = []
             for a_constraint, target in zip(constraint.assignments, constraint.targets):
                 w_constraint = list({a[0] for a in a_constraint})
                 d_constraint = list({date.fromisoformat(a[1]) for a in a_constraint})

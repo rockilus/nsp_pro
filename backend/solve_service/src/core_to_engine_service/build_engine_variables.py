@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
     Shift,
@@ -15,14 +14,14 @@ from utils.constants import Constants
 
 # pylint: disable=too-many-locals
 def build_engine_variables(
-    workers: List[Worker],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts: List[Shift],
-    shifts_not_deleted: List[Shift],
-    shift_id_to_duration_dict: Dict[str, int],
+    workers: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts: list[Shift],
+    shifts_not_deleted: list[Shift],
+    shift_id_to_duration_dict: dict[str, int],
 ) -> VariablesEngine:
-    assignment_vars: List[Tuple[str, str, str]] = []
-    shift_interval_vars: List[Tuple[int, int, int, Tuple[str, str, str]]] = []
+    assignment_vars: list[tuple[str, str, str]] = []
+    shift_interval_vars: list[tuple[int, int, int, tuple[str, str, str]]] = []
     for w in workers:
         for d in worker_ids_to_worker_dates[w.id].dates_hist:
             for s in shifts:
@@ -96,9 +95,9 @@ def build_shift_interval_var(
     worker: Worker,
     current_date: date,
     shift: Shift,
-    shifts: List[Shift],
-    shift_id_to_duration_dict: Dict[str, int],
-) -> Tuple[int, int, int, Tuple[str, str, str]]:
+    shifts: list[Shift],
+    shift_id_to_duration_dict: dict[str, int],
+) -> tuple[int, int, int, tuple[str, str, str]]:
     day_diff_start = 0
     if shift.rest_type == ShiftRestType.RECUPERATION:
         s_duty = next(

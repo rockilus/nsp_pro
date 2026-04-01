@@ -1,6 +1,5 @@
 import json
 import os
-from typing import Dict
 
 from shared.schemas.core import (
     EngineInputs,
@@ -10,10 +9,10 @@ from shared.schemas.core import (
 )
 
 
-def load_json_from_file(filename: str) -> Dict:
+def load_json_from_file(filename: str) -> dict:
     current_folder = os.path.dirname(__file__)
     file_path = os.path.join(current_folder, filename)
-    with open(file_path, "r", encoding="utf-8") as file:
+    with open(file_path, encoding="utf-8") as file:
         data = json.load(file)
     return data
 
