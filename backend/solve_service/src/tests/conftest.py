@@ -309,7 +309,7 @@ def attributes(
         for i, w in enumerate(workers_10[:5])
     ] + [
         Attribute(
-            id=f"a_loc_{i+5}",
+            id=f"a_loc_{i + 5}",
             value="",
             owner_type=AttributeOwnerType.WORKER,
             owner_id=w.id,
@@ -332,7 +332,7 @@ def attributes(
         for i, s in enumerate(shifts_3n_2d[:2])
     ] + [
         Attribute(
-            id=f"a_block_{i+3}",
+            id=f"a_block_{i + 3}",
             value="",
             owner_type=AttributeOwnerType.SHIFT,
             owner_id=s.id,
@@ -354,7 +354,7 @@ def attributes(
         for i, w in enumerate(workers_10[:3])
     ] + [
         Attribute(
-            id=f"a_60+_{i+3}",
+            id=f"a_60+_{i + 3}",
             value=False,
             owner_type=AttributeOwnerType.WORKER,
             owner_id=w.id,
@@ -376,7 +376,7 @@ def attributes(
         for i, s in enumerate(shifts_3n_2d[:2])
     ] + [
         Attribute(
-            id=f"a_intense_{i+2}",
+            id=f"a_intense_{i + 2}",
             value=False,
             owner_type=AttributeOwnerType.SHIFT,
             owner_id=s.id,
@@ -2140,9 +2140,9 @@ def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputsAugmented], O
 
 
 @pytest.fixture
-def run_core_to_engine_inputs() -> (
-    Callable[[EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]]
-):
+def run_core_to_engine_inputs() -> Callable[
+    [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+]:
     def _run_core_to_engine_inputs(
         engine_inputs: EngineInputsAugmented,
     ) -> Tuple[InputsEngine, ProcessingCache]:

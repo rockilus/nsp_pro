@@ -622,8 +622,7 @@ class TestTargetWorkTimeConstraints:
 
         objective_value_expected = (
             # fmt: off
-            engine_inputs_nb_duties.penalties.system_constraint
-            .monthly_target_nb_duties
+            engine_inputs_nb_duties.penalties.system_constraint.monthly_target_nb_duties
             # fmt: on
             * max_excess
         )

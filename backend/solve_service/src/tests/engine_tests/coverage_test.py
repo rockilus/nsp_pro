@@ -880,9 +880,9 @@ class TestCoverage:
     def test_shifts_no_staffing_should_not_be_assigned(self) -> None:
         ei_coverage = build_ei_coverage()
 
-        assert all(
-            shift.staffing == [] for shift in ei_coverage.shifts
-        ), "All shifts should have no staffing in this test"
+        assert all(shift.staffing == [] for shift in ei_coverage.shifts), (
+            "All shifts should have no staffing in this test"
+        )
 
         outputs = engine_solve_engine_inputs(ei_coverage)
         assert outputs.is_solution is True

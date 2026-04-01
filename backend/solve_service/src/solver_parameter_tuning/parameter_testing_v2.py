@@ -30,7 +30,7 @@ class SolverParameterTester:
     def run_solver_with_params(
         self, params: SolverParams, test_name: str, iter_num: int
     ) -> SolverRun:
-        print(f"Running test: {test_name} {iter_num+1}/{self.num_runs}")
+        print(f"Running test: {test_name} {iter_num + 1}/{self.num_runs}")
         new_inputs = copy.deepcopy(self.inputs)
         new_inputs.model_config.solver_params = params
         engine = self.engine_cls()
@@ -53,14 +53,10 @@ class SolverParameterTester:
         base_params = self.inputs.model_config.solver_params
         default_params = SolverParams(
             # fmt: off
-            max_time_in_seconds=self.inputs.model_config.solver_params
-            .max_time_in_seconds,
-            num_search_workers=self.inputs.model_config.solver_params
-            .num_search_workers,
-            log_search_progress=self.inputs.model_config.solver_params
-            .log_search_progress,
-            log_subsolver_statistics=self.inputs.model_config.solver_params
-            .log_subsolver_statistics,
+            max_time_in_seconds=self.inputs.model_config.solver_params.max_time_in_seconds,
+            num_search_workers=self.inputs.model_config.solver_params.num_search_workers,
+            log_search_progress=self.inputs.model_config.solver_params.log_search_progress,
+            log_subsolver_statistics=self.inputs.model_config.solver_params.log_subsolver_statistics,
             # fmt: on
             random_seed=self.inputs.model_config.solver_params.random_seed,
         )

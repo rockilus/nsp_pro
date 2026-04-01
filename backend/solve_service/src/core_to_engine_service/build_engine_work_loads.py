@@ -93,8 +93,7 @@ def build_engine_work_time(
         w_targets = w_to_work_times.get(w.id, {}).get(target_work_time_name, None)
         if w_targets is None:
             log_info(
-                f"Worker {w.id} does not have {target_work_time_name} "
-                "work time target"
+                f"Worker {w.id} does not have {target_work_time_name} work time target"
             )
             continue
         w_assignments, w_durations = build_engine_work_time_worker(
@@ -133,8 +132,7 @@ def build_engine_nb_duties(
         w_targets = w_to_nb_duties.get(w.id, {}).get(target_nb_duties_name, None)
         if w_targets is None:
             log_info(
-                f"Worker {w.id} does not have {target_nb_duties_name} "
-                "nb duties target"
+                f"Worker {w.id} does not have {target_nb_duties_name} nb duties target"
             )
             continue
         w_assignments = build_engine_nb_duties_worker(

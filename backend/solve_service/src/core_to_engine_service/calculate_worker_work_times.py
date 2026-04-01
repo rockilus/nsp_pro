@@ -335,8 +335,10 @@ def sort_workers(
 ) -> List[str]:
     return sorted(
         proportional_times.keys(),
-        key=lambda worker_id: proportional_times[worker_id][period_index]
-        - period_rounded_times[worker_id],
+        key=lambda worker_id: (
+            proportional_times[worker_id][period_index]
+            - period_rounded_times[worker_id]
+        ),
         reverse=True,
     )
 

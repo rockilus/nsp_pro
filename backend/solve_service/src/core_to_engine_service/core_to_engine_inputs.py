@@ -407,8 +407,7 @@ def core_to_engine_inputs(
                     shift_id_to_duration_dict,
                     engine_inputs.penalties.system_constraint.weekly_target_work_time,
                     # fmt: off
-                    engine_inputs.model_config.system_constraints
-                    .weekly_target_worktime_tolerance,
+                    engine_inputs.model_config.system_constraints.weekly_target_worktime_tolerance,
                     # fmt: on
                 )
                 if engine_inputs.model_config.system_constraints.weekly_target_work_time
@@ -422,15 +421,12 @@ def core_to_engine_inputs(
                     ws_to_dates,
                     shift_duties_not_deleted,
                     # fmt: off
-                    engine_inputs.penalties.system_constraint
-                    .monthly_target_nb_duties,
-                    engine_inputs.model_config.system_constraints
-                    .mthly_target_nb_duty_tolerance,
+                    engine_inputs.penalties.system_constraint.monthly_target_nb_duties,
+                    engine_inputs.model_config.system_constraints.mthly_target_nb_duty_tolerance,
                     # fmt: on
                 )
                 # fmt: off
-                if engine_inputs.model_config.system_constraints
-                .monthly_target_nb_duties
+                if engine_inputs.model_config.system_constraints.monthly_target_nb_duties
                 # fmt: on
                 else []
             ),
@@ -458,13 +454,11 @@ def core_to_engine_inputs(
                     engine_inputs.shift_demands,
                     fixed_assignments,
                     # fmt: off
-                    engine_inputs.penalties.system_constraint
-                    .special_days_target_nb_duties,
+                    engine_inputs.penalties.system_constraint.special_days_target_nb_duties,
                     # fmt: on
                 )
                 # fmt: off
-                if engine_inputs.model_config.system_constraints
-                .special_days_target_nb_duties
+                if engine_inputs.model_config.system_constraints.special_days_target_nb_duties
                 # fmt: on
                 else []
             ),

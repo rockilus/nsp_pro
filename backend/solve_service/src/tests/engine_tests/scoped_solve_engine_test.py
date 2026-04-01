@@ -45,9 +45,9 @@ class TestScopedSolveEngine:
         for demand in ei_scoped.shift_demands:
             key = (demand.date, demand.shift_id)
             assignments_count[key] -= demand.count
-            assert (
-                assignments_count[key] >= 0
-            ), f"Unfulfilled demand for {key} in full solve"
+            assert assignments_count[key] >= 0, (
+                f"Unfulfilled demand for {key} in full solve"
+            )
 
     # ------------------------------------------------------------------
     # T2 — DUTIES scope assigns only duty and recuperation shifts
@@ -69,13 +69,13 @@ class TestScopedSolveEngine:
             key = (demand.date, demand.shift_id)
             if demand.shift_id in duty_shift_ids:
                 assignments_count[key] -= demand.count
-                assert (
-                    assignments_count[key] >= 0
-                ), f"Unfulfilled demand for {key} in full solve"
+                assert assignments_count[key] >= 0, (
+                    f"Unfulfilled demand for {key} in full solve"
+                )
             else:
-                assert (
-                    assignments_count[key] == 0
-                ), f"Unexpected assignment for non-duty shift {key} in DUTIES scope"
+                assert assignments_count[key] == 0, (
+                    f"Unexpected assignment for non-duty shift {key} in DUTIES scope"
+                )
 
     # ------------------------------------------------------------------
     # T3 — NON_DUTIES scope assigns only normal shifts
@@ -94,9 +94,9 @@ class TestScopedSolveEngine:
             key = (demand.date, demand.shift_id)
             if demand.shift_id in non_duty_shift_ids:
                 assignments_count[key] -= demand.count
-                assert (
-                    assignments_count[key] >= 0
-                ), f"Unfulfilled demand for {key} in full solve"
+                assert assignments_count[key] >= 0, (
+                    f"Unfulfilled demand for {key} in full solve"
+                )
             else:
                 assert assignments_count[key] == 0, (
                     f"Unexpected assignment for non-normal shift {key} in "
@@ -124,9 +124,9 @@ class TestScopedSolveEngine:
             key = (demand.date, demand.shift_id)
             if demand.shift_id == test_shift.id:
                 assignments_count[key] -= demand.count
-                assert (
-                    assignments_count[key] >= 0
-                ), f"Unfulfilled demand for {key} in custom shift view solve"
+                assert assignments_count[key] >= 0, (
+                    f"Unfulfilled demand for {key} in custom shift view solve"
+                )
             else:
                 assert assignments_count[key] == 0, (
                     f"Unexpected assignment for non-selected shift {key} in "
@@ -152,9 +152,9 @@ class TestScopedSolveEngine:
             key = (demand.date, demand.shift_id)
             if demand.date == test_date:
                 assignments_count[key] -= demand.count
-                assert (
-                    assignments_count[key] >= 0
-                ), f"Unfulfilled demand for {key} in custom date shift view solve"
+                assert assignments_count[key] >= 0, (
+                    f"Unfulfilled demand for {key} in custom date shift view solve"
+                )
             else:
                 assert assignments_count[key] == 0, (
                     f"Unexpected assignment for non-selected date {key} in "
@@ -188,9 +188,9 @@ class TestScopedSolveEngine:
             key = (demand.date, demand.shift_id)
             if demand.id == test_demand.id:
                 assignments_count[key] -= demand.count
-                assert (
-                    assignments_count[key] >= 0
-                ), f"Unfulfilled demand for {key} in custom shift cell shift view solve"
+                assert assignments_count[key] >= 0, (
+                    f"Unfulfilled demand for {key} in custom shift cell shift view solve"
+                )
             else:
                 assert assignments_count[key] == 0, (
                     "Unexpected assignment for non-selected shift cell "
@@ -302,12 +302,12 @@ class TestScopedSolveEngine:
             and a.date == test_date
             and a.shift_id == test_shift.id
         ]
-        assert (
-            matching
-        ), "Out-of-scope non-duty assignment should be preserved in outputs"
-        assert (
-            len(matching) == 1
-        ), "Out-of-scope non-duty assignment should be marked fixed in outputs"
+        assert matching, (
+            "Out-of-scope non-duty assignment should be preserved in outputs"
+        )
+        assert len(matching) == 1, (
+            "Out-of-scope non-duty assignment should be marked fixed in outputs"
+        )
 
     def test_non_duties_out_of_scope_campaign_assignments_are_preserved_not_deleted(
         self, ei_scoped: EngineInputsAugmented
@@ -357,9 +357,9 @@ class TestScopedSolveEngine:
             and a.shift_id == test_shift_duty.id
         ]
         assert matching, "Out-of-scope duty assignment should be preserved in outputs"
-        assert (
-            len(matching) == 1
-        ), "Out-of-scope duty assignment should be marked fixed in outputs"
+        assert len(matching) == 1, (
+            "Out-of-scope duty assignment should be marked fixed in outputs"
+        )
 
     def test_custom_shift_view_out_of_scope_campaign_assignments_are_preserved(
         self, ei_scoped: EngineInputsAugmented
@@ -413,12 +413,12 @@ class TestScopedSolveEngine:
             and a.date == test_date
             and a.shift_id == test_shift.id
         ]
-        assert (
-            matching
-        ), "Out-of-scope non-duty assignment should be preserved in outputs"
-        assert (
-            len(matching) == 1
-        ), "Out-of-scope non-duty assignment should be marked fixed in outputs"
+        assert matching, (
+            "Out-of-scope non-duty assignment should be preserved in outputs"
+        )
+        assert len(matching) == 1, (
+            "Out-of-scope non-duty assignment should be marked fixed in outputs"
+        )
 
     def test_custom_worker_view_out_of_scope_campaign_assignments_are_preserved(
         self, ei_scoped: EngineInputsAugmented
@@ -458,12 +458,12 @@ class TestScopedSolveEngine:
             and a.date == test_date
             and a.shift_id == test_shift.id
         ]
-        assert (
-            matching
-        ), "Out-of-scope non-duty assignment should be preserved in outputs"
-        assert (
-            len(matching) == 1
-        ), "Out-of-scope non-duty assignment should be marked fixed in outputs"
+        assert matching, (
+            "Out-of-scope non-duty assignment should be preserved in outputs"
+        )
+        assert len(matching) == 1, (
+            "Out-of-scope non-duty assignment should be marked fixed in outputs"
+        )
 
     # ------------------------------------------------------------------
     # T6 — pre-existing fixed assignments are honoured by an in-scope solve
@@ -504,9 +504,9 @@ class TestScopedSolveEngine:
             and a.shift_id == test_shift.id
         ]
         assert matching, "Pre-existing fixed assignment should be preserved in outputs"
-        assert (
-            len(matching) == 1
-        ), "Pre-existing fixed assignment should be unchanged in outputs"
+        assert len(matching) == 1, (
+            "Pre-existing fixed assignment should be unchanged in outputs"
+        )
 
     # ------------------------------------------------------------------
     # T7 — CUSTOM shift cell with no demand produces no assignment
@@ -584,9 +584,9 @@ class TestScopedSolveEngine:
             for a in outputs.assignments
             if a.worker_id == test_worker.id and a.date == test_date
         ]
-        assert (
-            matching
-        ), "Expected an assignment for worker cell with unfulfilled demand, got none"
+        assert matching, (
+            "Expected an assignment for worker cell with unfulfilled demand, got none"
+        )
 
     # ------------------------------------------------------------------
     # T8b — worker cell assigns only the unfulfilled shift when one demand met
@@ -617,9 +617,9 @@ class TestScopedSolveEngine:
         test_demands = [
             d for d in ei_scoped.shift_demands if d.date == test_date and d.count > 0
         ]
-        assert (
-            len(test_demands) >= 2
-        ), f"Need at least 2 demands with count > 0 on {test_date}"
+        assert len(test_demands) >= 2, (
+            f"Need at least 2 demands with count > 0 on {test_date}"
+        )
 
         test_demand_unfulfilled = test_demands[0]
         test_demands_fulfilled = [
@@ -688,7 +688,7 @@ class TestScopedSolveEngine:
         ]
         assert len(matching) == 1, (
             "Expected exactly 1 new assignment for worker cell with one "
-            + f"unfulfilled demand, got {len(matching)-1}"
+            + f"unfulfilled demand, got {len(matching) - 1}"
         )
 
     # ------------------------------------------------------------------

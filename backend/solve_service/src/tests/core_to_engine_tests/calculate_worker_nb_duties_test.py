@@ -292,10 +292,8 @@ class TestBuildNbDutiesConstraints:
                 if not s.deleted and s.shift_type == ShiftType.DUTY
             ],
             # fmt: off
-            engine_inputs.penalties.system_constraint
-            .monthly_target_nb_duties,
-            engine_inputs.model_config.system_constraints
-            .mthly_target_nb_duty_tolerance,
+            engine_inputs.penalties.system_constraint.monthly_target_nb_duties,
+            engine_inputs.model_config.system_constraints.mthly_target_nb_duty_tolerance,
             # fmt: on
         )
 
@@ -343,10 +341,8 @@ class TestBuildNbDutiesConstraints:
                 if not s.deleted and s.shift_type == ShiftType.DUTY
             ],
             # fmt: off
-            engine_inputs.penalties.system_constraint
-            .monthly_target_nb_duties,
-            engine_inputs.model_config.system_constraints
-            .mthly_target_nb_duty_tolerance,
+            engine_inputs.penalties.system_constraint.monthly_target_nb_duties,
+            engine_inputs.model_config.system_constraints.mthly_target_nb_duty_tolerance,
             # fmt: on
         )
 
@@ -362,15 +358,13 @@ class TestBuildNbDutiesConstraints:
             assert (
                 gadtc.penalty
                 # fmt: off
-                == engine_inputs.penalties.system_constraint
-                .monthly_target_nb_duties
+                == engine_inputs.penalties.system_constraint.monthly_target_nb_duties
                 # fmt: on
             )
             assert (
                 gadtc.tolerance
                 # fmt: off
-                == engine_inputs.model_config.system_constraints
-                .mthly_target_nb_duty_tolerance
+                == engine_inputs.model_config.system_constraints.mthly_target_nb_duty_tolerance
                 # fmt: on
             )
             dates_gadtc = list(

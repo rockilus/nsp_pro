@@ -43,7 +43,8 @@ from tests.sample_data import test_data_set_2
 class TestRequestDeferred:
     # pylint: disable=redefined-outer-name
     def test_request_one_day_positive_hard(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         shifts: List[Shift] = sample_data_fixture.shifts
         target_shift = shifts[0]
@@ -107,7 +108,8 @@ class TestRequestDeferred:
 
     # pylint: disable=redefined-outer-name
     def test_request_one_day_positive_soft(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         shifts: List[Shift] = sample_data_fixture.shifts
         target_shift = shifts[0]
@@ -707,9 +709,9 @@ class TestRequestApproved:
             (b for b in breaches if b.objective_id == deferred_request.id),
             None,
         )
-        assert (
-            deferred_breach is not None
-        ), "Deferred negative request should be breached"
+        assert deferred_breach is not None, (
+            "Deferred negative request should be breached"
+        )
 
     # pylint: disable=redefined-outer-name
     def test_approved_negative_work_demand_with_conflicting_deferred(
@@ -816,9 +818,9 @@ class TestRequestApproved:
             (b for b in breaches if b.objective_id == deferred_request.id),
             None,
         )
-        assert (
-            deferred_breach is not None
-        ), "Deferred positive request should be breached"
+        assert deferred_breach is not None, (
+            "Deferred positive request should be breached"
+        )
 
     # pylint: disable=redefined-outer-name, too-many-locals
     def test_approved_leave_request_with_conflicting_deferred_work_demand(
@@ -946,9 +948,9 @@ class TestRequestApproved:
             ),
             None,
         )
-        assert (
-            work_assignment is None
-        ), "Worker on approved leave should not be assigned to work shift"
+        assert work_assignment is None, (
+            "Worker on approved leave should not be assigned to work shift"
+        )
 
         # Check that there's a breach for the deferred work demand
         breaches: List[Breach] = _parse_breaches_engine(
@@ -958,6 +960,6 @@ class TestRequestApproved:
             (b for b in breaches if b.objective_id == deferred_work.id),
             None,
         )
-        assert (
-            deferred_breach is not None
-        ), "Deferred work demand should be breached when leave is approved"
+        assert deferred_breach is not None, (
+            "Deferred work demand should be breached when leave is approved"
+        )

@@ -456,8 +456,7 @@ class TestTargetWorkTimeConstraints:
 
             penalty_expected = (
                 # fmt: off
-                ei_work_times.penalties.configuration_constraint
-                .weekly_worktime_contract
+                ei_work_times.penalties.configuration_constraint.weekly_worktime_contract
                 # fmt: on
                 * max(
                     work_time_worker

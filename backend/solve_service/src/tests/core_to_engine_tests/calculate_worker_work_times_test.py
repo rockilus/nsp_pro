@@ -466,10 +466,8 @@ class TestBuildWorkTimeConstraints:
             ],
             shift_id_to_duration_dict,
             # fmt: off
-            engine_inputs.penalties.system_constraint
-            .weekly_target_work_time,
-            engine_inputs.model_config.system_constraints
-            .weekly_target_worktime_tolerance,
+            engine_inputs.penalties.system_constraint.weekly_target_work_time,
+            engine_inputs.model_config.system_constraints.weekly_target_worktime_tolerance,
             # fmt: on
         )
 
@@ -526,10 +524,8 @@ class TestBuildWorkTimeConstraints:
             ],
             shift_id_to_duration_dict,
             # fmt: off
-            engine_inputs.penalties.system_constraint
-            .weekly_target_work_time,
-            engine_inputs.model_config.system_constraints
-            .weekly_target_worktime_tolerance,
+            engine_inputs.penalties.system_constraint.weekly_target_work_time,
+            engine_inputs.model_config.system_constraints.weekly_target_worktime_tolerance,
             # fmt: on
         )
 
@@ -545,15 +541,13 @@ class TestBuildWorkTimeConstraints:
             assert (
                 gadtc.penalty
                 # fmt: off
-                == engine_inputs.penalties.system_constraint
-                .weekly_target_work_time
+                == engine_inputs.penalties.system_constraint.weekly_target_work_time
                 # fmt: on
             )
             assert (
                 gadtc.tolerance
                 # fmt: off
-                == engine_inputs.model_config.system_constraints
-                .weekly_target_worktime_tolerance
+                == engine_inputs.model_config.system_constraints.weekly_target_worktime_tolerance
                 # fmt: on
             )
             dates_gadtc = list(

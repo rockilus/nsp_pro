@@ -508,8 +508,7 @@ class TestSpecialDayConstraints:
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_campaign_fixed,
             # fmt: off
-            penalty=engine_inputs_special_days.penalties.system_constraint
-            .special_days_target_nb_duties,
+            penalty=engine_inputs_special_days.penalties.system_constraint.special_days_target_nb_duties,
             # fmt: on
         )
 
@@ -547,8 +546,7 @@ class TestSpecialDayConstraints:
 
         objective_value_expected = (
             # fmt: off
-            engine_inputs_special_days.penalties.system_constraint
-            .special_days_target_nb_duties
+            engine_inputs_special_days.penalties.system_constraint.special_days_target_nb_duties
             # fmt: on
             * breach_count_expected
         )

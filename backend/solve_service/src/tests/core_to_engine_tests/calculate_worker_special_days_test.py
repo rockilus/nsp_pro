@@ -359,7 +359,6 @@ def engine_inputs_special_days(
 
 # pylint: disable=R0801, too-few-public-methods, redefined-outer-name
 class TestCalculateWorkerSpecialDays:
-
     def test_calculate_worker_special_days_output_format(
         self, engine_inputs_special_days: EngineInputsAugmented
     ) -> None:
@@ -814,7 +813,7 @@ class TestCalculateWorkerSpecialDays:
             for i, d in enumerate(dates_target[:2])
         ] + [
             Assignment(
-                id=f"a{i+2}",
+                id=f"a{i + 2}",
                 team_id="t0",
                 schedule_id=engine_inputs_special_days.schedule.id,
                 worker_id=worker_target_id,
@@ -945,8 +944,7 @@ class TestBuildDutySpecialDaysConstraints:
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_campaign_fixed,
             # fmt: off
-            penalty=engine_inputs_special_days.penalties.system_constraint
-            .special_days_target_nb_duties,
+            penalty=engine_inputs_special_days.penalties.system_constraint.special_days_target_nb_duties,
             # fmt: on
         )
 
@@ -993,8 +991,7 @@ class TestBuildDutySpecialDaysConstraints:
             fixed_assignments=engine_inputs_special_days.as_hist
             + engine_inputs_special_days.as_campaign_fixed,
             # fmt: off
-            penalty=engine_inputs_special_days.penalties.system_constraint
-            .special_days_target_nb_duties,
+            penalty=engine_inputs_special_days.penalties.system_constraint.special_days_target_nb_duties,
             # fmt: on
         )
 
@@ -1008,8 +1005,7 @@ class TestBuildDutySpecialDaysConstraints:
             assert (
                 gatc.penalty
                 # fmt: off
-                == engine_inputs_special_days.penalties.system_constraint
-                .special_days_target_nb_duties
+                == engine_inputs_special_days.penalties.system_constraint.special_days_target_nb_duties
                 # fmt: on
             )
             day_index_expected = date.fromisoformat(gatc.assignments[0][0][1]).weekday()
@@ -1033,9 +1029,7 @@ class TestBuildDutySpecialDaysConstraints:
                     {date.fromisoformat(a[1]) for a in assignments}
                 )
                 assert sorted(dates_assignments) == sorted(
-                    w_to_special_days[w_id][str(day_index_expected)][
-                        "dates"
-                    ]  # type: ignore
+                    w_to_special_days[w_id][str(day_index_expected)]["dates"]  # type: ignore
                 )
                 assert (
                     target == w_to_special_days[w_id][str(day_index_expected)]["target"]

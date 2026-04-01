@@ -524,9 +524,9 @@ def debug_breaches(
                             "max_weekly_nb_duties.stepped",
                             {"count": 0, "total": 0.0},
                         )
-                        special_stats["max_weekly_nb_duties.stepped"][
-                            "count"
-                        ] += stepped_count
+                        special_stats["max_weekly_nb_duties.stepped"]["count"] += (
+                            stepped_count
+                        )
                         special_stats["max_weekly_nb_duties.stepped"]["total"] += float(
                             stepped_total
                         )
@@ -571,12 +571,12 @@ def debug_breaches(
                             "max_week_day_nb_duties.stepped",
                             {"count": 0, "total": 0.0},
                         )
-                        special_stats["max_week_day_nb_duties.stepped"][
-                            "count"
-                        ] += stepped_count
-                        special_stats["max_week_day_nb_duties.stepped"][
-                            "total"
-                        ] += float(stepped_total)
+                        special_stats["max_week_day_nb_duties.stepped"]["count"] += (
+                            stepped_count
+                        )
+                        special_stats["max_week_day_nb_duties.stepped"]["total"] += (
+                            float(stepped_total)
+                        )
                         processed = True
                     except Exception:
                         pass
@@ -776,7 +776,7 @@ def debug_breaches(
         print(
             f"  Solver objective_value: {outputs.objective_value} vs "
             + f"calc: {total_calc} "
-            + f"delta: {int(total_calc)-outputs.objective_value}"
+            + f"delta: {int(total_calc) - outputs.objective_value}"
         )
         len_breaches = len(outputs.breaches)
         delta_breaches = total_breaches_for_checks - len_breaches

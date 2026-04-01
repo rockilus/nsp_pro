@@ -528,9 +528,9 @@ def test_parse_constraints_sum_all_workers_ignores_ended_worker(
     # And at least one active worker (w1) should be present
     assert "w1" in seen_workers
 
-    assert all(
-        len(cstr_vars) > 0 for cstr_vars in actual.constraint_variables
-    ), "Expected non-empty constraint variables for all periods"
+    assert all(len(cstr_vars) > 0 for cstr_vars in actual.constraint_variables), (
+        "Expected non-empty constraint variables for all periods"
+    )
 
 
 @pytest.mark.unit

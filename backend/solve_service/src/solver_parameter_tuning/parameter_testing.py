@@ -181,7 +181,7 @@ def run_solver_with_params(
     iter_num: int = 1,
     num_runs: int = 1,
 ) -> SolverRun:
-    print(f"Running test: {test_name} {iter_num+1}/{num_runs}")
+    print(f"Running test: {test_name} {iter_num + 1}/{num_runs}")
 
     new_inputs = copy.deepcopy(inputs)
     new_inputs.model_config.solver_params = params

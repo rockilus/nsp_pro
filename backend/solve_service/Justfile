@@ -1,5 +1,9 @@
 # Justfile for backend solve_service
 
+update-shared:
+    echo "Reinstall shared package..."
+    uv sync --reinstall-package shared
+
 format:
     echo "Formatting solve_service..."
     uv run ruff format .
@@ -18,6 +22,7 @@ test:
     uv run pytest
 
 all:
+    just update-shared
     just format
     just lint
     just typecheck

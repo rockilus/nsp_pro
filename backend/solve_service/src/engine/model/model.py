@@ -41,9 +41,9 @@ class Model:
         self.model = cp_model.CpModel()
         self.variables: Dict[Tuple[str, str, str], cp_model.IntVar] = {}
         self.intervals: Dict[Tuple[str, str, str], cp_model.IntervalVar] = {}
-        self.assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar] = (
-            {}
-        )  # worker, day, shift, specialty
+        self.assignment_wdss: Dict[
+            Tuple[str, str, str, str], cp_model.IntVar
+        ] = {}  # worker, day, shift, specialty
         self.model_config = model_config
 
         self.obj = Objective()
@@ -264,8 +264,7 @@ class Model:
             )
             self.add_work_time_constraints(
                 # fmt: off
-                inputs.configuration_constraints.work_loads
-                .weekly_work_time_contractual,
+                inputs.configuration_constraints.work_loads.weekly_work_time_contractual,
                 # fmt: on
                 True,
                 work_time_hts,

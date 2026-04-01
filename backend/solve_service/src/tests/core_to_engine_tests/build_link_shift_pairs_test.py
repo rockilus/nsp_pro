@@ -22,7 +22,8 @@ from tests.sample_data import sample_data_fixture  # noqa: F401
 class TestBuildLinkShiftPairs:
     # pylint: disable=redefined-outer-name, too-many-locals
     def test_build_link_shift_pairs(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts
@@ -104,7 +105,8 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_empty_workers(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers: List[Worker] = []
         shifts = sample_data_fixture.shifts
@@ -151,7 +153,8 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_empty_shifts(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts: List[Shift] = sample_data_fixture.shifts
@@ -197,7 +200,8 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_deleted_shift(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts
@@ -247,7 +251,8 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_worker_with_no_dates(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts

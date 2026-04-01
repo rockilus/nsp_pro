@@ -64,7 +64,8 @@ class SQSSolveConsumer:
             try:
                 # Poll for messages (uses base class method)
                 messages = await self.sqs_solve_service.receive_messages(
-                    max_messages=1, wait_time_seconds=20  # Long polling
+                    max_messages=1,
+                    wait_time_seconds=20,  # Long polling
                 )
 
                 if not messages:
@@ -98,10 +99,13 @@ class SQSSolveConsumer:
 
         try:
             # Process the solve request
-            schedule_solve_status, assignments, breaches, solver_output = (
-                await self._solve_schedule(
-                    message=message_content, message_id=message_id
-                )
+            (
+                schedule_solve_status,
+                assignments,
+                breaches,
+                solver_output,
+            ) = await self._solve_schedule(
+                message=message_content, message_id=message_id
             )
 
             # Update schedule with success
@@ -141,7 +145,9 @@ class SQSSolveConsumer:
             # TO#DO: Implement proper retry logic with max attempts
             await self.sqs_solve_service.delete_message(receipt_handle)
 
-    async def _solve_schedule(self, message: SQSSolveMessage, message_id: str) -> Tuple[
+    async def _solve_schedule(
+        self, message: SQSSolveMessage, message_id: str
+    ) -> Tuple[
         ScheduleSolveStatus,
         List[Assignment],
         List[Breach],
