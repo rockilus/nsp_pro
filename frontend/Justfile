@@ -16,6 +16,15 @@ test:
 	echo "Running Vitest..."
 	npx vitest run && npx jest
 
+
+playwright:
+	echo "Running Playwright E2E tests (Chromium, 2 retries)..."
+	npx playwright test --project=chromium --retries=2
+
+playwright-ui:
+    echo "Running Playwright UI..."
+    npx playwright test --ui
+
 all: format lint typecheck test
 all-no-test: format lint typecheck
 

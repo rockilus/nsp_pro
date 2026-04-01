@@ -16,7 +16,7 @@ import os from 'os';
 const numCPUs = os.cpus().length;
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: './tests/e2e',
   /* Global setup for tests */
   globalSetup: require.resolve('./tests/utils/global-setup.ts'),
   /* Global teardown for tests */
