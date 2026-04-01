@@ -3,9 +3,9 @@ import { useTranslation } from '../../app/i18n/client';
 // MUI
 import Button from '@mui/material/Button';
 // Components
-import ScheduleSelector from './schedule-selector';
+import CampaignParametersPanel from './campaign-parameters-panel';
 import ConstraintSelector from './constraint-selector';
-import RequestDeadlinePanel from './request-deadline-panel';
+import WorkTimeTable from './work-time-table';
 import MobileNavAppBar from '../app-bar/mobile-nav-app-bar';
 // Hooks
 import { useIsMobile } from '../../hooks/useIsMobile';
@@ -85,8 +85,8 @@ export default function CampaignTab({
     setScheduleCampaign(updatedSchedule);
   };
 
-  const handleReminderSent = () => {
-    // Reminder dispatched — no local state change needed
+  const handleReminderSent = (updatedSchedule: ScheduleT) => {
+    setScheduleCampaign(updatedSchedule);
   };
 
   useEffect(() => {
@@ -141,20 +141,27 @@ export default function CampaignTab({
           <TablesSkeleton numTables={3} numInternalRows={3} />
         ) : scheduleCampaign ? (
           <div>
-            <ScheduleSelector
+            <CampaignParametersPanel
               lng={lng}
               scheduleCampaign={scheduleCampaign}
               schedulesValidated={schedulesValidated}
-              workTimeTable={workTimeTable}
               handleUpdateSchedule={handleUpdateSchedule}
-            />
-            <RequestDeadlinePanel
-              lng={lng}
-              scheduleCampaign={scheduleCampaign}
               onDeadlineSet={handleDeadlineSet}
               onDeadlineExtended={handleDeadlineExtended}
               onReminderSent={handleReminderSent}
             />
+            {workTimeTable && (
+              <div style={{ marginTop: '16px' }}>
+                <span className="title">{t('supply_and_demand')}</span>
+                {isMobile ? (
+                  <div style={{ overflowX: 'auto', width: '100%' }}>
+                    <WorkTimeTable lng={lng} data={workTimeTable} />
+                  </div>
+                ) : (
+                  <WorkTimeTable lng={lng} data={workTimeTable} />
+                )}
+              </div>
+            )}
             {teamWithMembership.team.useSolver && (
               <>
                 <div className="divider" />

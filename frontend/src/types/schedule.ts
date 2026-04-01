@@ -48,6 +48,7 @@ export type ScheduleT = {
   updatedAt: dayjs.Dayjs;
   createdBy: string;
   requestDeadline?: dayjs.Dayjs;
+  lastReminderSentAt?: dayjs.Dayjs;
 };
 
 // Solution
@@ -177,6 +178,8 @@ export const toScheduleT = (data: any): ScheduleT => {
     updatedAt: dayjs.unix(data.updatedAt).utc(),
     requestDeadline:
       data.requestDeadline != null ? dayjs.unix(data.requestDeadline).utc() : undefined,
+    lastReminderSentAt:
+      data.lastReminderSentAt != null ? dayjs.unix(data.lastReminderSentAt).utc() : undefined,
   };
 };
 

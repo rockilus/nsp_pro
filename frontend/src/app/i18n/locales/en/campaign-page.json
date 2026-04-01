@@ -28,5 +28,8 @@
   "deadline_dialog_title": "Set request submission deadline",
   "extend_deadline_dialog_title": "Extend request submission deadline",
   "cancel": "Cancel",
-  "reminder_sent": "Reminder sent to team members"
+  "reminder_sent": "Reminder sent to team members",
+  "request_deadline": "Request deadline",
+  "set_deadline_for_requests": "Set deadline for requests",
+  "last_sent": "Last sent"
 }

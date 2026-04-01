@@ -531,7 +531,7 @@ export function useSendRequestDeadlineReminder() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const sendReminder = useCallback(
-    async (scheduleId: string, teamId: string): Promise<void> => {
+    async (scheduleId: string, teamId: string): Promise<ScheduleT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
       if (!isAuthenticated || !user?.id_token)
         throw new Error('User not authenticated - please sign in');

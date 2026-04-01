@@ -28,5 +28,8 @@
   "deadline_dialog_title": "Establecer fecha límite de envío",
   "extend_deadline_dialog_title": "Extender fecha límite de envío",
   "cancel": "Cancelar",
-  "reminder_sent": "Recordatorio enviado a los miembros del equipo"
+  "reminder_sent": "Recordatorio enviado a los miembros del equipo",
+  "request_deadline": "Fecha límite de solicitud",
+  "set_deadline_for_requests": "Establecer fecha límite para solicitudes",
+  "last_sent": "Último envío"
 }

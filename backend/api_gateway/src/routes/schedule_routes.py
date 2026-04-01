@@ -133,7 +133,9 @@ async def duplicate_period(
     return response
 
 
-@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
+@router.post(
+    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
+)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -255,7 +257,9 @@ async def set_request_deadline(
             raise NotAuthorizedError(
                 "You do not have permission to set the request deadline",
             )
-        deadline_date = datetime.fromtimestamp(body.deadline, tz=timezone.utc).date()
+        deadline_date = datetime.fromtimestamp(
+            body.deadline, tz=timezone.utc
+        ).date()
         schedule = await schedule_service.set_request_deadline(
             schedule_id=schedule_id, deadline_date=deadline_date
         )
@@ -275,7 +279,7 @@ async def send_request_deadline_reminder(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(get_schedule_service),
-) -> Dict:
+) -> ScheduleDTO:
     try:
         if not await authz_check(
             user_context.user_id, "update-schedule", "team", team_id
@@ -283,13 +287,14 @@ async def send_request_deadline_reminder(
             raise NotAuthorizedError(
                 "You do not have permission to send a reminder",
             )
-        result = await schedule_service.send_request_deadline_reminder(
+        schedule = await schedule_service.send_request_deadline_reminder(
             schedule_id=schedule_id
         )
+        response = schedule.to_dto()
     except Exception as e:
         log_info("Failed to send request deadline reminder")
         handle_routes_errors(e)
-    return result
+    return response
 
 
 @router.put("/schedules/{schedule_id}/request-deadline/teams/{team_id}")

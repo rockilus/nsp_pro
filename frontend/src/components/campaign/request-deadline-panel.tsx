@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { useTranslation } from '../../app/i18n/client';
 // MUI
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -24,7 +23,7 @@ interface RequestDeadlinePanelProps {
   scheduleCampaign: ScheduleT;
   onDeadlineSet: (schedule: ScheduleT) => void;
   onDeadlineExtended: (schedule: ScheduleT) => void;
-  onReminderSent: () => void;
+  onReminderSent: (schedule: ScheduleT) => void;
   lng: string;
 }
 
@@ -48,6 +47,7 @@ export default function RequestDeadlinePanel({
   const [reminderSnackbarOpen, setReminderSnackbarOpen] = useState(false);
 
   const currentDeadline = scheduleCampaign.requestDeadline;
+  const lastReminderSentAt = scheduleCampaign.lastReminderSentAt;
   const today = dayjs().utc().format('YYYY-MM-DD');
   const minExtend = currentDeadline ? currentDeadline.add(1, 'day').format('YYYY-MM-DD') : today;
 
@@ -73,9 +73,9 @@ export default function RequestDeadlinePanel({
 
   const handleSendReminder = async () => {
     try {
-      await sendReminder(scheduleCampaign.id, scheduleCampaign.teamId);
+      const updated = await sendReminder(scheduleCampaign.id, scheduleCampaign.teamId);
       setReminderSnackbarOpen(true);
-      onReminderSent();
+      onReminderSent(updated);
     } catch (error) {
       console.error('Failed to send reminder:', error);
     }
@@ -102,51 +102,60 @@ export default function RequestDeadlinePanel({
   };
 
   return (
-    <Box data-testid="request-deadline-panel" sx={{ mt: 2, mb: 1 }}>
-      {currentDeadline ? (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 2,
-            flexWrap: 'wrap',
-          }}
+    <>
+      <div
+        data-testid="request-deadline-panel"
+        className="campaign-info-row"
+        style={{ height: 'auto', minHeight: '45px', alignItems: 'center' }}
+      >
+        <div className="row-label-container">
+          <span className="row-label">{t('request_deadline')}</span>
+        </div>
+        <div
+          className="row-value-container"
+          style={{ width: 'auto', flex: 1, gap: '8px', flexWrap: 'wrap' }}
         >
-          <Typography variant="body2" color="text.secondary">
-            {t('current_deadline')}: <strong>{currentDeadline.format('MMM D, YYYY')}</strong>
-          </Typography>
-          <Button
-            variant="outlined"
-            size="small"
-            data-testid="send-reminder-button"
-            onClick={handleSendReminder}
-          >
-            {t('send_reminder')}
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
-            data-testid="extend-deadline-button"
-            onClick={() => setExtendDialogOpen(true)}
-          >
-            {t('extend_deadline')}
-          </Button>
-        </Box>
-      ) : (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="body2" color="text.secondary">
-            {t('no_deadline_set')}
-          </Typography>
-          <Button
-            variant="outlined"
-            size="small"
-            data-testid="set-deadline-button"
-            onClick={() => setSetDialogOpen(true)}
-          >
-            {t('set_deadline')}
-          </Button>
-        </Box>
-      )}
+          {currentDeadline ? (
+            <>
+              <Typography variant="body2" style={{ fontWeight: 600 }}>
+                {currentDeadline.format('MMM D, YYYY')}
+              </Typography>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  data-testid="send-reminder-button"
+                  onClick={handleSendReminder}
+                >
+                  {t('send_reminder')}
+                </Button>
+                {lastReminderSentAt && (
+                  <Typography variant="caption" color="text.secondary" style={{ marginTop: '2px' }}>
+                    {t('last_sent')}: {lastReminderSentAt.format('MMM D, YYYY')}
+                  </Typography>
+                )}
+              </div>
+              <Button
+                variant="outlined"
+                size="small"
+                data-testid="extend-deadline-button"
+                onClick={() => setExtendDialogOpen(true)}
+              >
+                {t('extend_deadline')}
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              data-testid="set-deadline-button"
+              onClick={() => setSetDialogOpen(true)}
+            >
+              {t('set_deadline_for_requests')}
+            </Button>
+          )}
+        </div>
+      </div>
 
       {/* Set deadline dialog */}
       <Dialog
@@ -213,6 +222,6 @@ export default function RequestDeadlinePanel({
         message={t('reminder_sent') || 'Reminder sent'}
         data-testid="reminder-sent-snackbar"
       />
-    </Box>
+    </>
   );
 }

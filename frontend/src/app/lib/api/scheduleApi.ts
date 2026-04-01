@@ -372,14 +372,15 @@ export class ScheduleApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     scheduleId: string,
     teamId: string,
-  ): Promise<void> {
+  ): Promise<ScheduleT> {
     if (!scheduleId) throw new Error('Schedule ID is required');
     if (!teamId) throw new Error('Team ID is required');
-    await this.makeRequest<void>(
+    const responseData = await this.makeRequest<any>(
       apiClient,
       'post',
       `/schedules/${scheduleId}/request-deadline/reminder/teams/${teamId}`,
     );
+    return toScheduleT(responseData);
   }
 
   /**

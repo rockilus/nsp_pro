@@ -59,6 +59,7 @@ class Schedule:
     created_at: datetime = datetime.now(timezone.utc)
     updated_at: datetime = datetime.now(timezone.utc)
     request_deadline: Optional[date] = None
+    last_reminder_sent_at: Optional[datetime] = None
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -82,6 +83,11 @@ class Schedule:
             if self.request_deadline is not None
             else None
         )
+        out["last_reminder_sent_at"] = (
+            self.last_reminder_sent_at.timestamp()
+            if self.last_reminder_sent_at is not None
+            else None
+        )
         return out
 
     @classmethod
@@ -89,21 +95,40 @@ class Schedule:
         return cls(
             id=data["id"],
             team_id=data["team_id"],
-            start_date=datetime.fromtimestamp(data["start_date"], timezone.utc).date(),
-            end_date=datetime.fromtimestamp(data["end_date"], timezone.utc).date(),
+            start_date=datetime.fromtimestamp(
+                data["start_date"], timezone.utc
+            ).date(),
+            end_date=datetime.fromtimestamp(
+                data["end_date"], timezone.utc
+            ).date(),
             status=ScheduleStatus(data["status"]),
             missing_coverage_dates=[
                 datetime.fromtimestamp(ts, timezone.utc).date()
                 for ts in data["missing_coverage_dates"]
             ],
             constraint_build_ids=data["constraint_build_ids"],
-            quick_staffings=[QuickStaffing(**qs) for qs in data["quick_staffings"]],
-            created_at=datetime.fromtimestamp(data["created_at"], timezone.utc),
-            updated_at=datetime.fromtimestamp(data["updated_at"], timezone.utc),
+            quick_staffings=[
+                QuickStaffing(**qs) for qs in data["quick_staffings"]
+            ],
+            created_at=datetime.fromtimestamp(
+                data["created_at"], timezone.utc
+            ),
+            updated_at=datetime.fromtimestamp(
+                data["updated_at"], timezone.utc
+            ),
             created_by=data["created_by"],
             request_deadline=(
-                datetime.fromtimestamp(data["request_deadline"], timezone.utc).date()
+                datetime.fromtimestamp(
+                    data["request_deadline"], timezone.utc
+                ).date()
                 if data.get("request_deadline") is not None
+                else None
+            ),
+            last_reminder_sent_at=(
+                datetime.fromtimestamp(
+                    data["last_reminder_sent_at"], timezone.utc
+                )
+                if data.get("last_reminder_sent_at") is not None
                 else None
             ),
         )
@@ -128,6 +153,11 @@ class Schedule:
                 self.request_deadline, time.min, tzinfo=timezone.utc
             ).timestamp()
             if self.request_deadline is not None
+            else None
+        )
+        data["last_reminder_sent_at"] = (
+            self.last_reminder_sent_at.timestamp()
+            if self.last_reminder_sent_at is not None
             else None
         )
         as_dict = humps.camelize(data)
@@ -155,8 +185,17 @@ class Schedule:
             data_snake["updated_at"], timezone.utc
         )
         data_snake["request_deadline"] = (
-            datetime.fromtimestamp(data_snake["request_deadline"], timezone.utc).date()
+            datetime.fromtimestamp(
+                data_snake["request_deadline"], timezone.utc
+            ).date()
             if data_snake.get("request_deadline") is not None
+            else None
+        )
+        data_snake["last_reminder_sent_at"] = (
+            datetime.fromtimestamp(
+                data_snake["last_reminder_sent_at"], timezone.utc
+            )
+            if data_snake.get("last_reminder_sent_at") is not None
             else None
         )
         return Schedule(**data_snake)
@@ -200,7 +239,9 @@ class WorkTimeTable:
         data_snake = humps.decamelize(data.model_dump())
         data_snake["duties"] = WorkTimeTableData.from_dto(data_snake["duties"])
         data_snake["others"] = WorkTimeTableData.from_dto(data_snake["others"])
-        data_snake["workers"] = WorkTimeTableData.from_dto(data_snake["workers"])
+        data_snake["workers"] = WorkTimeTableData.from_dto(
+            data_snake["workers"]
+        )
         return WorkTimeTable(**data_snake)
 
 
@@ -289,7 +330,9 @@ class DuplicateResult:
 
     def to_dto(self) -> DuplicateResultDTO:
         data = asdict(self)
-        data["assignments"] = self.assignments.to_dto() if self.assignments else None
+        data["assignments"] = (
+            self.assignments.to_dto() if self.assignments else None
+        )
         data["demands"] = self.demands.to_dto() if self.demands else None
         as_dict = humps.camelize(data)
         validator = TypeAdapter(DuplicateResultDTO)

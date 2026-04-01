@@ -28,5 +28,8 @@
   "deadline_dialog_title": "Définir la date limite de soumission",
   "extend_deadline_dialog_title": "Prolonger la date limite de soumission",
   "cancel": "Annuler",
-  "reminder_sent": "Rappel envoyé aux membres de l'équipe"
+  "reminder_sent": "Rappel envoyé aux membres de l'équipe",
+  "request_deadline": "Date limite de demande",
+  "set_deadline_for_requests": "Définir une date limite pour les demandes",
+  "last_sent": "Dernier envoi"
 }
