@@ -113,13 +113,27 @@ export default function CampaignParametersPanel({
             />
           </div>
         </div>
-        <RequestDeadlinePanel
-          lng={lng}
-          scheduleCampaign={scheduleCampaign}
-          onDeadlineSet={onDeadlineSet}
-          onDeadlineExtended={onDeadlineExtended}
-          onReminderSent={onReminderSent}
-        />
+        {/* Requests submission deadline row */}
+        <div className="py-0.5 flex min-h-[45px] flex-row items-center">
+          <div className="flex w-[150px] items-center">
+            <span className="text-sm text-[#3c4043]">{t('request_deadline')}</span>
+          </div>
+          <div className="gap-2 flex flex-1 items-center">
+            <span className="text-sm font-semibold">
+              {scheduleCampaign.requestDeadline
+                ? scheduleCampaign.requestDeadline.format('D MMMM YYYY')
+                : t('none') || 'None'}
+            </span>
+            <RequestDeadlinePanel
+              lng={lng}
+              scheduleCampaign={scheduleCampaign}
+              onDeadlineSet={onDeadlineSet}
+              onDeadlineExtended={onDeadlineExtended}
+              onReminderSent={onReminderSent}
+              compact
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

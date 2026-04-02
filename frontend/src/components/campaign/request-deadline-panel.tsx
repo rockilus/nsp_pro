@@ -29,6 +29,7 @@ interface RequestDeadlinePanelProps {
   onDeadlineExtended: (schedule: ScheduleT) => void;
   onReminderSent: (schedule: ScheduleT) => void;
   lng: string;
+  compact?: boolean;
 }
 
 dayjs.extend(utc);
@@ -39,6 +40,7 @@ export default function RequestDeadlinePanel({
   onDeadlineExtended,
   onReminderSent,
   lng,
+  compact = false,
 }: RequestDeadlinePanelProps) {
   const { t } = useTranslation(lng, 'campaign-page');
   const setRequestDeadline = useSetRequestDeadline();
@@ -115,32 +117,66 @@ export default function RequestDeadlinePanel({
 
   return (
     <>
-      <div
-        data-testid="request-deadline-panel"
-        className="py-2 px-3 flex min-h-[45px] flex-row items-center max-w-[440px]"
-      >
-        <div className="flex w-[120px] items-center">
-          <span className="text-sm text-[#3c4043]">{t('request_deadline')}</span>
+      {!compact ? (
+        <div
+          data-testid="request-deadline-panel"
+          className="py-2 px-3 flex min-h-[45px] flex-row items-center max-w-[440px]"
+        >
+          <div className="flex w-[120px] items-center">
+            <span className="text-sm text-[#3c4043]">{t('request_deadline')}</span>
+          </div>
+          <div className="gap-2 flex flex-1 flex-wrap items-center">
+            {currentDeadline ? (
+              <>
+                <span className="text-sm font-semibold">{currentDeadline.format('MMM D, YYYY')}</span>
+                <div className="flex flex-col items-start">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="send-reminder-button"
+                    onClick={handleSendReminder}
+                  >
+                    {t('send_reminder')}
+                  </Button>
+                  {lastReminderSentAt && (
+                    <span className="text-xs mt-0.5 text-muted-foreground">
+                      {t('last_sent')}: {lastReminderSentAt.format('MMM D, YYYY')}
+                    </span>
+                  )}
+                </div>
+                <Button
+                  variant="default"
+                  size="sm"
+                  data-testid="extend-deadline-button"
+                  onClick={() => setExtendDialogOpen(true)}
+                >
+                  {t('extend_deadline')}
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                data-testid="set-deadline-button"
+                onClick={() => setSetDialogOpen(true)}
+              >
+                {t('set_deadline_for_requests')}
+              </Button>
+            )}
+          </div>
         </div>
-        <div className="gap-2 flex flex-1 flex-wrap items-center">
+      ) : (
+        <div data-testid="request-deadline-panel" className="flex items-center gap-2">
           {currentDeadline ? (
             <>
-              <span className="text-sm font-semibold">{currentDeadline.format('MMM D, YYYY')}</span>
-              <div className="flex flex-col items-start">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  data-testid="send-reminder-button"
-                  onClick={handleSendReminder}
-                >
-                  {t('send_reminder')}
-                </Button>
-                {lastReminderSentAt && (
-                  <span className="text-xs mt-0.5 text-muted-foreground">
-                    {t('last_sent')}: {lastReminderSentAt.format('MMM D, YYYY')}
-                  </span>
-                )}
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="send-reminder-button"
+                onClick={handleSendReminder}
+              >
+                {t('send_reminder')}
+              </Button>
               <Button
                 variant="default"
                 size="sm"
@@ -161,7 +197,7 @@ export default function RequestDeadlinePanel({
             </Button>
           )}
         </div>
-      </div>
+      )}
 
       {/* Set deadline dialog */}
       <Dialog open={setDialogOpen} onOpenChange={setSetDialogOpen}>
