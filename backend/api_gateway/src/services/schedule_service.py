@@ -418,7 +418,7 @@ class ScheduleService(BaseService):
         if member_user_ids:
             team = self.collection.team_db.get_team_by_id(schedule.team_id)
             team_name = team.name if team else ""
-            await self.notification_service.notify_campaign_request_deadline_extended(
+            await self.notification_service.notify_campaign_request_deadline_updated(
                 team_id=schedule.team_id,
                 team_name=team_name,
                 old_deadline_date=old_deadline.isoformat(),

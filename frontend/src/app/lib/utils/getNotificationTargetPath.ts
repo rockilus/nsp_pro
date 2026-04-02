@@ -39,7 +39,7 @@ export function getNotificationTargetPath(notification: NotificationT, lng: stri
     }
     case 'campaign_request_deadline_set':
     case 'campaign_request_deadline_reminder':
-    case 'campaign_request_deadline_extended':
+    case 'campaign_request_deadline_updated':
       return `${base}/requests`;
     default:
       return `${base}/schedule`;

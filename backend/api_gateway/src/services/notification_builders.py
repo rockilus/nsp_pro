@@ -540,7 +540,7 @@ def campaign_request_deadline_reminder_event(
     )
 
 
-def campaign_request_deadline_extended_event(
+def campaign_request_deadline_updated_event(
     team_id: str,
     team_name: str,
     old_deadline_date: str,
@@ -551,7 +551,7 @@ def campaign_request_deadline_extended_event(
 ) -> NotificationEvent:
     """Notify members that the request deadline has been extended."""
     return NotificationEvent(
-        notification_type=NotificationType.CAMPAIGN_REQUEST_DEADLINE_EXTENDED,
+        notification_type=NotificationType.CAMPAIGN_REQUEST_DEADLINE_UPDATED,
         user_ids=member_user_ids,
         team_id=team_id,
         event_data={

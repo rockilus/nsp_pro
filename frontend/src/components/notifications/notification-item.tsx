@@ -73,8 +73,8 @@ function getMessageKey(type: NotificationT['type']): string {
       return 'campaign_request_deadline_set';
     case 'campaign_request_deadline_reminder':
       return 'campaign_request_deadline_reminder';
-    case 'campaign_request_deadline_extended':
-      return 'campaign_request_deadline_extended';
+      case 'campaign_request_deadline_updated':
+        return 'campaign_request_deadline_updated';
     default:
       return 'user_published_schedule';
   }
@@ -108,6 +108,39 @@ export default function NotificationItem({
     eventData = { ...eventData };
     if (eventData.startDate) eventData.startDate = dayjs(eventData.startDate).format('DD/MM/YYYY');
     if (eventData.endDate) eventData.endDate = dayjs(eventData.endDate).format('DD/MM/YYYY');
+  }
+  // Format campaign request deadline fields for display
+  if (
+    notification.type === 'campaign_request_deadline_set' ||
+    notification.type === 'campaign_request_deadline_reminder' ||
+    notification.type === 'campaign_request_deadline_updated'
+  ) {
+    eventData = { ...eventData };
+    // camelCased keys arrive at the frontend (scheduleStartDate, scheduleEndDate)
+    if (eventData.scheduleStartDate)
+      eventData.scheduleStartDate = dayjs(eventData.scheduleStartDate).format('DD/MM/YYYY');
+    if (eventData.scheduleEndDate)
+      eventData.scheduleEndDate = dayjs(eventData.scheduleEndDate).format('DD/MM/YYYY');
+    // periodName for human-friendly period label
+    if (eventData.scheduleStartDate && eventData.scheduleEndDate)
+      eventData.periodName = `${eventData.scheduleStartDate} - ${eventData.scheduleEndDate}`;
+    // deadline date/time
+    if (eventData.deadlineDate) {
+      const d = dayjs(eventData.deadlineDate);
+      eventData.deadlineDate = d.format('DD/MM/YYYY');
+      eventData.deadlineTime = d.format('HH:mm');
+    }
+    // updated deadlines
+    if (eventData.newDeadlineDate) {
+      const nd = dayjs(eventData.newDeadlineDate);
+      eventData.newDeadlineDate = nd.format('DD/MM/YYYY');
+      eventData.newDeadlineTime = nd.format('HH:mm');
+    }
+    if (eventData.oldDeadlineDate) {
+      const od = dayjs(eventData.oldDeadlineDate);
+      eventData.oldDeadlineDate = od.format('DD/MM/YYYY');
+      eventData.oldDeadlineTime = od.format('HH:mm');
+    }
   }
   const message = t(messageKey, eventData as any) as string;
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);

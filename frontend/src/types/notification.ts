@@ -28,7 +28,7 @@ export type NotificationTypeT =
   | 'user_reversed_swap'
   | 'campaign_request_deadline_set'
   | 'campaign_request_deadline_reminder'
-  | 'campaign_request_deadline_extended';
+  | 'campaign_request_deadline_updated';
 
 export type NotificationT = {
   id: string;
@@ -68,7 +68,7 @@ export type NotificationKey =
   | 'user_reversed_swap'
   | 'campaign_request_deadline_set'
   | 'campaign_request_deadline_reminder'
-  | 'campaign_request_deadline_extended';
+  | 'campaign_request_deadline_updated';
 
 export const NOTIFICATION_KEYS: NotificationKey[] = [
   'user_published_schedule',
@@ -95,7 +95,7 @@ export const NOTIFICATION_KEYS: NotificationKey[] = [
   'user_reversed_swap',
   'campaign_request_deadline_set',
   'campaign_request_deadline_reminder',
-  'campaign_request_deadline_extended',
+  'campaign_request_deadline_updated',
 ];
 
 export type NotificationCategory = 'schedule' | 'requests' | 'assignments' | 'team' | 'swaps';
@@ -129,7 +129,7 @@ export const NOTIFICATION_REGISTRY: Record<NotificationKey, NotificationKeyMeta>
   user_reversed_swap: { category: 'swaps' },
   campaign_request_deadline_set: { category: 'schedule' },
   campaign_request_deadline_reminder: { category: 'schedule' },
-  campaign_request_deadline_extended: { category: 'schedule' },
+  campaign_request_deadline_updated: { category: 'schedule' },
 };
 
 export const NOTIFICATION_CATEGORY_ORDER: NotificationCategory[] = [

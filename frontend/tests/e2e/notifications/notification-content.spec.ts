@@ -1013,9 +1013,9 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
     expectedUrlPattern: /\/plan\/requests/,
   },
   {
-    type: 'campaign_request_deadline_extended',
+    type: 'campaign_request_deadline_updated',
     description: 'owner extends deadline; member is notified',
-    preferenceKey: 'campaign_request_deadline_extended',
+    preferenceKey: 'campaign_request_deadline_updated',
     recipientRole: 'user2',
     async setup(dbUtils, team, user1, user2) {
       await dbUtils.addTeamMember(user2.user_id, team.teamId, 'member');
@@ -1096,11 +1096,48 @@ for (const tc of NOTIFICATION_TEST_CASES) {
       const msg = page
         .locator(`[data-notification-type="${tc.type}"]`)
         .locator('[data-testid="notification-message"]');
-      const expected = tc.expectedText(team.name);
-      if (expected instanceof RegExp) {
-        await expect(msg).toHaveText(expected);
+
+      // For campaign request-deadline notifications compute the exact expected
+      // message using the notification eventData (ensures date/time formatting).
+      if (tc.type.startsWith('campaign_request_deadline')) {
+        const notifs = await dbUtils.getNotificationsAs(recipientId);
+        const notif = notifs.find((n) => n.type === tc.type);
+        if (!notif) throw new Error('Expected notification not found in DB');
+        const ed: any = notif.eventData;
+        const fmt = (d: string | undefined) => (d ? dayjs(d).format('DD/MM/YYYY') : '');
+        const tm = (d: string | undefined) => (d ? dayjs(d).format('HH:mm') : '');
+
+        let expectedStr = '';
+        if (tc.type === 'campaign_request_deadline_set') {
+          const start = fmt(ed.scheduleStartDate || ed.schedule_start_date);
+          const end = fmt(ed.scheduleEndDate || ed.schedule_end_date);
+          const deadline = fmt(ed.deadlineDate || ed.deadline_date);
+          const deadlineTime = tm(ed.deadlineDate || ed.deadline_date);
+          expectedStr = `Submissions are now open for ${start} to ${end}. Please provide your requests by ${deadline} at ${deadlineTime}.`;
+        } else if (tc.type === 'campaign_request_deadline_reminder') {
+          const start = fmt(ed.scheduleStartDate || ed.schedule_start_date);
+          const end = fmt(ed.scheduleEndDate || ed.schedule_end_date);
+          const period = `${start} - ${end}`;
+          const deadline = fmt(ed.deadlineDate || ed.deadline_date);
+          const deadlineTime = tm(ed.deadlineDate || ed.deadline_date);
+          expectedStr = `Don't forget to submit your requests for ${period}. The deadline is ${deadline} at ${deadlineTime}.`;
+        } else if (tc.type === 'campaign_request_deadline_updated') {
+          const start = fmt(ed.scheduleStartDate || ed.schedule_start_date);
+          const end = fmt(ed.scheduleEndDate || ed.schedule_end_date);
+          const period = `${start} - ${end}`;
+          const newDeadline = fmt(ed.newDeadlineDate || ed.new_deadline_date);
+          const newDeadlineTime = tm(ed.newDeadlineDate || ed.new_deadline_date);
+          expectedStr = `The submission deadline for ${period} has been changed to ${newDeadline} at ${newDeadlineTime}.`;
+        }
+
+        await expect(msg).toHaveText(expectedStr);
       } else {
-        await expect(msg).toHaveText(expected);
+        const expected = tc.expectedText(team.name);
+        if (expected instanceof RegExp) {
+          await expect(msg).toHaveText(expected);
+        } else {
+          await expect(msg).toHaveText(expected);
+        }
       }
     });
 

@@ -39,7 +39,7 @@ class NotificationKey(StrEnum):
     USER_REVERSED_SWAP = "user_reversed_swap"
     CAMPAIGN_REQUEST_DEADLINE_SET = "campaign_request_deadline_set"
     CAMPAIGN_REQUEST_DEADLINE_REMINDER = "campaign_request_deadline_reminder"
-    CAMPAIGN_REQUEST_DEADLINE_EXTENDED = "campaign_request_deadline_extended"
+    CAMPAIGN_REQUEST_DEADLINE_UPDATED = "campaign_request_deadline_updated"
 
 
 @dataclass(frozen=True)
@@ -129,7 +129,7 @@ NOTIFICATION_REGISTRY: dict[NotificationKey, NotificationKeyMeta] = {
         category=NotificationCategory.SCHEDULE,
         visible_to=frozenset({"member"}),
     ),
-    NotificationKey.CAMPAIGN_REQUEST_DEADLINE_EXTENDED: NotificationKeyMeta(
+    NotificationKey.CAMPAIGN_REQUEST_DEADLINE_UPDATED: NotificationKeyMeta(
         category=NotificationCategory.SCHEDULE,
         visible_to=frozenset({"member"}),
     ),
@@ -148,7 +148,9 @@ class NotificationPreferences:
 
     user_id: str
     preferences: dict[NotificationKey, ChannelPreferences] = field(
-        default_factory=lambda: {k: ChannelPreferences() for k in NotificationKey}
+        default_factory=lambda: {
+            k: ChannelPreferences() for k in NotificationKey
+        }
     )
 
     def to_dto(self) -> "NotificationPreferencesDTO":
@@ -161,7 +163,9 @@ class NotificationPreferences:
         )
 
     @classmethod
-    def from_dto(cls, dto: "NotificationPreferencesDTO") -> "NotificationPreferences":
+    def from_dto(
+        cls, dto: "NotificationPreferencesDTO"
+    ) -> "NotificationPreferences":
         valid_keys = {k.value for k in NotificationKey}
         return cls(
             user_id=dto.user_id,
