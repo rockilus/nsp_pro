@@ -6,7 +6,7 @@ import { useTranslation } from '../../app/i18n/client';
 import { DatePickerInput } from '@/components/ui/date-picker-input';
 // Components
 import RequestDeadlinePanel from './request-deadline-panel';
-import { formatToInput, parseFromInput } from '@/lib/date-utils';
+import { formatToInput, parseFromInput, formatLocalDate } from '@/lib/date-utils';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Constants
@@ -121,8 +121,8 @@ export default function CampaignParametersPanel({
           <div className="gap-2 flex flex-1 items-center">
             <span className="text-sm font-semibold">
               {scheduleCampaign.requestDeadline
-                ? scheduleCampaign.requestDeadline.format('D MMMM YYYY')
-                : t('none') || 'None'}
+                ? formatLocalDate(scheduleCampaign.requestDeadline, lng)
+                : t('no_deadline_set') || 'No deadline'}
             </span>
             <RequestDeadlinePanel
               lng={lng}

@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { formatToInput, parseFromInput } from '@/lib/date-utils';
+import { formatToInput, parseFromInput, formatLocalDate } from '@/lib/date-utils';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Hooks
@@ -128,7 +128,7 @@ export default function RequestDeadlinePanel({
           <div className="gap-2 flex flex-1 flex-wrap items-center">
             {currentDeadline ? (
               <>
-                <span className="text-sm font-semibold">{currentDeadline.format('MMM D, YYYY')}</span>
+                <span className="text-sm font-semibold">{formatLocalDate(currentDeadline, lng)}</span>
                 <div className="flex flex-col items-start">
                   <Button
                     variant="outline"
@@ -140,7 +140,7 @@ export default function RequestDeadlinePanel({
                   </Button>
                   {lastReminderSentAt && (
                     <span className="text-xs mt-0.5 text-muted-foreground">
-                      {t('last_sent')}: {lastReminderSentAt.format('MMM D, YYYY')}
+                      {t('last_sent')}: {formatLocalDate(lastReminderSentAt, lng)}
                     </span>
                   )}
                 </div>

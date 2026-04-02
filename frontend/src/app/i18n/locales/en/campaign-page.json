@@ -24,12 +24,12 @@
   "send_reminder": "Send reminder",
   "extend_deadline": "Extend deadline",
   "current_deadline": "Current deadline",
-  "no_deadline_set": "No deadline set",
+  "no_deadline_set": "No deadline",
   "deadline_dialog_title": "Set request submission deadline",
   "extend_deadline_dialog_title": "Extend request submission deadline",
   "cancel": "Cancel",
   "reminder_sent": "Reminder sent to team members",
-  "request_deadline": "Request deadline",
+  "request_deadline": "Requests deadline",
   "set_deadline_for_requests": "Set deadline for requests",
   "last_sent": "Last sent"
 }
