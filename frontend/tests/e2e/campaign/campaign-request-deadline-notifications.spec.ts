@@ -71,6 +71,29 @@ test.describe('Campaign request-deadline notifications', () => {
     await dbUtils.addTeamMember(memberA.user_id, team.teamId, 'member');
     await dbUtils.addTeamMember(memberB.user_id, team.teamId, 'member');
 
+    // Create workers and attach them to the corresponding users so
+    // notifications are delivered to the linked users (mirrors schedule tests).
+    const ownerWorker = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: 'Owner Worker',
+      weeklyHours: 40,
+    });
+    await dbUtils.attachWorkerToUser(ownerWorker.id, owner.user_id, team.teamId);
+
+    const workerA = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: 'Member A Worker',
+      weeklyHours: 40,
+    });
+    await dbUtils.attachWorkerToUser(workerA.id, memberA.user_id, team.teamId);
+
+    const workerB = await dbUtils.createWorker({
+      teamId: team.teamId,
+      name: 'Member B Worker',
+      weeklyHours: 40,
+    });
+    await dbUtils.attachWorkerToUser(workerB.id, memberB.user_id, team.teamId);
+
     const schedule = await dbUtils.createSchedule(team.teamId);
 
     testContextMap.set(testRunId, { dbUtils, team, owner, memberA, memberB, schedule });
