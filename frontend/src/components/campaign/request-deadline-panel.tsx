@@ -4,6 +4,7 @@ import utc from 'dayjs/plugin/utc';
 import type { Dayjs } from 'dayjs';
 import { toast } from 'sonner';
 import { useTranslation } from '../../app/i18n/client';
+import { Calendar, Send, Trash2 } from 'lucide-react';
 // shadcn/ui
 import { Button } from '@/components/ui/button';
 import { formatToInput, parseFromInput, formatLocalDate } from '@/lib/date-utils';
@@ -14,6 +15,7 @@ import {
   useSetRequestDeadline,
   useSendRequestDeadlineReminder,
   useExtendRequestDeadline,
+  useUpdateSchedule,
 } from '../../hooks/useSchedule';
 
 interface RequestDeadlinePanelProps {
@@ -39,6 +41,7 @@ export default function RequestDeadlinePanel({
   const setRequestDeadline = useSetRequestDeadline();
   const sendReminder = useSendRequestDeadlineReminder();
   const extendRequestDeadline = useExtendRequestDeadline();
+  const updateSchedule = useUpdateSchedule();
 
   const [showSetInput, setShowSetInput] = useState(false);
   const [showExtendInput, setShowExtendInput] = useState(false);
@@ -108,6 +111,24 @@ export default function RequestDeadlinePanel({
     }
   };
 
+  const handleDeleteDeadline = async () => {
+    setIsSaving(true);
+    try {
+      const updated = await updateSchedule({
+        ...scheduleCampaign,
+        requestDeadline: undefined,
+        lastReminderSentAt: undefined,
+      });
+      toast.success(t('deadline_deleted') || 'Deadline deleted');
+      // reuse onDeadlineSet to notify parent of the updated schedule
+      onDeadlineSet(updated);
+    } catch (error) {
+      console.error('Failed to delete request deadline:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <>
       {!compact ? (
@@ -120,52 +141,101 @@ export default function RequestDeadlinePanel({
           </div>
           <div className="gap-2 flex flex-1 flex-wrap items-center">
             {currentDeadline ? (
-              <>
-                {!showExtendInput && (
-                  <span className="text-sm font-semibold">{formatLocalDate(currentDeadline, lng)}</span>
-                )}
-                <div className="flex flex-col items-start">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    data-testid="send-reminder-button"
-                    onClick={handleSendReminder}
-                  >
-                    {t('send_reminder')}
+              showSetInput ? (
+                <>
+                  <input
+                    type="date"
+                    value={formatToInput(deadlineInput)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
+                    min={norm(today)}
+                    className={dateInputClass}
+                  />
+                  <Button variant="brand" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
+                    {t('set_deadline')}
                   </Button>
-                  {lastReminderSentAt && (
-                    <span className="text-xs mt-0.5 text-muted-foreground">
-                      {t('last_sent')}: {formatLocalDate(lastReminderSentAt, lng)}
-                    </span>
+                  <Button variant="outline" size="sm" onClick={() => { setShowSetInput(false); setDeadlineInput(null); }}>
+                    {t('cancel') || 'Cancel'}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {!showExtendInput && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{formatLocalDate(currentDeadline, lng)}</span>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          data-testid="edit-deadline-button"
+                          onClick={() => { setShowSetInput(true); setDeadlineInput(currentDeadline); setShowExtendInput(false); }}
+                          aria-label={t('edit_deadline') || 'Edit deadline'}
+                        >
+                          <Calendar className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          data-testid="send-reminder-icon-button"
+                          onClick={handleSendReminder}
+                          aria-label={t('send_reminder') || 'Send reminder'}
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          data-testid="delete-deadline-button"
+                          onClick={handleDeleteDeadline}
+                          aria-label={t('delete_deadline') || 'Delete deadline'}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   )}
-                </div>
-                {showExtendInput ? (
-                  <>
-                    <input
-                      type="date"
-                      value={formatToInput(extendInput)}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtendInput(parseFromInput(e.target.value))}
-                      min={norm(minExtend)}
-                      className={dateInputClass}
-                    />
-                    <Button variant="brand" size="sm" onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
+                  <div className="flex flex-col items-start">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      data-testid="send-reminder-button"
+                      onClick={handleSendReminder}
+                    >
+                      {t('send_reminder')}
+                    </Button>
+                    {lastReminderSentAt && (
+                      <span className="text-xs mt-0.5 text-muted-foreground">
+                        {t('last_sent')}: {formatLocalDate(lastReminderSentAt, lng)}
+                      </span>
+                    )}
+                  </div>
+                  {showExtendInput ? (
+                    <>
+                      <input
+                        type="date"
+                        value={formatToInput(extendInput)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtendInput(parseFromInput(e.target.value))}
+                        min={norm(minExtend)}
+                        className={dateInputClass}
+                      />
+                      <Button variant="brand" size="sm" onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
+                        {t('extend_deadline')}
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => { setShowExtendInput(false); setExtendInput(null); }}>
+                        {t('cancel') || 'Cancel'}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      data-testid="extend-deadline-button"
+                      onClick={() => { setShowExtendInput(true); setExtendInput(minExtend); }}
+                    >
                       {t('extend_deadline')}
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => { setShowExtendInput(false); setExtendInput(null); }}>
-                      {t('cancel') || 'Cancel'}
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    data-testid="extend-deadline-button"
-                    onClick={() => { setShowExtendInput(true); setExtendInput(minExtend); }}
-                  >
-                    {t('extend_deadline')}
-                  </Button>
-                )}
-              </>
+                  )}
+                </>
+              )
             ) : (
               showSetInput ? (
                 <>
@@ -204,42 +274,86 @@ export default function RequestDeadlinePanel({
             </span>
           )}
           {currentDeadline ? (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                data-testid="send-reminder-button"
-                onClick={handleSendReminder}
-              >
-                {t('send_reminder')}
-              </Button>
-              {showExtendInput ? (
-                <>
-                  <input
-                    type="date"
-                    value={formatToInput(extendInput)}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtendInput(parseFromInput(e.target.value))}
-                    min={norm(minExtend)}
-                    className={dateInputClass}
-                  />
-                  <Button variant="brand" size="sm" onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
+            showSetInput ? (
+              <>
+                <input
+                  type="date"
+                  value={formatToInput(deadlineInput)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
+                  min={norm(today)}
+                  className={dateInputClass}
+                />
+                <Button variant="default" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
+                  {t('set_deadline')}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => { setShowSetInput(false); setDeadlineInput(null); }}>
+                  {t('cancel') || 'Cancel'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}>
+                    {formatLocalDate(currentDeadline, lng)}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      data-testid="edit-deadline-button-compact"
+                      onClick={() => { setShowSetInput(true); setDeadlineInput(currentDeadline); setShowExtendInput(false); }}
+                      aria-label={t('edit_deadline') || 'Edit deadline'}
+                    >
+                      <Calendar className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      data-testid="send-reminder-icon-button-compact"
+                      onClick={handleSendReminder}
+                      aria-label={t('send_reminder') || 'Send reminder'}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      data-testid="delete-deadline-button-compact"
+                      onClick={handleDeleteDeadline}
+                      aria-label={t('delete_deadline') || 'Delete deadline'}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                {showExtendInput ? (
+                  <>
+                    <input
+                      type="date"
+                      value={formatToInput(extendInput)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtendInput(parseFromInput(e.target.value))}
+                      min={norm(minExtend)}
+                      className={dateInputClass}
+                    />
+                    <Button variant="brand" size="sm" onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
+                      {t('extend_deadline')}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => { setShowExtendInput(false); setExtendInput(null); }}>
+                      {t('cancel') || 'Cancel'}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    data-testid="extend-deadline-button"
+                    onClick={() => { setShowExtendInput(true); setExtendInput(minExtend); }}
+                  >
                     {t('extend_deadline')}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => { setShowExtendInput(false); setExtendInput(null); }}>
-                    {t('cancel') || 'Cancel'}
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="default"
-                  size="sm"
-                  data-testid="extend-deadline-button"
-                  onClick={() => { setShowExtendInput(true); setExtendInput(minExtend); }}
-                >
-                  {t('extend_deadline')}
-                </Button>
-              )}
-            </>
+                )}
+              </>
+            )
           ) : (
             showSetInput ? (
               <>
