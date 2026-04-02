@@ -67,9 +67,8 @@ for (const vp of viewports) {
 
       // Navigate to requests page for the created team
       await roleTestBase.navigateToRequestsPage(page);
-      const tabSelector = vp.name === 'mobile'
-        ? '[data-testid="mobile-request-tab"]'
-        : '[data-testid="request-tab"]';
+      const tabSelector =
+        vp.name === 'mobile' ? '[data-testid="mobile-request-tab"]' : '[data-testid="request-tab"]';
       await page.waitForSelector(tabSelector, { timeout: 10000 });
     });
 
