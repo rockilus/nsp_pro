@@ -21,6 +21,7 @@
   "status": "Status",
   "total": "Total",
   "set_deadline": "Set deadline & notify",
+  "set": "Set",
   "send_reminder": "Send reminder",
   "extend_deadline": "Extend deadline",
   "current_deadline": "Current deadline",

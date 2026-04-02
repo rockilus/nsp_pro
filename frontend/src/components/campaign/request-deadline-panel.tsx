@@ -160,7 +160,7 @@ export default function RequestDeadlinePanel({
                 data-testid="set-deadline-button"
                 onClick={() => setSetDialogOpen(true)}
               >
-                {t('set_deadline_for_requests')}
+                {t('set')}
               </Button>
             )}
           </div>
@@ -196,7 +196,7 @@ export default function RequestDeadlinePanel({
               data-testid="set-deadline-button"
               onClick={() => setSetDialogOpen(true)}
             >
-              {t('set_deadline_for_requests')}
+              {t('set')}
             </Button>
           )}
         </div>

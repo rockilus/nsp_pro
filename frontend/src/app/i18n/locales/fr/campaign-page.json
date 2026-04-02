@@ -21,6 +21,7 @@
   "status": "Statut",
   "total": "Total",
   "set_deadline": "Définir la date limite et notifier",
+  "set": "Définir",
   "send_reminder": "Envoyer un rappel",
   "extend_deadline": "Prolonger la date limite",
   "current_deadline": "Date limite actuelle",
