@@ -2,6 +2,8 @@ import React from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../app/i18n/client';
+// shadcn/ui
+import { DatePickerInput } from '@/components/ui/date-picker-input';
 // Components
 import RequestDeadlinePanel from './request-deadline-panel';
 import { formatToInput, parseFromInput } from '@/lib/date-utils';
