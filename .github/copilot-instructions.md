@@ -54,6 +54,7 @@ Rockilus is an advanced **Workforce Management (WFM) and algorithmic scheduling 
 - Never use `next/image` without `unoptimized: true` or a custom loader — this is a static export.
 - Use only Tailwind utility classes and existing shadcn/ui primitives. No MUI, Bootstrap, CSS modules, or extra SCSS.
 - When new UI elements are needed, add shadcn/ui components via CLI and compose from there.
+- Use lucide icons for UI iconography; prefer `lucide-react` and integrate icons via the project's shadcn/ui icon slots.
 - Never hardcode user-facing strings — always run them through the i18n system (English, French, Spanish).
 
 - Use the global design tokens defined in `src/app/globals.css` as the single source of truth for colors, radii and other UI tokens; prefer CSS variables (for example `var(--color-primary)`) and the shadcn token mappings instead of hardcoding color values in components.
