@@ -543,22 +543,43 @@ export function useSendRequestDeadlineReminder() {
   return sendReminder;
 }
 
+
 /**
- * Hook for extending the request deadline on a campaign schedule
+ * Hook for editing the request deadline (new semantics: can move earlier or later)
  */
-export function useExtendRequestDeadline() {
+export function useEditRequestDeadline() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
 
-  const extendRequestDeadline = useCallback(
+  const editRequestDeadline = useCallback(
     async (scheduleId: string, teamId: string, newDeadline: Date): Promise<ScheduleT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
       if (!isAuthenticated || !user?.id_token)
         throw new Error('User not authenticated - please sign in');
-      return ScheduleApi.extendRequestDeadline(apiClient, scheduleId, teamId, newDeadline);
+      return ScheduleApi.editRequestDeadline(apiClient, scheduleId, teamId, newDeadline);
     },
     [apiClient, isAuthenticated, loading, user],
   );
 
-  return extendRequestDeadline;
+  return editRequestDeadline;
+}
+
+/**
+ * Hook for deleting the request deadline
+ */
+export function useDeleteRequestDeadline() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const deleteRequestDeadline = useCallback(
+    async (scheduleId: string, teamId: string): Promise<ScheduleT> => {
+      if (loading) throw new Error('Authentication still loading - please wait');
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error('User not authenticated - please sign in');
+      return ScheduleApi.deleteRequestDeadline(apiClient, scheduleId, teamId);
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return deleteRequestDeadline;
 }

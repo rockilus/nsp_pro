@@ -1827,14 +1827,14 @@ export class DatabaseTestUtils {
   /**
    * Extend the request deadline as a specific user.
    */
-  async extendRequestDeadlineAs(
+  async editRequestDeadlineAs(
     userId: string,
     scheduleId: string,
     teamId: string,
     newDeadline: Date,
   ): Promise<ScheduleT> {
     const userClient = this.createAuthenticatedClientForUser(userId);
-    return await ScheduleApi.extendRequestDeadline(userClient, scheduleId, teamId, newDeadline);
+    return await ScheduleApi.editRequestDeadline(userClient, scheduleId, teamId, newDeadline);
   }
 
   //////////////////////////

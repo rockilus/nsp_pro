@@ -14,8 +14,8 @@ import { ScheduleT } from '../../types/schedule';
 import {
   useSetRequestDeadline,
   useSendRequestDeadlineReminder,
-  useExtendRequestDeadline,
-  useUpdateSchedule,
+  useEditRequestDeadline,
+  useDeleteRequestDeadline,
 } from '../../hooks/useSchedule';
 
 interface RequestDeadlinePanelProps {
@@ -40,19 +40,16 @@ export default function RequestDeadlinePanel({
   const { t } = useTranslation(lng, 'campaign-page');
   const setRequestDeadline = useSetRequestDeadline();
   const sendReminder = useSendRequestDeadlineReminder();
-  const extendRequestDeadline = useExtendRequestDeadline();
-  const updateSchedule = useUpdateSchedule();
+  const editRequestDeadline = useEditRequestDeadline();
+  const deleteRequestDeadline = useDeleteRequestDeadline();
 
-  const [showSetInput, setShowSetInput] = useState(false);
-  const [showExtendInput, setShowExtendInput] = useState(false);
+  const [mode, setMode] = useState<'idle' | 'set' | 'edit'>('idle');
   const [deadlineInput, setDeadlineInput] = useState<Dayjs | null>(null);
-  const [extendInput, setExtendInput] = useState<Dayjs | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const currentDeadline = scheduleCampaign.requestDeadline;
   const lastReminderSentAt = scheduleCampaign.lastReminderSentAt;
   const today = dayjs().utc().startOf('day');
-  const minExtend = currentDeadline ? currentDeadline.add(1, 'day') : today;
 
   const norm = (d?: Dayjs | string | null) => {
     if (!d) return undefined;
@@ -72,7 +69,7 @@ export default function RequestDeadlinePanel({
         deadline,
       );
       onDeadlineSet(updated);
-      setShowSetInput(false);
+      setMode('idle');
       setDeadlineInput(null);
     } catch (error) {
       console.error('Failed to set request deadline:', error);
@@ -90,22 +87,21 @@ export default function RequestDeadlinePanel({
       console.error('Failed to send reminder:', error);
     }
   };
-
-  const handleExtendDeadline = async () => {
-    if (!extendInput) return;
+  const handleEditDeadline = async () => {
+    if (!deadlineInput) return;
     setIsSaving(true);
     try {
-      const newDeadline = extendInput.utc().toDate();
-      const updated = await extendRequestDeadline(
+      const newDeadline = deadlineInput.utc().toDate();
+      const updated = await editRequestDeadline(
         scheduleCampaign.id,
         scheduleCampaign.teamId,
         newDeadline,
       );
       onDeadlineExtended(updated);
-      setShowExtendInput(false);
-      setExtendInput(null);
+      setMode('idle');
+      setDeadlineInput(null);
     } catch (error) {
-      console.error('Failed to extend deadline:', error);
+      console.error('Failed to edit request deadline:', error);
     } finally {
       setIsSaving(false);
     }
@@ -114,13 +110,9 @@ export default function RequestDeadlinePanel({
   const handleDeleteDeadline = async () => {
     setIsSaving(true);
     try {
-      const updated = await updateSchedule({
-        ...scheduleCampaign,
-        requestDeadline: undefined,
-        lastReminderSentAt: undefined,
-      });
+      const updated = await deleteRequestDeadline(scheduleCampaign.id, scheduleCampaign.teamId);
       toast.success(t('deadline_deleted') || 'Deadline deleted');
-      // reuse onDeadlineSet to notify parent of the updated schedule
+      // notify parent of the updated schedule
       onDeadlineSet(updated);
     } catch (error) {
       console.error('Failed to delete request deadline:', error);
@@ -141,7 +133,7 @@ export default function RequestDeadlinePanel({
           </div>
           <div className="gap-2 flex flex-1 flex-wrap items-center">
             {currentDeadline ? (
-              showSetInput ? (
+              mode === 'edit' ? (
                 <>
                   <input
                     type="date"
@@ -150,49 +142,47 @@ export default function RequestDeadlinePanel({
                     min={norm(today)}
                     className={dateInputClass}
                   />
-                  <Button variant="brand" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
+                  <Button variant="brand" size="sm" onClick={handleEditDeadline} disabled={isSaving || !deadlineInput}>
                     {t('set_deadline')}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => { setShowSetInput(false); setDeadlineInput(null); }}>
+                  <Button variant="outline" size="sm" onClick={() => { setMode('idle'); setDeadlineInput(null); }}>
                     {t('cancel') || 'Cancel'}
                   </Button>
                 </>
               ) : (
                 <>
-                  {!showExtendInput && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold">{formatLocalDate(currentDeadline, lng)}</span>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          data-testid="edit-deadline-button"
-                          onClick={() => { setShowSetInput(true); setDeadlineInput(currentDeadline); setShowExtendInput(false); }}
-                          aria-label={t('edit_deadline') || 'Edit deadline'}
-                        >
-                          <Calendar className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          data-testid="send-reminder-icon-button"
-                          onClick={handleSendReminder}
-                          aria-label={t('send_reminder') || 'Send reminder'}
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          data-testid="delete-deadline-button"
-                          onClick={handleDeleteDeadline}
-                          aria-label={t('delete_deadline') || 'Delete deadline'}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold">{formatLocalDate(currentDeadline, lng)}</span>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        data-testid="edit-deadline-button"
+                        onClick={() => { setMode('edit'); setDeadlineInput(currentDeadline); }}
+                        aria-label={t('edit_deadline') || 'Edit deadline'}
+                      >
+                        <Calendar className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        data-testid="send-reminder-icon-button"
+                        onClick={handleSendReminder}
+                        aria-label={t('send_reminder') || 'Send reminder'}
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        data-testid="delete-deadline-button"
+                        onClick={handleDeleteDeadline}
+                        aria-label={t('delete_deadline') || 'Delete deadline'}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                  )}
+                  </div>
                   <div className="flex flex-col items-start">
                     <Button
                       variant="outline"
@@ -208,36 +198,10 @@ export default function RequestDeadlinePanel({
                       </span>
                     )}
                   </div>
-                  {showExtendInput ? (
-                    <>
-                      <input
-                        type="date"
-                        value={formatToInput(extendInput)}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtendInput(parseFromInput(e.target.value))}
-                        min={norm(minExtend)}
-                        className={dateInputClass}
-                      />
-                      <Button variant="brand" size="sm" onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
-                        {t('extend_deadline')}
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => { setShowExtendInput(false); setExtendInput(null); }}>
-                        {t('cancel') || 'Cancel'}
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      data-testid="extend-deadline-button"
-                      onClick={() => { setShowExtendInput(true); setExtendInput(minExtend); }}
-                    >
-                      {t('extend_deadline')}
-                    </Button>
-                  )}
                 </>
               )
             ) : (
-              showSetInput ? (
+              mode === 'set' ? (
                 <>
                   <input
                     type="date"
@@ -249,7 +213,7 @@ export default function RequestDeadlinePanel({
                   <Button variant="brand" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
                     {t('set_deadline')}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => { setShowSetInput(false); setDeadlineInput(null); }}>
+                  <Button variant="outline" size="sm" onClick={() => { setMode('idle'); setDeadlineInput(null); }}>
                     {t('cancel') || 'Cancel'}
                   </Button>
                 </>
@@ -258,7 +222,7 @@ export default function RequestDeadlinePanel({
                   variant="ghost"
                   size="sm"
                   data-testid="set-deadline-button"
-                  onClick={() => { setShowSetInput(true); setDeadlineInput(today); }}
+                  onClick={() => { setMode('set'); setDeadlineInput(today); }}
                 >
                   {t('set')}
                 </Button>
@@ -268,119 +232,84 @@ export default function RequestDeadlinePanel({
         </div>
       ) : (
         <div data-testid="request-deadline-panel" className="flex items-center gap-2">
-          {!(showSetInput || showExtendInput) && (
-            <span className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}>
-              {currentDeadline ? formatLocalDate(currentDeadline, lng) : t('no_deadline_set') || 'No deadline'}
-            </span>
-          )}
-          {currentDeadline ? (
-            showSetInput ? (
-              <>
-                <input
-                  type="date"
-                  value={formatToInput(deadlineInput)}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
-                  min={norm(today)}
-                  className={dateInputClass}
-                />
-                <Button variant="default" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
-                  {t('set_deadline')}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => { setShowSetInput(false); setDeadlineInput(null); }}>
-                  {t('cancel') || 'Cancel'}
-                </Button>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center gap-2">
-                  <span className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}>
-                    {formatLocalDate(currentDeadline, lng)}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      data-testid="edit-deadline-button-compact"
-                      onClick={() => { setShowSetInput(true); setDeadlineInput(currentDeadline); setShowExtendInput(false); }}
-                      aria-label={t('edit_deadline') || 'Edit deadline'}
-                    >
-                      <Calendar className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      data-testid="send-reminder-icon-button-compact"
-                      onClick={handleSendReminder}
-                      aria-label={t('send_reminder') || 'Send reminder'}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      data-testid="delete-deadline-button-compact"
-                      onClick={handleDeleteDeadline}
-                      aria-label={t('delete_deadline') || 'Delete deadline'}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                {showExtendInput ? (
-                  <>
-                    <input
-                      type="date"
-                      value={formatToInput(extendInput)}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtendInput(parseFromInput(e.target.value))}
-                      min={norm(minExtend)}
-                      className={dateInputClass}
-                    />
-                    <Button variant="brand" size="sm" onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
-                      {t('extend_deadline')}
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => { setShowExtendInput(false); setExtendInput(null); }}>
-                      {t('cancel') || 'Cancel'}
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    data-testid="extend-deadline-button"
-                    onClick={() => { setShowExtendInput(true); setExtendInput(minExtend); }}
-                  >
-                    {t('extend_deadline')}
-                  </Button>
-                )}
-              </>
-            )
-          ) : (
-            showSetInput ? (
-              <>
-                <input
-                  type="date"
-                  value={formatToInput(deadlineInput)}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
-                  min={norm(today)}
-                  className={dateInputClass}
-                />
-                <Button variant="default" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
-                  {t('set_deadline')}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => { setShowSetInput(false); setDeadlineInput(null); }}>
-                  {t('cancel') || 'Cancel'}
-                </Button>
-              </>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                data-testid="set-deadline-button"
-                onClick={() => { setShowSetInput(true); setDeadlineInput(today); }}
-              >
-                {t('set')}
+          {mode === 'edit' ? (
+            <>
+              <input
+                type="date"
+                value={formatToInput(deadlineInput)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
+                min={norm(today)}
+                className={dateInputClass}
+              />
+              <Button variant="default" size="sm" onClick={handleEditDeadline} disabled={isSaving || !deadlineInput}>
+                {t('set_deadline')}
               </Button>
-            )
+              <Button variant="outline" size="sm" onClick={() => { setMode('idle'); setDeadlineInput(null); }}>
+                {t('cancel') || 'Cancel'}
+              </Button>
+            </>
+          ) : mode === 'set' ? (
+            <>
+              <input
+                type="date"
+                value={formatToInput(deadlineInput)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
+                min={norm(today)}
+                className={dateInputClass}
+              />
+              <Button variant="default" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
+                {t('set_deadline')}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => { setMode('idle'); setDeadlineInput(null); }}>
+                {t('cancel') || 'Cancel'}
+              </Button>
+            </>
+          ) : (
+            <>
+              <span className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}>
+                {currentDeadline ? formatLocalDate(currentDeadline, lng) : t('no_deadline_set') || 'No deadline'}
+              </span>
+              {currentDeadline ? (
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    data-testid="edit-deadline-button-compact"
+                    onClick={() => { setMode('edit'); setDeadlineInput(currentDeadline); }}
+                    aria-label={t('edit_deadline') || 'Edit deadline'}
+                  >
+                    <Calendar className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    data-testid="send-reminder-icon-button-compact"
+                    onClick={handleSendReminder}
+                    aria-label={t('send_reminder') || 'Send reminder'}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    data-testid="delete-deadline-button-compact"
+                    onClick={handleDeleteDeadline}
+                    aria-label={t('delete_deadline') || 'Delete deadline'}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="set-deadline-button"
+                  onClick={() => { setMode('set'); setDeadlineInput(today); }}
+                >
+                  {t('set')}
+                </Button>
+              )}
+            </>
           )}
         </div>
       )}

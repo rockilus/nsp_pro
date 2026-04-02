@@ -383,10 +383,11 @@ export class ScheduleApi extends BaseApi {
     return toScheduleT(responseData);
   }
 
+
   /**
-   * Extend the request deadline on a campaign schedule
+   * Edit the request deadline (new semantics: can move earlier or later, server validates >= today)
    */
-  static async extendRequestDeadline(
+  static async editRequestDeadline(
     apiClient: AuthenticatedApiClient,
     scheduleId: string,
     teamId: string,
@@ -399,6 +400,24 @@ export class ScheduleApi extends BaseApi {
       'put',
       `/schedules/${scheduleId}/request-deadline/teams/${teamId}`,
       { deadline: newDeadline.getTime() / 1000 },
+    );
+    return toScheduleT(responseData);
+  }
+
+  /**
+   * Delete the request deadline from a campaign schedule
+   */
+  static async deleteRequestDeadline(
+    apiClient: AuthenticatedApiClient,
+    scheduleId: string,
+    teamId: string,
+  ): Promise<ScheduleT> {
+    if (!scheduleId) throw new Error('Schedule ID is required');
+    if (!teamId) throw new Error('Team ID is required');
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      'delete',
+      `/schedules/${scheduleId}/request-deadline/teams/${teamId}`,
     );
     return toScheduleT(responseData);
   }

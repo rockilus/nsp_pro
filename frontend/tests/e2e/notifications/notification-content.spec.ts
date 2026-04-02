@@ -1029,7 +1029,7 @@ const NOTIFICATION_TEST_CASES: NotificationTestCase[] = [
       const initialDeadline = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       const extendedDeadline = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
       await dbUtils.setRequestDeadlineAs(user1.user_id, schedule.id, team.teamId, initialDeadline);
-      await dbUtils.extendRequestDeadlineAs(
+      await dbUtils.editRequestDeadlineAs(
         user1.user_id,
         schedule.id,
         team.teamId,

@@ -253,7 +253,7 @@ test('6 - deadline set and extended via API; member sees updated date in banner'
   const { dbUtils, team, owner, member, scheduleId } = ctxMap.get((testInfo as any).__runId)!;
 
   await dbUtils.setRequestDeadlineAs(owner.user_id, scheduleId, team.teamId, FUTURE_DEADLINE);
-  await dbUtils.extendRequestDeadlineAs(owner.user_id, scheduleId, team.teamId, EXTENDED_DEADLINE);
+  await dbUtils.editRequestDeadlineAs(owner.user_id, scheduleId, team.teamId, EXTENDED_DEADLINE);
 
   await goToRequestsPageAsMember(page, dbUtils, team.teamId, member.user_id);
 

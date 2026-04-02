@@ -133,7 +133,9 @@ async def duplicate_period(
     return response
 
 
-@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
+@router.post(
+    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
+)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -255,7 +257,9 @@ async def set_request_deadline(
             raise NotAuthorizedError(
                 "You do not have permission to set the request deadline",
             )
-        deadline_date = datetime.fromtimestamp(body.deadline, tz=timezone.utc).date()
+        deadline_date = datetime.fromtimestamp(
+            body.deadline, tz=timezone.utc
+        ).date()
         schedule = await schedule_service.set_request_deadline(
             schedule_id=schedule_id, deadline_date=deadline_date
         )
@@ -294,7 +298,7 @@ async def send_request_deadline_reminder(
 
 
 @router.put("/schedules/{schedule_id}/request-deadline/teams/{team_id}")
-async def extend_request_deadline(
+async def edit_request_deadline(
     schedule_id: str,
     team_id: str,
     body: SetDeadlineBody,
@@ -306,16 +310,41 @@ async def extend_request_deadline(
             user_context.user_id, "update-schedule", "team", team_id
         ):
             raise NotAuthorizedError(
-                "You do not have permission to extend the request deadline",
+                "You do not have permission to edit the request deadline",
             )
         new_deadline_date = datetime.fromtimestamp(
             body.deadline, tz=timezone.utc
         ).date()
-        schedule = await schedule_service.extend_request_deadline(
+        # Use edit semantics on the service: allow editing to any future date >= today
+        schedule = await schedule_service.edit_request_deadline(
             schedule_id=schedule_id, new_deadline_date=new_deadline_date
         )
         response = schedule.to_dto()
     except Exception as e:
         log_info("Failed to extend request deadline")
+        handle_routes_errors(e)
+    return response
+
+
+@router.delete("/schedules/{schedule_id}/request-deadline/teams/{team_id}")
+async def delete_request_deadline(
+    schedule_id: str,
+    team_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    schedule_service: ScheduleService = Depends(get_schedule_service),
+) -> ScheduleDTO:
+    try:
+        if not await authz_check(
+            user_context.user_id, "update-schedule", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to delete the request deadline",
+            )
+        schedule = await schedule_service.delete_request_deadline(
+            schedule_id=schedule_id
+        )
+        response = schedule.to_dto()
+    except Exception as e:
+        log_info("Failed to delete request deadline")
         handle_routes_errors(e)
     return response
