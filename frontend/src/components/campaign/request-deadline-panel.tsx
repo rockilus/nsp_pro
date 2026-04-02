@@ -155,7 +155,7 @@ export default function RequestDeadlinePanel({
               </>
             ) : (
               <Button
-                variant="default"
+                variant="ghost"
                 size="sm"
                 data-testid="set-deadline-button"
                 onClick={() => setSetDialogOpen(true)}
@@ -191,7 +191,7 @@ export default function RequestDeadlinePanel({
             </>
           ) : (
             <Button
-              variant="default"
+              variant="outline"
               size="sm"
               data-testid="set-deadline-button"
               onClick={() => setSetDialogOpen(true)}
@@ -219,7 +219,7 @@ export default function RequestDeadlinePanel({
             <Button variant="outline" onClick={() => setSetDialogOpen(false)}>
               {t('cancel') || 'Cancel'}
             </Button>
-            <Button variant="brand" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
+            <Button variant="default" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
               {t('set_deadline')}
             </Button>
           </DialogFooter>
