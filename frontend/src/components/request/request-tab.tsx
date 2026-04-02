@@ -374,9 +374,9 @@ export default function RequestTab({
               <Tab label={t('calendar') || 'Calendar'} data-testid="calendar-tab" />
             </Tabs>
 
-            <div className="gap-4 flex items-center">
+            <div className="flex items-center gap-4">
               {requestViewSettings.selectedTab === 'table' && (
-                <div className="gap-2 flex items-center">
+                <div className="flex items-center gap-2">
                   <FormControlLabel
                     control={
                       <Switch

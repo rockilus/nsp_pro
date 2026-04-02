@@ -56,9 +56,9 @@ export default function CampaignParametersPanel({
   return (
     <div className="flex w-full flex-col self-start">
       <div className="flex w-full flex-col">
-        <span className="text-xl font-semibold mb-1 text-[#3c4043]">{t('campaign')}</span>
+        <span className="mb-1 text-xl font-semibold text-[#3c4043]">{t('campaign')}</span>
         {/* Start date row */}
-        <div className="py-0.5 flex min-h-[45px] flex-row items-center">
+        <div className="flex min-h-[45px] flex-row items-center py-0.5">
           <div className="flex w-[150px] items-center">
             <span className="text-sm text-[#3c4043]">{t('start')}</span>
           </div>
@@ -85,7 +85,7 @@ export default function CampaignParametersPanel({
           </div>
         </div>
         {/* End date row */}
-        <div className="py-0.5 flex min-h-[45px] flex-row items-center">
+        <div className="flex min-h-[45px] flex-row items-center py-0.5">
           <div className="flex w-[150px] items-center">
             <span className="text-sm text-[#3c4043]">{t('end')}</span>
           </div>
@@ -114,11 +114,11 @@ export default function CampaignParametersPanel({
           </div>
         </div>
         {/* Requests submission deadline row */}
-        <div className="py-0.5 flex min-h-[45px] flex-row items-center">
+        <div className="flex min-h-[45px] flex-row items-center py-0.5">
           <div className="flex w-[150px] items-center">
             <span className="text-sm text-[#3c4043]">{t('request_deadline')}</span>
           </div>
-          <div className="gap-2 flex flex-1 items-center">
+          <div className="flex flex-1 items-center gap-2">
             <RequestDeadlinePanel
               lng={lng}
               scheduleCampaign={scheduleCampaign}

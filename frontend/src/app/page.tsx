@@ -79,7 +79,7 @@ export default function RootPage() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <p>Redirecting...</p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="mt-2 text-sm text-gray-500">
             Not redirected?{' '}
             <a href={`/${fallbackLng}/`} className="underline">
               Click here

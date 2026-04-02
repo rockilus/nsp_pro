@@ -383,7 +383,6 @@ export class ScheduleApi extends BaseApi {
     return toScheduleT(responseData);
   }
 
-
   /**
    * Edit the request deadline (new semantics: can move earlier or later, server validates >= today)
    */

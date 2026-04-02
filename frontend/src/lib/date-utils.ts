@@ -13,6 +13,4 @@ export const parseFromInput = (s?: string | null, asUtc = true): Dayjs | null =>
 
 export const toDate = (d?: Dayjs | null): Date | null => (d ? d.utc().toDate() : null);
 
-
-
 export default { formatToInput, parseFromInput, toDate };

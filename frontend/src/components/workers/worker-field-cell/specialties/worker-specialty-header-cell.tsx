@@ -48,7 +48,7 @@ export default function WorkerSpecialtyHeaderCell({
       <Tooltip title={t('specialties_tooltip')} placement="top">
         <span>{t('specialties')}</span>
       </Tooltip>
-      <div className="gap-1 flex items-center">
+      <div className="flex items-center gap-1">
         {onSort && onFilter && column && (
           <div onClick={(e) => e.stopPropagation()}>
             <ColumnSortFilterMenu

@@ -67,7 +67,7 @@ export default function DimensionCell({
       className="table-header-default flex items-center justify-between"
       data-testid={`dimension-cell-content-${dimension.id}`}
     >
-      <div className="gap-1 flex items-center">
+      <div className="flex items-center gap-1">
         <Tooltip title={dimension.name} placement="top">
           <span data-testid={`dimension-name-${dimension.id}`}>{dimension.name}</span>
         </Tooltip>

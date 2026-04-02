@@ -384,7 +384,7 @@ const RequestForm = ({
       )}
       {/* Status chip and action buttons */}
       {isEdit && request && (
-        <div className="gap-2 mb-4 flex items-center">
+        <div className="mb-4 flex items-center gap-2">
           <Chip
             label={getRequestStatusLabel(requestState.status, t)}
             size="small"

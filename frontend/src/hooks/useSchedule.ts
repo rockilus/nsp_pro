@@ -543,7 +543,6 @@ export function useSendRequestDeadlineReminder() {
   return sendReminder;
 }
 
-
 /**
  * Hook for editing the request deadline (new semantics: can move earlier or later)
  */

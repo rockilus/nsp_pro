@@ -89,7 +89,7 @@ const ShiftCell = ({
 
     // Otherwise, show as a chip with shift colors (like work requests)
     return (
-      <div className="gap-1 flex flex-wrap">
+      <div className="flex flex-wrap gap-1">
         <Chip
           label={shift?.name || 'Unknown'}
           size="small"
@@ -113,7 +113,7 @@ const ShiftCell = ({
     const displayText = getRequestTargetDisplayText(request, workers, shifts, t('not'));
 
     return (
-      <div className="gap-1 flex flex-wrap">
+      <div className="flex flex-wrap gap-1">
         <Chip
           label={displayText}
           size="small"
@@ -160,7 +160,7 @@ const DateCell = ({ request, lng, t }: { request: RequestT; lng: string; t: any 
 const TypeCell = ({ request, t }: { request: RequestT; t: any }) => {
   const isWork = request.requestType === RequestType.WORK_DEMAND;
   return (
-    <div className="gap-1 flex flex-col items-start">
+    <div className="flex flex-col items-start gap-1">
       <Chip
         label={isWork ? t('work') : t('leave')}
         size="small"
@@ -263,7 +263,7 @@ const ActionsCell = ({
     (request.status === RequestStatus.APPROVED || request.status === RequestStatus.DENIED);
 
   return (
-    <div className="gap-1 flex items-center">
+    <div className="flex items-center gap-1">
       <RequestPanel
         lng={lng}
         teamId={request.teamId}
@@ -634,7 +634,7 @@ export default function RequestTable({
                   }}
                 >
                   <TableCell>
-                    <div className="gap-2 flex items-center">
+                    <div className="flex items-center gap-2">
                       <WorkerCell request={request} workers={workers} t={t} />
                       {isPast && showPastRequests && (
                         <Chip
@@ -664,7 +664,7 @@ export default function RequestTable({
                   </TableCell>
                   {userTeamRole !== TeamMembershipRole.MEMBER && (
                     <TableCell>
-                      <div className="gap-1 flex flex-col">
+                      <div className="flex flex-col gap-1">
                         <span>{request.createdAt.format('MMM D, YYYY')}</span>
                         {requestDeadline?.deadlineDate && (
                           <Chip
