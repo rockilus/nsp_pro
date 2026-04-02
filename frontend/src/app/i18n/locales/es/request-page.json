@@ -35,9 +35,8 @@
   "unknown": "Desconocido",
   "work": "Trabajo",
   "worker": "Miembro",
-  "request_deadline_banner": "Tu líder de equipo ha solicitado que envíes tu disponibilidad antes del {date}",
-  "request_deadline_banner_period": "Periodo: {period}",
-  "request_deadline_banner_submission": "Plazo de entrega: Por favor, envíe sus solicitudes antes del {deadline}.",
+  "request_deadline_banner_period": "Periodo: {{period}}",
+  "request_deadline_banner_submission": "Plazo de entrega: Por favor, envíe sus solicitudes antes del {{deadline}}.",
   "submitted_on": "Enviado el",
   "before_deadline": "Antes del plazo",
   "after_deadline": "Después del plazo"

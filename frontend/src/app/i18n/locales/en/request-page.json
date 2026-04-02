@@ -35,9 +35,8 @@
   "unknown": "Unknown",
   "work": "Work",
   "worker": "Member",
-  "request_deadline_banner": "Your team leader has requested that you submit your availability by {date}",
-  "request_deadline_banner_period": "For period: {period}",
-  "request_deadline_banner_submission": "Submission Deadline: Please submit your requests by {deadline}.",
+  "request_deadline_banner_period": "For period: {{period}}",
+  "request_deadline_banner_submission": "Submission Deadline: Please submit your requests by {{deadline}}.",
   "submitted_on": "Submitted on",
   "before_deadline": "Before deadline",
   "after_deadline": "After deadline"
