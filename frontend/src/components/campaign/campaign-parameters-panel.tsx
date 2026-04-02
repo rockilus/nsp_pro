@@ -1,5 +1,6 @@
 import React from 'react';
 import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../app/i18n/client';
 // shadcn/ui
