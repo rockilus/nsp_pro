@@ -250,7 +250,7 @@ export default function RequestDeadlinePanel({
                   min={norm(today)}
                   className={dateInputClass}
                 />
-                <Button variant="brand" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
+                <Button variant="default" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
                   {t('set_deadline')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => { setShowSetInput(false); setDeadlineInput(null); }}>
