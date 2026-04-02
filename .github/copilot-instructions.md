@@ -56,6 +56,10 @@ Rockilus is an advanced **Workforce Management (WFM) and algorithmic scheduling 
 - When new UI elements are needed, add shadcn/ui components via CLI and compose from there.
 - Never hardcode user-facing strings — always run them through the i18n system (English, French, Spanish).
 
+- Use the global design tokens defined in `src/app/globals.css` as the single source of truth for colors, radii and other UI tokens; prefer CSS variables (for example `var(--color-primary)`) and the shadcn token mappings instead of hardcoding color values in components.
+- Support both light and dark themes: ensure components respond to the `.dark` class and `prefers-color-scheme`, and validate visual states in both modes (colors, borders, shadows, toasts).
+- Design for and verify responsiveness across desktop, tablet and mobile: use Tailwind responsive utilities and fluid layouts, check key screens at typical breakpoints, and ensure spacing and touch targets are mobile-friendly.
+
 #### Backend — API Service
 - **Language:** Python
 - **Location:** `backend/api_gateway/`
