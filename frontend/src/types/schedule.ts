@@ -197,11 +197,16 @@ export const fromScheduleT = (data: ScheduleT): any => {
 
 export type RequestDeadlineT = {
   deadlineDate: dayjs.Dayjs | null;
+  periodStartDate?: dayjs.Dayjs | null;
+  periodEndDate?: dayjs.Dayjs | null;
 };
 
 export const toRequestDeadlineT = (data: any): RequestDeadlineT => {
   return {
     deadlineDate: data.deadlineDate != null ? dayjs.unix(data.deadlineDate).utc() : null,
+    periodStartDate:
+      data.periodStartDate != null ? dayjs.unix(data.periodStartDate).utc() : null,
+    periodEndDate: data.periodEndDate != null ? dayjs.unix(data.periodEndDate).utc() : null,
   };
 };
 

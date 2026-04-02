@@ -96,6 +96,17 @@ export default function MobileRequestTab({
         } else {
           setDeadlineBannerDate(null);
         }
+        // set campaign period if provided by API
+        if (result.periodStartDate) {
+          setCampaignPeriodStart(result.periodStartDate);
+        } else {
+          setCampaignPeriodStart(null);
+        }
+        if (result.periodEndDate) {
+          setCampaignPeriodEnd(result.periodEndDate);
+        } else {
+          setCampaignPeriodEnd(null);
+        }
       } catch {
         // Fail silently
       }

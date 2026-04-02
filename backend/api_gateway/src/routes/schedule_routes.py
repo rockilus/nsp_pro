@@ -32,6 +32,8 @@ class SetDeadlineBody(BaseModel):
 
 class RequestDeadlineDTO(BaseModel):
     deadlineDate: Optional[float] = None
+    periodStartDate: Optional[float] = None
+    periodEndDate: Optional[float] = None
 
 
 @router.post("/schedules/teams/{team_id}", status_code=201)
@@ -225,11 +227,33 @@ async def get_request_deadline(
         campaign = next(
             (s for s in schedules if s.status == ScheduleStatus.CAMPAIGN), None
         )
-        if campaign is None or campaign.request_deadline is None:
-            return RequestDeadlineDTO(deadlineDate=None)
+        if campaign is None:
+            return RequestDeadlineDTO(
+                deadlineDate=None, periodStartDate=None, periodEndDate=None
+            )
+
+        # Build period start/end as UTC timestamps (start of day)
+        period_start_ts = datetime.combine(
+            campaign.start_date, datetime.min.time(), tzinfo=timezone.utc
+        ).timestamp()
+        period_end_ts = datetime.combine(
+            campaign.end_date, datetime.min.time(), tzinfo=timezone.utc
+        ).timestamp()
+
+        if campaign.request_deadline is None:
+            return RequestDeadlineDTO(
+                deadlineDate=None,
+                periodStartDate=period_start_ts,
+                periodEndDate=period_end_ts,
+            )
+
         # `request_deadline` is a timezone-aware datetime in UTC
         deadline_ts = campaign.request_deadline.timestamp()
-        response = RequestDeadlineDTO(deadlineDate=deadline_ts)
+        response = RequestDeadlineDTO(
+            deadlineDate=deadline_ts,
+            periodStartDate=period_start_ts,
+            periodEndDate=period_end_ts,
+        )
     except Exception as e:
         log_info("Failed to get request deadline")
         handle_routes_errors(e)
