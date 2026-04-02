@@ -121,7 +121,9 @@ export default function RequestDeadlinePanel({
           <div className="gap-2 flex flex-1 flex-wrap items-center">
             {currentDeadline ? (
               <>
-                <span className="text-sm font-semibold">{formatLocalDate(currentDeadline, lng)}</span>
+                {!showExtendInput && (
+                  <span className="text-sm font-semibold">{formatLocalDate(currentDeadline, lng)}</span>
+                )}
                 <div className="flex flex-col items-start">
                   <Button
                     variant="outline"
@@ -196,9 +198,11 @@ export default function RequestDeadlinePanel({
         </div>
       ) : (
         <div data-testid="request-deadline-panel" className="flex items-center gap-2">
-          <span className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}>
-            {currentDeadline ? formatLocalDate(currentDeadline, lng) : t('no_deadline_set') || 'No deadline'}
-          </span>
+          {!(showSetInput || showExtendInput) && (
+            <span className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}>
+              {currentDeadline ? formatLocalDate(currentDeadline, lng) : t('no_deadline_set') || 'No deadline'}
+            </span>
+          )}
           {currentDeadline ? (
             <>
               <Button
