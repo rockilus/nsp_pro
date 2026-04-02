@@ -342,7 +342,7 @@ export default function RequestTab({
           {deadlineBannerDate && (
             <Alert severity="info" sx={{ mx: 2, mt: 1 }} data-testid="request-deadline-banner">
               {t('request_deadline_banner', {
-                date: deadlineBannerDate.format('MMM D, YYYY'),
+                date: deadlineBannerDate.format('MMM D, YYYY HH:mm'),
               })}
             </Alert>
           )}

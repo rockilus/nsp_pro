@@ -323,9 +323,12 @@ class ScheduleService(BaseService):
             )
 
     async def set_request_deadline(
-        self, schedule_id: str, deadline_date: date
+        self, schedule_id: str, deadline_date: datetime
     ) -> Schedule:
-        """Set the request deadline on a CAMPAIGN schedule and notify members."""
+        """Set the request deadline on a CAMPAIGN schedule and notify members.
+
+        `deadline_date` is a timezone-aware UTC datetime.
+        """
         schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
         if not schedule:
             raise ValueError(f"Schedule with id {schedule_id} not found")
@@ -333,8 +336,9 @@ class ScheduleService(BaseService):
             raise ValueError(
                 "Request deadline can only be set on a CAMPAIGN schedule"
             )
-        if deadline_date <= date.today():
-            raise ValueError("Deadline date must be in the future")
+        now_utc = datetime.now(timezone.utc)
+        if deadline_date <= now_utc:
+            raise ValueError("Deadline must be in the future (UTC)")
         schedule.request_deadline = deadline_date
         schedule.last_reminder_sent_at = datetime.now(timezone.utc)
         schedule.updated_at = datetime.now(timezone.utc)
@@ -386,11 +390,11 @@ class ScheduleService(BaseService):
         return schedule
 
     async def edit_request_deadline(
-        self, schedule_id: str, new_deadline_date: date
+        self, schedule_id: str, new_deadline_date: datetime
     ) -> Schedule:
         """Edit the request deadline (allow earlier or later changes) and notify members.
 
-        Validation: `new_deadline_date` must be >= today, and a deadline must
+        Validation: `new_deadline_date` must be >= now (UTC), and a deadline must
         already exist on the campaign (use POST set_request_deadline to create).
         """
         schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
@@ -398,8 +402,9 @@ class ScheduleService(BaseService):
             raise ValueError(f"Schedule with id {schedule_id} not found")
         if schedule.request_deadline is None:
             raise ValueError("No request deadline is set on this schedule")
-        if new_deadline_date < date.today():
-            raise ValueError("New deadline date must be today or later")
+        now_utc = datetime.now(timezone.utc)
+        if new_deadline_date <= now_utc:
+            raise ValueError("New deadline must be in the future (UTC)")
 
         old_deadline = schedule.request_deadline
         schedule.request_deadline = new_deadline_date

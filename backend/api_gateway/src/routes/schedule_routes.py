@@ -133,7 +133,9 @@ async def duplicate_period(
     return response
 
 
-@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
+@router.post(
+    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
+)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -225,11 +227,8 @@ async def get_request_deadline(
         )
         if campaign is None or campaign.request_deadline is None:
             return RequestDeadlineDTO(deadlineDate=None)
-        deadline_ts = datetime.combine(
-            campaign.request_deadline,
-            datetime.min.time(),
-            tzinfo=timezone.utc,
-        ).timestamp()
+        # `request_deadline` is a timezone-aware datetime in UTC
+        deadline_ts = campaign.request_deadline.timestamp()
         response = RequestDeadlineDTO(deadlineDate=deadline_ts)
     except Exception as e:
         log_info("Failed to get request deadline")
@@ -255,7 +254,8 @@ async def set_request_deadline(
             raise NotAuthorizedError(
                 "You do not have permission to set the request deadline",
             )
-        deadline_date = datetime.fromtimestamp(body.deadline, tz=timezone.utc).date()
+        # Interpret incoming epoch (seconds) as UTC datetime
+        deadline_date = datetime.fromtimestamp(body.deadline, tz=timezone.utc)
         schedule = await schedule_service.set_request_deadline(
             schedule_id=schedule_id, deadline_date=deadline_date
         )
@@ -308,10 +308,11 @@ async def edit_request_deadline(
             raise NotAuthorizedError(
                 "You do not have permission to edit the request deadline",
             )
+        # Interpret incoming epoch (seconds) as UTC datetime
         new_deadline_date = datetime.fromtimestamp(
             body.deadline, tz=timezone.utc
-        ).date()
-        # Use edit semantics on the service: allow editing to any future date >= today
+        )
+        # Use edit semantics on the service: allow editing to any future datetime > now
         schedule = await schedule_service.edit_request_deadline(
             schedule_id=schedule_id, new_deadline_date=new_deadline_date
         )

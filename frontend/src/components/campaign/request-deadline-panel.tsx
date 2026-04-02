@@ -7,7 +7,10 @@ import { useTranslation } from '../../app/i18n/client';
 import { Calendar, Send, Trash2 } from 'lucide-react';
 // shadcn/ui
 import { Button } from '@/components/ui/button';
-import { formatToInput, parseFromInput } from '@/lib/date-utils';
+import {
+  formatToInputDateTime,
+  parseFromInputDateTime,
+} from '@/lib/date-utils';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Hooks
@@ -49,11 +52,11 @@ export default function RequestDeadlinePanel({
 
   const currentDeadline = scheduleCampaign.requestDeadline;
   const lastReminderSentAt = scheduleCampaign.lastReminderSentAt;
-  const today = dayjs().utc().startOf('day');
+  const today = dayjs().utc().startOf('minute');
 
   const norm = (d?: Dayjs | string | null) => {
     if (!d) return undefined;
-    return typeof d === 'string' ? d : (d as Dayjs).utc().format('YYYY-MM-DD');
+    return typeof d === 'string' ? d : (d as Dayjs).utc().format('YYYY-MM-DDTHH:mm');
   };
   const dateInputClass =
     'h-9 w-40 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50';
@@ -126,10 +129,10 @@ export default function RequestDeadlinePanel({
       {mode === 'edit' ? (
         <>
           <input
-            type="date"
-            value={formatToInput(deadlineInput)}
+            type="datetime-local"
+            value={formatToInputDateTime(deadlineInput)}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setDeadlineInput(parseFromInput(e.target.value))
+              setDeadlineInput(parseFromInputDateTime(e.target.value))
             }
             min={norm(today)}
             className={dateInputClass}
@@ -156,10 +159,10 @@ export default function RequestDeadlinePanel({
       ) : mode === 'set' ? (
         <>
           <input
-            type="date"
-            value={formatToInput(deadlineInput)}
+            type="datetime-local"
+            value={formatToInputDateTime(deadlineInput)}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setDeadlineInput(parseFromInput(e.target.value))
+              setDeadlineInput(parseFromInputDateTime(e.target.value))
             }
             min={norm(today)}
             className={dateInputClass}
@@ -190,7 +193,7 @@ export default function RequestDeadlinePanel({
               className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}
             >
               {currentDeadline
-                ? currentDeadline.format('DD/MM/YYYY')
+                ? currentDeadline.format('DD/MM/YYYY HH:mm')
                 : t('no_deadline_set') || 'No deadline'}
             </span>
             {currentDeadline && lastReminderSentAt ? (
