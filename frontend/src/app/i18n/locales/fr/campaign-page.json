@@ -32,5 +32,6 @@
   "reminder_sent": "Rappel envoyé aux membres de l'équipe",
   "request_deadline": "Demande date limite",
   "set_deadline_for_requests": "Définir une date limite pour les demandes",
-  "last_sent": "Dernier envoi"
+  "last_sent": "Dernier envoi",
+  "sent": "Envoyé"
 }

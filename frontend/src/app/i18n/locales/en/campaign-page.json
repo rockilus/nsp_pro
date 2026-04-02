@@ -32,5 +32,6 @@
   "reminder_sent": "Reminder sent to team members",
   "request_deadline": "Requests deadline",
   "set_deadline_for_requests": "Set deadline for requests",
-  "last_sent": "Last sent"
+  "last_sent": "Last sent",
+  "sent": "Sent"
 }

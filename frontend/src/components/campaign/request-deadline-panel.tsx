@@ -185,13 +185,20 @@ export default function RequestDeadlinePanel({
         </>
       ) : (
         <>
-          <span
-            className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}
-          >
-            {currentDeadline
-              ? currentDeadline.format('DD/MM/YYYY')
-              : t('no_deadline_set') || 'No deadline'}
-          </span>
+          <div className="flex flex-col">
+            <span
+              className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}
+            >
+              {currentDeadline
+                ? currentDeadline.format('DD/MM/YYYY')
+                : t('no_deadline_set') || 'No deadline'}
+            </span>
+            {currentDeadline && lastReminderSentAt ? (
+              <span className="text-xs text-muted-foreground">
+                {t('sent') || 'Sent'} {dayjs(lastReminderSentAt).utc().format('DD/MM/YYYY')}
+              </span>
+            ) : null}
+          </div>
           {currentDeadline ? (
             <div className="flex items-center gap-1">
               <Button
