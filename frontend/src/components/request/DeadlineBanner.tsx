@@ -56,12 +56,8 @@ export default function DeadlineBanner({
 
   if (!deadline) return null;
 
-  
-
   const period = periodStart && periodEnd ? formatPeriod(periodStart, periodEnd, lng) : undefined;
   const deadlineStr = formatDeadline(deadline, lng);
-
-    
 
   return (
     <Alert className={className} data-testid="request-deadline-banner">

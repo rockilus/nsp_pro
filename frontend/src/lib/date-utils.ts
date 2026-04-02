@@ -12,7 +12,7 @@ export const parseFromInput = (s?: string | null, asUtc = true): Dayjs | null =>
 };
 
 export const formatToInputDateTime = (d?: Dayjs | null): string =>
-  (d ? d.utc().format("YYYY-MM-DDTHH:mm") : '');
+  d ? d.utc().format('YYYY-MM-DDTHH:mm') : '';
 
 export const parseFromInputDateTime = (s?: string | null, asUtc = true): Dayjs | null => {
   if (!s) return null;

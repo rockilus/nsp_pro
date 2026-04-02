@@ -112,7 +112,12 @@ for (const vp of viewports) {
       const schedule = await ctx.roleTestBase.dbUtils.createSchedule(team.teamId);
       const deadline = dayjs.utc().add(2, 'day').toDate();
 
-      await ctx.roleTestBase.dbUtils.setRequestDeadlineAs(owner.userId, schedule.id, team.teamId, deadline);
+      await ctx.roleTestBase.dbUtils.setRequestDeadlineAs(
+        owner.userId,
+        schedule.id,
+        team.teamId,
+        deadline,
+      );
       await ctx.roleTestBase.dbUtils.validateSchedule(schedule.id, team.teamId);
 
       await page.reload();
@@ -120,7 +125,9 @@ for (const vp of viewports) {
       await expect(page.locator('[data-testid="request-deadline-banner"]')).toHaveCount(0);
     });
 
-    test('displayed when deadline is on campaign schedule with expected content', async ({ page }, testInfo) => {
+    test('displayed when deadline is on campaign schedule with expected content', async ({
+      page,
+    }, testInfo) => {
       const ctx = getCtx(testInfo);
       const owner = ctx.roleTestBase.getOwnerUser();
 
@@ -128,7 +135,12 @@ for (const vp of viewports) {
       const schedule = await ctx.roleTestBase.dbUtils.createSchedule(team.teamId);
       const deadlineDate = dayjs.utc().add(1, 'day').startOf('minute').toDate();
 
-      await ctx.roleTestBase.dbUtils.setRequestDeadlineAs(owner.userId, schedule.id, team.teamId, deadlineDate);
+      await ctx.roleTestBase.dbUtils.setRequestDeadlineAs(
+        owner.userId,
+        schedule.id,
+        team.teamId,
+        deadlineDate,
+      );
 
       await page.reload();
       await page.waitForLoadState('networkidle');

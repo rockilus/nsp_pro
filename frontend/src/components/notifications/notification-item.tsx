@@ -73,8 +73,8 @@ function getMessageKey(type: NotificationT['type']): string {
       return 'campaign_request_deadline_set';
     case 'campaign_request_deadline_reminder':
       return 'campaign_request_deadline_reminder';
-      case 'campaign_request_deadline_updated':
-        return 'campaign_request_deadline_updated';
+    case 'campaign_request_deadline_updated':
+      return 'campaign_request_deadline_updated';
     default:
       return 'user_published_schedule';
   }

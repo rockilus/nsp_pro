@@ -14,7 +14,12 @@ interface NotifTestContext {
 
 const testContextMap = new Map<string, NotifTestContext>();
 
-async function findNotification(dbUtils: DatabaseTestUtils, userId: string, type: string, timeoutMs = 3000) {
+async function findNotification(
+  dbUtils: DatabaseTestUtils,
+  userId: string,
+  type: string,
+  timeoutMs = 3000,
+) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     const notifs = await dbUtils.getNotificationsAs(userId);
@@ -113,8 +118,16 @@ test.describe('Campaign request-deadline notifications', () => {
 
     await dbUtils.setRequestDeadlineAs(owner.user_id, schedule.id, team.teamId, deadline);
 
-    const notifA = await findNotification(dbUtils, memberA.user_id, 'campaign_request_deadline_set');
-    const notifB = await findNotification(dbUtils, memberB.user_id, 'campaign_request_deadline_set');
+    const notifA = await findNotification(
+      dbUtils,
+      memberA.user_id,
+      'campaign_request_deadline_set',
+    );
+    const notifB = await findNotification(
+      dbUtils,
+      memberB.user_id,
+      'campaign_request_deadline_set',
+    );
 
     expect(notifA).toBeDefined();
     expect(notifA!.userId).toBe(memberA.user_id);
@@ -139,8 +152,16 @@ test.describe('Campaign request-deadline notifications', () => {
     await dbUtils.setRequestDeadlineAs(owner.user_id, schedule.id, team.teamId, initialDeadline);
     await dbUtils.editRequestDeadlineAs(owner.user_id, schedule.id, team.teamId, newDeadline);
 
-    const notifA = await findNotification(dbUtils, memberA.user_id, 'campaign_request_deadline_updated');
-    const notifB = await findNotification(dbUtils, memberB.user_id, 'campaign_request_deadline_updated');
+    const notifA = await findNotification(
+      dbUtils,
+      memberA.user_id,
+      'campaign_request_deadline_updated',
+    );
+    const notifB = await findNotification(
+      dbUtils,
+      memberB.user_id,
+      'campaign_request_deadline_updated',
+    );
 
     expect(notifA).toBeDefined();
     expect(notifA!.type).toBe('campaign_request_deadline_updated' as NotificationTypeT);
@@ -160,8 +181,16 @@ test.describe('Campaign request-deadline notifications', () => {
 
     await dbUtils.sendRequestDeadlineReminderAs(owner.user_id, schedule.id, team.teamId);
 
-    const notifA = await findNotification(dbUtils, memberA.user_id, 'campaign_request_deadline_reminder');
-    const notifB = await findNotification(dbUtils, memberB.user_id, 'campaign_request_deadline_reminder');
+    const notifA = await findNotification(
+      dbUtils,
+      memberA.user_id,
+      'campaign_request_deadline_reminder',
+    );
+    const notifB = await findNotification(
+      dbUtils,
+      memberB.user_id,
+      'campaign_request_deadline_reminder',
+    );
 
     expect(notifA).toBeDefined();
     expect(notifA!.type).toBe('campaign_request_deadline_reminder' as NotificationTypeT);

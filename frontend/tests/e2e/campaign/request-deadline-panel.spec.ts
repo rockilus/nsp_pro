@@ -89,7 +89,9 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     await expect(panel.locator('[data-testid="cancel-deadline-button"]')).toBeVisible();
   });
 
-  test('confirming set updates request deadline and lastReminderSentAt', async ({ page }, testInfo) => {
+  test('confirming set updates request deadline and lastReminderSentAt', async ({
+    page,
+  }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const { dbUtils, team, owner, schedule } = testContextMap.get(testRunId)!;
 
@@ -108,26 +110,26 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     const inputValue = formatToInputDateTime(newDeadline); // ISO for datetime-local
 
     // Set the underlying input (datetime-local expects YYYY-MM-DDTHH:mm)
-    await panel.locator('[data-testid="deadline-input"]').evaluate(
-      (el, value) => {
-        const input = el as HTMLInputElement;
-        input.focus();
-        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set;
-        nativeSetter!.call(input, value as string);
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-        input.blur();
-      },
-      inputValue,
-    );
+    await panel.locator('[data-testid="deadline-input"]').evaluate((el, value) => {
+      const input = el as HTMLInputElement;
+      input.focus();
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        'value',
+      )!.set;
+      nativeSetter!.call(input, value as string);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.blur();
+    }, inputValue);
 
-      const confirmBtn = panel.locator('[data-testid="confirm-deadline-button"]');
-      await expect(confirmBtn).toBeEnabled({ timeout: 2000 });
+    const confirmBtn = panel.locator('[data-testid="confirm-deadline-button"]');
+    await expect(confirmBtn).toBeEnabled({ timeout: 2000 });
 
-      await Promise.all([
-        page.waitForResponse((r) => r.url().includes('/request-deadline') && r.ok()),
-        confirmBtn.click(),
-      ]);
+    await Promise.all([
+      page.waitForResponse((r) => r.url().includes('/request-deadline') && r.ok()),
+      confirmBtn.click(),
+    ]);
 
     await expect(panel.locator('[data-testid="current-deadline"]')).toContainText(displayValue);
 
@@ -162,7 +164,12 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     const testRunId = (testInfo as any).testRunId as string;
     const { dbUtils, team, owner, schedule } = testContextMap.get(testRunId)!;
 
-    await dbUtils.setRequestDeadlineAs(owner.user_id, schedule.id, team.teamId, dayjs.utc().add(1, 'day').toDate());
+    await dbUtils.setRequestDeadlineAs(
+      owner.user_id,
+      schedule.id,
+      team.teamId,
+      dayjs.utc().add(1, 'day').toDate(),
+    );
 
     await dbUtils.authenticatePageAsUser(page, owner.user_id);
     await page.goto(`${testConfig.frontendUrl}/en/plan/campaign/`);
@@ -179,18 +186,18 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     const updatedInputValue = formatToInputDateTime(updatedDeadline);
     const updatedDisplayValue = updatedDeadline.format('DD/MM/YYYY HH:mm');
 
-    await panel.locator('[data-testid="deadline-input"]').evaluate(
-      (el, value) => {
-        const input = el as HTMLInputElement;
-        input.focus();
-        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set;
-        nativeSetter!.call(input, value as string);
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-        input.blur();
-      },
-      updatedInputValue,
-    );
+    await panel.locator('[data-testid="deadline-input"]').evaluate((el, value) => {
+      const input = el as HTMLInputElement;
+      input.focus();
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        'value',
+      )!.set;
+      nativeSetter!.call(input, value as string);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.blur();
+    }, updatedInputValue);
 
     await Promise.all([
       page.waitForResponse((r) => r.url().includes('/request-deadline') && r.ok()),
@@ -210,7 +217,12 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     const testRunId = (testInfo as any).testRunId as string;
     const { dbUtils, team, owner, schedule } = testContextMap.get(testRunId)!;
 
-    await dbUtils.setRequestDeadlineAs(owner.user_id, schedule.id, team.teamId, dayjs.utc().add(1, 'day').toDate());
+    await dbUtils.setRequestDeadlineAs(
+      owner.user_id,
+      schedule.id,
+      team.teamId,
+      dayjs.utc().add(1, 'day').toDate(),
+    );
 
     await dbUtils.authenticatePageAsUser(page, owner.user_id);
     await page.goto(`${testConfig.frontendUrl}/en/plan/campaign/`);
@@ -220,16 +232,18 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
 
     const panel = page.locator('[data-testid="request-deadline-panel"]');
 
-    const before = (await dbUtils.getSchedules(team.teamId)).find((s: any) => s.id === schedule.id)
-      .lastReminderSentAt;
+    const before = (await dbUtils.getSchedules(team.teamId)).find(
+      (s: any) => s.id === schedule.id,
+    ).lastReminderSentAt;
 
     await Promise.all([
       page.waitForResponse((r) => r.url().includes('/reminder') && r.ok()),
       panel.locator('[data-testid="send-reminder-button"]').click(),
     ]);
 
-    const after = (await dbUtils.getSchedules(team.teamId)).find((s: any) => s.id === schedule.id)
-      .lastReminderSentAt;
+    const after = (await dbUtils.getSchedules(team.teamId)).find(
+      (s: any) => s.id === schedule.id,
+    ).lastReminderSentAt;
 
     expect(after).toBeTruthy();
     if (before) {
@@ -237,11 +251,18 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     }
   });
 
-  test('delete clears deadline and lastReminderSentAt and UI returns to no-deadline', async ({ page }, testInfo) => {
+  test('delete clears deadline and lastReminderSentAt and UI returns to no-deadline', async ({
+    page,
+  }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const { dbUtils, team, owner, schedule } = testContextMap.get(testRunId)!;
 
-    await dbUtils.setRequestDeadlineAs(owner.user_id, schedule.id, team.teamId, dayjs.utc().add(1, 'day').toDate());
+    await dbUtils.setRequestDeadlineAs(
+      owner.user_id,
+      schedule.id,
+      team.teamId,
+      dayjs.utc().add(1, 'day').toDate(),
+    );
 
     await dbUtils.authenticatePageAsUser(page, owner.user_id);
     await page.goto(`${testConfig.frontendUrl}/en/plan/campaign/`);
@@ -256,7 +277,9 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
       panel.locator('[data-testid="delete-deadline-button"]').click(),
     ]);
 
-    const updated = (await dbUtils.getSchedules(team.teamId)).find((s: any) => s.id === schedule.id);
+    const updated = (await dbUtils.getSchedules(team.teamId)).find(
+      (s: any) => s.id === schedule.id,
+    );
     expect(updated.requestDeadline).toBeFalsy();
     expect(updated.lastReminderSentAt).toBeFalsy();
 

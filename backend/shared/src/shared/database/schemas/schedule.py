@@ -70,8 +70,7 @@ class ScheduleSchema(DocumentBaseSchema):
     def from_mongo(cls, data: Dict[str, Any]) -> "ScheduleSchema":
         data["id"] = str(data.pop("_id"))
         data["quick_staffings"] = [
-            QuickStaffingSchema.from_mongo(qs)
-            for qs in data["quick_staffings"]
+            QuickStaffingSchema.from_mongo(qs) for qs in data["quick_staffings"]
         ]
         return cls(**data)
 
@@ -79,12 +78,8 @@ class ScheduleSchema(DocumentBaseSchema):
         return Schedule(
             id=self.id or "",
             team_id=self.team,
-            start_date=datetime.fromtimestamp(
-                self.start_date, tz=timezone.utc
-            ).date(),
-            end_date=datetime.fromtimestamp(
-                self.end_date, tz=timezone.utc
-            ).date(),
+            start_date=datetime.fromtimestamp(self.start_date, tz=timezone.utc).date(),
+            end_date=datetime.fromtimestamp(self.end_date, tz=timezone.utc).date(),
             status=ScheduleStatus(self.status),
             missing_coverage_dates=[
                 datetime.fromtimestamp(dt, tz=timezone.utc).date()
@@ -92,21 +87,15 @@ class ScheduleSchema(DocumentBaseSchema):
             ],
             constraint_build_ids=self.constraint_builds,
             quick_staffings=[qs.to_core() for qs in self.quick_staffings],
-            created_at=datetime.fromtimestamp(
-                self.created_at, tz=timezone.utc
-            ),
-            updated_at=datetime.fromtimestamp(
-                self.updated_at, tz=timezone.utc
-            ),
+            created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
+            updated_at=datetime.fromtimestamp(self.updated_at, tz=timezone.utc),
             request_deadline=(
                 datetime.fromtimestamp(self.request_deadline, tz=timezone.utc)
                 if self.request_deadline is not None
                 else None
             ),
             last_reminder_sent_at=(
-                datetime.fromtimestamp(
-                    self.last_reminder_sent_at, tz=timezone.utc
-                )
+                datetime.fromtimestamp(self.last_reminder_sent_at, tz=timezone.utc)
                 if self.last_reminder_sent_at is not None
                 else None
             ),
@@ -131,8 +120,7 @@ class ScheduleSchema(DocumentBaseSchema):
             ],
             constraint_builds=schedule.constraint_build_ids,
             quick_staffings=[
-                QuickStaffingSchema.from_core(qs)
-                for qs in schedule.quick_staffings
+                QuickStaffingSchema.from_core(qs) for qs in schedule.quick_staffings
             ],
             created_at=schedule.created_at.timestamp(),
             updated_at=schedule.updated_at.timestamp(),

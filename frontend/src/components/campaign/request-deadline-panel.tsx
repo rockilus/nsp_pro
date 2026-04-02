@@ -7,10 +7,7 @@ import { useTranslation } from '../../app/i18n/client';
 import { Calendar, Send, Trash2 } from 'lucide-react';
 // shadcn/ui
 import { Button } from '@/components/ui/button';
-import {
-  formatToInputDateTime,
-  parseFromInputDateTime,
-} from '@/lib/date-utils';
+import { formatToInputDateTime, parseFromInputDateTime } from '@/lib/date-utils';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Hooks
@@ -196,7 +193,9 @@ export default function RequestDeadlinePanel({
         <>
           <div className="relative">
             <span
-              className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}
+              className={
+                currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'
+              }
               data-testid="current-deadline"
             >
               {currentDeadline
@@ -205,7 +204,7 @@ export default function RequestDeadlinePanel({
             </span>
             {currentDeadline && lastReminderSentAt ? (
               <span
-                className="absolute left-0 top-full mt-0 text-xs text-muted-foreground whitespace-nowrap"
+                className="absolute top-full left-0 mt-0 text-xs whitespace-nowrap text-muted-foreground"
                 data-testid="last-reminder-date"
               >
                 {t('sent') || 'Sent'} {dayjs(lastReminderSentAt).utc().format('DD/MM/YYYY')}

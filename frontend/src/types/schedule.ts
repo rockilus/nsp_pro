@@ -204,8 +204,7 @@ export type RequestDeadlineT = {
 export const toRequestDeadlineT = (data: any): RequestDeadlineT => {
   return {
     deadlineDate: data.deadlineDate != null ? dayjs.unix(data.deadlineDate).utc() : null,
-    periodStartDate:
-      data.periodStartDate != null ? dayjs.unix(data.periodStartDate).utc() : null,
+    periodStartDate: data.periodStartDate != null ? dayjs.unix(data.periodStartDate).utc() : null,
     periodEndDate: data.periodEndDate != null ? dayjs.unix(data.periodEndDate).utc() : null,
   };
 };
