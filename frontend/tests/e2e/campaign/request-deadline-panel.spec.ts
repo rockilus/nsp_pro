@@ -1,40 +1,85 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { RoleTestBase } from '../../utils/role-test-base';
+import { DatabaseTestUtils, TestUser } from '../../utils/database-utils';
 import { formatToInputDateTime } from '@/lib/date-utils';
+import { testConfig } from '../../utils/test-config';
 
 dayjs.extend(utc);
 
-const roleTestBase = new RoleTestBase();
+interface RequestDeadlineTestContext {
+  dbUtils: DatabaseTestUtils;
+  team: { teamId: string; name: string };
+  owner: TestUser;
+  schedule: any;
+}
+
+const testContextMap = new Map<string, RequestDeadlineTestContext>();
 
 test.describe('RequestDeadlinePanel (campaign page)', () => {
-  let team: { teamId: string; name: string };
-  let schedule: any;
+  test.beforeEach(async ({}, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+    (testInfo as any).testRunId = testRunId;
 
-  test.beforeEach(async () => {
-    // Create team and users
-    await roleTestBase.setupRoleTests(test.info().workerIndex);
-    team = roleTestBase.getTestTeam();
-    // Create a campaign schedule for the team
-    schedule = await roleTestBase.dbUtils.createSchedule(team.teamId);
+    const dbUtils = new DatabaseTestUtils();
+    await dbUtils.waitForApiReady();
+
+    const id1 = randomUUID().replace(/-/g, '').slice(0, 24);
+    const owner: TestUser = {
+      user_id: id1,
+      email: `testuser-${id1}@example.com`,
+      username: `testuser-${id1}`,
+      first_name: 'Test',
+      last_name: 'User',
+    };
+
+    await dbUtils.createTestUser(owner);
+
+    const team = await dbUtils.createTeam({
+      name: `E2E Request Deadline Team ${workerIndex}-${Date.now()}`,
+      ownerUserId: owner.user_id,
+    });
+
+    const schedule = await dbUtils.createSchedule(team.teamId);
+
+    testContextMap.set(testRunId, { dbUtils, team, owner, schedule });
   });
 
-  test('no deadline display and set button visible', async ({ page }) => {
-    await roleTestBase.actAsOwner(page);
-    await roleTestBase.navigateToCampaignPage(page);
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+    testContextMap.delete(testRunId);
+  });
+
+  test('no deadline display and set button visible', async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team, owner } = testContextMap.get(testRunId)!;
+
+    await dbUtils.authenticatePageAsUser(page, owner.user_id);
+    await page.goto(`${testConfig.frontendUrl}/en/plan/campaign/`);
+    await page.evaluate((teamId) => localStorage.setItem('selectedTeamId', teamId), team.teamId);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
 
     const panel = page.locator('[data-testid="request-deadline-panel"]');
     await expect(panel).toBeVisible();
 
-    // When no deadline set, current-deadline should show the fallback text
     await expect(panel.locator('[data-testid="current-deadline"]')).toBeVisible();
     await expect(panel.locator('[data-testid="set-deadline-button"]')).toBeVisible();
   });
 
-  test('open set input shows input + confirm + cancel', async ({ page }) => {
-    await roleTestBase.actAsOwner(page);
-    await roleTestBase.navigateToCampaignPage(page);
+  test('open set input shows input + confirm + cancel', async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team, owner } = testContextMap.get(testRunId)!;
+
+    await dbUtils.authenticatePageAsUser(page, owner.user_id);
+    await page.goto(`${testConfig.frontendUrl}/en/plan/campaign/`);
+    await page.evaluate((teamId) => localStorage.setItem('selectedTeamId', teamId), team.teamId);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+
     const panel = page.locator('[data-testid="request-deadline-panel"]');
 
     await panel.locator('[data-testid="set-deadline-button"]').click();
@@ -44,9 +89,16 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     await expect(panel.locator('[data-testid="cancel-deadline-button"]')).toBeVisible();
   });
 
-  test('confirming set updates request deadline and lastReminderSentAt', async ({ page }) => {
-    await roleTestBase.actAsOwner(page);
-    await roleTestBase.navigateToCampaignPage(page);
+  test('confirming set updates request deadline and lastReminderSentAt', async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team, owner, schedule } = testContextMap.get(testRunId)!;
+
+    await dbUtils.authenticatePageAsUser(page, owner.user_id);
+    await page.goto(`${testConfig.frontendUrl}/en/plan/campaign/`);
+    await page.evaluate((teamId) => localStorage.setItem('selectedTeamId', teamId), team.teamId);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+
     const panel = page.locator('[data-testid="request-deadline-panel"]');
 
     await panel.locator('[data-testid="set-deadline-button"]').click();
@@ -61,53 +113,50 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
       panel.locator('[data-testid="confirm-deadline-button"]').click(),
     ]);
 
-    // UI shows formatted deadline
     await expect(panel.locator('[data-testid="current-deadline"]')).toContainText(
       newDeadline.format('DD/MM/YYYY HH:mm'),
     );
 
-    // Server-side schedule should have requestDeadline and lastReminderSentAt set
-    const schedules = await roleTestBase.dbUtils.getSchedules(team.teamId);
+    const schedules = await dbUtils.getSchedules(team.teamId);
     const updated = schedules.find((s: any) => s.id === schedule.id);
     expect(updated.requestDeadline).toBeTruthy();
     expect(updated.lastReminderSentAt).toBeTruthy();
   });
 
-  test('action buttons appear after deadline set', async ({ page }) => {
-    await roleTestBase.actAsOwner(page);
-    await roleTestBase.navigateToCampaignPage(page);
-    const panel = page.locator('[data-testid="request-deadline-panel"]');
+  test('action buttons appear after deadline set', async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team, owner, schedule } = testContextMap.get(testRunId)!;
 
     // Set initial deadline via API to reach the state
     const apiDeadline = dayjs.utc().add(1, 'day').toDate();
-    await roleTestBase.dbUtils.setRequestDeadlineAs(
-      roleTestBase.getOwnerUser().userId,
-      schedule.id,
-      team.teamId,
-      apiDeadline,
-    );
+    await dbUtils.setRequestDeadlineAs(owner.user_id, schedule.id, team.teamId, apiDeadline);
 
+    await dbUtils.authenticatePageAsUser(page, owner.user_id);
+    await page.goto(`${testConfig.frontendUrl}/en/plan/campaign/`);
+    await page.evaluate((teamId) => localStorage.setItem('selectedTeamId', teamId), team.teamId);
     await page.reload();
+    await page.waitForLoadState('networkidle');
+
+    const panel = page.locator('[data-testid="request-deadline-panel"]');
 
     await expect(panel.locator('[data-testid="edit-deadline-button"]')).toBeVisible();
     await expect(panel.locator('[data-testid="send-reminder-button"]')).toBeVisible();
     await expect(panel.locator('[data-testid="delete-deadline-button"]')).toBeVisible();
   });
 
-  test('editing updates the deadline', async ({ page }) => {
-    await roleTestBase.actAsOwner(page);
-    await roleTestBase.navigateToCampaignPage(page);
-    const panel = page.locator('[data-testid="request-deadline-panel"]');
+  test('editing updates the deadline', async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team, owner, schedule } = testContextMap.get(testRunId)!;
 
-    // Ensure a deadline exists first
-    await roleTestBase.dbUtils.setRequestDeadlineAs(
-      roleTestBase.getOwnerUser().userId,
-      schedule.id,
-      team.teamId,
-      dayjs.utc().add(1, 'day').toDate(),
-    );
+    await dbUtils.setRequestDeadlineAs(owner.user_id, schedule.id, team.teamId, dayjs.utc().add(1, 'day').toDate());
 
+    await dbUtils.authenticatePageAsUser(page, owner.user_id);
+    await page.goto(`${testConfig.frontendUrl}/en/plan/campaign/`);
+    await page.evaluate((teamId) => localStorage.setItem('selectedTeamId', teamId), team.teamId);
     await page.reload();
+    await page.waitForLoadState('networkidle');
+
+    const panel = page.locator('[data-testid="request-deadline-panel"]');
 
     await panel.locator('[data-testid="edit-deadline-button"]').click();
     await expect(panel.locator('[data-testid="deadline-input"]')).toBeVisible();
@@ -124,38 +173,35 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
       updatedDeadline.format('DD/MM/YYYY HH:mm'),
     );
 
-    const schedules = await roleTestBase.dbUtils.getSchedules(team.teamId);
+    const schedules = await dbUtils.getSchedules(team.teamId);
     const updated = schedules.find((s: any) => s.id === schedule.id);
     expect(updated.requestDeadline).toBeTruthy();
   });
 
-  test('resend reminder updates lastReminderSentAt', async ({ page }) => {
-    await roleTestBase.actAsOwner(page);
-    await roleTestBase.navigateToCampaignPage(page);
+  test('resend reminder updates lastReminderSentAt', async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team, owner, schedule } = testContextMap.get(testRunId)!;
+
+    await dbUtils.setRequestDeadlineAs(owner.user_id, schedule.id, team.teamId, dayjs.utc().add(1, 'day').toDate());
+
+    await dbUtils.authenticatePageAsUser(page, owner.user_id);
+    await page.goto(`${testConfig.frontendUrl}/en/plan/campaign/`);
+    await page.evaluate((teamId) => localStorage.setItem('selectedTeamId', teamId), team.teamId);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+
     const panel = page.locator('[data-testid="request-deadline-panel"]');
 
-    // Ensure a deadline exists first
-    await roleTestBase.dbUtils.setRequestDeadlineAs(
-      roleTestBase.getOwnerUser().userId,
-      schedule.id,
-      team.teamId,
-      dayjs.utc().add(1, 'day').toDate(),
-    );
-
-    await page.reload();
-
-    const before = (await roleTestBase.dbUtils.getSchedules(team.teamId)).find(
-      (s: any) => s.id === schedule.id,
-    ).lastReminderSentAt;
+    const before = (await dbUtils.getSchedules(team.teamId)).find((s: any) => s.id === schedule.id)
+      .lastReminderSentAt;
 
     await Promise.all([
       page.waitForResponse((r) => r.url().includes('/reminder') && r.status() === 200),
       panel.locator('[data-testid="send-reminder-button"]').click(),
     ]);
 
-    const after = (await roleTestBase.dbUtils.getSchedules(team.teamId)).find(
-      (s: any) => s.id === schedule.id,
-    ).lastReminderSentAt;
+    const after = (await dbUtils.getSchedules(team.teamId)).find((s: any) => s.id === schedule.id)
+      .lastReminderSentAt;
 
     expect(after).toBeTruthy();
     if (before) {
@@ -163,34 +209,29 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     }
   });
 
-  test('delete clears deadline and lastReminderSentAt and UI returns to no-deadline', async ({ page }) => {
-    await roleTestBase.actAsOwner(page);
-    await roleTestBase.navigateToCampaignPage(page);
-    const panel = page.locator('[data-testid="request-deadline-panel"]');
+  test('delete clears deadline and lastReminderSentAt and UI returns to no-deadline', async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const { dbUtils, team, owner, schedule } = testContextMap.get(testRunId)!;
 
-    // Ensure a deadline exists first
-    await roleTestBase.dbUtils.setRequestDeadlineAs(
-      roleTestBase.getOwnerUser().userId,
-      schedule.id,
-      team.teamId,
-      dayjs.utc().add(1, 'day').toDate(),
-    );
+    await dbUtils.setRequestDeadlineAs(owner.user_id, schedule.id, team.teamId, dayjs.utc().add(1, 'day').toDate());
 
+    await dbUtils.authenticatePageAsUser(page, owner.user_id);
+    await page.goto(`${testConfig.frontendUrl}/en/plan/campaign/`);
+    await page.evaluate((teamId) => localStorage.setItem('selectedTeamId', teamId), team.teamId);
     await page.reload();
+    await page.waitForLoadState('networkidle');
+
+    const panel = page.locator('[data-testid="request-deadline-panel"]');
 
     await Promise.all([
       page.waitForResponse((r) => r.url().includes('/request-deadline') && r.status() === 200),
       panel.locator('[data-testid="delete-deadline-button"]').click(),
     ]);
 
-    // Server should show fields cleared
-    const updated = (await roleTestBase.dbUtils.getSchedules(team.teamId)).find(
-      (s: any) => s.id === schedule.id,
-    );
+    const updated = (await dbUtils.getSchedules(team.teamId)).find((s: any) => s.id === schedule.id);
     expect(updated.requestDeadline).toBeFalsy();
     expect(updated.lastReminderSentAt).toBeFalsy();
 
-    // UI returns to no-deadline state
     await expect(panel.locator('[data-testid="current-deadline"]')).toBeVisible();
     await expect(panel.locator('[data-testid="set-deadline-button"]')).toBeVisible();
   });
