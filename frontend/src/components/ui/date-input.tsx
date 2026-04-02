@@ -35,7 +35,7 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
       return typeof d === 'string' ? d : (d as Dayjs).utc().format('YYYY-MM-DD');
     };
 
-    const combinedClassName = cn('px-3 py-1.5 font-sans', className);
+    // const combinedClassName = cn('px-3 py-1.5 font-sans', className);
 
     return (
       <Input
@@ -48,7 +48,7 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
         onChange={handle}
         min={norm(min)}
         max={norm(max)}
-        className={combinedClassName}
+        // className={combinedClassName}
         required={required}
         disabled={disabled}
       />
