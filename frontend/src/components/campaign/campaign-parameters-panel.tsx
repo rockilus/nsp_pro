@@ -4,7 +4,7 @@ import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../app/i18n/client';
 // Components
 import RequestDeadlinePanel from './request-deadline-panel';
-import DateInput from '@/components/ui/date-input';
+import { formatToInput, parseFromInput } from '@/lib/date-utils';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Constants
@@ -46,6 +46,11 @@ export default function CampaignParametersPanel({
   const dateInputClass =
     'h-9 w-40 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50';
 
+  const norm = (d?: Dayjs | string | null) => {
+    if (!d) return undefined;
+    return typeof d === 'string' ? d : (d as Dayjs).utc().format('YYYY-MM-DD');
+  };
+
   return (
     <div className="flex w-full flex-col self-start">
       <div className="flex w-full flex-col">
@@ -56,9 +61,11 @@ export default function CampaignParametersPanel({
             <span className="text-sm text-[#3c4043]">{t('start')}</span>
           </div>
           <div className="flex items-center">
-            <DateInput
-              value={scheduleCampaign.startDate}
-              onChange={(newStart) => {
+            <input
+              type="date"
+              value={formatToInput(scheduleCampaign.startDate)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const newStart = parseFromInput(e.target.value);
                 if (!newStart) return;
                 const maxEndForNewStart = newStart.add(MAX_SCHEDULE_DURATION_MONTHS, 'month');
                 const newEnd = scheduleCampaign.endDate.isAfter(maxEndForNewStart)
@@ -70,7 +77,7 @@ export default function CampaignParametersPanel({
                   endDate: newEnd,
                 });
               }}
-              min={minDate}
+              min={norm(minDate)}
               className={dateInputClass}
             />
           </div>
@@ -81,9 +88,11 @@ export default function CampaignParametersPanel({
             <span className="text-sm text-[#3c4043]">{t('end')}</span>
           </div>
           <div className="flex items-center">
-            <DateInput
-              value={scheduleCampaign.endDate}
-              onChange={(newEnd) => {
+            <input
+              type="date"
+              value={formatToInput(scheduleCampaign.endDate)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const newEnd = parseFromInput(e.target.value);
                 if (!newEnd) return;
                 const candidate = newEnd;
                 const maxAllowed = scheduleCampaign.startDate.add(
@@ -96,8 +105,8 @@ export default function CampaignParametersPanel({
                   endDate: finalEnd,
                 });
               }}
-              min={scheduleCampaign.startDate}
-              max={maxEndFromStart}
+              min={norm(scheduleCampaign.startDate)}
+              max={norm(maxEndFromStart)}
               className={dateInputClass}
             />
           </div>

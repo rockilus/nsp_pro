@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import DateInput from '@/components/ui/date-input';
+import { formatToInput, parseFromInput } from '@/lib/date-utils';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Hooks
@@ -55,6 +55,13 @@ export default function RequestDeadlinePanel({
   const lastReminderSentAt = scheduleCampaign.lastReminderSentAt;
   const today = dayjs().utc().startOf('day');
   const minExtend = currentDeadline ? currentDeadline.add(1, 'day') : today;
+
+  const norm = (d?: Dayjs | string | null) => {
+    if (!d) return undefined;
+    return typeof d === 'string' ? d : (d as Dayjs).utc().format('YYYY-MM-DD');
+  };
+  const dateInputClass =
+    'h-9 w-40 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50';
 
   const handleSetDeadline = async () => {
     if (!deadlineInput) return;
@@ -162,7 +169,13 @@ export default function RequestDeadlinePanel({
           <DialogHeader>
             <DialogTitle>{t('deadline_dialog_title')}</DialogTitle>
           </DialogHeader>
-          <DateInput value={deadlineInput} min={today} onChange={(d) => setDeadlineInput(d)} />
+          <input
+            type="date"
+            value={formatToInput(deadlineInput)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
+            min={norm(today)}
+            className={dateInputClass}
+          />
           <DialogFooter>
             <Button variant="outline" onClick={() => setSetDialogOpen(false)}>
               {t('cancel') || 'Cancel'}
@@ -180,7 +193,13 @@ export default function RequestDeadlinePanel({
           <DialogHeader>
             <DialogTitle>{t('extend_deadline_dialog_title')}</DialogTitle>
           </DialogHeader>
-          <DateInput value={extendInput} min={minExtend} onChange={(d) => setExtendInput(d)} />
+          <input
+            type="date"
+            value={formatToInput(extendInput)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtendInput(parseFromInput(e.target.value))}
+            min={norm(minExtend)}
+            className={dateInputClass}
+          />
           <DialogFooter>
             <Button variant="outline" onClick={() => setExtendDialogOpen(false)}>
               {t('cancel') || 'Cancel'}
