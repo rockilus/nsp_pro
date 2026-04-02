@@ -59,7 +59,7 @@ export default function RequestDeadlinePanel({
     return typeof d === 'string' ? d : (d as Dayjs).utc().format('YYYY-MM-DDTHH:mm');
   };
   const dateInputClass =
-    'h-9 w-40 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50';
+    'h-9 w-46 rounded-md border border-input bg-transparent px-2.5 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50';
 
   const handleSetDeadline = async () => {
     if (!deadlineInput) return;
