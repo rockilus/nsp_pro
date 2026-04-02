@@ -142,7 +142,7 @@ export default function RequestDeadlinePanel({
                 )}
               </div>
               <Button
-                variant="outline"
+                variant="default"
                 size="sm"
                 data-testid="extend-deadline-button"
                 onClick={() => setExtendDialogOpen(true)}
@@ -152,7 +152,7 @@ export default function RequestDeadlinePanel({
             </>
           ) : (
             <Button
-              variant="brand"
+              variant="default"
               size="sm"
               data-testid="set-deadline-button"
               onClick={() => setSetDialogOpen(true)}
