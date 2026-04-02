@@ -131,6 +131,7 @@ export default function RequestDeadlinePanel({
           <input
             type="datetime-local"
             value={formatToInputDateTime(deadlineInput)}
+            data-testid="deadline-input"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setDeadlineInput(parseFromInputDateTime(e.target.value))
             }
@@ -141,6 +142,7 @@ export default function RequestDeadlinePanel({
             variant="default"
             size="sm"
             onClick={handleEditDeadline}
+            data-testid="confirm-deadline-button"
             disabled={isSaving || !deadlineInput}
           >
             {t('set_deadline')}
@@ -152,6 +154,7 @@ export default function RequestDeadlinePanel({
               setMode('idle');
               setDeadlineInput(null);
             }}
+            data-testid="cancel-deadline-button"
           >
             {t('cancel') || 'Cancel'}
           </Button>
@@ -161,6 +164,7 @@ export default function RequestDeadlinePanel({
           <input
             type="datetime-local"
             value={formatToInputDateTime(deadlineInput)}
+            data-testid="deadline-input"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setDeadlineInput(parseFromInputDateTime(e.target.value))
             }
@@ -171,6 +175,7 @@ export default function RequestDeadlinePanel({
             variant="default"
             size="sm"
             onClick={handleSetDeadline}
+            data-testid="confirm-deadline-button"
             disabled={isSaving || !deadlineInput}
           >
             {t('set_deadline')}
@@ -182,6 +187,7 @@ export default function RequestDeadlinePanel({
               setMode('idle');
               setDeadlineInput(null);
             }}
+            data-testid="cancel-deadline-button"
           >
             {t('cancel') || 'Cancel'}
           </Button>
@@ -191,13 +197,17 @@ export default function RequestDeadlinePanel({
           <div className="relative">
             <span
               className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}
+              data-testid="current-deadline"
             >
               {currentDeadline
                 ? currentDeadline.format('DD/MM/YYYY HH:mm')
                 : t('no_deadline_set') || 'No deadline'}
             </span>
             {currentDeadline && lastReminderSentAt ? (
-              <span className="absolute left-0 top-full mt-0 text-xs text-muted-foreground whitespace-nowrap">
+              <span
+                className="absolute left-0 top-full mt-0 text-xs text-muted-foreground whitespace-nowrap"
+                data-testid="last-reminder-date"
+              >
                 {t('sent') || 'Sent'} {dayjs(lastReminderSentAt).utc().format('DD/MM/YYYY')}
               </span>
             ) : null}
@@ -213,6 +223,7 @@ export default function RequestDeadlinePanel({
                   setDeadlineInput(currentDeadline);
                 }}
                 aria-label={t('edit_deadline') || 'Edit deadline'}
+                data-testid="edit-deadline-button"
               >
                 <Calendar className="h-4 w-4" />
               </Button>
@@ -222,6 +233,7 @@ export default function RequestDeadlinePanel({
                 data-testid="send-reminder-icon-button-compact"
                 onClick={handleSendReminder}
                 aria-label={t('send_reminder') || 'Send reminder'}
+                data-testid="send-reminder-button"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -231,6 +243,7 @@ export default function RequestDeadlinePanel({
                 data-testid="delete-deadline-button-compact"
                 onClick={handleDeleteDeadline}
                 aria-label={t('delete_deadline') || 'Delete deadline'}
+                data-testid="delete-deadline-button"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
