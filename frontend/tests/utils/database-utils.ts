@@ -1837,6 +1837,18 @@ export class DatabaseTestUtils {
     return await ScheduleApi.editRequestDeadline(userClient, scheduleId, teamId, newDeadline);
   }
 
+  /**
+   * Delete the request deadline as a specific user.
+   */
+  async deleteRequestDeadlineAs(
+    userId: string,
+    scheduleId: string,
+    teamId: string,
+  ): Promise<ScheduleT> {
+    const userClient = this.createAuthenticatedClientForUser(userId);
+    return await ScheduleApi.deleteRequestDeadline(userClient, scheduleId, teamId);
+  }
+
   //////////////////////////
   // Assignment Methods
   //////////////////////////
