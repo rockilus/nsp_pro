@@ -134,7 +134,7 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     await expect(panel.locator('[data-testid="current-deadline"]')).toContainText(displayValue);
 
     const schedules = await dbUtils.getSchedules(team.teamId);
-    const updated = schedules.find((s: any) => s.id === schedule.id);
+    const updated = schedules.find((s: any) => s.id === schedule.id)!;
     expect(updated.requestDeadline).toBeTruthy();
     expect(updated.lastReminderSentAt).toBeTruthy();
   });
@@ -209,7 +209,7 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     );
 
     const schedules = await dbUtils.getSchedules(team.teamId);
-    const updated = schedules.find((s: any) => s.id === schedule.id);
+    const updated = schedules.find((s: any) => s.id === schedule.id)!;
     expect(updated.requestDeadline).toBeTruthy();
   });
 
@@ -234,7 +234,7 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
 
     const before = (await dbUtils.getSchedules(team.teamId)).find(
       (s: any) => s.id === schedule.id,
-    ).lastReminderSentAt;
+    )!.lastReminderSentAt;
 
     await Promise.all([
       page.waitForResponse((r) => r.url().includes('/reminder') && r.ok()),
@@ -243,7 +243,7 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
 
     const after = (await dbUtils.getSchedules(team.teamId)).find(
       (s: any) => s.id === schedule.id,
-    ).lastReminderSentAt;
+    )!.lastReminderSentAt;
 
     expect(after).toBeTruthy();
     if (before) {
@@ -279,7 +279,7 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
 
     const updated = (await dbUtils.getSchedules(team.teamId)).find(
       (s: any) => s.id === schedule.id,
-    );
+    )!;
     expect(updated.requestDeadline).toBeFalsy();
     expect(updated.lastReminderSentAt).toBeFalsy();
 
