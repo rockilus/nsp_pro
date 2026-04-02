@@ -4,6 +4,7 @@ import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../app/i18n/client';
 // Components
 import RequestDeadlinePanel from './request-deadline-panel';
+import DateInput from '@/components/ui/date-input';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Constants
@@ -55,14 +56,10 @@ export default function CampaignParametersPanel({
             <span className="text-sm text-[#3c4043]">{t('start')}</span>
           </div>
           <div className="flex items-center">
-            <input
-              type="date"
-              className={dateInputClass}
-              value={scheduleCampaign.startDate.format('YYYY-MM-DD')}
-              min={minDate.format('YYYY-MM-DD')}
-              onChange={(e) => {
-                if (!e.target.value) return;
-                const newStart = dayjs.utc(e.target.value);
+            <DateInput
+              value={scheduleCampaign.startDate}
+              onChange={(newStart) => {
+                if (!newStart) return;
                 const maxEndForNewStart = newStart.add(MAX_SCHEDULE_DURATION_MONTHS, 'month');
                 const newEnd = scheduleCampaign.endDate.isAfter(maxEndForNewStart)
                   ? maxEndForNewStart
@@ -73,6 +70,8 @@ export default function CampaignParametersPanel({
                   endDate: newEnd,
                 });
               }}
+              min={minDate}
+              className={dateInputClass}
             />
           </div>
         </div>
@@ -82,15 +81,11 @@ export default function CampaignParametersPanel({
             <span className="text-sm text-[#3c4043]">{t('end')}</span>
           </div>
           <div className="flex items-center">
-            <input
-              type="date"
-              className={dateInputClass}
-              value={scheduleCampaign.endDate.format('YYYY-MM-DD')}
-              min={scheduleCampaign.startDate.format('YYYY-MM-DD')}
-              max={maxEndFromStart?.format('YYYY-MM-DD')}
-              onChange={(e) => {
-                if (!e.target.value) return;
-                const candidate = dayjs.utc(e.target.value);
+            <DateInput
+              value={scheduleCampaign.endDate}
+              onChange={(newEnd) => {
+                if (!newEnd) return;
+                const candidate = newEnd;
                 const maxAllowed = scheduleCampaign.startDate.add(
                   MAX_SCHEDULE_DURATION_MONTHS,
                   'month',
@@ -101,6 +96,9 @@ export default function CampaignParametersPanel({
                   endDate: finalEnd,
                 });
               }}
+              min={scheduleCampaign.startDate}
+              max={maxEndFromStart}
+              className={dateInputClass}
             />
           </div>
         </div>

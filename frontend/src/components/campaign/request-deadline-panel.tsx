@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import type { Dayjs } from 'dayjs';
 import { toast } from 'sonner';
 import { useTranslation } from '../../app/i18n/client';
 // shadcn/ui
@@ -11,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import DateInput from '@/components/ui/date-input';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Hooks
@@ -29,6 +31,8 @@ interface RequestDeadlinePanelProps {
   lng: string;
 }
 
+dayjs.extend(utc);
+
 export default function RequestDeadlinePanel({
   scheduleCampaign,
   onDeadlineSet,
@@ -43,20 +47,20 @@ export default function RequestDeadlinePanel({
 
   const [setDialogOpen, setSetDialogOpen] = useState(false);
   const [extendDialogOpen, setExtendDialogOpen] = useState(false);
-  const [deadlineInput, setDeadlineInput] = useState('');
-  const [extendInput, setExtendInput] = useState('');
+  const [deadlineInput, setDeadlineInput] = useState<Dayjs | null>(null);
+  const [extendInput, setExtendInput] = useState<Dayjs | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const currentDeadline = scheduleCampaign.requestDeadline;
   const lastReminderSentAt = scheduleCampaign.lastReminderSentAt;
-  const today = dayjs().utc().format('YYYY-MM-DD');
-  const minExtend = currentDeadline ? currentDeadline.add(1, 'day').format('YYYY-MM-DD') : today;
+  const today = dayjs().utc().startOf('day');
+  const minExtend = currentDeadline ? currentDeadline.add(1, 'day') : today;
 
   const handleSetDeadline = async () => {
     if (!deadlineInput) return;
     setIsSaving(true);
     try {
-      const deadline = new Date(deadlineInput);
+      const deadline = deadlineInput.utc().toDate();
       const updated = await setRequestDeadline(
         scheduleCampaign.id,
         scheduleCampaign.teamId,
@@ -64,7 +68,7 @@ export default function RequestDeadlinePanel({
       );
       onDeadlineSet(updated);
       setSetDialogOpen(false);
-      setDeadlineInput('');
+      setDeadlineInput(null);
     } catch (error) {
       console.error('Failed to set request deadline:', error);
     } finally {
@@ -86,7 +90,7 @@ export default function RequestDeadlinePanel({
     if (!extendInput) return;
     setIsSaving(true);
     try {
-      const newDeadline = new Date(extendInput);
+      const newDeadline = extendInput.utc().toDate();
       const updated = await extendRequestDeadline(
         scheduleCampaign.id,
         scheduleCampaign.teamId,
@@ -94,7 +98,7 @@ export default function RequestDeadlinePanel({
       );
       onDeadlineExtended(updated);
       setExtendDialogOpen(false);
-      setExtendInput('');
+      setExtendInput(null);
     } catch (error) {
       console.error('Failed to extend deadline:', error);
     } finally {
@@ -106,9 +110,9 @@ export default function RequestDeadlinePanel({
     <>
       <div
         data-testid="request-deadline-panel"
-        className="py-0.5 flex min-h-[45px] flex-row items-center"
+        className="py-2 px-3 flex min-h-[45px] flex-row items-center max-w-[440px]"
       >
-        <div className="flex w-[150px] items-center">
+        <div className="flex w-[120px] items-center">
           <span className="text-sm text-[#3c4043]">{t('request_deadline')}</span>
         </div>
         <div className="gap-2 flex flex-1 flex-wrap items-center">
@@ -141,7 +145,7 @@ export default function RequestDeadlinePanel({
             </>
           ) : (
             <Button
-              variant="outline"
+              variant="brand"
               size="sm"
               data-testid="set-deadline-button"
               onClick={() => setSetDialogOpen(true)}
@@ -154,21 +158,16 @@ export default function RequestDeadlinePanel({
 
       {/* Set deadline dialog */}
       <Dialog open={setDialogOpen} onOpenChange={setSetDialogOpen}>
-        <DialogContent data-testid="deadline-dialog" showCloseButton={false}>
+        <DialogContent className="w-4/5 md:w-1/2" data-testid="deadline-dialog" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>{t('deadline_dialog_title')}</DialogTitle>
           </DialogHeader>
-          <Input
-            type="date"
-            value={deadlineInput}
-            min={today}
-            onChange={(e) => setDeadlineInput(e.target.value)}
-          />
+          <DateInput value={deadlineInput} min={today} onChange={(d) => setDeadlineInput(d)} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setSetDialogOpen(false)}>
               {t('cancel') || 'Cancel'}
             </Button>
-            <Button onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
+            <Button variant="brand" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
               {t('set_deadline')}
             </Button>
           </DialogFooter>
@@ -177,21 +176,16 @@ export default function RequestDeadlinePanel({
 
       {/* Extend deadline dialog */}
       <Dialog open={extendDialogOpen} onOpenChange={setExtendDialogOpen}>
-        <DialogContent data-testid="extend-deadline-dialog" showCloseButton={false}>
+        <DialogContent className="w-4/5 md:w-1/2" data-testid="extend-deadline-dialog" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>{t('extend_deadline_dialog_title')}</DialogTitle>
           </DialogHeader>
-          <Input
-            type="date"
-            value={extendInput}
-            min={minExtend}
-            onChange={(e) => setExtendInput(e.target.value)}
-          />
+          <DateInput value={extendInput} min={minExtend} onChange={(d) => setExtendInput(d)} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setExtendDialogOpen(false)}>
               {t('cancel') || 'Cancel'}
             </Button>
-            <Button onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
+            <Button variant="brand" onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
               {t('extend_deadline')}
             </Button>
           </DialogFooter>
