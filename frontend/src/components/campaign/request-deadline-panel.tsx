@@ -167,6 +167,9 @@ export default function RequestDeadlinePanel({
         </div>
       ) : (
         <div data-testid="request-deadline-panel" className="flex items-center gap-2">
+          <span className="text-sm font-semibold">
+            {currentDeadline ? formatLocalDate(currentDeadline, lng) : t('no_deadline_set') || 'No deadline'}
+          </span>
           {currentDeadline ? (
             <>
               <Button

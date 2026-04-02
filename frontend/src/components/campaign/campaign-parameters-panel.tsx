@@ -119,11 +119,6 @@ export default function CampaignParametersPanel({
             <span className="text-sm text-[#3c4043]">{t('request_deadline')}</span>
           </div>
           <div className="gap-2 flex flex-1 items-center">
-            <span className="text-sm font-semibold">
-              {scheduleCampaign.requestDeadline
-                ? formatLocalDate(scheduleCampaign.requestDeadline, lng)
-                : t('no_deadline_set') || 'No deadline'}
-            </span>
             <RequestDeadlinePanel
               lng={lng}
               scheduleCampaign={scheduleCampaign}
