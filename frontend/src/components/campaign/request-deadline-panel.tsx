@@ -7,7 +7,7 @@ import { useTranslation } from '../../app/i18n/client';
 import { Calendar, Send, Trash2 } from 'lucide-react';
 // shadcn/ui
 import { Button } from '@/components/ui/button';
-import { formatToInput, parseFromInput, formatLocalDate } from '@/lib/date-utils';
+import { formatToInput, parseFromInput } from '@/lib/date-utils';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Hooks
@@ -122,115 +122,6 @@ export default function RequestDeadlinePanel({
   };
 
   return (
-    <>
-      {!compact ? (
-        <div
-          data-testid="request-deadline-panel"
-          className="py-2 px-3 flex min-h-[45px] flex-row items-center max-w-[440px]"
-        >
-          <div className="flex w-[120px] items-center">
-            <span className="text-sm text-[#3c4043]">{t('request_deadline')}</span>
-          </div>
-          <div className="gap-2 flex flex-1 flex-wrap items-center">
-            {currentDeadline ? (
-              mode === 'edit' ? (
-                <>
-                  <input
-                    type="date"
-                    value={formatToInput(deadlineInput)}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
-                    min={norm(today)}
-                    className={dateInputClass}
-                  />
-                  <Button variant="brand" size="sm" onClick={handleEditDeadline} disabled={isSaving || !deadlineInput}>
-                    {t('set_deadline')}
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => { setMode('idle'); setDeadlineInput(null); }}>
-                    {t('cancel') || 'Cancel'}
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold">{formatLocalDate(currentDeadline, lng)}</span>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        data-testid="edit-deadline-button"
-                        onClick={() => { setMode('edit'); setDeadlineInput(currentDeadline); }}
-                        aria-label={t('edit_deadline') || 'Edit deadline'}
-                      >
-                        <Calendar className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        data-testid="send-reminder-icon-button"
-                        onClick={handleSendReminder}
-                        aria-label={t('send_reminder') || 'Send reminder'}
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        data-testid="delete-deadline-button"
-                        onClick={handleDeleteDeadline}
-                        aria-label={t('delete_deadline') || 'Delete deadline'}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      data-testid="send-reminder-button"
-                      onClick={handleSendReminder}
-                    >
-                      {t('send_reminder')}
-                    </Button>
-                    {lastReminderSentAt && (
-                      <span className="text-xs mt-0.5 text-muted-foreground">
-                        {t('last_sent')}: {formatLocalDate(lastReminderSentAt, lng)}
-                      </span>
-                    )}
-                  </div>
-                </>
-              )
-            ) : (
-              mode === 'set' ? (
-                <>
-                  <input
-                    type="date"
-                    value={formatToInput(deadlineInput)}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
-                    min={norm(today)}
-                    className={dateInputClass}
-                  />
-                  <Button variant="brand" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
-                    {t('set_deadline')}
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => { setMode('idle'); setDeadlineInput(null); }}>
-                    {t('cancel') || 'Cancel'}
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  data-testid="set-deadline-button"
-                  onClick={() => { setMode('set'); setDeadlineInput(today); }}
-                >
-                  {t('set')}
-                </Button>
-              )
-            )}
-          </div>
-        </div>
-      ) : (
         <div data-testid="request-deadline-panel" className="flex items-center gap-2">
           {mode === 'edit' ? (
             <>
@@ -267,7 +158,7 @@ export default function RequestDeadlinePanel({
           ) : (
             <>
               <span className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}>
-                {currentDeadline ? formatLocalDate(currentDeadline, lng) : t('no_deadline_set') || 'No deadline'}
+                {currentDeadline ? currentDeadline.format('DD/MM/YYYY') : t('no_deadline_set') || 'No deadline'}
               </span>
               {currentDeadline ? (
                 <div className="flex items-center gap-1">
@@ -312,9 +203,5 @@ export default function RequestDeadlinePanel({
             </>
           )}
         </div>
-      )}
-
-      {/* Inline set/extend inputs handled above; dialogs removed */}
-    </>
   );
 }

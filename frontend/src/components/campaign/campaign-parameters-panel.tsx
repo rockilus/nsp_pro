@@ -6,7 +6,7 @@ import { useTranslation } from '../../app/i18n/client';
 import { DatePickerInput } from '@/components/ui/date-picker-input';
 // Components
 import RequestDeadlinePanel from './request-deadline-panel';
-import { formatToInput, parseFromInput, formatLocalDate } from '@/lib/date-utils';
+import { formatToInput, parseFromInput } from '@/lib/date-utils';
 // Types
 import { ScheduleT } from '../../types/schedule';
 // Constants
@@ -125,7 +125,6 @@ export default function CampaignParametersPanel({
               onDeadlineSet={onDeadlineSet}
               onDeadlineExtended={onDeadlineExtended}
               onReminderSent={onReminderSent}
-              compact
             />
           </div>
         </div>

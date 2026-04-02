@@ -13,12 +13,6 @@ export const parseFromInput = (s?: string | null, asUtc = true): Dayjs | null =>
 
 export const toDate = (d?: Dayjs | null): Date | null => (d ? d.utc().toDate() : null);
 
-// Format a Dayjs date for display according to locale preferences.
-// Default is day-first (DD/MM/YYYY); English (`en`) uses month-first (MM/DD/YYYY).
-export const formatLocalDate = (d?: Dayjs | null, lng?: string): string => {
-  if (!d) return '';
-  const fmt = lng && lng.toLowerCase().startsWith('en') ? 'MM/DD/YYYY' : 'DD/MM/YYYY';
-  return (d as Dayjs).utc().format(fmt);
-};
 
-export default { formatToInput, parseFromInput, toDate, formatLocalDate };
+
+export default { formatToInput, parseFromInput, toDate };
