@@ -104,18 +104,32 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     await panel.locator('[data-testid="set-deadline-button"]').click();
 
     const newDeadline = dayjs.utc().add(2, 'day').startOf('minute');
-    const inputValue = formatToInputDateTime(newDeadline);
+    const displayValue = newDeadline.format('DD/MM/YYYY HH:mm');
+    const inputValue = formatToInputDateTime(newDeadline); // ISO for datetime-local
 
-    await panel.locator('[data-testid="deadline-input"]').fill(inputValue);
-
-    await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/request-deadline') && r.status() === 200),
-      panel.locator('[data-testid="confirm-deadline-button"]').click(),
-    ]);
-
-    await expect(panel.locator('[data-testid="current-deadline"]')).toContainText(
-      newDeadline.format('DD/MM/YYYY HH:mm'),
+    // Set the underlying input (datetime-local expects YYYY-MM-DDTHH:mm)
+    await panel.locator('[data-testid="deadline-input"]').evaluate(
+      (el, value) => {
+        const input = el as HTMLInputElement;
+        input.focus();
+        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set;
+        nativeSetter!.call(input, value as string);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        input.blur();
+      },
+      inputValue,
     );
+
+      const confirmBtn = panel.locator('[data-testid="confirm-deadline-button"]');
+      await expect(confirmBtn).toBeEnabled({ timeout: 2000 });
+
+      await Promise.all([
+        page.waitForResponse((r) => r.url().includes('/request-deadline') && r.ok()),
+        confirmBtn.click(),
+      ]);
+
+    await expect(panel.locator('[data-testid="current-deadline"]')).toContainText(displayValue);
 
     const schedules = await dbUtils.getSchedules(team.teamId);
     const updated = schedules.find((s: any) => s.id === schedule.id);
@@ -162,15 +176,29 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     await expect(panel.locator('[data-testid="deadline-input"]')).toBeVisible();
 
     const updatedDeadline = dayjs.utc().add(3, 'day').startOf('minute');
-    await panel.locator('[data-testid="deadline-input"]').fill(formatToInputDateTime(updatedDeadline));
+    const updatedInputValue = formatToInputDateTime(updatedDeadline);
+    const updatedDisplayValue = updatedDeadline.format('DD/MM/YYYY HH:mm');
+
+    await panel.locator('[data-testid="deadline-input"]').evaluate(
+      (el, value) => {
+        const input = el as HTMLInputElement;
+        input.focus();
+        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')!.set;
+        nativeSetter!.call(input, value as string);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        input.blur();
+      },
+      updatedInputValue,
+    );
 
     await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/request-deadline') && r.status() === 200),
+      page.waitForResponse((r) => r.url().includes('/request-deadline') && r.ok()),
       panel.locator('[data-testid="confirm-deadline-button"]').click(),
     ]);
 
     await expect(panel.locator('[data-testid="current-deadline"]')).toContainText(
-      updatedDeadline.format('DD/MM/YYYY HH:mm'),
+      updatedDisplayValue,
     );
 
     const schedules = await dbUtils.getSchedules(team.teamId);
@@ -196,7 +224,7 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
       .lastReminderSentAt;
 
     await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/reminder') && r.status() === 200),
+      page.waitForResponse((r) => r.url().includes('/reminder') && r.ok()),
       panel.locator('[data-testid="send-reminder-button"]').click(),
     ]);
 
@@ -224,7 +252,7 @@ test.describe('RequestDeadlinePanel (campaign page)', () => {
     const panel = page.locator('[data-testid="request-deadline-panel"]');
 
     await Promise.all([
-      page.waitForResponse((r) => r.url().includes('/request-deadline') && r.status() === 200),
+      page.waitForResponse((r) => r.url().includes('/request-deadline') && r.ok()),
       panel.locator('[data-testid="delete-deadline-button"]').click(),
     ]);
 
