@@ -358,7 +358,7 @@ export default function RequestTab({
               periodStart={campaignPeriodStart}
               periodEnd={campaignPeriodEnd}
               deadline={deadlineBannerDate}
-              className="mx-2 mt-1"
+              className="mb-1"
               data-testid="request-deadline-banner"
             />
           )}

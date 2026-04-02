@@ -42,7 +42,7 @@ function formatDeadline(deadline: dayjs.Dayjs, lng: string) {
     const month = d.format('MMM').replace('.', '').toLowerCase();
     return `${d.format('D')} ${month} a las ${d.format('HH:mm')}`;
   }
-  return d.format('MMM D [at] h:mm A');
+  return d.format('DD MMM [at] HH:mm');
 }
 
 export default function DeadlineBanner({

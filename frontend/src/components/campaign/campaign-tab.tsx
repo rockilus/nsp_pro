@@ -175,7 +175,7 @@ export default function CampaignTab({
             )}
           </div>
         ) : (
-          <Button variant="outline" onClick={handleAddSchedule} className="m-2 h-[35px]">
+          <Button variant="default" onClick={handleAddSchedule} className="m-2 h-[35px]">
             {t('start_new_campaign')}
           </Button>
         )}

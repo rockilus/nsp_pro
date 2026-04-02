@@ -318,7 +318,7 @@ export default function MobileRequestTab({
               periodStart={campaignPeriodStart}
               periodEnd={campaignPeriodEnd}
               deadline={deadlineBannerDate}
-              className="mb-1"
+              className="mb-1 mt-2"
               data-testid="request-deadline-banner"
             />
           )}
