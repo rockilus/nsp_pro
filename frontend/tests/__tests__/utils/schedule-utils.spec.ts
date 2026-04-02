@@ -12,7 +12,7 @@ describe('getPeriodStartEndDates - week->month overlap behavior', () => {
     // Freeze system time to 2026-03-06 UTC
     jest.useFakeTimers();
     // @ts-ignore: Jest method available in this environment
-    jest.setSystemTime(new Date('2026-03-06T12:00:00Z'));
+    jest.setSystemTime(new Date('2026-03-06T12:00:00Z').getTime());
   });
 
   afterAll(() => {
