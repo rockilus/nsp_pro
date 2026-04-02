@@ -6,13 +6,6 @@ import { toast } from 'sonner';
 import { useTranslation } from '../../app/i18n/client';
 // shadcn/ui
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { formatToInput, parseFromInput, formatLocalDate } from '@/lib/date-utils';
 // Types
 import { ScheduleT } from '../../types/schedule';
@@ -47,8 +40,8 @@ export default function RequestDeadlinePanel({
   const sendReminder = useSendRequestDeadlineReminder();
   const extendRequestDeadline = useExtendRequestDeadline();
 
-  const [setDialogOpen, setSetDialogOpen] = useState(false);
-  const [extendDialogOpen, setExtendDialogOpen] = useState(false);
+  const [showSetInput, setShowSetInput] = useState(false);
+  const [showExtendInput, setShowExtendInput] = useState(false);
   const [deadlineInput, setDeadlineInput] = useState<Dayjs | null>(null);
   const [extendInput, setExtendInput] = useState<Dayjs | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -76,7 +69,7 @@ export default function RequestDeadlinePanel({
         deadline,
       );
       onDeadlineSet(updated);
-      setSetDialogOpen(false);
+      setShowSetInput(false);
       setDeadlineInput(null);
     } catch (error) {
       console.error('Failed to set request deadline:', error);
@@ -106,7 +99,7 @@ export default function RequestDeadlinePanel({
         newDeadline,
       );
       onDeadlineExtended(updated);
-      setExtendDialogOpen(false);
+      setShowExtendInput(false);
       setExtendInput(null);
     } catch (error) {
       console.error('Failed to extend deadline:', error);
@@ -144,24 +137,60 @@ export default function RequestDeadlinePanel({
                     </span>
                   )}
                 </div>
-                <Button
-                  variant="default"
-                  size="sm"
-                  data-testid="extend-deadline-button"
-                  onClick={() => setExtendDialogOpen(true)}
-                >
-                  {t('extend_deadline')}
-                </Button>
+                {showExtendInput ? (
+                  <>
+                    <input
+                      type="date"
+                      value={formatToInput(extendInput)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtendInput(parseFromInput(e.target.value))}
+                      min={norm(minExtend)}
+                      className={dateInputClass}
+                    />
+                    <Button variant="brand" size="sm" onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
+                      {t('extend_deadline')}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => { setShowExtendInput(false); setExtendInput(null); }}>
+                      {t('cancel') || 'Cancel'}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    data-testid="extend-deadline-button"
+                    onClick={() => { setShowExtendInput(true); setExtendInput(minExtend); }}
+                  >
+                    {t('extend_deadline')}
+                  </Button>
+                )}
               </>
             ) : (
-              <Button
-                variant="ghost"
-                size="sm"
-                data-testid="set-deadline-button"
-                onClick={() => setSetDialogOpen(true)}
-              >
-                {t('set')}
-              </Button>
+              showSetInput ? (
+                <>
+                  <input
+                    type="date"
+                    value={formatToInput(deadlineInput)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
+                    min={norm(today)}
+                    className={dateInputClass}
+                  />
+                  <Button variant="brand" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
+                    {t('set_deadline')}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => { setShowSetInput(false); setDeadlineInput(null); }}>
+                    {t('cancel') || 'Cancel'}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  data-testid="set-deadline-button"
+                  onClick={() => { setShowSetInput(true); setDeadlineInput(today); }}
+                >
+                  {t('set')}
+                </Button>
+              )
             )}
           </div>
         </div>
@@ -180,75 +209,65 @@ export default function RequestDeadlinePanel({
               >
                 {t('send_reminder')}
               </Button>
-              <Button
-                variant="default"
-                size="sm"
-                data-testid="extend-deadline-button"
-                onClick={() => setExtendDialogOpen(true)}
-              >
-                {t('extend_deadline')}
-              </Button>
+              {showExtendInput ? (
+                <>
+                  <input
+                    type="date"
+                    value={formatToInput(extendInput)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtendInput(parseFromInput(e.target.value))}
+                    min={norm(minExtend)}
+                    className={dateInputClass}
+                  />
+                  <Button variant="brand" size="sm" onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
+                    {t('extend_deadline')}
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => { setShowExtendInput(false); setExtendInput(null); }}>
+                    {t('cancel') || 'Cancel'}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  data-testid="extend-deadline-button"
+                  onClick={() => { setShowExtendInput(true); setExtendInput(minExtend); }}
+                >
+                  {t('extend_deadline')}
+                </Button>
+              )}
             </>
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              data-testid="set-deadline-button"
-              onClick={() => setSetDialogOpen(true)}
-            >
-              {t('set')}
-            </Button>
+            showSetInput ? (
+              <>
+                <input
+                  type="date"
+                  value={formatToInput(deadlineInput)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
+                  min={norm(today)}
+                  className={dateInputClass}
+                />
+                <Button variant="brand" size="sm" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
+                  {t('set_deadline')}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => { setShowSetInput(false); setDeadlineInput(null); }}>
+                  {t('cancel') || 'Cancel'}
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="set-deadline-button"
+                onClick={() => { setShowSetInput(true); setDeadlineInput(today); }}
+              >
+                {t('set')}
+              </Button>
+            )
           )}
         </div>
       )}
 
-      {/* Set deadline dialog */}
-      <Dialog open={setDialogOpen} onOpenChange={setSetDialogOpen}>
-        <DialogContent className="w-4/5 md:w-1/2" data-testid="deadline-dialog" showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>{t('deadline_dialog_title')}</DialogTitle>
-          </DialogHeader>
-          <input
-            type="date"
-            value={formatToInput(deadlineInput)}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDeadlineInput(parseFromInput(e.target.value))}
-            min={norm(today)}
-            className={dateInputClass}
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSetDialogOpen(false)}>
-              {t('cancel') || 'Cancel'}
-            </Button>
-            <Button variant="default" onClick={handleSetDeadline} disabled={isSaving || !deadlineInput}>
-              {t('set_deadline')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Extend deadline dialog */}
-      <Dialog open={extendDialogOpen} onOpenChange={setExtendDialogOpen}>
-        <DialogContent className="w-4/5 md:w-1/2" data-testid="extend-deadline-dialog" showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>{t('extend_deadline_dialog_title')}</DialogTitle>
-          </DialogHeader>
-          <input
-            type="date"
-            value={formatToInput(extendInput)}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setExtendInput(parseFromInput(e.target.value))}
-            min={norm(minExtend)}
-            className={dateInputClass}
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setExtendDialogOpen(false)}>
-              {t('cancel') || 'Cancel'}
-            </Button>
-            <Button variant="brand" onClick={handleExtendDeadline} disabled={isSaving || !extendInput}>
-              {t('extend_deadline')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Inline set/extend inputs handled above; dialogs removed */}
     </>
   );
 }
