@@ -7,7 +7,7 @@ import { useTranslation } from '../../../app/i18n/client';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
+import DeadlineBanner from '../DeadlineBanner';
 import AddIcon from '@mui/icons-material/Add';
 import NoWorkerAssigned from '../../common/NoWorkerAssigned';
 // Hooks
@@ -81,6 +81,9 @@ export default function MobileRequestTab({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState<string>('');
   const [deadlineBannerDate, setDeadlineBannerDate] = useState<dayjs.Dayjs | null>(null);
+
+  const [campaignPeriodStart, setCampaignPeriodStart] = useState<dayjs.Dayjs | null>(null);
+  const [campaignPeriodEnd, setCampaignPeriodEnd] = useState<dayjs.Dayjs | null>(null);
 
   const getRequestDeadline = useGetRequestDeadline(teamId);
 
@@ -299,11 +302,14 @@ export default function MobileRequestTab({
       ) : (
         <Box sx={{ padding: '0 8px', height: 'calc(100vh - 64px)' }}>
           {deadlineBannerDate && (
-            <Alert severity="info" sx={{ mb: 1 }} data-testid="request-deadline-banner">
-              {t('request_deadline_banner', {
-                date: deadlineBannerDate.format('MMM D, YYYY HH:mm'),
-              })}
-            </Alert>
+            <DeadlineBanner
+              lng={lng}
+              periodStart={campaignPeriodStart}
+              periodEnd={campaignPeriodEnd}
+              deadline={deadlineBannerDate}
+              className="mb-1"
+              data-testid="request-deadline-banner"
+            />
           )}
           <PortraitRequestList
             weeks={weeks}

@@ -21,8 +21,8 @@ import Tab from '@mui/material/Tab';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Alert from '@mui/material/Alert';
+import { useGetRequestDeadline } from '../../hooks/useSchedule';
+import DeadlineBanner from './DeadlineBanner';
 import NoWorkerAssigned from '../common/NoWorkerAssigned';
 // Components
 import RequestPanel from './request-panel';
@@ -45,7 +45,6 @@ import {
 import { useUserWorker } from '../../hooks/useUserWorker';
 import { useGetShiftOptions } from '../../hooks/useStats';
 import { useApiClient } from '../../app/lib/api-client';
-import { useGetRequestDeadline } from '../../hooks/useSchedule';
 // API clients
 import { RequestApi } from '../../app/lib/api/requestApi';
 import { ShiftApi } from '../../app/lib/api/shiftApi';
@@ -103,6 +102,8 @@ export default function RequestTab({
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
   const [showPastRequests, setShowPastRequests] = useState<boolean>(false);
   const [deadlineBannerDate, setDeadlineBannerDate] = useState<dayjs.Dayjs | null>(null);
+  const [campaignPeriodStart, setCampaignPeriodStart] = useState<dayjs.Dayjs | null>(null);
+  const [campaignPeriodEnd, setCampaignPeriodEnd] = useState<dayjs.Dayjs | null>(null);
 
   // Check if member has no worker association
   const memberHasNoWorker =
@@ -340,11 +341,14 @@ export default function RequestTab({
       ) : (
         <div>
           {deadlineBannerDate && (
-            <Alert severity="info" sx={{ mx: 2, mt: 1 }} data-testid="request-deadline-banner">
-              {t('request_deadline_banner', {
-                date: deadlineBannerDate.format('MMM D, YYYY HH:mm'),
-              })}
-            </Alert>
+            <DeadlineBanner
+              lng={lng}
+              periodStart={campaignPeriodStart}
+              periodEnd={campaignPeriodEnd}
+              deadline={deadlineBannerDate}
+              className="mx-2 mt-1"
+              data-testid="request-deadline-banner"
+            />
           )}
           <div
             style={{

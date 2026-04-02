@@ -36,6 +36,8 @@
   "work": "Travail",
   "worker": "Membre",
   "request_deadline_banner": "Votre responsable d'équipe vous demande de soumettre vos disponibilités avant le {date}",
+  "request_deadline_banner_period": "Période : {period}",
+  "request_deadline_banner_submission": "Date limite d'envoi : Merci de soumettre vos demandes avant le {deadline}.",
   "submitted_on": "Soumis le",
   "before_deadline": "Avant la date limite",
   "after_deadline": "Après la date limite"
