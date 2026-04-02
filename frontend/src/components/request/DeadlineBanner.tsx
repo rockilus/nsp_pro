@@ -64,7 +64,7 @@ export default function DeadlineBanner({
     
 
   return (
-    <Alert className={className}>
+    <Alert className={className} data-testid="request-deadline-banner">
       <CalendarClock className="size-4" />
       <div>
         {period && <AlertTitle>{t('request_deadline_banner_period', { period })}</AlertTitle>}

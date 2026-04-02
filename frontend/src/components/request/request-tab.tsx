@@ -359,7 +359,6 @@ export default function RequestTab({
               periodEnd={campaignPeriodEnd}
               deadline={deadlineBannerDate}
               className="mb-1"
-              data-testid="request-deadline-banner"
             />
           )}
           <div

@@ -100,6 +100,7 @@ for (const vp of viewports) {
 
       // Reload as member of the primary team and ensure banner is not present
       await page.reload();
+      await page.waitForLoadState('networkidle');
       await expect(page.locator('[data-testid="request-deadline-banner"]')).toHaveCount(0);
     });
 
@@ -115,6 +116,7 @@ for (const vp of viewports) {
       await ctx.roleTestBase.dbUtils.validateSchedule(schedule.id, team.teamId);
 
       await page.reload();
+      await page.waitForLoadState('networkidle');
       await expect(page.locator('[data-testid="request-deadline-banner"]')).toHaveCount(0);
     });
 
@@ -129,6 +131,7 @@ for (const vp of viewports) {
       await ctx.roleTestBase.dbUtils.setRequestDeadlineAs(owner.userId, schedule.id, team.teamId, deadlineDate);
 
       await page.reload();
+      await page.waitForLoadState('networkidle');
 
       const banner = page.locator('[data-testid="request-deadline-banner"]');
       await expect(banner).toBeVisible();
