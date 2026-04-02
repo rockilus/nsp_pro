@@ -1,5 +1,5 @@
 from datetime import datetime, time, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from pydantic import field_validator
 
@@ -49,6 +49,8 @@ class ScheduleSchema(DocumentBaseSchema):
     quick_staffings: List[QuickStaffingSchema] = []
     created_at: float
     updated_at: float
+    request_deadline: Optional[float] = None
+    last_reminder_sent_at: Optional[float] = None
     created_by: str
 
     @field_validator("status")
@@ -87,6 +89,16 @@ class ScheduleSchema(DocumentBaseSchema):
             quick_staffings=[qs.to_core() for qs in self.quick_staffings],
             created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
             updated_at=datetime.fromtimestamp(self.updated_at, tz=timezone.utc),
+            request_deadline=(
+                datetime.fromtimestamp(self.request_deadline, tz=timezone.utc).date()
+                if self.request_deadline is not None
+                else None
+            ),
+            last_reminder_sent_at=(
+                datetime.fromtimestamp(self.last_reminder_sent_at, tz=timezone.utc)
+                if self.last_reminder_sent_at is not None
+                else None
+            ),
             created_by=self.created_by,
         )
 
@@ -112,5 +124,17 @@ class ScheduleSchema(DocumentBaseSchema):
             ],
             created_at=schedule.created_at.timestamp(),
             updated_at=schedule.updated_at.timestamp(),
+            request_deadline=(
+                datetime.combine(
+                    schedule.request_deadline, time.min, timezone.utc
+                ).timestamp()
+                if schedule.request_deadline is not None
+                else None
+            ),
+            last_reminder_sent_at=(
+                schedule.last_reminder_sent_at.timestamp()
+                if schedule.last_reminder_sent_at is not None
+                else None
+            ),
             created_by=schedule.created_by,
         )
