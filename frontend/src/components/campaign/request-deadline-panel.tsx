@@ -216,7 +216,6 @@ export default function RequestDeadlinePanel({
               <Button
                 variant="ghost"
                 size="sm"
-                data-testid="edit-deadline-button-compact"
                 onClick={() => {
                   setMode('edit');
                   setDeadlineInput(currentDeadline);
@@ -229,7 +228,6 @@ export default function RequestDeadlinePanel({
               <Button
                 variant="ghost"
                 size="sm"
-                data-testid="send-reminder-icon-button-compact"
                 onClick={handleSendReminder}
                 aria-label={t('send_reminder') || 'Send reminder'}
                 data-testid="send-reminder-button"
@@ -239,7 +237,6 @@ export default function RequestDeadlinePanel({
               <Button
                 variant="ghost"
                 size="sm"
-                data-testid="delete-deadline-button-compact"
                 onClick={handleDeleteDeadline}
                 aria-label={t('delete_deadline') || 'Delete deadline'}
                 data-testid="delete-deadline-button"
