@@ -185,7 +185,7 @@ export default function RequestDeadlinePanel({
         </>
       ) : (
         <>
-          <div className="flex flex-col">
+          <div className="relative">
             <span
               className={currentDeadline ? 'text-sm font-semibold' : 'text-sm text-muted-foreground'}
             >
@@ -194,7 +194,7 @@ export default function RequestDeadlinePanel({
                 : t('no_deadline_set') || 'No deadline'}
             </span>
             {currentDeadline && lastReminderSentAt ? (
-              <span className="text-xs text-muted-foreground">
+              <span className="absolute left-0 top-full mt-0 text-xs text-muted-foreground whitespace-nowrap">
                 {t('sent') || 'Sent'} {dayjs(lastReminderSentAt).utc().format('DD/MM/YYYY')}
               </span>
             ) : null}
