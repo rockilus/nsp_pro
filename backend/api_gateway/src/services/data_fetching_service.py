@@ -14,7 +14,9 @@ from src.services.base_service import BaseService
 
 # pylint: disable=R0801
 class DataFetchingService(BaseService):
-    def fetch_workers_shifts_dim_attributes_spe(self, team_id: str) -> Tuple[
+    def fetch_workers_shifts_dim_attributes_spe(
+        self, team_id: str
+    ) -> Tuple[
         List[Worker],
         List[Shift],
         List[Dimension],

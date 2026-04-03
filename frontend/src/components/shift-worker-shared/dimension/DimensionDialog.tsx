@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 // MUI
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function DimensionDialog({
   buttonContent,
@@ -21,7 +21,7 @@ export default function DimensionDialog({
   setOpen: (open: boolean) => void;
 }) {
   const [windowWidth, setWindowWidth] = useState<number>(
-    typeof window !== "undefined" ? window.innerWidth : 0
+    typeof window !== 'undefined' ? window.innerWidth : 0,
   );
 
   const handleClick = () => {
@@ -33,18 +33,18 @@ export default function DimensionDialog({
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       const handleResize = () => {
         setWindowWidth(window.innerWidth);
       };
 
-      window.addEventListener("resize", handleResize);
+      window.addEventListener('resize', handleResize);
 
-      return () => window.removeEventListener("resize", handleResize);
+      return () => window.removeEventListener('resize', handleResize);
     }
   }, []);
 
-  const id = open ? "floating-dialog" : undefined;
+  const id = open ? 'floating-dialog' : undefined;
 
   return (
     <Box>
@@ -54,16 +54,16 @@ export default function DimensionDialog({
         aria-describedby={id}
         onClick={handleClick}
         sx={{
-          display: "inline-block",
-          backgroundColor: "transparent",
-          border: "none",
-          boxShadow: "none",
-          "&:hover": {
-            backgroundColor: "transparent",
-            boxShadow: "none",
+          display: 'inline-block',
+          backgroundColor: 'transparent',
+          border: 'none',
+          boxShadow: 'none',
+          '&:hover': {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
           },
           padding: 0,
-          cursor: "pointer",
+          cursor: 'pointer',
         }}
       >
         {buttonContent}
@@ -81,12 +81,12 @@ export default function DimensionDialog({
             margin: 20,
             padding: 20,
             width: 350,
-            height: "80%",
-            boxSizing: "border-box",
-            position: "absolute",
+            height: '80%',
+            boxSizing: 'border-box',
+            position: 'absolute',
             top: 40,
             right: 20,
-            boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+            boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
           },
         }}
       >

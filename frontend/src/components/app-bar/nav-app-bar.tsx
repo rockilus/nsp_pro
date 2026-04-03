@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 // MUI
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
 // Components
-import AccountMenu from "./account-menu";
-import NavLinks from "./nav-links";
-import NotificationBell from "./notification-bell";
+import AccountMenu from './account-menu';
+import NavLinks from './nav-links';
+import NotificationBell from './notification-bell';
 // Context
-import { useTeam } from "@/context/TeamContext";
+import { useTeam } from '@/context/TeamContext';
 // Styles
-import "./nav-app-bar.css";
+import './nav-app-bar.css';
 
 const logoWidthOriginal = 753;
 const logoHeightOriginal = 98;
@@ -26,22 +26,17 @@ const NavAppBar = ({ lng }: { lng: string }) => {
     <AppBar
       position="static"
       sx={{
-        backgroundColor: "white",
-        boxShadow: "none",
-        borderBottom: "1px solid lightgray",
+        backgroundColor: 'white',
+        boxShadow: 'none',
+        borderBottom: '1px solid lightgray',
       }}
     >
-      <Toolbar sx={{ height: "64px", padding: "0 12px" }}>
+      <Toolbar sx={{ height: '64px', padding: '0 12px' }}>
         <div className="app-bar-content-container">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/rockilus_logo_blue.jpg"
-            alt="logo"
-            width={logoWidth}
-            height={logoHeight}
-          />
+          <img src="/rockilus_logo_blue.jpg" alt="logo" width={logoWidth} height={logoHeight} />
           <NavLinks lng={lng} selectedTeam={selectedTeam} />
-          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <NotificationBell lng={lng} />
             <AccountMenu lng={lng} />
           </div>

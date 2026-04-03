@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -10,12 +10,12 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-} from "@mui/material";
-import CheckIcon from "@mui/icons-material/Check";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CloseIcon from "@mui/icons-material/Close";
-import { useTranslation } from "../../../app/i18n/client";
-import { BulkSelectionProps } from "./types";
+} from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
+import { useTranslation } from '../../../app/i18n/client';
+import { BulkSelectionProps } from './types';
 
 export function BulkSelectionSection({
   lng,
@@ -26,7 +26,7 @@ export function BulkSelectionSection({
   onDeleteBulkSelection,
   onCancelBulkMode,
 }: BulkSelectionProps) {
-  const { t } = useTranslation(lng, "shift-demands");
+  const { t } = useTranslation(lng, 'shift-demands');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const hasSelection = selectedCellsCount > 0;
@@ -45,9 +45,9 @@ export function BulkSelectionSection({
   };
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter" && hasSelection && bulkValue) {
+    if (event.key === 'Enter' && hasSelection && bulkValue) {
       onApplyBulkChange();
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
       onCancelBulkMode();
     }
   };
@@ -58,7 +58,7 @@ export function BulkSelectionSection({
         {/* Selection status and input */}
         <Box display="flex" alignItems="center" gap={2}>
           <Typography variant="body2" fontWeight="medium">
-            {t("selection")}:
+            {t('selection')}:
           </Typography>
 
           <TextField
@@ -70,9 +70,9 @@ export function BulkSelectionSection({
             disabled={!hasSelection}
             inputProps={{
               min: 0,
-              style: { textAlign: "center" },
+              style: { textAlign: 'center' },
             }}
-            placeholder={t("shift_demands")}
+            placeholder={t('shift_demands')}
             onKeyDown={handleKeyPress}
             sx={{ width: 80 }}
           />
@@ -86,12 +86,12 @@ export function BulkSelectionSection({
             color="error"
             onClick={handleDeleteClick}
             disabled={!hasSelection}
-            title={t("delete")}
+            title={t('delete')}
             sx={{
               border: 1,
-              borderColor: "divider",
-              "&:hover": { borderColor: "error.main" },
-              "&.Mui-disabled": { borderColor: "action.disabled" },
+              borderColor: 'divider',
+              '&:hover': { borderColor: 'error.main' },
+              '&.Mui-disabled': { borderColor: 'action.disabled' },
             }}
           >
             <DeleteIcon fontSize="small" />
@@ -102,12 +102,12 @@ export function BulkSelectionSection({
             size="small"
             onClick={onApplyBulkChange}
             disabled={!hasSelection || !bulkValue}
-            title={t("save")}
+            title={t('save')}
             sx={{
               border: 1,
-              borderColor: "divider",
-              "&:hover": { borderColor: "primary.main" },
-              "&.Mui-disabled": { borderColor: "action.disabled" },
+              borderColor: 'divider',
+              '&:hover': { borderColor: 'primary.main' },
+              '&.Mui-disabled': { borderColor: 'action.disabled' },
             }}
           >
             <CheckIcon fontSize="small" />
@@ -117,7 +117,7 @@ export function BulkSelectionSection({
             data-testid="bulk-selection-cancel-button"
             size="small"
             onClick={onCancelBulkMode}
-            title={t("cancel")}
+            title={t('cancel')}
             sx={{
               ml: 1, // Add slight space before cancel button
             }}
@@ -133,17 +133,15 @@ export function BulkSelectionSection({
         onClose={handleDeleteCancel}
         aria-labelledby="delete-dialog-title"
       >
-        <DialogTitle id="delete-dialog-title">
-          {t("confirm_delete")}
-        </DialogTitle>
+        <DialogTitle id="delete-dialog-title">{t('confirm_delete')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {t("delete_selection_confirmation", { count: selectedCellsCount })}
+            {t('delete_selection_confirmation', { count: selectedCellsCount })}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteCancel} color="primary">
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             data-testid="bulk-selection-delete-confirm-button"
@@ -152,7 +150,7 @@ export function BulkSelectionSection({
             variant="contained"
             autoFocus
           >
-            {t("delete")}
+            {t('delete')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,16 +1,9 @@
-import React, { useState } from "react";
-import { useTranslation } from "../../../app/i18n/client";
-import { useIsMobile } from "@/hooks/useIsMobile";
+import React, { useState } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
+import { useIsMobile } from '@/hooks/useIsMobile';
 // MUI
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Button,
-  Box,
-  IconButton,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import { Dialog, DialogContent, DialogTitle, Button, Box, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 // Types
 import {
   ScheduleItemType,
@@ -22,12 +15,12 @@ import {
   EditDemandData,
   CreateRequestData,
   EditRequestData,
-} from "./schedule-item-types";
+} from './schedule-item-types';
 // Forms
-import AssignmentForm from "./assignment/assignment-form";
-import DemandForm from "./demand/demand-form";
-import { RequestForm } from "@/components/common/RequestForm";
-import { TeamMembershipRole } from "@/types/team";
+import AssignmentForm from './assignment/assignment-form';
+import DemandForm from './demand/demand-form';
+import { RequestForm } from '@/components/common/RequestForm';
+import { TeamMembershipRole } from '@/types/team';
 
 export default function ScheduleItemDialog({
   lng,
@@ -59,7 +52,7 @@ export default function ScheduleItemDialog({
   handleAcceptRequest,
   handleDenyRequest,
 }: ScheduleItemDialogProps) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
   const isMobile = useIsMobile();
 
   const [activeType, setActiveType] = useState<ScheduleItemType>(selectedType);
@@ -78,21 +71,13 @@ export default function ScheduleItemDialog({
   const getDialogTitle = () => {
     switch (activeType) {
       case ScheduleItemType.ASSIGNMENT:
-        return mode === DialogMode.CREATE
-          ? t("new_assignment")
-          : t("edit_assignment");
+        return mode === DialogMode.CREATE ? t('new_assignment') : t('edit_assignment');
       case ScheduleItemType.DEMAND:
-        return mode === DialogMode.CREATE
-          ? t("new_coverage")
-          : t("edit_coverage");
+        return mode === DialogMode.CREATE ? t('new_coverage') : t('edit_coverage');
       case ScheduleItemType.REQUEST:
-        return mode === DialogMode.CREATE
-          ? t("new_request")
-          : t("edit_request");
+        return mode === DialogMode.CREATE ? t('new_request') : t('edit_request');
       default:
-        return mode === DialogMode.CREATE
-          ? t("new_schedule_item")
-          : t("edit_schedule_item");
+        return mode === DialogMode.CREATE ? t('new_schedule_item') : t('edit_schedule_item');
     }
   };
 
@@ -107,60 +92,40 @@ export default function ScheduleItemDialog({
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <span>{getDialogTitle()}</span>
-          <IconButton
-            onClick={onClose}
-            size="small"
-            edge="end"
-            data-testid="close-dialog-button"
-          >
+          <IconButton onClick={onClose} size="small" edge="end" data-testid="close-dialog-button">
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent>
         {mode === DialogMode.CREATE && !isMobile && (
-          <Box
-            sx={{ display: "flex", gap: 1, mb: 2 }}
-            data-testid="schedule-item-type-buttons"
-          >
+          <Box sx={{ display: 'flex', gap: 1, mb: 2 }} data-testid="schedule-item-type-buttons">
             <Button
-              variant={
-                activeType === ScheduleItemType.ASSIGNMENT
-                  ? "contained"
-                  : "outlined"
-              }
+              variant={activeType === ScheduleItemType.ASSIGNMENT ? 'contained' : 'outlined'}
               size="small"
               onClick={() => handleTypeChange(ScheduleItemType.ASSIGNMENT)}
               data-testid="assignment-button"
-              sx={{ textTransform: "none" }}
+              sx={{ textTransform: 'none' }}
             >
-              {t("assignment")}
+              {t('assignment')}
             </Button>
             <Button
-              variant={
-                activeType === ScheduleItemType.DEMAND
-                  ? "contained"
-                  : "outlined"
-              }
+              variant={activeType === ScheduleItemType.DEMAND ? 'contained' : 'outlined'}
               size="small"
               onClick={() => handleTypeChange(ScheduleItemType.DEMAND)}
               data-testid="demand-button"
-              sx={{ textTransform: "none" }}
+              sx={{ textTransform: 'none' }}
             >
-              {t("demand")}
+              {t('demand')}
             </Button>
             <Button
-              variant={
-                activeType === ScheduleItemType.REQUEST
-                  ? "contained"
-                  : "outlined"
-              }
+              variant={activeType === ScheduleItemType.REQUEST ? 'contained' : 'outlined'}
               size="small"
               onClick={() => handleTypeChange(ScheduleItemType.REQUEST)}
               data-testid="request-button"
-              sx={{ textTransform: "none" }}
+              sx={{ textTransform: 'none' }}
             >
-              {t("request")}
+              {t('request')}
             </Button>
           </Box>
         )}
@@ -175,26 +140,17 @@ export default function ScheduleItemDialog({
             shifts={shifts}
             schedules={schedules}
             assignmentData={
-              mode === DialogMode.EDIT &&
-              dialogData &&
-              "assignmentData" in dialogData
+              mode === DialogMode.EDIT && dialogData && 'assignmentData' in dialogData
                 ? (dialogData as EditAssignmentData).assignmentData
                 : null
             }
             initialData={
-              mode === DialogMode.CREATE &&
-              dialogData &&
-              "workerId" in dialogData
+              mode === DialogMode.CREATE && dialogData && 'workerId' in dialogData
                 ? (dialogData as CreateAssignmentData)
                 : null
             }
             useSolver={useSolver}
-            onSave={(
-              assignment,
-              recurrence,
-              updateScope,
-              options?: { keepOpen?: boolean },
-            ) => {
+            onSave={(assignment, recurrence, updateScope, options?: { keepOpen?: boolean }) => {
               if (mode === DialogMode.CREATE && handleCreateAssignment) {
                 handleCreateAssignment(assignment, recurrence);
               } else if (mode === DialogMode.EDIT && handleUpdateAssignment) {
@@ -222,14 +178,12 @@ export default function ScheduleItemDialog({
             shifts={shifts}
             specialties={specialties}
             cellData={
-              mode === DialogMode.EDIT && dialogData && "cellData" in dialogData
+              mode === DialogMode.EDIT && dialogData && 'cellData' in dialogData
                 ? (dialogData as EditDemandData).cellData
                 : null
             }
             initialData={
-              mode === DialogMode.CREATE &&
-              dialogData &&
-              "shiftId" in dialogData
+              mode === DialogMode.CREATE && dialogData && 'shiftId' in dialogData
                 ? (dialogData as CreateDemandData)
                 : null
             }
@@ -246,7 +200,7 @@ export default function ScheduleItemDialog({
             teamId={teamId}
             isEdit={mode === DialogMode.EDIT}
             request={
-              mode === DialogMode.EDIT && dialogData && "request" in dialogData
+              mode === DialogMode.EDIT && dialogData && 'request' in dialogData
                 ? (dialogData as EditRequestData).request
                 : null
             }

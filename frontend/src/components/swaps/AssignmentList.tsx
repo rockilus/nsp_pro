@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Box, Typography } from "@mui/material";
-import { AssignmentDataDictT } from "../../types/assignment";
-import AssignmentOfferItem from "./AssignmentOfferItem";
-import { useTranslation } from "../../app/i18n/client";
+import { Box, Typography } from '@mui/material';
+import { AssignmentDataDictT } from '../../types/assignment';
+import AssignmentOfferItem from './AssignmentOfferItem';
+import { useTranslation } from '../../app/i18n/client';
 
 interface AssignmentListProps {
   assignments: AssignmentDataDictT[];
@@ -24,12 +24,12 @@ export default function AssignmentList({
   emptyMessage,
   lng,
 }: AssignmentListProps) {
-  const { t } = useTranslation(lng, "swap-page");
+  const { t } = useTranslation(lng, 'swap-page');
 
   if (assignments.length === 0) {
     return (
       <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
-        {emptyMessage ?? t("list_no_assignments")}
+        {emptyMessage ?? t('list_no_assignments')}
       </Typography>
     );
   }
@@ -41,9 +41,9 @@ export default function AssignmentList({
     <Box>
       <Box
         sx={{
-          display: isMobile ? "block" : "flex",
-          flexDirection: isMobile ? "column" : "row",
-          flexWrap: isMobile ? "nowrap" : "wrap",
+          display: isMobile ? 'block' : 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          flexWrap: isMobile ? 'nowrap' : 'wrap',
           gap: isMobile ? 0 : 1,
         }}
       >
@@ -54,14 +54,14 @@ export default function AssignmentList({
               showTimes={showTimes}
               isMobile={isMobile}
               lng={lng}
-              testId={`${testIdPrefix ?? "assignment-offer-item"}-${data.assignment.id}`}
+              testId={`${testIdPrefix ?? 'assignment-offer-item'}-${data.assignment.id}`}
             />
           </Box>
         ))}
       </Box>
       {remainingCount > 0 && (
         <Typography variant="caption" color="text.secondary" sx={{ pl: 1 }}>
-          {t("list_more", { count: remainingCount })}
+          {t('list_more', { count: remainingCount })}
         </Typography>
       )}
     </Box>

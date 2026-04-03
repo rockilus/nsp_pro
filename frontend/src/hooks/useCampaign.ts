@@ -1,17 +1,13 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { ScheduleT } from "../types/schedule";
-import { ConstraintT } from "../types/constraint";
+import { ScheduleT } from '../types/schedule';
+import { ConstraintT } from '../types/constraint';
 // API Client
-import {
-  CampaignApi,
-  CampaignTabData,
-  CampaignTabDataNoSolver,
-} from "../app/lib/api/campaignApi";
-import { useApiClient } from "../app/lib/api-client";
+import { CampaignApi, CampaignTabData, CampaignTabDataNoSolver } from '../app/lib/api/campaignApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Campaign Hooks //
@@ -27,7 +23,7 @@ export function useGetCampaignTabData() {
   const getCampaignTabData = useCallback(
     async (teamId: string): Promise<CampaignTabData> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetCampaignTabData called:", {
+        console.log('🔍 useGetCampaignTabData called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -37,30 +33,30 @@ export function useGetCampaignTabData() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         const result = await CampaignApi.getCampaignTabData(apiClient, teamId);
 
         if (env.isDevelopment) {
-          console.log("✅ Campaign tab data fetched successfully");
+          console.log('✅ Campaign tab data fetched successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to get campaign tab data:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get campaign tab data:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getCampaignTabData;
@@ -76,7 +72,7 @@ export function useGetCampaignTabDataNoSolver() {
   const getCampaignTabDataNoSolver = useCallback(
     async (teamId: string): Promise<CampaignTabDataNoSolver> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetCampaignTabDataNoSolver called:", {
+        console.log('🔍 useGetCampaignTabDataNoSolver called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -86,33 +82,30 @@ export function useGetCampaignTabDataNoSolver() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        const result = await CampaignApi.getCampaignTabDataNoSolver(
-          apiClient,
-          teamId
-        );
+        const result = await CampaignApi.getCampaignTabDataNoSolver(apiClient, teamId);
 
         if (env.isDevelopment) {
-          console.log("✅ Campaign tab data (no solver) fetched successfully");
+          console.log('✅ Campaign tab data (no solver) fetched successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to get campaign tab data (no solver):", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get campaign tab data (no solver):', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getCampaignTabDataNoSolver;

@@ -321,7 +321,7 @@ async def authz_delete_all_resource_instances() -> None:
             )
 
             log_info(
-                f"Fetched {len(resource_instances)} resource instances " f"for deletion"
+                f"Fetched {len(resource_instances)} resource instances for deletion"
             )
 
             # If no instances found, we're done
@@ -333,7 +333,7 @@ async def authz_delete_all_resource_instances() -> None:
                 # Use the full resource instance identifier
                 # (resource:key format)
                 # Fallback to just the key if resource is not available
-                if hasattr(instance, 'resource') and instance.resource:
+                if hasattr(instance, "resource") and instance.resource:
                     resource_instance_id = f"{instance.resource}:{instance.key}"
                 else:
                     # If resource is not available, try just the key

@@ -1,26 +1,19 @@
-import { describe, it, expect } from "@jest/globals";
-import { render, screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import DailyShiftDemandCell from "../../../../src/components/schedule/table/shared/daily-shift-demand-cell";
-import type {
-  ScheduleCellDataT,
-  ScheduleViewSettingsT,
-} from "../../../../src/types/schedule";
+import { describe, it, expect } from '@jest/globals';
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import DailyShiftDemandCell from '../../../../src/components/schedule/table/shared/daily-shift-demand-cell';
+import type { ScheduleCellDataT, ScheduleViewSettingsT } from '../../../../src/types/schedule';
 
 // Mock the translation hook
-jest.mock("../../../../src/app/i18n/client", () => ({
+jest.mock('../../../../src/app/i18n/client', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
-    i18n: { changeLanguage: jest.fn(), resolvedLanguage: "en" },
+    i18n: { changeLanguage: jest.fn(), resolvedLanguage: 'en' },
   }),
 }));
-import {
-  ShiftType,
-  ShiftRestType,
-  ShiftLeaveType,
-} from "../../../../src/types/shift";
+import { ShiftType, ShiftRestType, ShiftLeaveType } from '../../../../src/types/shift';
 
 dayjs.extend(utc);
 
@@ -28,18 +21,18 @@ dayjs.extend(utc);
  * Test suite for DailyShiftDemandCell component
  * Focuses on edge cases, particularly zero staffing scenarios
  */
-describe("DailyShiftDemandCell", () => {
+describe('DailyShiftDemandCell', () => {
   const mockHandleDemandSelection = jest.fn();
   const mockScheduleViewSettings: ScheduleViewSettingsT = {
-    timeFrame: "week",
-    groupBy: "shift",
+    timeFrame: 'week',
+    groupBy: 'shift',
     showBreaches: false,
     showAssignments: true,
     showDailyShiftDemands: true,
     showRequests: false,
-    periodStartDate: dayjs.utc("2026-01-26"),
+    periodStartDate: dayjs.utc('2026-01-26'),
   };
-  const mockLng = "en";
+  const mockLng = 'en';
 
   const createMockScheduleCellData = (
     assignmentsCount: number,
@@ -47,39 +40,39 @@ describe("DailyShiftDemandCell", () => {
     shiftDemandCount: number,
   ): ScheduleCellDataT => ({
     assignmentsData: Array(assignmentsCount).fill({
-      id: "assignment-1",
-      workerId: "worker-1",
-      shiftId: "shift-1",
+      id: 'assignment-1',
+      workerId: 'worker-1',
+      shiftId: 'shift-1',
     }),
     shiftDemandsData: {
       shiftDemand: {
-        id: "demand-1",
+        id: 'demand-1',
         count: shiftDemandCount,
-        shiftId: "shift-1",
-        date: dayjs("2026-01-29").unix(),
-        teamId: "team-1",
+        shiftId: 'shift-1',
+        date: dayjs('2026-01-29').unix(),
+        teamId: 'team-1',
         notes: null,
-        source: "manual" as const,
+        source: 'manual' as const,
         sourceId: null,
         createdAt: dayjs().unix(),
         updatedAt: dayjs().unix(),
       },
       shift: {
-        id: "shift-1",
-        teamId: "team-1",
-        name: "Morning Shift",
-        acronym: "MS",
+        id: 'shift-1',
+        teamId: 'team-1',
+        name: 'Morning Shift',
+        acronym: 'MS',
         acronymCustom: false,
         staffing: staffingValues.map((staffing, idx) => ({
           specialtyId: idx === 0 ? null : `specialty-${idx}`,
           staffing,
         })),
-        color: "#000000",
+        color: '#000000',
         shiftType: ShiftType.NORMAL,
         restType: ShiftRestType.NONE,
         leaveType: ShiftLeaveType.NONE,
-        startTime: dayjs.utc("08:00", "HH:mm"),
-        endTime: dayjs.utc("16:00", "HH:mm"),
+        startTime: dayjs.utc('08:00', 'HH:mm'),
+        endTime: dayjs.utc('16:00', 'HH:mm'),
         recuperationTime: 0,
         recuperationDutyId: null,
         deleted: false,
@@ -93,8 +86,8 @@ describe("DailyShiftDemandCell", () => {
     jest.clearAllMocks();
   });
 
-  describe("Normal operation", () => {
-    it("should display correct actual/target counts when staffing is met", () => {
+  describe('Normal operation', () => {
+    it('should display correct actual/target counts when staffing is met', () => {
       // 6 assignments with total staffing of 3 = 2 fulfilled shifts out of 2 target
       const scheduleCellData = createMockScheduleCellData(6, [1, 2], 2);
 
@@ -107,12 +100,12 @@ describe("DailyShiftDemandCell", () => {
         />,
       );
 
-      const actualCountElements = screen.getAllByText("2");
+      const actualCountElements = screen.getAllByText('2');
       expect(actualCountElements).toHaveLength(2); // Both actual and target are 2
-      expect(screen.getByText("/")).toBeTruthy();
+      expect(screen.getByText('/')).toBeTruthy();
     });
 
-    it("should display correct actual/target counts when staffing is not met", () => {
+    it('should display correct actual/target counts when staffing is not met', () => {
       // 3 assignments with total staffing of 5 = 0 fulfilled shifts out of 2 target
       const scheduleCellData = createMockScheduleCellData(3, [2, 3], 2);
 
@@ -125,12 +118,12 @@ describe("DailyShiftDemandCell", () => {
         />,
       );
 
-      expect(screen.getByText("0")).toBeTruthy();
-      expect(screen.getByText("/")).toBeTruthy();
-      expect(screen.getByText("2")).toBeTruthy();
+      expect(screen.getByText('0')).toBeTruthy();
+      expect(screen.getByText('/')).toBeTruthy();
+      expect(screen.getByText('2')).toBeTruthy();
     });
 
-    it("should call handleDemandSelection when clicked", () => {
+    it('should call handleDemandSelection when clicked', () => {
       const scheduleCellData = createMockScheduleCellData(4, [2], 1);
 
       render(
@@ -142,7 +135,7 @@ describe("DailyShiftDemandCell", () => {
         />,
       );
 
-      const cell = screen.getByTestId("demand-cell-demand-1");
+      const cell = screen.getByTestId('demand-cell-demand-1');
       fireEvent.click(cell);
 
       expect(mockHandleDemandSelection).toHaveBeenCalledTimes(1);
@@ -150,8 +143,8 @@ describe("DailyShiftDemandCell", () => {
     });
   });
 
-  describe("Zero staffing edge case", () => {
-    it("should display 0 as actual count when shiftStaffingTotal is 0 (empty staffing array)", () => {
+  describe('Zero staffing edge case', () => {
+    it('should display 0 as actual count when shiftStaffingTotal is 0 (empty staffing array)', () => {
       // Empty staffing array (common for LEAVE/REST shifts)
       const scheduleCellData = createMockScheduleCellData(5, [], 3);
 
@@ -165,12 +158,12 @@ describe("DailyShiftDemandCell", () => {
       );
 
       // Should show 0/3 instead of Infinity/3 or NaN/3
-      const actualCountElements = screen.getAllByText("0");
+      const actualCountElements = screen.getAllByText('0');
       expect(actualCountElements.length).toBeGreaterThan(0);
-      expect(screen.getByText("3")).toBeTruthy();
+      expect(screen.getByText('3')).toBeTruthy();
     });
 
-    it("should display 0 as actual count when all staffing values are 0", () => {
+    it('should display 0 as actual count when all staffing values are 0', () => {
       // All staffing values are 0
       const scheduleCellData = createMockScheduleCellData(8, [0, 0, 0], 2);
 
@@ -184,11 +177,11 @@ describe("DailyShiftDemandCell", () => {
       );
 
       // Should show 0/2
-      expect(screen.getByText("0")).toBeTruthy();
-      expect(screen.getByText("2")).toBeTruthy();
+      expect(screen.getByText('0')).toBeTruthy();
+      expect(screen.getByText('2')).toBeTruthy();
     });
 
-    it("should not throw error when rendering with zero staffing", () => {
+    it('should not throw error when rendering with zero staffing', () => {
       const scheduleCellData = createMockScheduleCellData(10, [], 5);
 
       // Should not throw
@@ -204,7 +197,7 @@ describe("DailyShiftDemandCell", () => {
       }).not.toThrow();
     });
 
-    it("should still be clickable when staffing is zero", () => {
+    it('should still be clickable when staffing is zero', () => {
       const scheduleCellData = createMockScheduleCellData(4, [], 2);
 
       render(
@@ -216,15 +209,15 @@ describe("DailyShiftDemandCell", () => {
         />,
       );
 
-      const cell = screen.getByTestId("demand-cell-demand-1");
+      const cell = screen.getByTestId('demand-cell-demand-1');
       fireEvent.click(cell);
 
       expect(mockHandleDemandSelection).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe("Traffic light color logic", () => {
-    it("should apply green color when actual equals target", () => {
+  describe('Traffic light color logic', () => {
+    it('should apply green color when actual equals target', () => {
       const scheduleCellData = createMockScheduleCellData(4, [2], 2);
 
       const { container } = render(
@@ -236,12 +229,12 @@ describe("DailyShiftDemandCell", () => {
         />,
       );
 
-      const cellContainer = container.querySelector(".dsd-cell-container");
+      const cellContainer = container.querySelector('.dsd-cell-container');
       expect(cellContainer).toBeTruthy();
       // Green background color should be applied via CSS variables
     });
 
-    it("should apply red color when actual does not equal target (zero staffing case)", () => {
+    it('should apply red color when actual does not equal target (zero staffing case)', () => {
       const scheduleCellData = createMockScheduleCellData(10, [], 5);
 
       const { container } = render(
@@ -253,7 +246,7 @@ describe("DailyShiftDemandCell", () => {
         />,
       );
 
-      const cellContainer = container.querySelector(".dsd-cell-container");
+      const cellContainer = container.querySelector('.dsd-cell-container');
       expect(cellContainer).toBeTruthy();
       // Red background color should be applied when 0 !== 5
     });

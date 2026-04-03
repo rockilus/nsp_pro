@@ -1,10 +1,10 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from 'react';
 // MUI
-import Box from "@mui/material/Box";
-import TableCell from "@mui/material/TableCell";
-import TextField from "@mui/material/TextField";
+import Box from '@mui/material/Box';
+import TableCell from '@mui/material/TableCell';
+import TextField from '@mui/material/TextField';
 // Types
-import { WorkerT } from "../../../types/worker";
+import { WorkerT } from '../../../types/worker';
 
 export default function WorkerFieldCellWeeklyHoursDesired({
   worker,
@@ -17,17 +17,13 @@ export default function WorkerFieldCellWeeklyHoursDesired({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
-  const [valueState, setValueState] = useState<number | "">(
-    worker.weeklyHoursDesired
-  );
+  const [valueState, setValueState] = useState<number | ''>(worker.weeklyHoursDesired);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  const handleEdit = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const newValue = e.target.value === "" ? "" : Number(e.target.value);
-    if (newValue !== "" && newValue < worker.weeklyHours) {
+  const handleEdit = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const newValue = e.target.value === '' ? '' : Number(e.target.value);
+    if (newValue !== '' && newValue < worker.weeklyHours) {
       setError(`Desired hours can't be lower than ${worker.weeklyHours}`);
     } else {
       setError(null);
@@ -36,7 +32,7 @@ export default function WorkerFieldCellWeeklyHoursDesired({
   };
 
   const handleEditConfirm = async (usedOnBlur: boolean = false) => {
-    if (typeof valueState === "number" && valueState < worker.weeklyHours) {
+    if (typeof valueState === 'number' && valueState < worker.weeklyHours) {
       setError(`Desired hours can't be lower than ${worker.weeklyHours}`);
       if (usedOnBlur) {
         setValueState(worker.weeklyHoursDesired);
@@ -46,7 +42,7 @@ export default function WorkerFieldCellWeeklyHoursDesired({
       return;
     }
     setError(null);
-    if (valueState !== worker.weeklyHoursDesired && valueState !== "") {
+    if (valueState !== worker.weeklyHoursDesired && valueState !== '') {
       setIsSaving(true);
       try {
         await handleUpdateWorker({
@@ -56,7 +52,7 @@ export default function WorkerFieldCellWeeklyHoursDesired({
       } finally {
         setIsSaving(false);
       }
-    } else if (valueState === "") {
+    } else if (valueState === '') {
       setValueState(worker.weeklyHoursDesired);
     }
     setEditing({});
@@ -72,10 +68,10 @@ export default function WorkerFieldCellWeeklyHoursDesired({
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [worker.id]: "weeklyHoursDesired" })}
-      sx={{ paddingY: 0, textAlign: "center" }}
+      onClick={() => setEditing({ [worker.id]: 'weeklyHoursDesired' })}
+      sx={{ paddingY: 0, textAlign: 'center' }}
       data-testid="worker-weekly-hours-desired-cell"
-      data-state={editing ? "editing" : isSaving ? "saving" : "display"}
+      data-state={editing ? 'editing' : isSaving ? 'saving' : 'display'}
       data-current-value={worker.weeklyHoursDesired}
     >
       {editing ? (
@@ -87,27 +83,27 @@ export default function WorkerFieldCellWeeklyHoursDesired({
           onChange={handleEdit}
           onBlur={() => handleEditConfirm(true)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               handleEditConfirm();
-            } else if (e.key === "Escape") {
+            } else if (e.key === 'Escape') {
               handleEditCancel();
             }
           }}
           autoFocus
           error={!!error}
           inputProps={{
-            style: { textAlign: "center" },
-            "data-testid": `worker-weekly-hours-desired-input-${worker.id}`,
-            "data-state": "editing",
+            style: { textAlign: 'center' },
+            'data-testid': `worker-weekly-hours-desired-input-${worker.id}`,
+            'data-state': 'editing',
           }}
         />
       ) : (
         <Box
           sx={{
             minHeight: 45,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           data-testid={`worker-weekly-hours-desired-display-${worker.id}`}
           data-state="display"

@@ -1,11 +1,11 @@
-import React from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import Tooltip from "@mui/material/Tooltip";
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Tooltip from '@mui/material/Tooltip';
 // Types
-import { ScheduleViewSettingsT } from "../../../types/schedule";
+import { ScheduleViewSettingsT } from '../../../types/schedule';
 
 export default function DataViewSelector({
   lng,
@@ -16,11 +16,11 @@ export default function DataViewSelector({
   scheduleViewSettings: ScheduleViewSettingsT;
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
 }) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   const handleChange = (
     event: React.MouseEvent<HTMLElement>,
-    newAlignment: "shift" | "worker" | null,
+    newAlignment: 'shift' | 'worker' | null,
   ) => {
     if (newAlignment !== null) {
       const newSettings = {
@@ -35,10 +35,10 @@ export default function DataViewSelector({
     <div
       data-testid="data-view-selector"
       style={{
-        display: "flex",
-        flexDirection: "row",
-        alignItems: "center",
-        padding: "0 16px",
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: '0 16px',
       }}
     >
       <ToggleButtonGroup
@@ -48,30 +48,30 @@ export default function DataViewSelector({
         onChange={handleChange}
         aria-label="Platform"
       >
-        <Tooltip title={t("display_by_shift")}>
+        <Tooltip title={t('display_by_shift')}>
           <ToggleButton
             data-testid="data-view-shift-button"
             value="shift"
             sx={{
-              textTransform: "none",
-              height: "35px",
-              fontSize: "0.9rem",
+              textTransform: 'none',
+              height: '35px',
+              fontSize: '0.9rem',
             }}
           >
-            {t("shift")}
+            {t('shift')}
           </ToggleButton>
         </Tooltip>
-        <Tooltip title={t("display_by_worker")}>
+        <Tooltip title={t('display_by_worker')}>
           <ToggleButton
             data-testid="data-view-worker-button"
             value="worker"
             sx={{
-              textTransform: "none",
-              height: "35px",
-              fontSize: "0.9rem",
+              textTransform: 'none',
+              height: '35px',
+              fontSize: '0.9rem',
             }}
           >
-            {t("worker")}
+            {t('worker')}
           </ToggleButton>
         </Tooltip>
       </ToggleButtonGroup>

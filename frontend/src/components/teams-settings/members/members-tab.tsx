@@ -1,42 +1,33 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useTranslation } from "../../../app/i18n/client";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
+import { useRouter } from 'next/navigation';
 // Components
-import MembersList from "./members-list";
-import AddMemberDialog from "./add-member-dialog";
-import InvitationsList from "./invitations-list";
-import NavigationHeader from "@/components/common/navigation-header";
+import MembersList from './members-list';
+import AddMemberDialog from './add-member-dialog';
+import InvitationsList from './invitations-list';
+import NavigationHeader from '@/components/common/navigation-header';
 // Hooks
-import { useIsMobile, useIsLandscape } from "../../../hooks/useIsMobile";
+import { useIsMobile, useIsLandscape } from '../../../hooks/useIsMobile';
 // Actions
-import {
-  useGetTeamUsersWithMemberships,
-  useRemoveUserFromTeam,
-} from "@/hooks/useTeam";
-import { useGetWorkers, useAttachUserToWorker } from "@/hooks/useWorker";
+import { useGetTeamUsersWithMemberships, useRemoveUserFromTeam } from '@/hooks/useTeam';
+import { useGetWorkers, useAttachUserToWorker } from '@/hooks/useWorker';
 import {
   useCreateTeamInvitation,
   useGetTeamInvitations,
   useResendTeamInvitationEmail,
   useDeleteTeamInvitation,
-} from "@/hooks/useTeamInvitation";
+} from '@/hooks/useTeamInvitation';
 // Styles
-import "../../../styles/text-styles.css";
-import "../../../styles/tab-container-styles.css";
-import "./members-tab.css";
+import '../../../styles/text-styles.css';
+import '../../../styles/tab-container-styles.css';
+import './members-tab.css';
 // Types
-import { UserWithMembership } from "@/types/user";
-import { WorkerT } from "@/types/worker";
-import { TeamInvitationT } from "@/types/team-invitation";
+import { UserWithMembership } from '@/types/user';
+import { WorkerT } from '@/types/worker';
+import { TeamInvitationT } from '@/types/team-invitation';
 
-export default function MembersTab({
-  lng,
-  teamId,
-}: {
-  lng: string;
-  teamId: string;
-}) {
-  const { t } = useTranslation(lng, "teams-page");
+export default function MembersTab({ lng, teamId }: { lng: string; teamId: string }) {
+  const { t } = useTranslation(lng, 'teams-page');
   const router = useRouter();
   const isMobile = useIsMobile();
   const isLandscape = useIsLandscape();
@@ -70,26 +61,19 @@ export default function MembersTab({
       setWorkers(workers);
       setInvitations(invitations);
     } catch (error) {
-      console.error("Failed to fetch team data:", error);
+      console.error('Failed to fetch team data:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [
-    teamId,
-    getTeamUsersWithMembershipsFn,
-    getWorkersFn,
-    getTeamInvitationsFn,
-  ]);
+  }, [teamId, getTeamUsersWithMembershipsFn, getWorkersFn, getTeamInvitationsFn]);
 
   const handleRemoveFromTeam = async (teamId: string, userId: string) => {
     try {
       await removeUserFromTeamFn(teamId, userId);
       // If we get here, the removal was successful
-      setUsers((prevUsers) =>
-        prevUsers.filter((user) => user.user.id !== userId)
-      );
+      setUsers((prevUsers) => prevUsers.filter((user) => user.user.id !== userId));
     } catch (error) {
-      console.error("Failed to remove user from team:", error);
+      console.error('Failed to remove user from team:', error);
       // Handle error as needed (show notification, etc.)
     }
   };
@@ -98,16 +82,10 @@ export default function MembersTab({
   // Worker Actions
   //////////////////////////
 
-  const handleAttachUserToWorker = async (
-    workerId: string,
-    userId: string,
-    teamId: string
-  ) => {
+  const handleAttachUserToWorker = async (workerId: string, userId: string, teamId: string) => {
     const updatedWorkers = await attachUserToWorkerFn(workerId, userId, teamId);
     setWorkers((prevWorkers) =>
-      prevWorkers.map((worker) =>
-        worker.id === updatedWorkers.id ? updatedWorkers : worker
-      )
+      prevWorkers.map((worker) => (worker.id === updatedWorkers.id ? updatedWorkers : worker)),
     );
   };
 
@@ -120,24 +98,21 @@ export default function MembersTab({
       const newInvitation = await createTeamInvitationFn(invitation, teamId);
       setInvitations((prevInvitations) => [...prevInvitations, newInvitation]);
     } catch (error) {
-      console.error("Failed to create team invitation:", error);
+      console.error('Failed to create team invitation:', error);
       // Handle error as needed (show notification, etc.)
     }
   };
 
   const handleResendTeamInvitationEmail = async (invitationId: string) => {
     try {
-      const newInvitation = await resendTeamInvitationEmailFn(
-        invitationId,
-        teamId
-      );
+      const newInvitation = await resendTeamInvitationEmailFn(invitationId, teamId);
       setInvitations((prevInvitations) =>
         prevInvitations.map((invitation) =>
-          invitation.id === newInvitation.id ? newInvitation : invitation
-        )
+          invitation.id === newInvitation.id ? newInvitation : invitation,
+        ),
       );
     } catch (error) {
-      console.error("Failed to resend team invitation email:", error);
+      console.error('Failed to resend team invitation email:', error);
       // Handle error as needed (show notification, etc.)
     }
   };
@@ -146,10 +121,10 @@ export default function MembersTab({
     try {
       await deleteTeamInvitationFn(invitationId, teamId);
       setInvitations((prevInvitations) =>
-        prevInvitations.filter((invitation) => invitation.id !== invitationId)
+        prevInvitations.filter((invitation) => invitation.id !== invitationId),
       );
     } catch (error) {
-      console.error("Failed to delete team invitation:", error);
+      console.error('Failed to delete team invitation:', error);
       // Handle error as needed (show notification, etc.)
     }
   };
@@ -161,7 +136,7 @@ export default function MembersTab({
   return (
     <div data-testid="team-members-page-heading">
       <NavigationHeader
-        title={t("members")}
+        title={t('members')}
         onBack={() => router.push(`/${lng}/plan/teams?teamId=${teamId}`)}
         showBackButton={isMobile && !isLandscape}
       />
@@ -185,18 +160,16 @@ export default function MembersTab({
               handleAttachUserToWorker={handleAttachUserToWorker}
             />
           ) : (
-            <div>{t("no_member_message")}</div>
+            <div>{t('no_member_message')}</div>
           )}
           {invitations.length > 0 && (
             <div className="invitations-container">
-              <span className="subtitle">{t("invitations")}</span>
+              <span className="subtitle">{t('invitations')}</span>
               <InvitationsList
                 lng={lng}
                 invitations={invitations}
                 workers={workers}
-                handleResendTeamInvitationEmail={
-                  handleResendTeamInvitationEmail
-                }
+                handleResendTeamInvitationEmail={handleResendTeamInvitationEmail}
                 handleDeleteTeamInvitation={handleDeleteTeamInvitation}
               />
             </div>

@@ -1,5 +1,3 @@
-from typing import List
-
 from ortools.sat.python import cp_model  # type: ignore
 from shared.schemas.core import ConstraintOperator, ConstraintSum
 
@@ -48,8 +46,8 @@ class AddConstraintSum(AddConstraint):
     def _add_constraint_sum_hour(
         self,
         constraint: ConstraintSum,
-        cstr_vars: List[cp_model.IntVar],
-        cstr_durs: List[int],
+        cstr_vars: list[cp_model.IntVar],
+        cstr_durs: list[int],
         target_for_period: int,
         hard_to_soft: bool,
     ) -> None:
@@ -156,7 +154,7 @@ class AddConstraintSum(AddConstraint):
     def _add_constraint_sum_other(
         self,
         constraint: ConstraintSum,
-        cstr_vars: List[cp_model.IntVar],
+        cstr_vars: list[cp_model.IntVar],
         target_for_period: int,
         hard_to_soft: bool,
     ) -> None:

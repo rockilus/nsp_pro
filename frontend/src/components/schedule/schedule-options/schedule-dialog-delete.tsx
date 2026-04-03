@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // MUI
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 export default function ScheduleDialogDelete({
   scheduleId,
@@ -26,7 +26,7 @@ export default function ScheduleDialogDelete({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
       <Button
         variant="outlined"
         onClick={handleClickOpen}
@@ -34,8 +34,8 @@ export default function ScheduleDialogDelete({
         sx={{
           paddingLeft: 0.2,
           paddingRight: 0.2,
-          textTransform: "none",
-          height: "35px",
+          textTransform: 'none',
+          height: '35px',
         }}
       >
         Delete
@@ -46,13 +46,11 @@ export default function ScheduleDialogDelete({
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Delete this schedule?"}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">{'Delete this schedule?'}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Deleting this schedule will delete its configuration and all its
-            assignments. This action is not reversible.
+            Deleting this schedule will delete its configuration and all its assignments. This
+            action is not reversible.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

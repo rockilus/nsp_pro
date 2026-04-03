@@ -1,7 +1,7 @@
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // Types
-import { AttributeT } from "./attribute";
+import { AttributeT } from './attribute';
 
 dayjs.extend(utc);
 
@@ -30,9 +30,7 @@ export function toWorkerT(data: any): WorkerT {
   return {
     ...data,
     employmentStartDate: dayjs.unix(data.employmentStartDate).utc(),
-    employmentEndDate: data.employmentEndDate
-      ? dayjs.unix(data.employmentEndDate).utc()
-      : null,
+    employmentEndDate: data.employmentEndDate ? dayjs.unix(data.employmentEndDate).utc() : null,
   };
 }
 
@@ -43,8 +41,6 @@ export function fromWorkerT(data: WorkerT): any {
   return {
     ...data,
     employmentStartDate: data.employmentStartDate.unix(),
-    employmentEndDate: data.employmentEndDate
-      ? data.employmentEndDate.unix()
-      : null,
+    employmentEndDate: data.employmentEndDate ? data.employmentEndDate.unix() : null,
   };
 }

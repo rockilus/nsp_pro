@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import React from "react";
-import { AuthProvider as OidcAuthProvider } from "react-oidc-context";
-import { cognitoAuthConfig } from "../../config/cognito";
-import { AuthContextProvider } from "../../contexts/auth-context";
-import { env } from "@/config/env";
-import { CookiesProvider } from "react-cookie";
-import ReactQueryProvider from "../providers/ReactQueryProvider";
+import React from 'react';
+import { AuthProvider as OidcAuthProvider } from 'react-oidc-context';
+import { cognitoAuthConfig } from '../../config/cognito';
+import { AuthContextProvider } from '../../contexts/auth-context';
+import { env } from '@/config/env';
+import { CookiesProvider } from 'react-cookie';
+import ReactQueryProvider from '../providers/ReactQueryProvider';
 
 interface AuthProviderProps {
   children: React.ReactNode;

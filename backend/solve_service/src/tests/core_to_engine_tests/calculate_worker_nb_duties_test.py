@@ -1,6 +1,5 @@
 import math
-from datetime import date, datetime, timedelta, timezone
-from typing import Dict, List
+from datetime import UTC, date, datetime, timedelta
 
 from shared.schemas.core import (
     EngineInputsAugmented,
@@ -38,7 +37,7 @@ class TestCalculateWorkerNbDuties:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         # Call the method under test
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
@@ -82,7 +81,7 @@ class TestCalculateWorkerNbDuties:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         # Call the method under test
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
@@ -98,7 +97,7 @@ class TestCalculateWorkerNbDuties:
         )
 
         # Verify the output
-        w_to_desired_per_period: Dict[str, List[int]] = {}
+        w_to_desired_per_period: dict[str, list[int]] = {}
         for worker in engine_inputs.workers:
             for i, period in enumerate(periods_monthly):
                 expected_desired = math.ceil(
@@ -116,7 +115,7 @@ class TestCalculateWorkerNbDuties:
             s.id for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY
         ]
 
-        nb_duties_periods: Dict[int, float] = {}
+        nb_duties_periods: dict[int, float] = {}
         for i, period in enumerate(periods_monthly):
             dsds_period = [
                 dsd
@@ -125,7 +124,7 @@ class TestCalculateWorkerNbDuties:
             ]
             nb_duties_periods[i] = sum(dsd.count for dsd in dsds_period)
 
-        w_to_target_per_period: Dict[str, List[float]] = {}
+        w_to_target_per_period: dict[str, list[float]] = {}
         for worker in engine_inputs.workers:
             for i, period in enumerate(periods_monthly):
                 total_desired = sum(
@@ -160,7 +159,7 @@ class TestCalculateWorkerNbDuties:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
         ref_nb_days = get_nb_days_in_months(periods_monthly)
 
@@ -187,7 +186,7 @@ class TestCalculateWorkerNbDuties:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
         ref_nb_days = get_nb_days_in_months(periods_monthly)
 
@@ -197,8 +196,8 @@ class TestCalculateWorkerNbDuties:
             name="Leave",
             acronym="L",
             acronym_custom=False,
-            start_time=datetime(2021, 1, 1, 0, 0, tzinfo=timezone.utc),
-            end_time=datetime(2021, 1, 2, 0, 0, tzinfo=timezone.utc),
+            start_time=datetime(2021, 1, 1, 0, 0, tzinfo=UTC),
+            end_time=datetime(2021, 1, 2, 0, 0, tzinfo=UTC),
             staffing=[],
             color="#000000",
             shift_type=ShiftType.LEAVE,
@@ -228,7 +227,7 @@ class TestCalculateWorkerNbDuties:
             request_type=RequestType.LEAVE,
             fulfillment=FulfillmentStatus.NOT_PROCESSED,
             comment="",
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         )
         engine_inputs.requests_leave.append(request_leave)
 
@@ -260,7 +259,7 @@ class TestBuildNbDutiesConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
         w_to_nb_duties = calculate_worker_nb_duties(
@@ -292,10 +291,8 @@ class TestBuildNbDutiesConstraints:
                 if not s.deleted and s.shift_type == ShiftType.DUTY
             ],
             # fmt: off
-            engine_inputs.penalties.system_constraint
-            .monthly_target_nb_duties,
-            engine_inputs.model_config.system_constraints
-            .mthly_target_nb_duty_tolerance,
+            engine_inputs.penalties.system_constraint.monthly_target_nb_duties,
+            engine_inputs.model_config.system_constraints.mthly_target_nb_duty_tolerance,
             # fmt: on
         )
 
@@ -311,7 +308,7 @@ class TestBuildNbDutiesConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
         w_to_nb_duties = calculate_worker_nb_duties(
@@ -343,10 +340,8 @@ class TestBuildNbDutiesConstraints:
                 if not s.deleted and s.shift_type == ShiftType.DUTY
             ],
             # fmt: off
-            engine_inputs.penalties.system_constraint
-            .monthly_target_nb_duties,
-            engine_inputs.model_config.system_constraints
-            .mthly_target_nb_duty_tolerance,
+            engine_inputs.penalties.system_constraint.monthly_target_nb_duties,
+            engine_inputs.model_config.system_constraints.mthly_target_nb_duty_tolerance,
             # fmt: on
         )
 
@@ -362,15 +357,13 @@ class TestBuildNbDutiesConstraints:
             assert (
                 gadtc.penalty
                 # fmt: off
-                == engine_inputs.penalties.system_constraint
-                .monthly_target_nb_duties
+                == engine_inputs.penalties.system_constraint.monthly_target_nb_duties
                 # fmt: on
             )
             assert (
                 gadtc.tolerance
                 # fmt: off
-                == engine_inputs.model_config.system_constraints
-                .mthly_target_nb_duty_tolerance
+                == engine_inputs.model_config.system_constraints.mthly_target_nb_duty_tolerance
                 # fmt: on
             )
             dates_gadtc = list(

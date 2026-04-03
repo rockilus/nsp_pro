@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from datetime import date, timedelta
-from typing import Callable, Dict, List, Optional, Tuple
 
 from shared.augment import r_to_r_augmented
 from shared.constraint_parser import parse_selected_shifts
@@ -25,7 +25,7 @@ from shared.schemas.core.constraint import SWOIdTypes
 # pylint: disable=too-many-branches, too-many-locals
 def _sync_assignments_with_requests(
     schedule: Schedule,
-    requests: List[Request],
+    requests: list[Request],
     collections: DatabaseCollections,
 ) -> None:
     """Ensure assignments mirror request approval status.
@@ -93,21 +93,20 @@ def _sync_assignments_with_requests(
                         reference_assignment_id=None,
                     )
                     ab.create_assignment(assignment_new)
-        else:
-            if req.status != RequestStatus.APPROVED:
-                ab.delete_assignments_by_source_id(source_id=req.id)
+        elif req.status != RequestStatus.APPROVED:
+            ab.delete_assignments_by_source_id(source_id=req.id)
 
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments
 def get_requests_by_dates(
     schedule: Schedule,
-    workers: List[Worker],
-    shifts: List[Shift],
-    dimensions: List[Dimension],
-    dim_entries: List[DimEntry],
-    attributes: List[Attribute],
+    workers: list[Worker],
+    shifts: list[Shift],
+    dimensions: list[Dimension],
+    dim_entries: list[DimEntry],
+    attributes: list[Attribute],
     collections: DatabaseCollections,
-) -> Tuple[List[RequestAugmented], List[Request]]:
+) -> tuple[list[RequestAugmented], list[Request]]:
     requests = collections.request_db.get_requests_by_dates(
         start_date=schedule.start_date,
         end_date=schedule.end_date,
@@ -119,7 +118,7 @@ def get_requests_by_dates(
         if r.request_type == RequestType.WORK_DEMAND
         and r.status == RequestStatus.APPROVED
     ]
-    r_work_augmented: List[RequestAugmented] = []
+    r_work_augmented: list[RequestAugmented] = []
     for r in requests_work:
         worker = next((w for w in workers if w.id == r.worker_id), None)
         r_augmented = r_to_r_augmented(
@@ -145,16 +144,16 @@ def get_requests_by_dates(
 
 
 def update_requests(
-    requests: List[Request],
-    workers: List[Worker],
-    shifts: List[Shift],
-    dimensions: List[Dimension],
-    dim_entries: List[DimEntry],
-    attributes: List[Attribute],
-    assignments: List[Assignment],
-    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]],
+    requests: list[Request],
+    workers: list[Worker],
+    shifts: list[Shift],
+    dimensions: list[Dimension],
+    dim_entries: list[DimEntry],
+    attributes: list[Attribute],
+    assignments: list[Assignment],
+    dim_to_attr_value_to_shift: dict[str, dict[str | int | float | bool, list[str]]],
     collections: DatabaseCollections,
-) -> List[RequestAugmented]:
+) -> list[RequestAugmented]:
     """Update requests and evaluate fulfillment for requests.
 
     Persist fulfillment status once at the end and return the augmented
@@ -199,7 +198,7 @@ def update_requests(
     if need_persist:
         collections.request_db.update_requests(updated_requests)
 
-    out: List[RequestAugmented] = []
+    out: list[RequestAugmented] = []
     for r in updated_requests:
         worker = next((w for w in workers if w.id == r.worker_id), None)
         out.append(
@@ -219,10 +218,10 @@ def update_requests(
 def evaluate_request_fulfillment(
     req: Request,
     assignment_exists: Callable[[str, str, str, date], bool],
-    assignments: List[Assignment],
-    shifts: List[Shift],
-    shift_dim_dict: Dict,
-) -> Optional[FulfillmentStatus]:
+    assignments: list[Assignment],
+    shifts: list[Shift],
+    shift_dim_dict: dict,
+) -> FulfillmentStatus | None:
     """Evaluate fulfillment for leave, single-shift and
     multi-shift work requests.
 
@@ -235,7 +234,7 @@ def evaluate_request_fulfillment(
     # Helper: collect assigned shift ids for the worker on a given date.
     def _assigned_shift_ids_on_date(
         worker_id: str, team_id: str, a_date: date
-    ) -> List[str]:
+    ) -> list[str]:
         return [
             a.shift_id
             for a in assignments

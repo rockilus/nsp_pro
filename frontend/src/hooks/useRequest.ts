@@ -1,21 +1,21 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { RequestT } from "../types/request";
-import { AssignmentT } from "../types/assignment";
-import { WorkerT } from "../types/worker";
-import { ShiftT } from "../types/shift";
-import { ShiftWorkerOptionT } from "../types/constraint";
-import { TeamMembershipRole } from "@/types/team";
+import { RequestT } from '../types/request';
+import { AssignmentT } from '../types/assignment';
+import { WorkerT } from '../types/worker';
+import { ShiftT } from '../types/shift';
+import { ShiftWorkerOptionT } from '../types/constraint';
+import { TeamMembershipRole } from '@/types/team';
 // API Client
-import { RequestApi } from "../app/lib/api/requestApi";
-import { WorkerApi } from "../app/lib/api/workerApi";
-import { ShiftApi } from "../app/lib/api/shiftApi";
-import { useApiClient } from "../app/lib/api-client";
+import { RequestApi } from '../app/lib/api/requestApi';
+import { WorkerApi } from '../app/lib/api/workerApi';
+import { ShiftApi } from '../app/lib/api/shiftApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
+import { useAuth } from '../contexts/auth-context';
 // Stats hooks
-import { useGetShiftOptions } from "./useStats";
-import { env } from "@/config/env";
+import { useGetShiftOptions } from './useStats';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Request Hooks //
@@ -31,7 +31,7 @@ export function useAddRequest() {
   const addRequest = useCallback(
     async (request: RequestT, teamId: string): Promise<RequestT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAddRequest called:", {
+        console.log('🔍 useAddRequest called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -41,43 +41,39 @@ export function useAddRequest() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!request) {
-        throw new Error("Request data is required");
+        throw new Error('Request data is required');
       }
 
       if (!teamId || teamId.trim().length === 0) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
-        const newRequest = await RequestApi.addRequest(
-          apiClient,
-          request,
-          teamId.trim()
-        );
+        const newRequest = await RequestApi.addRequest(apiClient, request, teamId.trim());
 
         if (env.isDevelopment) {
-          console.log("✅ Request added successfully");
+          console.log('✅ Request added successfully');
         }
 
         return newRequest;
       } catch (error) {
-        console.error("❌ Failed to add request:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to add request:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addRequest;
@@ -93,7 +89,7 @@ export function useGetRequests() {
   const getRequests = useCallback(
     async (teamId: string): Promise<RequestT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetRequests called:", {
+        console.log('🔍 useGetRequests called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -103,24 +99,24 @@ export function useGetRequests() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await RequestApi.getRequests(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get requests:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get requests:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getRequests;
@@ -137,28 +133,24 @@ export function useUpdateRequest() {
     async (updatedRequest: RequestT, teamId: string): Promise<RequestT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await RequestApi.updateRequest(
-          apiClient,
-          updatedRequest,
-          teamId
-        );
+        return await RequestApi.updateRequest(apiClient, updatedRequest, teamId);
       } catch (error) {
-        console.error("❌ Failed to update request:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update request:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateRequest;
@@ -174,28 +166,28 @@ export function useAcceptRequest() {
   const acceptRequest = useCallback(
     async (
       requestId: string,
-      teamId: string
+      teamId: string,
     ): Promise<{ request: RequestT; assignments: AssignmentT[] }> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await RequestApi.acceptRequest(apiClient, requestId, teamId);
       } catch (error) {
-        console.error("❌ Failed to accept request:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to accept request:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return acceptRequest;
@@ -212,24 +204,24 @@ export function useDenyRequest() {
     async (requestId: string, teamId: string): Promise<RequestT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await RequestApi.denyRequest(apiClient, requestId, teamId);
       } catch (error) {
-        console.error("❌ Failed to deny request:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to deny request:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return denyRequest;
@@ -245,28 +237,28 @@ export function useRescindRequest() {
   const rescindRequest = useCallback(
     async (
       requestId: string,
-      teamId: string
+      teamId: string,
     ): Promise<{ request: RequestT; assignmentsDeletedIds: string[] }> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await RequestApi.rescindRequest(apiClient, requestId, teamId);
       } catch (error) {
-        console.error("❌ Failed to rescind request:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to rescind request:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return rescindRequest;
@@ -283,24 +275,24 @@ export function useDeleteRequest() {
     async (requestId: string, teamId: string): Promise<void> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         await RequestApi.deleteRequest(apiClient, requestId, teamId);
       } catch (error) {
-        console.error("❌ Failed to delete request:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete request:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteRequest;
@@ -332,7 +324,7 @@ export function useGetRequestsTabData() {
   const getRequestsTabData = useCallback(
     async (teamId: string, userWorkerId?: string): Promise<RequestsTabData> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetRequestsTabData called:", {
+        console.log('🔍 useGetRequestsTabData called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -343,11 +335,11 @@ export function useGetRequestsTabData() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -367,14 +359,14 @@ export function useGetRequestsTabData() {
           shiftOptions,
         };
       } catch (error) {
-        console.error("❌ Failed to fetch requests tab data:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to fetch requests tab data:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, getShiftOptions]
+    [apiClient, isAuthenticated, loading, user, getShiftOptions],
   );
 
   return getRequestsTabData;

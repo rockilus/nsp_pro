@@ -1,17 +1,14 @@
-import React from "react";
+import React from 'react';
 // MUI
-import Checkbox from "@mui/material/Checkbox";
+import Checkbox from '@mui/material/Checkbox';
 // Styles
-import "./assignment-cell.css";
+import './assignment-cell.css';
 // Types
-import {
-  AssignmentDataT,
-  ScheduleViewSettingsT,
-} from "../../../../types/schedule";
-import { ShiftType } from "@/types/shift";
-import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
+import { AssignmentDataT, ScheduleViewSettingsT } from '../../../../types/schedule';
+import { ShiftType } from '@/types/shift';
+import { TeamMembershipRole, TeamWithMembership } from '@/types/team';
 // Constants
-import { ShiftColorMappings } from "../../../../constants/constants";
+import { ShiftColorMappings } from '../../../../constants/constants';
 
 export default function AssignmentCell({
   assignmentData,
@@ -30,12 +27,10 @@ export default function AssignmentCell({
   isSelected: boolean;
   onAssignmentSelect: () => void;
 }) {
-  const { background, sample, text } = ShiftColorMappings[
-    assignmentData.shift.color
-  ] || {
-    background: "#f5f5f5",
-    sample: "#9e9e9e",
-    text: "#212121",
+  const { background, sample, text } = ShiftColorMappings[assignmentData.shift.color] || {
+    background: '#f5f5f5',
+    sample: '#9e9e9e',
+    text: '#212121',
   };
 
   return (
@@ -53,15 +48,13 @@ export default function AssignmentCell({
       }}
       style={
         {
-          "--bg-color": background,
-          "--text-color": text,
-          position: "relative",
+          '--bg-color': background,
+          '--text-color': text,
+          position: 'relative',
           cursor:
-            teamWithMembership.membership.role === TeamMembershipRole.OWNER
-              ? "pointer"
-              : "default",
-          outline: isSelected ? "2px solid #1976d2" : undefined,
-          outlineOffset: isSelected ? "-2px" : undefined,
+            teamWithMembership.membership.role === TeamMembershipRole.OWNER ? 'pointer' : 'default',
+          outline: isSelected ? '2px solid #1976d2' : undefined,
+          outlineOffset: isSelected ? '-2px' : undefined,
         } as React.CSSProperties
       }
     >
@@ -75,48 +68,46 @@ export default function AssignmentCell({
           }}
           onClick={(e) => e.stopPropagation()}
           sx={{
-            position: "absolute",
+            position: 'absolute',
             top: 0,
             right: 0,
-            padding: "1px",
+            padding: '1px',
             zIndex: 5,
-            "& .MuiSvgIcon-root": { fontSize: 14 },
+            '& .MuiSvgIcon-root': { fontSize: 14 },
           }}
         />
       )}
       <span className="a-cell-title">
-        {scheduleViewSettings.groupBy === "worker"
-          ? scheduleViewSettings.timeFrame === "week"
+        {scheduleViewSettings.groupBy === 'worker'
+          ? scheduleViewSettings.timeFrame === 'week'
             ? assignmentData.shift.name
             : assignmentData.shift.acronym
-          : scheduleViewSettings.groupBy === "shift"
-            ? scheduleViewSettings.timeFrame === "week"
+          : scheduleViewSettings.groupBy === 'shift'
+            ? scheduleViewSettings.timeFrame === 'week'
               ? assignmentData.worker.name
               : assignmentData.worker.acronym
             : null}
       </span>
-      {scheduleViewSettings.groupBy === "worker" &&
-        scheduleViewSettings.timeFrame === "week" && (
-          <div className="a-cell-shift-times-container">
-            <span className="a-cell-shift-times-text">
-              {assignmentData.shift.startTime.format("HH:mm")}
-            </span>
-            <span className="a-cell-shift-times-text">{" - "}</span>
-            <span className="a-cell-shift-times-text">
-              {assignmentData.shift.endTime.format("HH:mm")}
-              {!assignmentData.shift.endTime.isSame(
-                assignmentData.shift.startTime,
-                "day",
-              ) && <sup>+1</sup>}
-            </span>
-          </div>
-        )}
-      {scheduleViewSettings.groupBy === "worker" && (
+      {scheduleViewSettings.groupBy === 'worker' && scheduleViewSettings.timeFrame === 'week' && (
+        <div className="a-cell-shift-times-container">
+          <span className="a-cell-shift-times-text">
+            {assignmentData.shift.startTime.format('HH:mm')}
+          </span>
+          <span className="a-cell-shift-times-text">{' - '}</span>
+          <span className="a-cell-shift-times-text">
+            {assignmentData.shift.endTime.format('HH:mm')}
+            {!assignmentData.shift.endTime.isSame(assignmentData.shift.startTime, 'day') && (
+              <sup>+1</sup>
+            )}
+          </span>
+        </div>
+      )}
+      {scheduleViewSettings.groupBy === 'worker' && (
         <div
           className={`a-cell-shift-type-marker ${
-            assignmentData.shift.shiftType === ShiftType.DUTY ? "duty" : "other"
+            assignmentData.shift.shiftType === ShiftType.DUTY ? 'duty' : 'other'
           }`}
-          style={{ "--bg-color": sample } as React.CSSProperties}
+          style={{ '--bg-color': sample } as React.CSSProperties}
         ></div>
       )}
       {assignmentData.assignment.fixed && (

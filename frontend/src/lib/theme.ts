@@ -1,4 +1,4 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme } from '@mui/material/styles';
 
 // Change this single value to adjust the delay for every Tooltip in the app.
 export const TOOLTIP_ENTER_DELAY = 1000;

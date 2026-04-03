@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Paper,
@@ -18,30 +18,27 @@ import {
   Grow,
   ClickAwayListener,
   MenuList,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import {
-  ScheduleSelectionState,
-  SelectionScope,
-} from "../../../types/scheduleSelection";
-import { WorkerT } from "../../../types/worker";
-import { ShiftT } from "../../../types/shift";
-import { ScheduleT } from "../../../types/schedule";
-import { useTranslation } from "../../../app/i18n/client";
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { ScheduleSelectionState, SelectionScope } from '../../../types/scheduleSelection';
+import { WorkerT } from '../../../types/worker';
+import { ShiftT } from '../../../types/shift';
+import { ScheduleT } from '../../../types/schedule';
+import { useTranslation } from '../../../app/i18n/client';
 
-type ActionKey = "create" | "update" | "toggleFixed" | "delete";
+type ActionKey = 'create' | 'update' | 'toggleFixed' | 'delete';
 
 const ACTION_LABEL_KEYS: Record<ActionKey, string> = {
-  create: "select_mode_action_create_assignments",
-  update: "select_mode_action_update_assignments",
-  toggleFixed: "select_mode_action_toggle_fixed",
-  delete: "select_mode_action_delete_assignments",
+  create: 'select_mode_action_create_assignments',
+  update: 'select_mode_action_update_assignments',
+  toggleFixed: 'select_mode_action_toggle_fixed',
+  delete: 'select_mode_action_delete_assignments',
 };
-const ACTION_KEYS: ActionKey[] = ["create", "update", "toggleFixed", "delete"];
+const ACTION_KEYS: ActionKey[] = ['create', 'update', 'toggleFixed', 'delete'];
 
 interface ScheduleActionToolbarProps {
   lng: string;
@@ -49,7 +46,7 @@ interface ScheduleActionToolbarProps {
   workers: WorkerT[];
   shifts: ShiftT[];
   scheduleCampaign: ScheduleT | null;
-  groupBy: "shift" | "worker";
+  groupBy: 'shift' | 'worker';
   onBulkCreate: (id: string) => Promise<void>;
   onBulkUpdate: (id: string) => Promise<void>;
   onBulkToggleFixed: () => Promise<void>;
@@ -74,9 +71,9 @@ export function ScheduleActionToolbar({
   scope,
   onScopeChange,
 }: ScheduleActionToolbarProps) {
-  const { t } = useTranslation(lng, "schedule-page");
-  const [selectedAction, setSelectedAction] = useState<ActionKey>("create");
-  const [entityId, setEntityId] = useState<string>("");
+  const { t } = useTranslation(lng, 'schedule-page');
+  const [selectedAction, setSelectedAction] = useState<ActionKey>('create');
+  const [entityId, setEntityId] = useState<string>('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,49 +81,42 @@ export function ScheduleActionToolbar({
   const anchorRef = useRef<HTMLDivElement>(null);
 
   // In shift view: pick a worker for create/update; in worker view: pick a shift
-  const options = groupBy === "shift" ? workers : shifts;
-  const optionLabel = (opt: WorkerT | ShiftT) =>
-    "name" in opt ? opt.name : (opt as ShiftT).name;
+  const options = groupBy === 'shift' ? workers : shifts;
+  const optionLabel = (opt: WorkerT | ShiftT) => ('name' in opt ? opt.name : (opt as ShiftT).name);
   const optionId = (opt: WorkerT | ShiftT) => opt.id;
 
   const cellCount = selectionState.selectedCells.length;
   const assignmentCount = selectionState.selectedAssignmentIds.length;
 
-  const needsEntitySelect =
-    selectedAction === "create" || selectedAction === "update";
+  const needsEntitySelect = selectedAction === 'create' || selectedAction === 'update';
 
-  const entityLabel = groupBy === "shift" ? "worker" : "shift";
+  const entityLabel = groupBy === 'shift' ? 'worker' : 'shift';
 
-  const selectHasError =
-    validationError !== null && needsEntitySelect && !entityId;
+  const selectHasError = validationError !== null && needsEntitySelect && !entityId;
 
   const validate = (): string | null => {
     switch (selectedAction) {
-      case "create":
-        if (cellCount === 0) return t("select_mode_warning_no_cell_selected");
+      case 'create':
+        if (cellCount === 0) return t('select_mode_warning_no_cell_selected');
         if (!entityId)
-          return t("select_mode_warning_no_member_shift_selected", {
+          return t('select_mode_warning_no_member_shift_selected', {
             entity:
-              groupBy === "shift"
-                ? t("worker").toLocaleLowerCase()
-                : t("shift").toLocaleLowerCase(),
+              groupBy === 'shift'
+                ? t('worker').toLocaleLowerCase()
+                : t('shift').toLocaleLowerCase(),
           });
         return null;
-      case "update":
-        if (assignmentCount === 0)
-          return t("select_mode_warning_no_assignment_selected");
+      case 'update':
+        if (assignmentCount === 0) return t('select_mode_warning_no_assignment_selected');
         if (!entityId)
-          return t("select_mode_warning_no_member_shift_selected", {
+          return t('select_mode_warning_no_member_shift_selected', {
             entity:
-              groupBy === "shift"
-                ? t("worker").toLowerCase()
-                : t("shift").toLocaleLowerCase(),
+              groupBy === 'shift' ? t('worker').toLowerCase() : t('shift').toLocaleLowerCase(),
           });
         return null;
-      case "toggleFixed":
-      case "delete":
-        if (assignmentCount === 0)
-          return t("select_mode_warning_no_assignment_selected");
+      case 'toggleFixed':
+      case 'delete':
+        if (assignmentCount === 0) return t('select_mode_warning_no_assignment_selected');
         return null;
     }
   };
@@ -134,23 +124,23 @@ export function ScheduleActionToolbar({
   const currentActionLabel = t(ACTION_LABEL_KEYS[selectedAction]);
 
   const actionIcon: Record<ActionKey, React.ReactNode> = {
-    create: <AddIcon fontSize="small" sx={{ color: "text.secondary" }} />,
-    update: <EditIcon fontSize="small" sx={{ color: "text.secondary" }} />,
+    create: <AddIcon fontSize="small" sx={{ color: 'text.secondary' }} />,
+    update: <EditIcon fontSize="small" sx={{ color: 'text.secondary' }} />,
     toggleFixed: (
       <span
         style={{
-          width: "20px",
-          height: "20px",
-          fontSize: "1.0rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          width: '20px',
+          height: '20px',
+          fontSize: '1.0rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         🔒
       </span>
     ),
-    delete: <DeleteIcon fontSize="small" sx={{ color: "error.main" }} />,
+    delete: <DeleteIcon fontSize="small" sx={{ color: 'error.main' }} />,
   };
 
   const handleMainAction = async () => {
@@ -159,25 +149,25 @@ export function ScheduleActionToolbar({
       setValidationError(error);
       return;
     }
-    if (selectedAction === "delete" && !deleteConfirm) {
+    if (selectedAction === 'delete' && !deleteConfirm) {
       setDeleteConfirm(true);
       return;
     }
     setIsLoading(true);
     try {
       switch (selectedAction) {
-        case "create":
+        case 'create':
           await onBulkCreate(entityId);
-          setEntityId("");
+          setEntityId('');
           break;
-        case "update":
+        case 'update':
           await onBulkUpdate(entityId);
-          setEntityId("");
+          setEntityId('');
           break;
-        case "toggleFixed":
+        case 'toggleFixed':
           await onBulkToggleFixed();
           break;
-        case "delete":
+        case 'delete':
           await onBulkDelete();
           setDeleteConfirm(false);
           break;
@@ -192,8 +182,8 @@ export function ScheduleActionToolbar({
     setDropdownOpen(false);
     setDeleteConfirm(false);
     setValidationError(null);
-    if (key !== "create" && key !== "update") {
-      setEntityId("");
+    if (key !== 'create' && key !== 'update') {
+      setEntityId('');
     }
   };
 
@@ -203,11 +193,11 @@ export function ScheduleActionToolbar({
       elevation={2}
       sx={{
         p: 0,
-        width: "100%",
-        padding: "8px 16px",
-        backgroundColor: "primary.50",
-        borderTop: "1px solid",
-        borderColor: "primary.200",
+        width: '100%',
+        padding: '8px 16px',
+        backgroundColor: 'primary.50',
+        borderTop: '1px solid',
+        borderColor: 'primary.200',
       }}
     >
       <Box
@@ -229,20 +219,20 @@ export function ScheduleActionToolbar({
           <Typography
             variant="body2"
             data-testid="schedule-selection-counts"
-            sx={{ color: "text.secondary", minWidth: "160px", flexShrink: 0 }}
+            sx={{ color: 'text.secondary', minWidth: '160px', flexShrink: 0 }}
           >
             {cellCount > 0 &&
-              t("select_mode_selection_counts_cells", {
+              t('select_mode_selection_counts_cells', {
                 count: cellCount,
-                s: cellCount !== 1 ? "s" : "",
+                s: cellCount !== 1 ? 's' : '',
               })}
-            {cellCount > 0 && assignmentCount > 0 && ", "}
+            {cellCount > 0 && assignmentCount > 0 && ', '}
             {assignmentCount > 0 &&
-              (lng === "es"
-                ? `${assignmentCount} ${assignmentCount !== 1 ? "asignaciones" : "asignación"}`
-                : t("select_mode_selection_counts_assignments", {
+              (lng === 'es'
+                ? `${assignmentCount} ${assignmentCount !== 1 ? 'asignaciones' : 'asignación'}`
+                : t('select_mode_selection_counts_assignments', {
                     count: assignmentCount,
-                    s: assignmentCount !== 1 ? "s" : "",
+                    s: assignmentCount !== 1 ? 's' : '',
                   }))}
           </Typography>
         </Box>
@@ -259,12 +249,8 @@ export function ScheduleActionToolbar({
         >
           {scheduleCampaign && (
             <>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ whiteSpace: "nowrap" }}
-              >
-                {t("select_mode_target_period")}
+              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                {t('select_mode_target_period')}
               </Typography>
               <ToggleButtonGroup
                 size="small"
@@ -274,24 +260,22 @@ export function ScheduleActionToolbar({
                 onChange={(_, val) => val && onScopeChange(val)}
                 data-testid="schedule-scope-toggle-group"
               >
-                <Tooltip title={t("select_mode_target_period_view_tooltip")}>
+                <Tooltip title={t('select_mode_target_period_view_tooltip')}>
                   <ToggleButton
                     value="view"
                     data-testid="schedule-scope-view"
-                    sx={{ fontSize: "0.7rem", textTransform: "none" }}
+                    sx={{ fontSize: '0.7rem', textTransform: 'none' }}
                   >
-                    {t("select_mode_target_period_view")}
+                    {t('select_mode_target_period_view')}
                   </ToggleButton>
                 </Tooltip>
-                <Tooltip
-                  title={t("select_mode_target_period_campaign_tooltip")}
-                >
+                <Tooltip title={t('select_mode_target_period_campaign_tooltip')}>
                   <ToggleButton
                     value="campaign"
                     data-testid="schedule-scope-campaign"
-                    sx={{ fontSize: "0.7rem", textTransform: "none" }}
+                    sx={{ fontSize: '0.7rem', textTransform: 'none' }}
                   >
-                    {t("select_mode_target_period_campaign")}
+                    {t('select_mode_target_period_campaign')}
                   </ToggleButton>
                 </Tooltip>
               </ToggleButtonGroup>
@@ -310,29 +294,25 @@ export function ScheduleActionToolbar({
           sx={{ flexShrink: 0, flex: 0.4 }}
         >
           {needsEntitySelect && (
-            <FormControl
-              size="small"
-              sx={{ minWidth: 160 }}
-              error={selectHasError}
-            >
-              <InputLabel sx={{ fontSize: "0.8rem" }}>
-                {groupBy === "shift" ? t("worker") : t("shift")}
+            <FormControl size="small" sx={{ minWidth: 160 }} error={selectHasError}>
+              <InputLabel sx={{ fontSize: '0.8rem' }}>
+                {groupBy === 'shift' ? t('worker') : t('shift')}
               </InputLabel>
               <Select
                 value={entityId}
-                label={groupBy === "shift" ? t("worker") : t("shift")}
+                label={groupBy === 'shift' ? t('worker') : t('shift')}
                 onChange={(e) => {
                   setEntityId(e.target.value);
                   setValidationError(null);
                 }}
-                sx={{ fontSize: "0.8rem" }}
+                sx={{ fontSize: '0.8rem' }}
                 data-testid="schedule-entity-select"
               >
                 {options.map((opt) => (
                   <MenuItem
                     key={optionId(opt)}
                     value={optionId(opt)}
-                    sx={{ fontSize: "0.8rem" }}
+                    sx={{ fontSize: '0.8rem' }}
                     data-testid={`schedule-entity-option-${optionId(opt)}`}
                   >
                     {optionLabel(opt)}
@@ -345,11 +325,11 @@ export function ScheduleActionToolbar({
           {deleteConfirm ? (
             <Box display="flex" alignItems="center" gap={0.5}>
               <Typography variant="caption" color="error">
-                {lng === "es"
-                  ? `${assignmentCount} ${assignmentCount !== 1 ? "asignaciones" : "asignación"}`
-                  : t("select_mode_delete_confirmation", {
+                {lng === 'es'
+                  ? `${assignmentCount} ${assignmentCount !== 1 ? 'asignaciones' : 'asignación'}`
+                  : t('select_mode_delete_confirmation', {
                       count: assignmentCount,
-                      s: assignmentCount !== 1 ? "s" : "",
+                      s: assignmentCount !== 1 ? 's' : '',
                     })}
               </Typography>
               <Button
@@ -359,18 +339,18 @@ export function ScheduleActionToolbar({
                 disabled={isLoading}
                 onClick={handleMainAction}
                 data-testid="schedule-delete-confirm-button"
-                sx={{ fontSize: "0.75rem", textTransform: "none" }}
+                sx={{ fontSize: '0.75rem', textTransform: 'none' }}
               >
-                {t("confirm")}
+                {t('confirm')}
               </Button>
               <Button
                 size="small"
                 variant="text"
                 onClick={() => setDeleteConfirm(false)}
                 data-testid="schedule-delete-cancel-button"
-                sx={{ fontSize: "0.75rem", textTransform: "none" }}
+                sx={{ fontSize: '0.75rem', textTransform: 'none' }}
               >
-                {t("cancel")}
+                {t('cancel')}
               </Button>
             </Box>
           ) : (
@@ -379,15 +359,15 @@ export function ScheduleActionToolbar({
                 ref={anchorRef}
                 size="small"
                 variant="contained"
-                color={selectedAction === "delete" ? "error" : "primary"}
+                color={selectedAction === 'delete' ? 'error' : 'primary'}
               >
                 <Button
                   disabled={isLoading}
                   onClick={handleMainAction}
                   data-testid="schedule-action-main-button"
                   sx={{
-                    fontSize: "0.75rem",
-                    textTransform: "none",
+                    fontSize: '0.75rem',
+                    textTransform: 'none',
                   }}
                 >
                   {currentActionLabel}
@@ -414,12 +394,8 @@ export function ScheduleActionToolbar({
           )}
         </Box>
         {/* Cancel */}
-        <Tooltip title={t("select_mode_exit_tooltip")}>
-          <IconButton
-            size="small"
-            onClick={onCancel}
-            data-testid="schedule-close-selection-button"
-          >
+        <Tooltip title={t('select_mode_exit_tooltip')}>
+          <IconButton size="small" onClick={onCancel} data-testid="schedule-close-selection-button">
             <CloseIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -434,10 +410,7 @@ export function ScheduleActionToolbar({
         disablePortal
       >
         {({ TransitionProps }) => (
-          <Grow
-            {...TransitionProps}
-            style={{ transformOrigin: "center bottom" }}
-          >
+          <Grow {...TransitionProps} style={{ transformOrigin: 'center bottom' }}>
             <Paper>
               <ClickAwayListener onClickAway={() => setDropdownOpen(false)}>
                 <MenuList autoFocusItem dense>
@@ -448,16 +421,16 @@ export function ScheduleActionToolbar({
                       onClick={() => handleActionSelect(key)}
                       data-testid={`schedule-action-option-${key}`}
                       sx={{
-                        fontSize: "0.8rem",
-                        display: "flex",
-                        alignItems: "center",
+                        fontSize: '0.8rem',
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: 1,
                       }}
                     >
                       {actionIcon[key]}
                       <Typography
                         variant="inherit"
-                        color={key === "delete" ? "error" : "text.primary"}
+                        color={key === 'delete' ? 'error' : 'text.primary'}
                       >
                         {t(ACTION_LABEL_KEYS[key])}
                       </Typography>

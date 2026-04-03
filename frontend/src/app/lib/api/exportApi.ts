@@ -2,8 +2,8 @@
  * API client for export operations
  */
 
-import { ExportOptionsT, fromExportOptionsT } from "../../../types/schedule";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { ExportOptionsT, fromExportOptionsT } from '../../../types/schedule';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class ExportApi extends BaseApi {
   /**
@@ -12,24 +12,24 @@ export class ExportApi extends BaseApi {
   static async exportSchedule(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    exportOptions: ExportOptionsT
+    exportOptions: ExportOptionsT,
   ): Promise<Blob> {
     // Security: Input validation
     if (!apiClient) {
-      throw new Error("API client is required for authenticated requests");
+      throw new Error('API client is required for authenticated requests');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!exportOptions || !exportOptions.startDate || !exportOptions.endDate) {
-      throw new Error("Invalid export options provided");
+      throw new Error('Invalid export options provided');
     }
 
     return await this.makeBlobRequest(
       apiClient,
-      "post",
+      'post',
       `/export/teams/${teamId}`,
-      fromExportOptionsT(exportOptions)
+      fromExportOptionsT(exportOptions),
     );
   }
 
@@ -39,7 +39,7 @@ export class ExportApi extends BaseApi {
   static downloadBlob(blob: Blob, filename: string): void {
     try {
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
@@ -47,8 +47,8 @@ export class ExportApi extends BaseApi {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Failed to download file:", error);
-      throw new Error("Failed to download file");
+      console.error('Failed to download file:', error);
+      throw new Error('Failed to download file');
     }
   }
 }

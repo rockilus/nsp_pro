@@ -3,24 +3,16 @@
  * Provides common functionality for all API clients
  */
 
-import { env } from "../../../config/env";
+import { env } from '../../../config/env';
 
 export interface AuthenticatedApiClient {
   get: <T>(endpoint: string, options?: RequestInit) => Promise<T>;
   post: <T>(endpoint: string, data?: any, options?: RequestInit) => Promise<T>;
   put: <T>(endpoint: string, data?: any, options?: RequestInit) => Promise<T>;
-  delete: <T>(
-    endpoint: string,
-    data?: any,
-    options?: RequestInit,
-  ) => Promise<T>;
+  delete: <T>(endpoint: string, data?: any, options?: RequestInit) => Promise<T>;
   // Optional raw methods for endpoints that return non-JSON (e.g. file downloads)
   getRaw?: (endpoint: string, options?: RequestInit) => Promise<Response>;
-  postRaw?: (
-    endpoint: string,
-    data?: any,
-    options?: RequestInit,
-  ) => Promise<Response>;
+  postRaw?: (endpoint: string, data?: any, options?: RequestInit) => Promise<Response>;
 }
 
 export interface ApiErrorResponse {
@@ -37,24 +29,23 @@ export const handleApiError = async (response: Response): Promise<never> => {
     const errorData: ApiErrorResponse = await response.json();
 
     // Create user-friendly error message based on status
-    let userMessage =
-      errorData.detail || errorData.message || "An unexpected error occurred";
+    let userMessage = errorData.detail || errorData.message || 'An unexpected error occurred';
 
     switch (response.status) {
       case 401:
-        userMessage = "Authentication required. Please sign in again.";
+        userMessage = 'Authentication required. Please sign in again.';
         break;
       case 403:
         userMessage = "You don't have permission to perform this action";
         break;
       case 404:
-        userMessage = "The requested resource was not found";
+        userMessage = 'The requested resource was not found';
         break;
       case 422:
         userMessage = `Validation failed: ${userMessage}`;
         break;
       case 500:
-        userMessage = "A server error occurred. Please try again later.";
+        userMessage = 'A server error occurred. Please try again later.';
         break;
     }
 
@@ -76,20 +67,20 @@ export abstract class BaseApi {
    */
   protected static async makeRequest<T>(
     apiClient: AuthenticatedApiClient,
-    method: "get" | "post" | "put" | "delete",
+    method: 'get' | 'post' | 'put' | 'delete',
     endpoint: string,
     data?: any,
     options?: RequestInit,
   ): Promise<T> {
     try {
       switch (method) {
-        case "get":
+        case 'get':
           return await apiClient.get<T>(endpoint, options);
-        case "post":
+        case 'post':
           return await apiClient.post<T>(endpoint, data, options);
-        case "put":
+        case 'put':
           return await apiClient.put<T>(endpoint, data, options);
-        case "delete":
+        case 'delete':
           return await apiClient.delete<T>(endpoint, data, options);
         default:
           throw new Error(`Unsupported method: ${method}`);
@@ -98,7 +89,7 @@ export abstract class BaseApi {
       // Log error for debugging while sanitizing sensitive information
       if (env.isDevelopment) {
         console.error(`❌ API ${method.toUpperCase()} ${endpoint} failed:`, {
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
       }
@@ -117,10 +108,10 @@ export abstract class BaseApi {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
         ...options.headers,
       },
-      credentials: "include", // For session-based auth fallback
+      credentials: 'include', // For session-based auth fallback
     });
 
     if (!response.ok) {
@@ -136,7 +127,7 @@ export abstract class BaseApi {
    */
   protected static async makeBlobRequest(
     apiClientOrToken: AuthenticatedApiClient | string,
-    method: "post" | "get",
+    method: 'post' | 'get',
     endpoint: string,
     data?: any,
   ): Promise<Blob> {
@@ -144,12 +135,12 @@ export abstract class BaseApi {
       let response: Response;
 
       // If an authenticated API client is provided and it exposes raw methods, use them
-      if (typeof apiClientOrToken !== "string") {
+      if (typeof apiClientOrToken !== 'string') {
         const apiClient = apiClientOrToken as AuthenticatedApiClient;
 
-        if (method === "post" && apiClient.postRaw) {
+        if (method === 'post' && apiClient.postRaw) {
           response = await apiClient.postRaw(endpoint, data);
-        } else if (method === "get" && apiClient.getRaw) {
+        } else if (method === 'get' && apiClient.getRaw) {
           response = await apiClient.getRaw(endpoint);
         } else {
           // Fallback to doing a raw fetch but attempt to use authless headers via a simple fetch
@@ -157,7 +148,7 @@ export abstract class BaseApi {
           response = await fetch(`${this.baseUrl}${endpoint}`, {
             method: method.toUpperCase(),
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
             body: data ? JSON.stringify(data) : undefined,
           });
@@ -166,12 +157,12 @@ export abstract class BaseApi {
         // Legacy: token string provided
         const authToken = apiClientOrToken as string;
         if (!authToken) {
-          throw new Error("Authentication token is required");
+          throw new Error('Authentication token is required');
         }
         response = await fetch(`${this.baseUrl}${endpoint}`, {
           method: method.toUpperCase(),
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${authToken}`,
           },
           body: data ? JSON.stringify(data) : undefined,
@@ -180,16 +171,14 @@ export abstract class BaseApi {
 
       if (!response.ok) {
         const responseData = await response.json().catch(() => ({}));
-        throw new Error(
-          `Request failed: ${responseData.detail || response.statusText}`,
-        );
+        throw new Error(`Request failed: ${responseData.detail || response.statusText}`);
       }
 
       return await response.blob();
     } catch (error) {
       if (env.isDevelopment) {
         console.error(`❌ Blob ${method.toUpperCase()} ${endpoint} failed:`, {
-          error: error instanceof Error ? error.message : "Unknown error",
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
       }

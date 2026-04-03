@@ -1,0 +1,41 @@
+# Justfile for backend api_gateway service
+
+update-shared:
+    echo "Reinstall shared package..."
+    uv sync --reinstall-package shared
+
+format:
+    echo "Formatting api_gateway..."
+    uv run ruff format .
+    uv run ruff check --fix .
+
+lint:
+    echo "Running linter for api_gateway..."
+    uv run ruff check .
+
+typecheck:
+    echo "Running type checker for api_gateway..."
+    uv run python -m mypy .
+
+test:
+    echo "Running tests for api_gateway..."
+    uv run pytest
+
+all:
+    just update-shared
+    just format
+    just lint
+    just typecheck
+    just test
+
+all-no-test:
+    just update-shared
+    just format
+    just lint
+    just typecheck
+
+dev:
+    echo "Starting development server for api_gateway on port 4000..."
+    uv run uvicorn src.main:app --reload --host 127.0.0.1 --port 4000 --env-file .env.development.tests 
+
+

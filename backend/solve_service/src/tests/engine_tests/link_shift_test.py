@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta, timezone
-from typing import List
+from datetime import UTC, datetime, timedelta
 
 from shared.augment import requests_to_requests_augmented
 from shared.schemas.core import (
@@ -29,7 +28,8 @@ from tests.sample_data import sample_data_fixture  # noqa: F401
 class TestDutyRecupConstraint:
     # pylint: disable=redefined-outer-name, too-many-locals
     def test_link_shift(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:  # noqa: F811
         shifts = sample_data_fixture.shifts
         shift_target_1 = next((shift for shift in shifts if shift.id == "s0"), None)
@@ -89,7 +89,8 @@ class TestDutyRecupConstraint:
 
     # pylint: disable=redefined-outer-name
     def test_link_shift_conflict(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts
@@ -99,7 +100,7 @@ class TestDutyRecupConstraint:
         date_target = schedule.start_date
         shift_target_0_id = "s0"
         shift_target_1_id = "s1"
-        requests: List[Request] = [
+        requests: list[Request] = [
             Request(
                 id="r0",
                 team_id="t0",
@@ -122,7 +123,7 @@ class TestDutyRecupConstraint:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             ),
             Request(
                 id="r0",
@@ -146,7 +147,7 @@ class TestDutyRecupConstraint:
                 request_type=RequestType.WORK_DEMAND,
                 fulfillment=FulfillmentStatus.NOT_PROCESSED,
                 comment="",
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             ),
         ]
         sample_data_fixture.requests_work = requests_to_requests_augmented(
@@ -233,7 +234,7 @@ class TestDutyRecupConstraint:
             assert count_actual == 1
 
         # Check output contains expected breach
-        breaches: List[Breach] = _parse_breaches_engine(schedule, outputs.breaches)
+        breaches: list[Breach] = _parse_breaches_engine(schedule, outputs.breaches)
         assert len(breaches) == 1
         breaches_expected = [
             Breach(

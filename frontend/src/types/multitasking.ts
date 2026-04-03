@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 /**
  * TypeScript types and interfaces for multitasking feature
@@ -27,7 +27,7 @@ export interface MultitaskingSelectionState {
   isActive: boolean;
   selectedShiftDemandIds: string[];
   availableShiftDemandIds: string[];
-  mode: "selecting" | "editing";
+  mode: 'selecting' | 'editing';
 }
 
 /**
@@ -51,10 +51,7 @@ export interface ShiftDemandSelectionInfo {
 /**
  * Enum for multitasking group types (matches backend DTO)
  */
-export type MultitaskingGroupType =
-  | "shift_demand"
-  | "shift_demand_template"
-  | "assignment";
+export type MultitaskingGroupType = 'shift_demand' | 'shift_demand_template' | 'assignment';
 
 /**
  * DTO for multitasking group (matches backend MultitaskingGroupDTO)
@@ -115,11 +112,9 @@ export interface ShiftDemandConcurrencyResponse {
 /**
  * Converts a MultitaskingGroupDTO to a MultitaskingGroup (with dayjs dates and correct field mapping)
  */
-export function toMultitaskingGroup(
-  dto: MultitaskingGroupDTO
-): MultitaskingGroup {
+export function toMultitaskingGroup(dto: MultitaskingGroupDTO): MultitaskingGroup {
   return {
-    id: dto.id || "",
+    id: dto.id || '',
     type: dto.type,
     teamId: dto.teamId,
     relatedIds: dto.relatedIds,

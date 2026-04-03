@@ -1,7 +1,7 @@
-import * as React from "react";
+import * as React from 'react';
 // MUI
-import Popover from "@mui/material/Popover";
-import Button from "@mui/material/Button";
+import Popover from '@mui/material/Popover';
+import Button from '@mui/material/Button';
 
 export default function PopoverAnchorElOver({
   buttonContent,
@@ -14,9 +14,7 @@ export default function PopoverAnchorElOver({
   open: boolean;
   setOpen: (open: boolean) => void;
 }) {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
-    null
-  );
+  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -28,13 +26,13 @@ export default function PopoverAnchorElOver({
     setAnchorEl(null);
   };
 
-  const id = open ? "simple-popover" : undefined;
+  const id = open ? 'simple-popover' : undefined;
 
   return (
     <div
       style={{
-        width: "100%",
-        height: "100%",
+        width: '100%',
+        height: '100%',
       }}
     >
       <Button
@@ -43,18 +41,18 @@ export default function PopoverAnchorElOver({
         variant="contained"
         onClick={handleClick}
         sx={{
-          backgroundColor: "transparent",
-          border: "none",
-          boxShadow: "none",
-          "&:hover": {
-            backgroundColor: "transparent",
-            boxShadow: "none",
+          backgroundColor: 'transparent',
+          border: 'none',
+          boxShadow: 'none',
+          '&:hover': {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
           },
-          textTransform: "none",
-          justifyContent: "flex-start",
+          textTransform: 'none',
+          justifyContent: 'flex-start',
           padding: 0,
-          width: "100%",
-          height: "100%",
+          width: '100%',
+          height: '100%',
           minHeight: 20,
         }}
       >
@@ -67,13 +65,13 @@ export default function PopoverAnchorElOver({
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: "top",
-          horizontal: "left",
+          vertical: 'top',
+          horizontal: 'left',
         }}
         slotProps={{
           paper: {
             style: {
-              boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+              boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
               padding: 0,
             },
           },

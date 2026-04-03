@@ -1,112 +1,100 @@
-import { describe, it, expect } from "@jest/globals";
-import fs from "fs";
-import path from "path";
+import { describe, it, expect } from '@jest/globals';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Test suite to verify API centralization refactoring for TemplateViewer
  * Ensures TemplateViewer uses callbacks instead of direct API calls
  */
-describe("TemplateViewer API Centralization", () => {
-  const frontendPath = path.join(process.cwd(), "src");
-  const viewerFile = path.join(
-    frontendPath,
-    "components/shiftDemand/templates/TemplateViewer.tsx"
-  );
+describe('TemplateViewer API Centralization', () => {
+  const frontendPath = path.join(process.cwd(), 'src');
+  const viewerFile = path.join(frontendPath, 'components/shiftDemand/templates/TemplateViewer.tsx');
   const windowFile = path.join(
     frontendPath,
-    "components/shiftDemand/templates/TemplateManagementWindow.tsx"
+    'components/shiftDemand/templates/TemplateManagementWindow.tsx',
   );
 
-  describe("TemplateViewer Component", () => {
-    it("should not make direct ShiftDemandTemplateApi.updateTemplate calls", () => {
+  describe('TemplateViewer Component', () => {
+    it('should not make direct ShiftDemandTemplateApi.updateTemplate calls', () => {
       if (!fs.existsSync(viewerFile)) {
         console.warn(`TemplateViewer file not found: ${viewerFile}`);
         return;
       }
 
-      const viewerContent = fs.readFileSync(viewerFile, "utf8");
-      expect(viewerContent).not.toContain(
-        "ShiftDemandTemplateApi.updateTemplate"
-      );
+      const viewerContent = fs.readFileSync(viewerFile, 'utf8');
+      expect(viewerContent).not.toContain('ShiftDemandTemplateApi.updateTemplate');
     });
 
-    it("should not import ShiftDemandTemplateApi (except for TemplateUtils)", () => {
+    it('should not import ShiftDemandTemplateApi (except for TemplateUtils)', () => {
       if (!fs.existsSync(viewerFile)) {
         console.warn(`TemplateViewer file not found: ${viewerFile}`);
         return;
       }
 
-      const viewerContent = fs.readFileSync(viewerFile, "utf8");
+      const viewerContent = fs.readFileSync(viewerFile, 'utf8');
       const apiImportLines = viewerContent
-        .split("\n")
-        .filter(
-          (line) =>
-            line.includes("ShiftDemandTemplateApi") && line.includes("import")
-        );
+        .split('\n')
+        .filter((line) => line.includes('ShiftDemandTemplateApi') && line.includes('import'));
 
       expect(apiImportLines.length).toBe(0);
     });
 
-    it("should use onUpdateTemplate callback for API operations", () => {
+    it('should use onUpdateTemplate callback for API operations', () => {
       if (!fs.existsSync(viewerFile)) {
         console.warn(`TemplateViewer file not found: ${viewerFile}`);
         return;
       }
 
-      const viewerContent = fs.readFileSync(viewerFile, "utf8");
-      expect(viewerContent).toContain("await onUpdateTemplate({");
+      const viewerContent = fs.readFileSync(viewerFile, 'utf8');
+      expect(viewerContent).toContain('await onUpdateTemplate({');
     });
 
-    it("should have proper interface with onUpdateTemplate callback prop", () => {
+    it('should have proper interface with onUpdateTemplate callback prop', () => {
       if (!fs.existsSync(viewerFile)) {
         console.warn(`TemplateViewer file not found: ${viewerFile}`);
         return;
       }
 
-      const viewerContent = fs.readFileSync(viewerFile, "utf8");
+      const viewerContent = fs.readFileSync(viewerFile, 'utf8');
       expect(viewerContent).toContain(
-        "onUpdateTemplate: (updates: Partial<ShiftDemandTemplateDTO>) => Promise<void>"
+        'onUpdateTemplate: (updates: Partial<ShiftDemandTemplateDTO>) => Promise<void>',
       );
     });
 
-    it("should still import TemplateUtils for other functionality (if needed)", () => {
+    it('should still import TemplateUtils for other functionality (if needed)', () => {
       if (!fs.existsSync(viewerFile)) {
         console.warn(`TemplateViewer file not found: ${viewerFile}`);
         return;
       }
 
-      const viewerContent = fs.readFileSync(viewerFile, "utf8");
+      const viewerContent = fs.readFileSync(viewerFile, 'utf8');
       // This is optional - just log if TemplateUtils is used
-      const hasTemplateUtils = viewerContent.includes("TemplateUtils");
+      const hasTemplateUtils = viewerContent.includes('TemplateUtils');
       if (hasTemplateUtils) {
-        console.log(
-          "ℹ️ TemplateViewer still uses TemplateUtils (for other functionality)"
-        );
+        console.log('ℹ️ TemplateViewer still uses TemplateUtils (for other functionality)');
       }
     });
   });
 
-  describe("TemplateManagementWindow Integration", () => {
-    it("should have handleUpdateTemplate method", () => {
+  describe('TemplateManagementWindow Integration', () => {
+    it('should have handleUpdateTemplate method', () => {
       if (!fs.existsSync(windowFile)) {
         console.warn(`TemplateManagementWindow file not found: ${windowFile}`);
         return;
       }
 
-      const windowContent = fs.readFileSync(windowFile, "utf8");
-      expect(windowContent).toContain("const handleUpdateTemplate = async");
+      const windowContent = fs.readFileSync(windowFile, 'utf8');
+      expect(windowContent).toContain('const handleUpdateTemplate = async');
     });
 
-    it("should pass handleUpdateTemplate to TemplateViewer", () => {
+    it('should pass handleUpdateTemplate to TemplateViewer', () => {
       if (!fs.existsSync(windowFile)) {
         console.warn(`TemplateManagementWindow file not found: ${windowFile}`);
         return;
       }
 
-      const windowContent = fs.readFileSync(windowFile, "utf8");
-      expect(windowContent).toContain(
-        "onUpdateTemplate={handleUpdateTemplate}"
-      );
+      const windowContent = fs.readFileSync(windowFile, 'utf8');
+      expect(windowContent).toContain('onUpdateTemplate={handleUpdateTemplate}');
     });
 
     // it("should make centralized API calls in handleUpdateTemplate", () => {

@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../../../app/i18n/client";
+import React, { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { useTranslation } from '../../../../../app/i18n/client';
 // MUI
-import { Select, MenuItem, TextField, Button } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { Select, MenuItem, TextField, Button } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Styles
-import "./recurrence-edit.css";
+import './recurrence-edit.css';
 // Types
 import {
   OccurrenceType,
@@ -15,7 +15,7 @@ import {
   RecurrenceEndType,
   RecurrenceRuleT,
   OccurrenceInfoT,
-} from "../../../../../types/recurrence";
+} from '../../../../../types/recurrence';
 
 dayjs.extend(utc);
 
@@ -40,7 +40,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   onClose,
   onRecurrenceChange,
 }) => {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   interface FormState {
     repeatEvery: number;
@@ -60,15 +60,13 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
         : FrequencyType.WEEK,
     weekDays: recurrenceRule?.weekDays || [(startDate.day() + 6) % 7],
     monthRepeatType: recurrenceRule?.monthRepeatType || null,
-    recurrenceEndType:
-      recurrenceRule?.recurrenceEndType || RecurrenceEndType.NEVER,
-    endDate: recurrenceRule?.endDate || startDate.add(3, "month"),
+    recurrenceEndType: recurrenceRule?.recurrenceEndType || RecurrenceEndType.NEVER,
+    endDate: recurrenceRule?.endDate || startDate.add(3, 'month'),
     numberOfOccurrences: recurrenceRule?.numberOfOccurrences || 12,
   }));
 
   const [repeatEveryError, setRepeatEveryError] = useState<boolean>(false);
-  const [numberOfOccurrencesError, setNumberOfOccurrencesError] =
-    useState<boolean>(false);
+  const [numberOfOccurrencesError, setNumberOfOccurrencesError] = useState<boolean>(false);
 
   useEffect(() => {
     // Defer updating state to avoid synchronous setState inside effect
@@ -83,9 +81,8 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             : FrequencyType.WEEK,
         weekDays: recurrenceRule?.weekDays || [(startDate.day() + 6) % 7],
         monthRepeatType: recurrenceRule?.monthRepeatType || null,
-        recurrenceEndType:
-          recurrenceRule?.recurrenceEndType || RecurrenceEndType.NEVER,
-        endDate: recurrenceRule?.endDate || startDate.add(3, "month"),
+        recurrenceEndType: recurrenceRule?.recurrenceEndType || RecurrenceEndType.NEVER,
+        endDate: recurrenceRule?.endDate || startDate.add(3, 'month'),
         numberOfOccurrences: recurrenceRule?.numberOfOccurrences || 12,
       }));
     }, 0);
@@ -121,7 +118,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
     if (hasError) return;
 
     const updatedRecurrence: RecurrenceRuleT = {
-      id: recurrenceRule?.id || "",
+      id: recurrenceRule?.id || '',
       teamId,
       occurrenceType,
       occurrenceInfo: {
@@ -141,9 +138,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
       recurrenceEndType: formState.recurrenceEndType,
       startDate,
       endDate:
-        formState.recurrenceEndType === RecurrenceEndType.END_DATE
-          ? formState.endDate
-          : null,
+        formState.recurrenceEndType === RecurrenceEndType.END_DATE ? formState.endDate : null,
       numberOfOccurrences:
         formState.recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES
           ? formState.numberOfOccurrences
@@ -158,124 +153,118 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   };
 
   const frequencyOptions = [
-    { value: FrequencyType.DAY, label: t("day").toLowerCase(), testId: "day" },
+    { value: FrequencyType.DAY, label: t('day').toLowerCase(), testId: 'day' },
     {
       value: FrequencyType.WEEK,
-      label: t("week").toLowerCase(),
-      testId: "week",
+      label: t('week').toLowerCase(),
+      testId: 'week',
     },
     {
       value: FrequencyType.MONTH,
-      label: t("month").toLowerCase(),
-      testId: "month",
+      label: t('month').toLowerCase(),
+      testId: 'month',
     },
     {
       value: FrequencyType.YEAR,
-      label: t("year").toLowerCase(),
-      testId: "year",
+      label: t('year').toLowerCase(),
+      testId: 'year',
     },
   ];
 
   const weekDayOptions = [
     {
       value: 0,
-      label: t("monday_short"),
-      fullDayName: t("monday"),
+      label: t('monday_short'),
+      fullDayName: t('monday'),
     },
     {
       value: 1,
-      label: t("tuesday_short"),
-      fullDayName: t("tuesday"),
+      label: t('tuesday_short'),
+      fullDayName: t('tuesday'),
     },
     {
       value: 2,
-      label: t("wednesday_short"),
-      fullDayName: t("wednesday"),
+      label: t('wednesday_short'),
+      fullDayName: t('wednesday'),
     },
     {
       value: 3,
-      label: t("thursday_short"),
-      fullDayName: t("thursday"),
+      label: t('thursday_short'),
+      fullDayName: t('thursday'),
     },
     {
       value: 4,
-      label: t("friday_short"),
-      fullDayName: t("friday"),
+      label: t('friday_short'),
+      fullDayName: t('friday'),
     },
     {
       value: 5,
-      label: t("saturday_short"),
-      fullDayName: t("saturday"),
+      label: t('saturday_short'),
+      fullDayName: t('saturday'),
     },
     {
       value: 6,
-      label: t("sunday_short"),
-      fullDayName: t("sunday"),
+      label: t('sunday_short'),
+      fullDayName: t('sunday'),
     },
   ];
 
   // Define a dictionary for translating ordinal terms
   const ordinalTranslation: Record<number, string> = {
-    1: t("first"),
-    2: t("second"),
-    3: t("third"),
-    4: t("fourth"),
-    5: t("fifth"),
+    1: t('first'),
+    2: t('second'),
+    3: t('third'),
+    4: t('fourth'),
+    5: t('fifth'),
   };
 
   // Update the monthRepeatOptions to use the ordinalTranslation dictionary
   const monthRepeatOptions = [
     {
       value: MonthRepeatType.DAY_IN_MONTH,
-      label: `${t("Monthly on day")} ${startDate.date()}`,
+      label: `${t('Monthly on day')} ${startDate.date()}`,
     },
     {
       value: MonthRepeatType.WEEKDAY,
-      label: `${t("Monthly on the")} ${
-        ordinalTranslation[Math.ceil(startDate.date() / 7)]
-      } ${
-        weekDayOptions.find((day) => day.value === (startDate.day() + 6) % 7)
-          ?.fullDayName
+      label: `${t('Monthly on the')} ${ordinalTranslation[Math.ceil(startDate.date() / 7)]} ${
+        weekDayOptions.find((day) => day.value === (startDate.day() + 6) % 7)?.fullDayName
       } `,
     },
   ];
 
   return (
-    <div
-      className="recurrence-edit-container"
-      data-testid="recurrence-edit-container"
-    >
-      <h2 className="recurrence-edit-title">{t("recurrence")}</h2>
+    <div className="recurrence-edit-container" data-testid="recurrence-edit-container">
+      <h2 className="recurrence-edit-title">{t('recurrence')}</h2>
 
       <div className="recurrence-edit-section">
         <div className="recurrence-edit-sub-section-row">
-          <label className="recurrence-edit-text">{t("repeat_every")}</label>
+          <label className="recurrence-edit-text">{t('repeat_every')}</label>
           <TextField
             type="number"
-            value={formState.repeatEvery === 0 ? "" : formState.repeatEvery}
+            value={formState.repeatEvery === 0 ? '' : formState.repeatEvery}
             onChange={(e) => {
               setFormState((prev) => ({
                 ...prev,
-                repeatEvery: e.target.value === "" ? 0 : Number(e.target.value),
+                repeatEvery: e.target.value === '' ? 0 : Number(e.target.value),
               }));
               setRepeatEveryError(false);
             }}
             error={repeatEveryError}
             inputProps={{
               min: 1,
-              "data-testid": "repeat-every-input",
+              'data-testid': 'repeat-every-input',
               style: {
-                height: "30px",
-                fontSize: "0.8rem",
-                color: "#3c4043",
-                padding: "0",
-                textAlign: "right",
-                appearance: "textfield",
+                height: '30px',
+                fontSize: '0.8rem',
+                color: '#3c4043',
+                padding: '0',
+                textAlign: 'right',
+                appearance: 'textfield',
               },
             }}
             variant="outlined"
             size="small"
-            sx={{ width: "50px", marginLeft: "5px" }}
+            sx={{ width: '50px', marginLeft: '5px' }}
           />
           <Select
             value={formState.frequencyType}
@@ -289,14 +278,14 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             displayEmpty
             data-testid="frequency-select"
             sx={{
-              width: "100px",
-              height: "30px",
-              fontSize: "0.8rem",
+              width: '100px',
+              height: '30px',
+              fontSize: '0.8rem',
               fontWeight: 400,
-              color: "#3c4043",
-              marginLeft: "5px",
-              "& .MuiSelect-select": {
-                paddingY: "0",
+              color: '#3c4043',
+              marginLeft: '5px',
+              '& .MuiSelect-select': {
+                paddingY: '0',
               },
             }}
           >
@@ -306,9 +295,9 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 value={option.value}
                 data-testid={`frequency-option-${option.testId}`}
                 sx={{
-                  fontSize: "0.8rem",
+                  fontSize: '0.8rem',
                   fontWeight: 400,
-                  color: "#3c4043",
+                  color: '#3c4043',
                 }}
               >
                 {option.label}
@@ -321,14 +310,14 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
       {formState.frequencyType === FrequencyType.WEEK && (
         <div className="recurrence-edit-section">
           <div className="recurrence-edit-sub-section">
-            <label className="recurrence-edit-text">{t("repeat_on")}</label>
+            <label className="recurrence-edit-text">{t('repeat_on')}</label>
             <div className="recurrence-edit-select-weekdays">
               {weekDayOptions.map((day) => (
                 <button
                   key={day.value}
                   onClick={() => handleWeekDayToggle(day.value)}
                   className={`weekday-button ${
-                    formState.weekDays.includes(day.value) ? "selected" : ""
+                    formState.weekDays.includes(day.value) ? 'selected' : ''
                   }`}
                   data-testid={`weekday-button-${day.value}`}
                 >
@@ -354,13 +343,13 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             displayEmpty
             data-testid="month-repeat-type-select"
             sx={{
-              width: "100%",
-              height: "30px",
-              fontSize: "0.8rem",
+              width: '100%',
+              height: '30px',
+              fontSize: '0.8rem',
               fontWeight: 400,
-              color: "#3c4043",
-              "& .MuiSelect-select": {
-                paddingY: "0",
+              color: '#3c4043',
+              '& .MuiSelect-select': {
+                paddingY: '0',
               },
             }}
           >
@@ -369,9 +358,9 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 key={option.value}
                 value={option.value}
                 sx={{
-                  fontSize: "0.8rem",
+                  fontSize: '0.8rem',
                   fontWeight: 400,
-                  color: "#3c4043",
+                  color: '#3c4043',
                 }}
               >
                 {option.label}
@@ -382,7 +371,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
       )}
 
       <div className="recurrence-edit-section">
-        <label className="recurrence-edit-text">{t("ends")}</label>
+        <label className="recurrence-edit-text">{t('ends')}</label>
         <div className="recurrence-edit-end-options">
           <label>
             <input
@@ -398,7 +387,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               data-testid="recurrence-never-radio"
             />
             <span className="recurrence-edit-text recurrence-edit-radio-option-label">
-              {t("never")}
+              {t('never')}
             </span>
           </label>
           <div className="recurrence-edit-end-option">
@@ -406,9 +395,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               <input
                 type="radio"
                 value={RecurrenceEndType.END_DATE}
-                checked={
-                  formState.recurrenceEndType === RecurrenceEndType.END_DATE
-                }
+                checked={formState.recurrenceEndType === RecurrenceEndType.END_DATE}
                 onChange={() =>
                   setFormState((prev) => ({
                     ...prev,
@@ -418,44 +405,40 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 data-testid="recurrence-end-date-radio"
               />
               <span className="recurrence-edit-text recurrence-edit-radio-option-label">
-                {t("on")}
+                {t('on')}
               </span>
             </label>
             <DatePicker
-              disabled={
-                formState.recurrenceEndType !== RecurrenceEndType.END_DATE
-              }
+              disabled={formState.recurrenceEndType !== RecurrenceEndType.END_DATE}
               value={formState.endDate}
               timezone="UTC"
               onChange={(newDate) => {
                 setFormState((prev) => ({
                   ...prev,
-                  endDate: newDate
-                    ? dayjs(newDate).utc()
-                    : startDate.add(3, "month"),
+                  endDate: newDate ? dayjs(newDate).utc() : startDate.add(3, 'month'),
                 }));
               }}
               minDate={startDate}
               slotProps={{
                 textField: {
                   inputProps: {
-                    "data-testid": "recurrence-end-date-picker",
+                    'data-testid': 'recurrence-end-date-picker',
                   },
                 },
               }}
               sx={{
-                marginLeft: "5px",
-                width: "130px",
-                color: "#3c4043",
-                "& .MuiInputBase-root": {
-                  height: "30px",
+                marginLeft: '5px',
+                width: '130px',
+                color: '#3c4043',
+                '& .MuiInputBase-root': {
+                  height: '30px',
                 },
-                "& .MuiInputBase-input": {
-                  fontSize: "0.8rem",
+                '& .MuiInputBase-input': {
+                  fontSize: '0.8rem',
                   fontWeight: 400,
                 },
-                "& .MuiSvgIcon-root": {
-                  fontSize: "1rem",
+                '& .MuiSvgIcon-root': {
+                  fontSize: '1rem',
                 },
               }}
               // renderInput={(params) => <TextField {...params} />}
@@ -466,10 +449,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               <input
                 type="radio"
                 value={RecurrenceEndType.NUMBER_OF_OCCURRENCES}
-                checked={
-                  formState.recurrenceEndType ===
-                  RecurrenceEndType.NUMBER_OF_OCCURRENCES
-                }
+                checked={formState.recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES}
                 onChange={() =>
                   setFormState((prev) => ({
                     ...prev,
@@ -479,48 +459,38 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 data-testid="recurrence-occurrences-radio"
               />
               <span className="recurrence-edit-text recurrence-edit-radio-option-label">
-                {t("after")}
+                {t('after')}
               </span>
             </label>
             <TextField
               type="number"
-              disabled={
-                formState.recurrenceEndType !==
-                RecurrenceEndType.NUMBER_OF_OCCURRENCES
-              }
-              value={
-                formState.numberOfOccurrences === 0
-                  ? ""
-                  : formState.numberOfOccurrences
-              }
+              disabled={formState.recurrenceEndType !== RecurrenceEndType.NUMBER_OF_OCCURRENCES}
+              value={formState.numberOfOccurrences === 0 ? '' : formState.numberOfOccurrences}
               onChange={(e) => {
                 setFormState((prev) => ({
                   ...prev,
-                  numberOfOccurrences:
-                    e.target.value === "" ? 0 : Number(e.target.value),
+                  numberOfOccurrences: e.target.value === '' ? 0 : Number(e.target.value),
                 }));
                 setNumberOfOccurrencesError(false);
               }}
               error={numberOfOccurrencesError}
               inputProps={{
                 min: 1,
-                "data-testid": "recurrence-occurrences-input",
+                'data-testid': 'recurrence-occurrences-input',
                 style: {
-                  height: "30px",
-                  fontSize: "0.8rem",
-                  color: "#3c4043",
-                  padding: "0",
-                  textAlign: "right",
-                  appearance: "textfield",
+                  height: '30px',
+                  fontSize: '0.8rem',
+                  color: '#3c4043',
+                  padding: '0',
+                  textAlign: 'right',
+                  appearance: 'textfield',
                 },
               }}
               variant="outlined"
               size="small"
-              sx={{ width: "50px", marginLeft: "5px" }}
+              sx={{ width: '50px', marginLeft: '5px' }}
             />
-            <span className="recurrence-edit-text">
-              {t("occurrences").toLocaleLowerCase()}
-            </span>
+            <span className="recurrence-edit-text">{t('occurrences').toLocaleLowerCase()}</span>
           </div>
         </div>
       </div>
@@ -533,20 +503,20 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
             data-testid="recurrence-cancel-button"
             sx={{
               marginRight: 1,
-              textTransform: "none",
-              fontSize: "0.8rem",
+              textTransform: 'none',
+              fontSize: '0.8rem',
               fontWeight: 500,
             }}
           >
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             variant="contained"
             onClick={handleSubmit}
             data-testid="recurrence-done-button"
-            sx={{ textTransform: "none", fontSize: "0.8rem", fontWeight: 500 }}
+            sx={{ textTransform: 'none', fontSize: '0.8rem', fontWeight: 500 }}
           >
-            {t("ok")}
+            {t('ok')}
           </Button>
         </div>
       </div>

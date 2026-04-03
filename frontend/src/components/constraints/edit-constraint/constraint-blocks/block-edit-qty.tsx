@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 // Types
-import { BlockT, TemplateBlockT } from "../../../../types/constraint";
+import { BlockT, TemplateBlockT } from '../../../../types/constraint';
 // Constants
-import { ConstraintDefaultColors } from "../../../../constants/constants";
+import { ConstraintDefaultColors } from '../../../../constants/constants';
 
 export default function BlockEditQty({
   index,
@@ -23,12 +23,12 @@ export default function BlockEditQty({
 }) {
   const initialValue = useCallback(() => {
     if (block === null) {
-      return "";
+      return '';
     }
-    if (typeof block.value === "number" || block.value === "") {
+    if (typeof block.value === 'number' || block.value === '') {
       return block.value.toString();
     }
-    throw new Error("block.value is not a number");
+    throw new Error('block.value is not a number');
   }, [block]);
 
   const [valueState, setValueState] = useState<string>(initialValue);
@@ -41,9 +41,8 @@ export default function BlockEditQty({
   const displayValue = !isDirty && block !== null ? initialValue() : valueState;
 
   const handleSubmit = useCallback(() => {
-    const submittedValue =
-      !isDirty && block !== null ? initialValue() : valueState;
-    if (submittedValue !== "") {
+    const submittedValue = !isDirty && block !== null ? initialValue() : valueState;
+    if (submittedValue !== '') {
       handleEditBlock({
         name: templateBlock.name,
         type: templateBlock.type,
@@ -68,7 +67,7 @@ export default function BlockEditQty({
   ]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" || event.key === "Escape") {
+    if (event.key === 'Enter' || event.key === 'Escape') {
       handleSubmit();
     }
   };
@@ -103,9 +102,9 @@ export default function BlockEditQty({
           data-testid="constraint-number-input"
           style={{
             color: ConstraintDefaultColors.shade3,
-            appearance: "textfield",
-            MozAppearance: "textfield",
-            WebkitAppearance: "none",
+            appearance: 'textfield',
+            MozAppearance: 'textfield',
+            WebkitAppearance: 'none',
           }}
         />
       </div>

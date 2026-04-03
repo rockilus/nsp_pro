@@ -33,9 +33,9 @@ async def log_middleware(request: Request, call_next):
         "response_phrase": HTTPStatus(response.status_code).phrase,
     }
     log_message = (
-        f'{log_dict["client"]} {log_dict["method"]} '
-        + f'{log_dict["path"]} {log_dict["response_status"]} '
-        + f'{log_dict["response_phrase"]}'
+        f"{log_dict['client']} {log_dict['method']} "
+        + f"{log_dict['path']} {log_dict['response_status']} "
+        + f"{log_dict['response_phrase']}"
     )
     logger.debug(log_message)
     return response

@@ -1,6 +1,5 @@
 # pylint: disable=too-many-lines
 from datetime import date, datetime, timedelta
-from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
     Assignment,
@@ -164,7 +163,7 @@ class TestFilterCampaignDates:
 
     def test_filter_campaign_dates_worker_not_found(self) -> None:
         """Test filtering when worker is not in the mapping."""
-        worker_ids_to_worker_dates: Dict[str, WorkerDates] = {}
+        worker_ids_to_worker_dates: dict[str, WorkerDates] = {}
 
         request = Request(
             id="r0",
@@ -251,7 +250,7 @@ class TestZeroOverlappingShifts:
         shifts = [reference_shift, overlapping_normal, non_overlapping]
 
         # Initialize output dictionary
-        out: Dict[Tuple[str, str, str], int] = {
+        out: dict[tuple[str, str, str], int] = {
             ("w0", "2025-01-01", "s_ref"): 1,
             ("w0", "2025-01-01", "s_normal"): 1,
             ("w0", "2025-01-01", "s_other"): 1,
@@ -306,7 +305,7 @@ class TestZeroOverlappingShifts:
 
         shifts = [reference_shift, non_overlapping]
 
-        out: Dict[Tuple[str, str, str], int] = {
+        out: dict[tuple[str, str, str], int] = {
             ("w0", "2025-01-01", "s_ref"): 1,
             ("w0", "2025-01-01", "s_other"): 1,
         }
@@ -365,7 +364,7 @@ class TestInitializeHistoricalAssignments:
             )
         ]
 
-        assignments: List[Assignment] = []
+        assignments: list[Assignment] = []
 
         result = _initialize_historical_assignments(
             workers, worker_ids_to_worker_dates, shifts, assignments
@@ -419,7 +418,7 @@ class TestInitializeHistoricalAssignments:
             )
         ]
 
-        assignments: List[Assignment] = []
+        assignments: list[Assignment] = []
 
         result = _initialize_historical_assignments(
             workers, worker_ids_to_worker_dates, shifts, assignments
@@ -571,7 +570,7 @@ class TestApplyLeaveRequests:
         ]
 
         # Initialize output
-        out: Dict[Tuple[str, str, str], int] = {
+        out: dict[tuple[str, str, str], int] = {
             ("w0", "2025-01-01", "s_leave"): 0,
             ("w0", "2025-01-01", "s_normal"): 1,
             ("w0", "2025-01-02", "s_leave"): 0,
@@ -622,9 +621,9 @@ class TestApplyLeaveRequests:
             )
         ]
 
-        out: Dict[Tuple[str, str, str], int] = {}
-        shift_dict: Dict[str, Shift] = {}
-        shifts: List[Shift] = []
+        out: dict[tuple[str, str, str], int] = {}
+        shift_dict: dict[str, Shift] = {}
+        shifts: list[Shift] = []
 
         # Should not raise an error
         _apply_leave_requests(
@@ -645,7 +644,7 @@ class TestApplyWorkDemandRequests:
 
     def test_apply_negative_work_demand(self) -> None:
         """Test applying a negative work demand request."""
-        out: Dict[Tuple[str, str, str], int] = {
+        out: dict[tuple[str, str, str], int] = {
             ("w0", "2025-01-01", "s0"): 1,
             ("w0", "2025-01-01", "s1"): 1,
         }
@@ -724,7 +723,7 @@ class TestApplyWorkDemandRequests:
 
         shifts = [target_shift, overlapping_shift]
 
-        out: Dict[Tuple[str, str, str], int] = {
+        out: dict[tuple[str, str, str], int] = {
             ("w0", "2025-01-01", "s0"): 0,
             ("w0", "2025-01-01", "s1"): 1,
         }
@@ -836,7 +835,7 @@ class TestZeroUnrequestedLeaveShifts:
             )
         ]
 
-        out: Dict[Tuple[str, str, str], int] = {
+        out: dict[tuple[str, str, str], int] = {
             ("w0", "2025-01-01", "s_leave"): 1,
             ("w0", "2025-01-02", "s_leave"): 1,
         }
@@ -919,7 +918,7 @@ class TestZeroShiftsWithoutDemand:
             )
         ]
 
-        out: Dict[Tuple[str, str, str], int] = {}
+        out: dict[tuple[str, str, str], int] = {}
 
         _zero_shifts_without_demand(
             out,
@@ -1060,9 +1059,9 @@ class TestCoreToEngineFixedValuesIntegration:
         ]
 
         # Empty dimensions for this test
-        dimensions: List[Dimension] = []
-        dim_entries: List[DimEntry] = []
-        attributes: List[Attribute] = []
+        dimensions: list[Dimension] = []
+        dim_entries: list[DimEntry] = []
+        attributes: list[Attribute] = []
 
         variables = build_engine_variables(
             workers=workers,

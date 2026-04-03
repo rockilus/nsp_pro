@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta, timezone
-from typing import List, Tuple
+from datetime import UTC, datetime, timedelta
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -17,13 +16,13 @@ from shared.schemas.core import (
 
 def fetch_workers_shifts_dim_attributes_spe(
     team_id: str, collections: DatabaseCollections
-) -> Tuple[
-    List[Worker],
-    List[Shift],
-    List[Dimension],
-    List[DimEntry],
-    List[Attribute],
-    List[Specialty],
+) -> tuple[
+    list[Worker],
+    list[Shift],
+    list[Dimension],
+    list[DimEntry],
+    list[Attribute],
+    list[Specialty],
 ]:
     workers = collections.worker_db.get_workers(team_id)
     shifts = collections.shift_db.get_shifts(team_id)
@@ -40,7 +39,7 @@ def fetch_workers_shifts_dim_attributes_spe(
             duty.start_time.day,
             duty.end_time.hour,
             duty.end_time.minute,
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
         desired_end = desired_start + timedelta(hours=duty.recuperation_time)
 

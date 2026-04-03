@@ -4,7 +4,7 @@ export interface SelectedScheduleCell {
   scheduleId: string | null;
 }
 
-export type SelectionScope = "view" | "campaign";
+export type SelectionScope = 'view' | 'campaign';
 
 export interface ScheduleSelectionState {
   isActive: boolean;

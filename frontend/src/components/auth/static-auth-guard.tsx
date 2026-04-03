@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useAuth } from "../../contexts/auth-context";
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../contexts/auth-context';
 
 interface StaticAuthGuardProps {
   children: React.ReactNode;
@@ -15,7 +15,7 @@ export function StaticAuthGuard({ children, fallback }: StaticAuthGuardProps) {
   useEffect(() => {
     // Wait for client-side hydration in static deployment
     const timer = setTimeout(() => {
-      console.log("🔄 Static deployment hydration check:", {
+      console.log('🔄 Static deployment hydration check:', {
         isAuthenticated,
         loading,
         hasUser: !!user,
@@ -32,9 +32,7 @@ export function StaticAuthGuard({ children, fallback }: StaticAuthGuardProps) {
   // rather than just showing a static fallback with no recovery path.
   useEffect(() => {
     if (isRehydrated && !loading && !isAuthenticated) {
-      console.warn(
-        "🚫 StaticAuthGuard: not authenticated — redirecting to sign-in",
-      );
+      console.warn('🚫 StaticAuthGuard: not authenticated — redirecting to sign-in');
       signIn();
     }
   }, [isRehydrated, loading, isAuthenticated, signIn]);

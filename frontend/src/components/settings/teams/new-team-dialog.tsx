@@ -1,12 +1,12 @@
-import * as React from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import * as React from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // // MUI
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 
 export default function NewTeamDialog({
   lng,
@@ -15,11 +15,11 @@ export default function NewTeamDialog({
   lng: string;
   handleCreateTeam: (teamName: string) => void;
 }) {
-  const { t } = useTranslation(lng, "teams-page");
+  const { t } = useTranslation(lng, 'teams-page');
 
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState(false);
-  const [helperText, setHelperText] = React.useState("");
+  const [helperText, setHelperText] = React.useState('');
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -35,9 +35,9 @@ export default function NewTeamDialog({
     const formJson = Object.fromEntries((formData as any).entries());
     const teamName = formJson.email;
 
-    if (!teamName || teamName.trim() === "") {
+    if (!teamName || teamName.trim() === '') {
       setError(true);
-      setHelperText(t("team_name_required"));
+      setHelperText(t('team_name_required'));
       return;
     }
 
@@ -52,28 +52,28 @@ export default function NewTeamDialog({
         onClick={handleClickOpen}
         data-testid="new-team-btn"
         sx={{
-          textTransform: "none",
-          fontSize: "12px",
-          padding: "3px 12px",
+          textTransform: 'none',
+          fontSize: '12px',
+          padding: '3px 12px',
         }}
       >
-        {t("new_team")}
+        {t('new_team')}
       </Button>
       <Dialog
         open={open}
         onClose={handleClose}
         PaperProps={{
-          component: "form",
+          component: 'form',
           onSubmit: handleSubmit,
         }}
         sx={{
-          "& .MuiDialog-paper": {
-            width: "100%",
-            maxWidth: "500px",
+          '& .MuiDialog-paper': {
+            width: '100%',
+            maxWidth: '500px',
           },
         }}
       >
-        <DialogTitle>{t("new_team")}</DialogTitle>
+        <DialogTitle>{t('new_team')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -81,33 +81,33 @@ export default function NewTeamDialog({
             margin="dense"
             id="name"
             name="email"
-            label={t("team_name")}
+            label={t('team_name')}
             type="text"
             fullWidth
             variant="standard"
             error={error}
             helperText={helperText}
-            slotProps={{ htmlInput: { "data-testid": "team-name-input" } }}
+            slotProps={{ htmlInput: { 'data-testid': 'team-name-input' } }}
           />
         </DialogContent>
         <DialogActions>
           <Button
             onClick={handleClose}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
             }}
           >
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             variant="contained"
             type="submit"
             data-testid="create-team-submit-btn"
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
             }}
           >
-            {t("create")}
+            {t('create')}
           </Button>
         </DialogActions>
       </Dialog>

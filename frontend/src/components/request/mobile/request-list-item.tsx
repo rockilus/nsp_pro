@@ -1,17 +1,17 @@
-import React from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import { RequestT, RequestStatus, RequestType } from "@/types/request";
-import { ShiftT } from "@/types/shift";
-import { ShiftWorkerOptionT, SWOIdTypes } from "@/types/constraint";
-import { WorkerT } from "@/types/worker";
+import React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import { RequestT, RequestStatus, RequestType } from '@/types/request';
+import { ShiftT } from '@/types/shift';
+import { ShiftWorkerOptionT, SWOIdTypes } from '@/types/constraint';
+import { WorkerT } from '@/types/worker';
 import {
   getShiftWorkerOptionDisplayText,
   getShiftColors,
   getRequestStatusColor,
   getRequestStatusLabel,
-} from "@/utils/shift-worker-option-display";
+} from '@/utils/shift-worker-option-display';
 
 interface RequestListItemProps {
   request: RequestT;
@@ -42,8 +42,8 @@ export default function RequestListItem({
 
   // Get emoji indicator
   const getEmoji = () => {
-    if (isLeave) return "🏖️";
-    return request.negative ? "🙅" : "🙋";
+    if (isLeave) return '🏖️';
+    return request.negative ? '🙅' : '🙋';
   };
 
   // Get shift names to display
@@ -51,11 +51,11 @@ export default function RequestListItem({
     if (isLeave) {
       return shift
         ? [{ name: shift.name, color: shift.color }]
-        : [{ name: t("all_day"), color: "grey" }];
+        : [{ name: t('all_day'), color: 'grey' }];
     } else {
       // Work request - get shift names from shiftOptions
       if (request.shiftOptions.length === 0) {
-        return [{ name: t("no_preferences"), color: "grey" }];
+        return [{ name: t('no_preferences'), color: 'grey' }];
       }
 
       const shiftNames = request.shiftOptions
@@ -64,14 +64,14 @@ export default function RequestListItem({
           const foundShift = shifts.find((s) => s.id === swo.id);
           return foundShift
             ? { name: foundShift.name, color: foundShift.color }
-            : { name: swo.name as string, color: "grey" };
+            : { name: swo.name as string, color: 'grey' };
         });
 
       // If no shifts found in options, show the option names
       if (shiftNames.length === 0) {
         return request.shiftOptions.map((swo) => ({
-          name: getShiftWorkerOptionDisplayText(swo, workers, shifts, t("not")),
-          color: "grey",
+          name: getShiftWorkerOptionDisplayText(swo, workers, shifts, t('not')),
+          color: 'grey',
         }));
       }
 
@@ -80,13 +80,11 @@ export default function RequestListItem({
   };
 
   // Check if request spans multiple days
-  const isMultiDay = !request.startDate.isSame(request.endDate, "day");
+  const isMultiDay = !request.startDate.isSame(request.endDate, 'day');
 
   // Get date range text with weekday
   const dateRangeText = isMultiDay
-    ? `${request.startDate.format("ddd, MMM D")} - ${request.endDate.format(
-        "ddd, MMM D"
-      )}`
+    ? `${request.startDate.format('ddd, MMM D')} - ${request.endDate.format('ddd, MMM D')}`
     : null;
 
   const shiftNamesList = getShiftNames();
@@ -97,34 +95,31 @@ export default function RequestListItem({
       data-testid={`mobile-request-item-${request.id}`}
       onClick={onClick}
       sx={{
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
         gap: 1,
         p: 1.5,
         borderRadius: 1,
-        cursor: onClick ? "pointer" : "default",
-        backgroundColor: isLeave ? "#ffebee" : "#fff",
-        border: "1px solid #e0e0e0",
+        cursor: onClick ? 'pointer' : 'default',
+        backgroundColor: isLeave ? '#ffebee' : '#fff',
+        border: '1px solid #e0e0e0',
       }}
     >
       {/* First line: Emoji + Shift names + Status chip */}
       <Box
         sx={{
-          display: "flex",
+          display: 'flex',
           gap: 1,
-          alignItems: "center",
-          justifyContent: "space-between",
+          alignItems: 'center',
+          justifyContent: 'space-between',
         }}
       >
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center", flex: 1 }}>
-          <Typography variant="body2" sx={{ fontSize: "1.2rem" }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flex: 1 }}>
+          <Typography variant="body2" sx={{ fontSize: '1.2rem' }}>
             {emoji}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{ fontWeight: 600, fontSize: "0.875rem" }}
-          >
-            {shiftNamesList.map((s) => s.name).join(", ")}
+          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+            {shiftNamesList.map((s) => s.name).join(', ')}
           </Typography>
         </Box>
         <Chip
@@ -133,7 +128,7 @@ export default function RequestListItem({
           color={getRequestStatusColor(request.status) as any}
           sx={{
             fontWeight: 500,
-            fontSize: "0.7rem",
+            fontSize: '0.7rem',
             height: 20,
           }}
         />
@@ -141,10 +136,7 @@ export default function RequestListItem({
 
       {/* Second line: Date range (only if multi-day) */}
       {isMultiDay && dateRangeText && (
-        <Typography
-          variant="body2"
-          sx={{ fontWeight: 500, fontSize: "0.875rem" }}
-        >
+        <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
           {dateRangeText}
         </Typography>
       )}

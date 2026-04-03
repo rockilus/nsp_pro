@@ -37,6 +37,9 @@ class NotificationKey(StrEnum):
     USER_VALIDATED_SWAP = "user_validated_swap"
     USER_DENIED_SWAP = "user_denied_swap"
     USER_REVERSED_SWAP = "user_reversed_swap"
+    CAMPAIGN_REQUEST_DEADLINE_SET = "campaign_request_deadline_set"
+    CAMPAIGN_REQUEST_DEADLINE_REMINDER = "campaign_request_deadline_reminder"
+    CAMPAIGN_REQUEST_DEADLINE_UPDATED = "campaign_request_deadline_updated"
 
 
 @dataclass(frozen=True)
@@ -117,6 +120,18 @@ NOTIFICATION_REGISTRY: dict[NotificationKey, NotificationKeyMeta] = {
     ),
     NotificationKey.USER_REVERSED_SWAP: NotificationKeyMeta(
         category=NotificationCategory.SWAPS,
+    ),
+    NotificationKey.CAMPAIGN_REQUEST_DEADLINE_SET: NotificationKeyMeta(
+        category=NotificationCategory.SCHEDULE,
+        visible_to=frozenset({"member"}),
+    ),
+    NotificationKey.CAMPAIGN_REQUEST_DEADLINE_REMINDER: NotificationKeyMeta(
+        category=NotificationCategory.SCHEDULE,
+        visible_to=frozenset({"member"}),
+    ),
+    NotificationKey.CAMPAIGN_REQUEST_DEADLINE_UPDATED: NotificationKeyMeta(
+        category=NotificationCategory.SCHEDULE,
+        visible_to=frozenset({"member"}),
     ),
 }
 

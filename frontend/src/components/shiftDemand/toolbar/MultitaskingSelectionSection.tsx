@@ -1,15 +1,15 @@
-import React, { useState } from "react";
-import { Box, Typography, Button, IconButton, Chip } from "@mui/material";
+import React, { useState } from 'react';
+import { Box, Typography, Button, IconButton, Chip } from '@mui/material';
 import {
   Cancel as CancelIcon,
   Add as AddIcon,
   Edit as EditIcon,
   Group as GroupIcon,
   List as ListIcon,
-} from "@mui/icons-material";
-import { MultitaskingSelectionProps } from "./types";
-import { MultitaskingGroup } from "../../../types/multitasking";
-import { MultitaskingGroupsDialog } from "./MultitaskingGroupsDialog";
+} from '@mui/icons-material';
+import { MultitaskingSelectionProps } from './types';
+import { MultitaskingGroup } from '../../../types/multitasking';
+import { MultitaskingGroupsDialog } from './MultitaskingGroupsDialog';
 
 export function MultitaskingSelectionSection({
   lng,
@@ -36,7 +36,7 @@ export function MultitaskingSelectionSection({
           startIcon={<ListIcon />}
           onClick={() => setGroupsDialogOpen(true)}
           disabled={!hasGroups}
-          sx={{ minWidth: "auto" }}
+          sx={{ minWidth: 'auto' }}
         >
           Groups ({multitaskingGroups.length})
         </Button>
@@ -49,7 +49,7 @@ export function MultitaskingSelectionSection({
           onClick={onConfirmMultitasking}
           color="primary"
           disabled={selectedShiftDemandsCount < 2}
-          sx={{ minWidth: "auto" }}
+          sx={{ minWidth: 'auto' }}
         >
           Create
         </Button>
@@ -59,8 +59,8 @@ export function MultitaskingSelectionSection({
           size="small"
           onClick={onCancelMultitaskingMode}
           sx={{
-            color: "text.secondary",
-            "&:hover": { color: "error.main" },
+            color: 'text.secondary',
+            '&:hover': { color: 'error.main' },
           }}
         >
           <CancelIcon />
@@ -77,7 +77,7 @@ export function MultitaskingSelectionSection({
           if (onDeleteGroup) {
             await onDeleteGroup(groupId);
           } else {
-            console.log("Delete group:", groupId);
+            console.log('Delete group:', groupId);
           }
           setGroupsDialogOpen(false);
         }}

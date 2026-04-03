@@ -10,7 +10,9 @@
   border-radius: 4px;
   margin: 1px 0;
   padding: 2px;
-  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  transition:
+    opacity 0.2s ease-in-out,
+    transform 0.2s ease-in-out;
 }
 
 .rc-container:hover {

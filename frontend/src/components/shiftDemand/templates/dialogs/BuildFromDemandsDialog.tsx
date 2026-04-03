@@ -5,7 +5,7 @@
  * to copy demands from existing shift demands into the template.
  */
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -20,28 +20,25 @@ import {
   Select,
   MenuItem,
   CircularProgress,
-} from "@mui/material";
-import { ContentCopy } from "@mui/icons-material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs, { Dayjs } from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import { useTranslation } from "../../../../app/i18n/client";
+} from '@mui/material';
+import { ContentCopy } from '@mui/icons-material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs, { Dayjs } from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import { useTranslation } from '../../../../app/i18n/client';
 
 // Extend dayjs with UTC and timezone plugins
 dayjs.extend(utc);
 dayjs.extend(timezone);
-import { ShiftDemandTemplateDTO } from "../../../../types/shift-demand-template";
+import { ShiftDemandTemplateDTO } from '../../../../types/shift-demand-template';
 
 interface BuildFromDemandsDialogProps {
   lng: string;
   open: boolean;
   onClose: () => void;
   template: ShiftDemandTemplateDTO;
-  onApplyDemands: (
-    sourceWeekStartDate: number,
-    targetWeekNumber: number,
-  ) => Promise<void>;
+  onApplyDemands: (sourceWeekStartDate: number, targetWeekNumber: number) => Promise<void>;
   applyLoading?: boolean;
 }
 
@@ -53,7 +50,7 @@ export function BuildFromDemandsDialog({
   onApplyDemands,
   applyLoading = false,
 }: BuildFromDemandsDialogProps) {
-  const { t } = useTranslation(lng, "shift-demand-templates");
+  const { t } = useTranslation(lng, 'shift-demand-templates');
 
   // State for form inputs (using UTC dates to avoid timezone issues)
   const [sourceWeekStart, setSourceWeekStart] = useState<Dayjs | null>(null);
@@ -63,12 +60,12 @@ export function BuildFromDemandsDialog({
   // Available weeks in the template
   const availableWeeks = template.weeksData.map((week) => ({
     number: week.weekNumber,
-    label: `${t("week")} ${week.weekNumber + 1}`,
+    label: `${t('week')} ${week.weekNumber + 1}`,
   }));
 
   const handleApply = async () => {
     if (!sourceWeekStart) {
-      setError(t("please_select_source_week"));
+      setError(t('please_select_source_week'));
       return;
     }
 
@@ -76,7 +73,7 @@ export function BuildFromDemandsDialog({
 
     try {
       // Ensure we get the Monday of the selected week in UTC
-      const mondayOfWeek = sourceWeekStart.utc().startOf("week").day(1);
+      const mondayOfWeek = sourceWeekStart.utc().startOf('week').day(1);
 
       await onApplyDemands(
         Math.floor(mondayOfWeek.valueOf() / 1000), // Convert ms to seconds (Unix timestamp)
@@ -85,8 +82,8 @@ export function BuildFromDemandsDialog({
 
       handleClose();
     } catch (err: any) {
-      console.error("Failed to apply demands to template week:", err);
-      setError(err.message || t("failed_to_apply_demands_to_template_week"));
+      console.error('Failed to apply demands to template week:', err);
+      setError(err.message || t('failed_to_apply_demands_to_template_week'));
     }
   };
 
@@ -107,38 +104,36 @@ export function BuildFromDemandsDialog({
       maxWidth="md"
       fullWidth
     >
-      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {t("import_coverage")}
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {t('import_coverage')}
       </DialogTitle>
 
       <DialogContent>
         <Box sx={{ py: 2 }}>
           <Alert severity="info" sx={{ mb: 3 }}>
-            {t("import_coverage_description")}
+            {t('import_coverage_description')}
           </Alert>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Source Week Selection */}
             <Box>
               <Typography variant="h6" gutterBottom>
-                {t("source_week")}
+                {t('source_week')}
               </Typography>
               <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                {t("select_source_week_explanation")}
+                {t('select_source_week_explanation')}
               </Typography>
               <DatePicker
                 data-testid="source-week-date-picker"
-                label={t("source_week_start_date")}
+                label={t('source_week_start_date')}
                 value={sourceWeekStart}
-                onChange={(newValue) =>
-                  setSourceWeekStart(newValue ? newValue.utc() : null)
-                }
+                onChange={(newValue) => setSourceWeekStart(newValue ? newValue.utc() : null)}
                 slotProps={{
                   textField: {
                     fullWidth: true,
-                    helperText: t("any_day_will_find_monday"),
+                    helperText: t('any_day_will_find_monday'),
                     inputProps: {
-                      "data-testid": "source-week-date-input",
+                      'data-testid': 'source-week-date-input',
                     },
                   },
                 }}
@@ -148,18 +143,18 @@ export function BuildFromDemandsDialog({
             {/* Target Week Selection */}
             <Box>
               <Typography variant="h6" gutterBottom>
-                {t("target_week")}
+                {t('target_week')}
               </Typography>
               <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                {t("select_target_week_explanation")}
+                {t('select_target_week_explanation')}
               </Typography>
               <FormControl fullWidth>
-                <InputLabel>{t("target_week_in_template")}</InputLabel>
+                <InputLabel>{t('target_week_in_template')}</InputLabel>
                 <Select
                   data-testid="target-week-select"
                   value={targetWeekNumber}
                   onChange={(e) => setTargetWeekNumber(Number(e.target.value))}
-                  label={t("target_week_in_template")}
+                  label={t('target_week_in_template')}
                 >
                   {availableWeeks.map((week) => (
                     <MenuItem
@@ -177,7 +172,7 @@ export function BuildFromDemandsDialog({
             {/* Warning about overwriting */}
             <Alert severity="warning">
               <Typography variant="body2">
-                {t("overwrite_warning", {
+                {t('overwrite_warning', {
                   weekNumber: targetWeekNumber + 1,
                 })}
               </Typography>
@@ -198,18 +193,18 @@ export function BuildFromDemandsDialog({
           data-testid="build-from-demands-cancel-button"
           onClick={handleClose}
           disabled={applyLoading}
-          sx={{ textTransform: "none" }}
+          sx={{ textTransform: 'none' }}
         >
-          {t("cancel")}
+          {t('cancel')}
         </Button>
         <Button
           data-testid="build-from-demands-apply-button"
           onClick={handleApply}
           variant="contained"
           disabled={!sourceWeekStart || applyLoading}
-          sx={{ textTransform: "none" }}
+          sx={{ textTransform: 'none' }}
         >
-          {applyLoading ? t("importing") : t("import")}
+          {applyLoading ? t('importing') : t('import')}
         </Button>
       </DialogActions>
     </Dialog>

@@ -1,34 +1,34 @@
-import React, { ReactElement, useEffect, useState, useRef } from "react";
-import { useTranslation } from "../../../app/i18n/client";
-import { useRouter } from "next/navigation";
+import React, { ReactElement, useEffect, useState, useRef } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
+import { useRouter } from 'next/navigation';
 // MUI
-import Box from "@mui/material/Box";
-import EditIcon from "@mui/icons-material/Edit";
-import FormControl from "@mui/material/FormControl";
-import IconButton from "@mui/material/IconButton";
-import MenuItem from "@mui/material/MenuItem";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import TextField from "@mui/material/TextField";
+import Box from '@mui/material/Box';
+import EditIcon from '@mui/icons-material/Edit';
+import FormControl from '@mui/material/FormControl';
+import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
 // Components
-import UserProfileRow from "./user-profile-row";
-import NavigationHeader from "@/components/common/navigation-header";
+import UserProfileRow from './user-profile-row';
+import NavigationHeader from '@/components/common/navigation-header';
 // Skeletons
-import TablesSkeleton from "../../skeletons/tables-skeleton";
+import TablesSkeleton from '../../skeletons/tables-skeleton';
 // Hooks
-import { useIsMobile, useIsLandscape } from "../../../hooks/useIsMobile";
+import { useIsMobile, useIsLandscape } from '../../../hooks/useIsMobile';
 // Actions
-import { useGetUser, useUpdateUser } from "../../../hooks/useUser";
+import { useGetUser, useUpdateUser } from '../../../hooks/useUser';
 // Styles
-import "./user-profile-tab.css";
-import "../../../styles/text-styles.css";
-import "../../../styles/tab-container-styles.css";
+import './user-profile-tab.css';
+import '../../../styles/text-styles.css';
+import '../../../styles/tab-container-styles.css';
 // Types
-import { UserT } from "../../../types/user";
+import { UserT } from '../../../types/user';
 // Constants
-import { languages } from "../../../constants/constants";
+import { languages } from '../../../constants/constants';
 
 export default function UserProfileTab({ lng }: { lng: string }) {
-  const { t } = useTranslation(lng, "profile-page");
+  const { t } = useTranslation(lng, 'profile-page');
   const router = useRouter();
   const isMobile = useIsMobile();
   const isLandscape = useIsLandscape();
@@ -62,11 +62,8 @@ export default function UserProfileTab({ lng }: { lng: string }) {
     if (userState && user) {
       const userKeys = Object.keys(user);
       for (let key of userKeys) {
-        if (key === "workers") continue;
-        if (
-          user[key as keyof typeof user] !==
-          userState[key as keyof typeof userState]
-        ) {
+        if (key === 'workers') continue;
+        if (user[key as keyof typeof user] !== userState[key as keyof typeof userState]) {
           handleUpdateUser(userState);
           break;
         }
@@ -79,7 +76,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
   };
 
   const handleEditCancel = () => {
-    console.log("handleEditCancel");
+    console.log('handleEditCancel');
 
     setUserState(user);
     setFieldEditing(null);
@@ -105,7 +102,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
         setUser(userData);
         setUserState(userData);
       } catch (error) {
-        console.error("Failed to fetch user data:", error);
+        console.error('Failed to fetch user data:', error);
         // Reset flag on error to allow retry
         hasFetched.current = false;
       } finally {
@@ -128,19 +125,16 @@ export default function UserProfileTab({ lng }: { lng: string }) {
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (
-        <div
-          className="user-profile-container"
-          data-testid="personal-info-page-heading"
-        >
+        <div className="user-profile-container" data-testid="personal-info-page-heading">
           <NavigationHeader
-            title={t("personal_info")}
+            title={t('personal_info')}
             onBack={() => router.push(`/${lng}/plan/settings`)}
             showBackButton={isMobile && !isLandscape}
           />
           {user && userState ? (
             <div className="user-profile">
               <UserProfileRow
-                label={t("first_name")}
+                label={t('first_name')}
                 value={<span>{user.firstName}</span>}
                 valueEditing={
                   <TextField
@@ -156,22 +150,22 @@ export default function UserProfileTab({ lng }: { lng: string }) {
                     }}
                     onBlur={handleEditConfirm}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === 'Enter') {
                         handleEditConfirm();
-                      } else if (e.key === "Escape") {
+                      } else if (e.key === 'Escape') {
                         handleEditCancel();
                       }
                     }}
                     autoFocus
                   />
                 }
-                editing={fieldEditing === "firstName"}
-                editButton={editButton(() => setFieldEditing("firstName"))}
+                editing={fieldEditing === 'firstName'}
+                editButton={editButton(() => setFieldEditing('firstName'))}
                 handleEditConfirm={handleEditConfirm}
                 handleEditCancel={handleEditCancel}
               />
               <UserProfileRow
-                label={t("last_name")}
+                label={t('last_name')}
                 value={<span>{user.lastName}</span>}
                 valueEditing={
                   <TextField
@@ -187,22 +181,22 @@ export default function UserProfileTab({ lng }: { lng: string }) {
                     }}
                     onBlur={handleEditConfirm}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === 'Enter') {
                         handleEditConfirm();
-                      } else if (e.key === "Escape") {
+                      } else if (e.key === 'Escape') {
                         handleEditCancel();
                       }
                     }}
                     autoFocus
                   />
                 }
-                editing={fieldEditing === "lastName"}
-                editButton={editButton(() => setFieldEditing("lastName"))}
+                editing={fieldEditing === 'lastName'}
+                editButton={editButton(() => setFieldEditing('lastName'))}
                 handleEditConfirm={handleEditConfirm}
                 handleEditCancel={handleEditCancel}
               />
               <UserProfileRow
-                label={t("email")}
+                label={t('email')}
                 value={
                   <span>{user.email}</span>
                   // <div>
@@ -223,22 +217,22 @@ export default function UserProfileTab({ lng }: { lng: string }) {
                     }}
                     onBlur={handleEditConfirm}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === 'Enter') {
                         handleEditConfirm();
-                      } else if (e.key === "Escape") {
+                      } else if (e.key === 'Escape') {
                         handleEditCancel();
                       }
                     }}
                     autoFocus
                   />
                 }
-                editing={fieldEditing === "email"}
-                editButton={editButton(() => setFieldEditing("email"))}
+                editing={fieldEditing === 'email'}
+                editButton={editButton(() => setFieldEditing('email'))}
                 handleEditConfirm={handleEditConfirm}
                 handleEditCancel={handleEditCancel}
               />
               <UserProfileRow
-                label={t("language")}
+                label={t('language')}
                 value={<span>{languages[user.language]}</span>}
                 valueEditing={
                   <FormControl fullWidth>
@@ -256,14 +250,14 @@ export default function UserProfileTab({ lng }: { lng: string }) {
                     </Select>
                   </FormControl>
                 }
-                editing={fieldEditing === "language"}
-                editButton={editButton(() => setFieldEditing("language"))}
+                editing={fieldEditing === 'language'}
+                editButton={editButton(() => setFieldEditing('language'))}
                 handleEditConfirm={handleEditConfirm}
                 handleEditCancel={handleEditCancel}
               />
             </div>
           ) : (
-            <Box sx={{ padding: 2 }}>{t("no_user_found")}</Box>
+            <Box sx={{ padding: 2 }}>{t('no_user_found')}</Box>
           )}
         </div>
       )}

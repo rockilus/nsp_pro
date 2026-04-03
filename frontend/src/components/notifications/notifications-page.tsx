@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { useTranslation } from "@/app/i18n/client";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useTranslation } from '@/app/i18n/client';
 import {
   useNotifications,
   useMarkNotificationRead,
@@ -11,23 +11,23 @@ import {
   useMarkAllNotificationsSeen,
   useReadSeenBefore,
   SEEN_GRACE_PERIOD_HOURS,
-} from "@/app/lib/hooks/useNotifications";
-import NotificationItem from "./notification-item";
+} from '@/app/lib/hooks/useNotifications';
+import NotificationItem from './notification-item';
 // MUI
-import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
-import Divider from "@mui/material/Divider";
-import IconButton from "@mui/material/IconButton";
-import ListItemText from "@mui/material/ListItemText";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import Typography from "@mui/material/Typography";
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import Typography from '@mui/material/Typography';
 
 const PAGE_LIMIT = 50;
 
 export default function NotificationsPage({ lng }: { lng: string }) {
-  const { t } = useTranslation(lng, "notifications");
+  const { t } = useTranslation(lng, 'notifications');
   const { data, isLoading } = useNotifications(PAGE_LIMIT, 0);
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
@@ -61,7 +61,7 @@ export default function NotificationsPage({ lng }: { lng: string }) {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -72,24 +72,24 @@ export default function NotificationsPage({ lng }: { lng: string }) {
       data-testid="notifications-page"
       sx={{
         maxWidth: 680,
-        mx: "auto",
-        pt: "20px",
+        mx: 'auto',
+        pt: '20px',
         px: 2,
-        maxHeight: "calc(100vh - 64px)",
-        overflowY: "auto",
+        maxHeight: 'calc(100vh - 64px)',
+        overflowY: 'auto',
       }}
     >
       {/* Header */}
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           mb: 2,
         }}
       >
         <Typography variant="h6" fontWeight={600}>
-          {t("title")}
+          {t('title')}
         </Typography>
         <IconButton
           size="small"
@@ -103,8 +103,8 @@ export default function NotificationsPage({ lng }: { lng: string }) {
           anchorEl={menuAnchorEl}
           open={menuOpen}
           onClose={handleMenuClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
           <MenuItem
             onClick={() => {
@@ -113,7 +113,7 @@ export default function NotificationsPage({ lng }: { lng: string }) {
             }}
             data-testid="notifications-page-mark-all-read"
           >
-            <ListItemText>{t("mark_all_read")}</ListItemText>
+            <ListItemText>{t('mark_all_read')}</ListItemText>
           </MenuItem>
           <MenuItem
             component={Link}
@@ -121,14 +121,14 @@ export default function NotificationsPage({ lng }: { lng: string }) {
             onClick={handleMenuClose}
             data-testid="notifications-page-open-settings"
           >
-            <ListItemText>{t("notification_settings")}</ListItemText>
+            <ListItemText>{t('notification_settings')}</ListItemText>
           </MenuItem>
         </Menu>
       </Box>
 
       {notifications.length === 0 && (
         <Typography color="text.secondary" align="center" sx={{ mt: 4 }}>
-          {t("no_notifications")}
+          {t('no_notifications')}
         </Typography>
       )}
 

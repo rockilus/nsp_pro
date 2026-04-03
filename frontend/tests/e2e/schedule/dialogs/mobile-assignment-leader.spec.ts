@@ -6,20 +6,19 @@
  * (no Demand or Request access).
  */
 
-import { test, expect } from "@playwright/test";
-import { randomUUID } from "crypto";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { ScheduleTestBase } from "../../../utils/schedule-test-base";
+import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { ScheduleTestBase } from '../../../utils/schedule-test-base';
 
 dayjs.extend(utc);
 
-test.describe("Mobile Assignment Dialogs - Team Leader", () => {
+test.describe('Mobile Assignment Dialogs - Team Leader', () => {
   const testBasesMap = new Map<string, ScheduleTestBase>();
 
   test.beforeEach(async ({ page }, testInfo) => {
-    const workerIndex =
-      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
 
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     console.log(`[Test Run ${testRunId}] Starting mobile leader test setup`);
@@ -30,7 +29,7 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     (testInfo as any).testRunId = testRunId;
 
     await scheduleTestBase.setupScheduleTests(workerIndex, {
-      referenceDate: dayjs.utc().add(1, "day"),
+      referenceDate: dayjs.utc().add(1, 'day'),
       createAssignments: true,
       linkMemberToWorker: false,
     });
@@ -50,14 +49,10 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
-  test("should open assignment dialog when clicking on fab button", async ({
-    page,
-  }, testInfo) => {
+  test('should open assignment dialog when clicking on fab button', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
 
-    const fabButton = page
-      .locator('[data-testid="mobile-create-assignment-fab"]')
-      .first();
+    const fabButton = page.locator('[data-testid="mobile-create-assignment-fab"]').first();
 
     expect(fabButton).toBeVisible();
 
@@ -71,17 +66,13 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     const assignmentForm = page.locator('[data-testid="assignment-form"]');
     await expect(assignmentForm).toBeVisible();
 
-    console.log("✅ Assignment dialog opened with assignment form");
+    console.log('✅ Assignment dialog opened with assignment form');
   });
 
-  test("should not show type selection buttons on mobile viewport", async ({
-    page,
-  }, testInfo) => {
+  test('should not show type selection buttons on mobile viewport', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
 
-    const fabButton = page
-      .locator('[data-testid="mobile-create-assignment-fab"]')
-      .first();
+    const fabButton = page.locator('[data-testid="mobile-create-assignment-fab"]').first();
 
     await expect(fabButton).toBeVisible();
     await fabButton.click();
@@ -91,9 +82,7 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     await expect(dialog).toBeVisible();
 
     // Type selection buttons should NOT be visible on mobile
-    const typeButtons = page.locator(
-      '[data-testid="schedule-item-type-buttons"]',
-    );
+    const typeButtons = page.locator('[data-testid="schedule-item-type-buttons"]');
     await expect(typeButtons).not.toBeVisible();
 
     // Assignment button should NOT be visible
@@ -112,14 +101,10 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     const assignmentForm = page.locator('[data-testid="assignment-form"]');
     await expect(assignmentForm).toBeVisible();
 
-    console.log(
-      "✅ Type selection buttons hidden on mobile, only assignment form visible",
-    );
+    console.log('✅ Type selection buttons hidden on mobile, only assignment form visible');
   });
 
-  test("should create assignment on mobile viewport", async ({
-    page,
-  }, testInfo) => {
+  test('should create assignment on mobile viewport', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testTeam = scheduleTestBase.getTestTeam()!;
@@ -127,9 +112,7 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
 
     // Open dialog (implementation may vary - adjust selector as needed)
-    const fabButton = page
-      .locator('[data-testid="mobile-create-assignment-fab"]')
-      .first();
+    const fabButton = page.locator('[data-testid="mobile-create-assignment-fab"]').first();
 
     expect(fabButton).toBeVisible();
 
@@ -140,40 +123,28 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     await expect(assignmentForm).toBeVisible();
 
     // Select worker
-    const workerSelect = page.locator(
-      '[data-testid="edit-assignment-worker-select"]',
-    );
+    const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();
-    await page
-      .locator(`[data-testid="worker-option-${testWorkers[0].id}"]`)
-      .click();
+    await page.locator(`[data-testid="worker-option-${testWorkers[0].id}"]`).click();
 
     // Select shift
-    const shiftSelect = page.locator(
-      '[data-testid="edit-assignment-shift-select"]',
-    );
+    const shiftSelect = page.locator('[data-testid="edit-assignment-shift-select"]');
     await shiftSelect.click();
-    await page
-      .locator(`[data-testid="shift-option-${testShifts[0].id}"]`)
-      .click();
+    await page.locator(`[data-testid="shift-option-${testShifts[0].id}"]`).click();
 
     // Select date (tomorrow)
-    const tomorrow = dayjs.utc().add(1, "day");
+    const tomorrow = dayjs.utc().add(1, 'day');
 
-    const datePicker = page.locator(
-      '[data-testid="edit-assignment-date-picker"]',
-    );
-    await datePicker.waitFor({ state: "visible" });
-    await datePicker.fill("", { force: true }); // Clear first
+    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
+    await datePicker.waitFor({ state: 'visible' });
+    await datePicker.fill('', { force: true }); // Clear first
     await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
-    await datePicker.press("Enter");
+    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
+    await datePicker.press('Enter');
     await page.waitForTimeout(300);
 
     // Click create button
-    const createButton = page.locator(
-      '[data-testid="edit-assignment-create-button"]',
-    );
+    const createButton = page.locator('[data-testid="edit-assignment-create-button"]');
     await createButton.click();
 
     // Wait for dialog to close
@@ -183,8 +154,8 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     // Verify assignment was created in database
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const assignments = AR.assignmentsRead;
 
@@ -193,14 +164,14 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
       (a) =>
         a.workerId === testWorkers[0].id &&
         a.shiftId === testShifts[0].id &&
-        a.date.isSame(tomorrow, "day"),
+        a.date.isSame(tomorrow, 'day'),
     );
     expect(createdAssignment).toBeDefined();
 
-    console.log("✅ Assignment created successfully");
+    console.log('✅ Assignment created successfully');
   });
 
-  test("should open assignment in edit mode with populated fields on mobile viewport", async ({
+  test('should open assignment in edit mode with populated fields on mobile viewport', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -211,8 +182,8 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const assignments = AR.assignmentsRead;
     await expect(assignments.length).toBeGreaterThan(0);
@@ -222,9 +193,7 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     // Click on assignment cell to open edit dialog
     // Note: Selector depends on schedule UI implementation
     const assignmentDate = dayjs(assignment.date);
-    const assignmentCell = page.locator(
-      `[data-testid="assignment-list-item-${assignment.id}"]`,
-    );
+    const assignmentCell = page.locator(`[data-testid="assignment-list-item-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
@@ -238,45 +207,35 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     await expect(assignmentButton).not.toBeVisible();
 
     // Verify worker field is populated with the assignment's worker
-    const workerSelect = page.locator(
-      '[data-testid="edit-assignment-worker-select"]',
-    );
+    const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await expect(workerSelect).toBeVisible();
-    const expectedWorker = testWorkers.find(
-      (w) => w.id === assignment.workerId,
-    );
+    const expectedWorker = testWorkers.find((w) => w.id === assignment.workerId);
     expect(expectedWorker).toBeDefined();
     await expect(workerSelect).toContainText(expectedWorker!.name);
 
     // Verify shift field is populated with the assignment's shift
-    const shiftSelect = page.locator(
-      '[data-testid="edit-assignment-shift-select"]',
-    );
+    const shiftSelect = page.locator('[data-testid="edit-assignment-shift-select"]');
     await expect(shiftSelect).toBeVisible();
     const expectedShift = testShifts.find((s) => s.id === assignment.shiftId);
     expect(expectedShift).toBeDefined();
     await expect(shiftSelect).toContainText(expectedShift!.name);
 
     // Verify date field is populated with the assignment's date
-    const datePicker = page.locator(
-      '[data-testid="edit-assignment-date-picker"]',
-    );
+    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
     await expect(datePicker).toBeVisible();
-    const expectedDate = dayjs(assignment.date).format("DD/MM/YYYY");
+    const expectedDate = dayjs(assignment.date).format('DD/MM/YYYY');
     await expect(datePicker).toHaveValue(expectedDate);
 
     // Save and Delete buttons should be visible
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
-    const deleteButton = page.locator(
-      '[data-testid="delete-assignment-button"]',
-    );
+    const deleteButton = page.locator('[data-testid="delete-assignment-button"]');
     await expect(saveButton).toBeVisible();
     await expect(deleteButton).toBeVisible();
 
-    console.log("✅ Assignment opened in edit mode successfully");
+    console.log('✅ Assignment opened in edit mode successfully');
   });
 
-  test("should update assignment worker", async ({ page }, testInfo) => {
+  test('should update assignment worker', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testTeam = scheduleTestBase.getTestTeam()!;
@@ -286,8 +245,8 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     // Get the created assignment
     const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const assignments = AR2.assignmentsRead;
     await expect(assignments.length).toBeGreaterThan(0);
@@ -296,66 +255,54 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     const assignmentDate = dayjs(assignment.date);
 
     // Open assignment for editing
-    const assignmentCell = page.locator(
-      `[data-testid="assignment-list-item-${assignment.id}"]`,
-    );
+    const assignmentCell = page.locator(`[data-testid="assignment-list-item-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
 
     // Wait for dialog
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-item-dialog"]')).toBeVisible();
 
     // Change worker to a different one
     const newWorker = testWorkers.find((w) => w.id !== assignment.workerId);
     expect(newWorker).toBeDefined();
 
-    const workerSelect = page.locator(
-      '[data-testid="edit-assignment-worker-select"]',
-    );
+    const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();
-    await page
-      .locator(`[data-testid="worker-option-${newWorker!.id}"]`)
-      .click();
+    await page.locator(`[data-testid="worker-option-${newWorker!.id}"]`).click();
 
     // Save changes
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
     await saveButton.click();
 
     // Wait for dialog to close
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="schedule-item-dialog"]')).not.toBeVisible({
+      timeout: 5000,
+    });
 
     // Verify assignment was updated in database
     const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const updatedAssignments = AR3.assignmentsRead;
-    const updatedAssignment = updatedAssignments.find(
-      (a) => a.id === assignment.id,
-    );
+    const updatedAssignment = updatedAssignments.find((a) => a.id === assignment.id);
     expect(updatedAssignment).toBeDefined();
 
     expect(updatedAssignment!.workerId).toBe(newWorker!.id);
-    console.log("✅ Assignment worker updated successfully");
+    console.log('✅ Assignment worker updated successfully');
   });
 
-  test("should delete assignment on mobile viewport", async ({
-    page,
-  }, testInfo) => {
+  test('should delete assignment on mobile viewport', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
 
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const assignments = AR.assignmentsRead;
     await expect(assignments.length).toBeGreaterThan(0);
@@ -364,47 +311,37 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     const assignmentId = assignment.id;
 
     // Open assignment for editing
-    const assignmentCell = page.locator(
-      `[data-testid="assignment-list-item-${assignment.id}"]`,
-    );
+    const assignmentCell = page.locator(`[data-testid="assignment-list-item-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
 
     // Wait for dialog
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-item-dialog"]')).toBeVisible();
 
     // Click delete button
-    const deleteButton = page.locator(
-      '[data-testid="delete-assignment-button"]',
-    );
+    const deleteButton = page.locator('[data-testid="delete-assignment-button"]');
     await deleteButton.click();
 
     // Wait for dialog to close
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).not.toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="schedule-item-dialog"]')).not.toBeVisible({
+      timeout: 5000,
+    });
 
     // Verify assignment was deleted from database
     const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const updatedAssignments = AR2.assignmentsRead;
-    const deletedAssignment = updatedAssignments.find(
-      (a: any) => a.id === assignmentId,
-    );
+    const deletedAssignment = updatedAssignments.find((a: any) => a.id === assignmentId);
 
     expect(deletedAssignment).toBeUndefined();
-    console.log("✅ Assignment deleted successfully");
+    console.log('✅ Assignment deleted successfully');
   });
 
-  test("should access recurrence on mobile viewport", async ({
-    page,
-  }, testInfo) => {
+  test('should access recurrence on mobile viewport', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
@@ -412,9 +349,7 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     const testTeam = scheduleTestBase.getTestTeam()!;
 
     // Open dialog (implementation may vary - adjust selector as needed)
-    const fabButton = page
-      .locator('[data-testid="mobile-create-assignment-fab"]')
-      .first();
+    const fabButton = page.locator('[data-testid="mobile-create-assignment-fab"]').first();
 
     expect(fabButton).toBeVisible();
 
@@ -429,29 +364,25 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     await recurrenceButton.click();
 
     // Set daily frequency
-    const recurrenceContainer = page.locator(
-      '[data-testid="recurrence-edit-container"]',
-    );
+    const recurrenceContainer = page.locator('[data-testid="recurrence-edit-container"]');
     await expect(recurrenceContainer).toBeVisible();
 
-    console.log("✅ Recurrence accessible on mobile viewport");
+    console.log('✅ Recurrence accessible on mobile viewport');
   });
 
-  test("should check replacement on mobile viewport", async ({
-    page,
-  }, testInfo) => {
+  test('should check replacement on mobile viewport', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
     const testWorkers = scheduleTestBase.getTestWorkers();
 
-    const morningShift = testShifts.find((s) => s.name === "Morning Shift")!;
+    const morningShift = testShifts.find((s) => s.name === 'Morning Shift')!;
 
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const assignments = AR.assignmentsRead;
     await expect(assignments.length).toBeGreaterThan(0);
@@ -462,25 +393,19 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     const originalWorkerId = assignment.workerId;
 
     // Open assignment for editing
-    const assignmentCell = page.locator(
-      `[data-testid="assignment-list-item-${assignment.id}"]`,
-    );
+    const assignmentCell = page.locator(`[data-testid="assignment-list-item-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
 
     // Wait for dialog
-    await expect(
-      page.locator('[data-testid="schedule-item-dialog"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-item-dialog"]')).toBeVisible();
 
     // Verify check replacement button exists
-    const checkReplacementButton = page.locator(
-      '[data-testid="check-replacement-button"]',
-    );
+    const checkReplacementButton = page.locator('[data-testid="check-replacement-button"]');
     await expect(checkReplacementButton).toBeVisible();
 
-    console.log("✅ Check replacement button visible");
+    console.log('✅ Check replacement button visible');
 
     // Click the check replacement button
     await checkReplacementButton.click();
@@ -493,76 +418,56 @@ test.describe("Mobile Assignment Dialogs - Team Leader", () => {
     await expect(seeDetailsButton).not.toBeVisible(); // Should not be visible on mobile
 
     // Verify all workers except the original worker appear in the list
-    const expectedCandidateWorkers = testWorkers.filter(
-      (w) => w.id !== originalWorkerId,
-    );
+    const expectedCandidateWorkers = testWorkers.filter((w) => w.id !== originalWorkerId);
 
     for (const worker of expectedCandidateWorkers) {
-      const candidateItem = page.locator(
-        `[data-testid="candidate-${worker.id}"]`,
-      );
+      const candidateItem = page.locator(`[data-testid="candidate-${worker.id}"]`);
       await expect(candidateItem).toBeVisible();
 
       // Verify the worker has a replace button
-      const replaceButton = page.locator(
-        `[data-testid="replace-button-${worker.id}"]`,
-      );
+      const replaceButton = page.locator(`[data-testid="replace-button-${worker.id}"]`);
       await expect(replaceButton).toBeVisible();
     }
 
-    console.log(
-      "✅ All workers except original worker appear with replace buttons",
-    );
+    console.log('✅ All workers except original worker appear with replace buttons');
 
     // Verify the original worker does NOT appear in the list
-    const originalWorkerCandidate = page.locator(
-      `[data-testid="candidate-${originalWorkerId}"]`,
-    );
+    const originalWorkerCandidate = page.locator(`[data-testid="candidate-${originalWorkerId}"]`);
     await expect(originalWorkerCandidate).not.toBeVisible();
 
     // Select a replacement worker (pick the first candidate)
     const replacementWorker = expectedCandidateWorkers[0];
-    const replaceButton = page.locator(
-      `[data-testid="replace-button-${replacementWorker.id}"]`,
-    );
+    const replaceButton = page.locator(`[data-testid="replace-button-${replacementWorker.id}"]`);
     await replaceButton.click();
 
-    console.log(
-      `✅ Clicked replace button for worker: ${replacementWorker.name}`,
-    );
+    console.log(`✅ Clicked replace button for worker: ${replacementWorker.name}`);
 
     // Wait for the replacement to complete
     await page.waitForTimeout(1500); // Wait for API call and UI update
 
     // Verify the assignment dialog has closed
-    const assignmentDialog = page.locator(
-      '[data-testid="schedule-item-dialog"]',
-    );
+    const assignmentDialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(assignmentDialog).not.toBeVisible();
 
-    console.log("✅ Assignment dialog closed after replacement");
+    console.log('✅ Assignment dialog closed after replacement');
 
     // Fetch assignments again
     const updatedAR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const updatedAssignments = updatedAR.assignmentsRead;
 
     // Find the updated assignment
-    const updatedAssignment = updatedAssignments.find(
-      (a) => a.id === assignment.id,
-    );
+    const updatedAssignment = updatedAssignments.find((a) => a.id === assignment.id);
 
     // Verify the assignment is now assigned to the replacement worker
     expect(updatedAssignment).toBeDefined();
     expect(updatedAssignment!.workerId).toBe(replacementWorker.id);
     expect(updatedAssignment!.shiftId).toBe(assignment.shiftId);
-    expect(updatedAssignment!.date.isSame(assignment.date, "day")).toBe(true);
+    expect(updatedAssignment!.date.isSame(assignment.date, 'day')).toBe(true);
 
-    console.log(
-      `✅ Assignment successfully replaced to worker: ${replacementWorker.name}`,
-    );
+    console.log(`✅ Assignment successfully replaced to worker: ${replacementWorker.name}`);
   });
 });

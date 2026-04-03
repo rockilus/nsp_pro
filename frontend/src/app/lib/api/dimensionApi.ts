@@ -2,10 +2,10 @@
  * API client for dimension operations
  */
 
-import { DimensionT, DimensionType } from "../../../types/dimension";
-import { DimEntryT } from "../../../types/dim-entry";
-import { AttributeT } from "../../../types/attribute";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { DimensionT, DimensionType } from '../../../types/dimension';
+import { DimEntryT } from '../../../types/dim-entry';
+import { AttributeT } from '../../../types/attribute';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export interface AddDimensionResponse {
   newDimension: DimensionT;
@@ -25,21 +25,21 @@ export class DimensionApi extends BaseApi {
   static async addDimension(
     apiClient: AuthenticatedApiClient,
     dimension: DimensionT,
-    dimEntries: DimEntryT[]
+    dimEntries: DimEntryT[],
   ): Promise<AddDimensionResponse> {
     // Security: Input validation
     if (!dimension || !dimension.teamId) {
-      throw new Error("Invalid dimension data provided");
+      throw new Error('Invalid dimension data provided');
     }
     if (!dimEntries || !Array.isArray(dimEntries)) {
-      throw new Error("Invalid dimension entries provided");
+      throw new Error('Invalid dimension entries provided');
     }
 
     const responseData = await this.makeRequest<AddDimensionResponse>(
       apiClient,
-      "post",
+      'post',
       `/dimensions/teams/${dimension.teamId}`,
-      { dimension, dim_entries: dimEntries }
+      { dimension, dim_entries: dimEntries },
     );
     return responseData;
   }
@@ -50,18 +50,18 @@ export class DimensionApi extends BaseApi {
   static async getDimensions(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    dimTypes?: DimensionType[]
+    dimTypes?: DimensionType[],
   ): Promise<GetDimensionsResponse> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
-    const queryParams = dimTypes ? `?dim_types=${dimTypes.join(",")}` : "";
+    const queryParams = dimTypes ? `?dim_types=${dimTypes.join(',')}` : '';
     const responseData = await this.makeRequest<GetDimensionsResponse>(
       apiClient,
-      "get",
-      `/dimensions/teams/${teamId}${queryParams}`
+      'get',
+      `/dimensions/teams/${teamId}${queryParams}`,
     );
     return responseData;
   }
@@ -71,18 +71,18 @@ export class DimensionApi extends BaseApi {
    */
   static async updateDimension(
     apiClient: AuthenticatedApiClient,
-    updatedDimension: DimensionT
+    updatedDimension: DimensionT,
   ): Promise<DimensionT> {
     // Security: Input validation
     if (!updatedDimension || !updatedDimension.id || !updatedDimension.teamId) {
-      throw new Error("Invalid dimension data provided");
+      throw new Error('Invalid dimension data provided');
     }
 
     const responseData = await this.makeRequest<DimensionT>(
       apiClient,
-      "put",
+      'put',
       `/dimensions/${updatedDimension.id}/teams/${updatedDimension.teamId}`,
-      updatedDimension
+      updatedDimension,
     );
     return responseData;
   }
@@ -93,20 +93,16 @@ export class DimensionApi extends BaseApi {
   static async deleteDimension(
     apiClient: AuthenticatedApiClient,
     dimensionId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!dimensionId) {
-      throw new Error("Dimension ID is required");
+      throw new Error('Dimension ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
-    await this.makeRequest<void>(
-      apiClient,
-      "delete",
-      `/dimensions/${dimensionId}/teams/${teamId}`
-    );
+    await this.makeRequest<void>(apiClient, 'delete', `/dimensions/${dimensionId}/teams/${teamId}`);
   }
 }

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">Rappel : soumettez vos disponibilités</div>
+        <div class="email-body">
+            <p>Bonjour {recipient_name},</p>
+            <p>Ceci est un rappel pour soumettre vos demandes de disponibilité pour le planning de <strong>{team_name}</strong>.</p>
+            <p><strong>Période du planning :</strong> {schedule_start_date} – {schedule_end_date}</p>
+            <p><strong>Date limite de soumission :</strong> {deadline_date}</p>
+            <p>Veuillez soumettre vos disponibilités avant la date limite en cliquant sur le bouton ci-dessous :</p>
+            <a href="{notification_link}" class="cta-button">Soumettre les demandes</a>
+        </div>
+        <div class="email-footer">
+            <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+            <p>Merci,<br>L'Équipe Rockilus</p>
+        </div>
+    </div>
+</body>
+</html>

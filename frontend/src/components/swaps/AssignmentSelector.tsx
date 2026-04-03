@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
 import {
   Box,
   Checkbox,
@@ -22,12 +22,12 @@ import {
   useTheme,
   useMediaQuery,
   Button,
-} from "@mui/material";
-import { Add as AddIcon } from "@mui/icons-material";
-import dayjs from "dayjs";
-import { AssignmentDataDictT } from "../../types/assignment";
-import { LinkShiftT } from "../../types/shift";
-import { useTranslation } from "../../app/i18n/client";
+} from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
+import dayjs from 'dayjs';
+import { AssignmentDataDictT } from '../../types/assignment';
+import { LinkShiftT } from '../../types/shift';
+import { useTranslation } from '../../app/i18n/client';
 
 interface AssignmentSelectorProps {
   selectedAssignmentIds: string[];
@@ -52,14 +52,14 @@ export default function AssignmentSelector({
   lng,
 }: AssignmentSelectorProps) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { t } = useTranslation(lng, "swap-page");
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { t } = useTranslation(lng, 'swap-page');
 
   // Group assignments by date
   const groupedAssignments = useMemo(() => {
     const groups: { [key: string]: AssignmentDataDictT[] } = {};
     assignments.forEach((a) => {
-      const dateKey = a.assignment.date.format("YYYY-MM-DD");
+      const dateKey = a.assignment.date.format('YYYY-MM-DD');
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
@@ -84,9 +84,7 @@ export default function AssignmentSelector({
     const selectedSet = new Set(selectedAssignmentIds);
 
     // Get selected assignments
-    const selectedAssignments = assignments.filter((a) =>
-      selectedSet.has(a.assignment.id),
-    );
+    const selectedAssignments = assignments.filter((a) => selectedSet.has(a.assignment.id));
 
     // For each selected assignment, check if it has linked shifts
     selectedAssignments.forEach((selectedAssignment) => {
@@ -106,8 +104,7 @@ export default function AssignmentSelector({
         const linkedAssignment = assignments.find(
           (a) =>
             a.assignment.workerId === workerId &&
-            a.assignment.date.format("YYYY-MM-DD") ===
-              date.format("YYYY-MM-DD") &&
+            a.assignment.date.format('YYYY-MM-DD') === date.format('YYYY-MM-DD') &&
             a.assignment.shiftId === linkedShiftId &&
             !selectedSet.has(a.assignment.id),
         );
@@ -150,7 +147,7 @@ export default function AssignmentSelector({
   if (assignments.length === 0) {
     return (
       <Alert severity="info" sx={{ m: 2 }}>
-        {t("selector_no_assignments")}
+        {t('selector_no_assignments')}
       </Alert>
     );
   }
@@ -162,17 +159,12 @@ export default function AssignmentSelector({
         // Mobile: List view
         <List>
           {groupedAssignments.map((group) => (
-            <Box key={group.date.format("YYYY-MM-DD")} sx={{ mb: 2 }}>
-              <Typography
-                variant="subtitle2"
-                sx={{ px: 2, py: 1, bgcolor: "grey.100" }}
-              >
-                {group.date.format("ddd, MMM D, YYYY")}
+            <Box key={group.date.format('YYYY-MM-DD')} sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ px: 2, py: 1, bgcolor: 'grey.100' }}>
+                {group.date.format('ddd, MMM D, YYYY')}
               </Typography>
               {group.assignments.map((data) => {
-                const isSelected = selectedAssignmentIds.includes(
-                  data.assignment.id,
-                );
+                const isSelected = selectedAssignmentIds.includes(data.assignment.id);
 
                 return (
                   <ListItem
@@ -180,27 +172,17 @@ export default function AssignmentSelector({
                     disablePadding
                     data-testid={`assignment-${data.assignment.id}`}
                   >
-                    <ListItemButton
-                      onClick={() => handleToggle(data.assignment.id)}
-                      dense
-                    >
+                    <ListItemButton onClick={() => handleToggle(data.assignment.id)} dense>
                       <ListItemIcon>
-                        <Checkbox
-                          edge="start"
-                          checked={isSelected}
-                          tabIndex={-1}
-                          disableRipple
-                        />
+                        <Checkbox edge="start" checked={isSelected} tabIndex={-1} disableRipple />
                       </ListItemIcon>
                       <ListItemText
                         primary={
                           <Box display="flex" alignItems="center" gap={1}>
-                            <Typography variant="body2">
-                              {data.shift.name}
-                            </Typography>
+                            <Typography variant="body2">{data.shift.name}</Typography>
                           </Box>
                         }
-                        secondary={`${data.shift.startTime.format("HH:mm")} - ${data.shift.endTime.format("HH:mm")} • ${data.worker.name}`}
+                        secondary={`${data.shift.startTime.format('HH:mm')} - ${data.shift.endTime.format('HH:mm')} • ${data.worker.name}`}
                       />
                     </ListItemButton>
                   </ListItem>
@@ -215,34 +197,30 @@ export default function AssignmentSelector({
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox">{t("col_select")}</TableCell>
-                <TableCell>{t("col_date")}</TableCell>
-                <TableCell>{t("col_worker")}</TableCell>
-                <TableCell>{t("col_shift")}</TableCell>
-                <TableCell>{t("col_time")}</TableCell>
+                <TableCell padding="checkbox">{t('col_select')}</TableCell>
+                <TableCell>{t('col_date')}</TableCell>
+                <TableCell>{t('col_worker')}</TableCell>
+                <TableCell>{t('col_shift')}</TableCell>
+                <TableCell>{t('col_time')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {groupedAssignments.map((group) =>
                 group.assignments.map((data) => {
-                  const isSelected = selectedAssignmentIds.includes(
-                    data.assignment.id,
-                  );
+                  const isSelected = selectedAssignmentIds.includes(data.assignment.id);
 
                   return (
                     <TableRow
                       key={data.assignment.id}
                       hover
                       onClick={() => handleToggle(data.assignment.id)}
-                      sx={{ cursor: "pointer" }}
+                      sx={{ cursor: 'pointer' }}
                       data-testid={`assignment-${data.assignment.id}`}
                     >
                       <TableCell padding="checkbox">
                         <Checkbox checked={isSelected} />
                       </TableCell>
-                      <TableCell>
-                        {data.assignment.date.format("MMM D, YYYY")}
-                      </TableCell>
+                      <TableCell>{data.assignment.date.format('MMM D, YYYY')}</TableCell>
                       <TableCell>{data.worker.name}</TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={1}>
@@ -250,8 +228,8 @@ export default function AssignmentSelector({
                         </Box>
                       </TableCell>
                       <TableCell>
-                        {data.shift.startTime.format("HH:mm")} -{" "}
-                        {data.shift.endTime.format("HH:mm")}
+                        {data.shift.startTime.format('HH:mm')} -{' '}
+                        {data.shift.endTime.format('HH:mm')}
                       </TableCell>
                     </TableRow>
                   );
@@ -276,15 +254,15 @@ export default function AssignmentSelector({
               onClick={handleAddSuggested}
               data-testid="add-all-linked-shifts"
             >
-              {t("btn_add_all")}
+              {t('btn_add_all')}
             </Button>
           }
         >
           <Typography variant="body2" fontWeight="medium" gutterBottom>
-            {t("selector_linked_title")}
+            {t('selector_linked_title')}
           </Typography>
           <Typography variant="body2">
-            {t("selector_linked_body", {
+            {t('selector_linked_body', {
               count: suggestedLinkedAssignments.length,
             })}
           </Typography>
@@ -292,7 +270,7 @@ export default function AssignmentSelector({
             {suggestedLinkedAssignments.map((data) => (
               <Chip
                 key={data.assignment.id}
-                label={`${data.shift.name} on ${data.assignment.date.format("MMM D")}`}
+                label={`${data.shift.name} on ${data.assignment.date.format('MMM D')}`}
                 size="small"
                 sx={{ mr: 0.5, mt: 0.5 }}
               />

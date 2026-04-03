@@ -1,13 +1,13 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 export enum TeamInvitationStatus {
-  PENDING = "pending",
-  ACCEPTED = "accepted",
-  REJECTED = "rejected",
-  EXPIRED = "expired",
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
+  EXPIRED = 'expired',
 }
 export enum TeamInvitationType {
-  MEMBER = "member",
+  MEMBER = 'member',
 }
 export type TeamInvitationT = {
   id: string;
@@ -61,9 +61,7 @@ export const fromTeamInvitationT = (data: TeamInvitationT): any => {
   };
 };
 
-export const toEnrichedTeamInvitationT = (
-  data: any
-): EnrichedTeamInvitationT => {
+export const toEnrichedTeamInvitationT = (data: any): EnrichedTeamInvitationT => {
   return {
     ...data,
     createdAt: dayjs.unix(data.createdAt).utc(),
@@ -72,9 +70,7 @@ export const toEnrichedTeamInvitationT = (
   };
 };
 
-export const fromEnrichedTeamInvitationT = (
-  data: EnrichedTeamInvitationT
-): any => {
+export const fromEnrichedTeamInvitationT = (data: EnrichedTeamInvitationT): any => {
   return {
     ...data,
     createdAt: data.createdAt.unix(),

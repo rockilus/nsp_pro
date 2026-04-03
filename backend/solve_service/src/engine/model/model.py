@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from typing import Dict, List, Optional, Tuple
 
 # from google.protobuf import text_format  # type: ignore
 from google.protobuf import text_format  # type: ignore
@@ -39,11 +38,11 @@ class Model:
     # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(self, model_config: ModelConfig) -> None:
         self.model = cp_model.CpModel()
-        self.variables: Dict[Tuple[str, str, str], cp_model.IntVar] = {}
-        self.intervals: Dict[Tuple[str, str, str], cp_model.IntervalVar] = {}
-        self.assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar] = (
-            {}
-        )  # worker, day, shift, specialty
+        self.variables: dict[tuple[str, str, str], cp_model.IntVar] = {}
+        self.intervals: dict[tuple[str, str, str], cp_model.IntervalVar] = {}
+        self.assignment_wdss: dict[
+            tuple[str, str, str, str], cp_model.IntVar
+        ] = {}  # worker, day, shift, specialty
         self.model_config = model_config
 
         self.obj = Objective()
@@ -264,8 +263,7 @@ class Model:
             )
             self.add_work_time_constraints(
                 # fmt: off
-                inputs.configuration_constraints.work_loads
-                .weekly_work_time_contractual,
+                inputs.configuration_constraints.work_loads.weekly_work_time_contractual,
                 # fmt: on
                 True,
                 work_time_hts,
@@ -355,15 +353,15 @@ class Model:
             )
 
     def set_fixed_variables(
-        self, fixed_values: Dict[Tuple[str, str, str], int]
+        self, fixed_values: dict[tuple[str, str, str], int]
     ) -> None:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
 
     def add_solution_hint(
         self,
-        var_sol: Dict[Tuple[str, str, str], int],
-        var_spe_sol: Dict[Tuple[str, str, str, str], int],
+        var_sol: dict[tuple[str, str, str], int],
+        var_spe_sol: dict[tuple[str, str, str, str], int],
     ) -> None:
         for k, v in var_sol.items():
             if k in self.variables:
@@ -371,14 +369,14 @@ class Model:
         self.add_constraint_factory.var_spe_sol = var_spe_sol
 
     def no_interval_overlap(
-        self, no_overlap_shift_intervals: List[List[Tuple[str, str, str]]]
+        self, no_overlap_shift_intervals: list[list[tuple[str, str, str]]]
     ) -> None:
         for w_assignments in no_overlap_shift_intervals:
             self.model.AddNoOverlap([self.intervals[a] for a in w_assignments])
 
     def add_duty_recup_constraints(
         self,
-        duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]],
+        duty_recup_pairs: list[tuple[tuple[str, str, str], tuple[str, str, str], int]],
         hard_to_soft: bool,
     ) -> None:
         for duty, recup, penalty in duty_recup_pairs:
@@ -399,7 +397,7 @@ class Model:
 
     def add_link_shift_constraints(
         self,
-        ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]],
+        ls_pairs: list[tuple[tuple[str, str, str], tuple[str, str, str], str, int]],
     ) -> None:
         for s1, s2, ls_id, penalty in ls_pairs:
             s1_var = self.variables[s1]
@@ -494,7 +492,7 @@ class Model:
                     self.obj.int_coeffs.append(work_time.penalty)
 
     def add_target_work_time_constraints(
-        self, constraints: List[GroupsAssignmentsDurationsTargetConstraint]
+        self, constraints: list[GroupsAssignmentsDurationsTargetConstraint]
     ) -> None:
         for constraint in constraints:
             excesses = []
@@ -607,7 +605,7 @@ class Model:
                     self.obj.int_coeffs.append(nb_duties.penalty)
 
     def add_target_nb_duties_constraints(
-        self, constraints: List[GroupsAssignmentsTargetConstraint]
+        self, constraints: list[GroupsAssignmentsTargetConstraint]
     ) -> None:
         for constraint in constraints:
             excesses = []
@@ -650,7 +648,7 @@ class Model:
     # pylint: disable=too-many-branches
     def add_max_weekly_nb_duties_constraints(
         self,
-        constraint: Tuple[List[List[List[Tuple[str, str, str]]]], int],
+        constraint: tuple[list[list[list[tuple[str, str, str]]]], int],
         obj_category: ObjectiveCategory,
     ) -> None:
         """Add penalties for weekly duty concentration.
@@ -679,9 +677,9 @@ class Model:
         if max_assignments == 0:
             return
 
-        week_max_vars: List[cp_model.IntVar] = []
-        all_worker_week_sum_vars: List[cp_model.IntVar] = []
-        all_worker_week_assignment_lists: List[List[cp_model.IntVar]] = []
+        week_max_vars: list[cp_model.IntVar] = []
+        all_worker_week_sum_vars: list[cp_model.IntVar] = []
+        all_worker_week_assignment_lists: list[list[cp_model.IntVar]] = []
 
         for week in weeks_vars:
             if not week:
@@ -753,7 +751,7 @@ class Model:
                 )
 
     def add_special_days_constraints(
-        self, constraints: List[GroupsAssignmentsTargetConstraint]
+        self, constraints: list[GroupsAssignmentsTargetConstraint]
     ) -> None:
         for constraint in constraints:
             excesses = []
@@ -790,8 +788,8 @@ class Model:
 
     def add_consecutive_duty_gap_constraints(
         self,
-        constraint: Tuple[
-            List[Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]],
+        constraint: tuple[
+            list[tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]],
             int,
         ],
     ) -> None:
@@ -829,7 +827,7 @@ class Model:
 
     def add_worker_shift_filter_constraints(
         self,
-        worker_shift_filters: Tuple[List[Tuple[str, str, str]], int],
+        worker_shift_filters: tuple[list[tuple[str, str, str]], int],
         hard_to_soft: bool,
     ) -> None:
         wsf_filter, penalty = worker_shift_filters
@@ -842,7 +840,7 @@ class Model:
                 #     None, [cstr_var], "worker_shift_filter"
                 # )
                 var_name = ""
-                cstr_vars: List[cp_model.IntVar | cp_model.NotBooleanVariable] = [
+                cstr_vars: list[cp_model.IntVar | cp_model.NotBooleanVariable] = [
                     cstr_var.Not()  # type: ignore
                 ]
                 lit = self.model.NewBoolVar(var_name)
@@ -938,7 +936,7 @@ class Model:
         return out
 
     def estimate_time_limit(
-        self, min_seconds: int = 1, max_seconds: Optional[int] = None
+        self, min_seconds: int = 1, max_seconds: int | None = None
     ) -> int:
         """Estimate a reasonable time budget for the current model.
 

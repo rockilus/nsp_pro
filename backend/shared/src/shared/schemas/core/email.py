@@ -45,6 +45,15 @@ class EmailType(str, Enum):
     NOTIFICATION_USER_VALIDATED_SWAP = "notification_user_validated_swap"
     NOTIFICATION_USER_DENIED_SWAP = "notification_user_denied_swap"
     NOTIFICATION_USER_REVERSED_SWAP = "notification_user_reversed_swap"
+    NOTIFICATION_CAMPAIGN_REQUEST_DEADLINE_SET = (
+        "notification_campaign_request_deadline_set"
+    )
+    NOTIFICATION_CAMPAIGN_REQUEST_DEADLINE_REMINDER = (
+        "notification_campaign_request_deadline_reminder"
+    )
+    NOTIFICATION_CAMPAIGN_REQUEST_DEADLINE_UPDATED = (
+        "notification_campaign_request_deadline_updated"
+    )
 
 
 class EmailPriority(str, Enum):

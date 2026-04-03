@@ -7,7 +7,7 @@
  * - Modal dialogs for creation and application
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -19,11 +19,11 @@ import {
   Alert,
   Snackbar,
   Tooltip,
-} from "@mui/material";
-import { Close, Menu, MenuOpen } from "@mui/icons-material";
-import dayjs from "dayjs";
-import { useTranslation } from "../../../app/i18n/client";
-import { ShiftT } from "../../../types/shift";
+} from '@mui/material';
+import { Close, Menu, MenuOpen } from '@mui/icons-material';
+import dayjs from 'dayjs';
+import { useTranslation } from '../../../app/i18n/client';
+import { ShiftT } from '../../../types/shift';
 import {
   ShiftDemandTemplateDTO,
   TemplateViewMode,
@@ -34,8 +34,8 @@ import {
   ApplyDemandsToTemplateWeekDTO,
   ApplyTemplateToDateRangeDTO,
   TemplateApplicationResult,
-} from "../../../types/shift-demand-template";
-import { TemplateUtils } from "../../../app/lib/api/shiftDemandTemplateApi";
+} from '../../../types/shift-demand-template';
+import { TemplateUtils } from '../../../app/lib/api/shiftDemandTemplateApi';
 import {
   useGetTemplates,
   useGetTemplate,
@@ -44,16 +44,16 @@ import {
   useDeleteTemplate,
   useApplyTemplateToDateRange,
   useApplyDemandsToTemplateWeek,
-} from "../../../hooks/useShiftDemandTemplate";
+} from '../../../hooks/useShiftDemandTemplate';
 
 // Import template components
-import { TemplateList } from "./TemplateList";
-import { TemplateViewer } from "./TemplateViewer";
-import { TemplateCreationDialog } from "./TemplateCreationDialog";
-import TemplateApplicationToRangeDialog from "./TemplateApplicationToRangeDialog";
+import { TemplateList } from './TemplateList';
+import { TemplateViewer } from './TemplateViewer';
+import { TemplateCreationDialog } from './TemplateCreationDialog';
+import TemplateApplicationToRangeDialog from './TemplateApplicationToRangeDialog';
 
 // Import CSS
-import "./TemplateManagementWindow.css";
+import './TemplateManagementWindow.css';
 
 interface TemplateManagementWindowProps {
   lng: string;
@@ -77,9 +77,9 @@ export default function TemplateManagementWindow({
   currentPeriod,
   onTemplateApplied,
 }: TemplateManagementWindowProps) {
-  const { t } = useTranslation(lng, "shift-demand-templates");
+  const { t } = useTranslation(lng, 'shift-demand-templates');
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Initialize hooks
   const getTemplates = useGetTemplates();
@@ -91,14 +91,11 @@ export default function TemplateManagementWindow({
   const applyDemandsToTemplateWeek = useApplyDemandsToTemplateWeek();
 
   // State management
-  const [selectedTemplate, setSelectedTemplate] =
-    useState<ShiftDemandTemplateDTO | null>(null);
-  const [viewMode, setViewMode] = useState<TemplateViewMode>("list");
+  const [selectedTemplate, setSelectedTemplate] = useState<ShiftDemandTemplateDTO | null>(null);
+  const [viewMode, setViewMode] = useState<TemplateViewMode>('list');
   const [showCreationDialog, setShowCreationDialog] = useState(false);
-  const [showRangeApplicationDialog, setShowRangeApplicationDialog] =
-    useState(false);
-  const [templateToApply, setTemplateToApply] =
-    useState<ShiftDemandTemplateDTO | null>(null);
+  const [showRangeApplicationDialog, setShowRangeApplicationDialog] = useState(false);
+  const [templateToApply, setTemplateToApply] = useState<ShiftDemandTemplateDTO | null>(null);
 
   // Template list state
   const [templates, setTemplates] = useState<TemplateListItem[]>([]);
@@ -115,7 +112,7 @@ export default function TemplateManagementWindow({
 
   // Auto-hide sidebar on mobile when template is selected
   useEffect(() => {
-    if (isMobile && selectedTemplate && viewMode !== "list") {
+    if (isMobile && selectedTemplate && viewMode !== 'list') {
       setSidebarVisible(false);
     }
   }, [isMobile, selectedTemplate, viewMode]);
@@ -124,7 +121,7 @@ export default function TemplateManagementWindow({
   useEffect(() => {
     if (!open) {
       setSelectedTemplate(null);
-      setViewMode("list");
+      setViewMode('list');
       setShowCreationDialog(false);
       setError(null);
       setSuccessMessage(null);
@@ -142,16 +139,14 @@ export default function TemplateManagementWindow({
         // Load full template data from API using hook
         const fullTemplate = await getTemplate(template.id, teamId);
         setSelectedTemplate(fullTemplate);
-        setViewMode("view");
+        setViewMode('view');
 
         // Auto-hide sidebar on mobile after selection
         if (isMobile) {
           setSidebarVisible(false);
         }
       } catch (error) {
-        setError(
-          error instanceof Error ? error.message : t("error_loading_template"),
-        );
+        setError(error instanceof Error ? error.message : t('error_loading_template'));
       }
     },
     [getTemplate, teamId, isMobile, t],
@@ -170,8 +165,8 @@ export default function TemplateManagementWindow({
         setTemplateToApply(templateToUse);
         setShowRangeApplicationDialog(true);
       } catch (error) {
-        console.error("Failed to fetch template for application:", error);
-        setError(t("template_fetch_failed"));
+        console.error('Failed to fetch template for application:', error);
+        setError(t('template_fetch_failed'));
       }
     }
   };
@@ -179,17 +174,15 @@ export default function TemplateManagementWindow({
   const handleTemplateDelete = useCallback(
     (templateId: string) => {
       setSelectedTemplate(null);
-      setViewMode("list");
-      setSuccessMessage(t("template_deleted_successfully"));
+      setViewMode('list');
+      setSuccessMessage(t('template_deleted_successfully'));
       // Trigger template list refresh by updating templates state
       setTemplates((prev) => prev.filter((t) => t.id !== templateId));
     },
     [t],
   );
 
-  const handleTemplateCreated = async (
-    templateData: ShiftDemandTemplateCreateDTO,
-  ) => {
+  const handleTemplateCreated = async (templateData: ShiftDemandTemplateCreateDTO) => {
     try {
       // Create the template via hook
       const newTemplate = await createTemplate(teamId, templateData);
@@ -197,8 +190,8 @@ export default function TemplateManagementWindow({
       // Update UI state
       setShowCreationDialog(false);
       setSelectedTemplate(newTemplate);
-      setViewMode("view");
-      setSuccessMessage(t("template_created_successfully"));
+      setViewMode('view');
+      setSuccessMessage(t('template_created_successfully'));
 
       // Add to templates list for immediate UI update
       const newTemplateListItem: TemplateListItem = {
@@ -218,19 +211,16 @@ export default function TemplateManagementWindow({
         setSidebarVisible(false);
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : t("error_creating_template");
+      const errorMessage = error instanceof Error ? error.message : t('error_creating_template');
       setError(errorMessage);
     }
   };
 
-  const handleRangeApplicationComplete = (
-    result: TemplateApplicationResult,
-  ) => {
+  const handleRangeApplicationComplete = (result: TemplateApplicationResult) => {
     setShowRangeApplicationDialog(false);
     setTemplateToApply(null);
     setSuccessMessage(
-      t("template_applied_successfully_with_counts", {
+      t('template_applied_successfully_with_counts', {
         created: result.demandsCreated,
         updated: result.demandsUpdated,
         deleted: result.demandsDeleted,
@@ -251,24 +241,20 @@ export default function TemplateManagementWindow({
     request: ApplyTemplateToDateRangeDTO,
   ): Promise<TemplateApplicationResult> => {
     if (!templateToApply) {
-      throw new Error("No template selected for application");
+      throw new Error('No template selected for application');
     }
 
     try {
-      return await applyTemplateToDateRange(
-        templateToApply.id,
-        teamId,
-        request,
-      );
+      return await applyTemplateToDateRange(templateToApply.id, teamId, request);
     } catch (error) {
-      console.error("Failed to apply template to date range:", error);
+      console.error('Failed to apply template to date range:', error);
       throw error;
     }
   };
 
   const handleBack = () => {
     setSelectedTemplate(null);
-    setViewMode("list");
+    setViewMode('list');
     // Show sidebar when going back to list on mobile
     if (isMobile) {
       setSidebarVisible(true);
@@ -291,12 +277,9 @@ export default function TemplateManagementWindow({
     setSuccessMessage(null);
   };
 
-  const handleTemplatesLoaded = useCallback(
-    (loadedTemplates: TemplateListItem[]) => {
-      setTemplates(loadedTemplates);
-    },
-    [],
-  );
+  const handleTemplatesLoaded = useCallback((loadedTemplates: TemplateListItem[]) => {
+    setTemplates(loadedTemplates);
+  }, []);
 
   const handleLoadTemplates = useCallback(async () => {
     if (!teamId) return;
@@ -320,10 +303,8 @@ export default function TemplateManagementWindow({
 
       setTemplates(listItems);
     } catch (error) {
-      console.error("Failed to load templates:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to load templates",
-      );
+      console.error('Failed to load templates:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load templates');
     }
   }, [teamId, getTemplates]);
 
@@ -333,10 +314,8 @@ export default function TemplateManagementWindow({
         await deleteTemplate(templateId, teamId);
         handleTemplateDelete(templateId);
       } catch (error) {
-        console.error("Failed to delete template:", error);
-        setError(
-          error instanceof Error ? error.message : "Failed to delete template",
-        );
+        console.error('Failed to delete template:', error);
+        setError(error instanceof Error ? error.message : 'Failed to delete template');
         throw error;
       }
     },
@@ -344,27 +323,19 @@ export default function TemplateManagementWindow({
   );
 
   // Centralized template update handlers
-  const handleUpdateTemplate = async (
-    updates: Partial<ShiftDemandTemplateDTO>,
-  ) => {
+  const handleUpdateTemplate = async (updates: Partial<ShiftDemandTemplateDTO>) => {
     if (!selectedTemplate) return;
 
     setTemplateUpdateLoading(true);
     try {
-      const updatedTemplate = await updateTemplate(
-        selectedTemplate.id,
-        teamId,
-        updates,
-      );
+      const updatedTemplate = await updateTemplate(selectedTemplate.id, teamId, updates);
 
       // Update local state
       setSelectedTemplate(updatedTemplate);
-      setSuccessMessage(t("template_updated_successfully"));
+      setSuccessMessage(t('template_updated_successfully'));
     } catch (error) {
-      console.error("Failed to update template:", error);
-      setError(
-        error instanceof Error ? error.message : t("error_updating_template"),
-      );
+      console.error('Failed to update template:', error);
+      setError(error instanceof Error ? error.message : t('error_updating_template'));
       throw error; // Re-throw so child components can handle loading states
     } finally {
       setTemplateUpdateLoading(false);
@@ -387,7 +358,7 @@ export default function TemplateManagementWindow({
 
   const handleDeleteWeek = async (weekNumber: number) => {
     if (!selectedTemplate || selectedTemplate.weeksData.length <= 1) {
-      throw new Error("Cannot delete the last week");
+      throw new Error('Cannot delete the last week');
     }
 
     // Remove the week and renumber remaining weeks
@@ -405,20 +376,15 @@ export default function TemplateManagementWindow({
     if (!selectedTemplate) return;
 
     // For EVEN_ODD conversion, we need to handle week adjustment
-    if (
-      templateType === TemplateType.EVEN_ODD &&
-      selectedTemplate.weeksData.length !== 2
-    ) {
+    if (templateType === TemplateType.EVEN_ODD && selectedTemplate.weeksData.length !== 2) {
       let adjustedWeeksData: TemplateWeekDataDTO[];
 
       if (selectedTemplate.weeksData.length >= 2) {
         // Template has 2 or more weeks - keep only first 2
-        adjustedWeeksData = selectedTemplate.weeksData
-          .slice(0, 2)
-          .map((week, index) => ({
-            ...week,
-            weekNumber: index, // Renumber to 0, 1
-          }));
+        adjustedWeeksData = selectedTemplate.weeksData.slice(0, 2).map((week, index) => ({
+          ...week,
+          weekNumber: index, // Renumber to 0, 1
+        }));
       } else {
         // Template has fewer than 2 weeks - use existing weeks and add empty ones
         adjustedWeeksData = [...selectedTemplate.weeksData];
@@ -446,10 +412,7 @@ export default function TemplateManagementWindow({
     }
   };
 
-  const handleUpdateTemplateMetadata = async (updates: {
-    name?: string;
-    description?: string;
-  }) => {
+  const handleUpdateTemplateMetadata = async (updates: { name?: string; description?: string }) => {
     await handleUpdateTemplate(updates);
   };
 
@@ -458,10 +421,8 @@ export default function TemplateManagementWindow({
       await deleteTemplate(templateId, teamId);
       // The onDelete callback will handle UI updates
     } catch (error) {
-      console.error("Failed to delete template:", error);
-      setError(
-        error instanceof Error ? error.message : t("error_deleting_template"),
-      );
+      console.error('Failed to delete template:', error);
+      setError(error instanceof Error ? error.message : t('error_deleting_template'));
       throw error;
     }
   };
@@ -488,13 +449,11 @@ export default function TemplateManagementWindow({
 
       // Update local state
       setSelectedTemplate(updatedTemplate);
-      setSuccessMessage(t("demands_applied_successfully"));
+      setSuccessMessage(t('demands_applied_successfully'));
     } catch (error) {
-      console.error("Failed to apply demands to template week:", error);
+      console.error('Failed to apply demands to template week:', error);
       setError(
-        error instanceof Error
-          ? error.message
-          : t("failed_to_apply_demands_to_template_week"),
+        error instanceof Error ? error.message : t('failed_to_apply_demands_to_template_week'),
       );
       throw error; // Re-throw so child components can handle loading states
     } finally {
@@ -504,7 +463,7 @@ export default function TemplateManagementWindow({
 
   // Render main content based on view mode
   const renderMainContent = () => {
-    if (viewMode === "view" && selectedTemplate) {
+    if (viewMode === 'view' && selectedTemplate) {
       return (
         <TemplateViewer
           lng={lng}
@@ -530,10 +489,10 @@ export default function TemplateManagementWindow({
     return (
       <Box className="template-management-empty">
         <Typography variant="h6" color="textSecondary" gutterBottom>
-          {t("select_template_to_view")}
+          {t('select_template_to_view')}
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          {t("select_template_description")}
+          {t('select_template_description')}
         </Typography>
       </Box>
     );
@@ -550,10 +509,10 @@ export default function TemplateManagementWindow({
         PaperProps={{
           sx: {
             margin: 0,
-            maxHeight: "100vh",
-            height: "100vh",
-            display: "flex",
-            flexDirection: "column",
+            maxHeight: '100vh',
+            height: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
           },
         }}
         data-testid="template-management-window"
@@ -561,39 +520,35 @@ export default function TemplateManagementWindow({
         {/* Header */}
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
             p: 2,
             borderBottom: 1,
-            borderColor: "divider",
-            bgcolor: "background.paper",
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
             zIndex: 1,
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Tooltip
-              title={sidebarVisible ? t("hide_sidebar") : t("show_sidebar")}
-            >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Tooltip title={sidebarVisible ? t('hide_sidebar') : t('show_sidebar')}>
               <IconButton
                 onClick={toggleSidebar}
-                sx={{ color: "text.secondary" }}
-                aria-label={
-                  sidebarVisible ? t("hide_sidebar") : t("show_sidebar")
-                }
+                sx={{ color: 'text.secondary' }}
+                aria-label={sidebarVisible ? t('hide_sidebar') : t('show_sidebar')}
               >
                 {sidebarVisible ? <MenuOpen /> : <Menu />}
               </IconButton>
             </Tooltip>
             <Typography variant="h6" component="h2">
-              {t("template_management")}
+              {t('template_management')}
             </Typography>
           </Box>
           <IconButton
             data-testid="template-management-close-button"
             onClick={onClose}
-            sx={{ color: "text.secondary" }}
-            aria-label={t("close")}
+            sx={{ color: 'text.secondary' }}
+            aria-label={t('close')}
           >
             <Close />
           </IconButton>
@@ -603,9 +558,9 @@ export default function TemplateManagementWindow({
         <DialogContent
           sx={{
             flex: 1,
-            display: "flex",
+            display: 'flex',
             p: 0,
-            overflow: "hidden",
+            overflow: 'hidden',
           }}
           className="template-management-content"
         >
@@ -634,7 +589,7 @@ export default function TemplateManagementWindow({
             className="template-management-main"
             sx={{
               flex: 1,
-              ...(sidebarVisible ? {} : { width: "100%" }),
+              ...(sidebarVisible ? {} : { width: '100%' }),
             }}
           >
             {renderMainContent()}
@@ -659,13 +614,9 @@ export default function TemplateManagementWindow({
         open={!!error}
         autoHideDuration={6000}
         onClose={handleCloseError}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert
-          onClose={handleCloseError}
-          severity="error"
-          sx={{ width: "100%" }}
-        >
+        <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
           {error}
         </Alert>
       </Snackbar>
@@ -675,13 +626,9 @@ export default function TemplateManagementWindow({
         open={!!successMessage}
         autoHideDuration={4000}
         onClose={handleCloseSuccess}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert
-          onClose={handleCloseSuccess}
-          severity="success"
-          sx={{ width: "100%" }}
-        >
+        <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%' }}>
           {successMessage}
         </Alert>
       </Snackbar>

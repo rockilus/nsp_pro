@@ -9,19 +9,19 @@
  * - UI state management during select mode in template context
  */
 
-import { test, expect } from "@playwright/test";
-import dayjs from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
-import isBetween from "dayjs/plugin/isBetween";
-import utc from "dayjs/plugin/utc";
-import { TemplateTestBase } from "../../utils/template-test-base";
+import { test, expect } from '@playwright/test';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import isBetween from 'dayjs/plugin/isBetween';
+import utc from 'dayjs/plugin/utc';
+import { TemplateTestBase } from '../../utils/template-test-base';
 
 // Extend dayjs with the required plugins
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 dayjs.extend(utc);
 
-test.describe("Template Viewer - Select Feature", () => {
+test.describe('Template Viewer - Select Feature', () => {
   let templateTestBase: TemplateTestBase;
 
   test.beforeAll(async () => {
@@ -37,7 +37,7 @@ test.describe("Template Viewer - Select Feature", () => {
     // Create a template via API for testing with unique name
     const templateId = await templateTestBase.createTemplateViaAPI({
       name: `Test Template for Select ${Date.now()}`,
-      description: "Template for testing select functionality",
+      description: 'Template for testing select functionality',
     });
 
     // Open template management window and select the template
@@ -45,13 +45,11 @@ test.describe("Template Viewer - Select Feature", () => {
     await templateTestBase.selectTemplateInViewer(page, templateId);
 
     // Wait for template viewer to load
-    await expect(
-      page.locator('[data-testid="template-viewer-container"]')
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="template-viewer-container"]')).toBeVisible();
   });
 
-  test.describe("Select Mode Activation/Deactivation", () => {
-    test("should activate select mode when clicking the select button in template toolbar", async ({
+  test.describe('Select Mode Activation/Deactivation', () => {
+    test('should activate select mode when clicking the select button in template toolbar', async ({
       page,
     }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
@@ -66,14 +64,10 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Verify select mode is activated
       await expect(actionToolbar).toBeVisible();
-      await expect(selectButton).toHaveCSS(
-        "background-color",
-        "rgb(25, 118, 210)"
-      ); // Active blue color
+      await expect(selectButton).toHaveCSS('background-color', 'rgb(25, 118, 210)'); // Active blue color
 
       // Verify bulk selection elements are visible in template context
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
       await expect(bulkElements.input).toBeVisible();
       await expect(bulkElements.deleteButton).toBeVisible();
       await expect(bulkElements.confirmButton).toBeVisible();
@@ -84,7 +78,7 @@ test.describe("Template Viewer - Select Feature", () => {
       await expect(checkboxes.selectAll).toBeVisible();
     });
 
-    test("should deactivate select mode when clicking the select button again", async ({
+    test('should deactivate select mode when clicking the select button again', async ({
       page,
     }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
@@ -99,19 +93,13 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Verify select mode is deactivated
       await expect(actionToolbar).not.toBeVisible();
-      await expect(selectButton).not.toHaveCSS(
-        "background-color",
-        "rgb(25, 118, 210)"
-      );
+      await expect(selectButton).not.toHaveCSS('background-color', 'rgb(25, 118, 210)');
     });
 
-    test("should deactivate select mode when clicking the cancel button", async ({
-      page,
-    }) => {
+    test('should deactivate select mode when clicking the cancel button', async ({ page }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
       const actionToolbar = templateTestBase.getTemplateActionToolbar(page);
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
 
       // Activate select mode
       await selectButton.click();
@@ -122,13 +110,10 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Verify select mode is deactivated
       await expect(actionToolbar).not.toBeVisible();
-      await expect(selectButton).not.toHaveCSS(
-        "background-color",
-        "rgb(25, 118, 210)"
-      );
+      await expect(selectButton).not.toHaveCSS('background-color', 'rgb(25, 118, 210)');
     });
 
-    test("should show checkboxes in template table cells when select mode is active", async ({
+    test('should show checkboxes in template table cells when select mode is active', async ({
       page,
     }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
@@ -137,32 +122,23 @@ test.describe("Template Viewer - Select Feature", () => {
       await selectButton.click();
 
       // Check that cell checkboxes are visible (using a generic selector to verify presence)
-      const cellCheckboxes = page.locator(
-        '[data-testid*="template-cell-checkbox"] input'
-      );
+      const cellCheckboxes = page.locator('[data-testid*="template-cell-checkbox"] input');
       await expect(cellCheckboxes.first()).toBeVisible();
 
       // Check that row checkboxes are visible
-      const rowCheckboxes = page.locator(
-        '[data-testid*="template-row-checkbox"] input'
-      );
+      const rowCheckboxes = page.locator('[data-testid*="template-row-checkbox"] input');
       await expect(rowCheckboxes.first()).toBeVisible();
 
       // Check that column checkboxes are visible
-      const columnCheckboxes = page.locator(
-        '[data-testid*="template-column-checkbox"] input'
-      );
+      const columnCheckboxes = page.locator('[data-testid*="template-column-checkbox"] input');
       await expect(columnCheckboxes.first()).toBeVisible();
     });
   });
 
-  test.describe("Individual Cell Selection", () => {
-    test("should select and deselect individual template cells", async ({
-      page,
-    }) => {
+  test.describe('Individual Cell Selection', () => {
+    test('should select and deselect individual template cells', async ({ page }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
 
       // Activate select mode
       await selectButton.click();
@@ -189,12 +165,9 @@ test.describe("Template Viewer - Select Feature", () => {
       await expect(firstCellCheckbox).not.toBeChecked();
     });
 
-    test("should show selection count when template cells are selected", async ({
-      page,
-    }) => {
+    test('should show selection count when template cells are selected', async ({ page }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
 
       // Activate select mode
       await selectButton.click();
@@ -221,8 +194,8 @@ test.describe("Template Viewer - Select Feature", () => {
     });
   });
 
-  test.describe("Row and Column Selection", () => {
-    test("should select all cells in a template row when clicking row checkbox", async ({
+  test.describe('Row and Column Selection', () => {
+    test('should select all cells in a template row when clicking row checkbox', async ({
       page,
     }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
@@ -231,9 +204,7 @@ test.describe("Template Viewer - Select Feature", () => {
       await selectButton.click();
 
       // Find and click a row checkbox
-      const firstRowCheckbox = page
-        .locator('[data-testid*="template-row-checkbox"] input')
-        .first();
+      const firstRowCheckbox = page.locator('[data-testid*="template-row-checkbox"] input').first();
       await expect(firstRowCheckbox).toBeVisible();
       await firstRowCheckbox.click();
 
@@ -241,13 +212,13 @@ test.describe("Template Viewer - Select Feature", () => {
       await expect(firstRowCheckbox).toBeChecked();
 
       // Get the shift ID from the row checkbox data-testid
-      const shiftId = await firstRowCheckbox.getAttribute("data-testid");
-      const extractedShiftId = shiftId?.replace("template-row-checkbox-", "");
+      const shiftId = await firstRowCheckbox.getAttribute('data-testid');
+      const extractedShiftId = shiftId?.replace('template-row-checkbox-', '');
 
       // Verify that all cells in the row are now selected
       if (extractedShiftId) {
         const rowCellCheckboxes = page.locator(
-          `[data-testid*="template-cell-checkbox-${extractedShiftId}"] input`
+          `[data-testid*="template-cell-checkbox-${extractedShiftId}"] input`,
         );
         const count = await rowCellCheckboxes.count();
 
@@ -260,7 +231,7 @@ test.describe("Template Viewer - Select Feature", () => {
       }
     });
 
-    test("should select all cells in a template column when clicking column checkbox", async ({
+    test('should select all cells in a template column when clicking column checkbox', async ({
       page,
     }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
@@ -279,7 +250,7 @@ test.describe("Template Viewer - Select Feature", () => {
       await expect(firstColumnCheckbox).toBeChecked();
 
       // Get the week and day index from the column checkbox data-testid
-      const columnId = await firstColumnCheckbox.getAttribute("data-testid");
+      const columnId = await firstColumnCheckbox.getAttribute('data-testid');
       const match = columnId?.match(/template-column-checkbox-(\d+)-(\d+)/);
 
       if (match) {
@@ -288,7 +259,7 @@ test.describe("Template Viewer - Select Feature", () => {
 
         // Verify that all cells in the column are now selected
         const columnCellCheckboxes = page.locator(
-          `[data-testid*="-${weekNumber}-${dayIndex}"][data-testid*="template-cell-checkbox"] input`
+          `[data-testid*="-${weekNumber}-${dayIndex}"][data-testid*="template-cell-checkbox"] input`,
         );
         const count = await columnCellCheckboxes.count();
 
@@ -301,9 +272,7 @@ test.describe("Template Viewer - Select Feature", () => {
       }
     });
 
-    test("should select all template cells when clicking select all checkbox", async ({
-      page,
-    }) => {
+    test('should select all template cells when clicking select all checkbox', async ({ page }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
       const checkboxes = templateTestBase.getTemplateSelectionCheckboxes(page);
 
@@ -317,9 +286,7 @@ test.describe("Template Viewer - Select Feature", () => {
       await expect(checkboxes.selectAll).toBeChecked();
 
       // Verify that all cell checkboxes are now selected
-      const allCellCheckboxes = page.locator(
-        '[data-testid*="template-cell-checkbox"] input'
-      );
+      const allCellCheckboxes = page.locator('[data-testid*="template-cell-checkbox"] input');
       const count = await allCellCheckboxes.count();
 
       expect(count).toBeGreaterThan(0);
@@ -330,13 +297,10 @@ test.describe("Template Viewer - Select Feature", () => {
     });
   });
 
-  test.describe("Button States", () => {
-    test("should disable action buttons when no template cells are selected", async ({
-      page,
-    }) => {
+  test.describe('Button States', () => {
+    test('should disable action buttons when no template cells are selected', async ({ page }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
 
       // Activate select mode
       await selectButton.click();
@@ -346,36 +310,30 @@ test.describe("Template Viewer - Select Feature", () => {
       await expect(bulkElements.deleteButton).toBeDisabled();
     });
 
-    test("should enable action buttons when template cells are selected", async ({
-      page,
-    }) => {
+    test('should enable action buttons when template cells are selected', async ({ page }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
 
       // Activate select mode
       await selectButton.click();
 
       // Select a cell
-      const firstCellCheckbox = page
-        .locator('[data-testid*="template-cell-checkbox"]')
-        .first();
+      const firstCellCheckbox = page.locator('[data-testid*="template-cell-checkbox"]').first();
       await firstCellCheckbox.click();
 
       // Verify action buttons are enabled when cells are selected
       await expect(bulkElements.deleteButton).toBeEnabled();
 
       // Confirm button should be enabled when there's a valid bulk value and selection
-      await expect(bulkElements.input).toHaveValue("1"); // Default value
+      await expect(bulkElements.input).toHaveValue('1'); // Default value
       await expect(bulkElements.confirmButton).toBeEnabled();
     });
 
-    test("should disable confirm button when input is empty in template context", async ({
+    test('should disable confirm button when input is empty in template context', async ({
       page,
     }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
 
       // Activate select mode
       await selectButton.click();
@@ -387,73 +345,60 @@ test.describe("Template Viewer - Select Feature", () => {
       await firstCellCheckbox.click();
 
       // Clear the input
-      await bulkElements.input.fill("");
+      await bulkElements.input.fill('');
 
       // Confirm button should be disabled
       await expect(bulkElements.confirmButton).toBeDisabled();
 
       // Set a valid value
-      await bulkElements.input.fill("2");
+      await bulkElements.input.fill('2');
 
       // Confirm button should be enabled again
       await expect(bulkElements.confirmButton).toBeEnabled();
     });
   });
 
-  test.describe("Bulk Operations", () => {
-    test("should create/update template demands when confirming bulk selection", async ({
+  test.describe('Bulk Operations', () => {
+    test('should create/update template demands when confirming bulk selection', async ({
       page,
     }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
 
       // Activate select mode
       await selectButton.click();
 
       // Select a few cells
-      const cellCheckboxes = page.locator(
-        '[data-testid*="template-cell-checkbox"] input'
-      );
+      const cellCheckboxes = page.locator('[data-testid*="template-cell-checkbox"] input');
       await cellCheckboxes.first().click();
       await cellCheckboxes.nth(1).click();
 
       // Set bulk value
-      await bulkElements.input.fill("3");
+      await bulkElements.input.fill('3');
 
       // Apply bulk change
       await bulkElements.confirmButton.click();
 
       // Wait for operation to complete and select mode to exit
-      await expect(
-        templateTestBase.getTemplateActionToolbar(page)
-      ).not.toBeVisible();
+      await expect(templateTestBase.getTemplateActionToolbar(page)).not.toBeVisible();
 
       // Verify select mode is no longer active
-      await expect(selectButton).not.toHaveCSS(
-        "background-color",
-        "rgb(25, 118, 210)"
-      );
+      await expect(selectButton).not.toHaveCSS('background-color', 'rgb(25, 118, 210)');
 
       // Note: In a real test, you might want to verify the actual demand values
       // were updated in the template table, but that would require more complex
       // UI inspection of the template cells
     });
 
-    test("should delete template demands when confirming bulk deletion", async ({
-      page,
-    }) => {
+    test('should delete template demands when confirming bulk deletion', async ({ page }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
 
       // Activate select mode
       await selectButton.click();
 
       // Select some cells
-      const cellCheckboxes = page.locator(
-        '[data-testid*="template-cell-checkbox"] input'
-      );
+      const cellCheckboxes = page.locator('[data-testid*="template-cell-checkbox"] input');
       await cellCheckboxes.first().click();
       await cellCheckboxes.nth(1).click();
 
@@ -462,38 +407,28 @@ test.describe("Template Viewer - Select Feature", () => {
 
       // Confirm deletion in dialog (assuming the BulkSelectionSection handles the confirmation)
       const deleteConfirmButton = page.locator(
-        '[data-testid="bulk-selection-delete-confirm-button"]'
+        '[data-testid="bulk-selection-delete-confirm-button"]',
       );
       if (await deleteConfirmButton.isVisible()) {
         await deleteConfirmButton.click();
       }
 
       // Wait for operation to complete and select mode to exit
-      await expect(
-        templateTestBase.getTemplateActionToolbar(page)
-      ).not.toBeVisible();
+      await expect(templateTestBase.getTemplateActionToolbar(page)).not.toBeVisible();
 
       // Verify select mode is no longer active
-      await expect(selectButton).not.toHaveCSS(
-        "background-color",
-        "rgb(25, 118, 210)"
-      );
+      await expect(selectButton).not.toHaveCSS('background-color', 'rgb(25, 118, 210)');
     });
 
-    test("should cancel deletion when clicking cancel in confirmation dialog", async ({
-      page,
-    }) => {
+    test('should cancel deletion when clicking cancel in confirmation dialog', async ({ page }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
 
       // Activate select mode
       await selectButton.click();
 
       // Select some cells
-      const cellCheckboxes = page.locator(
-        '[data-testid*="template-cell-checkbox"] input'
-      );
+      const cellCheckboxes = page.locator('[data-testid*="template-cell-checkbox"] input');
       await cellCheckboxes.first().click();
 
       // Click delete button
@@ -506,23 +441,15 @@ test.describe("Template Viewer - Select Feature", () => {
       }
 
       // Verify select mode is still active
-      await expect(
-        templateTestBase.getTemplateActionToolbar(page)
-      ).toBeVisible();
-      await expect(selectButton).toHaveCSS(
-        "background-color",
-        "rgb(25, 118, 210)"
-      );
+      await expect(templateTestBase.getTemplateActionToolbar(page)).toBeVisible();
+      await expect(selectButton).toHaveCSS('background-color', 'rgb(25, 118, 210)');
     });
   });
 
-  test.describe("Keyboard Shortcuts", () => {
-    test("should apply bulk change when pressing Enter in input field", async ({
-      page,
-    }) => {
+  test.describe('Keyboard Shortcuts', () => {
+    test('should apply bulk change when pressing Enter in input field', async ({ page }) => {
       const selectButton = templateTestBase.getTemplateSelectButton(page);
-      const bulkElements =
-        templateTestBase.getTemplateBulkSelectionElements(page);
+      const bulkElements = templateTestBase.getTemplateBulkSelectionElements(page);
 
       // Activate select mode
       await selectButton.click();
@@ -534,19 +461,14 @@ test.describe("Template Viewer - Select Feature", () => {
       await firstCellCheckbox.check();
 
       // Set bulk value and press Enter
-      await bulkElements.input.fill("2");
-      await bulkElements.input.press("Enter");
+      await bulkElements.input.fill('2');
+      await bulkElements.input.press('Enter');
 
       // Wait for operation to complete and select mode to exit
-      await expect(
-        templateTestBase.getTemplateActionToolbar(page)
-      ).not.toBeVisible();
+      await expect(templateTestBase.getTemplateActionToolbar(page)).not.toBeVisible();
 
       // Verify select mode is no longer active
-      await expect(selectButton).not.toHaveCSS(
-        "background-color",
-        "rgb(25, 118, 210)"
-      );
+      await expect(selectButton).not.toHaveCSS('background-color', 'rgb(25, 118, 210)');
     });
 
     // Note: Escape functionality may not be implemented yet - commenting out like in shift-demand-select.spec.ts

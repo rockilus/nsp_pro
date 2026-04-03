@@ -5,7 +5,7 @@
  * to balance data freshness with performance.
  */
 
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 export interface BufferRange {
   start: dayjs.Dayjs;
@@ -33,12 +33,12 @@ export function calculateBufferMonths(
   periodEnd: dayjs.Dayjs,
 ): BufferRange {
   // Find the earliest and latest months in the period
-  const earliestMonth = periodStart.startOf("month");
-  const latestMonth = periodEnd.startOf("month");
+  const earliestMonth = periodStart.startOf('month');
+  const latestMonth = periodEnd.startOf('month');
 
   // Extend by one month in each direction
-  const bufferStart = earliestMonth.subtract(1, "month");
-  const bufferEnd = latestMonth.add(1, "month").endOf("month");
+  const bufferStart = earliestMonth.subtract(1, 'month');
+  const bufferEnd = latestMonth.add(1, 'month').endOf('month');
 
   return {
     start: bufferStart,
@@ -71,8 +71,8 @@ export function shouldFetchMore(
   // "Significantly" = more than 15 days outside the buffer
   const threshold = 15;
 
-  const beforeStart = currentBuffer.start.diff(newPeriodStart, "day");
-  const afterEnd = newPeriodEnd.diff(currentBuffer.end, "day");
+  const beforeStart = currentBuffer.start.diff(newPeriodStart, 'day');
+  const afterEnd = newPeriodEnd.diff(currentBuffer.end, 'day');
 
   // Need to fetch if new period extends more than threshold days beyond buffer
   return beforeStart > threshold || afterEnd > threshold;
@@ -93,10 +93,8 @@ export function calculateMobileBufferMonths(
   weeksRadius: number = 8,
 ): BufferRange {
   // Calculate the full visible range
-  const visibleStart = centerDate
-    .subtract(weeksRadius, "week")
-    .startOf("isoWeek");
-  const visibleEnd = centerDate.add(weeksRadius, "week").endOf("isoWeek");
+  const visibleStart = centerDate.subtract(weeksRadius, 'week').startOf('isoWeek');
+  const visibleEnd = centerDate.add(weeksRadius, 'week').endOf('isoWeek');
 
   // Use the standard buffer calculation on this extended range
   return calculateBufferMonths(visibleStart, visibleEnd);
@@ -120,8 +118,8 @@ export function areBuffersEquivalent(
   }
 
   // Buffers are equivalent if start/end dates are within 1 day
-  const startDiff = Math.abs(buffer1.start.diff(buffer2.start, "day"));
-  const endDiff = Math.abs(buffer1.end.diff(buffer2.end, "day"));
+  const startDiff = Math.abs(buffer1.start.diff(buffer2.start, 'day'));
+  const endDiff = Math.abs(buffer1.end.diff(buffer2.end, 'day'));
 
   return startDiff <= 1 && endDiff <= 1;
 }

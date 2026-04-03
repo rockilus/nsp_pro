@@ -12,8 +12,8 @@ export interface AdminLink {
 export function getAdminLinks(lng: string): AdminLink[] {
   return [
     {
-      name: "users",
-      label: "Users",
+      name: 'users',
+      label: 'Users',
       href: `/${lng}/admin/users`,
     },
   ];

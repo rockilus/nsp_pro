@@ -5,20 +5,19 @@
  * for team leaders, including shift selection, date selection, and validation.
  */
 
-import { test, expect } from "@playwright/test";
-import { randomUUID } from "crypto";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { ScheduleTestBase } from "../../../utils/schedule-test-base";
+import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { ScheduleTestBase } from '../../../utils/schedule-test-base';
 
 dayjs.extend(utc);
 
-test.describe("Demand Creation - Team Leader", () => {
+test.describe('Demand Creation - Team Leader', () => {
   const testBasesMap = new Map<string, ScheduleTestBase>();
 
   test.beforeEach(async ({ page }, testInfo) => {
-    const workerIndex =
-      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
 
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     console.log(`[Test Run ${testRunId}] Starting demand creation test setup`);
@@ -30,7 +29,7 @@ test.describe("Demand Creation - Team Leader", () => {
 
     // Setup schedule test environment with shifts, no demands initially
     await scheduleTestBase.setupScheduleTests(workerIndex, {
-      referenceDate: dayjs.utc().add(1, "day"),
+      referenceDate: dayjs.utc().add(1, 'day'),
       createAssignments: false,
       linkMemberToWorker: false,
     });
@@ -48,9 +47,7 @@ test.describe("Demand Creation - Team Leader", () => {
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
-  test("should create demand with shift and date", async ({
-    page,
-  }, testInfo) => {
+  test('should create demand with shift and date', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testTeam = scheduleTestBase.getTestTeam()!;
@@ -68,18 +65,16 @@ test.describe("Demand Creation - Team Leader", () => {
     // Select shift
     const shiftSelect = page.locator('[data-testid="demand-shift-select"]');
     await shiftSelect.click();
-    await page
-      .locator(`[data-testid="demand-shift-option-${testShifts[0].id}"]`)
-      .click();
+    await page.locator(`[data-testid="demand-shift-option-${testShifts[0].id}"]`).click();
 
     // Select date (tomorrow)
-    const tomorrow = dayjs.utc().utc().startOf("day").add(1, "day");
+    const tomorrow = dayjs.utc().utc().startOf('day').add(1, 'day');
     const datePicker = page.locator('[data-testid="demand-date-picker"]');
-    await datePicker.waitFor({ state: "visible" });
-    await datePicker.fill("", { force: true }); // Clear first
+    await datePicker.waitFor({ state: 'visible' });
+    await datePicker.fill('', { force: true }); // Clear first
     await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
-    await datePicker.press("Enter");
+    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
+    await datePicker.press('Enter');
     await page.waitForTimeout(300);
 
     // Click create button
@@ -91,10 +86,7 @@ test.describe("Demand Creation - Team Leader", () => {
     await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
     // Verify demand was created in database
-    const demands = await scheduleTestBase.getShiftDemandsByPeriod(
-      tomorrow,
-      tomorrow,
-    );
+    const demands = await scheduleTestBase.getShiftDemandsByPeriod(tomorrow, tomorrow);
 
     expect(demands.length).toBeGreaterThan(0);
     const createdDemand = demands.find(
@@ -102,12 +94,10 @@ test.describe("Demand Creation - Team Leader", () => {
     );
     expect(createdDemand).toBeDefined();
 
-    console.log("✅ Demand created successfully");
+    console.log('✅ Demand created successfully');
   });
 
-  test("should show validation error when shift is not selected", async ({
-    page,
-  }, testInfo) => {
+  test('should show validation error when shift is not selected', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
 
     // Open dialog
@@ -120,13 +110,13 @@ test.describe("Demand Creation - Team Leader", () => {
     await demandButton.click();
 
     // Select only date, not shift
-    const tomorrow = dayjs.utc().utc().startOf("day").add(1, "day");
+    const tomorrow = dayjs.utc().utc().startOf('day').add(1, 'day');
     const datePicker = page.locator('[data-testid="demand-date-picker"]');
-    await datePicker.waitFor({ state: "visible" });
-    await datePicker.fill("", { force: true }); // Clear first
+    await datePicker.waitFor({ state: 'visible' });
+    await datePicker.fill('', { force: true }); // Clear first
     await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format("DD/MM/YYYY"), { force: true });
-    await datePicker.press("Enter");
+    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
+    await datePicker.press('Enter');
     await page.waitForTimeout(300);
 
     // Try to create without shift
@@ -141,17 +131,17 @@ test.describe("Demand Creation - Team Leader", () => {
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).toBeVisible();
 
-    console.log("✅ Validation prevents demand creation without shift");
+    console.log('✅ Validation prevents demand creation without shift');
   });
 
-  test("should cancel demand creation", async ({ page }, testInfo) => {
+  test('should cancel demand creation', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testTeam = scheduleTestBase.getTestTeam()!;
 
     const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(1, "month"),
+      dayjs.utc().add(1, 'month'),
     );
 
     // Open dialog
@@ -174,7 +164,7 @@ test.describe("Demand Creation - Team Leader", () => {
     // Verify no demand was created
     const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(1, "month"),
+      dayjs.utc().add(1, 'month'),
     );
 
     const newDemands = demandsAfter.filter(
@@ -182,12 +172,10 @@ test.describe("Demand Creation - Team Leader", () => {
     );
     expect(newDemands.length).toBe(0);
 
-    console.log("✅ Demand creation cancelled successfully");
+    console.log('✅ Demand creation cancelled successfully');
   });
 
-  test("should create demand with default count of 1", async ({
-    page,
-  }, testInfo) => {
+  test('should create demand with default count of 1', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testTeam = scheduleTestBase.getTestTeam()!;
@@ -205,20 +193,18 @@ test.describe("Demand Creation - Team Leader", () => {
     // Select shift
     const shiftSelect = page.locator('[data-testid="demand-shift-select"]');
     await shiftSelect.click();
-    await page
-      .locator(`[data-testid="demand-shift-option-${testShifts[0].id}"]`)
-      .click();
+    await page.locator(`[data-testid="demand-shift-option-${testShifts[0].id}"]`).click();
 
     // Select date (tomorrow)
-    const dayAfterTomorrow = dayjs.utc().utc().startOf("day").add(2, "day");
+    const dayAfterTomorrow = dayjs.utc().utc().startOf('day').add(2, 'day');
     const datePicker = page.locator('[data-testid="demand-date-picker"]');
-    await datePicker.waitFor({ state: "visible" });
-    await datePicker.fill("", { force: true }); // Clear first
+    await datePicker.waitFor({ state: 'visible' });
+    await datePicker.fill('', { force: true }); // Clear first
     await page.waitForTimeout(100);
-    await datePicker.fill(dayAfterTomorrow.format("DD/MM/YYYY"), {
+    await datePicker.fill(dayAfterTomorrow.format('DD/MM/YYYY'), {
       force: true,
     });
-    await datePicker.press("Enter");
+    await datePicker.press('Enter');
     await page.waitForTimeout(300);
 
     // Click create button
@@ -232,17 +218,16 @@ test.describe("Demand Creation - Team Leader", () => {
     // Verify demand was created in database
     const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(1, "month"),
+      dayjs.utc().add(1, 'month'),
     );
 
     expect(demands.length).toBeGreaterThan(0);
     const createdDemand = demands.find(
-      (d) =>
-        d.shiftId === testShifts[0].id && d.date === dayAfterTomorrow.unix(),
+      (d) => d.shiftId === testShifts[0].id && d.date === dayAfterTomorrow.unix(),
     );
     expect(createdDemand).toBeDefined();
 
     expect(createdDemand!.count).toBe(1);
-    console.log("✅ Demand created with default count of 1");
+    console.log('✅ Demand created with default count of 1');
   });
 });

@@ -90,7 +90,7 @@ async def get_test_environment_only() -> None:
         )
 
     # Additional check for database name patterns
-    db_name = getattr(config, 'mongodb_database_name', '').lower()
+    db_name = getattr(config, "mongodb_database_name", "").lower()
     if "prod" in db_name:
         logger.warning(f"Test utilities access denied for database: {db_name}")
         raise HTTPException(
@@ -401,9 +401,7 @@ async def add_team_member(
         if role_value not in ["owner", "member"]:
             raise HTTPException(
                 status_code=400,
-                detail=(
-                    f"Invalid role '{request.role}'. " "Must be 'owner' or 'member'."
-                ),
+                detail=(f"Invalid role '{request.role}'. Must be 'owner' or 'member'."),
             )
 
         # Map string role to enum

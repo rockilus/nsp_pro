@@ -1,9 +1,9 @@
-import React from "react";
-import { Box, Paper, Divider } from "@mui/material";
-import { FilterSortSection } from "./FilterSortSection";
-import { BulkSelectionSection } from "./BulkSelectionSection";
-import { MultitaskingSelectionSection } from "./MultitaskingSelectionSection";
-import { ShiftDemandActionToolbarProps } from "./types";
+import React from 'react';
+import { Box, Paper, Divider } from '@mui/material';
+import { FilterSortSection } from './FilterSortSection';
+import { BulkSelectionSection } from './BulkSelectionSection';
+import { MultitaskingSelectionSection } from './MultitaskingSelectionSection';
+import { ShiftDemandActionToolbarProps } from './types';
 
 export function ShiftDemandActionToolbar({
   lng,
@@ -39,16 +39,16 @@ export function ShiftDemandActionToolbar({
       sx={{
         p: 2,
         mb: 2,
-        width: "100%",
+        width: '100%',
         margin: 0,
-        padding: "8px 16px",
+        padding: '8px 16px',
         backgroundColor: showBulkMode
-          ? "primary.50"
+          ? 'primary.50'
           : showMultitaskingMode
-          ? "secondary.50"
-          : "grey.50",
-        borderTop: "1px solid",
-        borderColor: "grey.100",
+            ? 'secondary.50'
+            : 'grey.50',
+        borderTop: '1px solid',
+        borderColor: 'grey.100',
       }}
     >
       <Box
@@ -71,20 +71,15 @@ export function ShiftDemandActionToolbar({
         )}
 
         {/* Spacer when only showing filters, bulk mode, or multitasking mode */}
-        {!showBulkMode &&
-          !showMultitaskingMode &&
-          showFilters &&
-          hasFiltersOrSort && <Box flex={1} />}
-        {!showFilters && (showBulkMode || showMultitaskingMode) && (
+        {!showBulkMode && !showMultitaskingMode && showFilters && hasFiltersOrSort && (
           <Box flex={1} />
         )}
+        {!showFilters && (showBulkMode || showMultitaskingMode) && <Box flex={1} />}
 
         {/* Divider between sections */}
-        {showFilters &&
-          (showBulkMode || showMultitaskingMode) &&
-          hasFiltersOrSort && (
-            <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
-          )}
+        {showFilters && (showBulkMode || showMultitaskingMode) && hasFiltersOrSort && (
+          <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
+        )}
 
         {/* Right side - Bulk Selection */}
         {showBulkMode && (

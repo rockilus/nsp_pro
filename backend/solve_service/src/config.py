@@ -134,7 +134,7 @@ def _validate_ca_bundle(ca_bundle_path: str) -> bool:
         with open(ca_bundle_path, "rb") as f:
             content = f.read()
         return _validate_ca_content(content)
-    except (OSError, IOError):
+    except OSError:
         return False
 
 

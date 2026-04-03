@@ -8,18 +8,18 @@
  * - Template deletion with confirmation dialog
  */
 
-import { test, expect } from "@playwright/test";
-import { TemplateTestBase } from "../../utils/template-test-base";
-import dayjs from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
-import isBetween from "dayjs/plugin/isBetween";
-import utc from "dayjs/plugin/utc";
+import { test, expect } from '@playwright/test';
+import { TemplateTestBase } from '../../utils/template-test-base';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import isBetween from 'dayjs/plugin/isBetween';
+import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(isoWeek);
 dayjs.extend(isBetween);
 dayjs.extend(utc);
 
-test.describe("Template Management", () => {
+test.describe('Template Management', () => {
   let templateTestBase: TemplateTestBase;
 
   test.beforeAll(async () => {
@@ -33,15 +33,13 @@ test.describe("Template Management", () => {
     await templateTestBase.navigateToShiftDemandsPage(page);
   });
 
-  test("should display template button in toolbar", async ({ page }) => {
+  test('should display template button in toolbar', async ({ page }) => {
     const templateButton = templateTestBase.getTemplateButton(page);
     await expect(templateButton).toBeVisible();
-    await expect(templateButton).toContainText("Templates");
+    await expect(templateButton).toContainText('Templates');
   });
 
-  test("should open template management window when clicking template button", async ({
-    page,
-  }) => {
+  test('should open template management window when clicking template button', async ({ page }) => {
     const templateButton = templateTestBase.getTemplateButton(page);
     await templateButton.click();
 
@@ -49,13 +47,11 @@ test.describe("Template Management", () => {
     await expect(templateWindow).toBeVisible();
 
     // Verify window contains expected elements
-    await expect(page.locator("text=Template Management")).toBeVisible();
+    await expect(page.locator('text=Template Management')).toBeVisible();
     await expect(templateTestBase.getCreateTemplateButton(page)).toBeVisible();
   });
 
-  test("should close template management window when clicking close button", async ({
-    page,
-  }) => {
+  test('should close template management window when clicking close button', async ({ page }) => {
     // Open the template window
     await templateTestBase.openTemplateManagementWindow(page);
 
@@ -68,21 +64,19 @@ test.describe("Template Management", () => {
     await expect(templateWindow).not.toBeVisible();
   });
 
-  test("should close template management window when pressing Escape key", async ({
-    page,
-  }) => {
+  test('should close template management window when pressing Escape key', async ({ page }) => {
     // Open the template window
     await templateTestBase.openTemplateManagementWindow(page);
 
     // Press Escape key
-    await page.keyboard.press("Escape");
+    await page.keyboard.press('Escape');
 
     // Verify window is closed
     const templateWindow = templateTestBase.getTemplateManagementWindow(page);
     await expect(templateWindow).not.toBeVisible();
   });
 
-  test("should open template creation dialog when clicking create template button", async ({
+  test('should open template creation dialog when clicking create template button', async ({
     page,
   }) => {
     // Open template management window
@@ -97,7 +91,7 @@ test.describe("Template Management", () => {
     await expect(creationDialog).toBeVisible();
 
     // Verify dialog contains expected elements
-    await expect(page.locator("text=Create New Template")).toBeVisible();
+    await expect(page.locator('text=Create New Template')).toBeVisible();
 
     const formElements = templateTestBase.getTemplateCreationFormElements(page);
     await expect(formElements.nameInput).toBeVisible();
@@ -106,9 +100,7 @@ test.describe("Template Management", () => {
     await expect(formElements.cancelButton).toBeVisible();
   });
 
-  test("should disable create button when template name is empty", async ({
-    page,
-  }) => {
+  test('should disable create button when template name is empty', async ({ page }) => {
     await templateTestBase.openTemplateCreationDialog(page);
 
     const formElements = templateTestBase.getTemplateCreationFormElements(page);
@@ -117,7 +109,7 @@ test.describe("Template Management", () => {
     await expect(formElements.createButton).toBeDisabled();
 
     // Type something in name field - button should be enabled
-    await formElements.nameInput.fill("Test Template");
+    await formElements.nameInput.fill('Test Template');
     await expect(formElements.createButton).not.toBeDisabled();
 
     // Clear the name field - button should be disabled again
@@ -125,27 +117,23 @@ test.describe("Template Management", () => {
     await expect(formElements.createButton).toBeDisabled();
   });
 
-  test("should validate template name length requirements", async ({
-    page,
-  }) => {
+  test('should validate template name length requirements', async ({ page }) => {
     await templateTestBase.openTemplateCreationDialog(page);
 
     const formElements = templateTestBase.getTemplateCreationFormElements(page);
 
     // Test minimum length (empty string should be invalid, but single character should be valid)
-    await formElements.nameInput.fill("");
+    await formElements.nameInput.fill('');
     await expect(formElements.createButton).toBeDisabled();
 
     // Test valid length (minimum is 1 character)
-    await formElements.nameInput.fill("A");
+    await formElements.nameInput.fill('A');
     await expect(formElements.createButton).not.toBeDisabled();
   });
 
-  test("should create a new template and display it in the list", async ({
-    page,
-  }) => {
+  test('should create a new template and display it in the list', async ({ page }) => {
     const templateName = `Test Template ${Date.now()}`;
-    const templateDescription = "This is a test template created by automation";
+    const templateDescription = 'This is a test template created by automation';
 
     await templateTestBase.createTemplateViaUI(page, {
       name: templateName,
@@ -157,22 +145,18 @@ test.describe("Template Management", () => {
 
     // Wait for template list to refresh and check if template appears in the list
     await expect(
-      page
-        .locator(`[data-testid^="template-list-item-"]`)
-        .filter({ hasText: templateName })
+      page.locator(`[data-testid^="template-list-item-"]`).filter({ hasText: templateName }),
     ).toBeVisible({ timeout: 10000 });
   });
 
-  test("should cancel template creation when clicking cancel button", async ({
-    page,
-  }) => {
+  test('should cancel template creation when clicking cancel button', async ({ page }) => {
     await templateTestBase.openTemplateCreationDialog(page);
 
     const formElements = templateTestBase.getTemplateCreationFormElements(page);
 
     // Fill in some data
-    await formElements.nameInput.fill("Test Template");
-    await formElements.descriptionInput.fill("Test description");
+    await formElements.nameInput.fill('Test Template');
+    await formElements.descriptionInput.fill('Test description');
 
     // Click cancel
     await formElements.cancelButton.click();
@@ -182,14 +166,12 @@ test.describe("Template Management", () => {
     await expect(creationDialog).not.toBeVisible();
   });
 
-  test("should display created templates in the template list", async ({
-    page,
-  }) => {
+  test('should display created templates in the template list', async ({ page }) => {
     // Create a template via API for testing list display
     const templateName = `API Template ${Date.now()}`;
     const templateId = await templateTestBase.createTemplateViaAPI({
       name: templateName,
-      description: "Created via API for list testing",
+      description: 'Created via API for list testing',
     });
 
     // Open template management window
@@ -204,14 +186,12 @@ test.describe("Template Management", () => {
     await expect(page.locator(`text=${templateName}`)).toBeVisible();
   });
 
-  test("should select template when clicking on it (not on action buttons)", async ({
-    page,
-  }) => {
+  test('should select template when clicking on it (not on action buttons)', async ({ page }) => {
     // Create a template via API
     const templateName = `Selectable Template ${Date.now()}`;
     const templateId = await templateTestBase.createTemplateViaAPI({
       name: templateName,
-      description: "Template for selection testing",
+      description: 'Template for selection testing',
     });
 
     // Open template management window
@@ -227,14 +207,12 @@ test.describe("Template Management", () => {
     await expect(templateItem).toHaveClass(/selected/);
   });
 
-  test("should show apply and delete buttons for each template in the list", async ({
-    page,
-  }) => {
+  test('should show apply and delete buttons for each template in the list', async ({ page }) => {
     // Create a template via API
     const templateName = `Template with Actions ${Date.now()}`;
     const templateId = await templateTestBase.createTemplateViaAPI({
       name: templateName,
-      description: "Template for action buttons testing",
+      description: 'Template for action buttons testing',
     });
 
     // Open template management window
@@ -242,22 +220,17 @@ test.describe("Template Management", () => {
     await templateTestBase.waitForTemplateListLoaded(page);
 
     // Verify action buttons are present
-    const actionButtons = templateTestBase.getTemplateActionButtons(
-      page,
-      templateId
-    );
+    const actionButtons = templateTestBase.getTemplateActionButtons(page, templateId);
     await expect(actionButtons.apply).toBeVisible();
     await expect(actionButtons.delete).toBeVisible();
   });
 
-  test("should open confirmation dialog when clicking delete button", async ({
-    page,
-  }) => {
+  test('should open confirmation dialog when clicking delete button', async ({ page }) => {
     // Create a template via API
     const templateName = `Template to Delete ${Date.now()}`;
     const templateId = await templateTestBase.createTemplateViaAPI({
       name: templateName,
-      description: "Template for deletion testing",
+      description: 'Template for deletion testing',
     });
 
     // Open template management window
@@ -265,15 +238,11 @@ test.describe("Template Management", () => {
     await templateTestBase.waitForTemplateListLoaded(page);
 
     // Click the delete button
-    const actionButtons = templateTestBase.getTemplateActionButtons(
-      page,
-      templateId
-    );
+    const actionButtons = templateTestBase.getTemplateActionButtons(page, templateId);
     await actionButtons.delete.click();
 
     // Verify confirmation dialog opens
-    const confirmDialog =
-      templateTestBase.getTemplateDeleteConfirmationDialog(page);
+    const confirmDialog = templateTestBase.getTemplateDeleteConfirmationDialog(page);
     await expect(confirmDialog).toBeVisible();
 
     // Verify dialog content - check for template name within the dialog
@@ -285,14 +254,12 @@ test.describe("Template Management", () => {
     await expect(dialogButtons.cancel).toBeVisible();
   });
 
-  test("should cancel deletion when clicking cancel in confirmation dialog", async ({
-    page,
-  }) => {
+  test('should cancel deletion when clicking cancel in confirmation dialog', async ({ page }) => {
     // Create a template via API
     const templateName = `Template Cancel Delete ${Date.now()}`;
     const templateId = await templateTestBase.createTemplateViaAPI({
       name: templateName,
-      description: "Template for deletion cancellation testing",
+      description: 'Template for deletion cancellation testing',
     });
 
     // Open template management window
@@ -300,10 +267,7 @@ test.describe("Template Management", () => {
     await templateTestBase.waitForTemplateListLoaded(page);
 
     // Click the delete button
-    const actionButtons = templateTestBase.getTemplateActionButtons(
-      page,
-      templateId
-    );
+    const actionButtons = templateTestBase.getTemplateActionButtons(page, templateId);
     await actionButtons.delete.click();
 
     // Click cancel in confirmation dialog
@@ -311,8 +275,7 @@ test.describe("Template Management", () => {
     await dialogButtons.cancel.click();
 
     // Verify dialog is closed
-    const confirmDialog =
-      templateTestBase.getTemplateDeleteConfirmationDialog(page);
+    const confirmDialog = templateTestBase.getTemplateDeleteConfirmationDialog(page);
     await expect(confirmDialog).not.toBeVisible();
 
     // Verify template is still in the list
@@ -320,14 +283,12 @@ test.describe("Template Management", () => {
     await expect(templateItem).toBeVisible();
   });
 
-  test("should delete template when confirming deletion in dialog", async ({
-    page,
-  }) => {
+  test('should delete template when confirming deletion in dialog', async ({ page }) => {
     // Create a template via API
     const templateName = `Template Confirm Delete ${Date.now()}`;
     const templateId = await templateTestBase.createTemplateViaAPI({
       name: templateName,
-      description: "Template for deletion confirmation testing",
+      description: 'Template for deletion confirmation testing',
     });
 
     // Open template management window
@@ -335,10 +296,7 @@ test.describe("Template Management", () => {
     await templateTestBase.waitForTemplateListLoaded(page);
 
     // Click the delete button
-    const actionButtons = templateTestBase.getTemplateActionButtons(
-      page,
-      templateId
-    );
+    const actionButtons = templateTestBase.getTemplateActionButtons(page, templateId);
     await actionButtons.delete.click();
 
     // Click confirm in confirmation dialog
@@ -346,8 +304,7 @@ test.describe("Template Management", () => {
     await dialogButtons.confirm.click();
 
     // Wait for dialog to close and template to be removed
-    const confirmDialog =
-      templateTestBase.getTemplateDeleteConfirmationDialog(page);
+    const confirmDialog = templateTestBase.getTemplateDeleteConfirmationDialog(page);
     await expect(confirmDialog).not.toBeVisible();
 
     // Verify template is no longer in the list
@@ -355,21 +312,19 @@ test.describe("Template Management", () => {
     await expect(templateItem).not.toBeVisible();
   });
 
-  test("should handle multiple templates in the list correctly", async ({
-    page,
-  }) => {
+  test('should handle multiple templates in the list correctly', async ({ page }) => {
     // Create multiple templates via API
     const template1Name = `First Template ${Date.now()}`;
     const template2Name = `Second Template ${Date.now() + 1}`;
 
     const template1Id = await templateTestBase.createTemplateViaAPI({
       name: template1Name,
-      description: "First template for multiple template testing",
+      description: 'First template for multiple template testing',
     });
 
     const template2Id = await templateTestBase.createTemplateViaAPI({
       name: template2Name,
-      description: "Second template for multiple template testing",
+      description: 'Second template for multiple template testing',
     });
 
     // Open template management window
@@ -377,14 +332,8 @@ test.describe("Template Management", () => {
     await templateTestBase.waitForTemplateListLoaded(page);
 
     // Verify both templates appear
-    const template1Item = templateTestBase.getTemplateListItem(
-      page,
-      template1Id
-    );
-    const template2Item = templateTestBase.getTemplateListItem(
-      page,
-      template2Id
-    );
+    const template1Item = templateTestBase.getTemplateListItem(page, template1Id);
+    const template2Item = templateTestBase.getTemplateListItem(page, template2Id);
 
     await expect(template1Item).toBeVisible();
     await expect(template2Item).toBeVisible();
@@ -400,19 +349,17 @@ test.describe("Template Management", () => {
     await expect(template1Item).not.toHaveClass(/selected/);
   });
 
-  test("should use confirmation dialog instead of browser alert for deletion", async ({
-    page,
-  }) => {
+  test('should use confirmation dialog instead of browser alert for deletion', async ({ page }) => {
     // Create a template via API
     const templateName = `Dialog Test Template ${Date.now()}`;
     const templateId = await templateTestBase.createTemplateViaAPI({
       name: templateName,
-      description: "Template for dialog testing",
+      description: 'Template for dialog testing',
     });
 
     // Set up dialog listener to catch any browser alerts/confirms
     let alertFired = false;
-    page.on("dialog", async (dialog) => {
+    page.on('dialog', async (dialog) => {
       alertFired = true;
       await dialog.dismiss();
     });
@@ -422,18 +369,14 @@ test.describe("Template Management", () => {
     await templateTestBase.waitForTemplateListLoaded(page);
 
     // Click the delete button
-    const actionButtons = templateTestBase.getTemplateActionButtons(
-      page,
-      templateId
-    );
+    const actionButtons = templateTestBase.getTemplateActionButtons(page, templateId);
     await actionButtons.delete.click();
 
     // Verify no browser alert was fired and our custom confirmation dialog is shown instead
     expect(alertFired).toBe(false);
 
     // Verify our custom confirmation dialog is shown instead
-    const confirmDialog =
-      templateTestBase.getTemplateDeleteConfirmationDialog(page);
+    const confirmDialog = templateTestBase.getTemplateDeleteConfirmationDialog(page);
     await expect(confirmDialog).toBeVisible();
   });
 });

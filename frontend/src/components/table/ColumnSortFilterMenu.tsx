@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   IconButton,
   Menu,
@@ -7,22 +7,17 @@ import {
   ListItemText,
   Divider,
   Popover,
-} from "@mui/material";
+} from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   FilterList as FilterListIcon,
-} from "@mui/icons-material";
-import {
-  ColumnDefinition,
-  ColumnFilter,
-  TableSort,
-  SortDirection,
-} from "../../types/filter";
-import TextFilter from "./filters/TextFilter";
-import SelectFilter from "./filters/SelectFilter";
-import DateFilter from "./filters/DateFilter";
+} from '@mui/icons-material';
+import { ColumnDefinition, ColumnFilter, TableSort, SortDirection } from '../../types/filter';
+import TextFilter from './filters/TextFilter';
+import SelectFilter from './filters/SelectFilter';
+import DateFilter from './filters/DateFilter';
 
 interface ColumnSortFilterMenuProps {
   column: ColumnDefinition;
@@ -40,9 +35,7 @@ export default function ColumnSortFilterMenu({
   onFilter,
 }: ColumnSortFilterMenuProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(
-    null
-  );
+  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -76,7 +69,7 @@ export default function ColumnSortFilterMenu({
 
   const renderFilterComponent = () => {
     switch (column.type) {
-      case "text":
+      case 'text':
         return (
           <TextFilter
             onApply={onFilter}
@@ -87,7 +80,7 @@ export default function ColumnSortFilterMenu({
           />
         );
 
-      case "select":
+      case 'select':
         return (
           <SelectFilter
             onApply={onFilter}
@@ -99,7 +92,7 @@ export default function ColumnSortFilterMenu({
           />
         );
 
-      case "boolean":
+      case 'boolean':
         return (
           <SelectFilter
             onApply={onFilter}
@@ -111,7 +104,7 @@ export default function ColumnSortFilterMenu({
           />
         );
 
-      case "date":
+      case 'date':
         return (
           <DateFilter
             onApply={onFilter}
@@ -138,7 +131,7 @@ export default function ColumnSortFilterMenu({
         onClick={handleMenuOpen}
         sx={{
           opacity: 0.7,
-          "&:hover": { opacity: 1 },
+          '&:hover': { opacity: 1 },
         }}
         data-testid={`column-menu-${column.id}`}
       >
@@ -151,20 +144,14 @@ export default function ColumnSortFilterMenu({
         onClose={handleMenuClose}
         PaperProps={{ sx: { minWidth: 180 } }}
       >
-        <MenuItem
-          onClick={() => handleSort("asc")}
-          data-testid={`sort-asc-${column.id}`}
-        >
+        <MenuItem onClick={() => handleSort('asc')} data-testid={`sort-asc-${column.id}`}>
           <ListItemIcon>
             <ArrowUpwardIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText>Sort Ascending</ListItemText>
         </MenuItem>
 
-        <MenuItem
-          onClick={() => handleSort("desc")}
-          data-testid={`sort-desc-${column.id}`}
-        >
+        <MenuItem onClick={() => handleSort('desc')} data-testid={`sort-desc-${column.id}`}>
           <ListItemIcon>
             <ArrowDownwardIcon fontSize="small" />
           </ListItemIcon>
@@ -172,20 +159,14 @@ export default function ColumnSortFilterMenu({
         </MenuItem>
 
         {sortDirection && (
-          <MenuItem
-            onClick={() => handleSort(null)}
-            data-testid={`remove-sort-${column.id}`}
-          >
+          <MenuItem onClick={() => handleSort(null)} data-testid={`remove-sort-${column.id}`}>
             <ListItemText>Remove Sort</ListItemText>
           </MenuItem>
         )}
 
         <Divider />
 
-        <MenuItem
-          onClick={handleFilterOpen}
-          data-testid={`filter-menu-${column.id}`}
-        >
+        <MenuItem onClick={handleFilterOpen} data-testid={`filter-menu-${column.id}`}>
           <ListItemIcon>
             <FilterListIcon fontSize="small" />
           </ListItemIcon>
@@ -198,8 +179,8 @@ export default function ColumnSortFilterMenu({
         anchorEl={filterAnchorEl}
         onClose={handleFilterClose}
         anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
+          vertical: 'bottom',
+          horizontal: 'left',
         }}
       >
         {renderFilterComponent()}

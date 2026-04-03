@@ -1,15 +1,15 @@
-import React, { useMemo, useState } from "react";
-import dayjs from "dayjs";
+import React, { useMemo, useState } from 'react';
+import dayjs from 'dayjs';
 // MUI
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 // Hooks
-import { useIsLandscape } from "@/hooks/useIsMobile";
+import { useIsLandscape } from '@/hooks/useIsMobile';
 // Local components
-import DateCarousel from "./date-carousel";
-import TeamAssignmentItem from "./team-assignment-item";
+import DateCarousel from './date-carousel';
+import TeamAssignmentItem from './team-assignment-item';
 // Types
-import { ShiftRestType, ShiftType } from "@/types/shift";
+import { ShiftRestType, ShiftType } from '@/types/shift';
 
 interface MobileTeamScheduleProps {
   lng: string;
@@ -43,9 +43,9 @@ export default function MobileTeamSchedule({
 
   // Filter assignments for the selected date
   const selectedDateAssignments = useMemo(() => {
-    const dateKey = selectedDate.utc().format("YYYY-MM-DD");
+    const dateKey = selectedDate.utc().format('YYYY-MM-DD');
     const dayAssignments = assignments.filter((a) => {
-      const assignmentDate = dayjs(a.date).utc().format("YYYY-MM-DD");
+      const assignmentDate = dayjs(a.date).utc().format('YYYY-MM-DD');
       return assignmentDate === dateKey;
     });
 
@@ -88,7 +88,7 @@ export default function MobileTeamSchedule({
   return (
     <Box
       data-testid="mobile-team-schedule"
-      sx={{ display: "flex", flexDirection: "column", height: "100%" }}
+      sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
     >
       {/* Horizontal date carousel - fixed at top */}
       <Box sx={{ flexShrink: 0 }}>
@@ -106,7 +106,7 @@ export default function MobileTeamSchedule({
       <Box
         sx={{
           flex: 1,
-          overflowY: "auto",
+          overflowY: 'auto',
           px: 2,
           pb: 8,
         }}
@@ -114,24 +114,22 @@ export default function MobileTeamSchedule({
         {selectedDateAssignments.length === 0 ? (
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              minHeight: "50vh",
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '50vh',
               padding: 3,
             }}
           >
             <Typography variant="h6" color="text.secondary">
-              No assignments for {selectedDate.format("MMMM D, YYYY")}
+              No assignments for {selectedDate.format('MMMM D, YYYY')}
             </Typography>
           </Box>
         ) : (
           <Box
             sx={{
-              display: "grid",
-              gridTemplateColumns: isLandscape
-                ? "repeat(auto-fill, minmax(300px, 1fr))"
-                : "1fr",
+              display: 'grid',
+              gridTemplateColumns: isLandscape ? 'repeat(auto-fill, minmax(300px, 1fr))' : '1fr',
               gap: 1.5,
             }}
           >
@@ -145,9 +143,7 @@ export default function MobileTeamSchedule({
                   assignment={assignment}
                   worker={worker}
                   shift={shift}
-                  onClick={
-                    canEdit ? () => onAssignmentClick(assignment) : undefined
-                  }
+                  onClick={canEdit ? () => onAssignmentClick(assignment) : undefined}
                 />
               );
             })}

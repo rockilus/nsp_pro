@@ -1,16 +1,16 @@
-import React from "react";
-import Link from "next/link";
-import { useTranslation } from "../../../app/i18n/client";
+import React from 'react';
+import Link from 'next/link';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Button from "@mui/material/Button";
+import Button from '@mui/material/Button';
 // Components
-import RemoveFromTeamDialog from "./remove-from-team-dialog";
-import EditWorkerPopover from "./edit-worker";
+import RemoveFromTeamDialog from './remove-from-team-dialog';
+import EditWorkerPopover from './edit-worker';
 // Styles
-import "./members-list.css";
+import './members-list.css';
 // Types
-import { UserWithMembership } from "@/types/user";
-import { WorkerT } from "@/types/worker";
+import { UserWithMembership } from '@/types/user';
+import { WorkerT } from '@/types/worker';
 
 export default function MembersList({
   lng,
@@ -25,13 +25,9 @@ export default function MembersList({
   users: UserWithMembership[];
   workers: WorkerT[];
   handleRemoveFromTeam: (teamId: string, userId: string) => void;
-  handleAttachUserToWorker: (
-    workerId: string,
-    userId: string,
-    teamId: string,
-  ) => Promise<void>;
+  handleAttachUserToWorker: (workerId: string, userId: string, teamId: string) => Promise<void>;
 }) {
-  const { t } = useTranslation(lng, "teams-page");
+  const { t } = useTranslation(lng, 'teams-page');
 
   const MembersListItem = ({
     userWithMembership,
@@ -48,7 +44,7 @@ export default function MembersList({
     return (
       <div
         key={userWithMembership.user.id}
-        className={`teams-list-item ${isFirstItem ? "first-item" : ""}`}
+        className={`teams-list-item ${isFirstItem ? 'first-item' : ''}`}
       >
         <div className="team-list-item-description">
           <strong className="teams-list-item-name">
@@ -62,9 +58,7 @@ export default function MembersList({
             {userWithMembership.membership.role.valueOf()}
           </span>
         </div>
-        <span className="teams-list-item-email">
-          {userWithMembership.user.email}
-        </span>
+        <span className="teams-list-item-email">{userWithMembership.user.email}</span>
         <div className="members-list-item-actions">
           <EditWorkerPopover
             lng={lng}

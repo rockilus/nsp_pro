@@ -1,47 +1,39 @@
-import React, { useState } from "react";
-import dayjs from "dayjs";
-import { useTranslation } from "@/app/i18n/client";
+import React, { useState } from 'react';
+import dayjs from 'dayjs';
+import { useTranslation } from '@/app/i18n/client';
 // MUI
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import FormControl from "@mui/material/FormControl";
-import MenuItem from "@mui/material/MenuItem";
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import Select from "@mui/material/Select";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import Typography from "@mui/material/Typography";
-import WorkIcon from "@mui/icons-material/Work";
-import IconButton from "@mui/material/IconButton";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import UndoIcon from "@mui/icons-material/Undo";
-import ClearIcon from "@mui/icons-material/Clear";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import Chip from "@mui/material/Chip";
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import Select from '@mui/material/Select';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Typography from '@mui/material/Typography';
+import WorkIcon from '@mui/icons-material/Work';
+import IconButton from '@mui/material/IconButton';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import UndoIcon from '@mui/icons-material/Undo';
+import ClearIcon from '@mui/icons-material/Clear';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import Chip from '@mui/material/Chip';
 // Components
-import ShiftOptionsDisplay from "@/components/stats/nav-bar/shift-options-display";
+import ShiftOptionsDisplay from '@/components/stats/nav-bar/shift-options-display';
 // Styles
-import "@/components/request/request-panel.css";
+import '@/components/request/request-panel.css';
 // Utils
-import {
-  getRequestStatusColor,
-  getRequestStatusLabel,
-} from "@/utils/shift-worker-option-display";
+import { getRequestStatusColor, getRequestStatusLabel } from '@/utils/shift-worker-option-display';
 // Types
-import {
-  RequestT,
-  RequestStatus,
-  RequestType,
-  FulfillmentStatus,
-} from "@/types/request";
-import { ShiftT, ShiftType, ShiftRestType } from "@/types/shift";
-import { WorkerT } from "@/types/worker";
-import { TeamMembershipRole } from "@/types/team";
-import { ShiftWorkerOptionT, SWOIdTypes } from "@/types/constraint";
+import { RequestT, RequestStatus, RequestType, FulfillmentStatus } from '@/types/request';
+import { ShiftT, ShiftType, ShiftRestType } from '@/types/shift';
+import { WorkerT } from '@/types/worker';
+import { TeamMembershipRole } from '@/types/team';
+import { ShiftWorkerOptionT, SWOIdTypes } from '@/types/constraint';
 
 const RequestForm = ({
   lng,
@@ -84,23 +76,23 @@ const RequestForm = ({
   isMobile?: boolean;
   title?: string;
 }) => {
-  const { t } = useTranslation(lng, "request-page");
+  const { t } = useTranslation(lng, 'request-page');
 
   // Helper to create a default request object
   const createDefaultRequest = (): RequestT => ({
-    id: "",
+    id: '',
     teamId: teamId,
     requestType: RequestType.WORK_DEMAND,
-    workerId: userWorkerId || "",
-    startDate: dayjs.utc().startOf("day"),
-    endDate: dayjs.utc().startOf("day"),
+    workerId: userWorkerId || '',
+    startDate: dayjs.utc().startOf('day'),
+    endDate: dayjs.utc().startOf('day'),
     shiftId: null,
     shiftOptions: [],
     negative: false,
     hard: true,
     status: RequestStatus.PENDING,
     fulfillment: FulfillmentStatus.NOT_PROCESSED,
-    comment: "",
+    comment: '',
     createdAt: dayjs.utc(),
     active: true,
     shiftTargetIds: [],
@@ -112,9 +104,7 @@ const RequestForm = ({
     isEdit && request ? request : createDefaultRequest(),
   );
   const [dateRange, setDateRange] = useState<boolean>(
-    isEdit && request
-      ? !request.startDate.isSame(request.endDate, "day")
-      : false,
+    isEdit && request ? !request.startDate.isSame(request.endDate, 'day') : false,
   );
   const [requestType, setRequestType] = useState<RequestType>(
     isEdit && request ? request.requestType : RequestType.WORK_DEMAND,
@@ -133,8 +123,7 @@ const RequestForm = ({
     (userWorkerId && requestState.workerId === userWorkerId);
 
   const canApprove =
-    userTeamRole === TeamMembershipRole.OWNER &&
-    requestState.status === RequestStatus.PENDING;
+    userTeamRole === TeamMembershipRole.OWNER && requestState.status === RequestStatus.PENDING;
 
   const canRescind =
     userTeamRole === TeamMembershipRole.OWNER &&
@@ -142,22 +131,15 @@ const RequestForm = ({
       requestState.status === RequestStatus.DENIED);
 
   // Helper to filter shifts by request type
-  function filterShiftsByRequestType(
-    shifts: ShiftT[],
-    requestType: RequestType,
-  ): ShiftT[] {
+  function filterShiftsByRequestType(shifts: ShiftT[], requestType: RequestType): ShiftT[] {
     return shifts.filter((s) => {
       if (requestType === RequestType.WORK_DEMAND) {
-        return (
-          !s.deleted &&
-          (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY)
-        );
+        return !s.deleted && (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY);
       } else {
         return (
           !s.deleted &&
           (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE) &&
-          (s.restType === ShiftRestType.OFF ||
-            s.restType === ShiftRestType.NONE)
+          (s.restType === ShiftRestType.OFF || s.restType === ShiftRestType.NONE)
         );
       }
     });
@@ -170,18 +152,13 @@ const RequestForm = ({
   ): ShiftWorkerOptionT[] {
     const normalDutyShiftIds = shifts
       .filter(
-        (s) =>
-          !s.deleted &&
-          (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY),
+        (s) => !s.deleted && (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY),
       )
       .map((s) => s.id);
 
     return shiftOptions.filter((opt) => {
-      if (opt.categoryName === "All") return false;
-      if (
-        opt.idType === SWOIdTypes.SHIFT &&
-        !normalDutyShiftIds.includes(opt.id)
-      ) {
+      if (opt.categoryName === 'All') return false;
+      if (opt.idType === SWOIdTypes.SHIFT && !normalDutyShiftIds.includes(opt.id)) {
         return false;
       }
       return true;
@@ -203,7 +180,7 @@ const RequestForm = ({
     if (request) {
       setRequestState(request);
       setRequestType(request.requestType);
-      setDateRange(!request.startDate.isSame(request.endDate, "day"));
+      setDateRange(!request.startDate.isSame(request.endDate, 'day'));
     }
   }, [request, isEdit]);
 
@@ -217,30 +194,24 @@ const RequestForm = ({
 
     let hasError = false;
     // Worker ID validation
-    if (!requestState.workerId || requestState.workerId.trim() === "") {
+    if (!requestState.workerId || requestState.workerId.trim() === '') {
       setWorkerIdError(true);
       hasError = true;
     }
     // Start date must be after today
-    const today = dayjs.utc().startOf("day");
-    if (
-      !requestState.startDate ||
-      !requestState.startDate.isAfter(today.subtract(1, "day"))
-    ) {
+    const today = dayjs.utc().startOf('day');
+    if (!requestState.startDate || !requestState.startDate.isAfter(today.subtract(1, 'day'))) {
       setStartDateError(true);
       hasError = true;
     }
     // End date must be same as or after start date
-    if (
-      !requestState.endDate ||
-      requestState.endDate.isBefore(requestState.startDate, "day")
-    ) {
+    if (!requestState.endDate || requestState.endDate.isBefore(requestState.startDate, 'day')) {
       setEndDateError(true);
       hasError = true;
     }
     // Leave request: shiftId required, shiftOptions must be empty
     if (requestType === RequestType.LEAVE) {
-      if (!requestState.shiftId || requestState.shiftId === "") {
+      if (!requestState.shiftId || requestState.shiftId === '') {
         setShiftIdError(true);
         hasError = true;
       }
@@ -255,10 +226,7 @@ const RequestForm = ({
         setShiftIdError(true);
         hasError = true;
       }
-      if (
-        !requestState.shiftOptions ||
-        requestState.shiftOptions.length === 0
-      ) {
+      if (!requestState.shiftOptions || requestState.shiftOptions.length === 0) {
         setShiftOptionsError(true);
         hasError = true;
       }
@@ -335,7 +303,7 @@ const RequestForm = ({
           <Select
             value={requestState.workerId}
             disabled={userTeamRole === TeamMembershipRole.MEMBER}
-            label={t("worker")}
+            label={t('worker')}
             onChange={(e) => {
               setRequestState({
                 ...requestState,
@@ -361,8 +329,8 @@ const RequestForm = ({
       <div className="select-container">
         <FormControl fullWidth error={shiftIdError}>
           <Select
-            value={requestState.shiftId || ""}
-            label={t("shift")}
+            value={requestState.shiftId || ''}
+            label={t('shift')}
             onChange={(e) => {
               setRequestState({
                 ...requestState,
@@ -389,20 +357,20 @@ const RequestForm = ({
       {isMobile && (
         <Box
           sx={{
-            position: "sticky",
+            position: 'sticky',
             top: 0,
             zIndex: 1100,
-            backgroundColor: "background.paper",
+            backgroundColor: 'background.paper',
             borderBottom: 1,
-            borderColor: "divider",
+            borderColor: 'divider',
             p: 2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            {title || "Request"}
+            {title || 'Request'}
           </Typography>
           <IconButton
             aria-label="close"
@@ -416,7 +384,7 @@ const RequestForm = ({
       )}
       {/* Status chip and action buttons */}
       {isEdit && request && (
-        <div className="flex items-center gap-2 mb-4">
+        <div className="mb-4 flex items-center gap-2">
           <Chip
             label={getRequestStatusLabel(requestState.status, t)}
             size="small"
@@ -435,7 +403,7 @@ const RequestForm = ({
                   status: RequestStatus.APPROVED,
                 }));
               }}
-              title={t("approve_request")}
+              title={t('approve_request')}
               color="success"
               data-testid={`approve-request-button-${request.id}`}
             >
@@ -454,7 +422,7 @@ const RequestForm = ({
                   status: RequestStatus.DENIED,
                 }));
               }}
-              title={t("deny_request")}
+              title={t('deny_request')}
               color="error"
               data-testid={`reject-request-button-${request.id}`}
             >
@@ -475,8 +443,8 @@ const RequestForm = ({
               }}
               title={
                 requestState.status === RequestStatus.APPROVED
-                  ? t("rescind_approval")
-                  : t("rescind_denial")
+                  ? t('rescind_approval')
+                  : t('rescind_denial')
               }
               color="warning"
               data-testid={`rescind-request-button-${request.id}`}
@@ -490,10 +458,7 @@ const RequestForm = ({
       )}
 
       {/* Form content */}
-      <div
-        className="request-panel-container"
-        style={fullWidth ? { width: "100%" } : undefined}
-      >
+      <div className="request-panel-container" style={fullWidth ? { width: '100%' } : undefined}>
         <ToggleButtonGroup
           color="primary"
           value={requestType}
@@ -537,31 +502,31 @@ const RequestForm = ({
           <ToggleButton
             value={RequestType.WORK_DEMAND}
             sx={{
-              marginTop: "5px",
-              marginBottom: "5px",
-              marginLeft: "56px",
-              textTransform: "none",
-              height: "30px",
-              width: "105px",
-              fontSize: "0.8rem",
+              marginTop: '5px',
+              marginBottom: '5px',
+              marginLeft: '56px',
+              textTransform: 'none',
+              height: '30px',
+              width: '105px',
+              fontSize: '0.8rem',
             }}
             data-testid="work-request-type-button"
           >
-            {t("work")}
+            {t('work')}
           </ToggleButton>
           <ToggleButton
             value={RequestType.LEAVE}
             sx={{
-              marginTop: "5px",
-              marginBottom: "5px",
-              textTransform: "none",
-              height: "30px",
-              width: "105px",
-              fontSize: "0.8rem",
+              marginTop: '5px',
+              marginBottom: '5px',
+              textTransform: 'none',
+              height: '30px',
+              width: '105px',
+              fontSize: '0.8rem',
             }}
             data-testid="leave-request-type-button"
           >
-            {t("leave")}
+            {t('leave')}
           </ToggleButton>
         </ToggleButtonGroup>
         <div className="variable-input-container">
@@ -573,25 +538,24 @@ const RequestForm = ({
             checked={dateRange}
             onChange={handleSelectDateRange}
             size="small"
-            sx={{ marginLeft: "49px", height: "30px", width: "30px" }}
+            sx={{ marginLeft: '49px', height: '30px', width: '30px' }}
             data-testid="date-range-checkbox"
           />
-          <Typography sx={{ fontSize: "0.8rem" }}>{t("date_range")}</Typography>
+          <Typography sx={{ fontSize: '0.8rem' }}>{t('date_range')}</Typography>
         </div>
         <div className="variable-input-container">
           <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
           <div className="date-pickers-container">
             <DatePicker
-              minDate={dayjs.utc().startOf("day")}
+              minDate={dayjs.utc().startOf('day')}
               sx={{ marginLeft: 1, marginRight: 2 }}
               value={requestState.startDate}
               onChange={(newValue) => {
                 setRequestState({
                   ...requestState,
-                  startDate:
-                    newValue?.startOf("day") || dayjs.utc().startOf("day"),
+                  startDate: newValue?.startOf('day') || dayjs.utc().startOf('day'),
                   endDate: !dateRange
-                    ? newValue?.startOf("day") || dayjs.utc().startOf("day")
+                    ? newValue?.startOf('day') || dayjs.utc().startOf('day')
                     : requestState.endDate,
                 });
                 setStartDateError(false);
@@ -600,7 +564,7 @@ const RequestForm = ({
               slotProps={{
                 textField: {
                   error: startDateError,
-                  inputProps: { "data-testid": "start-date-picker" },
+                  inputProps: { 'data-testid': 'start-date-picker' },
                 },
                 // openPickerButton: { "data-testid": "start-date-picker" } as any,
               }}
@@ -610,23 +574,22 @@ const RequestForm = ({
                 minDate={requestState.startDate}
                 sx={{
                   marginLeft: 1,
-                  marginTop: "1px",
+                  marginTop: '1px',
                   marginRight: 2,
-                  width: "100%",
+                  width: '100%',
                 }}
                 value={requestState.endDate}
                 onChange={(newValue) => {
                   setRequestState({
                     ...requestState,
-                    endDate:
-                      newValue?.startOf("day") || dayjs.utc().startOf("day"),
+                    endDate: newValue?.startOf('day') || dayjs.utc().startOf('day'),
                   });
                   setEndDateError(false);
                 }}
                 slotProps={{
                   textField: {
                     error: endDateError,
-                    inputProps: { "data-testid": "end-date-picker" },
+                    inputProps: { 'data-testid': 'end-date-picker' },
                   },
                 }}
               />
@@ -651,31 +614,31 @@ const RequestForm = ({
               <ToggleButton
                 value={false}
                 sx={{
-                  marginTop: "5px",
-                  marginBottom: "5px",
-                  marginLeft: "56px",
-                  textTransform: "none",
-                  height: "30px",
-                  width: "105px",
-                  fontSize: "0.8rem",
+                  marginTop: '5px',
+                  marginBottom: '5px',
+                  marginLeft: '56px',
+                  textTransform: 'none',
+                  height: '30px',
+                  width: '105px',
+                  fontSize: '0.8rem',
                 }}
                 data-testid="positive-request-button"
               >
-                {t("do")}
+                {t('do')}
               </ToggleButton>
               <ToggleButton
                 value={true}
                 sx={{
-                  marginTop: "5px",
-                  marginBottom: "5px",
-                  textTransform: "none",
-                  height: "30px",
-                  width: "105px",
-                  fontSize: "0.8rem",
+                  marginTop: '5px',
+                  marginBottom: '5px',
+                  textTransform: 'none',
+                  height: '30px',
+                  width: '105px',
+                  fontSize: '0.8rem',
                 }}
                 data-testid="negative-request-button"
               >
-                {t("dont")}
+                {t('dont')}
               </ToggleButton>
             </ToggleButtonGroup>
           </div>
@@ -687,7 +650,7 @@ const RequestForm = ({
               style={
                 shiftOptionsError
                   ? {
-                      border: "2px solid #f44336",
+                      border: '2px solid #f44336',
                       borderRadius: 8,
                       padding: 2,
                     }
@@ -725,7 +688,7 @@ const RequestForm = ({
               sx={{ marginRight: 2 }}
               data-testid={`delete-request-button`}
             >
-              {t("delete")}
+              {t('delete')}
             </Button>
           )}
           <Button
@@ -735,7 +698,7 @@ const RequestForm = ({
             onClick={handleSaveRequest}
             data-testid="save-request-button"
           >
-            {t("save")}
+            {t('save')}
           </Button>
         </div>
       </div>
@@ -743,6 +706,6 @@ const RequestForm = ({
   );
 };
 
-RequestForm.displayName = "RequestForm";
+RequestForm.displayName = 'RequestForm';
 
 export default React.memo(RequestForm);

@@ -1,27 +1,27 @@
-import React from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import Grid from "@mui/material/Grid";
-import IconButton from "@mui/material/IconButton";
-import ToggleButton from "@mui/material/ToggleButton";
-import Typography from "@mui/material/Typography";
+import Box from '@mui/material/Box';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import ToggleButton from '@mui/material/ToggleButton';
+import Typography from '@mui/material/Typography';
 // Components
-import ConstraintButton from "./constraint-button";
-import MissingProperties from "./missing-properties";
+import ConstraintButton from './constraint-button';
+import MissingProperties from './missing-properties';
 // Types
-import { ConstraintT, TemplateT } from "../../../types/constraint";
+import { ConstraintT, TemplateT } from '../../../types/constraint';
 // Constants
 import {
   ConstraintColorActiveBack,
   ConstraintColorInactiveBack,
   ConstraintColorActiveText,
   ConstraintColorInactiveText,
-} from "../../../constants/constants";
-import { WorkerT } from "../../../types/worker";
-import { ShiftT } from "../../../types/shift";
+} from '../../../constants/constants';
+import { WorkerT } from '../../../types/worker';
+import { ShiftT } from '../../../types/shift';
 
 interface HardSoftButtonProps {
   lng: string;
@@ -36,7 +36,7 @@ const HardSoftButton: React.FC<HardSoftButtonProps> = ({
   constraintId,
   handleToggleHard,
 }) => {
-  const { t } = useTranslation(lng, "constraint-page");
+  const { t } = useTranslation(lng, 'constraint-page');
 
   return (
     <ToggleButton
@@ -45,7 +45,7 @@ const HardSoftButton: React.FC<HardSoftButtonProps> = ({
       sx={{ height: 30 }}
       data-testid={`constraint-hard-soft-button-${constraintId}`}
     >
-      {hard ? t("hard") : t("soft")}
+      {hard ? t('hard') : t('soft')}
     </ToggleButton>
   );
 };
@@ -91,7 +91,7 @@ export default function ConstraintListItem({
       size={{ xs: 12, md: 12, xl: 12 }}
       sx={{
         paddingX: 1,
-        borderBottom: isLast ? "none" : "1px solid #e0e0e0",
+        borderBottom: isLast ? 'none' : '1px solid #e0e0e0',
       }}
       data-testid={`constraint-item-${constraint.id}`}
     >
@@ -99,8 +99,8 @@ export default function ConstraintListItem({
         container
         spacing={0}
         sx={{
-          display: "flex",
-          alignItems: "center",
+          display: 'flex',
+          alignItems: 'center',
           backgroundColor: constraint.active
             ? ConstraintColorActiveBack
             : ConstraintColorInactiveBack,
@@ -110,18 +110,11 @@ export default function ConstraintListItem({
           <Typography
             variant="subtitle2"
             align="left"
-            color={
-              constraint.active
-                ? ConstraintColorActiveText
-                : ConstraintColorInactiveText
-            }
+            color={constraint.active ? ConstraintColorActiveText : ConstraintColorInactiveText}
           >
             {constraint.text}
           </Typography>
-          <MissingProperties
-            lng={lng}
-            missingProperties={constraint.missingAttributes}
-          />
+          <MissingProperties lng={lng} missingProperties={constraint.missingAttributes} />
         </Grid>
         <Grid size={{ xs: 3 }}>
           <HardSoftButton
@@ -132,7 +125,7 @@ export default function ConstraintListItem({
           />
         </Grid>
         <Grid size={{ xs: 1 }}>
-          <Box sx={{ display: "flex", flexDirection: "row" }}>
+          <Box sx={{ display: 'flex', flexDirection: 'row' }}>
             <div data-testid={`constraint-edit-button-${constraint.id}`}>
               <ConstraintButton
                 lng={lng}

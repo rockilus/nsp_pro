@@ -1,12 +1,12 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { WorkerT } from "../types/worker";
+import { WorkerT } from '../types/worker';
 // API Client
-import { WorkerApi } from "../app/lib/api/workerApi";
-import { useApiClient } from "../app/lib/api-client";
+import { WorkerApi } from '../app/lib/api/workerApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Worker Hooks //
@@ -22,7 +22,7 @@ export function useAddWorker() {
   const addWorker = useCallback(
     async (worker: WorkerT): Promise<WorkerT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAddWorker called:", {
+        console.log('🔍 useAddWorker called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -33,35 +33,35 @@ export function useAddWorker() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!worker || !worker.teamId) {
-        throw new Error("Invalid worker data provided");
+        throw new Error('Invalid worker data provided');
       }
 
       try {
         const newWorker = await WorkerApi.addWorker(apiClient, worker);
 
         if (env.isDevelopment) {
-          console.log("✅ Worker added successfully");
+          console.log('✅ Worker added successfully');
         }
 
         return newWorker;
       } catch (error) {
-        console.error("❌ Failed to add worker:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to add worker:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addWorker;
@@ -77,7 +77,7 @@ export function useGetWorkers() {
   const getWorkers = useCallback(
     async (teamId: string): Promise<WorkerT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetWorkers called:", {
+        console.log('🔍 useGetWorkers called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -87,24 +87,24 @@ export function useGetWorkers() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await WorkerApi.getWorkers(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get workers:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get workers:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getWorkers;
@@ -120,7 +120,7 @@ export function useGetAllWorkers() {
   const getAllWorkers = useCallback(
     async (teamId: string): Promise<WorkerT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetAllWorkers called:", {
+        console.log('🔍 useGetAllWorkers called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -130,24 +130,24 @@ export function useGetAllWorkers() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await WorkerApi.getWorkers(apiClient, teamId, undefined, true);
       } catch (error) {
-        console.error("❌ Failed to get all workers:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get all workers:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getAllWorkers;
@@ -164,24 +164,24 @@ export function useUpdateWorker() {
     async (updatedWorker: WorkerT): Promise<WorkerT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await WorkerApi.updateWorker(apiClient, updatedWorker);
       } catch (error) {
-        console.error("❌ Failed to update worker:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update worker:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateWorker;
@@ -195,36 +195,27 @@ export function useAttachUserToWorker() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const attachUserToWorker = useCallback(
-    async (
-      workerId: string,
-      userId: string,
-      teamId: string
-    ): Promise<WorkerT> => {
+    async (workerId: string, userId: string, teamId: string): Promise<WorkerT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await WorkerApi.attachUserToWorker(
-          apiClient,
-          workerId,
-          userId,
-          teamId
-        );
+        return await WorkerApi.attachUserToWorker(apiClient, workerId, userId, teamId);
       } catch (error) {
-        console.error("❌ Failed to attach user to worker:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to attach user to worker:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return attachUserToWorker;
@@ -241,24 +232,24 @@ export function useDeleteWorker() {
     async (workerId: string, teamId: string): Promise<void> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         await WorkerApi.deleteWorker(apiClient, workerId, teamId);
       } catch (error) {
-        console.error("❌ Failed to delete worker:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete worker:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteWorker;
@@ -275,17 +266,17 @@ export function useGetWorkersTabData() {
     async (teamId: string) => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         // Import the new API classes to use authenticated methods
-        const { DimensionApi } = await import("../app/lib/api/dimensionApi");
-        const { SpecialtyApi } = await import("../app/lib/api/specialtyApi");
+        const { DimensionApi } = await import('../app/lib/api/dimensionApi');
+        const { SpecialtyApi } = await import('../app/lib/api/specialtyApi');
 
         const workersTabData = await Promise.all([
           WorkerApi.getWorkers(apiClient, teamId),
@@ -300,14 +291,14 @@ export function useGetWorkersTabData() {
           specialties: workersTabData[2],
         };
       } catch (error) {
-        console.error("❌ Failed to get workers tab data:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get workers tab data:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getWorkersTabData;

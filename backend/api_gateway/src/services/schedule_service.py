@@ -289,3 +289,115 @@ class ScheduleService(BaseService):
                 "Schedule duration must be at most "
                 + f"{config.max_schedule_duration_months} months"
             )
+
+    async def set_request_deadline(
+        self, schedule_id: str, deadline_date: datetime
+    ) -> Schedule:
+        """Set the request deadline on a CAMPAIGN schedule and notify members.
+
+        `deadline_date` is a timezone-aware UTC datetime.
+        """
+        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
+        if not schedule:
+            raise ValueError(f"Schedule with id {schedule_id} not found")
+        if schedule.status != ScheduleStatus.CAMPAIGN:
+            raise ValueError("Request deadline can only be set on a CAMPAIGN schedule")
+        now_utc = datetime.now(timezone.utc)
+        if deadline_date <= now_utc:
+            raise ValueError("Deadline must be in the future (UTC)")
+        schedule.request_deadline = deadline_date
+        schedule.last_reminder_sent_at = datetime.now(timezone.utc)
+        schedule.updated_at = datetime.now(timezone.utc)
+        schedule = self.collection.schedule_db.update_schedule(schedule)
+        workers = self.collection.worker_db.get_workers_not_deleted(schedule.team_id)
+        member_user_ids = [w.user_id for w in workers if w.user_id]
+        if member_user_ids:
+            team = self.collection.team_db.get_team_by_id(schedule.team_id)
+            team_name = team.name if team else ""
+            await self.notification_service.notify_campaign_request_deadline_set(
+                team_id=schedule.team_id,
+                team_name=team_name,
+                deadline_date=deadline_date.isoformat(),
+                schedule_start=schedule.start_date.isoformat(),
+                schedule_end=schedule.end_date.isoformat(),
+                member_user_ids=member_user_ids,
+            )
+        return schedule
+
+    async def send_request_deadline_reminder(self, schedule_id: str) -> Schedule:
+        """Dispatch a reminder notification for the request deadline."""
+        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
+        if not schedule:
+            raise ValueError(f"Schedule with id {schedule_id} not found")
+        if schedule.request_deadline is None:
+            raise ValueError("No request deadline is set on this schedule")
+        workers = self.collection.worker_db.get_workers_not_deleted(schedule.team_id)
+        member_user_ids = [w.user_id for w in workers if w.user_id]
+        if member_user_ids:
+            team = self.collection.team_db.get_team_by_id(schedule.team_id)
+            team_name = team.name if team else ""
+            await self.notification_service.notify_campaign_request_deadline_reminder(
+                team_id=schedule.team_id,
+                team_name=team_name,
+                deadline_date=schedule.request_deadline.isoformat(),
+                schedule_start=schedule.start_date.isoformat(),
+                schedule_end=schedule.end_date.isoformat(),
+                member_user_ids=member_user_ids,
+            )
+        schedule.last_reminder_sent_at = datetime.now(timezone.utc)
+        schedule.updated_at = datetime.now(timezone.utc)
+        schedule = self.collection.schedule_db.update_schedule(schedule)
+        return schedule
+
+    async def edit_request_deadline(
+        self, schedule_id: str, new_deadline_date: datetime
+    ) -> Schedule:
+        """Edit the request deadline (allow earlier or later changes) and notify members.
+
+        Validation: `new_deadline_date` must be >= now (UTC), and a deadline must
+        already exist on the campaign (use POST set_request_deadline to create).
+        """
+        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
+        if not schedule:
+            raise ValueError(f"Schedule with id {schedule_id} not found")
+        if schedule.request_deadline is None:
+            raise ValueError("No request deadline is set on this schedule")
+        now_utc = datetime.now(timezone.utc)
+        if new_deadline_date <= now_utc:
+            raise ValueError("New deadline must be in the future (UTC)")
+
+        old_deadline = schedule.request_deadline
+        schedule.request_deadline = new_deadline_date
+        schedule.updated_at = datetime.now(timezone.utc)
+        schedule = self.collection.schedule_db.update_schedule(schedule)
+
+        workers = self.collection.worker_db.get_workers_not_deleted(schedule.team_id)
+        member_user_ids = [w.user_id for w in workers if w.user_id]
+        if member_user_ids:
+            team = self.collection.team_db.get_team_by_id(schedule.team_id)
+            team_name = team.name if team else ""
+            await self.notification_service.notify_campaign_request_deadline_updated(
+                team_id=schedule.team_id,
+                team_name=team_name,
+                old_deadline_date=old_deadline.isoformat(),
+                new_deadline_date=new_deadline_date.isoformat(),
+                schedule_start=schedule.start_date.isoformat(),
+                schedule_end=schedule.end_date.isoformat(),
+                member_user_ids=member_user_ids,
+            )
+        return schedule
+
+    async def delete_request_deadline(self, schedule_id: str) -> Schedule:
+        """Delete the request deadline from a campaign schedule (silent).
+
+        This clears both `request_deadline` and `last_reminder_sent_at` and
+        returns the updated schedule. No notifications are sent.
+        """
+        schedule = self.collection.schedule_db.get_schedule_by_id(schedule_id)
+        if not schedule:
+            raise ValueError(f"Schedule with id {schedule_id} not found")
+        schedule.request_deadline = None
+        schedule.last_reminder_sent_at = None
+        schedule.updated_at = datetime.now(timezone.utc)
+        schedule = self.collection.schedule_db.update_schedule(schedule)
+        return schedule

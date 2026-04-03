@@ -8,12 +8,12 @@ import {
   fromTeamInvitationT,
   EnrichedTeamInvitationT,
   toEnrichedTeamInvitationT,
-} from "../../../types/team-invitation";
-import { TeamWithMembership, toTeamWithMembership } from "../../../types/team";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+} from '../../../types/team-invitation';
+import { TeamWithMembership, toTeamWithMembership } from '../../../types/team';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class TeamInvitationApi extends BaseApi {
-  private static readonly baseEndpoint = "/team-invitations";
+  private static readonly baseEndpoint = '/team-invitations';
 
   /**
    * Create a new team invitation (authenticated)
@@ -25,15 +25,15 @@ export class TeamInvitationApi extends BaseApi {
   ): Promise<TeamInvitationT> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!invitation || !invitation.email) {
-      throw new Error("Invalid invitation data provided");
+      throw new Error('Invalid invitation data provided');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `${this.baseEndpoint}/teams/${teamId}`,
       fromTeamInvitationT(invitation),
     );
@@ -49,12 +49,12 @@ export class TeamInvitationApi extends BaseApi {
   ): Promise<TeamInvitationT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any[]>(
       apiClient,
-      "get",
+      'get',
       `${this.baseEndpoint}/teams/${teamId}`,
     );
     return responseData.map(toTeamInvitationT);
@@ -68,7 +68,7 @@ export class TeamInvitationApi extends BaseApi {
   ): Promise<EnrichedTeamInvitationT[]> {
     const responseData = await this.makeRequest<any[]>(
       apiClient,
-      "get",
+      'get',
       `${this.baseEndpoint}/pending`,
     );
     return responseData.map(toEnrichedTeamInvitationT);
@@ -83,12 +83,12 @@ export class TeamInvitationApi extends BaseApi {
   ): Promise<TeamWithMembership> {
     // Security: Input validation
     if (!token) {
-      throw new Error("Invitation token is required");
+      throw new Error('Invitation token is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `${this.baseEndpoint}/accept`,
       { token },
     );
@@ -104,15 +104,10 @@ export class TeamInvitationApi extends BaseApi {
   ): Promise<void> {
     // Security: Input validation
     if (!token) {
-      throw new Error("Invitation token is required");
+      throw new Error('Invitation token is required');
     }
 
-    await this.makeRequest<void>(
-      apiClient,
-      "post",
-      `${this.baseEndpoint}/reject`,
-      { token },
-    );
+    await this.makeRequest<void>(apiClient, 'post', `${this.baseEndpoint}/reject`, { token });
   }
 
   /**
@@ -125,15 +120,15 @@ export class TeamInvitationApi extends BaseApi {
   ): Promise<TeamInvitationT> {
     // Security: Input validation
     if (!invitationId) {
-      throw new Error("Invitation ID is required");
+      throw new Error('Invitation ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `${this.baseEndpoint}/${invitationId}/resend/teams/${teamId}`,
     );
     return toTeamInvitationT(responseData);
@@ -149,15 +144,15 @@ export class TeamInvitationApi extends BaseApi {
   ): Promise<{ message: string }> {
     // Security: Input validation
     if (!invitationId) {
-      throw new Error("Invitation ID is required");
+      throw new Error('Invitation ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     return await this.makeRequest<{ message: string }>(
       apiClient,
-      "delete",
+      'delete',
       `${this.baseEndpoint}/${invitationId}/teams/${teamId}`,
     );
   }

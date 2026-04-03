@@ -7,8 +7,7 @@ for solve requests and processes them using the existing solve logic.
 
 import asyncio
 import time
-from datetime import datetime, timezone
-from typing import List, Tuple
+from datetime import UTC, datetime
 
 from loguru import logger
 from shared.database.database_collections import DatabaseCollections
@@ -64,7 +63,8 @@ class SQSSolveConsumer:
             try:
                 # Poll for messages (uses base class method)
                 messages = await self.sqs_solve_service.receive_messages(
-                    max_messages=1, wait_time_seconds=20  # Long polling
+                    max_messages=1,
+                    wait_time_seconds=20,  # Long polling
                 )
 
                 if not messages:
@@ -98,10 +98,13 @@ class SQSSolveConsumer:
 
         try:
             # Process the solve request
-            schedule_solve_status, assignments, breaches, solver_output = (
-                await self._solve_schedule(
-                    message=message_content, message_id=message_id
-                )
+            (
+                schedule_solve_status,
+                assignments,
+                breaches,
+                solver_output,
+            ) = await self._solve_schedule(
+                message=message_content, message_id=message_id
             )
 
             # Update schedule with success
@@ -141,10 +144,12 @@ class SQSSolveConsumer:
             # TO#DO: Implement proper retry logic with max attempts
             await self.sqs_solve_service.delete_message(receipt_handle)
 
-    async def _solve_schedule(self, message: SQSSolveMessage, message_id: str) -> Tuple[
+    async def _solve_schedule(
+        self, message: SQSSolveMessage, message_id: str
+    ) -> tuple[
         ScheduleSolveStatus,
-        List[Assignment],
-        List[Breach],
+        list[Assignment],
+        list[Breach],
         SolverOutputMetadata,
     ]:
         """
@@ -225,8 +230,8 @@ class SQSSolveConsumer:
         self,
         message_id: str,
         solve_status: ScheduleSolveStatus,
-        assignments: List[Assignment],
-        breaches: List[Breach],
+        assignments: list[Assignment],
+        breaches: list[Breach],
         solver_outputs: SolverOutputMetadata,
     ):
         """
@@ -246,7 +251,7 @@ class SQSSolveConsumer:
             raise ValueError(f"Solve task with id {message_id} not found")
         solve_task_status.request_status = SolveRequestStatus.COMPLETED
         solve_task_status.solve_status = solve_status
-        solve_task_status.completed_at = datetime.now(tz=timezone.utc)
+        solve_task_status.completed_at = datetime.now(tz=UTC)
         solve_task_status.result = ResultModel(
             assignments=assignments,
             breaches=breaches,
@@ -274,7 +279,7 @@ class SQSSolveConsumer:
         if not solve_task_status:
             raise ValueError(f"Solve task with id {message_id} not found")
         solve_task_status.request_status = SolveRequestStatus.FAILED
-        solve_task_status.completed_at = datetime.now(tz=timezone.utc)
+        solve_task_status.completed_at = datetime.now(tz=UTC)
         solve_task_status.error_message = error
         self.collections.solve_task_status_db.update_solve_task_status(
             solve_task_status=solve_task_status

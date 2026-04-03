@@ -2,8 +2,8 @@
  * API client for link shift operations
  */
 
-import { LinkShiftT } from "../../../types/shift";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { LinkShiftT } from '../../../types/shift';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class LinkShiftApi extends BaseApi {
   /**
@@ -11,18 +11,18 @@ export class LinkShiftApi extends BaseApi {
    */
   static async createLinkShift(
     apiClient: AuthenticatedApiClient,
-    linkShift: LinkShiftT
+    linkShift: LinkShiftT,
   ): Promise<LinkShiftT> {
     // Security: Input validation
     if (!linkShift || !linkShift.teamId) {
-      throw new Error("Invalid link shift data provided");
+      throw new Error('Invalid link shift data provided');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/link-shifts/teams/${linkShift.teamId}`,
-      linkShift
+      linkShift,
     );
     return responseData as LinkShiftT;
   }
@@ -32,17 +32,17 @@ export class LinkShiftApi extends BaseApi {
    */
   static async getLinkShifts(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<LinkShiftT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any[]>(
       apiClient,
-      "get",
-      `/link-shifts/teams/${teamId}`
+      'get',
+      `/link-shifts/teams/${teamId}`,
     );
     return responseData as LinkShiftT[];
   }
@@ -52,18 +52,18 @@ export class LinkShiftApi extends BaseApi {
    */
   static async updateLinkShift(
     apiClient: AuthenticatedApiClient,
-    linkShift: LinkShiftT
+    linkShift: LinkShiftT,
   ): Promise<LinkShiftT> {
     // Security: Input validation
     if (!linkShift || !linkShift.id || !linkShift.teamId) {
-      throw new Error("Invalid link shift data provided");
+      throw new Error('Invalid link shift data provided');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "put",
+      'put',
       `/link-shifts/${linkShift.id}/teams/${linkShift.teamId}`,
-      linkShift
+      linkShift,
     );
     return responseData as LinkShiftT;
   }
@@ -74,20 +74,20 @@ export class LinkShiftApi extends BaseApi {
   static async deleteLinkShift(
     apiClient: AuthenticatedApiClient,
     linkShiftId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!linkShiftId) {
-      throw new Error("Link shift ID is required");
+      throw new Error('Link shift ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     await this.makeRequest<void>(
       apiClient,
-      "delete",
-      `/link-shifts/${linkShiftId}/teams/${teamId}`
+      'delete',
+      `/link-shifts/${linkShiftId}/teams/${teamId}`,
     );
   }
 }

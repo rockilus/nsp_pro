@@ -1,12 +1,12 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { BreachT } from "../types/breach";
+import { BreachT } from '../types/breach';
 // API Client
-import { BreachApi } from "../app/lib/api/breachApi";
-import { useApiClient } from "../app/lib/api-client";
+import { BreachApi } from '../app/lib/api/breachApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Breach Hooks //
@@ -22,7 +22,7 @@ export function useGetBreaches() {
   const getBreaches = useCallback(
     async (teamId: string): Promise<BreachT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetBreaches called:", {
+        console.log('🔍 useGetBreaches called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -32,24 +32,24 @@ export function useGetBreaches() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await BreachApi.getBreaches(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get breaches:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get breaches:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getBreaches;

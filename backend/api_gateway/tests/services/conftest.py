@@ -67,10 +67,10 @@ def base_workers(base_team_id: str) -> List[Worker]:
     workers = []
     for i in range(30):
         worker = Worker(
-            id=f"worker_{i+1}",
+            id=f"worker_{i + 1}",
             team_id=base_team_id,
-            name=f"Worker {i+1}",
-            acronym=f"W{i+1}",
+            name=f"Worker {i + 1}",
+            acronym=f"W{i + 1}",
             acronym_custom=False,
             employment_start_date=date(2025, 1, 1),
             employment_end_date=None,

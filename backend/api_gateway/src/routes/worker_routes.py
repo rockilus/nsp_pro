@@ -56,9 +56,7 @@ async def create_worker(
         worker_created, a_bool = worker_service.create_worker(w_data)
         response = worker_created.to_dto(a_bool)
 
-        log_info(
-            f"Worker created successfully for team {team_id}: " f"{worker_created.id}"
-        )
+        log_info(f"Worker created successfully for team {team_id}: {worker_created.id}")
 
     except NotAuthorizedError:
         # Re-raise authorization errors without additional logging

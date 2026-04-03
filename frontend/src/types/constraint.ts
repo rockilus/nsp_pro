@@ -1,5 +1,5 @@
 // Types
-import { AttributeOwnerType } from "./attribute";
+import { AttributeOwnerType } from './attribute';
 
 export enum SWOIdTypes {
   NONE = 0,

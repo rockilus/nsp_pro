@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from typing import Dict, List, Optional, Tuple
 
 from shared.constraint_parser import build_dim_to_attr_value_to_owner
 from shared.constraint_parser.parse_selected_shifts import (
@@ -28,8 +27,8 @@ from core_to_engine_service.build_scope_context import ScopeContext
 
 def _filter_campaign_dates(
     request: Request,
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-) -> List[date]:
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+) -> list[date]:
     """
     Filter request dates to only include those in worker's campaign period.
 
@@ -58,11 +57,11 @@ def _filter_campaign_dates(
 
 
 def _zero_overlapping_shifts(
-    out: Dict[Tuple[str, str, str], int],
+    out: dict[tuple[str, str, str], int],
     worker_id: str,
     date_iso: str,
     reference_shift: Shift,
-    shifts: List[Shift],
+    shifts: list[Shift],
     exclude_shift_id: str | None = None,
 ) -> None:
     """
@@ -83,11 +82,11 @@ def _zero_overlapping_shifts(
 
 
 def _initialize_historical_assignments(
-    workers: List[Worker],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts: List[Shift],
-    assignments: List[Assignment],
-) -> Dict[Tuple[str, str, str], int]:
+    workers: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts: list[Shift],
+    assignments: list[Assignment],
+) -> dict[tuple[str, str, str], int]:
     """
     Initialize fixed values dictionary with historical assignments.
 
@@ -119,11 +118,11 @@ def _initialize_historical_assignments(
 
 
 def _apply_leave_requests(
-    out: Dict[Tuple[str, str, str], int],
-    approved_requests: List[Request],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shift_dict: Dict[str, Shift],
-    shifts: List[Shift],
+    out: dict[tuple[str, str, str], int],
+    approved_requests: list[Request],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shift_dict: dict[str, Shift],
+    shifts: list[Shift],
 ) -> None:
     """
     Apply approved LEAVE requests to fixed values.
@@ -161,10 +160,10 @@ def _apply_leave_requests(
 
 
 def _apply_negative_work_demand(
-    out: Dict[Tuple[str, str, str], int],
+    out: dict[tuple[str, str, str], int],
     req: Request,
-    target_shift_ids: List[str],
-    dates_to_process: List[date],
+    target_shift_ids: list[str],
+    dates_to_process: list[date],
 ) -> None:
     """
     Apply a negative WORK_DEMAND request (worker doesn't want these shifts).
@@ -182,12 +181,12 @@ def _apply_negative_work_demand(
 
 
 def _apply_single_shift_work_demand(
-    out: Dict[Tuple[str, str, str], int],
+    out: dict[tuple[str, str, str], int],
     req: Request,
     target_shift: Shift,
     target_shift_id: str,
-    dates_to_process: List[date],
-    shifts: List[Shift],
+    dates_to_process: list[date],
+    shifts: list[Shift],
 ) -> None:
     """
     Apply a positive single-shift WORK_DEMAND request.
@@ -215,11 +214,11 @@ def _apply_single_shift_work_demand(
 
 
 def _apply_multi_shift_work_demand(
-    out: Dict[Tuple[str, str, str], int],
+    out: dict[tuple[str, str, str], int],
     req: Request,
-    target_shifts: List[Shift],
-    dates_to_process: List[date],
-    shifts: List[Shift],
+    target_shifts: list[Shift],
+    dates_to_process: list[date],
+    shifts: list[Shift],
 ) -> None:
     """
     Apply a positive multi-shift WORK_DEMAND request.
@@ -242,12 +241,12 @@ def _apply_multi_shift_work_demand(
 
 
 def _apply_work_demand_requests(
-    out: Dict[Tuple[str, str, str], int],
-    approved_requests: List[Request],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shift_dict: Dict[str, Shift],
-    shifts: List[Shift],
-    dim_to_attr_value_to_shift: Dict[str, Dict[str | int | float | bool, List[str]]],
+    out: dict[tuple[str, str, str], int],
+    approved_requests: list[Request],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shift_dict: dict[str, Shift],
+    shifts: list[Shift],
+    dim_to_attr_value_to_shift: dict[str, dict[str | int | float | bool, list[str]]],
 ) -> None:
     """
     Apply approved WORK_DEMAND requests to fixed values.
@@ -293,29 +292,28 @@ def _apply_work_demand_requests(
 
         if req.negative:
             _apply_negative_work_demand(out, req, target_shift_ids, dates_to_process)
+        # Positive request
+        elif len(target_shift_ids) == 1:
+            _apply_single_shift_work_demand(
+                out,
+                req,
+                target_shifts[0],
+                target_shift_ids[0],
+                dates_to_process,
+                shifts,
+            )
         else:
-            # Positive request
-            if len(target_shift_ids) == 1:
-                _apply_single_shift_work_demand(
-                    out,
-                    req,
-                    target_shifts[0],
-                    target_shift_ids[0],
-                    dates_to_process,
-                    shifts,
-                )
-            else:
-                _apply_multi_shift_work_demand(
-                    out, req, target_shifts, dates_to_process, shifts
-                )
+            _apply_multi_shift_work_demand(
+                out, req, target_shifts, dates_to_process, shifts
+            )
 
 
 def _zero_unrequested_leave_shifts(
-    out: Dict[Tuple[str, str, str], int],
-    workers_not_deleted: List[Worker],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts: List[Shift],
-    requests: List[Request],
+    out: dict[tuple[str, str, str], int],
+    workers_not_deleted: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts: list[Shift],
+    requests: list[Request],
 ) -> None:
     """
     Set leave shifts to 0 when no request exists for that worker/date/shift.
@@ -345,11 +343,11 @@ def _zero_unrequested_leave_shifts(
 
 
 def _zero_shifts_without_demand(
-    out: Dict[Tuple[str, str, str], int],
-    workers_not_deleted: List[Worker],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts: List[Shift],
-    daily_shift_demands: List[ShiftDemandNew],
+    out: dict[tuple[str, str, str], int],
+    workers_not_deleted: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts: list[Shift],
+    daily_shift_demands: list[ShiftDemandNew],
 ) -> None:
     """
     Set normal/duty shifts to 0 when no demand exists for that date.
@@ -385,21 +383,21 @@ def _zero_shifts_without_demand(
 
 
 def core_to_engine_fixed_values(
-    workers: List[Worker],
-    workers_not_deleted: List[Worker],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts: List[Shift],
-    shifts_not_deleted: List[Shift],
-    daily_shift_demands: List[ShiftDemandNew],
-    assignments: List[Assignment],
-    requests: List[Request],
-    approved_requests: List[Request],
-    dimensions: List[Dimension],
-    dim_entries: List[DimEntry],
-    attributes: List[Attribute],
-    var_model: List[Tuple[str, str, str]],
-    scope_ctx: Optional[ScopeContext] = None,
-) -> Dict[Tuple[str, str, str], int]:
+    workers: list[Worker],
+    workers_not_deleted: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts: list[Shift],
+    shifts_not_deleted: list[Shift],
+    daily_shift_demands: list[ShiftDemandNew],
+    assignments: list[Assignment],
+    requests: list[Request],
+    approved_requests: list[Request],
+    dimensions: list[Dimension],
+    dim_entries: list[DimEntry],
+    attributes: list[Attribute],
+    var_model: list[tuple[str, str, str]],
+    scope_ctx: ScopeContext | None = None,
+) -> dict[tuple[str, str, str], int]:
     """
     Build fixed values dictionary for the solver.
 

@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
+import Box from '@mui/material/Box';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
 // Styles
-import "./update-dimension-dim-entries-input.css";
+import './update-dimension-dim-entries-input.css';
 // Types
-import { DimEntryT } from "@/types/dim-entry";
+import { DimEntryT } from '@/types/dim-entry';
 
 export default function UpdateDimensionDimEntriesInput({
   lng,
@@ -30,17 +30,15 @@ export default function UpdateDimensionDimEntriesInput({
   updateDimEntry: (dimEntry: DimEntryT) => void;
   deleteDimEntry: (dimEntryId: string) => void;
 }) {
-  const { t } = useTranslation(lng, "shift-page");
+  const { t } = useTranslation(lng, 'shift-page');
 
   const [newDimEntry, setNewDimEntry] = useState<DimEntryT>({
-    id: "",
+    id: '',
     dimensionId: dimensionId,
-    name: "",
+    name: '',
     deleted: false,
   });
-  const [DimEntryEditing, setDimEntryEditing] = useState<DimEntryT | null>(
-    null,
-  );
+  const [DimEntryEditing, setDimEntryEditing] = useState<DimEntryT | null>(null);
   const [error, setError] = useState<boolean>(false);
   const [errorEditing, setErrorEditing] = useState<boolean>(false);
 
@@ -49,12 +47,12 @@ export default function UpdateDimensionDimEntriesInput({
   };
 
   const handleAddOption = () => {
-    if (newDimEntry.name.trim() !== "") {
+    if (newDimEntry.name.trim() !== '') {
       createDimEntry(newDimEntry);
       setNewDimEntry({
-        id: "",
+        id: '',
         dimensionId: dimensionId,
-        name: "",
+        name: '',
         deleted: false,
       });
       setError(false);
@@ -64,14 +62,14 @@ export default function UpdateDimensionDimEntriesInput({
   };
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       handleAddOption();
     }
   };
 
   const handleEditDimEntry = () => {
     if (DimEntryEditing) {
-      if (DimEntryEditing.name.trim() === "") {
+      if (DimEntryEditing.name.trim() === '') {
         setErrorEditing(true);
       } else {
         updateDimEntry(DimEntryEditing);
@@ -82,22 +80,17 @@ export default function UpdateDimensionDimEntriesInput({
   };
 
   return (
-    <Box
-      sx={{ width: "100%" }}
-      data-testid={`dim-entries-input-${dimensionId}`}
-    >
+    <Box sx={{ width: '100%' }} data-testid={`dim-entries-input-${dimensionId}`}>
       <TextField
-        label={t("property_new_option")}
+        label={t('property_new_option')}
         variant="outlined"
         value={newDimEntry.name}
         onChange={handleInputChange}
         onKeyDown={handleKeyPress}
         error={error || listError}
-        helperText={
-          error || listError ? t("property_new_option_helper_text") : ""
-        }
+        helperText={error || listError ? t('property_new_option_helper_text') : ''}
         data-testid={`new-dim-entry-field-${dimensionId}`}
-        sx={{ width: "100%" }}
+        sx={{ width: '100%' }}
       />
       <Box mt={2} data-testid={`dim-entries-list-${dimensionId}`}>
         {dimEntries.map((de, index) => (
@@ -109,28 +102,21 @@ export default function UpdateDimensionDimEntriesInput({
             data-testid={`dim-entry-item-${de.id}`}
           >
             {DimEntryEditing?.id === de.id ? (
-              <div
-                className="edit-dim-entry"
-                data-testid={`dim-entry-editing-${de.id}`}
-              >
+              <div className="edit-dim-entry" data-testid={`dim-entry-editing-${de.id}`}>
                 <TextField
                   value={DimEntryEditing.name}
-                  onChange={(e) =>
-                    setDimEntryEditing({ ...de, name: e.target.value })
-                  }
+                  onChange={(e) => setDimEntryEditing({ ...de, name: e.target.value })}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === 'Enter') {
                       handleEditDimEntry();
-                    } else if (e.key === "Escape") {
+                    } else if (e.key === 'Escape') {
                       setDimEntryEditing(null);
                     }
                   }}
                   error={errorEditing}
-                  helperText={
-                    errorEditing ? t("property_new_option_helper_text") : ""
-                  }
+                  helperText={errorEditing ? t('property_new_option_helper_text') : ''}
                   data-testid={`dim-entry-edit-field-${de.id}`}
-                  sx={{ width: "100%" }}
+                  sx={{ width: '100%' }}
                 />
                 <IconButton
                   onClick={handleEditDimEntry}
@@ -146,10 +132,7 @@ export default function UpdateDimensionDimEntriesInput({
                 </IconButton>
               </div>
             ) : (
-              <div
-                className="edit-dim-entry"
-                data-testid={`dim-entry-display-${de.id}`}
-              >
+              <div className="edit-dim-entry" data-testid={`dim-entry-display-${de.id}`}>
                 <Box flexGrow={1} data-testid={`dim-entry-name-${de.id}`}>
                   {de.name}
                 </Box>

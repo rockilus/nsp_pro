@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
     CoveragePenalty,
@@ -15,14 +14,14 @@ from engine import ShiftDemand as ShiftDemandEngine
 
 # pylint: disable=too-many-locals, too-many-arguments
 def build_engine_shift_demands(
-    workers_not_deleted: List[Worker],
-    dates_campaign: List[date],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts_not_deleted: List[Shift],
-    daily_shift_demands: List[ShiftDemandNew],
+    workers_not_deleted: list[Worker],
+    dates_campaign: list[date],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts_not_deleted: list[Shift],
+    daily_shift_demands: list[ShiftDemandNew],
     c_penalty: CoveragePenalty,
-) -> List[ShiftDemandEngine]:
-    out: List[ShiftDemandEngine] = []
+) -> list[ShiftDemandEngine]:
+    out: list[ShiftDemandEngine] = []
     seen_pair = set()
     for shift_demand in daily_shift_demands:
         pair = (shift_demand.date.isoformat(), shift_demand.shift_id)
@@ -37,10 +36,10 @@ def build_engine_shift_demands(
         if shift is None:
             continue
         seen_pair.add(pair)
-        assignments: List[Tuple[str, str, str]] = []
-        assignments_specialty: List[List[Tuple[str, str, str, str]]] = []
+        assignments: list[tuple[str, str, str]] = []
+        assignments_specialty: list[list[tuple[str, str, str, str]]] = []
         target: int = 0
-        target_specialty: List[int] = []
+        target_specialty: list[int] = []
         for staffing in shift.staffing:
             specialty_id = staffing.specialty_id
             target_staffing = staffing.staffing * shift_demand.count

@@ -1,16 +1,16 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 export enum SwapType {
-  DIRECT = "direct",
-  OPEN = "open",
+  DIRECT = 'direct',
+  OPEN = 'open',
 }
 
 export enum SwapStatus {
-  ACTIVE = "active",
-  PENDING_APPROVAL = "pending_approval",
-  COMPLETED = "completed",
-  DENIED = "denied",
-  REVERTED = "reverted",
+  ACTIVE = 'active',
+  PENDING_APPROVAL = 'pending_approval',
+  COMPLETED = 'completed',
+  DENIED = 'denied',
+  REVERTED = 'reverted',
 }
 
 export type SwapBidT = {
@@ -83,7 +83,7 @@ export function toSwapRequestT(data: any): SwapRequestT {
     offeredAssignmentIds: data.offeredAssignmentIds,
     requestedAssignmentIds: data.requestedAssignmentIds,
     targetWorkerId: data.targetWorkerId,
-    offeringWorkerId: data.offeringWorkerId ?? "",
+    offeringWorkerId: data.offeringWorkerId ?? '',
     comment: data.comment,
     bids: (data.bids || []).map(toSwapBidT),
     createdAt: dayjs.unix(data.createdAt),
@@ -106,8 +106,8 @@ export function fromSwapRequestT(swap: Partial<SwapRequestT>): any {
     offeredAssignmentIds: swap.offeredAssignmentIds,
     requestedAssignmentIds: swap.requestedAssignmentIds,
     targetWorkerId: swap.targetWorkerId,
-    offeringWorkerId: swap.offeringWorkerId ?? "",
-    comment: swap.comment || "",
+    offeringWorkerId: swap.offeringWorkerId ?? '',
+    comment: swap.comment || '',
     bids: (swap.bids || []).map(fromSwapBidT),
     createdAt: swap.createdAt?.unix(),
     completedAt: swap.completedAt?.unix(),

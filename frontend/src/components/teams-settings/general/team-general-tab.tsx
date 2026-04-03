@@ -1,29 +1,29 @@
-import React, { ReactElement, useEffect, useState, useCallback } from "react";
-import { useTranslation } from "../../../app/i18n/client";
-import { useRouter } from "next/navigation";
+import React, { ReactElement, useEffect, useState, useCallback } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
+import { useRouter } from 'next/navigation';
 // MUI
-import Box from "@mui/material/Box";
-import EditIcon from "@mui/icons-material/Edit";
-import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
-import Checkbox from "@mui/material/Checkbox";
+import Box from '@mui/material/Box';
+import EditIcon from '@mui/icons-material/Edit';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
+import Checkbox from '@mui/material/Checkbox';
 // Components
-import UserProfileRow from "@/components/settings/profile/user-profile-row";
-import NavigationHeader from "@/components/common/navigation-header";
+import UserProfileRow from '@/components/settings/profile/user-profile-row';
+import NavigationHeader from '@/components/common/navigation-header';
 // Context
-import { useTeam } from "@/context/TeamContext";
+import { useTeam } from '@/context/TeamContext';
 // Skeletons
-import TablesSkeleton from "../../skeletons/tables-skeleton";
+import TablesSkeleton from '../../skeletons/tables-skeleton';
 // Hooks
-import { useIsMobile, useIsLandscape } from "../../../hooks/useIsMobile";
+import { useIsMobile, useIsLandscape } from '../../../hooks/useIsMobile';
 // Actions
-import { useGetTeamById, useUpdateTeam } from "@/hooks/useTeam";
+import { useGetTeamById, useUpdateTeam } from '@/hooks/useTeam';
 // Styles
-import "./team-general-tab.css";
-import "../../../styles/text-styles.css";
-import "../../../styles/tab-container-styles.css";
+import './team-general-tab.css';
+import '../../../styles/text-styles.css';
+import '../../../styles/tab-container-styles.css';
 // Types
-import { TeamT } from "@/types/team";
+import { TeamT } from '@/types/team';
 
 export default function TeamGeneralTab({
   lng,
@@ -32,7 +32,7 @@ export default function TeamGeneralTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
-  const { t } = useTranslation(lng, "teams-page");
+  const { t } = useTranslation(lng, 'teams-page');
   const router = useRouter();
   const isMobile = useIsMobile();
   const isLandscape = useIsLandscape();
@@ -65,7 +65,7 @@ export default function TeamGeneralTab({
       const fetchedTeam = await getTeamByIdFn(selectedTeamId);
       setTeam(fetchedTeam);
     } catch (error) {
-      console.error("Failed to fetch team:", error);
+      console.error('Failed to fetch team:', error);
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +78,7 @@ export default function TeamGeneralTab({
       setTeam(newTeam);
       updateTeamInContext(newTeam);
     } catch (error) {
-      console.error("Failed to update team:", error);
+      console.error('Failed to update team:', error);
     }
   };
 
@@ -97,10 +97,7 @@ export default function TeamGeneralTab({
       const userKeys = Object.keys(team);
 
       for (let key of userKeys) {
-        if (
-          team[key as keyof typeof team] !==
-          teamState[key as keyof typeof teamState]
-        ) {
+        if (team[key as keyof typeof team] !== teamState[key as keyof typeof teamState]) {
           handleUpdateTeam(teamState);
           break;
         }
@@ -110,7 +107,7 @@ export default function TeamGeneralTab({
   };
 
   const handleEditCancel = () => {
-    console.log("handleEditCancel");
+    console.log('handleEditCancel');
 
     setTeamState(team);
     setFieldEditing(null);
@@ -131,21 +128,16 @@ export default function TeamGeneralTab({
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (
-        <div
-          className="team-general-container"
-          data-testid="team-general-page-heading"
-        >
+        <div className="team-general-container" data-testid="team-general-page-heading">
           <NavigationHeader
-            title={t("general")}
-            onBack={() =>
-              router.push(`/${lng}/plan/teams?teamId=${selectedTeamId}`)
-            }
+            title={t('general')}
+            onBack={() => router.push(`/${lng}/plan/teams?teamId=${selectedTeamId}`)}
             showBackButton={isMobile && !isLandscape}
           />
           {team && teamState ? (
             <div className="team-general-content">
               <UserProfileRow
-                label={t("name")}
+                label={t('name')}
                 value={<span>{team.name}</span>}
                 valueEditing={
                   <TextField
@@ -161,26 +153,24 @@ export default function TeamGeneralTab({
                     }}
                     onBlur={handleEditConfirm}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === 'Enter') {
                         handleEditConfirm();
-                      } else if (e.key === "Escape") {
+                      } else if (e.key === 'Escape') {
                         handleEditCancel();
                       }
                     }}
                     autoFocus
                   />
                 }
-                editing={fieldEditing === "name"}
-                editButton={editButton(() => setFieldEditing("name"))}
+                editing={fieldEditing === 'name'}
+                editButton={editButton(() => setFieldEditing('name'))}
                 handleEditConfirm={handleEditConfirm}
                 handleEditCancel={handleEditCancel}
               />
               <hr className="separator" />
               <div className="team-settings-row">
                 <div className="team-settings-row-label-container">
-                  <span className="team-settings-row-label">
-                    {t("use_solver")}
-                  </span>
+                  <span className="team-settings-row-label">{t('use_solver')}</span>
                 </div>
                 <div className="team-settings-row-value-container">
                   <Checkbox
@@ -188,25 +178,22 @@ export default function TeamGeneralTab({
                     size="small"
                     checked={teamState.useSolver}
                     onChange={handleChangeUseSolver}
-                    sx={{ marginTop: "-7px" }}
+                    sx={{ marginTop: '-7px' }}
                     autoFocus
                   />
                   <div className="team-settings-checkbox-label-container">
-                    <label
-                      className="team-settings-checkbox-label"
-                      htmlFor="use-solver-checkbox"
-                    >
-                      {t("use_solver_label")}
+                    <label className="team-settings-checkbox-label" htmlFor="use-solver-checkbox">
+                      {t('use_solver_label')}
                     </label>
                     <span className="team-settings-checkbox-description">
-                      {t("use_solver_description")}
+                      {t('use_solver_description')}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <Box sx={{ padding: 2 }}>{t("no_team_message")}</Box>
+            <Box sx={{ padding: 2 }}>{t('no_team_message')}</Box>
           )}
         </div>
       )}

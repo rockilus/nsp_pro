@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
 import {
   ScheduleT,
@@ -6,18 +6,19 @@ import {
   WorkTimeTableT,
   DuplicateRequestT,
   DuplicateResultT,
-} from "../types/schedule";
-import { AssignmentT } from "../types/assignment";
-import { ShiftT } from "../types/shift";
-import { WorkerT } from "../types/worker";
-import { RecurrenceRuleT } from "../types/recurrence";
+  RequestDeadlineT,
+} from '../types/schedule';
+import { AssignmentT } from '../types/assignment';
+import { ShiftT } from '../types/shift';
+import { WorkerT } from '../types/worker';
+import { RecurrenceRuleT } from '../types/recurrence';
 // API Client
-import { ScheduleApi } from "../app/lib/api/scheduleApi";
-import { useApiClient } from "../app/lib/api-client";
+import { ScheduleApi } from '../app/lib/api/scheduleApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
-import { validateScheduleDuration } from "../types/schedule";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
+import { validateScheduleDuration } from '../types/schedule';
 
 //////////////////////////
 // Authenticated Schedule Hooks //
@@ -33,7 +34,7 @@ export function useCreateSchedule() {
   const createSchedule = useCallback(
     async (teamId: string): Promise<ScheduleT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useCreateSchedule called:", {
+        console.log('🔍 useCreateSchedule called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -43,29 +44,29 @@ export function useCreateSchedule() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!teamId || teamId.trim().length === 0) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
         const schedule = await ScheduleApi.createSchedule(apiClient, teamId);
 
         if (env.isDevelopment) {
-          console.log("✅ Schedule created successfully");
+          console.log('✅ Schedule created successfully');
         }
 
         return schedule;
       } catch (error) {
-        console.error("❌ Failed to create schedule:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to create schedule:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -87,7 +88,7 @@ export function useGetSchedules() {
   const getSchedules = useCallback(
     async (teamId: string): Promise<ScheduleT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetSchedules called:", {
+        console.log('🔍 useGetSchedules called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -97,18 +98,18 @@ export function useGetSchedules() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ScheduleApi.getSchedules(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get schedules:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get schedules:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -130,7 +131,7 @@ export function useGetWorkTimeTable() {
   const getWorkTimeTable = useCallback(
     async (scheduleId: string, teamId: string): Promise<WorkTimeTableT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetWorkTimeTable called:", {
+        console.log('🔍 useGetWorkTimeTable called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -141,22 +142,18 @@ export function useGetWorkTimeTable() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ScheduleApi.getWorkTimeTable(
-          apiClient,
-          scheduleId,
-          teamId,
-        );
+        return await ScheduleApi.getWorkTimeTable(apiClient, scheduleId, teamId);
       } catch (error) {
-        console.error("❌ Failed to get work time table:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get work time table:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -179,11 +176,11 @@ export function useUpdateSchedule() {
     async (schedule: ScheduleT): Promise<ScheduleT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Client-side pre-flight validation: ensure schedule duration within limits
@@ -192,17 +189,17 @@ export function useUpdateSchedule() {
       } catch (e) {
         // Surface a clear client-side error without calling the API
         if (e instanceof Error) {
-          console.error("❌ Schedule validation failed:", e.message);
+          console.error('❌ Schedule validation failed:', e.message);
           throw e;
         }
-        throw new Error("Schedule validation failed");
+        throw new Error('Schedule validation failed');
       }
 
       try {
         return await ScheduleApi.updateSchedule(apiClient, schedule);
       } catch (error) {
-        console.error("❌ Failed to update schedule:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update schedule:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -225,18 +222,18 @@ export function useDeleteSchedule() {
     async (scheduleId: string, teamId: string): Promise<void> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         await ScheduleApi.deleteSchedule(apiClient, scheduleId, teamId);
       } catch (error) {
-        console.error("❌ Failed to delete schedule:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete schedule:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -259,22 +256,18 @@ export function useValidateSchedule() {
     async (scheduleId: string, teamId: string): Promise<ScheduleT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ScheduleApi.validateSchedule(
-          apiClient,
-          scheduleId,
-          teamId,
-        );
+        return await ScheduleApi.validateSchedule(apiClient, scheduleId, teamId);
       } catch (error) {
-        console.error("❌ Failed to validate schedule:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to validate schedule:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -299,22 +292,18 @@ export function useExportSchedule() {
     async (teamId: string, exportOptions: ExportOptionsT): Promise<any> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ScheduleApi.exportSchedule(
-          apiClient,
-          teamId,
-          exportOptions,
-        );
+        return await ScheduleApi.exportSchedule(apiClient, teamId, exportOptions);
       } catch (error) {
-        console.error("❌ Failed to export schedule:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to export schedule:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -341,23 +330,18 @@ export function useDuplicatePeriod() {
     ): Promise<DuplicateResultT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ScheduleApi.duplicatePeriod(
-          apiClient,
-          duplicateRequest,
-          campaignId,
-          teamId,
-        );
+        return await ScheduleApi.duplicatePeriod(apiClient, duplicateRequest, campaignId, teamId);
       } catch (error) {
-        console.error("❌ Failed to duplicate period:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to duplicate period:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -388,18 +372,18 @@ export function useGetScheduleEntities() {
     }> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ScheduleApi.getScheduleEntities(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get schedule entities:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get schedule entities:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -431,22 +415,18 @@ export function useGetScheduleAssignmentsData() {
     }> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ScheduleApi.getScheduleAssignmentsData(
-          apiClient,
-          teamId,
-          includeCampaign,
-        );
+        return await ScheduleApi.getScheduleAssignmentsData(apiClient, teamId, includeCampaign);
       } catch (error) {
-        console.error("❌ Failed to get schedule assignments data:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get schedule assignments data:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
@@ -478,11 +458,11 @@ export function useGetScheduleAssignmentsDataNoSolver() {
     }> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -492,13 +472,10 @@ export function useGetScheduleAssignmentsDataNoSolver() {
           includeCampaign,
         );
       } catch (error) {
-        console.error(
-          "❌ Failed to get schedule assignments data (no solver):",
-          {
-            error: error instanceof Error ? error.message : "Unknown error",
-            timestamp: new Date().toISOString(),
-          },
-        );
+        console.error('❌ Failed to get schedule assignments data (no solver):', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString(),
+        });
         throw error;
       }
     },
@@ -506,4 +483,102 @@ export function useGetScheduleAssignmentsDataNoSolver() {
   );
 
   return getScheduleAssignmentsDataNoSolver;
+}
+
+/**
+ * Hook for getting the request deadline for a team's campaign schedule
+ */
+export function useGetRequestDeadline(teamId: string | null | undefined) {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const getRequestDeadline = useCallback(async (): Promise<RequestDeadlineT> => {
+    if (loading) throw new Error('Authentication still loading - please wait');
+    if (!isAuthenticated || !user?.id_token)
+      throw new Error('User not authenticated - please sign in');
+    if (!teamId) throw new Error('Team ID is required');
+    return ScheduleApi.getRequestDeadline(apiClient, teamId);
+  }, [apiClient, isAuthenticated, loading, user, teamId]);
+
+  return getRequestDeadline;
+}
+
+/**
+ * Hook for setting the request deadline on a campaign schedule
+ */
+export function useSetRequestDeadline() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const setRequestDeadline = useCallback(
+    async (scheduleId: string, teamId: string, deadline: Date): Promise<ScheduleT> => {
+      if (loading) throw new Error('Authentication still loading - please wait');
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error('User not authenticated - please sign in');
+      return ScheduleApi.setRequestDeadline(apiClient, scheduleId, teamId, deadline);
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return setRequestDeadline;
+}
+
+/**
+ * Hook for sending a reminder notification for the request deadline
+ */
+export function useSendRequestDeadlineReminder() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const sendReminder = useCallback(
+    async (scheduleId: string, teamId: string): Promise<ScheduleT> => {
+      if (loading) throw new Error('Authentication still loading - please wait');
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error('User not authenticated - please sign in');
+      return ScheduleApi.sendRequestDeadlineReminder(apiClient, scheduleId, teamId);
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return sendReminder;
+}
+
+/**
+ * Hook for editing the request deadline (new semantics: can move earlier or later)
+ */
+export function useEditRequestDeadline() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const editRequestDeadline = useCallback(
+    async (scheduleId: string, teamId: string, newDeadline: Date): Promise<ScheduleT> => {
+      if (loading) throw new Error('Authentication still loading - please wait');
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error('User not authenticated - please sign in');
+      return ScheduleApi.editRequestDeadline(apiClient, scheduleId, teamId, newDeadline);
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return editRequestDeadline;
+}
+
+/**
+ * Hook for deleting the request deadline
+ */
+export function useDeleteRequestDeadline() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const deleteRequestDeadline = useCallback(
+    async (scheduleId: string, teamId: string): Promise<ScheduleT> => {
+      if (loading) throw new Error('Authentication still loading - please wait');
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error('User not authenticated - please sign in');
+      return ScheduleApi.deleteRequestDeadline(apiClient, scheduleId, teamId);
+    },
+    [apiClient, isAuthenticated, loading, user],
+  );
+
+  return deleteRequestDeadline;
 }

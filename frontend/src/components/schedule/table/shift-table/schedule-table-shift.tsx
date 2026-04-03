@@ -1,21 +1,21 @@
-import React from "react";
-import dayjs from "dayjs";
+import React from 'react';
+import dayjs from 'dayjs';
 // MUI
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
 // Components
-import DatesHeaderRow from "../shared/dates-header-row";
-import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
-import ShiftTableRow from "./shift-table-row";
-import { buildScheduleCellDict } from "../shared/assignment-utils";
-import { getRelevantShifts } from "./shift-table-utils";
-import { RoleBased } from "../../../access/role-based";
+import DatesHeaderRow from '../shared/dates-header-row';
+import DailyShiftDemandRow from '../shared/daily-shift-demand-row';
+import ShiftTableRow from './shift-table-row';
+import { buildScheduleCellDict } from '../shared/assignment-utils';
+import { getRelevantShifts } from './shift-table-utils';
+import { RoleBased } from '../../../access/role-based';
 // Types
-import { ShiftT } from "../../../../types/shift";
-import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from '../../../../types/shift';
+import { WorkerT } from '../../../../types/worker';
 import {
   ScheduleT,
   ExportOptionsT,
@@ -23,19 +23,19 @@ import {
   AssignmentDataT,
   ScheduleCellDataT,
   ScheduleViewSettingsT,
-} from "../../../../types/schedule";
-import { BreachT } from "@/types/breach";
-import { ShiftDemandDTO } from "@/types/shiftDemand";
-import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
-import { RequestT } from "../../../../types/request";
-import { AttributeOwnerType } from "../../../../types/attribute";
-import { RecurrenceRuleT } from "@/types/recurrence";
-import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
+} from '../../../../types/schedule';
+import { BreachT } from '@/types/breach';
+import { ShiftDemandDTO } from '@/types/shiftDemand';
+import { AssignmentT, CreateAssignmentT } from '@/types/assignment';
+import { RequestT } from '../../../../types/request';
+import { AttributeOwnerType } from '../../../../types/attribute';
+import { RecurrenceRuleT } from '@/types/recurrence';
+import { TeamMembershipRole, TeamWithMembership } from '@/types/team';
 import {
   ScheduleSelectionState,
   SelectedScheduleCell,
   SelectionScope,
-} from "../../../../types/scheduleSelection";
+} from '../../../../types/scheduleSelection';
 
 export default function ScheduleTableShift({
   lng,
@@ -87,28 +87,16 @@ export default function ScheduleTableShift({
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
-  handleCellSelect: (
-    rowId: string,
-    date: string,
-    scheduleId: string | null,
-  ) => void;
+  handleCellSelect: (rowId: string, date: string, scheduleId: string | null) => void;
   handleAssignmentSelect: (assignmentId: string) => void;
   handleRowSelect: (rowId: string, scope: SelectionScope) => void;
-  handleColumnSelect: (
-    date: string,
-    rowIds: string[],
-    scope: SelectionScope,
-  ) => void;
+  handleColumnSelect: (date: string, rowIds: string[], scope: SelectionScope) => void;
   handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
   isCustomSolveModeActive?: boolean;
   customSolveSelectedCells?: SelectedScheduleCell[];
   handleCustomRowSelect?: (rowId: string) => void;
   handleCustomColumnSelect?: (date: string, rowIds: string[]) => void;
-  handleCustomCellSelect?: (
-    rowId: string,
-    date: string,
-    scheduleId: string | null,
-  ) => void;
+  handleCustomCellSelect?: (rowId: string, date: string, scheduleId: string | null) => void;
   handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   const shiftsForHeader = getRelevantShifts(shifts, assignments);
@@ -127,16 +115,16 @@ export default function ScheduleTableShift({
   return (
     <TableContainer
       component={Paper}
-      style={{ width: "100%", height: "calc(100vh - 104px)" }}
+      style={{ width: '100%', height: 'calc(100vh - 104px)' }}
       data-testid="schedule-table-shift"
     >
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead
           style={{
-            position: "sticky",
+            position: 'sticky',
             top: 0,
             zIndex: 1,
-            backgroundColor: "white",
+            backgroundColor: 'white',
           }}
         >
           <DatesHeaderRow

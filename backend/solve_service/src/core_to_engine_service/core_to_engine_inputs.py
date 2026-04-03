@@ -1,5 +1,3 @@
-from typing import Dict, List, Optional, Tuple
-
 from shared.constraint_parser import (
     build_dim_to_attr_value_to_owner,
 )
@@ -67,17 +65,21 @@ from core_to_engine_service.calculate_worker_work_times import (
     build_work_time_constraints,
     calculate_worker_work_times,
 )
-from engine import ConfigurationConstraintInputs
+from engine import (
+    ConfigurationConstraintInputs,
+    ProcessingCache,
+    SolHint,
+    SystemConstraintInputs,
+)
 from engine import Inputs as InputsEngine
 from engine import ModelSetup as ModelSetupEngine
-from engine import ProcessingCache, SolHint, SystemConstraintInputs
 
 
 # pylint: disable=too-many-arguments, too-many-locals, R0801, W0613
 def core_to_engine_inputs(
     engine_inputs: EngineInputsAugmented,
-    solve_scope: Optional[SolveScope] = None,
-) -> Tuple[InputsEngine, ProcessingCache]:
+    solve_scope: SolveScope | None = None,
+) -> tuple[InputsEngine, ProcessingCache]:
     # Workers
     workers_not_deleted = [w for w in engine_inputs.workers if not w.deleted]
     worker_not_deleted_ids = [w.id for w in engine_inputs.workers if not w.deleted]
@@ -153,8 +155,8 @@ def core_to_engine_inputs(
     # Runs before the Dates block so that engine_inputs.shifts and
     # engine_inputs.shift_demands are pruned, and locked WIP assignments are
     # appended to as_campaign_fixed, before any build_* call.
-    _scope_ctx: Optional[ScopeContext] = None
-    demands_in_scope: List[ShiftDemandNew] = engine_inputs.shift_demands
+    _scope_ctx: ScopeContext | None = None
+    demands_in_scope: list[ShiftDemandNew] = engine_inputs.shift_demands
     if solve_scope is not None and solve_scope.scope_type != SolveScopeType.FULL:
         _scope_ctx = preprocess_scope(
             scope=solve_scope,
@@ -407,8 +409,7 @@ def core_to_engine_inputs(
                     shift_id_to_duration_dict,
                     engine_inputs.penalties.system_constraint.weekly_target_work_time,
                     # fmt: off
-                    engine_inputs.model_config.system_constraints
-                    .weekly_target_worktime_tolerance,
+                    engine_inputs.model_config.system_constraints.weekly_target_worktime_tolerance,
                     # fmt: on
                 )
                 if engine_inputs.model_config.system_constraints.weekly_target_work_time
@@ -422,15 +423,12 @@ def core_to_engine_inputs(
                     ws_to_dates,
                     shift_duties_not_deleted,
                     # fmt: off
-                    engine_inputs.penalties.system_constraint
-                    .monthly_target_nb_duties,
-                    engine_inputs.model_config.system_constraints
-                    .mthly_target_nb_duty_tolerance,
+                    engine_inputs.penalties.system_constraint.monthly_target_nb_duties,
+                    engine_inputs.model_config.system_constraints.mthly_target_nb_duty_tolerance,
                     # fmt: on
                 )
                 # fmt: off
-                if engine_inputs.model_config.system_constraints
-                .monthly_target_nb_duties
+                if engine_inputs.model_config.system_constraints.monthly_target_nb_duties
                 # fmt: on
                 else []
             ),
@@ -458,13 +456,11 @@ def core_to_engine_inputs(
                     engine_inputs.shift_demands,
                     fixed_assignments,
                     # fmt: off
-                    engine_inputs.penalties.system_constraint
-                    .special_days_target_nb_duties,
+                    engine_inputs.penalties.system_constraint.special_days_target_nb_duties,
                     # fmt: on
                 )
                 # fmt: off
-                if engine_inputs.model_config.system_constraints
-                .special_days_target_nb_duties
+                if engine_inputs.model_config.system_constraints.special_days_target_nb_duties
                 # fmt: on
                 else []
             ),
@@ -499,7 +495,7 @@ def core_to_engine_inputs(
     )
 
 
-def _build_shift_id_to_duration_dict(shifts: List[Shift]) -> Dict[str, int]:
+def _build_shift_id_to_duration_dict(shifts: list[Shift]) -> dict[str, int]:
     return {
         s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1) for s in shifts
     }

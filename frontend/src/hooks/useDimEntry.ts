@@ -1,13 +1,13 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { DimEntryT } from "../types/dim-entry";
-import { AttributeT } from "../types/attribute";
+import { DimEntryT } from '../types/dim-entry';
+import { AttributeT } from '../types/attribute';
 // API Client
-import { DimEntryApi } from "../app/lib/api/dimEntryApi";
-import { useApiClient } from "../app/lib/api-client";
+import { DimEntryApi } from '../app/lib/api/dimEntryApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Dim Entry Hooks //
@@ -23,7 +23,7 @@ export function useAddDimEntry() {
   const addDimEntry = useCallback(
     async (dimEntry: DimEntryT, teamId: string): Promise<DimEntryT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useAddDimEntry called:", {
+        console.log('🔍 useAddDimEntry called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -34,43 +34,39 @@ export function useAddDimEntry() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!dimEntry || !dimEntry.name?.trim()) {
-        throw new Error("Dim entry name is required");
+        throw new Error('Dim entry name is required');
       }
 
       if (!teamId) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
-        const result = await DimEntryApi.addDimEntry(
-          apiClient,
-          dimEntry,
-          teamId
-        );
+        const result = await DimEntryApi.addDimEntry(apiClient, dimEntry, teamId);
 
         if (env.isDevelopment) {
-          console.log("✅ Dim entry added successfully");
+          console.log('✅ Dim entry added successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to add dim entry:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to add dim entry:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return addDimEntry;
@@ -86,7 +82,7 @@ export function useUpdateDimEntry() {
   const updateDimEntry = useCallback(
     async (updatedDimEntry: DimEntryT, teamId: string): Promise<DimEntryT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useUpdateDimEntry called:", {
+        console.log('🔍 useUpdateDimEntry called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -97,28 +93,24 @@ export function useUpdateDimEntry() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await DimEntryApi.updateDimEntry(
-          apiClient,
-          updatedDimEntry,
-          teamId
-        );
+        return await DimEntryApi.updateDimEntry(apiClient, updatedDimEntry, teamId);
       } catch (error) {
-        console.error("❌ Failed to update dim entry:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update dim entry:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateDimEntry;
@@ -134,7 +126,7 @@ export function useDeleteDimEntry() {
   const deleteDimEntry = useCallback(
     async (dimEntryId: string, teamId: string): Promise<AttributeT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useDeleteDimEntry called:", {
+        console.log('🔍 useDeleteDimEntry called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -145,24 +137,24 @@ export function useDeleteDimEntry() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await DimEntryApi.deleteDimEntry(apiClient, dimEntryId, teamId);
       } catch (error) {
-        console.error("❌ Failed to delete dim entry:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete dim entry:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteDimEntry;

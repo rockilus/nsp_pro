@@ -1,12 +1,12 @@
-import React from "react";
+import React from 'react';
 // MUI
-import DeleteIcon from "@mui/icons-material/Delete";
-import IconButton from "@mui/material/IconButton";
-import SyncAltIcon from "@mui/icons-material/SyncAlt";
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
 // Styles
-import "./link-shift-list.css";
+import './link-shift-list.css';
 // Types
-import { LinkShiftT, ShiftT } from "../../../types/shift";
+import { LinkShiftT, ShiftT } from '../../../types/shift';
 
 interface LinkShiftListProps {
   linkShifts: LinkShiftT[];
@@ -33,26 +33,22 @@ const LinkShiftList: React.FC<LinkShiftListProps> = ({
           {getShiftNames(linkShift.shiftIds).map((shift, index) => (
             <React.Fragment key={index}>
               <div className="ls-item-info">
-                <span className="ls-item-name">
-                  {shift?.name || "Uknown shift"}
-                </span>
+                <span className="ls-item-name">{shift?.name || 'Uknown shift'}</span>
                 <span className="ls-item-times">
                   {shift
-                    ? `${shift.startTime.format(
-                        "HH:mm"
-                      )} - ${shift.endTime.format("HH:mm")}`
-                    : ""}
+                    ? `${shift.startTime.format('HH:mm')} - ${shift.endTime.format('HH:mm')}`
+                    : ''}
                 </span>
               </div>
               {index < linkShift.shiftIds.length - 1 && (
-                <SyncAltIcon sx={{ marginX: 1, fontSize: 16, color: "grey" }} />
+                <SyncAltIcon sx={{ marginX: 1, fontSize: 16, color: 'grey' }} />
               )}
             </React.Fragment>
           ))}
           <IconButton
             onClick={() => handleDeleteLinkShift(linkShift.id)}
             aria-label="delete"
-            sx={{ marginLeft: "10px" }}
+            sx={{ marginLeft: '10px' }}
           >
             <DeleteIcon />
           </IconButton>

@@ -13,7 +13,7 @@ frontend/src/
 │   └── useTeam.ts         # React hooks for team operations
 ├── app/lib/
 │   ├── user.ts            # Legacy functions + re-exports
-│   ├── team.ts            # Legacy functions + re-exports  
+│   ├── team.ts            # Legacy functions + re-exports
 │   └── api/
 │       ├── baseApi.ts     # Base API client with common functionality
 │       ├── userApi.ts     # User-specific API methods
@@ -29,7 +29,7 @@ frontend/src/
 ### Key Components
 
 1. **BaseApi** - Abstract class with common API functionality
-2. **UserApi & TeamApi** - Concrete implementations for specific operations  
+2. **UserApi & TeamApi** - Concrete implementations for specific operations
 3. **useUser.ts & useTeam.ts** - React hooks that use the new API with authentication
 4. **Updated Components** - All components now use the new hooks
 
@@ -41,7 +41,7 @@ frontend/src/
 ✅ **Security**: Authentication validation in hooks, sanitized error messages  
 ✅ **Maintainability**: Common patterns shared across all API clients  
 ✅ **Backward Compatibility**: Legacy methods preserved but discouraged  
-✅ **Clean Organization**: Hooks in dedicated folder, components updated  
+✅ **Clean Organization**: Hooks in dedicated folder, components updated
 
 ## Usage Examples
 
@@ -94,8 +94,8 @@ function UserProfile() {
 ### Direct API Usage (When not in React context)
 
 ```typescript
-import { UserApi } from "@/app/lib/api/userApi";
-import { useApiClient } from "@/app/lib/api-client";
+import { UserApi } from '@/app/lib/api/userApi';
+import { useApiClient } from '@/app/lib/api-client';
 
 // This must be called within a React component or hook
 function MyComponent() {
@@ -107,7 +107,7 @@ function MyComponent() {
       const updatedUser = await UserApi.updateUser(apiClient, userData);
       await UserApi.updatePassword(apiClient, passwordData, userId);
     } catch (error) {
-      console.error("API call failed:", error);
+      console.error('API call failed:', error);
     }
   };
 }
@@ -116,16 +116,18 @@ function MyComponent() {
 ## Migration Guide
 
 ### From Old Pattern
+
 ```typescript
 // OLD - Direct fetch calls (deprecated)
-import { getUser, updateUser } from "@/app/lib/user";
+import { getUser, updateUser } from '@/app/lib/user';
 const user = await getUser(); // ⚠️ No authentication handling
 ```
 
 ### To New Pattern
+
 ```typescript
 // NEW - Authenticated hooks
-import { useGetUser, useUpdateUser } from "@/hooks/useUser";
+import { useGetUser, useUpdateUser } from '@/hooks/useUser';
 const getUser = useGetUser();
 const updateUser = useUpdateUser();
 const user = await getUser(); // ✅ Full authentication handling
@@ -142,18 +144,21 @@ These components have been successfully migrated to use the new hooks:
 ## Import Paths
 
 ### Recommended (New)
+
 ```typescript
-import { useGetUser, useUpdateUser, useUpdatePassword } from "@/hooks/useUser";
+import { useGetUser, useUpdateUser, useUpdatePassword } from '@/hooks/useUser';
 ```
 
 ### Also Works (Legacy Re-export)
+
 ```typescript
-import { useGetUser, useUpdateUser, useUpdatePassword } from "@/app/lib/user";
+import { useGetUser, useUpdateUser, useUpdatePassword } from '@/app/lib/user';
 ```
 
 ### Direct API (Advanced)
+
 ```typescript
-import { UserApi } from "@/app/lib/api/userApi";
+import { UserApi } from '@/app/lib/api/userApi';
 ```
 
 ## API Methods
@@ -163,12 +168,16 @@ import { UserApi } from "@/app/lib/api/userApi";
 ```typescript
 class UserApi extends BaseApi {
   // Authenticated methods (preferred)
-  static async getCurrentUser(apiClient: AuthenticatedApiClient): Promise<UserT>
-  static async updateUser(apiClient: AuthenticatedApiClient, user: UserT): Promise<UserT>
-  static async updatePassword(apiClient: AuthenticatedApiClient, passwordData: PasswordData, userId: string): Promise<void>
-  
+  static async getCurrentUser(apiClient: AuthenticatedApiClient): Promise<UserT>;
+  static async updateUser(apiClient: AuthenticatedApiClient, user: UserT): Promise<UserT>;
+  static async updatePassword(
+    apiClient: AuthenticatedApiClient,
+    passwordData: PasswordData,
+    userId: string,
+  ): Promise<void>;
+
   // Legacy method (discouraged)
-  static async getCurrentUserLegacy(): Promise<UserT>
+  static async getCurrentUserLegacy(): Promise<UserT>;
 }
 ```
 
@@ -176,14 +185,14 @@ class UserApi extends BaseApi {
 
 ```typescript
 // Authentication-aware hooks
-export function useGetUser(): () => Promise<UserT>
-export function useUpdateUser(): (userData: UserT) => Promise<UserT>
-export function useUpdatePassword(): (passwordData: PasswordData, userId: string) => Promise<void>
+export function useGetUser(): () => Promise<UserT>;
+export function useUpdateUser(): (userData: UserT) => Promise<UserT>;
+export function useUpdatePassword(): (passwordData: PasswordData, userId: string) => Promise<void>;
 
 // Legacy functions (deprecated)
-export async function getUser(): Promise<UserT> // @deprecated
-export async function updateUser(user: UserT): Promise<UserT> // @deprecated
-export async function updatePassword(passwordData: PasswordData, userId: string): Promise<void> // @deprecated
+export async function getUser(): Promise<UserT>; // @deprecated
+export async function updateUser(user: UserT): Promise<UserT>; // @deprecated
+export async function updatePassword(passwordData: PasswordData, userId: string): Promise<void>; // @deprecated
 ```
 
 ## Error Handling
@@ -191,6 +200,7 @@ export async function updatePassword(passwordData: PasswordData, userId: string)
 The new architecture provides consistent error handling:
 
 ### HTTP Status Code Mapping
+
 - `401` → "Authentication required. Please sign in again."
 - `403` → "You don't have permission to perform this action"
 - `404` → "The requested resource was not found"
@@ -198,6 +208,7 @@ The new architecture provides consistent error handling:
 - `500` → "A server error occurred. Please try again later."
 
 ### Authentication Errors
+
 - Hooks automatically validate authentication state
 - Clear error messages for authentication failures
 - Proper error propagation for UI handling
@@ -208,7 +219,7 @@ The new architecture provides consistent error handling:
 ✅ **Error Sanitization**: Error messages are sanitized to prevent information leakage  
 ✅ **Authentication Checks**: All hooks validate authentication state  
 ✅ **CSRF Protection**: Uses `credentials: "include"` for session-based fallback  
-✅ **Type Safety**: TypeScript prevents common security mistakes  
+✅ **Type Safety**: TypeScript prevents common security mistakes
 
 ## Next Steps
 
@@ -225,8 +236,11 @@ export class TeamApi extends BaseApi {
   static async getTeams(apiClient: AuthenticatedApiClient): Promise<TeamT[]> {
     return this.makeRequest<TeamT[]>(apiClient, 'get', '/teams');
   }
-  
-  static async createTeam(apiClient: AuthenticatedApiClient, teamData: CreateTeamT): Promise<TeamT> {
+
+  static async createTeam(
+    apiClient: AuthenticatedApiClient,
+    teamData: CreateTeamT,
+  ): Promise<TeamT> {
     return this.makeRequest<TeamT>(apiClient, 'post', '/teams', teamData);
   }
 }
@@ -235,9 +249,9 @@ export class TeamApi extends BaseApi {
 export function useGetTeams() {
   const apiClient = useApiClient();
   const { isAuthenticated, loading } = useAuth();
-  
+
   return useCallback(async () => {
-    if (loading || !isAuthenticated) throw new Error("Not authenticated");
+    if (loading || !isAuthenticated) throw new Error('Not authenticated');
     return TeamApi.getTeams(apiClient);
   }, [apiClient, isAuthenticated, loading]);
 }

@@ -1,6 +1,5 @@
 import json
 from dataclasses import asdict
-from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
 from shared.schemas.core import Constraint
@@ -30,7 +29,7 @@ from engine.types import ObjectiveCategory, Request, ShiftDemand, VarName
 
 def build_var_name_constraint(
     constraint: Constraint | Request,
-    cstr_vars: List[cp_model.IntVar],
+    cstr_vars: list[cp_model.IntVar],
     category: ObjectiveCategory,
 ) -> str:
     return json.dumps(
@@ -46,7 +45,7 @@ def build_var_name_constraint(
 
 
 def build_var_name_work_time(
-    cstr_vars: List[cp_model.IntVar], category: ObjectiveCategory
+    cstr_vars: list[cp_model.IntVar], category: ObjectiveCategory
 ) -> str:
     return json.dumps(
         asdict(
@@ -68,7 +67,7 @@ def build_var_name_work_time(
 
 
 def build_var_name_groups_assignments(
-    cstr_vars: List[cp_model.IntVar], category: ObjectiveCategory
+    cstr_vars: list[cp_model.IntVar], category: ObjectiveCategory
 ) -> str:
     return json.dumps(
         asdict(
@@ -84,7 +83,7 @@ def build_var_name_groups_assignments(
 
 def build_var_name_daily_shift_demand(
     shift_demand: ShiftDemand,
-    cstr_vars: List[cp_model.IntVar],
+    cstr_vars: list[cp_model.IntVar],
     category: ObjectiveCategory,
 ) -> str:
     return json.dumps(
@@ -100,7 +99,7 @@ def build_var_name_daily_shift_demand(
 
 
 def build_var_name_duty_recup(
-    cstr_vars: List[cp_model.IntVar], category: ObjectiveCategory
+    cstr_vars: list[cp_model.IntVar], category: ObjectiveCategory
 ) -> str:
     return json.dumps(
         asdict(
@@ -115,7 +114,7 @@ def build_var_name_duty_recup(
 
 
 def build_var_name_link_shift(
-    cstr_vars: List[cp_model.IntVar],
+    cstr_vars: list[cp_model.IntVar],
     category: ObjectiveCategory,
     link_shift_id: str,
 ) -> str:
@@ -169,7 +168,7 @@ def build_var_name_link_shift(
 #     )
 
 
-def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> str:
+def build_var_name_seq(constraint: Constraint, span: list[cp_model.IntVar]) -> str:
     # pylint: disable=protected-access
     return json.dumps(
         asdict(
@@ -196,7 +195,7 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
 
 
 def build_var_name_equity(
-    cstr_vars: List[cp_model.IntVar], category: ObjectiveCategory
+    cstr_vars: list[cp_model.IntVar], category: ObjectiveCategory
 ) -> str:
     return json.dumps(
         asdict(
@@ -212,7 +211,7 @@ def build_var_name_equity(
 
 def build_var_name_generic(
     objective_id: str | None,
-    cstr_vars: List[cp_model.IntVar],
+    cstr_vars: list[cp_model.IntVar],
     category: ObjectiveCategory,
     hard_to_soft: bool | None = None,
     meta: dict | None = None,
@@ -222,7 +221,7 @@ def build_var_name_generic(
     `cstr_vars` can be a list of cp_model.IntVar or strings (var names).
     """
     # normalize cstr_vars to names
-    names: List[str] = []
+    names: list[str] = []
     for v in cstr_vars:
         try:
             names.append(v.Name())

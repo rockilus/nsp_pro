@@ -1,29 +1,29 @@
-import React, { useState } from "react";
-import { useTranslation } from "../../../../app/i18n/client";
+import React, { useState } from 'react';
+import { useTranslation } from '../../../../app/i18n/client';
 // Components
-import BlockEditShiftWorkerOption from "./block-edit-shift-worker-option";
-import GetBlockNameLabel from "../../../data-display/get-block-name-label";
-import PopoverBoxAnchorElOver from "../../../inputs/popover-box-anchor-el-over";
+import BlockEditShiftWorkerOption from './block-edit-shift-worker-option';
+import GetBlockNameLabel from '../../../data-display/get-block-name-label';
+import PopoverBoxAnchorElOver from '../../../inputs/popover-box-anchor-el-over';
 import {
   blockDisplayName,
   blockDisplayPlaceholder,
   blockDislayValue,
-} from "../../../data-display/block-display";
+} from '../../../data-display/block-display';
 // Utils
 import {
   expandBoolDimOptions,
   groupByCategoryName,
-} from "../../shift-worker-option-utils/shift-worker-option-utils";
-import { getShiftWorkerOptionDisplayText } from "../../../../utils/shift-worker-option-display";
+} from '../../shift-worker-option-utils/shift-worker-option-utils';
+import { getShiftWorkerOptionDisplayText } from '../../../../utils/shift-worker-option-display';
 // Types
 import {
   TemplateBlockT,
   BlockT,
   ShiftWorkerOptionT,
   SWOIdTypes,
-} from "../../../../types/constraint";
-import { WorkerT } from "../../../../types/worker";
-import { ShiftT } from "../../../../types/shift";
+} from '../../../../types/constraint';
+import { WorkerT } from '../../../../types/worker';
+import { ShiftT } from '../../../../types/shift';
 
 export default function BlockDisplayShiftWorkerOption({
   lng,
@@ -46,32 +46,27 @@ export default function BlockDisplayShiftWorkerOption({
   handleEditBlock: (block: BlockT) => void;
   handleRemoveError: (index: number) => void;
 }) {
-  const { t } = useTranslation(lng, "constraint-page");
+  const { t } = useTranslation(lng, 'constraint-page');
 
   const [open, setOpen] = useState(false);
 
   const translateOptionName = (name: string) => {
     switch (name) {
-      case "all workers":
-        return t("all_workers");
-      case "all shifts":
-        return t("all_shifts");
-      case "Duties":
-        return t("duties");
-      case `${t("not")} duties`:
-        return `${t("not")} ${t("duties").toLocaleLowerCase()}`;
+      case 'all workers':
+        return t('all_workers');
+      case 'all shifts':
+        return t('all_shifts');
+      case 'Duties':
+        return t('duties');
+      case `${t('not')} duties`:
+        return `${t('not')} ${t('duties').toLocaleLowerCase()}`;
       default:
         return name;
     }
   };
 
   const swoDisplayString = (swo: ShiftWorkerOptionT): string => {
-    const displayText = getShiftWorkerOptionDisplayText(
-      swo,
-      workers,
-      shifts,
-      t("not")
-    );
+    const displayText = getShiftWorkerOptionDisplayText(swo, workers, shifts, t('not'));
     return translateOptionName(displayText);
   };
 
@@ -83,7 +78,7 @@ export default function BlockDisplayShiftWorkerOption({
         const swo = block.value[i] as ShiftWorkerOptionT;
         blockNames.push(swoDisplayString(swo));
       }
-      displayString = blockNames.join(", ");
+      displayString = blockNames.join(', ');
     }
 
     return (
@@ -93,12 +88,12 @@ export default function BlockDisplayShiftWorkerOption({
           : blockDisplayPlaceholder(
               templateBlock.placeholder,
               error,
-              `constraint-block-placeholder-${index}`
+              `constraint-block-placeholder-${index}`,
             )}
         {blockDisplayName(
           GetBlockNameLabel(lng, templateBlock.name),
           error,
-          `constraint-block-name-${index}`
+          `constraint-block-name-${index}`,
         )}
       </div>
     );
@@ -119,7 +114,7 @@ export default function BlockDisplayShiftWorkerOption({
           templateBlock={templateBlock}
           error={error}
           shiftWorkerOptionDict={groupByCategoryName(
-            expandBoolDimOptions(templateBlock.options as ShiftWorkerOptionT[])
+            expandBoolDimOptions(templateBlock.options as ShiftWorkerOptionT[]),
           )}
           handleEditBlock={handleEditBlock}
           handleClose={handleClose}

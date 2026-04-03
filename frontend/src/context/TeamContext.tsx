@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { createContext, useContext } from "react";
-import { TeamWithMembership, TeamT } from "@/types/team";
+import { createContext, useContext } from 'react';
+import { TeamWithMembership, TeamT } from '@/types/team';
 
 type TeamContextType = {
   teams: TeamWithMembership[];
@@ -13,13 +13,11 @@ type TeamContextType = {
   addTeamToContext: (team: TeamWithMembership) => void;
 };
 
-export const TeamContext = createContext<TeamContextType | undefined>(
-  undefined,
-);
+export const TeamContext = createContext<TeamContextType | undefined>(undefined);
 
 export function useTeam() {
   const ctx = useContext(TeamContext);
-  if (!ctx) throw new Error("useTeam must be used within a TeamProvider");
+  if (!ctx) throw new Error('useTeam must be used within a TeamProvider');
   return ctx;
 }
 

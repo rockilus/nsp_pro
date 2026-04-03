@@ -43,8 +43,7 @@ async def get_constraint_templates(
         # pylint: disable=R0801
         (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
             # fmt: off
-            data_fetching_service
-            .fetch_workers_not_d_shifts_not_d_dim_not_d_attributes_spes(
+            data_fetching_service.fetch_workers_not_d_shifts_not_d_dim_not_d_attributes_spes(
                 team_id
             )
             # fmt: on

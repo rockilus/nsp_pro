@@ -1,7 +1,7 @@
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // Types
-import { AttributeT } from "./attribute";
+import { AttributeT } from './attribute';
 
 dayjs.extend(utc);
 

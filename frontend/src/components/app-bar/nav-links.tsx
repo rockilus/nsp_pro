@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTranslation } from "@/app/i18n/client";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTranslation } from '@/app/i18n/client';
 // MUI
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
 // Styles
-import "./nav-links.css";
+import './nav-links.css';
 // Types
-import { TeamMembershipRole, TeamWithMembership } from "@/types/team";
-import { canAccessPage } from "@/app/lib/access-control/check-access";
+import { TeamMembershipRole, TeamWithMembership } from '@/types/team';
+import { canAccessPage } from '@/app/lib/access-control/check-access';
 
 export default function NavLinks({
   lng,
@@ -23,7 +23,7 @@ export default function NavLinks({
   lng: string;
   selectedTeam: TeamWithMembership | null;
 }) {
-  const { t } = useTranslation(lng, "app-bar");
+  const { t } = useTranslation(lng, 'app-bar');
 
   const pathname = usePathname();
 
@@ -34,58 +34,58 @@ export default function NavLinks({
     route: string;
   }[] = [
     {
-      name: "workers",
-      label: t("workers"),
+      name: 'workers',
+      label: t('workers'),
       href: `/${lng}/plan/workers`,
-      route: "/workers",
+      route: '/workers',
     },
     {
-      name: "shifts",
-      label: t("shifts"),
+      name: 'shifts',
+      label: t('shifts'),
       href: `/${lng}/plan/shifts`,
-      route: "/shifts",
+      route: '/shifts',
     },
     {
-      name: "shift-demands",
-      label: t("shift_demands"),
+      name: 'shift-demands',
+      label: t('shift_demands'),
       href: `/${lng}/plan/shift-demands`,
-      route: "/shift-demands",
+      route: '/shift-demands',
     },
     {
-      name: "constraints",
-      label: t("constraints"),
+      name: 'constraints',
+      label: t('constraints'),
       href: `/${lng}/plan/constraints`,
-      route: "/constraints",
+      route: '/constraints',
     },
     {
-      name: "requests",
-      label: t("requests"),
+      name: 'requests',
+      label: t('requests'),
       href: `/${lng}/plan/requests`,
-      route: "/requests",
+      route: '/requests',
     },
     {
-      name: "campaign",
-      label: t("campaign"),
+      name: 'campaign',
+      label: t('campaign'),
       href: `/${lng}/plan/campaign`,
-      route: "/campaign",
+      route: '/campaign',
     },
     {
-      name: "schedule",
-      label: t("schedule"),
+      name: 'schedule',
+      label: t('schedule'),
       href: `/${lng}/plan/schedule`,
-      route: "/schedule",
+      route: '/schedule',
     },
     {
-      name: "swaps",
-      label: t("swaps"),
+      name: 'swaps',
+      label: t('swaps'),
       href: `/${lng}/plan/swaps`,
-      route: "/swaps",
+      route: '/swaps',
     },
     {
-      name: "stats",
-      label: t("stats"),
+      name: 'stats',
+      label: t('stats'),
       href: `/${lng}/plan/stats`,
-      route: "/stats",
+      route: '/stats',
     },
   ];
 
@@ -97,8 +97,7 @@ export default function NavLinks({
 
   // Determine active tab by matching pathname with the link href pattern
   const activeRoute =
-    links.find((l) => pathname?.startsWith(`/${lng}/plan${l.route}`))?.route ??
-    false;
+    links.find((l) => pathname?.startsWith(`/${lng}/plan${l.route}`))?.route ?? false;
 
   return (
     <div className="nav-links-container">
@@ -109,12 +108,12 @@ export default function NavLinks({
         indicatorColor="primary"
         variant="standard"
         sx={{
-          height: "64px",
-          display: "flex",
-          alignItems: "center",
+          height: '64px',
+          display: 'flex',
+          alignItems: 'center',
           // make the indicator (underline) thicker
-          "& .MuiTabs-indicator": {
-            height: "4px",
+          '& .MuiTabs-indicator': {
+            height: '4px',
             // borderRadius: 2,
           },
         }}
@@ -130,12 +129,12 @@ export default function NavLinks({
             className="nav-link-link"
             disableRipple
             sx={{
-              textTransform: "none",
-              padding: "0 10px",
-              minWidth: "auto",
+              textTransform: 'none',
+              padding: '0 10px',
+              minWidth: 'auto',
               minHeight: 64,
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
             }}
           />
         ))}
@@ -153,7 +152,7 @@ export function NavLinksMobile({
   selectedTeam: TeamWithMembership | null;
   onClick?: () => void;
 }) {
-  const { t } = useTranslation(lng, "app-bar");
+  const { t } = useTranslation(lng, 'app-bar');
   const pathname = usePathname();
 
   const allLinks: {
@@ -187,10 +186,10 @@ export function NavLinksMobile({
     //   route: "/constraints",
     // },
     {
-      name: "requests",
-      label: t("requests"),
+      name: 'requests',
+      label: t('requests'),
       href: `/${lng}/plan/requests`,
-      route: "/requests",
+      route: '/requests',
     },
     // {
     //   name: "campaign",
@@ -199,16 +198,16 @@ export function NavLinksMobile({
     //   route: "/campaign",
     // },
     {
-      name: "schedule",
-      label: t("schedule"),
+      name: 'schedule',
+      label: t('schedule'),
       href: `/${lng}/plan/schedule`,
-      route: "/schedule",
+      route: '/schedule',
     },
     {
-      name: "swaps",
-      label: t("swaps"),
+      name: 'swaps',
+      label: t('swaps'),
       href: `/${lng}/plan/swaps`,
-      route: "/swaps",
+      route: '/swaps',
     },
     // {
     //   name: "stats",

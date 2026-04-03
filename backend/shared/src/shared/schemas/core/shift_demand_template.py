@@ -419,7 +419,7 @@ def apply_demands_to_template_week(
         raise ValueError(
             f"Target week number {target_week_number} is out of range. "
             f"Template has {len(template.weeks_data)} weeks "
-            f"(0-{len(template.weeks_data)-1})"
+            f"(0-{len(template.weeks_data) - 1})"
         )
 
     # Convert source week demands to DemandEntry format

@@ -1,22 +1,22 @@
-import React from "react";
-import { useTranslation } from "../../app/i18n/client";
-import { useIsMobile } from "../../hooks/useIsMobile";
+import React from 'react';
+import { useTranslation } from '../../app/i18n/client';
+import { useIsMobile } from '../../hooks/useIsMobile';
 // MUI
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import EditIcon from "@mui/icons-material/Edit";
-import CloseIcon from "@mui/icons-material/Close";
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import CloseIcon from '@mui/icons-material/Close';
 // Components
-import { RequestForm } from "@/components/common/RequestForm";
+import { RequestForm } from '@/components/common/RequestForm';
 // Types
-import { RequestT } from "../../types/request";
-import { ShiftT } from "../../types/shift";
-import { WorkerT } from "../../types/worker";
-import { TeamMembershipRole } from "@/types/team";
-import { ShiftWorkerOptionT } from "@/types/constraint";
+import { RequestT } from '../../types/request';
+import { ShiftT } from '../../types/shift';
+import { WorkerT } from '../../types/worker';
+import { TeamMembershipRole } from '@/types/team';
+import { ShiftWorkerOptionT } from '@/types/constraint';
 
 const RequestPanel = ({
   lng,
@@ -57,7 +57,7 @@ const RequestPanel = ({
   onClose?: () => void;
   open?: boolean;
 }) => {
-  const { t } = useTranslation(lng, "request-page");
+  const { t } = useTranslation(lng, 'request-page');
   const isMobile = useIsMobile();
 
   const [internalOpen, setInternalOpen] = React.useState<boolean>(false);
@@ -87,7 +87,7 @@ const RequestPanel = ({
     }
   }, [request, hideButton, externalOpen]);
 
-  const id = open ? "request-dialog" : undefined;
+  const id = open ? 'request-dialog' : undefined;
 
   return (
     <div data-testid="request-panel">
@@ -110,16 +110,14 @@ const RequestPanel = ({
             <Button
               aria-describedby={id}
               variant="contained"
-              disabled={
-                userTeamRole === TeamMembershipRole.MEMBER && !userWorkerId
-              }
+              disabled={userTeamRole === TeamMembershipRole.MEMBER && !userWorkerId}
               onClick={handleClick}
               sx={{
-                textTransform: "none",
+                textTransform: 'none',
               }}
               data-testid="new-request-button"
             >
-              {t("new_request")}
+              {t('new_request')}
             </Button>
           )}
         </>
@@ -137,12 +135,12 @@ const RequestPanel = ({
           <DialogTitle>
             <div
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
               }}
             >
-              <span>{isEdit ? t("edit_request") : t("new_request")}</span>
+              <span>{isEdit ? t('edit_request') : t('new_request')}</span>
               <IconButton
                 aria-label="close"
                 onClick={handleClose}
@@ -178,7 +176,7 @@ const RequestPanel = ({
             handleDenyRequest={handleDenyRequest}
             onClose={handleClose}
             isMobile={isMobile}
-            title={isEdit ? t("edit_request") : t("new_request")}
+            title={isEdit ? t('edit_request') : t('new_request')}
             fullWidth={isMobile}
           />
         </DialogContent>
@@ -187,6 +185,6 @@ const RequestPanel = ({
   );
 };
 
-RequestPanel.displayName = "RequestPanel";
+RequestPanel.displayName = 'RequestPanel';
 
 export default React.memo(RequestPanel);

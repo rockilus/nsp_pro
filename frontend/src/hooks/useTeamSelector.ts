@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from 'react';
 // import { useRouter } from "next/navigation";
-import { TeamWithMembership, TeamT } from "@/types/team";
-import { useGetUserTeamsWithMemberships } from "./useTeam";
+import { TeamWithMembership, TeamT } from '@/types/team';
+import { useGetUserTeamsWithMemberships } from './useTeam';
 
 export function useTeamSelector() {
   //   const router = useRouter();
@@ -16,9 +16,7 @@ export function useTeamSelector() {
 
   const updateTeamInContext = (updatedTeam: TeamT) => {
     setTeams((prevTeams) =>
-      prevTeams.map((t) =>
-        t.team.id === updatedTeam.id ? { ...t, team: updatedTeam } : t,
-      ),
+      prevTeams.map((t) => (t.team.id === updatedTeam.id ? { ...t, team: updatedTeam } : t)),
     );
   };
 
@@ -38,9 +36,8 @@ export function useTeamSelector() {
         setTeams(fetchedTeams);
 
         // const urlTeamId = new URLSearchParams(window.location.search).get("team");
-        const storageTeamId = localStorage.getItem("selectedTeamId");
-        const fallbackTeamId =
-          storageTeamId || fetchedTeams[0]?.team.id || null;
+        const storageTeamId = localStorage.getItem('selectedTeamId');
+        const fallbackTeamId = storageTeamId || fetchedTeams[0]?.team.id || null;
         // const fallbackTeamId =
         //   urlTeamId || storageTeamId || fetchedTeams[0]?.team.id || null;
 
@@ -48,8 +45,8 @@ export function useTeamSelector() {
           setSelectedTeamId(fallbackTeamId);
         }
       } catch (err) {
-        console.error("Failed to fetch teams:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch teams");
+        console.error('Failed to fetch teams:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch teams');
         // Reset the flag on error to allow retry
         hasFetched.current = false;
       } finally {
@@ -72,7 +69,7 @@ export function useTeamSelector() {
 
   const setSelectedTeamIdAndPersist = (id: string | null) => {
     if (id) {
-      localStorage.setItem("selectedTeamId", id);
+      localStorage.setItem('selectedTeamId', id);
     }
     setSelectedTeamId(id);
   };

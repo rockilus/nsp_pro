@@ -1,8 +1,8 @@
-import { User } from "oidc-client-ts";
-import { env } from "../../config/env";
-import { useAuth } from "../../contexts/auth-context";
-import { useMemo } from "react";
-import { getImpersonationToken } from "./impersonation-storage";
+import { User } from 'oidc-client-ts';
+import { env } from '../../config/env';
+import { useAuth } from '../../contexts/auth-context';
+import { useMemo } from 'react';
+import { getImpersonationToken } from './impersonation-storage';
 
 interface ApiClientOptions extends RequestInit {
   requireAuth?: boolean;
@@ -17,42 +17,40 @@ class APIClient {
 
   private getAuthHeaders(user?: User | null): HeadersInit {
     const headers: HeadersInit = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
 
     if (env.isDevelopment) {
       // Development mode: use simple headers
-      headers["X-Dev-User-ID"] = env.devUserId;
-      headers["X-API-Key"] = env.devApiKey;
+      headers['X-Dev-User-ID'] = env.devUserId;
+      headers['X-API-Key'] = env.devApiKey;
 
       // Debug logging for development
-      if (typeof window !== "undefined") {
-        console.log("Development API call with user:", env.devUserId);
+      if (typeof window !== 'undefined') {
+        console.log('Development API call with user:', env.devUserId);
       }
     } else {
       // Production mode: use existing Cognito auth
-      if (typeof window !== "undefined" && env.isDevelopment) {
-        console.log("API Client Auth Debug:", {
+      if (typeof window !== 'undefined' && env.isDevelopment) {
+        console.log('API Client Auth Debug:', {
           hasUser: !!user,
           hasIdToken: !!user?.id_token,
           tokenLength: user?.id_token?.length || 0,
           // Only log first 20 chars for security
-          tokenPreview: user?.id_token
-            ? `${user.id_token.substring(0, 20)}...`
-            : "none",
+          tokenPreview: user?.id_token ? `${user.id_token.substring(0, 20)}...` : 'none',
         });
       }
 
       // Use ID token for AWS API Gateway with Cognito User Pool authorizer
       if (user?.id_token) {
-        headers["Authorization"] = `Bearer ${user.id_token}`;
+        headers['Authorization'] = `Bearer ${user.id_token}`;
       }
     }
 
     // Attach the impersonation JWT when an admin has an active session
     const impersonationToken = getImpersonationToken();
     if (impersonationToken) {
-      headers["X-Impersonation-Token"] = impersonationToken;
+      headers['X-Impersonation-Token'] = impersonationToken;
     }
 
     return headers;
@@ -68,17 +66,17 @@ class APIClient {
 
     // In development mode, be more lenient with auth requirements
     if (requireAuth && !env.isDevelopment && !user?.id_token) {
-      throw new Error("User not authenticated");
+      throw new Error('User not authenticated');
     }
 
     // Debug logging for request details
-    if (typeof window !== "undefined" && env.isDevelopment) {
-      console.log("API Request Debug:", {
+    if (typeof window !== 'undefined' && env.isDevelopment) {
+      console.log('API Request Debug:', {
         endpoint,
-        method: restOptions.method || "GET",
+        method: restOptions.method || 'GET',
         baseURL: this.baseURL,
         isDevelopment: env.isDevelopment,
-        hasAuthHeader: "Authorization" in headers || "X-Dev-User-ID" in headers,
+        hasAuthHeader: 'Authorization' in headers || 'X-Dev-User-ID' in headers,
         requireAuth,
       });
     }
@@ -90,20 +88,15 @@ class APIClient {
         ...restOptions.headers,
       },
       // In development, don't include credentials to avoid CORS issues
-      credentials: env.isDevelopment
-        ? undefined
-        : user?.id_token
-          ? undefined
-          : "include",
+      credentials: env.isDevelopment ? undefined : user?.id_token ? undefined : 'include',
     });
 
     if (!response.ok) {
       const responseData = await response.json().catch(() => ({}));
-      const errorMessage =
-        responseData.detail || `${response.status} ${response.statusText}`;
+      const errorMessage = responseData.detail || `${response.status} ${response.statusText}`;
 
       if (response.status === 401) {
-        throw new Error("Unauthorized access. Please sign in again.");
+        throw new Error('Unauthorized access. Please sign in again.');
       }
       throw new Error(`API request failed: ${errorMessage}`);
     }
@@ -129,7 +122,7 @@ class APIClient {
     const headers = this.getAuthHeaders(user);
 
     if (requireAuth && !env.isDevelopment && !user?.id_token) {
-      throw new Error("User not authenticated");
+      throw new Error('User not authenticated');
     }
 
     const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -138,22 +131,14 @@ class APIClient {
         ...headers,
         ...restOptions.headers,
       },
-      credentials: env.isDevelopment
-        ? undefined
-        : user?.id_token
-          ? undefined
-          : "include",
+      credentials: env.isDevelopment ? undefined : user?.id_token ? undefined : 'include',
     });
 
     return response;
   }
 
-  async get<T>(
-    endpoint: string,
-    user?: User | null,
-    options?: ApiClientOptions,
-  ): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "GET" }, user);
+  async get<T>(endpoint: string, user?: User | null, options?: ApiClientOptions): Promise<T> {
+    return this.request<T>(endpoint, { ...options, method: 'GET' }, user);
   }
 
   async post<T>(
@@ -166,7 +151,7 @@ class APIClient {
       endpoint,
       {
         ...options,
-        method: "POST",
+        method: 'POST',
         body: data ? JSON.stringify(data) : undefined,
       },
       user,
@@ -186,7 +171,7 @@ class APIClient {
       endpoint,
       {
         ...options,
-        method: "POST",
+        method: 'POST',
         body: data ? JSON.stringify(data) : undefined,
       },
       user,
@@ -203,7 +188,7 @@ class APIClient {
       endpoint,
       {
         ...options,
-        method: "PUT",
+        method: 'PUT',
         body: data ? JSON.stringify(data) : undefined,
       },
       user,
@@ -220,7 +205,7 @@ class APIClient {
       endpoint,
       {
         ...options,
-        method: "DELETE",
+        method: 'DELETE',
         body: data ? JSON.stringify(data) : undefined,
       },
       user,
@@ -237,8 +222,8 @@ export function useApiClient() {
   // CRITICAL: Memoize the API client to prevent infinite loops
   return useMemo(() => {
     // Reduce debug logging spam in production
-    if (env.isDevelopment && typeof window !== "undefined") {
-      console.log("useApiClient Debug:", {
+    if (env.isDevelopment && typeof window !== 'undefined') {
+      console.log('useApiClient Debug:', {
         isAuthenticated,
         loading,
         hasUser: !!user,

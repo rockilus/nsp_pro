@@ -105,7 +105,7 @@ def save_benchmark_to_csv(
         "commit": get_git_revision_hash(),
     }
     try:
-        with open(file_path, "r", newline="", encoding="utf-8") as csvfile:
+        with open(file_path, newline="", encoding="utf-8") as csvfile:
             csv.DictReader(csvfile, fieldnames=fieldnames)
         with open(file_path, "a", newline="", encoding="utf-8") as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)

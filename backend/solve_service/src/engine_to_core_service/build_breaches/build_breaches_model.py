@@ -1,6 +1,5 @@
 import json
 from datetime import date
-from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
     Assignment,
@@ -30,15 +29,15 @@ from engine import VarName as VarNameEngine
 # pylint: disable=too-many-arguments
 def build_breaches_model(
     schedule: Schedule,
-    workers: List[Worker],
-    shifts: List[Shift],
-    link_shifts: List[LinkShift],
-    daily_shift_demands: List[ShiftDemandNew],
-    assignments: List[Assignment],
+    workers: list[Worker],
+    shifts: list[Shift],
+    link_shifts: list[LinkShift],
+    daily_shift_demands: list[ShiftDemandNew],
+    assignments: list[Assignment],
     constraints: Constraints,
-    requests: List[RequestAugmented],
-    breaches_engine: List[BreachEngine],
-) -> Tuple[List[Breach], List[Breach]]:
+    requests: list[RequestAugmented],
+    breaches_engine: list[BreachEngine],
+) -> tuple[list[Breach], list[Breach]]:
     breaches_parsed = _parse_breaches_engine(schedule, breaches_engine)
     breaches = [
         b
@@ -65,9 +64,9 @@ def build_breaches_model(
 
 
 def _parse_breaches_engine(
-    schedule: Schedule, breaches_engine: List[BreachEngine]
-) -> List[Breach]:
-    out: List[Breach] = []
+    schedule: Schedule, breaches_engine: list[BreachEngine]
+) -> list[Breach]:
+    out: list[Breach] = []
     for be in breaches_engine:
         try:
             var_name = VarNameEngine(**json.loads(be.var_name))
@@ -109,12 +108,12 @@ def _parse_breaches_engine(
 
 # pylint: disable=too-many-return-statements
 def _build_breach_description(
-    workers: List[Worker],
-    shifts: List[Shift],
-    link_shifts: List[LinkShift],
-    assignments: List[Assignment],
+    workers: list[Worker],
+    shifts: list[Shift],
+    link_shifts: list[LinkShift],
+    assignments: list[Assignment],
     constraints: Constraints,
-    requests: List[RequestAugmented],
+    requests: list[RequestAugmented],
     breach: Breach,
 ) -> str:
     if breach.objective_category == ObjectiveCategory.CONSTRAINT:
@@ -212,9 +211,9 @@ def _get_constraint_by_id(
 
 # pylint: disable=too-many-locals
 def _build_description_breach_constraint_sum(
-    workers: List[Worker],
-    shifts: List[Shift],
-    assignments: List[Assignment],
+    workers: list[Worker],
+    shifts: list[Shift],
+    assignments: list[Assignment],
     constraint: ConstraintSum,
     breach: Breach,
 ) -> str:
@@ -257,9 +256,9 @@ def _build_description_breach_constraint_sum(
 
 
 def _build_description_breach_constraint_seq(
-    workers: List[Worker],
-    shifts: List[Shift],
-    assignments: List[Assignment],
+    workers: list[Worker],
+    shifts: list[Shift],
+    assignments: list[Assignment],
     constraint: ConstraintSeq,
     breach: Breach,
 ) -> str:
@@ -295,9 +294,9 @@ def _build_description_breach_constraint_seq(
 
 
 def _build_description_breach_constraint_ord(
-    workers: List[Worker],
-    shifts: List[Shift],
-    assignments: List[Assignment],
+    workers: list[Worker],
+    shifts: list[Shift],
+    assignments: list[Assignment],
     constraint: ConstraintOrd,
     breach: Breach,
 ) -> str:
@@ -347,8 +346,8 @@ def _build_description_breach_constraint_ord(
 
 
 def _build_description_breach_constraint_fil(
-    workers: List[Worker],
-    shifts: List[Shift],
+    workers: list[Worker],
+    shifts: list[Shift],
     breach: Breach,
 ) -> str:
     # No:
@@ -380,10 +379,10 @@ def _build_description_breach_constraint_fil(
 
 
 def _build_description_breach_request(
-    workers: List[Worker],
-    shifts: List[Shift],
-    assignments: List[Assignment],
-    requests: List[RequestAugmented],
+    workers: list[Worker],
+    shifts: list[Shift],
+    assignments: list[Assignment],
+    requests: list[RequestAugmented],
     breach: Breach,
 ) -> str:
     request = next((r for r in requests if r.id == breach.objective_id), None)
@@ -432,15 +431,15 @@ def _build_description_breach_request(
 
 
 def _build_description_breach_work_time(
-    workers: List[Worker],
-    shifts: List[Shift],
-    assignments: List[Assignment],
+    workers: list[Worker],
+    shifts: list[Shift],
+    assignments: list[Assignment],
     breach: Breach,
 ) -> str:
     shifts_work = [
         s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
     ]
-    shift_id_to_duration_dict: Dict[str, float] = {
+    shift_id_to_duration_dict: dict[str, float] = {
         s.id: (s.end_time - s.start_time).total_seconds() // 3600 for s in shifts_work
     }
     worker = next((w for w in workers if w.id == breach.variables[0].worker_id), None)
@@ -480,9 +479,9 @@ def _build_description_breach_work_time(
 
 
 def _build_description_breach_nb_duties(
-    workers: List[Worker],
-    shifts: List[Shift],
-    assignments: List[Assignment],
+    workers: list[Worker],
+    shifts: list[Shift],
+    assignments: list[Assignment],
     breach: Breach,
 ) -> str:
     shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
@@ -510,10 +509,10 @@ def _build_description_breach_nb_duties(
 
 
 def _build_description_link_shift_breach(
-    workers: List[Worker],
-    shifts: List[Shift],
-    assignments: List[Assignment],
-    link_shifts: List[LinkShift],
+    workers: list[Worker],
+    shifts: list[Shift],
+    assignments: list[Assignment],
+    link_shifts: list[LinkShift],
     breach: Breach,
 ) -> str:
     link_shift = next((ls for ls in link_shifts if ls.id == breach.objective_id), None)
@@ -556,11 +555,11 @@ def _build_description_link_shift_breach(
 
 def _build_daily_shift_demand_breaches(
     schedule: Schedule,
-    shifts: List[Shift],
-    daily_shift_demands: List[ShiftDemandNew],
-    assignments: List[Assignment],
-) -> List[Breach]:
-    out: List[Breach] = []
+    shifts: list[Shift],
+    daily_shift_demands: list[ShiftDemandNew],
+    assignments: list[Assignment],
+) -> list[Breach]:
+    out: list[Breach] = []
     for s in [s for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]]:
         dsds = [dsd for dsd in daily_shift_demands if dsd.shift_id == s.id]
         dates_dsds = list(set(dsd.date for dsd in dsds))
@@ -597,8 +596,8 @@ def _build_daily_shift_demand_breaches(
 
 
 def _build_description_duty_recup_breach(
-    workers: List[Worker],
-    shifts: List[Shift],
+    workers: list[Worker],
+    shifts: list[Shift],
     breach: Breach,
 ) -> str:
     duty_var = breach.variables[0]

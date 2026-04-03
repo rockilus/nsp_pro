@@ -3,20 +3,20 @@
  * Provides user-friendly error messages with proper styling and auto-dismiss
  */
 
-import React from "react";
-import { Alert, Snackbar } from "@mui/material";
+import React from 'react';
+import { Alert, Snackbar } from '@mui/material';
 
 interface ErrorFeedbackProps {
   error: string | null;
   onClose: () => void;
-  severity?: "error" | "warning" | "info" | "success";
+  severity?: 'error' | 'warning' | 'info' | 'success';
   autoHideDuration?: number;
 }
 
 export function ErrorFeedback({
   error,
   onClose,
-  severity = "error",
+  severity = 'error',
   autoHideDuration = 6000,
 }: ErrorFeedbackProps) {
   return (
@@ -24,14 +24,9 @@ export function ErrorFeedback({
       open={!!error}
       autoHideDuration={autoHideDuration}
       onClose={onClose}
-      anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
     >
-      <Alert
-        onClose={onClose}
-        severity={severity}
-        variant="filled"
-        sx={{ width: "100%" }}
-      >
+      <Alert onClose={onClose} severity={severity} variant="filled" sx={{ width: '100%' }}>
         {error}
       </Alert>
     </Snackbar>

@@ -5,17 +5,12 @@
  * reducing duplication across multiple constraint test files.
  */
 
-import { Page } from "@playwright/test";
-import { DatabaseTestUtils } from "./database-utils";
-import { ConstraintT, TemplateT } from "../../src/types/constraint";
-import {
-  ShiftT,
-  ShiftType,
-  ShiftRestType,
-  ShiftLeaveType,
-} from "../../src/types/shift";
-import { WorkerT } from "../../src/types/worker";
-import dayjs from "dayjs";
+import { Page } from '@playwright/test';
+import { DatabaseTestUtils } from './database-utils';
+import { ConstraintT, TemplateT } from '../../src/types/constraint';
+import { ShiftT, ShiftType, ShiftRestType, ShiftLeaveType } from '../../src/types/shift';
+import { WorkerT } from '../../src/types/worker';
+import dayjs from 'dayjs';
 
 export class ConstraintTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -42,25 +37,20 @@ export class ConstraintTestBase {
    * @param workerIndex - The worker index for unique naming
    * @param testId - Optional test ID for test isolation. If provided, workers and shifts will be stored by test ID
    */
-  async setupConstraintTests(
-    workerIndex: number,
-    testId?: string,
-  ): Promise<void> {
+  async setupConstraintTests(workerIndex: number, testId?: string): Promise<void> {
     // Wait for API to be ready
     await this.dbUtils.waitForApiReady();
 
     // Verify test utilities are available
     const health = await this.dbUtils.checkHealth();
     if (!health.test_utilities_available) {
-      throw new Error("Test utilities are not available");
+      throw new Error('Test utilities are not available');
     }
 
     // Create a test team
     const teamName = `Constraint Test Team ${workerIndex}-${Date.now()}`;
     this.testTeam = await this.dbUtils.createTeam({ name: teamName });
-    console.log(
-      `Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`,
-    );
+    console.log(`Created test team: ${this.testTeam.name} (${this.testTeam.teamId})`);
 
     // Create test workers
     const workers: WorkerT[] = [];
@@ -91,14 +81,14 @@ export class ConstraintTestBase {
     const shift1 = await this.createTestShift(
       {
         name: `Morning Shift ${workerIndex}-${Date.now()}`,
-        acronym: "MS",
+        acronym: 'MS',
       },
       testId,
     );
     const shift2 = await this.createTestShift(
       {
         name: `Evening Shift ${workerIndex}-${Date.now()}`,
-        acronym: "ES",
+        acronym: 'ES',
       },
       testId,
     );
@@ -112,29 +102,21 @@ export class ConstraintTestBase {
       console.log(
         `[Test ${testId}] Created test workers: ${workers
           .map((w) => `${w.name} (${w.id})`)
-          .join(", ")}`,
+          .join(', ')}`,
       );
       // Log shift names with their ids for better traceability
       console.log(
         `[Test ${testId}] Created test shifts: ${shifts
           .map((s) => `${s.name} (${s.id})`)
-          .join(", ")}`,
+          .join(', ')}`,
       );
     } else {
       // Legacy storage for backwards compatibility
       this.testWorkers = workers;
       this.testShifts = shifts;
       // Include ids in legacy logs as well for parity with testId logs
-      console.log(
-        `Created test workers: ${workers
-          .map((w) => `${w.name} (${w.id})`)
-          .join(", ")}`,
-      );
-      console.log(
-        `Created test shifts: ${shifts
-          .map((s) => `${s.name} (${s.id})`)
-          .join(", ")}`,
-      );
+      console.log(`Created test workers: ${workers.map((w) => `${w.name} (${w.id})`).join(', ')}`);
+      console.log(`Created test shifts: ${shifts.map((s) => `${s.name} (${s.id})`).join(', ')}`);
     }
   }
 
@@ -144,7 +126,7 @@ export class ConstraintTestBase {
    */
   async navigateToConstraintsPageDirect(page: Page): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
     // Set authentication headers before any navigation
@@ -152,7 +134,7 @@ export class ConstraintTestBase {
 
     // Set the selected team in localStorage to bypass team selection
     await page.addInitScript((teamData) => {
-      localStorage.setItem("selectedTeam", JSON.stringify(teamData));
+      localStorage.setItem('selectedTeam', JSON.stringify(teamData));
     }, this.testTeam);
 
     // Navigate directly to the constraints page with the team context
@@ -171,11 +153,11 @@ export class ConstraintTestBase {
     // Wait for loading to complete
     await page
       .waitForSelector('[data-testid="constraints-loading"]', {
-        state: "hidden",
+        state: 'hidden',
         timeout: 5000,
       })
       .catch(() => {
-        console.log("No loading indicator found or already hidden");
+        console.log('No loading indicator found or already hidden');
       });
   }
 
@@ -205,7 +187,7 @@ export class ConstraintTestBase {
     testId?: string,
   ): Promise<WorkerT> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
     return await this.dbUtils.createWorker({
@@ -233,7 +215,7 @@ export class ConstraintTestBase {
     testId?: string,
   ): Promise<ShiftT> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
     const defaultShiftData = {
@@ -243,7 +225,7 @@ export class ConstraintTestBase {
       shiftType: ShiftType.DUTY,
       restType: ShiftRestType.NONE,
       leaveType: ShiftLeaveType.NONE,
-      color: "#1976d2",
+      color: '#1976d2',
       ...shiftData,
     };
 
@@ -255,7 +237,7 @@ export class ConstraintTestBase {
    */
   async deleteTestWorker(workerId: string): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
     return await this.dbUtils.deleteWorker(workerId, this.testTeam.teamId);
@@ -295,7 +277,7 @@ export class ConstraintTestBase {
    */
   async deleteAllTestWorkers(): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
     for (const worker of this.testWorkers) {
@@ -314,16 +296,14 @@ export class ConstraintTestBase {
    */
   async deleteTestWorkers(testId: string): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
     const workers = this.testWorkersMap.get(testId) || [];
     for (const worker of workers) {
       try {
         await this.dbUtils.deleteWorker(worker.id, this.testTeam.teamId);
-        console.log(
-          `[Test ${testId}] Deleted worker: ${worker.name} (${worker.id})`,
-        );
+        console.log(`[Test ${testId}] Deleted worker: ${worker.name} (${worker.id})`);
       } catch (error) {
         console.warn(`Failed to delete worker ${worker.name}:`, error);
       }
@@ -387,9 +367,7 @@ export class ConstraintTestBase {
    * Gets the constraint block placeholder by index
    */
   getConstraintBlockPlaceholder(page: Page, blockIndex: number) {
-    return page.locator(
-      `[data-testid="constraint-block-placeholder-${blockIndex}"]`,
-    );
+    return page.locator(`[data-testid="constraint-block-placeholder-${blockIndex}"]`);
   }
 
   /**
@@ -431,27 +409,21 @@ export class ConstraintTestBase {
    * Gets the hard/soft button for a specific constraint
    */
   getConstraintHardSoftButton(page: Page, constraintId: string) {
-    return page.locator(
-      `[data-testid="constraint-hard-soft-button-${constraintId}"]`,
-    );
+    return page.locator(`[data-testid="constraint-hard-soft-button-${constraintId}"]`);
   }
 
   /**
    * Gets the edit button for a specific constraint
    */
   getConstraintEditButton(page: Page, constraintId: string) {
-    return page.locator(
-      `[data-testid="constraint-edit-button-${constraintId}"]`,
-    );
+    return page.locator(`[data-testid="constraint-edit-button-${constraintId}"]`);
   }
 
   /**
    * Gets the delete button for a specific constraint
    */
   getConstraintDeleteButton(page: Page, constraintId: string) {
-    return page.locator(
-      `[data-testid="constraint-delete-button-${constraintId}"]`,
-    );
+    return page.locator(`[data-testid="constraint-delete-button-${constraintId}"]`);
   }
 
   /**
@@ -514,7 +486,7 @@ export class ConstraintTestBase {
 
     // Wait for dialog to open
     const dialog = this.getNewConstraintDialog(page);
-    await dialog.waitFor({ state: "visible" });
+    await dialog.waitFor({ state: 'visible' });
   }
 
   /**
@@ -526,16 +498,13 @@ export class ConstraintTestBase {
 
     // Wait for the constraint edit form to appear
     const editForm = this.getConstraintEditForm(page);
-    await editForm.waitFor({ state: "visible" });
+    await editForm.waitFor({ state: 'visible' });
   }
 
   /**
    * Clicks on a constraint block placeholder to open selection
    */
-  async clickConstraintBlockPlaceholder(
-    page: Page,
-    blockIndex: number,
-  ): Promise<void> {
+  async clickConstraintBlockPlaceholder(page: Page, blockIndex: number): Promise<void> {
     const placeholder = this.getConstraintBlockPlaceholder(page, blockIndex);
     await placeholder.click();
   }
@@ -545,12 +514,10 @@ export class ConstraintTestBase {
    */
   async selectWorkers(page: Page, workerNames: string[]): Promise<void> {
     const dialog = this.getShiftWorkerOptionDialog(page);
-    await dialog.waitFor({ state: "visible" });
+    await dialog.waitFor({ state: 'visible' });
 
     for (const workerName of workerNames) {
-      const workerOption = page.locator(
-        `[data-testid="worker-option"][text="${workerName}"]`,
-      );
+      const workerOption = page.locator(`[data-testid="worker-option"][text="${workerName}"]`);
       await workerOption.click();
     }
 
@@ -563,12 +530,10 @@ export class ConstraintTestBase {
    */
   async selectShifts(page: Page, shiftNames: string[]): Promise<void> {
     const dialog = this.getShiftWorkerOptionDialog(page);
-    await dialog.waitFor({ state: "visible" });
+    await dialog.waitFor({ state: 'visible' });
 
     for (const shiftName of shiftNames) {
-      const shiftOption = page.locator(
-        `[data-testid="shift-option"][text="${shiftName}"]`,
-      );
+      const shiftOption = page.locator(`[data-testid="shift-option"][text="${shiftName}"]`);
       await shiftOption.click();
     }
 
@@ -587,23 +552,16 @@ export class ConstraintTestBase {
   /**
    * Waits for the constraint to appear in the list
    */
-  async waitForConstraintInList(
-    page: Page,
-    constraintText: string,
-  ): Promise<void> {
+  async waitForConstraintInList(page: Page, constraintText: string): Promise<void> {
     const constraintList = this.getConstraintList(page);
-    await constraintList
-      .locator(`text=${constraintText}`)
-      .waitFor({ state: "visible" });
+    await constraintList.locator(`text=${constraintText}`).waitFor({ state: 'visible' });
   }
 
   /**
    * Checks if validation errors are displayed
    */
   async hasValidationErrors(page: Page): Promise<boolean> {
-    const errorElements = page.locator(
-      '[data-testid*="constraint-block-error"]',
-    );
+    const errorElements = page.locator('[data-testid*="constraint-block-error"]');
     const count = await errorElements.count();
     return count > 0;
   }
@@ -611,16 +569,11 @@ export class ConstraintTestBase {
   /**
    * Fills a constraint placeholder with the first available option
    */
-  async fillPlaceholderWithFirstOption(
-    page: Page,
-    placeholderIndex: number,
-  ): Promise<void> {
+  async fillPlaceholderWithFirstOption(page: Page, placeholderIndex: number): Promise<void> {
     console.log(`Attempting to fill placeholder ${placeholderIndex}...`);
 
     // Click on the placeholder
-    const placeholders = page.locator(
-      '[data-testid^="constraint-block-placeholder-"]',
-    );
+    const placeholders = page.locator('[data-testid^="constraint-block-placeholder-"]');
     const placeholder = placeholders.nth(placeholderIndex);
     await placeholder.click({ force: true });
 
@@ -628,8 +581,8 @@ export class ConstraintTestBase {
     const dialogSelectors = [
       '[data-testid^="shift-worker-option-dialog-"]',
       '[role="dialog"]:visible',
-      ".MuiPopover-root:visible",
-      ".MuiDialog-root:visible",
+      '.MuiPopover-root:visible',
+      '.MuiDialog-root:visible',
     ];
 
     for (const selector of dialogSelectors) {
@@ -643,7 +596,7 @@ export class ConstraintTestBase {
         const optionSelectors = [
           '[data-testid^="worker-option"]',
           '[data-testid^="shift-option"]',
-          ".MuiMenuItem",
+          '.MuiMenuItem',
           '.MuiListItem[role="button"]',
           'li[role="option"]',
         ];
@@ -653,9 +606,7 @@ export class ConstraintTestBase {
           const optionCount = await options.count();
           if (optionCount > 0) {
             await options.first().click();
-            console.log(
-              `✅ Selected first option using selector: ${optionSelector}`,
-            );
+            console.log(`✅ Selected first option using selector: ${optionSelector}`);
 
             // Look for and click confirm button
             const confirmSelectors = [
@@ -670,31 +621,26 @@ export class ConstraintTestBase {
               const confirmButton = dialog.locator(confirmSelector);
               if (await confirmButton.isVisible({ timeout: 1000 })) {
                 await confirmButton.click();
-                console.log(
-                  `✅ Clicked confirm button using selector: ${confirmSelector}`,
-                );
+                console.log(`✅ Clicked confirm button using selector: ${confirmSelector}`);
                 break;
               }
             }
 
             // Close the dialog if still open
             if (await dialog.isVisible({ timeout: 500 })) {
-              await page.keyboard.press("Escape");
+              await page.keyboard.press('Escape');
               // Wait for dialog to close
-              await dialog.waitFor({ state: "hidden", timeout: 2000 });
+              await dialog.waitFor({ state: 'hidden', timeout: 2000 });
             }
 
             // Double-check that no popover remains open
-            const remainingPopovers = page.locator(".MuiPopover-root:visible");
+            const remainingPopovers = page.locator('.MuiPopover-root:visible');
             if ((await remainingPopovers.count()) > 0) {
-              await page.keyboard.press("Escape");
+              await page.keyboard.press('Escape');
               // Wait for popovers to close
               await page.waitForFunction(
                 () => {
-                  return (
-                    document.querySelectorAll(".MuiPopover-root:visible")
-                      .length === 0
-                  );
+                  return document.querySelectorAll('.MuiPopover-root:visible').length === 0;
                 },
                 { timeout: 2000 },
               );
@@ -706,18 +652,13 @@ export class ConstraintTestBase {
       }
     }
 
-    console.log(
-      `ℹ️ No selection dialog found for placeholder ${placeholderIndex}`,
-    );
+    console.log(`ℹ️ No selection dialog found for placeholder ${placeholderIndex}`);
   }
 
   /**
    * Fills a string block placeholder (dropdown with options)
    */
-  async fillStringPlaceholder(
-    page: Page,
-    placeholderIndex: number,
-  ): Promise<void> {
+  async fillStringPlaceholder(page: Page, placeholderIndex: number): Promise<void> {
     console.log(`Attempting to fill string placeholder ${placeholderIndex}...`);
 
     // Click on the placeholder
@@ -729,9 +670,9 @@ export class ConstraintTestBase {
     await placeholder.click({ force: true });
 
     // Look for the string option dialog
-    const dialog = page.locator(".MuiPopover-root:visible").first();
+    const dialog = page.locator('.MuiPopover-root:visible').first();
     if (await dialog.isVisible({ timeout: 2000 })) {
-      console.log("✅ Found string options dialog");
+      console.log('✅ Found string options dialog');
 
       // Look for string options with data-testid
       const stringOptions = dialog.locator('[data-testid^="string-option-"]');
@@ -743,44 +684,31 @@ export class ConstraintTestBase {
         const optionText = await firstOption.textContent();
         console.log(`Selecting first string option: "${optionText}"`);
         await firstOption.click();
-        console.log(
-          `✅ Selected string option for placeholder ${placeholderIndex}`,
-        );
+        console.log(`✅ Selected string option for placeholder ${placeholderIndex}`);
         return;
       }
 
       // Fallback: look for ListItemButton elements
-      const listItems = dialog.locator(
-        'button[role="button"], .MuiListItemButton-root',
-      );
+      const listItems = dialog.locator('button[role="button"], .MuiListItemButton-root');
       const listItemCount = await listItems.count();
       if (listItemCount > 0) {
         const firstItem = listItems.first();
         const itemText = await firstItem.textContent();
         console.log(`Selecting first list item: "${itemText}"`);
         await firstItem.click();
-        console.log(
-          `✅ Selected list item for placeholder ${placeholderIndex}`,
-        );
+        console.log(`✅ Selected list item for placeholder ${placeholderIndex}`);
         return;
       }
     }
 
-    console.log(
-      `⚠️ No string options found for placeholder ${placeholderIndex}`,
-    );
+    console.log(`⚠️ No string options found for placeholder ${placeholderIndex}`);
   }
 
   /**
    * Fills a constraint placeholder by text content (for shift-worker option blocks)
    */
-  async fillPlaceholderByText(
-    page: Page,
-    placeholderText: string,
-  ): Promise<void> {
-    console.log(
-      `Attempting to fill placeholder with text "${placeholderText}"...`,
-    );
+  async fillPlaceholderByText(page: Page, placeholderText: string): Promise<void> {
+    console.log(`Attempting to fill placeholder with text "${placeholderText}"...`);
 
     // Find placeholder by text content
     const placeholder = page
@@ -794,9 +722,7 @@ export class ConstraintTestBase {
     }
 
     if (count > 1) {
-      console.log(
-        `⚠️ Multiple placeholders found with text "${placeholderText}", using first one`,
-      );
+      console.log(`⚠️ Multiple placeholders found with text "${placeholderText}", using first one`);
     }
 
     await placeholder.first().click({ force: true });
@@ -805,8 +731,8 @@ export class ConstraintTestBase {
     const dialogSelectors = [
       '[data-testid^="shift-worker-option-dialog-"]',
       '[role="dialog"]:visible',
-      ".MuiPopover-root:visible",
-      ".MuiDialog-root:visible",
+      '.MuiPopover-root:visible',
+      '.MuiDialog-root:visible',
     ];
 
     for (const selector of dialogSelectors) {
@@ -827,13 +753,13 @@ export class ConstraintTestBase {
           await searchInput.clear();
 
           // Type a search term based on what we're looking for
-          let searchTerm = "";
-          if (placeholderText.toLowerCase() === "jean") {
-            searchTerm = "Test Worker"; // Search for test workers
-          } else if (placeholderText.toLowerCase().includes("consultation")) {
-            searchTerm = "Shift"; // Search for shifts
+          let searchTerm = '';
+          if (placeholderText.toLowerCase() === 'jean') {
+            searchTerm = 'Test Worker'; // Search for test workers
+          } else if (placeholderText.toLowerCase().includes('consultation')) {
+            searchTerm = 'Shift'; // Search for shifts
           } else {
-            searchTerm = "Test"; // Generic search
+            searchTerm = 'Test'; // Generic search
           }
 
           await searchInput.fill(searchTerm);
@@ -841,28 +767,26 @@ export class ConstraintTestBase {
           // Wait a moment for the search to process and then proceed
           // Look for any visible options in the dialog after typing
           // Wait for the input value to be set properly
-          await searchInput.waitFor({ state: "visible" });
+          await searchInput.waitFor({ state: 'visible' });
 
           // Try to find clickable options that match our search
           const searchResults = dialog
             .locator('[role="option"], [data-testid*="option"], li, div')
             .filter({
-              hasText: new RegExp(searchTerm, "i"),
+              hasText: new RegExp(searchTerm, 'i'),
             })
             .filter({ hasNotText: /^$/ }); // Exclude empty text
 
           const resultCount = await searchResults.count();
           if (resultCount > 0) {
-            console.log(
-              `Found ${resultCount} search results, clicking first one`,
-            );
+            console.log(`Found ${resultCount} search results, clicking first one`);
             try {
               await searchResults.first().click({ force: true });
               console.log(
                 `✅ Selected option for "${placeholderText}" using search: "${searchTerm}"`,
               );
               // Wait for dialog to close
-              await dialog.waitFor({ state: "hidden", timeout: 3000 });
+              await dialog.waitFor({ state: 'hidden', timeout: 3000 });
               return;
             } catch (error) {
               console.log(`Failed to click search result: ${error}`);
@@ -871,46 +795,36 @@ export class ConstraintTestBase {
 
           // Fallback: try keyboard navigation
           console.log(`No clickable results found, trying keyboard navigation`);
-          await searchInput.press("ArrowDown");
-          await searchInput.press("Enter");
+          await searchInput.press('ArrowDown');
+          await searchInput.press('Enter');
 
-          console.log(
-            `✅ Selected option for "${placeholderText}" using keyboard navigation`,
-          );
+          console.log(`✅ Selected option for "${placeholderText}" using keyboard navigation`);
 
           // Wait for dialog to close
           try {
-            await dialog.waitFor({ state: "hidden", timeout: 3000 });
+            await dialog.waitFor({ state: 'hidden', timeout: 3000 });
           } catch (error) {
-            console.log(
-              `Dialog did not close after keyboard selection: ${error}`,
-            );
+            console.log(`Dialog did not close after keyboard selection: ${error}`);
             // Force close by pressing Escape
-            await searchInput.press("Escape");
+            await searchInput.press('Escape');
           }
           return;
         }
 
         // Fallback: try to click on visible options without using the input
-        const visibleOptions = dialog
-          .locator('div[style*="cursor: pointer"]')
-          .filter({
-            has: page.locator("text").filter({ hasText: /Test|Worker|Shift/ }),
-          });
+        const visibleOptions = dialog.locator('div[style*="cursor: pointer"]').filter({
+          has: page.locator('text').filter({ hasText: /Test|Worker|Shift/ }),
+        });
         const optionCount = await visibleOptions.count();
 
         if (optionCount > 0) {
-          console.log(
-            `Found ${optionCount} visible options, clicking first one`,
-          );
+          console.log(`Found ${optionCount} visible options, clicking first one`);
           try {
             await visibleOptions.first().click({ force: true });
-            console.log(
-              `✅ Clicked first visible option for "${placeholderText}"`,
-            );
+            console.log(`✅ Clicked first visible option for "${placeholderText}"`);
 
             // Wait for dialog to close
-            await dialog.waitFor({ state: "hidden", timeout: 3000 });
+            await dialog.waitFor({ state: 'hidden', timeout: 3000 });
             return;
           } catch (error) {
             console.log(`Failed to click visible option: ${error}`);
@@ -919,21 +833,14 @@ export class ConstraintTestBase {
       }
     }
 
-    console.log(
-      `ℹ️ No selection dialog found for placeholder "${placeholderText}"`,
-    );
+    console.log(`ℹ️ No selection dialog found for placeholder "${placeholderText}"`);
   }
 
   /**
    * Fills a string block placeholder by text content
    */
-  async fillStringPlaceholderByText(
-    page: Page,
-    placeholderText: string,
-  ): Promise<void> {
-    console.log(
-      `Attempting to fill string placeholder with text "${placeholderText}"...`,
-    );
+  async fillStringPlaceholderByText(page: Page, placeholderText: string): Promise<void> {
+    console.log(`Attempting to fill string placeholder with text "${placeholderText}"...`);
 
     // Find placeholder by text content
     const placeholder = page
@@ -949,9 +856,9 @@ export class ConstraintTestBase {
     await placeholder.first().click({ force: true });
 
     // Look for the string option dialog
-    const dialog = page.locator(".MuiPopover-root:visible").first();
+    const dialog = page.locator('.MuiPopover-root:visible').first();
     if (await dialog.isVisible({ timeout: 3000 })) {
-      console.log("✅ Found string options dialog");
+      console.log('✅ Found string options dialog');
 
       // Look for string options with data-testid
       const stringOptions = dialog.locator('[data-testid^="string-option-"]');
@@ -963,12 +870,10 @@ export class ConstraintTestBase {
         const optionText = await firstOption.textContent();
         console.log(`Selecting first string option: "${optionText}"`);
         await firstOption.click();
-        console.log(
-          `✅ Selected string option for placeholder "${placeholderText}"`,
-        );
+        console.log(`✅ Selected string option for placeholder "${placeholderText}"`);
 
         // Wait for dialog to close
-        await dialog.waitFor({ state: "hidden", timeout: 3000 });
+        await dialog.waitFor({ state: 'hidden', timeout: 3000 });
         return;
       }
 
@@ -982,36 +887,28 @@ export class ConstraintTestBase {
         const itemText = await firstItem.textContent();
         console.log(`Selecting first list item: "${itemText}"`);
         await firstItem.click();
-        console.log(
-          `✅ Selected list item for placeholder "${placeholderText}"`,
-        );
+        console.log(`✅ Selected list item for placeholder "${placeholderText}"`);
 
         // Wait for dialog to close
-        await dialog.waitFor({ state: "hidden", timeout: 3000 });
+        await dialog.waitFor({ state: 'hidden', timeout: 3000 });
         return;
       }
 
       // Final fallback: any clickable element in dialog
-      const anyClickable = dialog
-        .locator('li, [role="option"], button')
-        .first();
+      const anyClickable = dialog.locator('li, [role="option"], button').first();
       if (await anyClickable.isVisible({ timeout: 1000 })) {
         const itemText = await anyClickable.textContent();
         console.log(`Selecting fallback clickable item: "${itemText}"`);
         await anyClickable.click();
-        console.log(
-          `✅ Selected fallback item for placeholder "${placeholderText}"`,
-        );
+        console.log(`✅ Selected fallback item for placeholder "${placeholderText}"`);
 
         // Wait for dialog to close
-        await dialog.waitFor({ state: "hidden", timeout: 3000 });
+        await dialog.waitFor({ state: 'hidden', timeout: 3000 });
         return;
       }
     }
 
-    console.log(
-      `⚠️ No string options found for placeholder "${placeholderText}"`,
-    );
+    console.log(`⚠️ No string options found for placeholder "${placeholderText}"`);
   }
 
   /**
@@ -1044,9 +941,7 @@ export class ConstraintTestBase {
       '.MuiPopover-root:visible, .MuiDialog-root:visible, [role="dialog"]:visible',
     );
     const dialogCount = await allDialogs.count();
-    console.log(
-      `Found ${dialogCount} dialogs open after clicking number placeholder`,
-    );
+    console.log(`Found ${dialogCount} dialogs open after clicking number placeholder`);
 
     // Look for the number input with specific data-testid first
     let numberInput = page.locator('[data-testid="constraint-number-input"]');
@@ -1056,7 +951,7 @@ export class ConstraintTestBase {
       await numberInput.fill(value.toString());
 
       // Try multiple submission methods to ensure the value is accepted
-      await numberInput.press("Enter"); // First try Enter
+      await numberInput.press('Enter'); // First try Enter
 
       // Wait for the input to reflect the value
       await page.waitForFunction(
@@ -1070,9 +965,7 @@ export class ConstraintTestBase {
         { timeout: 2000 },
       );
 
-      console.log(
-        `✅ Filled number input with ${value} for placeholder "${placeholderText}"`,
-      );
+      console.log(`✅ Filled number input with ${value} for placeholder "${placeholderText}"`);
       return;
     }
 
@@ -1083,18 +976,14 @@ export class ConstraintTestBase {
       // Try number input first
       numberInput = dialog.locator('input[type="number"]');
       if (await numberInput.isVisible({ timeout: 1000 })) {
-        console.log(
-          `Found number input in dialog ${i} for "${placeholderText}"`,
-        );
+        console.log(`Found number input in dialog ${i} for "${placeholderText}"`);
         await numberInput.clear();
         await numberInput.fill(value.toString());
-        await numberInput.press("Enter");
+        await numberInput.press('Enter');
 
         // Wait for the input to be filled
-        await numberInput.waitFor({ state: "attached", timeout: 2000 });
-        console.log(
-          `✅ Filled number input with ${value} for placeholder "${placeholderText}"`,
-        );
+        await numberInput.waitFor({ state: 'attached', timeout: 2000 });
+        console.log(`✅ Filled number input with ${value} for placeholder "${placeholderText}"`);
         return;
       }
 
@@ -1104,31 +993,25 @@ export class ConstraintTestBase {
         console.log(`Found text input in dialog ${i} for "${placeholderText}"`);
         await textInput.clear();
         await textInput.fill(value.toString());
-        await textInput.press("Enter");
+        await textInput.press('Enter');
 
         // Wait for the input to be filled
-        await textInput.waitFor({ state: "attached", timeout: 2000 });
-        console.log(
-          `✅ Filled text input with ${value} for placeholder "${placeholderText}"`,
-        );
+        await textInput.waitFor({ state: 'attached', timeout: 2000 });
+        console.log(`✅ Filled text input with ${value} for placeholder "${placeholderText}"`);
         return;
       }
 
       // Try any input
-      const anyInput = dialog.locator("input");
+      const anyInput = dialog.locator('input');
       if (await anyInput.isVisible({ timeout: 1000 })) {
-        console.log(
-          `Found generic input in dialog ${i} for "${placeholderText}"`,
-        );
+        console.log(`Found generic input in dialog ${i} for "${placeholderText}"`);
         await anyInput.clear();
         await anyInput.fill(value.toString());
-        await anyInput.press("Enter");
+        await anyInput.press('Enter');
 
         // Wait for the input to be filled
-        await anyInput.waitFor({ state: "attached", timeout: 2000 });
-        console.log(
-          `✅ Filled generic input with ${value} for placeholder "${placeholderText}"`,
-        );
+        await anyInput.waitFor({ state: 'attached', timeout: 2000 });
+        console.log(`✅ Filled generic input with ${value} for placeholder "${placeholderText}"`);
         return;
       }
     }
@@ -1139,7 +1022,7 @@ export class ConstraintTestBase {
       console.log(`Found fallback number input for "${placeholderText}"`);
       await pageNumberInput.clear();
       await pageNumberInput.fill(value.toString());
-      await pageNumberInput.press("Enter");
+      await pageNumberInput.press('Enter');
 
       // Wait for the input to reflect the value
       await page.waitForFunction(
@@ -1159,12 +1042,8 @@ export class ConstraintTestBase {
       return;
     }
 
-    console.log(
-      `❌ FAILED: No number input found for placeholder "${placeholderText}"`,
-    );
-    throw new Error(
-      `No number input found for placeholder "${placeholderText}"`,
-    );
+    console.log(`❌ FAILED: No number input found for placeholder "${placeholderText}"`);
+    throw new Error(`No number input found for placeholder "${placeholderText}"`);
   }
 
   //////////////////////////
@@ -1183,8 +1062,8 @@ export class ConstraintTestBase {
   generateConstraintBlocksFromTemplate(
     template: TemplateT,
     options: {
-      workerId?: string | "all";
-      shiftId?: string | "all" | "duty" | "no-duty";
+      workerId?: string | 'all';
+      shiftId?: string | 'all' | 'duty' | 'no-duty';
       numberValue?: number;
     } = {},
     testId?: string,
@@ -1192,7 +1071,7 @@ export class ConstraintTestBase {
     const { workerId, shiftId, numberValue = 2 } = options;
 
     if (!template.blocks || !Array.isArray(template.blocks)) {
-      throw new Error("Template must have blocks array");
+      throw new Error('Template must have blocks array');
     }
 
     const testWorkers = this.getTestWorkers(testId);
@@ -1233,26 +1112,23 @@ export class ConstraintTestBase {
 
             // Check if this block is for workers (name 4 = WORKER)
             if (templateBlock.name === 4) {
-              if (workerId === "all") {
+              if (workerId === 'all') {
                 // Look for "all workers" option
                 selectedOption = templateBlock.options.find(
                   (opt: any) =>
-                    opt.categoryName === "All" &&
+                    opt.categoryName === 'All' &&
                     opt.isBoolDim === false &&
-                    (opt.name === "all workers" ||
-                      opt.name.toLowerCase().includes("all")),
+                    (opt.name === 'all workers' || opt.name.toLowerCase().includes('all')),
                 );
               } else if (workerId) {
                 // Look for specific worker by ID
                 selectedOption = templateBlock.options.find(
-                  (opt: any) =>
-                    opt.id === workerId && opt.categoryName === "Workers",
+                  (opt: any) => opt.id === workerId && opt.categoryName === 'Workers',
                 );
               } else {
                 // Default: use first available worker
                 const workerOption = templateBlock.options.find(
-                  (opt: any) =>
-                    opt.categoryName === "Workers" && opt.idType === 1,
+                  (opt: any) => opt.categoryName === 'Workers' && opt.idType === 1,
                 );
                 if (workerOption && testWorkers.length > 0) {
                   selectedOption = {
@@ -1268,42 +1144,35 @@ export class ConstraintTestBase {
 
             // Check if this block is for shifts (name 3 = SHIFT)
             else if (templateBlock.name === 3) {
-              if (shiftId === "all") {
+              if (shiftId === 'all') {
                 // Look for "all shifts" option
                 selectedOption = templateBlock.options.find(
                   (opt: any) =>
-                    opt.categoryName === "All" &&
+                    opt.categoryName === 'All' &&
                     opt.isBoolDim === false &&
-                    (opt.name === "all shifts" ||
-                      opt.name.toLowerCase().includes("all")),
+                    (opt.name === 'all shifts' || opt.name.toLowerCase().includes('all')),
                 );
-              } else if (shiftId === "duty") {
+              } else if (shiftId === 'duty') {
                 // Look for duty option
                 selectedOption = templateBlock.options.find(
                   (opt: any) =>
-                    opt.categoryName === "Duties" &&
-                    opt.isBoolDim === true &&
-                    opt.name === true,
+                    opt.categoryName === 'Duties' && opt.isBoolDim === true && opt.name === true,
                 );
-              } else if (shiftId === "no-duty") {
+              } else if (shiftId === 'no-duty') {
                 // Look for no-duty option
                 selectedOption = templateBlock.options.find(
                   (opt: any) =>
-                    opt.categoryName === "Duties" &&
-                    opt.isBoolDim === true &&
-                    opt.name === false,
+                    opt.categoryName === 'Duties' && opt.isBoolDim === true && opt.name === false,
                 );
               } else if (shiftId) {
                 // Look for specific shift by ID
                 selectedOption = templateBlock.options.find(
-                  (opt: any) =>
-                    opt.id === shiftId && opt.categoryName === "Shifts",
+                  (opt: any) => opt.id === shiftId && opt.categoryName === 'Shifts',
                 );
               } else {
                 // Default: use first available shift
                 const shiftOption = templateBlock.options.find(
-                  (opt: any) =>
-                    opt.categoryName === "Shifts" && opt.idType === 2,
+                  (opt: any) => opt.categoryName === 'Shifts' && opt.idType === 2,
                 );
                 if (shiftOption && testShifts.length > 0) {
                   selectedOption = {
@@ -1333,7 +1202,7 @@ export class ConstraintTestBase {
                   id: testWorkers[0].id,
                   idType: 1,
                   isBoolDim: false,
-                  categoryName: "Workers",
+                  categoryName: 'Workers',
                 },
               ];
             } else if (templateBlock.name === 3 && testShifts.length > 0) {
@@ -1344,7 +1213,7 @@ export class ConstraintTestBase {
                   id: testShifts[0].id,
                   idType: 2,
                   isBoolDim: false,
-                  categoryName: "Shifts",
+                  categoryName: 'Shifts',
                 },
               ];
             } else {
@@ -1377,18 +1246,18 @@ export class ConstraintTestBase {
     active?: boolean;
   }): Promise<ConstraintT> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
     return await this.dbUtils.createConstraint({
       teamId: this.testTeam.teamId,
       constraintType: constraintData.constraintType,
       templateId: constraintData.templateId,
-      language: constraintData.language || "en",
+      language: constraintData.language || 'en',
       blocks: constraintData.blocks,
       text: constraintData.text,
       hard: constraintData.hard ?? true,
-      priority: constraintData.priority || "medium",
+      priority: constraintData.priority || 'medium',
       active: constraintData.active ?? true,
     });
   }
@@ -1404,8 +1273,8 @@ export class ConstraintTestBase {
   async createTestConstraintFromTemplate(
     template: TemplateT,
     options: {
-      workerId?: string | "all";
-      shiftId?: string | "all" | "duty" | "no-duty";
+      workerId?: string | 'all';
+      shiftId?: string | 'all' | 'duty' | 'no-duty';
       numberValue?: number;
       language?: string;
       text?: string;
@@ -1416,20 +1285,16 @@ export class ConstraintTestBase {
     testId?: string,
   ): Promise<ConstraintT> {
     const {
-      language = "en",
-      text = "", // Will be populated by backend
+      language = 'en',
+      text = '', // Will be populated by backend
       hard = true,
-      priority = "medium",
+      priority = 'medium',
       active = true,
       ...blockOptions
     } = options;
 
     // Generate blocks from template
-    const blocks = this.generateConstraintBlocksFromTemplate(
-      template,
-      blockOptions,
-      testId,
-    );
+    const blocks = this.generateConstraintBlocksFromTemplate(template, blockOptions, testId);
 
     // Create the constraint
     return await this.createTestConstraint({
@@ -1461,14 +1326,10 @@ export class ConstraintTestBase {
     },
   ): Promise<ConstraintT> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
-    return await this.dbUtils.updateConstraint(
-      constraintId,
-      this.testTeam.teamId,
-      updates,
-    );
+    return await this.dbUtils.updateConstraint(constraintId, this.testTeam.teamId, updates);
   }
 
   /**
@@ -1476,7 +1337,7 @@ export class ConstraintTestBase {
    */
   async deleteTestConstraint(constraintId: string): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
     await this.dbUtils.deleteConstraint(constraintId, this.testTeam.teamId);
@@ -1487,7 +1348,7 @@ export class ConstraintTestBase {
    */
   async getTestConstraints(): Promise<any[]> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
     return await this.dbUtils.getConstraints(this.testTeam.teamId);
@@ -1498,7 +1359,7 @@ export class ConstraintTestBase {
    */
   async getTestConstraintTemplates(): Promise<any[]> {
     if (!this.testTeam) {
-      throw new Error("No test team created. Call setupConstraintTests first.");
+      throw new Error('No test team created. Call setupConstraintTests first.');
     }
 
     return await this.dbUtils.getConstraintTemplates(this.testTeam.teamId);

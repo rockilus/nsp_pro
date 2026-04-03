@@ -1,10 +1,9 @@
-import React from "react";
-import { useTranslation } from "../../app/i18n/client";
+import React from 'react';
+import { useTranslation } from '../../app/i18n/client';
 // Styles
-import "./work-time-table.css";
+import './work-time-table.css';
 // Types
-import { WorkTimeTableT } from "../../types/schedule";
-import { log } from "console";
+import { WorkTimeTableT } from '../../types/schedule';
 
 interface WorkTimeTableProps {
   lng: string;
@@ -12,12 +11,12 @@ interface WorkTimeTableProps {
 }
 
 const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
-  const { t } = useTranslation(lng, "campaign-page");
+  const { t } = useTranslation(lng, 'campaign-page');
 
   const { duties, others, workers, nbWeeks } = data;
 
   const formatNumber = (num: number) => {
-    return num === 0 ? "-" : num.toLocaleString();
+    return num === 0 ? '-' : num.toLocaleString();
   };
 
   const convertToPerWeek = (x: number, nbDeci: number) => {
@@ -27,14 +26,10 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
 
   const workerHoursForOthers = Math.max(workers.hours - duties.hours, 0);
 
-  const dutiesCellsClassName = `cell-content ${
-    duties.hours > workers.hours && "light-red"
-  }`;
-  const othersCellsClassName = `cell-content ${
-    others.hours > workerHoursForOthers && "light-red"
-  }`;
+  const dutiesCellsClassName = `cell-content ${duties.hours > workers.hours && 'light-red'}`;
+  const othersCellsClassName = `cell-content ${others.hours > workerHoursForOthers && 'light-red'}`;
   const totalCellsClassName = `cell-content ${
-    duties.hours + others.hours > workers.hours && "light-red"
+    duties.hours + others.hours > workers.hours && 'light-red'
   }`;
 
   return (
@@ -43,35 +38,35 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
         <tr>
           <th></th>
           <th colSpan={2}>
-            <div className="column-header">{t("duties")}</div>
+            <div className="column-header">{t('duties')}</div>
           </th>
           <th></th>
           <th colSpan={2}>
-            <div className="column-header">{t("non_duty")}</div>
+            <div className="column-header">{t('non_duty')}</div>
           </th>
           <th></th>
           <th colSpan={2}>
-            <div className="column-header">{t("total")}</div>
+            <div className="column-header">{t('total')}</div>
           </th>
         </tr>
         <tr>
           <th></th>
           <th>
-            <div className="column-subheader">{t("h")}</div>
+            <div className="column-subheader">{t('h')}</div>
           </th>
           <th>
             <div className="column-subheader">#</div>
           </th>
           <th className="column-separator"></th>
           <th>
-            <div className="column-subheader">{t("h")}</div>
+            <div className="column-subheader">{t('h')}</div>
           </th>
           <th>
             <div className="column-subheader">#</div>
           </th>
           <th className="column-separator"></th>
           <th>
-            <div className="column-subheader">{t("h")}</div>
+            <div className="column-subheader">{t('h')}</div>
           </th>
           <th>
             <div className="column-subheader">#</div>
@@ -81,81 +76,57 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
       <tbody>
         <tr>
           <th>
-            <div className="row-header">{t("coverage")}</div>
+            <div className="row-header">{t('coverage')}</div>
           </th>
           <td>
-            <div className={dutiesCellsClassName}>
-              {formatNumber(duties.hours)}
-            </div>
+            <div className={dutiesCellsClassName}>{formatNumber(duties.hours)}</div>
           </td>
           <td>
-            <div className={dutiesCellsClassName}>
-              {formatNumber(duties.count)}
-            </div>
+            <div className={dutiesCellsClassName}>{formatNumber(duties.count)}</div>
           </td>
           <td className="column-separator"></td>
           <td>
-            <div className={othersCellsClassName}>
-              {formatNumber(others.hours)}
-            </div>
+            <div className={othersCellsClassName}>{formatNumber(others.hours)}</div>
           </td>
           <td>
-            <div className={othersCellsClassName}>
-              {formatNumber(others.count)}
-            </div>
+            <div className={othersCellsClassName}>{formatNumber(others.count)}</div>
           </td>
           <td className="column-separator"></td>
           <td>
-            <div className={totalCellsClassName}>
-              {formatNumber(duties.hours + others.hours)}
-            </div>
+            <div className={totalCellsClassName}>{formatNumber(duties.hours + others.hours)}</div>
           </td>
           <td>
-            <div className={totalCellsClassName}>
-              {formatNumber(duties.count + others.count)}
-            </div>
+            <div className={totalCellsClassName}>{formatNumber(duties.count + others.count)}</div>
           </td>
         </tr>
         <tr>
           <th>
-            <div className="row-header">{t("capacity")}</div>
+            <div className="row-header">{t('capacity')}</div>
           </th>
           <td>
-            <div className={dutiesCellsClassName}>
-              {formatNumber(workers.hours)}
-            </div>
+            <div className={dutiesCellsClassName}>{formatNumber(workers.hours)}</div>
           </td>
           <td>
-            <div className={dutiesCellsClassName}>
-              {formatNumber(workers.count)}
-            </div>
+            <div className={dutiesCellsClassName}>{formatNumber(workers.count)}</div>
           </td>
           <td></td>
           <td>
-            <div className={othersCellsClassName}>
-              {formatNumber(workerHoursForOthers)}
-            </div>
+            <div className={othersCellsClassName}>{formatNumber(workerHoursForOthers)}</div>
           </td>
           <td>
-            <div className={othersCellsClassName}>
-              {formatNumber(workers.count)}
-            </div>
+            <div className={othersCellsClassName}>{formatNumber(workers.count)}</div>
           </td>
           <td></td>
           <td>
-            <div className={totalCellsClassName}>
-              {formatNumber(workers.hours)}
-            </div>
+            <div className={totalCellsClassName}>{formatNumber(workers.hours)}</div>
           </td>
           <td>
-            <div className={totalCellsClassName}>
-              {formatNumber(workers.count)}
-            </div>
+            <div className={totalCellsClassName}>{formatNumber(workers.count)}</div>
           </td>
         </tr>
         <tr>
           <th>
-            <div className="row-header">{t("per_worker_per_week")}</div>
+            <div className="row-header">{t('per_worker_per_week')}</div>
           </th>
           <td>
             <div className={dutiesCellsClassName}>
@@ -181,18 +152,12 @@ const WorkTimeTable: React.FC<WorkTimeTableProps> = ({ lng, data }) => {
           <td></td>
           <td>
             <div className={totalCellsClassName}>
-              {convertToPerWeek(
-                (duties.hours + others.hours) / workers.count,
-                0,
-              )}
+              {convertToPerWeek((duties.hours + others.hours) / workers.count, 0)}
             </div>
           </td>
           <td>
             <div className={totalCellsClassName}>
-              {convertToPerWeek(
-                (duties.count + others.count) / workers.count,
-                1,
-              )}
+              {convertToPerWeek((duties.count + others.count) / workers.count, 1)}
             </div>
           </td>
         </tr>

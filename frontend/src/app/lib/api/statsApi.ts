@@ -2,9 +2,9 @@
  * API client for stats operations
  */
 
-import { StatsT, StatsHeaderT, StatsOptionsT } from "../../../types/stats";
-import { ShiftWorkerOptionT } from "../../../types/constraint";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { StatsT, StatsHeaderT, StatsOptionsT } from '../../../types/stats';
+import { ShiftWorkerOptionT } from '../../../types/constraint';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class StatsApi extends BaseApi {
   /**
@@ -13,21 +13,21 @@ export class StatsApi extends BaseApi {
   static async getStats(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    statsOptions: StatsOptionsT
+    statsOptions: StatsOptionsT,
   ): Promise<StatsT> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!statsOptions) {
-      throw new Error("Stats options are required");
+      throw new Error('Stats options are required');
     }
 
     const responseData = await this.makeRequest<StatsT>(
       apiClient,
-      "post",
+      'post',
       `/stats/teams/${teamId}`,
-      statsOptions
+      statsOptions,
     );
     return responseData;
   }
@@ -37,18 +37,18 @@ export class StatsApi extends BaseApi {
    */
   static async addHeader(
     apiClient: AuthenticatedApiClient,
-    header: StatsHeaderT
+    header: StatsHeaderT,
   ): Promise<StatsHeaderT> {
     // Security: Input validation
     if (!header || !header.teamId) {
-      throw new Error("Invalid header data provided");
+      throw new Error('Invalid header data provided');
     }
 
     const responseData = await this.makeRequest<StatsHeaderT>(
       apiClient,
-      "post",
+      'post',
       `/stats/stats-headers/teams/${header.teamId}`,
-      header
+      header,
     );
     return responseData;
   }
@@ -59,20 +59,20 @@ export class StatsApi extends BaseApi {
   static async deleteHeader(
     apiClient: AuthenticatedApiClient,
     headerId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!headerId) {
-      throw new Error("Header ID is required");
+      throw new Error('Header ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     await this.makeRequest<void>(
       apiClient,
-      "delete",
-      `/stats/stats-headers/${headerId}/teams/${teamId}`
+      'delete',
+      `/stats/stats-headers/${headerId}/teams/${teamId}`,
     );
   }
 
@@ -81,17 +81,17 @@ export class StatsApi extends BaseApi {
    */
   static async getShiftOptions(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftWorkerOptionT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<ShiftWorkerOptionT[]>(
       apiClient,
-      "get",
-      `/stats/shift-options/teams/${teamId}`
+      'get',
+      `/stats/shift-options/teams/${teamId}`,
     );
     return responseData;
   }

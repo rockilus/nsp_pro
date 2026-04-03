@@ -1,7 +1,7 @@
 # pylint: disable=too-many-lines
+from collections.abc import Callable
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from typing import Callable, List, Tuple
 
 import pytest
 from shared.schemas.core import (
@@ -74,7 +74,7 @@ def schedule() -> Schedule:
 
 # Workers
 @pytest.fixture
-def workers_10() -> List[Worker]:
+def workers_10() -> list[Worker]:
     return [
         Worker(
             id=f"w{i}",
@@ -97,7 +97,7 @@ def workers_10() -> List[Worker]:
 
 # Shifts
 @pytest.fixture
-def shifts_3n_2d() -> List[Shift]:
+def shifts_3n_2d() -> list[Shift]:
     return [
         # Normal shifts
         Shift(
@@ -226,7 +226,7 @@ def shifts_3n_2d() -> List[Shift]:
 
 # Dimensions
 @pytest.fixture
-def dimensions() -> List[Dimension]:
+def dimensions() -> list[Dimension]:
     return [
         Dimension(
             id="dim0",
@@ -266,7 +266,7 @@ def dimensions() -> List[Dimension]:
 # DimEntries
 # pylint: disable=redefined-outer-name
 @pytest.fixture
-def dim_entries(dimensions: List[Dimension]) -> List[DimEntry]:  # noqa: F811
+def dim_entries(dimensions: list[Dimension]) -> list[DimEntry]:  # noqa: F811
     locations = ["loc0", "loc1"]
     de_loc = [
         DimEntry(id=f"de_loc_{i}", dimension_id=dim.id, name=loc, deleted=False)
@@ -292,10 +292,10 @@ def dim_entries(dimensions: List[Dimension]) -> List[DimEntry]:  # noqa: F811
 # Attributes
 @pytest.fixture
 def attributes(
-    workers_10: List[Worker],  # noqa: F811
-    shifts_3n_2d: List[Shift],  # noqa: F811
-    dim_entries: List[DimEntry],  # noqa: F811
-) -> List[Attribute]:
+    workers_10: list[Worker],  # noqa: F811
+    shifts_3n_2d: list[Shift],  # noqa: F811
+    dim_entries: list[DimEntry],  # noqa: F811
+) -> list[Attribute]:
     des_loc = [de for de in dim_entries if de.dimension_id == "dim0"]
     a_loc = [
         Attribute(
@@ -309,7 +309,7 @@ def attributes(
         for i, w in enumerate(workers_10[:5])
     ] + [
         Attribute(
-            id=f"a_loc_{i+5}",
+            id=f"a_loc_{i + 5}",
             value="",
             owner_type=AttributeOwnerType.WORKER,
             owner_id=w.id,
@@ -332,7 +332,7 @@ def attributes(
         for i, s in enumerate(shifts_3n_2d[:2])
     ] + [
         Attribute(
-            id=f"a_block_{i+3}",
+            id=f"a_block_{i + 3}",
             value="",
             owner_type=AttributeOwnerType.SHIFT,
             owner_id=s.id,
@@ -354,7 +354,7 @@ def attributes(
         for i, w in enumerate(workers_10[:3])
     ] + [
         Attribute(
-            id=f"a_60+_{i+3}",
+            id=f"a_60+_{i + 3}",
             value=False,
             owner_type=AttributeOwnerType.WORKER,
             owner_id=w.id,
@@ -376,7 +376,7 @@ def attributes(
         for i, s in enumerate(shifts_3n_2d[:2])
     ] + [
         Attribute(
-            id=f"a_intense_{i+2}",
+            id=f"a_intense_{i + 2}",
             value=False,
             owner_type=AttributeOwnerType.SHIFT,
             owner_id=s.id,
@@ -393,9 +393,9 @@ def attributes(
 # pylint: disable=redefined-outer-name
 @pytest.fixture
 def daily_shift_demands_shifts_3n_2d(
-    shifts_3n_2d: List[Shift],  # noqa: F811
+    shifts_3n_2d: list[Shift],  # noqa: F811
     schedule: Schedule,  # noqa: F811
-) -> List[ShiftDemandNew]:
+) -> list[ShiftDemandNew]:
     daily_shift_demands = []
     # Create daily shift demands for every weekday for shifts s0 to s2
     for shift in [s for s in shifts_3n_2d if s.shift_type == ShiftType.NORMAL]:
@@ -456,12 +456,12 @@ def model_config_fix() -> ModelConfig:
 @pytest.fixture
 def engine_inputs(
     schedule,  # noqa: F811
-    workers_10: List[Worker],  # noqa: F811
-    shifts_3n_2d: List[Shift],  # noqa: F811
-    dimensions: List[Dimension],  # noqa: F811
-    dim_entries: List[DimEntry],  # noqa: F811
-    attributes: List[Attribute],  # noqa: F811
-    daily_shift_demands_shifts_3n_2d: List[ShiftDemandNew],  # noqa: F811
+    workers_10: list[Worker],  # noqa: F811
+    shifts_3n_2d: list[Shift],  # noqa: F811
+    dimensions: list[Dimension],  # noqa: F811
+    dim_entries: list[DimEntry],  # noqa: F811
+    attributes: list[Attribute],  # noqa: F811
+    daily_shift_demands_shifts_3n_2d: list[ShiftDemandNew],  # noqa: F811
     penalties_fix: Penalties,  # noqa: F811
     model_config_fix: ModelConfig,  # noqa: F811
 ) -> EngineInputsAugmented:
@@ -497,7 +497,7 @@ dates_campaign = [
 periods_weekly = build_periods_weekly([], dates_campaign)
 
 
-def integer_division_list(numerator: int, denominator: int) -> List[int]:
+def integer_division_list(numerator: int, denominator: int) -> list[int]:
     quotient = numerator // denominator
     remainder = numerator % denominator
     result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
@@ -506,7 +506,7 @@ def integer_division_list(numerator: int, denominator: int) -> List[int]:
 
 target_average = 1
 period_lengths = integer_division_list(len(dates_campaign), int(target_average))
-d_constraint_eve: List[List[date]] = []
+d_constraint_eve: list[list[date]] = []
 for index, period_length in enumerate(period_lengths):
     cum_days = sum(period_lengths[:index])
     start_date = dates_campaign[0] + timedelta(days=cum_days)
@@ -2085,7 +2085,7 @@ test_data = [
 
 
 def generate_test_name(
-    val: Tuple[
+    val: tuple[
         ConstraintBuildAugmented,
         ConstraintFai | ConstraintFil | ConstraintOrd | ConstraintSeq | ConstraintSum,
     ],
@@ -2140,12 +2140,12 @@ def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputsAugmented], O
 
 
 @pytest.fixture
-def run_core_to_engine_inputs() -> (
-    Callable[[EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]]
-):
+def run_core_to_engine_inputs() -> Callable[
+    [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
+]:
     def _run_core_to_engine_inputs(
         engine_inputs: EngineInputsAugmented,
-    ) -> Tuple[InputsEngine, ProcessingCache]:
+    ) -> tuple[InputsEngine, ProcessingCache]:
         return core_to_engine_inputs(engine_inputs)
 
     return _run_core_to_engine_inputs

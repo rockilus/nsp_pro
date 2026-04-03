@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from "react";
-import dayjs, { Dayjs } from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../../app/i18n/client";
+import React, { useState, useEffect } from 'react';
+import dayjs, { Dayjs } from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { useTranslation } from '../../../../app/i18n/client';
 // MUI
-import { Button, MenuItem, Select } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { Button, MenuItem, Select } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Styles
-import "./demand-selection.css";
-import "./create-demand.css";
+import './demand-selection.css';
+import './create-demand.css';
 // Types
-import { ShiftT } from "../../../../types/shift";
-import { SpecialtyT } from "@/types/specialty";
-import { ShiftDemandDTO, ShiftDemandUpdateDTO } from "@/types/shiftDemand";
-import { AssignmentT } from "@/types/assignment";
-import { ScheduleCellDataT } from "../../../../types/schedule";
-import { DialogMode } from "../schedule-item-types";
+import { ShiftT } from '../../../../types/shift';
+import { SpecialtyT } from '@/types/specialty';
+import { ShiftDemandDTO, ShiftDemandUpdateDTO } from '@/types/shiftDemand';
+import { AssignmentT } from '@/types/assignment';
+import { ScheduleCellDataT } from '../../../../types/schedule';
+import { DialogMode } from '../schedule-item-types';
 
 dayjs.extend(utc);
 
@@ -34,10 +34,7 @@ interface DemandFormProps {
     count: number,
     notes?: string,
   ) => Promise<void>;
-  onUpdateDemand?: (
-    demandId: string,
-    updates: Partial<ShiftDemandUpdateDTO>,
-  ) => Promise<void>;
+  onUpdateDemand?: (demandId: string, updates: Partial<ShiftDemandUpdateDTO>) => Promise<void>;
   onDeleteDemand?: (demandId: string) => Promise<void>;
   onCancel: () => void;
 }
@@ -47,10 +44,7 @@ interface AdjustStaffingButtonsProps {
   onIncrease: () => void;
 }
 
-const AdjustStaffingButtons = ({
-  onDecrease,
-  onIncrease,
-}: AdjustStaffingButtonsProps) => {
+const AdjustStaffingButtons = ({ onDecrease, onIncrease }: AdjustStaffingButtonsProps) => {
   return (
     <div className="demand-selection-adjust-buttons-container">
       <button
@@ -83,7 +77,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
   onDeleteDemand,
   onCancel,
 }) => {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   const isEditing = mode === DialogMode.EDIT;
 
@@ -101,16 +95,12 @@ const DemandForm: React.FC<DemandFormProps> = ({
     ? (cellData?.assignmentsData.map((ad) => ad.assignment) ?? [])
     : [];
 
-  const [selectedShiftId, setSelectedShiftId] = useState<string | null>(
-    shift?.id ?? null,
-  );
+  const [selectedShiftId, setSelectedShiftId] = useState<string | null>(shift?.id ?? null);
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(date);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [demandCount, setDemandCount] = useState<number>(
-    shiftDemand?.count ?? 1,
-  );
-  const [shiftError, setShiftError] = useState<string>("");
-  const [dateError, setDateError] = useState<string>("");
+  const [demandCount, setDemandCount] = useState<number>(shiftDemand?.count ?? 1);
+  const [shiftError, setShiftError] = useState<string>('');
+  const [dateError, setDateError] = useState<string>('');
 
   useEffect(() => {
     if (isEditing && cellData) {
@@ -127,19 +117,19 @@ const DemandForm: React.FC<DemandFormProps> = ({
 
   const handleCreateClick = async () => {
     // Clear previous errors
-    setShiftError("");
-    setDateError("");
+    setShiftError('');
+    setDateError('');
 
     // Validate inputs
     let hasError = false;
 
     if (!selectedShiftId) {
-      setShiftError(t("please_select_a_shift"));
+      setShiftError(t('please_select_a_shift'));
       hasError = true;
     }
 
     if (!selectedDate) {
-      setDateError(t("please_select_a_date"));
+      setDateError(t('please_select_a_date'));
       hasError = true;
     }
 
@@ -147,16 +137,11 @@ const DemandForm: React.FC<DemandFormProps> = ({
 
     setIsSubmitting(true);
     try {
-      await onCreateDemand(
-        selectedShiftId!,
-        selectedDate!,
-        1,
-        "Direct requirement",
-      );
+      await onCreateDemand(selectedShiftId!, selectedDate!, 1, 'Direct requirement');
       onCancel(); // Close dialog after successful creation
     } catch (error) {
-      console.error("Failed to create demand:", error);
-      alert("Failed to create demand. Please try again.");
+      console.error('Failed to create demand:', error);
+      alert('Failed to create demand. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -178,7 +163,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
     } catch (error) {
       // Revert on error
       setDemandCount(previousCount);
-      console.error("Failed to decrease demand:", error);
+      console.error('Failed to decrease demand:', error);
     }
   };
 
@@ -196,7 +181,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
     } catch (error) {
       // Revert on error
       setDemandCount(previousCount);
-      console.error("Failed to increase demand:", error);
+      console.error('Failed to increase demand:', error);
     }
   };
 
@@ -216,18 +201,13 @@ const DemandForm: React.FC<DemandFormProps> = ({
     );
 
     const countActual =
-      shiftStaffingTotal > 0
-        ? Math.floor(assignmentsCount / shiftStaffingTotal)
-        : 0;
+      shiftStaffingTotal > 0 ? Math.floor(assignmentsCount / shiftStaffingTotal) : 0;
 
     return (
       <div className="demand-selection-container">
         <div className="demand-selection-content">
           <div className="demand-selection-first-row">
-            <span
-              className="demand-selection-shift-name"
-              data-testid="demand-shift-name"
-            >
+            <span className="demand-selection-shift-name" data-testid="demand-shift-name">
               {shift.name}
             </span>
             <div className="demand-selection-shift-status">
@@ -238,29 +218,23 @@ const DemandForm: React.FC<DemandFormProps> = ({
             </div>
           </div>
           <span className="demand-selection-date-time">
-            {selectedDate.format("D MMMM YYYY")}
-            {" ⋅ "}
-            {shift.startTime.format("HH:mm")}
-            {" - "}
-            {shift.endTime.format("HH:mm")}
-            {!shift.endTime.isSame(shift.startTime, "day") && <sup>+1</sup>}
+            {selectedDate.format('D MMMM YYYY')}
+            {' ⋅ '}
+            {shift.startTime.format('HH:mm')}
+            {' - '}
+            {shift.endTime.format('HH:mm')}
+            {!shift.endTime.isSame(shift.startTime, 'day') && <sup>+1</sup>}
           </span>
           <div className="demand-selection-daily-shift-demand">
-            <span className="demand-selection-dsd-label">{t("demand")}</span>
-            <span
-              className="demand-selection-dsd-target"
-              data-testid="demand-target-count"
-            >
+            <span className="demand-selection-dsd-label">{t('demand')}</span>
+            <span className="demand-selection-dsd-target" data-testid="demand-target-count">
               {demandCount}
             </span>
-            <AdjustStaffingButtons
-              onDecrease={handleDecreaseDSD}
-              onIncrease={handleIncreaseDSD}
-            />
+            <AdjustStaffingButtons onDecrease={handleDecreaseDSD} onIncrease={handleIncreaseDSD} />
           </div>
           <div className="demand-selection-staffing-required">
             <span className="demand-selection-staffing-required-label">
-              {t("staffing_required")}
+              {t('staffing_required')}
             </span>
             {shift.staffing.map((staffing, index) => (
               <div
@@ -269,9 +243,8 @@ const DemandForm: React.FC<DemandFormProps> = ({
               >
                 <span className="demand-selection-staffing-required-name">
                   {staffing.specialtyId
-                    ? specialties.find((s) => s.id == staffing.specialtyId)
-                        ?.name
-                    : t("any")}
+                    ? specialties.find((s) => s.id == staffing.specialtyId)?.name
+                    : t('any')}
                 </span>
                 <span className="demand-selection-staffing-required-count-per-shift">
                   {`(${staffing.staffing})`}
@@ -283,15 +256,11 @@ const DemandForm: React.FC<DemandFormProps> = ({
             ))}
             <div className="demand-selection-sum-line" />
             <div className="demand-selection-staffing-required-item">
-              <span className="demand-selection-staffing-required-name">
-                {t("total")}
-              </span>
+              <span className="demand-selection-staffing-required-name">{t('total')}</span>
               <span className="demand-selection-staffing-required-count-per-shift"></span>
               <span className="demand-selection-staffing-required-count">
-                {shift.staffing.reduce(
-                  (sum: number, staffing) => sum + staffing.staffing,
-                  0,
-                ) * demandCount}
+                {shift.staffing.reduce((sum: number, staffing) => sum + staffing.staffing, 0) *
+                  demandCount}
               </span>
             </div>
           </div>
@@ -304,10 +273,10 @@ const DemandForm: React.FC<DemandFormProps> = ({
             className="delete-button"
             data-testid="delete-demand-button"
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
             }}
           >
-            {t("delete")}
+            {t('delete')}
           </Button>
         </div>
       </div>
@@ -320,12 +289,12 @@ const DemandForm: React.FC<DemandFormProps> = ({
   return (
     <div className="create-demand-container">
       <div className="form">
-        <span className="form-title">{t("shift")}</span>
+        <span className="form-title">{t('shift')}</span>
         <Select
-          value={selectedShiftId || ""}
+          value={selectedShiftId || ''}
           onChange={(e) => {
             setSelectedShiftId(e.target.value);
-            setShiftError(""); // Clear error on change
+            setShiftError(''); // Clear error on change
           }}
           fullWidth
           displayEmpty
@@ -333,14 +302,10 @@ const DemandForm: React.FC<DemandFormProps> = ({
           error={!!shiftError}
         >
           <MenuItem value="" disabled>
-            <span style={{ color: "#999" }}>{t("select_a_shift")}</span>
+            <span style={{ color: '#999' }}>{t('select_a_shift')}</span>
           </MenuItem>
           {shifts.map((s) => (
-            <MenuItem
-              key={s.id}
-              value={s.id}
-              data-testid={`demand-shift-option-${s.id}`}
-            >
+            <MenuItem key={s.id} value={s.id} data-testid={`demand-shift-option-${s.id}`}>
               {s.name}
             </MenuItem>
           ))}
@@ -349,10 +314,10 @@ const DemandForm: React.FC<DemandFormProps> = ({
         {shiftError && (
           <span
             style={{
-              color: "#d32f2f",
-              fontSize: "0.75rem",
-              marginTop: "4px",
-              display: "block",
+              color: '#d32f2f',
+              fontSize: '0.75rem',
+              marginTop: '4px',
+              display: 'block',
             }}
             data-testid="demand-shift-error"
           >
@@ -360,20 +325,20 @@ const DemandForm: React.FC<DemandFormProps> = ({
           </span>
         )}
 
-        <span className="form-title">{t("date")}</span>
+        <span className="form-title">{t('date')}</span>
         <DatePicker
           value={selectedDate}
           timezone="UTC"
           onChange={(newDate) => {
             setSelectedDate(newDate ? dayjs(newDate).utc() : null);
-            setDateError(""); // Clear error on change
+            setDateError(''); // Clear error on change
           }}
           slotProps={{
             textField: {
               fullWidth: true,
               error: !!dateError,
               inputProps: {
-                "data-testid": "demand-date-picker",
+                'data-testid': 'demand-date-picker',
               },
             },
           }}
@@ -381,10 +346,10 @@ const DemandForm: React.FC<DemandFormProps> = ({
         {dateError && (
           <span
             style={{
-              color: "#d32f2f",
-              fontSize: "0.75rem",
-              marginTop: "4px",
-              display: "block",
+              color: '#d32f2f',
+              fontSize: '0.75rem',
+              marginTop: '4px',
+              display: 'block',
             }}
             data-testid="demand-date-error"
           >
@@ -401,11 +366,11 @@ const DemandForm: React.FC<DemandFormProps> = ({
           className="delete-button"
           data-testid="cancel-demand-button"
           sx={{
-            textTransform: "none",
-            marginRight: "8px",
+            textTransform: 'none',
+            marginRight: '8px',
           }}
         >
-          {t("cancel")}
+          {t('cancel')}
         </Button>
         <Button
           variant="contained"
@@ -415,10 +380,10 @@ const DemandForm: React.FC<DemandFormProps> = ({
           className="create-button"
           data-testid="create-demand-button"
           sx={{
-            textTransform: "none",
+            textTransform: 'none',
           }}
         >
-          {isSubmitting ? t("creating") : t("create")}
+          {isSubmitting ? t('creating') : t('create')}
         </Button>
       </div>
     </div>

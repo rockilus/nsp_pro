@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from shared.schemas.core import (
@@ -93,8 +93,8 @@ class TestBuildDates:
             constraint_build_ids=[],
             quick_staffings=[],
             created_by="user1",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
         fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 

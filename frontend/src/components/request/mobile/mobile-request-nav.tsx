@@ -1,11 +1,11 @@
-import React from "react";
-import dayjs from "dayjs";
+import React from 'react';
+import dayjs from 'dayjs';
 // MUI
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import Button from "@mui/material/Button";
-import TuneIcon from "@mui/icons-material/Tune";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import TuneIcon from '@mui/icons-material/Tune';
 
 interface MobileRequestNavProps {
   visibleMonth: string;
@@ -23,21 +23,18 @@ export default function MobileRequestNav({
   return (
     <Box
       sx={{
-        display: "flex",
-        alignItems: "center",
+        display: 'flex',
+        alignItems: 'center',
         gap: 1,
         flex: 1,
-        justifyContent: "space-between",
+        justifyContent: 'space-between',
       }}
     >
-      <Typography
-        variant="subtitle1"
-        sx={{ fontWeight: 600, color: "text.secondary" }}
-      >
+      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.secondary' }}>
         {visibleMonth}
       </Typography>
 
-      <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
         <IconButton onClick={onSettingsClick} size="small">
           <TuneIcon />
         </IconButton>
@@ -46,15 +43,15 @@ export default function MobileRequestNav({
           sx={{
             minWidth: 30,
             height: 30,
-            borderRadius: "6px",
+            borderRadius: '6px',
             padding: 0,
-            color: "text.secondary",
+            color: 'text.secondary',
             border: (theme) => `2px solid ${theme.palette.text.secondary}`,
-            backgroundColor: "transparent",
+            backgroundColor: 'transparent',
             fontWeight: 600,
           }}
         >
-          {dayjs.utc().format("D")}
+          {dayjs.utc().format('D')}
         </Button>
       </Box>
     </Box>

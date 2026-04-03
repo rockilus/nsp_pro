@@ -1,13 +1,13 @@
-import { languages } from "../../i18n/settings";
+import { languages } from '../../i18n/settings';
 // MUI
-import CssBaseline from "@mui/material/CssBaseline";
+import CssBaseline from '@mui/material/CssBaseline';
 // Components
-import AdminLayout from "@/components/admin/admin-layout";
-import ProtectedRoute from "@/components/auth/protected-route";
-import SuperAdminGuard from "@/components/admin/super-admin-guard";
+import AdminLayout from '@/components/admin/admin-layout';
+import ProtectedRoute from '@/components/auth/protected-route';
+import SuperAdminGuard from '@/components/admin/super-admin-guard';
 // Context
-import { UserProvider } from "@/context/UserProvider";
-import React from "react";
+import { UserProvider } from '@/context/UserProvider';
+import React from 'react';
 
 export async function generateStaticParams() {
   return languages.map((lng) => ({ lng }));

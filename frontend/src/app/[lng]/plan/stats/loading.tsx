@@ -1,7 +1,7 @@
 // Skeletons
-import CoveragesSkeleton from "../../../../components/skeletons/coverages-skeleton";
+import CoveragesSkeleton from '../../../../components/skeletons/coverages-skeleton';
 // Styles
-import "../../../../styles/tab-container-styles.css";
+import '../../../../styles/tab-container-styles.css';
 
 export default function Loading() {
   return (

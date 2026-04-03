@@ -1,17 +1,14 @@
-"use client";
-import React from "react";
-import { Sparkle } from "lucide-react";
+'use client';
+import React from 'react';
+import { Sparkle } from 'lucide-react';
 // Styles
-import "./daily-shift-demand-cell.css";
+import './daily-shift-demand-cell.css';
 // Types
-import {
-  ScheduleCellDataT,
-  ScheduleViewSettingsT,
-} from "../../../../types/schedule";
+import { ScheduleCellDataT, ScheduleViewSettingsT } from '../../../../types/schedule';
 // Constants
-import { TrafficLightColorMappings } from "../../../../constants/constants";
-import { useTranslation } from "../../../../app/i18n/client";
-import Tooltip from "@mui/material/Tooltip";
+import { TrafficLightColorMappings } from '../../../../constants/constants';
+import { useTranslation } from '../../../../app/i18n/client';
+import Tooltip from '@mui/material/Tooltip';
 
 export default function DailyShiftDemandCell({
   scheduleCellData,
@@ -40,22 +37,15 @@ export default function DailyShiftDemandCell({
     ) || 0;
 
   const countActual =
-    shiftStaffingTotal > 0
-      ? Math.floor(assignmentsCount / shiftStaffingTotal)
-      : 0;
-  const countTarget =
-    scheduleCellData.shiftDemandsData?.shiftDemand?.count || 0;
+    shiftStaffingTotal > 0 ? Math.floor(assignmentsCount / shiftStaffingTotal) : 0;
+  const countTarget = scheduleCellData.shiftDemandsData?.shiftDemand?.count || 0;
 
   const { background, text } =
-    countActual === countTarget
-      ? TrafficLightColorMappings.green
-      : TrafficLightColorMappings.red;
+    countActual === countTarget ? TrafficLightColorMappings.green : TrafficLightColorMappings.red;
 
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
   const tooltipText =
-    scheduleViewSettings.groupBy === "shift"
-      ? t("dsd.tooltip.shift")
-      : t("dsd.tooltip.worker");
+    scheduleViewSettings.groupBy === 'shift' ? t('dsd.tooltip.shift') : t('dsd.tooltip.worker');
 
   return (
     <Tooltip title={tooltipText} arrow>
@@ -66,9 +56,9 @@ export default function DailyShiftDemandCell({
         aria-label={tooltipText}
         style={
           {
-            "--bg-color": background,
-            "--text-color": text,
-            position: "relative",
+            '--bg-color': background,
+            '--text-color': text,
+            position: 'relative',
           } as React.CSSProperties
         }
       >
@@ -85,22 +75,19 @@ export default function DailyShiftDemandCell({
             }}
             data-testid={`dsd-custom-select-${scheduleCellData.shiftDemandsData?.shiftDemand?.id}`}
             style={{
-              position: "absolute",
+              position: 'absolute',
               bottom: 2,
-              left: "50%",
-              transform: "translateX(-50%)",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
               padding: 0,
               lineHeight: 1,
-              color: isCustomCellSelected ? "#1976d2" : "#9e9e9e",
+              color: isCustomCellSelected ? '#1976d2' : '#9e9e9e',
             }}
           >
-            <Sparkle
-              size={14}
-              fill={isCustomCellSelected ? "currentColor" : "none"}
-            />
+            <Sparkle size={14} fill={isCustomCellSelected ? 'currentColor' : 'none'} />
           </button>
         )}
       </div>

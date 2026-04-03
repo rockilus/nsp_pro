@@ -1,6 +1,5 @@
 from collections import Counter
-from datetime import date, datetime, timezone
-from typing import List
+from datetime import UTC, date, datetime
 
 import pytest
 from shared.constraint_parser import (
@@ -67,15 +66,15 @@ def make_simple_engine_inputs(
     )
 
     # two shifts and two workers
-    shifts: List[Shift] = [
+    shifts: list[Shift] = [
         Shift(
             id="sh0",
             team_id="t0",
             name="Shift 0",
             acronym="S0",
             acronym_custom=False,
-            start_time=datetime(2025, 1, 1, tzinfo=timezone.utc),
-            end_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
+            start_time=datetime(2025, 1, 1, tzinfo=UTC),
+            end_time=datetime(2025, 1, 1, 8, tzinfo=UTC),
             staffing=[Staffing(specialty_id=None, staffing=1)],
             color="#000000",
             shift_type=ShiftType.NORMAL,
@@ -91,8 +90,8 @@ def make_simple_engine_inputs(
             name="Shift 1",
             acronym="S1",
             acronym_custom=False,
-            start_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
-            end_time=datetime(2025, 1, 1, 16, tzinfo=timezone.utc),
+            start_time=datetime(2025, 1, 1, 8, tzinfo=UTC),
+            end_time=datetime(2025, 1, 1, 16, tzinfo=UTC),
             staffing=[Staffing(specialty_id=None, staffing=1)],
             color="#ffffff",
             shift_type=ShiftType.NORMAL,
@@ -108,8 +107,8 @@ def make_simple_engine_inputs(
             name="Shift 2",
             acronym="S2",
             acronym_custom=False,
-            start_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
-            end_time=datetime(2025, 1, 2, 8, tzinfo=timezone.utc),
+            start_time=datetime(2025, 1, 1, 8, tzinfo=UTC),
+            end_time=datetime(2025, 1, 2, 8, tzinfo=UTC),
             staffing=[Staffing(specialty_id=None, staffing=1)],
             color="#ffffff",
             shift_type=ShiftType.DUTY,
@@ -125,8 +124,8 @@ def make_simple_engine_inputs(
             name="Recup Shift 2",
             acronym="RS2",
             acronym_custom=False,
-            start_time=datetime(2025, 1, 1, 8, tzinfo=timezone.utc),
-            end_time=datetime(2025, 1, 2, 8, tzinfo=timezone.utc),
+            start_time=datetime(2025, 1, 1, 8, tzinfo=UTC),
+            end_time=datetime(2025, 1, 2, 8, tzinfo=UTC),
             staffing=[],
             color="#ffffff",
             shift_type=ShiftType.REST,
@@ -138,7 +137,7 @@ def make_simple_engine_inputs(
         ),
     ]
 
-    workers: List[Worker] = []
+    workers: list[Worker] = []
     for i in range(4):
         workers.append(
             Worker(
@@ -159,13 +158,13 @@ def make_simple_engine_inputs(
         )
 
     # no dimensions/entries/attributes for this simple case
-    dimensions: List[Dimension] = []
-    dim_entries: List[DimEntry] = []
-    attributes: List[Attribute] = []
+    dimensions: list[Dimension] = []
+    dim_entries: list[DimEntry] = []
+    attributes: list[Attribute] = []
 
     # shift demands: create a demand of 1 for sh0, sh1 and sh2 for every
     # day in the schedule (2025-01-01 and 2025-01-02)
-    shift_demands: List[ShiftDemandNew] = []
+    shift_demands: list[ShiftDemandNew] = []
     schedule_dates = [date(2025, 1, 1), date(2025, 1, 2)]
     for d in schedule_dates:
         for sh_id in ("sh0", "sh1", "sh2"):
@@ -497,9 +496,9 @@ def test_parse_constraints_fil_all_workers_ignores_ended_worker(
     # And at least one active worker (w1) should be present
     assert "w1" in seen_workers
 
-    assert len(
-        actual.constraint_variables
-    ), "Expected non-empty constraint variables for all periods"
+    assert len(actual.constraint_variables), (
+        "Expected non-empty constraint variables for all periods"
+    )
 
 
 @pytest.mark.unit

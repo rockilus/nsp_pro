@@ -1,38 +1,38 @@
-import { useTranslation } from "../../app/i18n/client";
+import { useTranslation } from '../../app/i18n/client';
 // Types
-import { ScheduleSolveStatus } from "@/types/solveTaskStatus";
+import { ScheduleSolveStatus } from '@/types/solveTaskStatus';
 
 export const GetStatusLabel = (lng: string, status: ScheduleSolveStatus) => {
-  const { t } = useTranslation(lng, "campaign-page");
+  const { t } = useTranslation(lng, 'campaign-page');
   const statusOptions: { name: ScheduleSolveStatus; label: string }[] = [
-    { name: ScheduleSolveStatus.NOT_SOLVED, label: t("not_solved") },
-    { name: ScheduleSolveStatus.SOLVED_NO_BREACH, label: t("solved") },
-    { name: ScheduleSolveStatus.NO_SOLUTION, label: t("no_solution") },
-    { name: ScheduleSolveStatus.SOLVED_SOFT_BREACHED, label: t("soft_breach") },
-    { name: ScheduleSolveStatus.SOLVED_HARD_BREACHED, label: t("hard_breach") },
+    { name: ScheduleSolveStatus.NOT_SOLVED, label: t('not_solved') },
+    { name: ScheduleSolveStatus.SOLVED_NO_BREACH, label: t('solved') },
+    { name: ScheduleSolveStatus.NO_SOLUTION, label: t('no_solution') },
+    { name: ScheduleSolveStatus.SOLVED_SOFT_BREACHED, label: t('soft_breach') },
+    { name: ScheduleSolveStatus.SOLVED_HARD_BREACHED, label: t('hard_breach') },
   ];
-  return statusOptions.find((option) => option.name === status)?.label || "";
+  return statusOptions.find((option) => option.name === status)?.label || '';
 };
 
 // Custom hook version
 const useStatusLabel = (lng: string) => {
-  const { t } = useTranslation(lng, "campaign-page");
+  const { t } = useTranslation(lng, 'campaign-page');
 
   const getStatusLabel = (status: ScheduleSolveStatus): string => {
     const statusOptions: { name: ScheduleSolveStatus; label: string }[] = [
-      { name: ScheduleSolveStatus.NOT_SOLVED, label: t("not_solved") },
-      { name: ScheduleSolveStatus.SOLVED_NO_BREACH, label: t("solved") },
-      { name: ScheduleSolveStatus.NO_SOLUTION, label: t("no_solution") },
+      { name: ScheduleSolveStatus.NOT_SOLVED, label: t('not_solved') },
+      { name: ScheduleSolveStatus.SOLVED_NO_BREACH, label: t('solved') },
+      { name: ScheduleSolveStatus.NO_SOLUTION, label: t('no_solution') },
       {
         name: ScheduleSolveStatus.SOLVED_SOFT_BREACHED,
-        label: t("soft_breach"),
+        label: t('soft_breach'),
       },
       {
         name: ScheduleSolveStatus.SOLVED_HARD_BREACHED,
-        label: t("hard_breach"),
+        label: t('hard_breach'),
       },
     ];
-    return statusOptions.find((option) => option.name === status)?.label || "";
+    return statusOptions.find((option) => option.name === status)?.label || '';
   };
 
   return getStatusLabel;

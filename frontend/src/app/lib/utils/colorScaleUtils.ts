@@ -2,9 +2,9 @@
  * Color scale utilities for heatmap visualization
  */
 
-import { scaleSequential } from "d3-scale";
-import { interpolateBlues } from "d3-scale-chromatic";
-import { rgb } from "d3-color";
+import { scaleSequential } from 'd3-scale';
+import { interpolateBlues } from 'd3-scale-chromatic';
+import { rgb } from 'd3-color';
 
 /**
  * Creates a D3 color scale for heatmap visualization
@@ -52,12 +52,9 @@ function getRelativeLuminance(hexColor: string): number {
   const gsRGB = color.g / 255;
   const bsRGB = color.b / 255;
 
-  const r =
-    rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
-  const g =
-    gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
-  const b =
-    bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
+  const r = rsRGB <= 0.03928 ? rsRGB / 12.92 : Math.pow((rsRGB + 0.055) / 1.055, 2.4);
+  const g = gsRGB <= 0.03928 ? gsRGB / 12.92 : Math.pow((gsRGB + 0.055) / 1.055, 2.4);
+  const b = bsRGB <= 0.03928 ? bsRGB / 12.92 : Math.pow((bsRGB + 0.055) / 1.055, 2.4);
 
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
@@ -73,7 +70,7 @@ export function getContrastTextColor(backgroundColor: string): string {
 
   // Use white text for dark backgrounds (luminance < 0.5)
   // Use black text for light backgrounds (luminance >= 0.5)
-  return luminance < 0.5 ? "#ffffff" : "#000000";
+  return luminance < 0.5 ? '#ffffff' : '#000000';
 }
 
 /**
@@ -85,12 +82,12 @@ export function getContrastTextColor(backgroundColor: string): string {
  */
 export function getHeatmapColors(
   value: number,
-  scale: ReturnType<typeof createColorScale>
+  scale: ReturnType<typeof createColorScale>,
 ): { backgroundColor: string; color: string } {
   if (!scale) {
     return {
-      backgroundColor: "transparent",
-      color: "#3c4043",
+      backgroundColor: 'transparent',
+      color: '#3c4043',
     };
   }
 

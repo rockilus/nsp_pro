@@ -7,47 +7,35 @@
  * could_do, or cant_do.
  */
 
-import { test, expect } from "@playwright/test";
-import { randomUUID } from "crypto";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import isoWeek from "dayjs/plugin/isoWeek";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import { ScheduleTestBase } from "../../../utils/schedule-test-base";
-import {
-  AssignmentT,
-  AssignmentSource,
-} from "../../../../src/types/assignment";
+import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import { ScheduleTestBase } from '../../../utils/schedule-test-base';
+import { AssignmentT, AssignmentSource } from '../../../../src/types/assignment';
 import {
   ReplacementImplicationsT,
   ReplacementCandidateT,
   MostConstrainingReasonT,
   ConstraintHitsT,
-} from "../../../../src/types/replacement";
-import {
-  ConstraintType,
-  BlockNameOptions,
-  BlockTypeOptions,
-  SWOIdTypes,
-} from "@/types/constraint";
-import { BreachT, ObjectiveCategory } from "../../../../src/types/breach";
-import { RequestType, RequestStatus } from "@/types/request";
-import {
-  DimensionEntryType,
-  DimensionType,
-} from "../../../../src/types/dimension";
-import { AttributeOwnerType } from "@/types/attribute";
+} from '../../../../src/types/replacement';
+import { ConstraintType, BlockNameOptions, BlockTypeOptions, SWOIdTypes } from '@/types/constraint';
+import { BreachT, ObjectiveCategory } from '../../../../src/types/breach';
+import { RequestType, RequestStatus } from '@/types/request';
+import { DimensionEntryType, DimensionType } from '../../../../src/types/dimension';
+import { AttributeOwnerType } from '@/types/attribute';
 
 dayjs.extend(utc);
 dayjs.extend(isoWeek);
 dayjs.extend(isSameOrBefore);
 
-test.describe("Assignment Replacement - Team Leader", () => {
+test.describe('Assignment Replacement - Team Leader', () => {
   const testBasesMap = new Map<string, ScheduleTestBase>();
 
   test.beforeEach(async ({ page }, testInfo) => {
-    const workerIndex =
-      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
 
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     console.log(`[Test Run ${testRunId}] Starting replacement test setup`);
@@ -58,7 +46,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     (testInfo as any).testRunId = testRunId;
 
     await scheduleTestBase.setupScheduleTests(workerIndex, {
-      referenceDate: dayjs.utc().add(1, "day"),
+      referenceDate: dayjs.utc().add(1, 'day'),
       createAssignments: true,
       linkMemberToWorker: false,
       createDutyAndRecuperation: true,
@@ -91,17 +79,14 @@ test.describe("Assignment Replacement - Team Leader", () => {
       expect(actual.lastDate).toBeNull();
     } else {
       expect(actual.lastDate).not.toBeNull();
-      expect(actual.lastDate!.isSame(expected.lastDate, "day")).toBe(true);
+      expect(actual.lastDate!.isSame(expected.lastDate, 'day')).toBe(true);
     }
   }
 
   /**
    * Helper to compare constraint hits (hard or soft)
    */
-  function compareConstraintHits(
-    expected: ConstraintHitsT,
-    actual: ConstraintHitsT,
-  ): void {
+  function compareConstraintHits(expected: ConstraintHitsT, actual: ConstraintHitsT): void {
     expect(actual.meetsConstraints).toBe(expected.meetsConstraints);
     expect(actual.breaches.length).toBe(expected.breaches.length);
 
@@ -111,22 +96,18 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
       // Skip dynamic fields (id, scheduleId, description)
       expect(actualBreach.objectiveId).toBe(expectedBreach.objectiveId);
-      expect(actualBreach.objectiveCategory).toBe(
-        expectedBreach.objectiveCategory,
-      );
+      expect(actualBreach.objectiveCategory).toBe(expectedBreach.objectiveCategory);
       expect(actualBreach.hardToSoft).toBe(expectedBreach.hardToSoft);
 
       // Compare variables array
-      expect(actualBreach.variables.length).toBe(
-        expectedBreach.variables.length,
-      );
+      expect(actualBreach.variables.length).toBe(expectedBreach.variables.length);
       for (let j = 0; j < expectedBreach.variables.length; j++) {
         const expectedVar = expectedBreach.variables[j];
         const actualVar = actualBreach.variables[j];
 
         expect(actualVar.workerId).toBe(expectedVar.workerId);
         expect(actualVar.shiftId).toBe(expectedVar.shiftId);
-        expect(actualVar.date.isSame(expectedVar.date, "day")).toBe(true);
+        expect(actualVar.date.isSame(expectedVar.date, 'day')).toBe(true);
       }
     }
   }
@@ -145,40 +126,26 @@ test.describe("Assignment Replacement - Team Leader", () => {
     expect(actual.isntOnLeave).toBe(expected.isntOnLeave);
 
     // Filter hits
-    expect(actual.filterHits.isntFilteredOut).toBe(
-      expected.filterHits.isntFilteredOut,
-    );
-    expect(actual.filterHits.filterLabels.sort()).toEqual(
-      expected.filterHits.filterLabels.sort(),
-    );
+    expect(actual.filterHits.isntFilteredOut).toBe(expected.filterHits.isntFilteredOut);
+    expect(actual.filterHits.filterLabels.sort()).toEqual(expected.filterHits.filterLabels.sort());
 
     // Overlap hits
-    expect(actual.overlapHits.hasntOverlap).toBe(
-      expected.overlapHits.hasntOverlap,
-    );
+    expect(actual.overlapHits.hasntOverlap).toBe(expected.overlapHits.hasntOverlap);
     expect(actual.overlapHits.overlapAssignmentIds.sort()).toEqual(
       expected.overlapHits.overlapAssignmentIds.sort(),
     );
 
     // Hard constraint hits
-    compareConstraintHits(
-      expected.hardConstraintHits,
-      actual.hardConstraintHits,
-    );
+    compareConstraintHits(expected.hardConstraintHits, actual.hardConstraintHits);
 
     // Request hits
-    expect(actual.requestHits.hasNoRequestConflict).toBe(
-      expected.requestHits.hasNoRequestConflict,
-    );
+    expect(actual.requestHits.hasNoRequestConflict).toBe(expected.requestHits.hasNoRequestConflict);
     expect(actual.requestHits.conflictingRequestIds.sort()).toEqual(
       expected.requestHits.conflictingRequestIds.sort(),
     );
 
     // Soft constraints (could do)
-    compareConstraintHits(
-      expected.softConstraintHits,
-      actual.softConstraintHits,
-    );
+    compareConstraintHits(expected.softConstraintHits, actual.softConstraintHits);
 
     // Monthly duties
     expect(actual.newMonthlyDuties.newNumberMonthlyDuties).toBe(
@@ -187,9 +154,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     expect(actual.newMonthlyDuties.newMonthlyDutiesDelta).toBe(
       expected.newMonthlyDuties.newMonthlyDutiesDelta,
     );
-    expect(actual.newMonthlyDuties.meetsTarget).toBe(
-      expected.newMonthlyDuties.meetsTarget,
-    );
+    expect(actual.newMonthlyDuties.meetsTarget).toBe(expected.newMonthlyDuties.meetsTarget);
 
     // Weekly time
     expect(actual.newWeeklyTime.newWeeklyWorkedMinutes).toBe(
@@ -198,9 +163,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     expect(actual.newWeeklyTime.newWeeklyTimeDeltaMinutes).toBe(
       expected.newWeeklyTime.newWeeklyTimeDeltaMinutes,
     );
-    expect(actual.newWeeklyTime.meetsTarget).toBe(
-      expected.newWeeklyTime.meetsTarget,
-    );
+    expect(actual.newWeeklyTime.meetsTarget).toBe(expected.newWeeklyTime.meetsTarget);
 
     // LTM indicators
     compareLTMIndicators(
@@ -235,17 +198,11 @@ test.describe("Assignment Replacement - Team Leader", () => {
       expect(candidate.workerId).toBe(expectedCandidate.workerId);
       expect(candidate.workerName).toBe(expectedCandidate.workerName);
 
-      console.log(
-        `Comparing candidate: ${candidate.workerName} (ID: ${candidate.workerId})`,
-      );
+      console.log(`Comparing candidate: ${candidate.workerName} (ID: ${candidate.workerId})`);
 
       expect(candidate.rank).toBe(expectedCandidate.rank);
-      expect(candidate.replacementCategory).toBe(
-        expectedCandidate.replacementCategory,
-      );
-      expect(candidate.mostConstrainingReason).toBe(
-        expectedCandidate.mostConstrainingReason,
-      );
+      expect(candidate.replacementCategory).toBe(expectedCandidate.replacementCategory);
+      expect(candidate.mostConstrainingReason).toBe(expectedCandidate.mostConstrainingReason);
 
       // Compare nested implications
       compareReplacementImplications(
@@ -258,7 +215,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     }
   }
 
-  test("should return expected analysis and ranking for each worker", async ({
+  test('should return expected analysis and ranking for each worker', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -269,9 +226,9 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     const allShifts = await scheduleTestBase.getAllShifts();
 
-    const morningShift = testShifts.find((s) => s.name === "Morning Shift")!;
-    const dutyShift = testShifts.find((s) => s.name === "Duty Shift")!;
-    const leaveShift = allShifts.find((s) => s.name === "Vacation")!;
+    const morningShift = testShifts.find((s) => s.name === 'Morning Shift')!;
+    const dutyShift = testShifts.find((s) => s.name === 'Duty Shift')!;
+    const leaveShift = allShifts.find((s) => s.name === 'Vacation')!;
 
     expect(morningShift).toBeDefined();
     expect(dutyShift).toBeDefined();
@@ -288,32 +245,26 @@ test.describe("Assignment Replacement - Team Leader", () => {
           return pool[i];
         }
       }
-      throw new Error("no unused workers left");
+      throw new Error('no unused workers left');
     }
 
     // Get the test assignment, and delete all the others
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const assignments = AR.assignmentsRead;
     await expect(assignments.length).toBeGreaterThan(0);
 
-    const testAssignment = assignments.find(
-      (a) => a.shiftId === morningShift.id,
-    )!;
+    const testAssignment = assignments.find((a) => a.shiftId === morningShift.id)!;
     expect(testAssignment).toBeDefined();
 
-    const testWorker = testWorkers.find(
-      (w) => w.id === testAssignment.workerId,
-    )!;
+    const testWorker = testWorkers.find((w) => w.id === testAssignment.workerId)!;
     expect(testWorker).toBeDefined();
 
     // Mark test worker as used
-    const testWorkerIndex = testWorkers.findIndex(
-      (w) => w.id === testAssignment.workerId,
-    );
+    const testWorkerIndex = testWorkers.findIndex((w) => w.id === testAssignment.workerId);
     expect(testWorkerIndex).toBeGreaterThanOrEqual(0);
     used.add(testWorkerIndex);
 
@@ -323,10 +274,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     expect(testDate).toBeDefined();
 
     for (const assignment of assignments) {
-      if (
-        assignment.id !== testAssignment.id &&
-        !assignment.referenceAssignmentId
-      ) {
+      if (assignment.id !== testAssignment.id && !assignment.referenceAssignmentId) {
         await scheduleTestBase.deleteAssignment(assignment.id);
       }
     }
@@ -383,10 +331,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
     };
 
     const defaultCandidate: ReplacementCandidateT = {
-      workerId: "",
-      workerName: "",
+      workerId: '',
+      workerName: '',
       rank: 0,
-      replacementCategory: "can_do",
+      replacementCategory: 'can_do',
       replacementImplications: defaultImplications,
       mostConstrainingReason: MostConstrainingReasonT.NO_CONSTRAINTS_VIOLATED,
     };
@@ -418,9 +366,9 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     for (let i = 0; i < 5; i++) {
       const pastDate = dayjs(testDate)
-        .subtract(i + 1, "week")
-        .startOf("day")
-        .add(12, "hours"); // Add 12 hours to avoid timezone issues
+        .subtract(i + 1, 'week')
+        .startOf('day')
+        .add(12, 'hours'); // Add 12 hours to avoid timezone issues
 
       await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: w1.id,
@@ -433,10 +381,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
     // not on the same weekday
     for (let i = 0; i < 2; i++) {
       const pastDate = dayjs(testDate)
-        .subtract(i + 1, "week")
-        .subtract(1, "day") // Add 1 day to be a different weekday
-        .startOf("day")
-        .add(12, "hours"); // Add 12 hours to avoid timezone issues
+        .subtract(i + 1, 'week')
+        .subtract(1, 'day') // Add 1 day to be a different weekday
+        .startOf('day')
+        .add(12, 'hours'); // Add 12 hours to avoid timezone issues
 
       await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: w1.id,
@@ -454,17 +402,11 @@ test.describe("Assignment Replacement - Team Leader", () => {
         ...defaultCandidate.replacementImplications,
         nbTimesDidShiftLtm: {
           count: 8,
-          lastDate: dayjs(testDate)
-            .subtract(1, "week")
-            .startOf("day")
-            .add(12, "hours"),
+          lastDate: dayjs(testDate).subtract(1, 'week').startOf('day').add(12, 'hours'),
         },
         nbTimesWorkedWeekdayLtm: {
           count: 6,
-          lastDate: dayjs(testDate)
-            .subtract(1, "week")
-            .startOf("day")
-            .add(12, "hours"),
+          lastDate: dayjs(testDate).subtract(1, 'week').startOf('day').add(12, 'hours'),
         },
       },
     };
@@ -481,24 +423,21 @@ test.describe("Assignment Replacement - Team Leader", () => {
     let dutyDate2: dayjs.Dayjs | undefined = undefined;
 
     for (
-      let currDate = dayjs(testDate).utc().startOf("isoWeek");
-      currDate.isSameOrBefore(dayjs(testDate).utc().endOf("isoWeek"), "day");
-      currDate = currDate.add(1, "day")
+      let currDate = dayjs(testDate).utc().startOf('isoWeek');
+      currDate.isSameOrBefore(dayjs(testDate).utc().endOf('isoWeek'), 'day');
+      currDate = currDate.add(1, 'day')
     ) {
       // Ensure neither date conflicts with testDate or testDate - 1
-      const testDateMinus1 = dayjs(testDate).subtract(1, "day");
-      if (
-        currDate.isSame(testDate, "day") ||
-        currDate.isSame(testDateMinus1, "day")
-      ) {
+      const testDateMinus1 = dayjs(testDate).subtract(1, 'day');
+      if (currDate.isSame(testDate, 'day') || currDate.isSame(testDateMinus1, 'day')) {
         continue;
       }
       if (!dutyDate1) {
-        dutyDate1 = currDate.startOf("day").add(12, "hours");
+        dutyDate1 = currDate.startOf('day').add(12, 'hours');
         continue;
       }
-      if (!dutyDate2 && dutyDate1 && currDate.diff(dutyDate1, "day") >= 2) {
-        dutyDate2 = currDate.startOf("day").add(12, "hours");
+      if (!dutyDate2 && dutyDate1 && currDate.diff(dutyDate1, 'day') >= 2) {
+        dutyDate2 = currDate.startOf('day').add(12, 'hours');
         break;
       }
     }
@@ -507,9 +446,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     expect(dutyDate2).toBeDefined();
 
     if (!dutyDate1 || !dutyDate2) {
-      throw new Error(
-        "Failed to find suitable dates for duty assignments for w2",
-      );
+      throw new Error('Failed to find suitable dates for duty assignments for w2');
     }
 
     await scheduleTestBase.createAssignmentAndRecurrence({
@@ -528,7 +465,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerId: w2.id,
       workerName: w2.name,
       rank: rankCounter,
-      replacementCategory: "could_do",
+      replacementCategory: 'could_do',
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         newMonthlyDuties: {
@@ -550,8 +487,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
     const w3 = pickUnused();
     const softConstraint = await scheduleTestBase.createConstraint({
       constraintType: ConstraintType.FIL,
-      templateId: "",
-      language: "en",
+      templateId: '',
+      language: 'en',
       blocks: [
         {
           name: BlockNameOptions.WORKER,
@@ -562,19 +499,19 @@ test.describe("Assignment Replacement - Team Leader", () => {
               id: w3.id,
               idType: SWOIdTypes.WORKER,
               isBoolDim: false,
-              categoryName: "Workers",
+              categoryName: 'Workers',
             },
           ],
         },
         {
           name: BlockNameOptions.OPERATOR,
           type: BlockTypeOptions.STRING,
-          value: "should not",
+          value: 'should not',
         },
         {
           name: BlockNameOptions.TEXT,
           type: BlockTypeOptions.STRING,
-          value: "faire des",
+          value: 'faire des',
         },
         {
           name: BlockNameOptions.SHIFT,
@@ -585,14 +522,14 @@ test.describe("Assignment Replacement - Team Leader", () => {
               id: testShift.id,
               idType: SWOIdTypes.SHIFT,
               isBoolDim: false,
-              categoryName: "Shifts",
+              categoryName: 'Shifts',
             },
           ],
         },
       ],
-      text: "",
+      text: '',
       hard: false,
-      priority: "medium",
+      priority: 'medium',
       active: true,
     });
 
@@ -601,7 +538,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerId: w3.id,
       workerName: w3.name,
       rank: rankCounter,
-      replacementCategory: "could_do",
+      replacementCategory: 'could_do',
       mostConstrainingReason: MostConstrainingReasonT.SOFT_CONSTRAINT_VIOLATION,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
@@ -609,8 +546,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
           meetsConstraints: false,
           breaches: [
             {
-              id: "",
-              scheduleId: "",
+              id: '',
+              scheduleId: '',
               objectiveId: softConstraint.id,
               objectiveCategory: ObjectiveCategory.CONSTRAINT,
               variables: [
@@ -620,7 +557,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
                   shiftId: testShift.id,
                 },
               ],
-              description: "",
+              description: '',
               hardToSoft: null,
             },
           ],
@@ -639,15 +576,15 @@ test.describe("Assignment Replacement - Team Leader", () => {
       endDate: testDate,
       status: RequestStatus.PENDING,
       negative: false,
-      comment: "Test work demand request",
+      comment: 'Test work demand request',
       shiftId: null,
       shiftOptions: [
         {
           name: true,
-          id: "",
+          id: '',
           idType: SWOIdTypes.DUTY,
           isBoolDim: true,
-          categoryName: "Duties",
+          categoryName: 'Duties',
         },
       ],
     });
@@ -659,7 +596,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerId: w4.id,
       workerName: w4.name,
       rank: rankCounter,
-      replacementCategory: "cant_do",
+      replacementCategory: 'cant_do',
       mostConstrainingReason: MostConstrainingReasonT.REQUEST_CONFLICT,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
@@ -676,8 +613,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
     const w5 = pickUnused();
     const hardConstraint = await scheduleTestBase.createConstraint({
       constraintType: ConstraintType.FIL,
-      templateId: "",
-      language: "en",
+      templateId: '',
+      language: 'en',
       blocks: [
         {
           name: BlockNameOptions.WORKER,
@@ -688,19 +625,19 @@ test.describe("Assignment Replacement - Team Leader", () => {
               id: w5.id,
               idType: SWOIdTypes.WORKER,
               isBoolDim: false,
-              categoryName: "Workers",
+              categoryName: 'Workers',
             },
           ],
         },
         {
           name: BlockNameOptions.OPERATOR,
           type: BlockTypeOptions.STRING,
-          value: "should not",
+          value: 'should not',
         },
         {
           name: BlockNameOptions.TEXT,
           type: BlockTypeOptions.STRING,
-          value: "faire des",
+          value: 'faire des',
         },
         {
           name: BlockNameOptions.SHIFT,
@@ -711,14 +648,14 @@ test.describe("Assignment Replacement - Team Leader", () => {
               id: testShift.id,
               idType: SWOIdTypes.SHIFT,
               isBoolDim: false,
-              categoryName: "Shifts",
+              categoryName: 'Shifts',
             },
           ],
         },
       ],
-      text: "",
+      text: '',
       hard: true,
-      priority: "medium",
+      priority: 'medium',
       active: true,
     });
 
@@ -727,7 +664,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerId: w5.id,
       workerName: w5.name,
       rank: rankCounter,
-      replacementCategory: "cant_do",
+      replacementCategory: 'cant_do',
       mostConstrainingReason: MostConstrainingReasonT.HARD_CONSTRAINT_VIOLATION,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
@@ -735,8 +672,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
           meetsConstraints: false,
           breaches: [
             {
-              id: "",
-              scheduleId: "",
+              id: '',
+              scheduleId: '',
               objectiveId: hardConstraint.id,
               objectiveCategory: ObjectiveCategory.CONSTRAINT,
               variables: [
@@ -746,7 +683,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
                   shiftId: testShift.id,
                 },
               ],
-              description: "",
+              description: '',
               hardToSoft: null,
             },
           ],
@@ -772,7 +709,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerId: w6.id,
       workerName: w6.name,
       rank: rankCounter,
-      replacementCategory: "cant_do",
+      replacementCategory: 'cant_do',
       mostConstrainingReason: MostConstrainingReasonT.HAS_OVERLAP,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
@@ -791,12 +728,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
     const ARResultW6_2 = await scheduleTestBase.createAssignmentAndRecurrence({
       workerId: w6_2.id,
       shiftId: dutyShift.id,
-      date: testDate.add(-1, "day"),
+      date: testDate.add(-1, 'day'),
     });
 
-    const dutyAssignment = ARResultW6_2.assignmentsCreated.find(
-      (a) => a.shiftId === dutyShift.id,
-    )!;
+    const dutyAssignment = ARResultW6_2.assignmentsCreated.find((a) => a.shiftId === dutyShift.id)!;
     const recupAssignment = ARResultW6_2.assignmentsCreated.find(
       (a) => a.referenceAssignmentId === dutyAssignment.id,
     )!;
@@ -806,7 +741,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerId: w6_2.id,
       workerName: w6_2.name,
       rank: rankCounter,
-      replacementCategory: "cant_do",
+      replacementCategory: 'cant_do',
       mostConstrainingReason: MostConstrainingReasonT.HAS_OVERLAP,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
@@ -837,8 +772,8 @@ test.describe("Assignment Replacement - Team Leader", () => {
       dimensionType: [DimensionType.WORKER, DimensionType.SHIFT],
       dimEntries: [
         {
-          id: "",
-          dimensionId: "",
+          id: '',
+          dimensionId: '',
           name: `${w7.name} - ${testShift.name}`,
           deleted: false,
         },
@@ -846,7 +781,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     });
 
     await scheduleTestBase.createAttribute({
-      value: "",
+      value: '',
       ownerType: AttributeOwnerType.SHIFT,
       ownerId: testShift.id,
       dimensionId: dimensionFilter.newDimension.id,
@@ -856,7 +791,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     for (const worker of testWorkers) {
       if (worker.id !== w7.id) {
         await scheduleTestBase.createAttribute({
-          value: "",
+          value: '',
           ownerType: AttributeOwnerType.WORKER,
           ownerId: worker.id,
           dimensionId: dimensionFilter.newDimension.id,
@@ -870,13 +805,13 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerId: w7.id,
       workerName: w7.name,
       rank: rankCounter,
-      replacementCategory: "cant_do",
+      replacementCategory: 'cant_do',
       mostConstrainingReason: MostConstrainingReasonT.FILTERED_OUT,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
         filterHits: {
           isntFilteredOut: false,
-          filterLabels: ["worker_shift_filter"],
+          filterLabels: ['worker_shift_filter'],
         },
       },
     };
@@ -892,14 +827,12 @@ test.describe("Assignment Replacement - Team Leader", () => {
       endDate: testDate,
       status: RequestStatus.PENDING,
       negative: false,
-      comment: "Test work demand request",
+      comment: 'Test work demand request',
       shiftId: leaveShift.id,
       shiftOptions: [],
     });
     // Approve the request so it becomes an approved work demand
-    const requestApproval = await scheduleTestBase.approveRequest(
-      leaveRequest.id,
-    );
+    const requestApproval = await scheduleTestBase.approveRequest(leaveRequest.id);
     expect(requestApproval.assignments.length).toBe(1);
 
     expectedCandidates[w8.id] = {
@@ -907,7 +840,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerId: w8.id,
       workerName: w8.name,
       rank: rankCounter,
-      replacementCategory: "cant_do",
+      replacementCategory: 'cant_do',
       mostConstrainingReason: MostConstrainingReasonT.ON_LEAVE,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
@@ -950,7 +883,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerId: w9.id,
       workerName: w9.name,
       rank: rankCounter,
-      replacementCategory: "cant_do",
+      replacementCategory: 'cant_do',
       mostConstrainingReason: MostConstrainingReasonT.MISSING_SPECIALTY,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
@@ -963,7 +896,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
     // Setup worker to test no employed implications
     const w10 = pickUnused();
     await scheduleTestBase.updateWorker(w10.id, {
-      employmentEndDate: dayjs(testDate).subtract(1, "day"),
+      employmentEndDate: dayjs(testDate).subtract(1, 'day'),
     });
 
     expectedCandidates[w10.id] = {
@@ -971,7 +904,7 @@ test.describe("Assignment Replacement - Team Leader", () => {
       workerId: w10.id,
       workerName: w10.name,
       rank: rankCounter,
-      replacementCategory: "cant_do",
+      replacementCategory: 'cant_do',
       mostConstrainingReason: MostConstrainingReasonT.NOT_EMPLOYED,
       replacementImplications: {
         ...defaultCandidate.replacementImplications,
@@ -982,16 +915,14 @@ test.describe("Assignment Replacement - Team Leader", () => {
     rankCounter++;
 
     // Get replacement candidates via the api
-    const actualCandidates = await scheduleTestBase.getReplacementCandidates(
-      testAssignment.id,
-    );
+    const actualCandidates = await scheduleTestBase.getReplacementCandidates(testAssignment.id);
 
     // Compare actual vs expected candidates
     compareReplacementCandidates(expectedCandidates, actualCandidates);
-    console.log("✅ All replacement candidates match expectations");
+    console.log('✅ All replacement candidates match expectations');
   });
 
-  test("should complete replacement when replace button is clicked in candidate list", async ({
+  test('should complete replacement when replace button is clicked in candidate list', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -999,13 +930,13 @@ test.describe("Assignment Replacement - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const testWorkers = scheduleTestBase.getTestWorkers();
 
-    const morningShift = testShifts.find((s) => s.name === "Morning Shift")!;
+    const morningShift = testShifts.find((s) => s.name === 'Morning Shift')!;
 
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const assignments = AR.assignmentsRead;
     await expect(assignments.length).toBeGreaterThan(0);
@@ -1020,15 +951,13 @@ test.describe("Assignment Replacement - Team Leader", () => {
       page,
       {
         targetDate: assignment.date,
-        timeFrame: "week",
+        timeFrame: 'week',
       },
       true, // reload page
     );
 
     // Click on assignment
-    const assignmentCell = page.locator(
-      `[data-testid="assignment-cell-${assignment.id}"]`,
-    );
+    const assignmentCell = page.locator(`[data-testid="assignment-cell-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
@@ -1038,12 +967,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
     await expect(dialog).toBeVisible();
 
     // Verify check replacement button exists
-    const checkReplacementButton = page.locator(
-      '[data-testid="check-replacement-button"]',
-    );
+    const checkReplacementButton = page.locator('[data-testid="check-replacement-button"]');
     await expect(checkReplacementButton).toBeVisible();
 
-    console.log("✅ Check replacement button visible");
+    console.log('✅ Check replacement button visible');
 
     // Click the check replacement button
     await checkReplacementButton.click();
@@ -1052,80 +979,60 @@ test.describe("Assignment Replacement - Team Leader", () => {
     await page.waitForTimeout(1000); // Wait for API response
 
     // Verify all workers except the original worker appear in the list
-    const expectedCandidateWorkers = testWorkers.filter(
-      (w) => w.id !== originalWorkerId,
-    );
+    const expectedCandidateWorkers = testWorkers.filter((w) => w.id !== originalWorkerId);
 
     for (const worker of expectedCandidateWorkers) {
-      const candidateItem = page.locator(
-        `[data-testid="candidate-${worker.id}"]`,
-      );
+      const candidateItem = page.locator(`[data-testid="candidate-${worker.id}"]`);
       await expect(candidateItem).toBeVisible();
 
       // Verify the worker has a replace button
-      const replaceButton = page.locator(
-        `[data-testid="replace-button-${worker.id}"]`,
-      );
+      const replaceButton = page.locator(`[data-testid="replace-button-${worker.id}"]`);
       await expect(replaceButton).toBeVisible();
     }
 
-    console.log(
-      "✅ All workers except original worker appear with replace buttons",
-    );
+    console.log('✅ All workers except original worker appear with replace buttons');
 
     // Verify the original worker does NOT appear in the list
-    const originalWorkerCandidate = page.locator(
-      `[data-testid="candidate-${originalWorkerId}"]`,
-    );
+    const originalWorkerCandidate = page.locator(`[data-testid="candidate-${originalWorkerId}"]`);
     await expect(originalWorkerCandidate).not.toBeVisible();
 
     // Select a replacement worker (pick the first candidate)
     const replacementWorker = expectedCandidateWorkers[0];
-    const replaceButton = page.locator(
-      `[data-testid="replace-button-${replacementWorker.id}"]`,
-    );
+    const replaceButton = page.locator(`[data-testid="replace-button-${replacementWorker.id}"]`);
     await replaceButton.click();
 
-    console.log(
-      `✅ Clicked replace button for worker: ${replacementWorker.name}`,
-    );
+    console.log(`✅ Clicked replace button for worker: ${replacementWorker.name}`);
 
     // Wait for the replacement to complete
     await page.waitForTimeout(1500); // Wait for API call and UI update
 
     // Verify the assignment dialog has closed
-    const assignmentDialog = page.locator(
-      '[data-testid="schedule-item-dialog"]',
-    );
+    const assignmentDialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(assignmentDialog).not.toBeVisible();
 
-    console.log("✅ Assignment dialog closed after replacement");
+    console.log('✅ Assignment dialog closed after replacement');
 
     // Fetch assignments again
     const updatedAR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const updatedAssignments = updatedAR.assignmentsRead;
 
     // Find the updated assignment
-    const updatedAssignment = updatedAssignments.find(
-      (a) => a.id === assignment.id,
-    );
+    const updatedAssignment = updatedAssignments.find((a) => a.id === assignment.id);
 
     // Verify the assignment is now assigned to the replacement worker
     expect(updatedAssignment).toBeDefined();
     expect(updatedAssignment!.workerId).toBe(replacementWorker.id);
     expect(updatedAssignment!.shiftId).toBe(assignment.shiftId);
-    expect(updatedAssignment!.date.isSame(assignment.date, "day")).toBe(true);
+    expect(updatedAssignment!.date.isSame(assignment.date, 'day')).toBe(true);
 
-    console.log(
-      `✅ Assignment successfully replaced to worker: ${replacementWorker.name}`,
-    );
+    console.log(`✅ Assignment successfully replaced to worker: ${replacementWorker.name}`);
   });
 
-  test("should complete replacement when replace button is clicked in details dialog", async ({
+  test('should complete replacement when replace button is clicked in details dialog', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -1133,13 +1040,13 @@ test.describe("Assignment Replacement - Team Leader", () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const testWorkers = scheduleTestBase.getTestWorkers();
 
-    const morningShift = testShifts.find((s) => s.name === "Morning Shift")!;
+    const morningShift = testShifts.find((s) => s.name === 'Morning Shift')!;
 
     // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const assignments = AR.assignmentsRead;
     await expect(assignments.length).toBeGreaterThan(0);
@@ -1154,15 +1061,13 @@ test.describe("Assignment Replacement - Team Leader", () => {
       page,
       {
         targetDate: assignment.date,
-        timeFrame: "week",
+        timeFrame: 'week',
       },
       true,
     );
 
     // Click on assignment
-    const assignmentCell = page.locator(
-      `[data-testid="assignment-cell-${assignment.id}"]`,
-    );
+    const assignmentCell = page.locator(`[data-testid="assignment-cell-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
 
     await assignmentCell.click();
@@ -1172,12 +1077,10 @@ test.describe("Assignment Replacement - Team Leader", () => {
     await expect(dialog).toBeVisible();
 
     // Verify check replacement button exists
-    const checkReplacementButton = page.locator(
-      '[data-testid="check-replacement-button"]',
-    );
+    const checkReplacementButton = page.locator('[data-testid="check-replacement-button"]');
     await expect(checkReplacementButton).toBeVisible();
 
-    console.log("✅ Check replacement button visible");
+    console.log('✅ Check replacement button visible');
 
     // Click the check replacement button
     await checkReplacementButton.click();
@@ -1190,38 +1093,30 @@ test.describe("Assignment Replacement - Team Leader", () => {
     await expect(seeDetailsButton).toBeVisible();
     await seeDetailsButton.click();
 
-    console.log("✅ Clicked see details button");
+    console.log('✅ Clicked see details button');
 
     // Wait for the details dialog to open
     await page.waitForTimeout(500);
 
     // Verify the details dialog is visible
-    const detailsDialog = page.locator(
-      '[data-testid="replacement-details-dialog"]',
-    );
+    const detailsDialog = page.locator('[data-testid="replacement-details-dialog"]');
     await expect(detailsDialog).toBeVisible();
 
-    console.log("✅ Replacement details dialog opened");
+    console.log('✅ Replacement details dialog opened');
 
     // Verify all workers (including current worker) appear in the details table
     for (const worker of testWorkers) {
-      const candidateRow = page.locator(
-        `[data-testid="candidate-row-${worker.id}"]`,
-      );
+      const candidateRow = page.locator(`[data-testid="candidate-row-${worker.id}"]`);
       await expect(candidateRow).toBeVisible();
     }
 
-    console.log("✅ All workers appear in details table");
+    console.log('✅ All workers appear in details table');
 
     // Verify replace buttons exist for all workers except the current worker
-    const expectedCandidateWorkers = testWorkers.filter(
-      (w) => w.id !== originalWorkerId,
-    );
+    const expectedCandidateWorkers = testWorkers.filter((w) => w.id !== originalWorkerId);
 
     for (const worker of expectedCandidateWorkers) {
-      const replaceButton = page.locator(
-        `[data-testid="replace-candidate-${worker.id}"]`,
-      );
+      const replaceButton = page.locator(`[data-testid="replace-candidate-${worker.id}"]`);
       await expect(replaceButton).toBeVisible();
     }
 
@@ -1231,15 +1126,11 @@ test.describe("Assignment Replacement - Team Leader", () => {
     );
     await expect(currentWorkerReplaceButton).not.toBeVisible();
 
-    console.log(
-      "✅ Replace buttons visible for all workers except current worker",
-    );
+    console.log('✅ Replace buttons visible for all workers except current worker');
 
     // Select a replacement worker (pick the first candidate)
     const replacementWorker = expectedCandidateWorkers[0];
-    const replaceButton = page.locator(
-      `[data-testid="replace-candidate-${replacementWorker.id}"]`,
-    );
+    const replaceButton = page.locator(`[data-testid="replace-candidate-${replacementWorker.id}"]`);
     await expect(replaceButton).toBeVisible();
     await replaceButton.click();
 
@@ -1252,31 +1143,27 @@ test.describe("Assignment Replacement - Team Leader", () => {
 
     // Verify both dialogs have closed
     await expect(detailsDialog).not.toBeVisible();
-    const assignmentDialog = page.locator(
-      '[data-testid="schedule-item-dialog"]',
-    );
+    const assignmentDialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(assignmentDialog).not.toBeVisible();
 
-    console.log("✅ Both dialogs closed after replacement");
+    console.log('✅ Both dialogs closed after replacement');
 
     // Fetch assignments again
     const updatedAR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      dayjs.utc().startOf("day"),
-      dayjs.utc().add(2, "month").endOf("day"),
+      dayjs.utc().startOf('day'),
+      dayjs.utc().add(2, 'month').endOf('day'),
     );
     const updatedAssignments = updatedAR.assignmentsRead;
 
     // Find the updated assignment
-    const updatedAssignment = updatedAssignments.find(
-      (a) => a.id === assignment.id,
-    );
+    const updatedAssignment = updatedAssignments.find((a) => a.id === assignment.id);
 
     // Verify the assignment is now assigned to the replacement worker
     expect(updatedAssignment).toBeDefined();
     expect(updatedAssignment!.workerId).toBe(replacementWorker.id);
     expect(updatedAssignment!.shiftId).toBe(assignment.shiftId);
-    expect(updatedAssignment!.date.isSame(assignment.date, "day")).toBe(true);
+    expect(updatedAssignment!.date.isSame(assignment.date, 'day')).toBe(true);
 
     console.log(
       `✅ Assignment successfully replaced to worker: ${replacementWorker.name} via details dialog`,

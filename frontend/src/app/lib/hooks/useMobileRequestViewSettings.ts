@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { useLocalStorageState } from "./useLocalStorageState";
+import { useCallback } from 'react';
+import { useLocalStorageState } from './useLocalStorageState';
 
 export type MobileRequestViewSettingsT = {
   mobileSelectedWorkerId: string | null;
@@ -20,25 +20,21 @@ const mobileRequestViewSettingsSerializer = {
       };
       return JSON.stringify(serialized);
     } catch (error) {
-      console.warn("Error serializing request view settings:", error);
+      console.warn('Error serializing request view settings:', error);
       return JSON.stringify({});
     }
   },
 
   deserialize: (value: string): MobileRequestViewSettingsT => {
     try {
-      const parsed: Partial<SerializedMobileRequestViewSettings> =
-        JSON.parse(value);
+      const parsed: Partial<SerializedMobileRequestViewSettings> = JSON.parse(value);
       const settings: MobileRequestViewSettingsT = {
         mobileSelectedWorkerId: parsed.mobileSelectedWorkerId ?? null,
         showPastRequests: parsed.showPastRequests ?? false,
       };
       return settings;
     } catch (error) {
-      console.warn(
-        "Error deserializing request view settings, using defaults:",
-        error,
-      );
+      console.warn('Error deserializing request view settings, using defaults:', error);
       return {
         mobileSelectedWorkerId: null,
         showPastRequests: false,

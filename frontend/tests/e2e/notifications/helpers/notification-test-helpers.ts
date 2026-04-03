@@ -1,11 +1,8 @@
-import { expect, Page, TestInfo } from "@playwright/test";
-import { randomUUID } from "crypto";
-import { DatabaseTestUtils, TestUser } from "../../../utils/database-utils";
-import { testConfig } from "../../../utils/test-config";
-import type {
-  NotificationKey,
-  NotificationTypeT,
-} from "../../../../src/types/notification";
+import { expect, Page, TestInfo } from '@playwright/test';
+import { randomUUID } from 'crypto';
+import { DatabaseTestUtils, TestUser } from '../../../utils/database-utils';
+import { testConfig } from '../../../utils/test-config';
+import type { NotificationKey, NotificationTypeT } from '../../../../src/types/notification';
 
 export interface NotifTestContext {
   dbUtils: DatabaseTestUtils;
@@ -23,11 +20,10 @@ const BELL_BASE_URL = `${testConfig.frontendUrl}/en/plan/settings/teams`;
  */
 export class NotificationTestContextMap<T> {
   private readonly map = new Map<string, T>();
-  private readonly key = "__notifTestRunId";
+  private readonly key = '__notifTestRunId';
 
   initRunId(testInfo: TestInfo): string {
-    const workerIndex =
-      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
     const runId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     (testInfo as any)[this.key] = runId;
     return runId;
@@ -71,9 +67,9 @@ export async function navigateToPlanAndOpenBellAsUser(
   await page.goto(BELL_BASE_URL);
   await page.waitForSelector('[data-testid="notification-bell-button"]');
   await page.click('[data-testid="notification-bell-button"]');
-  await expect(
-    page.locator('[data-testid="notification-bell-popover"]'),
-  ).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('[data-testid="notification-bell-popover"]')).toBeVisible({
+    timeout: 10_000,
+  });
 }
 
 export interface NotificationTestCase {
@@ -85,7 +81,7 @@ export interface NotificationTestCase {
    * Which of the two test users receives this notification.
    * Used to disable the preference before triggering the event.
    */
-  recipientRole: "user1" | "user2";
+  recipientRole: 'user1' | 'user2';
   /**
    * Creates all required test data for this notification type.
    * Returns the userId of the user who should receive the notification.

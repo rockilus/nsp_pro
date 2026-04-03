@@ -1,6 +1,6 @@
 // Types
-import { AttributeT } from "./attribute";
-import { DimEntryT } from "./dim-entry";
+import { AttributeT } from './attribute';
+import { DimEntryT } from './dim-entry';
 
 export enum DimensionType {
   WORKER = 0,

@@ -1,18 +1,18 @@
-import "../globals.css";
+import '../globals.css';
 
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
-import { notFound } from "next/navigation";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
+import { notFound } from 'next/navigation';
 // Components
-import { LanguageProvider } from "../../components/providers/LanguageProvider";
-import { languages } from "../i18n/settings";
+import { LanguageProvider } from '../../components/providers/LanguageProvider';
+import { languages } from '../i18n/settings';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Rockilus",
-  description: "Planning made easy",
+  title: 'Rockilus',
+  description: 'Planning made easy',
 };
 
 export async function generateStaticParams() {
@@ -24,10 +24,7 @@ interface RootLayoutProps {
   params: Promise<{ lng: string }>;
 }
 
-export default async function RootLayout({
-  children,
-  params,
-}: RootLayoutProps) {
+export default async function RootLayout({ children, params }: RootLayoutProps) {
   const resolvedParams = await params;
   const lng = resolvedParams.lng;
 

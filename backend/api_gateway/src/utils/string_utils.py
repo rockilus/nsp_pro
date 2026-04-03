@@ -1,11 +1,11 @@
 def generate_acronym(input_string: str, existing_acronyms: list) -> str:
     if not input_string.strip():
-        return ''
+        return ""
 
     words = [word for word in input_string.split() if word.strip()]
 
     # Generate the initial acronym (first letter of each word, John Smith -> JS)
-    acronym = ''.join(word[0].upper() for word in words)
+    acronym = "".join(word[0].upper() for word in words)
     if acronym not in existing_acronyms:
         return acronym
 

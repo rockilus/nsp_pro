@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 // Components
-import TeamSettingsLayout from "@/components/teams-settings/team-settings-layout";
-import MobileNavAppBar from "@/components/app-bar/mobile-nav-app-bar";
-import { AccessGuard } from "@/components/access/access-guard";
+import TeamSettingsLayout from '@/components/teams-settings/team-settings-layout';
+import MobileNavAppBar from '@/components/app-bar/mobile-nav-app-bar';
+import { AccessGuard } from '@/components/access/access-guard';
 // Context
-import { useTeam } from "@/context/TeamContext";
+import { useTeam } from '@/context/TeamContext';
 // Hooks
-import { useIsMobile } from "@/hooks/useIsMobile";
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 export default function Layout({
   children,
@@ -25,7 +25,7 @@ export default function Layout({
   const isMobile = useIsMobile();
 
   // Extract teamId from query parameters
-  const teamId = searchParams.get("teamId");
+  const teamId = searchParams.get('teamId');
 
   // Security: Validate and sync team selection
   useEffect(() => {
@@ -44,15 +44,13 @@ export default function Layout({
         }
       } else {
         // Security: Invalid team ID, redirect to team selection
-        console.warn(
-          `❌ Invalid team ID: ${teamId}, redirecting to team selection`
-        );
+        console.warn(`❌ Invalid team ID: ${teamId}, redirecting to team selection`);
         router.replace(`/${lng}/plan/settings/teams`);
         return;
       }
     } else {
       // No team ID specified, redirect to team selection
-      console.log("❌ No team ID specified, redirecting to team selection");
+      console.log('❌ No team ID specified, redirecting to team selection');
       router.replace(`/${lng}/plan/settings/teams`);
       return;
     }
@@ -61,7 +59,7 @@ export default function Layout({
   // Security: Redirect to team selection if no teams available
   useEffect(() => {
     if (!loading && teams.length === 0) {
-      console.log("🔄 No teams available, redirecting to team selection");
+      console.log('🔄 No teams available, redirecting to team selection');
       router.replace(`/${lng}/plan/settings/teams`);
     }
   }, [teams, loading, router, lng]);
@@ -69,7 +67,7 @@ export default function Layout({
   // Loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-lg">Loading teams...</div>
       </div>
     );
@@ -78,7 +76,7 @@ export default function Layout({
   // Validation state - show while team is being validated/set
   if (!teamId || !selectedTeam || selectedTeam.team.id !== teamId) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-lg">Loading team...</div>
       </div>
     );

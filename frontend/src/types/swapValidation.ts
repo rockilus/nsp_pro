@@ -1,9 +1,9 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 import {
   ReplacementImplicationsT,
   ReplacementCategoryT,
   MostConstrainingReasonT,
-} from "./replacement";
+} from './replacement';
 
 export type AssignmentImplicationT = {
   assignmentId: string;

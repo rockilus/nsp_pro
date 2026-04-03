@@ -28,7 +28,7 @@ def create_test_app() -> FastAPI:
 class TestTestUtilsRoutes:
     """Test suite for test utilities routes."""
 
-    @patch('src.routes.utils_routes.config')
+    @patch("src.routes.utils_routes.config")
     def test_health_endpoint(self, mock_config):
         """Test the health endpoint."""
         mock_config.environment = "test"
@@ -44,7 +44,7 @@ class TestTestUtilsRoutes:
         assert data["environment"] == "test"
         assert data["test_utilities_available"] is True
 
-    @patch('src.routes.utils_routes.config')
+    @patch("src.routes.utils_routes.config")
     def test_environment_validation_rejects_production(self, mock_config):
         """Test that production environment is rejected."""
         mock_config.environment = "production"
@@ -62,7 +62,7 @@ class TestTestUtilsRoutes:
         detail = response.json()["detail"]
         assert "only available in test environments" in detail
 
-    @patch('src.routes.utils_routes.config')
+    @patch("src.routes.utils_routes.config")
     def test_environment_validation_rejects_prod_database(self, mock_config):
         """Test that production database names are rejected."""
         mock_config.environment = "test"
@@ -130,8 +130,8 @@ class TestTestUtilsRoutes:
     #     assert response.status_code == 400
     #     assert "Invalid confirmation token" in response.json()["detail"]
 
-    @patch('src.routes.utils_routes.config')
-    @patch('src.routes.utils_routes.DatabaseResetService')
+    @patch("src.routes.utils_routes.config")
+    @patch("src.routes.utils_routes.DatabaseResetService")
     def test_dry_run_endpoint(self, mock_service_class, mock_config):
         """Test the dry run endpoint."""
         mock_config.environment = "test"

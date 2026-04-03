@@ -1,14 +1,13 @@
 import calendar
 from datetime import date, timedelta
-from typing import List
 
 
 def build_periods_weekly(
-    dates_hist: List[date], dates_campaign: List[date]
-) -> List[List[date]]:
+    dates_hist: list[date], dates_campaign: list[date]
+) -> list[list[date]]:
     dates_campaign = sorted(dates_campaign)  # Ensure dates are sorted
 
-    periods: List[List[date]] = []
+    periods: list[list[date]] = []
     while dates_campaign:
         # Get the start of the week (Monday)
         start_date = dates_campaign[0]
@@ -32,11 +31,11 @@ def build_periods_weekly(
 
 
 def build_periods_monthly(
-    dates_hist: List[date], dates_campaign: List[date]
-) -> List[List[date]]:
+    dates_hist: list[date], dates_campaign: list[date]
+) -> list[list[date]]:
     dates_campaign = sorted(dates_campaign)  # Ensure dates are sorted
 
-    periods: List[List[date]] = []
+    periods: list[list[date]] = []
     while dates_campaign:
         # Get the start of the month
         start_date = dates_campaign[0]
@@ -61,8 +60,8 @@ def build_periods_monthly(
 
 
 def build_periods_yearly(
-    dates_hist: List[date], dates_campaign: List[date]
-) -> List[List[date]]:
+    dates_hist: list[date], dates_campaign: list[date]
+) -> list[list[date]]:
     """Build periods grouped by calendar year.
 
     For each year present in dates_campaign, collect all campaign dates in that
@@ -71,7 +70,7 @@ def build_periods_yearly(
     """
     dates_campaign = sorted(dates_campaign)  # Ensure dates are sorted
 
-    periods: List[List[date]] = []
+    periods: list[list[date]] = []
     while dates_campaign:
         # Get the year for the first campaign date
         start_date = dates_campaign[0]

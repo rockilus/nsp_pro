@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from 'react';
 
 export function useLocalStorageState<T>(
   key: string,
@@ -6,10 +6,10 @@ export function useLocalStorageState<T>(
   serializer?: {
     serialize: (value: T) => string;
     deserialize: (value: string) => T;
-  }
+  },
 ): [T, (value: T | ((prev: T) => T)) => void] {
   const [state, setState] = useState<T>(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       // Server-side rendering - return default value
       return defaultValue;
     }
@@ -20,9 +20,7 @@ export function useLocalStorageState<T>(
         return defaultValue;
       }
 
-      const parsed = serializer
-        ? serializer.deserialize(item)
-        : JSON.parse(item);
+      const parsed = serializer ? serializer.deserialize(item) : JSON.parse(item);
 
       // Additional validation: ensure the parsed value is not null/undefined
       return parsed !== null && parsed !== undefined ? parsed : defaultValue;
@@ -32,10 +30,7 @@ export function useLocalStorageState<T>(
       try {
         localStorage.removeItem(key);
       } catch (removeError) {
-        console.warn(
-          `Error removing corrupted localStorage key "${key}":`,
-          removeError
-        );
+        console.warn(`Error removing corrupted localStorage key "${key}":`, removeError);
       }
       return defaultValue;
     }
@@ -47,7 +42,7 @@ export function useLocalStorageState<T>(
         const valueToStore = value instanceof Function ? value(state) : value;
         setState(valueToStore);
 
-        if (typeof window !== "undefined") {
+        if (typeof window !== 'undefined') {
           const serializedValue = serializer
             ? serializer.serialize(valueToStore)
             : JSON.stringify(valueToStore);
@@ -59,17 +54,14 @@ export function useLocalStorageState<T>(
         try {
           localStorage.removeItem(key);
         } catch (removeError) {
-          console.warn(
-            `Error removing localStorage key "${key}":`,
-            removeError
-          );
+          console.warn(`Error removing localStorage key "${key}":`, removeError);
         }
         // Still update the React state even if localStorage fails
         const valueToStore = value instanceof Function ? value(state) : value;
         setState(valueToStore);
       }
     },
-    [key, state, serializer]
+    [key, state, serializer],
   );
 
   return [state, setValue];

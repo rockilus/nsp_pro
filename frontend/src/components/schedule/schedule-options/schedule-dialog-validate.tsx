@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Tooltip from "@mui/material/Tooltip";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 // Types
-import { ScheduleT } from "../../../types/schedule";
+import { ScheduleT } from '../../../types/schedule';
 
 export default function ScheduleDialogValidate({
   lng,
@@ -21,7 +21,7 @@ export default function ScheduleDialogValidate({
   scheduleCampaign: ScheduleT;
   handleValidateSchedule: (scheduleId: string) => void;
 }) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   const [open, setOpen] = useState(false);
 
@@ -34,8 +34,8 @@ export default function ScheduleDialogValidate({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column" }}>
-      <Tooltip title={t("validate_button_tooltip")}>
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+      <Tooltip title={t('validate_button_tooltip')}>
         <Button
           data-testid="validate-button"
           variant="outlined"
@@ -43,12 +43,12 @@ export default function ScheduleDialogValidate({
           sx={{
             paddingLeft: 0.2,
             paddingRight: 0.2,
-            textTransform: "none",
-            height: "35px",
-            width: "65px",
+            textTransform: 'none',
+            height: '35px',
+            width: '65px',
           }}
         >
-          {t("validate")}
+          {t('validate')}
         </Button>
       </Tooltip>
       <Dialog
@@ -57,15 +57,13 @@ export default function ScheduleDialogValidate({
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{t("validate_title")}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{t('validate_title')}</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            {t("validate_text")}
-          </DialogContentText>
+          <DialogContentText id="alert-dialog-description">{t('validate_text')}</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="error">
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             onClick={() => {
@@ -74,7 +72,7 @@ export default function ScheduleDialogValidate({
             }}
             autoFocus
           >
-            {t("validate")}
+            {t('validate')}
           </Button>
         </DialogActions>
       </Dialog>

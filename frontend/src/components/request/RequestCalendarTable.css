@@ -217,7 +217,7 @@
 }
 
 .calendar-cell--clickable:not(.calendar-cell--leave):hover::before {
-  content: "+";
+  content: '+';
   position: absolute;
   font-size: 16px;
   font-weight: bold;
@@ -312,9 +312,9 @@
 }
 
 /* Summary row styling */
-.calendar-row__name[title="Demand"],
-.calendar-row__name[title="Offer"],
-.calendar-row__name[title="Delta"] {
+.calendar-row__name[title='Demand'],
+.calendar-row__name[title='Offer'],
+.calendar-row__name[title='Delta'] {
   background-color: #fafafa;
   border-bottom: 1px solid rgba(224, 224, 224, 0.8);
   font-size: 0.8125rem;

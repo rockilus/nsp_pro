@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 export type TeamT = {
   id: string;
@@ -9,8 +9,8 @@ export type TeamT = {
 };
 
 export enum TeamMembershipRole {
-  OWNER = "owner",
-  MEMBER = "member",
+  OWNER = 'owner',
+  MEMBER = 'member',
 }
 
 export type MembershipForTeamWithMembership = {

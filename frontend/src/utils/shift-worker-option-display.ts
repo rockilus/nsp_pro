@@ -1,8 +1,8 @@
-import { ShiftWorkerOptionT, SWOIdTypes } from "../types/constraint";
-import { WorkerT } from "../types/worker";
-import { ShiftT } from "../types/shift";
-import { RequestT, RequestType, RequestStatus } from "../types/request";
-import { ShiftColorMappings } from "../constants/constants";
+import { ShiftWorkerOptionT, SWOIdTypes } from '../types/constraint';
+import { WorkerT } from '../types/worker';
+import { ShiftT } from '../types/shift';
+import { RequestT, RequestType, RequestStatus } from '../types/request';
+import { ShiftColorMappings } from '../constants/constants';
 
 /**
  * Get the display text for a ShiftWorkerOption with proper handling of different types
@@ -16,18 +16,18 @@ export const getShiftWorkerOptionDisplayText = (
   swo: ShiftWorkerOptionT,
   workers: WorkerT[] = [],
   shifts: ShiftT[] = [],
-  notTranslation: string = "not"
+  notTranslation: string = 'not',
 ): string => {
   // Handle worker type
   if (swo.idType === SWOIdTypes.WORKER) {
     const worker = workers.find((w) => w.id === swo.id);
-    return worker?.name || "Unknown Worker";
+    return worker?.name || 'Unknown Worker';
   }
 
   // Handle shift type
   if (swo.idType === SWOIdTypes.SHIFT) {
     const shift = shifts.find((s) => s.id === swo.id);
-    return shift?.name || "Unknown Shift";
+    return shift?.name || 'Unknown Shift';
   }
 
   // Handle dimension type with boolean dimension
@@ -64,7 +64,7 @@ export const getRequestTargetDisplayText = (
   request: RequestT,
   workers: WorkerT[] = [],
   shifts: ShiftT[] = [],
-  notTranslation: string = "not"
+  notTranslation: string = 'not',
 ): string => {
   if (request.requestType === RequestType.LEAVE) {
     // For leave requests, show the shift being left (or all day)
@@ -73,15 +73,15 @@ export const getRequestTargetDisplayText = (
       const shift = shifts.find((s) => s.id === shiftId);
       return shift ? shift.name : shiftId;
     }
-    return "—";
+    return '—';
   } else {
     // For work requests, show emoji and shift options
-    const emoji = request.negative ? "🙅" : "🙋";
+    const emoji = request.negative ? '🙅' : '🙋';
     if (request.shiftOptions && request.shiftOptions.length > 0) {
       const optionTexts = request.shiftOptions.map((so) =>
-        getShiftWorkerOptionDisplayText(so, workers, shifts, notTranslation)
+        getShiftWorkerOptionDisplayText(so, workers, shifts, notTranslation),
       );
-      return `${emoji} ${optionTexts.join(", ")}`;
+      return `${emoji} ${optionTexts.join(', ')}`;
     }
     return `${emoji} —`;
   }
@@ -100,13 +100,11 @@ export const getShiftWorkerOptionsDisplayText = (
   swos: ShiftWorkerOptionT[],
   workers: WorkerT[] = [],
   shifts: ShiftT[] = [],
-  notTranslation: string = "not",
-  separator: string = ", "
+  notTranslation: string = 'not',
+  separator: string = ', ',
 ): string => {
   return swos
-    .map((swo) =>
-      getShiftWorkerOptionDisplayText(swo, workers, shifts, notTranslation)
-    )
+    .map((swo) => getShiftWorkerOptionDisplayText(swo, workers, shifts, notTranslation))
     .join(separator);
 };
 
@@ -118,7 +116,7 @@ export const getShiftWorkerOptionsDisplayText = (
  */
 export const getShiftColors = (
   request: RequestT | null,
-  shifts: ShiftT[] = []
+  shifts: ShiftT[] = [],
 ): { background: string; sample: string; text: string } | null => {
   if (!request) return null;
 
@@ -134,9 +132,9 @@ export const getShiftColors = (
       const shift = shifts.find((s) => s.id === shiftOption.id);
       if (shift) {
         const colors = ShiftColorMappings[shift.color] || {
-          background: "#f5f5f5",
-          sample: "#9e9e9e",
-          text: "#212121",
+          background: '#f5f5f5',
+          sample: '#9e9e9e',
+          text: '#212121',
         };
         return {
           background: colors.background,
@@ -147,18 +145,18 @@ export const getShiftColors = (
     }
     // Otherwise, use default work request colors (grey)
     return {
-      background: "#f5f5f5",
-      sample: "#9e9e9e",
-      text: "#212121",
+      background: '#f5f5f5',
+      sample: '#9e9e9e',
+      text: '#212121',
     };
   }
 
   // For leave requests, use red
   if (request.requestType === RequestType.LEAVE) {
     return {
-      background: "#F44336",
-      sample: "#D32F2F",
-      text: "#FFFFFF",
+      background: '#F44336',
+      sample: '#D32F2F',
+      text: '#FFFFFF',
     };
   }
 
@@ -171,17 +169,17 @@ export const getShiftColors = (
  * @returns MUI color name for the status
  */
 export const getRequestStatusColor = (
-  status: RequestStatus
-): "success" | "error" | "warning" | "default" => {
+  status: RequestStatus,
+): 'success' | 'error' | 'warning' | 'default' => {
   switch (status) {
     case RequestStatus.APPROVED:
-      return "success";
+      return 'success';
     case RequestStatus.DENIED:
-      return "error";
+      return 'error';
     case RequestStatus.DEFERRED:
-      return "warning";
+      return 'warning';
     default:
-      return "default";
+      return 'default';
   }
 };
 
@@ -193,18 +191,18 @@ export const getRequestStatusColor = (
  */
 export const getRequestStatusLabel = (
   status: RequestStatus,
-  t: (key: string) => string
+  t: (key: string) => string,
 ): string => {
   switch (status) {
     case RequestStatus.PENDING:
-      return t("pending");
+      return t('pending');
     case RequestStatus.APPROVED:
-      return t("approved");
+      return t('approved');
     case RequestStatus.DENIED:
-      return t("rejected");
+      return t('rejected');
     case RequestStatus.DEFERRED:
-      return t("deferred");
+      return t('deferred');
     default:
-      return "Unknown";
+      return 'Unknown';
   }
 };

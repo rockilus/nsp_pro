@@ -1,16 +1,11 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { useAuth as useOidcAuth, ErrorContext } from "react-oidc-context";
-import { User } from "oidc-client-ts";
-import {
-  cognitoAuthConfig,
-  cognitoDomain,
-  logoutUri,
-  isNetworkError,
-} from "../config/cognito";
-import { env } from "../config/env";
-import dayjs from "dayjs";
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useAuth as useOidcAuth, ErrorContext } from 'react-oidc-context';
+import { User } from 'oidc-client-ts';
+import { cognitoAuthConfig, cognitoDomain, logoutUri, isNetworkError } from '../config/cognito';
+import { env } from '../config/env';
+import dayjs from 'dayjs';
 
 interface AuthContextType {
   user: User | undefined | null;
@@ -27,13 +22,9 @@ interface AuthContextType {
  * Detects if the current device is mobile Safari
  */
 const isMobileSafari = (): boolean => {
-  if (typeof window === "undefined") return false;
+  if (typeof window === 'undefined') return false;
   const ua = navigator.userAgent;
-  return (
-    /iPhone|iPad|iPod/.test(ua) &&
-    /Safari/.test(ua) &&
-    !/CriOS|FxiOS|OPiOS|mercury/.test(ua)
-  );
+  return /iPhone|iPad|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|OPiOS|mercury/.test(ua);
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,7 +32,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }
@@ -52,18 +43,11 @@ export function useAuth(): AuthContextType {
 const isValidLogoutUri = (uri: string): boolean => {
   try {
     const url = new URL(uri);
-    const allowedHosts = [
-      "www.rockilus.com",
-      "app.rockilus.com",
-      "localhost",
-      "127.0.0.1",
-    ];
+    const allowedHosts = ['www.rockilus.com', 'app.rockilus.com', 'localhost', '127.0.0.1'];
 
     return (
       allowedHosts.includes(url.hostname) &&
-      (url.protocol === "https:" ||
-        url.hostname === "localhost" ||
-        url.hostname === "127.0.0.1")
+      (url.protocol === 'https:' || url.hostname === 'localhost' || url.hostname === '127.0.0.1')
     );
   } catch {
     return false;
@@ -99,10 +83,10 @@ const clearAuthTokens = (): void => {
 
         const authKeys = Object.keys(storage).filter(
           (key) =>
-            key.startsWith("oidc.") ||
-            key.includes("cognito") ||
-            key.includes("auth") ||
-            key.startsWith("_capacitor_"), // Capacitor storage prefix if using mobile
+            key.startsWith('oidc.') ||
+            key.includes('cognito') ||
+            key.includes('auth') ||
+            key.startsWith('_capacitor_'), // Capacitor storage prefix if using mobile
         );
 
         authKeys.forEach((key) => {
@@ -110,21 +94,19 @@ const clearAuthTokens = (): void => {
         });
       } catch (storageError) {
         console.warn(
-          `Error clearing ${
-            storage === localStorage ? "localStorage" : "sessionStorage"
-          }:`,
+          `Error clearing ${storage === localStorage ? 'localStorage' : 'sessionStorage'}:`,
           storageError,
         );
       }
     });
 
     // Clear network error tracking
-    localStorage.removeItem("refreshAttempts");
-    localStorage.removeItem("lastRefreshAttempt");
-    localStorage.removeItem("networkErrorCount");
-    localStorage.removeItem("lastNetworkError");
+    localStorage.removeItem('refreshAttempts');
+    localStorage.removeItem('lastRefreshAttempt');
+    localStorage.removeItem('networkErrorCount');
+    localStorage.removeItem('lastNetworkError');
   } catch (error) {
-    console.error("Error clearing auth tokens:", error);
+    console.error('Error clearing auth tokens:', error);
   }
 };
 
@@ -140,7 +122,7 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => {
       setIsAuthenticated(true);
       setLoading(false);
-      console.log("🔧 Development mode: Auto-authenticated");
+      console.log('🔧 Development mode: Auto-authenticated');
     }, 100);
   }, []);
 
@@ -149,18 +131,18 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => {
       setIsAuthenticated(true);
       setLoading(false);
-      console.log("🔧 Development sign-in completed");
+      console.log('🔧 Development sign-in completed');
     }, 500);
   };
 
   const signOut = async (): Promise<void> => {
     setIsAuthenticated(false);
-    console.log("🔧 Development sign-out completed");
+    console.log('🔧 Development sign-out completed');
   };
 
   const signOutRedirect = async (locale?: string): Promise<void> => {
     await signOut();
-    window.location.href = "/";
+    window.location.href = '/';
   };
 
   // Create mock user object that matches OIDC structure
@@ -168,22 +150,22 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
     ? ({
         profile: {
           sub: env.devUserId,
-          email: "dev@nsp-pro.com",
-          name: "Development User",
-          aud: "dev-client",
+          email: 'dev@nsp-pro.com',
+          name: 'Development User',
+          aud: 'dev-client',
           exp: Math.floor(dayjs().unix() / 1000) + 3600, // 1 hour from now
           iat: Math.floor(dayjs().unix() / 1000),
-          iss: "dev-issuer",
+          iss: 'dev-issuer',
         },
         id_token: env.devUserId, // Use dev user ID as token
         access_token: env.devUserId,
         refresh_token: env.devUserId,
-        token_type: "Bearer",
-        scope: "openid profile email",
+        token_type: 'Bearer',
+        scope: 'openid profile email',
         expires_at: Math.floor(dayjs().unix() / 1000) + 3600,
         expires_in: 3600,
         expired: false,
-        scopes: ["openid", "profile", "email"],
+        scopes: ['openid', 'profile', 'email'],
         toStorageString: () => JSON.stringify({}),
         state: null,
         session_state: null,
@@ -201,9 +183,7 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
     signOutRedirect,
   };
 
-  return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 /**
@@ -220,12 +200,12 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
  * entry if the user spent too long on the Cognito login page.
  */
 function pruneOidcState(): void {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
-  const activeState = new URLSearchParams(window.location.search).get("state");
+  const activeState = new URLSearchParams(window.location.search).get('state');
 
   Object.keys(localStorage)
-    .filter((key) => key.startsWith("oidc.") && !key.startsWith("oidc.user:"))
+    .filter((key) => key.startsWith('oidc.') && !key.startsWith('oidc.user:'))
     .forEach((key) => {
       // Keep the entry whose hash matches the current callback's state param.
       if (activeState && key === `oidc.${activeState}`) return;
@@ -254,12 +234,12 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
   // error loop (e.g. "No matching state found in storage" on reload).
   useEffect(() => {
     if (!auth.error) return;
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
     const params = new URLSearchParams(window.location.search);
-    if (params.has("code") || params.has("state")) {
+    if (params.has('code') || params.has('state')) {
       console.warn(
-        "⚠️ Auth error with callback params in URL — stripping to prevent refresh loop:",
+        '⚠️ Auth error with callback params in URL — stripping to prevent refresh loop:',
         auth.error.message,
       );
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -274,22 +254,21 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
 
     // Handle silent renew errors with enhanced network awareness
     const handleSilentRenewError = async (error: any) => {
-      console.error("🔴 Silent renew failed:", error);
+      console.error('🔴 Silent renew failed:', error);
       setRetryingRefresh(false);
 
       // Track refresh attempts for debugging
-      const attempts =
-        parseInt(localStorage.getItem("refreshAttempts") || "0") + 1;
-      localStorage.setItem("refreshAttempts", attempts.toString());
-      localStorage.setItem("lastRefreshAttempt", new Date().toISOString());
+      const attempts = parseInt(localStorage.getItem('refreshAttempts') || '0') + 1;
+      localStorage.setItem('refreshAttempts', attempts.toString());
+      localStorage.setItem('lastRefreshAttempt', new Date().toISOString());
 
       // Handle network errors with retry logic
       if (isNetworkError(error)) {
-        console.warn("🌐 Network error during token refresh");
+        console.warn('🌐 Network error during token refresh');
 
         // Don't clear tokens for network errors - retry instead
         if (attempts <= 3) {
-          console.log("🔄 Attempting network-aware refresh retry...");
+          console.log('🔄 Attempting network-aware refresh retry...');
           setRetryingRefresh(true);
 
           try {
@@ -297,7 +276,7 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
             setRetryingRefresh(false);
             return;
           } catch (retryError) {
-            console.error("❌ Network-aware refresh retry failed:", retryError);
+            console.error('❌ Network-aware refresh retry failed:', retryError);
             setRetryingRefresh(false);
           }
         }
@@ -305,17 +284,17 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
 
       // Check if it's a refresh token rotation error
       if (
-        error?.error === "invalid_grant" ||
-        error?.error_description?.includes("refresh token") ||
-        error?.error_description?.includes("Token is not valid")
+        error?.error === 'invalid_grant' ||
+        error?.error_description?.includes('refresh token') ||
+        error?.error_description?.includes('Token is not valid')
       ) {
         console.warn(
-          "🔄 Refresh token rotation conflict or expiry detected — clearing state and redirecting to login",
+          '🔄 Refresh token rotation conflict or expiry detected — clearing state and redirecting to login',
         );
         clearAuthTokens();
         // Reset refresh attempt counter on rotation errors
-        localStorage.removeItem("refreshAttempts");
-        localStorage.removeItem("lastRefreshAttempt");
+        localStorage.removeItem('refreshAttempts');
+        localStorage.removeItem('lastRefreshAttempt');
         // Actively redirect to Cognito so the user isn't silently logged out
         // with no way to recover without a hard refresh.
         try {
@@ -335,23 +314,21 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
 
     // Handle access token expiring notification
     const handleAccessTokenExpiring = () => {
-      console.log(
-        "⏰ Access token expiring soon, silent renew will be attempted",
-      );
+      console.log('⏰ Access token expiring soon, silent renew will be attempted');
 
       // Pre-emptively check network connectivity
       if (!navigator.onLine) {
-        console.warn("🌐 Device appears offline, refresh may fail");
+        console.warn('🌐 Device appears offline, refresh may fail');
       }
     };
 
     // Handle successful silent renew
     const handleSilentRenewSuccess = () => {
-      console.log("✅ Silent renew successful, new tokens received");
+      console.log('✅ Silent renew successful, new tokens received');
       // Reset all error counters on successful renewal
-      localStorage.removeItem("refreshAttempts");
-      localStorage.removeItem("networkErrorCount");
-      localStorage.setItem("lastSuccessfulRefresh", new Date().toISOString());
+      localStorage.removeItem('refreshAttempts');
+      localStorage.removeItem('networkErrorCount');
+      localStorage.setItem('lastSuccessfulRefresh', new Date().toISOString());
       setRetryingRefresh(false);
     };
 
@@ -372,17 +349,14 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOutRedirect = async (locale?: string): Promise<void> => {
     // Build locale-aware landing page URI: https://www.rockilus.com/fr/ etc.
-    const supportedLocales = ["en", "fr", "es"];
-    const effectiveLocale =
-      locale && supportedLocales.includes(locale) ? locale : null;
-    const targetUri = effectiveLocale
-      ? `${logoutUri}/${effectiveLocale}/`
-      : logoutUri;
+    const supportedLocales = ['en', 'fr', 'es'];
+    const effectiveLocale = locale && supportedLocales.includes(locale) ? locale : null;
+    const targetUri = effectiveLocale ? `${logoutUri}/${effectiveLocale}/` : logoutUri;
 
     try {
       // Validate logout URI for security
       if (!isValidLogoutUri(targetUri)) {
-        throw new Error("Invalid logout URI detected");
+        throw new Error('Invalid logout URI detected');
       }
 
       // Clear local auth state first
@@ -396,7 +370,7 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
       // Use window.location.href as recommended by AWS
       window.location.href = logoutUrl;
     } catch (error) {
-      console.error("Logout redirect failed:", error);
+      console.error('Logout redirect failed:', error);
 
       // Fallback: clear local state and redirect to landing page
       try {
@@ -410,7 +384,7 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
           window.location.href = window.location.origin;
         }
       } catch (fallbackError) {
-        console.error("Fallback logout failed:", fallbackError);
+        console.error('Fallback logout failed:', fallbackError);
         // Last resort: reload page to clear any remaining state
         window.location.reload();
       }
@@ -422,7 +396,7 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
       clearAuthTokens();
       await auth.removeUser();
     } catch (error) {
-      console.error("Local signout failed:", error);
+      console.error('Local signout failed:', error);
       // Still clear tokens even if removeUser fails
       clearAuthTokens();
     }
@@ -432,43 +406,40 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // Always use react-oidc-context's signinRedirect for proper state management
       // This ensures the library can handle the callback correctly
-      console.log("🔐 Initiating auth redirect via react-oidc-context");
+      console.log('🔐 Initiating auth redirect via react-oidc-context');
 
       // Mobile Safari detection for logging
       const isSafari = isMobileSafari();
       if (isSafari) {
-        console.log("📱 Mobile Safari detected");
+        console.log('📱 Mobile Safari detected');
       }
 
       // Detect the active locale: URL path → browser language → 'en'
-      const supportedLocales = ["en", "fr", "es"];
+      const supportedLocales = ['en', 'fr', 'es'];
       const pathLocaleMatch = window.location.pathname.match(/\/(en|fr|es)\//);
-      const browserLocale = navigator.language.split("-")[0];
+      const browserLocale = navigator.language.split('-')[0];
       const locale =
-        pathLocaleMatch?.[1] ??
-        (supportedLocales.includes(browserLocale) ? browserLocale : "fr");
+        pathLocaleMatch?.[1] ?? (supportedLocales.includes(browserLocale) ? browserLocale : 'fr');
 
       // Persist for the callback page so it can set the language on new users.
-      localStorage.setItem("rockilus_signup_locale", locale);
+      localStorage.setItem('rockilus_signup_locale', locale);
 
       await auth.signinRedirect({
         extraQueryParams: { ui_locales: locale },
         redirect_uri: `${env.clientUrl}/${locale}/callback/`,
       });
     } catch (error) {
-      console.error("❌ Sign-in redirect failed:", error);
+      console.error('❌ Sign-in redirect failed:', error);
 
       // Only use manual redirect as last resort if signinRedirect throws
       // This should rarely happen
       try {
         // Re-derive locale for the fallback branch
-        const supportedLocales = ["en", "fr", "es"];
-        const pathLocaleMatch =
-          window.location.pathname.match(/\/(en|fr|es)\//);
-        const browserLocale = navigator.language.split("-")[0];
+        const supportedLocales = ['en', 'fr', 'es'];
+        const pathLocaleMatch = window.location.pathname.match(/\/(en|fr|es)\//);
+        const browserLocale = navigator.language.split('-')[0];
         const locale =
-          pathLocaleMatch?.[1] ??
-          (supportedLocales.includes(browserLocale) ? browserLocale : "fr");
+          pathLocaleMatch?.[1] ?? (supportedLocales.includes(browserLocale) ? browserLocale : 'fr');
 
         const localeRedirectUri = `${env.clientUrl}/${locale}/callback/`;
         const authUrl =
@@ -479,10 +450,10 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
           `redirect_uri=${encodeURIComponent(localeRedirectUri)}&` +
           `ui_locales=${locale}`;
 
-        console.log("🔄 Falling back to window.location.href redirect");
+        console.log('🔄 Falling back to window.location.href redirect');
         window.location.href = authUrl;
       } catch (fallbackError) {
-        console.error("❌ Fallback redirect also failed:", fallbackError);
+        console.error('❌ Fallback redirect also failed:', fallbackError);
         throw fallbackError;
       }
     }
@@ -499,9 +470,7 @@ function ProductionAuthProvider({ children }: { children: React.ReactNode }) {
     signOutRedirect,
   };
 
-  return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 /**
@@ -513,59 +482,50 @@ const handleNetworkAwareRefresh = async (auth: any): Promise<void> => {
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(
-        `🔄 Attempting token refresh (attempt ${attempt}/${maxRetries})`,
-      );
+      console.log(`🔄 Attempting token refresh (attempt ${attempt}/${maxRetries})`);
 
       // Check if we have a valid refresh token before attempting
       if (!auth.user?.refresh_token) {
-        console.warn("❌ No refresh token available, skipping refresh");
-        throw new Error("No refresh token available");
+        console.warn('❌ No refresh token available, skipping refresh');
+        throw new Error('No refresh token available');
       }
 
       await auth.signinSilent();
-      console.log("✅ Token refresh successful");
+      console.log('✅ Token refresh successful');
 
       // Reset network error tracking on success
-      localStorage.removeItem("networkErrorCount");
-      localStorage.removeItem("lastNetworkError");
-      localStorage.setItem("lastSuccessfulRefresh", new Date().toISOString());
+      localStorage.removeItem('networkErrorCount');
+      localStorage.removeItem('lastNetworkError');
+      localStorage.setItem('lastSuccessfulRefresh', new Date().toISOString());
 
       return;
     } catch (error: any) {
       console.error(`❌ Token refresh attempt ${attempt} failed:`, error);
 
       if (isNetworkError(error)) {
-        const networkErrorCount =
-          parseInt(localStorage.getItem("networkErrorCount") || "0") + 1;
-        localStorage.setItem("networkErrorCount", networkErrorCount.toString());
-        localStorage.setItem("lastNetworkError", new Date().toISOString());
+        const networkErrorCount = parseInt(localStorage.getItem('networkErrorCount') || '0') + 1;
+        localStorage.setItem('networkErrorCount', networkErrorCount.toString());
+        localStorage.setItem('lastNetworkError', new Date().toISOString());
 
         if (attempt < maxRetries) {
-          console.log(
-            `🔄 Network error detected, retrying in ${retryDelay}ms...`,
-          );
+          console.log(`🔄 Network error detected, retrying in ${retryDelay}ms...`);
           await new Promise((resolve) => setTimeout(resolve, retryDelay));
           continue;
         } else {
-          console.error("❌ Max network retry attempts reached");
-          throw new Error(
-            "Network connectivity issues preventing token refresh",
-          );
+          console.error('❌ Max network retry attempts reached');
+          throw new Error('Network connectivity issues preventing token refresh');
         }
       }
 
       // Handle refresh token rotation specific errors
       if (
-        error?.error === "invalid_grant" ||
-        error?.error_description?.includes("refresh token") ||
-        error?.error_description?.includes("Token is not valid")
+        error?.error === 'invalid_grant' ||
+        error?.error_description?.includes('refresh token') ||
+        error?.error_description?.includes('Token is not valid')
       ) {
-        console.warn("🔄 Refresh token rotation conflict detected");
+        console.warn('🔄 Refresh token rotation conflict detected');
         clearAuthTokens();
-        throw new Error(
-          "Refresh token rotation conflict - please sign in again",
-        );
+        throw new Error('Refresh token rotation conflict - please sign in again');
       }
 
       // For other errors, don't retry
@@ -585,10 +545,10 @@ export function AuthContextProvider({
 }): React.ReactElement {
   // Security: Default to production mode unless explicitly set to development
   if (env.isDevelopment) {
-    console.log("🔧 Using development authentication");
+    console.log('🔧 Using development authentication');
     return <DevelopmentAuthProvider>{children}</DevelopmentAuthProvider>;
   }
 
-  console.log("🔒 Using production authentication (Cognito OIDC)");
+  console.log('🔒 Using production authentication (Cognito OIDC)');
   return <ProductionAuthProvider>{children}</ProductionAuthProvider>;
 }

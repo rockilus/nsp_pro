@@ -61,8 +61,7 @@ class APIGatewaySQSSolveService(BaseService):
         """
 
         logger.info(
-            f"Submitting SQS solve request for schedule {schedule_id} "
-            f"by user {user_id}"
+            f"Submitting SQS solve request for schedule {schedule_id} by user {user_id}"
         )
 
         # Get the schedule and validate it exists

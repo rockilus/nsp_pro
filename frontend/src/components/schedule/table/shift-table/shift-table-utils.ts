@@ -1,6 +1,6 @@
 // Types
-import { ShiftT, ShiftType } from "../../../../types/shift";
-import { AssignmentT } from "@/types/assignment";
+import { ShiftT, ShiftType } from '../../../../types/shift';
+import { AssignmentT } from '@/types/assignment';
 
 // Sorts an array of shifts with the following order:
 // 1. Duty shifts (`ShiftType.DUTY`), ordered by start time.
@@ -30,17 +30,13 @@ const sortShifts = (shifts: ShiftT[]): ShiftT[] => {
   });
 };
 
-export const getRelevantShifts = (
-  shifts: ShiftT[],
-  assignments: AssignmentT[]
-): ShiftT[] => {
+export const getRelevantShifts = (shifts: ShiftT[], assignments: AssignmentT[]): ShiftT[] => {
   const shiftIdsInAssignments = new Set(assignments.map((a) => a.shiftId));
 
   const relevantShifts = shifts.filter(
     (shift) =>
       (shiftIdsInAssignments.has(shift.id) || !shift.deleted) &&
-      (shift.shiftType === ShiftType.NORMAL ||
-        shift.shiftType === ShiftType.DUTY)
+      (shift.shiftType === ShiftType.NORMAL || shift.shiftType === ShiftType.DUTY),
   );
 
   return sortShifts(relevantShifts);

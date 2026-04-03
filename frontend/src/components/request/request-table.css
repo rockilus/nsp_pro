@@ -11,9 +11,7 @@
   position: relative;
   width: 100%;
   overflow: auto;
-  height: calc(
-    100vh - 140px
-  ); /* 65 nav bar + 20 padding + 50 request tabs + 5 at the bottom  */
+  height: calc(100vh - 140px); /* 65 nav bar + 20 padding + 50 request tabs + 5 at the bottom  */
 }
 
 /* Sticky table header inside the scrollable request-table-container */

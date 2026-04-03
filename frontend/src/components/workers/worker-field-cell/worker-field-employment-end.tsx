@@ -1,21 +1,14 @@
-import React, {
-  Dispatch,
-  SetStateAction,
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { Dispatch, SetStateAction, useState, useRef, useEffect, useCallback } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import TableCell from "@mui/material/TableCell";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import TableCell from '@mui/material/TableCell';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Types
-import { WorkerT } from "../../../types/worker";
+import { WorkerT } from '../../../types/worker';
 
 dayjs.extend(utc);
 
@@ -32,12 +25,10 @@ export default function WorkerFieldEmploymentEnd({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
-  const { t } = useTranslation(lng, "worker-page");
+  const { t } = useTranslation(lng, 'worker-page');
 
   const cellRef = useRef<HTMLTableCellElement>(null);
-  const [valueState, setValueState] = useState<dayjs.Dayjs | null>(
-    worker.employmentEndDate
-  );
+  const [valueState, setValueState] = useState<dayjs.Dayjs | null>(worker.employmentEndDate);
   const [datePickerOpen, setDatePickerOpen] = useState<boolean>(false);
 
   const handlePermanentChange = () => {
@@ -73,7 +64,7 @@ export default function WorkerFieldEmploymentEnd({
       }
       setEditing({});
     },
-    [worker, handleUpdateWorker, setEditing]
+    [worker, handleUpdateWorker, setEditing],
   );
 
   const handleClickOutside = useCallback(
@@ -87,30 +78,30 @@ export default function WorkerFieldEmploymentEnd({
         }
       }
     },
-    [cellRef, valueState, datePickerOpen, editing, handleEditConfirm]
+    [cellRef, valueState, datePickerOpen, editing, handleEditConfirm],
   );
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (!editing) return;
-      if (event.key === "Enter") {
+      if (event.key === 'Enter') {
         handleEditConfirm(valueState);
-      } else if (event.key === "Escape") {
+      } else if (event.key === 'Escape') {
         setValueState(worker.employmentEndDate);
         setDatePickerOpen(false);
         setEditing({});
       }
     },
-    [worker, valueState, editing, handleEditConfirm, setEditing]
+    [worker, valueState, editing, handleEditConfirm, setEditing],
   );
 
   useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [handleClickOutside, handleKeyDown, editing]);
 
@@ -119,16 +110,16 @@ export default function WorkerFieldEmploymentEnd({
       component="th"
       scope="row"
       data-testid="worker-employment-end-cell"
-      sx={{ paddingY: 0, textAlign: "center" }}
+      sx={{ paddingY: 0, textAlign: 'center' }}
     >
       {editing ? (
         <div
           ref={cellRef}
           data-testid={`worker-employment-end-editor-${worker.id}`}
           style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
           <DatePicker
@@ -142,7 +133,7 @@ export default function WorkerFieldEmploymentEnd({
             slotProps={{
               textField: {
                 inputProps: {
-                  "data-testid": `worker-employment-end-datepicker-input-${worker.id}`,
+                  'data-testid': `worker-employment-end-datepicker-input-${worker.id}`,
                 },
               },
             }}
@@ -156,24 +147,24 @@ export default function WorkerFieldEmploymentEnd({
                 data-testid={`worker-employment-end-permanent-checkbox-input-${worker.id}`}
               />
             }
-            label={t("permanent")}
+            label={t('permanent')}
           />
         </div>
       ) : (
         <div
-          onClick={() => setEditing({ [worker.id]: "employmentEndDate" })}
+          onClick={() => setEditing({ [worker.id]: 'employmentEndDate' })}
           data-testid={`worker-employment-end-display-${worker.id}`}
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
             minHeight: 45,
           }}
         >
           <span>
             {worker.employmentEndDate
-              ? worker.employmentEndDate.format("DD/MM/YYYY")
-              : t("permanent")}
+              ? worker.employmentEndDate.format('DD/MM/YYYY')
+              : t('permanent')}
           </span>
         </div>
       )}

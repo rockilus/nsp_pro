@@ -2,4 +2,4 @@
  * TimeNavigation component export
  */
 
-export { TimeNavigation, type TimeFrame } from "./TimeNavigation";
+export { TimeNavigation, type TimeFrame } from './TimeNavigation';

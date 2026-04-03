@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from "react";
-import dayjs from "dayjs";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState, useMemo } from 'react';
+import dayjs from 'dayjs';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
 import {
   IconButton,
@@ -17,20 +17,16 @@ import {
   Checkbox,
   FormControlLabel,
   Tooltip,
-} from "@mui/material";
-import SettingsIcon from "@mui/icons-material/Settings";
+} from '@mui/material';
+import SettingsIcon from '@mui/icons-material/Settings';
 // Components
-import ScheduleSettingsView from "./schedule-settings-view";
+import ScheduleSettingsView from './schedule-settings-view';
 // Styles
-import "../../../styles/text-styles.css";
+import '../../../styles/text-styles.css';
 // Types
-import {
-  ScheduleT,
-  DuplicateRequestT,
-  ScheduleViewSettingsT,
-} from "../../../types/schedule";
-import { OccurrenceType } from "@/types/recurrence";
-import { TeamMembershipRole, TeamWithMembership } from "../../../types/team";
+import { ScheduleT, DuplicateRequestT, ScheduleViewSettingsT } from '../../../types/schedule';
+import { OccurrenceType } from '@/types/recurrence';
+import { TeamMembershipRole, TeamWithMembership } from '../../../types/team';
 
 interface ScheduleSettingsProps {
   lng: string;
@@ -46,7 +42,7 @@ interface ScheduleSettingsProps {
     teamId: string,
   ) => void;
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
-  handleChangeTimeFrame: (newTimeFrame: "week" | "month") => void;
+  handleChangeTimeFrame: (newTimeFrame: 'week' | 'month') => void;
 }
 
 const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
@@ -61,7 +57,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   updateScheduleViewSettings,
   handleChangeTimeFrame,
 }) => {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [isDuplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
@@ -71,12 +67,8 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
     startDate: dayjs.Dayjs;
     endDate: dayjs.Dayjs;
   } | null>(null);
-  const [occurrenceType, setOccurrenceType] = useState<OccurrenceType>(
-    OccurrenceType.ASSIGNMENT,
-  );
-  const [copyAssignments, setCopyAssignments] = useState(
-    !teamWithMembership.team.useSolver,
-  );
+  const [occurrenceType, setOccurrenceType] = useState<OccurrenceType>(OccurrenceType.ASSIGNMENT);
+  const [copyAssignments, setCopyAssignments] = useState(!teamWithMembership.team.useSolver);
   const [copyDemands, setCopyDemands] = useState(false);
   const [copyAssignmentsError, setCopyAssignmentsError] = useState(false);
   const [copyDemandsError, setCopyDemandsError] = useState(false);
@@ -124,11 +116,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
     setCopyAssignmentsError(false);
     setCopyDemandsError(false);
 
-    await handleSendDuplicateRequest(
-      duplicateRequest,
-      campaign.id,
-      campaign.teamId,
-    );
+    await handleSendDuplicateRequest(duplicateRequest, campaign.id, campaign.teamId);
     setWarningDialogOpen(false);
     setDuplicateDialogOpen(false);
     setTargetWeek(null);
@@ -144,27 +132,22 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   const weekOptions = useMemo(() => {
     if (!campaign) return [];
 
-    const campaignStart = campaign.startDate.startOf("day");
-    const campaignEnd = campaign.endDate.endOf("day");
+    const campaignStart = campaign.startDate.startOf('day');
+    const campaignEnd = campaign.endDate.endOf('day');
 
     const weeks = [];
     let currentStart = campaignStart;
 
     while (currentStart.isSameOrBefore(campaignEnd)) {
-      const currentEnd = dayjs.min(
-        currentStart.endOf("week").add(1, "day"),
-        campaignEnd,
-      );
+      const currentEnd = dayjs.min(currentStart.endOf('week').add(1, 'day'), campaignEnd);
       if (!(currentStart.isBefore(endDate) && currentEnd.isAfter(startDate))) {
         weeks.push({
-          label: `${currentStart.format("D MMMM YYYY")} - ${currentEnd.format(
-            "D MMMM YYYY",
-          )}`,
+          label: `${currentStart.format('D MMMM YYYY')} - ${currentEnd.format('D MMMM YYYY')}`,
           startDate: currentStart,
           endDate: currentEnd,
         });
       }
-      currentStart = currentEnd.add(1, "day");
+      currentStart = currentEnd.add(1, 'day');
     }
 
     return weeks;
@@ -172,10 +155,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
 
   return (
     <div>
-      <IconButton
-        data-testid="schedule-settings-button"
-        onClick={handleOpenPopover}
-      >
+      <IconButton data-testid="schedule-settings-button" onClick={handleOpenPopover}>
         <SettingsIcon />
       </IconButton>
       <Popover
@@ -183,10 +163,10 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
         onClose={handleClosePopover}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       >
-        <div style={{ padding: "16px", minWidth: "300px" }}>
+        <div style={{ padding: '16px', minWidth: '300px' }}>
           <ScheduleSettingsView
             lng={lng}
             teamWithMembership={teamWithMembership}
@@ -198,22 +178,19 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
           {/* Tools Section */}
           {teamWithMembership.membership.role === TeamMembershipRole.OWNER && (
             <div>
-              <h4
-                className="subtitle settings-view-title"
-                style={{ margin: "0 0 8px 0" }}
-              >
-                {t("tools")}
+              <h4 className="subtitle settings-view-title" style={{ margin: '0 0 8px 0' }}>
+                {t('tools')}
               </h4>
-              <Tooltip title={t("select_mode_tooltip")}>
+              <Tooltip title={t('select_mode_tooltip')}>
                 <MenuItem
                   data-testid="settings-selection-mode-button"
                   onClick={() => {
                     onToggleSelectionMode();
                     handleClosePopover();
                   }}
-                  sx={{ fontSize: "0.8rem" }}
+                  sx={{ fontSize: '0.8rem' }}
                 >
-                  {t("select")}
+                  {t('select')}
                 </MenuItem>
               </Tooltip>
               <MenuItem
@@ -221,13 +198,13 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                 onClick={handleDuplicateWeek}
                 disabled={
                   !campaign ||
-                  scheduleViewSettings.timeFrame !== "week" ||
-                  endDate.diff(startDate, "day") + 1 !== 7 ||
+                  scheduleViewSettings.timeFrame !== 'week' ||
+                  endDate.diff(startDate, 'day') + 1 !== 7 ||
                   startDate.day() !== 1
                 }
-                sx={{ fontSize: "0.8rem" }}
+                sx={{ fontSize: '0.8rem' }}
               >
-                {t("duplicate_week")}
+                {t('duplicate_week')}
               </MenuItem>
             </div>
           )}
@@ -239,16 +216,14 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
         open={isDuplicateDialogOpen}
         onClose={() => setDuplicateDialogOpen(false)}
       >
-        <DialogTitle>{t("duplicate_week")}</DialogTitle>
+        <DialogTitle>{t('duplicate_week')}</DialogTitle>
         <DialogContent>
           <FormControl fullWidth>
-            <InputLabel>{t("target_week")}</InputLabel>
+            <InputLabel>{t('target_week')}</InputLabel>
             <Select
-              value={targetWeek?.label || ""}
+              value={targetWeek?.label || ''}
               onChange={(e) => {
-                const selectedWeek = weekOptions.find(
-                  (week) => week.label === e.target.value,
-                );
+                const selectedWeek = weekOptions.find((week) => week.label === e.target.value);
                 setTargetWeek(selectedWeek || null);
               }}
               displayEmpty
@@ -256,15 +231,15 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                 (selected as string) ? (
                   (selected as string)
                 ) : (
-                  <em style={{ color: "#6b6b6b" }}>{t("target_week")}</em>
+                  <em style={{ color: '#6b6b6b' }}>{t('target_week')}</em>
                 )
               }
-              inputProps={{ "aria-label": t("target_week") }}
-              style={{ minWidth: "300px" }}
+              inputProps={{ 'aria-label': t('target_week') }}
+              style={{ minWidth: '300px' }}
             >
               {/* optional disabled placeholder item for a11y */}
               <MenuItem disabled value="">
-                <em>{t("target_week")}</em>
+                <em>{t('target_week')}</em>
               </MenuItem>
               {weekOptions.map((week, index) => (
                 <MenuItem key={`${index}-${week.label}`} value={week.label}>
@@ -286,11 +261,11 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                 label={
                   <span
                     style={{
-                      fontSize: "0.875rem",
-                      color: copyAssignmentsError ? "red" : "inherit",
+                      fontSize: '0.875rem',
+                      color: copyAssignmentsError ? 'red' : 'inherit',
                     }}
                   >
-                    {t("assignment")}
+                    {t('assignment')}
                   </span>
                 }
               />
@@ -306,11 +281,11 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                 label={
                   <span
                     style={{
-                      fontSize: "0.875rem",
-                      color: copyDemandsError ? "red" : "inherit",
+                      fontSize: '0.875rem',
+                      color: copyDemandsError ? 'red' : 'inherit',
                     }}
                   >
-                    {t("demand")}
+                    {t('demand')}
                   </span>
                 }
               />
@@ -323,9 +298,9 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
               setTargetWeek(null);
               setDuplicateDialogOpen(false);
             }}
-            sx={{ textTransform: "none" }}
+            sx={{ textTransform: 'none' }}
           >
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             onClick={() => {
@@ -336,33 +311,29 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
             color="primary"
             variant="contained"
             disabled={!targetWeek || (!copyAssignments && !copyDemands)}
-            sx={{ textTransform: "none" }}
+            sx={{ textTransform: 'none' }}
           >
-            {t("duplicate")}
+            {t('duplicate')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={isWarningDialogOpen} onClose={handleCloseWarningDialog}>
-        <DialogTitle>{t("duplicate_week")}</DialogTitle>
+        <DialogTitle>{t('duplicate_week')}</DialogTitle>
         <DialogContent>
-          {t("duplicate_warning_part_1")} <b>{targetWeek?.label}</b>{" "}
-          {t("duplicate_warning_part_2")}
+          {t('duplicate_warning_part_1')} <b>{targetWeek?.label}</b> {t('duplicate_warning_part_2')}
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseWarningDialog}
-            sx={{ textTransform: "none" }}
-          >
-            {t("cancel")}
+          <Button onClick={handleCloseWarningDialog} sx={{ textTransform: 'none' }}>
+            {t('cancel')}
           </Button>
           <Button
             onClick={handleConfirmDuplicate}
             color="primary"
             variant="contained"
-            sx={{ textTransform: "none" }}
+            sx={{ textTransform: 'none' }}
           >
-            {t("confirm")}
+            {t('confirm')}
           </Button>
         </DialogActions>
       </Dialog>

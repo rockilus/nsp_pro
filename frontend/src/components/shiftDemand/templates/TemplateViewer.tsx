@@ -7,9 +7,9 @@
  * - Action buttons (edit, apply, delete)
  */
 
-import React, { useState, useMemo } from "react";
-import dayjs from "dayjs";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState, useMemo } from 'react';
+import dayjs from 'dayjs';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
 import {
   Box,
@@ -25,38 +25,27 @@ import {
   DialogActions,
   TextField,
   Alert,
-} from "@mui/material";
-import {
-  Edit,
-  PlayArrow,
-  Delete,
-  CalendarToday,
-  Person,
-  Info,
-} from "@mui/icons-material";
+} from '@mui/material';
+import { Edit, PlayArrow, Delete, CalendarToday, Person, Info } from '@mui/icons-material';
 // Types
-import { ShiftT } from "../../../types/shift";
+import { ShiftT } from '../../../types/shift';
 import {
   ShiftDemandTemplateDTO,
   TemplateWeekDataDTO,
   DemandEntryDTO,
   TemplateType,
   TEMPLATE_CONSTRAINTS,
-} from "../../../types/shift-demand-template";
-import {
-  ColumnDefinition,
-  ColumnFilter,
-  TableSort,
-} from "../../../types/filter";
+} from '../../../types/shift-demand-template';
+import { ColumnDefinition, ColumnFilter, TableSort } from '../../../types/filter';
 // Lib
-import { TemplateUtils } from "../../../app/lib/api/shiftDemandTemplateApi";
-import { useTableState } from "../../../hooks/useTableState";
+import { TemplateUtils } from '../../../app/lib/api/shiftDemandTemplateApi';
+import { useTableState } from '../../../hooks/useTableState';
 // Components
-import { createShiftColumns } from "../shiftColumns";
-import { TemplateToolbar } from "./TemplateToolbar";
-import { BuildFromDemandsDialog } from "./dialogs/BuildFromDemandsDialog";
-import TemplateTable from "./TemplateTable";
-import { TemplateActionToolbar } from "./TemplateActionToolbar";
+import { createShiftColumns } from '../shiftColumns';
+import { TemplateToolbar } from './TemplateToolbar';
+import { BuildFromDemandsDialog } from './dialogs/BuildFromDemandsDialog';
+import TemplateTable from './TemplateTable';
+import { TemplateActionToolbar } from './TemplateActionToolbar';
 
 interface TemplateViewerProps {
   lng: string;
@@ -71,10 +60,7 @@ interface TemplateViewerProps {
   onAddWeek: () => Promise<void>;
   onDeleteWeek: (weekNumber: number) => Promise<void>;
   onUpdateTemplateType: (templateType: TemplateType) => Promise<void>;
-  onUpdateTemplateMetadata: (updates: {
-    name?: string;
-    description?: string;
-  }) => Promise<void>;
+  onUpdateTemplateMetadata: (updates: { name?: string; description?: string }) => Promise<void>;
   onDeleteTemplate: (templateId: string) => Promise<void>;
   onApplyDemandsToTemplateWeek: (
     sourceWeekStartDate: number,
@@ -100,12 +86,12 @@ export function TemplateViewer({
   onApplyDemandsToTemplateWeek,
   templateUpdateLoading,
 }: TemplateViewerProps) {
-  const { t } = useTranslation(lng, "shift-demand-templates");
+  const { t } = useTranslation(lng, 'shift-demand-templates');
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Toolbar state
   const [currentWeek, setCurrentWeek] = useState(0);
-  const [weeksToShow, setWeeksToShow] = useState<1 | 2 | "all">(2);
+  const [weeksToShow, setWeeksToShow] = useState<1 | 2 | 'all'>(2);
   const [templateType, setTemplateType] = useState<TemplateType>(
     template.templateType as TemplateType,
   );
@@ -115,9 +101,7 @@ export function TemplateViewer({
   const [editNameOpen, setEditNameOpen] = useState(false);
   const [editDescriptionOpen, setEditDescriptionOpen] = useState(false);
   const [editedName, setEditedName] = useState(template.name);
-  const [editedDescription, setEditedDescription] = useState(
-    template.description || "",
-  );
+  const [editedDescription, setEditedDescription] = useState(template.description || '');
   const [saveLoading, setSaveLoading] = useState(false);
 
   // Template table state
@@ -129,18 +113,18 @@ export function TemplateViewer({
   }>({
     isActive: false,
     selectedCells: [],
-    bulkValue: "1",
+    bulkValue: '1',
   });
 
   // Get day names for headers
   const dayNames = [
-    t("monday_short"),
-    t("tuesday_short"),
-    t("wednesday_short"),
-    t("thursday_short"),
-    t("friday_short"),
-    t("saturday_short"),
-    t("sunday_short"),
+    t('monday_short'),
+    t('tuesday_short'),
+    t('wednesday_short'),
+    t('thursday_short'),
+    t('friday_short'),
+    t('saturday_short'),
+    t('sunday_short'),
   ];
 
   // Create shifts map for quick lookup
@@ -149,14 +133,12 @@ export function TemplateViewer({
   // Compute derived values for toolbar
   const totalWeeks = template.weeksData.length;
   const displayedWeeks = useMemo(() => {
-    if (weeksToShow === "all") {
+    if (weeksToShow === 'all') {
       return template.weeksData.map((w) => w.weekNumber);
     }
     if (weeksToShow === 2) {
       const secondWeek = Math.min(currentWeek + 1, totalWeeks - 1);
-      return currentWeek === secondWeek
-        ? [currentWeek]
-        : [currentWeek, secondWeek];
+      return currentWeek === secondWeek ? [currentWeek] : [currentWeek, secondWeek];
     }
     return [currentWeek];
   }, [currentWeek, weeksToShow, template.weeksData, totalWeeks]);
@@ -174,10 +156,7 @@ export function TemplateViewer({
   }, [template.weeksData]);
 
   // Shift column definitions for filtering/sorting
-  const shiftColumns = useMemo(
-    () => createShiftColumns(t, shifts),
-    [t, shifts],
-  );
+  const shiftColumns = useMemo(() => createShiftColumns(t, shifts), [t, shifts]);
 
   // Table state for shift filtering and sorting
   const {
@@ -187,7 +166,7 @@ export function TemplateViewer({
     removeFilter: removeShiftFilter,
     updateSort: updateShiftSort,
     resetAll: resetShiftFilters,
-  } = useTableState(shifts, shiftColumns, "nsp-pro-template-table-state");
+  } = useTableState(shifts, shiftColumns, 'nsp-pro-template-table-state');
 
   // Bulk mode toggle
   const toggleBulkMode = () => {
@@ -195,20 +174,16 @@ export function TemplateViewer({
       ...prev,
       isActive: !prev.isActive,
       selectedCells: [],
-      bulkValue: "1",
+      bulkValue: '1',
     }));
   };
 
   // Show filter toolbar when either bulk mode is active OR filters/sorting is applied
   const showFilterToolbar =
-    bulkChangeState.isActive ||
-    shiftTableState.filters.length > 0 ||
-    shiftTableState.sort !== null;
+    bulkChangeState.isActive || shiftTableState.filters.length > 0 || shiftTableState.sort !== null;
 
   const handleDelete = async () => {
-    if (
-      !window.confirm(t("confirm_delete_template", { name: template.name }))
-    ) {
+    if (!window.confirm(t('confirm_delete_template', { name: template.name }))) {
       return;
     }
 
@@ -217,10 +192,8 @@ export function TemplateViewer({
       await onDeleteTemplate(template.id);
       onDelete();
     } catch (error) {
-      console.error("Failed to delete template:", error);
-      onError(
-        error instanceof Error ? error.message : "Failed to delete template",
-      );
+      console.error('Failed to delete template:', error);
+      onError(error instanceof Error ? error.message : 'Failed to delete template');
     } finally {
       setDeleteLoading(false);
     }
@@ -232,17 +205,14 @@ export function TemplateViewer({
   };
 
   const handleEditDescription = () => {
-    setEditedDescription(template.description || "");
+    setEditedDescription(template.description || '');
     setEditDescriptionOpen(true);
   };
 
   const handleSaveName = async () => {
     const trimmedName = editedName.trim();
 
-    if (
-      trimmedName === "" ||
-      trimmedName.length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH
-    ) {
+    if (trimmedName === '' || trimmedName.length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH) {
       setEditNameOpen(false);
       return;
     }
@@ -257,12 +227,8 @@ export function TemplateViewer({
       await onUpdateTemplateMetadata({ name: trimmedName });
       setEditNameOpen(false);
     } catch (error) {
-      console.error("Failed to update template name:", error);
-      onError(
-        error instanceof Error
-          ? error.message
-          : "Failed to update template name",
-      );
+      console.error('Failed to update template name:', error);
+      onError(error instanceof Error ? error.message : 'Failed to update template name');
     } finally {
       setSaveLoading(false);
     }
@@ -281,12 +247,8 @@ export function TemplateViewer({
       });
       setEditDescriptionOpen(false);
     } catch (error) {
-      console.error("Failed to update template description:", error);
-      onError(
-        error instanceof Error
-          ? error.message
-          : "Failed to update template description",
-      );
+      console.error('Failed to update template description:', error);
+      onError(error instanceof Error ? error.message : 'Failed to update template description');
     } finally {
       setSaveLoading(false);
     }
@@ -297,7 +259,7 @@ export function TemplateViewer({
   };
 
   const formatDate = (timestamp: number) => {
-    return dayjs(timestamp * 1000).format("MMMM D, YYYY");
+    return dayjs(timestamp * 1000).format('MMMM D, YYYY');
   };
 
   // Toolbar handlers
@@ -305,10 +267,10 @@ export function TemplateViewer({
     setCurrentWeek(Math.max(0, Math.min(week, totalWeeks - 1)));
   };
 
-  const handleWeeksToShowChange = (weeks: 1 | 2 | "all") => {
+  const handleWeeksToShowChange = (weeks: 1 | 2 | 'all') => {
     setWeeksToShow(weeks);
     // Reset current week if it would go out of bounds
-    if (weeks !== "all") {
+    if (weeks !== 'all') {
       const maxStartWeek = totalWeeks - (weeks === 2 ? 2 : 1);
       if (currentWeek > Math.max(0, maxStartWeek)) {
         setCurrentWeek(Math.max(0, maxStartWeek));
@@ -348,7 +310,7 @@ export function TemplateViewer({
       await onApplyDemandsToTemplateWeek(sourceWeekStartDate, targetWeekNumber);
       setBuildDialogOpen(false);
     } catch (error) {
-      console.error("Failed to apply demands to template week:", error);
+      console.error('Failed to apply demands to template week:', error);
       // Error is handled in parent component, just re-throw
       throw error;
     }
@@ -376,7 +338,7 @@ export function TemplateViewer({
     if (shiftsWithDemands.length === 0) {
       return (
         <Alert severity="info" sx={{ mb: 2 }}>
-          {t("no_demands_for_week", { week: title })}
+          {t('no_demands_for_week', { week: title })}
         </Alert>
       );
     }
@@ -384,7 +346,7 @@ export function TemplateViewer({
     return (
       <Box className="template-week-grid">
         {/* Header row */}
-        <Box className="template-week-grid-header">{t("shift")}</Box>
+        <Box className="template-week-grid-header">{t('shift')}</Box>
         {dayNames.map((dayName) => (
           <Box key={dayName} className="template-week-grid-header">
             {dayName}
@@ -404,11 +366,9 @@ export function TemplateViewer({
               {shiftDemands.map((count, dayIndex) => (
                 <Box
                   key={dayIndex}
-                  className={`template-week-grid-cell ${
-                    count > 0 ? "has-demand" : "empty"
-                  }`}
+                  className={`template-week-grid-cell ${count > 0 ? 'has-demand' : 'empty'}`}
                 >
-                  {count > 0 ? count : "—"}
+                  {count > 0 ? count : '—'}
                 </Box>
               ))}
             </React.Fragment>
@@ -418,11 +378,7 @@ export function TemplateViewer({
     );
   };
 
-  const getDemandValue = (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ): number => {
+  const getDemandValue = (shiftId: string, weekNumber: number, dayIndex: number): number => {
     const key = `${shiftId}-${weekNumber}-${dayIndex}`;
     return templateDataMap.get(key) || 0;
   };
@@ -493,10 +449,8 @@ export function TemplateViewer({
       // Update local data map for immediate UI feedback
       templateDataMap.set(cellKey, numericValue);
     } catch (error) {
-      console.error("Failed to update template demand:", error);
-      onError(
-        error instanceof Error ? error.message : "Failed to update demand",
-      );
+      console.error('Failed to update template demand:', error);
+      onError(error instanceof Error ? error.message : 'Failed to update demand');
     } finally {
       setSavingCells((prev) => {
         const newSet = new Set(prev);
@@ -507,30 +461,18 @@ export function TemplateViewer({
   };
 
   // Bulk selection handlers
-  const isCellSelected = (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ): boolean => {
+  const isCellSelected = (shiftId: string, weekNumber: number, dayIndex: number): boolean => {
     return bulkChangeState.selectedCells.some(
       (cell) =>
-        cell.shiftId === shiftId &&
-        cell.weekNumber === weekNumber &&
-        cell.dayIndex === dayIndex,
+        cell.shiftId === shiftId && cell.weekNumber === weekNumber && cell.dayIndex === dayIndex,
     );
   };
 
-  const toggleCellSelection = (
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ): void => {
+  const toggleCellSelection = (shiftId: string, weekNumber: number, dayIndex: number): void => {
     setBulkChangeState((prev) => {
       const isSelected = prev.selectedCells.some(
         (cell) =>
-          cell.shiftId === shiftId &&
-          cell.weekNumber === weekNumber &&
-          cell.dayIndex === dayIndex,
+          cell.shiftId === shiftId && cell.weekNumber === weekNumber && cell.dayIndex === dayIndex,
       );
 
       if (isSelected) {
@@ -548,10 +490,7 @@ export function TemplateViewer({
       } else {
         return {
           ...prev,
-          selectedCells: [
-            ...prev.selectedCells,
-            { shiftId, weekNumber, dayIndex },
-          ],
+          selectedCells: [...prev.selectedCells, { shiftId, weekNumber, dayIndex }],
         };
       }
     });
@@ -771,7 +710,7 @@ export function TemplateViewer({
 
     // Validate bulk value
     if (value < 0) {
-      onError(t("invalid_demand_value", "Invalid demand value"));
+      onError(t('invalid_demand_value', 'Invalid demand value'));
       return;
     }
 
@@ -799,8 +738,7 @@ export function TemplateViewer({
           if (value === 0) {
             // Remove demand if value is 0
             updatedDemands = updatedDemands.filter(
-              (d) =>
-                !(d.shiftId === cell.shiftId && d.dayOfWeek === cell.dayIndex),
+              (d) => !(d.shiftId === cell.shiftId && d.dayOfWeek === cell.dayIndex),
             );
           } else if (existingDemandIndex >= 0) {
             // Update existing demand
@@ -840,13 +778,11 @@ export function TemplateViewer({
         ...prev,
         isActive: false,
         selectedCells: [],
-        bulkValue: "1",
+        bulkValue: '1',
       }));
     } catch (error) {
-      console.error("Failed to apply bulk changes:", error);
-      onError(
-        error instanceof Error ? error.message : "Failed to apply bulk changes",
-      );
+      console.error('Failed to apply bulk changes:', error);
+      onError(error instanceof Error ? error.message : 'Failed to apply bulk changes');
     }
   };
 
@@ -868,9 +804,7 @@ export function TemplateViewer({
         // Remove demands for selected cells (equivalent to setting them to 0)
         const updatedDemands = week.demands.filter((demand) => {
           return !cellsForThisWeek.some(
-            (cell) =>
-              cell.shiftId === demand.shiftId &&
-              cell.dayIndex === demand.dayOfWeek,
+            (cell) => cell.shiftId === demand.shiftId && cell.dayIndex === demand.dayOfWeek,
           );
         });
 
@@ -896,15 +830,11 @@ export function TemplateViewer({
         ...prev,
         isActive: false,
         selectedCells: [],
-        bulkValue: "1",
+        bulkValue: '1',
       }));
     } catch (error) {
-      console.error("Failed to delete bulk selection:", error);
-      onError(
-        error instanceof Error
-          ? error.message
-          : "Failed to delete bulk selection",
-      );
+      console.error('Failed to delete bulk selection:', error);
+      onError(error instanceof Error ? error.message : 'Failed to delete bulk selection');
     }
   };
 
@@ -913,7 +843,7 @@ export function TemplateViewer({
       ...prev,
       isActive: false,
       selectedCells: [],
-      bulkValue: "1",
+      bulkValue: '1',
     }));
   };
 
@@ -933,24 +863,21 @@ export function TemplateViewer({
   // ...existing code...
 
   return (
-    <Box
-      data-testid="template-viewer-container"
-      className="template-viewer-container"
-    >
+    <Box data-testid="template-viewer-container" className="template-viewer-container">
       {/* Header */}
       <Box className="template-viewer-header">
         {/* First line: Title, template info, and action buttons */}
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
           {/* Left side: Title + Template info */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {/* Title with edit button */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Typography variant="h5" component="h2">
                 {template.name}
               </Typography>
@@ -959,7 +886,7 @@ export function TemplateViewer({
                 onClick={handleEditName}
                 sx={{
                   opacity: 0.6,
-                  "&:hover": { opacity: 1 },
+                  '&:hover': { opacity: 1 },
                 }}
               >
                 <Edit fontSize="small" />
@@ -968,17 +895,17 @@ export function TemplateViewer({
           </Box>
 
           {/* Right side: Action buttons (icons only) */}
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Tooltip title={t("apply_template")}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Tooltip title={t('apply_template')}>
               <span>
                 <IconButton
                   data-testid="template-viewer-apply-button"
                   onClick={() => onApply(template.id)}
                   color="primary"
                   sx={{
-                    bgcolor: "primary.main",
-                    color: "white",
-                    "&:hover": { bgcolor: "primary.dark" },
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    '&:hover': { bgcolor: 'primary.dark' },
                   }}
                 >
                   <PlayArrow />
@@ -986,13 +913,9 @@ export function TemplateViewer({
               </span>
             </Tooltip>
 
-            <Tooltip title={t("delete_template")}>
+            <Tooltip title={t('delete_template')}>
               <span>
-                <IconButton
-                  onClick={handleDelete}
-                  disabled={deleteLoading}
-                  color="error"
-                >
+                <IconButton onClick={handleDelete} disabled={deleteLoading} color="error">
                   {deleteLoading ? <CircularProgress size={20} /> : <Delete />}
                 </IconButton>
               </span>
@@ -1002,7 +925,7 @@ export function TemplateViewer({
 
         {/* Second line: Description */}
         {template.description && (
-          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
             <Typography variant="body1" color="textSecondary">
               {template.description}
             </Typography>
@@ -1011,7 +934,7 @@ export function TemplateViewer({
               onClick={handleEditDescription}
               sx={{
                 opacity: 0.6,
-                "&:hover": { opacity: 1 },
+                '&:hover': { opacity: 1 },
                 mt: -0.5,
               }}
             >
@@ -1046,9 +969,7 @@ export function TemplateViewer({
       <TemplateActionToolbar
         lng={lng}
         showBulkMode={bulkChangeState.isActive}
-        showFilters={
-          shiftTableState.filters.length > 0 || shiftTableState.sort !== null
-        }
+        showFilters={shiftTableState.filters.length > 0 || shiftTableState.sort !== null}
         // Filter/Sort props
         filters={shiftTableState.filters}
         sort={shiftTableState.sort}
@@ -1058,9 +979,7 @@ export function TemplateViewer({
         // Bulk selection props
         selectedCellsCount={bulkChangeState.selectedCells.length}
         bulkValue={bulkChangeState.bulkValue}
-        onBulkValueChange={(value) =>
-          setBulkChangeState((prev) => ({ ...prev, bulkValue: value }))
-        }
+        onBulkValueChange={(value) => setBulkChangeState((prev) => ({ ...prev, bulkValue: value }))}
         onApplyBulkChange={applyBulkChange}
         onDeleteBulkSelection={deleteBulkSelection}
         onCancelBulkMode={cancelBulkMode}
@@ -1096,24 +1015,19 @@ export function TemplateViewer({
       </Box>
 
       {/* Edit Name Dialog */}
-      <Dialog
-        open={editNameOpen}
-        onClose={() => setEditNameOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>{t("edit_template_name")}</DialogTitle>
+      <Dialog open={editNameOpen} onClose={() => setEditNameOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{t('edit_template_name')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label={t("template_name")}
+            label={t('template_name')}
             fullWidth
             variant="outlined"
             value={editedName}
             onChange={(e) => setEditedName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === 'Enter') {
                 handleSaveName();
               }
             }}
@@ -1124,7 +1038,7 @@ export function TemplateViewer({
             helperText={
               editedName.trim().length > 0 &&
               editedName.trim().length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH
-                ? t("template_name_too_short")
+                ? t('template_name_too_short')
                 : `${editedName.length}/${TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH}`
             }
             inputProps={{
@@ -1133,18 +1047,18 @@ export function TemplateViewer({
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditNameOpen(false)}>{t("cancel")}</Button>
+          <Button onClick={() => setEditNameOpen(false)}>{t('cancel')}</Button>
           <Button
             onClick={handleSaveName}
             variant="contained"
             disabled={
               saveLoading ||
-              editedName.trim() === "" ||
+              editedName.trim() === '' ||
               editedName.trim().length < TEMPLATE_CONSTRAINTS.MIN_NAME_LENGTH ||
               editedName.length > TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH
             }
           >
-            {saveLoading ? <CircularProgress size={20} /> : t("save")}
+            {saveLoading ? <CircularProgress size={20} /> : t('save')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1156,12 +1070,12 @@ export function TemplateViewer({
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>{t("edit_template_description")}</DialogTitle>
+        <DialogTitle>{t('edit_template_description')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label={t("template_description")}
+            label={t('template_description')}
             fullWidth
             multiline
             rows={3}
@@ -1175,15 +1089,9 @@ export function TemplateViewer({
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDescriptionOpen(false)}>
-            {t("cancel")}
-          </Button>
-          <Button
-            onClick={handleSaveDescription}
-            variant="contained"
-            disabled={saveLoading}
-          >
-            {saveLoading ? <CircularProgress size={20} /> : t("save")}
+          <Button onClick={() => setEditDescriptionOpen(false)}>{t('cancel')}</Button>
+          <Button onClick={handleSaveDescription} variant="contained" disabled={saveLoading}>
+            {saveLoading ? <CircularProgress size={20} /> : t('save')}
           </Button>
         </DialogActions>
       </Dialog>

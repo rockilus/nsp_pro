@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">Date limite de soumission modifiée</div>
+        <div class="email-body">
+            <p>Bonjour {recipient_name},</p>
+            <p>La date limite de soumission pour le planning de <strong>{team_name}</strong> a été modifiée.</p>
+            <p><strong>Période du planning :</strong> {schedule_start_date} – {schedule_end_date}</p>
+            <p><strong>Date limite précédente :</strong> {old_deadline_date}</p>
+            <p><strong>Nouvelle date limite :</strong> {new_deadline_date}</p>
+            <p>Veuillez soumettre vos demandes de disponibilité avant la nouvelle date limite en cliquant sur le bouton ci-dessous :</p>
+            <a href="{notification_link}" class="cta-button">Soumettre les demandes</a>
+        </div>
+        <div class="email-footer">
+            <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+            <p>Merci,<br>L'Équipe Rockilus</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -9,7 +9,7 @@
 /**
  * Shift demand source types matching backend enum exactly
  */
-export type ShiftDemandSource = "manual" | "template" | "solver" | "import";
+export type ShiftDemandSource = 'manual' | 'template' | 'solver' | 'import';
 
 /**
  * Base interface for shift demand data (matches backend ShiftDemandNewBaseDTO)
@@ -53,8 +53,8 @@ export const SHIFT_DEMAND_CONSTRAINTS = {
   MAX_COUNT: 1000,
   MAX_NOTES_LENGTH: 1000,
   OBJECTID_PATTERN: /^[a-fA-F0-9]{24}$/,
-  MIN_DATE: new Date("2000-01-01").getTime() / 1000,
-  MAX_DATE: new Date("2100-01-01").getTime() / 1000,
+  MIN_DATE: new Date('2000-01-01').getTime() / 1000,
+  MAX_DATE: new Date('2100-01-01').getTime() / 1000,
 } as const;
 
 /**
@@ -70,7 +70,7 @@ export interface ShiftDemandMatrix {
 /**
  * Period navigation types
  */
-export type PeriodType = "week" | "month" | "custom";
+export type PeriodType = 'week' | 'month' | 'custom';
 
 /**
  * API response for bulk upsert operations (matches ShiftDemandsResultDTO)
@@ -113,18 +113,15 @@ export interface UseShiftDemandsResult {
  */
 export interface UseShiftDemandMutationsResult {
   create: {
-    mutate: (params: { demand: Omit<ShiftDemandCreateDTO, "teamId"> }) => void;
+    mutate: (params: { demand: Omit<ShiftDemandCreateDTO, 'teamId'> }) => void;
     mutateAsync: (params: {
-      demand: Omit<ShiftDemandCreateDTO, "teamId">;
+      demand: Omit<ShiftDemandCreateDTO, 'teamId'>;
     }) => Promise<ShiftDemandDTO>;
     isLoading: boolean;
     error: Error | null;
   };
   update: {
-    mutate: (params: {
-      demandId: string;
-      demand: ShiftDemandUpdateDTO;
-    }) => void;
+    mutate: (params: { demandId: string; demand: ShiftDemandUpdateDTO }) => void;
     mutateAsync: (params: {
       demandId: string;
       demand: ShiftDemandUpdateDTO;
@@ -139,10 +136,8 @@ export interface UseShiftDemandMutationsResult {
     error: Error | null;
   };
   bulkUpsert: {
-    mutate: (demands: Omit<ShiftDemandCreateDTO, "teamId">[]) => void;
-    mutateAsync: (
-      demands: Omit<ShiftDemandCreateDTO, "teamId">[]
-    ) => Promise<BulkUpsertResponse>;
+    mutate: (demands: Omit<ShiftDemandCreateDTO, 'teamId'>[]) => void;
+    mutateAsync: (demands: Omit<ShiftDemandCreateDTO, 'teamId'>[]) => Promise<BulkUpsertResponse>;
     isLoading: boolean;
     error: Error | null;
   };

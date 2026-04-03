@@ -5,12 +5,12 @@
  * appropriate access to various pages and features in the application.
  */
 
-import { test, expect } from "@playwright/test";
-import { RoleTestBase } from "../../utils/role-test-base";
+import { test, expect } from '@playwright/test';
+import { RoleTestBase } from '../../utils/role-test-base';
 
 const roleTestBase = new RoleTestBase();
 
-test.describe("Role-Based Access Control", () => {
+test.describe('Role-Based Access Control', () => {
   test.beforeEach(async ({ page }) => {
     // Setup creates:
     // - Test team
@@ -19,231 +19,199 @@ test.describe("Role-Based Access Control", () => {
     await roleTestBase.setupRoleTests(test.info().workerIndex);
   });
 
-  test.describe("Owner Access", () => {
-    test("owner can access workers page", async ({ page }) => {
+  test.describe('Owner Access', () => {
+    test('owner can access workers page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToWorkersPage(page);
 
       // Verify the workers page is displayed
-      await expect(
-        page.locator('[data-testid="workers-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="workers-page-heading"]')).toBeVisible();
 
       // Verify we're on the correct URL
-      await roleTestBase.verifyPageAccessible(page, "/plan/workers");
+      await roleTestBase.verifyPageAccessible(page, '/plan/workers');
     });
 
-    test("owner can access schedule page", async ({ page }) => {
+    test('owner can access schedule page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToSchedulePage(page);
 
       // Verify the schedule page is displayed
-      await expect(
-        page.locator('[data-testid="schedule-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="schedule-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/plan/schedule");
+      await roleTestBase.verifyPageAccessible(page, '/plan/schedule');
     });
 
-    test("owner can access requests page", async ({ page }) => {
+    test('owner can access requests page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToRequestsPage(page);
 
       // Verify the requests page is displayed
       await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/plan/requests");
+      await roleTestBase.verifyPageAccessible(page, '/plan/requests');
     });
 
-    test("owner can access teams settings page", async ({ page }) => {
+    test('owner can access teams settings page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToTeamsPage(page);
 
       // Verify the teams page is displayed
-      await expect(
-        page.locator('[data-testid="teams-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="teams-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/settings/teams");
+      await roleTestBase.verifyPageAccessible(page, '/settings/teams');
     });
 
-    test("owner can access shifts page", async ({ page }) => {
+    test('owner can access shifts page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToShiftsPage(page);
 
       // Verify the shifts page is displayed
-      await expect(
-        page.locator('[data-testid="shifts-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="shifts-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/plan/shifts");
+      await roleTestBase.verifyPageAccessible(page, '/plan/shifts');
     });
 
-    test("owner can access shift demands page", async ({ page }) => {
+    test('owner can access shift demands page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToShiftDemandsPage(page);
 
       // Verify the shift demands page is displayed
-      await expect(
-        page.locator('[data-testid="shift-demand-tab"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="shift-demand-tab"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/plan/shift-demands");
+      await roleTestBase.verifyPageAccessible(page, '/plan/shift-demands');
     });
 
-    test("owner can access constraints page", async ({ page }) => {
+    test('owner can access constraints page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToConstraintsPage(page);
 
       // Verify the constraints page is displayed
-      await expect(
-        page.locator('[data-testid="constraints-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="constraints-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/plan/constraints");
+      await roleTestBase.verifyPageAccessible(page, '/plan/constraints');
     });
 
-    test("owner can access campaign page", async ({ page }) => {
+    test('owner can access campaign page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToCampaignPage(page);
 
       // Verify the campaign page is displayed
-      await expect(
-        page.locator('[data-testid="campaign-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="campaign-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/plan/campaign");
+      await roleTestBase.verifyPageAccessible(page, '/plan/campaign');
     });
 
-    test("owner can access stats page", async ({ page }) => {
+    test('owner can access stats page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToStatsPage(page);
 
       // Verify the stats page is displayed
-      await expect(
-        page.locator('[data-testid="stats-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="stats-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/plan/stats");
+      await roleTestBase.verifyPageAccessible(page, '/plan/stats');
     });
 
-    test("owner can access personal info settings page", async ({ page }) => {
+    test('owner can access personal info settings page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToPersonalInfoPage(page);
 
       // Verify the personal info page is displayed
-      await expect(
-        page.locator('[data-testid="personal-info-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="personal-info-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/settings/personal-info");
+      await roleTestBase.verifyPageAccessible(page, '/settings/personal-info');
     });
 
-    test("owner can access security settings page", async ({ page }) => {
+    test('owner can access security settings page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToSecurityPage(page);
 
       // Verify the security page is displayed
-      await expect(
-        page.locator('[data-testid="security-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="security-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/settings/security");
+      await roleTestBase.verifyPageAccessible(page, '/settings/security');
     });
 
-    test("owner can access team general settings page", async ({ page }) => {
+    test('owner can access team general settings page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToTeamGeneralPage(page);
 
       // Verify the team general page is displayed
-      await expect(
-        page.locator('[data-testid="team-general-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="team-general-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/teams/general");
+      await roleTestBase.verifyPageAccessible(page, '/teams/general');
     });
 
-    test("owner can access team members settings page", async ({ page }) => {
+    test('owner can access team members settings page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToTeamMembersPage(page);
 
       // Verify the team members page is displayed
-      await expect(
-        page.locator('[data-testid="team-members-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="team-members-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/teams/members");
+      await roleTestBase.verifyPageAccessible(page, '/teams/members');
     });
   });
 
-  test.describe("Member Access - Allowed Pages", () => {
-    test("member can access schedule page (view only)", async ({ page }) => {
+  test.describe('Member Access - Allowed Pages', () => {
+    test('member can access schedule page (view only)', async ({ page }) => {
       await roleTestBase.actAsMember(page);
       await roleTestBase.navigateToSchedulePage(page);
 
       // Verify the schedule page is displayed
-      await expect(
-        page.locator('[data-testid="schedule-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="schedule-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/plan/schedule");
+      await roleTestBase.verifyPageAccessible(page, '/plan/schedule');
 
       // TODO: Verify member sees read-only view (no edit buttons)
       // This depends on the actual UI implementation
     });
 
-    test("member can access requests page", async ({ page }) => {
+    test('member can access requests page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
       await roleTestBase.navigateToRequestsPage(page);
 
       // Verify the requests page is displayed
       await expect(page.locator('[data-testid="request-tab"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/plan/requests");
+      await roleTestBase.verifyPageAccessible(page, '/plan/requests');
 
       // TODO: Verify member can only see/manage their own requests
       // This depends on the actual UI implementation
     });
 
-    test("member can access personal info settings page", async ({ page }) => {
+    test('member can access personal info settings page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
       await roleTestBase.navigateToPersonalInfoPage(page);
 
       // Verify the personal info page is displayed
-      await expect(
-        page.locator('[data-testid="personal-info-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="personal-info-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/settings/personal-info");
+      await roleTestBase.verifyPageAccessible(page, '/settings/personal-info');
     });
 
-    test("member can access security settings page", async ({ page }) => {
+    test('member can access security settings page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
       await roleTestBase.navigateToSecurityPage(page);
 
       // Verify the security page is displayed
-      await expect(
-        page.locator('[data-testid="security-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="security-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/settings/security");
+      await roleTestBase.verifyPageAccessible(page, '/settings/security');
     });
 
-    test("member can access teams settings page", async ({ page }) => {
+    test('member can access teams settings page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
       await roleTestBase.navigateToTeamsPage(page);
 
       // Verify the teams page is displayed
-      await expect(
-        page.locator('[data-testid="teams-page-heading"]'),
-      ).toBeVisible();
+      await expect(page.locator('[data-testid="teams-page-heading"]')).toBeVisible();
 
-      await roleTestBase.verifyPageAccessible(page, "/settings/teams");
+      await roleTestBase.verifyPageAccessible(page, '/settings/teams');
     });
   });
 
-  test.describe("Member Access - Restricted Pages", () => {
-    test("member cannot access workers page", async ({ page }) => {
+  test.describe('Member Access - Restricted Pages', () => {
+    test('member cannot access workers page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
 
       // Try to navigate to workers page
@@ -254,13 +222,13 @@ test.describe("Role-Based Access Control", () => {
       await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the workers page
-      await roleTestBase.verifyPageNotAccessible(page, "/plan/workers");
+      await roleTestBase.verifyPageNotAccessible(page, '/plan/workers');
 
       const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/plan/workers");
+      expect(currentUrl).not.toContain('/plan/workers');
     });
 
-    test("member cannot access shifts page", async ({ page }) => {
+    test('member cannot access shifts page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
 
       // Try to navigate to shifts page
@@ -271,13 +239,13 @@ test.describe("Role-Based Access Control", () => {
       await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the shifts page
-      await roleTestBase.verifyPageNotAccessible(page, "/plan/shifts");
+      await roleTestBase.verifyPageNotAccessible(page, '/plan/shifts');
 
       const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/plan/shifts");
+      expect(currentUrl).not.toContain('/plan/shifts');
     });
 
-    test("member cannot access shift demands page", async ({ page }) => {
+    test('member cannot access shift demands page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
 
       // Try to navigate to shift demands page
@@ -288,13 +256,13 @@ test.describe("Role-Based Access Control", () => {
       await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the shift demands page
-      await roleTestBase.verifyPageNotAccessible(page, "/plan/shift-demands");
+      await roleTestBase.verifyPageNotAccessible(page, '/plan/shift-demands');
 
       const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/plan/shift-demands");
+      expect(currentUrl).not.toContain('/plan/shift-demands');
     });
 
-    test("member cannot access constraints page", async ({ page }) => {
+    test('member cannot access constraints page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
 
       // Try to navigate to constraints page
@@ -305,13 +273,13 @@ test.describe("Role-Based Access Control", () => {
       await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the constraints page
-      await roleTestBase.verifyPageNotAccessible(page, "/plan/constraints");
+      await roleTestBase.verifyPageNotAccessible(page, '/plan/constraints');
 
       const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/plan/constraints");
+      expect(currentUrl).not.toContain('/plan/constraints');
     });
 
-    test("member cannot access campaign page", async ({ page }) => {
+    test('member cannot access campaign page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
 
       // Try to navigate to campaign page
@@ -322,13 +290,13 @@ test.describe("Role-Based Access Control", () => {
       await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the campaign page
-      await roleTestBase.verifyPageNotAccessible(page, "/plan/campaign");
+      await roleTestBase.verifyPageNotAccessible(page, '/plan/campaign');
 
       const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/plan/campaign");
+      expect(currentUrl).not.toContain('/plan/campaign');
     });
 
-    test("member cannot access stats page", async ({ page }) => {
+    test('member cannot access stats page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
 
       // Try to navigate to stats page
@@ -339,15 +307,13 @@ test.describe("Role-Based Access Control", () => {
       await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the stats page
-      await roleTestBase.verifyPageNotAccessible(page, "/plan/stats");
+      await roleTestBase.verifyPageNotAccessible(page, '/plan/stats');
 
       const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/plan/stats");
+      expect(currentUrl).not.toContain('/plan/stats');
     });
 
-    test("member cannot access team general settings page", async ({
-      page,
-    }) => {
+    test('member cannot access team general settings page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
 
       // Try to navigate to team general settings page
@@ -358,15 +324,13 @@ test.describe("Role-Based Access Control", () => {
       await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the team general settings page
-      await roleTestBase.verifyPageNotAccessible(page, "/teams/general");
+      await roleTestBase.verifyPageNotAccessible(page, '/teams/general');
 
       const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/teams/general");
+      expect(currentUrl).not.toContain('/teams/general');
     });
 
-    test("member cannot access team members settings page", async ({
-      page,
-    }) => {
+    test('member cannot access team members settings page', async ({ page }) => {
       await roleTestBase.actAsMember(page);
 
       // Try to navigate to team members settings page
@@ -377,10 +341,10 @@ test.describe("Role-Based Access Control", () => {
       await expect(page).toHaveURL(/\/plan\/schedule/);
 
       // Verify we're NOT on the team members settings page
-      await roleTestBase.verifyPageNotAccessible(page, "/teams/members");
+      await roleTestBase.verifyPageNotAccessible(page, '/teams/members');
 
       const currentUrl = page.url();
-      expect(currentUrl).not.toContain("/teams/members");
+      expect(currentUrl).not.toContain('/teams/members');
     });
   });
 

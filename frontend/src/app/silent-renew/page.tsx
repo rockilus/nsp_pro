@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 /**
  * Root Silent Renew Page — /silent-renew/
@@ -14,15 +14,15 @@
  * The page is intentionally blank — users never land here directly.
  */
 
-import { useEffect } from "react";
-import { UserManager } from "oidc-client-ts";
-import { cognitoAuthConfig } from "../../config/cognito";
+import { useEffect } from 'react';
+import { UserManager } from 'oidc-client-ts';
+import { cognitoAuthConfig } from '../../config/cognito';
 
 export default function SilentRenewPage() {
   useEffect(() => {
     const manager = new UserManager(cognitoAuthConfig as any);
     manager.signinSilentCallback().catch((err) => {
-      console.error("Silent renew callback error:", err);
+      console.error('Silent renew callback error:', err);
     });
   }, []);
 

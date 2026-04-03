@@ -1,24 +1,25 @@
-import React, { useMemo, useEffect, useCallback } from "react";
-import { useTranslation } from "../../app/i18n/client";
+import React, { useMemo, useEffect, useCallback } from 'react';
+import dayjs from 'dayjs';
+import { useTranslation } from '../../app/i18n/client';
 // MUI
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
-import UndoIcon from "@mui/icons-material/Undo";
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import UndoIcon from '@mui/icons-material/Undo';
 // Components
-import RequestPanel from "./request-panel";
-import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
-import TableFilterBar from "../table/TableFilterBar";
+import RequestPanel from './request-panel';
+import ColumnSortFilterMenu from '../table/ColumnSortFilterMenu';
+import TableFilterBar from '../table/TableFilterBar';
 // Hooks
-import { useTableState } from "../../hooks/useTableState";
+import { useTableState } from '../../hooks/useTableState';
 // Utils
 import {
   getShiftWorkerOptionDisplayText,
@@ -26,41 +27,32 @@ import {
   getShiftColors,
   getRequestStatusColor,
   getRequestStatusLabel,
-} from "../../utils/shift-worker-option-display";
+} from '../../utils/shift-worker-option-display';
 // Styles
-import "../../styles/table-styles.css";
-import "./request-table.css";
+import '../../styles/table-styles.css';
+import './request-table.css';
 // Types
-import { WorkerT } from "../../types/worker";
+import { WorkerT } from '../../types/worker';
 import {
   RequestT,
   RequestStatus,
   FulfillmentStatus,
   RequestType,
   RequestViewSettingsT,
-} from "../../types/request";
-import { ShiftT } from "../../types/shift";
-import { TeamMembershipRole } from "@/types/team";
-import { ShiftWorkerOptionT } from "@/types/constraint";
-import { ColumnDefinition, ColumnFilter } from "../../types/filter";
+} from '../../types/request';
+import { ShiftT } from '../../types/shift';
+import { TeamMembershipRole } from '@/types/team';
+import { ShiftWorkerOptionT } from '@/types/constraint';
+import { ColumnDefinition, ColumnFilter } from '../../types/filter';
+import { RequestDeadlineT } from '../../types/schedule';
 
 // Helper components for better organization
-const WorkerCell = ({
-  request,
-  workers,
-  t,
-}: {
-  request: RequestT;
-  workers: WorkerT[];
-  t: any;
-}) => {
+const WorkerCell = ({ request, workers, t }: { request: RequestT; workers: WorkerT[]; t: any }) => {
   const worker = workers.find((w) => w.id === request.workerId);
   return (
     <div className="flex flex-col">
-      <span className="font-medium">{worker?.name || t("unknown")}</span>
-      {worker?.deleted && (
-        <span className="text-xs text-red-500">{t("worker")} deleted</span>
-      )}
+      <span className="font-medium">{worker?.name || t('unknown')}</span>
+      {worker?.deleted && <span className="text-xs text-red-500">{t('worker')} deleted</span>}
     </div>
   );
 };
@@ -81,7 +73,7 @@ const ShiftCell = ({
 
   if (request.requestType === RequestType.LEAVE) {
     if (!request.shiftId) {
-      return <Chip label={t("all_day")} size="small" variant="outlined" />;
+      return <Chip label={t('all_day')} size="small" variant="outlined" />;
     }
     const shift = shifts.find((s) => s.id === request.shiftId);
 
@@ -89,8 +81,8 @@ const ShiftCell = ({
     if (shift?.deleted) {
       return (
         <div className="flex flex-col">
-          <span>{shift?.name || t("unknown")}</span>
-          <span className="text-xs text-red-500">{t("shift")} deleted</span>
+          <span>{shift?.name || t('unknown')}</span>
+          <span className="text-xs text-red-500">{t('shift')} deleted</span>
         </div>
       );
     }
@@ -99,7 +91,7 @@ const ShiftCell = ({
     return (
       <div className="flex flex-wrap gap-1">
         <Chip
-          label={shift?.name || "Unknown"}
+          label={shift?.name || 'Unknown'}
           size="small"
           variant="filled"
           sx={{
@@ -115,17 +107,10 @@ const ShiftCell = ({
   } else {
     // Work request - show shift preferences
     if (request.shiftOptions.length === 0) {
-      return (
-        <Chip label={t("no_preferences")} size="small" variant="outlined" />
-      );
+      return <Chip label={t('no_preferences')} size="small" variant="outlined" />;
     }
 
-    const displayText = getRequestTargetDisplayText(
-      request,
-      workers,
-      shifts,
-      t("not"),
-    );
+    const displayText = getRequestTargetDisplayText(request, workers, shifts, t('not'));
 
     return (
       <div className="flex flex-wrap gap-1">
@@ -146,38 +131,26 @@ const ShiftCell = ({
   }
 };
 
-const DateCell = ({
-  request,
-  lng,
-  t,
-}: {
-  request: RequestT;
-  lng: string;
-  t: any;
-}) => {
+const DateCell = ({ request, lng, t }: { request: RequestT; lng: string; t: any }) => {
   // Use localized formatting on the date object (assumes dayjs/moment-like API)
-  const start = request.startDate.locale
-    ? request.startDate.locale(lng)
-    : request.startDate;
-  const end = request.endDate.locale
-    ? request.endDate.locale(lng)
-    : request.endDate;
+  const start = request.startDate.locale ? request.startDate.locale(lng) : request.startDate;
+  const end = request.endDate.locale ? request.endDate.locale(lng) : request.endDate;
 
-  if (start.isSame(end, "day")) {
+  if (start.isSame(end, 'day')) {
     return (
       <div className="flex flex-col">
-        <span className="font-medium">{start.format("MMM D")}</span>
-        <span className="table-helper-text">{start.format("dddd")}</span>
+        <span className="font-medium">{start.format('MMM D')}</span>
+        <span className="table-helper-text">{start.format('dddd')}</span>
       </div>
     );
   } else {
     return (
       <div className="flex flex-col">
         <span className="font-medium">
-          {start.format("MMM D")} - {end.format("MMM D")}
+          {start.format('MMM D')} - {end.format('MMM D')}
         </span>
         <span className="table-helper-text">
-          {start.format("ddd")} - {end.format("ddd")}
+          {start.format('ddd')} - {end.format('ddd')}
         </span>
       </div>
     );
@@ -189,9 +162,9 @@ const TypeCell = ({ request, t }: { request: RequestT; t: any }) => {
   return (
     <div className="flex flex-col items-start gap-1">
       <Chip
-        label={isWork ? t("work") : t("leave")}
+        label={isWork ? t('work') : t('leave')}
         size="small"
-        color={isWork ? "primary" : "secondary"}
+        color={isWork ? 'primary' : 'secondary'}
         variant="filled"
       />
       {/* <Chip
@@ -219,24 +192,24 @@ const FulfillmentCell = ({ request, t }: { request: RequestT; t: any }) => {
   const getFulfillmentColor = (fulfillment: FulfillmentStatus) => {
     switch (fulfillment) {
       case FulfillmentStatus.FULFILLED:
-        return "success";
+        return 'success';
       case FulfillmentStatus.UNFULFILLED:
-        return "error";
+        return 'error';
       default:
-        return "default";
+        return 'default';
     }
   };
 
   const getFulfillmentLabel = (fulfillment: FulfillmentStatus) => {
     switch (fulfillment) {
       case FulfillmentStatus.FULFILLED:
-        return `✅ ${t("fulfilled")}`;
+        return `✅ ${t('fulfilled')}`;
       case FulfillmentStatus.UNFULFILLED:
-        return `❌ ${t("unfulfilled")}`;
+        return `❌ ${t('unfulfilled')}`;
       case FulfillmentStatus.NOT_PROCESSED:
-        return t("not_processed");
+        return t('not_processed');
       default:
-        return t("unknown");
+        return t('unknown');
     }
   };
 
@@ -277,19 +250,17 @@ const ActionsCell = ({
   handleAcceptRequest: (requestId: string) => void;
   handleDenyRequest: (requestId: string) => void;
 }) => {
-  const { t } = useTranslation(lng, "request-page");
+  const { t } = useTranslation(lng, 'request-page');
   const canEdit =
     userTeamRole !== TeamMembershipRole.MEMBER ||
     (userWorkerId && request.workerId === userWorkerId);
 
   const canApprove =
-    userTeamRole === TeamMembershipRole.OWNER &&
-    request.status === RequestStatus.PENDING;
+    userTeamRole === TeamMembershipRole.OWNER && request.status === RequestStatus.PENDING;
 
   const canRescind =
     userTeamRole === TeamMembershipRole.OWNER &&
-    (request.status === RequestStatus.APPROVED ||
-      request.status === RequestStatus.DENIED);
+    (request.status === RequestStatus.APPROVED || request.status === RequestStatus.DENIED);
 
   return (
     <div className="flex items-center gap-1">
@@ -315,7 +286,7 @@ const ActionsCell = ({
         <IconButton
           size="small"
           onClick={() => handleAcceptRequest(request.id)}
-          title={t("approve_request")}
+          title={t('approve_request')}
           color="success"
           data-testid={`approve-request-button-${request.id}`}
         >
@@ -327,7 +298,7 @@ const ActionsCell = ({
         <IconButton
           size="small"
           onClick={() => handleDenyRequest(request.id)}
-          title={t("reject_request")}
+          title={t('reject_request')}
           color="error"
           data-testid={`reject-request-button-${request.id}`}
         >
@@ -341,8 +312,8 @@ const ActionsCell = ({
           onClick={() => handleRescindRequest(request.id)}
           title={
             request.status === RequestStatus.APPROVED
-              ? t("rescind_approval")
-              : t("rescind_rejection")
+              ? t('rescind_approval')
+              : t('rescind_rejection')
           }
           color="warning"
           data-testid={`rescind-request-button-${request.id}`}
@@ -355,7 +326,7 @@ const ActionsCell = ({
         size="small"
         disabled={!canEdit}
         onClick={() => handleDeleteRequest(request.id)}
-        title={t("delete_request")}
+        title={t('delete_request')}
         color="error"
         data-testid={`delete-request-button-${request.id}`}
       >
@@ -382,6 +353,7 @@ export default function RequestTable({
   showPastRequests,
   viewSettings,
   onUpdateViewSettings,
+  requestDeadline,
 }: {
   lng: string;
   teamId: string;
@@ -399,25 +371,26 @@ export default function RequestTable({
   showPastRequests: boolean;
   viewSettings: RequestViewSettingsT;
   onUpdateViewSettings: (updates: Partial<RequestViewSettingsT>) => void;
+  requestDeadline?: RequestDeadlineT;
 }) {
-  const { t } = useTranslation(lng, "request-page");
+  const { t } = useTranslation(lng, 'request-page');
 
   // Helper function to check if request is in the past
   const isRequestPast = (request: RequestT) => {
-    return request.endDate.isBefore(new Date(), "day");
+    return request.endDate.isBefore(new Date(), 'day');
   };
 
   // Simplified column definitions focused on the actual requirements
   const columns: ColumnDefinition[] = useMemo(
     () => [
       {
-        id: "workerId",
-        label: t("worker"),
-        type: "select" as const,
+        id: 'workerId',
+        label: t('worker'),
+        type: 'select' as const,
         getValue: (request: RequestT) => request.workerId,
         getDisplayValue: (request: RequestT) => {
           const worker = workers.find((w) => w.id === request.workerId);
-          return worker ? worker.name : "Unknown";
+          return worker ? worker.name : 'Unknown';
         },
         getOptions: () =>
           workers.map((worker) => ({
@@ -426,31 +399,28 @@ export default function RequestTable({
           })),
       },
       {
-        id: "shift",
-        label: t("shift"),
-        type: "select" as const,
+        id: 'shift',
+        label: t('shift'),
+        type: 'select' as const,
         getValue: (request: RequestT) => {
           if (request.requestType === RequestType.LEAVE) {
-            return request.shiftId || "all_day";
+            return request.shiftId || 'all_day';
           }
-          return (
-            request.shiftOptions.map((opt) => opt.id).join(",") ||
-            "no_preferences"
-          );
+          return request.shiftOptions.map((opt) => opt.id).join(',') || 'no_preferences';
         },
         getDisplayValue: (request: RequestT) => {
           if (request.requestType === RequestType.LEAVE) {
-            if (!request.shiftId) return t("all_day");
+            if (!request.shiftId) return t('all_day');
             const shift = shifts.find((s) => s.id === request.shiftId);
-            return shift ? shift.name : t("unknown");
+            return shift ? shift.name : t('unknown');
           }
           return request.shiftOptions.length > 0
-            ? request.shiftOptions.map((opt) => opt.name).join(", ")
-            : t("no_preferences");
+            ? request.shiftOptions.map((opt) => opt.name).join(', ')
+            : t('no_preferences');
         },
         getOptions: () => [
-          { value: "all_day", label: t("all_day") },
-          { value: "no_preferences", label: t("no_preferences") },
+          { value: 'all_day', label: t('all_day') },
+          { value: 'no_preferences', label: t('no_preferences') },
           ...shifts.map((shift) => ({
             value: shift.id,
             label: shift.name,
@@ -458,58 +428,65 @@ export default function RequestTable({
         ],
       },
       {
-        id: "date",
-        label: t("date"),
-        type: "date" as const,
-        getValue: (request: RequestT) => request.startDate.format("YYYY-MM-DD"),
+        id: 'date',
+        label: t('date'),
+        type: 'date' as const,
+        getValue: (request: RequestT) => request.startDate.format('YYYY-MM-DD'),
         getDisplayValue: (request: RequestT) => {
-          if (request.startDate.isSame(request.endDate, "day")) {
-            return request.startDate.format("MMM D, YYYY");
+          if (request.startDate.isSame(request.endDate, 'day')) {
+            return request.startDate.format('MMM D, YYYY');
           }
-          return `${request.startDate.format(
-            "MMM D",
-          )} - ${request.endDate.format("MMM D, YYYY")}`;
+          return `${request.startDate.format('MMM D')} - ${request.endDate.format('MMM D, YYYY')}`;
         },
       },
       {
-        id: "requestType",
-        label: t("type"),
-        type: "select" as const,
+        id: 'requestType',
+        label: t('type'),
+        type: 'select' as const,
         getValue: (request: RequestT) => request.requestType,
         getDisplayValue: (request: RequestT) =>
-          request.requestType === RequestType.WORK_DEMAND
-            ? t("work")
-            : t("leave"),
+          request.requestType === RequestType.WORK_DEMAND ? t('work') : t('leave'),
         getOptions: () => [
-          { value: RequestType.WORK_DEMAND, label: t("work") },
-          { value: RequestType.LEAVE, label: t("leave") },
+          { value: RequestType.WORK_DEMAND, label: t('work') },
+          { value: RequestType.LEAVE, label: t('leave') },
         ],
       },
       {
-        id: "status",
-        label: t("status"),
-        type: "select" as const,
+        id: 'status',
+        label: t('status'),
+        type: 'select' as const,
         getValue: (request: RequestT) => request.status,
         getOptions: () => [
-          { value: RequestStatus.PENDING, label: t("pending") },
-          { value: RequestStatus.APPROVED, label: t("approved") },
-          { value: RequestStatus.DENIED, label: t("rejected") },
+          { value: RequestStatus.PENDING, label: t('pending') },
+          { value: RequestStatus.APPROVED, label: t('approved') },
+          { value: RequestStatus.DENIED, label: t('rejected') },
           // { value: RequestStatus.DEFERRED, label: t("deferred") },
         ],
       },
       {
-        id: "fulfillment",
-        label: t("fulfillment"),
-        type: "select" as const,
+        id: 'fulfillment',
+        label: t('fulfillment'),
+        type: 'select' as const,
         getValue: (request: RequestT) => request.fulfillment,
         getOptions: () => [
-          { value: FulfillmentStatus.NOT_PROCESSED, label: t("not_processed") },
-          { value: FulfillmentStatus.FULFILLED, label: t("fulfilled") },
-          { value: FulfillmentStatus.UNFULFILLED, label: t("unfulfilled") },
+          { value: FulfillmentStatus.NOT_PROCESSED, label: t('not_processed') },
+          { value: FulfillmentStatus.FULFILLED, label: t('fulfilled') },
+          { value: FulfillmentStatus.UNFULFILLED, label: t('unfulfilled') },
         ],
       },
+      ...(userTeamRole !== TeamMembershipRole.MEMBER
+        ? [
+            {
+              id: 'createdAt',
+              label: t('submitted_on'),
+              type: 'date' as const,
+              getValue: (request: RequestT) => request.createdAt.format('YYYY-MM-DD'),
+              getDisplayValue: (request: RequestT) => request.createdAt.format('MMM D, YYYY'),
+            },
+          ]
+        : []),
     ],
-    [workers, shifts, t],
+    [workers, shifts, t, userTeamRole],
   );
 
   // Table state for filtering requests (in-memory only, synced with parent viewSettings)
@@ -527,16 +504,12 @@ export default function RequestTable({
   useEffect(() => {
     // Only update if different to avoid infinite loops
     const filtersChanged =
-      JSON.stringify(viewSettings.filters) !==
-      JSON.stringify(tableState.filters);
-    const sortChanged =
-      JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
+      JSON.stringify(viewSettings.filters) !== JSON.stringify(tableState.filters);
+    const sortChanged = JSON.stringify(viewSettings.sort) !== JSON.stringify(tableState.sort);
 
     if (filtersChanged || sortChanged) {
       // Update internal state to match parent
-      viewSettings.filters.forEach((filter: ColumnFilter) =>
-        addFilterInternal(filter),
-      );
+      viewSettings.filters.forEach((filter: ColumnFilter) => addFilterInternal(filter));
       if (viewSettings.sort !== tableState.sort) {
         updateSortInternal(viewSettings.sort);
       }
@@ -555,12 +528,7 @@ export default function RequestTable({
     (filter: ColumnFilter) => {
       addFilterInternal(filter);
       onUpdateViewSettings({
-        filters: [
-          ...viewSettings.filters.filter(
-            (f: ColumnFilter) => f.id !== filter.id,
-          ),
-          filter,
-        ],
+        filters: [...viewSettings.filters.filter((f: ColumnFilter) => f.id !== filter.id), filter],
       });
     },
     [addFilterInternal, onUpdateViewSettings, viewSettings.filters],
@@ -570,9 +538,7 @@ export default function RequestTable({
     (filterId: string) => {
       removeFilterInternal(filterId);
       onUpdateViewSettings({
-        filters: viewSettings.filters.filter(
-          (f: ColumnFilter) => f.id !== filterId,
-        ),
+        filters: viewSettings.filters.filter((f: ColumnFilter) => f.id !== filterId),
       });
     },
     [removeFilterInternal, onUpdateViewSettings, viewSettings.filters],
@@ -605,16 +571,14 @@ export default function RequestTable({
         className="request-table-container"
         data-testid="request-table"
         sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: "8px",
+          border: '1px solid',
+          borderColor: 'divider',
+          borderRadius: '8px',
         }}
       >
         <Table size="small" aria-label="requests table">
           <TableHead>
-            <TableRow
-              sx={{ backgroundColor: (theme) => theme.palette.grey[50] }}
-            >
+            <TableRow sx={{ backgroundColor: (theme) => theme.palette.grey[50] }}>
               {columns.map((column) => (
                 <TableCell
                   key={column.id}
@@ -628,13 +592,9 @@ export default function RequestTable({
                     <ColumnSortFilterMenu
                       column={column}
                       currentSort={
-                        tableState.sort?.columnId === column.id
-                          ? tableState.sort
-                          : undefined
+                        tableState.sort?.columnId === column.id ? tableState.sort : undefined
                       }
-                      currentFilter={tableState.filters.find(
-                        (f) => f.id === column.id,
-                      )}
+                      currentFilter={tableState.filters.find((f) => f.id === column.id)}
                       onSort={updateSort}
                       onFilter={addFilter}
                     />
@@ -645,7 +605,7 @@ export default function RequestTable({
                 sx={{
                   fontWeight: 600,
                   color: (theme) => theme.palette.grey[700],
-                  width: "8rem",
+                  width: '8rem',
                 }}
               >
                 <span />
@@ -659,8 +619,8 @@ export default function RequestTable({
                 <TableRow
                   key={request.id}
                   sx={{
-                    "&:last-child td, &:last-child th": { border: 0 },
-                    "&:hover": {
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    '&:hover': {
                       backgroundColor: (theme) => theme.palette.grey[50],
                     },
                     ...(!request.active ? { opacity: 0.5 } : {}),
@@ -668,7 +628,7 @@ export default function RequestTable({
                       ? {
                           backgroundColor: (theme) => theme.palette.grey[100],
                           opacity: 0.75,
-                          "& .MuiTableCell-root": { color: "text.secondary" },
+                          '& .MuiTableCell-root': { color: 'text.secondary' },
                         }
                       : {}),
                   }}
@@ -678,22 +638,17 @@ export default function RequestTable({
                       <WorkerCell request={request} workers={workers} t={t} />
                       {isPast && showPastRequests && (
                         <Chip
-                          label={t("past") || "Past"}
+                          label={t('past') || 'Past'}
                           size="small"
                           variant="outlined"
                           color="default"
-                          sx={{ fontSize: "0.75rem", opacity: 0.6 }}
+                          sx={{ fontSize: '0.75rem', opacity: 0.6 }}
                         />
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <ShiftCell
-                      request={request}
-                      shifts={shifts}
-                      workers={workers}
-                      t={t}
-                    />
+                    <ShiftCell request={request} shifts={shifts} workers={workers} t={t} />
                   </TableCell>
                   <TableCell>
                     <DateCell request={request} lng={lng} t={t} />
@@ -707,6 +662,32 @@ export default function RequestTable({
                   <TableCell>
                     <FulfillmentCell request={request} t={t} />
                   </TableCell>
+                  {userTeamRole !== TeamMembershipRole.MEMBER && (
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <span>{request.createdAt.format('MMM D, YYYY')}</span>
+                        {requestDeadline?.deadlineDate && (
+                          <Chip
+                            label={
+                              request.createdAt.isBefore(requestDeadline.deadlineDate, 'day') ||
+                              request.createdAt.isSame(requestDeadline.deadlineDate, 'day')
+                                ? t('before_deadline')
+                                : t('after_deadline')
+                            }
+                            size="small"
+                            color={
+                              request.createdAt.isBefore(requestDeadline.deadlineDate, 'day') ||
+                              request.createdAt.isSame(requestDeadline.deadlineDate, 'day')
+                                ? 'success'
+                                : 'error'
+                            }
+                            variant="outlined"
+                            data-testid="request-created-at-chip"
+                          />
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
                   <TableCell>
                     <ActionsCell
                       request={request}

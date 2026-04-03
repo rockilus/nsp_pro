@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import i18next, { FlatNamespace, KeyPrefix } from "i18next";
+import { useEffect, useState } from 'react';
+import i18next, { FlatNamespace, KeyPrefix } from 'i18next';
 import {
   initReactI18next,
   useTranslation as useTranslationOrg,
   UseTranslationOptions,
   UseTranslationResponse,
   FallbackNs,
-} from "react-i18next";
-import { useCookies } from "react-cookie";
-import resourcesToBackend from "i18next-resources-to-backend";
+} from 'react-i18next';
+import { useCookies } from 'react-cookie';
+import resourcesToBackend from 'i18next-resources-to-backend';
 // import LocizeBackend from 'i18next-locize-backend'
-import LanguageDetector from "i18next-browser-languagedetector";
-import { getOptions, languages, cookieName } from "./settings";
+import LanguageDetector from 'i18next-browser-languagedetector';
+import { getOptions, languages, cookieName } from './settings';
 
-const runsOnServerSide = typeof window === "undefined";
+const runsOnServerSide = typeof window === 'undefined';
 
 // on client side the normal singleton is ok
 i18next
@@ -23,8 +23,7 @@ i18next
   .use(LanguageDetector)
   .use(
     resourcesToBackend(
-      (language: string, namespace: string) =>
-        import(`./locales/${language}/${namespace}.json`),
+      (language: string, namespace: string) => import(`./locales/${language}/${namespace}.json`),
     ),
   )
   // .use(LocizeBackend) // locize backend could be used on client side, but prefer to keep it in sync with server side
@@ -32,18 +31,11 @@ i18next
     ...getOptions(),
     lng: undefined, // let detect the language on client side
     detection: {
-      order: ["path", "htmlTag", "cookie", "navigator"],
+      order: ['path', 'htmlTag', 'cookie', 'navigator'],
     },
     preload: runsOnServerSide ? languages : [],
     // Preload critical namespaces to prevent re-render cascades from lazy loading
-    ns: [
-      "translation",
-      "request-page",
-      "shift-page",
-      "stats-page",
-      "schedule-page",
-      "common",
-    ],
+    ns: ['translation', 'request-page', 'shift-page', 'stats-page', 'schedule-page', 'common'],
   });
 
 export function useTranslation<
@@ -66,7 +58,7 @@ export function useTranslation<
 
   useEffect(() => {
     if (cookies.i18next === lng) return;
-    setCookie(cookieName, lng, { path: "/" });
+    setCookie(cookieName, lng, { path: '/' });
   }, [lng, cookies.i18next, setCookie]);
 
   return ret;

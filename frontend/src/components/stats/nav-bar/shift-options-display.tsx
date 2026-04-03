@@ -1,21 +1,21 @@
-import React, { useState, useMemo, useCallback } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
+import Box from '@mui/material/Box';
 // Components
-import PopoverSelectShifts from "./popover-select-shifts";
-import { blockDislayValue } from "./block-display";
-import ShiftOptionsEdit from "./shift-options-edit";
+import PopoverSelectShifts from './popover-select-shifts';
+import { blockDislayValue } from './block-display';
+import ShiftOptionsEdit from './shift-options-edit';
 // Utils
 import {
   expandBoolDimOptions,
   groupByCategoryName,
-} from "../../constraints/shift-worker-option-utils/shift-worker-option-utils";
-import { getShiftWorkerOptionDisplayText } from "../../../utils/shift-worker-option-display";
+} from '../../constraints/shift-worker-option-utils/shift-worker-option-utils';
+import { getShiftWorkerOptionDisplayText } from '../../../utils/shift-worker-option-display';
 // Types
-import { ShiftWorkerOptionT } from "../../../types/constraint";
-import { WorkerT } from "../../../types/worker";
-import { ShiftT } from "../../../types/shift";
+import { ShiftWorkerOptionT } from '../../../types/constraint';
+import { WorkerT } from '../../../types/worker';
+import { ShiftT } from '../../../types/shift';
 
 const ShiftOptionsDisplay = ({
   lng,
@@ -34,7 +34,7 @@ const ShiftOptionsDisplay = ({
   disabled: boolean;
   handleEditSelectedShifts: (selectedShifts: ShiftWorkerOptionT[]) => void;
 }) => {
-  const { t } = useTranslation(lng, "stats-page");
+  const { t } = useTranslation(lng, 'stats-page');
 
   const [open, setOpen] = useState(false);
   const [selectedShiftsState, setSelectedShiftsState] =
@@ -54,19 +54,14 @@ const ShiftOptionsDisplay = ({
           ? blockDislayValue(
               selectedShiftsState
                 .map((item) =>
-                  typeof item === "object" && "name" in item
-                    ? getShiftWorkerOptionDisplayText(
-                        item,
-                        workers,
-                        shifts,
-                        t("not"),
-                      )
-                    : "",
+                  typeof item === 'object' && 'name' in item
+                    ? getShiftWorkerOptionDisplayText(item, workers, shifts, t('not'))
+                    : '',
                 )
-                .join(", "),
+                .join(', '),
               disabled,
             )
-          : t("select_shift")}
+          : t('select_shift')}
       </div>
     );
   }, [selectedShiftsState, workers, shifts, disabled, t]);
@@ -79,12 +74,9 @@ const ShiftOptionsDisplay = ({
     setOpen(false);
   }, [disabled, handleEditSelectedShifts, selectedShiftsState]);
 
-  const handleEditSelectedShiftsState = useCallback(
-    (selectedShifts: ShiftWorkerOptionT[]) => {
-      setSelectedShiftsState(selectedShifts);
-    },
-    [],
-  );
+  const handleEditSelectedShiftsState = useCallback((selectedShifts: ShiftWorkerOptionT[]) => {
+    setSelectedShiftsState(selectedShifts);
+  }, []);
 
   const handleOpenPopover = useCallback(() => {
     if (disabled) {
@@ -123,6 +115,6 @@ const ShiftOptionsDisplay = ({
   );
 };
 
-ShiftOptionsDisplay.displayName = "ShiftOptionsDisplay";
+ShiftOptionsDisplay.displayName = 'ShiftOptionsDisplay';
 
 export default React.memo(ShiftOptionsDisplay);

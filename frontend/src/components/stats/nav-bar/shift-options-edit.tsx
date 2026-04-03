@@ -1,21 +1,21 @@
-import React, { useState, ChangeEvent, useRef, useCallback } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState, ChangeEvent, useRef, useCallback } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Chip from "@mui/material/Chip";
-import ClearIcon from "@mui/icons-material/Clear";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
-import ListSubheader from "@mui/material/ListSubheader";
+import Chip from '@mui/material/Chip';
+import ClearIcon from '@mui/icons-material/Clear';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
 // Utils
-import { getShiftWorkerOptionDisplayText } from "../../../utils/shift-worker-option-display";
+import { getShiftWorkerOptionDisplayText } from '../../../utils/shift-worker-option-display';
 // Types
-import { ShiftWorkerOptionT } from "../../../types/constraint";
-import { WorkerT } from "../../../types/worker";
-import { ShiftT } from "../../../types/shift";
+import { ShiftWorkerOptionT } from '../../../types/constraint';
+import { WorkerT } from '../../../types/worker';
+import { ShiftT } from '../../../types/shift';
 // Constants
-import { ConstraintDefaultColors } from "../../../constants/constants";
+import { ConstraintDefaultColors } from '../../../constants/constants';
 
 export default function ShiftOptionsEdit({
   lng,
@@ -34,73 +34,59 @@ export default function ShiftOptionsEdit({
   handleConfirmEditSelectedShifts: () => void;
   handleEditSelectedShiftsState: (selectedShifts: ShiftWorkerOptionT[]) => void;
 }) {
-  const { t } = useTranslation(lng, "stats-page");
+  const { t } = useTranslation(lng, 'stats-page');
 
   const filterOptionsList = useCallback(
     (
       searchQuery: string,
       selectedOptions: ShiftWorkerOptionT[],
-      options: ShiftWorkerOptionT[]
+      options: ShiftWorkerOptionT[],
     ): ShiftWorkerOptionT[] => {
       const selectedArray: string[] = selectedOptions.map((item) =>
-        getShiftWorkerOptionDisplayText(item, workers, shifts, t("not"))
+        getShiftWorkerOptionDisplayText(item, workers, shifts, t('not')),
       );
-      return searchQuery === ""
+      return searchQuery === ''
         ? options.filter(
             (option) =>
               !selectedArray.includes(
-                getShiftWorkerOptionDisplayText(
-                  option,
-                  workers,
-                  shifts,
-                  t("not")
-                )
-              )
+                getShiftWorkerOptionDisplayText(option, workers, shifts, t('not')),
+              ),
           )
         : options.filter(
             (option) =>
               !selectedArray.includes(
-                getShiftWorkerOptionDisplayText(
-                  option,
-                  workers,
-                  shifts,
-                  t("not")
-                )
+                getShiftWorkerOptionDisplayText(option, workers, shifts, t('not')),
               ) &&
-              getShiftWorkerOptionDisplayText(option, workers, shifts, t("not"))
+              getShiftWorkerOptionDisplayText(option, workers, shifts, t('not'))
                 .toLowerCase()
-                .includes(searchQuery.toLowerCase())
+                .includes(searchQuery.toLowerCase()),
           );
     },
-    [t, workers, shifts]
+    [t, workers, shifts],
   );
 
   const filterOptions = useCallback(
     (
       searchQuery: string,
       selectedOptions: ShiftWorkerOptionT[],
-      options: { [key: string]: ShiftWorkerOptionT[] }
+      options: { [key: string]: ShiftWorkerOptionT[] },
     ): { [key: string]: ShiftWorkerOptionT[] } => {
       let out: { [key: string]: ShiftWorkerOptionT[] } = {};
       for (let key of Object.keys(options)) {
-        const filteredKeyOptions = filterOptionsList(
-          searchQuery,
-          selectedOptions,
-          options[key]
-        );
+        const filteredKeyOptions = filterOptionsList(searchQuery, selectedOptions, options[key]);
         if (filteredKeyOptions.length > 0) {
           out[key] = filteredKeyOptions;
         }
       }
       return out;
     },
-    [filterOptionsList]
+    [filterOptionsList],
   );
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [filteredOptions, setFilteredOptions] = useState<{
     [key: string]: ShiftWorkerOptionT[];
-  }>(filterOptions("", selectedShifts, statsShiftOptions));
+  }>(filterOptions('', selectedShifts, statsShiftOptions));
   const [selectedOption, setSelectedOption] = useState<{
     [key: string]: ShiftWorkerOptionT;
   } | null>(null);
@@ -109,11 +95,7 @@ export default function ShiftOptionsEdit({
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.trim();
     setSearchQuery(query);
-    const newFilteredOptions = filterOptions(
-      query,
-      selectedShifts,
-      statsShiftOptions
-    );
+    const newFilteredOptions = filterOptions(query, selectedShifts, statsShiftOptions);
     setFilteredOptions(newFilteredOptions);
     if (Object.keys(newFilteredOptions).length > 0) {
       for (let key of Object.keys(newFilteredOptions)) {
@@ -129,32 +111,25 @@ export default function ShiftOptionsEdit({
 
   const handleDeleteFromSelected = (optionToDelete: ShiftWorkerOptionT) => {
     if (selectedShifts.includes(optionToDelete)) {
-      const newValue = selectedShifts.filter(
-        (option) => option !== optionToDelete
-      );
+      const newValue = selectedShifts.filter((option) => option !== optionToDelete);
       handleEditSelectedShiftsState(newValue);
-      setFilteredOptions(
-        filterOptions(searchQuery, newValue, statsShiftOptions)
-      );
+      setFilteredOptions(filterOptions(searchQuery, newValue, statsShiftOptions));
     }
     // Update the external state for "selected" here
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Backspace" && event.currentTarget.selectionStart === 0) {
+    if (event.key === 'Backspace' && event.currentTarget.selectionStart === 0) {
       const lastSelected = selectedShifts[selectedShifts.length - 1];
       if (lastSelected) {
         handleDeleteFromSelected(lastSelected);
       }
       // Update the external state for "selected" here
-    } else if (event.key === "Enter") {
+    } else if (event.key === 'Enter') {
       if (selectedOption) {
-        handleAddSelectedOption(
-          Object.keys(selectedOption)[0],
-          Object.values(selectedOption)[0]
-        );
+        handleAddSelectedOption(Object.keys(selectedOption)[0], Object.values(selectedOption)[0]);
       }
-    } else if (event.key === "ArrowDown") {
+    } else if (event.key === 'ArrowDown') {
       const keys = Object.keys(filteredOptions);
       const selectedOptionTemp = selectedOption || {
         [keys[0]]: filteredOptions[keys[0]][0],
@@ -174,18 +149,15 @@ export default function ShiftOptionsEdit({
         } else if (currentKeyIndex < keys.length - 1) {
           // There is a next key
           setSelectedOption({
-            [keys[currentKeyIndex + 1]]:
-              filteredOptions[keys[currentKeyIndex + 1]][0],
+            [keys[currentKeyIndex + 1]]: filteredOptions[keys[currentKeyIndex + 1]][0],
           });
         }
       }
-    } else if (event.key === "ArrowUp") {
+    } else if (event.key === 'ArrowUp') {
       const keys = Object.keys(filteredOptions);
       const selectedOptionTemp = selectedOption || {
         [keys[keys.length - 1]]:
-          filteredOptions[keys[keys.length - 1]][
-            filteredOptions[keys[keys.length - 1]].length - 1
-          ],
+          filteredOptions[keys[keys.length - 1]][filteredOptions[keys[keys.length - 1]].length - 1],
       };
       if (!selectedOption) {
         setSelectedOption(selectedOptionTemp);
@@ -203,30 +175,21 @@ export default function ShiftOptionsEdit({
           // There is a previous key
           const previousKey = keys[currentKeyIndex - 1];
           setSelectedOption({
-            [previousKey]:
-              filteredOptions[previousKey][
-                filteredOptions[previousKey].length - 1
-              ],
+            [previousKey]: filteredOptions[previousKey][filteredOptions[previousKey].length - 1],
           });
         }
       }
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
       handleConfirmEditSelectedShifts();
     }
   };
 
-  const handleAddSelectedOption = (
-    newOptionKey: string,
-    newOption: ShiftWorkerOptionT
-  ) => {
-    if (
-      newOptionKey in filteredOptions &&
-      filteredOptions[newOptionKey].includes(newOption)
-    ) {
+  const handleAddSelectedOption = (newOptionKey: string, newOption: ShiftWorkerOptionT) => {
+    if (newOptionKey in filteredOptions && filteredOptions[newOptionKey].includes(newOption)) {
       const newValue = [...selectedShifts, newOption];
       handleEditSelectedShiftsState(newValue);
-      setFilteredOptions(filterOptions("", newValue, statsShiftOptions));
-      setSearchQuery("");
+      setFilteredOptions(filterOptions('', newValue, statsShiftOptions));
+      setSearchQuery('');
     }
     // Update the external state for "selected" here
   };
@@ -234,16 +197,16 @@ export default function ShiftOptionsEdit({
   return (
     <div
       style={{
-        width: "240px",
-        borderRadius: "6px",
+        width: '240px',
+        borderRadius: '6px',
         boxShadow:
-          "rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px",
+          'rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px',
       }}
     >
       <div
         style={{
-          borderTopRightRadius: "inherit",
-          borderTopLeftRadius: "inherit",
+          borderTopRightRadius: 'inherit',
+          borderTopLeftRadius: 'inherit',
           // background: "#f0efed",
           background: ConstraintDefaultColors.shade0,
         }}
@@ -255,14 +218,14 @@ export default function ShiftOptionsEdit({
           className="input-container"
           onClick={() => inputRef.current && inputRef.current.focus()}
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "flex-start",
-            overflow: "auto",
-            cursor: "text",
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            overflow: 'auto',
+            cursor: 'text',
             // Hide scrollbar
-            scrollbarWidth: "none", // For Firefox
-            msOverflowStyle: "none", // For Internet Explorer and Edge
+            scrollbarWidth: 'none', // For Firefox
+            msOverflowStyle: 'none', // For Internet Explorer and Edge
             // "&::-webkit-scrollbar": {
             //   display: "none", // For Chrome, Safari and Opera
             // },
@@ -271,23 +234,18 @@ export default function ShiftOptionsEdit({
           {selectedShifts.map((option, index) => (
             <Chip
               key={index}
-              label={getShiftWorkerOptionDisplayText(
-                option,
-                workers,
-                shifts,
-                t("not")
-              )}
+              label={getShiftWorkerOptionDisplayText(option, workers, shifts, t('not'))}
               onDelete={() => handleDeleteFromSelected(option)}
               deleteIcon={
                 <ClearIcon
                   style={{
-                    fontSize: "15px",
+                    fontSize: '15px',
                     color: ConstraintDefaultColors.shade2,
                   }}
                 />
               }
               sx={{
-                height: "21px",
+                height: '21px',
                 color: ConstraintDefaultColors.shade3,
                 background: ConstraintDefaultColors.shade1,
               }}
@@ -302,78 +260,65 @@ export default function ShiftOptionsEdit({
             // placeholder="Search shifts"
             style={{
               color: ConstraintDefaultColors.shade3,
-              height: "21px",
-              border: "none",
-              outline: "none",
-              background: "transparent",
-              minWidth: "60px",
+              height: '21px',
+              border: 'none',
+              outline: 'none',
+              background: 'transparent',
+              minWidth: '60px',
               flexGrow: 1,
             }}
           />
         </div>
       </div>
-      <div style={{ padding: "8px 0 8px 0" }}>
+      <div style={{ padding: '8px 0 8px 0' }}>
         <div
           style={{
-            fontSize: "13px",
-            fontWeight: "bold",
+            fontSize: '13px',
+            fontWeight: 'bold',
             // color: "rgba(55, 53, 47, 0.65)",
             color: ConstraintDefaultColors.shade2,
-            padding: "0 16px 6px 16px",
+            padding: '0 16px 6px 16px',
           }}
         >
-          {t("select_one_or_more")}
+          {t('select_one_or_more')}
         </div>
         <List
           sx={{
-            width: "100%",
+            width: '100%',
             maxWidth: 360,
-            bgcolor: "background.paper",
-            position: "relative",
-            overflow: "auto",
+            bgcolor: 'background.paper',
+            position: 'relative',
+            overflow: 'auto',
             maxHeight: 300,
-            "& ul": { padding: 0 },
+            '& ul': { padding: 0 },
           }}
           subheader={<li />}
         >
-          {Object.keys(filteredOptions).map(
-            (sectionLabel: string, sectionIndex: number) => (
-              <li key={`section-${sectionIndex}`}>
-                <ul>
-                  <ListSubheader>{sectionLabel}</ListSubheader>
-                  {filteredOptions[sectionLabel].map(
-                    (option: ShiftWorkerOptionT, index: number) => (
-                      <ListItemButton
-                        key={`item-${sectionLabel}-${index}`}
-                        data-testid={`swo-option-${option.categoryName}-${option.id}-${option.isBoolDim}`}
-                        onClick={() => {
-                          handleAddSelectedOption(sectionLabel, option);
-                        }}
-                        selected={
-                          selectedOption
-                            ? selectedOption[sectionLabel] === option
-                            : false
-                        }
-                        sx={{ padding: "0 0 0 0" }}
-                      >
-                        <ListItem sx={{ padding: "0 16px 0 16px" }}>
-                          <ListItemText
-                            primary={getShiftWorkerOptionDisplayText(
-                              option,
-                              workers,
-                              shifts,
-                              t("not")
-                            )}
-                            style={{ color: ConstraintDefaultColors.shade3 }}
-                          />
-                        </ListItem>
-                      </ListItemButton>
-                    )
-                  )}
-                </ul>
-              </li>
-            )
-          )}
+          {Object.keys(filteredOptions).map((sectionLabel: string, sectionIndex: number) => (
+            <li key={`section-${sectionIndex}`}>
+              <ul>
+                <ListSubheader>{sectionLabel}</ListSubheader>
+                {filteredOptions[sectionLabel].map((option: ShiftWorkerOptionT, index: number) => (
+                  <ListItemButton
+                    key={`item-${sectionLabel}-${index}`}
+                    data-testid={`swo-option-${option.categoryName}-${option.id}-${option.isBoolDim}`}
+                    onClick={() => {
+                      handleAddSelectedOption(sectionLabel, option);
+                    }}
+                    selected={selectedOption ? selectedOption[sectionLabel] === option : false}
+                    sx={{ padding: '0 0 0 0' }}
+                  >
+                    <ListItem sx={{ padding: '0 16px 0 16px' }}>
+                      <ListItemText
+                        primary={getShiftWorkerOptionDisplayText(option, workers, shifts, t('not'))}
+                        style={{ color: ConstraintDefaultColors.shade3 }}
+                      />
+                    </ListItem>
+                  </ListItemButton>
+                ))}
+              </ul>
+            </li>
+          ))}
         </List>
       </div>
     </div>

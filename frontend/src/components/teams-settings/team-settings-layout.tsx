@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import React from "react";
-import Link from "next/link";
-import { useTranslation } from "@/app/i18n/client";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import React from 'react';
+import Link from 'next/link';
+import { useTranslation } from '@/app/i18n/client';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 // MUI
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
 // Components
-import NavigationHeader from "@/components/common/navigation-header";
+import NavigationHeader from '@/components/common/navigation-header';
 // Context
-import { useTeam } from "@/context/TeamContext";
+import { useTeam } from '@/context/TeamContext';
 // Hooks
-import { useResponsiveSettings } from "@/hooks/useResponsiveSettings";
+import { useResponsiveSettings } from '@/hooks/useResponsiveSettings';
 // Styles
-import "./team-settings-layout.css";
+import './team-settings-layout.css';
 
 export default function TeamSettingsLayout({
   children,
@@ -27,13 +27,12 @@ export default function TeamSettingsLayout({
     lng: string;
   };
 }) {
-  const { t } = useTranslation(lng, "teams-page");
+  const { t } = useTranslation(lng, 'teams-page');
   const { selectedTeam } = useTeam();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { isMobile, showNav, showContent, shouldRedirect } =
-    useResponsiveSettings(lng);
+  const { isMobile, showNav, showContent, shouldRedirect } = useResponsiveSettings(lng);
 
   const teamId = selectedTeam?.team.id;
 
@@ -47,7 +46,7 @@ export default function TeamSettingsLayout({
   // Security: Only render if team is selected
   if (!selectedTeam) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-lg">No team selected</div>
       </div>
     );
@@ -61,13 +60,13 @@ export default function TeamSettingsLayout({
   // Navigation links for team settings
   const teamLinks: { name: string; label: string; href: string }[] = [
     {
-      name: "general",
-      label: t("general") || "General",
+      name: 'general',
+      label: t('general') || 'General',
       href: `/${lng}/plan/teams/general?teamId=${teamId}`,
     },
     {
-      name: "members",
-      label: t("users") || "Members",
+      name: 'members',
+      label: t('users') || 'Members',
       href: `/${lng}/plan/teams/members?teamId=${teamId}`,
     },
   ];
@@ -78,7 +77,7 @@ export default function TeamSettingsLayout({
       {showNav && (
         <div className="team-settings-sidebar">
           {/* Team Header with Back Navigation */}
-          <div style={{ paddingLeft: "16px" }}>
+          <div style={{ paddingLeft: '16px' }}>
             <NavigationHeader
               title={selectedTeam.team.name}
               onBack={handleBackToTeams}

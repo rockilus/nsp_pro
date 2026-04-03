@@ -2,15 +2,15 @@
  * Shared base functionality for Template E2E tests
  */
 
-import { Page, expect } from "@playwright/test";
-import { DatabaseTestUtils } from "./database-utils";
-import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
-import dayjs from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
-import utc from "dayjs/plugin/utc";
-import isBetween from "dayjs/plugin/isBetween";
-import { testConfig } from "./test-config";
-import { ShiftType } from "../../src/types/shift";
+import { Page, expect } from '@playwright/test';
+import { DatabaseTestUtils } from './database-utils';
+import { AuthenticatedApiClient } from '../../src/app/lib/api/baseApi';
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import utc from 'dayjs/plugin/utc';
+import isBetween from 'dayjs/plugin/isBetween';
+import { testConfig } from './test-config';
+import { ShiftType } from '../../src/types/shift';
 import {
   ShiftDemandTemplateDTO,
   ShiftDemandTemplateCreateDTO,
@@ -18,8 +18,8 @@ import {
   TemplateType,
   TemplateWeekDataDTO,
   DemandEntryDTO,
-} from "../../src/types/shift-demand-template";
-import { ShiftDemandTemplateApi } from "../../src/app/lib/api/shiftDemandTemplateApi";
+} from '../../src/types/shift-demand-template';
+import { ShiftDemandTemplateApi } from '../../src/app/lib/api/shiftDemandTemplateApi';
 
 dayjs.extend(isoWeek);
 dayjs.extend(utc);
@@ -58,7 +58,7 @@ export class TemplateTestBase {
    */
   async setupTemplateTests(testId?: string): Promise<void> {
     try {
-      console.log(`[${testId || "legacy"}] 🔧 Setting up template tests...`);
+      console.log(`[${testId || 'legacy'}] 🔧 Setting up template tests...`);
 
       // Create a test team with shifts
       this.testTeam = await this.dbUtils.createTeam({
@@ -66,7 +66,7 @@ export class TemplateTestBase {
       });
 
       console.log(
-        `[${testId || "legacy"}] ✅ Created test team: ${this.testTeam.name} (${
+        `[${testId || 'legacy'}] ✅ Created test team: ${this.testTeam.name} (${
           this.testTeam.teamId
         })`,
       );
@@ -77,14 +77,9 @@ export class TemplateTestBase {
       // Create test templates
       await this.createTestTemplates(testId);
 
-      console.log(
-        `[${testId || "legacy"}] ✅ Template test setup completed successfully`,
-      );
+      console.log(`[${testId || 'legacy'}] ✅ Template test setup completed successfully`);
     } catch (error) {
-      console.error(
-        `[${testId || "legacy"}] ❌ Failed to setup template tests:`,
-        error,
-      );
+      console.error(`[${testId || 'legacy'}] ❌ Failed to setup template tests:`, error);
       throw error;
     }
   }
@@ -95,7 +90,7 @@ export class TemplateTestBase {
    */
   private async createTestShifts(testId?: string): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
     try {
@@ -103,23 +98,23 @@ export class TemplateTestBase {
       const shifts = [
         {
           teamId: this.testTeam.teamId,
-          name: "Morning Shift",
-          startTime: dayjs.utc("2023-01-01T08:00:00"),
-          endTime: dayjs.utc("2023-01-01T16:00:00"),
+          name: 'Morning Shift',
+          startTime: dayjs.utc('2023-01-01T08:00:00'),
+          endTime: dayjs.utc('2023-01-01T16:00:00'),
           shiftType: ShiftType.NORMAL,
         },
         {
           teamId: this.testTeam.teamId,
-          name: "Evening Shift",
-          startTime: dayjs.utc("2023-01-01T16:00:00"),
-          endTime: dayjs.utc("2023-01-01T00:00:00"),
+          name: 'Evening Shift',
+          startTime: dayjs.utc('2023-01-01T16:00:00'),
+          endTime: dayjs.utc('2023-01-01T00:00:00'),
           shiftType: ShiftType.NORMAL,
         },
         {
           teamId: this.testTeam.teamId,
-          name: "Night Shift",
-          startTime: dayjs.utc("2023-01-01T00:00:00"),
-          endTime: dayjs.utc("2023-01-01T08:00:00"),
+          name: 'Night Shift',
+          startTime: dayjs.utc('2023-01-01T00:00:00'),
+          endTime: dayjs.utc('2023-01-01T08:00:00'),
           shiftType: ShiftType.NORMAL,
         },
       ];
@@ -128,16 +123,11 @@ export class TemplateTestBase {
         const createdShift = await this.dbUtils.createShift(shiftData);
         this.createdShiftIds.push(createdShift.id);
         console.log(
-          `[${testId || "legacy"}] ✅ Created test shift: ${shiftData.name} (${
-            createdShift.id
-          })`,
+          `[${testId || 'legacy'}] ✅ Created test shift: ${shiftData.name} (${createdShift.id})`,
         );
       }
     } catch (error) {
-      console.error(
-        `[${testId || "legacy"}] Failed to create test shifts:`,
-        error,
-      );
+      console.error(`[${testId || 'legacy'}] Failed to create test shifts:`, error);
       throw error;
     }
   }
@@ -152,27 +142,25 @@ export class TemplateTestBase {
    */
   private async createTestTemplates(testId?: string): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
     if (this.createdShiftIds.length === 0) {
-      throw new Error("No test shifts available for template creation");
+      throw new Error('No test shifts available for template creation');
     }
 
     try {
       const templates: ShiftDemandTemplateDTO[] = [];
 
       // 1. Create a standard template with 2 weeks
-      console.log(
-        `[${testId || "legacy"}] 🔧 Creating standard template with 2 weeks...`,
-      );
+      console.log(`[${testId || 'legacy'}] 🔧 Creating standard template with 2 weeks...`);
 
       const standardTemplate = await ShiftDemandTemplateApi.createTemplate(
         this.testApiClient,
         this.testTeam.teamId,
         {
           name: `Standard Template ${testId || Date.now()}`,
-          description: "Test standard template with 2 weeks",
+          description: 'Test standard template with 2 weeks',
         },
       );
 
@@ -206,34 +194,31 @@ export class TemplateTestBase {
         { weekNumber: 1, demands: week1Demands },
       ];
 
-      const updatedStandardTemplate =
-        await ShiftDemandTemplateApi.updateTemplate(
-          this.testApiClient,
-          standardTemplate.id,
-          this.testTeam.teamId,
-          {
-            weeksData,
-          },
-        );
+      const updatedStandardTemplate = await ShiftDemandTemplateApi.updateTemplate(
+        this.testApiClient,
+        standardTemplate.id,
+        this.testTeam.teamId,
+        {
+          weeksData,
+        },
+      );
 
       templates.push(updatedStandardTemplate);
       console.log(
-        `[${testId || "legacy"}] ✅ Created standard template: ${
+        `[${testId || 'legacy'}] ✅ Created standard template: ${
           updatedStandardTemplate.name
         } (${updatedStandardTemplate.id})`,
       );
 
       // 2. Create an even/odd template with 2 weeks
-      console.log(
-        `[${testId || "legacy"}] 🔧 Creating even/odd template with 2 weeks...`,
-      );
+      console.log(`[${testId || 'legacy'}] 🔧 Creating even/odd template with 2 weeks...`);
 
       const evenOddTemplate = await ShiftDemandTemplateApi.createTemplate(
         this.testApiClient,
         this.testTeam.teamId,
         {
           name: `Even/Odd Template ${testId || Date.now()}`,
-          description: "Test even/odd template with 2 weeks",
+          description: 'Test even/odd template with 2 weeks',
         },
       );
 
@@ -267,20 +252,19 @@ export class TemplateTestBase {
         { weekNumber: 1, demands: oddWeekDemands },
       ];
 
-      const updatedEvenOddTemplate =
-        await ShiftDemandTemplateApi.updateTemplate(
-          this.testApiClient,
-          evenOddTemplate.id,
-          this.testTeam.teamId,
-          {
-            templateType: TemplateType.EVEN_ODD,
-            weeksData: evenOddWeeksData,
-          },
-        );
+      const updatedEvenOddTemplate = await ShiftDemandTemplateApi.updateTemplate(
+        this.testApiClient,
+        evenOddTemplate.id,
+        this.testTeam.teamId,
+        {
+          templateType: TemplateType.EVEN_ODD,
+          weeksData: evenOddWeeksData,
+        },
+      );
 
       templates.push(updatedEvenOddTemplate);
       console.log(
-        `[${testId || "legacy"}] ✅ Created even/odd template: ${
+        `[${testId || 'legacy'}] ✅ Created even/odd template: ${
           updatedEvenOddTemplate.name
         } (${updatedEvenOddTemplate.id})`,
       );
@@ -292,14 +276,9 @@ export class TemplateTestBase {
         this.testTemplates = templates;
       }
 
-      console.log(
-        `[${testId || "legacy"}] ✅ Created ${templates.length} test templates`,
-      );
+      console.log(`[${testId || 'legacy'}] ✅ Created ${templates.length} test templates`);
     } catch (error) {
-      console.error(
-        `[${testId || "legacy"}] ❌ Failed to create test templates:`,
-        error,
-      );
+      console.error(`[${testId || 'legacy'}] ❌ Failed to create test templates:`, error);
       throw error;
     }
   }
@@ -328,9 +307,7 @@ export class TemplateTestBase {
    */
   getStandardTestTemplate(testId?: string): ShiftDemandTemplateDTO | null {
     const templates = this.getTestTemplates(testId);
-    return (
-      templates.find((t) => t.templateType === TemplateType.STANDARD) || null
-    );
+    return templates.find((t) => t.templateType === TemplateType.STANDARD) || null;
   }
 
   /**
@@ -339,9 +316,7 @@ export class TemplateTestBase {
    */
   getEvenOddTestTemplate(testId?: string): ShiftDemandTemplateDTO | null {
     const templates = this.getTestTemplates(testId);
-    return (
-      templates.find((t) => t.templateType === TemplateType.EVEN_ODD) || null
-    );
+    return templates.find((t) => t.templateType === TemplateType.EVEN_ODD) || null;
   }
 
   /**
@@ -368,10 +343,7 @@ export class TemplateTestBase {
           );
           console.log(`[${testId}] 🗑️  Deleted template: ${template.name}`);
         } catch (error) {
-          console.warn(
-            `[${testId}] ⚠️  Failed to delete template ${template.id}:`,
-            error,
-          );
+          console.warn(`[${testId}] ⚠️  Failed to delete template ${template.id}:`, error);
         }
       }
       this.testTemplatesMap.delete(testId);
@@ -384,9 +356,7 @@ export class TemplateTestBase {
    */
   async navigateToShiftDemandsPage(page: Page): Promise<void> {
     if (!this.testTeam) {
-      throw new Error(
-        "No test team available. Did you forget to call setupTemplateTests()?",
-      );
+      throw new Error('No test team available. Did you forget to call setupTemplateTests()?');
     }
 
     // Set authentication headers before any navigation
@@ -397,7 +367,7 @@ export class TemplateTestBase {
 
     // Set the selected team in localStorage to ensure proper team context
     await page.evaluate((teamId) => {
-      localStorage.setItem("selectedTeamId", teamId);
+      localStorage.setItem('selectedTeamId', teamId);
     }, this.testTeam.teamId);
 
     // Reload the page to apply the localStorage changes and ensure
@@ -405,7 +375,7 @@ export class TemplateTestBase {
     await page.reload();
 
     // Wait for the page to load and the team context to initialize
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
 
     // Wait for the main content to be visible using the data-testid attribute
     // Add a longer timeout for webkit compatibility
@@ -416,12 +386,10 @@ export class TemplateTestBase {
     // Additional wait to ensure page components are fully initialized
     await page.waitForFunction(() => {
       // Check if React has finished rendering by looking for the presence of key elements
-      const shiftDemandTab = document.querySelector(
-        '[data-testid="shift-demand-tab"]',
-      );
+      const shiftDemandTab = document.querySelector('[data-testid="shift-demand-tab"]');
       return shiftDemandTab !== null;
     });
-    console.log("✅ Navigated to shift demands page");
+    console.log('✅ Navigated to shift demands page');
   }
 
   /**
@@ -468,12 +436,8 @@ export class TemplateTestBase {
       descriptionInput: page.locator(
         '[data-testid="template-description-input"] textarea:not([readonly])',
       ),
-      createButton: page.locator(
-        '[data-testid="template-creation-create-button"]',
-      ),
-      cancelButton: page.locator(
-        '[data-testid="template-creation-cancel-button"]',
-      ),
+      createButton: page.locator('[data-testid="template-creation-create-button"]'),
+      cancelButton: page.locator('[data-testid="template-creation-cancel-button"]'),
     };
   }
 
@@ -489,12 +453,8 @@ export class TemplateTestBase {
    */
   getTemplateActionButtons(page: Page, templateId: string) {
     return {
-      apply: page.locator(
-        `[data-testid="template-apply-button-${templateId}"]`,
-      ),
-      delete: page.locator(
-        `[data-testid="template-delete-button-${templateId}"]`,
-      ),
+      apply: page.locator(`[data-testid="template-apply-button-${templateId}"]`),
+      delete: page.locator(`[data-testid="template-delete-button-${templateId}"]`),
     };
   }
 
@@ -510,12 +470,8 @@ export class TemplateTestBase {
    */
   getDeleteConfirmationButtons(page: Page) {
     return {
-      confirm: page.locator(
-        '[data-testid="template-delete-confirmation-dialog-confirm-button"]',
-      ),
-      cancel: page.locator(
-        '[data-testid="template-delete-confirmation-dialog-cancel-button"]',
-      ),
+      confirm: page.locator('[data-testid="template-delete-confirmation-dialog-confirm-button"]'),
+      cancel: page.locator('[data-testid="template-delete-confirmation-dialog-cancel-button"]'),
     };
   }
 
@@ -527,16 +483,14 @@ export class TemplateTestBase {
     description?: string;
   }): Promise<string> {
     if (!this.testTeam) {
-      throw new Error(
-        "No test team available. Did you forget to call setupTemplateTests()?",
-      );
+      throw new Error('No test team available. Did you forget to call setupTemplateTests()?');
     }
 
     // Use the database utils to create a template
     const template = await this.dbUtils.createShiftDemandTemplate({
       teamId: this.testTeam.teamId,
       name: templateData.name,
-      description: templateData.description || "",
+      description: templateData.description || '',
     });
 
     return template.templateId;
@@ -553,9 +507,7 @@ export class TemplateTestBase {
           timeout: 5000,
         })
         .catch(() => null),
-      page
-        .waitForSelector(".template-list-empty", { timeout: 5000 })
-        .catch(() => null),
+      page.waitForSelector('.template-list-empty', { timeout: 5000 }).catch(() => null),
     ]);
   }
 
@@ -629,34 +581,16 @@ export class TemplateTestBase {
    */
   getTemplateToolbarElements(page: Page) {
     return {
-      addWeekButton: page.locator(
-        '[data-testid="template-toolbar-add-week-button"]',
-      ),
-      removeWeekButton: page.locator(
-        '[data-testid="template-toolbar-remove-week-button"]',
-      ),
-      previousWeekButton: page.locator(
-        '[data-testid="template-toolbar-previous-week-button"]',
-      ),
-      nextWeekButton: page.locator(
-        '[data-testid="template-toolbar-next-week-button"]',
-      ),
-      weekDisplay: page.locator(
-        '[data-testid="template-toolbar-week-display"]',
-      ),
+      addWeekButton: page.locator('[data-testid="template-toolbar-add-week-button"]'),
+      removeWeekButton: page.locator('[data-testid="template-toolbar-remove-week-button"]'),
+      previousWeekButton: page.locator('[data-testid="template-toolbar-previous-week-button"]'),
+      nextWeekButton: page.locator('[data-testid="template-toolbar-next-week-button"]'),
+      weekDisplay: page.locator('[data-testid="template-toolbar-week-display"]'),
       typeToggle: page.locator('[data-testid="template-toolbar-type-toggle"]'),
-      standardTypeButton: page.locator(
-        '[data-testid="template-toolbar-standard-type-button"]',
-      ),
-      evenOddTypeButton: page.locator(
-        '[data-testid="template-toolbar-even-odd-type-button"]',
-      ),
-      fromDemandsButton: page.locator(
-        '[data-testid="template-toolbar-from-demands-button"]',
-      ),
-      selectButton: page.locator(
-        '[data-testid="template-toolbar-select-button"]',
-      ),
+      standardTypeButton: page.locator('[data-testid="template-toolbar-standard-type-button"]'),
+      evenOddTypeButton: page.locator('[data-testid="template-toolbar-even-odd-type-button"]'),
+      fromDemandsButton: page.locator('[data-testid="template-toolbar-from-demands-button"]'),
+      selectButton: page.locator('[data-testid="template-toolbar-select-button"]'),
     };
   }
 
@@ -665,15 +599,9 @@ export class TemplateTestBase {
    */
   getDeleteWeekDialogElements(page: Page) {
     return {
-      dialog: page.locator(
-        '[data-testid="template-toolbar-delete-week-dialog"]',
-      ),
-      cancelButton: page.locator(
-        '[data-testid="template-toolbar-delete-week-cancel-button"]',
-      ),
-      confirmButton: page.locator(
-        '[data-testid="template-toolbar-delete-week-confirm-button"]',
-      ),
+      dialog: page.locator('[data-testid="template-toolbar-delete-week-dialog"]'),
+      cancelButton: page.locator('[data-testid="template-toolbar-delete-week-cancel-button"]'),
+      confirmButton: page.locator('[data-testid="template-toolbar-delete-week-confirm-button"]'),
     };
   }
 
@@ -682,15 +610,9 @@ export class TemplateTestBase {
    */
   getEvenOddConversionDialogElements(page: Page) {
     return {
-      dialog: page.locator(
-        '[data-testid="template-toolbar-even-odd-conversion-dialog"]',
-      ),
-      cancelButton: page.locator(
-        '[data-testid="template-toolbar-even-odd-cancel-button"]',
-      ),
-      confirmButton: page.locator(
-        '[data-testid="template-toolbar-even-odd-confirm-button"]',
-      ),
+      dialog: page.locator('[data-testid="template-toolbar-even-odd-conversion-dialog"]'),
+      cancelButton: page.locator('[data-testid="template-toolbar-even-odd-cancel-button"]'),
+      confirmButton: page.locator('[data-testid="template-toolbar-even-odd-confirm-button"]'),
     };
   }
 
@@ -707,7 +629,7 @@ export class TemplateTestBase {
   async selectTemplateInViewer(page: Page, templateId: string) {
     // Refresh the page to ensure templates created via API are visible
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
 
     // Navigate back to shift demands and reopen template window
     await this.navigateToShiftDemandsPage(page);
@@ -723,9 +645,7 @@ export class TemplateTestBase {
     await templateItem.click();
 
     // Wait for the toolbar to become visible
-    const toolbar = page.locator(
-      '[data-testid="template-toolbar-add-week-button"]',
-    );
+    const toolbar = page.locator('[data-testid="template-toolbar-add-week-button"]');
     await expect(toolbar).toBeVisible();
   }
 
@@ -739,9 +659,7 @@ export class TemplateTestBase {
     weekCount?: number;
   }): Promise<string> {
     if (!this.testTeam) {
-      throw new Error(
-        "No test team available. Did you forget to call setupTemplateTests()?",
-      );
+      throw new Error('No test team available. Did you forget to call setupTemplateTests()?');
     }
 
     // Create the template first
@@ -771,9 +689,7 @@ export class TemplateTestBase {
     }[];
   }): Promise<string> {
     if (!this.testTeam) {
-      throw new Error(
-        "No test team available. Did you forget to call setupTemplateTests()?",
-      );
+      throw new Error('No test team available. Did you forget to call setupTemplateTests()?');
     }
 
     // Create the basic template first
@@ -793,9 +709,7 @@ export class TemplateTestBase {
    */
   async updateTemplateViaAPI(templateId: string, updates: Partial<unknown>) {
     if (!this.testTeam) {
-      throw new Error(
-        "No test team available. Did you forget to call setupTemplateTests()?",
-      );
+      throw new Error('No test team available. Did you forget to call setupTemplateTests()?');
     }
 
     // Delegate to DatabaseTestUtils which wraps ShiftDemandTemplateApi
@@ -834,26 +748,14 @@ export class TemplateTestBase {
   /**
    * Gets template cell by coordinates
    */
-  getTemplateCell(
-    page: Page,
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) {
-    return page.locator(
-      `[data-testid="template-cell-${shiftId}-${weekNumber}-${dayIndex}"]`,
-    );
+  getTemplateCell(page: Page, shiftId: string, weekNumber: number, dayIndex: number) {
+    return page.locator(`[data-testid="template-cell-${shiftId}-${weekNumber}-${dayIndex}"]`);
   }
 
   /**
    * Gets template cell checkbox for bulk selection
    */
-  getTemplateCellCheckbox(
-    page: Page,
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) {
+  getTemplateCellCheckbox(page: Page, shiftId: string, weekNumber: number, dayIndex: number) {
     return page.locator(
       `[data-testid="template-cell-checkbox-${shiftId}-${weekNumber}-${dayIndex}"] input`,
     );
@@ -863,18 +765,14 @@ export class TemplateTestBase {
    * Gets template row checkbox for bulk selection
    */
   getTemplateRowCheckbox(page: Page, shiftId: string) {
-    return page.locator(
-      `[data-testid="template-row-checkbox-${shiftId}"] input`,
-    );
+    return page.locator(`[data-testid="template-row-checkbox-${shiftId}"] input`);
   }
 
   /**
    * Gets template column checkbox for bulk selection
    */
   getTemplateColumnCheckbox(page: Page, weekNumber: number, dayIndex: number) {
-    return page.locator(
-      `[data-testid="template-column-checkbox-${weekNumber}-${dayIndex}"] input`,
-    );
+    return page.locator(`[data-testid="template-column-checkbox-${weekNumber}-${dayIndex}"] input`);
   }
 
   /**
@@ -887,57 +785,29 @@ export class TemplateTestBase {
   /**
    * Gets template empty state element
    */
-  getTemplateEmptyState(
-    page: Page,
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) {
-    return page.locator(
-      `[data-testid="template-empty-${shiftId}-${weekNumber}-${dayIndex}"]`,
-    );
+  getTemplateEmptyState(page: Page, shiftId: string, weekNumber: number, dayIndex: number) {
+    return page.locator(`[data-testid="template-empty-${shiftId}-${weekNumber}-${dayIndex}"]`);
   }
 
   /**
    * Gets template value element
    */
-  getTemplateValue(
-    page: Page,
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) {
-    return page.locator(
-      `[data-testid="template-value-${shiftId}-${weekNumber}-${dayIndex}"]`,
-    );
+  getTemplateValue(page: Page, shiftId: string, weekNumber: number, dayIndex: number) {
+    return page.locator(`[data-testid="template-value-${shiftId}-${weekNumber}-${dayIndex}"]`);
   }
 
   /**
    * Gets template increment button
    */
-  getTemplateIncrementButton(
-    page: Page,
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) {
-    return page.locator(
-      `[data-testid="template-increment-${shiftId}-${weekNumber}-${dayIndex}"]`,
-    );
+  getTemplateIncrementButton(page: Page, shiftId: string, weekNumber: number, dayIndex: number) {
+    return page.locator(`[data-testid="template-increment-${shiftId}-${weekNumber}-${dayIndex}"]`);
   }
 
   /**
    * Gets template decrement button
    */
-  getTemplateDecrementButton(
-    page: Page,
-    shiftId: string,
-    weekNumber: number,
-    dayIndex: number,
-  ) {
-    return page.locator(
-      `[data-testid="template-decrement-${shiftId}-${weekNumber}-${dayIndex}"]`,
-    );
+  getTemplateDecrementButton(page: Page, shiftId: string, weekNumber: number, dayIndex: number) {
+    return page.locator(`[data-testid="template-decrement-${shiftId}-${weekNumber}-${dayIndex}"]`);
   }
 
   /**
@@ -958,9 +828,7 @@ export class TemplateTestBase {
    * Gets a specific week header
    */
   getTemplateWeekHeader(page: Page, weekNumber: number) {
-    return page.locator(
-      `[data-testid="template-table-week-header-${weekNumber}"]`,
-    );
+    return page.locator(`[data-testid="template-table-week-header-${weekNumber}"]`);
   }
 
   /**
@@ -1007,16 +875,14 @@ export class TemplateTestBase {
             '[data-testid="template-toolbar-week-display"]',
           );
           if (!weekDisplay) return false;
-          const text = weekDisplay.textContent || "";
+          const text = weekDisplay.textContent || '';
           // Look for pattern like "/3" or "/4" to indicate total weeks
           const match = text.match(/\/(\d+)/);
           if (match) {
             return parseInt(match[1]) === count;
           }
           // Fallback to counting visible week headers
-          const weeks = document.querySelectorAll(
-            '[data-testid^="template-table-week-header-"]',
-          );
+          const weeks = document.querySelectorAll('[data-testid^="template-table-week-header-"]');
           return weeks.length === count;
         },
         expectedWeekCount,
@@ -1029,7 +895,7 @@ export class TemplateTestBase {
           const weekDisplay = document.querySelector(
             '[data-testid="template-toolbar-week-display"]',
           );
-          return weekDisplay !== null && weekDisplay.textContent !== "";
+          return weekDisplay !== null && weekDisplay.textContent !== '';
         },
         { timeout: 10000 },
       );
@@ -1078,9 +944,7 @@ export class TemplateTestBase {
     const toolbarElements = this.getTemplateToolbarElements(page);
 
     // Get the current week count before removing (only if we're confirming)
-    const currentWeekCount = confirmAction
-      ? await this.getTotalWeekCount(page)
-      : undefined;
+    const currentWeekCount = confirmAction ? await this.getTotalWeekCount(page) : undefined;
 
     // Wait for button to be enabled
     await expect(toolbarElements.removeWeekButton).not.toBeDisabled();
@@ -1117,15 +981,9 @@ export class TemplateTestBase {
   getTemplateBulkSelectionElements(page: Page) {
     return {
       input: page.locator('[data-testid="bulk-selection-input"] input'),
-      deleteButton: page.locator(
-        '[data-testid="bulk-selection-delete-button"]',
-      ),
-      confirmButton: page.locator(
-        '[data-testid="bulk-selection-confirm-button"]',
-      ),
-      cancelButton: page.locator(
-        '[data-testid="bulk-selection-cancel-button"]',
-      ),
+      deleteButton: page.locator('[data-testid="bulk-selection-delete-button"]'),
+      confirmButton: page.locator('[data-testid="bulk-selection-confirm-button"]'),
+      cancelButton: page.locator('[data-testid="bulk-selection-cancel-button"]'),
     };
   }
 
@@ -1134,9 +992,7 @@ export class TemplateTestBase {
    */
   getTemplateSelectionCheckboxes(page: Page) {
     return {
-      selectAll: page.locator(
-        '[data-testid="template-select-all-checkbox"] input',
-      ),
+      selectAll: page.locator('[data-testid="template-select-all-checkbox"] input'),
     };
   }
 
@@ -1229,19 +1085,11 @@ export class TemplateTestBase {
   getBuildFromDemandsFormElements(page: Page) {
     return {
       dialog: page.locator('[data-testid="build-from-demands-dialog"]'),
-      sourceWeekDatePicker: page.locator(
-        '[data-testid="source-week-date-picker"]',
-      ),
-      sourceWeekDateInput: page.locator(
-        '[data-testid="source-week-date-input"]',
-      ),
+      sourceWeekDatePicker: page.locator('[data-testid="source-week-date-picker"]'),
+      sourceWeekDateInput: page.locator('[data-testid="source-week-date-input"]'),
       targetWeekSelect: page.locator('[data-testid="target-week-select"]'),
-      applyButton: page.locator(
-        '[data-testid="build-from-demands-apply-button"]',
-      ),
-      cancelButton: page.locator(
-        '[data-testid="build-from-demands-cancel-button"]',
-      ),
+      applyButton: page.locator('[data-testid="build-from-demands-apply-button"]'),
+      cancelButton: page.locator('[data-testid="build-from-demands-cancel-button"]'),
     };
   }
 
@@ -1286,20 +1134,18 @@ export class TemplateTestBase {
     await expect(input).toBeEnabled();
 
     // Convert incoming MM/DD/YYYY to dayjs and format as DD/MM/YYYY (app locale)
-    const d = dayjs.utc(date, "MM/DD/YYYY", true);
+    const d = dayjs.utc(date, 'MM/DD/YYYY', true);
     if (!d.isValid()) {
-      throw new Error(
-        `Invalid date string passed to selectSourceWeekDate: ${date}`,
-      );
+      throw new Error(`Invalid date string passed to selectSourceWeekDate: ${date}`);
     }
-    const formatted = d.format("DD/MM/YYYY");
+    const formatted = d.format('DD/MM/YYYY');
 
     // Set the value directly on the input element and trigger React's internal handlers
     await input.evaluate((el: HTMLInputElement, v: string) => {
       // Get the native setter to bypass React's value property
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
         window.HTMLInputElement.prototype,
-        "value",
+        'value',
       )?.set;
 
       if (nativeInputValueSetter) {
@@ -1309,8 +1155,8 @@ export class TemplateTestBase {
       }
 
       // Dispatch input event to trigger React's onChange handler
-      el.dispatchEvent(new Event("input", { bubbles: true }));
-      el.dispatchEvent(new Event("change", { bubbles: true }));
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
 
       // Blur the input to ensure validation runs
       el.blur();
@@ -1337,11 +1183,7 @@ export class TemplateTestBase {
   /**
    * Helper method to apply demands from source to target week
    */
-  async applyDemandsFromSourceToTarget(
-    page: Page,
-    sourceDate: string,
-    targetWeekNumber: number,
-  ) {
+  async applyDemandsFromSourceToTarget(page: Page, sourceDate: string, targetWeekNumber: number) {
     // Open the dialog
     await this.openBuildFromDemandsDialog(page);
 
@@ -1371,9 +1213,9 @@ export class TemplateTestBase {
     // This would use the API to create shift demands for testing
     // Implementation would depend on the API structure
     console.log(
-      "Creating shift demands for week starting:",
+      'Creating shift demands for week starting:',
       weekStartDate,
-      "with demands:",
+      'with demands:',
       demands,
     );
   }
@@ -1421,34 +1263,20 @@ export class TemplateTestBase {
    */
   getTemplateApplicationDialogElements(page: Page) {
     return {
-      startDatePicker: page.locator(
-        '[data-testid="template-application-start-date"]',
-      ),
-      endDatePicker: page.locator(
-        '[data-testid="template-application-end-date"]',
-      ),
-      overwriteSwitch: page.locator(
-        '[data-testid="template-application-overwrite-switch"]',
-      ),
-      applyButton: page.locator(
-        '[data-testid="template-application-apply-button"]',
-      ),
-      cancelButton: page.locator(
-        '[data-testid="template-application-cancel-button"]',
-      ),
+      startDatePicker: page.locator('[data-testid="template-application-start-date"]'),
+      endDatePicker: page.locator('[data-testid="template-application-end-date"]'),
+      overwriteSwitch: page.locator('[data-testid="template-application-overwrite-switch"]'),
+      applyButton: page.locator('[data-testid="template-application-apply-button"]'),
+      cancelButton: page.locator('[data-testid="template-application-cancel-button"]'),
     };
   }
 
   /**
    * Sets a date in the template application dialog
    */
-  async setApplicationDialogDate(
-    page: Page,
-    field: "start" | "end",
-    dateString: string,
-  ) {
+  async setApplicationDialogDate(page: Page, field: 'start' | 'end', dateString: string) {
     const selector =
-      field === "start"
+      field === 'start'
         ? '[data-testid="template-application-start-date"]'
         : '[data-testid="template-application-end-date"]';
 
@@ -1460,20 +1288,18 @@ export class TemplateTestBase {
     await expect(input).toBeEnabled();
 
     // Convert incoming YYYY-MM-DD to dayjs and format as DD/MM/YYYY (app locale)
-    const d = dayjs.utc(dateString, "YYYY-MM-DD", true);
+    const d = dayjs.utc(dateString, 'YYYY-MM-DD', true);
     if (!d.isValid()) {
-      throw new Error(
-        `Invalid date string passed to setApplicationDialogDate: ${dateString}`,
-      );
+      throw new Error(`Invalid date string passed to setApplicationDialogDate: ${dateString}`);
     }
-    const formatted = d.format("DD/MM/YYYY");
+    const formatted = d.format('DD/MM/YYYY');
 
     // Set the value directly on the input element and trigger React's internal handlers
     await input.evaluate((el: HTMLInputElement, v: string) => {
       // Get the native setter to bypass React's value property
       const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
         window.HTMLInputElement.prototype,
-        "value",
+        'value',
       )?.set;
 
       if (nativeInputValueSetter) {
@@ -1483,8 +1309,8 @@ export class TemplateTestBase {
       }
 
       // Dispatch input event to trigger React's onChange handler
-      el.dispatchEvent(new Event("input", { bubbles: true }));
-      el.dispatchEvent(new Event("change", { bubbles: true }));
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
 
       // Blur the input to ensure validation runs
       el.blur();
@@ -1546,16 +1372,16 @@ export class TemplateTestBase {
     await page.evaluate((dateStr) => {
       const periodState = {
         currentDate: dateStr, // ISO string
-        periodType: "month", // Default to month view
+        periodType: 'month', // Default to month view
       };
-      localStorage.setItem("nsp_pro_period_state", JSON.stringify(periodState));
+      localStorage.setItem('nsp_pro_period_state', JSON.stringify(periodState));
     }, targetDate.toISOString());
 
     // Reload the page to apply the new period state
     await page.reload();
 
     // Wait for the page to load and the shift demands table to be visible again
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
     await expect(shiftDemandTable).toBeVisible({ timeout: 10000 });
 
     // Verify that we're now in the correct period
@@ -1593,11 +1419,7 @@ export class TemplateTestBase {
   /**
    * Verifies that a shift demand does not exist for a specific shift and date
    */
-  async verifyShiftDemandNotExists(
-    page: Page,
-    shiftId: string,
-    dateString: string,
-  ) {
+  async verifyShiftDemandNotExists(page: Page, shiftId: string, dateString: string) {
     // Navigate to the period containing the target date
     await this.navigateToPeriod(page, dateString);
 
@@ -1608,7 +1430,7 @@ export class TemplateTestBase {
     const exists = (await valueElement.count()) > 0;
     if (exists) {
       const text = await valueElement.textContent();
-      expect(text === "" || text === "0").toBeTruthy();
+      expect(text === '' || text === '0').toBeTruthy();
     }
   }
 
@@ -1621,7 +1443,7 @@ export class TemplateTestBase {
     value: number;
   }): Promise<void> {
     if (!this.testTeam) {
-      throw new Error("Test team not initialized");
+      throw new Error('Test team not initialized');
     }
 
     await this.dbUtils.createShiftDemand({
@@ -1637,9 +1459,7 @@ export class TemplateTestBase {
    */
   async convertTemplateToEvenOdd(page: Page, templateId: string) {
     // Click on the even/odd toggle button in the template toolbar
-    const evenOddToggle = page.locator(
-      '[data-testid="template-toolbar-even-odd-type-button"]',
-    );
+    const evenOddToggle = page.locator('[data-testid="template-toolbar-even-odd-type-button"]');
     await expect(evenOddToggle).toBeVisible();
     await evenOddToggle.click();
 
@@ -1659,6 +1479,6 @@ export class TemplateTestBase {
 
     // Wait for the conversion to be completed by checking for Even/Odd UI elements
     // Look for the standard/even-odd toggle button state or specific even/odd template indicators
-    await expect(evenOddToggle).toHaveAttribute("aria-pressed", "true");
+    await expect(evenOddToggle).toHaveAttribute('aria-pressed', 'true');
   }
 }

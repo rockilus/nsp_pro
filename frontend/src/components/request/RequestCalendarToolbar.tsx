@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import dayjs, { Dayjs } from "dayjs";
-import isoWeek from "dayjs/plugin/isoWeek";
+import React, { useState } from 'react';
+import dayjs, { Dayjs } from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
 // MUI
 import {
   Box,
@@ -13,17 +13,14 @@ import {
   ListItemText,
   Divider,
   IconButton as BackButton,
-} from "@mui/material";
-import {
-  Tune as TuneIcon,
-  ArrowBack as ArrowBackIcon,
-} from "@mui/icons-material";
+} from '@mui/material';
+import { Tune as TuneIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 // Components
-import { TimeNavigation } from "../common/TimeNavigation";
-import SelectFilter from "../table/filters/SelectFilter";
-import DateFilter from "../table/filters/DateFilter";
+import { TimeNavigation } from '../common/TimeNavigation';
+import SelectFilter from '../table/filters/SelectFilter';
+import DateFilter from '../table/filters/DateFilter';
 // Types
-import { ColumnDefinition, ColumnFilter } from "../../types/filter";
+import { ColumnDefinition, ColumnFilter } from '../../types/filter';
 
 dayjs.extend(isoWeek);
 
@@ -32,8 +29,8 @@ interface RequestCalendarToolbarProps {
   // Period Navigation props
   currentPeriod: { start: Dayjs; end: Dayjs };
   onPeriodChange: (start: Dayjs, end: Dayjs) => void;
-  timeFrame: "week" | "month";
-  onTimeFrameChange: (timeFrame: "week" | "month") => void;
+  timeFrame: 'week' | 'month';
+  onTimeFrameChange: (timeFrame: 'week' | 'month') => void;
   isLoading?: boolean;
 
   // Filter props (now using table state)
@@ -54,9 +51,7 @@ export function RequestCalendarToolbar({
   onFilter,
 }: RequestCalendarToolbarProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedColumn, setSelectedColumn] = useState<ColumnDefinition | null>(
-    null,
-  );
+  const [selectedColumn, setSelectedColumn] = useState<ColumnDefinition | null>(null);
 
   // Handlers for TimeNavigation
   const handleToday = () => {
@@ -64,13 +59,13 @@ export function RequestCalendarToolbar({
     const today = dayjs.utc();
     let start: Dayjs, end: Dayjs;
 
-    if (timeFrame === "week") {
-      start = today.startOf("isoWeek");
-      end = today.endOf("isoWeek");
+    if (timeFrame === 'week') {
+      start = today.startOf('isoWeek');
+      end = today.endOf('isoWeek');
     } else {
       // month
-      start = today.startOf("month");
-      end = today.endOf("month");
+      start = today.startOf('month');
+      end = today.endOf('month');
     }
 
     onPeriodChange(start, end);
@@ -81,13 +76,13 @@ export function RequestCalendarToolbar({
 
     let start: Dayjs, end: Dayjs;
 
-    if (timeFrame === "week") {
-      start = currentPeriod.start.subtract(1, "week");
-      end = currentPeriod.end.subtract(1, "week");
+    if (timeFrame === 'week') {
+      start = currentPeriod.start.subtract(1, 'week');
+      end = currentPeriod.end.subtract(1, 'week');
     } else {
       // month
-      start = currentPeriod.start.subtract(1, "month").startOf("month");
-      end = currentPeriod.start.subtract(1, "month").endOf("month");
+      start = currentPeriod.start.subtract(1, 'month').startOf('month');
+      end = currentPeriod.start.subtract(1, 'month').endOf('month');
     }
 
     onPeriodChange(start, end);
@@ -98,19 +93,19 @@ export function RequestCalendarToolbar({
 
     let start: Dayjs, end: Dayjs;
 
-    if (timeFrame === "week") {
-      start = currentPeriod.start.add(1, "week");
-      end = currentPeriod.end.add(1, "week");
+    if (timeFrame === 'week') {
+      start = currentPeriod.start.add(1, 'week');
+      end = currentPeriod.end.add(1, 'week');
     } else {
       // month
-      start = currentPeriod.start.add(1, "month").startOf("month");
-      end = currentPeriod.start.add(1, "month").endOf("month");
+      start = currentPeriod.start.add(1, 'month').startOf('month');
+      end = currentPeriod.start.add(1, 'month').endOf('month');
     }
 
     onPeriodChange(start, end);
   };
 
-  const handleTimeFrameChangeInternal = (newTimeFrame: "week" | "month") => {
+  const handleTimeFrameChangeInternal = (newTimeFrame: 'week' | 'month') => {
     // The parent's onTimeFrameChange already handles period adjustment
     onTimeFrameChange(newTimeFrame);
   };
@@ -139,10 +134,10 @@ export function RequestCalendarToolbar({
   };
 
   // Get filterable columns (exclude workerId since it has its own UI in the table)
-  const filterableColumns = columns.filter((col) => col.id !== "workerId");
+  const filterableColumns = columns.filter((col) => col.id !== 'workerId');
 
   const open = Boolean(anchorEl);
-  const popoverId = open ? "filter-popover" : undefined;
+  const popoverId = open ? 'filter-popover' : undefined;
 
   return (
     <Paper
@@ -150,13 +145,13 @@ export function RequestCalendarToolbar({
       sx={{
         p: 2,
         mb: 1,
-        width: "100%",
+        width: '100%',
         margin: 0,
-        padding: "3px 0px",
-        position: "sticky",
+        padding: '3px 0px',
+        position: 'sticky',
         top: 0,
         zIndex: 10,
-        backgroundColor: "background.paper",
+        backgroundColor: 'background.paper',
       }}
     >
       <Box
@@ -185,7 +180,7 @@ export function RequestCalendarToolbar({
           size="small"
           aria-describedby={popoverId}
           sx={{
-            color: filters.length > 0 ? "primary.main" : "text.secondary",
+            color: filters.length > 0 ? 'primary.main' : 'text.secondary',
           }}
           data-testid="calendar-filter-menu-button"
         >
@@ -199,21 +194,19 @@ export function RequestCalendarToolbar({
           anchorEl={anchorEl}
           onClose={handleFilterMenuClose}
           anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
+            vertical: 'bottom',
+            horizontal: 'right',
           }}
           transformOrigin={{
-            vertical: "top",
-            horizontal: "right",
+            vertical: 'top',
+            horizontal: 'right',
           }}
         >
           {!selectedColumn ? (
             // Main menu - show list of filterable columns
             <List sx={{ minWidth: 200 }} data-testid="filter-column-list">
               {filterableColumns.map((column, index) => {
-                const hasFilter = filters.some((f) =>
-                  f.id.startsWith(column.id),
-                );
+                const hasFilter = filters.some((f) => f.id.startsWith(column.id));
                 return (
                   <React.Fragment key={column.id}>
                     {index > 0 && <Divider />}
@@ -225,11 +218,9 @@ export function RequestCalendarToolbar({
                         <ListItemText
                           primary={column.label}
                           sx={{
-                            "& .MuiListItemText-primary": {
+                            '& .MuiListItemText-primary': {
                               fontWeight: hasFilter ? 600 : 400,
-                              color: hasFilter
-                                ? "primary.main"
-                                : "text.primary",
+                              color: hasFilter ? 'primary.main' : 'text.primary',
                             },
                           }}
                         />
@@ -244,40 +235,34 @@ export function RequestCalendarToolbar({
             <Box>
               <Box
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
+                  display: 'flex',
+                  alignItems: 'center',
                   p: 1,
                   borderBottom: 1,
-                  borderColor: "divider",
+                  borderColor: 'divider',
                 }}
               >
                 <BackButton size="small" onClick={handleBackToMenu}>
                   <ArrowBackIcon />
                 </BackButton>
               </Box>
-              {selectedColumn.type === "select" && (
+              {selectedColumn.type === 'select' && (
                 <SelectFilter
                   onApply={handleFilterApply}
                   onClose={handleFilterMenuClose}
                   columnId={selectedColumn.id}
                   label={selectedColumn.label}
                   options={selectedColumn.getOptions?.() || []}
-                  currentValue={
-                    filters.find((f) => f.id.startsWith(selectedColumn.id))
-                      ?.value
-                  }
+                  currentValue={filters.find((f) => f.id.startsWith(selectedColumn.id))?.value}
                 />
               )}
-              {selectedColumn.type === "date" && (
+              {selectedColumn.type === 'date' && (
                 <DateFilter
                   onApply={handleFilterApply}
                   onClose={handleFilterMenuClose}
                   columnId={selectedColumn.id}
                   label={selectedColumn.label}
-                  currentValue={
-                    filters.find((f) => f.id.startsWith(selectedColumn.id))
-                      ?.value
-                  }
+                  currentValue={filters.find((f) => f.id.startsWith(selectedColumn.id))?.value}
                 />
               )}
             </Box>

@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // MUI
-import Alert from "@mui/material/Alert";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
-import Typography from "@mui/material/Typography";
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 // Hooks
 import {
   getImpersonationTarget,
   ImpersonationTarget,
   useStopAdminImpersonation,
-} from "@/hooks/useAdminImpersonation";
+} from '@/hooks/useAdminImpersonation';
 import {
   isImpersonationTokenExpired,
   clearImpersonationTarget,
-} from "@/app/lib/impersonation-storage";
+} from '@/app/lib/impersonation-storage';
 
 /**
  * Sticky banner displayed at the top of every page when an admin is
@@ -50,10 +50,8 @@ export default function ImpersonationBanner() {
       // Navigation happens inside the hook; clear local state as fallback
       setTarget(null);
     } catch (err) {
-      console.error("Failed to stop impersonation:", err);
-      setStopError(
-        err instanceof Error ? err.message : "Failed to stop impersonation",
-      );
+      console.error('Failed to stop impersonation:', err);
+      setStopError(err instanceof Error ? err.message : 'Failed to stop impersonation');
       setStopping(false);
     }
   };
@@ -62,10 +60,10 @@ export default function ImpersonationBanner() {
     <Box
       data-testid="impersonation-banner"
       sx={{
-        position: "sticky",
+        position: 'sticky',
         top: 0,
         zIndex: 9999,
-        width: "100%",
+        width: '100%',
       }}
     >
       <Alert
@@ -80,22 +78,18 @@ export default function ImpersonationBanner() {
             variant="outlined"
             onClick={handleStop}
             disabled={stopping}
-            startIcon={
-              stopping ? (
-                <CircularProgress size={14} color="inherit" />
-              ) : undefined
-            }
-            sx={{ ml: 2, whiteSpace: "nowrap" }}
+            startIcon={stopping ? <CircularProgress size={14} color="inherit" /> : undefined}
+            sx={{ ml: 2, whiteSpace: 'nowrap' }}
           >
-            {stopping ? "Stopping…" : "Stop impersonating"}
+            {stopping ? 'Stopping…' : 'Stop impersonating'}
           </Button>
         }
       >
         <Typography variant="body2" component="span">
-          You are viewing the account of{" "}
+          You are viewing the account of{' '}
           <strong>
             {target.firstName} {target.lastName}
-          </strong>{" "}
+          </strong>{' '}
           ({target.email})
         </Typography>
         {stopError && (

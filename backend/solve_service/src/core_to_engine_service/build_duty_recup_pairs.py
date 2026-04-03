@@ -1,5 +1,3 @@
-from typing import Dict, List, Optional, Tuple
-
 from shared.schemas.core import (
     Assignment,
     Shift,
@@ -16,17 +14,17 @@ from core_to_engine_service.build_scope_context import ScopeContext
 
 
 def build_duty_recup_pairs(
-    workers_not_deleted: List[Worker],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts_not_deleted: List[Shift],
-    shift_duties_not_deleted: List[Shift],
+    workers_not_deleted: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts_not_deleted: list[Shift],
+    shift_duties_not_deleted: list[Shift],
     penalty: int,
-    scope_ctx: Optional[ScopeContext] = None,
-    fixed_assignments: Optional[List[Assignment]] = None,
-) -> List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]]:
-    out: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]] = []
+    scope_ctx: ScopeContext | None = None,
+    fixed_assignments: list[Assignment] | None = None,
+) -> list[tuple[tuple[str, str, str], tuple[str, str, str], int]]:
+    out: list[tuple[tuple[str, str, str], tuple[str, str, str], int]] = []
     # build quick lookup for shift objects by id
-    shift_id_to_shift: Dict[str, Shift] = {s.id: s for s in shifts_not_deleted}
+    shift_id_to_shift: dict[str, Shift] = {s.id: s for s in shifts_not_deleted}
     for shift in shift_duties_not_deleted:
         # pylint: disable=R0801
         rec_shift = next(
@@ -41,7 +39,7 @@ def build_duty_recup_pairs(
             None,
         )
         if rec_shift:
-            pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]] = []
+            pairs: list[tuple[tuple[str, str, str], tuple[str, str, str], int]] = []
             for w in workers_not_deleted:
                 for d in worker_ids_to_worker_dates[w.id].dates_campaign:
                     # scope check

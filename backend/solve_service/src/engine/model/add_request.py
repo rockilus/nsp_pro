@@ -1,5 +1,3 @@
-from typing import Dict, List, Tuple
-
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.utils.model_utils import build_var_name_constraint
@@ -11,16 +9,16 @@ class AddRequest:
     def __init__(
         self,
         model: cp_model.CpModel,
-        variables: Dict[Tuple[str, str, str], cp_model.IntVar],
+        variables: dict[tuple[str, str, str], cp_model.IntVar],
         obj: Objective,
     ) -> None:
         self.model = model
         self.variables = variables
         self.obj = obj
 
-    def add_requests(self, requests: List[Request], hard_to_soft: bool) -> None:
+    def add_requests(self, requests: list[Request], hard_to_soft: bool) -> None:
         for r in requests:
-            c_variables: List[cp_model.IntVar] = [
+            c_variables: list[cp_model.IntVar] = [
                 self.variables[a] for a in r.assignments
             ]
             c_var_len = len(c_variables)

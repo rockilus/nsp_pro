@@ -2,8 +2,8 @@
  * API client for constraint operations
  */
 
-import { ConstraintT, TemplateT } from "../../../types/constraint";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { ConstraintT, TemplateT } from '../../../types/constraint';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class ConstraintApi extends BaseApi {
   /**
@@ -11,18 +11,18 @@ export class ConstraintApi extends BaseApi {
    */
   static async addConstraint(
     apiClient: AuthenticatedApiClient,
-    constraint: ConstraintT
+    constraint: ConstraintT,
   ): Promise<ConstraintT> {
     // Security: Input validation
     if (!constraint || !constraint.teamId) {
-      throw new Error("Invalid constraint data provided");
+      throw new Error('Invalid constraint data provided');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/constraints/teams/${constraint.teamId}`,
-      constraint
+      constraint,
     );
     return responseData as ConstraintT;
   }
@@ -32,17 +32,17 @@ export class ConstraintApi extends BaseApi {
    */
   static async getConstraints(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ConstraintT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any[]>(
       apiClient,
-      "get",
-      `/constraints/teams/${teamId}`
+      'get',
+      `/constraints/teams/${teamId}`,
     );
     return responseData as ConstraintT[];
   }
@@ -52,22 +52,18 @@ export class ConstraintApi extends BaseApi {
    */
   static async updateConstraint(
     apiClient: AuthenticatedApiClient,
-    updatedConstraint: ConstraintT
+    updatedConstraint: ConstraintT,
   ): Promise<ConstraintT> {
     // Security: Input validation
-    if (
-      !updatedConstraint ||
-      !updatedConstraint.id ||
-      !updatedConstraint.teamId
-    ) {
-      throw new Error("Invalid constraint data provided");
+    if (!updatedConstraint || !updatedConstraint.id || !updatedConstraint.teamId) {
+      throw new Error('Invalid constraint data provided');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "put",
+      'put',
       `/constraints/${updatedConstraint.id}/teams/${updatedConstraint.teamId}`,
-      updatedConstraint
+      updatedConstraint,
     );
     return responseData as ConstraintT;
   }
@@ -78,20 +74,20 @@ export class ConstraintApi extends BaseApi {
   static async deleteConstraint(
     apiClient: AuthenticatedApiClient,
     constraintId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!constraintId) {
-      throw new Error("Constraint ID is required");
+      throw new Error('Constraint ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     await this.makeRequest<void>(
       apiClient,
-      "delete",
-      `/constraints/${constraintId}/teams/${teamId}`
+      'delete',
+      `/constraints/${constraintId}/teams/${teamId}`,
     );
   }
 
@@ -100,17 +96,17 @@ export class ConstraintApi extends BaseApi {
    */
   static async getTemplates(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<TemplateT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any[]>(
       apiClient,
-      "get",
-      `/constraint-templates/teams/${teamId}`
+      'get',
+      `/constraint-templates/teams/${teamId}`,
     );
     return responseData as TemplateT[];
   }

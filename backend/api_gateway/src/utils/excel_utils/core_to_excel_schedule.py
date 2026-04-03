@@ -651,10 +651,10 @@ def build_legend_worksheet(
     )
 
     # Write headers for shifts (now on header_row)
-    col_acr: Cell = ws[f"{get_column_letter(shifts_cols["acronym"])}{header_row}"]
-    col_name: Cell = ws[f"{get_column_letter(shifts_cols["name"])}{header_row}"]
-    col_start: Cell = ws[f"{get_column_letter(shifts_cols["start"])}{header_row}"]
-    col_end: Cell = ws[f"{get_column_letter(shifts_cols["end"])}{header_row}"]
+    col_acr: Cell = ws[f"{get_column_letter(shifts_cols['acronym'])}{header_row}"]
+    col_name: Cell = ws[f"{get_column_letter(shifts_cols['name'])}{header_row}"]
+    col_start: Cell = ws[f"{get_column_letter(shifts_cols['start'])}{header_row}"]
+    col_end: Cell = ws[f"{get_column_letter(shifts_cols['end'])}{header_row}"]
 
     col_acr.value = "Acronym"
     col_name.value = "Name"
@@ -665,8 +665,8 @@ def build_legend_worksheet(
         cell.alignment = center
 
     # Write headers for workers (now on header_row)
-    wcol_acr: Cell = ws[f"{get_column_letter(workers_cols["acronym"])}{header_row}"]
-    wcol_name: Cell = ws[f"{get_column_letter(workers_cols["name"])}{header_row}"]
+    wcol_acr: Cell = ws[f"{get_column_letter(workers_cols['acronym'])}{header_row}"]
+    wcol_name: Cell = ws[f"{get_column_letter(workers_cols['name'])}{header_row}"]
     wcol_acr.value = "Acronym"
     wcol_name.value = "Name"
     for cell in (wcol_acr, wcol_name):

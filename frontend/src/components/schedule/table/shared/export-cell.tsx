@@ -1,24 +1,24 @@
-import React, { useState, useMemo, Dispatch, SetStateAction } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { Sparkle } from "lucide-react";
-import { useTranslation } from "../../../../app/i18n/client";
+import React, { useState, useMemo, Dispatch, SetStateAction } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { Sparkle } from 'lucide-react';
+import { useTranslation } from '../../../../app/i18n/client';
 // MUI
-import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import CloseIcon from "@mui/icons-material/Close";
-import IconButton from "@mui/material/IconButton";
-import IosShareIcon from "@mui/icons-material/IosShare";
-import Tooltip from "@mui/material/Tooltip";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import TableCell from "@mui/material/TableCell";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
+import IosShareIcon from '@mui/icons-material/IosShare';
+import Tooltip from '@mui/material/Tooltip';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import TableCell from '@mui/material/TableCell';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Styles
-import "./export-cell.css";
-import "../../../../styles/text-styles.css";
+import './export-cell.css';
+import '../../../../styles/text-styles.css';
 // Types
 import {
   ExportOptionsT,
@@ -26,12 +26,12 @@ import {
   ScheduleT,
   ScheduleStatus,
   periodDateT,
-} from "../../../../types/schedule";
+} from '../../../../types/schedule';
 import {
   ScheduleSelectionState,
   SelectedScheduleCell,
   SelectionScope,
-} from "../../../../types/scheduleSelection";
+} from '../../../../types/scheduleSelection';
 
 dayjs.extend(utc);
 
@@ -57,28 +57,25 @@ const ExportDialogContent = ({
   return (
     <div className="popover-content-container">
       <div className="dialog-header">
-        <span className="title">{t("export_to_excel")}</span>
+        <span className="title">{t('export_to_excel')}</span>
         <IconButton
           aria-label="close"
           onClick={handleClose}
           className="close-button"
           data-testid="export-dialog-close-button"
-          sx={{ marginBottom: "16px" }}
+          sx={{ marginBottom: '16px' }}
         >
           <CloseIcon className="close-icon" />
         </IconButton>
       </div>
       <div className="period-selector">
-        <span className="period-selector-label">{t("period")}:</span>
+        <span className="period-selector-label">{t('period')}:</span>
         <ToggleButtonGroup
           color="primary"
           value={exportOptionsState.periodOption}
           exclusive
           data-testid="export-period-toggle-group"
-          onChange={(
-            event: React.MouseEvent<HTMLElement>,
-            newAlignment: number,
-          ) => {
+          onChange={(event: React.MouseEvent<HTMLElement>, newAlignment: number) => {
             if (newAlignment !== null) {
               setExportOptionsState((prevState) => ({
                 ...prevState,
@@ -90,10 +87,7 @@ const ExportDialogContent = ({
                   startDate: periodDates[0].date,
                   endDate: periodDates[periodDates.length - 1].date,
                 }));
-              } else if (
-                newAlignment === ExportPeriodOptions.CAMPAIGN &&
-                scheduleCampaign
-              ) {
+              } else if (newAlignment === ExportPeriodOptions.CAMPAIGN && scheduleCampaign) {
                 setExportOptionsState((prevState) => ({
                   ...prevState,
                   startDate: dayjs.utc(scheduleCampaign.startDate),
@@ -107,15 +101,13 @@ const ExportDialogContent = ({
           {ExportOptionsMap.map((c) => (
             <ToggleButton
               key={c.value}
-              disabled={
-                c.value === ExportPeriodOptions.CAMPAIGN && !scheduleCampaign
-              }
+              disabled={c.value === ExportPeriodOptions.CAMPAIGN && !scheduleCampaign}
               value={c.value}
               data-testid={`export-period-option-${c.value}`}
               sx={{
-                textTransform: "none",
-                height: "25px",
-                fontSize: "0.8rem",
+                textTransform: 'none',
+                height: '25px',
+                fontSize: '0.8rem',
               }}
             >
               {c.label}
@@ -125,56 +117,48 @@ const ExportDialogContent = ({
       </div>
       <div className="date-picker-container">
         <DatePicker
-          disabled={
-            exportOptionsState.periodOption !== ExportPeriodOptions.CUSTOM
-          }
+          disabled={exportOptionsState.periodOption !== ExportPeriodOptions.CUSTOM}
           value={exportOptionsState.startDate}
           onChange={(newValue) => {
             setExportOptionsState((prevState) => ({
               ...prevState,
-              startDate: newValue
-                ? dayjs.utc(newValue).startOf("day")
-                : dayjs.utc().startOf("day"),
+              startDate: newValue ? dayjs.utc(newValue).startOf('day') : dayjs.utc().startOf('day'),
             }));
           }}
           slotProps={{
             textField: {
-              inputProps: { "data-testid": "export-start-date-picker" },
+              inputProps: { 'data-testid': 'export-start-date-picker' },
             },
           }}
           sx={{
-            width: "160px",
-            "& .MuiOutlinedInput-input": {
-              fontSize: "0.875rem",
-              height: "35px",
+            width: '160px',
+            '& .MuiOutlinedInput-input': {
+              fontSize: '0.875rem',
+              height: '35px',
               paddingY: 0,
             },
           }}
         />
         <DatePicker
-          disabled={
-            exportOptionsState.periodOption !== ExportPeriodOptions.CUSTOM
-          }
+          disabled={exportOptionsState.periodOption !== ExportPeriodOptions.CUSTOM}
           value={exportOptionsState.endDate}
           onChange={(newValue) => {
             setExportOptionsState((prevState) => ({
               ...prevState,
-              endDate: newValue
-                ? dayjs.utc(newValue).startOf("day")
-                : dayjs.utc().startOf("day"),
+              endDate: newValue ? dayjs.utc(newValue).startOf('day') : dayjs.utc().startOf('day'),
             }));
           }}
           slotProps={{
             textField: {
-              inputProps: { "data-testid": "export-end-date-picker" },
+              inputProps: { 'data-testid': 'export-end-date-picker' },
             },
           }}
           sx={{
-            width: "160px",
-            marginLeft: "10px",
-            "& .MuiOutlinedInput-input": {
-              fontSize: "0.875rem",
-              height: "35px",
+            width: '160px',
+            marginLeft: '10px',
+            '& .MuiOutlinedInput-input': {
+              fontSize: '0.875rem',
+              height: '35px',
               paddingY: 0,
             },
           }}
@@ -185,9 +169,9 @@ const ExportDialogContent = ({
           onClick={handleConfirmExport}
           variant="contained"
           data-testid="confirm-export-button"
-          sx={{ textTransform: "none" }}
+          sx={{ textTransform: 'none' }}
         >
-          {t("export_to_excel")}
+          {t('export_to_excel')}
         </Button>
       </div>
     </div>
@@ -221,30 +205,28 @@ export default function ExportCell({
   customSolveSelectedCells?: SelectedScheduleCell[];
   handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   const targetDates = useMemo(() => {
     if (!isSelectionActive) return [];
-    if (selectionScope === "campaign" && scheduleCampaign) {
+    if (selectionScope === 'campaign' && scheduleCampaign) {
       const dates: string[] = [];
-      let current = scheduleCampaign.startDate.startOf("day");
-      const end = scheduleCampaign.endDate.startOf("day");
-      while (current.isBefore(end) || current.isSame(end, "day")) {
-        dates.push(current.format("YYYY-MM-DD"));
-        current = current.add(1, "day");
+      let current = scheduleCampaign.startDate.startOf('day');
+      const end = scheduleCampaign.endDate.startOf('day');
+      while (current.isBefore(end) || current.isSame(end, 'day')) {
+        dates.push(current.format('YYYY-MM-DD'));
+        current = current.add(1, 'day');
       }
       return dates;
     }
-    return periodDates.map((pd) => pd.date.format("YYYY-MM-DD"));
+    return periodDates.map((pd) => pd.date.format('YYYY-MM-DD'));
   }, [isSelectionActive, selectionScope, scheduleCampaign, periodDates]);
 
   const isAllSelected = useMemo(() => {
     if (!rowIds?.length || !targetDates.length) return false;
     return rowIds.every((rowId) =>
       targetDates.every((date) =>
-        selectionState?.selectedCells.some(
-          (c) => c.rowId === rowId && c.date === date,
-        ),
+        selectionState?.selectedCells.some((c) => c.rowId === rowId && c.date === date),
       ),
     );
   }, [rowIds, targetDates, selectionState]);
@@ -253,52 +235,40 @@ export default function ExportCell({
     if (!rowIds?.length || !targetDates.length) return false;
     const hasSomeCell = rowIds.some((rowId) =>
       targetDates.some((date) =>
-        selectionState?.selectedCells.some(
-          (c) => c.rowId === rowId && c.date === date,
-        ),
+        selectionState?.selectedCells.some((c) => c.rowId === rowId && c.date === date),
       ),
     );
-    const hasSomeAssignment =
-      (selectionState?.selectedAssignmentIds.length ?? 0) > 0;
+    const hasSomeAssignment = (selectionState?.selectedAssignmentIds.length ?? 0) > 0;
     return (hasSomeCell || hasSomeAssignment) && !isAllSelected;
   }, [rowIds, targetDates, selectionState, isAllSelected]);
 
   const handleSelectAllChange = () => {
     if (isAllSelected) {
-      handleSelectAll?.([], selectionScope ?? "view");
+      handleSelectAll?.([], selectionScope ?? 'view');
     } else {
-      handleSelectAll?.(rowIds ?? [], selectionScope ?? "view");
+      handleSelectAll?.(rowIds ?? [], selectionScope ?? 'view');
     }
   };
 
   const isCustomAllSelected = useMemo(() => {
-    if (!isCustomSolveModeActive || !rowIds?.length || !scheduleCampaign)
-      return false;
-    let current = scheduleCampaign.startDate.startOf("day");
-    const end = scheduleCampaign.endDate.startOf("day");
-    while (current.isBefore(end) || current.isSame(end, "day")) {
-      const date = current.format("YYYY-MM-DD");
+    if (!isCustomSolveModeActive || !rowIds?.length || !scheduleCampaign) return false;
+    let current = scheduleCampaign.startDate.startOf('day');
+    const end = scheduleCampaign.endDate.startOf('day');
+    while (current.isBefore(end) || current.isSame(end, 'day')) {
+      const date = current.format('YYYY-MM-DD');
       if (
         !rowIds.every((rowId) =>
-          customSolveSelectedCells.some(
-            (c) => c.rowId === rowId && c.date === date,
-          ),
+          customSolveSelectedCells.some((c) => c.rowId === rowId && c.date === date),
         )
       )
         return false;
-      current = current.add(1, "day");
+      current = current.add(1, 'day');
     }
     return true;
-  }, [
-    isCustomSolveModeActive,
-    rowIds,
-    scheduleCampaign,
-    customSolveSelectedCells,
-  ]);
+  }, [isCustomSolveModeActive, rowIds, scheduleCampaign, customSolveSelectedCells]);
 
   const isCustomSomeSelected = useMemo(() => {
-    if (!isCustomSolveModeActive || !rowIds?.length || !scheduleCampaign)
-      return false;
+    if (!isCustomSolveModeActive || !rowIds?.length || !scheduleCampaign) return false;
     if (isCustomAllSelected) return false;
     return customSolveSelectedCells.some((c) => rowIds.includes(c.rowId));
   }, [
@@ -314,37 +284,31 @@ export default function ExportCell({
     if (isCustomAllSelected) {
       // Remove all campaign cells from selection
       const campaignKeys = new Set<string>();
-      let current = scheduleCampaign.startDate.startOf("day");
-      const end = scheduleCampaign.endDate.startOf("day");
-      while (current.isBefore(end) || current.isSame(end, "day")) {
-        const date = current.format("YYYY-MM-DD");
+      let current = scheduleCampaign.startDate.startOf('day');
+      const end = scheduleCampaign.endDate.startOf('day');
+      while (current.isBefore(end) || current.isSame(end, 'day')) {
+        const date = current.format('YYYY-MM-DD');
         rowIds.forEach((rowId) => campaignKeys.add(`${rowId}-${date}`));
-        current = current.add(1, "day");
+        current = current.add(1, 'day');
       }
       handleCustomSelectAll?.(
-        customSolveSelectedCells.filter(
-          (c) => !campaignKeys.has(`${c.rowId}-${c.date}`),
-        ),
+        customSolveSelectedCells.filter((c) => !campaignKeys.has(`${c.rowId}-${c.date}`)),
       );
     } else {
       // Add all campaign cells not yet selected
-      const existingKeys = new Set(
-        customSolveSelectedCells.map((c) => `${c.rowId}-${c.date}`),
-      );
+      const existingKeys = new Set(customSolveSelectedCells.map((c) => `${c.rowId}-${c.date}`));
       const toAdd: SelectedScheduleCell[] = [];
-      let current = scheduleCampaign.startDate.startOf("day");
-      const end = scheduleCampaign.endDate.startOf("day");
-      while (current.isBefore(end) || current.isSame(end, "day")) {
-        const date = current.format("YYYY-MM-DD");
-        const pd = periodDates.find(
-          (p) => p.date.format("YYYY-MM-DD") === date,
-        );
+      let current = scheduleCampaign.startDate.startOf('day');
+      const end = scheduleCampaign.endDate.startOf('day');
+      while (current.isBefore(end) || current.isSame(end, 'day')) {
+        const date = current.format('YYYY-MM-DD');
+        const pd = periodDates.find((p) => p.date.format('YYYY-MM-DD') === date);
         rowIds.forEach((rowId) => {
           if (!existingKeys.has(`${rowId}-${date}`)) {
             toAdd.push({ rowId, date, scheduleId: pd?.scheduleId ?? null });
           }
         });
-        current = current.add(1, "day");
+        current = current.add(1, 'day');
       }
       handleCustomSelectAll?.([...customSolveSelectedCells, ...toAdd]);
     }
@@ -368,11 +332,11 @@ export default function ExportCell({
   const ExportOptionsMap: { value: number; label: string }[] = [
     {
       value: ExportPeriodOptions.CURRENT_SELECTION,
-      label: t("current_selection"),
+      label: t('current_selection'),
     },
-    { value: ExportPeriodOptions.CAMPAIGN, label: t("campaign") },
-    { value: ExportPeriodOptions.ALL, label: t("all") },
-    { value: ExportPeriodOptions.CUSTOM, label: t("custom") },
+    { value: ExportPeriodOptions.CAMPAIGN, label: t('campaign') },
+    { value: ExportPeriodOptions.ALL, label: t('all') },
+    { value: ExportPeriodOptions.CUSTOM, label: t('custom') },
   ];
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -383,10 +347,7 @@ export default function ExportCell({
     setOpen(false);
   };
 
-  const handleChange = (
-    event: React.MouseEvent<HTMLElement>,
-    newAlignment: number,
-  ) => {
+  const handleChange = (event: React.MouseEvent<HTMLElement>, newAlignment: number) => {
     if (newAlignment !== null) {
       setExportOptionsState((prevState) => ({
         ...prevState,
@@ -398,10 +359,7 @@ export default function ExportCell({
           startDate: periodDates[0].date,
           endDate: periodDates[periodDates.length - 1].date,
         }));
-      } else if (
-        newAlignment === ExportPeriodOptions.CAMPAIGN &&
-        scheduleCampaign
-      ) {
+      } else if (newAlignment === ExportPeriodOptions.CAMPAIGN && scheduleCampaign) {
         setExportOptionsState((prevState) => ({
           ...prevState,
           startDate: dayjs.utc(scheduleCampaign.startDate),
@@ -418,20 +376,16 @@ export default function ExportCell({
   return (
     <TableCell
       sx={{
-        position: "sticky",
+        position: 'sticky',
         left: 0,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: '#FFFFFF',
         padding: 0,
       }}
     >
       <div className="export-cell-container">
-        <button
-          className="export-button"
-          onClick={handleClick}
-          data-testid="export-button"
-        >
-          <Tooltip title={t("export_to_excel")} placement="top">
-            <IosShareIcon sx={{ color: "#616161cf" }} />
+        <button className="export-button" onClick={handleClick} data-testid="export-button">
+          <Tooltip title={t('export_to_excel')} placement="top">
+            <IosShareIcon sx={{ color: '#616161cf' }} />
           </Tooltip>
         </button>
         {isSelectionActive && (
@@ -442,7 +396,7 @@ export default function ExportCell({
             onChange={handleSelectAllChange}
             onClick={(e) => e.stopPropagation()}
             data-testid="export-cell-select-all-checkbox"
-            sx={{ padding: "2px", display: "block", margin: "0 auto" }}
+            sx={{ padding: '2px', display: 'block', margin: '0 auto' }}
           />
         )}
         {isCustomSolveModeActive && (
@@ -454,26 +408,22 @@ export default function ExportCell({
                 handleCustomSelectAllChange();
               }}
               style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                display: "block",
-                margin: "0 auto",
-                padding: "2px",
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'block',
+                margin: '0 auto',
+                padding: '2px',
                 color: isCustomAllSelected
-                  ? "#1976d2"
+                  ? '#1976d2'
                   : isCustomSomeSelected
-                    ? "#42a5f5"
-                    : "#9e9e9e",
+                    ? '#42a5f5'
+                    : '#9e9e9e',
               }}
             >
               <Sparkle
                 size={14}
-                fill={
-                  isCustomAllSelected || isCustomSomeSelected
-                    ? "currentColor"
-                    : "none"
-                }
+                fill={isCustomAllSelected || isCustomSomeSelected ? 'currentColor' : 'none'}
               />
             </button>
           </Tooltip>
@@ -484,7 +434,7 @@ export default function ExportCell({
           data-testid="export-dialog"
           PaperProps={{
             style: {
-              boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+              boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
               padding: 20,
               width: 500,
             },

@@ -17,29 +17,21 @@
  * 10. user_denied_swap
  * 11. user_reversed_swap
  */
-import { test, expect } from "@playwright/test";
-import { randomUUID } from "crypto";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { DatabaseTestUtils, TestUser } from "../../utils/database-utils";
-import { ShiftType } from "@/types/shift";
-import { SwapType } from "@/types/swap";
-import { NotificationTypeT } from "@/types/notification";
+import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { DatabaseTestUtils, TestUser } from '../../utils/database-utils';
+import { ShiftType } from '@/types/shift';
+import { SwapType } from '@/types/swap';
+import { NotificationTypeT } from '@/types/notification';
 
 dayjs.extend(utc);
 
 // Future date: first working day of a month 2 months from now.
-const SWAP_DATE = dayjs
-  .utc()
-  .add(2, "month")
-  .startOf("month")
-  .add(1, "day")
-  .format("YYYY-MM-DD");
+const SWAP_DATE = dayjs.utc().add(2, 'month').startOf('month').add(1, 'day').format('YYYY-MM-DD');
 
-const MEMBER_SWAP_DATE = dayjs
-  .utc(SWAP_DATE)
-  .add(1, "day")
-  .format("YYYY-MM-DD");
+const MEMBER_SWAP_DATE = dayjs.utc(SWAP_DATE).add(1, 'day').format('YYYY-MM-DD');
 
 interface SwapNotifContext {
   dbUtils: DatabaseTestUtils;
@@ -59,32 +51,31 @@ interface SwapNotifContext {
 
 const testContextMap = new Map<string, SwapNotifContext>();
 
-test.describe("Swap notifications", () => {
+test.describe('Swap notifications', () => {
   test.beforeEach(async ({}, testInfo) => {
-    const workerIndex =
-      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     (testInfo as any).testRunId = testRunId;
 
     const dbUtils = new DatabaseTestUtils();
 
     // Create unique users per test run to prevent cross-worker notification leakage.
-    const ownerId = randomUUID().replace(/-/g, "").slice(0, 24);
-    const memberId = randomUUID().replace(/-/g, "").slice(0, 24);
+    const ownerId = randomUUID().replace(/-/g, '').slice(0, 24);
+    const memberId = randomUUID().replace(/-/g, '').slice(0, 24);
 
     const owner: TestUser = {
       user_id: ownerId,
       email: `owner-${ownerId}@example.com`,
       username: `owner-${ownerId}`,
-      first_name: "Swap",
-      last_name: "Owner",
+      first_name: 'Swap',
+      last_name: 'Owner',
     };
     const member: TestUser = {
       user_id: memberId,
       email: `member-${memberId}@example.com`,
       username: `member-${memberId}`,
-      first_name: "Swap",
-      last_name: "Member",
+      first_name: 'Swap',
+      last_name: 'Member',
     };
 
     await dbUtils.createTestUser(owner);
@@ -97,36 +88,28 @@ test.describe("Swap notifications", () => {
     });
 
     // Add member as team member.
-    await dbUtils.addTeamMember(member.user_id, team.teamId, "member");
+    await dbUtils.addTeamMember(member.user_id, team.teamId, 'member');
 
     // Create workers (uses testApiClient / TEST_USER access in dev).
     const ownerWorker = await dbUtils.createWorker({
       teamId: team.teamId,
-      name: "Owner Worker",
+      name: 'Owner Worker',
       weeklyHours: 40,
     });
     const memberWorker = await dbUtils.createWorker({
       teamId: team.teamId,
-      name: "Member Worker",
+      name: 'Member Worker',
       weeklyHours: 40,
     });
 
     // Attach each worker to the corresponding user.
-    await dbUtils.attachWorkerToUser(
-      ownerWorker.id,
-      owner.user_id,
-      team.teamId,
-    );
-    await dbUtils.attachWorkerToUser(
-      memberWorker.id,
-      member.user_id,
-      team.teamId,
-    );
+    await dbUtils.attachWorkerToUser(ownerWorker.id, owner.user_id, team.teamId);
+    await dbUtils.attachWorkerToUser(memberWorker.id, member.user_id, team.teamId);
 
     // Create a normal shift for the team.
     const shift = await dbUtils.createShift({
       teamId: team.teamId,
-      name: "Day Shift",
+      name: 'Day Shift',
       startTime: dayjs.utc().hour(8).minute(0).second(0).millisecond(0),
       endTime: dayjs.utc().hour(16).minute(0).second(0).millisecond(0),
       shiftType: ShiftType.NORMAL,
@@ -148,7 +131,7 @@ test.describe("Swap notifications", () => {
       teamId: team.teamId,
       workerId: memberWorker.id,
       shiftId: shift.id,
-      date: dayjs.utc(SWAP_DATE).add(1, "day"), // slightly different date to avoid conflict
+      date: dayjs.utc(SWAP_DATE).add(1, 'day'), // slightly different date to avoid conflict
       scheduleId: schedule.id,
     });
 
@@ -164,7 +147,7 @@ test.describe("Swap notifications", () => {
       memberWorkerId: memberWorker.id,
       ownerAssignmentId,
       memberAssignmentId,
-      shiftName: "Day Shift",
+      shiftName: 'Day Shift',
     });
   });
 
@@ -177,7 +160,7 @@ test.describe("Swap notifications", () => {
   // ---------------------------------------------------------------------------
   // 1. user_created_direct_swap
   // ---------------------------------------------------------------------------
-  test("target worker is notified when requester creates a direct swap", async ({}, testInfo) => {
+  test('target worker is notified when requester creates a direct swap', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const {
       dbUtils,
@@ -202,17 +185,15 @@ test.describe("Swap notifications", () => {
 
     const notifications = await dbUtils.getNotificationsAs(member.user_id);
     const notification = notifications.find(
-      (n) => n.type === ("user_created_direct_swap" as NotificationTypeT),
+      (n) => n.type === ('user_created_direct_swap' as NotificationTypeT),
     );
 
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(member.user_id);
     expect(notification!.teamId).toBe(team.teamId);
-    expect(notification!.type).toBe(
-      "user_created_direct_swap" as NotificationTypeT,
-    );
+    expect(notification!.type).toBe('user_created_direct_swap' as NotificationTypeT);
     expect(notification!.eventData.swapId).toBe(swap.id);
-    expect(notification!.eventData.requesterName).toBe("Owner Worker");
+    expect(notification!.eventData.requesterName).toBe('Owner Worker');
     expect(notification!.eventData.shiftName).toBe(shiftName);
     expect(notification!.eventData.date).toBe(SWAP_DATE);
     expect(notification!.eventData.teamName).toBe(team.name);
@@ -221,7 +202,7 @@ test.describe("Swap notifications", () => {
   // ---------------------------------------------------------------------------
   // 2. user_accepted_direct_swap
   // ---------------------------------------------------------------------------
-  test("requester is notified when target accepts a direct swap", async ({}, testInfo) => {
+  test('requester is notified when target accepts a direct swap', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const {
       dbUtils,
@@ -247,17 +228,15 @@ test.describe("Swap notifications", () => {
 
     const notifications = await dbUtils.getNotificationsAs(owner.user_id);
     const notification = notifications.find(
-      (n) => n.type === ("user_accepted_direct_swap" as NotificationTypeT),
+      (n) => n.type === ('user_accepted_direct_swap' as NotificationTypeT),
     );
 
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(owner.user_id);
     expect(notification!.teamId).toBe(team.teamId);
-    expect(notification!.type).toBe(
-      "user_accepted_direct_swap" as NotificationTypeT,
-    );
+    expect(notification!.type).toBe('user_accepted_direct_swap' as NotificationTypeT);
     expect(notification!.eventData.swapId).toBe(swap.id);
-    expect(notification!.eventData.targetName).toBe("Member Worker");
+    expect(notification!.eventData.targetName).toBe('Member Worker');
     expect(notification!.eventData.shiftName).toBe(shiftName);
     expect(notification!.eventData.date).toBe(SWAP_DATE);
     expect(notification!.eventData.teamName).toBe(team.name);
@@ -266,7 +245,7 @@ test.describe("Swap notifications", () => {
   // ---------------------------------------------------------------------------
   // 3. user_refused_direct_swap
   // ---------------------------------------------------------------------------
-  test("requester is notified when target refuses a direct swap", async ({}, testInfo) => {
+  test('requester is notified when target refuses a direct swap', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const {
       dbUtils,
@@ -292,17 +271,15 @@ test.describe("Swap notifications", () => {
 
     const notifications = await dbUtils.getNotificationsAs(owner.user_id);
     const notification = notifications.find(
-      (n) => n.type === ("user_refused_direct_swap" as NotificationTypeT),
+      (n) => n.type === ('user_refused_direct_swap' as NotificationTypeT),
     );
 
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(owner.user_id);
     expect(notification!.teamId).toBe(team.teamId);
-    expect(notification!.type).toBe(
-      "user_refused_direct_swap" as NotificationTypeT,
-    );
+    expect(notification!.type).toBe('user_refused_direct_swap' as NotificationTypeT);
     expect(notification!.eventData.swapId).toBe(swap.id);
-    expect(notification!.eventData.refuserName).toBe("Member Worker");
+    expect(notification!.eventData.refuserName).toBe('Member Worker');
     expect(notification!.eventData.shiftName).toBe(shiftName);
     expect(notification!.eventData.date).toBe(SWAP_DATE);
     expect(notification!.eventData.teamName).toBe(team.name);
@@ -311,7 +288,7 @@ test.describe("Swap notifications", () => {
   // ---------------------------------------------------------------------------
   // 4. user_created_open_swap
   // ---------------------------------------------------------------------------
-  test("team members are notified when a worker creates an open swap", async ({}, testInfo) => {
+  test('team members are notified when a worker creates an open swap', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const { dbUtils, team, owner, member, ownerAssignmentId, shiftName } =
       testContextMap.get(testRunId)!;
@@ -322,22 +299,20 @@ test.describe("Swap notifications", () => {
       offeredAssignmentIds: [ownerAssignmentId],
       requestedAssignmentIds: null,
       targetWorkerId: null,
-      comment: "Open swap",
+      comment: 'Open swap',
     });
 
     const notifications = await dbUtils.getNotificationsAs(member.user_id);
     const notification = notifications.find(
-      (n) => n.type === ("user_created_open_swap" as NotificationTypeT),
+      (n) => n.type === ('user_created_open_swap' as NotificationTypeT),
     );
 
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(member.user_id);
     expect(notification!.teamId).toBe(team.teamId);
-    expect(notification!.type).toBe(
-      "user_created_open_swap" as NotificationTypeT,
-    );
+    expect(notification!.type).toBe('user_created_open_swap' as NotificationTypeT);
     expect(notification!.eventData.swapId).toBe(swap.id);
-    expect(notification!.eventData.requesterName).toBe("Owner Worker");
+    expect(notification!.eventData.requesterName).toBe('Owner Worker');
     expect(notification!.eventData.shiftName).toBe(shiftName);
     expect(notification!.eventData.date).toBe(SWAP_DATE);
     expect(notification!.eventData.teamName).toBe(team.name);
@@ -346,7 +321,7 @@ test.describe("Swap notifications", () => {
   // ---------------------------------------------------------------------------
   // 5. user_bid_open_swap
   // ---------------------------------------------------------------------------
-  test("open swap creator is notified when someone bids", async ({}, testInfo) => {
+  test('open swap creator is notified when someone bids', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const {
       dbUtils,
@@ -365,24 +340,22 @@ test.describe("Swap notifications", () => {
       offeredAssignmentIds: [ownerAssignmentId],
       requestedAssignmentIds: null,
       targetWorkerId: null,
-      comment: "Open swap",
+      comment: 'Open swap',
     });
 
-    await dbUtils.addBidToOpenSwapAs(member.user_id, swap.id, memberWorkerId, [
-      memberAssignmentId,
-    ]);
+    await dbUtils.addBidToOpenSwapAs(member.user_id, swap.id, memberWorkerId, [memberAssignmentId]);
 
     const notifications = await dbUtils.getNotificationsAs(owner.user_id);
     const notification = notifications.find(
-      (n) => n.type === ("user_bid_open_swap" as NotificationTypeT),
+      (n) => n.type === ('user_bid_open_swap' as NotificationTypeT),
     );
 
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(owner.user_id);
     expect(notification!.teamId).toBe(team.teamId);
-    expect(notification!.type).toBe("user_bid_open_swap" as NotificationTypeT);
+    expect(notification!.type).toBe('user_bid_open_swap' as NotificationTypeT);
     expect(notification!.eventData.swapId).toBe(swap.id);
-    expect(notification!.eventData.bidderName).toBe("Member Worker");
+    expect(notification!.eventData.bidderName).toBe('Member Worker');
     expect(notification!.eventData.shiftName).toBe(shiftName);
     expect(notification!.eventData.date).toBe(SWAP_DATE);
     expect(notification!.eventData.teamName).toBe(team.name);
@@ -391,7 +364,7 @@ test.describe("Swap notifications", () => {
   // ---------------------------------------------------------------------------
   // 6. user_selected_bid_open_swap
   // ---------------------------------------------------------------------------
-  test("selected bidder is notified when their bid is chosen", async ({}, testInfo) => {
+  test('selected bidder is notified when their bid is chosen', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const {
       dbUtils,
@@ -410,15 +383,12 @@ test.describe("Swap notifications", () => {
       offeredAssignmentIds: [ownerAssignmentId],
       requestedAssignmentIds: null,
       targetWorkerId: null,
-      comment: "Open swap",
+      comment: 'Open swap',
     });
 
-    const swapWithBid = await dbUtils.addBidToOpenSwapAs(
-      member.user_id,
-      swap.id,
-      memberWorkerId,
-      [memberAssignmentId],
-    );
+    const swapWithBid = await dbUtils.addBidToOpenSwapAs(member.user_id, swap.id, memberWorkerId, [
+      memberAssignmentId,
+    ]);
 
     const bid = swapWithBid.bids?.[0];
     expect(bid).toBeDefined();
@@ -427,17 +397,15 @@ test.describe("Swap notifications", () => {
 
     const notifications = await dbUtils.getNotificationsAs(member.user_id);
     const notification = notifications.find(
-      (n) => n.type === ("user_selected_bid_open_swap" as NotificationTypeT),
+      (n) => n.type === ('user_selected_bid_open_swap' as NotificationTypeT),
     );
 
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(member.user_id);
     expect(notification!.teamId).toBe(team.teamId);
-    expect(notification!.type).toBe(
-      "user_selected_bid_open_swap" as NotificationTypeT,
-    );
+    expect(notification!.type).toBe('user_selected_bid_open_swap' as NotificationTypeT);
     expect(notification!.eventData.swapId).toBe(swap.id);
-    expect(notification!.eventData.requesterName).toBe("Owner Worker");
+    expect(notification!.eventData.requesterName).toBe('Owner Worker');
     expect(notification!.eventData.shiftName).toBe(shiftName);
     expect(notification!.eventData.date).toBe(SWAP_DATE);
     expect(notification!.eventData.teamName).toBe(team.name);
@@ -446,7 +414,7 @@ test.describe("Swap notifications", () => {
   // ---------------------------------------------------------------------------
   // 7. user_selected_other_bid_open_swap
   // ---------------------------------------------------------------------------
-  test("non-selected bidders are notified when another bid is chosen", async ({}, testInfo) => {
+  test('non-selected bidders are notified when another bid is chosen', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const {
       dbUtils,
@@ -460,28 +428,24 @@ test.describe("Swap notifications", () => {
     } = testContextMap.get(testRunId)!;
 
     // Create a third unique user who will also bid on the swap.
-    const thirdId = randomUUID().replace(/-/g, "").slice(0, 24);
+    const thirdId = randomUUID().replace(/-/g, '').slice(0, 24);
     const thirdUser: TestUser = {
       user_id: thirdId,
       email: `third-${thirdId}@example.com`,
       username: `third-${thirdId}`,
-      first_name: "Third",
-      last_name: "Bidder",
+      first_name: 'Third',
+      last_name: 'Bidder',
     };
     await dbUtils.createTestUser(thirdUser);
-    await dbUtils.addTeamMember(thirdUser.user_id, team.teamId, "member");
+    await dbUtils.addTeamMember(thirdUser.user_id, team.teamId, 'member');
 
     // Create a third worker and assignment.
     const thirdWorker = await dbUtils.createWorker({
       teamId: team.teamId,
-      name: "Third Bidder Worker",
+      name: 'Third Bidder Worker',
       weeklyHours: 40,
     });
-    await dbUtils.attachWorkerToUser(
-      thirdWorker.id,
-      thirdUser.user_id,
-      team.teamId,
-    );
+    await dbUtils.attachWorkerToUser(thirdWorker.id, thirdUser.user_id, team.teamId);
     const shift = (await dbUtils.getAllShifts(team.teamId)).find(
       (s) => s.shiftType === ShiftType.NORMAL,
     )!;
@@ -491,7 +455,7 @@ test.describe("Swap notifications", () => {
       teamId: team.teamId,
       workerId: thirdWorker.id,
       shiftId: shift.id,
-      date: dayjs.utc(SWAP_DATE).add(2, "day"),
+      date: dayjs.utc(SWAP_DATE).add(2, 'day'),
       scheduleId: schedule.id,
     });
     const thirdAssignmentId = thirdAssignmentResult.assignmentsCreated[0].id;
@@ -503,13 +467,11 @@ test.describe("Swap notifications", () => {
       offeredAssignmentIds: [ownerAssignmentId],
       requestedAssignmentIds: null,
       targetWorkerId: null,
-      comment: "Open swap",
+      comment: 'Open swap',
     });
 
     // member bids (will NOT be selected).
-    await dbUtils.addBidToOpenSwapAs(member.user_id, swap.id, memberWorkerId, [
-      memberAssignmentId,
-    ]);
+    await dbUtils.addBidToOpenSwapAs(member.user_id, swap.id, memberWorkerId, [memberAssignmentId]);
 
     // thirdUser bids (will be selected).
     const swapWithBids = await dbUtils.addBidToOpenSwapAs(
@@ -520,31 +482,22 @@ test.describe("Swap notifications", () => {
     );
 
     // Find the bid by thirdUser.
-    const selectedBid = swapWithBids.bids?.find(
-      (b) => b.workerId === thirdWorker.id,
-    );
+    const selectedBid = swapWithBids.bids?.find((b) => b.workerId === thirdWorker.id);
     expect(selectedBid).toBeDefined();
 
     // Owner selects thirdUser's bid.
-    await dbUtils.acceptBidOnOpenSwapAs(
-      owner.user_id,
-      swap.id,
-      selectedBid!.id,
-    );
+    await dbUtils.acceptBidOnOpenSwapAs(owner.user_id, swap.id, selectedBid!.id);
 
     // member (non-selected bidder) should receive user_selected_other_bid_open_swap.
     const notifications = await dbUtils.getNotificationsAs(member.user_id);
     const notification = notifications.find(
-      (n) =>
-        n.type === ("user_selected_other_bid_open_swap" as NotificationTypeT),
+      (n) => n.type === ('user_selected_other_bid_open_swap' as NotificationTypeT),
     );
 
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(member.user_id);
     expect(notification!.teamId).toBe(team.teamId);
-    expect(notification!.type).toBe(
-      "user_selected_other_bid_open_swap" as NotificationTypeT,
-    );
+    expect(notification!.type).toBe('user_selected_other_bid_open_swap' as NotificationTypeT);
     expect(notification!.eventData.swapId).toBe(swap.id);
     expect(notification!.eventData.shiftName).toBe(shiftName);
     expect(notification!.eventData.date).toBe(SWAP_DATE);
@@ -554,7 +507,7 @@ test.describe("Swap notifications", () => {
   // ---------------------------------------------------------------------------
   // 8. swap_ready_for_review
   // ---------------------------------------------------------------------------
-  test("team owner is notified when a swap is pending approval", async ({}, testInfo) => {
+  test('team owner is notified when a swap is pending approval', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const {
       dbUtils,
@@ -574,7 +527,7 @@ test.describe("Swap notifications", () => {
       offeredAssignmentIds: [ownerAssignmentId],
       requestedAssignmentIds: [memberAssignmentId],
       targetWorkerId: memberWorkerId,
-      comment: "Needs review",
+      comment: 'Needs review',
     });
 
     // Member accepts: swap goes to pending_approval → triggers swap_ready_for_review.
@@ -582,7 +535,7 @@ test.describe("Swap notifications", () => {
 
     const notifications = await dbUtils.getNotificationsAs(owner.user_id);
     const notification = notifications.find(
-      (n) => n.type === ("swap_ready_for_review" as NotificationTypeT),
+      (n) => n.type === ('swap_ready_for_review' as NotificationTypeT),
     );
 
     console.log(notification);
@@ -590,21 +543,19 @@ test.describe("Swap notifications", () => {
     expect(notification).toBeDefined();
     expect(notification!.userId).toBe(owner.user_id);
     expect(notification!.teamId).toBe(team.teamId);
-    expect(notification!.type).toBe(
-      "swap_ready_for_review" as NotificationTypeT,
-    );
+    expect(notification!.type).toBe('swap_ready_for_review' as NotificationTypeT);
     expect(notification!.eventData.swapId).toBe(swap.id);
-    expect(notification!.eventData.requesterName).toBe("Owner Worker");
+    expect(notification!.eventData.requesterName).toBe('Owner Worker');
     expect(notification!.eventData.shiftName).toBe(shiftName);
     expect(notification!.eventData.date).toBe(SWAP_DATE);
     expect(notification!.eventData.teamName).toBe(team.name);
-    expect(notification!.eventData.swapType).toBe("direct");
+    expect(notification!.eventData.swapType).toBe('direct');
   });
 
   // ---------------------------------------------------------------------------
   // 9. user_validated_swap
   // ---------------------------------------------------------------------------
-  test("swap parties are notified when the swap is approved", async ({}, testInfo) => {
+  test('swap parties are notified when the swap is approved', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const {
       dbUtils,
@@ -623,7 +574,7 @@ test.describe("Swap notifications", () => {
       offeredAssignmentIds: [ownerAssignmentId],
       requestedAssignmentIds: [memberAssignmentId],
       targetWorkerId: memberWorkerId,
-      comment: "Approve this",
+      comment: 'Approve this',
     });
 
     await dbUtils.acceptDirectSwapAs(member.user_id, swap.id);
@@ -632,17 +583,15 @@ test.describe("Swap notifications", () => {
     await dbUtils.approveSwapAsUser(swap.id, owner.user_id);
 
     // Both parties should receive user_validated_swap.
-    const memberNotifications = await dbUtils.getNotificationsAs(
-      member.user_id,
-    );
+    const memberNotifications = await dbUtils.getNotificationsAs(member.user_id);
     const memberNotif = memberNotifications.find(
-      (n) => n.type === ("user_validated_swap" as NotificationTypeT),
+      (n) => n.type === ('user_validated_swap' as NotificationTypeT),
     );
 
     expect(memberNotif).toBeDefined();
     expect(memberNotif!.userId).toBe(member.user_id);
     expect(memberNotif!.teamId).toBe(team.teamId);
-    expect(memberNotif!.type).toBe("user_validated_swap" as NotificationTypeT);
+    expect(memberNotif!.type).toBe('user_validated_swap' as NotificationTypeT);
     expect(memberNotif!.eventData.swapId).toBe(swap.id);
     expect(memberNotif!.eventData.ownShiftName).toBe(shiftName);
     expect(memberNotif!.eventData.ownDate).toBe(MEMBER_SWAP_DATE);
@@ -654,7 +603,7 @@ test.describe("Swap notifications", () => {
   // ---------------------------------------------------------------------------
   // 10. user_denied_swap
   // ---------------------------------------------------------------------------
-  test("swap parties are notified when the swap is denied", async ({}, testInfo) => {
+  test('swap parties are notified when the swap is denied', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const {
       dbUtils,
@@ -673,7 +622,7 @@ test.describe("Swap notifications", () => {
       offeredAssignmentIds: [ownerAssignmentId],
       requestedAssignmentIds: [memberAssignmentId],
       targetWorkerId: memberWorkerId,
-      comment: "Deny this",
+      comment: 'Deny this',
     });
 
     await dbUtils.acceptDirectSwapAs(member.user_id, swap.id);
@@ -682,17 +631,15 @@ test.describe("Swap notifications", () => {
     await dbUtils.denySwapAs(owner.user_id, swap.id);
 
     // Both parties should receive user_denied_swap.
-    const memberNotifications = await dbUtils.getNotificationsAs(
-      member.user_id,
-    );
+    const memberNotifications = await dbUtils.getNotificationsAs(member.user_id);
     const memberNotif = memberNotifications.find(
-      (n) => n.type === ("user_denied_swap" as NotificationTypeT),
+      (n) => n.type === ('user_denied_swap' as NotificationTypeT),
     );
 
     expect(memberNotif).toBeDefined();
     expect(memberNotif!.userId).toBe(member.user_id);
     expect(memberNotif!.teamId).toBe(team.teamId);
-    expect(memberNotif!.type).toBe("user_denied_swap" as NotificationTypeT);
+    expect(memberNotif!.type).toBe('user_denied_swap' as NotificationTypeT);
     expect(memberNotif!.eventData.swapId).toBe(swap.id);
     expect(memberNotif!.eventData.shiftName).toBe(shiftName);
     expect(memberNotif!.eventData.date).toBe(SWAP_DATE);
@@ -702,7 +649,7 @@ test.describe("Swap notifications", () => {
   // ---------------------------------------------------------------------------
   // 11. user_reversed_swap
   // ---------------------------------------------------------------------------
-  test("swap parties are notified when a completed swap is reversed", async ({}, testInfo) => {
+  test('swap parties are notified when a completed swap is reversed', async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const {
       dbUtils,
@@ -721,7 +668,7 @@ test.describe("Swap notifications", () => {
       offeredAssignmentIds: [ownerAssignmentId],
       requestedAssignmentIds: [memberAssignmentId],
       targetWorkerId: memberWorkerId,
-      comment: "Then reverse",
+      comment: 'Then reverse',
     });
 
     await dbUtils.acceptDirectSwapAs(member.user_id, swap.id);
@@ -731,17 +678,15 @@ test.describe("Swap notifications", () => {
     await dbUtils.revertSwapAs(owner.user_id, swap.id);
 
     // Both parties should receive user_reversed_swap.
-    const memberNotifications = await dbUtils.getNotificationsAs(
-      member.user_id,
-    );
+    const memberNotifications = await dbUtils.getNotificationsAs(member.user_id);
     const memberNotif = memberNotifications.find(
-      (n) => n.type === ("user_reversed_swap" as NotificationTypeT),
+      (n) => n.type === ('user_reversed_swap' as NotificationTypeT),
     );
 
     expect(memberNotif).toBeDefined();
     expect(memberNotif!.userId).toBe(member.user_id);
     expect(memberNotif!.teamId).toBe(team.teamId);
-    expect(memberNotif!.type).toBe("user_reversed_swap" as NotificationTypeT);
+    expect(memberNotif!.type).toBe('user_reversed_swap' as NotificationTypeT);
     expect(memberNotif!.eventData.swapId).toBe(swap.id);
     expect(memberNotif!.eventData.ownShiftName).toBe(shiftName);
     expect(memberNotif!.eventData.ownDate).toBe(MEMBER_SWAP_DATE);

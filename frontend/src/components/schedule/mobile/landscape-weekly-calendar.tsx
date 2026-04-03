@@ -1,10 +1,10 @@
-import React, { useMemo, useState, useRef, useEffect } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import { ShiftColorMappings } from "../../../constants/constants";
-import { ShiftType } from "../../../types/shift";
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { ShiftColorMappings } from '../../../constants/constants';
+import { ShiftType } from '../../../types/shift';
 
 dayjs.extend(utc);
 
@@ -57,7 +57,7 @@ const calculateAssignmentGridPosition = (
   // simply ends at midnight. For layout calculations we treat that
   // midnight as minute 1440 so durations compute correctly.
   const isMidnightNextDay =
-    endMinutes === 0 && endTime.isSame(startTime.add(1, "day").startOf("day"));
+    endMinutes === 0 && endTime.isSame(startTime.add(1, 'day').startOf('day'));
 
   const effectiveEndMinutes = isMidnightNextDay ? 1440 : endMinutes;
 
@@ -65,7 +65,7 @@ const calculateAssignmentGridPosition = (
   const endsNextDay =
     !isMidnightNextDay &&
     (endTime.isBefore(startTime) ||
-      !endTime.isSame(startTime, "day") ||
+      !endTime.isSame(startTime, 'day') ||
       effectiveEndMinutes < startMinutes);
 
   if (endsNextDay) {
@@ -236,16 +236,14 @@ export default function LandscapeWeeklyCalendar({
     let current = currentWeek.start;
     for (let i = 0; i < 7; i++) {
       days.push(current);
-      current = current.add(1, "day");
+      current = current.add(1, 'day');
     }
     return days;
   }, [currentWeek]);
 
   // Generate hour labels (00:00 - 23:00)
   const hours = useMemo(() => {
-    return Array.from({ length: 24 }, (_, i) =>
-      dayjs.utc().hour(i).minute(0).format("HH:mm"),
-    );
+    return Array.from({ length: 24 }, (_, i) => dayjs.utc().hour(i).minute(0).format('HH:mm'));
   }, []);
 
   // Touch handling for swipe navigation
@@ -275,20 +273,11 @@ export default function LandscapeWeeklyCalendar({
 
   const onTouchEnd = (e: React.TouchEvent) => {
     const finalX =
-      endX !== null && endX !== undefined
-        ? endX
-        : (e.changedTouches?.[0]?.clientX ?? null);
+      endX !== null && endX !== undefined ? endX : (e.changedTouches?.[0]?.clientX ?? null);
     const finalY =
-      endY !== null && endY !== undefined
-        ? endY
-        : (e.changedTouches?.[0]?.clientY ?? null);
+      endY !== null && endY !== undefined ? endY : (e.changedTouches?.[0]?.clientY ?? null);
 
-    if (
-      startX === null ||
-      startY === null ||
-      finalX === null ||
-      finalY === null
-    ) {
+    if (startX === null || startY === null || finalX === null || finalY === null) {
       setStartX(null);
       setStartY(null);
       setEndX(null);
@@ -301,10 +290,8 @@ export default function LandscapeWeeklyCalendar({
     const absX = Math.abs(dx);
     const absY = Math.abs(dy);
 
-    const isMostlyHorizontal =
-      absX >= minSwipeDistance && absX >= absY * directionalRatioThreshold;
-    const isMostlyVertical =
-      absY >= minSwipeDistance && absY >= absX * directionalRatioThreshold;
+    const isMostlyHorizontal = absX >= minSwipeDistance && absX >= absY * directionalRatioThreshold;
+    const isMostlyVertical = absY >= minSwipeDistance && absY >= absX * directionalRatioThreshold;
 
     if (isMostlyHorizontal) {
       if (dx < 0) {
@@ -329,7 +316,7 @@ export default function LandscapeWeeklyCalendar({
     const result: Map<string, PositionedAssignment[]> = new Map();
 
     weekDays.forEach((day) => {
-      const dateKey = day.format("YYYY-MM-DD");
+      const dateKey = day.format('YYYY-MM-DD');
       const dayAssignments = assignmentsByDate.get(dateKey) || [];
       // Don't include overnight second parts for current day assignments
       const positioned = calculateAssignmentPositions(
@@ -341,8 +328,8 @@ export default function LandscapeWeeklyCalendar({
       result.set(dateKey, positioned);
 
       // Also check for overnight assignments from the previous day
-      const prevDay = day.subtract(1, "day");
-      const prevDateKey = prevDay.format("YYYY-MM-DD");
+      const prevDay = day.subtract(1, 'day');
+      const prevDateKey = prevDay.format('YYYY-MM-DD');
       const prevAssignments = assignmentsByDate.get(prevDateKey) || [];
       // Include overnight second parts for previous day assignments
       const prevPositioned = calculateAssignmentPositions(
@@ -364,23 +351,18 @@ export default function LandscapeWeeklyCalendar({
   }, [weekDays, assignmentsByDate, shifts]);
 
   // Render assignment block
-  const renderAssignment = (
-    positioned: PositionedAssignment,
-    dateKey: string,
-  ) => {
+  const renderAssignment = (positioned: PositionedAssignment, dateKey: string) => {
     const { assignment, shift, top, height, width, left } = positioned;
     const colors = ShiftColorMappings[shift.color] || {
-      background: "#f5f5f5",
-      sample: "#9e9e9e",
-      text: "#212121",
+      background: '#f5f5f5',
+      sample: '#9e9e9e',
+      text: '#212121',
     };
 
     const isDuty = shift.shiftType === ShiftType.DUTY;
-    const startTime = dayjs.utc(shift.startTime).format("HH:mm");
-    const endTime = dayjs.utc(shift.endTime).format("HH:mm");
-    const endsNextDay = !dayjs
-      .utc(shift.endTime)
-      .isSame(dayjs.utc(shift.startTime), "day");
+    const startTime = dayjs.utc(shift.startTime).format('HH:mm');
+    const endTime = dayjs.utc(shift.endTime).format('HH:mm');
+    const endsNextDay = !dayjs.utc(shift.endTime).isSame(dayjs.utc(shift.startTime), 'day');
 
     // Use acronym if block is too small (< 60px height)
     // Assuming 24 hours fills viewport height, height % maps roughly to pixels
@@ -388,7 +370,7 @@ export default function LandscapeWeeklyCalendar({
 
     return (
       <Box
-        key={`${assignment.id}-${positioned.isSecondPart ? "part2" : "part1"}`}
+        key={`${assignment.id}-${positioned.isSecondPart ? 'part2' : 'part1'}`}
         onClick={
           canEdit
             ? () => {
@@ -397,27 +379,27 @@ export default function LandscapeWeeklyCalendar({
             : undefined
         }
         sx={{
-          position: "absolute",
+          position: 'absolute',
           top: `${top}%`,
           height: `${height}%`,
           left: `${left}%`,
           width: `${width}%`,
           backgroundColor: colors.background,
           color: colors.text,
-          borderLeft: isDuty ? `6px solid ${colors.sample}` : "none",
+          borderLeft: isDuty ? `6px solid ${colors.sample}` : 'none',
           borderRadius: positioned.isOvernight
-            ? "4px 4px 0 0" // First part: round top only
+            ? '4px 4px 0 0' // First part: round top only
             : positioned.isSecondPart
-              ? "0 0 4px 4px" // Second part: round bottom only
+              ? '0 0 4px 4px' // Second part: round bottom only
               : 1, // Normal shift: round all corners
           padding: 0.5,
-          cursor: canEdit ? "pointer" : "default",
-          overflow: "hidden",
-          minHeight: "30px",
-          fontSize: "0.75rem",
-          display: "flex",
-          flexDirection: "column",
-          "&:hover": {
+          cursor: canEdit ? 'pointer' : 'default',
+          overflow: 'hidden',
+          minHeight: '30px',
+          fontSize: '0.75rem',
+          display: 'flex',
+          flexDirection: 'column',
+          '&:hover': {
             opacity: 0.9,
           },
         }}
@@ -426,11 +408,11 @@ export default function LandscapeWeeklyCalendar({
           variant="caption"
           sx={{
             fontWeight: 600,
-            fontSize: "0.7rem",
+            fontSize: '0.7rem',
             lineHeight: 1.2,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}
         >
           {useAcronym ? shift.acronym : shift.name}
@@ -439,7 +421,7 @@ export default function LandscapeWeeklyCalendar({
           <Typography
             variant="caption"
             sx={{
-              fontSize: "0.65rem",
+              fontSize: '0.65rem',
               lineHeight: 1.1,
               color: colors.text,
               opacity: 0.9,
@@ -459,58 +441,55 @@ export default function LandscapeWeeklyCalendar({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
       sx={{
-        height: "calc(100vh - 80px)", // Account for nav bar
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
+        height: 'calc(100vh - 80px)', // Account for nav bar
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
       }}
     >
       {/* Day headers (sticky) */}
       <Box
         sx={{
-          display: "grid",
-          gridTemplateColumns: "45px repeat(7, 1fr)",
-          borderBottom: "2px solid #e0e0e0",
-          backgroundColor: "#fff",
-          position: "sticky",
+          display: 'grid',
+          gridTemplateColumns: '45px repeat(7, 1fr)',
+          borderBottom: '2px solid #e0e0e0',
+          backgroundColor: '#fff',
+          position: 'sticky',
           top: 0,
           zIndex: 10,
         }}
       >
         <Box sx={{ padding: 1 }} /> {/* Empty corner */}
         {weekDays.map((day) => {
-          const isToday = day.isSame(today, "day");
+          const isToday = day.isSame(today, 'day');
           return (
             <Box
-              key={day.format("YYYY-MM-DD")}
+              key={day.format('YYYY-MM-DD')}
               sx={{
-                padding: "2px",
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                padding: '2px',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
               }}
             >
-              <Typography
-                variant="caption"
-                sx={{ color: isToday ? "#1a73e8" : undefined }}
-              >
-                {day.format("ddd")}
+              <Typography variant="caption" sx={{ color: isToday ? '#1a73e8' : undefined }}>
+                {day.format('ddd')}
               </Typography>
               <Typography
                 variant="h6"
                 sx={{
                   width: 32,
                   height: 32,
-                  borderRadius: isToday ? "50%" : undefined,
-                  backgroundColor: isToday ? "#1a73e8" : undefined,
-                  color: isToday ? "#fff" : undefined,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  borderRadius: isToday ? '50%' : undefined,
+                  backgroundColor: isToday ? '#1a73e8' : undefined,
+                  color: isToday ? '#fff' : undefined,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                {day.format("D")}
+                {day.format('D')}
               </Typography>
             </Box>
           );
@@ -524,10 +503,10 @@ export default function LandscapeWeeklyCalendar({
         }}
         sx={{
           flex: 1,
-          overflowY: "auto",
-          display: "grid",
-          gridTemplateColumns: "45px repeat(7, 1fr)",
-          position: "relative",
+          overflowY: 'auto',
+          display: 'grid',
+          gridTemplateColumns: '45px repeat(7, 1fr)',
+          position: 'relative',
         }}
       >
         {/* Time column and hour grid lines */}
@@ -538,12 +517,12 @@ export default function LandscapeWeeklyCalendar({
               sx={{
                 gridColumn: 1,
                 gridRow: index + 1,
-                padding: "4px 8px",
-                fontSize: "0.7rem",
-                color: "text.secondary",
-                textAlign: "right",
-                borderTop: "1px solid #e0e0e0",
-                height: "60px", // Each hour slot
+                padding: '4px 8px',
+                fontSize: '0.7rem',
+                color: 'text.secondary',
+                textAlign: 'right',
+                borderTop: '1px solid #e0e0e0',
+                height: '60px', // Each hour slot
               }}
             >
               {hour}
@@ -552,36 +531,32 @@ export default function LandscapeWeeklyCalendar({
             {/* Grid lines across day columns */}
             {weekDays.map((day, dayIndex) => (
               <Box
-                key={`${day.format("YYYY-MM-DD")}-${hour}`}
+                key={`${day.format('YYYY-MM-DD')}-${hour}`}
                 sx={{
                   gridColumn: dayIndex + 2,
                   gridRow: index + 1,
-                  borderTop: "1px solid #e0e0e0",
-                  borderLeft: dayIndex === 0 ? "1px solid #e0e0e0" : "none",
-                  borderRight: "1px solid #e0e0e0",
-                  height: "60px",
-                  position: "relative",
+                  borderTop: '1px solid #e0e0e0',
+                  borderLeft: dayIndex === 0 ? '1px solid #e0e0e0' : 'none',
+                  borderRight: '1px solid #e0e0e0',
+                  height: '60px',
+                  position: 'relative',
                 }}
               >
                 {/* Render assignments for this day (positioned absolutely within the day column) */}
                 {index === 0 && ( // Only render once per day column
                   <Box
                     sx={{
-                      position: "absolute",
+                      position: 'absolute',
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: "1440px", // 24 hours * 60px per hour
+                      height: '1440px', // 24 hours * 60px per hour
                       zIndex: 2,
-                      pointerEvents: "auto",
+                      pointerEvents: 'auto',
                     }}
                   >
-                    {(
-                      positionedAssignmentsByDay.get(
-                        day.format("YYYY-MM-DD"),
-                      ) || []
-                    ).map((positioned) =>
-                      renderAssignment(positioned, day.format("YYYY-MM-DD")),
+                    {(positionedAssignmentsByDay.get(day.format('YYYY-MM-DD')) || []).map(
+                      (positioned) => renderAssignment(positioned, day.format('YYYY-MM-DD')),
                     )}
                   </Box>
                 )}

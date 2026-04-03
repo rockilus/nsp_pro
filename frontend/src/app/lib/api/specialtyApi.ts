@@ -2,9 +2,9 @@
  * API client for specialty operations
  */
 
-import { SpecialtyT } from "../../../types/specialty";
-import { WorkerT } from "../../../types/worker";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { SpecialtyT } from '../../../types/specialty';
+import { WorkerT } from '../../../types/worker';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class SpecialtyApi extends BaseApi {
   /**
@@ -13,21 +13,21 @@ export class SpecialtyApi extends BaseApi {
   static async addSpecialty(
     apiClient: AuthenticatedApiClient,
     specialty: SpecialtyT,
-    teamId: string
+    teamId: string,
   ): Promise<SpecialtyT> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!specialty || !specialty.name?.trim()) {
-      throw new Error("Specialty name is required");
+      throw new Error('Specialty name is required');
     }
 
     const responseData = await this.makeRequest<SpecialtyT>(
       apiClient,
-      "post",
+      'post',
       `/specialties/teams/${teamId}`,
-      specialty
+      specialty,
     );
     return responseData;
   }
@@ -37,17 +37,17 @@ export class SpecialtyApi extends BaseApi {
    */
   static async getSpecialties(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<SpecialtyT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<SpecialtyT[]>(
       apiClient,
-      "get",
-      `/specialties/teams/${teamId}`
+      'get',
+      `/specialties/teams/${teamId}`,
     );
     return responseData;
   }
@@ -58,24 +58,24 @@ export class SpecialtyApi extends BaseApi {
   static async updateSpecialty(
     apiClient: AuthenticatedApiClient,
     updatedSpecialty: SpecialtyT,
-    teamId: string
+    teamId: string,
   ): Promise<SpecialtyT> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!updatedSpecialty || !updatedSpecialty.id) {
-      throw new Error("Valid specialty with ID is required");
+      throw new Error('Valid specialty with ID is required');
     }
     if (!updatedSpecialty.name?.trim()) {
-      throw new Error("Specialty name is required");
+      throw new Error('Specialty name is required');
     }
 
     const responseData = await this.makeRequest<SpecialtyT>(
       apiClient,
-      "put",
+      'put',
       `/specialties/${updatedSpecialty.id}/teams/${teamId}`,
-      updatedSpecialty
+      updatedSpecialty,
     );
     return responseData;
   }
@@ -86,20 +86,20 @@ export class SpecialtyApi extends BaseApi {
   static async deleteSpecialty(
     apiClient: AuthenticatedApiClient,
     specialtyId: string,
-    teamId: string
+    teamId: string,
   ): Promise<WorkerT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
     if (!specialtyId) {
-      throw new Error("Specialty ID is required");
+      throw new Error('Specialty ID is required');
     }
 
     const responseData = await this.makeRequest<WorkerT[]>(
       apiClient,
-      "delete",
-      `/specialties/${specialtyId}/teams/${teamId}`
+      'delete',
+      `/specialties/${specialtyId}/teams/${teamId}`,
     );
     return responseData;
   }

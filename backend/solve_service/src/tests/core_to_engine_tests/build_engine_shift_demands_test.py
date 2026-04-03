@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from typing import List
 
 import pytest
 from shared.schemas.core import EngineInputsAugmented, Shift, Worker
@@ -11,8 +10,10 @@ from core_to_engine_service.build_engine_shift_demands import (
 from engine import ShiftDemand as ShiftDemandEngine
 
 # pylint: disable=unused-import
-from tests.sample_data import sample_data_benoit_case_fixture  # noqa: F401
-from tests.sample_data import test_data_set_1
+from tests.sample_data import (
+    sample_data_benoit_case_fixture,  # noqa: F401
+    test_data_set_1,
+)
 
 
 class TestBuildEngineShiftDemands:
@@ -54,7 +55,7 @@ class TestBuildEngineShiftDemands:
     # pylint: disable=R0801
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_workers(self, sample_data: EngineInputsAugmented) -> None:
-        workers: List[Worker] = []
+        workers: list[Worker] = []
         shifts = sample_data.shifts
         schedule = sample_data.schedule
         daily_shift_demands = sample_data.shift_demands
@@ -90,7 +91,7 @@ class TestBuildEngineShiftDemands:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_shifts(self, sample_data: EngineInputsAugmented) -> None:
         workers = sample_data.workers
-        shifts: List[Shift] = []
+        shifts: list[Shift] = []
         schedule = sample_data.schedule
         daily_shift_demands = sample_data.shift_demands
         fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed

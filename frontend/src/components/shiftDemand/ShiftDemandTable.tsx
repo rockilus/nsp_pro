@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Dayjs } from "dayjs";
+import React, { useState } from 'react';
+import { Dayjs } from 'dayjs';
 import {
   Table,
   TableContainer,
@@ -11,15 +11,15 @@ import {
   Checkbox,
   Tooltip,
   CircularProgress,
-} from "@mui/material";
-import { Add, Remove } from "@mui/icons-material";
-import { useTranslation } from "../../app/i18n/client";
-import { ShiftT, ShiftType } from "../../types/shift";
-import { MultitaskingSelectionState } from "../../types/multitasking";
-import { ShiftColorMappings } from "../../constants/constants";
-import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
-import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
-import "./ShiftDemandTable.css";
+} from '@mui/material';
+import { Add, Remove } from '@mui/icons-material';
+import { useTranslation } from '../../app/i18n/client';
+import { ShiftT, ShiftType } from '../../types/shift';
+import { MultitaskingSelectionState } from '../../types/multitasking';
+import { ShiftColorMappings } from '../../constants/constants';
+import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
+import ColumnSortFilterMenu from '../table/ColumnSortFilterMenu';
+import './ShiftDemandTable.css';
 
 // Types
 interface SelectedCell {
@@ -45,11 +45,7 @@ interface ShiftDemandTableProps {
   isShiftDemandSelected?: (shiftId: string, date: Dayjs) => boolean;
   // Regular props
   getDemandValue: (shiftId: string, date: Dayjs) => number;
-  handleCellChange: (
-    shiftId: string,
-    date: Dayjs,
-    value: string
-  ) => Promise<void>;
+  handleCellChange: (shiftId: string, date: Dayjs, value: string) => Promise<void>;
   isCellSelected: (shiftId: string, date: Dayjs) => boolean;
   toggleCellSelection: (shiftId: string, date: Dayjs) => void;
   selectAllRowCells: (shiftId: string) => void;
@@ -107,14 +103,14 @@ function ShiftDemandCell({
 
   // Get shift colors from the mapping
   const { background, sample, text } = ShiftColorMappings[shift.color] || {
-    background: "#f5f5f5",
-    sample: "#9e9e9e",
-    text: "#212121",
+    background: '#f5f5f5',
+    sample: '#9e9e9e',
+    text: '#212121',
   };
 
   const handleAddDemand = async () => {
     if (isSaving) return;
-    await onCellChange(shiftId, date, "1");
+    await onCellChange(shiftId, date, '1');
   };
 
   const handleIncrement = async (e: React.MouseEvent) => {
@@ -132,7 +128,7 @@ function ShiftDemandCell({
 
   const handleCellClick = () => {
     if (isMultitaskingMode && onToggleMultitaskingSelection) {
-      const shiftDemandId = `${shiftId}-${date.format("YYYY-MM-DD")}`;
+      const shiftDemandId = `${shiftId}-${date.format('YYYY-MM-DD')}`;
       onToggleMultitaskingSelection(shiftDemandId);
     } else if (value === 0) {
       handleAddDemand();
@@ -141,14 +137,14 @@ function ShiftDemandCell({
 
   // Apply multitasking styling
   const getCellClassName = () => {
-    let className = `shift-demand-cell ${isWeekend ? "weekend" : ""}`;
+    let className = `shift-demand-cell ${isWeekend ? 'weekend' : ''}`;
     if (isMultitaskingMode) {
       if (!isSelectable) {
-        className += " multitasking-disabled";
+        className += ' multitasking-disabled';
       } else if (isMultitaskingSelected) {
-        className += " multitasking-selected";
+        className += ' multitasking-selected';
       } else {
-        className += " multitasking-available";
+        className += ' multitasking-available';
       }
     }
     return className;
@@ -157,30 +153,24 @@ function ShiftDemandCell({
   return (
     <TableCell
       className={getCellClassName()}
-      data-testid={`shift-demand-cell-${shiftId}-${date.format("YYYY-MM-DD")}`}
+      data-testid={`shift-demand-cell-${shiftId}-${date.format('YYYY-MM-DD')}`}
       style={
         {
-          "--shift-bg-color": background,
-          "--shift-sample-color": sample,
-          "--shift-text-color": text,
+          '--shift-bg-color': background,
+          '--shift-sample-color': sample,
+          '--shift-text-color': text,
         } as React.CSSProperties
       }
       onClick={isMultitaskingMode ? handleCellClick : undefined}
       sx={{
-        cursor: isMultitaskingMode
-          ? isSelectable
-            ? "pointer"
-            : "not-allowed"
-          : "default",
+        cursor: isMultitaskingMode ? (isSelectable ? 'pointer' : 'not-allowed') : 'default',
         opacity: isMultitaskingMode && !isSelectable ? 0.5 : 1,
       }}
     >
       {isBulkMode ? (
-        <div className={`shift-demand-bulk ${isSelected ? "selected" : ""}`}>
+        <div className={`shift-demand-bulk ${isSelected ? 'selected' : ''}`}>
           <Checkbox
-            data-testid={`cell-select-checkbox-${shiftId}-${date.format(
-              "YYYY-MM-DD"
-            )}`}
+            data-testid={`cell-select-checkbox-${shiftId}-${date.format('YYYY-MM-DD')}`}
             checked={isSelected}
             onChange={() => onToggleSelection(shiftId, date)}
             size="small"
@@ -191,19 +181,15 @@ function ShiftDemandCell({
         </div>
       ) : (
         <div
-          className={`shift-demand-cell-content ${
-            value === 0 ? "clickable" : ""
-          }`}
+          className={`shift-demand-cell-content ${value === 0 ? 'clickable' : ''}`}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
           {value === 0 ? (
             // Empty state with shift color theming
             <div
-              className={`shift-demand-empty ${isHovered ? "hovered" : ""}`}
-              data-testid={`shift-demand-empty-${shiftId}-${date.format(
-                "YYYY-MM-DD"
-              )}`}
+              className={`shift-demand-empty ${isHovered ? 'hovered' : ''}`}
+              data-testid={`shift-demand-empty-${shiftId}-${date.format('YYYY-MM-DD')}`}
               onClick={!isMultitaskingMode ? handleAddDemand : undefined}
             >
               {isSaving ? (
@@ -215,36 +201,27 @@ function ShiftDemandCell({
           ) : (
             // Demand state with shift color theming
             <div
-              className={`shift-demand-content ${isHovered ? "hovered" : ""} ${
-                isSaving ? "saving" : ""
+              className={`shift-demand-content ${isHovered ? 'hovered' : ''} ${
+                isSaving ? 'saving' : ''
               }`}
             >
-              {isSaving && (
-                <CircularProgress size={16} className="shift-demand-loading" />
-              )}
+              {isSaving && <CircularProgress size={16} className="shift-demand-loading" />}
 
               {/* Decrement button */}
               {isHovered && !isSaving && !isMultitaskingMode && (
                 <button
                   onClick={handleDecrement}
                   className="shift-demand-button decrement"
-                  data-testid={`shift-demand-decrement-${shiftId}-${date.format(
-                    "YYYY-MM-DD"
-                  )}`}
+                  data-testid={`shift-demand-decrement-${shiftId}-${date.format('YYYY-MM-DD')}`}
                 >
-                  <Remove
-                    className="shift-demand-button-icon"
-                    sx={{ fontSize: "14px" }}
-                  />
+                  <Remove className="shift-demand-button-icon" sx={{ fontSize: '14px' }} />
                 </button>
               )}
 
               {/* Value display */}
               <span
-                className={`shift-demand-value ${isSaving ? "saving" : ""}`}
-                data-testid={`shift-demand-value-${shiftId}-${date.format(
-                  "YYYY-MM-DD"
-                )}`}
+                className={`shift-demand-value ${isSaving ? 'saving' : ''}`}
+                data-testid={`shift-demand-value-${shiftId}-${date.format('YYYY-MM-DD')}`}
               >
                 {value}
               </span>
@@ -254,14 +231,9 @@ function ShiftDemandCell({
                 <button
                   onClick={handleIncrement}
                   className="shift-demand-button increment"
-                  data-testid={`shift-demand-increment-${shiftId}-${date.format(
-                    "YYYY-MM-DD"
-                  )}`}
+                  data-testid={`shift-demand-increment-${shiftId}-${date.format('YYYY-MM-DD')}`}
                 >
-                  <Add
-                    className="shift-demand-button-icon"
-                    sx={{ fontSize: "14px" }}
-                  />
+                  <Add className="shift-demand-button-icon" sx={{ fontSize: '14px' }} />
                 </button>
               )}
             </div>
@@ -287,12 +259,12 @@ function ShiftDemandRowHeader({
   onSelectRow,
 }: ShiftDemandRowHeaderProps) {
   const { background, sample, text } = ShiftColorMappings[shift.color] || {
-    background: "#f5f5f5",
-    sample: "#9e9e9e",
-    text: "#212121",
+    background: '#f5f5f5',
+    sample: '#9e9e9e',
+    text: '#212121',
   };
 
-  const isNextDay = !shift.endTime.isSame(shift.startTime, "day");
+  const isNextDay = !shift.endTime.isSame(shift.startTime, 'day');
   const isDutyShift = shift.shiftType === ShiftType.DUTY;
 
   return (
@@ -303,16 +275,14 @@ function ShiftDemandRowHeader({
         padding: 0,
         minWidth: 180,
         maxWidth: 220,
-        position: "relative",
+        position: 'relative',
       }}
     >
       <div className="shift-demand-row-header-container">
         {/* Shift type marker for duty shifts, placeholder for non-duty shifts */}
         <div
-          className={`shift-demand-type-marker ${
-            isDutyShift ? "duty" : "placeholder"
-          }`}
-          style={{ "--bg-color": sample } as React.CSSProperties}
+          className={`shift-demand-type-marker ${isDutyShift ? 'duty' : 'placeholder'}`}
+          style={{ '--bg-color': sample } as React.CSSProperties}
         />
 
         {/* Bulk mode checkbox */}
@@ -333,7 +303,7 @@ function ShiftDemandRowHeader({
               variant="body2"
               className="shift-demand-name"
               data-testid={`shift-demand-name-${shift.id}`}
-              sx={{ fontSize: "0.875rem", fontWeight: 550 }}
+              sx={{ fontSize: '0.875rem', fontWeight: 550 }}
             >
               {shift.name || shift.acronym}
             </Typography>
@@ -345,16 +315,16 @@ function ShiftDemandRowHeader({
           <Typography
             variant="caption"
             className="shift-demand-time"
-            sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+            sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
           >
-            {shift.startTime.format("HH:mm")}
+            {shift.startTime.format('HH:mm')}
           </Typography>
           <Typography
             variant="caption"
             className="shift-demand-time"
-            sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+            sx={{ fontSize: '0.75rem', color: 'text.secondary' }}
           >
-            {shift.endTime.format("HH:mm")}
+            {shift.endTime.format('HH:mm')}
             {isNextDay && <sup>+1</sup>}
           </Typography>
         </div>
@@ -375,11 +345,7 @@ interface ShiftDemandRowProps {
   isShiftDemandSelected?: (shiftId: string, date: Dayjs) => boolean;
   // Regular props
   getDemandValue: (shiftId: string, date: Dayjs) => number;
-  handleCellChange: (
-    shiftId: string,
-    date: Dayjs,
-    value: string
-  ) => Promise<void>;
+  handleCellChange: (shiftId: string, date: Dayjs, value: string) => Promise<void>;
   isCellSelected: (shiftId: string, date: Dayjs) => boolean;
   toggleCellSelection: (shiftId: string, date: Dayjs) => void;
   selectAllRowCells: (shiftId: string) => void;
@@ -405,10 +371,7 @@ function ShiftDemandRow({
   isRowSelected,
   savingCells,
 }: ShiftDemandRowProps) {
-  const shiftTotal = dates.reduce(
-    (sum, date) => sum + getDemandValue(shift.id, date),
-    0
-  );
+  const shiftTotal = dates.reduce((sum, date) => sum + getDemandValue(shift.id, date), 0);
 
   return (
     <TableRow hover>
@@ -422,7 +385,7 @@ function ShiftDemandRow({
         const value = getDemandValue(shift.id, date);
         const isWeekend = date.day() === 0 || date.day() === 6;
         const isSelected = isCellSelected(shift.id, date);
-        const cellKey = `${shift.id}-${date.format("YYYY-MM-DD")}`;
+        const cellKey = `${shift.id}-${date.format('YYYY-MM-DD')}`;
         const isSaving = savingCells.has(cellKey);
 
         return (
@@ -438,15 +401,9 @@ function ShiftDemandRow({
             shift={shift} // Pass the shift object
             // Multitasking props
             isMultitaskingMode={multitaskingState?.isActive || false}
-            isSelectable={
-              isShiftDemandSelectable
-                ? isShiftDemandSelectable(shift.id, date)
-                : true
-            }
+            isSelectable={isShiftDemandSelectable ? isShiftDemandSelectable(shift.id, date) : true}
             isMultitaskingSelected={
-              isShiftDemandSelected
-                ? isShiftDemandSelected(shift.id, date)
-                : false
+              isShiftDemandSelected ? isShiftDemandSelected(shift.id, date) : false
             }
             onCellChange={handleCellChange}
             onToggleSelection={toggleCellSelection}
@@ -490,33 +447,27 @@ function ShiftDemandTableHeader({
   onFilter,
   shiftColumn,
 }: ShiftDemandTableHeaderProps) {
-  const { t } = useTranslation(lng, "shift-demands");
+  const { t } = useTranslation(lng, 'shift-demands');
 
   return (
     <TableHead>
       <TableRow>
-        <TableCell
-          className="shift-demand-table-header"
-          sx={{ position: "relative" }}
-        >
+        <TableCell className="shift-demand-table-header" sx={{ position: 'relative' }}>
           <div className="shift-demand-header-content">
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {bulkChangeState.isActive ? (
                 <>
                   <Checkbox
                     data-testid="select-all-checkbox"
                     checked={isAllSelected()}
-                    indeterminate={
-                      bulkChangeState.selectedCells.length > 0 &&
-                      !isAllSelected()
-                    }
+                    indeterminate={bulkChangeState.selectedCells.length > 0 && !isAllSelected()}
                     onChange={selectAllCells}
                     size="small"
                   />
-                  <Typography variant="body2">{t("shift")}</Typography>
+                  <Typography variant="body2">{t('shift')}</Typography>
                 </>
               ) : (
-                <Typography variant="body2">{t("shift")}</Typography>
+                <Typography variant="body2">{t('shift')}</Typography>
               )}
             </div>
 
@@ -536,36 +487,29 @@ function ShiftDemandTableHeader({
           <TableCell
             key={date.toISOString()}
             className={`shift-demand-table-header date-column ${
-              date.day() === 0 || date.day() === 6 ? "weekend" : ""
+              date.day() === 0 || date.day() === 6 ? 'weekend' : ''
             }`}
-            data-testid={`date-header-${date.format("YYYY-MM-DD")}`}
+            data-testid={`date-header-${date.format('YYYY-MM-DD')}`}
           >
             <div className="shift-demand-date-info">
               {bulkChangeState.isActive && (
                 <Checkbox
-                  data-testid={`column-select-checkbox-${date.format(
-                    "YYYY-MM-DD"
-                  )}`}
+                  data-testid={`column-select-checkbox-${date.format('YYYY-MM-DD')}`}
                   checked={isColumnSelected(date)}
                   onChange={() => selectAllColumnCells(date)}
                   size="small"
                 />
               )}
-              <Typography
-                variant="caption"
-                sx={{ fontSize: "0.75rem", display: "block" }}
-              >
-                {date.format("ddd")}
+              <Typography variant="caption" sx={{ fontSize: '0.75rem', display: 'block' }}>
+                {date.format('ddd')}
               </Typography>
-              <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
-                {date.format("D")}
+              <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+                {date.format('D')}
               </Typography>
             </div>
           </TableCell>
         ))}
-        <TableCell className="shift-demand-table-header total-column">
-          {t("total")}
-        </TableCell>
+        <TableCell className="shift-demand-table-header total-column">{t('total')}</TableCell>
       </TableRow>
     </TableHead>
   );
@@ -584,11 +528,7 @@ interface ShiftDemandTableBodyProps {
   isShiftDemandSelected?: (shiftId: string, date: Dayjs) => boolean;
   // Regular props
   getDemandValue: (shiftId: string, date: Dayjs) => number;
-  handleCellChange: (
-    shiftId: string,
-    date: Dayjs,
-    value: string
-  ) => Promise<void>;
+  handleCellChange: (shiftId: string, date: Dayjs, value: string) => Promise<void>;
   isCellSelected: (shiftId: string, date: Dayjs) => boolean;
   toggleCellSelection: (shiftId: string, date: Dayjs) => void;
   selectAllRowCells: (shiftId: string) => void;
@@ -665,7 +605,7 @@ export default function ShiftDemandTable({
   isColumnSelected,
   isAllSelected,
   savingCells,
-  maxHeight = "70vh", // Default to 70% of viewport height
+  maxHeight = '70vh', // Default to 70% of viewport height
   currentSort,
   currentFilter,
   onSort,
@@ -676,36 +616,35 @@ export default function ShiftDemandTable({
     <TableContainer
       sx={{
         maxHeight: maxHeight,
-        overflowY: "auto",
-        overflowX: "auto",
+        overflowY: 'auto',
+        overflowX: 'auto',
         // Ensure smooth scrolling
-        scrollBehavior: "smooth",
+        scrollBehavior: 'smooth',
         // Add subtle border to indicate scrollable area
-        border: "1px solid",
-        borderColor: "divider",
+        border: '1px solid',
+        borderColor: 'divider',
         borderRadius: 1,
         // Ensure the sticky header has proper z-index
-        "& .MuiTableHead-root": {
-          position: "sticky",
+        '& .MuiTableHead-root': {
+          position: 'sticky',
           top: 0,
           zIndex: 2,
-          backgroundColor: "background.paper",
+          backgroundColor: 'background.paper',
         },
         // Add subtle shadow under header when scrolling
-        "& .MuiTableHead-root::after": {
+        '& .MuiTableHead-root::after': {
           content: '""',
-          position: "absolute",
+          position: 'absolute',
           bottom: -1,
           left: 0,
           right: 0,
-          height: "1px",
-          background:
-            "linear-gradient(to right, transparent, rgba(0,0,0,0.1), transparent)",
+          height: '1px',
+          background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.1), transparent)',
           opacity: 0,
-          transition: "opacity 0.2s ease-in-out",
+          transition: 'opacity 0.2s ease-in-out',
         },
         // Show shadow when scrolled
-        "&.scrolled .MuiTableHead-root::after": {
+        '&.scrolled .MuiTableHead-root::after': {
           opacity: 1,
         },
       }}
@@ -713,9 +652,9 @@ export default function ShiftDemandTable({
       onScroll={(e) => {
         const container = e.currentTarget;
         if (container.scrollTop > 0) {
-          container.classList.add("scrolled");
+          container.classList.add('scrolled');
         } else {
-          container.classList.remove("scrolled");
+          container.classList.remove('scrolled');
         }
       }}
     >

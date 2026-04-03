@@ -1,23 +1,20 @@
-import { TeamMembershipRole } from "@/types/team";
+import { TeamMembershipRole } from '@/types/team';
 
-export const routeAccess: Record<
-  string,
-  { roles?: TeamMembershipRole[]; features?: string[] }
-> = {
-  "/workers": { roles: [TeamMembershipRole.OWNER] },
-  "/shifts": { roles: [TeamMembershipRole.OWNER] },
-  "/constraints": {
+export const routeAccess: Record<string, { roles?: TeamMembershipRole[]; features?: string[] }> = {
+  '/workers': { roles: [TeamMembershipRole.OWNER] },
+  '/shifts': { roles: [TeamMembershipRole.OWNER] },
+  '/constraints': {
     roles: [TeamMembershipRole.OWNER],
-    features: ["use_solver"],
+    features: ['use_solver'],
   },
-  "/campaign": { roles: [TeamMembershipRole.OWNER] },
-  "/shift-demands": { roles: [TeamMembershipRole.OWNER] },
-  "/stats": { roles: [TeamMembershipRole.OWNER] },
-  "/teams": { roles: [TeamMembershipRole.OWNER] },
-  "/requests": {
+  '/campaign': { roles: [TeamMembershipRole.OWNER] },
+  '/shift-demands': { roles: [TeamMembershipRole.OWNER] },
+  '/stats': { roles: [TeamMembershipRole.OWNER] },
+  '/teams': { roles: [TeamMembershipRole.OWNER] },
+  '/requests': {
     roles: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
   },
-  "/schedule": {
+  '/schedule': {
     roles: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
   },
 };

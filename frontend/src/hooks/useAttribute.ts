@@ -1,12 +1,12 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { AttributeT } from "@/types/attribute";
+import { AttributeT } from '@/types/attribute';
 // API Client
-import { AttributeApi } from "../app/lib/api/attributeApi";
-import { useApiClient } from "../app/lib/api-client";
+import { AttributeApi } from '../app/lib/api/attributeApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Attribute Hooks //
@@ -22,7 +22,7 @@ export function useUpdateAttribute() {
   const updateAttribute = useCallback(
     async (attribute: AttributeT, teamId: string): Promise<AttributeT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useUpdateAttribute called:", {
+        console.log('🔍 useUpdateAttribute called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -33,44 +33,44 @@ export function useUpdateAttribute() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       // if (!attribute || !attribute.id) {
       if (!attribute) {
-        throw new Error("Valid attribute data is required");
+        throw new Error('Valid attribute data is required');
       }
 
       if (!teamId || teamId.trim().length === 0) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
         const updatedAttribute = await AttributeApi.updateAttribute(
           apiClient,
           attribute,
-          teamId.trim()
+          teamId.trim(),
         );
 
         if (env.isDevelopment) {
-          console.log("✅ Attribute updated successfully");
+          console.log('✅ Attribute updated successfully');
         }
 
         return updatedAttribute;
       } catch (error) {
-        console.error("❌ Failed to update attribute:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update attribute:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateAttribute;
@@ -86,7 +86,7 @@ export function useGetAttributesByOwner() {
   const getAttributesByOwner = useCallback(
     async (ownerId: string, teamId: string): Promise<AttributeT[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetAttributesByOwner called:", {
+        console.log('🔍 useGetAttributesByOwner called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -97,37 +97,33 @@ export function useGetAttributesByOwner() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!ownerId || ownerId.trim().length === 0) {
-        throw new Error("Owner ID is required");
+        throw new Error('Owner ID is required');
       }
 
       if (!teamId || teamId.trim().length === 0) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
-        return await AttributeApi.getAttributesByOwner(
-          apiClient,
-          ownerId.trim(),
-          teamId.trim()
-        );
+        return await AttributeApi.getAttributesByOwner(apiClient, ownerId.trim(), teamId.trim());
       } catch (error) {
-        console.error("❌ Failed to get attributes:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get attributes:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getAttributesByOwner;
@@ -141,12 +137,9 @@ export function useCreateAttribute() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const createAttribute = useCallback(
-    async (
-      attribute: Omit<AttributeT, "id">,
-      teamId: string
-    ): Promise<AttributeT> => {
+    async (attribute: Omit<AttributeT, 'id'>, teamId: string): Promise<AttributeT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useCreateAttribute called:", {
+        console.log('🔍 useCreateAttribute called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -156,43 +149,43 @@ export function useCreateAttribute() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!attribute) {
-        throw new Error("Attribute data is required");
+        throw new Error('Attribute data is required');
       }
 
       if (!teamId || teamId.trim().length === 0) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
         const newAttribute = await AttributeApi.createAttribute(
           apiClient,
           attribute,
-          teamId.trim()
+          teamId.trim(),
         );
 
         if (env.isDevelopment) {
-          console.log("✅ Attribute created successfully");
+          console.log('✅ Attribute created successfully');
         }
 
         return newAttribute;
       } catch (error) {
-        console.error("❌ Failed to create attribute:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to create attribute:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createAttribute;
@@ -208,7 +201,7 @@ export function useDeleteAttribute() {
   const deleteAttribute = useCallback(
     async (attributeId: string, teamId: string): Promise<void> => {
       if (env.isDevelopment) {
-        console.log("🔍 useDeleteAttribute called:", {
+        console.log('🔍 useDeleteAttribute called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -219,41 +212,37 @@ export function useDeleteAttribute() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!attributeId || attributeId.trim().length === 0) {
-        throw new Error("Attribute ID is required");
+        throw new Error('Attribute ID is required');
       }
 
       if (!teamId || teamId.trim().length === 0) {
-        throw new Error("Team ID is required");
+        throw new Error('Team ID is required');
       }
 
       try {
-        await AttributeApi.deleteAttribute(
-          apiClient,
-          attributeId.trim(),
-          teamId.trim()
-        );
+        await AttributeApi.deleteAttribute(apiClient, attributeId.trim(), teamId.trim());
 
         if (env.isDevelopment) {
-          console.log("✅ Attribute deleted successfully");
+          console.log('✅ Attribute deleted successfully');
         }
       } catch (error) {
-        console.error("❌ Failed to delete attribute:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete attribute:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteAttribute;

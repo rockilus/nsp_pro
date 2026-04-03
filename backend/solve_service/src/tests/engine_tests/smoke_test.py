@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from collections.abc import Callable
 
 import pytest
 from shared.schemas.core import EngineInputsAugmented
@@ -26,7 +26,7 @@ def test_engine_solve_smoke(
 def test_engine_solve_smoke_benoit_case_250301(
     sample_data_benoit_case_fixture: EngineInputsAugmented,  # noqa: F811
     run_core_to_engine_inputs: Callable[
-        [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+        [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
     ],
     run_engine_solve: Callable[[InputsEngine], Outputs],
 ) -> None:

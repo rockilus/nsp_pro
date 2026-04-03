@@ -1,8 +1,8 @@
-import React from "react";
-import { Box, Paper, Divider } from "@mui/material";
-import { FilterSortSection } from "../toolbar/FilterSortSection";
-import { BulkSelectionSection } from "../toolbar/BulkSelectionSection";
-import { ColumnFilter, TableSort } from "../../../types/filter";
+import React from 'react';
+import { Box, Paper, Divider } from '@mui/material';
+import { FilterSortSection } from '../toolbar/FilterSortSection';
+import { BulkSelectionSection } from '../toolbar/BulkSelectionSection';
+import { ColumnFilter, TableSort } from '../../../types/filter';
 
 interface TemplateActionToolbarProps {
   lng: string;
@@ -55,12 +55,12 @@ export function TemplateActionToolbar({
       sx={{
         p: 2,
         mb: 2,
-        width: "100%",
+        width: '100%',
         margin: 0,
-        padding: "8px 16px",
-        backgroundColor: showBulkMode ? "primary.50" : "grey.50",
-        borderTop: "1px solid",
-        borderColor: "grey.100",
+        padding: '8px 16px',
+        backgroundColor: showBulkMode ? 'primary.50' : 'grey.50',
+        borderTop: '1px solid',
+        borderColor: 'grey.100',
       }}
     >
       <Box

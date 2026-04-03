@@ -1,11 +1,11 @@
-import React, { ReactElement } from "react";
+import React, { ReactElement } from 'react';
 // MUI
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
-import EditIcon from "@mui/icons-material/Edit";
-import IconButton from "@mui/material/IconButton";
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
+import IconButton from '@mui/material/IconButton';
 // Styles
-import "./user-profile-row.css";
+import './user-profile-row.css';
 
 export default function UserProfileRow({
   label,

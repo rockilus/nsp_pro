@@ -122,6 +122,21 @@ NOTIFICATION_EMAIL_MAP: dict[NotificationType, tuple[str, EmailType, str]] = {
         EmailType.NOTIFICATION_USER_REVERSED_SWAP,
         "/plan/swaps",
     ),
+    NotificationType.CAMPAIGN_REQUEST_DEADLINE_SET: (
+        "notification_campaign_request_deadline_set_email",
+        EmailType.NOTIFICATION_CAMPAIGN_REQUEST_DEADLINE_SET,
+        "/plan/requests",
+    ),
+    NotificationType.CAMPAIGN_REQUEST_DEADLINE_REMINDER: (
+        "notification_campaign_request_deadline_reminder_email",
+        EmailType.NOTIFICATION_CAMPAIGN_REQUEST_DEADLINE_REMINDER,
+        "/plan/requests",
+    ),
+    NotificationType.CAMPAIGN_REQUEST_DEADLINE_UPDATED: (
+        "notification_campaign_request_deadline_updated_email",
+        EmailType.NOTIFICATION_CAMPAIGN_REQUEST_DEADLINE_UPDATED,
+        "/plan/requests",
+    ),
 }
 
 # Subjects keyed by (NotificationType, language).
@@ -384,6 +399,45 @@ NOTIFICATION_SUBJECTS: dict[tuple[NotificationType, str], str] = {
         NotificationType.USER_REVERSED_SWAP,
         "fr",
     ): "Votre échange a été annulé",
+    # Campaign request deadline subjects — English
+    (
+        NotificationType.CAMPAIGN_REQUEST_DEADLINE_SET,
+        "en",
+    ): "Your team leader has requested your availability",
+    (
+        NotificationType.CAMPAIGN_REQUEST_DEADLINE_REMINDER,
+        "en",
+    ): "Reminder: Submit your availability requests",
+    (
+        NotificationType.CAMPAIGN_REQUEST_DEADLINE_UPDATED,
+        "en",
+    ): "Your request submission deadline has been extended",
+    # Campaign request deadline subjects — Spanish
+    (
+        NotificationType.CAMPAIGN_REQUEST_DEADLINE_SET,
+        "es",
+    ): "Tu líder de equipo ha solicitado tu disponibilidad",
+    (
+        NotificationType.CAMPAIGN_REQUEST_DEADLINE_REMINDER,
+        "es",
+    ): "Recordatorio: Envía tus solicitudes de disponibilidad",
+    (
+        NotificationType.CAMPAIGN_REQUEST_DEADLINE_UPDATED,
+        "es",
+    ): "Tu plazo de envío de solicitudes ha sido extendido",
+    # Campaign request deadline subjects — French
+    (
+        NotificationType.CAMPAIGN_REQUEST_DEADLINE_SET,
+        "fr",
+    ): "Votre responsable d'équipe a demandé vos disponibilités",
+    (
+        NotificationType.CAMPAIGN_REQUEST_DEADLINE_REMINDER,
+        "fr",
+    ): "Rappel : Soumettez vos demandes de disponibilité",
+    (
+        NotificationType.CAMPAIGN_REQUEST_DEADLINE_UPDATED,
+        "fr",
+    ): "Votre délai de soumission des demandes a été prolongé",
 }
 
 

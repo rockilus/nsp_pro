@@ -1,60 +1,48 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useMemo } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../app/i18n/client";
+import React, { useState, useEffect, useMemo } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { useTranslation } from '../../app/i18n/client';
 // Mobile
-import { useIsMobile } from "../../hooks/useIsMobile";
-import MobileWorkerTab from "./mobile/mobile-worker-tab";
+import { useIsMobile } from '../../hooks/useIsMobile';
+import MobileWorkerTab from './mobile/mobile-worker-tab';
 // Components
-import WorkerTable from "./worker-table";
-import TableFilterBar from "../table/TableFilterBar";
-import TableAddButton from "../buttons/table-add-button";
-import DimensionDialog from "../shift-worker-shared/dimension/DimensionDialog";
-import NewDimensionForm from "../shift-worker-shared/dimension/new-dimension-form";
+import WorkerTable from './worker-table';
+import TableFilterBar from '../table/TableFilterBar';
+import TableAddButton from '../buttons/table-add-button';
+import DimensionDialog from '../shift-worker-shared/dimension/DimensionDialog';
+import NewDimensionForm from '../shift-worker-shared/dimension/new-dimension-form';
 // Hooks
-import { useTableState } from "../../hooks/useTableState";
+import { useTableState } from '../../hooks/useTableState';
 import {
   useAddWorker,
   useUpdateWorker,
   useDeleteWorker,
   useGetWorkersTabData,
-} from "../../hooks/useWorker";
-import {
-  useAddDimension,
-  useUpdateDimension,
-  useDeleteDimension,
-} from "../../hooks/useDimension";
-import {
-  useAddSpecialty,
-  useUpdateSpecialty,
-  useDeleteSpecialty,
-} from "../../hooks/useSpecialty";
-import { useUpdateAttribute } from "../../hooks/useAttribute";
-import {
-  useAddDimEntry,
-  useUpdateDimEntry,
-  useDeleteDimEntry,
-} from "../../hooks/useDimEntry";
+} from '../../hooks/useWorker';
+import { useAddDimension, useUpdateDimension, useDeleteDimension } from '../../hooks/useDimension';
+import { useAddSpecialty, useUpdateSpecialty, useDeleteSpecialty } from '../../hooks/useSpecialty';
+import { useUpdateAttribute } from '../../hooks/useAttribute';
+import { useAddDimEntry, useUpdateDimEntry, useDeleteDimEntry } from '../../hooks/useDimEntry';
 // Utils
-import { createWorkerColumns } from "./workerColumns";
+import { createWorkerColumns } from './workerColumns';
 // Styles
-import "../../styles/text-styles.css";
-import "../../styles/tab-container-styles.css";
-import "../../styles/table-styles.css";
+import '../../styles/text-styles.css';
+import '../../styles/tab-container-styles.css';
+import '../../styles/table-styles.css';
 // Types
-import { WorkerT } from "../../types/worker";
-import { DimensionT, DimensionType } from "../../types/dimension";
-import { DimEntryT } from "@/types/dim-entry";
-import { AttributeT } from "../../types/attribute";
-import { SpecialtyT } from "@/types/specialty";
+import { WorkerT } from '../../types/worker';
+import { DimensionT, DimensionType } from '../../types/dimension';
+import { DimEntryT } from '@/types/dim-entry';
+import { AttributeT } from '../../types/attribute';
+import { SpecialtyT } from '@/types/specialty';
 
 dayjs.extend(utc);
 
 // Hook for dynamic height calculation
 const useTableHeight = (isFilterToolbarActive: boolean) => {
-  const [tableHeight, setTableHeight] = React.useState("70vh");
+  const [tableHeight, setTableHeight] = React.useState('70vh');
 
   React.useEffect(() => {
     const calculateHeight = () => {
@@ -71,18 +59,15 @@ const useTableHeight = (isFilterToolbarActive: boolean) => {
         titleContainerHeight -
         filterToolbarHeight -
         paddingAndMargins;
-      const maxHeight = Math.max(
-        300,
-        Math.min(availableHeight, viewportHeight),
-      );
+      const maxHeight = Math.max(300, Math.min(availableHeight, viewportHeight));
 
       setTableHeight(`${maxHeight}px`);
     };
 
     calculateHeight();
-    window.addEventListener("resize", calculateHeight);
+    window.addEventListener('resize', calculateHeight);
 
-    return () => window.removeEventListener("resize", calculateHeight);
+    return () => window.removeEventListener('resize', calculateHeight);
   }, [isFilterToolbarActive]);
 
   return tableHeight;
@@ -95,7 +80,7 @@ export default function WorkerTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
-  const { t } = useTranslation(lng, "worker-page");
+  const { t } = useTranslation(lng, 'worker-page');
 
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [dimensions, setDimensions] = useState<DimensionT[]>([]);
@@ -140,59 +125,57 @@ export default function WorkerTab({
     removeFilter,
     updateSort,
     resetAll,
-  } = useTableState(workers, workerColumns, "nsp-pro-worker-table-state");
+  } = useTableState(workers, workerColumns, 'nsp-pro-worker-table-state');
 
   // Show filter toolbar when filters/sorting is applied
-  const showFilterToolbar =
-    tableState.filters.length > 0 || tableState.sort !== null;
+  const showFilterToolbar = tableState.filters.length > 0 || tableState.sort !== null;
 
   // Dynamic table height accounts for filter toolbar
   const tableHeight = useTableHeight(showFilterToolbar);
 
   // Memoize filtered dimensions for performance
   const dimensionsDisplayed = useMemo(
-    () =>
-      dimensions.filter((dim) => dim.dimTypes.includes(DimensionType.WORKER)),
+    () => dimensions.filter((dim) => dim.dimTypes.includes(DimensionType.WORKER)),
     [dimensions],
   );
 
   const DefaultWorkerFields: Record<string, string>[] = [
-    { name: "name", label: t("name"), tooltip: t("name_tooltip") },
-    { name: "acronym", label: t("acronym"), tooltip: t("acronym_tooltip") },
+    { name: 'name', label: t('name'), tooltip: t('name_tooltip') },
+    { name: 'acronym', label: t('acronym'), tooltip: t('acronym_tooltip') },
     {
-      name: "employmentStartDate",
-      label: t("employment_start_date"),
-      tooltip: t("employment_start_date_tooltip"),
+      name: 'employmentStartDate',
+      label: t('employment_start_date'),
+      tooltip: t('employment_start_date_tooltip'),
     },
     {
-      name: "employmentEndDate",
-      label: t("employment_end_date"),
-      tooltip: t("employment_end_date_tooltip"),
+      name: 'employmentEndDate',
+      label: t('employment_end_date'),
+      tooltip: t('employment_end_date_tooltip'),
     },
     {
-      name: "specialties",
-      label: t("specialties"),
-      tooltip: t("specialties_tooltip"),
+      name: 'specialties',
+      label: t('specialties'),
+      tooltip: t('specialties_tooltip'),
     },
     {
-      name: "weeklyHours",
-      label: t("weekly_hours"),
-      tooltip: t("weekly_hours_tooltip"),
+      name: 'weeklyHours',
+      label: t('weekly_hours'),
+      tooltip: t('weekly_hours_tooltip'),
     },
     {
-      name: "weeklyHoursDesired",
-      label: t("weekly_hours_desired"),
-      tooltip: t("weekly_hours_desired_tooltip"),
+      name: 'weeklyHoursDesired',
+      label: t('weekly_hours_desired'),
+      tooltip: t('weekly_hours_desired_tooltip'),
     },
     {
-      name: "dutiesPerMonth",
-      label: t("duties_per_month"),
-      tooltip: t("duties_per_month_tooltip"),
+      name: 'dutiesPerMonth',
+      label: t('duties_per_month'),
+      tooltip: t('duties_per_month_tooltip'),
     },
     {
-      name: "annualLeave",
-      label: t("annual_leave"),
-      tooltip: t("annual_leave_tooltip"),
+      name: 'annualLeave',
+      label: t('annual_leave'),
+      tooltip: t('annual_leave_tooltip'),
     },
   ];
 
@@ -202,13 +185,13 @@ export default function WorkerTab({
 
   const handleAddWorker = async () => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const addedWorker = await addWorkerFn({
-      id: "",
+      id: '',
       teamId: selectedTeamId,
-      name: "",
-      acronym: "",
+      name: '',
+      acronym: '',
       acronymCustom: false,
       employmentStartDate: dayjs.utc(),
       employmentEndDate: null,
@@ -226,7 +209,7 @@ export default function WorkerTab({
 
   const handleUpdateWorker = async (worker: WorkerT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const updatedWorker = await updateWorkerFn(worker);
     setWorkers((prevWorkers) =>
@@ -236,7 +219,7 @@ export default function WorkerTab({
 
   const handleDeleteWorker = async (workerId: string) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     await deleteWorkerFn(workerId, selectedTeamId);
     setWorkers(workers.filter((worker) => worker.id !== workerId));
@@ -246,12 +229,9 @@ export default function WorkerTab({
   // Dimension Actions
   //////////////////////////
 
-  const handleAddDimension = async (
-    newDimension: DimensionT,
-    newDimEntries: DimEntryT[],
-  ) => {
+  const handleAddDimension = async (newDimension: DimensionT, newDimEntries: DimEntryT[]) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const {
       newDimension: newDimensionResponse,
@@ -259,10 +239,7 @@ export default function WorkerTab({
       newAttributes: newAttributesResponse,
     } = await addDimensionFn(newDimension, newDimEntries);
     setDimensions([...dimensions, newDimensionResponse]);
-    setDimEntries((prevDimEntries) => [
-      ...prevDimEntries,
-      ...newDimEntriesResponse,
-    ]);
+    setDimEntries((prevDimEntries) => [...prevDimEntries, ...newDimEntriesResponse]);
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) => {
         const newAttributes = newAttributesResponse.filter(
@@ -281,7 +258,7 @@ export default function WorkerTab({
 
   const handleUpdateDimension = async (dimension: DimensionT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const updatedDimension = await updateDimensionFn(dimension);
     setDimensions((prevDimensions) =>
@@ -293,7 +270,7 @@ export default function WorkerTab({
 
   const handleDeleteDimension = async (dimensionId: string) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     await deleteDimensionFn(dimensionId, selectedTeamId);
     setDimensions(dimensions.filter((d) => d.id !== dimensionId));
@@ -305,7 +282,7 @@ export default function WorkerTab({
 
   const handleAddDimEntry = async (dimEntry: DimEntryT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const newDimEntry = await addDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries([...dimEntries, newDimEntry]);
@@ -313,24 +290,19 @@ export default function WorkerTab({
 
   const handleUpdateDimEntry = async (dimEntry: DimEntryT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const updatedDimEntry = await updateDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries((prevDimEntries) =>
-      prevDimEntries.map((de) =>
-        de.id === updatedDimEntry.id ? updatedDimEntry : de,
-      ),
+      prevDimEntries.map((de) => (de.id === updatedDimEntry.id ? updatedDimEntry : de)),
     );
   };
 
   const handleDeleteDimEntry = async (dimEntryId: string) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    const updatedAttributes = await deleteDimEntryFn(
-      dimEntryId,
-      selectedTeamId,
-    );
+    const updatedAttributes = await deleteDimEntryFn(dimEntryId, selectedTeamId);
     setDimEntries(dimEntries.filter((dimEntry) => dimEntry.id !== dimEntryId));
     for (const updatedAttribute of updatedAttributes) {
       setWorkers((prevWorker) =>
@@ -360,7 +332,7 @@ export default function WorkerTab({
 
   const handleUpdateAttribute = async (attribute: AttributeT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const updatedAttribute = await updateAttributeFn(attribute, selectedTeamId);
     setWorkers((prevWorkers) =>
@@ -389,7 +361,7 @@ export default function WorkerTab({
 
   const handleAddSpecialty = async (specialty: SpecialtyT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const newSpecialty = await addSpecialtyFn(specialty, selectedTeamId);
     setSpecialties([...specialties, newSpecialty]);
@@ -397,24 +369,20 @@ export default function WorkerTab({
 
   const handleUpdateSpecialty = async (specialty: SpecialtyT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const updatedSpecialty = await updateSpecialtyFn(specialty, selectedTeamId);
     setSpecialties((prevSpecialties) =>
-      prevSpecialties.map((de) =>
-        de.id === updatedSpecialty.id ? updatedSpecialty : de,
-      ),
+      prevSpecialties.map((de) => (de.id === updatedSpecialty.id ? updatedSpecialty : de)),
     );
   };
 
   const handleDeleteSpecialty = async (specialtyId: string) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const updatedWorkers = await deleteSpecialtyFn(specialtyId, selectedTeamId);
-    setSpecialties(
-      specialties.filter((specialty) => specialty.id !== specialtyId),
-    );
+    setSpecialties(specialties.filter((specialty) => specialty.id !== specialtyId));
 
     // If backend did not return any updated workers, fall back to an
     // optimistic local update: remove the specialtyId from each worker's
@@ -425,9 +393,7 @@ export default function WorkerTab({
           worker.specialtyIds && worker.specialtyIds.length > 0
             ? {
                 ...worker,
-                specialtyIds: worker.specialtyIds.filter(
-                  (id) => id !== specialtyId,
-                ),
+                specialtyIds: worker.specialtyIds.filter((id) => id !== specialtyId),
               }
             : worker,
         ),
@@ -437,9 +403,7 @@ export default function WorkerTab({
 
     setWorkers((prevWorkers) =>
       prevWorkers.map((worker) => {
-        const updatedWorker = updatedWorkers.find(
-          (w: WorkerT) => w.id === worker.id,
-        );
+        const updatedWorker = updatedWorkers.find((w: WorkerT) => w.id === worker.id);
         return updatedWorker ? updatedWorker : worker;
       }),
     );
@@ -460,7 +424,7 @@ export default function WorkerTab({
           setDimEntries(fetchedDimEntries);
           setSpecialties(fetchedSpecialties);
         } catch (error) {
-          console.error("Failed to fetch workers tab data:", error);
+          console.error('Failed to fetch workers tab data:', error);
         }
       }
     };
@@ -500,21 +464,18 @@ export default function WorkerTab({
               aria-level={1}
               data-testid="workers-page-heading"
             >
-              {t("team")}
+              {t('team')}
             </span>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <TableAddButton
-                text={t("worker")}
+                text={t('worker')}
                 handleClick={handleAddWorker}
-                tooltip={t("create_member_tooltip")}
+                tooltip={t('create_member_tooltip')}
               />
               <DimensionDialog
-                title={t("new_property")}
+                title={t('new_property')}
                 buttonContent={
-                  <TableAddButton
-                    text={t("property")}
-                    tooltip={t("create_property_tooltip")}
-                  />
+                  <TableAddButton text={t('property')} tooltip={t('create_property_tooltip')} />
                 }
                 content={
                   <NewDimensionForm

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   Box,
@@ -14,16 +14,13 @@ import {
   TableHead,
   TableRow,
   Paper,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import dayjs from "dayjs";
-import {
-  SwapValidationResultT,
-  AssignmentImplicationT,
-} from "../../types/swapValidation";
-import { AssignmentDataDictT } from "../../types/assignment";
-import { useTranslation } from "../../app/i18n/client";
-import { buildSwapValidationMessage } from "./swapValidationMessages";
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import dayjs from 'dayjs';
+import { SwapValidationResultT, AssignmentImplicationT } from '../../types/swapValidation';
+import { AssignmentDataDictT } from '../../types/assignment';
+import { useTranslation } from '../../app/i18n/client';
+import { buildSwapValidationMessage } from './swapValidationMessages';
 import {
   renderBoolean,
   renderWeeklyTime,
@@ -32,8 +29,8 @@ import {
   renderOverlapHit,
   renderFilterHit,
   renderRequestHit,
-} from "../common/implications-renderers";
-import { getCategoryEmoji } from "../../utils/replacementHelpers";
+} from '../common/implications-renderers';
+import { getCategoryEmoji } from '../../utils/replacementHelpers';
 
 interface SwapAnalysisDialogProps {
   open: boolean;
@@ -50,7 +47,7 @@ export default function SwapAnalysisDialog({
   assignments,
   lng,
 }: SwapAnalysisDialogProps) {
-  const { t } = useTranslation(lng, "swap-page");
+  const { t } = useTranslation(lng, 'swap-page');
 
   // Rotated column dimensions
   const ROTATED_COLUMN_WIDTH = 40;
@@ -71,20 +68,17 @@ export default function SwapAnalysisDialog({
     return assignments.find((a) => a.assignment.id === assignmentId);
   };
 
-  const formatAssignmentLabel = (
-    assignmentData: AssignmentDataDictT | undefined,
-  ): string => {
-    if (!assignmentData) return "Unknown Assignment";
+  const formatAssignmentLabel = (assignmentData: AssignmentDataDictT | undefined): string => {
+    if (!assignmentData) return 'Unknown Assignment';
 
     const { shift, assignment } = assignmentData;
-    const dateStr = dayjs(assignment.date).format("MMM D");
-    const startStr = shift.startTime.format("HH:mm");
-    const endStr = shift.endTime.format("HH:mm");
+    const dateStr = dayjs(assignment.date).format('MMM D');
+    const startStr = shift.startTime.format('HH:mm');
+    const endStr = shift.endTime.format('HH:mm');
     const endsNextDay =
-      shift.endTime.isBefore(shift.startTime) ||
-      shift.endTime.diff(shift.startTime, "day") > 0;
+      shift.endTime.isBefore(shift.startTime) || shift.endTime.diff(shift.startTime, 'day') > 0;
 
-    return `${shift.name} - ${dateStr} - ${startStr}–${endStr}${endsNextDay ? "⁺¹" : ""}`;
+    return `${shift.name} - ${dateStr} - ${startStr}–${endStr}${endsNextDay ? '⁺¹' : ''}`;
   };
 
   const renderAssignmentRow = (item: AssignmentImplicationT) => {
@@ -96,17 +90,17 @@ export default function SwapAnalysisDialog({
         key={item.assignmentId}
         data-testid={`assignment-row-${item.assignmentId}`}
         sx={{
-          "&:hover": { backgroundColor: "action.hover" },
+          '&:hover': { backgroundColor: 'action.hover' },
         }}
       >
         <TableCell
           sx={{
             // position: "sticky",
             left: 0,
-            backgroundColor: "background.paper",
+            backgroundColor: 'background.paper',
             zIndex: 1,
             minWidth: ASSIGNMENT_COLUMN_WIDTH,
-            padding: "8px 16px",
+            padding: '8px 16px',
           }}
         >
           <Typography variant="body2" fontWeight="medium">
@@ -115,18 +109,16 @@ export default function SwapAnalysisDialog({
         </TableCell>
         <TableCell
           sx={{
-            textAlign: "center",
+            textAlign: 'center',
             padding: 0,
           }}
         >
-          <span style={{ fontSize: "1.1rem" }}>
-            {getCategoryEmoji(item.replacementCategory)}
-          </span>
+          <span style={{ fontSize: '1.1rem' }}>{getCategoryEmoji(item.replacementCategory)}</span>
         </TableCell>
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
@@ -135,7 +127,7 @@ export default function SwapAnalysisDialog({
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
@@ -144,47 +136,43 @@ export default function SwapAnalysisDialog({
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
-          <Typography variant="body2">
-            {impl.nbTimesDidShiftLtm.count}
-          </Typography>
+          <Typography variant="body2">{impl.nbTimesDidShiftLtm.count}</Typography>
         </TableCell>
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
-          <Typography variant="body2">
-            {impl.nbTimesWorkedWeekdayLtm.count}
-          </Typography>
+          <Typography variant="body2">{impl.nbTimesWorkedWeekdayLtm.count}</Typography>
         </TableCell>
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
-          {renderConstraintHit(impl.softConstraintHits, "soft")}
+          {renderConstraintHit(impl.softConstraintHits, 'soft')}
         </TableCell>
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
-          {renderConstraintHit(impl.hardConstraintHits, "hard")}
+          {renderConstraintHit(impl.hardConstraintHits, 'hard')}
         </TableCell>
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
@@ -193,7 +181,7 @@ export default function SwapAnalysisDialog({
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
@@ -202,7 +190,7 @@ export default function SwapAnalysisDialog({
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
@@ -211,7 +199,7 @@ export default function SwapAnalysisDialog({
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
@@ -220,7 +208,7 @@ export default function SwapAnalysisDialog({
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
@@ -229,7 +217,7 @@ export default function SwapAnalysisDialog({
         <TableCell
           sx={{
             padding: 0,
-            textAlign: "center",
+            textAlign: 'center',
             minWidth: ROTATED_COLUMN_WIDTH,
           }}
         >
@@ -247,9 +235,9 @@ export default function SwapAnalysisDialog({
       fullScreen
       data-testid="swap-analysis-dialog"
     >
-      <DialogTitle sx={{ position: "relative" }}>
-        <Box sx={{ fontWeight: 500, fontSize: "1.25rem" }}>
-          {t("analysis_title", {
+      <DialogTitle sx={{ position: 'relative' }}>
+        <Box sx={{ fontWeight: 500, fontSize: '1.25rem' }}>
+          {t('analysis_title', {
             workerA: workerAInfo.workerName,
             workerB: workerBInfo.workerName,
           })}
@@ -258,16 +246,16 @@ export default function SwapAnalysisDialog({
           {validationMessage}
         </Typography>
         <IconButton
-          aria-label={t("btn_close")}
+          aria-label={t('btn_close')}
           onClick={onClose}
-          sx={{ position: "absolute", right: 8, top: 8 }}
+          sx={{ position: 'absolute', right: 8, top: 8 }}
           size="large"
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ paddingBottom: "24px" }}>
+      <DialogContent sx={{ paddingBottom: '24px' }}>
         <TableContainer
           component={Paper}
           // sx={{ maxHeight: 700, overflowX: "auto" }}
@@ -280,160 +268,160 @@ export default function SwapAnalysisDialog({
               <TableRow>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ASSIGNMENT_COLUMN_WIDTH,
                     // position: "sticky",
                     left: 0,
-                    backgroundColor: "background.paper",
+                    backgroundColor: 'background.paper',
                     zIndex: 2,
                     padding: 0,
-                    verticalAlign: "bottom",
-                    paddingLeft: "16px",
+                    verticalAlign: 'bottom',
+                    paddingLeft: '16px',
                   }}
                 >
-                  {t("col_assignment")}
+                  {t('col_assignment')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: 50,
                     padding: 0,
-                    textAlign: "center",
+                    textAlign: 'center',
                   }}
                 >
                   {/* Category emoji - no title */}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_h_week")}
+                  {t('col_h_week')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_duties_month")}
+                  {t('col_duties_month')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_shift_ltm")}
+                  {t('col_shift_ltm')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_day_ltm")}
+                  {t('col_day_ltm')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_soft")}
+                  {t('col_soft')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_hard")}
+                  {t('col_hard')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_request")}
+                  {t('col_request')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_overlap")}
+                  {t('col_overlap')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_filter")}
+                  {t('col_filter')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_leave")}
+                  {t('col_leave')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_specialty")}
+                  {t('col_specialty')}
                 </TableCell>
                 <TableCell
                   sx={{
-                    fontWeight: "bold",
+                    fontWeight: 'bold',
                     minWidth: ROTATED_COLUMN_WIDTH,
                     padding: 0,
-                    paddingBottom: "4px",
-                    writingMode: "sideways-lr",
+                    paddingBottom: '4px',
+                    writingMode: 'sideways-lr',
                   }}
                 >
-                  {t("col_employed")}
+                  {t('col_employed')}
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -443,18 +431,18 @@ export default function SwapAnalysisDialog({
                 <TableCell
                   colSpan={totalColumns}
                   sx={{
-                    backgroundColor: "primary.main",
-                    color: "primary.contrastText",
-                    fontWeight: "bold",
-                    fontSize: "1rem",
-                    padding: "12px 16px",
+                    backgroundColor: 'primary.main',
+                    color: 'primary.contrastText',
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
+                    padding: '12px 16px',
                     // position: "sticky",
                     left: 0,
                     zIndex: 2,
                   }}
                   data-testid="section-postswap"
                 >
-                  {t("analysis_post_swap")}
+                  {t('analysis_post_swap')}
                 </TableCell>
               </TableRow>
 
@@ -463,10 +451,10 @@ export default function SwapAnalysisDialog({
                 <TableCell
                   colSpan={totalColumns}
                   sx={{
-                    backgroundColor: "action.hover",
-                    fontWeight: "bold",
-                    fontSize: "0.875rem",
-                    padding: "8px 16px",
+                    backgroundColor: 'action.hover',
+                    fontWeight: 'bold',
+                    fontSize: '0.875rem',
+                    padding: '8px 16px',
                     // position: "sticky",
                     left: 0,
                     zIndex: 2,
@@ -480,11 +468,8 @@ export default function SwapAnalysisDialog({
                 workerAInfo.postSwap.map((item) => renderAssignmentRow(item))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={totalColumns}
-                    sx={{ textAlign: "center", padding: "16px" }}
-                  >
-                    {t("analysis_no_assignments")}
+                  <TableCell colSpan={totalColumns} sx={{ textAlign: 'center', padding: '16px' }}>
+                    {t('analysis_no_assignments')}
                   </TableCell>
                 </TableRow>
               )}
@@ -494,10 +479,10 @@ export default function SwapAnalysisDialog({
                 <TableCell
                   colSpan={totalColumns}
                   sx={{
-                    backgroundColor: "action.hover",
-                    fontWeight: "bold",
-                    fontSize: "0.875rem",
-                    padding: "8px 16px",
+                    backgroundColor: 'action.hover',
+                    fontWeight: 'bold',
+                    fontSize: '0.875rem',
+                    padding: '8px 16px',
                     // position: "sticky",
                     left: 0,
                     zIndex: 2,
@@ -511,11 +496,8 @@ export default function SwapAnalysisDialog({
                 workerBInfo.postSwap.map((item) => renderAssignmentRow(item))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={totalColumns}
-                    sx={{ textAlign: "center", padding: "16px" }}
-                  >
-                    {t("analysis_no_assignments")}
+                  <TableCell colSpan={totalColumns} sx={{ textAlign: 'center', padding: '16px' }}>
+                    {t('analysis_no_assignments')}
                   </TableCell>
                 </TableRow>
               )}
@@ -527,7 +509,7 @@ export default function SwapAnalysisDialog({
                   sx={{
                     height: 24,
                     borderBottom: 0,
-                    backgroundColor: "background.default",
+                    backgroundColor: 'background.default',
                   }}
                 />
               </TableRow>
@@ -537,18 +519,18 @@ export default function SwapAnalysisDialog({
                 <TableCell
                   colSpan={totalColumns}
                   sx={{
-                    backgroundColor: "primary.main",
-                    color: "primary.contrastText",
-                    fontWeight: "bold",
-                    fontSize: "1rem",
-                    padding: "12px 16px",
+                    backgroundColor: 'primary.main',
+                    color: 'primary.contrastText',
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
+                    padding: '12px 16px',
                     // position: "sticky",
                     left: 0,
                     zIndex: 2,
                   }}
                   data-testid="section-preswap"
                 >
-                  {t("analysis_pre_swap")}
+                  {t('analysis_pre_swap')}
                 </TableCell>
               </TableRow>
 
@@ -557,10 +539,10 @@ export default function SwapAnalysisDialog({
                 <TableCell
                   colSpan={totalColumns}
                   sx={{
-                    backgroundColor: "action.hover",
-                    fontWeight: "bold",
-                    fontSize: "0.875rem",
-                    padding: "8px 16px",
+                    backgroundColor: 'action.hover',
+                    fontWeight: 'bold',
+                    fontSize: '0.875rem',
+                    padding: '8px 16px',
                     // position: "sticky",
                     left: 0,
                     zIndex: 2,
@@ -574,11 +556,8 @@ export default function SwapAnalysisDialog({
                 workerAInfo.preSwap.map((item) => renderAssignmentRow(item))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={totalColumns}
-                    sx={{ textAlign: "center", padding: "16px" }}
-                  >
-                    {t("analysis_no_assignments")}
+                  <TableCell colSpan={totalColumns} sx={{ textAlign: 'center', padding: '16px' }}>
+                    {t('analysis_no_assignments')}
                   </TableCell>
                 </TableRow>
               )}
@@ -588,10 +567,10 @@ export default function SwapAnalysisDialog({
                 <TableCell
                   colSpan={totalColumns}
                   sx={{
-                    backgroundColor: "action.hover",
-                    fontWeight: "bold",
-                    fontSize: "0.875rem",
-                    padding: "8px 16px",
+                    backgroundColor: 'action.hover',
+                    fontWeight: 'bold',
+                    fontSize: '0.875rem',
+                    padding: '8px 16px',
                     // position: "sticky",
                     left: 0,
                     zIndex: 2,
@@ -605,11 +584,8 @@ export default function SwapAnalysisDialog({
                 workerBInfo.preSwap.map((item) => renderAssignmentRow(item))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={totalColumns}
-                    sx={{ textAlign: "center", padding: "16px" }}
-                  >
-                    {t("analysis_no_assignments")}
+                  <TableCell colSpan={totalColumns} sx={{ textAlign: 'center', padding: '16px' }}>
+                    {t('analysis_no_assignments')}
                   </TableCell>
                 </TableRow>
               )}
@@ -619,7 +595,7 @@ export default function SwapAnalysisDialog({
 
         <Box sx={{ mt: 2 }}>
           <Typography variant="caption" color="text.secondary">
-            {t("analysis_footer")}
+            {t('analysis_footer')}
           </Typography>
         </Box>
       </DialogContent>

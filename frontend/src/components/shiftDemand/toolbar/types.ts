@@ -1,6 +1,6 @@
-import { ColumnFilter, TableSort } from "../../../types/filter";
-import { MultitaskingGroup } from "../../../types/multitasking";
-import { ShiftT } from "../../../types/shift";
+import { ColumnFilter, TableSort } from '../../../types/filter';
+import { MultitaskingGroup } from '../../../types/multitasking';
+import { ShiftT } from '../../../types/shift';
 
 export interface FilterSortProps {
   lng: string;
@@ -32,9 +32,7 @@ export interface MultitaskingSelectionProps {
   onDeleteGroup?: (groupId: string) => Promise<void>;
 }
 
-export interface ShiftDemandActionToolbarProps
-  extends FilterSortProps,
-    BulkSelectionProps {
+export interface ShiftDemandActionToolbarProps extends FilterSortProps, BulkSelectionProps {
   showBulkMode: boolean;
   showFilters: boolean;
   // Multitasking props

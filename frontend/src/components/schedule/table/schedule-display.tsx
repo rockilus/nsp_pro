@@ -1,9 +1,9 @@
-import React from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import React from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // Components
-import ScheduleTableShift from "./shift-table/schedule-table-shift";
-import ScheduleTableWorker from "./worker-table/schedule-table-worker";
+import ScheduleTableShift from './shift-table/schedule-table-shift';
+import ScheduleTableWorker from './worker-table/schedule-table-worker';
 // Types
 import {
   ScheduleT,
@@ -12,20 +12,20 @@ import {
   AssignmentDataT,
   ScheduleCellDataT,
   ScheduleViewSettingsT,
-} from "../../../types/schedule";
-import { BreachT } from "@/types/breach";
-import { ShiftDemandDTO } from "@/types/shiftDemand";
-import { AssignmentT, CreateAssignmentT } from "@/types/assignment";
-import { ShiftT } from "../../../types/shift";
-import { WorkerT } from "../../../types/worker";
-import { RequestT } from "../../../types/request";
-import { RecurrenceRuleT } from "@/types/recurrence";
-import { TeamWithMembership } from "@/types/team";
+} from '../../../types/schedule';
+import { BreachT } from '@/types/breach';
+import { ShiftDemandDTO } from '@/types/shiftDemand';
+import { AssignmentT, CreateAssignmentT } from '@/types/assignment';
+import { ShiftT } from '../../../types/shift';
+import { WorkerT } from '../../../types/worker';
+import { RequestT } from '../../../types/request';
+import { RecurrenceRuleT } from '@/types/recurrence';
+import { TeamWithMembership } from '@/types/team';
 import {
   ScheduleSelectionState,
   SelectedScheduleCell,
   SelectionScope,
-} from "../../../types/scheduleSelection";
+} from '../../../types/scheduleSelection';
 
 dayjs.extend(utc);
 
@@ -80,28 +80,16 @@ export default function ScheduleDisplay({
   handleRequestSelection?: (request: RequestT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
-  handleCellSelect: (
-    rowId: string,
-    date: string,
-    scheduleId: string | null,
-  ) => void;
+  handleCellSelect: (rowId: string, date: string, scheduleId: string | null) => void;
   handleAssignmentSelect: (assignmentId: string) => void;
   handleRowSelect: (rowId: string, scope: SelectionScope) => void;
-  handleColumnSelect: (
-    date: string,
-    rowIds: string[],
-    scope: SelectionScope,
-  ) => void;
+  handleColumnSelect: (date: string, rowIds: string[], scope: SelectionScope) => void;
   handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
   isCustomSolveModeActive?: boolean;
   customSolveSelectedCells?: SelectedScheduleCell[];
   handleCustomRowSelect?: (rowId: string) => void;
   handleCustomColumnSelect?: (date: string, rowIds: string[]) => void;
-  handleCustomCellSelect?: (
-    rowId: string,
-    date: string,
-    scheduleId: string | null,
-  ) => void;
+  handleCustomCellSelect?: (rowId: string, date: string, scheduleId: string | null) => void;
   handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   const scheduleDisplays: { [key: string]: React.ReactElement } = {

@@ -1,0 +1,39 @@
+# Justfile for backend solve_service
+
+update-shared:
+    echo "Reinstall shared package..."
+    uv sync --reinstall-package shared
+
+format:
+    echo "Formatting solve_service..."
+    uv run ruff format .
+    uv run ruff check --fix .
+
+lint:
+    echo "Running linter for solve_service..."
+    uv run ruff check .
+
+typecheck:
+    echo "Running type checker for solve_service..."
+    uv run python -m mypy .
+
+test:
+    echo "Running tests for solve_service..."
+    uv run pytest
+
+all:
+    just update-shared
+    just format
+    just lint
+    just typecheck
+    just test
+
+all-no-test:
+    just update-shared
+    just format
+    just lint
+    just typecheck
+
+dev:
+    echo "Starting solve_service (SQS consumer)..."
+    uv run python -m src.main --env-file .env.development.tests

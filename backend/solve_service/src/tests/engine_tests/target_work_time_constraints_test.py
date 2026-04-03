@@ -1,7 +1,7 @@
 import math
+from collections.abc import Callable
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from typing import Callable, List, Tuple
 
 import pytest
 from shared.schemas.core import (
@@ -200,7 +200,7 @@ class TestTargetWorkTimeConstraints:
         self,
         ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -213,7 +213,7 @@ class TestTargetWorkTimeConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_work_times(
@@ -247,7 +247,7 @@ class TestTargetWorkTimeConstraints:
         self,
         ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -265,7 +265,7 @@ class TestTargetWorkTimeConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_work_times(
@@ -285,7 +285,7 @@ class TestTargetWorkTimeConstraints:
 
         shift_duration_min = min(s_id_to_duration.values())
 
-        deltas: List[int] = []
+        deltas: list[int] = []
         for w in ei_work_times.workers:
             assignments_worker = [a for a in out.assignments if a.worker_id == w.id]
 
@@ -343,7 +343,7 @@ class TestTargetWorkTimeConstraints:
         self,
         ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -373,7 +373,7 @@ class TestTargetWorkTimeConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_work_times(
@@ -407,7 +407,7 @@ class TestTargetWorkTimeConstraints:
         self,
         ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -423,7 +423,7 @@ class TestTargetWorkTimeConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_work_times(
@@ -456,8 +456,7 @@ class TestTargetWorkTimeConstraints:
 
             penalty_expected = (
                 # fmt: off
-                ei_work_times.penalties.configuration_constraint
-                .weekly_worktime_contract
+                ei_work_times.penalties.configuration_constraint.weekly_worktime_contract
                 # fmt: on
                 * max(
                     work_time_worker
@@ -474,7 +473,7 @@ class TestTargetWorkTimeConstraints:
         self,
         ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]
+            [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -534,7 +533,7 @@ class TestTargetWorkTimeConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         w_to_work_times = calculate_worker_work_times(

@@ -1,17 +1,17 @@
-import * as React from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import * as React from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // // MUI
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import DeleteIcon from "@mui/icons-material/Delete";
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import DeleteIcon from '@mui/icons-material/Delete';
 // Types
-import { TeamMembershipRole } from "@/types/team";
-import { UserWithMembership } from "@/types/user";
+import { TeamMembershipRole } from '@/types/team';
+import { UserWithMembership } from '@/types/user';
 
 export default function RemoveFromTeamDialog({
   lng,
@@ -24,17 +24,16 @@ export default function RemoveFromTeamDialog({
   userWithMembership: UserWithMembership;
   handleRemoveFromTeam: (teamId: string, userId: string) => void;
 }) {
-  const { t } = useTranslation(lng, "teams-page");
+  const { t } = useTranslation(lng, 'teams-page');
 
   const [open, setOpen] = React.useState(false);
   const [error, setError] = React.useState(false);
-  const [helperText, setHelperText] = React.useState("");
-  const [confirmationName, setConfirmationName] = React.useState("");
+  const [helperText, setHelperText] = React.useState('');
+  const [confirmationName, setConfirmationName] = React.useState('');
 
   // Define a variable to store the confirmation string based on the user's name or email
   const confirmationString =
-    userWithMembership.user.firstName.trim() &&
-    userWithMembership.user.lastName.trim()
+    userWithMembership.user.firstName.trim() && userWithMembership.user.lastName.trim()
       ? `${userWithMembership.user.firstName.toLocaleLowerCase()} ${userWithMembership.user.lastName.toLocaleLowerCase()}`
       : userWithMembership.user.email.toLocaleLowerCase();
 
@@ -52,7 +51,7 @@ export default function RemoveFromTeamDialog({
     event.preventDefault();
     if (confirmationName.trim() !== confirmationString) {
       setError(true);
-      setHelperText(t("user_name_mismatch"));
+      setHelperText(t('user_name_mismatch'));
       return;
     }
 
@@ -66,14 +65,12 @@ export default function RemoveFromTeamDialog({
         variant="outlined"
         onClick={handleClickOpen}
         color="error"
-        disabled={
-          userWithMembership.membership.role === TeamMembershipRole.OWNER
-        }
+        disabled={userWithMembership.membership.role === TeamMembershipRole.OWNER}
         sx={{
-          textTransform: "none",
-          fontSize: "12px",
-          padding: "3px 0",
-          height: "100%",
+          textTransform: 'none',
+          fontSize: '12px',
+          padding: '3px 0',
+          height: '100%',
         }}
       >
         <DeleteIcon fontSize="small" />
@@ -82,24 +79,24 @@ export default function RemoveFromTeamDialog({
         open={open}
         onClose={handleClose}
         PaperProps={{
-          component: "form",
+          component: 'form',
           onSubmit: handleSubmit,
         }}
         sx={{
-          "& .MuiDialog-paper": {
-            width: "100%",
-            maxWidth: "500px",
+          '& .MuiDialog-paper': {
+            width: '100%',
+            maxWidth: '500px',
           },
         }}
       >
-        <DialogTitle>{`${t("remove_from_team")} ${
+        <DialogTitle>{`${t('remove_from_team')} ${
           userWithMembership.user.firstName
         } ${userWithMembership.user.lastName}`}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {t("remove_from_team_message_1")}
+            {t('remove_from_team_message_1')}
             <strong>{confirmationString}</strong>
-            {t("remove_from_team_message_2")}
+            {t('remove_from_team_message_2')}
           </DialogContentText>
           <TextField
             autoFocus
@@ -122,20 +119,20 @@ export default function RemoveFromTeamDialog({
           <Button
             onClick={handleClose}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
             }}
           >
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             variant="contained"
             type="submit"
             disabled={isDisabled}
             sx={{
-              textTransform: "none",
+              textTransform: 'none',
             }}
           >
-            {t("remove")}
+            {t('remove')}
           </Button>
         </DialogActions>
       </Dialog>

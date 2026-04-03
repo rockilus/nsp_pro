@@ -1,7 +1,7 @@
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // Types
-import { LinkShiftT, ShiftT } from "../../../types/shift";
+import { LinkShiftT, ShiftT } from '../../../types/shift';
 
 dayjs.extend(utc);
 
@@ -30,29 +30,29 @@ const shiftsOverlap = (shifts: ShiftT[]): boolean => {
 const validateLinkShift = (
   lsCandidate: LinkShiftT,
   shiftsLs: ShiftT[],
-  lsOthers: LinkShiftT[]
+  lsOthers: LinkShiftT[],
 ): ValidationResultT => {
   if (lsCandidate.shiftIds.length < 2) {
-    return { isValid: false, validationMessage: "missing_shift" };
+    return { isValid: false, validationMessage: 'missing_shift' };
   }
   if (lsCandidate.shiftIds.length !== new Set(lsCandidate.shiftIds).size) {
-    return { isValid: false, validationMessage: "duplicate_shift" };
+    return { isValid: false, validationMessage: 'duplicate_shift' };
   }
   if (shiftsLs.length !== lsCandidate.shiftIds.length) {
-    return { isValid: false, validationMessage: "shift_not_found" };
+    return { isValid: false, validationMessage: 'shift_not_found' };
   }
   if (shiftsOverlap(shiftsLs)) {
-    return { isValid: false, validationMessage: "shifts_overlap" };
+    return { isValid: false, validationMessage: 'shifts_overlap' };
   }
   for (const ls of lsOthers) {
     if (
       new Set(ls.shiftIds).size === new Set(lsCandidate.shiftIds).size &&
       ls.shiftIds.every((id) => lsCandidate.shiftIds.includes(id))
     ) {
-      return { isValid: false, validationMessage: "shifts_already_linked" };
+      return { isValid: false, validationMessage: 'shifts_already_linked' };
     }
   }
-  return { isValid: true, validationMessage: "" };
+  return { isValid: true, validationMessage: '' };
 };
 
 export { validateLinkShift };

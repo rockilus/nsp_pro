@@ -1,18 +1,18 @@
-import dayjs from "dayjs";
-import { BreachT, toBreachT } from "./breach";
+import dayjs from 'dayjs';
+import { BreachT, toBreachT } from './breach';
 
-export type ReplacementCategoryT = "can_do" | "could_do" | "cant_do";
+export type ReplacementCategoryT = 'can_do' | 'could_do' | 'cant_do';
 
 export enum MostConstrainingReasonT {
-  NOT_EMPLOYED = "not_employed",
-  MISSING_SPECIALTY = "missing_specialty",
-  ON_LEAVE = "on_leave",
-  FILTERED_OUT = "filtered_out",
-  HAS_OVERLAP = "has_overlap",
-  HARD_CONSTRAINT_VIOLATION = "hard_constraint_violation",
-  REQUEST_CONFLICT = "request_conflict",
-  SOFT_CONSTRAINT_VIOLATION = "soft_constraint_violation",
-  NO_CONSTRAINTS_VIOLATED = "no_constraints_violated",
+  NOT_EMPLOYED = 'not_employed',
+  MISSING_SPECIALTY = 'missing_specialty',
+  ON_LEAVE = 'on_leave',
+  FILTERED_OUT = 'filtered_out',
+  HAS_OVERLAP = 'has_overlap',
+  HARD_CONSTRAINT_VIOLATION = 'hard_constraint_violation',
+  REQUEST_CONFLICT = 'request_conflict',
+  SOFT_CONSTRAINT_VIOLATION = 'soft_constraint_violation',
+  NO_CONSTRAINTS_VIOLATED = 'no_constraints_violated',
 }
 
 export type FilterHitsT = {
@@ -98,21 +98,19 @@ export function toReplacementCandidateT(data: any): ReplacementCandidateT {
       nbTimesWorkedWeekdayLtm: {
         count: data.replacementImplications.nbTimesWorkedWeekdayLtm.count,
         lastDate: data.replacementImplications.nbTimesWorkedWeekdayLtm.lastDate
-          ? dayjs.unix(
-              data.replacementImplications.nbTimesWorkedWeekdayLtm.lastDate,
-            )
+          ? dayjs.unix(data.replacementImplications.nbTimesWorkedWeekdayLtm.lastDate)
           : null,
       },
       softConstraintHits: {
         ...data.replacementImplications.softConstraintHits,
-        breaches: data.replacementImplications.softConstraintHits.breaches.map(
-          (breach: any) => toBreachT(breach),
+        breaches: data.replacementImplications.softConstraintHits.breaches.map((breach: any) =>
+          toBreachT(breach),
         ),
       },
       hardConstraintHits: {
         ...data.replacementImplications.hardConstraintHits,
-        breaches: data.replacementImplications.hardConstraintHits.breaches.map(
-          (breach: any) => toBreachT(breach),
+        breaches: data.replacementImplications.hardConstraintHits.breaches.map((breach: any) =>
+          toBreachT(breach),
         ),
       },
     },

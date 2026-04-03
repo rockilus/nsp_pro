@@ -1,5 +1,4 @@
 from datetime import date
-from typing import Dict, List
 
 from shared.schemas.core import (
     Assignment,
@@ -19,11 +18,11 @@ from utils.constants import Constants
 # pylint: disable=too-many-arguments
 def build_breaches_not_model(
     schedule: Schedule,
-    workers: List[Worker],
-    shifts: List[Shift],
-    assignments: List[Assignment],
+    workers: list[Worker],
+    shifts: list[Shift],
+    assignments: list[Assignment],
     processing_cache: ProcessingCache,
-) -> List[Breach]:
+) -> list[Breach]:
     out = build_work_time_breaches(
         schedule,
         workers,
@@ -52,13 +51,13 @@ def build_breaches_not_model(
 # pylint: disable=too-many-arguments, too-many-locals, R0801
 def build_work_time_breaches(
     schedule: Schedule,
-    workers: List[Worker],
-    shifts: List[Shift],
-    periods: List[List[date]],
-    w_to_work_times: Dict[str, Dict[str, List[int]]],
-    shift_id_to_duration_dict: Dict[str, int],
-    assignments: List[Assignment],
-) -> List[Breach]:
+    workers: list[Worker],
+    shifts: list[Shift],
+    periods: list[list[date]],
+    w_to_work_times: dict[str, dict[str, list[int]]],
+    shift_id_to_duration_dict: dict[str, int],
+    assignments: list[Assignment],
+) -> list[Breach]:
     # Calculate work time actual for each period
     shift_work_ids = [
         s.id for s in shifts if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
@@ -73,9 +72,9 @@ def build_work_time_breaches(
     )
 
     # Compare to work time expected and create breach when actual > expected
-    i_to_period: Dict[int, List[date]] = dict(enumerate(periods))
+    i_to_period: dict[int, list[date]] = dict(enumerate(periods))
 
-    out: List[Breach] = []
+    out: list[Breach] = []
     for w_id, w_work_times in w_to_work_times.items():
         wts_actual = w_to_wt_actual.get(w_id, None)
         if wts_actual is None:
@@ -130,15 +129,15 @@ def build_work_time_breaches(
 
 
 def calc_work_times_actual(
-    workers: List[Worker],
-    shift_work_ids: List[str],
-    periods: List[List[date]],
-    shift_id_to_duration_dict: Dict[str, int],
-    assignments: List[Assignment],
-) -> Dict[str, List[int]]:
+    workers: list[Worker],
+    shift_work_ids: list[str],
+    periods: list[list[date]],
+    shift_id_to_duration_dict: dict[str, int],
+    assignments: list[Assignment],
+) -> dict[str, list[int]]:
     w_not_deleted_ids = [w.id for w in workers if not w.deleted]
 
-    w_to_wt_actual: Dict[str, List[int]] = {}
+    w_to_wt_actual: dict[str, list[int]] = {}
     for w_id in w_not_deleted_ids:
         w_to_wt_actual[w_id] = []
         for period in periods:
@@ -165,12 +164,12 @@ def convert_minutes_to_hours(minutes: int) -> float:
 
 def build_nb_duty_breaches(
     schedule: Schedule,
-    workers: List[Worker],
-    shifts: List[Shift],
-    periods: List[List[date]],
-    w_to_nb_duties: Dict[str, Dict[str, List[int]]],
-    assignments: List[Assignment],
-) -> List[Breach]:
+    workers: list[Worker],
+    shifts: list[Shift],
+    periods: list[list[date]],
+    w_to_nb_duties: dict[str, dict[str, list[int]]],
+    assignments: list[Assignment],
+) -> list[Breach]:
     # Calculate nb duty actual for each period
     shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
 
@@ -182,9 +181,9 @@ def build_nb_duty_breaches(
     )
 
     # Compare to nb duty expected and create breach when actual > expected
-    i_to_period: Dict[int, List[date]] = dict(enumerate(periods))
+    i_to_period: dict[int, list[date]] = dict(enumerate(periods))
 
-    out: List[Breach] = []
+    out: list[Breach] = []
     for w_id, nb_duty_expected in w_to_nb_duties.items():
         nb_duty_actual = w_to_nb_duty_actual.get(w_id, None)
         if nb_duty_actual is None:
@@ -232,14 +231,14 @@ def build_nb_duty_breaches(
 
 
 def calc_nb_duty_actual(
-    workers: List[Worker],
-    shift_duty_ids: List[str],
-    periods: List[List[date]],
-    assignments: List[Assignment],
-) -> Dict[str, List[int]]:
+    workers: list[Worker],
+    shift_duty_ids: list[str],
+    periods: list[list[date]],
+    assignments: list[Assignment],
+) -> dict[str, list[int]]:
     w_not_deleted_ids = [w.id for w in workers if not w.deleted]
 
-    out: Dict[str, List[int]] = {}
+    out: dict[str, list[int]] = {}
     for w_id in w_not_deleted_ids:
         out[w_id] = []
         for period in periods:

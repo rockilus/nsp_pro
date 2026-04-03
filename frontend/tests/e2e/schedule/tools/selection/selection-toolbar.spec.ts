@@ -11,40 +11,35 @@
  * - Close button exits selection mode
  */
 
-import { test, expect } from "@playwright/test";
-import { randomUUID } from "crypto";
-import { ScheduleTestBase } from "../../../../utils/schedule-test-base";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
+import { ScheduleTestBase } from '../../../../utils/schedule-test-base';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(utc);
 
 /** Enter selection mode via settings popover */
-async function enterSelectionMode(
-  page: import("@playwright/test").Page,
-): Promise<void> {
+async function enterSelectionMode(page: import('@playwright/test').Page): Promise<void> {
   await page.click('[data-testid="schedule-settings-button"]');
   await page.click('[data-testid="settings-selection-mode-button"]');
-  await expect(
-    page.locator('[data-testid="schedule-action-toolbar"]'),
-  ).toBeVisible();
+  await expect(page.locator('[data-testid="schedule-action-toolbar"]')).toBeVisible();
 }
 
 /** Switch the selected action via the dropdown */
 async function selectAction(
-  page: import("@playwright/test").Page,
-  action: "create" | "update" | "toggleFixed" | "delete",
+  page: import('@playwright/test').Page,
+  action: 'create' | 'update' | 'toggleFixed' | 'delete',
 ): Promise<void> {
   await page.click('[data-testid="schedule-action-dropdown-toggle"]');
   await page.click(`[data-testid="schedule-action-option-${action}"]`);
 }
 
-test.describe("Schedule Selection - Action Toolbar", () => {
+test.describe('Schedule Selection - Action Toolbar', () => {
   const testBasesMap = new Map<string, ScheduleTestBase>();
 
   test.beforeEach(async ({ page }, testInfo) => {
-    const workerIndex =
-      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     const scheduleTestBase = new ScheduleTestBase();
     testBasesMap.set(testRunId, scheduleTestBase);
@@ -62,9 +57,9 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     await scheduleTestBase.navigateToSchedulePage(page);
 
     await scheduleTestBase.setScheduleViewSettings(page, {
-      groupBy: "shift",
+      groupBy: 'shift',
       targetDate: referenceDate,
-      timeFrame: "week",
+      timeFrame: 'week',
     });
 
     await enterSelectionMode(page);
@@ -78,243 +73,180 @@ test.describe("Schedule Selection - Action Toolbar", () => {
 
   // ── Scope toggle ──────────────────────────────────────────────────────────
 
-  test("scope toggle absent with no campaign", async ({ page }) => {
-    await expect(
-      page.locator('[data-testid="schedule-scope-toggle-group"]'),
-    ).not.toBeVisible();
+  test('scope toggle absent with no campaign', async ({ page }) => {
+    await expect(page.locator('[data-testid="schedule-scope-toggle-group"]')).not.toBeVisible();
   });
 
-  test("scope toggle present with campaign", async ({ page }, testInfo) => {
+  test('scope toggle present with campaign', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
 
     const today = dayjs.utc();
-    await scheduleTestBase.createCampaignSchedule(
-      today.startOf("month"),
-      today.endOf("month"),
-    );
+    await scheduleTestBase.createCampaignSchedule(today.startOf('month'), today.endOf('month'));
 
     await page.reload();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState('networkidle');
     await enterSelectionMode(page);
 
-    await expect(
-      page.locator('[data-testid="schedule-scope-toggle-group"]'),
-    ).toBeVisible();
-    await expect(
-      page.locator('[data-testid="schedule-scope-view"]'),
-    ).toBeVisible();
-    await expect(
-      page.locator('[data-testid="schedule-scope-campaign"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-scope-toggle-group"]')).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-scope-view"]')).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-scope-campaign"]')).toBeVisible();
   });
 
   // ── Dropdown ──────────────────────────────────────────────────────────────
 
-  test("dropdown shows all 4 action options", async ({ page }) => {
+  test('dropdown shows all 4 action options', async ({ page }) => {
     await page.click('[data-testid="schedule-action-dropdown-toggle"]');
 
-    for (const key of ["create", "update", "toggleFixed", "delete"]) {
-      await expect(
-        page.locator(`[data-testid="schedule-action-option-${key}"]`),
-      ).toBeVisible();
+    for (const key of ['create', 'update', 'toggleFixed', 'delete']) {
+      await expect(page.locator(`[data-testid="schedule-action-option-${key}"]`)).toBeVisible();
     }
   });
 
   // ── Entity select visibility ───────────────────────────────────────────────
 
-  test("entity select shown for create/update, hidden for toggleFixed/delete", async ({
-    page,
-  }) => {
+  test('entity select shown for create/update, hidden for toggleFixed/delete', async ({ page }) => {
     // Default action is "create" — entity select should be visible
-    await expect(
-      page.locator('[data-testid="schedule-entity-select"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-entity-select"]')).toBeVisible();
 
     // Switch to "update" — entity select still visible
-    await selectAction(page, "update");
-    await expect(
-      page.locator('[data-testid="schedule-entity-select"]'),
-    ).toBeVisible();
+    await selectAction(page, 'update');
+    await expect(page.locator('[data-testid="schedule-entity-select"]')).toBeVisible();
 
     // Switch to "toggleFixed" — entity select hidden
-    await selectAction(page, "toggleFixed");
-    await expect(
-      page.locator('[data-testid="schedule-entity-select"]'),
-    ).not.toBeVisible();
+    await selectAction(page, 'toggleFixed');
+    await expect(page.locator('[data-testid="schedule-entity-select"]')).not.toBeVisible();
 
     // Switch to "delete" — entity select hidden
-    await selectAction(page, "delete");
-    await expect(
-      page.locator('[data-testid="schedule-entity-select"]'),
-    ).not.toBeVisible();
+    await selectAction(page, 'delete');
+    await expect(page.locator('[data-testid="schedule-entity-select"]')).not.toBeVisible();
   });
 
   // ── Validation errors ─────────────────────────────────────────────────────
 
-  test("validation: create with no cells selected shows error", async ({
-    page,
-  }) => {
+  test('validation: create with no cells selected shows error', async ({ page }) => {
     // Ensure nothing is selected (default state after entering selection mode)
     await page.click('[data-testid="schedule-action-main-button"]');
 
-    await expect(
-      page.locator('[data-testid="schedule-validation-error"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-validation-error"]')).toBeVisible();
   });
 
-  test("validation: create with cells but no entity selected shows error", async ({
-    page,
-  }) => {
+  test('validation: create with cells but no entity selected shows error', async ({ page }) => {
     // Select all cells
     await page.click('[data-testid="export-cell-select-all-checkbox"]');
 
     // Submit without picking an entity
     await page.click('[data-testid="schedule-action-main-button"]');
 
-    await expect(
-      page.locator('[data-testid="schedule-validation-error"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-validation-error"]')).toBeVisible();
   });
 
-  test("validation: update with no assignments shows error", async ({
-    page,
-  }) => {
-    await selectAction(page, "update");
+  test('validation: update with no assignments shows error', async ({ page }) => {
+    await selectAction(page, 'update');
 
     // Select only cells (no assignments)
     await page.click('[data-testid="export-cell-select-all-checkbox"]');
 
     await page.click('[data-testid="schedule-action-main-button"]');
 
-    await expect(
-      page.locator('[data-testid="schedule-validation-error"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-validation-error"]')).toBeVisible();
   });
 
-  test("validation: toggleFixed with no assignments shows error", async ({
-    page,
-  }) => {
-    await selectAction(page, "toggleFixed");
+  test('validation: toggleFixed with no assignments shows error', async ({ page }) => {
+    await selectAction(page, 'toggleFixed');
 
     await page.click('[data-testid="schedule-action-main-button"]');
 
-    await expect(
-      page.locator('[data-testid="schedule-validation-error"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-validation-error"]')).toBeVisible();
   });
 
-  test("validation: delete with no assignments shows error", async ({
-    page,
-  }) => {
-    await selectAction(page, "delete");
+  test('validation: delete with no assignments shows error', async ({ page }) => {
+    await selectAction(page, 'delete');
 
     await page.click('[data-testid="schedule-action-main-button"]');
 
-    await expect(
-      page.locator('[data-testid="schedule-validation-error"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-validation-error"]')).toBeVisible();
   });
 
   // ── Delete confirmation flow ───────────────────────────────────────────────
 
-  test("delete confirmation flow: cancel aborts deletion", async ({
-    page,
-  }, testInfo) => {
+  test('delete confirmation flow: cancel aborts deletion', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
 
     const referenceDate = dayjs.utc();
     const result = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      referenceDate.startOf("week"),
-      referenceDate.endOf("week"),
+      referenceDate.startOf('week'),
+      referenceDate.endOf('week'),
     );
 
     if (result.assignmentsRead.length === 0) {
-      test.skip(true, "No assignments in current week — skipping");
+      test.skip(true, 'No assignments in current week — skipping');
       return;
     }
 
     // Select an assignment
     const assignmentId = result.assignmentsRead[0].id;
-    await page
-      .locator(`[data-testid="assignment-cell-${assignmentId}"]`)
-      .click();
+    await page.locator(`[data-testid="assignment-cell-${assignmentId}"]`).click();
 
-    await selectAction(page, "delete");
+    await selectAction(page, 'delete');
 
     // Click main action → confirm button should appear
     await page.click('[data-testid="schedule-action-main-button"]');
-    await expect(
-      page.locator('[data-testid="schedule-delete-confirm-button"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-testid="schedule-delete-confirm-button"]')).toBeVisible();
 
     // Cancel — confirmation dismissed, no deletion
     await page.click('[data-testid="schedule-delete-cancel-button"]');
-    await expect(
-      page.locator('[data-testid="schedule-delete-confirm-button"]'),
-    ).not.toBeVisible();
+    await expect(page.locator('[data-testid="schedule-delete-confirm-button"]')).not.toBeVisible();
 
     // Assignment should still exist
     const afterCancel = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      referenceDate.startOf("week"),
-      referenceDate.endOf("week"),
+      referenceDate.startOf('week'),
+      referenceDate.endOf('week'),
     );
-    expect(afterCancel.assignmentsRead.some((a) => a.id === assignmentId)).toBe(
-      true,
-    );
+    expect(afterCancel.assignmentsRead.some((a) => a.id === assignmentId)).toBe(true);
   });
 
-  test("delete confirmation flow: confirm deletes assignments", async ({
-    page,
-  }, testInfo) => {
+  test('delete confirmation flow: confirm deletes assignments', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
 
     const referenceDate = dayjs.utc();
     const result = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      referenceDate.startOf("week"),
-      referenceDate.endOf("week"),
+      referenceDate.startOf('week'),
+      referenceDate.endOf('week'),
     );
 
     if (result.assignmentsRead.length === 0) {
-      test.skip(true, "No assignments in current week — skipping");
+      test.skip(true, 'No assignments in current week — skipping');
       return;
     }
 
     const assignmentId = result.assignmentsRead[0].id;
-    await page
-      .locator(`[data-testid="assignment-cell-${assignmentId}"]`)
-      .click();
+    await page.locator(`[data-testid="assignment-cell-${assignmentId}"]`).click();
 
-    await selectAction(page, "delete");
+    await selectAction(page, 'delete');
     await page.click('[data-testid="schedule-action-main-button"]');
     await page.click('[data-testid="schedule-delete-confirm-button"]');
 
     // Wait for toolbar to return to normal (delete confirmed)
-    await expect(
-      page.locator('[data-testid="schedule-delete-confirm-button"]'),
-    ).not.toBeVisible();
+    await expect(page.locator('[data-testid="schedule-delete-confirm-button"]')).not.toBeVisible();
 
     // Verify assignment was removed
     const afterDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
-      referenceDate.startOf("week"),
-      referenceDate.endOf("week"),
+      referenceDate.startOf('week'),
+      referenceDate.endOf('week'),
     );
-    expect(afterDelete.assignmentsRead.some((a) => a.id === assignmentId)).toBe(
-      false,
-    );
+    expect(afterDelete.assignmentsRead.some((a) => a.id === assignmentId)).toBe(false);
   });
 
   // ── Bulk create ───────────────────────────────────────────────────────────
 
-  test("bulk create: creates assignments for selected cells", async ({
-    page,
-  }, testInfo) => {
+  test('bulk create: creates assignments for selected cells', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
 
@@ -325,15 +257,11 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     // Compute Mon–Sun week matching the schedule UI weekly view
     const dow = referenceDate.day();
     const daysToMonday = (dow + 6) % 7;
-    const weekStart = referenceDate
-      .startOf("day")
-      .subtract(daysToMonday, "day");
-    const weekEnd = weekStart.add(6, "day").endOf("day");
+    const weekStart = referenceDate.startOf('day').subtract(daysToMonday, 'day');
+    const weekEnd = weekStart.add(6, 'day').endOf('day');
 
     // Select all cells in first shift row (7 day-slots across the week)
-    const rowCheckbox = page.locator(
-      `[data-testid="shift-row-checkbox-${shifts[0].id}"]`,
-    );
+    const rowCheckbox = page.locator(`[data-testid="shift-row-checkbox-${shifts[0].id}"]`);
     await expect(rowCheckbox).toBeVisible();
     await rowCheckbox.click();
 
@@ -347,9 +275,7 @@ test.describe("Schedule Selection - Action Toolbar", () => {
 
     // Pick workers[1] as the entity
     await page.click('[data-testid="schedule-entity-select"]');
-    await page
-      .locator(`[data-testid="schedule-entity-option-${workers[1].id}"]`)
-      .click();
+    await page.locator(`[data-testid="schedule-entity-option-${workers[1].id}"]`).click();
 
     await page.click('[data-testid="schedule-action-main-button"]');
     await page.waitForTimeout(1500);
@@ -361,20 +287,16 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     );
 
     // Build the list of truly new assignments by excluding IDs that existed before
-    const createdAssignments = afterCreate.assignmentsRead.filter(
-      (a) => !beforeIds.has(a.id),
-    );
+    const createdAssignments = afterCreate.assignmentsRead.filter((a) => !beforeIds.has(a.id));
     expect(createdAssignments).toHaveLength(7);
 
     // Verify one assignment exists for each day of the week
     for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-      const expectedDate = weekStart.add(dayOffset, "day");
-      const assignment = createdAssignments.find((a) =>
-        a.date.isSame(expectedDate, "day"),
-      );
+      const expectedDate = weekStart.add(dayOffset, 'day');
+      const assignment = createdAssignments.find((a) => a.date.isSame(expectedDate, 'day'));
       expect(
         assignment,
-        `Expected assignment for ${expectedDate.format("YYYY-MM-DD")} (workers[1], shifts[0])`,
+        `Expected assignment for ${expectedDate.format('YYYY-MM-DD')} (workers[1], shifts[0])`,
       ).toBeDefined();
       expect(assignment!.workerId).toBe(workers[1].id);
       expect(assignment!.shiftId).toBe(shifts[0].id);
@@ -383,7 +305,7 @@ test.describe("Schedule Selection - Action Toolbar", () => {
 
   // ── Bulk update ───────────────────────────────────────────────────────────
 
-  test("bulk update: updates selected assignments to a different shift", async ({
+  test('bulk update: updates selected assignments to a different shift', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -400,29 +322,23 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     expect(alternateWorker).toBeDefined();
 
     if (!alternateShift) {
-      test.skip(true, "No alternate shift available — skipping");
+      test.skip(true, 'No alternate shift available — skipping');
       return;
     }
     if (!alternateWorker) {
-      test.skip(true, "No alternate worker available — skipping");
+      test.skip(true, 'No alternate worker available — skipping');
       return;
     }
 
     // Compute Mon–Sun week matching the schedule UI weekly view
     const dow = referenceDate.day();
     const daysToMonday = (dow + 6) % 7;
-    const weekStart = referenceDate
-      .startOf("day")
-      .subtract(daysToMonday, "day");
-    const weekEnd = weekStart.add(6, "day").endOf("day");
+    const weekStart = referenceDate.startOf('day').subtract(daysToMonday, 'day');
+    const weekEnd = weekStart.add(6, 'day').endOf('day');
 
     // Pre-create 3 assignments on shifts[0] for workers[1] across the week
     // (workers[1] has no pre-existing assignments, avoiding any conflicts)
-    const testDates = [
-      weekStart,
-      weekStart.add(1, "day"),
-      weekStart.add(2, "day"),
-    ];
+    const testDates = [weekStart, weekStart.add(1, 'day'), weekStart.add(2, 'day')];
     const createdIds: string[] = [];
 
     for (const date of testDates) {
@@ -438,9 +354,9 @@ test.describe("Schedule Selection - Action Toolbar", () => {
 
     // Reload page so the new assignments are visible, then re-enter selection mode
     await scheduleTestBase.setScheduleViewSettings(page, {
-      groupBy: "shift",
+      groupBy: 'shift',
       targetDate: referenceDate,
-      timeFrame: "week",
+      timeFrame: 'week',
     });
     await enterSelectionMode(page);
 
@@ -450,9 +366,7 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       weekStart,
       weekEnd,
     );
-    const beforeById = new Map(
-      beforeUpdate.assignmentsRead.map((a) => [a.id, a]),
-    );
+    const beforeById = new Map(beforeUpdate.assignmentsRead.map((a) => [a.id, a]));
 
     // Select each pre-created assignment
     for (const id of createdIds) {
@@ -462,12 +376,10 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       }
     }
 
-    await selectAction(page, "update");
+    await selectAction(page, 'update');
 
     await page.click('[data-testid="schedule-entity-select"]');
-    await page
-      .locator(`[data-testid="schedule-entity-option-${alternateWorker.id}"]`)
-      .click();
+    await page.locator(`[data-testid="schedule-entity-option-${alternateWorker.id}"]`).click();
 
     await page.click('[data-testid="schedule-action-main-button"]');
     await page.waitForTimeout(1500);
@@ -480,9 +392,7 @@ test.describe("Schedule Selection - Action Toolbar", () => {
 
     // Verify every pre-created assignment was updated to the alternate shift
     for (const id of createdIds) {
-      const updatedAssignment = afterUpdate.assignmentsRead.find(
-        (a) => a.id === id,
-      );
+      const updatedAssignment = afterUpdate.assignmentsRead.find((a) => a.id === id);
       expect(
         updatedAssignment,
         `Assignment ${id} should have been updated to alternate shift`,
@@ -494,7 +404,7 @@ test.describe("Schedule Selection - Action Toolbar", () => {
 
   // ── Bulk toggleFixed ──────────────────────────────────────────────────────
 
-  test("bulk toggleFixed: toggles fixed flag on selected assignments", async ({
+  test('bulk toggleFixed: toggles fixed flag on selected assignments', async ({
     page,
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
@@ -507,17 +417,11 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     // Compute Mon–Sun week matching the schedule UI weekly view
     const dow = referenceDate.day();
     const daysToMonday = (dow + 6) % 7;
-    const weekStart = referenceDate
-      .startOf("day")
-      .subtract(daysToMonday, "day");
-    const weekEnd = weekStart.add(6, "day").endOf("day");
+    const weekStart = referenceDate.startOf('day').subtract(daysToMonday, 'day');
+    const weekEnd = weekStart.add(6, 'day').endOf('day');
 
     // Pre-create 3 unfixed assignments for workers[1] across the week
-    const testDates = [
-      weekStart,
-      weekStart.add(1, "day"),
-      weekStart.add(2, "day"),
-    ];
+    const testDates = [weekStart, weekStart.add(1, 'day'), weekStart.add(2, 'day')];
     const createdIds: string[] = [];
 
     for (const date of testDates) {
@@ -533,9 +437,9 @@ test.describe("Schedule Selection - Action Toolbar", () => {
 
     // Reload page so the new assignments are visible, then re-enter selection mode
     await scheduleTestBase.setScheduleViewSettings(page, {
-      groupBy: "shift",
+      groupBy: 'shift',
       targetDate: referenceDate,
-      timeFrame: "week",
+      timeFrame: 'week',
     });
     await enterSelectionMode(page);
 
@@ -545,9 +449,7 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       weekStart,
       weekEnd,
     );
-    const beforeFixedById = new Map(
-      beforeToggle.assignmentsRead.map((a) => [a.id, a]),
-    );
+    const beforeFixedById = new Map(beforeToggle.assignmentsRead.map((a) => [a.id, a]));
 
     // Select each pre-created assignment
     for (const id of createdIds) {
@@ -557,7 +459,7 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       }
     }
 
-    await selectAction(page, "toggleFixed");
+    await selectAction(page, 'toggleFixed');
     await page.click('[data-testid="schedule-action-main-button"]');
     await page.waitForTimeout(1500);
 
@@ -569,28 +471,21 @@ test.describe("Schedule Selection - Action Toolbar", () => {
 
     // Build list of truly toggled assignments: existed before and fixed value changed
     const toggledAssignments = afterToggle.assignmentsRead.filter(
-      (a) =>
-        beforeFixedById.has(a.id) &&
-        beforeFixedById.get(a.id)!.fixed !== a.fixed,
+      (a) => beforeFixedById.has(a.id) && beforeFixedById.get(a.id)!.fixed !== a.fixed,
     );
     expect(toggledAssignments).toHaveLength(createdIds.length);
 
     // Verify every pre-created assignment was toggled to fixed: true
     for (const id of createdIds) {
       const toggled = toggledAssignments.find((a) => a.id === id);
-      expect(
-        toggled,
-        `Assignment ${id} should have been toggled`,
-      ).toBeDefined();
+      expect(toggled, `Assignment ${id} should have been toggled`).toBeDefined();
       expect(toggled!.fixed).toBe(true);
     }
   });
 
   // ── Bulk delete ───────────────────────────────────────────────────────────
 
-  test("bulk delete: deletes all selected assignments", async ({
-    page,
-  }, testInfo) => {
+  test('bulk delete: deletes all selected assignments', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
 
@@ -601,17 +496,11 @@ test.describe("Schedule Selection - Action Toolbar", () => {
     // Compute Mon–Sun week matching the schedule UI weekly view
     const dow = referenceDate.day();
     const daysToMonday = (dow + 6) % 7;
-    const weekStart = referenceDate
-      .startOf("day")
-      .subtract(daysToMonday, "day");
-    const weekEnd = weekStart.add(6, "day").endOf("day");
+    const weekStart = referenceDate.startOf('day').subtract(daysToMonday, 'day');
+    const weekEnd = weekStart.add(6, 'day').endOf('day');
 
     // Pre-create 3 assignments for workers[1] across the week
-    const testDates = [
-      weekStart,
-      weekStart.add(1, "day"),
-      weekStart.add(2, "day"),
-    ];
+    const testDates = [weekStart, weekStart.add(1, 'day'), weekStart.add(2, 'day')];
     const createdIds: string[] = [];
 
     for (const date of testDates) {
@@ -627,9 +516,9 @@ test.describe("Schedule Selection - Action Toolbar", () => {
 
     // Reload page so the new assignments are visible, then re-enter selection mode
     await scheduleTestBase.setScheduleViewSettings(page, {
-      groupBy: "shift",
+      groupBy: 'shift',
       targetDate: referenceDate,
-      timeFrame: "week",
+      timeFrame: 'week',
     });
     await enterSelectionMode(page);
 
@@ -639,9 +528,7 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       weekStart,
       weekEnd,
     );
-    const beforeDeleteIds = new Set(
-      beforeDelete.assignmentsRead.map((a) => a.id),
-    );
+    const beforeDeleteIds = new Set(beforeDelete.assignmentsRead.map((a) => a.id));
 
     // Select each pre-created assignment
     for (const id of createdIds) {
@@ -651,7 +538,7 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       }
     }
 
-    await selectAction(page, "delete");
+    await selectAction(page, 'delete');
     await page.click('[data-testid="schedule-action-main-button"]');
     await page.click('[data-testid="schedule-delete-confirm-button"]');
     await page.waitForTimeout(1500);
@@ -661,35 +548,25 @@ test.describe("Schedule Selection - Action Toolbar", () => {
       weekStart,
       weekEnd,
     );
-    const afterDeleteIds = new Set(
-      afterDelete.assignmentsRead.map((a) => a.id),
-    );
+    const afterDeleteIds = new Set(afterDelete.assignmentsRead.map((a) => a.id));
 
     // Build list of truly deleted assignments: existed before but missing after
-    const deletedIds = [...beforeDeleteIds].filter(
-      (id) => !afterDeleteIds.has(id),
-    );
+    const deletedIds = [...beforeDeleteIds].filter((id) => !afterDeleteIds.has(id));
     expect(deletedIds).toHaveLength(createdIds.length);
 
     // Verify every pre-created assignment is gone
     for (const id of createdIds) {
-      expect(deletedIds, `Assignment ${id} should have been deleted`).toContain(
-        id,
-      );
+      expect(deletedIds, `Assignment ${id} should have been deleted`).toContain(id);
     }
   });
 
   // ── Close button ──────────────────────────────────────────────────────────
 
-  test("close button exits selection mode", async ({ page }) => {
-    await expect(
-      page.locator('[data-testid="schedule-action-toolbar"]'),
-    ).toBeVisible();
+  test('close button exits selection mode', async ({ page }) => {
+    await expect(page.locator('[data-testid="schedule-action-toolbar"]')).toBeVisible();
 
     await page.click('[data-testid="schedule-close-selection-button"]');
 
-    await expect(
-      page.locator('[data-testid="schedule-action-toolbar"]'),
-    ).not.toBeVisible();
+    await expect(page.locator('[data-testid="schedule-action-toolbar"]')).not.toBeVisible();
   });
 });

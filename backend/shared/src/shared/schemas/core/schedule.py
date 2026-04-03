@@ -1,7 +1,7 @@
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, time, timezone
 from enum import Enum
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import humps
 from pydantic import TypeAdapter
@@ -58,6 +58,8 @@ class Schedule:
     created_by: str
     created_at: datetime = datetime.now(timezone.utc)
     updated_at: datetime = datetime.now(timezone.utc)
+    request_deadline: Optional[datetime] = None
+    last_reminder_sent_at: Optional[datetime] = None
 
     def to_dict(self) -> Dict:
         out = asdict(self)
@@ -74,6 +76,16 @@ class Schedule:
         ]
         out["created_at"] = self.created_at.timestamp()
         out["updated_at"] = self.updated_at.timestamp()
+        out["request_deadline"] = (
+            self.request_deadline.timestamp()
+            if self.request_deadline is not None
+            else None
+        )
+        out["last_reminder_sent_at"] = (
+            self.last_reminder_sent_at.timestamp()
+            if self.last_reminder_sent_at is not None
+            else None
+        )
         return out
 
     @classmethod
@@ -93,6 +105,16 @@ class Schedule:
             created_at=datetime.fromtimestamp(data["created_at"], timezone.utc),
             updated_at=datetime.fromtimestamp(data["updated_at"], timezone.utc),
             created_by=data["created_by"],
+            request_deadline=(
+                datetime.fromtimestamp(data["request_deadline"], timezone.utc)
+                if data.get("request_deadline") is not None
+                else None
+            ),
+            last_reminder_sent_at=(
+                datetime.fromtimestamp(data["last_reminder_sent_at"], timezone.utc)
+                if data.get("last_reminder_sent_at") is not None
+                else None
+            ),
         )
 
     def to_dto(self) -> ScheduleDTO:
@@ -110,6 +132,16 @@ class Schedule:
         ]
         data["created_at"] = self.created_at.timestamp()
         data["updated_at"] = self.updated_at.timestamp()
+        data["request_deadline"] = (
+            self.request_deadline.timestamp()
+            if self.request_deadline is not None
+            else None
+        )
+        data["last_reminder_sent_at"] = (
+            self.last_reminder_sent_at.timestamp()
+            if self.last_reminder_sent_at is not None
+            else None
+        )
         as_dict = humps.camelize(data)
         validator = TypeAdapter(ScheduleDTO)
         return validator.validate_python(as_dict)
@@ -133,6 +165,16 @@ class Schedule:
         )
         data_snake["updated_at"] = datetime.fromtimestamp(
             data_snake["updated_at"], timezone.utc
+        )
+        data_snake["request_deadline"] = (
+            datetime.fromtimestamp(data_snake["request_deadline"], timezone.utc)
+            if data_snake.get("request_deadline") is not None
+            else None
+        )
+        data_snake["last_reminder_sent_at"] = (
+            datetime.fromtimestamp(data_snake["last_reminder_sent_at"], timezone.utc)
+            if data_snake.get("last_reminder_sent_at") is not None
+            else None
         )
         return Schedule(**data_snake)
 

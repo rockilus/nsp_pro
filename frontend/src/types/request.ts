@@ -1,23 +1,23 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 // Types
-import { MissingAttribute, ShiftWorkerOptionT } from "./constraint";
-import { ColumnFilter, TableSort } from "./filter";
+import { MissingAttribute, ShiftWorkerOptionT } from './constraint';
+import { ColumnFilter, TableSort } from './filter';
 
 export enum RequestStatus {
-  PENDING = "pending", // Waiting for manager review
-  APPROVED = "approved", // Approved and must be fulfilled
-  DENIED = "denied", // Denied and must not be fulfilled
-  DEFERRED = "deferred", // Left to the algorithm to decide
+  PENDING = 'pending', // Waiting for manager review
+  APPROVED = 'approved', // Approved and must be fulfilled
+  DENIED = 'denied', // Denied and must not be fulfilled
+  DEFERRED = 'deferred', // Left to the algorithm to decide
 }
 
 export enum FulfillmentStatus {
-  NOT_PROCESSED = "not_processed",
-  FULFILLED = "fulfilled",
-  UNFULFILLED = "unfulfilled",
+  NOT_PROCESSED = 'not_processed',
+  FULFILLED = 'fulfilled',
+  UNFULFILLED = 'unfulfilled',
 }
 export enum RequestType {
-  WORK_DEMAND = "work_demand",
-  LEAVE = "leave",
+  WORK_DEMAND = 'work_demand',
+  LEAVE = 'leave',
 }
 
 export type RequestT = {
@@ -61,15 +61,15 @@ export const fromRequestT = (data: RequestT) => {
 
 // Request Calendar View Settings
 export type RequestCalendarViewSettingsT = {
-  timeFrame: "week" | "month";
+  timeFrame: 'week' | 'month';
   periodStartDate: dayjs.Dayjs;
 };
 
 // Request View Settings (combines calendar and table state)
 export type RequestViewSettingsT = {
-  selectedTab: "table" | "calendar";
+  selectedTab: 'table' | 'calendar';
   filters: ColumnFilter[];
   sort: TableSort | null;
-  timeFrame: "week" | "month";
+  timeFrame: 'week' | 'month';
   periodStartDate: dayjs.Dayjs;
 };

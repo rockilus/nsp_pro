@@ -1,11 +1,11 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 import {
   StatsOptionsT,
   StatsUnitOptions,
   StatsTimeFrameOptions,
   HeaderUnitOptions,
-} from "@/types/stats";
-import { ShiftWorkerOptionT, SWOIdTypes } from "@/types/constraint";
+} from '@/types/stats';
+import { ShiftWorkerOptionT, SWOIdTypes } from '@/types/constraint';
 
 export interface SerializedStatsOptions {
   timeFrame: StatsTimeFrameOptions;
@@ -21,9 +21,7 @@ export interface SerializedStatsOptions {
 /**
  * Validates and normalizes stats options
  */
-export function validateStatsOptions(
-  options: Partial<StatsOptionsT>
-): StatsOptionsT {
+export function validateStatsOptions(options: Partial<StatsOptionsT>): StatsOptionsT {
   const now = dayjs.utc();
 
   // Validate timeFrame
@@ -69,11 +67,9 @@ export function validateStatsOptions(
   } else {
     try {
       const parsed = dayjs.utc(options.startDate);
-      startDate = parsed.isValid()
-        ? parsed
-        : now.startOf("day").subtract(1, "year");
+      startDate = parsed.isValid() ? parsed : now.startOf('day').subtract(1, 'year');
     } catch {
-      startDate = now.startOf("day").subtract(1, "year");
+      startDate = now.startOf('day').subtract(1, 'year');
     }
   }
 
@@ -82,27 +78,27 @@ export function validateStatsOptions(
   } else {
     try {
       const parsed = dayjs.utc(options.endDate);
-      endDate = parsed.isValid() ? parsed : now.startOf("day");
+      endDate = parsed.isValid() ? parsed : now.startOf('day');
     } catch {
-      endDate = now.startOf("day");
+      endDate = now.startOf('day');
     }
   }
 
   // Ensure dates are reasonable (not more than 5 years in past/future)
-  const fiveYearsAgo = now.subtract(5, "years");
-  const fiveYearsFromNow = now.add(5, "years");
+  const fiveYearsAgo = now.subtract(5, 'years');
+  const fiveYearsFromNow = now.add(5, 'years');
 
   if (startDate.isBefore(fiveYearsAgo) || startDate.isAfter(fiveYearsFromNow)) {
-    startDate = now.startOf("day").subtract(1, "year");
+    startDate = now.startOf('day').subtract(1, 'year');
   }
 
   if (endDate.isBefore(fiveYearsAgo) || endDate.isAfter(fiveYearsFromNow)) {
-    endDate = now.startOf("day");
+    endDate = now.startOf('day');
   }
 
   // Ensure end date is not before start date
   if (endDate.isBefore(startDate)) {
-    endDate = startDate.add(1, "month");
+    endDate = startDate.add(1, 'month');
   }
 
   // Validate selectedShifts
@@ -110,11 +106,11 @@ export function validateStatsOptions(
     ? options.selectedShifts
     : [
         {
-          name: "all shifts",
-          id: "",
+          name: 'all shifts',
+          id: '',
           idType: SWOIdTypes.NONE,
           isBoolDim: false,
-          categoryName: "All",
+          categoryName: 'All',
         },
       ];
 
@@ -125,37 +121,31 @@ export function validateStatsOptions(
     statsUnit,
     headerUnit,
     selectedShifts,
-    showFavorites:
-      typeof options.showFavorites === "boolean"
-        ? options.showFavorites
-        : false,
-    enableHeatmap:
-      typeof options.enableHeatmap === "boolean" ? options.enableHeatmap : true,
+    showFavorites: typeof options.showFavorites === 'boolean' ? options.showFavorites : false,
+    enableHeatmap: typeof options.enableHeatmap === 'boolean' ? options.enableHeatmap : true,
   };
 }
 
 export function getDefaultStatsOptions(
-  scheduleCampaign?: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs } | null
+  scheduleCampaign?: { startDate: dayjs.Dayjs; endDate: dayjs.Dayjs } | null,
 ): StatsOptionsT {
   const now = dayjs.utc();
 
   return {
-    timeFrame: scheduleCampaign
-      ? StatsTimeFrameOptions.CAMPAING
-      : StatsTimeFrameOptions.LTM,
+    timeFrame: scheduleCampaign ? StatsTimeFrameOptions.CAMPAING : StatsTimeFrameOptions.LTM,
     startDate: scheduleCampaign
       ? scheduleCampaign.startDate
-      : now.startOf("day").subtract(1, "year"),
-    endDate: scheduleCampaign ? scheduleCampaign.endDate : now.startOf("day"),
+      : now.startOf('day').subtract(1, 'year'),
+    endDate: scheduleCampaign ? scheduleCampaign.endDate : now.startOf('day'),
     statsUnit: StatsUnitOptions.NB_DAYS_WORKED,
     headerUnit: HeaderUnitOptions.WEEKDAY,
     selectedShifts: [
       {
-        name: "all shifts",
-        id: "",
+        name: 'all shifts',
+        id: '',
         idType: SWOIdTypes.NONE,
         isBoolDim: false,
-        categoryName: "All",
+        categoryName: 'All',
       },
     ],
     showFavorites: false,

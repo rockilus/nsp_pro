@@ -1,9 +1,9 @@
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
-import { AssignmentT, toAssignmentT } from "./assignment";
-import { BreachT, toBreachT } from "./breach";
-import { RequestT, toRequestT } from "./request";
+import { AssignmentT, toAssignmentT } from './assignment';
+import { BreachT, toBreachT } from './breach';
+import { RequestT, toRequestT } from './request';
 
 dayjs.extend(utc);
 
@@ -13,7 +13,7 @@ export interface SolveRequestT {
   solve_scope?: SolveScope;
 }
 
-export type SolveScopeType = "FULL" | "DUTIES" | "NON_DUTIES" | "CUSTOM";
+export type SolveScopeType = 'FULL' | 'DUTIES' | 'NON_DUTIES' | 'CUSTOM';
 
 export interface WorkerDateCell {
   worker_id: string;
@@ -32,22 +32,22 @@ export interface SolveScope {
   dates?: string[];
   worker_cells?: WorkerDateCell[];
   shift_cells?: ShiftDateCell[];
-  solve_view?: "worker" | "shift";
+  solve_view?: 'worker' | 'shift';
 }
 
 export enum SolveRequestStatus {
-  PENDING = "PENDING",
-  IN_PROGRESS = "IN_PROGRESS",
-  COMPLETED = "COMPLETED",
-  FAILED = "FAILED",
+  PENDING = 'PENDING',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
 }
 
 export enum ScheduleSolveStatus {
-  NOT_SOLVED = "NOT_SOLVED",
-  SOLVED_NO_BREACH = "SOLVED_NO_BREACH",
-  SOLVED_HARD_BREACHED = "SOLVED_HARD_BREACHED",
-  SOLVED_SOFT_BREACHED = "SOLVED_SOFT_BREACHED",
-  NO_SOLUTION = "NO_SOLUTION",
+  NOT_SOLVED = 'NOT_SOLVED',
+  SOLVED_NO_BREACH = 'SOLVED_NO_BREACH',
+  SOLVED_HARD_BREACHED = 'SOLVED_HARD_BREACHED',
+  SOLVED_SOFT_BREACHED = 'SOLVED_SOFT_BREACHED',
+  NO_SOLUTION = 'NO_SOLUTION',
 }
 
 export interface ResultModelT {
@@ -72,17 +72,13 @@ export interface SolveTaskStatusResponseT {
 
 export const toResultModelT = (data: any): ResultModelT => {
   return {
-    assignments: data.assignments.map((assignment: any) =>
-      toAssignmentT(assignment),
-    ),
+    assignments: data.assignments.map((assignment: any) => toAssignmentT(assignment)),
     breaches: data.breaches.map((breach: any) => toBreachT(breach)),
     requests: data.requests.map((request: any) => toRequestT(request)),
   };
 };
 
-export const toSolveTaskStatusResponseT = (
-  data: any,
-): SolveTaskStatusResponseT => {
+export const toSolveTaskStatusResponseT = (data: any): SolveTaskStatusResponseT => {
   return {
     ...data,
     startedAt: data.startedAt ? dayjs.unix(data.startedAt).utc() : null,

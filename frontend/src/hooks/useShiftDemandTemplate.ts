@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
 import {
   ShiftDemandTemplateDTO,
@@ -11,13 +11,13 @@ import {
   TemplateApplicationResult,
   TemplateValidationResult,
   BatchTemplateOperationResult,
-} from "../types/shift-demand-template";
+} from '../types/shift-demand-template';
 // API Client
-import { ShiftDemandTemplateApi } from "../app/lib/api/shiftDemandTemplateApi";
-import { useApiClient } from "../app/lib/api-client";
+import { ShiftDemandTemplateApi } from '../app/lib/api/shiftDemandTemplateApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Template Hooks //
@@ -33,7 +33,7 @@ export function useGetTemplates() {
   const getTemplates = useCallback(
     async (teamId: string): Promise<ShiftDemandTemplateDTO[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetTemplates called:", {
+        console.log('🔍 useGetTemplates called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -43,24 +43,24 @@ export function useGetTemplates() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ShiftDemandTemplateApi.getTemplates(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get templates:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get templates:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTemplates;
@@ -74,12 +74,9 @@ export function useGetTemplate() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const getTemplate = useCallback(
-    async (
-      templateId: string,
-      teamId: string
-    ): Promise<ShiftDemandTemplateDTO> => {
+    async (templateId: string, teamId: string): Promise<ShiftDemandTemplateDTO> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetTemplate called:", {
+        console.log('🔍 useGetTemplate called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -90,28 +87,24 @@ export function useGetTemplate() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ShiftDemandTemplateApi.getTemplate(
-          apiClient,
-          templateId,
-          teamId
-        );
+        return await ShiftDemandTemplateApi.getTemplate(apiClient, templateId, teamId);
       } catch (error) {
-        console.error("❌ Failed to get template:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get template:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTemplate;
@@ -127,10 +120,10 @@ export function useCreateTemplate() {
   const createTemplate = useCallback(
     async (
       teamId: string,
-      template: ShiftDemandTemplateCreateDTO
+      template: ShiftDemandTemplateCreateDTO,
     ): Promise<ShiftDemandTemplateDTO> => {
       if (env.isDevelopment) {
-        console.log("🔍 useCreateTemplate called:", {
+        console.log('🔍 useCreateTemplate called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -141,34 +134,30 @@ export function useCreateTemplate() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        const result = await ShiftDemandTemplateApi.createTemplate(
-          apiClient,
-          teamId,
-          template
-        );
+        const result = await ShiftDemandTemplateApi.createTemplate(apiClient, teamId, template);
 
         if (env.isDevelopment) {
-          console.log("✅ Template created successfully");
+          console.log('✅ Template created successfully');
         }
 
         return result;
       } catch (error) {
-        console.error("❌ Failed to create template:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to create template:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createTemplate;
@@ -182,34 +171,31 @@ export function useCreateTemplateFromDateRange() {
   const { user, isAuthenticated, loading } = useAuth();
 
   const createTemplateFromDateRange = useCallback(
-    async (
-      teamId: string,
-      template: TemplateFromDemandsDTO
-    ): Promise<ShiftDemandTemplateDTO> => {
+    async (teamId: string, template: TemplateFromDemandsDTO): Promise<ShiftDemandTemplateDTO> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ShiftDemandTemplateApi.createTemplateFromDateRange(
           apiClient,
           teamId,
-          template
+          template,
         );
       } catch (error) {
-        console.error("❌ Failed to create template from date range:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to create template from date range:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createTemplateFromDateRange;
@@ -226,33 +212,28 @@ export function useUpdateTemplate() {
     async (
       templateId: string,
       teamId: string,
-      update: ShiftDemandTemplateUpdateDTO
+      update: ShiftDemandTemplateUpdateDTO,
     ): Promise<ShiftDemandTemplateDTO> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ShiftDemandTemplateApi.updateTemplate(
-          apiClient,
-          templateId,
-          teamId,
-          update
-        );
+        return await ShiftDemandTemplateApi.updateTemplate(apiClient, templateId, teamId, update);
       } catch (error) {
-        console.error("❌ Failed to update template:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update template:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateTemplate;
@@ -269,28 +250,24 @@ export function useDeleteTemplate() {
     async (templateId: string, teamId: string): Promise<void> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        await ShiftDemandTemplateApi.deleteTemplate(
-          apiClient,
-          templateId,
-          teamId
-        );
+        await ShiftDemandTemplateApi.deleteTemplate(apiClient, templateId, teamId);
       } catch (error) {
-        console.error("❌ Failed to delete template:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to delete template:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return deleteTemplate;
@@ -307,24 +284,24 @@ export function useApplyTemplate() {
     async (request: ApplyTemplateDTO): Promise<TemplateApplicationResult> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await ShiftDemandTemplateApi.applyTemplate(apiClient, request);
       } catch (error) {
-        console.error("❌ Failed to apply template:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to apply template:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return applyTemplate;
@@ -341,27 +318,24 @@ export function useValidateTemplateApplication() {
     async (request: ApplyTemplateDTO): Promise<TemplateValidationResult> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ShiftDemandTemplateApi.validateTemplateApplication(
-          apiClient,
-          request
-        );
+        return await ShiftDemandTemplateApi.validateTemplateApplication(apiClient, request);
       } catch (error) {
-        console.error("❌ Failed to validate template application:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to validate template application:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return validateTemplateApplication;
@@ -378,27 +352,24 @@ export function useBatchDeleteTemplates() {
     async (templateIds: string[]): Promise<BatchTemplateOperationResult> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ShiftDemandTemplateApi.batchDeleteTemplates(
-          apiClient,
-          templateIds
-        );
+        return await ShiftDemandTemplateApi.batchDeleteTemplates(apiClient, templateIds);
       } catch (error) {
-        console.error("❌ Failed to batch delete templates:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to batch delete templates:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return batchDeleteTemplates;
@@ -413,7 +384,7 @@ export function useGetTemplateAnalytics() {
 
   const getTemplateAnalytics = useCallback(
     async (
-      templateId: string
+      templateId: string,
     ): Promise<{
       usageCount: number;
       lastUsed?: string;
@@ -421,27 +392,24 @@ export function useGetTemplateAnalytics() {
     }> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        return await ShiftDemandTemplateApi.getTemplateAnalytics(
-          apiClient,
-          templateId
-        );
+        return await ShiftDemandTemplateApi.getTemplateAnalytics(apiClient, templateId);
       } catch (error) {
-        console.error("❌ Failed to get template analytics:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get template analytics:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTemplateAnalytics;
@@ -458,15 +426,15 @@ export function useApplyDemandsToTemplateWeek() {
     async (
       templateId: string,
       teamId: string,
-      request: ApplyDemandsToTemplateWeekDTO
+      request: ApplyDemandsToTemplateWeekDTO,
     ): Promise<ShiftDemandTemplateDTO> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -474,17 +442,17 @@ export function useApplyDemandsToTemplateWeek() {
           apiClient,
           templateId,
           teamId,
-          request
+          request,
         );
       } catch (error) {
-        console.error("❌ Failed to apply demands to template week:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to apply demands to template week:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return applyDemandsToTemplateWeek;
@@ -501,15 +469,15 @@ export function useApplyTemplateToDateRange() {
     async (
       templateId: string,
       teamId: string,
-      request: ApplyTemplateToDateRangeDTO
+      request: ApplyTemplateToDateRangeDTO,
     ): Promise<TemplateApplicationResult> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
@@ -517,17 +485,17 @@ export function useApplyTemplateToDateRange() {
           apiClient,
           templateId,
           teamId,
-          request
+          request,
         );
       } catch (error) {
-        console.error("❌ Failed to apply template to date range:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to apply template to date range:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return applyTemplateToDateRange;

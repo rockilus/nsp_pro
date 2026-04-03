@@ -1,13 +1,13 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import { TeamT, TeamWithMembership } from "../types/team";
-import { UserWithMembership } from "../types/user";
+import { TeamT, TeamWithMembership } from '../types/team';
+import { UserWithMembership } from '../types/user';
 // API Client
-import { TeamApi } from "../app/lib/api/teamApi";
-import { useApiClient } from "../app/lib/api-client";
+import { TeamApi } from '../app/lib/api/teamApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated Team Hooks //
@@ -23,7 +23,7 @@ export function useCreateTeam() {
   const createTeam = useCallback(
     async (teamName: string): Promise<TeamWithMembership> => {
       if (env.isDevelopment) {
-        console.log("🔍 useCreateTeam called:", {
+        console.log('🔍 useCreateTeam called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -33,35 +33,35 @@ export function useCreateTeam() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       // Input validation
       if (!teamName || teamName.trim().length === 0) {
-        throw new Error("Team name is required");
+        throw new Error('Team name is required');
       }
 
       try {
         const team = await TeamApi.createTeam(apiClient, teamName.trim());
 
         if (env.isDevelopment) {
-          console.log("✅ Team created successfully");
+          console.log('✅ Team created successfully');
         }
 
         return team;
       } catch (error) {
-        console.error("❌ Failed to create team:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to create team:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return createTeam;
@@ -77,7 +77,7 @@ export function useGetTeamById() {
   const getTeamById = useCallback(
     async (teamId: string): Promise<TeamT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetTeamById called:", {
+        console.log('🔍 useGetTeamById called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -87,24 +87,24 @@ export function useGetTeamById() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await TeamApi.getTeamById(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get team:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get team:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTeamById;
@@ -117,11 +117,9 @@ export function useGetUserTeamsWithMemberships() {
   const apiClient = useApiClient();
   const { user, isAuthenticated, loading } = useAuth();
 
-  const getUserTeamsWithMemberships = useCallback(async (): Promise<
-    TeamWithMembership[]
-  > => {
+  const getUserTeamsWithMemberships = useCallback(async (): Promise<TeamWithMembership[]> => {
     if (env.isDevelopment) {
-      console.log("🔍 useGetUserTeamsWithMemberships called:", {
+      console.log('🔍 useGetUserTeamsWithMemberships called:', {
         timestamp: new Date().toISOString(),
         isAuthenticated,
         hasUser: !!user,
@@ -130,18 +128,18 @@ export function useGetUserTeamsWithMemberships() {
 
     // Security: Validate authentication state
     if (loading) {
-      throw new Error("Authentication still loading - please wait");
+      throw new Error('Authentication still loading - please wait');
     }
 
     if (!isAuthenticated || !user?.id_token) {
-      throw new Error("User not authenticated - please sign in");
+      throw new Error('User not authenticated - please sign in');
     }
 
     try {
       return await TeamApi.getUserTeamsWithMemberships(apiClient);
     } catch (error) {
-      console.error("❌ Failed to get user teams:", {
-        error: error instanceof Error ? error.message : "Unknown error",
+      console.error('❌ Failed to get user teams:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       });
       throw error;
@@ -161,7 +159,7 @@ export function useGetTeamUsersWithMemberships() {
   const getTeamUsersWithMemberships = useCallback(
     async (teamId: string): Promise<UserWithMembership[]> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetTeamUsersWithMemberships called:", {
+        console.log('🔍 useGetTeamUsersWithMemberships called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -171,24 +169,24 @@ export function useGetTeamUsersWithMemberships() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await TeamApi.getTeamUsersWithMemberships(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to get team users:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get team users:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getTeamUsersWithMemberships;
@@ -205,24 +203,24 @@ export function useUpdateTeam() {
     async (teamId: string, teamData: TeamT): Promise<TeamT> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await TeamApi.updateTeam(apiClient, teamId, teamData);
       } catch (error) {
-        console.error("❌ Failed to update team:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to update team:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return updateTeam;
@@ -239,24 +237,24 @@ export function useLeaveTeam() {
     async (teamId: string): Promise<void> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         await TeamApi.leaveTeam(apiClient, teamId);
       } catch (error) {
-        console.error("❌ Failed to leave team:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to leave team:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return leaveTeam;
@@ -273,24 +271,24 @@ export function useRemoveUserFromTeam() {
     async (teamId: string, userId: string): Promise<void> => {
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         await TeamApi.removeUserFromTeam(apiClient, teamId, userId);
       } catch (error) {
-        console.error("❌ Failed to remove user from team:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to remove user from team:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return removeUserFromTeam;

@@ -12,18 +12,18 @@
  * - Member can delete their own requests
  */
 
-import { test, expect } from "@playwright/test";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { RoleTestBase } from "../../utils/role-test-base";
-import { RequestTestBase } from "../../utils/request-test-base";
-import { RequestStatus, RequestType } from "../../../src/types/request";
-import { ShiftType } from "../../../src/types/shift";
-import { WorkerT } from "../../../src/types/worker";
+import { test, expect } from '@playwright/test';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { RoleTestBase } from '../../utils/role-test-base';
+import { RequestTestBase } from '../../utils/request-test-base';
+import { RequestStatus, RequestType } from '../../../src/types/request';
+import { ShiftType } from '../../../src/types/shift';
+import { WorkerT } from '../../../src/types/worker';
 
 dayjs.extend(utc);
 
-test.describe("Request Page - Member User", () => {
+test.describe('Request Page - Member User', () => {
   const roleTestBase = new RoleTestBase();
   const requestTestBase = new RequestTestBase();
   let testRunId: string;
@@ -31,8 +31,7 @@ test.describe("Request Page - Member User", () => {
 
   test.beforeEach(async ({ page }, testInfo) => {
     // Generate unique test run ID for data isolation
-    const workerIndex =
-      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
     testRunId = `member-${workerIndex}-${testInfo.title}-${Date.now()}`;
 
     console.log(`[${testRunId}] Setting up member user test`);
@@ -51,34 +50,30 @@ test.describe("Request Page - Member User", () => {
       startTime: dayjs.utc().hour(8).minute(0).second(0),
       endTime: dayjs.utc().hour(16).minute(0).second(0),
       shiftType: ShiftType.NORMAL,
-      color: "#4caf50",
-      acronym: "DAY",
+      color: '#4caf50',
+      acronym: 'DAY',
     });
 
-    console.log(
-      `[${testRunId}] Created day shift: ${dayShift.name} (${dayShift.id})`,
-    );
+    console.log(`[${testRunId}] Created day shift: ${dayShift.name} (${dayShift.id})`);
 
     // Create another worker (not linked to member) as owner for testing isolation
     await roleTestBase.actAsOwner(page);
     otherWorker = await roleTestBase.dbUtils.createWorker({
       teamId: testTeam.teamId,
       name: `Other Worker ${testRunId}`,
-      acronym: "OTH",
+      acronym: 'OTH',
       weeklyHours: 40,
       weeklyHoursDesired: 40,
       dutiesPerMonth: 8,
       annualLeave: 25,
     });
 
-    console.log(
-      `[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.id})`,
-    );
+    console.log(`[${testRunId}] Created other worker: ${otherWorker.name} (${otherWorker.id})`);
 
     // Create a request for the other worker using the same dayShift
     expect(otherWorker).toBeDefined();
 
-    const tomorrow = dayjs.utc().add(1, "day");
+    const tomorrow = dayjs.utc().add(1, 'day');
     await roleTestBase.dbUtils.createRequest({
       teamId: testTeam.teamId,
       workerId: otherWorker.id,
@@ -93,7 +88,7 @@ test.describe("Request Page - Member User", () => {
           id: dayShift.id,
           idType: 2,
           isBoolDim: false,
-          categoryName: "Shifts",
+          categoryName: 'Shifts',
         },
       ],
     });
@@ -105,7 +100,7 @@ test.describe("Request Page - Member User", () => {
 
     expect(memberWorker).toBeDefined();
     if (!memberWorker) {
-      throw new Error("Member worker not created");
+      throw new Error('Member worker not created');
     }
 
     await roleTestBase.dbUtils.createRequest({
@@ -122,7 +117,7 @@ test.describe("Request Page - Member User", () => {
           id: dayShift.id,
           idType: 2,
           isBoolDim: false,
-          categoryName: "Shifts",
+          categoryName: 'Shifts',
         },
       ],
     });
@@ -142,19 +137,19 @@ test.describe("Request Page - Member User", () => {
     console.log(`[${testRunId}] Test completed`);
   });
 
-  test("member can create a request for their worker and it is displayed in the table", async ({
+  test('member can create a request for their worker and it is displayed in the table', async ({
     page,
   }) => {
     const memberWorker = roleTestBase.getMemberWorker();
     if (!memberWorker) {
-      throw new Error("Member worker not created");
+      throw new Error('Member worker not created');
     }
 
     // Open the new request dialog
     await requestTestBase.openNewRequestPopover(page);
 
     // Select work request type
-    await requestTestBase.selectRequestType(page, "work");
+    await requestTestBase.selectRequestType(page, 'work');
 
     // Verify the worker select is disabled and shows the member's worker
     const workerSelect = requestTestBase.getWorkerSelect(page);
@@ -162,11 +157,11 @@ test.describe("Request Page - Member User", () => {
     await expect(workerSelect).toHaveValue(memberWorker.id);
 
     // Set the request date (the day after tomorrow)
-    const tomorrow = dayjs.utc().add(2, "day");
+    const tomorrow = dayjs.utc().add(2, 'day');
     await requestTestBase.setStartDate(page, tomorrow);
 
     // Set positive preference
-    await requestTestBase.setRequestPreference(page, "positive");
+    await requestTestBase.setRequestPreference(page, 'positive');
 
     // Select shift options
     await requestTestBase.selectShiftOptions(page);
@@ -177,20 +172,18 @@ test.describe("Request Page - Member User", () => {
     // Verify the request appears in the table
     await requestTestBase.verifyRequestInTable(page, {
       workerName: memberWorker.name,
-      type: "work",
-      date: tomorrow.format("YYYY-MM-DD"),
-      preference: "positive",
+      type: 'work',
+      date: tomorrow.format('YYYY-MM-DD'),
+      preference: 'positive',
     });
 
-    console.log("✅ Member successfully created request for their worker");
+    console.log('✅ Member successfully created request for their worker');
   });
 
-  test("member can see their existing requests in the table", async ({
-    page,
-  }) => {
+  test('member can see their existing requests in the table', async ({ page }) => {
     const memberWorker = roleTestBase.getMemberWorker();
     if (!memberWorker) {
-      throw new Error("Member worker not created");
+      throw new Error('Member worker not created');
     }
 
     // Verify the request appears in the table (created in beforeEach)
@@ -201,31 +194,25 @@ test.describe("Request Page - Member User", () => {
     const workerNameCell = page.locator(`text=${memberWorker.name}`).first();
     await expect(workerNameCell).toBeVisible();
 
-    console.log("✅ Member can see their existing request in the table");
+    console.log('✅ Member can see their existing request in the table');
   });
 
-  test("member cannot see other workers' requests in the table", async ({
-    page,
-  }) => {
+  test("member cannot see other workers' requests in the table", async ({ page }) => {
     // Verify the table does NOT contain the other worker's request
     const otherWorkerCell = page.locator(`text=${otherWorker.name}`);
     await expect(otherWorkerCell).not.toBeVisible();
 
-    console.log(
-      "✅ Member cannot see other workers' requests (verified absence)",
-    );
+    console.log("✅ Member cannot see other workers' requests (verified absence)");
   });
 
-  test("member can edit their own requests", async ({ page }) => {
+  test('member can edit their own requests', async ({ page }) => {
     const memberWorker = roleTestBase.getMemberWorker();
     if (!memberWorker) {
-      throw new Error("Member worker not created");
+      throw new Error('Member worker not created');
     }
 
     // Click the edit button for the request created in beforeEach
-    const editButton = page
-      .locator(`[data-testid^="edit-request-button-"]`)
-      .first();
+    const editButton = page.locator(`[data-testid^="edit-request-button-"]`).first();
     await expect(editButton).toBeVisible();
     await editButton.click();
 
@@ -234,7 +221,7 @@ test.describe("Request Page - Member User", () => {
     await expect(dialog).toBeVisible();
 
     // Change the date to 2 days from now
-    const newDate = dayjs.utc().add(2, "days");
+    const newDate = dayjs.utc().add(2, 'days');
     await requestTestBase.setStartDate(page, newDate);
 
     // Save the changes
@@ -243,33 +230,29 @@ test.describe("Request Page - Member User", () => {
     // Verify the updated request appears in the table with new date
     await requestTestBase.verifyRequestInTable(page, {
       workerName: memberWorker.name,
-      type: "work",
-      date: newDate.format("YYYY-MM-DD"),
+      type: 'work',
+      date: newDate.format('YYYY-MM-DD'),
     });
 
-    console.log("✅ Member successfully edited their own request");
+    console.log('✅ Member successfully edited their own request');
   });
 
-  test("member can delete their own requests", async ({ page }) => {
+  test('member can delete their own requests', async ({ page }) => {
     const memberWorker = roleTestBase.getMemberWorker();
     if (!memberWorker) {
-      throw new Error("Member worker not created");
+      throw new Error('Member worker not created');
     }
 
     // Get the initial row count (request created in beforeEach)
     const requestTable = requestTestBase.getRequestTable(page);
     await expect(requestTable).toBeVisible();
 
-    const initialRows = await page
-      .locator('[data-testid^="delete-request-button-"]')
-      .count();
+    const initialRows = await page.locator('[data-testid^="delete-request-button-"]').count();
 
     expect(initialRows).toBeGreaterThan(0);
 
     // Click the delete button for the first request (member's request from beforeEach)
-    const deleteButton = page
-      .locator(`[data-testid^="delete-request-button-"]`)
-      .first();
+    const deleteButton = page.locator(`[data-testid^="delete-request-button-"]`).first();
     await expect(deleteButton).toBeVisible();
     await deleteButton.click();
 
@@ -277,12 +260,10 @@ test.describe("Request Page - Member User", () => {
     await page.waitForTimeout(500);
 
     // Verify the row count decreased
-    const finalRows = await page
-      .locator('[data-testid^="delete-request-button-"]')
-      .count();
+    const finalRows = await page.locator('[data-testid^="delete-request-button-"]').count();
 
     expect(finalRows).toBe(initialRows - 1);
 
-    console.log("✅ Member successfully deleted their own request");
+    console.log('✅ Member successfully deleted their own request');
   });
 });

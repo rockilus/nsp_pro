@@ -1,76 +1,76 @@
-import { describe, it, expect } from "@jest/globals";
-import fs from "fs";
-import path from "path";
+import { describe, it, expect } from '@jest/globals';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Test suite to verify the API centralization refactoring
  * Checks that components follow the centralized API pattern
  */
-describe("API Centralization", () => {
-  const frontendPath = path.join(process.cwd(), "src");
+describe('API Centralization', () => {
+  const frontendPath = path.join(process.cwd(), 'src');
 
-  describe("TemplateApplicationToRangeDialog", () => {
+  describe('TemplateApplicationToRangeDialog', () => {
     const dialogFile = path.join(
       frontendPath,
-      "components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx"
+      'components/shiftDemand/templates/TemplateApplicationToRangeDialog.tsx',
     );
 
-    it("should not directly import ShiftDemandTemplateApi", () => {
+    it('should not directly import ShiftDemandTemplateApi', () => {
       if (!fs.existsSync(dialogFile)) {
         console.warn(`File not found: ${dialogFile}`);
         return;
       }
 
-      const dialogContent = fs.readFileSync(dialogFile, "utf8");
-      expect(dialogContent).not.toContain("ShiftDemandTemplateApi");
+      const dialogContent = fs.readFileSync(dialogFile, 'utf8');
+      expect(dialogContent).not.toContain('ShiftDemandTemplateApi');
     });
 
-    it("should have onApplyTemplate prop for callback pattern", () => {
+    it('should have onApplyTemplate prop for callback pattern', () => {
       if (!fs.existsSync(dialogFile)) {
         console.warn(`File not found: ${dialogFile}`);
         return;
       }
 
-      const dialogContent = fs.readFileSync(dialogFile, "utf8");
-      expect(dialogContent).toContain("onApplyTemplate");
+      const dialogContent = fs.readFileSync(dialogFile, 'utf8');
+      expect(dialogContent).toContain('onApplyTemplate');
     });
 
-    it("should use callback for API operations", () => {
+    it('should use callback for API operations', () => {
       if (!fs.existsSync(dialogFile)) {
         console.warn(`File not found: ${dialogFile}`);
         return;
       }
 
-      const dialogContent = fs.readFileSync(dialogFile, "utf8");
-      expect(dialogContent).toContain("await onApplyTemplate");
+      const dialogContent = fs.readFileSync(dialogFile, 'utf8');
+      expect(dialogContent).toContain('await onApplyTemplate');
     });
 
-    it("should have proper TypeScript interface for callback", () => {
+    it('should have proper TypeScript interface for callback', () => {
       if (!fs.existsSync(dialogFile)) {
         console.warn(`File not found: ${dialogFile}`);
         return;
       }
 
-      const dialogContent = fs.readFileSync(dialogFile, "utf8");
-      expect(dialogContent).toContain("ApplyTemplateToDateRangeDTO");
-      expect(dialogContent).toContain("TemplateApplicationResult");
+      const dialogContent = fs.readFileSync(dialogFile, 'utf8');
+      expect(dialogContent).toContain('ApplyTemplateToDateRangeDTO');
+      expect(dialogContent).toContain('TemplateApplicationResult');
     });
   });
 
-  describe("TemplateManagementWindow", () => {
+  describe('TemplateManagementWindow', () => {
     const windowFile = path.join(
       frontendPath,
-      "components/shiftDemand/templates/TemplateManagementWindow.tsx"
+      'components/shiftDemand/templates/TemplateManagementWindow.tsx',
     );
 
-    it("should have handleApplyTemplateToRange method", () => {
+    it('should have handleApplyTemplateToRange method', () => {
       if (!fs.existsSync(windowFile)) {
         console.warn(`File not found: ${windowFile}`);
         return;
       }
 
-      const windowContent = fs.readFileSync(windowFile, "utf8");
-      expect(windowContent).toContain("handleApplyTemplateToRange");
+      const windowContent = fs.readFileSync(windowFile, 'utf8');
+      expect(windowContent).toContain('handleApplyTemplateToRange');
     });
 
     // it("should make centralized API calls", () => {
@@ -85,26 +85,24 @@ describe("API Centralization", () => {
     //   );
     // });
 
-    it("should pass callback to dialog component", () => {
+    it('should pass callback to dialog component', () => {
       if (!fs.existsSync(windowFile)) {
         console.warn(`File not found: ${windowFile}`);
         return;
       }
 
-      const windowContent = fs.readFileSync(windowFile, "utf8");
-      expect(windowContent).toContain(
-        "onApplyTemplate={handleApplyTemplateToRange}"
-      );
+      const windowContent = fs.readFileSync(windowFile, 'utf8');
+      expect(windowContent).toContain('onApplyTemplate={handleApplyTemplateToRange}');
     });
 
-    it("should import required types", () => {
+    it('should import required types', () => {
       if (!fs.existsSync(windowFile)) {
         console.warn(`File not found: ${windowFile}`);
         return;
       }
 
-      const windowContent = fs.readFileSync(windowFile, "utf8");
-      expect(windowContent).toContain("ApplyTemplateToDateRangeDTO");
+      const windowContent = fs.readFileSync(windowFile, 'utf8');
+      expect(windowContent).toContain('ApplyTemplateToDateRangeDTO');
     });
   });
 

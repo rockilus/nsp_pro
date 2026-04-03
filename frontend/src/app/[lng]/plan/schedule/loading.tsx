@@ -1,7 +1,7 @@
 // Skeletons
-import ScheduleSkeleton from "../../../../components/skeletons/schedule-skeleton";
+import ScheduleSkeleton from '../../../../components/skeletons/schedule-skeleton';
 // Styles
-import "../../../../styles/tab-container-styles.css";
+import '../../../../styles/tab-container-styles.css';
 
 export default function Loading() {
   return (

@@ -1,17 +1,18 @@
-import "./globals.css";
+import './globals.css';
 
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { AuthProvider } from "../components/auth/auth-provider";
-import ThemeRegistry from "../components/providers/ThemeRegistry";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { AuthProvider } from '../components/auth/auth-provider';
+import ThemeRegistry from '../components/providers/ThemeRegistry';
 // Components
-import ImpersonationBanner from "../components/app-bar/impersonation-banner";
+import ImpersonationBanner from '../components/app-bar/impersonation-banner';
+import { Toaster } from '../components/ui/sonner';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Rockilus",
-  description: "Planning made easy",
+  title: 'Rockilus',
+  description: 'Planning made easy',
 };
 
 export default async function RootLayout({
@@ -26,6 +27,7 @@ export default async function RootLayout({
           <AuthProvider>
             <ImpersonationBanner />
             {children}
+            <Toaster />
           </AuthProvider>
         </body>
       </ThemeRegistry>

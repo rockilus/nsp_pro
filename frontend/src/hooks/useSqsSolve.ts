@@ -1,15 +1,12 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 // Types
-import {
-  SolveTaskStatusResponseT,
-  SolveRequestT,
-} from "../types/solveTaskStatus";
+import { SolveTaskStatusResponseT, SolveRequestT } from '../types/solveTaskStatus';
 // API Client
-import { SqsSolveApi } from "../app/lib/api/sqsSolveApi";
-import { useApiClient } from "../app/lib/api-client";
+import { SqsSolveApi } from '../app/lib/api/sqsSolveApi';
+import { useApiClient } from '../app/lib/api-client';
 // Auth Context
-import { useAuth } from "../contexts/auth-context";
-import { env } from "@/config/env";
+import { useAuth } from '../contexts/auth-context';
+import { env } from '@/config/env';
 
 //////////////////////////
 // Authenticated SQS Solve Hooks //
@@ -25,7 +22,7 @@ export function useStartSolve() {
   const startSolve = useCallback(
     async (request: SolveRequestT): Promise<SolveTaskStatusResponseT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useStartSolve called:", {
+        console.log('🔍 useStartSolve called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -35,15 +32,15 @@ export function useStartSolve() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
-        console.log("useStartSolve Debug:", {
+        console.log('useStartSolve Debug:', {
           apiClient,
           request,
         });
@@ -51,19 +48,19 @@ export function useStartSolve() {
         const response = await SqsSolveApi.startSolve(apiClient, request);
 
         if (env.isDevelopment) {
-          console.log("✅ Solve started successfully");
+          console.log('✅ Solve started successfully');
         }
 
         return response;
       } catch (error) {
-        console.error("❌ Failed to start solve:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to start solve:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return startSolve;
@@ -79,7 +76,7 @@ export function useGetSolveStatus() {
   const getSolveStatus = useCallback(
     async (solveId: string): Promise<SolveTaskStatusResponseT> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetSolveStatus called:", {
+        console.log('🔍 useGetSolveStatus called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -89,24 +86,24 @@ export function useGetSolveStatus() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SqsSolveApi.getSolveStatus(apiClient, solveId);
       } catch (error) {
-        console.error("❌ Failed to get solve status:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get solve status:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getSolveStatus;
@@ -122,7 +119,7 @@ export function useCancelSolve() {
   const cancelSolve = useCallback(
     async (solveId: string): Promise<void> => {
       if (env.isDevelopment) {
-        console.log("🔍 useCancelSolve called:", {
+        console.log('🔍 useCancelSolve called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -132,28 +129,28 @@ export function useCancelSolve() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         await SqsSolveApi.cancelSolve(apiClient, solveId);
 
         if (env.isDevelopment) {
-          console.log("✅ Solve canceled successfully");
+          console.log('✅ Solve canceled successfully');
         }
       } catch (error) {
-        console.error("❌ Failed to cancel solve:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to cancel solve:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return cancelSolve;
@@ -169,7 +166,7 @@ export function useGetLatestSolveStatus() {
   const getLatestSolveStatus = useCallback(
     async (scheduleId: string): Promise<SolveTaskStatusResponseT | null> => {
       if (env.isDevelopment) {
-        console.log("🔍 useGetLatestSolveStatus called:", {
+        console.log('🔍 useGetLatestSolveStatus called:', {
           timestamp: new Date().toISOString(),
           isAuthenticated,
           hasUser: !!user,
@@ -179,24 +176,24 @@ export function useGetLatestSolveStatus() {
 
       // Security: Validate authentication state
       if (loading) {
-        throw new Error("Authentication still loading - please wait");
+        throw new Error('Authentication still loading - please wait');
       }
 
       if (!isAuthenticated || !user?.id_token) {
-        throw new Error("User not authenticated - please sign in");
+        throw new Error('User not authenticated - please sign in');
       }
 
       try {
         return await SqsSolveApi.getLatestSolveStatus(apiClient, scheduleId);
       } catch (error) {
-        console.error("❌ Failed to get latest solve status:", {
-          error: error instanceof Error ? error.message : "Unknown error",
+        console.error('❌ Failed to get latest solve status:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user]
+    [apiClient, isAuthenticated, loading, user],
   );
 
   return getLatestSolveStatus;

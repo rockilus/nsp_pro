@@ -2,9 +2,9 @@
  * API client for request operations
  */
 
-import { RequestT, toRequestT, fromRequestT } from "../../../types/request";
-import { AssignmentT, toAssignmentT } from "../../../types/assignment";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { RequestT, toRequestT, fromRequestT } from '../../../types/request';
+import { AssignmentT, toAssignmentT } from '../../../types/assignment';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class RequestApi extends BaseApi {
   /**
@@ -13,21 +13,21 @@ export class RequestApi extends BaseApi {
   static async addRequest(
     apiClient: AuthenticatedApiClient,
     request: RequestT,
-    teamId: string
+    teamId: string,
   ): Promise<RequestT> {
     // Security: Input validation
     if (!request) {
-      throw new Error("Request data is required");
+      throw new Error('Request data is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/requests/teams/${teamId}`,
-      fromRequestT(request)
+      fromRequestT(request),
     );
     return toRequestT(responseData);
   }
@@ -39,20 +39,20 @@ export class RequestApi extends BaseApi {
   static async getRequests(
     apiClient: AuthenticatedApiClient,
     teamId: string,
-    workerId?: string
+    workerId?: string,
   ): Promise<RequestT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     // Build query string if workerId is provided
-    const queryParams = workerId ? `?worker_id=${workerId}` : "";
+    const queryParams = workerId ? `?worker_id=${workerId}` : '';
 
     const responseData = await this.makeRequest<any[]>(
       apiClient,
-      "get",
-      `/requests/teams/${teamId}${queryParams}`
+      'get',
+      `/requests/teams/${teamId}${queryParams}`,
     );
     return responseData.map(toRequestT);
   }
@@ -63,21 +63,21 @@ export class RequestApi extends BaseApi {
   static async updateRequest(
     apiClient: AuthenticatedApiClient,
     updatedRequest: RequestT,
-    teamId: string
+    teamId: string,
   ): Promise<RequestT> {
     // Security: Input validation
     if (!updatedRequest || !updatedRequest.id) {
-      throw new Error("Invalid request data provided");
+      throw new Error('Invalid request data provided');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "put",
+      'put',
       `/requests/${updatedRequest.id}/teams/${teamId}`,
-      fromRequestT(updatedRequest)
+      fromRequestT(updatedRequest),
     );
     return toRequestT(responseData);
   }
@@ -88,26 +88,24 @@ export class RequestApi extends BaseApi {
   static async acceptRequest(
     apiClient: AuthenticatedApiClient,
     requestId: string,
-    teamId: string
+    teamId: string,
   ): Promise<{ request: RequestT; assignments: AssignmentT[] }> {
     // Security: Input validation
     if (!requestId?.trim()) {
-      throw new Error("Request ID is required");
+      throw new Error('Request ID is required');
     }
     if (!teamId?.trim()) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
-      `/requests/${requestId}/teams/${teamId}/accept`
+      'post',
+      `/requests/${requestId}/teams/${teamId}/accept`,
     );
     return {
       request: toRequestT(responseData.request),
-      assignments: (responseData.assignments || []).map((a: any) =>
-        toAssignmentT(a)
-      ),
+      assignments: (responseData.assignments || []).map((a: any) => toAssignmentT(a)),
     };
   }
 
@@ -117,20 +115,20 @@ export class RequestApi extends BaseApi {
   static async denyRequest(
     apiClient: AuthenticatedApiClient,
     requestId: string,
-    teamId: string
+    teamId: string,
   ): Promise<RequestT> {
     // Security: Input validation
     if (!requestId?.trim()) {
-      throw new Error("Request ID is required");
+      throw new Error('Request ID is required');
     }
     if (!teamId?.trim()) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
-      `/requests/${requestId}/teams/${teamId}/deny`
+      'post',
+      `/requests/${requestId}/teams/${teamId}/deny`,
     );
     return toRequestT(responseData);
   }
@@ -141,20 +139,20 @@ export class RequestApi extends BaseApi {
   static async rescindRequest(
     apiClient: AuthenticatedApiClient,
     requestId: string,
-    teamId: string
+    teamId: string,
   ): Promise<{ request: RequestT; assignmentsDeletedIds: string[] }> {
     // Security: Input validation
     if (!requestId?.trim()) {
-      throw new Error("Request ID is required");
+      throw new Error('Request ID is required');
     }
     if (!teamId?.trim()) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
-      `/requests/${requestId}/teams/${teamId}/rescind`
+      'post',
+      `/requests/${requestId}/teams/${teamId}/rescind`,
     );
     return {
       request: toRequestT(responseData.request),
@@ -168,20 +166,16 @@ export class RequestApi extends BaseApi {
   static async deleteRequest(
     apiClient: AuthenticatedApiClient,
     requestId: string,
-    teamId: string
+    teamId: string,
   ): Promise<void> {
     // Security: Input validation
     if (!requestId) {
-      throw new Error("Request ID is required");
+      throw new Error('Request ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
-    await this.makeRequest<void>(
-      apiClient,
-      "delete",
-      `/requests/${requestId}/teams/${teamId}`
-    );
+    await this.makeRequest<void>(apiClient, 'delete', `/requests/${requestId}/teams/${teamId}`);
   }
 }

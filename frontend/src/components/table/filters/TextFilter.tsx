@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { TextField, Button, Box } from "@mui/material";
-import { ColumnFilter } from "../../../types/filter";
+import React, { useState } from 'react';
+import { TextField, Button, Box } from '@mui/material';
+import { ColumnFilter } from '../../../types/filter';
 
 interface TextFilterProps {
   onApply: (filter: ColumnFilter) => void;
@@ -17,13 +17,13 @@ export default function TextFilter({
   label,
   currentValue,
 }: TextFilterProps) {
-  const [value, setValue] = useState(currentValue || "");
+  const [value, setValue] = useState(currentValue || '');
 
   const handleApply = () => {
     if (value.trim()) {
       onApply({
         id: columnId,
-        type: "text",
+        type: 'text',
         value: value.trim(),
         label: `${label} contains "${value.trim()}"`,
       });
@@ -39,10 +39,10 @@ export default function TextFilter({
         label={`Filter ${label}`}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        onKeyPress={(e) => e.key === "Enter" && handleApply()}
+        onKeyPress={(e) => e.key === 'Enter' && handleApply()}
         autoFocus
       />
-      <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
         <Button onClick={handleApply} variant="contained" size="small">
           Apply
         </Button>

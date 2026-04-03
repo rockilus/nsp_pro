@@ -25,6 +25,9 @@ from shared.schemas.core.notification_preferences import NotificationKey
 from src.config import config
 from src.services.base_service import BaseService
 from src.services.notification_builders import (
+    campaign_request_deadline_updated_event,
+    campaign_request_deadline_reminder_event,
+    campaign_request_deadline_set_event,
     swap_ready_for_review_event,
     user_accepted_direct_swap_event,
     user_accepted_request_event,
@@ -53,7 +56,7 @@ from src.services.notification_email_config import (
 if TYPE_CHECKING:
     from src.services.email_queue_service import EmailQueueService
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals, too-many-lines, too-many-arguments
 
 # Maps each NotificationType to a NotificationKey that controls it.
 # Types absent from this map are always delivered (fail-open).
@@ -68,10 +71,10 @@ _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
     # fmt: off
     NotificationType.USER_RECEIVED_TEAM_INVITE: (
         NotificationKey.USER_RECEIVED_TEAM_INVITE
-        ),
+    ),
     NotificationType.USER_ACCEPTED_TEAM_INVITE: (
         NotificationKey.USER_ACCEPTED_TEAM_INVITE
-        ),
+    ),
     # fmt: on
     NotificationType.USER_REMOVED_FROM_TEAM: NotificationKey.USER_REMOVED_FROM_TEAM,
     NotificationType.USER_LEFT_TEAM: NotificationKey.USER_LEFT_TEAM,
@@ -97,6 +100,15 @@ _NOTIFICATION_TYPE_TO_KEY: dict[NotificationType, NotificationKey] = {
     NotificationType.USER_VALIDATED_SWAP: NotificationKey.USER_VALIDATED_SWAP,
     NotificationType.USER_DENIED_SWAP: NotificationKey.USER_DENIED_SWAP,
     NotificationType.USER_REVERSED_SWAP: NotificationKey.USER_REVERSED_SWAP,
+    NotificationType.CAMPAIGN_REQUEST_DEADLINE_SET: (
+        NotificationKey.CAMPAIGN_REQUEST_DEADLINE_SET
+    ),
+    NotificationType.CAMPAIGN_REQUEST_DEADLINE_REMINDER: (
+        NotificationKey.CAMPAIGN_REQUEST_DEADLINE_REMINDER
+    ),
+    NotificationType.CAMPAIGN_REQUEST_DEADLINE_UPDATED: (
+        NotificationKey.CAMPAIGN_REQUEST_DEADLINE_UPDATED
+    ),
 }
 
 
@@ -698,17 +710,15 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             team_name = team.name if team else ""
             await self._dispatch_swap_party_events(
                 swap=swap,
-                event_factory=lambda pid, os, od, xs, xd: (
-                    user_validated_swap_event(
-                        team_id=swap.team_id,
-                        team_name=team_name,
-                        swap_id=swap.id,
-                        own_shift_name=os,
-                        own_date=od,
-                        other_shift_name=xs,
-                        other_date=xd,
-                        party_user_id=pid,
-                    )
+                event_factory=lambda pid, os, od, xs, xd: user_validated_swap_event(
+                    team_id=swap.team_id,
+                    team_name=team_name,
+                    swap_id=swap.id,
+                    own_shift_name=os,
+                    own_date=od,
+                    other_shift_name=xs,
+                    other_date=xd,
+                    party_user_id=pid,
                 ),
             )
         except Exception as e:  # pylint: disable=broad-except
@@ -741,17 +751,15 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             team_name = team.name if team else ""
             await self._dispatch_swap_party_events(
                 swap=swap,
-                event_factory=lambda pid, os, od, xs, xd: (
-                    user_reversed_swap_event(
-                        team_id=swap.team_id,
-                        team_name=team_name,
-                        swap_id=swap.id,
-                        own_shift_name=os,
-                        own_date=od,
-                        other_shift_name=xs,
-                        other_date=xd,
-                        party_user_id=pid,
-                    )
+                event_factory=lambda pid, os, od, xs, xd: user_reversed_swap_event(
+                    team_id=swap.team_id,
+                    team_name=team_name,
+                    swap_id=swap.id,
+                    own_shift_name=os,
+                    own_date=od,
+                    other_shift_name=xs,
+                    other_date=xd,
+                    party_user_id=pid,
                 ),
             )
         except Exception as e:  # pylint: disable=broad-except
@@ -949,3 +957,80 @@ class NotificationService(BaseService):  # pylint: disable=too-many-public-metho
             await self.dispatch(event)
         except Exception as e:  # pylint: disable=broad-except
             logger.error(f"Failed to send new-request-created notification: {e}")
+
+    async def notify_campaign_request_deadline_set(
+        self,
+        team_id: str,
+        team_name: str,
+        deadline_date: str,
+        schedule_start: str,
+        schedule_end: str,
+        member_user_ids: list[str],
+    ) -> None:
+        """Notify members that the team leader has set a request deadline."""
+        try:
+            event = campaign_request_deadline_set_event(
+                team_id=team_id,
+                team_name=team_name,
+                deadline_date=deadline_date,
+                schedule_start=schedule_start,
+                schedule_end=schedule_end,
+                member_user_ids=member_user_ids,
+            )
+            await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(
+                f"Failed to send campaign-request-deadline-set notification: {e}"
+            )
+
+    async def notify_campaign_request_deadline_reminder(
+        self,
+        team_id: str,
+        team_name: str,
+        deadline_date: str,
+        schedule_start: str,
+        schedule_end: str,
+        member_user_ids: list[str],
+    ) -> None:
+        """Remind members to submit their requests before the deadline."""
+        try:
+            event = campaign_request_deadline_reminder_event(
+                team_id=team_id,
+                team_name=team_name,
+                deadline_date=deadline_date,
+                schedule_start=schedule_start,
+                schedule_end=schedule_end,
+                member_user_ids=member_user_ids,
+            )
+            await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(
+                f"Failed to send campaign-request-deadline-reminder notification: {e}"
+            )
+
+    async def notify_campaign_request_deadline_updated(
+        self,
+        team_id: str,
+        team_name: str,
+        old_deadline_date: str,
+        new_deadline_date: str,
+        schedule_start: str,
+        schedule_end: str,
+        member_user_ids: list[str],
+    ) -> None:
+        """Notify members that the request deadline has been extended."""
+        try:
+            event = campaign_request_deadline_updated_event(
+                team_id=team_id,
+                team_name=team_name,
+                old_deadline_date=old_deadline_date,
+                new_deadline_date=new_deadline_date,
+                schedule_start=schedule_start,
+                schedule_end=schedule_end,
+                member_user_ids=member_user_ids,
+            )
+            await self.dispatch(event)
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(
+                f"Failed to send campaign-request-deadline-updated notification: {e}"
+            )

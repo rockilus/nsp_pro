@@ -5,20 +5,19 @@
  * for team leaders, including increasing/decreasing demand count and deleting demands.
  */
 
-import { test, expect } from "@playwright/test";
-import { randomUUID } from "crypto";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { ScheduleTestBase } from "../../../utils/schedule-test-base";
+import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { ScheduleTestBase } from '../../../utils/schedule-test-base';
 
 dayjs.extend(utc);
 
-test.describe("Demand Editing - Team Leader", () => {
+test.describe('Demand Editing - Team Leader', () => {
   const testBasesMap = new Map<string, ScheduleTestBase>();
 
   test.beforeEach(async ({ page }, testInfo) => {
-    const workerIndex =
-      typeof testInfo.workerIndex === "number" ? testInfo.workerIndex : 0;
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
 
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     console.log(`[Test Run ${testRunId}] Starting demand editing test setup`);
@@ -30,7 +29,7 @@ test.describe("Demand Editing - Team Leader", () => {
 
     // Setup schedule test environment with shifts
     await scheduleTestBase.setupScheduleTests(workerIndex, {
-      referenceDate: dayjs.utc().add(1, "day"),
+      referenceDate: dayjs.utc().add(1, 'day'),
       createAssignments: false,
       linkMemberToWorker: false,
       createShiftDemands: true,
@@ -48,16 +47,14 @@ test.describe("Demand Editing - Team Leader", () => {
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
-  test("should open edit dialog for existing demand", async ({
-    page,
-  }, testInfo) => {
+  test('should open edit dialog for existing demand', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
 
     const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(2, "months"),
+      dayjs.utc().add(2, 'months'),
     );
     expect(demands.length).toBeGreaterThan(0);
     const testDemand = demands[0];
@@ -70,15 +67,13 @@ test.describe("Demand Editing - Team Leader", () => {
       page,
       {
         targetDate: testDemandDate,
-        timeFrame: "week",
+        timeFrame: 'week',
       },
       true, // reload page
     );
 
     // Click on the demand cell in schedule grid
-    const demandCell = page.locator(
-      `[data-testid="demand-cell-${demands[0].id}"]`,
-    );
+    const demandCell = page.locator(`[data-testid="demand-cell-${demands[0].id}"]`);
     expect(demandCell).toBeVisible({ timeout: 5000 });
 
     await demandCell.click();
@@ -95,17 +90,17 @@ test.describe("Demand Editing - Team Leader", () => {
     const countDisplay = page.locator('[data-testid="demand-count-display"]');
     await expect(countDisplay).toContainText(testDemand.count.toString());
 
-    console.log("✅ Edit dialog opened for existing demand");
+    console.log('✅ Edit dialog opened for existing demand');
   });
 
-  test("should increase demand count", async ({ page }, testInfo) => {
+  test('should increase demand count', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
 
     const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(2, "months"),
+      dayjs.utc().add(2, 'months'),
     );
     expect(demands.length).toBeGreaterThan(0);
     const testDemand = demands[0];
@@ -118,15 +113,13 @@ test.describe("Demand Editing - Team Leader", () => {
       page,
       {
         targetDate: testDemandDate,
-        timeFrame: "week",
+        timeFrame: 'week',
       },
       true, // reload page
     );
 
     // Click on the demand cell in schedule grid
-    const demandCell = page.locator(
-      `[data-testid="demand-cell-${demands[0].id}"]`,
-    );
+    const demandCell = page.locator(`[data-testid="demand-cell-${demands[0].id}"]`);
     expect(demandCell).toBeVisible({ timeout: 5000 });
 
     await demandCell.click();
@@ -139,40 +132,34 @@ test.describe("Demand Editing - Team Leader", () => {
     await expect(countDisplay).toContainText(testDemand.count.toString());
 
     // Click increase button
-    const increaseButton = page.locator(
-      '[data-testid="increase-demand-button"]',
-    );
+    const increaseButton = page.locator('[data-testid="increase-demand-button"]');
     await increaseButton.click();
 
     // Count should now be 3
-    const countDisplayAfter = page.locator(
-      '[data-testid="demand-target-count"]',
-    );
-    await expect(countDisplayAfter).toContainText(
-      (testDemand.count + 1).toString(),
-    );
+    const countDisplayAfter = page.locator('[data-testid="demand-target-count"]');
+    await expect(countDisplayAfter).toContainText((testDemand.count + 1).toString());
 
     // Verify in database
     const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(2, "months"),
+      dayjs.utc().add(2, 'months'),
     );
     expect(demandsAfter.length).toBeGreaterThan(0);
     const testDemandAfter = demandsAfter.find((d) => d.id === testDemand.id);
     expect(testDemandAfter).toBeDefined();
     expect(testDemandAfter!.count).toBe(testDemand.count + 1);
 
-    console.log("✅ Demand count increased successfully");
+    console.log('✅ Demand count increased successfully');
   });
 
-  test("should decrease demand count", async ({ page }, testInfo) => {
+  test('should decrease demand count', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
 
     const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(2, "months"),
+      dayjs.utc().add(2, 'months'),
     );
     expect(demands.length).toBeGreaterThan(0);
     const testDemand = demands[0];
@@ -185,15 +172,13 @@ test.describe("Demand Editing - Team Leader", () => {
       page,
       {
         targetDate: testDemandDate,
-        timeFrame: "week",
+        timeFrame: 'week',
       },
       true, // reload page
     );
 
     // Click on the demand cell in schedule grid
-    const demandCell = page.locator(
-      `[data-testid="demand-cell-${demands[0].id}"]`,
-    );
+    const demandCell = page.locator(`[data-testid="demand-cell-${demands[0].id}"]`);
     expect(demandCell).toBeVisible({ timeout: 5000 });
 
     await demandCell.click();
@@ -206,42 +191,34 @@ test.describe("Demand Editing - Team Leader", () => {
     await expect(countDisplay).toContainText(testDemand.count.toString());
 
     // Click increase button
-    const increaseButton = page.locator(
-      '[data-testid="decrease-demand-button"]',
-    );
+    const increaseButton = page.locator('[data-testid="decrease-demand-button"]');
     await increaseButton.click();
 
     // Count should now be 3
-    const countDisplayAfter = page.locator(
-      '[data-testid="demand-target-count"]',
-    );
-    await expect(countDisplayAfter).toContainText(
-      (testDemand.count - 1).toString(),
-    );
+    const countDisplayAfter = page.locator('[data-testid="demand-target-count"]');
+    await expect(countDisplayAfter).toContainText((testDemand.count - 1).toString());
 
     // Verify in database
     const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(2, "months"),
+      dayjs.utc().add(2, 'months'),
     );
     expect(demandsAfter.length).toBeGreaterThan(0);
     const testDemandAfter = demandsAfter.find((d) => d.id === testDemand.id);
     expect(testDemandAfter).toBeDefined();
     expect(testDemandAfter!.count).toBe(testDemand.count - 1);
 
-    console.log("✅ Demand count decreased successfully");
+    console.log('✅ Demand count decreased successfully');
   });
 
-  test("should not allow decreasing count below 1", async ({
-    page,
-  }, testInfo) => {
+  test('should not allow decreasing count below 1', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
 
     const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(2, "months"),
+      dayjs.utc().add(2, 'months'),
     );
     expect(demands.length).toBeGreaterThan(0);
     const testDemand = demands[0];
@@ -254,15 +231,13 @@ test.describe("Demand Editing - Team Leader", () => {
       page,
       {
         targetDate: testDemandDate,
-        timeFrame: "week",
+        timeFrame: 'week',
       },
       true, // reload page
     );
 
     // Click on the demand cell in schedule grid
-    const demandCell = page.locator(
-      `[data-testid="demand-cell-${demands[0].id}"]`,
-    );
+    const demandCell = page.locator(`[data-testid="demand-cell-${demands[0].id}"]`);
     expect(demandCell).toBeVisible({ timeout: 5000 });
 
     await demandCell.click();
@@ -275,45 +250,41 @@ test.describe("Demand Editing - Team Leader", () => {
     await expect(countDisplay).toContainText(testDemand.count.toString());
 
     // Click increase button
-    const increaseButton = page.locator(
-      '[data-testid="decrease-demand-button"]',
-    );
+    const increaseButton = page.locator('[data-testid="decrease-demand-button"]');
 
     for (let i = 0; i < testDemand.count + 1; i++) {
       await increaseButton.click();
     }
 
     // Count should now be 3
-    const countDisplayAfter = page.locator(
-      '[data-testid="demand-target-count"]',
-    );
-    await expect(countDisplayAfter).toContainText("1");
+    const countDisplayAfter = page.locator('[data-testid="demand-target-count"]');
+    await expect(countDisplayAfter).toContainText('1');
 
     await increaseButton.click();
 
-    await expect(countDisplayAfter).toContainText("1");
+    await expect(countDisplayAfter).toContainText('1');
 
     // Verify in database
     const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(2, "months"),
+      dayjs.utc().add(2, 'months'),
     );
     expect(demandsAfter.length).toBeGreaterThan(0);
     const testDemandAfter = demandsAfter.find((d) => d.id === testDemand.id);
     expect(testDemandAfter).toBeDefined();
     expect(testDemandAfter!.count).toBe(1);
 
-    console.log("✅ Cannot decrease demand count below 0");
+    console.log('✅ Cannot decrease demand count below 0');
   });
 
-  test("should delete demand", async ({ page }, testInfo) => {
+  test('should delete demand', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
 
     const demands = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(2, "months"),
+      dayjs.utc().add(2, 'months'),
     );
     expect(demands.length).toBeGreaterThan(0);
     const testDemand = demands[0];
@@ -326,15 +297,13 @@ test.describe("Demand Editing - Team Leader", () => {
       page,
       {
         targetDate: testDemandDate,
-        timeFrame: "week",
+        timeFrame: 'week',
       },
       true, // reload page
     );
 
     // Click on the demand cell in schedule grid
-    const demandCell = page.locator(
-      `[data-testid="demand-cell-${demands[0].id}"]`,
-    );
+    const demandCell = page.locator(`[data-testid="demand-cell-${demands[0].id}"]`);
     expect(demandCell).toBeVisible({ timeout: 5000 });
 
     await demandCell.click();
@@ -353,12 +322,12 @@ test.describe("Demand Editing - Team Leader", () => {
 
     const demandsAfter = await scheduleTestBase.getShiftDemandsByPeriod(
       dayjs.utc(),
-      dayjs.utc().add(2, "months"),
+      dayjs.utc().add(2, 'months'),
     );
 
     const deletedDemand = demandsAfter.find((d) => d.id === testDemand.id);
     expect(deletedDemand).toBeUndefined();
 
-    console.log("✅ Demand deleted successfully");
+    console.log('✅ Demand deleted successfully');
   });
 });

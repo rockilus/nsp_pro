@@ -104,7 +104,7 @@ async def check_authz_health(
 async def check_processing_engine_health(
     processing_engine_url: str = Query(
         ..., description="The URL of the processing-engine service"
-    )
+    ),
 ):
     try:
         async with httpx.AsyncClient() as client:

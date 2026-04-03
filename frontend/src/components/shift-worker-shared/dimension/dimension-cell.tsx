@@ -1,25 +1,21 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // MUI
-import AbcIcon from "@mui/icons-material/Abc";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import ListIcon from "@mui/icons-material/List";
-import NumbersIcon from "@mui/icons-material/Numbers";
-import TableCell from "@mui/material/TableCell";
-import Tooltip from "@mui/material/Tooltip";
+import AbcIcon from '@mui/icons-material/Abc';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import ListIcon from '@mui/icons-material/List';
+import NumbersIcon from '@mui/icons-material/Numbers';
+import TableCell from '@mui/material/TableCell';
+import Tooltip from '@mui/material/Tooltip';
 // Components
-import PopoverAnchorElBelow from "../../inputs/popover-anchor-el-below";
-import UpdateDimensionForm from "./update-dimension-form";
-import ColumnSortFilterMenu from "../../table/ColumnSortFilterMenu";
+import PopoverAnchorElBelow from '../../inputs/popover-anchor-el-below';
+import UpdateDimensionForm from './update-dimension-form';
+import ColumnSortFilterMenu from '../../table/ColumnSortFilterMenu';
 // Styles
-import "../../../styles/table-styles.css";
+import '../../../styles/table-styles.css';
 //Types
-import { DimensionT, DimensionType } from "../../../types/dimension";
-import { DimEntryT } from "@/types/dim-entry";
-import {
-  ColumnDefinition,
-  ColumnFilter,
-  TableSort,
-} from "../../../types/filter";
+import { DimensionT, DimensionType } from '../../../types/dimension';
+import { DimEntryT } from '@/types/dim-entry';
+import { ColumnDefinition, ColumnFilter, TableSort } from '../../../types/filter';
 
 interface DimensionCellProps {
   lng: string;
@@ -55,7 +51,7 @@ export default function DimensionCell({
   handleAddDimEntry,
   handleUpdateDimEntry,
   handleDeleteDimEntry,
-  className = "",
+  className = '',
 }: DimensionCellProps) {
   const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);
 
@@ -73,9 +69,7 @@ export default function DimensionCell({
     >
       <div className="flex items-center gap-1">
         <Tooltip title={dimension.name} placement="top">
-          <span data-testid={`dimension-name-${dimension.id}`}>
-            {dimension.name}
-          </span>
+          <span data-testid={`dimension-name-${dimension.id}`}>{dimension.name}</span>
         </Tooltip>
         {iconsPrefix[dimension.entryType]}
       </div>
@@ -102,12 +96,12 @@ export default function DimensionCell({
       data-testid={`worker-dimension-${dimension.id}-header-cell`}
       sx={{
         paddingY: 0,
-        padding: "6px 8px",
-        height: "36px",
-        fontSize: "0.8rem",
+        padding: '6px 8px',
+        height: '36px',
+        fontSize: '0.8rem',
         fontWeight: 500,
-        backgroundColor: "#fafafa",
-        borderBottom: "1px solid #e0e0e0",
+        backgroundColor: '#fafafa',
+        borderBottom: '1px solid #e0e0e0',
       }}
     >
       <PopoverAnchorElBelow

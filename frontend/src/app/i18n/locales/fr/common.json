@@ -1,9 +1,9 @@
 {
-    "today": "Aujourd'hui",
-    "week": "Semaine",
-    "month": "Mois",
-    "previous_week": "Semaine précédente",
-    "previous_month": "Mois précédent",
-    "next_week": "Semaine suivante",
-    "next_month": "Mois suivant"
+  "today": "Aujourd'hui",
+  "week": "Semaine",
+  "month": "Mois",
+  "previous_week": "Semaine précédente",
+  "previous_month": "Mois précédent",
+  "next_week": "Semaine suivante",
+  "next_month": "Mois suivant"
 }

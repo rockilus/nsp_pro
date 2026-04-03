@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from typing import Dict, List
 
 from shared.schemas.core import (
     Assignment,
@@ -20,16 +19,16 @@ from engine import GroupsAssignmentsTargetConstraint
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-locals
 def build_duty_special_days_constraints(
-    workers: List[Worker],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    dates_hist: List[date],
-    dates_campaign: List[date],
-    shifts: List[Shift],
-    requests: List[Request],
-    daily_shift_demands: List[ShiftDemandNew],
-    fixed_assignments: List[Assignment],
+    workers: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    dates_hist: list[date],
+    dates_campaign: list[date],
+    shifts: list[Shift],
+    requests: list[Request],
+    daily_shift_demands: list[ShiftDemandNew],
+    fixed_assignments: list[Assignment],
     penalty: int,
-) -> List[GroupsAssignmentsTargetConstraint]:
+) -> list[GroupsAssignmentsTargetConstraint]:
     #     len(number of special days)
     # List[GroupsAssignmentsTargetConstraint]=
     #         len(workers) x len(shifts duty) * len(special days dates in campaign)
@@ -50,7 +49,7 @@ def build_duty_special_days_constraints(
     shift_duty_not_del_ids = [
         s.id for s in shifts if s.shift_type == ShiftType.DUTY and not s.deleted
     ]
-    sd_label_to_gatc: Dict[str, GroupsAssignmentsTargetConstraint] = {}
+    sd_label_to_gatc: dict[str, GroupsAssignmentsTargetConstraint] = {}
     for w_id, special_days_dict in w_to_special_days.items():
         for sd_label, sd_values in special_days_dict.items():
             if sd_label not in sd_label_to_gatc:
@@ -81,15 +80,15 @@ def build_duty_special_days_constraints(
 
 # pylint: disable=too-many-arguments, too-many-locals
 def calculate_worker_speacial_days(
-    workers: List[Worker],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    dates_hist: List[date],
-    dates_campaign: List[date],
-    shifts: List[Shift],
-    requests: List[Request],
-    daily_shift_demands: List[ShiftDemandNew],
-    fixed_assignments: List[Assignment],
-) -> Dict[str, Dict[str, Dict[str, int | List[date]]]]:
+    workers: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    dates_hist: list[date],
+    dates_campaign: list[date],
+    shifts: list[Shift],
+    requests: list[Request],
+    daily_shift_demands: list[ShiftDemandNew],
+    fixed_assignments: list[Assignment],
+) -> dict[str, dict[str, dict[str, int | list[date]]]]:
     # [
     # key: worker_id,
     # value: {
@@ -173,7 +172,7 @@ def calculate_worker_speacial_days(
     return out
 
 
-def get_ltm_dates(dates_hist: List[date], dates_campaign: List[date]) -> List[date]:
+def get_ltm_dates(dates_hist: list[date], dates_campaign: list[date]) -> list[date]:
     combined_dates = dates_hist + dates_campaign
     last_date_campaign = max(dates_campaign)
     twelve_months_ago = last_date_campaign - timedelta(days=365)
@@ -182,14 +181,14 @@ def get_ltm_dates(dates_hist: List[date], dates_campaign: List[date]) -> List[da
 
 
 def calculate_adjustment_coefficients(
-    workers: List[Worker],
-    shifts: List[Shift],
-    requests: List[Request],
-    special_day_dates: Dict[str, List[date]],
-    special_day_indexes: List[int],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    fixed_assignments: List[Assignment],
-) -> Dict[str, Dict[str, float]]:
+    workers: list[Worker],
+    shifts: list[Shift],
+    requests: list[Request],
+    special_day_dates: dict[str, list[date]],
+    special_day_indexes: list[int],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    fixed_assignments: list[Assignment],
+) -> dict[str, dict[str, float]]:
     shift_leave_ids = [s.id for s in shifts if s.shift_type == ShiftType.LEAVE]
     worker_request_leave_dates = {}
     for w in workers:
@@ -249,14 +248,14 @@ def calculate_adjustment_coefficients(
 
 
 def allocate_duties_on_special_days_to_workers(
-    special_day_indexes: List[int],
-    special_day_dates: Dict[str, List[date]],
-    special_day_nb_duties_ltm: Dict[str, int],
-    w_special_day_nb_duties_hist: Dict[str, Dict[str, int]],
-    worker_coefficients: Dict[str, Dict[str, float]],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-) -> Dict[str, Dict[str, Dict[str, int | List[date]]]]:
-    out: Dict[str, Dict[str, Dict[str, int | List[date]]]] = {}
+    special_day_indexes: list[int],
+    special_day_dates: dict[str, list[date]],
+    special_day_nb_duties_ltm: dict[str, int],
+    w_special_day_nb_duties_hist: dict[str, dict[str, int]],
+    worker_coefficients: dict[str, dict[str, float]],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+) -> dict[str, dict[str, dict[str, int | list[date]]]]:
+    out: dict[str, dict[str, dict[str, int | list[date]]]] = {}
     w_to_targets = {
         w_id: [
             special_day_nb_duties_ltm[str(i)] * worker_coefficients[w_id][str(i)]

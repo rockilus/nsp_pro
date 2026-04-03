@@ -3,21 +3,21 @@
  * Provides data fetching and caching for shift demand concurrency
  */
 
-import { useQuery } from "@tanstack/react-query";
-import dayjs, { Dayjs } from "dayjs";
-import { ShiftDemandConcurrency } from "@/types/multitasking";
-import { useGetShiftDemandConcurrency } from "@/hooks/useMultitasking";
+import { useQuery } from '@tanstack/react-query';
+import dayjs, { Dayjs } from 'dayjs';
+import { ShiftDemandConcurrency } from '@/types/multitasking';
+import { useGetShiftDemandConcurrency } from '@/hooks/useMultitasking';
 
 /**
  * Query key factory for multitasking data
  */
 export const multitaskingKeys = {
-  all: ["multitasking"] as const,
-  teams: (teamId: string) => [...multitaskingKeys.all, "team", teamId] as const,
+  all: ['multitasking'] as const,
+  teams: (teamId: string) => [...multitaskingKeys.all, 'team', teamId] as const,
   concurrency: (teamId: string, startDate: Dayjs, endDate: Dayjs) =>
     [
       ...multitaskingKeys.teams(teamId),
-      "concurrency",
+      'concurrency',
       startDate.toISOString(),
       endDate.toISOString(),
     ] as const,
@@ -30,7 +30,7 @@ export const useShiftDemandConcurrency = (
   teamId: string,
   startDate: Dayjs,
   endDate: Dayjs,
-  enabled: boolean = true
+  enabled: boolean = true,
 ) => {
   const getShiftDemandConcurrency = useGetShiftDemandConcurrency();
 
@@ -47,20 +47,16 @@ export const useShiftDemandConcurrency = (
 /**
  * Result type for the concurrency hook
  */
-export type UseShiftDemandConcurrencyResult = ReturnType<
-  typeof useShiftDemandConcurrency
->;
+export type UseShiftDemandConcurrencyResult = ReturnType<typeof useShiftDemandConcurrency>;
 
 /**
  * Utility function to get concurrent shift demand IDs for a specific shift demand
  */
 export const getConcurrentShiftDemandIds = (
   concurrencyList: ShiftDemandConcurrency[],
-  shiftDemandId: string
+  shiftDemandId: string,
 ): string[] => {
-  const concurrency = concurrencyList.find(
-    (item) => item.shiftDemandId === shiftDemandId
-  );
+  const concurrency = concurrencyList.find((item) => item.shiftDemandId === shiftDemandId);
   return concurrency?.concurrentShiftDemandIds || [];
 };
 
@@ -70,12 +66,9 @@ export const getConcurrentShiftDemandIds = (
 export const canWorkConcurrently = (
   concurrencyList: ShiftDemandConcurrency[],
   shiftDemandId1: string,
-  shiftDemandId2: string
+  shiftDemandId2: string,
 ): boolean => {
-  const concurrentIds = getConcurrentShiftDemandIds(
-    concurrencyList,
-    shiftDemandId1
-  );
+  const concurrentIds = getConcurrentShiftDemandIds(concurrencyList, shiftDemandId1);
   return concurrentIds.includes(shiftDemandId2);
 };
 
@@ -84,7 +77,7 @@ export const canWorkConcurrently = (
  */
 export const getCompatibleShiftDemands = (
   concurrencyList: ShiftDemandConcurrency[],
-  selectedShiftDemandIds: string[]
+  selectedShiftDemandIds: string[],
 ): string[] => {
   if (selectedShiftDemandIds.length === 0) {
     return concurrencyList.map((item) => item.shiftDemandId);
@@ -101,7 +94,7 @@ export const getCompatibleShiftDemands = (
 
     // Check if this shift demand is compatible with all selected ones
     return selectedShiftDemandIds.every((selectedId) =>
-      canWorkConcurrently(concurrencyList, shiftDemandId, selectedId)
+      canWorkConcurrently(concurrencyList, shiftDemandId, selectedId),
     );
   });
 };

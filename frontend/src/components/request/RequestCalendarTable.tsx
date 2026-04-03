@@ -1,25 +1,20 @@
-import React from "react";
-import dayjs, { Dayjs } from "dayjs";
-import "./RequestCalendarTable.css";
-import { StaffingSummaryLoadingIndicator } from "./StaffingSummaryLoadingIndicator";
-import {
-  RequestT,
-  RequestType,
-  RequestStatus,
-  FulfillmentStatus,
-} from "../../types/request";
-import { WorkerT } from "../../types/worker";
-import { ShiftT } from "../../types/shift";
-import { ShiftColorMappings } from "../../constants/constants";
-import { SWOIdTypes } from "../../types/constraint";
+import React from 'react';
+import dayjs, { Dayjs } from 'dayjs';
+import './RequestCalendarTable.css';
+import { StaffingSummaryLoadingIndicator } from './StaffingSummaryLoadingIndicator';
+import { RequestT, RequestType, RequestStatus, FulfillmentStatus } from '../../types/request';
+import { WorkerT } from '../../types/worker';
+import { ShiftT } from '../../types/shift';
+import { ShiftColorMappings } from '../../constants/constants';
+import { SWOIdTypes } from '../../types/constraint';
 import {
   getRequestTargetDisplayText,
   getShiftColors,
-} from "../../utils/shift-worker-option-display";
-import { ColumnDefinition, ColumnFilter, TableSort } from "../../types/filter";
-import ColumnSortFilterMenu from "../table/ColumnSortFilterMenu";
-import { Typography } from "@mui/material";
-import { useTranslation } from "../../app/i18n/client";
+} from '../../utils/shift-worker-option-display';
+import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
+import ColumnSortFilterMenu from '../table/ColumnSortFilterMenu';
+import { Typography } from '@mui/material';
+import { useTranslation } from '../../app/i18n/client';
 
 type StaffingSummary = {
   [date: string]: {
@@ -107,7 +102,7 @@ interface StaffingSummaryRowsProps {
 }
 
 // Constants
-const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
+const daysOfWeek = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 // Individual cell component
 function RequestCalendarCell({
@@ -135,54 +130,45 @@ function RequestCalendarCell({
 
   const getTitle = () => {
     if (isPastEmpty) {
-      return `Past date - ${date.format("MMM D")}`;
+      return `Past date - ${date.format('MMM D')}`;
     }
     if (worker.deleted && isEmpty) {
-      return `Worker deleted - ${date.format("MMM D")}`;
+      return `Worker deleted - ${date.format('MMM D')}`;
     }
     if (canAddRequest) {
-      return `Click to create request for ${worker.name} on ${date.format(
-        "MMM D"
-      )}`;
+      return `Click to create request for ${worker.name} on ${date.format('MMM D')}`;
     }
     if (canEditRequest && request) {
       // Build the tooltip content as plain text
-      const targetText = getRequestTargetDisplayText(
-        request,
-        [],
-        shifts,
-        "not"
-      );
+      const targetText = getRequestTargetDisplayText(request, [], shifts, 'not');
 
-      const periodText = request.startDate.isSame(request.endDate, "day")
-        ? request.startDate.format("DD MMM").toLowerCase()
-        : `${request.startDate
-            .format("DD MMM")
-            .toLowerCase()} - ${request.endDate
-            .format("DD MMM")
+      const periodText = request.startDate.isSame(request.endDate, 'day')
+        ? request.startDate.format('DD MMM').toLowerCase()
+        : `${request.startDate.format('DD MMM').toLowerCase()} - ${request.endDate
+            .format('DD MMM')
             .toLowerCase()}`;
 
       const statusEmoji = (() => {
         switch (request.status) {
           case RequestStatus.PENDING:
-            return "🟠";
+            return '🟠';
           case RequestStatus.APPROVED:
-            return "🟢";
+            return '🟢';
           case RequestStatus.DENIED:
-            return "🔴";
+            return '🔴';
           default:
-            return "";
+            return '';
         }
       })();
 
       const fulfillmentEmoji = (() => {
         switch (request.fulfillment) {
           case FulfillmentStatus.FULFILLED:
-            return "✅";
+            return '✅';
           case FulfillmentStatus.UNFULFILLED:
-            return "❌";
+            return '❌';
           default:
-            return "";
+            return '';
         }
       })();
 
@@ -214,9 +200,9 @@ function RequestCalendarCell({
     // Work request type indicator (negative vs positive)
     if (request.requestType === RequestType.WORK_DEMAND) {
       if (request.negative) {
-        emojis.push("🙅"); // Person gesturing no
+        emojis.push('🙅'); // Person gesturing no
       } else {
-        emojis.push("🙋"); // Person raising one hand
+        emojis.push('🙋'); // Person raising one hand
       }
     }
 
@@ -224,64 +210,62 @@ function RequestCalendarCell({
     if (request.status === RequestStatus.APPROVED) {
       switch (request.fulfillment) {
         case FulfillmentStatus.FULFILLED:
-          emojis.push("✅"); // Check mark
+          emojis.push('✅'); // Check mark
           break;
         case FulfillmentStatus.UNFULFILLED:
-          emojis.push("❌"); // Cross mark
+          emojis.push('❌'); // Cross mark
           break;
       }
     }
 
-    return emojis.join(" ");
+    return emojis.join(' ');
   };
 
   const requestEmojis = getRequestEmojis();
 
   // Get status-specific CSS class
   const getStatusClass = () => {
-    if (!request) return "";
+    if (!request) return '';
 
     switch (request.status) {
       case RequestStatus.PENDING:
-        return " calendar-cell--status-pending";
+        return ' calendar-cell--status-pending';
       case RequestStatus.DENIED:
-        return " calendar-cell--status-denied";
+        return ' calendar-cell--status-denied';
       case RequestStatus.APPROVED:
       default:
-        return "";
+        return '';
     }
   };
 
   return (
     <div
       key={date.date()}
-      className={`calendar-cell${isWeekend ? " weekend" : ""}${
-        request ? " calendar-cell--leave" : ""
-      }${canAddRequest || canEditRequest ? " calendar-cell--clickable" : ""}${
-        isPastEmpty ? " calendar-cell--past" : ""
+      className={`calendar-cell${isWeekend ? 'weekend' : ''}${
+        request ? 'calendar-cell--leave' : ''
+      }${canAddRequest || canEditRequest ? 'calendar-cell--clickable' : ''}${
+        isPastEmpty ? 'calendar-cell--past' : ''
       }${getStatusClass()}`}
       style={
         {
           ...(shiftColors && {
-            "--shift-bg-color": shiftColors.background,
-            "--shift-sample-color": shiftColors.sample,
-            "--shift-text-color": shiftColors.text,
+            '--shift-bg-color': shiftColors.background,
+            '--shift-sample-color': shiftColors.sample,
+            '--shift-text-color': shiftColors.text,
             background: shiftColors.background,
           }),
-          cursor: canAddRequest || canEditRequest ? "pointer" : "default",
+          cursor: canAddRequest || canEditRequest ? 'pointer' : 'default',
         } as React.CSSProperties
       }
-      data-testid={`calendar-cell-${worker.id}-${date.format("YYYY-MM-DD")}${
-        request ? `-request-${request.id}` : ""
+      data-testid={`calendar-cell-${worker.id}-${date.format('YYYY-MM-DD')}${
+        request ? `-request-${request.id}` : ''
       }`}
       data-request-type={request ? request.requestType : undefined}
       data-request-status={request ? request.status : undefined}
       onClick={handleClick}
       title={getTitle()}
     >
-      {request && requestEmojis && (
-        <div className="calendar-cell__emojis">{requestEmojis}</div>
-      )}
+      {request && requestEmojis && <div className="calendar-cell__emojis">{requestEmojis}</div>}
     </div>
   );
 }
@@ -308,16 +292,10 @@ function RequestCalendarRow({
         {days.map((d) => {
           const request = getRequestForDay(worker.id, d);
           const isEmpty = !request;
-          const isPast = d.isBefore(dayjs().utc(), "day");
+          const isPast = d.isBefore(dayjs().utc(), 'day');
           const canAddRequest =
-            isEmpty &&
-            !isPast &&
-            !worker.deleted &&
-            !!handleAddRequest &&
-            !!lng &&
-            !!teamId;
-          const canEditRequest =
-            !!request && !!handleUpdateRequest && !!lng && !!teamId;
+            isEmpty && !isPast && !worker.deleted && !!handleAddRequest && !!lng && !!teamId;
+          const canEditRequest = !!request && !!handleUpdateRequest && !!lng && !!teamId;
 
           return (
             <RequestCalendarCell
@@ -350,14 +328,14 @@ function RequestCalendarHeader({
   onFilter,
   workerColumn,
 }: RequestCalendarHeaderProps) {
-  const { t } = useTranslation(lng || "en", "request-page");
+  const { t } = useTranslation(lng || 'en', 'request-page');
 
   return (
     <div className="calendar-header">
       <div className="calendar-header__empty">
         {/* Filter/Sort menu for workers */}
         <div className="calendar-header__worker-content">
-          <Typography variant="body2">{t("workers")}</Typography>
+          <Typography variant="body2">{t('workers')}</Typography>
           {workerColumn && onSort && onFilter && (
             <ColumnSortFilterMenu
               column={workerColumn}
@@ -375,8 +353,8 @@ function RequestCalendarHeader({
           return (
             <div
               key={d.date()}
-              className={`calendar-header__day${isWeekend ? " weekend" : ""}`}
-              data-testid={`date-header-${d.format("YYYY-MM-DD")}`}
+              className={`calendar-header__day${isWeekend ? 'weekend' : ''}`}
+              data-testid={`date-header-${d.format('YYYY-MM-DD')}`}
             >
               <div className="calendar-header__day-number">{d.date()}</div>
               <div className="calendar-header__day-week">
@@ -425,11 +403,7 @@ function RequestCalendarBody({
 }
 
 // Staffing summary rows component
-function StaffingSummaryRows({
-  days,
-  staffingSummary,
-  isCalculating,
-}: StaffingSummaryRowsProps) {
+function StaffingSummaryRows({ days, staffingSummary, isCalculating }: StaffingSummaryRowsProps) {
   if (isCalculating || !staffingSummary) {
     return <StaffingSummaryLoadingIndicator days={days} />;
   }
@@ -438,16 +412,12 @@ function StaffingSummaryRows({
     <>
       {/* Program staffing requirement */}
       <div className="calendar-row">
-        <div
-          className="calendar-row__name"
-          style={{ fontWeight: 600 }}
-          title="Demand"
-        >
+        <div className="calendar-row__name" style={{ fontWeight: 600 }} title="Demand">
           Demand
         </div>
         <div className="calendar-row__days">
           {days.map((d) => {
-            const dateKey = d.format("YYYY-MM-DD");
+            const dateKey = d.format('YYYY-MM-DD');
             const summary = staffingSummary[dateKey] || {
               demand: 0,
               available: 0,
@@ -469,16 +439,12 @@ function StaffingSummaryRows({
       </div>
       {/* Current staff available */}
       <div className="calendar-row">
-        <div
-          className="calendar-row__name"
-          style={{ fontWeight: 600 }}
-          title="Offer"
-        >
+        <div className="calendar-row__name" style={{ fontWeight: 600 }} title="Offer">
           Offer
         </div>
         <div className="calendar-row__days">
           {days.map((d) => {
-            const dateKey = d.format("YYYY-MM-DD");
+            const dateKey = d.format('YYYY-MM-DD');
             const summary = staffingSummary[dateKey] || {
               demand: 0,
               available: 0,
@@ -500,16 +466,12 @@ function StaffingSummaryRows({
       </div>
       {/* Delta */}
       <div className="calendar-row">
-        <div
-          className="calendar-row__name"
-          style={{ fontWeight: 600 }}
-          title="Delta"
-        >
+        <div className="calendar-row__name" style={{ fontWeight: 600 }} title="Delta">
           Delta
         </div>
         <div className="calendar-row__days">
           {days.map((d) => {
-            const dateKey = d.format("YYYY-MM-DD");
+            const dateKey = d.format('YYYY-MM-DD');
             const summary = staffingSummary[dateKey] || {
               demand: 0,
               available: 0,
@@ -521,9 +483,7 @@ function StaffingSummaryRows({
               <div
                 key={dateKey}
                 className={`calendar-cell calendar-cell--delta${
-                  isNegative
-                    ? " calendar-cell--delta-negative"
-                    : " calendar-cell--delta-positive"
+                  isNegative ? 'calendar-cell--delta-negative' : 'calendar-cell--delta-positive'
                 }`}
               >
                 {delta}

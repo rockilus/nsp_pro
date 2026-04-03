@@ -69,6 +69,5 @@ class TeamMembershipRepository(BaseRepository[TeamMembershipSchema]):
         result = self.delete(membership_id)
         if result is False:
             raise ValueError(
-                "Team membership with id "
-                f"{membership_id} not found or already deleted"
+                f"Team membership with id {membership_id} not found or already deleted"
             )

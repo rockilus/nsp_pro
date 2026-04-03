@@ -514,7 +514,7 @@ class TestAssignmentRepository:
 
     def test_get_assignments_by_team_and_shifts_today_onward(self):
         """Test getting assignments by team and shifts from today onward."""
-        today = date.today()
+        today = datetime.now(timezone.utc).date()
         assignments = [
             AssignmentSchema(
                 team="team1",
@@ -569,7 +569,9 @@ class TestAssignmentRepository:
 
     def test_delete_assignments_by_team_and_shift_today_onward(self):
         """Test deleting assignments by team and shift from today onward."""
-        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0, tzinfo=None
+        )
         assignments = [
             AssignmentSchema(
                 team="team1",

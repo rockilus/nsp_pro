@@ -2,10 +2,10 @@
  * API client for shift operations
  */
 
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { ShiftT, LinkShiftT, toShiftT, fromShiftT } from "../../../types/shift";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { ShiftT, LinkShiftT, toShiftT, fromShiftT } from '../../../types/shift';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 dayjs.extend(utc);
 
@@ -37,20 +37,17 @@ export class ShiftApi extends BaseApi {
   /**
    * Add a new shift (authenticated)
    */
-  static async addShift(
-    apiClient: AuthenticatedApiClient,
-    shift: ShiftT
-  ): Promise<ShiftT> {
+  static async addShift(apiClient: AuthenticatedApiClient, shift: ShiftT): Promise<ShiftT> {
     // Security: Input validation
     if (!shift || !shift.teamId) {
-      throw new Error("Invalid shift data provided");
+      throw new Error('Invalid shift data provided');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "post",
+      'post',
       `/shifts/teams/${shift.teamId}`,
-      fromShiftT(shift)
+      fromShiftT(shift),
     );
     return toShiftT(responseData);
   }
@@ -58,39 +55,29 @@ export class ShiftApi extends BaseApi {
   /**
    * Get shifts for a team (authenticated)
    */
-  static async getShifts(
-    apiClient: AuthenticatedApiClient,
-    teamId: string
-  ): Promise<ShiftT[]> {
+  static async getShifts(apiClient: AuthenticatedApiClient, teamId: string): Promise<ShiftT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
-    const responseData = await this.makeRequest<any[]>(
-      apiClient,
-      "get",
-      `/shifts/teams/${teamId}`
-    );
+    const responseData = await this.makeRequest<any[]>(apiClient, 'get', `/shifts/teams/${teamId}`);
     return responseData.map(toShiftT);
   }
 
   /**
    * Get work shifts for a team (authenticated)
    */
-  static async getWorkShifts(
-    apiClient: AuthenticatedApiClient,
-    teamId: string
-  ): Promise<ShiftT[]> {
+  static async getWorkShifts(apiClient: AuthenticatedApiClient, teamId: string): Promise<ShiftT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any[]>(
       apiClient,
-      "get",
-      `/shifts/work/teams/${teamId}`
+      'get',
+      `/shifts/work/teams/${teamId}`,
     );
     return responseData.map(toShiftT);
   }
@@ -98,19 +85,16 @@ export class ShiftApi extends BaseApi {
   /**
    * Get all shifts for a team (authenticated)
    */
-  static async getAllShifts(
-    apiClient: AuthenticatedApiClient,
-    teamId: string
-  ): Promise<ShiftT[]> {
+  static async getAllShifts(apiClient: AuthenticatedApiClient, teamId: string): Promise<ShiftT[]> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any[]>(
       apiClient,
-      "get",
-      `/shifts/all/teams/${teamId}`
+      'get',
+      `/shifts/all/teams/${teamId}`,
     );
     return responseData.map(toShiftT);
   }
@@ -120,18 +104,18 @@ export class ShiftApi extends BaseApi {
    */
   static async updateShift(
     apiClient: AuthenticatedApiClient,
-    updatedShift: ShiftT
+    updatedShift: ShiftT,
   ): Promise<ShiftUpdateResponse> {
     // Security: Input validation
     if (!updatedShift || !updatedShift.id || !updatedShift.teamId) {
-      throw new Error("Invalid shift data provided");
+      throw new Error('Invalid shift data provided');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "put",
+      'put',
       `/shifts/${updatedShift.id}/teams/${updatedShift.teamId}`,
-      fromShiftT(updatedShift)
+      fromShiftT(updatedShift),
     );
 
     return {
@@ -139,9 +123,7 @@ export class ShiftApi extends BaseApi {
       linkShiftsUpdated: responseData.linkShifts.updated
         ? (responseData.linkShifts.updated as LinkShiftT[])
         : [],
-      linkShiftsIdsDeleted: responseData.linkShifts.deleted
-        ? responseData.linkShifts.deleted
-        : [],
+      linkShiftsIdsDeleted: responseData.linkShifts.deleted ? responseData.linkShifts.deleted : [],
     };
   }
 
@@ -151,29 +133,27 @@ export class ShiftApi extends BaseApi {
   static async deleteShift(
     apiClient: AuthenticatedApiClient,
     shiftId: string,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftDeleteResponse> {
     // Security: Input validation
     if (!shiftId) {
-      throw new Error("Shift ID is required");
+      throw new Error('Shift ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "delete",
-      `/shifts/${shiftId}/teams/${teamId}`
+      'delete',
+      `/shifts/${shiftId}/teams/${teamId}`,
     );
 
     return {
       linkShiftsUpdated: responseData.linkShifts.updated
         ? (responseData.linkShifts.updated as LinkShiftT[])
         : [],
-      linkShiftsIdsDeleted: responseData.linkShifts.deleted
-        ? responseData.linkShifts.deleted
-        : [],
+      linkShiftsIdsDeleted: responseData.linkShifts.deleted ? responseData.linkShifts.deleted : [],
     };
   }
 
@@ -182,27 +162,25 @@ export class ShiftApi extends BaseApi {
    */
   static async getShiftsTabData(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<ShiftsTabDataResponse> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     // Import the new API classes
-    const { DimensionApi } = await import("./dimensionApi");
-    const { SpecialtyApi } = await import("./specialtyApi");
-    const { LinkShiftApi } = await import("./linkShiftApi");
+    const { DimensionApi } = await import('./dimensionApi');
+    const { SpecialtyApi } = await import('./specialtyApi');
+    const { LinkShiftApi } = await import('./linkShiftApi');
 
     // Use authenticated API calls for all data
-    const [shifts, dimensionsData, specialties, linkShifts] = await Promise.all(
-      [
-        this.getShifts(apiClient, teamId),
-        DimensionApi.getDimensions(apiClient, teamId),
-        SpecialtyApi.getSpecialties(apiClient, teamId),
-        LinkShiftApi.getLinkShifts(apiClient, teamId),
-      ]
-    );
+    const [shifts, dimensionsData, specialties, linkShifts] = await Promise.all([
+      this.getShifts(apiClient, teamId),
+      DimensionApi.getDimensions(apiClient, teamId),
+      SpecialtyApi.getSpecialties(apiClient, teamId),
+      LinkShiftApi.getLinkShifts(apiClient, teamId),
+    ]);
 
     return {
       shifts,

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -14,8 +14,8 @@
       }
 
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Helvetica, Arial, sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         background: #f8fafc;
         color: #1e293b;
         min-height: 100vh;
@@ -73,7 +73,9 @@
         font-size: 0.9rem;
         font-weight: 500;
         color: #1e293b;
-        transition: border-color 0.15s, background 0.15s;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
       }
 
       .lang-btn:hover {
@@ -103,31 +105,30 @@
        * a redirect would loop back here — so we skip it and show the manual UI.
        */
       (function () {
-        var langs = ["en", "fr", "es"];
+        var langs = ['en', 'fr', 'es'];
 
         function detectLang() {
           try {
-            var s = localStorage.getItem("i18next");
+            var s = localStorage.getItem('i18next');
             if (s && langs.indexOf(s) !== -1) return s;
           } catch (e) {}
-          var b = (navigator.language || "").split("-")[0];
-          return langs.indexOf(b) !== -1 ? b : "en";
+          var b = (navigator.language || '').split('-')[0];
+          return langs.indexOf(b) !== -1 ? b : 'en';
         }
 
         var parts = window.location.pathname
-          .replace(/^\/|\/$/g, "")
-          .split("/")
+          .replace(/^\/|\/$/g, '')
+          .split('/')
           .filter(Boolean);
 
-        var firstSeg = parts[0] || "";
+        var firstSeg = parts[0] || '';
 
         // Only act when the first segment is not a recognised language code.
         if (langs.indexOf(firstSeg) === -1) {
           var lang = detectLang();
           // Drop the bad first segment; keep the rest of the path.
           var rest = parts.slice(1);
-          var newPath =
-            "/" + lang + "/" + (rest.length ? rest.join("/") + "/" : "");
+          var newPath = '/' + lang + '/' + (rest.length ? rest.join('/') + '/' : '');
           window.location.replace(newPath);
         }
       })();
@@ -158,8 +159,8 @@
       </div>
 
       <p class="hint">
-        If you arrived here from a broken link, you should be redirected
-        automatically. Otherwise, tap a language above to continue.
+        If you arrived here from a broken link, you should be redirected automatically. Otherwise,
+        tap a language above to continue.
       </p>
     </div>
   </body>

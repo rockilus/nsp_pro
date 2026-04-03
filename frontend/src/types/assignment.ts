@@ -1,9 +1,9 @@
-import dayjs from "dayjs";
-import { RequestT } from "./request";
-import { BreachT } from "./breach";
-import { ShiftT } from "./shift";
-import { WorkerT } from "./worker";
-import { RecurrenceRuleT, toRecurrenceRuleT } from "./recurrence";
+import dayjs from 'dayjs';
+import { RequestT } from './request';
+import { BreachT } from './breach';
+import { ShiftT } from './shift';
+import { WorkerT } from './worker';
+import { RecurrenceRuleT, toRecurrenceRuleT } from './recurrence';
 
 // class AssignmentSource(Enum):
 //     MANUAL = "manual"
@@ -13,11 +13,11 @@ import { RecurrenceRuleT, toRecurrenceRuleT } from "./recurrence";
 //     REQUEST = "request"
 
 export enum AssignmentSource {
-  MANUAL = "manual",
-  SOLVER = "solver",
-  DUPLICATE = "duplicate",
-  RECURRENCE = "recurrence",
-  REQUEST = "request",
+  MANUAL = 'manual',
+  SOLVER = 'solver',
+  DUPLICATE = 'duplicate',
+  RECURRENCE = 'recurrence',
+  REQUEST = 'request',
 }
 
 export type AssignmentT = {
@@ -79,29 +79,15 @@ export const fromAssignmentT = (data: AssignmentT): any => {
   };
 };
 
-export const toAssignmentsRecurrencesResultT = (
-  data: any
-): AssignmentsRecurrencesResultT => {
+export const toAssignmentsRecurrencesResultT = (data: any): AssignmentsRecurrencesResultT => {
   return {
-    assignmentsCreated: data.assignmentsCreated.map((assignment: any) =>
-      toAssignmentT(assignment)
-    ),
-    assignmentsRead: data.assignmentsRead.map((assignment: any) =>
-      toAssignmentT(assignment)
-    ),
-    assignmentsUpdated: data.assignmentsUpdated.map((assignment: any) =>
-      toAssignmentT(assignment)
-    ),
+    assignmentsCreated: data.assignmentsCreated.map((assignment: any) => toAssignmentT(assignment)),
+    assignmentsRead: data.assignmentsRead.map((assignment: any) => toAssignmentT(assignment)),
+    assignmentsUpdated: data.assignmentsUpdated.map((assignment: any) => toAssignmentT(assignment)),
     assignmentsDeletedIds: data.assignmentsDeletedIds || [],
-    recurrenceCreated: data.recurrenceCreated
-      ? toRecurrenceRuleT(data.recurrenceCreated)
-      : null,
-    recurrencesRead: data.recurrencesRead.map((recurrence: any) =>
-      toRecurrenceRuleT(recurrence)
-    ),
-    recurrenceUpdated: data.recurrenceUpdated
-      ? toRecurrenceRuleT(data.recurrenceUpdated)
-      : null,
+    recurrenceCreated: data.recurrenceCreated ? toRecurrenceRuleT(data.recurrenceCreated) : null,
+    recurrencesRead: data.recurrencesRead.map((recurrence: any) => toRecurrenceRuleT(recurrence)),
+    recurrenceUpdated: data.recurrenceUpdated ? toRecurrenceRuleT(data.recurrenceUpdated) : null,
     recurrencesDeletedIds: data.recurrencesDeletedIds || [],
   };
 };

@@ -1,0 +1,29 @@
+# Justfile for rockilus backend shared library (service-local tasks)
+
+format:
+    echo "Formatting shared..."
+    uv run ruff format .
+    uv run ruff check --fix .
+
+lint:
+    echo "Running linter for shared..."
+    uv run ruff check .
+
+typecheck:
+    echo "Running type checker for shared..."
+    uv run python -m mypy .
+
+test:
+    echo "Running tests for shared..."
+    uv run pytest
+
+all:
+    just format
+    just lint
+    just typecheck
+    just test
+
+all-no-test:
+    just format
+    just lint
+    just typecheck

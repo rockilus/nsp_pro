@@ -1,7 +1,6 @@
 import calendar
 import math
 from datetime import date, timedelta
-from typing import Dict, List, Tuple
 
 from shared.schemas.core import (
     Request,
@@ -22,13 +21,13 @@ from engine import GroupsAssignmentsTargetConstraint
 
 # pylint: disable=too-many-arguments, R0801
 def build_nb_duties_constraints(
-    periods: List[List[date]],
-    w_to_nb_duties: Dict[str, Dict[str, List[int]]],
-    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
-    shifts_duty: List[Shift],
+    periods: list[list[date]],
+    w_to_nb_duties: dict[str, dict[str, list[int]]],
+    ws_to_dates: dict[tuple[str, str], WorkerDates],
+    shifts_duty: list[Shift],
     penalty: int,
     tolerance: float,
-) -> List[GroupsAssignmentsTargetConstraint]:
+) -> list[GroupsAssignmentsTargetConstraint]:
     #     len(periods)
     # List[GroupsAssignmentsTargetConstraint]=
     #         len(workers) x len(shifts duty) * len(period)
@@ -37,9 +36,9 @@ def build_nb_duties_constraints(
     #     targets: List[int]
     #     penalty: int
     #     tolerance: int
-    p_index_to_period: Dict[int, List[date]] = dict(enumerate(periods))
+    p_index_to_period: dict[int, list[date]] = dict(enumerate(periods))
 
-    p_index_to_gadtc: Dict[int, GroupsAssignmentsTargetConstraint] = {}
+    p_index_to_gadtc: dict[int, GroupsAssignmentsTargetConstraint] = {}
     for w_id, nb_duties in w_to_nb_duties.items():
         target_work_times = nb_duties["target"]
         for i, period in p_index_to_period.items():
@@ -73,19 +72,19 @@ def build_nb_duties_constraints(
 # pylint: disable=too-many-locals, too-many-arguments, R0801
 def calculate_worker_nb_duties(
     schedule: Schedule,
-    workers: List[Worker],
-    shifts: List[Shift],
-    requests: List[Request],
-    shift_demands: List[ShiftDemandNew],
-    periods: List[List[date]],
-) -> Dict[str, Dict[str, List[int]]]:
+    workers: list[Worker],
+    shifts: list[Shift],
+    requests: list[Request],
+    shift_demands: list[ShiftDemandNew],
+    periods: list[list[date]],
+) -> dict[str, dict[str, list[int]]]:
     # [
     # key: worker_id,
     # value: {
     #   key: [desired, max, target],
     #   value: [target nb of duties for each period]}
     # ]
-    worker_nb_duties: Dict[str, Dict[str, List[int]]] = {}
+    worker_nb_duties: dict[str, dict[str, list[int]]] = {}
 
     shift_leave_ids = [
         shift.id for shift in shifts if shift.shift_type == ShiftType.LEAVE
@@ -134,12 +133,12 @@ def calculate_worker_nb_duties(
 
 
 def calculate_proportional_nb_duties(
-    workers: List[Worker],
-    shifts: List[Shift],
-    shift_demands: List[ShiftDemandNew],
-    periods: List[List[date]],
-    w_id_to_coef: Dict[str, List[float]],
-) -> Dict[str, List[int]]:
+    workers: list[Worker],
+    shifts: list[Shift],
+    shift_demands: list[ShiftDemandNew],
+    periods: list[list[date]],
+    w_id_to_coef: dict[str, list[float]],
+) -> dict[str, list[int]]:
 
     period_index_to_required_nb_duties = {}
     # Build quick lookup for shifts by id
@@ -166,12 +165,12 @@ def calculate_proportional_nb_duties(
             total_required += dsd.count * total_staffing
 
         period_index_to_required_nb_duties[period_index] = total_required
-    total_period_desired_nb_duties: List[float] = [
+    total_period_desired_nb_duties: list[float] = [
         sum(worker.duties_per_month * w_id_to_coef[worker.id][i] for worker in workers)
         for i in range(len(periods))
     ]
 
-    w_id_to_target_nb_duties_by_period: Dict[str, List[float]] = {}
+    w_id_to_target_nb_duties_by_period: dict[str, list[float]] = {}
     for worker in workers:
         for i, period in enumerate(periods):
             period_nb_duties = period_index_to_required_nb_duties[i]
@@ -191,7 +190,7 @@ def calculate_proportional_nb_duties(
     return round_proportional_times(w_id_to_target_nb_duties_by_period)
 
 
-def get_nb_days_in_months(dates_list: List[List[date]]) -> List[int]:
+def get_nb_days_in_months(dates_list: list[list[date]]) -> list[int]:
     days_in_months = []
     for dates in dates_list:
         if dates:
@@ -205,11 +204,11 @@ def get_nb_days_in_months(dates_list: List[List[date]]) -> List[int]:
 
 
 def build_max_weekly_nb_duties_vars(
-    worker_not_deleted: List[Worker],
-    shift_duties_not_deleted: List[Shift],
-    periods_weekly: List[List[date]],
-    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
-) -> List[List[List[Tuple[str, str, str]]]]:
+    worker_not_deleted: list[Worker],
+    shift_duties_not_deleted: list[Shift],
+    periods_weekly: list[list[date]],
+    ws_to_dates: dict[tuple[str, str], WorkerDates],
+) -> list[list[list[tuple[str, str, str]]]]:
     """Builds max weekly nb duties variables structure.
 
     Returns a list per week. Each week is a list of workers (only workers
@@ -219,14 +218,14 @@ def build_max_weekly_nb_duties_vars(
     from that week's list. If no weeks contain any assignments an empty
     list is returned.
     """
-    weeks: List[List[List[Tuple[str, str, str]]]] = []
+    weeks: list[list[list[tuple[str, str, str]]]] = []
     for week in periods_weekly:
-        week_entries: List[List[Tuple[str, str, str]]] = []
+        week_entries: list[list[tuple[str, str, str]]] = []
         if not week:
             # skip empty week periods to avoid empty sublists
             continue
         for w in worker_not_deleted:
-            worker_assignments: List[Tuple[str, str, str]] = []
+            worker_assignments: list[tuple[str, str, str]] = []
             for d in week:
                 for s in shift_duties_not_deleted:
                     key = (w.id, s.id)
@@ -245,11 +244,11 @@ def build_max_weekly_nb_duties_vars(
 
 
 def build_max_week_day_nb_duties_vars(
-    worker_not_deleted: List[Worker],
-    shift_duties_not_deleted: List[Shift],
-    dates_campaign: List[date],
-    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
-) -> List[List[List[Tuple[str, str, str]]]]:
+    worker_not_deleted: list[Worker],
+    shift_duties_not_deleted: list[Shift],
+    dates_campaign: list[date],
+    ws_to_dates: dict[tuple[str, str], WorkerDates],
+) -> list[list[list[tuple[str, str, str]]]]:
     """Builds max weekday nb duties variables structure from campaign dates.
 
     Returns a list per weekday (Monday=0 .. Sunday=6). Each weekday is a list
@@ -260,18 +259,18 @@ def build_max_week_day_nb_duties_vars(
     list. If no weekdays contain any assignments an empty list is returned.
     """
     # collect all dates for each weekday from the flat campaign dates list
-    weekdays: List[List[date]] = [[] for _ in range(7)]
+    weekdays: list[list[date]] = [[] for _ in range(7)]
     for d in dates_campaign:
         weekdays[d.weekday()].append(d)
 
-    weekday_entries_all: List[List[List[Tuple[str, str, str]]]] = []
+    weekday_entries_all: list[list[list[tuple[str, str, str]]]] = []
     for weekday_dates in weekdays:
-        day_entries: List[List[Tuple[str, str, str]]] = []
+        day_entries: list[list[tuple[str, str, str]]] = []
         if not weekday_dates:
             # skip empty weekday periods to avoid empty sublists
             continue
         for w in worker_not_deleted:
-            worker_assignments: List[Tuple[str, str, str]] = []
+            worker_assignments: list[tuple[str, str, str]] = []
             for d in weekday_dates:
                 for s in shift_duties_not_deleted:
                     key = (w.id, s.id)
@@ -290,13 +289,13 @@ def build_max_week_day_nb_duties_vars(
 
 
 def build_consecutive_duty_gap_vars(
-    worker_not_deleted: List[Worker],
-    shift_duties_not_deleted: List[Shift],
-    dates_campaign: List[date],
-    dates_hist: List[date],
-    ws_to_dates: Dict[Tuple[str, str], WorkerDates],
+    worker_not_deleted: list[Worker],
+    shift_duties_not_deleted: list[Shift],
+    dates_campaign: list[date],
+    dates_hist: list[date],
+    ws_to_dates: dict[tuple[str, str], WorkerDates],
     min_gap_days: int = 1,
-) -> List[Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]]:
+) -> list[tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]]:
     """Builds (day_d_vars, day_d+k_vars) pairs for consecutive duty gap penalty.
 
     For each worker, for each date d in (dates_hist + dates_campaign) and for
@@ -309,7 +308,7 @@ def build_consecutive_duty_gap_vars(
 
     campaign_date_set = set(dates_campaign)
     all_dates = dates_hist + dates_campaign
-    pairs: List[Tuple[List[Tuple[str, str, str]], List[Tuple[str, str, str]]]] = []
+    pairs: list[tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]] = []
 
     for w in worker_not_deleted:
         for d in all_dates:
@@ -317,8 +316,8 @@ def build_consecutive_duty_gap_vars(
                 d_next = d + timedelta(days=k)
                 if d_next not in campaign_date_set:
                     continue
-                vars_d: List[Tuple[str, str, str]] = []
-                vars_next: List[Tuple[str, str, str]] = []
+                vars_d: list[tuple[str, str, str]] = []
+                vars_next: list[tuple[str, str, str]] = []
                 for s in shift_duties_not_deleted:
                     key = (w.id, s.id)
                     if key not in ws_to_dates:

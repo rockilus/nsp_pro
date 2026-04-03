@@ -1,5 +1,5 @@
-import dayjs from "dayjs";
-import { ShiftWorkerOptionT } from "./constraint";
+import dayjs from 'dayjs';
+import { ShiftWorkerOptionT } from './constraint';
 
 export enum StatsTimeFrameOptions {
   CAMPAING = 0,

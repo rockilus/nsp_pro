@@ -489,3 +489,76 @@ def user_reversed_swap_event(
             "team_name": team_name,
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# Campaign request deadline notification builders
+# ---------------------------------------------------------------------------
+
+
+def campaign_request_deadline_set_event(
+    team_id: str,
+    team_name: str,
+    deadline_date: str,
+    schedule_start: str,
+    schedule_end: str,
+    member_user_ids: list[str],
+) -> NotificationEvent:
+    """Notify members that the team leader has set a request deadline."""
+    return NotificationEvent(
+        notification_type=NotificationType.CAMPAIGN_REQUEST_DEADLINE_SET,
+        user_ids=member_user_ids,
+        team_id=team_id,
+        event_data={
+            "team_name": team_name,
+            "deadline_date": deadline_date,
+            "schedule_start_date": schedule_start,
+            "schedule_end_date": schedule_end,
+        },
+    )
+
+
+def campaign_request_deadline_reminder_event(
+    team_id: str,
+    team_name: str,
+    deadline_date: str,
+    schedule_start: str,
+    schedule_end: str,
+    member_user_ids: list[str],
+) -> NotificationEvent:
+    """Remind members to submit their requests before the deadline."""
+    return NotificationEvent(
+        notification_type=NotificationType.CAMPAIGN_REQUEST_DEADLINE_REMINDER,
+        user_ids=member_user_ids,
+        team_id=team_id,
+        event_data={
+            "team_name": team_name,
+            "deadline_date": deadline_date,
+            "schedule_start_date": schedule_start,
+            "schedule_end_date": schedule_end,
+        },
+    )
+
+
+def campaign_request_deadline_updated_event(
+    team_id: str,
+    team_name: str,
+    old_deadline_date: str,
+    new_deadline_date: str,
+    schedule_start: str,
+    schedule_end: str,
+    member_user_ids: list[str],
+) -> NotificationEvent:
+    """Notify members that the request deadline has been extended."""
+    return NotificationEvent(
+        notification_type=NotificationType.CAMPAIGN_REQUEST_DEADLINE_UPDATED,
+        user_ids=member_user_ids,
+        team_id=team_id,
+        event_data={
+            "team_name": team_name,
+            "old_deadline_date": old_deadline_date,
+            "new_deadline_date": new_deadline_date,
+            "schedule_start_date": schedule_start,
+            "schedule_end_date": schedule_end,
+        },
+    )

@@ -1,12 +1,12 @@
 // Types
-import { BreachT } from "@/types/breach";
+import { BreachT } from '@/types/breach';
 
 export const getBreachType = (breaches: BreachT[]): string => {
   if (breaches.length === 0) {
-    return "noBreach";
+    return 'noBreach';
   }
   if (breaches.some((breach) => breach.hardToSoft)) {
-    return "hardBreach";
+    return 'hardBreach';
   }
-  return "softBreach";
+  return 'softBreach';
 };

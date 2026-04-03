@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 
 export const useTableHeight = (isFilterToolbarActive: boolean) => {
-  const [tableHeight, setTableHeight] = useState("70vh");
+  const [tableHeight, setTableHeight] = useState('70vh');
 
   useEffect(() => {
     const calculateHeight = () => {
@@ -17,17 +17,14 @@ export const useTableHeight = (isFilterToolbarActive: boolean) => {
         titleContainerHeight -
         filterToolbarHeight -
         paddingAndMargins;
-      const maxHeight = Math.max(
-        300,
-        Math.min(availableHeight, viewportHeight)
-      );
+      const maxHeight = Math.max(300, Math.min(availableHeight, viewportHeight));
 
       setTableHeight(`${maxHeight}px`);
     };
 
     calculateHeight();
-    window.addEventListener("resize", calculateHeight);
-    return () => window.removeEventListener("resize", calculateHeight);
+    window.addEventListener('resize', calculateHeight);
+    return () => window.removeEventListener('resize', calculateHeight);
   }, [isFilterToolbarActive]);
 
   return tableHeight;

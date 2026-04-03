@@ -1,33 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { useTranslation } from "../../app/i18n/client";
-// MUI
-import Button from "@mui/material/Button";
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../app/i18n/client';
+// shadcn/ui
+import { Button } from '@/components/ui/button';
 // Components
-import ScheduleSelector from "./schedule-selector";
-import ConstraintSelector from "./constraint-selector";
-import MobileNavAppBar from "../app-bar/mobile-nav-app-bar";
+import CampaignParametersPanel from './campaign-parameters-panel';
+import ConstraintSelector from './constraint-selector';
+import WorkTimeTable from './work-time-table';
+import MobileNavAppBar from '../app-bar/mobile-nav-app-bar';
 // Hooks
-import { useIsMobile } from "../../hooks/useIsMobile";
+import { useIsMobile } from '../../hooks/useIsMobile';
 // Skeletons
-import TablesSkeleton from "../skeletons/tables-skeleton";
+import TablesSkeleton from '../skeletons/tables-skeleton';
 // New hooks (authenticated)
-import {
-  useGetCampaignTabData,
-  useGetCampaignTabDataNoSolver,
-} from "../../hooks/useCampaign";
+import { useGetCampaignTabData, useGetCampaignTabDataNoSolver } from '../../hooks/useCampaign';
 // Hooks
-import {
-  useCreateSchedule,
-  useUpdateSchedule,
-  useGetWorkTimeTable,
-} from "../../hooks/useSchedule";
-import { clearGenerationSelection } from "../../app/lib/hooks/useGenerationSelection";
+import { useCreateSchedule, useUpdateSchedule, useGetWorkTimeTable } from '../../hooks/useSchedule';
+import { clearGenerationSelection } from '../../app/lib/hooks/useGenerationSelection';
 // Styles
-import "../../styles/tab-container-styles.css";
+import '../../styles/tab-container-styles.css';
 // Types
-import { ScheduleT, WorkTimeTableT } from "../../types/schedule";
-import { ConstraintT } from "../../types/constraint";
-import { TeamWithMembership } from "@/types/team";
+import { ScheduleT, WorkTimeTableT } from '../../types/schedule';
+import { ConstraintT } from '../../types/constraint';
+import { TeamWithMembership } from '@/types/team';
 
 export default function CampaignTab({
   lng,
@@ -36,7 +30,7 @@ export default function CampaignTab({
   lng: string;
   teamWithMembership: TeamWithMembership;
 }) {
-  const { t } = useTranslation(lng, "campaign-page");
+  const { t } = useTranslation(lng, 'campaign-page');
   const isMobile = useIsMobile();
 
   // Campaign hooks
@@ -49,14 +43,10 @@ export default function CampaignTab({
   const getWorkTimeTable = useGetWorkTimeTable();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
-    null,
-  );
+  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(null);
   const [schedulesValidated, setSchedulesValidated] = useState<ScheduleT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
-  const [workTimeTable, setWorkTimeTable] = useState<WorkTimeTableT | null>(
-    null,
-  );
+  const [workTimeTable, setWorkTimeTable] = useState<WorkTimeTableT | null>(null);
 
   //////////////////////////
   // Schedule Actions
@@ -67,13 +57,10 @@ export default function CampaignTab({
       const newSchedule = await createSchedule(teamWithMembership.team.id);
       clearGenerationSelection(newSchedule.id);
       setScheduleCampaign(newSchedule);
-      const newWorkTimeTable = await getWorkTimeTable(
-        newSchedule.id,
-        teamWithMembership.team.id,
-      );
+      const newWorkTimeTable = await getWorkTimeTable(newSchedule.id, teamWithMembership.team.id);
       setWorkTimeTable(newWorkTimeTable);
     } catch (error) {
-      console.error("Failed to create schedule:", error);
+      console.error('Failed to create schedule:', error);
       // TODO: Add user-facing error notification
     }
   };
@@ -82,15 +69,24 @@ export default function CampaignTab({
     try {
       const newSchedule = await updateSchedule(schedule);
       setScheduleCampaign(newSchedule);
-      const newWorkTimeTable = await getWorkTimeTable(
-        newSchedule.id,
-        newSchedule.teamId,
-      );
+      const newWorkTimeTable = await getWorkTimeTable(newSchedule.id, newSchedule.teamId);
       setWorkTimeTable(newWorkTimeTable);
     } catch (error) {
-      console.error("Failed to update schedule:", error);
+      console.error('Failed to update schedule:', error);
       // TODO: Add user-facing error notification
     }
+  };
+
+  const handleDeadlineSet = (updatedSchedule: ScheduleT) => {
+    setScheduleCampaign(updatedSchedule);
+  };
+
+  const handleDeadlineExtended = (updatedSchedule: ScheduleT) => {
+    setScheduleCampaign(updatedSchedule);
+  };
+
+  const handleReminderSent = (updatedSchedule: ScheduleT) => {
+    setScheduleCampaign(updatedSchedule);
   };
 
   useEffect(() => {
@@ -104,14 +100,12 @@ export default function CampaignTab({
           setSchedulesValidated(data.schedulesValidated);
           setConstraints(data.constraints);
         } else {
-          const data = await getCampaignTabDataNoSolver(
-            teamWithMembership.team.id,
-          );
+          const data = await getCampaignTabDataNoSolver(teamWithMembership.team.id);
           setScheduleCampaign(data.scheduleCampaign);
           setSchedulesValidated(data.schedulesValidated);
         }
       } catch (error) {
-        console.error("Failed to fetch campaign tab data:", error);
+        console.error('Failed to fetch campaign tab data:', error);
         // TODO: Add user-facing error notification
       } finally {
         setIsLoading(false);
@@ -131,7 +125,7 @@ export default function CampaignTab({
           );
           setWorkTimeTable(newWorkTimeTable);
         } catch (error) {
-          console.error("Failed to fetch work time table:", error);
+          console.error('Failed to fetch work time table:', error);
           // Handle error appropriately
         }
       };
@@ -147,13 +141,27 @@ export default function CampaignTab({
           <TablesSkeleton numTables={3} numInternalRows={3} />
         ) : scheduleCampaign ? (
           <div>
-            <ScheduleSelector
+            <CampaignParametersPanel
               lng={lng}
               scheduleCampaign={scheduleCampaign}
               schedulesValidated={schedulesValidated}
-              workTimeTable={workTimeTable}
               handleUpdateSchedule={handleUpdateSchedule}
+              onDeadlineSet={handleDeadlineSet}
+              onDeadlineExtended={handleDeadlineExtended}
+              onReminderSent={handleReminderSent}
             />
+            {workTimeTable && (
+              <div style={{ marginTop: '16px' }}>
+                <span className="title">{t('supply_and_demand')}</span>
+                {isMobile ? (
+                  <div style={{ overflowX: 'auto', width: '100%' }}>
+                    <WorkTimeTable lng={lng} data={workTimeTable} />
+                  </div>
+                ) : (
+                  <WorkTimeTable lng={lng} data={workTimeTable} />
+                )}
+              </div>
+            )}
             {teamWithMembership.team.useSolver && (
               <>
                 <div className="divider" />
@@ -167,18 +175,8 @@ export default function CampaignTab({
             )}
           </div>
         ) : (
-          <Button
-            variant="contained"
-            onClick={handleAddSchedule}
-            sx={{
-              paddingLeft: 0.3,
-              paddingRight: 1,
-              margin: "8px",
-              height: "35px",
-              textTransform: "none",
-            }}
-          >
-            {t("start_new_campaign")}
+          <Button variant="default" onClick={handleAddSchedule} className="m-2 h-[35px]">
+            {t('start_new_campaign')}
           </Button>
         )}
       </div>

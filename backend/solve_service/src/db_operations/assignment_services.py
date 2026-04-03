@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import List, Optional, Tuple
 
 from shared.database.database_collections import DatabaseCollections
 from shared.schemas.core import (
@@ -18,7 +17,7 @@ from engine import ScopeContext
 
 def get_wip_assignments(
     schedule: Schedule, collections: DatabaseCollections
-) -> List[Assignment]:
+) -> list[Assignment]:
     return collections.assignment_db.get_assignments_by_dates(
         team_id=schedule.team_id,
         start_date=schedule.start_date,
@@ -29,7 +28,7 @@ def get_wip_assignments(
 
 def get_fixed_assignments(
     schedule: Schedule, collections: DatabaseCollections
-) -> Tuple[List[Assignment], List[Assignment]]:
+) -> tuple[list[Assignment], list[Assignment]]:
     as_hist = collections.assignment_db.get_assignments_by_dates(
         team_id=schedule.team_id,
         start_date=None,
@@ -47,8 +46,8 @@ def get_fixed_assignments(
 def _delete_wip_in_scope(
     schedule: Schedule,
     collections: DatabaseCollections,
-    scope_ctx: Optional[ScopeContext],
-    solve_scope: Optional[SolveScope] = None,
+    scope_ctx: ScopeContext | None,
+    solve_scope: SolveScope | None = None,
 ) -> None:
     """Delete WIP assignments that fall within the solver's scope."""
     if scope_ctx is None:
@@ -65,7 +64,7 @@ def _delete_wip_in_scope(
         end_date=schedule.end_date,
         fixed=False,
     )
-    scoped_as_ids: List[str] = []
+    scoped_as_ids: list[str] = []
     if solve_scope is not None:
         # Build convenience sets from the full variable triples
         # `variables` contains (worker_id, date_iso, shift_id)
@@ -98,13 +97,13 @@ def _delete_wip_in_scope(
 
 
 def save_assignments(
-    assignments: List[Assignment],
+    assignments: list[Assignment],
     schedule: Schedule,
-    shifts: List[Shift],
+    shifts: list[Shift],
     collections: DatabaseCollections,
-    scope_ctx: Optional[ScopeContext] = None,
-    solve_scope: Optional[SolveScope] = None,
-) -> List[Assignment]:
+    scope_ctx: ScopeContext | None = None,
+    solve_scope: SolveScope | None = None,
+) -> list[Assignment]:
     _delete_wip_in_scope(
         schedule=schedule,
         collections=collections,
@@ -140,7 +139,7 @@ def save_assignments(
 
     # Also deduplicate incoming assignments (keep first occurrence)
     seen = set()
-    filtered_assignments: List[Assignment] = []
+    filtered_assignments: list[Assignment] = []
     for a in assignments:
         key = (a.worker_id, a.date, a.shift_id)
         if key in not_for_save_existing_keys:

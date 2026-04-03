@@ -365,16 +365,16 @@ class TestShiftDemandNewRepository:
 
         for i, source in enumerate(sources_to_test):
             shift_demand = self._create_test_shift_demand(
-                shift_id=f"shift{i+1}",
+                shift_id=f"shift{i + 1}",
                 source=source,
                 source_id=(
-                    f"source{i+1}" if source != ShiftDemandSource.MANUAL else None
+                    f"source{i + 1}" if source != ShiftDemandSource.MANUAL else None
                 ),
             )
             result = self.repo.create_shift_demand(shift_demand)
             assert result.source == source
             if source != ShiftDemandSource.MANUAL:
-                assert result.source_id == f"source{i+1}"
+                assert result.source_id == f"source{i + 1}"
 
     def test_shift_demand_date_edge_cases(self):
         """Test shift demands on edge case dates."""

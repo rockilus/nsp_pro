@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { detectLanguage } from "./lib/language-detection";
-import { fallbackLng, languages } from "./i18n/settings";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { detectLanguage } from './lib/language-detection';
+import { fallbackLng, languages } from './i18n/settings';
 
 export default function RootPage() {
   const router = useRouter();
@@ -34,9 +34,7 @@ export default function RootPage() {
       return;
     }
 
-    const onDeepLangPath = languages.some((lang) =>
-      pathname.startsWith(`/${lang}/`),
-    );
+    const onDeepLangPath = languages.some((lang) => pathname.startsWith(`/${lang}/`));
     if (onDeepLangPath) {
       // Don't auto-redirect — could loop if the deep path is also missing
       // from S3. Let the user use the manual "Click here" link.
@@ -77,14 +75,12 @@ export default function RootPage() {
         serves /index.html as the 404 fallback) and recreate the loop.
         Handles VPN/firewall environments where _next/static chunks are blocked.
       */}
-      {metaRefreshUrl && (
-        <meta httpEquiv="refresh" content={`1;url=${metaRefreshUrl}`} />
-      )}
-      <div className="flex items-center justify-center min-h-screen">
+      {metaRefreshUrl && <meta httpEquiv="refresh" content={`1;url=${metaRefreshUrl}`} />}
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <p>Redirecting...</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Not redirected?{" "}
+          <p className="mt-2 text-sm text-gray-500">
+            Not redirected?{' '}
             <a href={`/${fallbackLng}/`} className="underline">
               Click here
             </a>

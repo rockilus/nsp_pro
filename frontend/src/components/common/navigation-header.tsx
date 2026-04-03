@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
-import IconButton from "@mui/material/IconButton";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import React from 'react';
+import IconButton from '@mui/material/IconButton';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // Styles
-import "./navigation-styles.css";
+import './navigation-styles.css';
 
 interface NavigationHeaderProps {
   title: string;
@@ -12,19 +12,11 @@ interface NavigationHeaderProps {
   showBackButton: boolean;
 }
 
-export default function NavigationHeader({
-  title,
-  onBack,
-  showBackButton,
-}: NavigationHeaderProps) {
+export default function NavigationHeader({ title, onBack, showBackButton }: NavigationHeaderProps) {
   return (
     <div className="navigation-header">
       {showBackButton && onBack && (
-        <IconButton
-          onClick={onBack}
-          aria-label="back"
-          sx={{ padding: 0, marginRight: 1 }}
-        >
+        <IconButton onClick={onBack} aria-label="back" sx={{ padding: 0, marginRight: 1 }}>
           <ArrowBackIcon />
         </IconButton>
       )}

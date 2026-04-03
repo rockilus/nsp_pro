@@ -5,37 +5,31 @@
  * allowing Playwright tests to reset the database state before each test run.
  */
 
-import { TeamApi } from "../../src/app/lib/api/teamApi";
-import { TeamInvitationApi } from "../../src/app/lib/api/teamInvitationApi";
-import {
-  NotificationApi,
-  NotificationsResponse,
-} from "../../src/app/lib/api/notificationApi";
-import { WorkerApi } from "../../src/app/lib/api/workerApi";
-import { SpecialtyApi } from "../../src/app/lib/api/specialtyApi";
-import { DimensionApi } from "../../src/app/lib/api/dimensionApi";
-import { AttributeApi } from "../../src/app/lib/api/attributeApi";
-import { ShiftApi } from "../../src/app/lib/api/shiftApi";
-import { ShiftDemandApi } from "../../src/app/lib/api/shiftDemandApi";
-import { ShiftDemandTemplateApi } from "../../src/app/lib/api/shiftDemandTemplateApi";
-import { RequestApi } from "../../src/app/lib/api/requestApi";
-import { ScheduleApi } from "../../src/app/lib/api/scheduleApi";
-import { AssignmentApi } from "../../src/app/lib/api/assignmentApi";
-import { ConstraintApi } from "../../src/app/lib/api/constraintApi";
-import { SwapApi } from "../../src/app/lib/api/swapApi";
-import { AuthenticatedApiClient } from "../../src/app/lib/api/baseApi";
-import { TeamWithMembership } from "../../src/types/team";
+import { TeamApi } from '../../src/app/lib/api/teamApi';
+import { TeamInvitationApi } from '../../src/app/lib/api/teamInvitationApi';
+import { NotificationApi, NotificationsResponse } from '../../src/app/lib/api/notificationApi';
+import { WorkerApi } from '../../src/app/lib/api/workerApi';
+import { SpecialtyApi } from '../../src/app/lib/api/specialtyApi';
+import { DimensionApi } from '../../src/app/lib/api/dimensionApi';
+import { AttributeApi } from '../../src/app/lib/api/attributeApi';
+import { ShiftApi } from '../../src/app/lib/api/shiftApi';
+import { ShiftDemandApi } from '../../src/app/lib/api/shiftDemandApi';
+import { ShiftDemandTemplateApi } from '../../src/app/lib/api/shiftDemandTemplateApi';
+import { RequestApi } from '../../src/app/lib/api/requestApi';
+import { ScheduleApi } from '../../src/app/lib/api/scheduleApi';
+import { AssignmentApi } from '../../src/app/lib/api/assignmentApi';
+import { ConstraintApi } from '../../src/app/lib/api/constraintApi';
+import { SwapApi } from '../../src/app/lib/api/swapApi';
+import { AuthenticatedApiClient } from '../../src/app/lib/api/baseApi';
+import { TeamWithMembership } from '../../src/types/team';
 import {
   TeamInvitationT,
   TeamInvitationType,
   TeamInvitationStatus,
-} from "../../src/types/team-invitation";
-import {
-  NotificationT,
-  NotificationPreferencesT,
-} from "../../src/types/notification";
-import { WorkerT, toWorkerT } from "../../src/types/worker";
-import { SpecialtyT } from "../../src/types/specialty";
+} from '../../src/types/team-invitation';
+import { NotificationT, NotificationPreferencesT } from '../../src/types/notification';
+import { WorkerT, toWorkerT } from '../../src/types/worker';
+import { SpecialtyT } from '../../src/types/specialty';
 import {
   ShiftT,
   toShiftT,
@@ -44,53 +38,39 @@ import {
   ShiftRestType,
   ShiftLeaveType,
   LinkShiftT,
-} from "../../src/types/shift";
-import {
-  DimensionT,
-  DimensionType,
-  DimensionEntryType,
-} from "../../src/types/dimension";
-import { AddDimensionResponse } from "../../src/app/lib/api/dimensionApi";
-import { DimEntryT } from "../../src/types/dim-entry";
-import { AttributeT, toAttributeT } from "../../src/types/attribute";
+} from '../../src/types/shift';
+import { DimensionT, DimensionType, DimensionEntryType } from '../../src/types/dimension';
+import { AddDimensionResponse } from '../../src/app/lib/api/dimensionApi';
+import { DimEntryT } from '../../src/types/dim-entry';
+import { AttributeT, toAttributeT } from '../../src/types/attribute';
 import {
   ShiftDemandTemplateDTO,
   ShiftDemandTemplateCreateDTO,
   ShiftDemandTemplateUpdateDTO,
-} from "../../src/types/shift-demand-template";
-import {
-  ShiftDemandDTO,
-  ShiftDemandUpdateDTO,
-} from "../../src/types/shiftDemand";
+} from '../../src/types/shift-demand-template';
+import { ShiftDemandDTO, ShiftDemandUpdateDTO } from '../../src/types/shiftDemand';
 import {
   RequestT,
   RequestType,
   FulfillmentStatus,
   RequestStatus,
   fromRequestT,
-} from "../../src/types/request";
-import { ScheduleT, toScheduleT } from "../../src/types/schedule";
-import { testConfig } from "./test-config";
-import dayjs from "dayjs";
-import {
-  AssignmentT,
-  AssignmentSource,
-  AssignmentsRecurrencesResultT,
-} from "@/types/assignment";
-import { LinkShiftApi } from "@/app/lib/api/linkShiftApi";
-import { SwapRequestT, SwapType, toSwapRequestT } from "@/types/swap";
-import {
-  RecurrenceRuleT,
-  RecurrenceUpdateScope,
-} from "../../src/types/recurrence";
-import { ReplacementCandidateT } from "../../src/types/replacement";
+} from '../../src/types/request';
+import { ScheduleT, toScheduleT } from '../../src/types/schedule';
+import { testConfig } from './test-config';
+import dayjs from 'dayjs';
+import { AssignmentT, AssignmentSource, AssignmentsRecurrencesResultT } from '@/types/assignment';
+import { LinkShiftApi } from '@/app/lib/api/linkShiftApi';
+import { SwapRequestT, SwapType, toSwapRequestT } from '@/types/swap';
+import { RecurrenceRuleT, RecurrenceUpdateScope } from '../../src/types/recurrence';
+import { ReplacementCandidateT } from '../../src/types/replacement';
 import {
   ConstraintT,
   ConstraintType,
   BlockT,
   TemplateT,
   ShiftWorkerOptionT,
-} from "../../src/types/constraint";
+} from '../../src/types/constraint';
 
 export interface DatabaseResetOptions {
   collections?: string[];
@@ -138,7 +118,7 @@ export interface TestUserWithRole {
   userId: string;
   email: string;
   teamId: string;
-  role: "owner" | "member";
+  role: 'owner' | 'member';
   membershipId: string;
 }
 
@@ -169,7 +149,7 @@ export class DatabaseTestUtils {
    * and there's no existing API wrapper method
    */
   async makeAuthenticatedRequest<T>(
-    method: "GET" | "POST" | "PUT" | "DELETE",
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     endpoint: string,
     data?: any,
   ): Promise<T> {
@@ -182,9 +162,7 @@ export class DatabaseTestUtils {
     });
 
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ detail: "Unknown error" }));
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
       throw new Error(
         `API ${method} ${endpoint} failed: ${response.status} ${
           errorData.detail || JSON.stringify(errorData)
@@ -201,28 +179,24 @@ export class DatabaseTestUtils {
    */
   private getAuthHeaders(): Record<string, string> {
     const baseHeaders: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
 
-    if (testConfig.environment === "development") {
+    if (testConfig.environment === 'development') {
       // Development mode: use X-Dev headers (same as main app)
       if (!testConfig.devUserId || !testConfig.devApiKey) {
-        throw new Error(
-          "Development environment requires TEST_USER_ID and TEST_API_KEY to be set",
-        );
+        throw new Error('Development environment requires TEST_USER_ID and TEST_API_KEY to be set');
       }
 
       return {
         ...baseHeaders,
-        "X-Dev-User-ID": testConfig.devUserId,
-        "X-API-Key": testConfig.devApiKey,
+        'X-Dev-User-ID': testConfig.devUserId,
+        'X-API-Key': testConfig.devApiKey,
       };
     } else {
       // Staging/Production: use Bearer token
       if (!testConfig.authToken) {
-        throw new Error(
-          `${testConfig.environment} environment requires TEST_AUTH_TOKEN to be set`,
-        );
+        throw new Error(`${testConfig.environment} environment requires TEST_AUTH_TOKEN to be set`);
       }
 
       return {
@@ -255,9 +229,7 @@ export class DatabaseTestUtils {
       });
 
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ detail: "Unknown error" }));
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
 
         // Enhanced error logging for test debugging
         console.error(`❌ Test API ${method} ${endpoint} failed:`, {
@@ -280,45 +252,36 @@ export class DatabaseTestUtils {
 
     return {
       get: <T>(endpoint: string, options?: RequestInit) =>
-        makeAuthenticatedRequest<T>("GET", endpoint, undefined, options),
+        makeAuthenticatedRequest<T>('GET', endpoint, undefined, options),
       post: <T>(endpoint: string, data?: any, options?: RequestInit) =>
-        makeAuthenticatedRequest<T>("POST", endpoint, data, options),
+        makeAuthenticatedRequest<T>('POST', endpoint, data, options),
       put: <T>(endpoint: string, data?: any, options?: RequestInit) =>
-        makeAuthenticatedRequest<T>("PUT", endpoint, data, options),
+        makeAuthenticatedRequest<T>('PUT', endpoint, data, options),
       delete: <T>(endpoint: string, options?: RequestInit) =>
-        makeAuthenticatedRequest<T>("DELETE", endpoint, undefined, options),
+        makeAuthenticatedRequest<T>('DELETE', endpoint, undefined, options),
     };
   }
 
   /**
    * Reset database collections for testing
    */
-  async resetDatabase(
-    options: DatabaseResetOptions = {},
-  ): Promise<DatabaseResetResponse> {
-    const response = await fetch(
-      `${testConfig.apiUrl}/test-utils/reset-database`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          collections: options.collections,
-          preserve_system_data: options.preserveSystemData ?? true,
-          confirmation_token: testConfig.confirmationToken,
-        }),
+  async resetDatabase(options: DatabaseResetOptions = {}): Promise<DatabaseResetResponse> {
+    const response = await fetch(`${testConfig.apiUrl}/test-utils/reset-database`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    );
+      body: JSON.stringify({
+        collections: options.collections,
+        preserve_system_data: options.preserveSystemData ?? true,
+        confirmation_token: testConfig.confirmationToken,
+      }),
+    });
 
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ detail: "Unknown error" }));
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
       throw new Error(
-        `Database reset failed (${response.status}): ${
-          errorData.detail || response.statusText
-        }`,
+        `Database reset failed (${response.status}): ${errorData.detail || response.statusText}`,
       );
     }
 
@@ -329,24 +292,18 @@ export class DatabaseTestUtils {
    * Preview what collections would be reset without actually resetting them
    */
   async dryRunReset(collections?: string[]): Promise<DryRunResponse> {
-    const url = new URL(
-      `${testConfig.apiUrl}/test-utils/reset-database/dry-run`,
-    );
+    const url = new URL(`${testConfig.apiUrl}/test-utils/reset-database/dry-run`);
 
     if (collections && collections.length > 0) {
-      url.searchParams.set("collections", collections.join(","));
+      url.searchParams.set('collections', collections.join(','));
     }
 
     const response = await fetch(url.toString());
 
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ detail: "Unknown error" }));
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
       throw new Error(
-        `Dry run failed (${response.status}): ${
-          errorData.detail || response.statusText
-        }`,
+        `Dry run failed (${response.status}): ${errorData.detail || response.statusText}`,
       );
     }
 
@@ -379,7 +336,7 @@ export class DatabaseTestUtils {
     while (Date.now() - startTime < timeout) {
       try {
         await this.checkHealth();
-        console.log("✅ API is ready");
+        console.log('✅ API is ready');
         return;
       } catch (error) {
         // Continue waiting
@@ -395,7 +352,7 @@ export class DatabaseTestUtils {
    */
   async resetTeamRelatedData(): Promise<DatabaseResetResponse> {
     return this.resetDatabase({
-      collections: ["teams", "team_memberships"],
+      collections: ['teams', 'team_memberships'],
       preserveSystemData: true,
     });
   }
@@ -406,12 +363,12 @@ export class DatabaseTestUtils {
   async resetWorkersRelatedData(): Promise<DatabaseResetResponse> {
     return this.resetDatabase({
       collections: [
-        "teams",
-        "team_memberships",
-        "workers",
-        "dimensions",
-        "attributes",
-        "specialties",
+        'teams',
+        'team_memberships',
+        'workers',
+        'dimensions',
+        'attributes',
+        'specialties',
       ],
       preserveSystemData: true,
     });
@@ -422,14 +379,7 @@ export class DatabaseTestUtils {
    */
   async resetSchedulingData(): Promise<DatabaseResetResponse> {
     return this.resetDatabase({
-      collections: [
-        "schedules",
-        "shifts",
-        "assignments",
-        "shift_demands",
-        "coverage",
-        "requests",
-      ],
+      collections: ['schedules', 'shifts', 'assignments', 'shift_demands', 'coverage', 'requests'],
       preserveSystemData: true,
     });
   }
@@ -450,29 +400,27 @@ export class DatabaseTestUtils {
   async createTestUser(user?: Partial<TestUser>): Promise<UserCreationResult> {
     const defaultUser: TestUser = {
       user_id: testConfig.devUserId,
-      email: "testuser@example.com",
-      username: "testuser",
-      first_name: "Test",
-      last_name: "User",
+      email: 'testuser@example.com',
+      username: 'testuser',
+      first_name: 'Test',
+      last_name: 'User',
     };
 
     const testUser = { ...defaultUser, ...user };
 
     try {
       const response = await fetch(`${testConfig.apiUrl}/users/onboard`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "X-API-Key": testConfig.devApiKey,
+          'Content-Type': 'application/json',
+          'X-API-Key': testConfig.devApiKey,
         },
         body: JSON.stringify(testUser),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(
-          `Failed to create test user (HTTP ${response.status}): ${errorText}`,
-        );
+        throw new Error(`Failed to create test user (HTTP ${response.status}): ${errorText}`);
       }
 
       const result = await response.json();
@@ -481,7 +429,7 @@ export class DatabaseTestUtils {
       if (error instanceof Error) {
         throw new Error(`Test user creation failed: ${error.message}`);
       }
-      throw new Error("Test user creation failed with unknown error");
+      throw new Error('Test user creation failed with unknown error');
     }
   }
 
@@ -492,30 +440,25 @@ export class DatabaseTestUtils {
   async addTeamMember(
     userId: string,
     teamId: string,
-    role: "owner" | "member",
+    role: 'owner' | 'member',
   ): Promise<AddTeamMemberResult> {
     try {
-      const response = await fetch(
-        `${testConfig.apiUrl}/test-utils/add-team-member`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-Key": testConfig.devApiKey,
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            team_id: teamId,
-            role: role,
-          }),
+      const response = await fetch(`${testConfig.apiUrl}/test-utils/add-team-member`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': testConfig.devApiKey,
         },
-      );
+        body: JSON.stringify({
+          user_id: userId,
+          team_id: teamId,
+          role: role,
+        }),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(
-          `Failed to add team member (HTTP ${response.status}): ${errorText}`,
-        );
+        throw new Error(`Failed to add team member (HTTP ${response.status}): ${errorText}`);
       }
 
       const result = await response.json();
@@ -524,7 +467,7 @@ export class DatabaseTestUtils {
       if (error instanceof Error) {
         throw new Error(`Adding team member failed: ${error.message}`);
       }
-      throw new Error("Adding team member failed with unknown error");
+      throw new Error('Adding team member failed with unknown error');
     }
   }
 
@@ -540,15 +483,15 @@ export class DatabaseTestUtils {
       options: RequestInit = {},
     ): Promise<T> => {
       const authHeaders: Record<string, string> = {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       };
 
-      if (testConfig.environment === "development") {
-        authHeaders["X-Dev-User-ID"] = userId; // Use the specific user ID
-        authHeaders["X-API-Key"] = testConfig.devApiKey;
+      if (testConfig.environment === 'development') {
+        authHeaders['X-Dev-User-ID'] = userId; // Use the specific user ID
+        authHeaders['X-API-Key'] = testConfig.devApiKey;
       } else {
         // For non-dev environments, would need proper auth token per user
-        authHeaders["Authorization"] = `Bearer ${testConfig.authToken}`;
+        authHeaders['Authorization'] = `Bearer ${testConfig.authToken}`;
       }
 
       const response = await fetch(`${testConfig.apiUrl}${endpoint}`, {
@@ -562,18 +505,13 @@ export class DatabaseTestUtils {
       });
 
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ detail: "Unknown error" }));
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
 
-        console.error(
-          `❌ API ${method} ${endpoint} failed for user ${userId}:`,
-          {
-            status: response.status,
-            statusText: response.statusText,
-            error: errorData,
-          },
-        );
+        console.error(`❌ API ${method} ${endpoint} failed for user ${userId}:`, {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+        });
 
         throw new Error(
           `${method} ${endpoint} failed: ${response.status} ${
@@ -587,13 +525,13 @@ export class DatabaseTestUtils {
 
     return {
       get: <T>(endpoint: string, options?: RequestInit) =>
-        makeAuthenticatedRequest<T>("GET", endpoint, undefined, options),
+        makeAuthenticatedRequest<T>('GET', endpoint, undefined, options),
       post: <T>(endpoint: string, data?: any, options?: RequestInit) =>
-        makeAuthenticatedRequest<T>("POST", endpoint, data, options),
+        makeAuthenticatedRequest<T>('POST', endpoint, data, options),
       put: <T>(endpoint: string, data?: any, options?: RequestInit) =>
-        makeAuthenticatedRequest<T>("PUT", endpoint, data, options),
+        makeAuthenticatedRequest<T>('PUT', endpoint, data, options),
       delete: <T>(endpoint: string, options?: RequestInit) =>
-        makeAuthenticatedRequest<T>("DELETE", endpoint, undefined, options),
+        makeAuthenticatedRequest<T>('DELETE', endpoint, undefined, options),
     };
   }
 
@@ -605,10 +543,10 @@ export class DatabaseTestUtils {
    * @param userId - User ID to authenticate as
    */
   async authenticatePageAsUser(page: any, userId: string): Promise<void> {
-    if (testConfig.environment === "development") {
+    if (testConfig.environment === 'development') {
       await page.setExtraHTTPHeaders({
-        "X-Dev-User-ID": userId,
-        "X-API-Key": testConfig.devApiKey,
+        'X-Dev-User-ID': userId,
+        'X-API-Key': testConfig.devApiKey,
       });
     } else {
       // For staging/production, use Bearer token
@@ -636,7 +574,7 @@ export class DatabaseTestUtils {
    */
   async authenticatePageAsTestUser2(page: any): Promise<void> {
     if (!testConfig.devUserId2) {
-      throw new Error("TEST_USER_ID_2 is not configured in test environment");
+      throw new Error('TEST_USER_ID_2 is not configured in test environment');
     }
     await this.authenticatePageAsUser(page, testConfig.devUserId2);
   }
@@ -655,24 +593,24 @@ export class DatabaseTestUtils {
     while (Date.now() - startTime < timeout) {
       try {
         const response = await fetch(`${testConfig.permitUrl}/healthy`, {
-          method: "GET",
+          method: 'GET',
           signal: AbortSignal.timeout(2000),
         });
 
         if (response.ok) {
-          console.log("✅ Permit.io PDP is ready");
+          console.log('✅ Permit.io PDP is ready');
           return; // Both services are ready
         }
       } catch (error) {
         // Permit.io might not be required in test environment
-        console.warn("⚠️ Permit.io PDP not available, continuing without it");
+        console.warn('⚠️ Permit.io PDP not available, continuing without it');
         return;
       }
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
-    throw new Error("Services did not become ready within timeout period");
+    throw new Error('Services did not become ready within timeout period');
   }
 
   /**
@@ -687,10 +625,7 @@ export class DatabaseTestUtils {
         ? this.createAuthenticatedClientForUser(teamData.ownerUserId)
         : this.testApiClient;
       // Use the existing TeamApi with our test client
-      const result: TeamWithMembership = await TeamApi.createTeam(
-        client,
-        teamData.name,
-      );
+      const result: TeamWithMembership = await TeamApi.createTeam(client, teamData.name);
 
       return {
         teamId: result.team.id,
@@ -699,13 +634,9 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to create team '${teamData.name}': ${error.message}`,
-        );
+        throw new Error(`Failed to create team '${teamData.name}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to create team '${teamData.name}': Unknown error`,
-      );
+      throw new Error(`Failed to create team '${teamData.name}': Unknown error`);
     }
   }
 
@@ -727,11 +658,10 @@ export class DatabaseTestUtils {
     try {
       // Create a WorkerT object with defaults
       const worker: WorkerT = {
-        id: "", // Will be set by the API
+        id: '', // Will be set by the API
         teamId: workerData.teamId,
         name: workerData.name,
-        acronym:
-          workerData.acronym || workerData.name.substring(0, 3).toUpperCase(),
+        acronym: workerData.acronym || workerData.name.substring(0, 3).toUpperCase(),
         acronymCustom: Boolean(workerData.acronym),
         employmentStartDate: workerData.employmentStartDate
           ? dayjs(workerData.employmentStartDate).utc()
@@ -750,22 +680,15 @@ export class DatabaseTestUtils {
       };
 
       // Use the existing WorkerApi with our test client
-      const result: WorkerT = await WorkerApi.addWorker(
-        this.testApiClient,
-        worker,
-      );
+      const result: WorkerT = await WorkerApi.addWorker(this.testApiClient, worker);
 
       return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to create worker '${workerData.name}': ${error.message}`,
-        );
+        throw new Error(`Failed to create worker '${workerData.name}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to create worker '${workerData.name}': Unknown error`,
-      );
+      throw new Error(`Failed to create worker '${workerData.name}': Unknown error`);
     }
   }
 
@@ -793,9 +716,7 @@ export class DatabaseTestUtils {
       const currentWorker = workers.find((w) => w.id === workerId);
 
       if (!currentWorker) {
-        throw new Error(
-          `Worker with ID '${workerId}' not found in team '${teamId}'`,
-        );
+        throw new Error(`Worker with ID '${workerId}' not found in team '${teamId}'`);
       }
 
       // Create updated worker object
@@ -813,18 +734,14 @@ export class DatabaseTestUtils {
               : null
             : currentWorker.employmentEndDate,
         weeklyHours: updates.weeklyHours ?? currentWorker.weeklyHours,
-        weeklyHoursDesired:
-          updates.weeklyHoursDesired ?? currentWorker.weeklyHoursDesired,
+        weeklyHoursDesired: updates.weeklyHoursDesired ?? currentWorker.weeklyHoursDesired,
         dutiesPerMonth: updates.dutiesPerMonth ?? currentWorker.dutiesPerMonth,
         annualLeave: updates.annualLeave ?? currentWorker.annualLeave,
         specialtyIds: updates.specialtyIds ?? currentWorker.specialtyIds,
       };
 
       // Use the existing WorkerApi with our test client
-      const result: WorkerT = await WorkerApi.updateWorker(
-        this.testApiClient,
-        updatedWorker,
-      );
+      const result: WorkerT = await WorkerApi.updateWorker(this.testApiClient, updatedWorker);
 
       return {
         workerId: result.id,
@@ -834,9 +751,7 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to update worker '${workerId}': ${error.message}`,
-        );
+        throw new Error(`Failed to update worker '${workerId}': ${error.message}`);
       }
       throw new Error(`Failed to update worker '${workerId}': Unknown error`);
     }
@@ -863,9 +778,7 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to delete worker '${workerId}': ${error.message}`,
-        );
+        throw new Error(`Failed to delete worker '${workerId}': ${error.message}`);
       }
       throw new Error(`Failed to delete worker '${workerId}': Unknown error`);
     }
@@ -879,10 +792,10 @@ export class DatabaseTestUtils {
       const workers = await WorkerApi.getWorkers(this.testApiClient, teamId);
       return workers;
     } catch (error) {
-      console.error("Failed to get workers:", error);
+      console.error('Failed to get workers:', error);
       throw new Error(
         `Failed to get workers for team '${teamId}': ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -892,11 +805,7 @@ export class DatabaseTestUtils {
    * Attach a user to a worker using the existing WorkerApi for consistent behavior
    * This links a worker to a specific user, allowing member users to manage that worker
    */
-  async attachWorkerToUser(
-    workerId: string,
-    userId: string,
-    teamId: string,
-  ): Promise<WorkerT> {
+  async attachWorkerToUser(workerId: string, userId: string, teamId: string): Promise<WorkerT> {
     try {
       const result: WorkerT = await WorkerApi.attachUserToWorker(
         this.testApiClient,
@@ -909,13 +818,9 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to attach user ${userId} to worker ${workerId}: ${error.message}`,
-        );
+        throw new Error(`Failed to attach user ${userId} to worker ${workerId}: ${error.message}`);
       }
-      throw new Error(
-        `Failed to attach user ${userId} to worker ${workerId}: Unknown error`,
-      );
+      throw new Error(`Failed to attach user ${userId} to worker ${workerId}: Unknown error`);
     }
   }
 
@@ -938,11 +843,10 @@ export class DatabaseTestUtils {
   }): Promise<ShiftT> {
     try {
       const shift: ShiftT = {
-        id: "", // Will be set by the API
+        id: '', // Will be set by the API
         teamId: shiftData.teamId,
         name: shiftData.name,
-        acronym:
-          shiftData.acronym || shiftData.name.substring(0, 3).toUpperCase(),
+        acronym: shiftData.acronym || shiftData.name.substring(0, 3).toUpperCase(),
         acronymCustom: !!shiftData.acronym,
         startTime: shiftData.startTime,
         endTime: shiftData.endTime,
@@ -950,7 +854,7 @@ export class DatabaseTestUtils {
         staffing: shiftData.staffing ?? [],
         restType: shiftData.restType ?? ShiftRestType.NONE,
         leaveType: shiftData.leaveType ?? ShiftLeaveType.NONE,
-        color: shiftData.color ?? "#FFFFFF",
+        color: shiftData.color ?? '#FFFFFF',
         recuperationTime: shiftData.recuperationTime ?? 0,
         recuperationDutyId: shiftData.recuperationDutyId ?? null,
         deleted: false,
@@ -964,13 +868,9 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to create shift '${shiftData.name}': ${error.message}`,
-        );
+        throw new Error(`Failed to create shift '${shiftData.name}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to create shift '${shiftData.name}': Unknown error`,
-      );
+      throw new Error(`Failed to create shift '${shiftData.name}': Unknown error`);
     }
   }
 
@@ -980,22 +880,15 @@ export class DatabaseTestUtils {
   async getAllShifts(teamId: string): Promise<ShiftT[]> {
     try {
       // Use the existing ShiftApi with our test client
-      const result: ShiftT[] = await ShiftApi.getAllShifts(
-        this.testApiClient,
-        teamId,
-      );
+      const result: ShiftT[] = await ShiftApi.getAllShifts(this.testApiClient, teamId);
 
       return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to get all shifts for team '${teamId}': ${error.message}`,
-        );
+        throw new Error(`Failed to get all shifts for team '${teamId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to get all shifts for team '${teamId}': Unknown error`,
-      );
+      throw new Error(`Failed to get all shifts for team '${teamId}': Unknown error`);
     }
   }
 
@@ -1004,7 +897,7 @@ export class DatabaseTestUtils {
    */
   async updateShift(updatedShift: ShiftT): Promise<any> {
     if (!updatedShift || !updatedShift.id || !updatedShift.teamId) {
-      throw new Error("Invalid shift data provided");
+      throw new Error('Invalid shift data provided');
     }
 
     const apiClient = this.createTestApiClient();
@@ -1020,20 +913,15 @@ export class DatabaseTestUtils {
     shiftIds: string[];
   }): Promise<LinkShiftT> {
     try {
-      const apiClient = this.createAuthenticatedClientForUser(
-        TEST_USER.user_id,
-      );
+      const apiClient = this.createAuthenticatedClientForUser(TEST_USER.user_id);
 
       const linkShift: LinkShiftT = {
-        id: "", // Will be assigned by backend
+        id: '', // Will be assigned by backend
         teamId: linkShiftData.teamId,
         shiftIds: linkShiftData.shiftIds,
       };
 
-      const createdLinkShift = await LinkShiftApi.createLinkShift(
-        apiClient,
-        linkShift,
-      );
+      const createdLinkShift = await LinkShiftApi.createLinkShift(apiClient, linkShift);
       return createdLinkShift;
     } catch (error) {
       if (error instanceof Error) {
@@ -1050,14 +938,11 @@ export class DatabaseTestUtils {
   /**
    * Create a specialty using the existing SpecialtyApi for consistent behavior
    */
-  async createSpecialty(specialtyData: {
-    teamId: string;
-    name: string;
-  }): Promise<SpecialtyT> {
+  async createSpecialty(specialtyData: { teamId: string; name: string }): Promise<SpecialtyT> {
     try {
       // Create the specialty object
       const newSpecialty: SpecialtyT = {
-        id: "",
+        id: '',
         teamId: specialtyData.teamId,
         name: specialtyData.name,
         deleted: false,
@@ -1072,13 +957,9 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to create specialty '${specialtyData.name}': ${error.message}`,
-        );
+        throw new Error(`Failed to create specialty '${specialtyData.name}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to create specialty '${specialtyData.name}': Unknown error`,
-      );
+      throw new Error(`Failed to create specialty '${specialtyData.name}': Unknown error`);
     }
   }
 
@@ -1094,16 +975,11 @@ export class DatabaseTestUtils {
   ): Promise<SpecialtyT> {
     try {
       // First get the current specialty to merge with updates
-      const specialties = await SpecialtyApi.getSpecialties(
-        this.testApiClient,
-        teamId,
-      );
+      const specialties = await SpecialtyApi.getSpecialties(this.testApiClient, teamId);
       const currentSpecialty = specialties.find((s) => s.id === specialtyId);
 
       if (!currentSpecialty) {
-        throw new Error(
-          `Specialty with ID '${specialtyId}' not found in team '${teamId}'`,
-        );
+        throw new Error(`Specialty with ID '${specialtyId}' not found in team '${teamId}'`);
       }
 
       // Create updated specialty object
@@ -1123,13 +999,9 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to update specialty '${specialtyId}': ${error.message}`,
-        );
+        throw new Error(`Failed to update specialty '${specialtyId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to update specialty '${specialtyId}': Unknown error`,
-      );
+      throw new Error(`Failed to update specialty '${specialtyId}': Unknown error`);
     }
   }
 
@@ -1139,21 +1011,13 @@ export class DatabaseTestUtils {
   async deleteSpecialty(specialtyId: string, teamId: string): Promise<void> {
     try {
       // Use the existing SpecialtyApi with our test client
-      await SpecialtyApi.deleteSpecialty(
-        this.testApiClient,
-        specialtyId,
-        teamId,
-      );
+      await SpecialtyApi.deleteSpecialty(this.testApiClient, specialtyId, teamId);
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to delete specialty '${specialtyId}': ${error.message}`,
-        );
+        throw new Error(`Failed to delete specialty '${specialtyId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to delete specialty '${specialtyId}': Unknown error`,
-      );
+      throw new Error(`Failed to delete specialty '${specialtyId}': Unknown error`);
     }
   }
 
@@ -1163,22 +1027,15 @@ export class DatabaseTestUtils {
   async getSpecialties(teamId: string): Promise<SpecialtyT[]> {
     try {
       // Use the existing SpecialtyApi with our test client
-      const result: SpecialtyT[] = await SpecialtyApi.getSpecialties(
-        this.testApiClient,
-        teamId,
-      );
+      const result: SpecialtyT[] = await SpecialtyApi.getSpecialties(this.testApiClient, teamId);
 
       return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to get specialties for team '${teamId}': ${error.message}`,
-        );
+        throw new Error(`Failed to get specialties for team '${teamId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to get specialties for team '${teamId}': Unknown error`,
-      );
+      throw new Error(`Failed to get specialties for team '${teamId}': Unknown error`);
     }
   }
 
@@ -1205,7 +1062,7 @@ export class DatabaseTestUtils {
     try {
       // Create the dimension object
       const newDimension: DimensionT = {
-        id: "",
+        id: '',
         teamId: dimensionData.teamId,
         dimTypes: dimensionData.dimensionType,
         name: dimensionData.name,
@@ -1224,13 +1081,9 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to create dimension '${dimensionData.name}': ${error.message}`,
-        );
+        throw new Error(`Failed to create dimension '${dimensionData.name}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to create dimension '${dimensionData.name}': Unknown error`,
-      );
+      throw new Error(`Failed to create dimension '${dimensionData.name}': Unknown error`);
     }
   }
 
@@ -1261,10 +1114,7 @@ export class DatabaseTestUtils {
       };
 
       // Use the existing DimensionApi with our test client
-      const result = await DimensionApi.updateDimension(
-        this.testApiClient,
-        updatedDimension,
-      );
+      const result = await DimensionApi.updateDimension(this.testApiClient, updatedDimension);
 
       return {
         dimensionId: result.id,
@@ -1274,13 +1124,9 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to update dimension '${dimensionId}': ${error.message}`,
-        );
+        throw new Error(`Failed to update dimension '${dimensionId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to update dimension '${dimensionId}': Unknown error`,
-      );
+      throw new Error(`Failed to update dimension '${dimensionId}': Unknown error`);
     }
   }
 
@@ -1290,31 +1136,20 @@ export class DatabaseTestUtils {
   async deleteDimension(dimensionId: string, teamId: string): Promise<void> {
     try {
       // Use the existing DimensionApi with our test client
-      await DimensionApi.deleteDimension(
-        this.testApiClient,
-        dimensionId,
-        teamId,
-      );
+      await DimensionApi.deleteDimension(this.testApiClient, dimensionId, teamId);
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to delete dimension '${dimensionId}': ${error.message}`,
-        );
+        throw new Error(`Failed to delete dimension '${dimensionId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to delete dimension '${dimensionId}': Unknown error`,
-      );
+      throw new Error(`Failed to delete dimension '${dimensionId}': Unknown error`);
     }
   }
 
   /**
    * Get all dimensions for a team using the existing DimensionApi
    */
-  async getDimensions(
-    teamId: string,
-    dimensionType?: DimensionType,
-  ): Promise<DimensionT[]> {
+  async getDimensions(teamId: string, dimensionType?: DimensionType): Promise<DimensionT[]> {
     try {
       // Use the existing DimensionApi with our test client
       const result = await DimensionApi.getDimensions(
@@ -1327,13 +1162,9 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to get dimensions for team '${teamId}': ${error.message}`,
-        );
+        throw new Error(`Failed to get dimensions for team '${teamId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to get dimensions for team '${teamId}': Unknown error`,
-      );
+      throw new Error(`Failed to get dimensions for team '${teamId}': Unknown error`);
     }
   }
 
@@ -1355,7 +1186,7 @@ export class DatabaseTestUtils {
     try {
       // Create the attribute object
       const newAttribute = {
-        id: "", // Will be set by the API
+        id: '', // Will be set by the API
         value: attributeData.value,
         ownerType: attributeData.ownerType,
         ownerId: attributeData.ownerId,
@@ -1400,10 +1231,10 @@ export class DatabaseTestUtils {
       // In a real implementation, you might need to get the attribute first
       const updatedAttribute = {
         id: attributeId,
-        value: updates.value ?? "", // Will be updated by the API call
+        value: updates.value ?? '', // Will be updated by the API call
         ownerType: 1, // Default to WORKER for tests
-        ownerId: "", // Will be filled by the actual attribute data
-        dimensionId: "", // Will be filled by the actual attribute data
+        ownerId: '', // Will be filled by the actual attribute data
+        dimensionId: '', // Will be filled by the actual attribute data
         dimEntryIds: updates.dimEntryIds ?? [],
       };
 
@@ -1418,13 +1249,9 @@ export class DatabaseTestUtils {
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to update attribute '${attributeId}': ${error.message}`,
-        );
+        throw new Error(`Failed to update attribute '${attributeId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to update attribute '${attributeId}': Unknown error`,
-      );
+      throw new Error(`Failed to update attribute '${attributeId}': Unknown error`);
     }
   }
 
@@ -1434,21 +1261,13 @@ export class DatabaseTestUtils {
   async deleteAttribute(attributeId: string, teamId: string): Promise<void> {
     try {
       // Use the existing AttributeApi with our test client
-      await AttributeApi.deleteAttribute(
-        this.testApiClient,
-        attributeId,
-        teamId,
-      );
+      await AttributeApi.deleteAttribute(this.testApiClient, attributeId, teamId);
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to delete attribute '${attributeId}': ${error.message}`,
-        );
+        throw new Error(`Failed to delete attribute '${attributeId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to delete attribute '${attributeId}': Unknown error`,
-      );
+      throw new Error(`Failed to delete attribute '${attributeId}': Unknown error`);
     }
   }
 
@@ -1458,23 +1277,15 @@ export class DatabaseTestUtils {
   async getAttributesByOwner(ownerId: string, teamId: string): Promise<any[]> {
     try {
       // Use the existing AttributeApi with our test client
-      const result = await AttributeApi.getAttributesByOwner(
-        this.testApiClient,
-        ownerId,
-        teamId,
-      );
+      const result = await AttributeApi.getAttributesByOwner(this.testApiClient, ownerId, teamId);
 
       return result;
     } catch (error) {
       // Enhanced error handling for test debugging
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to get attributes for owner '${ownerId}': ${error.message}`,
-        );
+        throw new Error(`Failed to get attributes for owner '${ownerId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to get attributes for owner '${ownerId}': Unknown error`,
-      );
+      throw new Error(`Failed to get attributes for owner '${ownerId}': Unknown error`);
     }
   }
 
@@ -1487,7 +1298,7 @@ export class DatabaseTestUtils {
     date: dayjs.Dayjs;
     count: number;
     notes?: string;
-    source?: "manual" | "template" | "solver" | "import";
+    source?: 'manual' | 'template' | 'solver' | 'import';
   }): Promise<any> {
     try {
       const shiftDemandData = {
@@ -1495,7 +1306,7 @@ export class DatabaseTestUtils {
         date: options.date.unix(),
         count: options.count,
         notes: options.notes || null,
-        source: options.source || "manual",
+        source: options.source || 'manual',
         sourceId: null,
       };
 
@@ -1555,16 +1366,15 @@ export class DatabaseTestUtils {
       // Create template data in the format expected by the API
       const createData: ShiftDemandTemplateCreateDTO = {
         name: templateData.name,
-        description: templateData.description || "",
+        description: templateData.description || '',
       };
 
       // Use the existing ShiftDemandTemplateApi with our test client
-      const result: ShiftDemandTemplateDTO =
-        await ShiftDemandTemplateApi.createTemplate(
-          this.testApiClient,
-          templateData.teamId,
-          createData,
-        );
+      const result: ShiftDemandTemplateDTO = await ShiftDemandTemplateApi.createTemplate(
+        this.testApiClient,
+        templateData.teamId,
+        createData,
+      );
 
       console.log(`✅ Template created with ID: ${result.id}`);
 
@@ -1574,7 +1384,7 @@ export class DatabaseTestUtils {
         teamId: result.teamId,
       };
     } catch (error) {
-      console.error("Failed to create shift demand template:", error);
+      console.error('Failed to create shift demand template:', error);
       if (error instanceof Error) {
         throw new Error(`Failed to create template: ${error.message}`);
       }
@@ -1600,7 +1410,7 @@ export class DatabaseTestUtils {
       );
       return result;
     } catch (error) {
-      console.error("Failed to update shift demand template:", error);
+      console.error('Failed to update shift demand template:', error);
       throw error;
     }
   }
@@ -1608,23 +1418,16 @@ export class DatabaseTestUtils {
   /**
    * Delete a shift demand template using ShiftDemandTemplateApi for consistency
    */
-  async deleteShiftDemandTemplate(
-    templateId: string,
-    teamId: string,
-  ): Promise<void> {
+  async deleteShiftDemandTemplate(templateId: string, teamId: string): Promise<void> {
     try {
       console.log(`🗑️ Deleting shift demand template ${templateId}...`);
 
       // Use the existing ShiftDemandTemplateApi with our test client
-      await ShiftDemandTemplateApi.deleteTemplate(
-        this.testApiClient,
-        templateId,
-        teamId,
-      );
+      await ShiftDemandTemplateApi.deleteTemplate(this.testApiClient, templateId, teamId);
 
       console.log(`✅ Template deleted successfully`);
     } catch (error) {
-      console.error("Failed to delete shift demand template:", error);
+      console.error('Failed to delete shift demand template:', error);
       if (error instanceof Error) {
         throw new Error(`Failed to delete template: ${error.message}`);
       }
@@ -1652,7 +1455,7 @@ export class DatabaseTestUtils {
   }): Promise<ConstraintT> {
     try {
       const constraintToCreate: ConstraintT = {
-        id: "", // Will be set by the API
+        id: '', // Will be set by the API
         teamId: constraintData.teamId,
         constraintType: constraintData.constraintType,
         templateId: constraintData.templateId,
@@ -1665,12 +1468,9 @@ export class DatabaseTestUtils {
         missingAttributes: [],
       };
 
-      return await ConstraintApi.addConstraint(
-        this.testApiClient,
-        constraintToCreate,
-      );
+      return await ConstraintApi.addConstraint(this.testApiClient, constraintToCreate);
     } catch (error) {
-      console.error("Failed to create constraint:", error);
+      console.error('Failed to create constraint:', error);
       if (error instanceof Error) {
         throw new Error(`Failed to create constraint: ${error.message}`);
       }
@@ -1697,10 +1497,7 @@ export class DatabaseTestUtils {
   ): Promise<ConstraintT> {
     try {
       // First get the current constraint
-      const constraints = await ConstraintApi.getConstraints(
-        this.testApiClient,
-        teamId,
-      );
+      const constraints = await ConstraintApi.getConstraints(this.testApiClient, teamId);
       const currentConstraint = constraints.find((c) => c.id === constraintId);
 
       if (!currentConstraint) {
@@ -1712,12 +1509,9 @@ export class DatabaseTestUtils {
         ...updates,
       };
 
-      return await ConstraintApi.updateConstraint(
-        this.testApiClient,
-        updatedConstraint,
-      );
+      return await ConstraintApi.updateConstraint(this.testApiClient, updatedConstraint);
     } catch (error) {
-      console.error("Failed to update constraint:", error);
+      console.error('Failed to update constraint:', error);
       if (error instanceof Error) {
         throw new Error(`Failed to update constraint: ${error.message}`);
       }
@@ -1730,14 +1524,10 @@ export class DatabaseTestUtils {
    */
   async deleteConstraint(constraintId: string, teamId: string): Promise<void> {
     try {
-      await ConstraintApi.deleteConstraint(
-        this.testApiClient,
-        constraintId,
-        teamId,
-      );
+      await ConstraintApi.deleteConstraint(this.testApiClient, constraintId, teamId);
       console.log(`Deleted constraint: ${constraintId}`);
     } catch (error) {
-      console.error("Failed to delete constraint:", error);
+      console.error('Failed to delete constraint:', error);
       if (error instanceof Error) {
         throw new Error(`Failed to delete constraint: ${error.message}`);
       }
@@ -1750,16 +1540,11 @@ export class DatabaseTestUtils {
    */
   async getConstraints(teamId: string): Promise<ConstraintT[]> {
     try {
-      const constraints = await ConstraintApi.getConstraints(
-        this.testApiClient,
-        teamId,
-      );
-      console.log(
-        `Retrieved ${constraints.length} constraints for team ${teamId}`,
-      );
+      const constraints = await ConstraintApi.getConstraints(this.testApiClient, teamId);
+      console.log(`Retrieved ${constraints.length} constraints for team ${teamId}`);
       return constraints;
     } catch (error) {
-      console.error("Failed to get constraints:", error);
+      console.error('Failed to get constraints:', error);
       if (error instanceof Error) {
         throw new Error(`Failed to get constraints: ${error.message}`);
       }
@@ -1772,16 +1557,11 @@ export class DatabaseTestUtils {
    */
   async getConstraintTemplates(teamId: string): Promise<TemplateT[]> {
     try {
-      const templates = await ConstraintApi.getTemplates(
-        this.testApiClient,
-        teamId,
-      );
-      console.log(
-        `Retrieved ${templates.length} constraint templates for team ${teamId}`,
-      );
+      const templates = await ConstraintApi.getTemplates(this.testApiClient, teamId);
+      console.log(`Retrieved ${templates.length} constraint templates for team ${teamId}`);
       return templates;
     } catch (error) {
-      console.error("Failed to get constraint templates:", error);
+      console.error('Failed to get constraint templates:', error);
       if (error instanceof Error) {
         throw new Error(`Failed to get constraint templates: ${error.message}`);
       }
@@ -1794,7 +1574,7 @@ export class DatabaseTestUtils {
    */
   async resetConstraintData(): Promise<DatabaseResetResponse> {
     return this.resetDatabase({
-      collections: ["constraints", "constraint_templates"],
+      collections: ['constraints', 'constraint_templates'],
     });
   }
 
@@ -1820,7 +1600,7 @@ export class DatabaseTestUtils {
     try {
       // RequestDTO expects camelCase fields
       const requestPayload: RequestT = {
-        id: "",
+        id: '',
         teamId: requestData.teamId,
         requestType: requestData.requestType,
         workerId: requestData.workerId,
@@ -1832,7 +1612,7 @@ export class DatabaseTestUtils {
         hard: true,
         status: requestData.status || RequestStatus.PENDING,
         fulfillment: FulfillmentStatus.NOT_PROCESSED,
-        comment: requestData.comment || "",
+        comment: requestData.comment || '',
         createdAt: dayjs(),
         active: true,
         shiftTargetIds: [],
@@ -1852,11 +1632,9 @@ export class DatabaseTestUtils {
 
       return response;
     } catch (error) {
-      console.error("Failed to create request:", error);
+      console.error('Failed to create request:', error);
       throw new Error(
-        `Failed to create request: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to create request: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -1866,16 +1644,12 @@ export class DatabaseTestUtils {
    */
   async deleteRequest(requestId: string, teamId: string): Promise<void> {
     try {
-      await this.testApiClient.delete(
-        `/requests/${requestId}?teamId=${teamId}`,
-      );
+      await this.testApiClient.delete(`/requests/${requestId}?teamId=${teamId}`);
       console.log(`Deleted request ${requestId} from team ${teamId}`);
     } catch (error) {
       console.error(`Failed to delete request ${requestId}:`, error);
       throw new Error(
-        `Failed to delete request: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to delete request: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -1885,16 +1659,12 @@ export class DatabaseTestUtils {
    */
   async getRequests(teamId: string): Promise<any[]> {
     try {
-      const response = await this.testApiClient.get<any[]>(
-        `/requests?teamId=${teamId}`,
-      );
+      const response = await this.testApiClient.get<any[]>(`/requests?teamId=${teamId}`);
       return response;
     } catch (error) {
-      console.error("Failed to get requests:", error);
+      console.error('Failed to get requests:', error);
       throw new Error(
-        `Failed to get requests: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to get requests: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -1917,10 +1687,10 @@ export class DatabaseTestUtils {
       );
       return { request, assignments };
     } catch (error) {
-      console.error("Failed to approve request:", error);
+      console.error('Failed to approve request:', error);
       throw new Error(
         `Failed to approve request '${requestId}': ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -1934,17 +1704,13 @@ export class DatabaseTestUtils {
    */
   async denyRequest(requestId: string, teamId: string): Promise<RequestT> {
     try {
-      const deniedRequest = await RequestApi.denyRequest(
-        this.testApiClient,
-        requestId,
-        teamId,
-      );
+      const deniedRequest = await RequestApi.denyRequest(this.testApiClient, requestId, teamId);
       return deniedRequest;
     } catch (error) {
-      console.error("Failed to deny request:", error);
+      console.error('Failed to deny request:', error);
       throw new Error(
         `Failed to deny request '${requestId}': ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -1955,7 +1721,7 @@ export class DatabaseTestUtils {
    */
   async resetRequestData(): Promise<DatabaseResetResponse> {
     return this.resetDatabase({
-      collections: ["requests"],
+      collections: ['requests'],
       preserveSystemData: true,
     });
   }
@@ -1972,13 +1738,9 @@ export class DatabaseTestUtils {
       return await ScheduleApi.createSchedule(this.testApiClient, teamId);
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to create schedule for team '${teamId}': ${error.message}`,
-        );
+        throw new Error(`Failed to create schedule for team '${teamId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to create schedule for team '${teamId}': Unknown error`,
-      );
+      throw new Error(`Failed to create schedule for team '${teamId}': Unknown error`);
     }
   }
 
@@ -1990,13 +1752,9 @@ export class DatabaseTestUtils {
       return await ScheduleApi.getSchedules(this.testApiClient, teamId);
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to get schedules for team '${teamId}': ${error.message}`,
-        );
+        throw new Error(`Failed to get schedules for team '${teamId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to get schedules for team '${teamId}': Unknown error`,
-      );
+      throw new Error(`Failed to get schedules for team '${teamId}': Unknown error`);
     }
   }
 
@@ -2008,28 +1766,21 @@ export class DatabaseTestUtils {
       return await ScheduleApi.updateSchedule(this.testApiClient, schedule);
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to update schedule '${schedule.id}': ${error.message}`,
-        );
+        throw new Error(`Failed to update schedule '${schedule.id}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to update schedule '${schedule.id}': Unknown error`,
-      );
+      throw new Error(`Failed to update schedule '${schedule.id}': Unknown error`);
     }
   }
 
   /**
    * Validate a schedule using ScheduleApi for consistent behavior
    */
-  async validateSchedule(
-    scheduleId: string,
-    teamId: string,
-  ): Promise<ScheduleT> {
+  async validateSchedule(scheduleId: string, teamId: string): Promise<ScheduleT> {
     if (!scheduleId) {
-      throw new Error("Schedule ID is required");
+      throw new Error('Schedule ID is required');
     }
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     try {
@@ -2041,13 +1792,61 @@ export class DatabaseTestUtils {
       console.log(`✅ Validated schedule: ${validatedSchedule.id}`);
       return validatedSchedule;
     } catch (error) {
-      console.error("Failed to validate schedule:", error);
+      console.error('Failed to validate schedule:', error);
       throw new Error(
-        `Failed to validate schedule: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to validate schedule: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
+  }
+
+  /**
+   * Set the request deadline on a CAMPAIGN schedule as a specific user.
+   */
+  async setRequestDeadlineAs(
+    userId: string,
+    scheduleId: string,
+    teamId: string,
+    deadline: Date,
+  ): Promise<ScheduleT> {
+    const userClient = this.createAuthenticatedClientForUser(userId);
+    return await ScheduleApi.setRequestDeadline(userClient, scheduleId, teamId, deadline);
+  }
+
+  /**
+   * Send a request deadline reminder as a specific user.
+   */
+  async sendRequestDeadlineReminderAs(
+    userId: string,
+    scheduleId: string,
+    teamId: string,
+  ): Promise<void> {
+    const userClient = this.createAuthenticatedClientForUser(userId);
+    await ScheduleApi.sendRequestDeadlineReminder(userClient, scheduleId, teamId);
+  }
+
+  /**
+   * Extend the request deadline as a specific user.
+   */
+  async editRequestDeadlineAs(
+    userId: string,
+    scheduleId: string,
+    teamId: string,
+    newDeadline: Date,
+  ): Promise<ScheduleT> {
+    const userClient = this.createAuthenticatedClientForUser(userId);
+    return await ScheduleApi.editRequestDeadline(userClient, scheduleId, teamId, newDeadline);
+  }
+
+  /**
+   * Delete the request deadline as a specific user.
+   */
+  async deleteRequestDeadlineAs(
+    userId: string,
+    scheduleId: string,
+    teamId: string,
+  ): Promise<ScheduleT> {
+    const userClient = this.createAuthenticatedClientForUser(userId);
+    return await ScheduleApi.deleteRequestDeadline(userClient, scheduleId, teamId);
   }
 
   //////////////////////////
@@ -2072,7 +1871,7 @@ export class DatabaseTestUtils {
     try {
       // Construct AssignmentT object
       const assignment: AssignmentT = {
-        id: "", // Will be generated by backend
+        id: '', // Will be generated by backend
         workerId: assignmentData.workerId,
         shiftId: assignmentData.shiftId,
         date: assignmentData.date,
@@ -2094,7 +1893,7 @@ export class DatabaseTestUtils {
       if (error instanceof Error) {
         throw new Error(`Failed to create assignment: ${error.message}`);
       }
-      throw new Error("Failed to create assignment: Unknown error");
+      throw new Error('Failed to create assignment: Unknown error');
     }
   }
 
@@ -2115,13 +1914,9 @@ export class DatabaseTestUtils {
       );
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(
-          `Failed to delete assignment '${assignmentId}': ${error.message}`,
-        );
+        throw new Error(`Failed to delete assignment '${assignmentId}': ${error.message}`);
       }
-      throw new Error(
-        `Failed to delete assignment '${assignmentId}': Unknown error`,
-      );
+      throw new Error(`Failed to delete assignment '${assignmentId}': Unknown error`);
     }
   }
 
@@ -2143,7 +1938,7 @@ export class DatabaseTestUtils {
    */
   async addSecondUserToTeam(
     teamId: string,
-    role: "owner" | "member" = "member",
+    role: 'owner' | 'member' = 'member',
   ): Promise<AddTeamMemberResult> {
     return this.addTeamMember(TEST_USER_2.user_id, teamId, role);
   }
@@ -2156,10 +1951,7 @@ export class DatabaseTestUtils {
    * Load a predefined solver test scenario from backend fixtures
    * This creates all workers, shifts, and shift demands in one API call
    */
-  async loadSolverScenario(
-    scenarioName: string,
-    teamId: string,
-  ): Promise<SolverScenarioResult> {
+  async loadSolverScenario(scenarioName: string, teamId: string): Promise<SolverScenarioResult> {
     try {
       // Backend returns an object with scenario_name, workers and shifts
       const result = await this.testApiClient.post<{
@@ -2173,7 +1965,7 @@ export class DatabaseTestUtils {
         attributes: any[];
         shift_demands: any[];
         schedules: any[];
-      }>("/test-utils/scenarios/load", {
+      }>('/test-utils/scenarios/load', {
         scenario_name: scenarioName,
         team_id: teamId,
       });
@@ -2195,7 +1987,7 @@ export class DatabaseTestUtils {
       console.error(`Failed to load scenario '${scenarioName}':`, error);
       throw new Error(
         `Failed to load scenario '${scenarioName}': ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2208,17 +2000,15 @@ export class DatabaseTestUtils {
   async listSolverScenarios(): Promise<string[]> {
     try {
       // The route returns a simple array of scenario names
-      const result = await this.testApiClient.get<string[]>(
-        "/test-utils/scenarios",
-      );
+      const result = await this.testApiClient.get<string[]>('/test-utils/scenarios');
 
       console.log(`✅ Found ${result.length} available scenarios`);
       return result;
     } catch (error) {
-      console.error("Failed to list solver scenarios:", error);
+      console.error('Failed to list solver scenarios:', error);
       throw new Error(
         `Failed to list solver scenarios: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2240,25 +2030,19 @@ export class DatabaseTestUtils {
     comment: string;
   }): Promise<SwapRequestT> {
     try {
-      const result = await SwapApi.createSwap(
-        this.testApiClient,
-        swapData.teamId,
-        {
-          swapType: swapData.swapType,
-          offeredAssignmentIds: swapData.offeredAssignmentIds,
-          requestedAssignmentIds: swapData.requestedAssignmentIds,
-          targetWorkerId: swapData.targetWorkerId,
-          comment: swapData.comment,
-        },
-      );
+      const result = await SwapApi.createSwap(this.testApiClient, swapData.teamId, {
+        swapType: swapData.swapType,
+        offeredAssignmentIds: swapData.offeredAssignmentIds,
+        requestedAssignmentIds: swapData.requestedAssignmentIds,
+        targetWorkerId: swapData.targetWorkerId,
+        comment: swapData.comment,
+      });
       console.log(`✅ Created swap: ${result.id}`);
       return result;
     } catch (error) {
-      console.error("Failed to create swap:", error);
+      console.error('Failed to create swap:', error);
       throw new Error(
-        `Failed to create swap: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to create swap: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2281,11 +2065,9 @@ export class DatabaseTestUtils {
       console.log(`✅ Added bid to swap: ${swapId}`);
       return result;
     } catch (error) {
-      console.error("Failed to add bid to swap:", error);
+      console.error('Failed to add bid to swap:', error);
       throw new Error(
-        `Failed to add bid to swap: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to add bid to swap: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2293,20 +2075,15 @@ export class DatabaseTestUtils {
   /**
    * Accept a bid on an open swap
    */
-  async acceptBidOnOpenSwap(
-    swapId: string,
-    bidId: string,
-  ): Promise<SwapRequestT> {
+  async acceptBidOnOpenSwap(swapId: string, bidId: string): Promise<SwapRequestT> {
     try {
       const result = await SwapApi.acceptBid(this.testApiClient, swapId, bidId);
       console.log(`✅ Accepted bid ${bidId} on swap: ${swapId}`);
       return result;
     } catch (error) {
-      console.error("Failed to accept bid on swap:", error);
+      console.error('Failed to accept bid on swap:', error);
       throw new Error(
-        `Failed to accept bid on swap: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to accept bid on swap: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2316,21 +2093,15 @@ export class DatabaseTestUtils {
    */
   async getSwaps(
     teamId: string,
-    status?: "active" | "pending_approval" | "completed" | "cancelled",
+    status?: 'active' | 'pending_approval' | 'completed' | 'cancelled',
   ): Promise<SwapRequestT[]> {
     try {
-      const result = await SwapApi.getSwapsForTeam(
-        this.testApiClient,
-        teamId,
-        status as any,
-      );
+      const result = await SwapApi.getSwapsForTeam(this.testApiClient, teamId, status as any);
       return result;
     } catch (error) {
-      console.error("Failed to get swaps:", error);
+      console.error('Failed to get swaps:', error);
       throw new Error(
-        `Failed to get swaps: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to get swaps: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2343,11 +2114,9 @@ export class DatabaseTestUtils {
       const result = await SwapApi.getSwapById(this.testApiClient, swapId);
       return result;
     } catch (error) {
-      console.error("Failed to get swap by ID:", error);
+      console.error('Failed to get swap by ID:', error);
       throw new Error(
-        `Failed to get swap by ID: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to get swap by ID: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2361,11 +2130,9 @@ export class DatabaseTestUtils {
       console.log(`✅ Accepted direct swap: ${swapId}`);
       return result;
     } catch (error) {
-      console.error("Failed to accept direct swap:", error);
+      console.error('Failed to accept direct swap:', error);
       throw new Error(
-        `Failed to accept direct swap: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to accept direct swap: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2373,24 +2140,17 @@ export class DatabaseTestUtils {
   /**
    * Refuse a direct swap invitation as a specific user (target worker declines)
    */
-  async refuseDirectSwapAs(
-    userId: string,
-    swapId: string,
-  ): Promise<SwapRequestT> {
+  async refuseDirectSwapAs(userId: string, swapId: string): Promise<SwapRequestT> {
     try {
       const userClient = this.createAuthenticatedClientForUser(userId);
-      const responseData = await userClient.post<any>(
-        `/swaps/${swapId}/refuse`,
-      );
+      const responseData = await userClient.post<any>(`/swaps/${swapId}/refuse`);
       const result = toSwapRequestT(responseData);
       console.log(`✅ Refused direct swap ${swapId} as user ${userId}`);
       return result;
     } catch (error) {
-      console.error("Failed to refuse direct swap:", error);
+      console.error('Failed to refuse direct swap:', error);
       throw new Error(
-        `Failed to refuse direct swap: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to refuse direct swap: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2405,11 +2165,9 @@ export class DatabaseTestUtils {
       console.log(`✅ Denied swap ${swapId} as user ${userId}`);
       return result;
     } catch (error) {
-      console.error("Failed to deny swap as user:", error);
+      console.error('Failed to deny swap as user:', error);
       throw new Error(
-        `Failed to deny swap as user: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to deny swap as user: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2440,10 +2198,10 @@ export class DatabaseTestUtils {
       console.log(`✅ Created swap as user ${userId}: ${result.id}`);
       return result;
     } catch (error) {
-      console.error("Failed to create swap as user:", error);
+      console.error('Failed to create swap as user:', error);
       throw new Error(
         `Failed to create swap as user: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2452,20 +2210,17 @@ export class DatabaseTestUtils {
   /**
    * Accept a direct swap invitation as a specific user (target worker accepts)
    */
-  async acceptDirectSwapAs(
-    userId: string,
-    swapId: string,
-  ): Promise<SwapRequestT> {
+  async acceptDirectSwapAs(userId: string, swapId: string): Promise<SwapRequestT> {
     try {
       const userClient = this.createAuthenticatedClientForUser(userId);
       const result = await SwapApi.acceptDirectSwap(userClient, swapId);
       console.log(`✅ Accepted direct swap ${swapId} as user ${userId}`);
       return result;
     } catch (error) {
-      console.error("Failed to accept direct swap as user:", error);
+      console.error('Failed to accept direct swap as user:', error);
       throw new Error(
         `Failed to accept direct swap as user: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2482,19 +2237,14 @@ export class DatabaseTestUtils {
   ): Promise<SwapRequestT> {
     try {
       const userClient = this.createAuthenticatedClientForUser(userId);
-      const result = await SwapApi.addBid(
-        userClient,
-        swapId,
-        bidderWorkerId,
-        offeredAssignmentIds,
-      );
+      const result = await SwapApi.addBid(userClient, swapId, bidderWorkerId, offeredAssignmentIds);
       console.log(`✅ Added bid to swap ${swapId} as user ${userId}`);
       return result;
     } catch (error) {
-      console.error("Failed to add bid to open swap as user:", error);
+      console.error('Failed to add bid to open swap as user:', error);
       throw new Error(
         `Failed to add bid to open swap as user: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2511,15 +2261,13 @@ export class DatabaseTestUtils {
     try {
       const userClient = this.createAuthenticatedClientForUser(userId);
       const result = await SwapApi.acceptBid(userClient, swapId, bidId);
-      console.log(
-        `✅ Accepted bid ${bidId} on swap ${swapId} as user ${userId}`,
-      );
+      console.log(`✅ Accepted bid ${bidId} on swap ${swapId} as user ${userId}`);
       return result;
     } catch (error) {
-      console.error("Failed to accept bid on open swap as user:", error);
+      console.error('Failed to accept bid on open swap as user:', error);
       throw new Error(
         `Failed to accept bid on open swap as user: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2534,11 +2282,9 @@ export class DatabaseTestUtils {
       console.log(`✅ Approved swap: ${swapId}`);
       return result;
     } catch (error) {
-      console.error("Failed to approve swap:", error);
+      console.error('Failed to approve swap:', error);
       throw new Error(
-        `Failed to approve swap: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to approve swap: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2546,20 +2292,17 @@ export class DatabaseTestUtils {
   /**
    * Approve a swap using a client authenticated as a specific user
    */
-  async approveSwapAsUser(
-    swapId: string,
-    userId: string,
-  ): Promise<SwapRequestT> {
+  async approveSwapAsUser(swapId: string, userId: string): Promise<SwapRequestT> {
     try {
       const userClient = this.createAuthenticatedClientForUser(userId);
       const result = await SwapApi.approveSwap(userClient, swapId);
       console.log(`✅ Approved swap ${swapId} as user ${userId}`);
       return result;
     } catch (error) {
-      console.error("Failed to approve swap as user:", error);
+      console.error('Failed to approve swap as user:', error);
       throw new Error(
         `Failed to approve swap as user: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2575,11 +2318,9 @@ export class DatabaseTestUtils {
       console.log(`✅ Reverted swap: ${swapId}`);
       return result;
     } catch (error) {
-      console.error("Failed to revert swap:", error);
+      console.error('Failed to revert swap:', error);
       throw new Error(
-        `Failed to revert swap: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to revert swap: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2594,10 +2335,10 @@ export class DatabaseTestUtils {
       console.log(`✅ Reverted swap ${swapId} as user ${userId}`);
       return result;
     } catch (error) {
-      console.error("Failed to revert swap as user:", error);
+      console.error('Failed to revert swap as user:', error);
       throw new Error(
         `Failed to revert swap as user: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2611,11 +2352,9 @@ export class DatabaseTestUtils {
       await SwapApi.deleteSwap(this.testApiClient, swapId);
       console.log(`✅ Deleted swap: ${swapId}`);
     } catch (error) {
-      console.error("Failed to delete swap:", error);
+      console.error('Failed to delete swap:', error);
       throw new Error(
-        `Failed to delete swap: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to delete swap: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2644,17 +2383,13 @@ export class DatabaseTestUtils {
         workerId,
       );
 
-      console.log(
-        `✅ Retrieved ${result.assignmentsRead.length} assignments for team ${teamId}`,
-      );
+      console.log(`✅ Retrieved ${result.assignmentsRead.length} assignments for team ${teamId}`);
 
       return result;
     } catch (error) {
-      console.error("Failed to get assignments:", error);
+      console.error('Failed to get assignments:', error);
       throw new Error(
-        `Failed to get assignments: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to get assignments: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2673,8 +2408,8 @@ export class DatabaseTestUtils {
       // First get the current assignment to merge with updates.
       // The backend requires start_date and end_date, so use a wide range
       // to cover all test assignments (including far-future dates).
-      const wideStart = dayjs().subtract(180, "day");
-      const wideEnd = dayjs().add(180, "day");
+      const wideStart = dayjs().subtract(180, 'day');
+      const wideEnd = dayjs().add(180, 'day');
       const result = await AssignmentApi.getAssignments(
         this.testApiClient,
         teamId,
@@ -2682,9 +2417,7 @@ export class DatabaseTestUtils {
         wideStart,
         wideEnd,
       );
-      const existingAssignment = result.assignmentsRead.find(
-        (a) => a.id === assignmentId,
-      );
+      const existingAssignment = result.assignmentsRead.find((a) => a.id === assignmentId);
 
       if (!existingAssignment) {
         throw new Error(`Assignment ${assignmentId} not found`);
@@ -2713,11 +2446,9 @@ export class DatabaseTestUtils {
         assignments: updateResult.assignmentsUpdated,
       };
     } catch (error) {
-      console.error("Failed to update assignment:", error);
+      console.error('Failed to update assignment:', error);
       throw new Error(
-        `Failed to update assignment: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to update assignment: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2742,10 +2473,10 @@ export class DatabaseTestUtils {
 
       return updatedDemand;
     } catch (error) {
-      console.error("Failed to update shift demand:", error);
+      console.error('Failed to update shift demand:', error);
       throw new Error(
         `Failed to update shift demand: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2756,18 +2487,14 @@ export class DatabaseTestUtils {
    */
   async deleteShiftDemand(demandId: string, teamId: string): Promise<void> {
     try {
-      await ShiftDemandApi.deleteShiftDemand(
-        this.testApiClient,
-        teamId,
-        demandId,
-      );
+      await ShiftDemandApi.deleteShiftDemand(this.testApiClient, teamId, demandId);
 
       console.log(`✅ Deleted shift demand ${demandId}`);
     } catch (error) {
-      console.error("Failed to delete shift demand:", error);
+      console.error('Failed to delete shift demand:', error);
       throw new Error(
         `Failed to delete shift demand: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2797,21 +2524,15 @@ export class DatabaseTestUtils {
         teamId,
       };
 
-      const result = await RequestApi.updateRequest(
-        this.testApiClient,
-        updatedRequest,
-        teamId,
-      );
+      const result = await RequestApi.updateRequest(this.testApiClient, updatedRequest, teamId);
 
       console.log(`✅ Updated request ${requestId}`);
 
       return result;
     } catch (error) {
-      console.error("Failed to update request:", error);
+      console.error('Failed to update request:', error);
       throw new Error(
-        `Failed to update request: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Failed to update request: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
@@ -2836,10 +2557,10 @@ export class DatabaseTestUtils {
 
       return candidates;
     } catch (error) {
-      console.error("Failed to get replacement candidates:", error);
+      console.error('Failed to get replacement candidates:', error);
       throw new Error(
         `Failed to get replacement candidates: ${
-          error instanceof Error ? error.message : "Unknown error"
+          error instanceof Error ? error.message : 'Unknown error'
         }`,
       );
     }
@@ -2857,18 +2578,18 @@ export class DatabaseTestUtils {
     const client = this.createAuthenticatedClientForUser(userId);
 
     const invitation = {
-      id: "", // Will be set by backend
+      id: '', // Will be set by backend
       teamId,
       firstName: null,
       lastName: null,
       email,
       type,
       workerId: null,
-      token: "", // Will be set by backend
+      token: '', // Will be set by backend
       status: TeamInvitationStatus.PENDING,
       createdBy: null, // Will be set by backend
       createdAt: dayjs().utc(), // Will be set by backend
-      expiresAt: dayjs().add(7, "day").utc(), // Default expiration (can be overridden by backend)
+      expiresAt: dayjs().add(7, 'day').utc(), // Default expiration (can be overridden by backend)
       lastSentAt: null,
     };
 
@@ -2878,10 +2599,7 @@ export class DatabaseTestUtils {
   /**
    * Accept a team invitation as a specific user
    */
-  async acceptTeamInvitationAs(
-    userId: string,
-    token: string,
-  ): Promise<TeamWithMembership> {
+  async acceptTeamInvitationAs(userId: string, token: string): Promise<TeamWithMembership> {
     const client = this.createAuthenticatedClientForUser(userId);
     return TeamInvitationApi.acceptTeamInvitation(client, token);
   }
@@ -2911,17 +2629,14 @@ export class DatabaseTestUtils {
    */
   async getNotificationsAs(userId: string): Promise<NotificationT[]> {
     const client = this.createAuthenticatedClientForUser(userId);
-    const response: NotificationsResponse =
-      await NotificationApi.getMyNotifications(client);
+    const response: NotificationsResponse = await NotificationApi.getMyNotifications(client);
     return response.notifications;
   }
 
   /**
    * Get notification preferences for a specific user
    */
-  async getNotificationPreferencesAs(
-    userId: string,
-  ): Promise<NotificationPreferencesT> {
+  async getNotificationPreferencesAs(userId: string): Promise<NotificationPreferencesT> {
     const client = this.createAuthenticatedClientForUser(userId);
     return NotificationApi.getNotificationPreferences(client);
   }
@@ -2955,7 +2670,7 @@ export class DatabaseTestUtils {
   ): Promise<any> {
     const client = this.createAuthenticatedClientForUser(userId);
     const requestPayload: RequestT = {
-      id: "",
+      id: '',
       teamId: requestData.teamId,
       requestType: requestData.requestType,
       workerId: requestData.workerId,
@@ -2967,7 +2682,7 @@ export class DatabaseTestUtils {
       hard: true,
       status: RequestStatus.PENDING,
       fulfillment: FulfillmentStatus.NOT_PROCESSED,
-      comment: "",
+      comment: '',
       createdAt: dayjs(),
       active: true,
       shiftTargetIds: [],
@@ -2991,11 +2706,7 @@ export class DatabaseTestUtils {
   /**
    * Deny a request acting as a specific user (e.g., a manager)
    */
-  async denyRequestAs(
-    userId: string,
-    requestId: string,
-    teamId: string,
-  ): Promise<RequestT> {
+  async denyRequestAs(userId: string, requestId: string, teamId: string): Promise<RequestT> {
     const client = this.createAuthenticatedClientForUser(userId);
     return RequestApi.denyRequest(client, requestId, teamId);
   }
@@ -3005,11 +2716,11 @@ export class DatabaseTestUtils {
  * Default test user credentials for use across tests
  */
 export const TEST_USER = {
-  user_id: testConfig.devUserId || "64e9b7f1e13e4a1a9c8b4567",
-  email: "testuser@example.com",
-  username: "testuser",
-  first_name: "Test",
-  last_name: "User",
+  user_id: testConfig.devUserId || '64e9b7f1e13e4a1a9c8b4567',
+  email: 'testuser@example.com',
+  username: 'testuser',
+  first_name: 'Test',
+  last_name: 'User',
 } as const;
 
 /**
@@ -3018,9 +2729,9 @@ export const TEST_USER = {
  * Use addSecondUserToTeam() to explicitly add this user to a team when needed.
  */
 export const TEST_USER_2 = {
-  user_id: testConfig.devUserId2 || "64e9b7f1e13e4a1a9c8b4568",
-  email: "testuser2@example.com",
-  username: "testuser2",
-  first_name: "Test",
-  last_name: "User2",
+  user_id: testConfig.devUserId2 || '64e9b7f1e13e4a1a9c8b4568',
+  email: 'testuser2@example.com',
+  username: 'testuser2',
+  first_name: 'Test',
+  last_name: 'User2',
 } as const;

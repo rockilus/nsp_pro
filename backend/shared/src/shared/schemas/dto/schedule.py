@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -24,6 +24,8 @@ class ScheduleDTO(BaseModel):
     createdAt: float
     updatedAt: float
     createdBy: str
+    requestDeadline: Optional[float] = None
+    lastReminderSentAt: Optional[float] = None
 
 
 class PeriodDTO(BaseModel):

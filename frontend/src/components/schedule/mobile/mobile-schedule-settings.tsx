@@ -1,24 +1,24 @@
-import React from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 // Components
-import { RoleBased } from "@/components/access/role-based";
+import { RoleBased } from '@/components/access/role-based';
 // Types
-import { TeamMembershipRole } from "@/types/team";
+import { TeamMembershipRole } from '@/types/team';
 
-type ScheduleView = "worker" | "team";
+type ScheduleView = 'worker' | 'team';
 
 interface MobileScheduleSettingsProps {
   open: boolean;
@@ -43,17 +43,13 @@ export default function MobileScheduleSettings({
   lng,
   userRole,
 }: MobileScheduleSettingsProps) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const { t } = useTranslation(lng, 'schedule-page');
 
   return (
-    <Dialog
-      data-testid="mobile-schedule-settings-dialog"
-      open={open}
-      onClose={onClose}
-    >
+    <Dialog data-testid="mobile-schedule-settings-dialog" open={open} onClose={onClose}>
       <DialogTitle>Settings</DialogTitle>
       <DialogContent>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
           {/* View Toggle */}
           <Box>
             <ToggleButtonGroup
@@ -73,9 +69,9 @@ export default function MobileScheduleSettings({
                 data-testid="mobile-view-worker-button"
                 value="worker"
                 sx={{
-                  textTransform: "none",
-                  height: "36px",
-                  fontSize: "0.875rem",
+                  textTransform: 'none',
+                  height: '36px',
+                  fontSize: '0.875rem',
                 }}
               >
                 My schedule
@@ -84,9 +80,9 @@ export default function MobileScheduleSettings({
                 data-testid="mobile-view-team-button"
                 value="team"
                 sx={{
-                  textTransform: "none",
-                  height: "36px",
-                  fontSize: "0.875rem",
+                  textTransform: 'none',
+                  height: '36px',
+                  fontSize: '0.875rem',
                 }}
               >
                 Team schedule
@@ -97,22 +93,16 @@ export default function MobileScheduleSettings({
           {/* Worker Selector - Only for Owners */}
           <RoleBased role={userRole} allowedRoles={[TeamMembershipRole.OWNER]}>
             <FormControl fullWidth>
-              <InputLabel id="mobile-worker-select-label">
-                {t("worker") || "Worker"}
-              </InputLabel>
+              <InputLabel id="mobile-worker-select-label">{t('worker') || 'Worker'}</InputLabel>
               <Select
                 data-testid="mobile-worker-select"
                 labelId="mobile-worker-select-label"
-                value={selectedWorkerId || ""}
-                label={t("worker") || "Worker"}
+                value={selectedWorkerId || ''}
+                label={t('worker') || 'Worker'}
                 onChange={(e) => onWorkerChange(String(e.target.value))}
               >
                 {workers.map((w: any) => (
-                  <MenuItem
-                    key={w.id}
-                    value={w.id}
-                    data-testid={`mobile-worker-option-${w.id}`}
-                  >
+                  <MenuItem key={w.id} value={w.id} data-testid={`mobile-worker-option-${w.id}`}>
                     {w.name}
                   </MenuItem>
                 ))}

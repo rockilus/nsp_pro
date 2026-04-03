@@ -2,42 +2,33 @@
  * API client for user operations
  */
 
-import { UserT, toUserT, fromUserT } from "../../../types/user";
-import { WorkerT, toWorkerT } from "../../../types/worker";
-import { BaseApi, AuthenticatedApiClient } from "./baseApi";
+import { UserT, toUserT, fromUserT } from '../../../types/user';
+import { WorkerT, toWorkerT } from '../../../types/worker';
+import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 export class UserApi extends BaseApi {
   /**
    * Get current user profile (authenticated)
    */
-  static async getCurrentUser(
-    apiClient: AuthenticatedApiClient
-  ): Promise<UserT> {
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      "get",
-      "/users/me"
-    );
+  static async getCurrentUser(apiClient: AuthenticatedApiClient): Promise<UserT> {
+    const responseData = await this.makeRequest<any>(apiClient, 'get', '/users/me');
     return toUserT(responseData) as UserT;
   }
 
   /**
    * Update user profile (authenticated)
    */
-  static async updateUser(
-    apiClient: AuthenticatedApiClient,
-    user: UserT
-  ): Promise<UserT> {
+  static async updateUser(apiClient: AuthenticatedApiClient, user: UserT): Promise<UserT> {
     // Security: Input validation
     if (!user || !user.id) {
-      throw new Error("Invalid user data provided");
+      throw new Error('Invalid user data provided');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "put",
+      'put',
       `/users/${user.id}`,
-      fromUserT(user)
+      fromUserT(user),
     );
     return toUserT(responseData) as UserT;
   }
@@ -53,7 +44,7 @@ export class UserApi extends BaseApi {
       newPasswordConfirm: string;
       accessToken: string;
     },
-    userId: string
+    userId: string,
   ): Promise<void> {
     // Security: Input validation
     if (
@@ -62,18 +53,18 @@ export class UserApi extends BaseApi {
       !passwordData.newPasswordConfirm ||
       !passwordData.accessToken
     ) {
-      throw new Error("All password fields and access token are required");
+      throw new Error('All password fields and access token are required');
     }
 
     if (!userId) {
-      throw new Error("User ID is required");
+      throw new Error('User ID is required');
     }
 
     await this.makeRequest<void>(
       apiClient,
-      "put",
+      'put',
       `/users/${userId}/change-password`,
-      passwordData
+      passwordData,
     );
   }
 
@@ -83,17 +74,17 @@ export class UserApi extends BaseApi {
    */
   static async getUserWorker(
     apiClient: AuthenticatedApiClient,
-    teamId: string
+    teamId: string,
   ): Promise<WorkerT | null> {
     // Security: Input validation
     if (!teamId) {
-      throw new Error("Team ID is required");
+      throw new Error('Team ID is required');
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
-      "get",
-      `/users/me/worker/teams/${teamId}`
+      'get',
+      `/users/me/worker/teams/${teamId}`,
     );
 
     // Backend returns null if no worker is associated with the user
