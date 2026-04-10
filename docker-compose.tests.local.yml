@@ -18,7 +18,7 @@ services:
 
   # LocalStack (to emulate SQS)
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:3.4
     container_name: localstack
     ports:
       - "4566:4566"
@@ -71,11 +71,6 @@ services:
     command: server --config=/policies/.cerbos.yaml
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://cerbos:3593/api/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://permit:7766/health"]
       interval: 10s
       timeout: 5s
       retries: 5
