@@ -105,7 +105,7 @@ test.describe('Worker Name Updates', () => {
 
     // Click somewhere else to trigger blur event (save)
     // We'll click on the page title
-    const pageTitle = page.getByRole('heading', { name: 'Workers' });
+    const pageTitle = page.locator('data-testid=workers-page-heading');
     await pageTitle.click();
 
     // Wait for the input to disappear and the display to show the new name

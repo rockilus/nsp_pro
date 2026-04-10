@@ -139,7 +139,7 @@ test.describe('Worker Weekly Hours Field Cell', () => {
     await expect(weeklyHoursInput).toHaveValue(newWeeklyHours.toString());
 
     // Click on the page title "Workers" to trigger blur event
-    const pageTitle = page.getByRole('heading', { name: 'Workers' });
+    const pageTitle = page.locator('data-testid=workers-page-heading');
     await pageTitle.click();
 
     // Wait for the update to complete

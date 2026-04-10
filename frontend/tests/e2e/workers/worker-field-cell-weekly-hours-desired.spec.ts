@@ -143,7 +143,7 @@ test.describe('Worker Weekly Hours Desired Field Cell', () => {
     await expect(weeklyHoursDesiredInput).toHaveValue(newWeeklyHoursDesired.toString());
 
     // Click on the page title "Workers" to trigger blur event
-    const pageTitle = page.getByRole('heading', { name: 'Workers' });
+    const pageTitle = page.locator('data-testid=workers-page-heading');
     await pageTitle.click();
 
     // Wait for the weekly hours desired update to complete
@@ -357,7 +357,7 @@ test.describe('Worker Weekly Hours Desired Field Cell', () => {
     await expect(weeklyHoursDesiredInput).toHaveValue(invalidWeeklyHoursDesired);
 
     // Click away to trigger blur event
-    const pageTitle = page.getByRole('heading', { name: 'Workers' });
+    const pageTitle = page.locator('data-testid=workers-page-heading');
     await pageTitle.click();
 
     // Wait for the validation error handling and reversion to complete

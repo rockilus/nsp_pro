@@ -281,14 +281,8 @@ export class WorkerTestBase {
   /**
    * Gets the acronym cell for a worker row
    */
-  getWorkerAcronymCell(page: Page, rowIndex: number = 0) {
-    const row = this.getWorkerRow(page, rowIndex);
-
-    // Prioritize the table cell itself for interaction, not the inner elements
-    const byCellTestId = row.locator('[data-testid^="worker-acronym-cell-"]');
-    const secondCell = row.locator('td, th').nth(1);
-
-    return byCellTestId.or(secondCell);
+  getWorkerAcronymCell(page: Page, workerId: string) {
+    return page.locator(`[data-testid="worker-acronym-cell-${workerId}"]`);
   }
 
   /**
