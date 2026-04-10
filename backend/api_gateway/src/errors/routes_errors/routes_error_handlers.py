@@ -24,6 +24,8 @@ from src.utils.constants import USER_ERROR_MESSAGE_GENERIC
 
 
 def handle_routes_errors(error: Exception) -> NoReturn:
+    if isinstance(error, HTTPException):
+        raise error
     if isinstance(error, SchemaTypeError):
         raise HTTPException(
             status_code=400,

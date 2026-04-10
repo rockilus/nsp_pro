@@ -40,10 +40,8 @@ class CerbosAuthzService:
                 return False
             roles = {"owner"}
         elif resource_kind == "team":
-            membership = (
-                self._team_membership_db.get_team_membership_by_user_and_team_id(
-                    user_id, resource_id
-                )
+            membership = self._team_membership_db.get_team_membership_by_user_and_team_id(
+                user_id, resource_id
             )
             if membership is None:
                 return False
@@ -52,10 +50,25 @@ class CerbosAuthzService:
                 return False
             roles = {authz_role}
         else:
-            log_info(f"CerbosAuthzService: unknown resource kind '{resource_kind}'")
+            log_info(
+                f"CerbosAuthzService: unknown resource kind '{resource_kind}'"
+            )
             return False
 
         principal = Principal(id=user_id, roles=list(roles))
         resource = Resource(id=resource_id, kind=resource_kind)
 
         return await self._client.is_allowed(action, principal, resource)
+
+    async def get_user_team_role(
+        self, user_id: str, team_id: str
+    ) -> str | None:
+        """Return the authz role ('leader' or 'member'), or None."""
+        membership = (
+            self._team_membership_db.get_team_membership_by_user_and_team_id(
+                user_id, team_id
+            )
+        )
+        if membership is None:
+            return None
+        return TEAM_ROLE_TO_AUTHZ_ROLE.get(membership.role.value)

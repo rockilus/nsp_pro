@@ -26,9 +26,16 @@ from fastapi.testclient import TestClient
 from shared.database.database_collections import DatabaseCollections
 from shared.database.interface import DatabaseInterface
 from shared.schemas.core.dim_entry import DimEntry
-from shared.schemas.core.dimension import Dimension, DimensionEntryType, DimensionType
+from shared.schemas.core.dimension import (
+    Dimension,
+    DimensionEntryType,
+    DimensionType,
+)
 from shared.schemas.core.team import Team
-from shared.schemas.core.team_membership import TeamMembership, TeamMembershipRole
+from shared.schemas.core.team_membership import (
+    TeamMembership,
+    TeamMembershipRole,
+)
 from shared.schemas.core.user import Language, User
 
 from .conftest import dev_headers, make_app
@@ -124,7 +131,13 @@ def seed_dim_entry(
 def cleanup(db: DatabaseCollections) -> None:
     """Delete all test data from relevant collections."""
     raw_db = db.database_interface.get_database()
-    for col_name in ("users", "team_memberships", "teams", "dimensions", "dim_entries"):
+    for col_name in (
+        "users",
+        "team_memberships",
+        "teams",
+        "dimensions",
+        "dim_entries",
+    ):
         try:
             raw_db[col_name].delete_many({})
         except Exception:  # pylint: disable=broad-except
@@ -161,7 +174,9 @@ class TestCreateDimEntry:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_cde_leader")
         team = seed_team(db, created_by_user_id="user_cde_leader")
-        seed_membership(db, "user_cde_leader", team.id, TeamMembershipRole.OWNER)
+        seed_membership(
+            db, "user_cde_leader", team.id, TeamMembershipRole.OWNER
+        )
         dimension = seed_dimension(db, team.id)
         app = make_app(db_interface)
         client = TestClient(app)
@@ -189,7 +204,9 @@ class TestCreateDimEntry:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_cde_member")
         team = seed_team(db)
-        seed_membership(db, "user_cde_member", team.id, TeamMembershipRole.MEMBER)
+        seed_membership(
+            db, "user_cde_member", team.id, TeamMembershipRole.MEMBER
+        )
         dimension = seed_dimension(db, team.id)
         app = make_app(db_interface)
         client = TestClient(app)
@@ -245,7 +262,12 @@ class TestCreateDimEntry:
 
         response = client.post(
             "/dim-entries/teams/any_team",
-            json={"id": "", "dimensionId": "dim_any", "name": "X", "deleted": False},
+            json={
+                "id": "",
+                "dimensionId": "dim_any",
+                "name": "X",
+                "deleted": False,
+            },
             headers=dev_headers("ghost_cde"),
         )
         assert response.status_code == 403
@@ -268,7 +290,9 @@ class TestUpdateDimEntry:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ude_leader")
         team = seed_team(db, created_by_user_id="user_ude_leader")
-        seed_membership(db, "user_ude_leader", team.id, TeamMembershipRole.OWNER)
+        seed_membership(
+            db, "user_ude_leader", team.id, TeamMembershipRole.OWNER
+        )
         dimension = seed_dimension(db, team.id)
         dim_entry = seed_dim_entry(db, dimension.id, name="Original Entry")
         app = make_app(db_interface)
@@ -297,7 +321,9 @@ class TestUpdateDimEntry:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ude_member")
         team = seed_team(db)
-        seed_membership(db, "user_ude_member", team.id, TeamMembershipRole.MEMBER)
+        seed_membership(
+            db, "user_ude_member", team.id, TeamMembershipRole.MEMBER
+        )
         dimension = seed_dimension(db, team.id)
         dim_entry = seed_dim_entry(db, dimension.id)
         app = make_app(db_interface)
@@ -355,7 +381,12 @@ class TestUpdateDimEntry:
 
         response = client.put(
             "/dim-entries/de_any/teams/team_any",
-            json={"id": "de_any", "dimensionId": "dim_any", "name": "X", "deleted": False},
+            json={
+                "id": "de_any",
+                "dimensionId": "dim_any",
+                "name": "X",
+                "deleted": False,
+            },
             headers=dev_headers("ghost_ude"),
         )
         assert response.status_code == 403
@@ -378,7 +409,9 @@ class TestDeleteDimEntry:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_dde_leader")
         team = seed_team(db, created_by_user_id="user_dde_leader")
-        seed_membership(db, "user_dde_leader", team.id, TeamMembershipRole.OWNER)
+        seed_membership(
+            db, "user_dde_leader", team.id, TeamMembershipRole.OWNER
+        )
         mock_des = make_mock_dim_entry_service()
         app = make_app(db_interface, dim_entry_service_override=mock_des)
         client = TestClient(app)
@@ -399,7 +432,9 @@ class TestDeleteDimEntry:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_dde_member")
         team = seed_team(db)
-        seed_membership(db, "user_dde_member", team.id, TeamMembershipRole.MEMBER)
+        seed_membership(
+            db, "user_dde_member", team.id, TeamMembershipRole.MEMBER
+        )
         mock_des = make_mock_dim_entry_service()
         app = make_app(db_interface, dim_entry_service_override=mock_des)
         client = TestClient(app)

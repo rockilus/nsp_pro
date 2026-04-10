@@ -12,6 +12,12 @@ resourcePolicy:
         - read-workers       # workers list
         - read-dimensions
         - read-shifts
+        - read-link-shifts
+        - create-request
+        - read-requests
+        - update-request
+        - rescind-request
+        - delete-request
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -20,6 +26,8 @@ resourcePolicy:
 
     # Team leaders only: team management + worker management + dimension management
     - actions:
+        - approve-request
+        - deny-request
         - update-team        # team settings
         - remove-user        # member management
         - create-worker      # worker management
@@ -35,6 +43,9 @@ resourcePolicy:
         - create-shift
         - update-shift
         - delete-shift
+        - create-link-shift
+        - update-link-shift
+        - delete-link-shift
         - create-shift-demand
         - read-shift-demands
         - update-shift-demand
@@ -43,6 +54,7 @@ resourcePolicy:
         - read-constraints
         - update-constraint
         - delete-constraint
+        - read-constraint-templates
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -54,6 +66,13 @@ resourcePolicy:
         - read-own-worker
         - read-workers
         - read-dimensions
+        - create-request
+        - read-requests
+        - update-request
+        - approve-request
+        - deny-request
+        - rescind-request
+        - delete-request
         - update-team
         - remove-user
         - create-worker
@@ -70,6 +89,10 @@ resourcePolicy:
         - create-shift
         - update-shift
         - delete-shift
+        - create-link-shift
+        - read-link-shifts
+        - update-link-shift
+        - delete-link-shift
         - read-shift-demands
         - create-shift-demand
         - update-shift-demand
@@ -78,6 +101,7 @@ resourcePolicy:
         - create-constraint
         - update-constraint
         - delete-constraint
+        - read-constraint-templates
       effect: EFFECT_ALLOW
       roles:
         - super_admin

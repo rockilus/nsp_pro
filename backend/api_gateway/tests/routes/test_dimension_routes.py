@@ -35,7 +35,10 @@ from shared.schemas.core.dimension import (
     NewDimension,
 )
 from shared.schemas.core.team import Team
-from shared.schemas.core.team_membership import TeamMembership, TeamMembershipRole
+from shared.schemas.core.team_membership import (
+    TeamMembership,
+    TeamMembershipRole,
+)
 from shared.schemas.core.user import Language, User
 
 from .conftest import dev_headers, make_app
@@ -184,7 +187,9 @@ class TestCreateDimension:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_cd_leader")
         team = seed_team(db, created_by_user_id="user_cd_leader")
-        seed_membership(db, "user_cd_leader", team.id, TeamMembershipRole.OWNER)
+        seed_membership(
+            db, "user_cd_leader", team.id, TeamMembershipRole.OWNER
+        )
         mock_ds = make_mock_dimension_service(team.id)
         app = make_app(db_interface, dimension_service_override=mock_ds)
         client = TestClient(app)
@@ -192,8 +197,10 @@ class TestCreateDimension:
         try:
             response = client.post(
                 f"/dimensions/teams/{team.id}",
-                json=_dimension_payload(team.id),
-                params={"dim_entries": []},
+                json={
+                    "dimension": _dimension_payload(team.id),
+                    "dim_entries": [],
+                },
                 headers=dev_headers("user_cd_leader"),
             )
             assert response.status_code == 200
@@ -206,7 +213,9 @@ class TestCreateDimension:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_cd_member")
         team = seed_team(db)
-        seed_membership(db, "user_cd_member", team.id, TeamMembershipRole.MEMBER)
+        seed_membership(
+            db, "user_cd_member", team.id, TeamMembershipRole.MEMBER
+        )
         mock_ds = make_mock_dimension_service(team.id)
         app = make_app(db_interface, dimension_service_override=mock_ds)
         client = TestClient(app)
@@ -214,8 +223,10 @@ class TestCreateDimension:
         try:
             response = client.post(
                 f"/dimensions/teams/{team.id}",
-                json=_dimension_payload(team.id),
-                params={"dim_entries": []},
+                json={
+                    "dimension": _dimension_payload(team.id),
+                    "dim_entries": [],
+                },
                 headers=dev_headers("user_cd_member"),
             )
             assert response.status_code == 403
@@ -235,8 +246,10 @@ class TestCreateDimension:
         try:
             response = client.post(
                 f"/dimensions/teams/{team.id}",
-                json=_dimension_payload(team.id),
-                params={"dim_entries": []},
+                json={
+                    "dimension": _dimension_payload(team.id),
+                    "dim_entries": [],
+                },
                 headers=dev_headers("user_cd_outsider"),
             )
             assert response.status_code == 403
@@ -253,8 +266,10 @@ class TestCreateDimension:
 
         response = client.post(
             "/dimensions/teams/any_team",
-            json=_dimension_payload("any_team"),
-            params={"dim_entries": []},
+            json={
+                "dimension": _dimension_payload("any_team"),
+                "dim_entries": [],
+            },
             headers=dev_headers("ghost_cd"),
         )
         assert response.status_code == 403
@@ -277,7 +292,9 @@ class TestGetDimensions:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_gd_leader")
         team = seed_team(db)
-        seed_membership(db, "user_gd_leader", team.id, TeamMembershipRole.OWNER)
+        seed_membership(
+            db, "user_gd_leader", team.id, TeamMembershipRole.OWNER
+        )
         seed_dimension(db, team.id, name="Leader Dimension")
         app = make_app(db_interface)
         client = TestClient(app)
@@ -290,7 +307,9 @@ class TestGetDimensions:
             assert response.status_code == 200
             data = response.json()
             assert "dimensions" in data
-            assert any(d["name"] == "Leader Dimension" for d in data["dimensions"])
+            assert any(
+                d["name"] == "Leader Dimension" for d in data["dimensions"]
+            )
         finally:
             cleanup(db)
 
@@ -301,7 +320,9 @@ class TestGetDimensions:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_gd_member")
         team = seed_team(db)
-        seed_membership(db, "user_gd_member", team.id, TeamMembershipRole.MEMBER)
+        seed_membership(
+            db, "user_gd_member", team.id, TeamMembershipRole.MEMBER
+        )
         seed_dimension(db, team.id, name="Member Dimension")
         app = make_app(db_interface)
         client = TestClient(app)
@@ -364,7 +385,9 @@ class TestUpdateDimension:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ud_leader")
         team = seed_team(db, created_by_user_id="user_ud_leader")
-        seed_membership(db, "user_ud_leader", team.id, TeamMembershipRole.OWNER)
+        seed_membership(
+            db, "user_ud_leader", team.id, TeamMembershipRole.OWNER
+        )
         dimension = seed_dimension(db, team.id, name="Original Name")
         app = make_app(db_interface)
         client = TestClient(app)
@@ -394,7 +417,9 @@ class TestUpdateDimension:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ud_member")
         team = seed_team(db)
-        seed_membership(db, "user_ud_member", team.id, TeamMembershipRole.MEMBER)
+        seed_membership(
+            db, "user_ud_member", team.id, TeamMembershipRole.MEMBER
+        )
         dimension = seed_dimension(db, team.id)
         app = make_app(db_interface)
         client = TestClient(app)
@@ -478,7 +503,9 @@ class TestDeleteDimension:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_dd_leader")
         team = seed_team(db, created_by_user_id="user_dd_leader")
-        seed_membership(db, "user_dd_leader", team.id, TeamMembershipRole.OWNER)
+        seed_membership(
+            db, "user_dd_leader", team.id, TeamMembershipRole.OWNER
+        )
         mock_ds = make_mock_dimension_service(team.id)
         app = make_app(db_interface, dimension_service_override=mock_ds)
         client = TestClient(app)
@@ -499,7 +526,9 @@ class TestDeleteDimension:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_dd_member")
         team = seed_team(db)
-        seed_membership(db, "user_dd_member", team.id, TeamMembershipRole.MEMBER)
+        seed_membership(
+            db, "user_dd_member", team.id, TeamMembershipRole.MEMBER
+        )
         mock_ds = make_mock_dimension_service(team.id)
         app = make_app(db_interface, dimension_service_override=mock_ds)
         client = TestClient(app)

@@ -26,7 +26,10 @@ from shared.database.database_collections import DatabaseCollections
 from shared.database.interface import DatabaseInterface
 from shared.schemas.core.attribute import Attribute, AttributeOwnerType
 from shared.schemas.core.team import Team
-from shared.schemas.core.team_membership import TeamMembership, TeamMembershipRole
+from shared.schemas.core.team_membership import (
+    TeamMembership,
+    TeamMembershipRole,
+)
 from shared.schemas.core.user import Language, User
 
 from .conftest import dev_headers, make_app
@@ -158,7 +161,9 @@ class TestUpdateAttribute:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ua_leader")
         team = seed_team(db, created_by_user_id="user_ua_leader")
-        seed_membership(db, "user_ua_leader", team.id, TeamMembershipRole.OWNER)
+        seed_membership(
+            db, "user_ua_leader", team.id, TeamMembershipRole.OWNER
+        )
         mock_as = make_mock_attribute_service()
         app = make_app(db_interface, attribute_service_override=mock_as)
         client = TestClient(app)
@@ -179,7 +184,9 @@ class TestUpdateAttribute:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ua_member")
         team = seed_team(db)
-        seed_membership(db, "user_ua_member", team.id, TeamMembershipRole.MEMBER)
+        seed_membership(
+            db, "user_ua_member", team.id, TeamMembershipRole.MEMBER
+        )
         mock_as = make_mock_attribute_service()
         app = make_app(db_interface, attribute_service_override=mock_as)
         client = TestClient(app)
