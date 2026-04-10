@@ -12,6 +12,7 @@ resourcePolicy:
         - read-workers       # workers list
         - read-dimensions
         - read-shifts
+        - read-shift-demands
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -34,6 +35,9 @@ resourcePolicy:
         - create-shift
         - update-shift
         - delete-shift
+        - create-shift-demand
+        - update-shift-demand
+        - delete-shift-demand
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -61,6 +65,10 @@ resourcePolicy:
         - create-shift
         - update-shift
         - delete-shift
+        - read-shift-demands
+        - create-shift-demand
+        - update-shift-demand
+        - delete-shift-demand
       effect: EFFECT_ALLOW
       roles:
         - super_admin
