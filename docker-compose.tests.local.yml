@@ -18,7 +18,7 @@ services:
 
   # LocalStack (to emulate SQS)
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:3.4
     container_name: localstack
     ports:
       - "4566:4566"
