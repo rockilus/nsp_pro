@@ -59,16 +59,3 @@ class CerbosAuthzService:
         resource = Resource(id=resource_id, kind=resource_kind)
 
         return await self._client.is_allowed(action, principal, resource)
-
-    async def get_user_team_role(
-        self, user_id: str, team_id: str
-    ) -> str | None:
-        """Return the authz role ('leader' or 'member'), or None."""
-        membership = (
-            self._team_membership_db.get_team_membership_by_user_and_team_id(
-                user_id, team_id
-            )
-        )
-        if membership is None:
-            return None
-        return TEAM_ROLE_TO_AUTHZ_ROLE.get(membership.role.value)

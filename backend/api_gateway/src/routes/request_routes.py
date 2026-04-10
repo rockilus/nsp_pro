@@ -8,6 +8,7 @@ from shared.schemas.dto import RequestDTO
 
 from src.dependencies import get_request_service, get_user_context
 from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
+from src.dependencies.team_membership import get_team_membership_service
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
@@ -17,6 +18,7 @@ from src.integrations.authorization.cerbos_authz_service import (
 )
 from src.security.user_context import UserContext
 from src.services.request_service import RequestService
+from src.services.team_membership_service import TeamMembershipService
 
 router = APIRouter()
 
@@ -29,6 +31,9 @@ async def create_request(
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    team_membership_service: TeamMembershipService = Depends(
+        get_team_membership_service
+    ),
 ) -> RequestDTO:
     try:
         if not await authz.check(
@@ -41,7 +46,7 @@ async def create_request(
                 "You do not have permission to create a request"
             )
 
-        team_role = await authz.get_user_team_role(
+        team_role = team_membership_service.get_user_team_role(
             user_id=user_context.effective_user_id,
             team_id=team_id,
         )
@@ -71,6 +76,9 @@ async def get_requests(
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    team_membership_service: TeamMembershipService = Depends(
+        get_team_membership_service
+    ),
 ) -> List[RequestDTO]:
     try:
         if not await authz.check(
@@ -81,7 +89,7 @@ async def get_requests(
             )
 
         # Get user role to determine filtering behavior
-        team_role = await authz.get_user_team_role(
+        team_role = team_membership_service.get_user_team_role(
             user_id=user_context.effective_user_id,
             team_id=team_id,
         )
@@ -126,6 +134,9 @@ async def update_request(
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    team_membership_service: TeamMembershipService = Depends(
+        get_team_membership_service
+    ),
 ):
     try:
         if not await authz.check(
@@ -137,7 +148,7 @@ async def update_request(
             raise NotAuthorizedError(
                 "You do not have permission to update a request"
             )
-        team_role = await authz.get_user_team_role(
+        team_role = team_membership_service.get_user_team_role(
             user_id=user_context.effective_user_id,
             team_id=team_id,
         )
@@ -255,6 +266,9 @@ async def delete_request(
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    team_membership_service: TeamMembershipService = Depends(
+        get_team_membership_service
+    ),
 ):
     try:
         if not await authz.check(
@@ -266,7 +280,7 @@ async def delete_request(
             raise NotAuthorizedError(
                 "You do not have permission to delete a request"
             )
-        team_role = await authz.get_user_team_role(
+        team_role = team_membership_service.get_user_team_role(
             user_id=user_context.effective_user_id,
             team_id=team_id,
         )

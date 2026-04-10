@@ -57,6 +57,13 @@ resourcePolicy:
         - approve-request
         - deny-request
         - rescind-request
+        - create-schedule
+        - read-schedules
+        - update-schedule
+        - delete-schedule
+        - read-schedule-work-times
+        - duplicate-period
+        - validate-schedule
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -104,6 +111,13 @@ resourcePolicy:
         - update-constraint
         - delete-constraint
         - read-constraint-templates
+        - read-schedules
+        - read-schedule-work-times
+        - create-schedule
+        - duplicate-period
+        - validate-schedule
+        - update-schedule
+        - delete-schedule
       effect: EFFECT_ALLOW
       roles:
         - super_admin
