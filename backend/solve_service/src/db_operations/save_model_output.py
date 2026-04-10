@@ -1,5 +1,5 @@
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import ModelOutput
+from shared.schemas.core import ModelOutput
 
 
 def save_model_output(

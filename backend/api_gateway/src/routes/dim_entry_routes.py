@@ -1,26 +1,19 @@
-from dataclasses import asdict
 from typing import List
 
-import humps
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas import DimEntry
-from shared.schemas.errors import handle_create_schema_object_error
+from shared.schemas.core import DimEntry
+from shared.schemas.dto import AttributeDTO, DimEntryDTO
 
-from errors import (
-    MessageTypeError,
+from src.dependencies import get_db_collections, get_dim_entry_service, get_user_context
+from src.errors import (
     NotAuthorizedError,
-    handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import AttributeMessage, DimEntryMessage
-from routes.attribute_routes import core_to_msg_attribute
-from scripts.setup_database import dim_entry_db
-from services.dimension_services import create_dim_entry as create_dim_entry_service
-from services.dimension_services import delete_dim_entry as delete_dim_entry_service
+from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
+from src.services.dim_entry_service import DimEntryService
 
 router = APIRouter()
 
@@ -28,17 +21,18 @@ router = APIRouter()
 @router.post("/dim-entries/teams/{team_id}")
 async def create_dim_entry(
     team_id: str,
-    dim_entry: DimEntryMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> DimEntryMessage:
+    dim_entry: DimEntryDTO,
+    user_context: UserContext = Depends(get_user_context),
+    dim_entry_service: DimEntryService = Depends(get_dim_entry_service),
+) -> DimEntryDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-shift-dimension", "team", team_id
+            user_context.user_id, "create-dim-entry", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create a dim entry")
-        de_data = msg_to_core_dim_entry(dim_entry)
-        de_created = create_dim_entry_service(de_data)
-        response = core_to_msg_dim_entry(de_created)
+        de_data = DimEntry.from_dto(dim_entry)
+        de_created = dim_entry_service.create_dim_entry(de_data)
+        response = de_created.to_dto()
     except Exception as e:
         log_info("Failed to create dim entry")
         handle_routes_errors(e)
@@ -48,18 +42,21 @@ async def create_dim_entry(
 @router.put("/dim-entries/{dim_entry_id}/teams/{team_id}")
 async def update_dim_entry(
     team_id: str,
-    dim_entry: DimEntryMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> DimEntryMessage:
+    dim_entry: DimEntryDTO,
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(
+        get_db_collections,
+    ),
+) -> DimEntryDTO:
     # pylint: disable=R0801
     try:
         if not await authz_check(
-            session.get_user_id(), "update-shift-dimension", "team", team_id
+            user_context.user_id, "update-dim-entry", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update a dim_entry")
-        de_data = msg_to_core_dim_entry(dim_entry)
-        updated_de = dim_entry_db.update_dim_entry(de_data)
-        response = core_to_msg_dim_entry(updated_de)
+        de_data = DimEntry.from_dto(dim_entry)
+        updated_de = db_collections.dim_entry_db.update_dim_entry(de_data)
+        response = updated_de.to_dto()
     except Exception as e:
         log_info("Failed to update dim entry")
         handle_routes_errors(e)
@@ -70,48 +67,20 @@ async def update_dim_entry(
 async def delete_dim_entry(
     dim_entry_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> List[AttributeMessage]:
+    user_context: UserContext = Depends(get_user_context),
+    dim_entry_service: DimEntryService = Depends(get_dim_entry_service),
+) -> List[AttributeDTO]:
     # pylint: disable=R0801
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-shift-dimension", "team", team_id
+            user_context.user_id, "delete-dim-entry", "team", team_id
         ):
             raise HTTPException(
                 status_code=403,
                 detail="You do not have permission to delete a dim entry",
             )
-        sp_updated = delete_dim_entry_service(dim_entry_id)
+        attr_updated = dim_entry_service.delete_dim_entry(dim_entry_id)
     except Exception as e:
         log_info("Failed to delete dim entry")
         handle_routes_errors(e)
-    return [core_to_msg_attribute(sp) for sp in sp_updated]
-
-
-# Mappers
-# core to message
-def core_to_msg_dim_entry(dim_entry: DimEntry) -> DimEntryMessage:
-    try:
-        data = asdict(dim_entry)
-    except Exception as e:
-        log_info("Failed to convert DimEntry to dictionary")
-        raise MessageTypeError(str(e)) from e
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(DimEntryMessage)
-    try:
-        de_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert DimEntry to DimEntryMessage")
-        handle_message_errors(e)
-    return de_msg
-
-
-# message to core
-def msg_to_core_dim_entry(msg: DimEntryMessage) -> DimEntry:
-    data_snake = humps.decamelize(msg.model_dump())
-    try:
-        dim_entry = DimEntry(**data_snake)
-    except Exception as e:
-        log_info("Failed to convert DimEntryMessage to DimEntry")
-        handle_create_schema_object_error(e)
-    return dim_entry
+    return [attr.to_dto() for attr in attr_updated]

@@ -1,14 +1,12 @@
-version: '3.8'
-
 services:
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
+  mongodb-shared-tests:
+    image: mongo:5.0
+    container_name: mongodb-shared-tests
     environment:
       MONGO_INITDB_ROOT_USERNAME: testuser
       MONGO_INITDB_ROOT_PASSWORD: testpass
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongo-data:/data/db
 

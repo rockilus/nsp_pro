@@ -1,11 +1,12 @@
 import math
-from datetime import date, datetime, timedelta, timezone
-from typing import Dict, List
+from datetime import UTC, date, datetime, timedelta
 
-from shared.schemas import (
+from shared.schemas.core import (
     EngineInputsAugmented,
+    FulfillmentStatus,
     Request,
     RequestStatus,
+    RequestType,
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -34,7 +35,7 @@ class TestCalculateWorkerWorkTimes:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         # Call the method under test
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
@@ -42,8 +43,8 @@ class TestCalculateWorkerWorkTimes:
             engine_inputs.schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.requests_leave,
+            engine_inputs.shift_demands,
             periods_weekly,
         )
 
@@ -73,7 +74,7 @@ class TestCalculateWorkerWorkTimes:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         # Call the method under test
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
@@ -81,13 +82,13 @@ class TestCalculateWorkerWorkTimes:
             engine_inputs.schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.requests_leave,
+            engine_inputs.shift_demands,
             periods_weekly,
         )
 
         # Verify the output
-        w_to_desired_per_period: Dict[str, List[int]] = {}
+        w_to_desired_per_period: dict[str, list[int]] = {}
         for worker in engine_inputs.workers:
             for i, period in enumerate(periods_weekly):
                 expected_contract = math.ceil(
@@ -124,11 +125,11 @@ class TestCalculateWorkerWorkTimes:
         ]
         shift_dict = {shift.id: shift for shift in engine_inputs.shifts}
 
-        work_time_periods: Dict[int, float] = {}
+        work_time_periods: dict[int, float] = {}
         for i, period in enumerate(periods_weekly):
             dsds_period = [
                 dsd
-                for dsd in engine_inputs.daily_shift_demands
+                for dsd in engine_inputs.shift_demands
                 if dsd.date in period and dsd.shift_id in shift_work_ids
             ]
             work_time_period = 0.0
@@ -147,7 +148,7 @@ class TestCalculateWorkerWorkTimes:
                 work_time_period += shift_duration * dsd.count
             work_time_periods[i] = work_time_period
 
-        w_to_target_per_period: Dict[str, List[float]] = {}
+        w_to_target_per_period: dict[str, list[float]] = {}
         for worker in engine_inputs.workers:
             for i, period in enumerate(periods_weekly):
                 total_desired = sum(
@@ -182,14 +183,14 @@ class TestCalculateWorkerWorkTimes:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
 
         out = calculate_adjustment_coefficients(
             schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs.requests_leave,
             periods_weekly,
             [Constants.NUM_DAYS_WEEK for _ in periods_weekly],
         )
@@ -208,7 +209,7 @@ class TestCalculateWorkerWorkTimes:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
 
         shift_leave = Shift(
@@ -217,8 +218,8 @@ class TestCalculateWorkerWorkTimes:
             name="Leave",
             acronym="L",
             acronym_custom=False,
-            start_time=datetime(2021, 1, 1, 0, 0, tzinfo=timezone.utc),
-            end_time=datetime(2021, 1, 2, 0, 0, tzinfo=timezone.utc),
+            start_time=datetime(2021, 1, 1, 0, 0, tzinfo=UTC),
+            end_time=datetime(2021, 1, 2, 0, 0, tzinfo=UTC),
             staffing=[],
             color="#000000",
             shift_type=ShiftType.LEAVE,
@@ -244,15 +245,19 @@ class TestCalculateWorkerWorkTimes:
             shift_id=shift_target_id,
             negative=False,
             hard=True,
-            status=RequestStatus.PENDING,
+            status=RequestStatus.APPROVED,
+            request_type=RequestType.LEAVE,
+            fulfillment=FulfillmentStatus.NOT_PROCESSED,
+            comment="",
+            created_at=datetime.now(tz=UTC),
         )
-        engine_inputs.requests.append(request_leave)
+        engine_inputs.requests_leave.append(request_leave)
 
         out = calculate_adjustment_coefficients(
             schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs.requests_leave,
             periods_weekly,
             [Constants.NUM_DAYS_WEEK for _ in periods_weekly],
         )
@@ -328,10 +333,12 @@ class TestCalculateWorkerWorkTimes:
             "worker2": [-15.2, -25.6, -35.1],
             "worker3": [-12.3, -22.1, -32.2],
         }
+        # Negative proportional times are clamped to 0 by the implementation,
+        # so the expected rounded result for all negative inputs is zeros.
         expected_rounded_times = {
-            "worker1": [-10, -20, -31],
-            "worker2": [-16, -26, -35],
-            "worker3": [-12, -22, -32],
+            "worker1": [0, 0, 0],
+            "worker2": [0, 0, 0],
+            "worker3": [0, 0, 0],
         }
         rounded_times = round_proportional_times(proportional_times)
         assert rounded_times == expected_rounded_times
@@ -344,7 +351,7 @@ class TestCalculateWorkerWorkTimes:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         # Call the method under test
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
@@ -352,8 +359,8 @@ class TestCalculateWorkerWorkTimes:
             engine_inputs.schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.requests_leave,
+            engine_inputs.shift_demands,
             periods_weekly,
         )
 
@@ -361,7 +368,7 @@ class TestCalculateWorkerWorkTimes:
             schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
+            engine_inputs.requests_leave,
             periods_weekly,
             [Constants.NUM_DAYS_WEEK for _ in periods_weekly],
         )
@@ -399,7 +406,7 @@ class TestCalculateWorkerWorkTimes:
             for s in shifts
         }
         target_total_expected = 0
-        for dsd in engine_inputs.daily_shift_demands:
+        for dsd in engine_inputs.shift_demands:
             if dsd.shift_id in s_id_to_duration:
                 target_total_expected += dsd.count * s_id_to_duration[dsd.shift_id]
         target_total_actual = sum(
@@ -419,7 +426,7 @@ class TestBuildWorkTimeConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         # Call the method under test
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
@@ -427,8 +434,8 @@ class TestBuildWorkTimeConstraints:
             engine_inputs.schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.requests_leave,
+            engine_inputs.shift_demands,
             periods_weekly,
         )
 
@@ -443,7 +450,7 @@ class TestBuildWorkTimeConstraints:
             [w for w in engine_inputs.workers if not w.deleted],
             engine_inputs.shifts,
             [s for s in engine_inputs.shifts if not s.deleted],
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs.as_hist + engine_inputs.as_campaign_fixed,
             dates_campaign,
         )
 
@@ -458,10 +465,8 @@ class TestBuildWorkTimeConstraints:
             ],
             shift_id_to_duration_dict,
             # fmt: off
-            engine_inputs.penalties.system_constraint
-            .weekly_target_work_time,
-            engine_inputs.model_config.system_constraints
-            .weekly_target_worktime_tolerance,
+            engine_inputs.penalties.system_constraint.weekly_target_work_time,
+            engine_inputs.model_config.system_constraints.weekly_target_worktime_tolerance,
             # fmt: on
         )
 
@@ -479,7 +484,7 @@ class TestBuildWorkTimeConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
 
         # Call the method under test
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
@@ -487,8 +492,8 @@ class TestBuildWorkTimeConstraints:
             engine_inputs.schedule,
             engine_inputs.workers,
             engine_inputs.shifts,
-            engine_inputs.requests,
-            engine_inputs.daily_shift_demands,
+            engine_inputs.requests_leave,
+            engine_inputs.shift_demands,
             periods_weekly,
         )
 
@@ -503,7 +508,7 @@ class TestBuildWorkTimeConstraints:
             [w for w in engine_inputs.workers if not w.deleted],
             engine_inputs.shifts,
             [s for s in engine_inputs.shifts if not s.deleted],
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs.as_hist + engine_inputs.as_campaign_fixed,
             dates_campaign,
         )
 
@@ -518,10 +523,8 @@ class TestBuildWorkTimeConstraints:
             ],
             shift_id_to_duration_dict,
             # fmt: off
-            engine_inputs.penalties.system_constraint
-            .weekly_target_work_time,
-            engine_inputs.model_config.system_constraints
-            .weekly_target_worktime_tolerance,
+            engine_inputs.penalties.system_constraint.weekly_target_work_time,
+            engine_inputs.model_config.system_constraints.weekly_target_worktime_tolerance,
             # fmt: on
         )
 
@@ -537,15 +540,13 @@ class TestBuildWorkTimeConstraints:
             assert (
                 gadtc.penalty
                 # fmt: off
-                == engine_inputs.penalties.system_constraint
-                .weekly_target_work_time
+                == engine_inputs.penalties.system_constraint.weekly_target_work_time
                 # fmt: on
             )
             assert (
                 gadtc.tolerance
                 # fmt: off
-                == engine_inputs.model_config.system_constraints
-                .weekly_target_worktime_tolerance
+                == engine_inputs.model_config.system_constraints.weekly_target_worktime_tolerance
                 # fmt: on
             )
             dates_gadtc = list(

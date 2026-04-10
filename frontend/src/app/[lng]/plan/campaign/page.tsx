@@ -1,49 +1,36 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import "dayjs/locale/en-gb";
-import "dayjs/locale/fr";
-import "dayjs/locale/es";
-// Stores
-import { useTeamStore } from "../../../../providers/team-store-provider";
-// Actions
-import { getSelectedTeamId } from "../../../lib/team";
+import React from 'react';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import 'dayjs/locale/en-gb';
+import 'dayjs/locale/fr';
+import 'dayjs/locale/es';
 // Components
-import CampaignTab from "../../../../components/campaign/campaign-tab";
+import CampaignTab from '../../../../components/campaign/campaign-tab';
+import { AccessGuard } from '@/components/access/access-guard';
+
+// Context
+import { useTeam } from '@/context/TeamContext';
 // Styles
-import "../../../../styles/page.css";
+import '../../../../styles/page.css';
 
-export default function Page({
-  params: { lng },
-}: {
-  params: {
-    lng: string;
-  };
-}) {
-  const selectedTeamId = useTeamStore((state) => state.selectedTeamId);
-  const setSelectedTeamId = useTeamStore((state) => state.setSelectedTeamId);
-
-  useEffect(() => {
-    const fetchTeamId = async () => {
-      if (!selectedTeamId) {
-        const teamId = await getSelectedTeamId();
-        setSelectedTeamId(teamId);
-      }
-    };
-
-    fetchTeamId();
-  }, [selectedTeamId, setSelectedTeamId]);
+export default function Page({ params }: { params: Promise<{ lng: string }> }) {
+  const { selectedTeam } = useTeam();
+  const { lng } = React.use(params as Promise<{ lng: string }>);
 
   return (
-    <div className="page-layout">
-      <LocalizationProvider
-        dateAdapter={AdapterDayjs}
-        adapterLocale={lng === "en" ? "en-gb" : lng === "es" ? "es" : "fr"}
-      >
-        <CampaignTab lng={lng} selectedTeamId={selectedTeamId} />
-      </LocalizationProvider>
-    </div>
+    selectedTeam && (
+      <AccessGuard route="/campaign" teamWithMembership={selectedTeam}>
+        <div className="page-layout">
+          <LocalizationProvider
+            dateAdapter={AdapterDayjs}
+            adapterLocale={lng === 'en' ? 'en-gb' : lng === 'es' ? 'es' : 'fr'}
+          >
+            <CampaignTab lng={lng} teamWithMembership={selectedTeam} />
+          </LocalizationProvider>
+        </div>
+      </AccessGuard>
+    )
   );
 }

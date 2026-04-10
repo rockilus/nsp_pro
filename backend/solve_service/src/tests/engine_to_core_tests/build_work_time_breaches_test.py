@@ -1,21 +1,20 @@
+from collections.abc import Callable
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from typing import Callable, List, Tuple
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     Breach,
     Constraints,
-    DailyShiftDemand,
-    DSDSourceType,
     EngineInputsAugmented,
     ModelConfig,
     ObjectiveCategory,
     Penalties,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
+    ShiftDemandNew,
+    ShiftDemandSource,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
@@ -53,14 +52,13 @@ class TestTargetWorkTimeConstraints:
             team_id="t0",
             start_date=date(2025, 2, 10),
             end_date=date(2025, 3, 9),
-            last_modified_dates=datetime.now(),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED,
             status=ScheduleStatus.CAMPAIGN,
             missing_coverage_dates=[],
             constraint_build_ids=[],
             quick_staffings=[],
-            last_updated_dsds=None,
+            created_by="user1",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
 
         # 4 workers
@@ -163,16 +161,17 @@ class TestTargetWorkTimeConstraints:
             current_date = schedule.start_date
             while current_date <= schedule.end_date:
                 daily_shift_demands.append(
-                    DailyShiftDemand(
-                        id=f"dsd_{shift.id}_{current_date}",
-                        team_id="t0",
-                        schedule_id=schedule.id,
-                        shift_demand_id=None,
-                        coverage_selector_id=None,
-                        source_type=DSDSourceType.SHIFT_DEMAND,
+                    ShiftDemandNew(
                         date=current_date,
                         shift_id=shift.id,
+                        team_id="t0",
                         count=1,
+                        notes=None,
+                        source=ShiftDemandSource.MANUAL,
+                        source_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        id=f"dsd_{shift.id}_{current_date}",
                     )
                 )
                 current_date += timedelta(days=1)
@@ -184,16 +183,17 @@ class TestTargetWorkTimeConstraints:
             schedule=schedule,
             workers=workers,
             shifts=shifts,
-            shifts_recup_new=[],
             link_shifts=[],
             dimensions=[],
             dim_entries=[],
             attributes=[],
             as_hist=[],
-            as_wip_fixed=[],
+            as_campaign_fixed=[],
+            as_campaign_not_fixed=[],
             cbs_augmented=[],
-            daily_shift_demands=daily_shift_demands,
-            requests=[],
+            shift_demands=daily_shift_demands,
+            requests_work=[],
+            requests_leave=[],
             model_output=None,
             penalties=penalties_fix,
             model_config=mc_copy,
@@ -204,7 +204,7 @@ class TestTargetWorkTimeConstraints:
         self,
         ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -231,7 +231,7 @@ class TestTargetWorkTimeConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
         assignments = build_campaign_assignments(schedule, engine_out.assignments)
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
@@ -239,8 +239,8 @@ class TestTargetWorkTimeConstraints:
             ei_work_times.schedule,
             ei_work_times.workers,
             ei_work_times.shifts,
-            ei_work_times.requests,
-            ei_work_times.daily_shift_demands,
+            ei_work_times.requests_leave,
+            ei_work_times.shift_demands,
             periods_weekly,
         )
         breaches = _parse_breaches_engine(ei_work_times.schedule, engine_out.breaches)
@@ -316,7 +316,7 @@ class TestTargetWorkTimeConstraints:
         self,
         ei_work_times: EngineInputsAugmented,
         run_core_to_engine_inputs: Callable[
-            [EngineInputsAugmented], Tuple[InputsEngine, Constraints]
+            [EngineInputsAugmented], tuple[InputsEngine, Constraints]
         ],
         run_engine_solve: Callable[[InputsEngine], Outputs],
     ) -> None:
@@ -343,7 +343,7 @@ class TestTargetWorkTimeConstraints:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dates_hist: List[date] = []
+        dates_hist: list[date] = []
         assignments = build_campaign_assignments(schedule, engine_out.assignments)
 
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
@@ -351,8 +351,8 @@ class TestTargetWorkTimeConstraints:
             ei_work_times.schedule,
             ei_work_times.workers,
             ei_work_times.shifts,
-            ei_work_times.requests,
-            ei_work_times.daily_shift_demands,
+            ei_work_times.requests_leave,
+            ei_work_times.shift_demands,
             periods_weekly,
         )
         breaches = _parse_breaches_engine(ei_work_times.schedule, engine_out.breaches)

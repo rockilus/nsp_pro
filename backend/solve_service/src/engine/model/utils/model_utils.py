@@ -1,11 +1,10 @@
 import json
 from dataclasses import asdict
-from typing import List
 
 from ortools.sat.python import cp_model  # type: ignore
-from shared.schemas import Constraint
+from shared.schemas.core import Constraint
 
-from engine.types import ObjectiveCategory, Request, VarName
+from engine.types import ObjectiveCategory, Request, ShiftDemand, VarName
 
 # def get_average_nb_shifts_per_worker(
 #     coverage: List[ShiftDemand],
@@ -30,7 +29,7 @@ from engine.types import ObjectiveCategory, Request, VarName
 
 def build_var_name_constraint(
     constraint: Constraint | Request,
-    cstr_vars: List[cp_model.IntVar],
+    cstr_vars: list[cp_model.IntVar],
     category: ObjectiveCategory,
 ) -> str:
     return json.dumps(
@@ -46,7 +45,29 @@ def build_var_name_constraint(
 
 
 def build_var_name_work_time(
-    cstr_vars: List[cp_model.IntVar], category: ObjectiveCategory
+    cstr_vars: list[cp_model.IntVar], category: ObjectiveCategory
+) -> str:
+    return json.dumps(
+        asdict(
+            VarName(
+                objective_id=None,
+                cstr_vars=[var.Name() for var in cstr_vars],
+                objective_category=category.value,
+                hard_to_soft=None,
+            )
+        )
+    )
+
+
+# class GroupsAssignmentsTargetConstraint:
+#     assignments: List[List[Tuple[str, str, str]]]
+#     targets: List[int]
+#     penalty: int
+#     tolerance: float = 0.0
+
+
+def build_var_name_groups_assignments(
+    cstr_vars: list[cp_model.IntVar], category: ObjectiveCategory
 ) -> str:
     return json.dumps(
         asdict(
@@ -61,8 +82,24 @@ def build_var_name_work_time(
 
 
 def build_var_name_daily_shift_demand(
-    cstr_vars: List[cp_model.IntVar],
+    shift_demand: ShiftDemand,
+    cstr_vars: list[cp_model.IntVar],
     category: ObjectiveCategory,
+) -> str:
+    return json.dumps(
+        asdict(
+            VarName(
+                objective_id=shift_demand.id,
+                cstr_vars=[var.Name() for var in cstr_vars],
+                objective_category=category.value,
+                hard_to_soft=None,
+            )
+        )
+    )
+
+
+def build_var_name_duty_recup(
+    cstr_vars: list[cp_model.IntVar], category: ObjectiveCategory
 ) -> str:
     return json.dumps(
         asdict(
@@ -77,7 +114,7 @@ def build_var_name_daily_shift_demand(
 
 
 def build_var_name_link_shift(
-    cstr_vars: List[cp_model.IntVar],
+    cstr_vars: list[cp_model.IntVar],
     category: ObjectiveCategory,
     link_shift_id: str,
 ) -> str:
@@ -131,7 +168,7 @@ def build_var_name_link_shift(
 #     )
 
 
-def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> str:
+def build_var_name_seq(constraint: Constraint, span: list[cp_model.IntVar]) -> str:
     # pylint: disable=protected-access
     return json.dumps(
         asdict(
@@ -155,3 +192,50 @@ def build_var_name_seq(constraint: Constraint, span: List[cp_model.IntVar]) -> s
 #         for shift_demand in coverage
 #         if shift_demand.nb_times_shift > 0  # QUICK FIX TO CHANGE XXX
 #     )
+
+
+def build_var_name_equity(
+    cstr_vars: list[cp_model.IntVar], category: ObjectiveCategory
+) -> str:
+    return json.dumps(
+        asdict(
+            VarName(
+                objective_id=None,
+                cstr_vars=[var.Name() for var in cstr_vars],
+                objective_category=category.value,
+                hard_to_soft=None,
+            )
+        )
+    )
+
+
+def build_var_name_generic(
+    objective_id: str | None,
+    cstr_vars: list[cp_model.IntVar],
+    category: ObjectiveCategory,
+    hard_to_soft: bool | None = None,
+    meta: dict | None = None,
+) -> str:
+    """Build a JSON VarName allowing arbitrary meta data.
+
+    `cstr_vars` can be a list of cp_model.IntVar or strings (var names).
+    """
+    # normalize cstr_vars to names
+    names: list[str] = []
+    for v in cstr_vars:
+        try:
+            names.append(v.Name())
+        except Exception:
+            names.append(str(v))
+
+    return json.dumps(
+        asdict(
+            VarName(
+                objective_id=objective_id,
+                cstr_vars=names,
+                objective_category=category.value,
+                hard_to_soft=hard_to_soft,
+                meta=meta,
+            )
+        )
+    )

@@ -1,0 +1,14 @@
+.settings-view-container {
+  margin-bottom: 16px;
+}
+
+.settings-view-line {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.settings-view-line-label {
+  font-size: 0.8rem;
+  width: 100px;
+}

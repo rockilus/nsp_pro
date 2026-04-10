@@ -1,22 +1,22 @@
-import * as React from "react";
+import * as React from 'react';
 // MUI
-import Popover from "@mui/material/Popover";
-import Button from "@mui/material/Button";
+import Popover from '@mui/material/Popover';
+import Button from '@mui/material/Button';
 
 export default function PopoverAnchorElBelow({
   buttonContent,
   content,
   open,
   setOpen,
+  testId,
 }: {
   buttonContent: React.ReactNode;
   content: React.ReactNode;
   open: boolean;
   setOpen: (open: boolean) => void;
+  testId?: string;
 }) {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
-    null
-  );
+  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -28,7 +28,7 @@ export default function PopoverAnchorElBelow({
     setAnchorEl(null);
   };
 
-  const id = open ? "simple-popover" : undefined;
+  const id = open ? 'simple-popover' : undefined;
 
   return (
     <div>
@@ -36,16 +36,17 @@ export default function PopoverAnchorElBelow({
         aria-describedby={id}
         variant="contained"
         onClick={handleClick}
+        data-testid={testId ? `${testId}-button` : undefined}
         sx={{
-          backgroundColor: "transparent",
-          border: "none",
-          boxShadow: "none",
-          "&:hover": {
-            backgroundColor: "transparent",
-            boxShadow: "none",
+          backgroundColor: 'transparent',
+          border: 'none',
+          boxShadow: 'none',
+          '&:hover': {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
           },
-          textTransform: "none",
-          justifyContent: "flex-start",
+          textTransform: 'none',
+          justifyContent: 'flex-start',
           padding: 0,
         }}
       >
@@ -56,14 +57,15 @@ export default function PopoverAnchorElBelow({
         open={open}
         anchorEl={anchorEl}
         onClose={handleClose}
+        data-testid={testId ? `${testId}-popover` : undefined}
         anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
+          vertical: 'bottom',
+          horizontal: 'left',
         }}
         slotProps={{
           paper: {
             style: {
-              boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+              boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
               padding: 20,
               width: 350,
             },

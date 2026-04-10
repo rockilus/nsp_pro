@@ -1,5 +1,5 @@
 // Types
-import { AttributeOwnerType } from "./attribute";
+import { AttributeOwnerType } from './attribute';
 
 export enum SWOIdTypes {
   NONE = 0,
@@ -7,6 +7,7 @@ export enum SWOIdTypes {
   SHIFT = 2,
   DIMENSION = 3,
   SPECIALTY = 4,
+  DUTY = 5,
 }
 
 export type ShiftWorkerOptionT = {

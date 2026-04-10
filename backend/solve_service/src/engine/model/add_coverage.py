@@ -1,5 +1,3 @@
-from typing import Dict, List, Tuple
-
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint import AddConstraint
@@ -12,19 +10,21 @@ class AddCoverage(AddConstraint):
     # pylint: disable=too-many-locals
     def add_coverage(
         self,
-        shift_demands: List[ShiftDemand],
+        shift_demands: list[ShiftDemand],
         hard_to_soft: bool,
     ) -> None:
         for shift_demand in shift_demands:
             if shift_demand.assignments:
-                c_variables: List[cp_model.IntVar] = [
+                c_variables: list[cp_model.IntVar] = [
                     self.variables[a] for a in shift_demand.assignments
                 ]
                 if not hard_to_soft:
                     self.model.Add(sum(c_variables) == shift_demand.target)
                 else:
                     var_name = build_var_name_daily_shift_demand(
-                        c_variables, ObjectiveCategory.DAILY_SHIFT_DEMAND
+                        shift_demand,
+                        c_variables,
+                        ObjectiveCategory.DAILY_SHIFT_DEMAND,
                     )
                     delta = self.model.NewIntVar(-100, 100, "")
                     self.model.Add(delta == sum(c_variables) - shift_demand.target)
@@ -37,8 +37,8 @@ class AddCoverage(AddConstraint):
                 shift_demand.assignments_specialties,
                 shift_demand.target_specialties,
             ):
-                c_variables_gen: List[cp_model.IntVar] = []
-                c_variables_spe: List[cp_model.IntVar] = []
+                c_variables_gen: list[cp_model.IntVar] = []
+                c_variables_spe: list[cp_model.IntVar] = []
                 for a_specialty in assignments_specialty:
                     # Create specialty variables
                     if a_specialty not in self.assignment_wdss:
@@ -65,6 +65,7 @@ class AddCoverage(AddConstraint):
                     self.model.Add(sum(c_variables_spe) == target_specialty)
                 else:
                     var_name = build_var_name_daily_shift_demand(
+                        shift_demand,
                         c_variables_gen,
                         ObjectiveCategory.DAILY_SHIFT_DEMAND_SPE,
                     )
@@ -80,7 +81,7 @@ class AddCoverage(AddConstraint):
 
     def add_worker_shift_constraints(self) -> None:
         # Group variables by (worker_id, iso_date, shift_id)
-        grouped_vars: Dict[Tuple[str, str, str], List[cp_model.IntVar]] = {}
+        grouped_vars: dict[tuple[str, str, str], list[cp_model.IntVar]] = {}
         for (
             worker_id,
             iso_date,
@@ -99,7 +100,7 @@ class AddCoverage(AddConstraint):
                 # print(f"Added constraint: sum({vars_group}) <= 1 for {key}")
 
     def add_spe_sol_hint(
-        self, var_spe_sol: Dict[Tuple[str, str, str, str], int]
+        self, var_spe_sol: dict[tuple[str, str, str, str], int]
     ) -> None:
         for k, v in var_spe_sol.items():
             if k in self.assignment_wdss:

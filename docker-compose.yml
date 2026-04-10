@@ -1,0 +1,204 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:5.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      # - mongodb_data:/data/db
+      - /data/db
+      # - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+
+    healthcheck:
+      test: mongo --eval "db.adminCommand('ping')"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # LocalStack (to emulate SQS)
+  localstack:
+    image: localstack/localstack:3.4
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # LocalStack SQS Queue Initializer
+  localstack-init:
+    image: amazon/aws-cli:latest
+    container_name: localstack-init
+    depends_on:
+      localstack:
+        condition: service_healthy
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=eu-west-3
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Creating SQS queues in LocalStack..."
+        
+        # Create solve DLQ
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-solve-dlq \
+          --attributes MessageRetentionPeriod=1209600 || true
+        
+        # Get DLQ ARN
+        SOLVE_DLQ_ARN=$$(aws --endpoint-url=http://localstack:4566 sqs get-queue-attributes \
+          --queue-url http://localstack:4566/000000000000/nsp-pro-dev-solve-dlq \
+          --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
+        
+        # Create solve queue
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-solve-queue \
+          --attributes "VisibilityTimeout=900,MessageRetentionPeriod=1209600,ReceiveMessageWaitTimeSeconds=20,RedrivePolicy={\\\"deadLetterTargetArn\\\":\\\"$$SOLVE_DLQ_ARN\\\",\\\"maxReceiveCount\\\":3}" || true
+        
+        # Create email DLQ
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-email-dlq \
+          --attributes MessageRetentionPeriod=1209600 || true
+        
+        # Get email DLQ ARN
+        EMAIL_DLQ_ARN=$$(aws --endpoint-url=http://localstack:4566 sqs get-queue-attributes \
+          --queue-url http://localstack:4566/000000000000/nsp-pro-dev-email-dlq \
+          --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
+        
+        # Create email queue
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-email-queue \
+          --attributes "VisibilityTimeout=300,MessageRetentionPeriod=1209600,ReceiveMessageWaitTimeSeconds=20,RedrivePolicy={\\\"deadLetterTargetArn\\\":\\\"$$EMAIL_DLQ_ARN\\\",\\\"maxReceiveCount\\\":3}" || true
+        
+        echo "✅ SQS queues created successfully!"
+        aws --endpoint-url=http://localstack:4566 sqs list-queues
+
+  # Permit.io PDP
+  permit:
+    image: permitio/pdp-v2:latest
+    container_name: permit
+    ports:
+      - "7766:7000"
+    env_file:
+      - .env.docker-compose.permit
+    # environment:
+    #   - PDP_API_KEY=your_api_key_here # Replace with your actual API key
+    #   - PDP_DEBUG=True
+    healthcheck:
+      test: ["CMD", "wget", "http://permit:7000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  fastapi:
+    build:
+      context: ./backend
+      dockerfile: api_gateway/Dockerfile
+    container_name: fastapi
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env.docker-compose.fastapi
+    # environment:
+    #   # Use the service names as hostnames within the Docker network
+    #   - MONGO_URI=mongodb://mongodb:27017
+    #   - SQS_QUEUE_URL=http://localstack:4566/000000000000/my-solve-queue
+    depends_on:
+      - mongodb
+      - localstack-init
+      - permit
+    # Add a health check to ensure it's ready before tests run
+    healthcheck:
+      test: ["CMD", "curl", "http://fastapi:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Solve Service
+  solve-service:
+    build:
+      context: ./backend
+      dockerfile: solve_service/Dockerfile
+    container_name: solve-service
+    env_file:
+      - .env.docker-compose.solve
+    depends_on:
+      - mongodb
+      - localstack-init
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Environment
+        - NEXT_PUBLIC_NODE_ENV=development
+
+        # API Configuration  
+        - NEXT_PUBLIC_API_URL=http://localhost:4000
+
+        # Development Authentication - must match backend DEV_USER_ID
+        - NEXT_PUBLIC_DEV_USER_ID=64e9b7f1e13e4a1a9c8b4567 # Test user
+        - NEXT_PUBLIC_DEV_API_KEY=ffb1f25b3585109374ac5fefa1728247ce600a27569c8344d779a57e0186cc93
+
+        # Production Cognito Config (not used in development but kept for compatibility)
+        - NEXT_PUBLIC_COGNITO_AUTHORITY=https://placeholder-cognito-authority
+        - NEXT_PUBLIC_COGNITO_CLIENT_ID=placeholder-client-id
+        - NEXT_PUBLIC_REDIRECT_URI=http://localhost:3000/fr/callback/
+        - NEXT_PUBLIC_LOGOUT_REDIRECT_URI=http://localhost:3000
+    container_name: frontend
+    ports:
+      - "3000:80"
+    healthcheck:
+      test: ["CMD", "curl", "http://frontend:80"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Development user initialization
+  # init-dev-user:
+  #   build:
+  #     context: .
+  #     dockerfile: scripts/Dockerfile.init-user
+  #   container_name: init-dev-user
+  #   environment:
+  #     - DEV_API_KEY=${DEV_API_KEY:-ffb1f25b3585109374ac5fefa1728247ce600a27569c8344d779a57e0186cc93}
+  #   depends_on:
+  #     fastapi:
+  #       condition: service_healthy
+  #     # permit:
+  #     #   condition: service_healthy
+  #     # mongodb:
+  #     #   condition: service_healthy
+  #   networks:
+  #     - default
+  #   restart: "no"  # Only run once
+  #   # profiles:
+  #   #   - dev-init  # Optional: only run when explicitly requested
+
+  # # 6. Playwright E2E Test Runner (Optional but Recommended)
+  # e2e-tests:
+  #   build:
+  #     context: ./frontend # Or a separate test directory
+  #   container_name: e2e-tests
+  #   environment:
+  #     - PLAYWRIGHT_BASE_URL=http://frontend:3000
+  #   depends_on:
+  #     frontend:
+  #       condition: service_healthy
+  #     fastapi:
+  #       condition: service_healthy
+  #     solve-service:
+  #       condition: service_healthy
+  #   command: npm run test:e2e
+
+# volumes:
+#   mongodb_data:

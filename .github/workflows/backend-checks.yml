@@ -1,0 +1,87 @@
+name: Backend Checks
+defaults:
+  run:
+    shell: bash
+    working-directory: ./backend
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'backend/**'
+
+jobs:
+  checks:
+    name: Backend checks
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.13']
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: testuser
+          MONGO_INITDB_ROOT_PASSWORD: testpass
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install just
+        run: sudo apt-get update && sudo apt-get install -y just
+
+      - name: Install dependencies for shared
+        run: uv sync --locked --all-extras --dev
+        working-directory: backend/shared
+
+      - name: Run checks shared
+        run: |
+          just typecheck && \
+          just lint && \
+          uv run ruff format --check . && \
+          just test
+        working-directory: backend/shared
+        env:
+          MONGO_URI: mongodb://testuser:testpass@localhost:27017/
+
+      - name: Install dependencies for api_gateway
+        run: uv sync --locked --all-extras --dev
+        working-directory: backend/api_gateway
+
+      - name: Run checks api_gateway
+        run: |
+          just typecheck && \
+          just lint && \
+          uv run ruff format --check . && \
+          just test
+        working-directory: backend/api_gateway
+
+      - name: Install dependencies for solve_service
+        run: uv sync --locked --all-extras --dev
+        working-directory: backend/solve_service
+
+      - name: Run checks solve_service
+        run: |
+          just typecheck && \
+          just lint && \
+          uv run ruff format --check . && \
+          just test
+        working-directory: backend/solve_service

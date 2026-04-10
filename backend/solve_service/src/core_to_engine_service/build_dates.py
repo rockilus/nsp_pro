@@ -1,18 +1,19 @@
 from datetime import date, timedelta
-from typing import Dict, List, Tuple
 
-from shared.schemas import Assignment, Schedule, Shift, Worker, WorkerDates
+from shared.schemas.core import (
+    Assignment,
+    Schedule,
+    Shift,
+    Worker,
+    WorkerDates,
+)
 
 
 def build_dates(
-    schedule: Schedule, fixed_assignments: List[Assignment]
-) -> Tuple[List[date], List[date]]:
+    schedule: Schedule, as_hist: list[Assignment]
+) -> tuple[list[date], list[date]]:
     start_date_hist = min(
-        (
-            min(a.date for a in fixed_assignments)
-            if fixed_assignments
-            else schedule.start_date
-        ),
+        (min(a.date for a in as_hist) if as_hist else schedule.start_date),
         schedule.start_date,
     )
     end_date_hist = schedule.start_date - timedelta(days=1)
@@ -23,16 +24,16 @@ def build_dates(
 
 def build_worker_ids_to_worker_dates(
     schedule: Schedule,
-    workers: List[Worker],
-    assignments: List[Assignment],
-    dates_campaign: List[date],
-) -> Dict[str, WorkerDates]:
-    worker_ids_to_worker_dates: Dict[str, WorkerDates] = {}
+    workers: list[Worker],
+    as_hist: list[Assignment],
+    dates_campaign: list[date],
+) -> dict[str, WorkerDates]:
+    worker_ids_to_worker_dates: dict[str, WorkerDates] = {}
     for worker in workers:
         # Worker's past dates, i.e. dates for his past assignments
         a_worker_past = [
             a
-            for a in assignments
+            for a in as_hist
             if a.worker_id == worker.id and a.date < schedule.start_date
         ]
         dates_hist_worker = list(sorted(set(a.date for a in a_worker_past)))
@@ -59,20 +60,20 @@ def build_worker_ids_to_worker_dates(
 # pylint: disable=too-many-arguments
 def build_ws_ids_to_dates(
     schedule: Schedule,
-    workers: List[Worker],
-    workers_not_deleted: List[Worker],
-    shifts: List[Shift],
-    shifts_not_deleted: List[Shift],
-    assignments: List[Assignment],
-    dates_campaign: List[date],
-) -> Dict[Tuple[str, str], WorkerDates]:
-    ws_ids_to_dates: Dict[Tuple[str, str], WorkerDates] = {}
+    workers: list[Worker],
+    workers_not_deleted: list[Worker],
+    shifts: list[Shift],
+    shifts_not_deleted: list[Shift],
+    as_hist: list[Assignment],
+    dates_campaign: list[date],
+) -> dict[tuple[str, str], WorkerDates]:
+    ws_ids_to_dates: dict[tuple[str, str], WorkerDates] = {}
     for w in workers:
         for s in shifts:
             # Worker and shift past dates, i.e. dates for past assignments
             a_worker_past = [
                 a
-                for a in assignments
+                for a in as_hist
                 if a.worker_id == w.id
                 and a.date < schedule.start_date
                 and a.shift_id == s.id
@@ -100,6 +101,6 @@ def build_ws_ids_to_dates(
     return ws_ids_to_dates
 
 
-def _build_dates_list(start_date: date, end_date: date) -> List[date]:
+def _build_dates_list(start_date: date, end_date: date) -> list[date]:
     delta = end_date - start_date
     return [start_date + timedelta(days=i) for i in range(delta.days + 1)]

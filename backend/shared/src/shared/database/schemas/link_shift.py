@@ -1,7 +1,7 @@
 from typing import List
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.shift import LinkShift
+from shared.schemas.core.link_shift import LinkShift
 
 
 class LinkShiftSchema(DocumentBaseSchema):

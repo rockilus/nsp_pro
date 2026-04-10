@@ -1,5 +1,3 @@
-from typing import Dict, Tuple
-
 from ortools.sat.python import cp_model  # type: ignore
 
 from engine.model.add_constraint_fai import AddConstraintFai
@@ -18,10 +16,10 @@ class AddConstraintFactory:
     def __init__(
         self,
         model: cp_model.CpModel,
-        variables: Dict[Tuple[str, str, str], cp_model.IntVar],
-        assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar],
+        variables: dict[tuple[str, str, str], cp_model.IntVar],
+        assignment_wdss: dict[tuple[str, str, str, str], cp_model.IntVar],
         obj: Objective,
-        var_spe_sol: Dict[Tuple[str, str, str, str], int] | None = None,
+        var_spe_sol: dict[tuple[str, str, str, str], int] | None = None,
     ):
         self.var_spe_sol = var_spe_sol
         self.add_constraint_sum = AddConstraintSum(

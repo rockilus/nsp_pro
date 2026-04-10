@@ -1,0 +1,65 @@
+.settings-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  flex-direction: column;
+}
+
+.settings-sidebar {
+  width: 20%;
+  max-width: 360px;
+}
+
+.settings-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #ffffff;
+}
+
+/* Mobile settings list (for parent page) */
+.mobile-settings-list {
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+  background-color: #ffffff;
+}
+
+.mobile-settings-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  padding: 24px 16px;
+  margin: 0;
+}
+
+/* Desktop layout */
+@media (min-width: 769px) {
+  .settings-layout {
+    flex-direction: row;
+  }
+
+  .settings-sidebar {
+    border-right: 1px solid #e5e7eb;
+  }
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+  .settings-layout {
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  .settings-sidebar {
+    width: 100%;
+    max-width: none;
+    background-color: #ffffff;
+  }
+
+  .settings-content {
+    width: 100%;
+    padding: 0;
+  }
+}

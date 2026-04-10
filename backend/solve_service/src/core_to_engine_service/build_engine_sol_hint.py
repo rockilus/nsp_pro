@@ -1,14 +1,12 @@
-from typing import Dict, List, Tuple
-
-from shared.schemas import Assignment, WorkerDates
+from shared.schemas.core import Assignment, WorkerDates
 
 
 def core_to_engine_sol_hint(
-    worker_not_deleted_ids: List[str],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shift_not_deleted_ids: List[str],
-    assignments: List[Assignment],
-) -> Dict[Tuple[str, str, str], int]:
+    worker_not_deleted_ids: list[str],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shift_not_deleted_ids: list[str],
+    assignments: list[Assignment],
+) -> dict[tuple[str, str, str], int]:
     out = {
         (w, d.isoformat(), s): 0
         for w in worker_not_deleted_ids

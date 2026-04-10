@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">Solicitud de Cambio Aceptada</div>
+        <div class="email-body">
+            <p>Hola {recipient_name},</p>
+            <p><strong>{target_name}</strong> ha aceptado tu solicitud de cambio para el turno <strong>{shift_name}</strong> el <strong>{date}</strong> en el equipo <strong>{team_name}</strong>.</p>
+            <p>Haz clic en el botón de abajo para ver el cambio:</p>
+            <a href="{notification_link}" class="cta-button">Ver Cambios</a>
+        </div>
+        <div class="email-footer">
+            <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+            <p>Gracias,<br>El Equipo de Rockilus</p>
+        </div>
+    </div>
+</body>
+</html>

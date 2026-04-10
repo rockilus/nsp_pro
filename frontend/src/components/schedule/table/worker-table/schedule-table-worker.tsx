@@ -1,98 +1,127 @@
-import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import React from 'react';
 // MUI
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
 // Components
-import DatesHeaderRow from "../shared/dates-header-row";
-import DailyShiftDemandRow from "../shared/daily-shift-demand-row";
-import WorkerTableRow from "./worker-table-row";
-import { getAssignmentsDataByOwnerAndDate } from "../shared/assignment-utils";
-import { getRelevantWorkers } from "./worker-table-utils";
+import DatesHeaderRow from '../shared/dates-header-row';
+import DailyShiftDemandRow from '../shared/daily-shift-demand-row';
+import WorkerTableRow from './worker-table-row';
+import { buildScheduleCellDict } from '../shared/assignment-utils';
+import { getRelevantWorkers } from './worker-table-utils';
 // Types
-import { ShiftT } from "../../../../types/shift";
-import { WorkerT } from "../../../../types/worker";
+import { ShiftT } from '../../../../types/shift';
+import { WorkerT } from '../../../../types/worker';
 import {
-  AssignmentT,
-  BreachT,
   ScheduleT,
-  AssignmentDataDictT,
-  DailyShiftDemandT,
   ExportOptionsT,
-  ScheduleStatus,
-} from "../../../../types/schedule";
-import { RequestT } from "../../../../types/request";
-import { AttributeOwnerType } from "../../../../types/attribute";
-
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
+  periodDateT,
+  ScheduleViewSettingsT,
+} from '../../../../types/schedule';
+import { BreachT } from '@/types/breach';
+import { ShiftDemandDTO } from '@/types/shiftDemand';
+import { CreateAssignmentT } from '@/types/assignment';
+import { AssignmentDataDictT } from '@/types/assignment';
+import { AssignmentT } from '@/types/assignment';
+import { RequestT } from '../../../../types/request';
+import { AttributeOwnerType } from '../../../../types/attribute';
+import { RecurrenceRuleT } from '@/types/recurrence';
+import { TeamMembershipRole, TeamWithMembership } from '@/types/team';
+import {
+  ScheduleSelectionState,
+  SelectedScheduleCell,
+  SelectionScope,
+} from '@/types/scheduleSelection';
 
 export default function ScheduleTableWorker({
   lng,
-  teamId,
+  teamWithMembership,
   shifts,
   workers,
   requests,
   assignments,
-  dailyShiftDemands,
+  shiftDemands,
+  recurrences,
   scheduleCampaign,
   periodDates,
   breaches,
-  showBreaches,
-  selectedDisplay,
-  handleCellSelection,
-  handleCreateDSD,
-  handleUpdateDSD,
+  scheduleViewSettings,
+  handleAssignmentSelection,
+  handleRequestSelection,
   handleExportSchedule,
+  handleOpenCreateAssignment,
+  selectionState,
+  selectionScope,
+  handleCellSelect,
+  handleAssignmentSelect,
+  handleRowSelect,
+  handleColumnSelect,
+  handleSelectAll,
+  isCustomSolveModeActive = false,
+  customSolveSelectedCells = [],
+  handleCustomRowSelect,
+  handleCustomColumnSelect,
+  handleCustomCellSelect,
+  handleCustomSelectAll,
 }: {
   lng: string;
-  teamId: string;
+  teamWithMembership: TeamWithMembership;
   shifts: ShiftT[];
   workers: WorkerT[];
   requests: RequestT[];
   assignments: AssignmentT[];
-  dailyShiftDemands: DailyShiftDemandT[];
+  shiftDemands: ShiftDemandDTO[];
+  recurrences: RecurrenceRuleT[];
   scheduleCampaign: ScheduleT | null;
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[];
+  periodDates: periodDateT[];
   breaches: BreachT[];
-  showBreaches: boolean;
-  selectedDisplay: string;
-  handleCellSelection: (selectedCell: AssignmentDataDictT) => void;
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  scheduleViewSettings: ScheduleViewSettingsT;
+  handleAssignmentSelection: (selectedCell: AssignmentDataDictT) => void;
+  handleRequestSelection?: (request: RequestT) => void;
   handleExportSchedule: (exportOptions: ExportOptionsT) => void;
+  handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
+  selectionState: ScheduleSelectionState;
+  selectionScope: SelectionScope;
+  handleCellSelect: (rowId: string, date: string, scheduleId: string | null) => void;
+  handleAssignmentSelect: (assignmentId: string) => void;
+  handleRowSelect: (rowId: string, scope: SelectionScope) => void;
+  handleColumnSelect: (date: string, rowIds: string[], scope: SelectionScope) => void;
+  handleSelectAll: (rowIds: string[], scope: SelectionScope) => void;
+  isCustomSolveModeActive?: boolean;
+  customSolveSelectedCells?: SelectedScheduleCell[];
+  handleCustomRowSelect?: (rowId: string) => void;
+  handleCustomColumnSelect?: (date: string, rowIds: string[]) => void;
+  handleCustomCellSelect?: (rowId: string, date: string, scheduleId: string | null) => void;
+  handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
-  const workersForHeader = getRelevantWorkers(
-    workers,
-    assignments,
-    scheduleCampaign
-  );
+  const workersForHeader = getRelevantWorkers(workers, assignments, scheduleCampaign);
 
-  const workerIdDateToAssignData = getAssignmentsDataByOwnerAndDate(
+  const scheduleCellDict = buildScheduleCellDict(
     AttributeOwnerType.WORKER,
     assignments,
+    shiftDemands,
+    recurrences,
+    requests,
     workers,
     shifts,
     breaches,
-    requests
   );
 
   return (
     <TableContainer
       component={Paper}
-      style={{ width: "100%", height: "calc(100vh - 104px)" }}
+      style={{ width: '100%', height: 'calc(100vh - 104px)' }}
+      data-testid="schedule-table-worker"
     >
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead
           style={{
-            position: "sticky",
+            position: 'sticky',
             top: 0,
             zIndex: 1,
-            backgroundColor: "white",
+            backgroundColor: 'white',
           }}
         >
           <DatesHeaderRow
@@ -100,19 +129,30 @@ export default function ScheduleTableWorker({
             periodDates={periodDates}
             scheduleCampaign={scheduleCampaign}
             handleExportSchedule={handleExportSchedule}
-          />
-          <DailyShiftDemandRow
-            lng={lng}
-            selectedDisplay={selectedDisplay}
-            teamId={teamId}
-            shifts={shifts}
+            teamWithMembership={teamWithMembership}
+            isSelectionActive={selectionState?.isActive}
+            selectionState={selectionState}
+            rowIds={workersForHeader.map((w) => w.id)}
+            selectionScope={selectionScope}
+            handleColumnSelect={handleColumnSelect}
+            handleSelectAll={handleSelectAll}
             assignments={assignments}
-            dailyShiftDemands={dailyShiftDemands}
-            scheduleCampaign={scheduleCampaign}
-            periodDates={periodDates}
-            handleCreateDSD={handleCreateDSD}
-            handleUpdateDSD={handleUpdateDSD}
+            isCustomSolveModeActive={isCustomSolveModeActive}
+            handleCustomColumnSelect={handleCustomColumnSelect}
+            customSolveSelectedCells={customSolveSelectedCells}
+            handleCustomSelectAll={handleCustomSelectAll}
           />
+          {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
+            teamWithMembership.team.useSolver && (
+              <DailyShiftDemandRow
+                lng={lng}
+                shifts={shifts}
+                assignments={assignments}
+                shiftDemands={shiftDemands}
+                periodDates={periodDates}
+                scheduleViewSettings={scheduleViewSettings}
+              />
+            )}
         </TableHead>
         <TableBody>
           {workersForHeader.map((worker, workerIndex) => (
@@ -122,11 +162,23 @@ export default function ScheduleTableWorker({
               shifts={shifts}
               worker={worker}
               assignments={assignments}
-              workerIdDateToAssignData={workerIdDateToAssignData}
               scheduleCampaign={scheduleCampaign}
               periodDates={periodDates}
-              showBreaches={showBreaches}
-              handleCellSelection={handleCellSelection}
+              scheduleCellsDict={scheduleCellDict}
+              scheduleViewSettings={scheduleViewSettings}
+              teamWithMembership={teamWithMembership}
+              handleAssignmentSelection={handleAssignmentSelection}
+              handleRequestSelection={handleRequestSelection}
+              handleOpenCreateAssignment={handleOpenCreateAssignment}
+              selectionState={selectionState}
+              selectionScope={selectionScope}
+              handleCellSelect={handleCellSelect}
+              handleAssignmentSelect={handleAssignmentSelect}
+              handleRowSelect={handleRowSelect}
+              isCustomSolveModeActive={isCustomSolveModeActive}
+              customSolveSelectedCells={customSolveSelectedCells}
+              handleCustomRowSelect={handleCustomRowSelect}
+              handleCustomCellSelect={handleCustomCellSelect}
             />
           ))}
         </TableBody>

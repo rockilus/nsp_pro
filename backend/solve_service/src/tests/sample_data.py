@@ -1,23 +1,22 @@
 import json
 import os
-from datetime import date, datetime, timedelta
-from typing import Dict, List
+from dataclasses import dataclass
+from datetime import UTC, date, datetime, timedelta
+from enum import Enum
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     Attribute,
     ConstraintBuildAugmented,
-    DailyShiftDemand,
     Dimension,
     DimEntry,
-    DSDSourceType,
     EngineInputs,
     EngineInputsAugmented,
-    Request,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
+    ShiftDemandNew,
+    ShiftDemandSource,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
@@ -39,7 +38,7 @@ from solve_service.penalties import penalties
 # Attributes: 0
 # FixedAssignments: 0
 # CbsAugmented: 0
-# DailyShiftDemands:
+# ShiftDemands:
 #     - Every weekday for shifts s0 to s2
 #     - Every days for shifts s3 and s4
 # Requests: 0
@@ -54,14 +53,13 @@ def sample_data_fixture() -> EngineInputsAugmented:
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 31),
-        last_modified_dates=datetime(2025, 1, 1, 0, 0),
-        last_updated_dsds=None,
-        solve_details=None,
-        solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
+        created_by="user1",
+        created_at=datetime(2025, 1, 1, 0, 0),
+        updated_at=datetime(2025, 1, 1, 0, 0),
     )
 
     workers = [
@@ -215,16 +213,17 @@ def sample_data_fixture() -> EngineInputsAugmented:
         while current_date <= schedule.end_date:
             if current_date.weekday() < 5:  # Weekdays only
                 daily_shift_demands.append(
-                    DailyShiftDemand(
-                        id=f"dsd_{shift_id}_{current_date}",
-                        team_id="t0",
-                        schedule_id="sch1",
-                        shift_demand_id=None,
-                        coverage_selector_id=None,  # Added argument
-                        source_type=DSDSourceType.SHIFT_DEMAND,
+                    ShiftDemandNew(
                         date=current_date,
                         shift_id=shift_id,
+                        team_id="t0",
                         count=1,
+                        notes=None,
+                        source=ShiftDemandSource.MANUAL,
+                        source_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        id=f"dsd_{shift_id}_{current_date}",
                     )
                 )
             current_date += timedelta(days=1)
@@ -234,40 +233,41 @@ def sample_data_fixture() -> EngineInputsAugmented:
         current_date = schedule.start_date
         while current_date <= schedule.end_date:
             daily_shift_demands.append(
-                DailyShiftDemand(
-                    id=f"dsd_{shift_id}_{current_date}",
-                    team_id="t0",
-                    schedule_id="sch1",
-                    shift_demand_id=None,
-                    coverage_selector_id=None,  # Added argument
-                    source_type=DSDSourceType.SHIFT_DEMAND,
+                ShiftDemandNew(
                     date=current_date,
                     shift_id=shift_id,
+                    team_id="t0",
                     count=1,
+                    notes=None,
+                    source=ShiftDemandSource.MANUAL,
+                    source_id=None,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    id=f"dsd_{shift_id}_{current_date}",
                 )
             )
             current_date += timedelta(days=1)
 
-    dimensions: List[Dimension] = []
-    dim_entries: List[DimEntry] = []
-    attributes: List[Attribute] = []
-    cbs_augmented: List[ConstraintBuildAugmented] = []
-    requests: List[Request] = []
+    dimensions: list[Dimension] = []
+    dim_entries: list[DimEntry] = []
+    attributes: list[Attribute] = []
+    cbs_augmented: list[ConstraintBuildAugmented] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
         workers=workers,
         shifts=shifts,
-        shifts_recup_new=[],
         link_shifts=[],
         dimensions=dimensions,
         dim_entries=dim_entries,
         attributes=attributes,
         as_hist=[],
-        as_wip_fixed=[],
+        as_campaign_fixed=[],
+        as_campaign_not_fixed=[],
         cbs_augmented=cbs_augmented,
-        daily_shift_demands=daily_shift_demands,
-        requests=requests,
+        shift_demands=daily_shift_demands,
+        requests_work=[],
+        requests_leave=[],
         model_output=None,
         penalties=penalties,
         model_config=model_config,
@@ -280,14 +280,13 @@ def sample_data() -> EngineInputsAugmented:
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 31),
-        last_modified_dates=datetime(2025, 1, 1, 0, 0),
-        last_updated_dsds=None,
-        solve_details=None,
-        solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
+        created_by="user1",
+        created_at=datetime(2025, 1, 1, 0, 0),
+        updated_at=datetime(2025, 1, 1, 0, 0),
     )
 
     workers = [
@@ -441,16 +440,17 @@ def sample_data() -> EngineInputsAugmented:
         while current_date <= schedule.end_date:
             if current_date.weekday() < 5:  # Weekdays only
                 daily_shift_demands.append(
-                    DailyShiftDemand(
-                        id=f"dsd_{shift_id}_{current_date}",
-                        team_id="t0",
-                        schedule_id="sch1",
-                        shift_demand_id=None,
-                        coverage_selector_id=None,  # Added argument
-                        source_type=DSDSourceType.SHIFT_DEMAND,
+                    ShiftDemandNew(
                         date=current_date,
                         shift_id=shift_id,
+                        team_id="t0",
                         count=1,
+                        notes=None,
+                        source=ShiftDemandSource.MANUAL,
+                        source_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        id=f"dsd_{shift_id}_{current_date}",
                     )
                 )
             current_date += timedelta(days=1)
@@ -460,40 +460,41 @@ def sample_data() -> EngineInputsAugmented:
         current_date = schedule.start_date
         while current_date <= schedule.end_date:
             daily_shift_demands.append(
-                DailyShiftDemand(
-                    id=f"dsd_{shift_id}_{current_date}",
-                    team_id="t0",
-                    schedule_id="sch1",
-                    shift_demand_id=None,
-                    coverage_selector_id=None,  # Added argument
-                    source_type=DSDSourceType.SHIFT_DEMAND,
+                ShiftDemandNew(
                     date=current_date,
                     shift_id=shift_id,
+                    team_id="t0",
                     count=1,
+                    notes=None,
+                    source=ShiftDemandSource.MANUAL,
+                    source_id=None,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    id=f"dsd_{shift_id}_{current_date}",
                 )
             )
             current_date += timedelta(days=1)
 
-    dimensions: List[Dimension] = []
-    dim_entries: List[DimEntry] = []
-    attributes: List[Attribute] = []
-    cbs_augmented: List[ConstraintBuildAugmented] = []
-    requests: List[Request] = []
+    dimensions: list[Dimension] = []
+    dim_entries: list[DimEntry] = []
+    attributes: list[Attribute] = []
+    cbs_augmented: list[ConstraintBuildAugmented] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
         workers=workers,
         shifts=shifts,
-        shifts_recup_new=[],
         link_shifts=[],
         dimensions=dimensions,
         dim_entries=dim_entries,
         attributes=attributes,
         as_hist=[],
-        as_wip_fixed=[],
+        as_campaign_fixed=[],
+        as_campaign_not_fixed=[],
         cbs_augmented=cbs_augmented,
-        daily_shift_demands=daily_shift_demands,
-        requests=requests,
+        shift_demands=daily_shift_demands,
+        requests_work=[],
+        requests_leave=[],
         model_output=None,
         penalties=penalties,
         model_config=model_config,
@@ -507,14 +508,13 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
         team_id="t0",
         start_date=date(2025, 1, 13),
         end_date=date(2025, 2, 16),
-        last_modified_dates=datetime(2025, 1, 13, 0, 0),
-        last_updated_dsds=None,
-        solve_details=None,
-        solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
+        created_by="user1",
+        created_at=datetime(2025, 1, 13, 0, 0),
+        updated_at=datetime(2025, 1, 13, 0, 0),
     )
 
     workers = [
@@ -615,71 +615,127 @@ def sample_data_astrid_case() -> EngineInputsAugmented:
         current_date = schedule.start_date
         while current_date <= schedule.end_date:
             daily_shift_demands.append(
-                DailyShiftDemand(
-                    id=f"dsd_{shift_id}_{current_date}",
-                    team_id="t0",
-                    schedule_id="sch1",
-                    shift_demand_id=None,
-                    coverage_selector_id=None,  # Added argument
-                    source_type=DSDSourceType.SHIFT_DEMAND,
+                ShiftDemandNew(
                     date=current_date,
                     shift_id=shift_id,
+                    team_id="t0",
                     count=1,
+                    notes=None,
+                    source=ShiftDemandSource.MANUAL,
+                    source_id=None,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    id=f"dsd_{shift_id}_{current_date}",
                 )
             )
             current_date += timedelta(days=1)
 
-    dimensions: List[Dimension] = []
-    dim_entries: List[DimEntry] = []
-    attributes: List[Attribute] = []
-    cbs_augmented: List[ConstraintBuildAugmented] = []
-    requests: List[Request] = []
+    dimensions: list[Dimension] = []
+    dim_entries: list[DimEntry] = []
+    attributes: list[Attribute] = []
+    cbs_augmented: list[ConstraintBuildAugmented] = []
 
     return EngineInputsAugmented(
         schedule=schedule,
         workers=workers,
         shifts=shifts,
-        shifts_recup_new=[],
         link_shifts=[],
         dimensions=dimensions,
         dim_entries=dim_entries,
         attributes=attributes,
         as_hist=[],
-        as_wip_fixed=[],
+        as_campaign_fixed=[],
+        as_campaign_not_fixed=[],
         cbs_augmented=cbs_augmented,
-        daily_shift_demands=daily_shift_demands,
-        requests=requests,
+        shift_demands=daily_shift_demands,
+        requests_work=[],
+        requests_leave=[],
         model_output=None,
         penalties=penalties,
         model_config=model_config,
     )
 
 
-def load_json_from_file(filename: str) -> Dict:
+def load_json_from_file(filename: str) -> dict:
     current_folder = os.path.dirname(__file__)
     file_path = os.path.join(current_folder, filename)
-    with open(file_path, "r", encoding="utf-8") as file:
+    with open(file_path, encoding="utf-8") as file:
         data = json.load(file)
     return data
 
 
+class DSDSourceType(Enum):
+    SHIFT_DEMAND = 0
+    DIRECT_REQUIREMENT = 1
+
+
+@dataclass
+class DailyShiftDemand:
+    id: str
+    team_id: str
+    schedule_id: str
+    shift_demand_id: str | None
+    coverage_selector_id: str | None
+    source_type: DSDSourceType
+    date: date
+    shift_id: str
+    count: int
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "DailyShiftDemand":
+        return cls(
+            id=data["id"],
+            team_id=data["team_id"],
+            schedule_id=data["schedule_id"],
+            shift_demand_id=data["shift_demand_id"],
+            coverage_selector_id=data["coverage_selector_id"],
+            source_type=DSDSourceType(data["source_type"]),
+            date=datetime.fromtimestamp(data["date"], tz=UTC).date(),
+            shift_id=data["shift_id"],
+            count=data["count"],
+        )
+
+
 def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
     data_dict = load_json_from_file(filename)
+
+    # Convert DailyShiftDemand to ShiftDemandNew
+    dsds_dict = data_dict.pop("daily_shift_demands", [])
+    dsds = [DailyShiftDemand.from_dict(dsd_dict) for dsd_dict in dsds_dict]
+    shift_demands_from_dsds = [
+        ShiftDemandNew(
+            date=dsd.date,
+            shift_id=dsd.shift_id,
+            team_id=dsd.team_id,
+            count=dsd.count,
+            notes=None,
+            source=ShiftDemandSource.MANUAL,
+            source_id=None,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            id=dsd.id,
+        )
+        for dsd in dsds
+        if dsd.count > 0
+    ]
+    data_dict["shift_demands"] = [sd.to_dict() for sd in shift_demands_from_dsds]
+
     ei = EngineInputs.from_dict(data_dict)
     return EngineInputsAugmented(
         schedule=ei.schedule,
         workers=ei.workers,
         shifts=ei.shifts,
-        shifts_recup_new=ei.shifts_recup_new,
         link_shifts=ei.link_shifts,
         dimensions=ei.dimensions,
         dim_entries=ei.dim_entries,
         attributes=ei.attributes,
         as_hist=ei.as_hist,
-        as_wip_fixed=ei.as_wip_fixed,
+        as_campaign_fixed=ei.as_campaign_fixed,
+        as_campaign_not_fixed=ei.as_campaign_not_fixed,
         cbs_augmented=ei.cbs_augmented,
-        daily_shift_demands=ei.daily_shift_demands,
-        requests=ei.requests,
+        shift_demands=ei.shift_demands,
+        requests_work=ei.requests_work,
+        requests_leave=ei.requests_leave,
         model_output=ei.model_output,
         penalties=penalties,
         model_config=model_config,
@@ -688,7 +744,7 @@ def load_engine_inputs_from_file(filename: str) -> EngineInputsAugmented:
 
 @pytest.fixture
 def sample_data_benoit_case_fixture() -> EngineInputsAugmented:
-    engine_inputs = load_engine_inputs_from_file("test_data/250324_benoit_case.json")
+    engine_inputs = load_engine_inputs_from_file("test_data/250521_benoit_case.json")
     # engine_inputs.requests = [
     #     r for r in engine_inputs.requests if r.id != "67893e204c7443695ec41f2b"
     # ]

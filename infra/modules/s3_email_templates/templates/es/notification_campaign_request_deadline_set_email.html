@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">Fecha límite para solicitudes de disponibilidad</div>
+        <div class="email-body">
+            <p>Hola {recipient_name},</p>
+            <p>El responsable de tu equipo ha solicitado tus disponibilidades para el horario de <strong>{team_name}</strong>.</p>
+            <p><strong>Período del horario:</strong> {schedule_start_date} – {schedule_end_date}</p>
+            <p><strong>Fecha límite de envío:</strong> {deadline_date}</p>
+            <p>Por favor, envía tus solicitudes de disponibilidad antes de la fecha límite haciendo clic en el botón de abajo:</p>
+            <a href="{notification_link}" class="cta-button">Enviar solicitudes</a>
+        </div>
+        <div class="email-footer">
+            <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+            <p>Gracias,<br>El Equipo de Rockilus</p>
+        </div>
+    </div>
+</body>
+</html>

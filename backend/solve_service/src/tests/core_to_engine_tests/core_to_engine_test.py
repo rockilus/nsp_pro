@@ -1,8 +1,7 @@
 from datetime import datetime
-from typing import List
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     EngineInputsAugmented,
     Shift,
     ShiftLeaveType,
@@ -32,7 +31,7 @@ class TestBuildShiftIdToDurationDict:
         assert shift_id_to_duration_dict == expected_durations
 
     def test_empty_shifts(self) -> None:
-        shifts: List[Shift] = []
+        shifts: list[Shift] = []
         shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
 
         # Verify the shift durations

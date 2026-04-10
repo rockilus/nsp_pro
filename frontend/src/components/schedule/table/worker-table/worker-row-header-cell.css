@@ -1,8 +1,15 @@
 .worker-row-header-cell-container {
   display: flex;
-  flex-direction: column;
-  padding-left: 10px;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 4px;
   width: 140px;
+}
+
+.worker-row-header-cell-content {
+  display: flex;
+  flex-direction: column;
+  padding-left: 4px;
 }
 
 .worker-name {

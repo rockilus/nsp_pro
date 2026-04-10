@@ -1,12 +1,17 @@
 {
-    "campaign": "Campaign",
-    "constraints": "Constraints",
-    "coverages": "Coverages",
-    "profile": "Profile",
-    "requests": "Requests",
-    "schedule": "Schedule",
-    "sign_out": "Sign out",
-    "shifts": "Shifts",
-    "stats": "Stats",
-    "workers": "Workers"
+  "campaign": "Campaign",
+  "constraints": "Rules",
+  "profile": "Profile",
+  "requests": "Requests",
+  "schedule": "Schedule",
+  "settings": "Settings",
+  "shift_demands": "Coverages",
+  "sign_out": "Sign out",
+  "signing_out": "Signing out...",
+  "shifts": "Shifts",
+  "stats": "Stats",
+  "swaps": "Swaps",
+  "teams": "Teams",
+  "workers": "Team",
+  "notifications": "Notifications"
 }

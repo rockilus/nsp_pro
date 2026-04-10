@@ -1,21 +1,15 @@
-import React, {
-  useState,
-  ChangeEvent,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
-import { useTranslation } from "../../../../app/i18n/client";
+import React, { useState, ChangeEvent, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from '../../../../app/i18n/client';
 // MUI
-import Chip from "@mui/material/Chip";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
+import Chip from '@mui/material/Chip';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
 // Types
-import { BlockT, TemplateBlockT } from "../../../../types/constraint";
+import { BlockT, TemplateBlockT } from '../../../../types/constraint';
 // Constants
-import { ConstraintDefaultColors } from "../../../../constants/constants";
+import { ConstraintDefaultColors } from '../../../../constants/constants';
 
 export default function BlockEditString({
   lng,
@@ -38,16 +32,16 @@ export default function BlockEditString({
   translateOptionName: (name: string) => string;
   handleRemoveError: (index: number) => void;
 }) {
-  const { t } = useTranslation(lng, "constraint-page");
+  const { t } = useTranslation(lng, 'constraint-page');
 
   const initialValue = useCallback((): string => {
     if (block === null) {
-      return "";
+      return '';
     }
-    if (typeof block.value === "string") {
+    if (typeof block.value === 'string') {
       return block.value;
     }
-    throw new Error("block.value is not a string");
+    throw new Error('block.value is not a string');
   }, [block]);
 
   const templateOptionsCast = useCallback((): string[] => {
@@ -56,49 +50,48 @@ export default function BlockEditString({
     }
     if (
       Array.isArray(templateBlock.options) &&
-      (templateBlock.options as any[]).every(
-        (option: unknown) => typeof option === "string"
-      )
+      (templateBlock.options as any[]).every((option: unknown) => typeof option === 'string')
     ) {
       return templateBlock.options as string[];
     }
-    throw new Error("templateBlock.options is not an array of strings");
+    throw new Error('templateBlock.options is not an array of strings');
   }, [templateBlock]);
 
   const [valueState, setValueState] = useState<string>(initialValue);
-  const [templateOptions, setTemplateOptions] =
-    useState<string[]>(templateOptionsCast);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [templateOptions, setTemplateOptions] = useState<string[]>(templateOptionsCast);
+  const [searchQuery, setSearchQuery] = useState('');
   const [filteredOptions, setFilteredOptions] = useState<string[]>(
-    templateOptions.filter((option) => !valueState.includes(option))
+    templateOptions.filter((option) => !valueState.includes(option)),
   );
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (block !== null) {
-      setValueState(initialValue);
+      // Schedule state update asynchronously to avoid synchronous setState in
+      // effect body which triggers the react-hooks/set-state-in-effect lint
+      // rule. Call the initializer function and set the explicit value.
+      Promise.resolve().then(() => setValueState(initialValue()));
     }
   }, [block, initialValue]);
 
   useEffect(() => {
     if (templateBlock !== null) {
-      setTemplateOptions(templateOptionsCast);
+      // Same pattern: schedule the options update in a microtask and call
+      // the templateOptionsCast function to get the array value.
+      Promise.resolve().then(() => setTemplateOptions(templateOptionsCast()));
     }
   }, [templateBlock, templateOptionsCast]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value.trim();
     setSearchQuery(query);
-    if (query === "") {
-      setFilteredOptions(
-        templateOptions.filter((option) => !valueState.includes(option))
-      );
+    if (query === '') {
+      setFilteredOptions(templateOptions.filter((option) => !valueState.includes(option)));
     } else {
       const newFilteredOptions = templateOptions.filter(
         (option) =>
-          !valueState.includes(option) &&
-          option.toLowerCase().includes(query.toLowerCase())
+          !valueState.includes(option) && option.toLowerCase().includes(query.toLowerCase()),
       );
       setFilteredOptions(newFilteredOptions);
       if (newFilteredOptions.length > 0) {
@@ -110,25 +103,25 @@ export default function BlockEditString({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       if (selectedOption) {
         handleAddSelectedOption(selectedOption);
       }
-    } else if (event.key === "ArrowDown") {
+    } else if (event.key === 'ArrowDown') {
       if (filteredOptions.length > 0) {
-        const index = filteredOptions.indexOf(selectedOption || "");
+        const index = filteredOptions.indexOf(selectedOption || '');
         if (index < filteredOptions.length - 1) {
           setSelectedOption(filteredOptions[index + 1]);
         }
       }
-    } else if (event.key === "ArrowUp") {
+    } else if (event.key === 'ArrowUp') {
       if (filteredOptions.length > 0) {
-        const index = filteredOptions.indexOf(selectedOption || "");
+        const index = filteredOptions.indexOf(selectedOption || '');
         if (index > 0) {
           setSelectedOption(filteredOptions[index - 1]);
         }
       }
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
       handleClose();
     }
   };
@@ -140,10 +133,8 @@ export default function BlockEditString({
         type: templateBlock.type,
         value: newOption,
       });
-      setFilteredOptions(
-        templateOptions.filter((option) => option !== newOption)
-      );
-      setSearchQuery("");
+      setFilteredOptions(templateOptions.filter((option) => option !== newOption));
+      setSearchQuery('');
       if (error) {
         handleRemoveError(index);
       }
@@ -154,16 +145,16 @@ export default function BlockEditString({
   return (
     <div
       style={{
-        width: "240px",
-        borderRadius: "6px",
+        width: '240px',
+        borderRadius: '6px',
         boxShadow:
-          "rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px",
+          'rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px',
       }}
     >
       <div
         style={{
-          borderTopRightRadius: "inherit",
-          borderTopLeftRadius: "inherit",
+          borderTopRightRadius: 'inherit',
+          borderTopLeftRadius: 'inherit',
           // background: "#f0efed",
           background: ConstraintDefaultColors.shade0,
         }}
@@ -175,14 +166,14 @@ export default function BlockEditString({
           className="input-container"
           onClick={() => inputRef.current && inputRef.current.focus()}
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "flex-start",
-            overflow: "auto",
-            cursor: "text",
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'flex-start',
+            overflow: 'auto',
+            cursor: 'text',
             // Hide scrollbar
-            scrollbarWidth: "none", // For Firefox
-            msOverflowStyle: "none", // For Internet Explorer and Edge
+            scrollbarWidth: 'none', // For Firefox
+            msOverflowStyle: 'none', // For Internet Explorer and Edge
             // "&::-webkit-scrollbar": {
             //   display: "none", // For Chrome, Safari and Opera
             // },
@@ -194,7 +185,7 @@ export default function BlockEditString({
               sx={{
                 color: ConstraintDefaultColors.shade3,
                 background: ConstraintDefaultColors.shade1,
-                height: "21px",
+                height: '21px',
               }}
             />
           )}
@@ -207,28 +198,28 @@ export default function BlockEditString({
             // placeholder="Search shifts"
             style={{
               color: ConstraintDefaultColors.shade3,
-              height: "21px",
-              border: "none",
-              outline: "none",
-              background: "transparent",
-              minWidth: "60px",
+              height: '21px',
+              border: 'none',
+              outline: 'none',
+              background: 'transparent',
+              minWidth: '60px',
               flexGrow: 1,
             }}
           />
         </div>
       </div>
-      <div style={{ padding: "8px 0 8px 0" }}>
+      <div style={{ padding: '8px 0 8px 0' }}>
         <div
           style={{
-            fontSize: "13px",
-            fontWeight: "bold",
+            fontSize: '13px',
+            fontWeight: 'bold',
             color: ConstraintDefaultColors.shade2,
-            padding: "0 16px 6px 16px",
+            padding: '0 16px 6px 16px',
           }}
         >
-          {t("select_one")}
+          {t('select_one')}
         </div>
-        <List dense={true} sx={{ padding: "0 0 0 0" }}>
+        <List dense={true} sx={{ padding: '0 0 0 0' }}>
           {filteredOptions.map((option) => (
             <ListItemButton
               key={option}
@@ -236,9 +227,10 @@ export default function BlockEditString({
                 handleAddSelectedOption(option);
               }}
               selected={selectedOption === option}
-              sx={{ padding: "0 0 0 0" }}
+              sx={{ padding: '0 0 0 0' }}
+              data-testid={`string-option-${option.replace(/\s+/g, '-').toLowerCase()}`}
             >
-              <ListItem sx={{ padding: "0 16px 0 16px" }}>
+              <ListItem sx={{ padding: '0 16px 0 16px' }}>
                 <ListItemText
                   primary={translateOptionName(option)}
                   style={{ color: ConstraintDefaultColors.shade3 }}

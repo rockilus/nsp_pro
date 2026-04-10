@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "migrate-mongo": "^11.0.0"
+    "migrate-mongo": "^11.0.0",
+    "mongodb": "^6.16.0"
   }
 }

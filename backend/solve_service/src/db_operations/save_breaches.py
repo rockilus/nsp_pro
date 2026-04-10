@@ -1,14 +1,12 @@
-from typing import List
-
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas import Breach, Schedule
+from shared.schemas.core import Breach, Schedule
 
 
 def save_breaches(
     schedule: Schedule,
-    breaches: List[Breach],
+    breaches: list[Breach],
     collections: DatabaseCollections,
-) -> List[Breach]:
+) -> list[Breach]:
     collections.breach_db.delete_breaches_by_schedule_id(schedule.id)
     if not breaches:
         return []

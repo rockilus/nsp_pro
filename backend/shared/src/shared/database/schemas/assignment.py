@@ -1,19 +1,22 @@
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.schedule import Assignment
+from shared.schemas.core.assignment import Assignment, AssignmentSource
 
 
 class AssignmentSchema(DocumentBaseSchema):
     """Assignment schema for validation."""
 
     team: str
-    schedule: str
+    schedule: Optional[str] = None
     worker: str
     date: datetime
     shift: str
+    reference_assignment_id: Optional[str] = None
     fixed: bool
+    source: str
+    source_id: Optional[str] = None
 
     def to_mongo(self) -> Dict[str, Any]:
         out = super().to_mongo()
@@ -28,10 +31,15 @@ class AssignmentSchema(DocumentBaseSchema):
         doc_dict = self.to_mongo()
         doc_dict["id"] = doc_dict.pop("_id")
         doc_dict["team_id"] = doc_dict.pop("team")
-        doc_dict["schedule_id"] = doc_dict.pop("schedule")
+        doc_dict["schedule_id"] = doc_dict.pop("schedule", None)
         doc_dict["worker_id"] = doc_dict.pop("worker")
         doc_dict["date"] = doc_dict["date"].date()
         doc_dict["shift_id"] = doc_dict.pop("shift")
+        doc_dict["source"] = AssignmentSource(doc_dict["source"])
+        doc_dict["reference_assignment_id"] = doc_dict.pop(
+            "reference_assignment_id", None
+        )
+        doc_dict["source_id"] = doc_dict.pop("source_id", None)
         return Assignment(**doc_dict)
 
     @classmethod
@@ -47,5 +55,8 @@ class AssignmentSchema(DocumentBaseSchema):
                 assignment.date.day,
             ),
             shift=assignment.shift_id,
+            reference_assignment_id=assignment.reference_assignment_id,
             fixed=assignment.fixed,
+            source=assignment.source.value,
+            source_id=assignment.source_id,
         )

@@ -1,22 +1,54 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+// Types
+import { MembershipForTeamWithMembership, TeamMembershipRole } from '@/types/team';
+
+dayjs.extend(utc);
 
 export type UserT = {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  workers: string[];
   language: string;
-  signUpDate: dayjs.Dayjs;
+  signUpAt: dayjs.Dayjs;
+  impersonatingUserId: string | null;
+  systemRole: string | null;
 };
 
-export type UserAuthT = {
-  id: string;
-  email: string;
+export type UserWithMembership = {
+  user: UserT;
+  membership: MembershipForTeamWithMembership;
 };
 
-export type UserDashboardT = {
-  user: UserT | null;
-  userAuthn: UserAuthT | null;
-  userAuthz: UserAuthT | null;
+export const toUserT = (data: any): UserT => {
+  return {
+    ...data,
+    signUpAt: dayjs.unix(data.signUpAt).utc(),
+    systemRole: data.systemRole ?? null,
+  };
+};
+
+export const fromUserT = (data: UserT): any => {
+  // Omit systemRole — the self-update endpoint only accepts
+  // firstName, lastName, email, and language.
+  const { systemRole, impersonatingUserId, signUpAt, id, ...updateFields } = data;
+  return {
+    ...updateFields,
+    signUpAt: signUpAt.unix(),
+  };
+};
+
+export const toUserWithMembership = (data: any): UserWithMembership => {
+  return {
+    ...data,
+    user: toUserT(data.user),
+  };
+};
+
+export const fromUserWithMembership = (data: UserWithMembership): any => {
+  return {
+    ...data,
+    user: fromUserT(data.user),
+  };
 };

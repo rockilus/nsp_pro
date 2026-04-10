@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 // Types
-import { BlockT, TemplateBlockT } from "../../../../types/constraint";
+import { BlockT, TemplateBlockT } from '../../../../types/constraint';
 // Constants
-import { ConstraintDefaultColors } from "../../../../constants/constants";
+import { ConstraintDefaultColors } from '../../../../constants/constants';
 
 export default function BlockEditQty({
   index,
@@ -23,28 +23,30 @@ export default function BlockEditQty({
 }) {
   const initialValue = useCallback(() => {
     if (block === null) {
-      return "";
+      return '';
     }
-    if (typeof block.value === "number" || block.value === "") {
+    if (typeof block.value === 'number' || block.value === '') {
       return block.value.toString();
     }
-    throw new Error("block.value is not a number");
+    throw new Error('block.value is not a number');
   }, [block]);
 
   const [valueState, setValueState] = useState<string>(initialValue);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isInitialFocus, setIsInitialFocus] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
 
-  useEffect(() => {
-    if (block !== null) {
-      setValueState(initialValue);
-    }
-  }, [block, initialValue]);
+  // displayValue is derived from props when the user hasn't edited the input yet.
+  // This avoids calling setState inside effects when `block` changes.
+  const displayValue = !isDirty && block !== null ? initialValue() : valueState;
 
   const handleSubmit = useCallback(() => {
-    if (valueState !== "") {
+    const submittedValue = !isDirty && block !== null ? initialValue() : valueState;
+    if (submittedValue !== '') {
       handleEditBlock({
         name: templateBlock.name,
         type: templateBlock.type,
-        value: parseInt(valueState),
+        value: parseInt(submittedValue),
       });
       if (error) {
         handleRemoveError(index);
@@ -59,10 +61,26 @@ export default function BlockEditQty({
     handleEditBlock,
     handleClose,
     handleRemoveError,
+    isDirty,
+    block,
+    initialValue,
   ]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter" || event.key === "Escape") {
+    if (event.key === 'Enter' || event.key === 'Escape') {
+      handleSubmit();
+    }
+  };
+
+  const handleBlur = () => {
+    // Ignore the first blur event that occurs immediately after mounting
+    if (isInitialFocus) {
+      setIsInitialFocus(false);
+      // Re-focus the input
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
+    } else {
       handleSubmit();
     }
   };
@@ -71,19 +89,22 @@ export default function BlockEditQty({
     <div>
       <div className="field-input">
         <input
+          ref={inputRef}
           type="number"
-          value={valueState}
+          value={displayValue}
           onChange={(e) => {
             setValueState(e.target.value);
+            setIsDirty(true);
           }}
-          onBlur={handleSubmit}
+          onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           autoFocus
+          data-testid="constraint-number-input"
           style={{
             color: ConstraintDefaultColors.shade3,
-            appearance: "textfield",
-            MozAppearance: "textfield",
-            WebkitAppearance: "none",
+            appearance: 'textfield',
+            MozAppearance: 'textfield',
+            WebkitAppearance: 'none',
           }}
         />
       </div>

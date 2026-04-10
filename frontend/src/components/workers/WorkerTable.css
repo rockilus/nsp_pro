@@ -1,0 +1,34 @@
+/* WorkerTable CSS - Backward compatibility wrapper for shared table styles */
+
+/* 
+ * This file now serves as a compatibility layer for the worker table.
+ * The actual styles have been moved to /src/styles/table-styles.css 
+ * to enable sharing across worker tables, shift tables, and other table components.
+ * 
+ * All worker-table-* classes are maintained for backward compatibility
+ * and are defined in the shared table-styles.css file.
+ */
+
+/* Import shared table styles (already handled by the component imports) */
+
+/* Worker-specific styles or overrides can be added here if needed */
+
+/* Note: All the original worker table styles have been moved to:
+ * /src/styles/table-styles.css
+ * 
+ * This includes:
+ * - .worker-table-container
+ * - .worker-table
+ * - .worker-table-header
+ * - .worker-table-first-column
+ * - .worker-table-first-header-cell
+ * - .worker-table-row
+ * - .worker-table-actions
+ * - .worker-table-actions-header
+ * - .worker-name-cell
+ * - .worker-name-text
+ * - And all other worker table related styles
+ * 
+ * The shared styles are also available with .shared-table-* prefixes
+ * for use in other table components like shift tables.
+ */

@@ -1,5 +1,6 @@
 // Types
-import { AttributeT } from "./attribute";
+import { AttributeT } from './attribute';
+import { DimEntryT } from './dim-entry';
 
 export enum DimensionType {
   WORKER = 0,
@@ -20,13 +21,6 @@ export type DimensionT = {
   dimTypes: DimensionType[];
   name: string;
   entryType: DimensionEntryType;
-  deleted: boolean;
-};
-
-export type DimEntryT = {
-  id: string;
-  dimensionId: string;
-  name: string;
   deleted: boolean;
 };
 

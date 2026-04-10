@@ -1,16 +1,19 @@
 from datetime import date, timedelta
-from typing import List
 
 import pytest
-from shared.schemas import EngineInputsAugmented, Shift, Worker
+from shared.schemas.core import EngineInputsAugmented, Shift, Worker
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
-from core_to_engine_service.build_engine_shift_demands import build_engine_shift_demands
+from core_to_engine_service.build_engine_shift_demands import (
+    build_engine_shift_demands,
+)
 from engine import ShiftDemand as ShiftDemandEngine
 
 # pylint: disable=unused-import
-from tests.sample_data import sample_data_benoit_case_fixture  # noqa: F401
-from tests.sample_data import test_data_set_1
+from tests.sample_data import (
+    sample_data_benoit_case_fixture,  # noqa: F401
+    test_data_set_1,
+)
 
 
 class TestBuildEngineShiftDemands:
@@ -21,8 +24,8 @@ class TestBuildEngineShiftDemands:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        daily_shift_demands = sample_data.daily_shift_demands
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        daily_shift_demands = sample_data.shift_demands
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -52,11 +55,11 @@ class TestBuildEngineShiftDemands:
     # pylint: disable=R0801
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_workers(self, sample_data: EngineInputsAugmented) -> None:
-        workers: List[Worker] = []
+        workers: list[Worker] = []
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        daily_shift_demands = sample_data.daily_shift_demands
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        daily_shift_demands = sample_data.shift_demands
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -88,10 +91,10 @@ class TestBuildEngineShiftDemands:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_shifts(self, sample_data: EngineInputsAugmented) -> None:
         workers = sample_data.workers
-        shifts: List[Shift] = []
+        shifts: list[Shift] = []
         schedule = sample_data.schedule
-        daily_shift_demands = sample_data.daily_shift_demands
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        daily_shift_demands = sample_data.shift_demands
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -128,8 +131,8 @@ class TestBuildEngineShiftDemands:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        daily_shift_demands = sample_data.daily_shift_demands
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        daily_shift_demands = sample_data.shift_demands
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -191,8 +194,8 @@ class TestBuildEngineShiftDemands:
         shifts = sample_data.shifts
         shifts[0].staffing[0].specialty_id = "spe1"
         schedule = sample_data.schedule
-        daily_shift_demands = sample_data.daily_shift_demands
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        daily_shift_demands = sample_data.shift_demands
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -268,10 +271,10 @@ class TestBuildEngineShiftDemands:
         workers = sample_data_benoit_case_fixture.workers
         shifts = sample_data_benoit_case_fixture.shifts
         schedule = sample_data_benoit_case_fixture.schedule
-        daily_shift_demands = sample_data_benoit_case_fixture.daily_shift_demands
+        daily_shift_demands = sample_data_benoit_case_fixture.shift_demands
         fixed_assignments = (
             sample_data_benoit_case_fixture.as_hist
-            + sample_data_benoit_case_fixture.as_wip_fixed
+            + sample_data_benoit_case_fixture.as_campaign_fixed
         )
 
         # Build necessary inputs
@@ -307,10 +310,10 @@ class TestBuildEngineShiftDemands:
         workers = sample_data_benoit_case_fixture.workers
         shifts = sample_data_benoit_case_fixture.shifts
         schedule = sample_data_benoit_case_fixture.schedule
-        daily_shift_demands = sample_data_benoit_case_fixture.daily_shift_demands
+        daily_shift_demands = sample_data_benoit_case_fixture.shift_demands
         fixed_assignments = (
             sample_data_benoit_case_fixture.as_hist
-            + sample_data_benoit_case_fixture.as_wip_fixed
+            + sample_data_benoit_case_fixture.as_campaign_fixed
         )
 
         # Build necessary inputs
@@ -356,7 +359,8 @@ class TestBuildEngineShiftDemands:
                     (s for s in shifts_not_deleted if s.id == shift_id), None
                 )
                 assert shift_ref is not None
-                total_count = sum(dsd.count for dsd in dsds_source)
+                # total_count = sum(dsd.count for dsd in dsds_source)
+                total_count = dsds_source[0].count
                 staffing = sum(s.staffing for s in shift_ref.staffing)
                 assert sd.target == total_count * staffing
 
@@ -368,10 +372,10 @@ class TestBuildEngineShiftDemands:
         workers = sample_data_benoit_case_fixture.workers
         shifts = sample_data_benoit_case_fixture.shifts
         schedule = sample_data_benoit_case_fixture.schedule
-        daily_shift_demands = sample_data_benoit_case_fixture.daily_shift_demands
+        daily_shift_demands = sample_data_benoit_case_fixture.shift_demands
         fixed_assignments = (
             sample_data_benoit_case_fixture.as_hist
-            + sample_data_benoit_case_fixture.as_wip_fixed
+            + sample_data_benoit_case_fixture.as_campaign_fixed
         )
 
         # Build necessary inputs

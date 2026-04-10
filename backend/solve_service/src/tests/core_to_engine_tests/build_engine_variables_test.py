@@ -1,8 +1,7 @@
 from datetime import date, timedelta
-from typing import List
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     EngineInputsAugmented,
     Shift,
     ShiftRestType,
@@ -11,7 +10,9 @@ from shared.schemas import (
 )
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
-from core_to_engine_service.build_engine_variables import build_engine_variables
+from core_to_engine_service.build_engine_variables import (
+    build_engine_variables,
+)
 from core_to_engine_service.core_to_engine_inputs import (
     _build_shift_id_to_duration_dict,
 )
@@ -26,7 +27,7 @@ class TestBuildEngineVariables:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -118,10 +119,10 @@ class TestBuildEngineVariables:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_workers(self, sample_data: EngineInputsAugmented) -> None:
-        workers: List[Worker] = []
+        workers: list[Worker] = []
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -151,9 +152,9 @@ class TestBuildEngineVariables:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_shifts(self, sample_data: EngineInputsAugmented) -> None:
         workers = sample_data.workers
-        shifts: List[Shift] = []
+        shifts: list[Shift] = []
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -188,7 +189,7 @@ class TestBuildEngineVariables:
         workers[0].employment_end_date = date(2025, 1, 15)
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -235,7 +236,7 @@ class TestBuildEngineVariables:
         workers[0].deleted = True
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -296,7 +297,7 @@ class TestBuildEngineVariables:
         sample_data.shifts = shifts_test
 
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [

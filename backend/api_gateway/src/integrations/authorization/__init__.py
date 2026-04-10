@@ -1,11 +1,18 @@
-from integrations.authorization.authz_services import (
+from src.integrations.authorization.authz_services import (
     authz_check,
     authz_connect,
+    authz_delete_all_instances,
+    authz_delete_all_instances_except_user,
+    authz_delete_all_users,
+    authz_delete_all_users_except,
     authz_delete_user,
     authz_get_all_users,
     authz_get_user,
     authz_health_check,
+    authz_role_assignment_assign,
     authz_role_assignment_get_user_team_ids,
+    authz_role_assignment_unassign,
+    authz_role_assignments_list,
     authz_team_resource_instance_create,
     authz_user_sync,
 )
@@ -13,11 +20,18 @@ from integrations.authorization.authz_services import (
 __all__ = [
     "authz_check",
     "authz_connect",
+    "authz_delete_all_instances",
+    "authz_delete_all_instances_except_user",
+    "authz_delete_all_users",
+    "authz_delete_all_users_except",
     "authz_delete_user",
     "authz_get_all_users",
     "authz_get_user",
     "authz_health_check",
+    "authz_role_assignment_assign",
     "authz_role_assignment_get_user_team_ids",
+    "authz_role_assignment_unassign",
+    "authz_role_assignments_list",
     "authz_team_resource_instance_create",
     "authz_user_sync",
 ]

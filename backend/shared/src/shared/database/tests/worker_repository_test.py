@@ -1,30 +1,36 @@
 from datetime import date, datetime, timezone
 
 import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.worker import WorkerRepository
 from shared.database.schemas.worker import WorkerSchema
-from shared.schemas.schemas.worker import Worker
+from shared.schemas.core.worker import Worker
 
 
 class TestWorkerRepository:
     repo: WorkerRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = WorkerRepository()
+        self.repo = WorkerRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("workers")  # type: ignore
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_worker(self):
         """Test creating a worker."""
@@ -400,6 +406,104 @@ class TestWorkerRepository:
         team2_workers = self.repo.get_workers("team2")
         assert len(team2_workers) == 1
 
+    def test_get_workers_by_ids_returns_matching_workers(self):
+        """Test getting workers by a list of worker IDs."""
+        workers = [
+            WorkerSchema(
+                name="John Doe",
+                team="team1",
+                acronym="JD",
+                acronym_custom=False,
+                employment_start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=5,
+                annual_leave=20,
+                specialties=["spec1"],
+                deleted=False,
+            ),
+            WorkerSchema(
+                name="Jane Smith",
+                team="team1",
+                acronym="JS",
+                acronym_custom=False,
+                employment_start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=5,
+                annual_leave=20,
+                specialties=["spec2"],
+                deleted=False,
+            ),
+        ]
+
+        created = self.repo.create_many(workers)
+        worker_ids = [w.id for w in created if w.id is not None]
+
+        results = self.repo.get_workers_by_ids(worker_ids)
+
+        assert len(results) == 2
+        assert set(r.id for r in results) == set(worker_ids)
+
+    def test_get_workers_by_ids_with_empty_input_returns_empty(self):
+        """Calling with empty list returns empty list."""
+        results = self.repo.get_workers_by_ids([])
+        assert results == []
+
+    def test_get_workers_by_ids_ignores_missing_ids(self):
+        """Missing IDs are ignored; existing workers are returned."""
+        worker = WorkerSchema(
+            name="John Doe",
+            team="team1",
+            acronym="JD",
+            acronym_custom=False,
+            employment_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+            employment_end_date=None,
+            weekly_hours=40,
+            weekly_hours_desired=40,
+            duties_per_month=5,
+            annual_leave=20,
+            specialties=["spec1"],
+            deleted=False,
+        )
+        created = self.repo.create(worker)
+
+        assert created.id is not None
+        results = self.repo.get_workers_by_ids([created.id, "missing_id"])
+
+        assert len(results) == 1
+        assert results[0].id == created.id
+
+    def test_get_workers_by_ids_strict_raises_on_missing(self):
+        """When raise_on_missing=True, a missing id raises ValueError."""
+        worker = WorkerSchema(
+            name="John Doe",
+            team="team1",
+            acronym="JD",
+            acronym_custom=False,
+            employment_start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
+            employment_end_date=None,
+            weekly_hours=40,
+            weekly_hours_desired=40,
+            duties_per_month=5,
+            annual_leave=20,
+            specialties=["spec1"],
+            deleted=False,
+        )
+        created = self.repo.create(worker)
+
+        assert created.id is not None
+        with pytest.raises(ValueError):
+            self.repo.get_workers_by_ids(
+                [created.id, "missing_id"], raise_on_missing=True
+            )
+
     def test_get_workers_not_deleted(self):
         """Test getting all non-deleted workers for a team."""
         workers = [
@@ -519,3 +623,72 @@ class TestWorkerRepository:
 
         spec2_workers = self.repo.get_workers_by_specialty_id("spec2")
         assert len(spec2_workers) == 1
+
+    def test_get_workers_by_team_and_user(self):
+        """Test getting workers by team and user ID."""
+        workers = [
+            WorkerSchema(
+                name="John Doe",
+                team="team1",
+                acronym="JD",
+                acronym_custom=False,
+                employment_start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=5,
+                annual_leave=20,
+                specialties=["spec1"],
+                deleted=False,
+                user_id="user1",
+            ),
+            WorkerSchema(
+                name="Jane Smith",
+                team="team1",
+                acronym="JS",
+                acronym_custom=False,
+                employment_start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=5,
+                annual_leave=20,
+                specialties=["spec2"],
+                deleted=False,
+                user_id="user2",
+            ),
+            WorkerSchema(
+                name="Bob Johnson",
+                team="team2",
+                acronym="BJ",
+                acronym_custom=False,
+                employment_start_date=datetime(
+                    2023, 1, 1, tzinfo=timezone.utc
+                ).timestamp(),
+                employment_end_date=None,
+                weekly_hours=40,
+                weekly_hours_desired=40,
+                duties_per_month=5,
+                annual_leave=20,
+                specialties=["spec1"],
+                deleted=False,
+                user_id="user1",
+            ),
+        ]
+        self.repo.create_many(workers)
+
+        team1_user1_workers = self.repo.get_workers_by_team_and_user("team1", "user1")
+        assert len(team1_user1_workers) == 1
+        assert team1_user1_workers[0].name == "John Doe"
+
+        team1_user2_workers = self.repo.get_workers_by_team_and_user("team1", "user2")
+        assert len(team1_user2_workers) == 1
+        assert team1_user2_workers[0].name == "Jane Smith"
+
+        team2_user1_workers = self.repo.get_workers_by_team_and_user("team2", "user1")
+        assert len(team2_user1_workers) == 1
+        assert team2_user1_workers[0].name == "Bob Johnson"

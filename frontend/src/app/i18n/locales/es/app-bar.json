@@ -1,12 +1,17 @@
 {
-    "campaign": "Campaña",
-    "constraints": "Restricciones",
-    "coverages": "Agendas",
-    "profile": "Perfil",
-    "requests": "Solicitudes",
-    "schedule": "Horario",
-    "sign_out": "Cerrar sesión",
-    "shifts": "Turnos",
-    "stats": "Estadísticas",
-    "workers": "Trabajadores"
+  "campaign": "Campaña",
+  "constraints": "Reglas",
+  "profile": "Perfil",
+  "requests": "Solicitudes",
+  "schedule": "Horario",
+  "settings": "Configuración",
+  "shift_demands": "Cobertura",
+  "sign_out": "Cerrar sesión",
+  "signing_out": "Cerrando sesión...",
+  "shifts": "Turnos",
+  "stats": "Estadísticas",
+  "swaps": "Intercambios",
+  "teams": "Equipos",
+  "workers": "Equipo",
+  "notifications": "Notificaciones"
 }

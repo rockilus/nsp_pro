@@ -1,9 +1,16 @@
 {
-    "monday": "Lunes",
-    "tuesday": "Martes",
-    "wednesday": "Miércoles",
-    "thursday": "Jueves",
-    "friday": "Viernes",
-    "saturday": "Sábado",
-    "sunday": "Domingo"
+  "monday": "Lunes",
+  "monday_short": "L",
+  "tuesday": "Martes",
+  "tuesday_short": "M",
+  "wednesday": "Miércoles",
+  "wednesday_short": "M",
+  "thursday": "Jueves",
+  "thursday_short": "J",
+  "friday": "Viernes",
+  "friday_short": "V",
+  "saturday": "Sábado",
+  "saturday_short": "S",
+  "sunday": "Domingo",
+  "sunday_short": "D"
 }

@@ -1,17 +1,15 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from 'react';
 // MUI
-import Checkbox from "@mui/material/Checkbox";
-import TableCell from "@mui/material/TableCell";
-import TextField from "@mui/material/TextField";
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
+import TableCell from '@mui/material/TableCell';
+import TextField from '@mui/material/TextField';
 // Components
-import AttributeCellDimEntries from "./attribute-cell-dim-entries";
+import AttributeCellDimEntries from './attribute-cell-dim-entries';
 // Types
-import {
-  DimensionEntryType,
-  DimEntryT,
-  DimensionT,
-} from "../../../types/dimension";
-import { AttributeT } from "@/types/attribute";
+import { DimensionEntryType, DimensionT } from '../../../types/dimension';
+import { DimEntryT } from '@/types/dim-entry';
+import { AttributeT } from '@/types/attribute';
 
 export default function AttributeCell({
   selectedTeamId,
@@ -21,6 +19,7 @@ export default function AttributeCell({
   editing,
   setEditing,
   handleUpdateAttribute,
+  className = '',
 }: {
   selectedTeamId: string;
   attribute: AttributeT;
@@ -29,17 +28,13 @@ export default function AttributeCell({
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
+  className?: string;
 }) {
-  const [valueState, setValueState] = useState<string | number | boolean>(
-    attribute.value
-  );
+  const [valueState, setValueState] = useState<string | number | boolean>(attribute.value);
 
   const handleEditConfirm = async () => {
     if (valueState !== attribute.value) {
-      handleUpdateAttribute(
-        { ...attribute, value: valueState },
-        selectedTeamId
-      );
+      handleUpdateAttribute({ ...attribute, value: valueState }, selectedTeamId);
     }
     setEditing({});
   };
@@ -50,7 +45,7 @@ export default function AttributeCell({
         ...attribute,
         value: !attribute.value,
       },
-      selectedTeamId
+      selectedTeamId,
     );
   };
 
@@ -59,19 +54,23 @@ export default function AttributeCell({
     setValueState(attribute.value);
   };
 
+  const shouldCenter =
+    dimension.entryType === DimensionEntryType.BOOL ||
+    dimension.entryType === DimensionEntryType.INT;
+  const cellClassName = shouldCenter ? `${className} shared-field-center`.trim() : className;
+
   return (
     <>
       <TableCell
         key={dimension.id}
         component="th"
         scope="row"
+        className={cellClassName}
+        data-testid={`attribute-cell-${attribute.ownerId}-${dimension.id}`}
         onClick={() => setEditing({ [attribute.ownerId]: dimension.id })}
         sx={{
           paddingY: 0,
-          cursor:
-            dimension.entryType === DimensionEntryType.DIM_ENTRIES
-              ? "default"
-              : "pointer",
+          cursor: dimension.entryType === DimensionEntryType.DIM_ENTRIES ? 'default' : 'pointer',
         }}
       >
         {dimension.entryType === DimensionEntryType.DIM_ENTRIES ? (
@@ -89,12 +88,13 @@ export default function AttributeCell({
               type="number"
               name={dimension.name}
               value={valueState}
+              data-testid={`attribute-number-field-${attribute.ownerId}-${dimension.id}`}
               onChange={(e) => setValueState(e.target.value)}
               onBlur={handleEditConfirm}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === 'Enter') {
                   handleEditConfirm();
-                } else if (e.key === "Escape") {
+                } else if (e.key === 'Escape') {
                   handleEditCancel();
                 }
               }}
@@ -106,12 +106,13 @@ export default function AttributeCell({
               type="text"
               name={dimension.name}
               value={valueState}
+              data-testid={`attribute-text-field-${attribute.ownerId}-${dimension.id}`}
               onChange={(e) => setValueState(e.target.value)}
               onBlur={handleEditConfirm}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === 'Enter') {
                   handleEditConfirm();
-                } else if (e.key === "Escape") {
+                } else if (e.key === 'Escape') {
                   handleEditCancel();
                 }
               }}
@@ -119,14 +120,21 @@ export default function AttributeCell({
             />
           )
         ) : dimension.entryType === DimensionEntryType.BOOL ? (
-          <Checkbox
-            checked={
-              typeof attribute.value === "boolean"
-                ? attribute.value
-                : attribute.value === 1
-            }
-            onClick={handleToggle}
-          />
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Checkbox
+              checked={
+                typeof attribute.value === 'boolean' ? attribute.value : attribute.value === 1
+              }
+              data-testid={`attribute-checkbox-${attribute.ownerId}-${dimension.id}`}
+              onClick={handleToggle}
+            />
+          </Box>
         ) : (
           attribute.value
         )}

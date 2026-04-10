@@ -1,10 +1,17 @@
 from datetime import date, timedelta
-from typing import List
 
-from shared.schemas import EngineInputsAugmented, LinkShift, Shift, Worker, WorkerDates
+from shared.schemas.core import (
+    EngineInputsAugmented,
+    LinkShift,
+    Shift,
+    Worker,
+    WorkerDates,
+)
 
 from core_to_engine_service.build_dates import build_worker_ids_to_worker_dates
-from core_to_engine_service.build_link_shift_pairs import build_link_shift_pairs
+from core_to_engine_service.build_link_shift_pairs import (
+    build_link_shift_pairs,
+)
 
 # pylint: disable=unused-import
 from tests.sample_data import sample_data_fixture  # noqa: F401
@@ -14,13 +21,14 @@ from tests.sample_data import sample_data_fixture  # noqa: F401
 class TestBuildLinkShiftPairs:
     # pylint: disable=redefined-outer-name, too-many-locals
     def test_build_link_shift_pairs(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts
         schedule = sample_data_fixture.schedule
         fixed_assignments = (
-            sample_data_fixture.as_hist + sample_data_fixture.as_wip_fixed
+            sample_data_fixture.as_hist + sample_data_fixture.as_campaign_fixed
         )
 
         shift_target_1 = next((shift for shift in shifts if shift.id == "s0"), None)
@@ -45,7 +53,7 @@ class TestBuildLinkShiftPairs:
             schedule, workers, fixed_assignments, dates_campaign
         )
         shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
-        dsds = sample_data_fixture.daily_shift_demands
+        dsds = sample_data_fixture.shift_demands
 
         # Call the method under test
         ls_pairs = build_link_shift_pairs(
@@ -96,13 +104,14 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_empty_workers(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
-        workers: List[Worker] = []
+        workers: list[Worker] = []
         shifts = sample_data_fixture.shifts
         schedule = sample_data_fixture.schedule
         fixed_assignments = (
-            sample_data_fixture.as_hist + sample_data_fixture.as_wip_fixed
+            sample_data_fixture.as_hist + sample_data_fixture.as_campaign_fixed
         )
 
         shift_target_1 = next((shift for shift in shifts if shift.id == "s0"), None)
@@ -133,7 +142,7 @@ class TestBuildLinkShiftPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
-            sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.shift_demands,
             sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
@@ -143,13 +152,14 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_empty_shifts(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
-        shifts: List[Shift] = sample_data_fixture.shifts
+        shifts: list[Shift] = sample_data_fixture.shifts
         schedule = sample_data_fixture.schedule
         fixed_assignments = (
-            sample_data_fixture.as_hist + sample_data_fixture.as_wip_fixed
+            sample_data_fixture.as_hist + sample_data_fixture.as_campaign_fixed
         )
         shift_target_1 = next((shift for shift in shifts if shift.id == "s0"), None)
         shift_target_2 = next((shift for shift in shifts if shift.id == "s1"), None)
@@ -179,7 +189,7 @@ class TestBuildLinkShiftPairs:
             worker_ids_to_worker_dates,
             [],
             link_shifts,
-            sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.shift_demands,
             sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
@@ -189,13 +199,14 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_deleted_shift(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts
         schedule = sample_data_fixture.schedule
         fixed_assignments = (
-            sample_data_fixture.as_hist + sample_data_fixture.as_wip_fixed
+            sample_data_fixture.as_hist + sample_data_fixture.as_campaign_fixed
         )
 
         shifts[0].deleted = True
@@ -229,7 +240,7 @@ class TestBuildLinkShiftPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
-            sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.shift_demands,
             sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 
@@ -239,7 +250,8 @@ class TestBuildLinkShiftPairs:
 
     # pylint: disable=redefined-outer-name
     def test_worker_with_no_dates(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts
@@ -271,7 +283,7 @@ class TestBuildLinkShiftPairs:
             worker_ids_to_worker_dates,
             shifts_not_deleted,
             link_shifts,
-            sample_data_fixture.daily_shift_demands,
+            sample_data_fixture.shift_demands,
             sample_data_fixture.penalties.configuration_constraint.link_shift,
         )
 

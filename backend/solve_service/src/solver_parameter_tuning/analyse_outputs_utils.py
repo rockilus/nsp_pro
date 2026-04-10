@@ -3,7 +3,7 @@ import os
 import re
 from collections import defaultdict
 from statistics import mean
-from typing import Dict, List, Set, Tuple, cast
+from typing import cast
 
 import pandas as pd
 
@@ -11,7 +11,7 @@ import pandas as pd
 def build_output_table(directory: str) -> pd.DataFrame:
     files_content, case_names = load_json_files(directory)
     params_to_outputs = files_content_to_params_to_outputs(files_content, case_names)
-    params_to_outputs_mean: Dict[Tuple, Dict[str, str | Dict]] = {}
+    params_to_outputs_mean: dict[tuple, dict[str, str | dict]] = {}
     for params_tuple, case_dict in params_to_outputs.items():
         params_to_outputs_mean.setdefault(params_tuple, {})["outputs"] = (
             aggregate_dicts(case_dict["outputs"])  # type: ignore
@@ -26,15 +26,15 @@ def build_output_table(directory: str) -> pd.DataFrame:
     return df
 
 
-def load_json_file(file_path: str) -> Dict:
-    with open(file_path, "r", encoding="utf-8") as file:
+def load_json_file(file_path: str) -> dict:
+    with open(file_path, encoding="utf-8") as file:
         return json.load(file)
 
 
-def load_json_files(directory: str) -> Tuple[List[Dict], List[str]]:
+def load_json_files(directory: str) -> tuple[list[dict], list[str]]:
     """Load all JSON files in a directory."""
-    files_content: List[Dict] = []
-    case_names: List[str] = []
+    files_content: list[dict] = []
+    case_names: list[str] = []
     for filename in os.listdir(directory):
         if filename.endswith(".json"):
             match = re.match(r"(.+)_\d+\.\d+\.json", filename)  # Extract case name
@@ -49,9 +49,9 @@ def load_json_files(directory: str) -> Tuple[List[Dict], List[str]]:
 
 
 def files_content_to_params_to_outputs(
-    files_content: List[Dict], case_names: List[str]
-) -> Dict[Tuple, Dict[str, str | List[Dict]]]:
-    out: Dict[Tuple, Dict[str, str | List[Dict]]] = {}
+    files_content: list[dict], case_names: list[str]
+) -> dict[tuple, dict[str, str | list[dict]]]:
+    out: dict[tuple, dict[str, str | list[dict]]] = {}
     for file_content, case_name in zip(files_content, case_names):
         params = file_content.get("params", {})
         for key in ["subsolvers", "ignore_subsolvers", "restart_algorithms"]:
@@ -74,7 +74,7 @@ def files_content_to_params_to_outputs(
     return out
 
 
-def aggregate_dicts(dict_list: List[Dict]) -> Dict:
+def aggregate_dicts(dict_list: list[dict]) -> dict:
     if not dict_list:
         return {}
 
@@ -97,7 +97,7 @@ def aggregate_dicts(dict_list: List[Dict]) -> Dict:
 
 
 def create_params_outputs_table(
-    params_to_outputs: Dict[Tuple, Dict[str, str | Dict]],
+    params_to_outputs: dict[tuple, dict[str, str | dict]],
 ) -> pd.DataFrame:
     columns = {
         case: cast(str, params_to_outputs[case]["case_name"])
@@ -106,8 +106,8 @@ def create_params_outputs_table(
     # Sort the columns by alphabetical order
     columns = dict(sorted(columns.items(), key=lambda item: item[1]))
     # Collect all possible output and parameter keys
-    all_outputs: Set[str] = set()
-    all_params: Set[str] = set()
+    all_outputs: set[str] = set()
+    all_params: set[str] = set()
 
     for case in params_to_outputs.values():
         all_outputs.update(case["outputs"].keys())  # type: ignore
@@ -163,7 +163,7 @@ def save_output_to_xlsx(df: pd.DataFrame, file_path: str) -> None:
     df.to_excel(file_path, index=True, engine="xlsxwriter")
 
 
-def filter_files_by_params(directory: str, params_list: List[Dict]) -> List[Dict]:
+def filter_files_by_params(directory: str, params_list: list[dict]) -> list[dict]:
     files_content, _ = load_json_files(directory)
     filtered_content = [
         file_content

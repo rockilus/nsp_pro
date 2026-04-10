@@ -1,13 +1,13 @@
-import React from "react";
+import React from 'react';
 // MUI
-import Box from "@mui/material/Box";
-import Menu from "@mui/material/Menu";
+import Box from '@mui/material/Box';
+import Menu from '@mui/material/Menu';
 // Components
-import ConstraintEdit from "../edit-constraint/constraint-edit";
+import ConstraintEdit from '../edit-constraint/constraint-edit';
 // Types
-import { ConstraintT, TemplateT } from "../../../types/constraint";
-import { WorkerT } from "../../../types/worker";
-import { ShiftT } from "../../../types/shift";
+import { ConstraintT, TemplateT } from '../../../types/constraint';
+import { WorkerT } from '../../../types/worker';
+import { ShiftT } from '../../../types/shift';
 
 export default function ConstraintButton({
   lng,
@@ -16,7 +16,6 @@ export default function ConstraintButton({
   buttonElement,
   constraint,
   constraintTemplate,
-  handleAddConstraint,
   handleUpdateConstraint,
 }: {
   lng: string;
@@ -25,7 +24,6 @@ export default function ConstraintButton({
   buttonElement: React.ReactNode;
   constraint: ConstraintT;
   constraintTemplate: TemplateT | null;
-  handleAddConstraint: (constraint: ConstraintT) => void;
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
 }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -38,9 +36,21 @@ export default function ConstraintButton({
     setAnchorEl(null);
   };
 
+  // Dummy function for compatibility - we only use handleUpdateConstraint in edit mode
+  const handleAddConstraint = (_: ConstraintT) => {
+    // This won't actually be used, since we're editing an existing constraint
+    handleClose();
+  };
+
+  // Wrap the update constraint handler to close the menu after update
+  const wrappedUpdateConstraint = (updatedConstraint: ConstraintT) => {
+    handleUpdateConstraint(updatedConstraint);
+    handleClose();
+  };
+
   return (
-    <Box style={{ width: "100%" }}>
-      <Box onClick={handleClick} sx={{ display: "inline-flex", minWidth: 0 }}>
+    <Box style={{ width: '100%' }}>
+      <Box onClick={handleClick} sx={{ display: 'inline-flex', minWidth: 0 }}>
         {buttonElement}
       </Box>
       <Menu
@@ -49,15 +59,16 @@ export default function ConstraintButton({
         open={open}
         onClose={handleClose}
         MenuListProps={{
-          "aria-labelledby": "basic-button",
+          'aria-labelledby': 'basic-button',
         }}
         slotProps={{
           paper: {
             style: {
-              width: "95%",
+              width: '95%',
             },
           },
         }}
+        data-testid="constraint-edit-popup"
       >
         <ConstraintEdit
           lng={lng}
@@ -66,7 +77,7 @@ export default function ConstraintButton({
           constraint={constraint}
           template={constraintTemplate}
           handleAddConstraint={handleAddConstraint}
-          handleUpdateConstraint={handleUpdateConstraint}
+          handleUpdateConstraint={wrappedUpdateConstraint}
         />
       </Menu>
     </Box>

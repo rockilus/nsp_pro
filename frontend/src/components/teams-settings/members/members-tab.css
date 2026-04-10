@@ -1,0 +1,10 @@
+.members-tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.3rem;
+}
+
+.invitations-container {
+  margin-top: 30px;
+}

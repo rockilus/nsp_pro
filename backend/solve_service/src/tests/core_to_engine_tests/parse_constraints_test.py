@@ -1,8 +1,11 @@
-from typing import Callable, Tuple
+from collections.abc import Callable
 
 import pytest
-from shared.constraint_parser import parse_constraints
-from shared.schemas import (
+from shared.constraint_parser import (
+    build_dim_to_attr_value_to_owner,
+    parse_constraints,
+)
+from shared.schemas.core import (
     ConstraintBuildAugmented,
     ConstraintFai,
     ConstraintFil,
@@ -18,12 +21,10 @@ from core_to_engine_service.build_dates import (
     build_dates,
     build_worker_ids_to_worker_dates,
 )
-from core_to_engine_service.build_dim_to_attr_value_to_owner import (
-    build_dim_to_attr_value_to_owner,
-)
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
+    build_periods_yearly,
 )
 
 
@@ -47,35 +48,37 @@ class TestParseConstraints:
         )
         dates_hist, dates_campaign = build_dates(
             engine_inputs.schedule,
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs.as_hist + engine_inputs.as_campaign_fixed,
         )
         periods_weekly = build_periods_weekly(dates_hist, dates_campaign)
         periods_monthly = build_periods_monthly(dates_hist, dates_campaign)
+        periods_yearly = build_periods_yearly(dates_hist, dates_campaign)
         worker_ids_to_worker_dates = build_worker_ids_to_worker_dates(
             engine_inputs.schedule,
             engine_inputs.workers,
-            engine_inputs.as_hist + engine_inputs.as_wip_fixed,
+            engine_inputs.as_hist + engine_inputs.as_campaign_fixed,
             dates_campaign,
         )
         return lambda inputs: parse_constraints(  # type: ignore
-            engine_inputs.cbs_augmented,
-            engine_inputs.schedule.id,
-            engine_inputs.workers,
-            dim_to_attr_value_to_worker,
-            dates_hist,
-            dates_campaign,
-            periods_weekly,
-            periods_monthly,
-            worker_ids_to_worker_dates,
-            engine_inputs.shifts,
-            dim_to_attr_value_to_shift,
-            engine_inputs.penalties,
+            cbas=engine_inputs.cbs_augmented,
+            schedule_id=engine_inputs.schedule.id,
+            workers=engine_inputs.workers,
+            worker_dim_dict=dim_to_attr_value_to_worker,
+            dates_hist=dates_hist,
+            dates_campaign=dates_campaign,
+            periods_weekly=periods_weekly,
+            periods_monthly=periods_monthly,
+            periods_yearly=periods_yearly,
+            worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+            shifts=engine_inputs.shifts,
+            shift_dim_dict=dim_to_attr_value_to_shift,
+            penalties=engine_inputs.penalties,
         )
 
     def test_parse_constraints(
         self,
         engine_inputs: EngineInputsAugmented,
-        constraint_with_expected_output: Tuple[
+        constraint_with_expected_output: tuple[
             ConstraintBuildAugmented,
             ConstraintFai
             | ConstraintFil

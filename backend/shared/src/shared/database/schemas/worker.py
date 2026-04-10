@@ -2,7 +2,7 @@ from datetime import datetime, time, timezone
 from typing import Any, Dict, List, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.worker import Worker
+from shared.schemas.core.worker import Worker
 
 
 class WorkerSchema(DocumentBaseSchema):
@@ -20,6 +20,7 @@ class WorkerSchema(DocumentBaseSchema):
     annual_leave: int
     specialties: List[str] = []
     deleted: bool = False
+    user_id: Optional[str] = None
 
     def to_mongo(self) -> Dict[str, Any]:
         out = super().to_mongo()
@@ -52,6 +53,7 @@ class WorkerSchema(DocumentBaseSchema):
             annual_leave=self.annual_leave,
             specialty_ids=self.specialties,
             deleted=self.deleted,
+            user_id=self.user_id,
         )
 
     @classmethod
@@ -78,4 +80,5 @@ class WorkerSchema(DocumentBaseSchema):
             annual_leave=worker.annual_leave,
             specialties=worker.specialty_ids,
             deleted=worker.deleted,
+            user_id=worker.user_id,
         )

@@ -1,15 +1,16 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.team import TeamSchema
-from shared.schemas.schemas.team import Team
+from shared.schemas.core.team import Team
 
 
 class TeamRepository(BaseRepository[TeamSchema]):
     """Repository for team documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("teams", TeamSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "teams", TeamSchema)
 
     def create_team(self, team: Team) -> Team:
         """Create a new team."""
@@ -22,21 +23,16 @@ class TeamRepository(BaseRepository[TeamSchema]):
         teams = self.find_all()
         return [team.to_core() for team in teams]
 
-    def get_team_by_id(self, team_id: str) -> Team:
+    def get_team_by_id(self, team_id: str) -> Team | None:
         """Get a team by its ID."""
         team = self.find_by_id(team_id)
-        if not team:
-            raise Exception(f"Team with id {team_id} not found")
+        if team is None:
+            return None
         return team.to_core()
 
     def get_teams_by_ids(self, team_ids: List[str]) -> List[Team]:
         """Get multiple teams by their IDs."""
         teams = self.find_all({"_id": {"$in": team_ids}})
-        return [team.to_core() for team in teams]
-
-    def get_teams_by_leader_id(self, leader_id: str) -> List[Team]:
-        """Get all teams for a leader."""
-        teams = self.find_all({"team_leaders": leader_id})
         return [team.to_core() for team in teams]
 
     def update_team(self, team: Team) -> Team:

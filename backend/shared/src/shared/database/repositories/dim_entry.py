@@ -1,15 +1,16 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
-from shared.database.schemas.dimension import DimEntrySchema
-from shared.schemas.schemas.dimension import DimEntry
+from shared.database.schemas.dim_entry import DimEntrySchema
+from shared.schemas.core.dim_entry import DimEntry
 
 
 class DimEntryRepository(BaseRepository[DimEntrySchema]):
     """Repository for dim entry documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("dim_entries", DimEntrySchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "dim_entries", DimEntrySchema)
 
     def create_dim_entry(self, dim_entry: DimEntry) -> DimEntry:
         """Create a new dim entry."""

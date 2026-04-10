@@ -1,13 +1,17 @@
-from datetime import timedelta
-from typing import List
+from datetime import UTC, datetime, timedelta
 
-from shared.schemas import (
+from shared.augment import requests_to_requests_augmented
+from shared.schemas.core import (
     Breach,
     EngineInputsAugmented,
+    FulfillmentStatus,
     LinkShift,
     ObjectiveCategory,
     Request,
     RequestStatus,
+    RequestType,
+    ShiftWorkerOption,
+    SWOIdTypes,
     Variable,
 )
 
@@ -24,7 +28,8 @@ from tests.sample_data import sample_data_fixture  # noqa: F401
 class TestDutyRecupConstraint:
     # pylint: disable=redefined-outer-name, too-many-locals
     def test_link_shift(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:  # noqa: F811
         shifts = sample_data_fixture.shifts
         shift_target_1 = next((shift for shift in shifts if shift.id == "s0"), None)
@@ -47,7 +52,7 @@ class TestDutyRecupConstraint:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dsds = sample_data_fixture.daily_shift_demands
+        dsds = sample_data_fixture.shift_demands
 
         # Check target shifts assigned
         for d in dates:
@@ -84,7 +89,8 @@ class TestDutyRecupConstraint:
 
     # pylint: disable=redefined-outer-name
     def test_link_shift_conflict(
-        self, sample_data_fixture: EngineInputsAugmented  # noqa: F811
+        self,
+        sample_data_fixture: EngineInputsAugmented,  # noqa: F811
     ) -> None:
         workers = sample_data_fixture.workers
         shifts = sample_data_fixture.shifts
@@ -94,17 +100,30 @@ class TestDutyRecupConstraint:
         date_target = schedule.start_date
         shift_target_0_id = "s0"
         shift_target_1_id = "s1"
-        requests: List[Request] = [
+        requests: list[Request] = [
             Request(
                 id="r0",
                 team_id="t0",
                 worker_id=worker_target_0.id,
                 start_date=date_target,
                 end_date=date_target,
-                shift_id=shift_target_0_id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=shift_target_0_id,
+                        id=shift_target_0_id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=shift_target_0_id,
+                    )
+                ],
                 negative=False,
                 hard=True,
-                status=RequestStatus.PENDING,
+                status=RequestStatus.DEFERRED,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=UTC),
             ),
             Request(
                 id="r0",
@@ -112,13 +131,33 @@ class TestDutyRecupConstraint:
                 worker_id=worker_target_1.id,
                 start_date=date_target,
                 end_date=date_target,
-                shift_id=shift_target_1_id,
+                shift_id=None,
+                shift_options=[
+                    ShiftWorkerOption(
+                        name=shift_target_1_id,
+                        id=shift_target_1_id,
+                        id_type=SWOIdTypes.SHIFT,
+                        is_bool_dim=False,
+                        category_name=shift_target_1_id,
+                    )
+                ],
                 negative=False,
                 hard=True,
-                status=RequestStatus.PENDING,
+                status=RequestStatus.DEFERRED,
+                request_type=RequestType.WORK_DEMAND,
+                fulfillment=FulfillmentStatus.NOT_PROCESSED,
+                comment="",
+                created_at=datetime.now(tz=UTC),
             ),
         ]
-        sample_data_fixture.requests = requests
+        sample_data_fixture.requests_work = requests_to_requests_augmented(
+            requests=requests,
+            workers=workers,
+            shifts=shifts,
+            dimensions=sample_data_fixture.dimensions,
+            dim_entries=sample_data_fixture.dim_entries,
+            attributes=sample_data_fixture.attributes,
+        )
 
         shift_target_0 = next(
             (shift for shift in shifts if shift.id == shift_target_0_id), None
@@ -144,7 +183,7 @@ class TestDutyRecupConstraint:
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
         ]
-        dsds = sample_data_fixture.daily_shift_demands
+        dsds = sample_data_fixture.shift_demands
 
         # Check target shifts assigned
         for d in dates:
@@ -184,18 +223,18 @@ class TestDutyRecupConstraint:
             assert a_s1 is not None
 
         # Check requests are complied with
-        for r in requests:
+        for r in sample_data_fixture.requests_work:
             count_actual = sum(
                 1
                 for a in outputs.assignments
                 if a.worker_id == r.worker_id
-                and a.shift_id == r.shift_id
+                and a.shift_id in r.shift_target_ids
                 and a.date == r.start_date
             )
             assert count_actual == 1
 
         # Check output contains expected breach
-        breaches: List[Breach] = _parse_breaches_engine(schedule, outputs.breaches)
+        breaches: list[Breach] = _parse_breaches_engine(schedule, outputs.breaches)
         assert len(breaches) == 1
         breaches_expected = [
             Breach(

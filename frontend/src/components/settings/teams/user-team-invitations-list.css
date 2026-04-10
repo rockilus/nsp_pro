@@ -1,0 +1,43 @@
+.invites-list-container {
+  display: flex;
+  flex-direction: column;
+  border: 0.0625rem solid #e5e7eb;
+  border-radius: 0.375rem;
+  margin-top: 10px;
+}
+
+.invites-list-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 0.0625rem solid #e5e7eb;
+  padding: 1rem;
+}
+
+.invites-list-item.first-item {
+  border-top: none;
+}
+
+.invites-list-item-name {
+  color: #1976d2;
+}
+
+.invites-list-item-info {
+  color: #616161;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.invites-list-item-info-divider {
+  color: #616161;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin: 0 5px;
+}
+
+.invites-list-item-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}

@@ -1,41 +1,53 @@
-from datetime import datetime, timezone
-from typing import List, Tuple
+from datetime import UTC, datetime
 
-from shared.schemas import (
+from shared.schemas.core import (
     Assignment,
     Breach,
-    DailyShiftDemand,
+    EngineInputsAugmented,
     LinkShift,
-    ModelOutput,
-    ModelOutputStatus,
-    Request,
+    RequestAugmented,
     Schedule,
     Shift,
+    ShiftDemandNew,
+    SolverOutputMetadata,
+    SolverOutputStatus,
     Worker,
 )
+from shared.schemas.core.solve_task_status import ScheduleSolveStatus
 
+from engine import Inputs, ProcessingCache
 from engine import Outputs as OutputsEngine
-from engine import ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches import build_breaches
-from engine_to_core_service.build_campaign_assignments import build_campaign_assignments
-from engine_to_core_service.update_requests import (
-    update_requests_and_build_request_breaches,
+from engine_to_core_service.build_campaign_assignments import (
+    build_campaign_assignments,
 )
-from engine_to_core_service.update_schedule import update_schedule_status
+from engine_to_core_service.update_schedule import get_schedule_status
+
+# from engine_to_core_service.update_requests import (
+#     update_requests_and_build_request_breaches,
+# )
 
 
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments, too-many-locals, too-many-positional-arguments
 def engine_to_core(
     schedule: Schedule,
     outputs: OutputsEngine,
-    workers: List[Worker],
-    shifts: List[Shift],
-    link_shifts: List[LinkShift],
-    daily_shift_demand: List[DailyShiftDemand],
-    requests: List[Request],
-    as_hist: List[Assignment],
+    workers: list[Worker],
+    shifts: list[Shift],
+    link_shifts: list[LinkShift],
+    daily_shift_demand: list[ShiftDemandNew],
+    requests: list[RequestAugmented],
+    as_hist: list[Assignment],
     processing_cache: ProcessingCache,
-) -> Tuple[Schedule, List[Assignment], List[Breach], List[Request], ModelOutput]:
+    engine_inputs: EngineInputsAugmented,
+    inputs: Inputs,
+) -> tuple[
+    ScheduleSolveStatus,
+    list[Assignment],
+    list[Breach],
+    list[RequestAugmented],
+    SolverOutputMetadata,
+]:
     as_campaign = build_campaign_assignments(schedule, outputs.assignments)
     assignments = as_hist + as_campaign
     breaches = build_breaches(
@@ -48,21 +60,22 @@ def engine_to_core(
         requests,
         outputs.breaches,
         processing_cache,
+        outputs,
+        engine_inputs=engine_inputs,
+        inputs=inputs,
     )
-    schedule = update_schedule_status(schedule, outputs.is_solution, breaches)
-    requests = update_requests_and_build_request_breaches(assignments, requests)
-    model_output = ModelOutput(
-        id="",
-        schedule_id=schedule.id,
-        status=ModelOutputStatus(outputs.status),
-        var_sol=outputs.var_sol,
-        var_spe_sol=outputs.var_spe_sol,
+    schedule_solve_status = get_schedule_status(
+        is_solution=outputs.is_solution, breaches=breaches
+    )
+    # requests = update_requests_and_build_request_breaches(assignments, requests)
+    model_output = SolverOutputMetadata(
+        status=SolverOutputStatus.from_int(outputs.status),
         objective_value=outputs.objective_value,
         wall_time=outputs.wall_time,
-        output_time=datetime.now(timezone.utc),
+        output_time=datetime.now(UTC),
     )
     return (
-        schedule,
+        schedule_solve_status,
         as_campaign,
         breaches,
         requests,

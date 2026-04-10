@@ -1,16 +1,24 @@
-from datetime import date, datetime
-from typing import List, Union
+from datetime import date, datetime, time, timezone
+from typing import Any, Dict, List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.assignment import AssignmentSchema
-from shared.schemas.schemas.schedule import Assignment
+from shared.schemas.core.assignment import Assignment
 
 
+# pylint: disable=too-many-public-methods
 class AssignmentRepository(BaseRepository[AssignmentSchema]):
-    """Repository for assignment documents using PyMongo."""
+    """Repository for assignment documents using modern database interface."""
 
-    def __init__(self):
-        super().__init__("assignments", AssignmentSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        """
+        Initialize AssignmentRepository.
+
+        Args:
+            database_interface: Database interface instance
+        """
+        super().__init__(database_interface, "assignments", AssignmentSchema)
 
     def create_assignment(self, assignment: Assignment) -> Assignment:
         """Create a new assignment."""
@@ -32,16 +40,14 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         assignments = self.find_all({"team": team_id})
         return [a.to_core() for a in assignments]
 
-    def get_assignment_by_id(self, assignment_id: str) -> Assignment:
+    def get_assignment_by_id(self, assignment_id: str) -> Optional[Assignment]:
         """Get an assignment by its ID."""
         assignment = self.find_by_id(assignment_id)
-        if not assignment:
-            raise Exception(f"Assignment with id {assignment_id} not found")
-        return assignment.to_core()
+        return assignment.to_core() if assignment else None
 
     def get_assignment_by_worker_id_date_schedule_id(
         self, worker_id: str, a_date: date, schedule_id: str
-    ) -> Union[Assignment, None]:
+    ) -> Optional[Assignment]:
         """Get an assignment by worker, date, and schedule."""
         assignment = self.find_all(
             {
@@ -52,19 +58,66 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         )
         return assignment[0].to_core() if assignment else None
 
-    def get_assignments_by_dates(
-        self, team_id: str, start_date: date, end_date: date
-    ) -> List[Assignment]:
-        """Get all assignments for a team within a date range."""
-        assignments = self.find_all(
+    def get_assignment_by_worker_shift_team_and_date(
+        self, worker_id: str, shift_id: str, team_id: str, a_date: date
+    ) -> Optional[Assignment]:
+        """Get an assignment by worker ID, shift ID, team ID, and date."""
+        assignment = self.find_all(
             {
+                "worker": worker_id,
+                "shift": shift_id,
                 "team": team_id,
-                "date": {
-                    "$gte": datetime(start_date.year, start_date.month, start_date.day),
-                    "$lte": datetime(end_date.year, end_date.month, end_date.day),
-                },
+                "date": datetime(a_date.year, a_date.month, a_date.day),
             }
         )
+        return assignment[0].to_core() if assignment else None
+
+    def get_assignments_by_dates(
+        self,
+        team_id: str,
+        start_date: Optional[date],
+        end_date: Optional[date],
+        fixed: Optional[bool] = None,
+    ) -> List[Assignment]:
+        """Get all assignments for a team within a date range.
+
+        Behavior:
+        - both start_date and end_date provided: return assignments where
+            date >= start_date and date <= end_date
+        - only start_date provided: return assignments where
+            date >= start_date
+        - only end_date provided: return assignments where
+            date <= end_date
+        - neither provided: return an empty list
+        """
+        if not start_date and not end_date:
+            return []
+
+        date_filter: Dict[str, Any] = {}
+        if start_date:
+            date_filter["$gte"] = datetime(
+                start_date.year,
+                start_date.month,
+                start_date.day,
+                tzinfo=timezone.utc,
+            )
+        if end_date:
+            date_filter["$lte"] = datetime(
+                end_date.year,
+                end_date.month,
+                end_date.day,
+                tzinfo=timezone.utc,
+            )
+
+        query: Dict[str, Any] = {"team": team_id}
+        if date_filter:
+            query["date"] = date_filter
+
+        # Optionally filter by fixed flag (True = only fixed, False = only non-fixed)
+        if fixed is not None:
+            query["fixed"] = fixed
+
+        assignments = self.find_all(query)
         return [a.to_core() for a in assignments]
 
     def get_assignments_by_schedule_id(self, schedule_id: str) -> List[Assignment]:
@@ -79,12 +132,114 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         assignments = self.find_all({"schedule": {"$in": schedule_ids}})
         return [a.to_core() for a in assignments]
 
-    def get_assignments_fixed_by_schedule_ids(
-        self, schedule_ids: List[str]
+    def get_assignments_by_ids(
+        self, assignment_ids: List[str], raise_on_missing: bool = False
     ) -> List[Assignment]:
-        """Get all fixed assignments for a list of schedule IDs."""
-        assignments = self.find_all({"fixed": True, "schedule": {"$in": schedule_ids}})
+        """Get assignments by a list of assignment IDs.
+
+        Forgiving behavior (default): missing IDs are ignored and the
+        returned list may be unordered (MongoDB `$in` does not guarantee
+        input order).
+
+        If `raise_on_missing` is True, raise `ValueError` when any provided
+        id is not found.
+        """
+        if not assignment_ids:
+            return []
+
+        assignments = self.find_all({"_id": {"$in": assignment_ids}})
+        results = [a.to_core() for a in assignments]
+
+        if raise_on_missing:
+            found_ids = {r.id for r in results}
+            missing = [aid for aid in assignment_ids if aid not in found_ids]
+            if missing:
+                raise ValueError(f"Assignments not found for ids: {missing}")
+
+        return results
+
+    def get_assignments_by_schedule_ids_and_date_range(
+        self, schedule_ids: List[str], start_date: date, end_date: date
+    ) -> List[Assignment]:
+        """Get assignments by a list of schedule IDs and a date range."""
+        if not schedule_ids or not start_date or not end_date:
+            return []
+
+        # Convert start and end dates to datetime objects
+        start_datetime = datetime(
+            start_date.year,
+            start_date.month,
+            start_date.day,
+            tzinfo=timezone.utc,
+        )
+        end_datetime = datetime(
+            end_date.year,
+            end_date.month,
+            end_date.day,
+            tzinfo=timezone.utc,
+        )
+
+        assignments = self.find_all(
+            {
+                "schedule": {"$in": schedule_ids},
+                "date": {"$gte": start_datetime, "$lte": end_datetime},
+            }
+        )
         return [a.to_core() for a in assignments]
+
+    def get_assignments_by_team_and_shifts_today_onward(
+        self, team_id: str, shift_ids: List[str]
+    ) -> List[Assignment]:
+        """Get all assignments for a team and list of shift IDs from today onward."""
+        today = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        assignments = self.find_all(
+            {
+                "team": team_id,
+                "shift": {"$in": shift_ids},
+                "date": {"$gte": today},
+            }
+        )
+        return [a.to_core() for a in assignments]
+
+    def get_assignments_by_reference_id(self, reference_id: str) -> List[Assignment]:
+        """Get assignments by their reference assignment ID."""
+        assignments = self.find_all({"reference_assignment_id": reference_id})
+        return [assignment.to_core() for assignment in assignments]
+
+    def get_assignments_by_source_id(self, source_id: str) -> List[Assignment]:
+        """Get all assignments created from a specific recurrence rule."""
+        assignments = self.find_all({"source_id": source_id})
+        return [assignment.to_core() for assignment in assignments]
+
+    def get_assignments_by_source_id_and_dates(
+        self, source_id: str, start_date: date, end_date: date
+    ) -> List[Assignment]:
+        """Get assignments for a recurrence within a specific date range."""
+        if not source_id or not start_date or not end_date:
+            return []
+
+        start_datetime = datetime(
+            start_date.year,
+            start_date.month,
+            start_date.day,
+            tzinfo=timezone.utc,
+        )
+        end_datetime = datetime(
+            end_date.year,
+            end_date.month,
+            end_date.day,
+            tzinfo=timezone.utc,
+        )
+
+        assignments = self.find_all(
+            {
+                "source_id": source_id,
+                "date": {"$gte": start_datetime, "$lte": end_datetime},
+            }
+        )
+        return [assignment.to_core() for assignment in assignments]
 
     def update_assignment(self, assignment: Assignment) -> Assignment:
         """Update an assignment."""
@@ -113,6 +268,74 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
                 f"Assignment with id {assignment_id} not found or already deleted"
             )
 
+    def delete_assignments(self, assignment_ids: List[str]) -> List[str]:
+        result = self.collection.delete_many({"_id": {"$in": assignment_ids}})
+        return assignment_ids if result.deleted_count > 0 else []
+
+    def delete_assignments_by_dates(
+        self,
+        team_id: str,
+        start_date: Optional[date],
+        end_date: Optional[date],
+        delete_fixed: bool = False,
+    ) -> List[str]:
+        """Delete all assignments for a team within a date range.
+
+            Behavior mirrors `get_assignments_by_dates`:
+            - both start_date and end_date provided: delete assignments where
+                date >= start_date and date <= end_date
+            - only start_date provided: delete assignments where
+                date >= start_date
+            - only end_date provided: delete assignments where
+                date <= end_date
+            - neither provided: do nothing and return []
+
+        If `delete_fixed` is True: delete both fixed and non-fixed assignments.
+        If `delete_fixed` is False: delete only non-fixed assignments (fixed == False).
+
+            Returns:
+                List[str]: list of deleted assignment ids
+        """
+        if not start_date and not end_date:
+            return []
+
+        date_filter: Dict[str, Any] = {}
+        if start_date:
+            date_filter["$gte"] = datetime(
+                start_date.year,
+                start_date.month,
+                start_date.day,
+                tzinfo=timezone.utc,
+            )
+        if end_date:
+            date_filter["$lte"] = datetime(
+                end_date.year,
+                end_date.month,
+                end_date.day,
+                tzinfo=timezone.utc,
+            )
+
+        query: Dict[str, Any] = {"team": team_id}
+        if date_filter:
+            query["date"] = date_filter
+
+        # If delete_fixed is False, we should only delete non-fixed assignments.
+        # If delete_fixed is True, we do not add any fixed filter and delete all
+        # matching
+        # assignments regardless of their `fixed` flag.
+        if not delete_fixed:
+            query["fixed"] = False
+
+        # Find matching assignments and collect their ids
+        matching = self.collection.find(query, {"_id": 1})
+        deleted_ids = [doc["_id"] for doc in matching]
+
+        # Delete them
+        if deleted_ids:
+            self.collection.delete_many(query)
+
+        return deleted_ids
+
     def delete_assignments_by_schedule_id(self, schedule_id: str) -> None:
         """Delete all assignments for a specific schedule."""
         self.collection.delete_many({"schedule": schedule_id})
@@ -124,3 +347,123 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
     def delete_assignments_by_shift_id(self, shift_id: str) -> None:
         """Delete all assignments for a specific shift."""
         self.collection.delete_many({"shift": shift_id})
+
+    def delete_assignments_by_team_and_shift_today_onward(
+        self, team_id: str, shift_id: str
+    ) -> None:
+        """Delete all assignments from today onward for a specific team and shift."""
+        today = datetime.now(timezone.utc).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        self.collection.delete_many(
+            {
+                "team": team_id,
+                "shift": shift_id,
+                "date": {"$gte": today},
+            }
+        )
+
+    def delete_assignments_by_team_worker_shift_and_date(
+        self, team_id: str, worker_id: str, shift_id: str, a_date: date
+    ) -> List[str]:
+        """Delete assignments for a given team ID, worker ID, shift ID, and date."""
+        start_of_day = datetime.combine(a_date, time.min, tzinfo=timezone.utc)
+        end_of_day = datetime.combine(a_date, time.max, tzinfo=timezone.utc)
+        # Find the matching assignments and get their IDs
+        matching_assignments = self.collection.find(
+            {
+                "team": team_id,
+                "worker": worker_id,
+                "shift": shift_id,
+                "date": {"$gte": start_of_day, "$lte": end_of_day},
+            },
+            {"_id": 1},  # Only retrieve the `_id` field
+        )
+        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+
+        # Delete the matching assignments
+        self.collection.delete_many(
+            {
+                "team": team_id,
+                "worker": worker_id,
+                "shift": shift_id,
+                "date": {"$gte": start_of_day, "$lte": end_of_day},
+            }
+        )
+
+        return deleted_ids
+
+    def delete_assignments_by_reference_id(self, reference_id: str) -> List[str]:
+        """Delete assignments by their reference assignment ID and return their IDs."""
+        matching_assignments = self.collection.find(
+            {"reference_assignment_id": reference_id}, {"_id": 1}
+        )
+        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+
+        self.collection.delete_many({"reference_assignment_id": reference_id})
+
+        return deleted_ids
+
+    def delete_assignments_by_source_id_from_date(
+        self, source_id: str, from_date: date
+    ) -> List[str]:
+        start_of_day = datetime.combine(from_date, time.min, tzinfo=timezone.utc)
+
+        # Find the matching assignments and get their IDs
+        matching_assignments = self.collection.find(
+            {
+                "source_id": source_id,
+                "date": {"$gte": start_of_day},
+            },
+            {"_id": 1},  # Only retrieve the `_id` field
+        )
+        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+
+        # Delete the matching assignments
+        self.collection.delete_many(
+            {
+                "source_id": source_id,
+                "date": {"$gte": start_of_day},
+            }
+        )
+
+        return deleted_ids
+
+    def delete_assignments_by_source_id(self, source_id: str) -> List[str]:
+        # Find the matching assignments and get their IDs
+        matching_assignments = self.collection.find(
+            {"source_id": source_id}, {"_id": 1}
+        )
+        deleted_ids = [assignment["_id"] for assignment in matching_assignments]
+
+        # Delete the matching assignments
+        self.collection.delete_many({"source_id": source_id})
+
+        return deleted_ids
+
+    def delete_assignments_by_schedule_id_and_dates(
+        self, schedule_id: str, dates: List[date]
+    ) -> None:
+        """Delete assignments by a schedule ID and a list of dates."""
+        if not schedule_id or not dates:
+            return
+
+        # Convert dates to datetime objects
+        date_filters = [
+            datetime(d.year, d.month, d.day, tzinfo=timezone.utc) for d in dates
+        ]
+
+        self.collection.delete_many(
+            {
+                "schedule": schedule_id,
+                "date": {"$in": date_filters},
+            }
+        )
+
+    def get_assignment_by_reference(
+        self, reference_assignment_id: str
+    ) -> Optional[Assignment]:
+        """Get an assignment by its reference_assignment_id (e.g., recuperation
+        assignments)."""
+        assignment = self.find_all({"reference_assignment_id": reference_assignment_id})
+        return assignment[0].to_core() if assignment else None

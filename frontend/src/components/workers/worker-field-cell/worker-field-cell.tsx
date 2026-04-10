@@ -1,19 +1,19 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction } from 'react';
 // MUI
-import TableCell from "@mui/material/TableCell";
+import TableCell from '@mui/material/TableCell';
 // Components
-import WorkerFieldCellName from "./worker-field-cell-name";
-import WorkerFieldCellAcronym from "./worker-field-cell-acronym";
-import WorkerFieldCellWeeklyHours from "./worker-field-cell-weekly-hours";
-import WorkerFieldCellAnnualLeave from "./worker-field-cell-annual-leave";
-import WorkerFieldCellDutiesPerMonth from "./worker-field-cell-duties-per-month";
-import WorkerFieldCellWeeklyHoursDesired from "./worker-field-cell-weekly-hours-desired";
-import WorkerSpecialtyCell from "./specialties/worker-specialty-cell";
-import WorkerFieldEmploymentStart from "./worker-field-employment-start";
-import WorkerFieldEmploymentEnd from "./worker-field-employment-end";
+import WorkerFieldCellName from './worker-field-cell-name';
+import WorkerFieldCellAcronym from './worker-field-cell-acronym';
+import WorkerFieldCellWeeklyHours from './worker-field-cell-weekly-hours';
+import WorkerFieldCellAnnualLeave from './worker-field-cell-annual-leave';
+import WorkerFieldCellDutiesPerMonth from './worker-field-cell-duties-per-month';
+import WorkerFieldCellWeeklyHoursDesired from './worker-field-cell-weekly-hours-desired';
+import WorkerSpecialtyCell from './specialties/worker-specialty-cell';
+import WorkerFieldEmploymentStart from './worker-field-employment-start';
+import WorkerFieldEmploymentEnd from './worker-field-employment-end';
 // Types
-import { WorkerT } from "../../../types/worker";
-import { SpecialtyT } from "../../../types/team";
+import { WorkerT } from '../../../types/worker';
+import { SpecialtyT } from '@/types/specialty';
 
 export default function WorkerFieldCell({
   lng,
@@ -32,66 +32,66 @@ export default function WorkerFieldCell({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
-  return workerField === "name" ? (
+  return workerField === 'name' ? (
     <WorkerFieldCellName
       worker={worker}
-      editing={editing[worker.id] === "name"}
+      editing={editing[worker.id] === 'name'}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />
-  ) : workerField === "acronym" ? (
+  ) : workerField === 'acronym' ? (
     <WorkerFieldCellAcronym
       worker={worker}
-      editing={editing[worker.id] === "acronym"}
+      editing={editing[worker.id] === 'acronym'}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />
-  ) : workerField === "employmentStartDate" ? (
+  ) : workerField === 'employmentStartDate' ? (
     <WorkerFieldEmploymentStart
       worker={worker}
-      editing={editing[worker.id] === "employmentStartDate"}
+      editing={editing[worker.id] === 'employmentStartDate'}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />
-  ) : workerField === "employmentEndDate" ? (
+  ) : workerField === 'employmentEndDate' ? (
     <WorkerFieldEmploymentEnd
       lng={lng}
       worker={worker}
-      editing={editing[worker.id] === "employmentEndDate"}
+      editing={editing[worker.id] === 'employmentEndDate'}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />
-  ) : workerField === "specialties" ? (
+  ) : workerField === 'specialties' ? (
     <WorkerSpecialtyCell
       worker={worker}
       specialties={specialties}
       handleUpdateWorker={handleUpdateWorker}
     />
-  ) : workerField === "weeklyHours" ? (
+  ) : workerField === 'weeklyHours' ? (
     <WorkerFieldCellWeeklyHours
       worker={worker}
-      editing={editing[worker.id] === "weeklyHours"}
+      editing={editing[worker.id] === 'weeklyHours'}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />
-  ) : workerField === "weeklyHoursDesired" ? (
+  ) : workerField === 'weeklyHoursDesired' ? (
     <WorkerFieldCellWeeklyHoursDesired
       worker={worker}
-      editing={editing[worker.id] === "weeklyHoursDesired"}
+      editing={editing[worker.id] === 'weeklyHoursDesired'}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />
-  ) : workerField === "dutiesPerMonth" ? (
+  ) : workerField === 'dutiesPerMonth' ? (
     <WorkerFieldCellDutiesPerMonth
       worker={worker}
-      editing={editing[worker.id] === "dutiesPerMonth"}
+      editing={editing[worker.id] === 'dutiesPerMonth'}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />
-  ) : workerField === "annualLeave" ? (
+  ) : workerField === 'annualLeave' ? (
     <WorkerFieldCellAnnualLeave
       worker={worker}
-      editing={editing[worker.id] === "annualLeave"}
+      editing={editing[worker.id] === 'annualLeave'}
       setEditing={setEditing}
       handleUpdateWorker={handleUpdateWorker}
     />

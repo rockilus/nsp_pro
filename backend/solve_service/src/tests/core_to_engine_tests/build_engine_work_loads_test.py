@@ -1,18 +1,21 @@
 import calendar
 import math
 from datetime import date, timedelta
-from typing import List
 
 import pytest
-from shared.schemas import EngineInputsAugmented, Shift, ShiftType, Worker
+from shared.schemas.core import EngineInputsAugmented, Shift, ShiftType, Worker
 
 from core_to_engine_service.build_dates import build_ws_ids_to_dates
-from core_to_engine_service.build_engine_work_loads import build_engine_work_loads
+from core_to_engine_service.build_engine_work_loads import (
+    build_engine_work_loads,
+)
 from core_to_engine_service.build_periods import (
     build_periods_monthly,
     build_periods_weekly,
 )
-from core_to_engine_service.calculate_worker_nb_duties import calculate_worker_nb_duties
+from core_to_engine_service.calculate_worker_nb_duties import (
+    calculate_worker_nb_duties,
+)
 from core_to_engine_service.calculate_worker_work_times import (
     calculate_worker_work_times,
 )
@@ -32,7 +35,7 @@ class TestBuildEngineWorkLoads:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -63,16 +66,16 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_monthly,
         )
 
@@ -112,10 +115,10 @@ class TestBuildEngineWorkLoads:
 
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_workers(self, sample_data: EngineInputsAugmented) -> None:
-        workers: List[Worker] = []
+        workers: list[Worker] = []
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -146,16 +149,16 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_monthly,
         )
 
@@ -184,9 +187,9 @@ class TestBuildEngineWorkLoads:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_empty_shifts(self, sample_data: EngineInputsAugmented) -> None:
         workers = sample_data.workers
-        shifts: List[Shift] = []
+        shifts: list[Shift] = []
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -217,16 +220,16 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_monthly,
         )
 
@@ -272,7 +275,7 @@ class TestBuildEngineWorkLoads:
         workers[0].employment_end_date = date(2025, 1, 15)
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -303,16 +306,16 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_monthly,
         )
 
@@ -371,7 +374,7 @@ class TestBuildEngineWorkLoads:
         workers[0].deleted = True
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -402,16 +405,16 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_monthly,
         )
 
@@ -465,7 +468,7 @@ class TestBuildEngineWorkLoads:
         workers = sample_data.workers
         shifts = sample_data.shifts
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         # Build necessary inputs
         dates_campaign = [
@@ -496,16 +499,16 @@ class TestBuildEngineWorkLoads:
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_weekly,
         )
         w_to_nb_duties = calculate_worker_nb_duties(
             schedule,
             workers_not_deleted,
             shifts_not_deleted,
-            sample_data.requests,
-            sample_data.daily_shift_demands,
+            sample_data.requests_leave,
+            sample_data.shift_demands,
             periods_monthly,
         )
 

@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-from typing import Dict, List, Tuple
 
 # from google.protobuf import text_format  # type: ignore
+from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
 
 # pylint: disable=no-name-in-module
 from ortools.sat.sat_parameters_pb2 import SatParameters  # type: ignore
-from shared.schemas import SolverParams, SolveStrategy
+from shared.schemas.core import SolverParams, SolveStrategy
 
 from engine.model.add_constraint_factory import AddConstraintFactory
 from engine.model.solver_solution_callback import SolverSolutionCallback
 from engine.model.utils.model_utils import (
-    build_var_name_daily_shift_demand,
+    build_var_name_duty_recup,
+    build_var_name_generic,
+    build_var_name_groups_assignments,
     build_var_name_link_shift,
     build_var_name_work_time,
 )
@@ -31,16 +33,16 @@ from engine.types import (
 from utils.constants import Constants
 
 
-# pylint: disable=too-many-public-methods
+# pylint: disable=too-many-public-methods, too-many-lines
 class Model:
     # pylint: disable=too-many-instance-attributes, too-many-arguments
     def __init__(self, model_config: ModelConfig) -> None:
         self.model = cp_model.CpModel()
-        self.variables: Dict[Tuple[str, str, str], cp_model.IntVar] = {}
-        self.intervals: Dict[Tuple[str, str, str], cp_model.IntervalVar] = {}
-        self.assignment_wdss: Dict[Tuple[str, str, str, str], cp_model.IntVar] = (
-            {}
-        )  # worker, day, shift, specialty
+        self.variables: dict[tuple[str, str, str], cp_model.IntVar] = {}
+        self.intervals: dict[tuple[str, str, str], cp_model.IntervalVar] = {}
+        self.assignment_wdss: dict[
+            tuple[str, str, str, str], cp_model.IntVar
+        ] = {}  # worker, day, shift, specialty
         self.model_config = model_config
 
         self.obj = Objective()
@@ -261,8 +263,7 @@ class Model:
             )
             self.add_work_time_constraints(
                 # fmt: off
-                inputs.configuration_constraints.work_loads
-                .weekly_work_time_contractual,
+                inputs.configuration_constraints.work_loads.weekly_work_time_contractual,
                 # fmt: on
                 True,
                 work_time_hts,
@@ -290,6 +291,25 @@ class Model:
         self.add_special_days_constraints(
             inputs.system_constraints.special_days_target_nb_duties
         )
+
+        # System constraint: max weekly number of duties across workers/weeks
+        # Format: (weeks x workers x assignments, penalty)
+        try:
+            self.add_max_weekly_nb_duties_constraints(
+                constraint=inputs.system_constraints.max_weekly_nb_duties,
+                obj_category=ObjectiveCategory.MAX_WEEKLY_NB_DUTIES,
+            )
+            self.add_max_weekly_nb_duties_constraints(
+                constraint=inputs.system_constraints.max_week_day_nb_duties,
+                obj_category=ObjectiveCategory.MAX_WEEK_DAY_NB_DUTIES,
+            )
+            self.add_consecutive_duty_gap_constraints(
+                constraint=inputs.system_constraints.duty_consecutive_gap,
+                # obj_category=ObjectiveCategory.DUTY_CONSECUTIVE_GAP,
+            )
+        except Exception:
+            # be defensive: if structure is missing or empty, skip
+            pass
 
         self.add_objective()
         self.solve()
@@ -333,15 +353,15 @@ class Model:
             )
 
     def set_fixed_variables(
-        self, fixed_values: Dict[Tuple[str, str, str], int]
+        self, fixed_values: dict[tuple[str, str, str], int]
     ) -> None:
         for k, v in fixed_values.items():
             self.model.Add(self.variables[k] == v)
 
     def add_solution_hint(
         self,
-        var_sol: Dict[Tuple[str, str, str], int],
-        var_spe_sol: Dict[Tuple[str, str, str, str], int],
+        var_sol: dict[tuple[str, str, str], int],
+        var_spe_sol: dict[tuple[str, str, str, str], int],
     ) -> None:
         for k, v in var_sol.items():
             if k in self.variables:
@@ -349,14 +369,14 @@ class Model:
         self.add_constraint_factory.var_spe_sol = var_spe_sol
 
     def no_interval_overlap(
-        self, no_overlap_shift_intervals: List[List[Tuple[str, str, str]]]
+        self, no_overlap_shift_intervals: list[list[tuple[str, str, str]]]
     ) -> None:
         for w_assignments in no_overlap_shift_intervals:
             self.model.AddNoOverlap([self.intervals[a] for a in w_assignments])
 
     def add_duty_recup_constraints(
         self,
-        duty_recup_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], int]],
+        duty_recup_pairs: list[tuple[tuple[str, str, str], tuple[str, str, str], int]],
         hard_to_soft: bool,
     ) -> None:
         for duty, recup, penalty in duty_recup_pairs:
@@ -365,7 +385,7 @@ class Model:
             if not hard_to_soft:
                 self.model.Add(duty_var == recup_var)
             else:
-                var_name = build_var_name_daily_shift_demand(
+                var_name = build_var_name_duty_recup(
                     [duty_var, recup_var], ObjectiveCategory.DUTY_RECUP
                 )
                 delta = self.model.NewIntVar(-1, 1, "")
@@ -377,7 +397,7 @@ class Model:
 
     def add_link_shift_constraints(
         self,
-        ls_pairs: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]],
+        ls_pairs: list[tuple[tuple[str, str, str], tuple[str, str, str], str, int]],
     ) -> None:
         for s1, s2, ls_id, penalty in ls_pairs:
             s1_var = self.variables[s1]
@@ -472,16 +492,18 @@ class Model:
                     self.obj.int_coeffs.append(work_time.penalty)
 
     def add_target_work_time_constraints(
-        self, constraints: List[GroupsAssignmentsDurationsTargetConstraint]
+        self, constraints: list[GroupsAssignmentsDurationsTargetConstraint]
     ) -> None:
         for constraint in constraints:
             excesses = []
+            cstr_vars = []
             for assignments, durations, target in zip(
                 constraint.assignments,
                 constraint.durations,
                 constraint.targets,
             ):
                 constraint_vars = [self.variables[a] for a in assignments]
+                cstr_vars.extend(constraint_vars)
                 tolerance_x100 = round(target * constraint.tolerance * 100)
                 weighted_sum = self.model.NewIntVar(
                     0,
@@ -534,12 +556,14 @@ class Model:
                     [division_result - 100, 0],
                 )
                 excesses.append(excess)
-            var_name = "target_work_time"
+            # var_name = "target_work_time"
+            var_name = build_var_name_groups_assignments(
+                cstr_vars=cstr_vars,
+                category=ObjectiveCategory.WORK_TIME_WEEK_TARGET,
+            )
             max_excess = self.model.NewIntVar(
                 0,
-                len(constraint_vars)
-                * Constants.NUM_HOURS_DAY
-                * Constants.NUM_MINUTES_HOUR,
+                len(cstr_vars) * Constants.NUM_HOURS_DAY * Constants.NUM_MINUTES_HOUR,
                 var_name,
             )
             self.model.AddMaxEquality(max_excess, excesses)
@@ -581,12 +605,14 @@ class Model:
                     self.obj.int_coeffs.append(nb_duties.penalty)
 
     def add_target_nb_duties_constraints(
-        self, constraints: List[GroupsAssignmentsTargetConstraint]
+        self, constraints: list[GroupsAssignmentsTargetConstraint]
     ) -> None:
         for constraint in constraints:
             excesses = []
+            cstr_vars = []
             for assignments, target in zip(constraint.assignments, constraint.targets):
                 constraint_vars = [self.variables[a] for a in assignments]
+                cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
                     -target,
                     len(constraint_vars)
@@ -603,7 +629,11 @@ class Model:
                     ],
                 )
                 excesses.append(excess)
-            var_name = "target_nb_duties"
+            # var_name = "target_nb_duties"
+            var_name = build_var_name_groups_assignments(
+                cstr_vars=cstr_vars,
+                category=ObjectiveCategory.DUTIES_PER_MONTH_TARGET,
+            )
             max_excess = self.model.NewIntVar(
                 0,
                 len(constraint_vars)
@@ -615,13 +645,120 @@ class Model:
             self.obj.int_vars.append(max_excess)
             self.obj.int_coeffs.append(constraint.penalty)
 
+    # pylint: disable=too-many-branches
+    def add_max_weekly_nb_duties_constraints(
+        self,
+        constraint: tuple[list[list[list[tuple[str, str, str]]]], int],
+        obj_category: ObjectiveCategory,
+    ) -> None:
+        """Add penalties for weekly duty concentration.
+
+        The input is a tuple: (weeks_vars, penalty) where `weeks_vars` is
+        a list per week; each week is a list per worker; each worker is a
+        list of assignment tuples `(worker_id, date_iso, shift_id)`.
+
+        We use a two-part penalty strategy:
+        1. Primary: penalize the global max weekly duties (avoid extremes)
+        2. Secondary: stepped penalties for each worker-week to encourage
+           spreading duties across weeks (quadratic-like approximation)
+        """
+        if not constraint:
+            return
+        weeks_vars, penalty = constraint
+        if not weeks_vars:
+            return
+
+        # Determine upper bound (max assignments any worker-week)
+        max_assignments = 0
+        for week in weeks_vars:
+            for worker_assignments in week:
+                if worker_assignments:
+                    max_assignments = max(max_assignments, len(worker_assignments))
+        if max_assignments == 0:
+            return
+
+        week_max_vars: list[cp_model.IntVar] = []
+        all_worker_week_sum_vars: list[cp_model.IntVar] = []
+        all_worker_week_assignment_lists: list[list[cp_model.IntVar]] = []
+
+        for week in weeks_vars:
+            if not week:
+                continue
+            worker_sum_vars = []
+            for worker_assignments in week:
+                if not worker_assignments:
+                    continue
+                # Collect boolean vars for this worker-week
+                constraint_vars = [
+                    self.variables[a] for a in worker_assignments if a in self.variables
+                ]
+                if not constraint_vars:
+                    continue
+                sum_var = self.model.NewIntVar(0, len(constraint_vars), "")
+                self.model.Add(sum_var == sum(constraint_vars))
+                worker_sum_vars.append(sum_var)
+                all_worker_week_sum_vars.append(sum_var)
+                # store the original assignment tuples for this worker-week
+                all_worker_week_assignment_lists.append(constraint_vars)
+            if not worker_sum_vars:
+                continue
+            week_max = self.model.NewIntVar(0, max_assignments, "")
+            self.model.AddMaxEquality(week_max, worker_sum_vars)
+            week_max_vars.append(week_max)
+
+        if not week_max_vars:
+            return
+
+        # Name the primary global max with VarName JSON including meta
+        global_varname_json = build_var_name_generic(
+            objective_id=None,
+            cstr_vars=[],
+            category=obj_category,
+            hard_to_soft=None,
+            meta={"type": "primary"},
+        )
+        global_max = self.model.NewIntVar(0, max_assignments, global_varname_json)
+        self.model.AddMaxEquality(global_max, week_max_vars)
+        self.obj.int_vars.append(global_max)
+        self.obj.int_coeffs.append(penalty)
+
+        # Secondary penalty: stepped penalties for each worker-week
+        # Approximates quadratic penalty to encourage spreading
+        # Thresholds: [2, 3, 4, 5, ...] with penalties [4, 9, 16, 25, ...]
+        stepped_penalty_weight = max(1, penalty // 20)
+        # Create stepped bool vars per worker-week and name them with VarName JSON
+        for sum_var, assignment_list in zip(
+            all_worker_week_sum_vars, all_worker_week_assignment_lists
+        ):
+            for threshold in range(2, max_assignments + 1):
+                step_varname_json = build_var_name_generic(
+                    objective_id=None,
+                    cstr_vars=assignment_list,
+                    category=obj_category,
+                    hard_to_soft=None,
+                    meta={
+                        "type": "step",
+                        "threshold": threshold,
+                    },
+                )
+                exceeds = self.model.NewBoolVar(step_varname_json)
+                self.model.Add(sum_var >= threshold).OnlyEnforceIf(exceeds)
+                self.model.Add(sum_var < threshold).OnlyEnforceIf(exceeds.Not())
+                # Quadratic-like penalty: threshold^2
+                self.obj.bool_vars.append(exceeds)
+                self.obj.bool_coeffs.append(
+                    threshold * threshold * stepped_penalty_weight
+                )
+
     def add_special_days_constraints(
-        self, constraints: List[GroupsAssignmentsTargetConstraint]
+        self, constraints: list[GroupsAssignmentsTargetConstraint]
     ) -> None:
         for constraint in constraints:
             excesses = []
+            cstr_vars = []
             for assignments, target in zip(constraint.assignments, constraint.targets):
                 constraint_vars = [self.variables[a] for a in assignments]
+                cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
                     -target,
                     len(constraint_vars)
@@ -633,7 +770,11 @@ class Model:
                     excess, [sum(v for v in constraint_vars) - target, 0]
                 )
                 excesses.append(excess)
-            var_name = "special_days"
+            # var_name = "special_days"
+            var_name = build_var_name_groups_assignments(
+                cstr_vars=cstr_vars,
+                category=ObjectiveCategory.SPECIAL_DAYS_TARGET,
+            )
             max_excess = self.model.NewIntVar(
                 0,
                 len(constraint_vars)
@@ -645,9 +786,48 @@ class Model:
             self.obj.int_vars.append(max_excess)
             self.obj.int_coeffs.append(constraint.penalty)
 
+    def add_consecutive_duty_gap_constraints(
+        self,
+        constraint: tuple[
+            list[tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]],
+            int,
+        ],
+    ) -> None:
+        """Add penalties for duties assigned on consecutive days (or within gap).
+
+        Input: (pairs, penalty) where pairs is a list of (vars_d, vars_next).
+        For each pair we penalise the case where both days contain a duty.
+        """
+        if not constraint:
+            return
+        pairs, penalty = constraint
+        if not pairs or penalty == 0:
+            return
+
+        for vars_d, vars_next in pairs:
+            model_vars_d = [self.variables[a] for a in vars_d if a in self.variables]
+            model_vars_next = [
+                self.variables[a] for a in vars_next if a in self.variables
+            ]
+            if not model_vars_d or not model_vars_next:
+                continue
+
+            has_duty_d = self.model.NewBoolVar("")
+            self.model.AddMaxEquality(has_duty_d, model_vars_d)
+
+            has_duty_next = self.model.NewBoolVar("")
+            self.model.AddMaxEquality(has_duty_next, model_vars_next)
+
+            # excess is 1 iff both days have a duty
+            excess = self.model.NewBoolVar("")
+            self.model.Add(has_duty_d + has_duty_next >= 2).OnlyEnforceIf(excess)
+            self.model.Add(has_duty_d + has_duty_next < 2).OnlyEnforceIf(excess.Not())
+            self.obj.bool_vars.append(excess)
+            self.obj.bool_coeffs.append(penalty)
+
     def add_worker_shift_filter_constraints(
         self,
-        worker_shift_filters: Tuple[List[Tuple[str, str, str]], int],
+        worker_shift_filters: tuple[list[tuple[str, str, str]], int],
         hard_to_soft: bool,
     ) -> None:
         wsf_filter, penalty = worker_shift_filters
@@ -660,7 +840,7 @@ class Model:
                 #     None, [cstr_var], "worker_shift_filter"
                 # )
                 var_name = ""
-                cstr_vars: List[cp_model.IntVar | cp_model.NotBooleanVariable] = [
+                cstr_vars: list[cp_model.IntVar | cp_model.NotBooleanVariable] = [
                     cstr_var.Not()  # type: ignore
                 ]
                 lit = self.model.NewBoolVar(var_name)
@@ -755,7 +935,103 @@ class Model:
 
         return out
 
+    def estimate_time_limit(
+        self, min_seconds: int = 1, max_seconds: int | None = None
+    ) -> int:
+        """Estimate a reasonable time budget for the current model.
+
+        The estimator is a lightweight heuristic based on:
+        - number of boolean/integer decision variables (`self.variables`)
+        - number of optional intervals (`self.intervals`)
+        - number of objective terms (bool + int vars collected in `self.obj`)
+
+        The returned value is clamped to `hard_cap_seconds` when provided
+        and is always at least 1 second.
+        """
+        proto = self.model.Proto()  # CpModelProto
+
+        # Basic size metrics
+        num_vars = len(proto.variables)
+        num_constraints = len(proto.constraints)
+        num_obj_vars = len(proto.objective.vars)
+
+        # Tunable coefficients (conservative defaults)
+        t0 = 1.0  # base seconds
+        # alpha = 4.5e-05  # seconds per variable
+        # beta = 9.0e-05  # seconds per constraint
+        # gamma = 5.0e-05  # seconds per objective var
+        alpha = 10.8e-05  # seconds per variable
+        beta = 21.6e-05  # seconds per constraint
+        gamma = 12.0e-05  # seconds per objective var
+
+        estimate = t0 + alpha * num_vars + beta * num_constraints + gamma * num_obj_vars
+
+        print(
+            f"[Model] time_limit_estimate: {estimate:.2f} s - "
+            f"min {min_seconds}s - max {max_seconds}s "
+            f"(vars={num_vars}, cstrs={num_constraints}, obj_vars={num_obj_vars})"
+        )
+
+        # Convert to integer seconds and clamp
+        budget = max(1, int(round(estimate)))
+        if max_seconds is not None:
+            try:
+                min_budget = int(min_seconds)
+                max_budget = int(max_seconds)
+                budget = max(min_budget, min(budget, max_budget))
+            except Exception:
+                # ignore malformed cap and return budget
+                pass
+        return budget
+
+    def save_cp_model_proto(self, path_txt: str) -> None:
+        """Write a human-readable text proto of the current CpModel to `path_txt`.
+
+        This only writes the text (pbtxt) representation using
+        google.protobuf.text_format.MessageToString(proto). Useful for
+        inspection and debugging.
+        """
+        try:
+            proto = self.model.Proto()
+        except Exception as exc:  # pragma: no cover - defensive
+            print(f"[Model] could not obtain model proto: {exc}")
+            return
+
+        try:
+            text = text_format.MessageToString(proto)
+        except Exception as exc:  # pragma: no cover - defensive
+            print(f"[Model] could not convert proto to text: {exc}")
+            return
+
+        try:
+            with open(path_txt, "w", encoding="utf-8") as f:
+                f.write(text)
+        except Exception as exc:  # pragma: no cover - defensive
+            print(f"[Model] could not write proto text to {path_txt}: {exc}")
+
     def solve(self) -> None:
+        # Print a light-weight estimate of how much time this problem likely needs
+        # and clamp it to the configured hard cap. This is informational for now.
+        estimated_budget = self.estimate_time_limit(
+            min_seconds=self.model_config.model_setup.min_solve_time_seconds,
+            max_seconds=self.model_config.model_setup.max_solve_time_seconds,
+        )
+        self.model_config.solver_params.max_time_in_seconds = estimated_budget
+        # self.model_config.solver_params.max_time_in_seconds = 90
+
+        # Save human-readable proto for inspection/debugging (timestamped)
+        # try:
+        #     ts = int(time.time())
+        #     out_dir = (
+        #         Path.cwd() / "backend/solve_service/src/engine/model_proto"
+        #     )
+        #     out_dir.mkdir(parents=True, exist_ok=True)
+        #     path = out_dir / f"cp_model_{ts}.pbtxt"
+        #     self.save_cp_model_proto(str(path))
+        #     print(f"[Model] saved model proto to {path}")
+        # except Exception as exc:  # pragma: no cover - best-effort
+        #     print(f"[Model] failed to save model proto: {exc}")
+
         # solution_printer = cp_model.ObjectiveSolutionPrinter()
         solution_callback = SolverSolutionCallback(
             limit=self.model_config.custom_solver_params.limit_number_solution

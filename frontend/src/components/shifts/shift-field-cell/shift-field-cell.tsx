@@ -1,18 +1,18 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction } from 'react';
 // MUI
-import TableCell from "@mui/material/TableCell";
+import TableCell from '@mui/material/TableCell';
 // Components
-import ShiftFieldCellColor from "./shift-field-cell-color";
-import ShiftFieldCellName from "./shift-field-cell-name";
-import ShiftFieldCellAcronym from "./shift-field-cell-acronym";
-import ShiftFieldCellDuty from "./shift-field-cell-duty";
-import ShiftFieldCellRecuperation from "./shift-field-cell-recuperation";
-import ShiftFieldCellStartTime from "./shift-field-cell-start-time";
-import ShiftFieldCellEndTime from "./shift-field-cell-end-time";
-import ShiftStaffingCell from "./staffing/shift-staffing-cell";
+import ShiftFieldCellColor from './shift-field-cell-color';
+import ShiftFieldCellName from './shift-field-cell-name';
+import ShiftFieldCellAcronym from './shift-field-cell-acronym';
+import ShiftFieldCellDuty from './shift-field-cell-duty';
+import ShiftFieldCellRecuperation from './shift-field-cell-recuperation';
+import ShiftFieldCellStartTime from './shift-field-cell-start-time';
+import ShiftFieldCellEndTime from './shift-field-cell-end-time';
+import ShiftStaffingCell from './staffing/shift-staffing-cell';
 // Types
-import { ShiftT } from "../../../types/shift";
-import { SpecialtyT } from "../../../types/team";
+import { ShiftT } from '../../../types/shift';
+import { SpecialtyT } from '@/types/specialty';
 
 export default function ShiftFieldCell({
   lng,
@@ -31,49 +31,49 @@ export default function ShiftFieldCell({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateShift: (updatedShift: ShiftT) => void;
 }) {
-  return shiftField === "color" ? (
+  return shiftField === 'color' ? (
     <ShiftFieldCellColor shift={shift} handleUpdateShift={handleUpdateShift} />
-  ) : shiftField === "name" ? (
+  ) : shiftField === 'name' ? (
     <ShiftFieldCellName
       lng={lng}
       shift={shift}
-      editing={editing[shift.id] === "name"}
+      editing={editing[shift.id] === 'name'}
       setEditing={setEditing}
       handleUpdateShift={handleUpdateShift}
     />
-  ) : shiftField === "acronym" ? (
+  ) : shiftField === 'acronym' ? (
     <ShiftFieldCellAcronym
       lng={lng}
       shift={shift}
-      editing={editing[shift.id] === "acronym"}
+      editing={editing[shift.id] === 'acronym'}
       setEditing={setEditing}
       handleUpdateShift={handleUpdateShift}
     />
-  ) : shiftField === "duty" ? (
+  ) : shiftField === 'duty' ? (
     <ShiftFieldCellDuty shift={shift} handleUpdateShift={handleUpdateShift} />
-  ) : shiftField === "recuperation" ? (
+  ) : shiftField === 'recuperation' ? (
     <ShiftFieldCellRecuperation
       lng={lng}
       shift={shift}
-      editing={editing[shift.id] === "recuperation"}
+      editing={editing[shift.id] === 'recuperation'}
       setEditing={setEditing}
       handleUpdateShift={handleUpdateShift}
     />
-  ) : shiftField === "start_time" ? (
+  ) : shiftField === 'start_time' ? (
     <ShiftFieldCellStartTime
       shift={shift}
-      editing={editing[shift.id] === "start_time"}
+      editing={editing[shift.id] === 'start_time'}
       setEditing={setEditing}
       handleUpdateShift={handleUpdateShift}
     />
-  ) : shiftField === "end_time" ? (
+  ) : shiftField === 'end_time' ? (
     <ShiftFieldCellEndTime
       shift={shift}
-      editing={editing[shift.id] === "end_time"}
+      editing={editing[shift.id] === 'end_time'}
       setEditing={setEditing}
       handleUpdateShift={handleUpdateShift}
     />
-  ) : shiftField === "staffing" ? (
+  ) : shiftField === 'staffing' ? (
     <ShiftStaffingCell
       shift={shift}
       specialties={specialties}

@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.schemas.attribute import Attribute, AttributeOwnerType
+from shared.schemas.core.attribute import Attribute, AttributeOwnerType
 
 
 class AttributeSchema(DocumentBaseSchema):

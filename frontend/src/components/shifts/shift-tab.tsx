@@ -1,43 +1,47 @@
-import React, { useState, useEffect } from "react";
-import { useTranslation } from "../../app/i18n/client";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from '../../app/i18n/client';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+// Mobile
+import { useIsMobile } from '../../hooks/useIsMobile';
+import MobileShiftTab from './mobile/mobile-shift-tab';
+// MUI
+import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 // Components
-import ShiftTable from "./shift-table";
+import ShiftTable from './shift-table';
+import TableFilterBar from '../table/TableFilterBar';
+import NewDimensionForm from '../shift-worker-shared/dimension/new-dimension-form';
+import DimensionDialog from '../shift-worker-shared/dimension/DimensionDialog';
+import TableAddButton from '../buttons/table-add-button';
+import LinkShiftDialog from './link-shift/link-shift-dialog';
 // Skeletons
-import TablesSkeleton from "../skeletons/tables-skeleton";
-// Actions
+import TablesSkeleton from '../skeletons/tables-skeleton';
+// Hooks
+import { useTableState } from '../../hooks/useTableState';
+import { useTableHeight } from '../../hooks/useTableHeight';
+import { useAddDimension, useUpdateDimension, useDeleteDimension } from '../../hooks/useDimension';
+import { useUpdateAttribute } from '../../hooks/useAttribute';
+import { useAddDimEntry, useUpdateDimEntry, useDeleteDimEntry } from '../../hooks/useDimEntry';
 import {
-  getShiftsTabData,
-  addShift,
-  deleteShift,
-  updateShift,
-} from "../../app/lib/shift";
-import {
-  addDimension,
-  updateDimension,
-  deleteDimension,
-} from "../../app/lib/dimension";
-import {
-  addDimEntry,
-  updateDimEntry,
-  deleteDimEntry,
-} from "../../app/lib/dim-entry";
-import { updateAttribute } from "../../app/lib/attribute";
-import { addLinkShift, deleteLinkShift } from "../../app/lib/link-shift";
+  useAddShift,
+  useUpdateShift,
+  useDeleteShift,
+  useGetShiftsTabData,
+} from '../../hooks/useShift';
+import { useCreateLinkShift, useDeleteLinkShift } from '../../hooks/useLinkShift';
+// Utils
+import { createShiftColumns } from './shiftColumns';
+import { filterWorkShifts, filterRestShifts } from './shift-utils/shift-utils';
 // Styles
-import "../../styles/tab-container-styles.css";
+import '../../styles/tab-container-styles.css';
+import '../../styles/table-styles.css';
 // Types
-import {
-  ShiftT,
-  ShiftLeaveType,
-  ShiftType,
-  ShiftRestType,
-  LinkShiftT,
-} from "../../types/shift";
-import { DimEntryT, DimensionT } from "../../types/dimension";
-import { AttributeT } from "../../types/attribute";
-import { SpecialtyT } from "../../types/team";
+import { ShiftT, ShiftLeaveType, ShiftType, ShiftRestType, LinkShiftT } from '../../types/shift';
+import { DimensionT } from '../../types/dimension';
+import { DimEntryT } from '@/types/dim-entry';
+import { AttributeT } from '../../types/attribute';
+import { SpecialtyT } from '@/types/specialty';
+import { DimensionType } from '../../types/dimension';
 
 dayjs.extend(utc);
 
@@ -48,7 +52,7 @@ export default function ShiftTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
-  const { t } = useTranslation(lng, "shift-page");
+  const { t } = useTranslation(lng, 'shift-page');
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
@@ -56,23 +60,122 @@ export default function ShiftTab({
   const [dimEntries, setDimEntries] = useState<DimEntryT[]>([]);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
   const [linkShifts, setLinkShifts] = useState<LinkShiftT[]>([]);
+  const [workPopoverRhsOpen, setWorkPopoverRhsOpen] = useState(false);
+  const [restPopoverRhsOpen, setRestPopoverRhsOpen] = useState(false);
+  const [shiftView, setShiftView] = useState<'work' | 'rest'>('work');
+
+  // Dimension hooks
+  const addDimensionFn = useAddDimension();
+  const updateDimensionFn = useUpdateDimension();
+  const deleteDimensionFn = useDeleteDimension();
+
+  // Attribute hooks
+  const updateAttributeFn = useUpdateAttribute();
+
+  // DimEntry hooks
+  const addDimEntryFn = useAddDimEntry();
+  const updateDimEntryFn = useUpdateDimEntry();
+  const deleteDimEntryFn = useDeleteDimEntry();
+
+  // LinkShift hooks
+  const createLinkShiftFn = useCreateLinkShift();
+  const deleteLinkShiftFn = useDeleteLinkShift();
+
+  // Shift hooks
+  const addShiftFn = useAddShift();
+  const updateShiftFn = useUpdateShift();
+  const deleteShiftFn = useDeleteShift();
+  const getShiftsTabDataFn = useGetShiftsTabData();
+
+  // Create shift columns for both work and rest shifts
+  const workShiftColumns = useMemo(() => {
+    return createShiftColumns(
+      t,
+      specialties,
+      dimensions,
+      dimEntries,
+      filterWorkShifts(shifts),
+      false,
+    );
+  }, [t, specialties, dimensions, dimEntries, shifts]);
+
+  const restShiftColumns = useMemo(() => {
+    return createShiftColumns(
+      t,
+      specialties,
+      dimensions,
+      dimEntries,
+      filterRestShifts(shifts),
+      true,
+    );
+  }, [t, specialties, dimensions, dimEntries, shifts]);
+
+  // Table state for work shifts
+  const {
+    tableState: workTableState,
+    filteredAndSortedData: filteredWorkShifts,
+    addFilter: addWorkFilter,
+    removeFilter: removeWorkFilter,
+    updateSort: updateWorkSort,
+    resetAll: resetWorkAll,
+  } = useTableState(filterWorkShifts(shifts), workShiftColumns, 'nsp-pro-work-shift-table-state');
+
+  // Table state for rest shifts
+  const {
+    tableState: restTableState,
+    filteredAndSortedData: filteredRestShifts,
+    addFilter: addRestFilter,
+    removeFilter: removeRestFilter,
+    updateSort: updateRestSort,
+    resetAll: resetRestAll,
+  } = useTableState(filterRestShifts(shifts), restShiftColumns, 'nsp-pro-rest-shift-table-state');
+
+  // Show filter toolbars
+  const showWorkFilterToolbar = workTableState.filters.length > 0 || workTableState.sort !== null;
+  const showRestFilterToolbar = restTableState.filters.length > 0 || restTableState.sort !== null;
+
+  // Dynamic table heights
+  const workTableHeight = useTableHeight(showWorkFilterToolbar);
+  const restTableHeight = useTableHeight(showRestFilterToolbar);
+
+  // Toggle handler
+  const handleShiftViewChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newView: 'work' | 'rest',
+  ) => {
+    if (newView !== null) {
+      setShiftView(newView);
+    }
+  };
 
   const DefaultWorkShiftFields: Record<string, string>[] = [
-    { name: "color", label: t("color") },
-    { name: "name", label: t("name") },
-    { name: "acronym", label: t("acronym") },
-    { name: "duty", label: t("duty") },
-    { name: "recuperation", label: t("recuperation") },
-    { name: "start_time", label: t("start_time") },
-    { name: "end_time", label: t("end_time") },
-    { name: "staffing", label: t("staffing") },
+    { name: 'color', label: t('color'), tooltip: t('color_tooltip') },
+    { name: 'name', label: t('name'), tooltip: t('name_tooltip') },
+    { name: 'acronym', label: t('acronym'), tooltip: t('acronym_tooltip') },
+    { name: 'duty', label: t('duty'), tooltip: t('duty_tooltip') },
+    {
+      name: 'recuperation',
+      label: t('recuperation'),
+      tooltip: t('recuperation_tooltip'),
+    },
+    {
+      name: 'start_time',
+      label: t('start_time'),
+      tooltip: t('start_time_tooltip'),
+    },
+    { name: 'end_time', label: t('end_time'), tooltip: t('end_time_tooltip') },
+    { name: 'staffing', label: t('staffing'), tooltip: t('staffing_tooltip') },
   ];
   const DefaultRestShiftFields: Record<string, string>[] = [
-    { name: "color", label: t("color") },
-    { name: "name", label: t("name") },
-    { name: "acronym", label: t("acronym") },
-    { name: "start_time", label: t("start_time") },
-    { name: "end_time", label: t("end_time") },
+    { name: 'color', label: t('color'), tooltip: t('color_tooltip') },
+    { name: 'name', label: t('name'), tooltip: t('name_tooltip') },
+    { name: 'acronym', label: t('acronym'), tooltip: t('acronym_tooltip') },
+    {
+      name: 'start_time',
+      label: t('start_time'),
+      tooltip: t('start_time_tooltip'),
+    },
+    { name: 'end_time', label: t('end_time'), tooltip: t('end_time_tooltip') },
   ];
 
   const roundTime = (dt: dayjs.Dayjs): dayjs.Dayjs => {
@@ -86,111 +189,121 @@ export default function ShiftTab({
 
   const handleAddShift = async (isRest: boolean) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    const addedShift = await addShift({
-      id: "",
-      teamId: selectedTeamId,
-      name: "",
-      acronym: "",
-      acronymCustom: false,
-      startTime: roundTime(dayjs.utc()),
-      endTime: roundTime(dayjs.utc()),
-      staffing: [
-        {
-          specialtyId: null,
-          staffing: 1,
-        },
-      ],
-      color: "grey",
-      shiftType: isRest ? ShiftType.REST : ShiftType.NORMAL,
-      restType: ShiftRestType.NONE,
-      leaveType: ShiftLeaveType.NONE,
-      recuperationTime: 0,
-      recuperationDutyId: null,
-      deleted: false,
-      attributes: [],
-    });
-    setShifts([...shifts, addedShift]);
+    try {
+      const addedShift = await addShiftFn({
+        id: '',
+        teamId: selectedTeamId,
+        name: '',
+        acronym: '',
+        acronymCustom: false,
+        startTime: roundTime(dayjs.utc()),
+        endTime: roundTime(dayjs.utc()),
+        staffing: [
+          {
+            specialtyId: null,
+            staffing: 1,
+          },
+        ],
+        color: 'grey',
+        shiftType: isRest ? ShiftType.REST : ShiftType.NORMAL,
+        restType: ShiftRestType.NONE,
+        leaveType: ShiftLeaveType.NONE,
+        recuperationTime: 0,
+        recuperationDutyId: null,
+        deleted: false,
+        attributes: [],
+      });
+      setShifts([...shifts, addedShift]);
+    } catch (error) {
+      console.error('Failed to add shift:', error);
+      throw error; // Re-throw for component-level handling
+    }
   };
 
   const handleUpdateShift = async (shift: ShiftT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    const {
-      shiftUpdated: updatedShift,
-      linkShiftsUpdated,
-      linkShiftsIdsDeleted,
-    } = await updateShift(shift);
-    setShifts((prevShifts) =>
-      prevShifts.map((w) => (w.id === updatedShift.id ? updatedShift : w))
-    );
-    setLinkShifts((prevLinkShifts) => {
-      const filteredLinkShifts = prevLinkShifts.filter(
-        (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id)
+    try {
+      const {
+        shiftUpdated: updatedShift,
+        linkShiftsUpdated,
+        linkShiftsIdsDeleted,
+      } = await updateShiftFn(shift);
+      setShifts((prevShifts) =>
+        prevShifts.map((w) => (w.id === updatedShift.id ? updatedShift : w)),
       );
-      const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
-        const lsUpdated = linkShiftsUpdated.find(
-          (ls) => ls.id === linkShift.id
+      setLinkShifts((prevLinkShifts) => {
+        const filteredLinkShifts = prevLinkShifts.filter(
+          (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id),
         );
-        return lsUpdated ? lsUpdated : linkShift;
+        const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
+          const lsUpdated = linkShiftsUpdated.find((ls: LinkShiftT) => ls.id === linkShift.id);
+          return lsUpdated ? lsUpdated : linkShift;
+        });
+        const newLinkShifts = linkShiftsUpdated.filter(
+          (linkShift: LinkShiftT) =>
+            !filteredLinkShifts.some((ls: LinkShiftT) => ls.id === linkShift.id),
+        );
+        return replacedLinkShifts.concat(newLinkShifts);
       });
-      const newLinkShifts = linkShiftsUpdated.filter(
-        (linkShift) => !filteredLinkShifts.some((ls) => ls.id === linkShift.id)
-      );
-      return replacedLinkShifts.concat(newLinkShifts);
-    });
+    } catch (error) {
+      console.error('Failed to update shift:', error);
+      throw error; // Re-throw for component-level handling
+    }
   };
 
   const handleDeleteShift = async (shiftId: string) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    const { linkShiftsUpdated, linkShiftsIdsDeleted } = await deleteShift(
-      shiftId,
-      selectedTeamId
-    );
-    setShifts(shifts.filter((shift) => shift.id !== shiftId));
-    setLinkShifts((prevLinkShifts) => {
-      const filteredLinkShifts = prevLinkShifts.filter(
-        (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id)
+    try {
+      const { linkShiftsUpdated, linkShiftsIdsDeleted } = await deleteShiftFn(
+        shiftId,
+        selectedTeamId,
       );
-      const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
-        const lsUpdated = linkShiftsUpdated.find(
-          (ls) => ls.id === linkShift.id
+      setShifts(shifts.filter((shift) => shift.id !== shiftId));
+      setLinkShifts((prevLinkShifts) => {
+        const filteredLinkShifts = prevLinkShifts.filter(
+          (linkShift) => !linkShiftsIdsDeleted.includes(linkShift.id),
         );
-        return lsUpdated ? lsUpdated : linkShift;
+        const replacedLinkShifts = filteredLinkShifts.map((linkShift) => {
+          const lsUpdated = linkShiftsUpdated.find((ls: LinkShiftT) => ls.id === linkShift.id);
+          return lsUpdated ? lsUpdated : linkShift;
+        });
+        const newLinkShifts = linkShiftsUpdated.filter(
+          (linkShift: LinkShiftT) =>
+            !filteredLinkShifts.some((ls: LinkShiftT) => ls.id === linkShift.id),
+        );
+        return replacedLinkShifts.concat(newLinkShifts);
       });
-      const newLinkShifts = linkShiftsUpdated.filter(
-        (linkShift) => !filteredLinkShifts.some((ls) => ls.id === linkShift.id)
-      );
-      return replacedLinkShifts.concat(newLinkShifts);
-    });
+    } catch (error) {
+      console.error('Failed to delete shift:', error);
+      throw error; // Re-throw for component-level handling
+    }
   };
 
   //////////////////////////
   // Dimension Actions
   //////////////////////////
 
-  const handleAddDimension = async (
-    newDimension: DimensionT,
-    newDimEntries: DimEntryT[]
-  ) => {
+  const handleAddDimension = async (newDimension: DimensionT, newDimEntries: DimEntryT[]) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
     const {
       newDimension: newDimensionResponse,
       newDimEntries: newDimEntriesResponse,
       newAttributes: newAttributesResponse,
-    } = await addDimension(newDimension, newDimEntries);
+    } = await addDimensionFn(newDimension, newDimEntries);
     setDimensions([...dimensions, newDimensionResponse]);
     setDimEntries([...dimEntries, ...newDimEntriesResponse]);
     setShifts((prevShifts) =>
       prevShifts.map((shift) => {
         const newAttributes = newAttributesResponse.filter(
-          (attribute) => attribute.ownerId === shift.id
+          (attribute: AttributeT) => attribute.ownerId === shift.id,
         );
         return newAttributes
           ? {
@@ -198,28 +311,28 @@ export default function ShiftTab({
               attributes: [...shift.attributes, ...newAttributes],
             }
           : shift;
-      })
+      }),
     );
     return true;
   };
 
   const handleUpdateDimension = async (dimension: DimensionT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    const updatedDimension = await updateDimension(dimension);
+    const updatedDimension = await updateDimensionFn(dimension);
     setDimensions((prevDimensions) =>
       prevDimensions.map((prevDim) =>
-        prevDim.id === updatedDimension.id ? updatedDimension : prevDim
-      )
+        prevDim.id === updatedDimension.id ? updatedDimension : prevDim,
+      ),
     );
   };
 
   const handleDeleteDimension = async (dimensionId: string) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    await deleteDimension(dimensionId, selectedTeamId);
+    await deleteDimensionFn(dimensionId, selectedTeamId);
     setDimensions(dimensions.filter((d) => d.id !== dimensionId));
   };
 
@@ -229,29 +342,27 @@ export default function ShiftTab({
 
   const handleAddDimEntry = async (dimEntry: DimEntryT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    const newDimEntry = await addDimEntry(dimEntry, selectedTeamId);
+    const newDimEntry = await addDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries([...dimEntries, newDimEntry]);
   };
 
   const handleUpdateDimEntry = async (dimEntry: DimEntryT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    const updatedDimEntry = await updateDimEntry(dimEntry, selectedTeamId);
+    const updatedDimEntry = await updateDimEntryFn(dimEntry, selectedTeamId);
     setDimEntries((prevDimEntries) =>
-      prevDimEntries.map((de) =>
-        de.id === updatedDimEntry.id ? updatedDimEntry : de
-      )
+      prevDimEntries.map((de) => (de.id === updatedDimEntry.id ? updatedDimEntry : de)),
     );
   };
 
   const handleDeleteDimEntry = async (dimEntryId: string) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    const updatedAttributes = await deleteDimEntry(dimEntryId, selectedTeamId);
+    const updatedAttributes = await deleteDimEntryFn(dimEntryId, selectedTeamId);
     setDimEntries(dimEntries.filter((dimEntry) => dimEntry.id !== dimEntryId));
     for (const updatedAttribute of updatedAttributes) {
       setShifts((prevShifts) =>
@@ -260,17 +371,17 @@ export default function ShiftTab({
             ? {
                 ...shift,
                 attributes: shift.attributes.some(
-                  (attribute) => attribute.id === updatedAttribute.id
+                  (attribute) => attribute.id === updatedAttribute.id,
                 )
                   ? shift.attributes.map((attribute) =>
                       attribute.id === updatedAttribute.id
                         ? { ...attribute, ...updatedAttribute }
-                        : attribute
+                        : attribute,
                     )
                   : [...shift.attributes, updatedAttribute],
               }
-            : shift
-        )
+            : shift,
+        ),
       );
     }
   };
@@ -281,26 +392,24 @@ export default function ShiftTab({
 
   const handleUpdateAttribute = async (attribute: AttributeT) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    const updatedAttribute = await updateAttribute(attribute, selectedTeamId);
+    const updatedAttribute = await updateAttributeFn(attribute, selectedTeamId);
     setShifts((prevShifts) =>
       prevShifts.map((shift) =>
         shift.id === updatedAttribute.ownerId
           ? {
               ...shift,
-              attributes: shift.attributes.some(
-                (attribute) => attribute.id === updatedAttribute.id
-              )
+              attributes: shift.attributes.some((attribute) => attribute.id === updatedAttribute.id)
                 ? shift.attributes.map((attribute) =>
                     attribute.id === updatedAttribute.id
                       ? { ...attribute, ...updatedAttribute }
-                      : attribute
+                      : attribute,
                   )
                 : [...shift.attributes, updatedAttribute],
             }
-          : shift
-      )
+          : shift,
+      ),
     );
   };
 
@@ -309,95 +418,173 @@ export default function ShiftTab({
   //////////////////////////
 
   const handleAddLinkShift = async (linkShift: LinkShiftT) => {
-    const newLinkShift = await addLinkShift(linkShift);
+    const newLinkShift = await createLinkShiftFn(linkShift);
     setLinkShifts([...linkShifts, newLinkShift]);
   };
 
   const handleDeleteLinkShift = async (linkShiftId: string) => {
     if (!selectedTeamId) {
-      throw new Error("Team not selected");
+      throw new Error('Team not selected');
     }
-    await deleteLinkShift(linkShiftId, selectedTeamId);
-    setLinkShifts(
-      linkShifts.filter((linkShift) => linkShift.id !== linkShiftId)
-    );
+    await deleteLinkShiftFn(linkShiftId, selectedTeamId);
+    setLinkShifts(linkShifts.filter((linkShift) => linkShift.id !== linkShiftId));
   };
 
   useEffect(() => {
     const fetchShiftsTabData = async () => {
       setIsLoading(true);
       if (selectedTeamId) {
-        const {
-          shifts: fetchedShifts,
-          dimensions: fetchedDimensions,
-          dimEntries: fetchedDimEntries,
-          specialties: fetchedSpecialties,
-          linkShifts: fetchedLinkShifts,
-        } = await getShiftsTabData(selectedTeamId);
-        setShifts(fetchedShifts);
-        setDimensions(fetchedDimensions);
-        setDimEntries(fetchedDimEntries);
-        setSpecialties(fetchedSpecialties);
-        setLinkShifts(fetchedLinkShifts);
-        setIsLoading(false);
+        try {
+          const {
+            shifts: fetchedShifts,
+            dimensions: fetchedDimensions,
+            dimEntries: fetchedDimEntries,
+            specialties: fetchedSpecialties,
+            linkShifts: fetchedLinkShifts,
+          } = await getShiftsTabDataFn(selectedTeamId);
+          setShifts(fetchedShifts);
+          setDimensions(fetchedDimensions);
+          setDimEntries(fetchedDimEntries);
+          setSpecialties(fetchedSpecialties);
+          setLinkShifts(fetchedLinkShifts);
+        } catch (error) {
+          console.error('Failed to fetch shifts tab data:', error);
+          // Handle error appropriately - maybe show a toast or error message
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
     fetchShiftsTabData();
-  }, [selectedTeamId]);
+  }, [selectedTeamId, getShiftsTabDataFn]);
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobileShiftTab lng={lng} selectedTeamId={selectedTeamId} />;
+  }
 
   return (
-    <div className="tab-container-wide">
+    <div className="tab-container-wide" data-testid="shifts-page-heading">
       {isLoading ? (
         <TablesSkeleton numTables={2} numInternalRows={3} />
       ) : (
         selectedTeamId && (
           <div>
+            {/* Consolidated Shifts Section with Toggle */}
+            <div className="table-title-container">
+              <span className="title">{t('shifts')}</span>
+              <div className="title-with-toggle">
+                <ToggleButtonGroup
+                  value={shiftView}
+                  exclusive
+                  onChange={handleShiftViewChange}
+                  size="small"
+                  sx={{ ml: 2, height: '35px' }}
+                >
+                  <Tooltip title={t('shifts_tooltip') || t('shifts')}>
+                    <span>
+                      <ToggleButton value="work">{t('shifts')}</ToggleButton>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title={t('rest_tooltip') || t('rest')}>
+                    <span>
+                      <ToggleButton value="rest">{t('rest')}</ToggleButton>
+                    </span>
+                  </Tooltip>
+                </ToggleButtonGroup>
+              </div>
+              <div className="shift-actions-container">
+                {shiftView === 'work' ? (
+                  <>
+                    <LinkShiftDialog
+                      lng={lng}
+                      teamId={selectedTeamId}
+                      shifts={shifts}
+                      linkShifts={linkShifts}
+                      handleAddLinkShift={handleAddLinkShift}
+                      handleDeleteLinkShift={handleDeleteLinkShift}
+                    />
+                    <TableAddButton
+                      text={t('shift')}
+                      tooltip={t('create_shift_tooltip')}
+                      handleClick={() => handleAddShift(false)}
+                    />
+                  </>
+                ) : (
+                  <TableAddButton
+                    text={t('rest')}
+                    tooltip={t('create_rest_tooltip')}
+                    handleClick={() => handleAddShift(true)}
+                  />
+                )}
+                <DimensionDialog
+                  title={t('new_property')}
+                  buttonContent={
+                    <TableAddButton text={t('property')} tooltip={t('create_property_tooltip')} />
+                  }
+                  content={
+                    <NewDimensionForm
+                      lng={lng}
+                      selectedTeamId={selectedTeamId}
+                      dimensionType={
+                        shiftView === 'work' ? DimensionType.SHIFT : DimensionType.REST_SHIFT
+                      }
+                      dimensions={dimensions}
+                      dimEntries={dimEntries}
+                      setOpenParent={
+                        shiftView === 'work' ? setWorkPopoverRhsOpen : setRestPopoverRhsOpen
+                      }
+                      handleAddDimension={handleAddDimension}
+                      handleUpdateDimension={handleUpdateDimension}
+                    />
+                  }
+                  open={shiftView === 'work' ? workPopoverRhsOpen : restPopoverRhsOpen}
+                  setOpen={shiftView === 'work' ? setWorkPopoverRhsOpen : setRestPopoverRhsOpen}
+                />
+              </div>
+            </div>
+
+            {/* Conditional filter bar */}
+            {((shiftView === 'work' && showWorkFilterToolbar) ||
+              (shiftView === 'rest' && showRestFilterToolbar)) && (
+              <TableFilterBar
+                filters={shiftView === 'work' ? workTableState.filters : restTableState.filters}
+                sort={shiftView === 'work' ? workTableState.sort : restTableState.sort}
+                onRemoveFilter={shiftView === 'work' ? removeWorkFilter : removeRestFilter}
+                onRemoveSort={() =>
+                  shiftView === 'work' ? updateWorkSort(null) : updateRestSort(null)
+                }
+                onResetAll={shiftView === 'work' ? resetWorkAll : resetRestAll}
+              />
+            )}
+
+            {/* Single conditional table */}
             <ShiftTable
               lng={lng}
               selectedTeamId={selectedTeamId}
-              isRest={false}
+              isRest={shiftView === 'rest'}
               dimensions={dimensions}
               dimEntries={dimEntries}
-              shifts={shifts}
-              specialties={specialties}
-              linkShifts={linkShifts}
-              defaultShiftFields={DefaultWorkShiftFields}
-              handleAddShift={handleAddShift}
+              shifts={shiftView === 'work' ? filteredWorkShifts : filteredRestShifts}
+              specialties={shiftView === 'work' ? specialties : []}
+              linkShifts={shiftView === 'work' ? linkShifts : []}
+              defaultShiftFields={
+                shiftView === 'work' ? DefaultWorkShiftFields : DefaultRestShiftFields
+              }
+              tableHeight={shiftView === 'work' ? workTableHeight : restTableHeight}
+              shiftColumns={shiftView === 'work' ? workShiftColumns : restShiftColumns}
+              currentSort={shiftView === 'work' ? workTableState.sort : restTableState.sort}
+              onSort={shiftView === 'work' ? updateWorkSort : updateRestSort}
+              onFilter={shiftView === 'work' ? addWorkFilter : addRestFilter}
               handleUpdateShift={handleUpdateShift}
               handleDeleteShift={handleDeleteShift}
-              handleAddDimension={handleAddDimension}
               handleUpdateDimension={handleUpdateDimension}
               handleDeleteDimension={handleDeleteDimension}
               handleAddDimEntry={handleAddDimEntry}
               handleUpdateDimEntry={handleUpdateDimEntry}
               handleDeleteDimEntry={handleDeleteDimEntry}
               handleUpdateAttribute={handleUpdateAttribute}
-              handleAddLinkShift={handleAddLinkShift}
-              handleDeleteLinkShift={handleDeleteLinkShift}
-            />
-            <div className="divider" />
-            <ShiftTable
-              lng={lng}
-              selectedTeamId={selectedTeamId}
-              isRest={true}
-              dimensions={dimensions}
-              dimEntries={dimEntries}
-              shifts={shifts}
-              specialties={[]}
-              linkShifts={[]}
-              defaultShiftFields={DefaultRestShiftFields}
-              handleAddShift={handleAddShift}
-              handleUpdateShift={handleUpdateShift}
-              handleDeleteShift={handleDeleteShift}
-              handleAddDimension={handleAddDimension}
-              handleUpdateDimension={handleUpdateDimension}
-              handleDeleteDimension={handleDeleteDimension}
-              handleAddDimEntry={handleAddDimEntry}
-              handleUpdateDimEntry={handleUpdateDimEntry}
-              handleDeleteDimEntry={handleDeleteDimEntry}
-              handleUpdateAttribute={handleUpdateAttribute}
-              handleAddLinkShift={handleAddLinkShift}
-              handleDeleteLinkShift={handleDeleteLinkShift}
             />
           </div>
         )

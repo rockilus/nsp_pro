@@ -1,15 +1,22 @@
-from typing import List
+from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.shift import ShiftSchema
-from shared.schemas.schemas.shift import Shift, ShiftType
+from shared.schemas.core.shift import Shift, ShiftRestType, ShiftType
 
 
 class ShiftRepository(BaseRepository[ShiftSchema]):
-    """Repository for shift documents using PyMongo."""
+    """Repository for shift documents using modern database interface."""
 
-    def __init__(self):
-        super().__init__("shifts", ShiftSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        """
+        Initialize ShiftRepository.
+
+        Args:
+            database_interface: Database interface instance
+        """
+        super().__init__(database_interface, "shifts", ShiftSchema)
 
     def create_shift(self, shift: Shift) -> Shift:
         """Create a new shift."""
@@ -74,10 +81,50 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
             raise Exception(f"Shift with id {shift_id} not found")
         return shift.to_core()
 
-    def get_shifts_by_ids(self, shift_ids: List[str]) -> List[Shift]:
-        """Get multiple shifts by their IDs."""
+    def get_shifts_by_ids(
+        self, shift_ids: List[str], raise_on_missing: bool = False
+    ) -> List[Shift]:
+        """Get multiple shifts by their IDs.
+
+        Forgiving behavior by default: missing IDs are ignored. If
+        `raise_on_missing` is True, raises `ValueError` when any id is not
+        found.
+        """
+        if not shift_ids:
+            return []
+
         shifts = self.find_all({"_id": {"$in": shift_ids}})
-        return [shift.to_core() for shift in shifts]
+        results = [shift.to_core() for shift in shifts]
+
+        if raise_on_missing:
+            found_ids = {r.id for r in results}
+            missing = [sid for sid in shift_ids if sid not in found_ids]
+            if missing:
+                raise ValueError(f"Shifts not found for ids: {missing}")
+
+        return results
+
+    def get_recuperation_shift(self, shift_id: str) -> Optional[Shift]:
+        """Get the recuperation shift associated with a given shift ID."""
+        shift = self.collection.find_one(
+            {
+                "recuperation_duty": shift_id,
+                "shift_type": ShiftType.REST.value,
+                "rest_type": ShiftRestType.RECUPERATION.value,
+            }
+        )
+        return ShiftSchema.from_mongo(shift).to_core() if shift else None
+
+    def get_recuperation_shifts(self, shift_ids: List[str]) -> List[Shift]:
+        """Get the recuperation shifts associated with a list of shift IDs."""
+        shifts = self.collection.find(
+            {
+                "recuperation_duty": {"$in": shift_ids},
+                "shift_type": ShiftType.REST.value,
+                "rest_type": ShiftRestType.RECUPERATION.value,
+            }
+        )
+        return [ShiftSchema.from_mongo(shift).to_core() for shift in shifts]
 
     def update_shift(self, shift: Shift) -> Shift:
         """Update a shift."""
@@ -120,7 +167,9 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         return shift.to_core()
 
     def logical_delete_shift_recup(self, shift_id: str) -> None:
-        """Mark all recuperation shifts associated with a duty shift as deleted."""
+        """
+        Mark all recuperation shifts associated with a duty shift as deleted.
+        """
         self.collection.update_many(
             {"recuperation_duty": shift_id}, {"$set": {"deleted": True}}
         )

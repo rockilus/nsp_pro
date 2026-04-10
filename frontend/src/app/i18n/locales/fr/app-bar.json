@@ -1,12 +1,17 @@
 {
-    "campaign": "Campagne",
-    "constraints": "Contraintes",
-    "coverages": "Agendas",
-    "profile": "Profil",
-    "requests": "Demandes",
-    "schedule": "Planning",
-    "sign_out": "Déconnexion",
-    "shifts": "Tâches",
-    "stats": "Stats",
-    "workers": "Travailleurs"
+  "campaign": "Campagne",
+  "constraints": "Règles",
+  "profile": "Profil",
+  "requests": "Demandes",
+  "schedule": "Planning",
+  "settings": "Paramètres",
+  "shift_demands": "Besoins",
+  "sign_out": "Déconnexion",
+  "signing_out": "Déconnexion...",
+  "shifts": "Postes",
+  "stats": "Stats",
+  "swaps": "Échanges",
+  "teams": "Équipes",
+  "workers": "Équipe",
+  "notifications": "Notifications"
 }

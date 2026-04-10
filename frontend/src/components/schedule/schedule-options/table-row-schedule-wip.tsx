@@ -1,10 +1,10 @@
-import React from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
+import React from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // MUI
-import Box from "@mui/material/Box";
-import TableCell from "@mui/material/TableCell";
-import TableRow from "@mui/material/TableRow";
+import Box from '@mui/material/Box';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 
 dayjs.extend(utc);
 
@@ -20,18 +20,18 @@ export default function TableRowScheduleWIP({
       <TableCell sx={{ width: 70, padding: 0 }}>
         <Box
           sx={{
-            display: "flex",
-            width: "50px",
-            paddingLeft: "10px",
-            color: "grey.700",
-            height: "30px",
-            alignItems: "center",
+            display: 'flex',
+            width: '50px',
+            paddingLeft: '10px',
+            color: 'grey.700',
+            height: '30px',
+            alignItems: 'center',
           }}
         >
           {name}
         </Box>
       </TableCell>
-      <TableCell sx={{ padding: 0, paddingLeft: "10px" }}>{content}</TableCell>
+      <TableCell sx={{ padding: 0, paddingLeft: '10px' }}>{content}</TableCell>
     </TableRow>
   );
 }

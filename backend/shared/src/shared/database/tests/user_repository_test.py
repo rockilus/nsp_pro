@@ -1,39 +1,43 @@
 from datetime import datetime, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.user import UserRepository
 from shared.database.schemas.user import UserSchema
-from shared.schemas.schemas.user import Language, User
+from shared.schemas.core.user import Language, User
 
 
 class TestUserRepository:
     repo: UserRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = UserRepository()
+        self.repo = UserRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("users")  # type: ignore
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_user(self):
         """Test creating a user."""
         user = User(
-            id=None,
+            id="user_0",
             email="john@example.com",
             first_name="John",
             last_name="Doe",
-            workers=[],
             language=Language.EN,
             sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             impersonating_user_id=None,
@@ -41,7 +45,7 @@ class TestUserRepository:
 
         result = self.repo.create_user(user)
 
-        assert result.id is not None
+        assert result.id == "user_0"
         assert result.email == "john@example.com"
         assert result.first_name == "John"
 
@@ -56,7 +60,6 @@ class TestUserRepository:
             email="john@example.com",
             first_name="John",
             last_name="Doe",
-            workers=[],
             language="en",
             sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             impersonating_user=None,
@@ -75,7 +78,6 @@ class TestUserRepository:
             email="john@example.com",
             first_name="John",
             last_name="Doe",
-            workers=[],
             language="en",
             sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             impersonating_user=None,
@@ -94,7 +96,6 @@ class TestUserRepository:
             email="john@example.com",
             first_name="John",
             last_name="Doe",
-            workers=[],
             language="en",
             sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             impersonating_user=None,
@@ -106,7 +107,6 @@ class TestUserRepository:
             email="john@example.com",
             first_name="John Updated",
             last_name="Doe",
-            workers=[],
             language=Language.EN,
             sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             impersonating_user_id=None,
@@ -125,7 +125,6 @@ class TestUserRepository:
             email="john@example.com",
             first_name="John",
             last_name="Doe",
-            workers=[],
             language="en",
             sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             impersonating_user=None,
@@ -142,7 +141,6 @@ class TestUserRepository:
             email="john@example.com",
             first_name="John",
             last_name="Doe",
-            workers=[],
             language="en",
             sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             impersonating_user=None,
@@ -151,7 +149,6 @@ class TestUserRepository:
             email="jane@example.com",
             first_name="Jane",
             last_name="Doe",
-            workers=[],
             language="en",
             sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
             impersonating_user=None,
@@ -162,5 +159,35 @@ class TestUserRepository:
         users = self.repo.get_users()
 
         assert len(users) == 2
+        assert users[0].email in ["john@example.com", "jane@example.com"]
+        assert users[1].email in ["john@example.com", "jane@example.com"]
+
+    def test_get_users_by_ids(self):
+        """Test getting users by a list of IDs."""
+        user1 = UserSchema(
+            email="john@example.com",
+            first_name="John",
+            last_name="Doe",
+            language="en",
+            sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
+            impersonating_user=None,
+        )
+        user2 = UserSchema(
+            email="jane@example.com",
+            first_name="Jane",
+            last_name="Doe",
+            language="en",
+            sign_up_at=datetime(2023, 1, 1, tzinfo=timezone.utc),
+            impersonating_user=None,
+        )
+        created_user1 = self.repo.create(user1)
+        created_user2 = self.repo.create(user2)
+
+        user_ids = [created_user1.id, created_user2.id]
+        users = self.repo.get_users_by_ids(user_ids)
+
+        assert len(users) == 2
+        assert users[0].id in user_ids
+        assert users[1].id in user_ids
         assert users[0].email in ["john@example.com", "jane@example.com"]
         assert users[1].email in ["john@example.com", "jane@example.com"]

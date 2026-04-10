@@ -4,21 +4,22 @@ from typing import List
 import humps
 from fastapi import APIRouter, Depends
 from pydantic import TypeAdapter
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas import Coverage
+from shared.schemas.core import Coverage
 from shared.schemas.errors import handle_create_schema_object_error
 
-from errors import (
+from src.dependencies import get_coverage_service, get_db_collections, get_user_context
+from src.errors import (
     MessageTypeError,
     NotAuthorizedError,
     handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import SessionContainerType, authn_verify_session
-from integrations.authorization import authz_check
-from routes.api_model import CoverageMessage
-from scripts.setup_database import coverage_db
-from services.coverage_services import delete_coverage as delete_coverage_service
+from src.integrations.authorization import authz_check
+from src.routes.api_model import CoverageMessage
+from src.security.user_context import UserContext
+from src.services.coverage_service import CoverageService
 
 router = APIRouter()
 
@@ -27,15 +28,16 @@ router = APIRouter()
 async def create_coverage(
     team_id: str,
     coverage: CoverageMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> CoverageMessage:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-coverage", "team", team_id
+            user_context.user_id, "create-coverage", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create a coverage")
         c_data = msg_to_core_coverage(coverage)
-        c_created = coverage_db.create_coverage(c_data)
+        c_created = db_collections.coverage_db.create_coverage(c_data)
         response = core_to_msg_coverage(c_created)
     except Exception as e:
         log_info("Failed to create coverage")
@@ -47,14 +49,15 @@ async def create_coverage(
 @router.get("/coverages/teams/{team_id}")
 async def get_coverages(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[CoverageMessage]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-coverages", "team", team_id
+            user_context.user_id, "read-coverages", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get coverages")
-        coverages = coverage_db.get_coverages(team_id)
+        coverages = db_collections.coverage_db.get_coverages(team_id)
         response = [core_to_msg_coverage(c) for c in coverages]
     except Exception as e:
         log_info("Failed to get coverages")
@@ -66,15 +69,16 @@ async def get_coverages(
 async def update_coverage(
     team_id: str,
     updated_coverage: CoverageMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ):
     try:
         if not await authz_check(
-            session.get_user_id(), "update-coverage", "team", team_id
+            user_context.user_id, "update-coverage", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update a coverage")
         cov_data = msg_to_core_coverage(updated_coverage)
-        cov = coverage_db.update_coverage(cov_data)
+        cov = db_collections.coverage_db.update_coverage(cov_data)
         response = core_to_msg_coverage(cov)
     except Exception as e:
         log_info("Failed to update coverage")
@@ -86,14 +90,15 @@ async def update_coverage(
 async def delete_coverage(
     coverage_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
+    coverage_service: CoverageService = Depends(get_coverage_service),
 ):
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-coverage", "team", team_id
+            user_context.user_id, "delete-coverage", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to delete a coverage")
-        delete_coverage_service(coverage_id)
+        coverage_service.delete_coverage(coverage_id)
     except Exception as e:
         log_info("Failed to delete coverage")
         handle_routes_errors(e)

@@ -1,9 +1,16 @@
 {
-    "monday": "Lundi",
-    "tuesday": "Mardi",
-    "wednesday": "Mercredi",
-    "thursday": "Jeudi",
-    "friday": "Vendredi",
-    "saturday": "Samedi",
-    "sunday": "Dimanche"
+  "monday": "Lundi",
+  "monday_short": "L",
+  "tuesday": "Mardi",
+  "tuesday_short": "M",
+  "wednesday": "Mercredi",
+  "wednesday_short": "M",
+  "thursday": "Jeudi",
+  "thursday_short": "J",
+  "friday": "Vendredi",
+  "friday_short": "V",
+  "saturday": "Samedi",
+  "saturday_short": "S",
+  "sunday": "Dimanche",
+  "sunday_short": "D"
 }

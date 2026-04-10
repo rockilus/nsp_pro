@@ -1,36 +1,47 @@
-import httpx
-import redis
-from fastapi import APIRouter, HTTPException, Query, status
+from typing import Dict
 
-from errors import AuthnConnectionError, AuthzConnectionError
-from integrations.authentication import authn_health_check
-from integrations.authorization import authz_connect, authz_health_check
-from routes.api_model import HealthCheck, ServiceStatus
-from scripts.setup_database import db
-from utils.env_config import PDP_API_KEY
+import httpx
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from pydantic import BaseModel
+from shared.database.database_collections import DatabaseCollections
+
+from src.config import config
+from src.dependencies import get_db_collections
+from src.errors import AuthzConnectionError
+from src.integrations.authorization import authz_connect, authz_health_check
 
 router = APIRouter()
 
 
+class ServiceStatus(BaseModel):
+    status: str
+    details: str | None
+
+
+class HealthCheck(BaseModel):
+    status: str
+    database_type: str
+    environment: str
+    services: Dict[str, ServiceStatus]
+
+
 @router.get("/health", response_model=HealthCheck)
-async def health_check() -> HealthCheck:
+async def health_check(
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> HealthCheck:
     health_status = {
         "database": ServiceStatus(status="ok", details=None),
-        "authn": ServiceStatus(status="ok", details=None),
         "authz": ServiceStatus(status="ok", details=None),
     }
-
     try:
-        db.check_health()
+        # Use the factory to check database health
+        is_healthy = await db_collections.database_interface.health_check()
+        if not is_healthy:
+            health_status["database"].status = "error"
+            health_status["database"].details = "Database health check failed"
     except Exception as e:
         health_status["database"].status = "error"
         health_status["database"].details = str(e)
-
-    try:
-        await authn_health_check()
-    except AuthnConnectionError as e:
-        health_status["authn"].status = "error"
-        health_status["authn"].details = str(e)
 
     try:
         await authz_health_check()
@@ -43,22 +54,39 @@ async def health_check() -> HealthCheck:
         if all(service.status == "ok" for service in health_status.values())
         else "error"
     )
+
+    db_type = "documentdb" if config.use_documentdb else "mongodb"
+
     if overall_status == "error":
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            # detail=health_status,
             detail={key: value.model_dump() for key, value in health_status.items()},
         )
-    return HealthCheck(status=overall_status, services=health_status)
+    return HealthCheck(
+        status=overall_status,
+        database_type=db_type,
+        environment=config.environment,
+        services=health_status,
+    )
 
 
 @router.get("/check-authn-health")
 async def check_authz_health(
-    pdp_url: str = Query(..., description="The URL of the Permit PDP")
+    request: Request,
+    # pdp_url: str = Query(..., description="The URL of the Permit PDP")
 ):
     try:
+        print(f"Full incoming request URL: {request.url}")
+        print(f"Raw query parameters from request object: {request.url.query}")
+        print(f"Parsed query parameters from request object: {request.query_params}")
+        pdp_url = request.query_params.get("pdp_url", None)
+        if not pdp_url:
+            raise HTTPException(
+                status_code=400,
+                detail="Missing required query parameter: pdp_url",
+            )
         print("Tenants request with pdp url: ", pdp_url)
-        permit = authz_connect(pdp_url, PDP_API_KEY)
+        permit = authz_connect(pdp_url, config.pdp_api_key)
         resource_instance = "team: 667d626f02d5723648a0f1fc"
         out = await permit.check(
             user="bb2a8dd2-240d-41fc-9920-9eb51948cb22",
@@ -72,55 +100,11 @@ async def check_authz_health(
         ) from e
 
 
-@router.get("/check-redis-health")
-async def check_redis_health(
-    redis_url: str = Query(..., description="The URL of the Redis server")
-):
-    try:
-        client = redis.StrictRedis.from_url(redis_url)
-        response = client.ping()
-        if response is not True:
-            raise HTTPException(
-                status_code=503,
-                detail="Redis health check failed: PING command did not return PONG",
-            )
-        return {"status": "success"}
-    except redis.ConnectionError as e:
-        raise HTTPException(
-            status_code=503, detail=f"Redis health check failed: {str(e)}"
-        ) from e
-
-
-@router.get("/check-data-fetcher-health")
-async def check_data_fetcher_health(
-    data_fetcher_url: str = Query(
-        ..., description="The URL of the data-fetcher service"
-    )
-):
-    try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            response = await client.get(f"{data_fetcher_url}/health")
-            response.raise_for_status()
-            return {
-                "status": "success",
-                "data_fetcher_status": response.json(),
-            }
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(
-            status_code=e.response.status_code,
-            detail=f"Data Fetcher health check failed: {e.response.text}",
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Unexpected error: {str(e)}"
-        ) from e
-
-
 @router.get("/check-processing-engine-health")
 async def check_processing_engine_health(
     processing_engine_url: str = Query(
         ..., description="The URL of the processing-engine service"
-    )
+    ),
 ):
     try:
         async with httpx.AsyncClient() as client:
@@ -134,31 +118,6 @@ async def check_processing_engine_health(
         raise HTTPException(
             status_code=e.response.status_code,
             detail=f"Processing Engine health check failed: {e.response.text}",
-        ) from e
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Unexpected error: {str(e)}"
-        ) from e
-
-
-@router.get("/check-storage-service-health")
-async def check_storage_service_health(
-    storage_service_url: str = Query(
-        ..., description="The URL of the storage-service service"
-    )
-):
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(f"{storage_service_url}/health")
-            response.raise_for_status()
-            return {
-                "status": "success",
-                "storage_service_status": response.json(),
-            }
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(
-            status_code=e.response.status_code,
-            detail=f"Storage Service health check failed: {e.response.text}",
         ) from e
     except Exception as e:
         raise HTTPException(

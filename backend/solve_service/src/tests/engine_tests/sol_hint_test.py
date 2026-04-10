@@ -2,8 +2,8 @@
 # from datetime import date, datetime, timedelta
 
 # import pytest
-# from shared.schemas import (
-#     DailyShiftDemand,
+# from shared.schemas.core import (
+#     ShiftDemandNew,
 #     DSDSourceType,
 #     EngineInputsAugmented,
 #     ModelConfig,
@@ -142,7 +142,7 @@
 #             current_date = schedule.start_date
 #             while current_date <= schedule.end_date:
 #                 daily_shift_demands.append(
-#                     DailyShiftDemand(
+#                     ShiftDemandNew(
 #                         id=f"dsd_{shift.id}_{current_date}",
 #                         team_id="t0",
 #                         schedule_id=schedule.id,
@@ -162,13 +162,12 @@
 #             schedule=schedule,
 #             workers=workers,
 #             shifts=shifts,
-#             shifts_recup_new=[],
 #             link_shifts=[],
 #             dimensions=[],
 #             dim_entries=[],
 #             attributes=[],
 #             as_hist=[],
-#             as_wip_fixed=[],
+#             as_campaign_fixed=[],
 #             cbs_augmented=[],
 #             daily_shift_demands=daily_shift_demands,
 #             requests=[],

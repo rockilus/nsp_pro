@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react';
 // MUI
-import Box from "@mui/material/Box";
-import TableCell from "@mui/material/TableCell";
-import TableRow from "@mui/material/TableRow";
+import Box from '@mui/material/Box';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 
 export default function TableRowScheduleWIP({
   name,
@@ -16,18 +16,18 @@ export default function TableRowScheduleWIP({
       <TableCell sx={{ width: 70, padding: 0 }}>
         <Box
           sx={{
-            display: "flex",
-            width: "50px",
-            paddingLeft: "10px",
-            color: "grey.700",
-            height: "30px",
-            alignItems: "center",
+            display: 'flex',
+            width: '50px',
+            paddingLeft: '10px',
+            color: 'grey.700',
+            height: '30px',
+            alignItems: 'center',
           }}
         >
           {name}
         </Box>
       </TableCell>
-      <TableCell sx={{ padding: 0, paddingLeft: "10px" }}>{content}</TableCell>
+      <TableCell sx={{ padding: 0, paddingLeft: '10px' }}>{content}</TableCell>
     </TableRow>
   );
 }

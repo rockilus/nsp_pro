@@ -1,0 +1,18 @@
+# Justfile for rockilus backend
+# Usage: cd backend && just <recipe>
+
+all:
+    echo "Running all checks in shared, api_gateway, and solve_service..."
+    cd shared just all
+    cd api_gateway just all
+    cd solve_service just all
+
+all-no-test:
+    echo "Running format, lint, typecheck across services (no tests)..."
+    cd shared && just all-no-test
+    cd api_gateway && just all-no-test
+    cd solve_service && just all-no-test
+
+
+
+

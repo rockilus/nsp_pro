@@ -1,21 +1,23 @@
 from typing import List, Optional
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.user import UserSchema
-from shared.schemas.schemas.user import User
+from shared.schemas.core.user import User
 
 
 class UserRepository(BaseRepository[UserSchema]):
     """Repository for user documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("users", UserSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "users", UserSchema)
 
     def create_user(self, user: User) -> User:
         """Create a new user."""
         user_schema = UserSchema.from_core(user)
-        result = self.create(user_schema)
-        return result.to_core()
+        doc = user_schema.to_mongo()
+        self.collection.insert_one(doc)
+        return user
 
     def get_users(self) -> List[User]:
         """Get all users."""
@@ -31,6 +33,11 @@ class UserRepository(BaseRepository[UserSchema]):
         """Get a user by its email."""
         users = self.find_all({"email": email})
         return users[0].to_core() if users else None
+
+    def get_users_by_ids(self, user_ids: List[str]) -> List[User]:
+        """Get users by a list of IDs."""
+        users = self.find_all({"_id": {"$in": user_ids}})
+        return [user.to_core() for user in users]
 
     def update_user(self, user: User) -> User:
         """Update a user."""

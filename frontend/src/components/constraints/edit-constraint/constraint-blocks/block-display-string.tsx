@@ -1,16 +1,16 @@
-import React, { useState } from "react";
-import { useTranslation } from "../../../../app/i18n/client";
+import React, { useState } from 'react';
+import { useTranslation } from '../../../../app/i18n/client';
 // Components
-import BlockEditString from "./block-edit-string";
-import GetBlockNameLabel from "../../../data-display/get-block-name-label";
-import PopoverBoxAnchorElOver from "../../../inputs/popover-box-anchor-el-over";
+import BlockEditString from './block-edit-string';
+import GetBlockNameLabel from '../../../data-display/get-block-name-label';
+import PopoverBoxAnchorElOver from '../../../inputs/popover-box-anchor-el-over';
 import {
   blockDisplayName,
   blockDisplayPlaceholder,
   blockDislayValue,
-} from "../../../data-display/block-display";
+} from '../../../data-display/block-display';
 // Types
-import { TemplateBlockT, BlockT } from "../../../../types/constraint";
+import { TemplateBlockT, BlockT } from '../../../../types/constraint';
 
 export default function BlockDisplayString({
   lng,
@@ -29,30 +29,30 @@ export default function BlockDisplayString({
   handleEditBlock: (block: BlockT) => void;
   handleRemoveError: (index: number) => void;
 }) {
-  const { t } = useTranslation(lng, "constraint-page");
+  const { t } = useTranslation(lng, 'constraint-page');
 
   const [open, setOpen] = useState(false);
 
   const translateOptionName = (name: string): string => {
     const translations: Record<string, string> = {
-      "at least": "operator_at_least",
-      exactly: "operator_exactly",
-      "at most": "operator_at_most",
-      "per week": "timing_per_week",
-      "per month": "timing_per_month",
-      "per year": "timing_per_year",
-      no: "operator_no",
-      after: "timing_after",
-      before: "timing_before",
-      monday: "week_days.monday",
-      tuesday: "week_days.tuesday",
-      wednesday: "week_days.wednesday",
-      thursday: "week_days.thursday",
-      friday: "week_days.friday",
-      saturday: "week_days.saturday",
-      sunday: "week_days.sunday",
-      "should only": "operator_should_only",
-      "should not": "operator_should_not",
+      'at least': 'operator_at_least',
+      exactly: 'operator_exactly',
+      'at most': 'operator_at_most',
+      'per week': 'timing_per_week',
+      'per month': 'timing_per_month',
+      'per year': 'timing_per_year',
+      no: 'operator_no',
+      after: 'timing_after',
+      before: 'timing_before',
+      monday: 'week_days.monday',
+      tuesday: 'week_days.tuesday',
+      wednesday: 'week_days.wednesday',
+      thursday: 'week_days.thursday',
+      friday: 'week_days.friday',
+      saturday: 'week_days.saturday',
+      sunday: 'week_days.sunday',
+      'should only': 'operator_should_only',
+      'should not': 'operator_should_not',
     };
 
     return translations[name] ? t(translations[name]) : name;
@@ -61,10 +61,18 @@ export default function BlockDisplayString({
   const blockDisplay = () => {
     return (
       <div>
-        {block && block.value !== ""
+        {block && block.value !== ''
           ? blockDislayValue(translateOptionName(block.value as string))
-          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
-        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
+          : blockDisplayPlaceholder(
+              templateBlock.placeholder,
+              error,
+              `constraint-block-placeholder-${index}`,
+            )}
+        {blockDisplayName(
+          GetBlockNameLabel(lng, templateBlock.name),
+          error,
+          `constraint-block-name-${index}`,
+        )}
       </div>
     );
   };
@@ -91,6 +99,7 @@ export default function BlockDisplayString({
       }
       open={open}
       setOpen={setOpen}
+      data-testid={`string-block-${templateBlock.name}-${index}`}
     />
   );
 }

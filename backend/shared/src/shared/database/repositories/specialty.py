@@ -1,15 +1,16 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.specialty import SpecialtySchema
-from shared.schemas.schemas.team import Specialty
+from shared.schemas.core.specialty import Specialty
 
 
 class SpecialtyRepository(BaseRepository[SpecialtySchema]):
     """Repository for specialty documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("specialties", SpecialtySchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "specialties", SpecialtySchema)
 
     def create_specialty(self, specialty: Specialty) -> Specialty:
         """Create a new specialty."""

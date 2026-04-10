@@ -1,245 +1,190 @@
-import React, { useState } from "react";
-import dayjs from "dayjs";
-import { useTranslation } from "../../app/i18n/client";
+import React from 'react';
+import { useTranslation } from '../../app/i18n/client';
+import { useIsMobile } from '../../hooks/useIsMobile';
 // MUI
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import FormControl from "@mui/material/FormControl";
-import MenuItem from "@mui/material/MenuItem";
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import Select from "@mui/material/Select";
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import Typography from "@mui/material/Typography";
-import WorkIcon from "@mui/icons-material/Work";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-// Styles
-import "./request-panel.css";
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import CloseIcon from '@mui/icons-material/Close';
+// Components
+import { RequestForm } from '@/components/common/RequestForm';
 // Types
-import { RequestT, RequestStatus } from "../../types/request";
-import { ShiftT } from "../../types/shift";
-import { WorkerT } from "../../types/worker";
+import { RequestT } from '../../types/request';
+import { ShiftT } from '../../types/shift';
+import { WorkerT } from '../../types/worker';
+import { TeamMembershipRole } from '@/types/team';
+import { ShiftWorkerOptionT } from '@/types/constraint';
 
-export default function RequestPanel({
+const RequestPanel = ({
   lng,
-  request,
+  teamId,
+  isEdit,
+  request = null,
   workers,
   shifts,
-  handleClose,
+  shiftOptions,
+  userWorkerId,
+  userTeamRole,
   handleAddRequest,
   handleUpdateRequest,
+  handleDeleteRequest,
+  handleRescindRequest,
+  handleAcceptRequest,
+  handleDenyRequest,
+  hideButton = false,
+  onClose,
+  open: externalOpen,
 }: {
   lng: string;
-  request: RequestT;
+  teamId: string;
+  isEdit: boolean;
+  request?: RequestT | null;
   workers: WorkerT[];
   shifts: ShiftT[];
-  handleClose: () => void;
+  shiftOptions: ShiftWorkerOptionT[];
+  userWorkerId: string | null;
+  userTeamRole: TeamMembershipRole;
   handleAddRequest: (request: RequestT) => void;
   handleUpdateRequest: (request: RequestT) => void;
-}) {
-  const { t } = useTranslation(lng, "request-page");
+  handleDeleteRequest?: (requestId: string) => void;
+  handleRescindRequest?: (requestId: string) => void;
+  handleAcceptRequest?: (requestId: string) => void;
+  handleDenyRequest?: (requestId: string) => void;
+  hideButton?: boolean;
+  onClose?: () => void;
+  open?: boolean;
+}) => {
+  const { t } = useTranslation(lng, 'request-page');
+  const isMobile = useIsMobile();
 
-  const [requestState, setRequestState] = useState<RequestT>(request);
-  const [dateRange, setDateRange] = useState<boolean>(
-    !request.startDate.isSame(request.endDate, "day")
-  );
+  const [internalOpen, setInternalOpen] = React.useState<boolean>(false);
 
-  const handleSaveRequest = async () => {
-    if (requestState.id === "") {
-      await handleAddRequest(requestState);
-    } else {
-      if (
-        requestState.workerId === request.workerId &&
-        requestState.startDate === request.startDate &&
-        requestState.endDate === request.endDate &&
-        requestState.shiftId === request.shiftId &&
-        requestState.negative === request.negative &&
-        requestState.hard === request.hard
-      ) {
-        handleClose();
-        return;
-      }
-      const updatedRequest = {
-        ...requestState,
-        status: RequestStatus.PENDING,
-      };
-      handleUpdateRequest(updatedRequest);
+  // Use external open state if provided, otherwise use internal state
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setInternalOpen(true);
+  };
+
+  const handleClose = () => {
+    if (externalOpen === undefined) {
+      setInternalOpen(false);
     }
-    handleClose();
-  };
-
-  const handleSelectDateRange = () => {
-    if (dateRange) {
-      setRequestState({
-        ...requestState,
-        endDate: requestState.startDate,
-      });
-    } else {
-      setRequestState({
-        ...requestState,
-        endDate: request.endDate,
-      });
+    // Call external onClose if provided
+    if (onClose) {
+      onClose();
     }
-    setDateRange(!dateRange);
   };
 
-  const selectWorker = () => {
-    return (
-      <div className="select-container">
-        <FormControl fullWidth>
-          <Select
-            value={requestState.workerId}
-            label="Worker"
-            onChange={(e) =>
-              setRequestState({
-                ...requestState,
-                workerId: e.target.value as string,
-              })
-            }
-          >
-            {workers.map((worker) => (
-              <MenuItem key={worker.id} value={worker.id}>
-                {worker.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-    );
-  };
-  const selectShift = () => {
-    return (
-      <div className="select-container">
-        <FormControl fullWidth>
-          <Select
-            value={requestState.shiftId}
-            label="Shift"
-            onChange={(e) =>
-              setRequestState({
-                ...requestState,
-                shiftId: e.target.value as string,
-              })
-            }
-          >
-            {shifts.map((shift) => (
-              <MenuItem key={shift.id} value={shift.id}>
-                {shift.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-    );
-  };
+  // Initialize with request data if provided (for calendar usage)
+  React.useEffect(() => {
+    if (request && hideButton && externalOpen === undefined) {
+      // Auto-open for calendar usage (both create and edit scenarios)
+      setInternalOpen(true);
+    }
+  }, [request, hideButton, externalOpen]);
+
+  const id = open ? 'request-dialog' : undefined;
 
   return (
-    <div className="request-panel-container">
-      <div className="variable-input-container">
-        <PeopleAltIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-        {selectWorker()}
-      </div>
-      <div className="variable-input-param-container">
-        <Checkbox
-          checked={dateRange}
-          onChange={handleSelectDateRange}
-          size="small"
-          sx={{ marginLeft: "49px", height: "30px", width: "30px" }}
-        />
-        <Typography sx={{ fontSize: "0.8rem" }}>{t("date_range")}</Typography>
-      </div>
-      <div className="variable-input-container">
-        <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-        <div className="date-pickers-container">
-          <DatePicker
-            minDate={dayjs.utc().startOf("day")}
-            sx={{ marginLeft: 1, marginRight: 2, width: "100%" }}
-            value={dayjs(requestState.startDate)}
-            onChange={(newValue) =>
-              setRequestState({
-                ...requestState,
-                startDate:
-                  newValue?.startOf("day") || dayjs.utc().startOf("day"),
-                endDate: !dateRange
-                  ? newValue?.startOf("day") || dayjs.utc().startOf("day")
-                  : requestState.endDate,
-              })
-            }
-          />
-          {dateRange && (
-            <DatePicker
-              minDate={requestState.startDate}
-              sx={{
-                marginLeft: 1,
-                marginTop: "1px",
-                marginRight: 2,
-                width: "100%",
-              }}
-              value={dayjs(requestState.endDate)}
-              onChange={(newValue) =>
-                setRequestState({
-                  ...requestState,
-                  endDate:
-                    newValue?.startOf("day") || dayjs.utc().startOf("day"),
-                })
+    <div data-testid="request-panel">
+      {!hideButton && (
+        <>
+          {isEdit && request ? (
+            <IconButton
+              edge="end"
+              aria-label="edit"
+              data-testid={`edit-request-button-${request.id}`}
+              disabled={
+                userTeamRole === TeamMembershipRole.MEMBER &&
+                (!userWorkerId || request.workerId !== userWorkerId)
               }
-            />
+              onClick={handleClick}
+            >
+              <EditIcon />
+            </IconButton>
+          ) : (
+            <Button
+              aria-describedby={id}
+              variant="contained"
+              disabled={userTeamRole === TeamMembershipRole.MEMBER && !userWorkerId}
+              onClick={handleClick}
+              sx={{
+                textTransform: 'none',
+              }}
+              data-testid="new-request-button"
+            >
+              {t('new_request')}
+            </Button>
           )}
-        </div>
-      </div>
-      <div className="variable-input-param-container">
-        <ToggleButtonGroup
-          color="primary"
-          value={requestState.negative}
-          exclusive
-          onChange={(event, value) =>
-            setRequestState({ ...requestState, negative: value })
-          }
-          aria-label="Platform"
-        >
-          <ToggleButton
-            value={false}
-            sx={{
-              marginTop: "5px",
-              marginBottom: "5px",
-              marginLeft: "56px",
-              textTransform: "none",
-              height: "30px",
-              width: "105px",
-              fontSize: "0.8rem",
-            }}
-          >
-            {t("work")}
-          </ToggleButton>
-          <ToggleButton
-            value={true}
-            sx={{
-              marginTop: "5px",
-              marginBottom: "5px",
-              textTransform: "none",
-              height: "30px",
-              width: "105px",
-              fontSize: "0.8rem",
-            }}
-          >
-            {t("doesnt_work")}
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </div>
-      <div className="variable-input-container">
-        <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-        {selectShift()}
-      </div>
-      <div className="save-button-container">
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ marginRight: 2 }}
-          onClick={handleSaveRequest}
-        >
-          {t("save")}
-        </Button>
-      </div>
+        </>
+      )}
+      <Dialog
+        id={id}
+        open={open}
+        onClose={handleClose}
+        // maxWidth="sm"
+        fullWidth
+        fullScreen={isMobile}
+        data-testid="request-panel-dialog"
+      >
+        {!isMobile && (
+          <DialogTitle>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <span>{isEdit ? t('edit_request') : t('new_request')}</span>
+              <IconButton
+                aria-label="close"
+                onClick={handleClose}
+                sx={{
+                  color: (theme) => theme.palette.grey[500],
+                }}
+                // primary test id expected by E2E tests
+                data-testid="close-request-dialog-button"
+                // preserve legacy id for any internal selectors (kept as legacy data attribute)
+                data-legacy-testid="close-request-panel-button"
+              >
+                <CloseIcon />
+              </IconButton>
+            </div>
+          </DialogTitle>
+        )}
+        <DialogContent sx={isMobile ? { p: 0 } : undefined}>
+          <RequestForm
+            lng={lng}
+            teamId={teamId}
+            isEdit={isEdit}
+            request={request}
+            workers={workers}
+            shifts={shifts}
+            shiftOptions={shiftOptions}
+            userWorkerId={userWorkerId}
+            userTeamRole={userTeamRole}
+            handleAddRequest={handleAddRequest}
+            handleUpdateRequest={handleUpdateRequest}
+            handleDeleteRequest={handleDeleteRequest}
+            handleRescindRequest={handleRescindRequest}
+            handleAcceptRequest={handleAcceptRequest}
+            handleDenyRequest={handleDenyRequest}
+            onClose={handleClose}
+            isMobile={isMobile}
+            title={isEdit ? t('edit_request') : t('new_request')}
+            fullWidth={isMobile}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
-}
+};
+
+RequestPanel.displayName = 'RequestPanel';
+
+export default React.memo(RequestPanel);

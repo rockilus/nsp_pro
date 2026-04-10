@@ -1,10 +1,10 @@
 # pylint: disable=too-many-lines
+from collections.abc import Callable
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from typing import Callable, List, Tuple
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     Attribute,
     AttributeOwnerType,
     Block,
@@ -18,20 +18,19 @@ from shared.schemas import (
     ConstraintSeq,
     ConstraintSum,
     ConstraintType,
-    DailyShiftDemand,
     Dimension,
     DimensionEntryType,
     DimensionType,
     DimEntry,
-    DSDSourceType,
     EngineInputs,
     EngineInputsAugmented,
     ModelConfig,
     Penalties,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     Shift,
+    ShiftDemandNew,
+    ShiftDemandSource,
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
@@ -63,20 +62,19 @@ def schedule() -> Schedule:
         team_id="t0",
         start_date=date(2025, 1, 1),
         end_date=date(2025, 1, 31),
-        solve_details=None,
-        solve_status=ScheduleSolveStatus.NOT_SOLVED,
         status=ScheduleStatus.CAMPAIGN,
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
-        last_modified_dates=datetime.now(),
-        last_updated_dsds=datetime.now(),
+        created_by="test_user",
+        created_at=datetime(2025, 1, 1, 0, 0),
+        updated_at=datetime(2025, 1, 1, 0, 0),
     )
 
 
 # Workers
 @pytest.fixture
-def workers_10() -> List[Worker]:
+def workers_10() -> list[Worker]:
     return [
         Worker(
             id=f"w{i}",
@@ -99,7 +97,7 @@ def workers_10() -> List[Worker]:
 
 # Shifts
 @pytest.fixture
-def shifts_3n_2d() -> List[Shift]:
+def shifts_3n_2d() -> list[Shift]:
     return [
         # Normal shifts
         Shift(
@@ -228,7 +226,7 @@ def shifts_3n_2d() -> List[Shift]:
 
 # Dimensions
 @pytest.fixture
-def dimensions() -> List[Dimension]:
+def dimensions() -> list[Dimension]:
     return [
         Dimension(
             id="dim0",
@@ -268,7 +266,7 @@ def dimensions() -> List[Dimension]:
 # DimEntries
 # pylint: disable=redefined-outer-name
 @pytest.fixture
-def dim_entries(dimensions: List[Dimension]) -> List[DimEntry]:  # noqa: F811
+def dim_entries(dimensions: list[Dimension]) -> list[DimEntry]:  # noqa: F811
     locations = ["loc0", "loc1"]
     de_loc = [
         DimEntry(id=f"de_loc_{i}", dimension_id=dim.id, name=loc, deleted=False)
@@ -294,10 +292,10 @@ def dim_entries(dimensions: List[Dimension]) -> List[DimEntry]:  # noqa: F811
 # Attributes
 @pytest.fixture
 def attributes(
-    workers_10: List[Worker],  # noqa: F811
-    shifts_3n_2d: List[Shift],  # noqa: F811
-    dim_entries: List[DimEntry],  # noqa: F811
-) -> List[Attribute]:
+    workers_10: list[Worker],  # noqa: F811
+    shifts_3n_2d: list[Shift],  # noqa: F811
+    dim_entries: list[DimEntry],  # noqa: F811
+) -> list[Attribute]:
     des_loc = [de for de in dim_entries if de.dimension_id == "dim0"]
     a_loc = [
         Attribute(
@@ -311,7 +309,7 @@ def attributes(
         for i, w in enumerate(workers_10[:5])
     ] + [
         Attribute(
-            id=f"a_loc_{i+5}",
+            id=f"a_loc_{i + 5}",
             value="",
             owner_type=AttributeOwnerType.WORKER,
             owner_id=w.id,
@@ -334,7 +332,7 @@ def attributes(
         for i, s in enumerate(shifts_3n_2d[:2])
     ] + [
         Attribute(
-            id=f"a_block_{i+3}",
+            id=f"a_block_{i + 3}",
             value="",
             owner_type=AttributeOwnerType.SHIFT,
             owner_id=s.id,
@@ -356,7 +354,7 @@ def attributes(
         for i, w in enumerate(workers_10[:3])
     ] + [
         Attribute(
-            id=f"a_60+_{i+3}",
+            id=f"a_60+_{i + 3}",
             value=False,
             owner_type=AttributeOwnerType.WORKER,
             owner_id=w.id,
@@ -378,7 +376,7 @@ def attributes(
         for i, s in enumerate(shifts_3n_2d[:2])
     ] + [
         Attribute(
-            id=f"a_intense_{i+2}",
+            id=f"a_intense_{i + 2}",
             value=False,
             owner_type=AttributeOwnerType.SHIFT,
             owner_id=s.id,
@@ -391,13 +389,13 @@ def attributes(
     return a_loc + a_block + a_60plus + a_intense
 
 
-# DailyShiftDemands
+# ShiftDemands
 # pylint: disable=redefined-outer-name
 @pytest.fixture
 def daily_shift_demands_shifts_3n_2d(
-    shifts_3n_2d: List[Shift],  # noqa: F811
+    shifts_3n_2d: list[Shift],  # noqa: F811
     schedule: Schedule,  # noqa: F811
-) -> List[DailyShiftDemand]:
+) -> list[ShiftDemandNew]:
     daily_shift_demands = []
     # Create daily shift demands for every weekday for shifts s0 to s2
     for shift in [s for s in shifts_3n_2d if s.shift_type == ShiftType.NORMAL]:
@@ -405,16 +403,17 @@ def daily_shift_demands_shifts_3n_2d(
         while current_date <= schedule.end_date:
             if current_date.weekday() < 5:  # Weekdays only
                 daily_shift_demands.append(
-                    DailyShiftDemand(
-                        id=f"dsd_{shift.id}_{current_date}",
-                        team_id="t0",
-                        schedule_id=schedule.id,
-                        shift_demand_id=None,
-                        source_type=DSDSourceType.SHIFT_DEMAND,
+                    ShiftDemandNew(
                         date=current_date,
                         shift_id=shift.id,
+                        team_id="t0",
                         count=1,
-                        coverage_selector_id=None,
+                        notes=None,
+                        source=ShiftDemandSource.MANUAL,
+                        source_id=None,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now(),
+                        id=f"dsd_{shift.id}_{current_date}",
                     )
                 )
             current_date += timedelta(days=1)
@@ -424,16 +423,17 @@ def daily_shift_demands_shifts_3n_2d(
         current_date = schedule.start_date
         while current_date <= schedule.end_date:
             daily_shift_demands.append(
-                DailyShiftDemand(
-                    id=f"dsd_{shift.id}_{current_date}",
-                    team_id="t0",
-                    schedule_id="sch1",
-                    shift_demand_id=None,
-                    source_type=DSDSourceType.SHIFT_DEMAND,
+                ShiftDemandNew(
                     date=current_date,
                     shift_id=shift.id,
+                    team_id="t0",
                     count=1,
-                    coverage_selector_id=None,
+                    notes=None,
+                    source=ShiftDemandSource.MANUAL,
+                    source_id=None,
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                    id=f"dsd_{shift.id}_{current_date}",
                 )
             )
             current_date += timedelta(days=1)
@@ -456,12 +456,12 @@ def model_config_fix() -> ModelConfig:
 @pytest.fixture
 def engine_inputs(
     schedule,  # noqa: F811
-    workers_10: List[Worker],  # noqa: F811
-    shifts_3n_2d: List[Shift],  # noqa: F811
-    dimensions: List[Dimension],  # noqa: F811
-    dim_entries: List[DimEntry],  # noqa: F811
-    attributes: List[Attribute],  # noqa: F811
-    daily_shift_demands_shifts_3n_2d: List[DailyShiftDemand],  # noqa: F811
+    workers_10: list[Worker],  # noqa: F811
+    shifts_3n_2d: list[Shift],  # noqa: F811
+    dimensions: list[Dimension],  # noqa: F811
+    dim_entries: list[DimEntry],  # noqa: F811
+    attributes: list[Attribute],  # noqa: F811
+    daily_shift_demands_shifts_3n_2d: list[ShiftDemandNew],  # noqa: F811
     penalties_fix: Penalties,  # noqa: F811
     model_config_fix: ModelConfig,  # noqa: F811
 ) -> EngineInputsAugmented:
@@ -469,16 +469,17 @@ def engine_inputs(
         schedule=schedule,
         workers=workers_10,
         shifts=shifts_3n_2d,
-        shifts_recup_new=[],
         link_shifts=[],
         dimensions=dimensions,
         dim_entries=dim_entries,
         attributes=attributes,
         as_hist=[],
-        as_wip_fixed=[],
+        as_campaign_fixed=[],
+        as_campaign_not_fixed=[],
         cbs_augmented=[],
-        daily_shift_demands=daily_shift_demands_shifts_3n_2d,
-        requests=[],
+        shift_demands=daily_shift_demands_shifts_3n_2d,
+        requests_work=[],
+        requests_leave=[],
         model_output=None,
         penalties=penalties_fix,
         model_config=model_config_fix,
@@ -496,7 +497,7 @@ dates_campaign = [
 periods_weekly = build_periods_weekly([], dates_campaign)
 
 
-def integer_division_list(numerator: int, denominator: int) -> List[int]:
+def integer_division_list(numerator: int, denominator: int) -> list[int]:
     quotient = numerator // denominator
     remainder = numerator % denominator
     result = [quotient + 1] * remainder + [quotient] * (denominator - remainder)
@@ -505,7 +506,7 @@ def integer_division_list(numerator: int, denominator: int) -> List[int]:
 
 target_average = 1
 period_lengths = integer_division_list(len(dates_campaign), int(target_average))
-d_constraint_eve: List[List[date]] = []
+d_constraint_eve: list[list[date]] = []
 for index, period_length in enumerate(period_lengths):
     cum_days = sum(period_lengths[:index])
     start_date = dates_campaign[0] + timedelta(days=cum_days)
@@ -1142,6 +1143,13 @@ test_data = [
             constraint_variables=[
                 [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
             ],
+            target_values=[
+                2,
+                3,
+                3,
+                3,
+                2,
+            ],  # Pro-rated for incomplete first & last weeks
             active=True,
             hard=True,
             priority="medium",
@@ -1221,6 +1229,13 @@ test_data = [
             constraint_variables=[
                 [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
             ],
+            target_values=[
+                1,
+                1,
+                1,
+                1,
+                1,
+            ],  # Pro-rated for incomplete first & last weeks
             active=True,
             hard=True,
             priority="medium",
@@ -1300,6 +1315,13 @@ test_data = [
             constraint_variables=[
                 [("w0", d.isoformat(), "s0") for d in week] for week in periods_weekly
             ],
+            target_values=[
+                1,
+                2,
+                2,
+                2,
+                1,
+            ],  # Pro-rated for incomplete first & last weeks
             active=True,
             hard=True,
             priority="medium",
@@ -1970,6 +1992,7 @@ test_data = [
             constraint_variables=[
                 [("w0", d.isoformat(), "s0") for d in dates_campaign]
             ],
+            target_values=[1],
             active=True,
             hard=True,
             priority="medium",
@@ -2062,7 +2085,7 @@ test_data = [
 
 
 def generate_test_name(
-    val: Tuple[
+    val: tuple[
         ConstraintBuildAugmented,
         ConstraintFai | ConstraintFil | ConstraintOrd | ConstraintSeq | ConstraintSum,
     ],
@@ -2117,12 +2140,12 @@ def run_engine_solve_from_engine_inputs() -> Callable[[EngineInputsAugmented], O
 
 
 @pytest.fixture
-def run_core_to_engine_inputs() -> (
-    Callable[[EngineInputsAugmented], Tuple[InputsEngine, ProcessingCache]]
-):
+def run_core_to_engine_inputs() -> Callable[
+    [EngineInputsAugmented], tuple[InputsEngine, ProcessingCache]
+]:
     def _run_core_to_engine_inputs(
         engine_inputs: EngineInputsAugmented,
-    ) -> Tuple[InputsEngine, ProcessingCache]:
+    ) -> tuple[InputsEngine, ProcessingCache]:
         return core_to_engine_inputs(engine_inputs)
 
     return _run_core_to_engine_inputs
@@ -2138,10 +2161,10 @@ def run_engine_solve() -> Callable[[InputsEngine], Outputs]:
 
 
 @pytest.fixture
-def benoit_case_250301(
+def sample_data_benoit_case_fixture(
     penalties_fix: Penalties, model_config_fix: ModelConfig
 ) -> EngineInputsAugmented:
-    ei_dict = load_json_from_file("test_data/250324_benoit_case.json")
+    ei_dict = load_json_from_file("test_data/250521_benoit_case.json")
     engine_inputs = EngineInputs.from_dict(ei_dict)
 
     model_config_copy = deepcopy(model_config_fix)

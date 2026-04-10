@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // MUI
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 export default function ScheduleDeleteDialog({
   scheduleId,
@@ -26,7 +26,7 @@ export default function ScheduleDeleteDialog({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", marginRight: 1 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', marginRight: 1 }}>
       <Button variant="outlined" onClick={handleClickOpen} fullWidth>
         Delete
       </Button>
@@ -36,13 +36,11 @@ export default function ScheduleDeleteDialog({
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Delete this schedule?"}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">{'Delete this schedule?'}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Deleting this schedule will remove all the associated assignments.
-            This action cannot be undone.
+            Deleting this schedule will remove all the associated assignments. This action cannot be
+            undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

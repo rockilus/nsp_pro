@@ -1,273 +1,96 @@
-import React, { useEffect, useState } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../../app/i18n/client";
-// MUI
-import Popover from "@mui/material/Popover";
-import TableCell from "@mui/material/TableCell";
+'use client';
+import React from 'react';
+import { Sparkle } from 'lucide-react';
 // Styles
-import "./daily-shift-demand-cell.css";
-import "../../../../styles/text-styles.css";
+import './daily-shift-demand-cell.css';
 // Types
-import {
-  DailyShiftDemandT,
-  DSDSourceType,
-  ScheduleT,
-  ScheduleStatus,
-} from "../../../../types/schedule";
-import { ShiftT, ShiftType } from "../../../../types/shift";
-
-dayjs.extend(utc);
+import { ScheduleCellDataT, ScheduleViewSettingsT } from '../../../../types/schedule';
+// Constants
+import { TrafficLightColorMappings } from '../../../../constants/constants';
+import { useTranslation } from '../../../../app/i18n/client';
+import Tooltip from '@mui/material/Tooltip';
 
 export default function DailyShiftDemandCell({
+  scheduleCellData,
+  handleDemandSelection,
+  scheduleViewSettings,
   lng,
-  selectedDisplay,
-  teamId,
-  scheduleCampaign,
-  periodDate,
-  dailyShiftDemands,
-  shifts,
-  counts,
-  handleCreateDSD,
-  handleUpdateDSD,
+  isCustomSolveModeActive = false,
+  isCustomCellSelected = false,
+  onCustomCellSelect,
+  isDateInCampaign = true,
 }: {
+  scheduleCellData: ScheduleCellDataT;
+  handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
+  scheduleViewSettings: ScheduleViewSettingsT;
   lng: string;
-  selectedDisplay: string;
-  teamId: string;
-  scheduleCampaign: ScheduleT | null;
-  periodDate: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null };
-  dailyShiftDemands: DailyShiftDemandT[];
-  shifts: ShiftT[];
-  counts: {
-    [id: string]: {
-      actual: number;
-      target: number;
-      staffingTotal: number;
-    };
-    total: {
-      actual: number;
-      target: number;
-      staffingTotal: number;
-    };
-  };
-  handleCreateDSD: (dsd: DailyShiftDemandT) => void;
-  handleUpdateDSD: (dsd: DailyShiftDemandT) => void;
+  isCustomSolveModeActive?: boolean;
+  isCustomCellSelected?: boolean;
+  onCustomCellSelect?: () => void;
+  isDateInCampaign?: boolean;
 }) {
-  const { t } = useTranslation(lng, "schedule-page");
+  const assignmentsCount = scheduleCellData.assignmentsData.length;
+  const shiftStaffingTotal =
+    scheduleCellData.shiftDemandsData?.shift.staffing.reduce(
+      (sum, staffing) => sum + staffing.staffing,
+      0,
+    ) || 0;
 
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
-    null
-  );
-  const [shiftsWorkNotDeleted, setShiftWorkNotDeleted] = useState<ShiftT[]>([]);
+  const countActual =
+    shiftStaffingTotal > 0 ? Math.floor(assignmentsCount / shiftStaffingTotal) : 0;
+  const countTarget = scheduleCellData.shiftDemandsData?.shiftDemand?.count || 0;
 
-  const open = Boolean(anchorEl);
-  const id = open ? "simple-popover" : undefined;
+  const { background, text } =
+    countActual === countTarget ? TrafficLightColorMappings.green : TrafficLightColorMappings.red;
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleDecreaseDSD = (shift: ShiftT) => {
-    if (
-      !scheduleCampaign ||
-      periodDate.scheduleStatus !== ScheduleStatus.CAMPAIGN
-    ) {
-      return;
-    }
-    const dsdShiftDemand = dailyShiftDemands.find(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        dsd.sourceType === DSDSourceType.SHIFT_DEMAND &&
-        dsd.count > 0
-    );
-    const dsdDirectReq = dailyShiftDemands.find(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
-    );
-    const dsdIsGreaterThanZero =
-      (dsdShiftDemand ? dsdShiftDemand.count : 0) +
-        (dsdDirectReq ? dsdDirectReq.count : 0) >
-      0;
-    if (!dsdIsGreaterThanZero) {
-      return;
-    }
-    if (dsdDirectReq) {
-      handleUpdateDSD({
-        ...dsdDirectReq,
-        count: dsdDirectReq.count - 1,
-      });
-    } else {
-      const newDsd: DailyShiftDemandT = {
-        id: "",
-        teamId: teamId,
-        scheduleId: scheduleCampaign.id,
-        shiftDemandId: null,
-        coverageSelectorId: null,
-        sourceType: DSDSourceType.DIRECT_REQUIREMENT,
-        date: periodDate.date,
-        shiftId: shift.id,
-        count: -1,
-      };
-      handleCreateDSD(newDsd);
-    }
-  };
-
-  const handleIncreaseDSD = (shift: ShiftT) => {
-    if (
-      !scheduleCampaign ||
-      periodDate.scheduleStatus !== ScheduleStatus.CAMPAIGN
-    ) {
-      return;
-    }
-    const dsdDirectReq = dailyShiftDemands.find(
-      (dsd) =>
-        dsd.shiftId === shift.id &&
-        dsd.sourceType === DSDSourceType.DIRECT_REQUIREMENT
-    );
-    if (dsdDirectReq) {
-      handleUpdateDSD({
-        ...dsdDirectReq,
-        count: dsdDirectReq.count + 1,
-      });
-    } else {
-      const newDsd: DailyShiftDemandT = {
-        id: "",
-        teamId: teamId,
-        scheduleId: scheduleCampaign.id,
-        shiftDemandId: null,
-        coverageSelectorId: null,
-        sourceType: DSDSourceType.DIRECT_REQUIREMENT,
-        date: periodDate.date,
-        shiftId: shift.id,
-        count: 1,
-      };
-      handleCreateDSD(newDsd);
-    }
-  };
-
-  const AdjustStaffingButtons = ({ shift }: { shift: ShiftT }) => {
-    return (
-      <div className="adjust-dsd-buttons">
-        <button
-          className="adjust-button adjust-button-left"
-          onClick={() => handleDecreaseDSD(shift)}
-        >
-          –
-        </button>
-        <button
-          className="adjust-button adjust-button-right"
-          onClick={() => handleIncreaseDSD(shift)}
-        >
-          +
-        </button>
-      </div>
-    );
-  };
-
-  const DSDPopoverButton = () => {
-    return (
-      <span
-        className={`dsd-stats-total ${
-          counts.total.actual !== counts.total.target && "breach"
-        }`}
-      >
-        {`${counts.total.actual} / ${counts.total.target}`}
-      </span>
-    );
-  };
-
-  const PopoverContent = () => {
-    return (
-      <div>
-        <span className="subtitle">
-          {selectedDisplay === "shift" ? t("shift_count") : t("worker_count")}
-        </span>
-        <div className="divider-popover" />
-        {shiftsWorkNotDeleted.map((shift) => {
-          return (
-            <div key={shift.id} className="container-dsd-item">
-              <div
-                className={`container-dsd-item-text ${
-                  counts[shift.id].actual !== counts[shift.id].target &&
-                  "breach"
-                }`}
-              >
-                <div className="shift-name">{shift.name}</div>
-                {selectedDisplay === "worker" && (
-                  <span className="dsd-stats staffing-count">{`(${
-                    counts[shift.id].staffingTotal
-                  })`}</span>
-                )}
-                <div className="container-dsd-stats">
-                  <span className="dsd-stats dsd-stats-actual">
-                    {counts[shift.id].actual}
-                  </span>
-                  <span className="dsd-stats dsd-stats-slash">/</span>
-                  <span className="dsd-stats dsd-stats-target">
-                    {counts[shift.id].target}
-                  </span>
-                </div>
-              </div>
-              {periodDate.scheduleStatus === ScheduleStatus.CAMPAIGN && (
-                <div className="container-dsd-adjust-buttons">
-                  <AdjustStaffingButtons shift={shift} />
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  useEffect(() => {
-    const shiftWorkNotDeleted = shifts.filter(
-      (s) =>
-        [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
-    );
-    setShiftWorkNotDeleted(shiftWorkNotDeleted);
-  }, [shifts]);
+  const { t } = useTranslation(lng, 'schedule-page');
+  const tooltipText =
+    scheduleViewSettings.groupBy === 'shift' ? t('dsd.tooltip.shift') : t('dsd.tooltip.worker');
 
   return (
-    <TableCell
-      sx={{
-        padding: 0,
-        borderRight: "1px solid #e0e0e07d",
-      }}
-    >
-      {periodDate.scheduleStatus !== null && (
-        <div className="container-dsd-cell">
-          <button onClick={handleClick}>
-            <DSDPopoverButton />
-          </button>
-          <Popover
-            id={id}
-            open={open}
-            anchorEl={anchorEl}
-            onClose={handleClose}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "left",
+    <Tooltip title={tooltipText} arrow>
+      <div
+        className="dsd-cell-container"
+        data-testid={`demand-cell-${scheduleCellData.shiftDemandsData?.shiftDemand?.id}`}
+        onClick={() => handleDemandSelection(scheduleCellData)}
+        aria-label={tooltipText}
+        style={
+          {
+            '--bg-color': background,
+            '--text-color': text,
+            position: 'relative',
+          } as React.CSSProperties
+        }
+      >
+        <div className="dsd-cell-stats">
+          <span className="dsd-stats dsd-stats-actual">{countActual}</span>
+          <span className="dsd-stats dsd-stats-slash">/</span>
+          <span className="dsd-stats dsd-stats-target">{countTarget}</span>
+        </div>
+        {isCustomSolveModeActive && isDateInCampaign && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onCustomCellSelect?.();
             }}
-            slotProps={{
-              paper: {
-                style: {
-                  boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-                  padding: 20,
-                  width: 300,
-                },
-              },
+            data-testid={`dsd-custom-select-${scheduleCellData.shiftDemandsData?.shiftDemand?.id}`}
+            style={{
+              position: 'absolute',
+              bottom: 2,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              lineHeight: 1,
+              color: isCustomCellSelected ? '#1976d2' : '#9e9e9e',
             }}
           >
-            <PopoverContent />
-          </Popover>
-        </div>
-      )}
-    </TableCell>
+            <Sparkle size={14} fill={isCustomCellSelected ? 'currentColor' : 'none'} />
+          </button>
+        )}
+      </div>
+    </Tooltip>
   );
 }

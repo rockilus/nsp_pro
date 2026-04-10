@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import i18next, { FlatNamespace, KeyPrefix } from "i18next";
+import { useEffect, useState } from 'react';
+import i18next, { FlatNamespace, KeyPrefix } from 'i18next';
 import {
   initReactI18next,
   useTranslation as useTranslationOrg,
   UseTranslationOptions,
   UseTranslationResponse,
   FallbackNs,
-} from "react-i18next";
-import { useCookies } from "react-cookie";
-import resourcesToBackend from "i18next-resources-to-backend";
+} from 'react-i18next';
+import { useCookies } from 'react-cookie';
+import resourcesToBackend from 'i18next-resources-to-backend';
 // import LocizeBackend from 'i18next-locize-backend'
-import LanguageDetector from "i18next-browser-languagedetector";
-import { getOptions, languages, cookieName } from "./settings";
+import LanguageDetector from 'i18next-browser-languagedetector';
+import { getOptions, languages, cookieName } from './settings';
 
-const runsOnServerSide = typeof window === "undefined";
+const runsOnServerSide = typeof window === 'undefined';
 
 // on client side the normal singleton is ok
 i18next
@@ -23,44 +23,34 @@ i18next
   .use(LanguageDetector)
   .use(
     resourcesToBackend(
-      (language: string, namespace: string) =>
-        import(`./locales/${language}/${namespace}.json`)
-    )
+      (language: string, namespace: string) => import(`./locales/${language}/${namespace}.json`),
+    ),
   )
   // .use(LocizeBackend) // locize backend could be used on client side, but prefer to keep it in sync with server side
   .init({
     ...getOptions(),
     lng: undefined, // let detect the language on client side
     detection: {
-      order: ["path", "htmlTag", "cookie", "navigator"],
+      order: ['path', 'htmlTag', 'cookie', 'navigator'],
     },
     preload: runsOnServerSide ? languages : [],
+    // Preload critical namespaces to prevent re-render cascades from lazy loading
+    ns: ['translation', 'request-page', 'shift-page', 'stats-page', 'schedule-page', 'common'],
   });
 
 export function useTranslation<
   Ns extends FlatNamespace,
-  KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined
+  KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined,
 >(
   lng: string,
   ns?: Ns,
-  options?: UseTranslationOptions<KPrefix>
+  options?: UseTranslationOptions<KPrefix>,
 ): UseTranslationResponse<FallbackNs<Ns>, KPrefix> {
   const [cookies, setCookie] = useCookies([cookieName]);
   const ret = useTranslationOrg(ns, options);
   const { i18n } = ret;
-  const [activeLng, setActiveLng] = useState(i18n.resolvedLanguage);
 
-  useEffect(() => {
-    if (!runsOnServerSide && lng && i18n.resolvedLanguage !== lng) {
-      i18n.changeLanguage(lng);
-    }
-  }, [lng, i18n]);
-
-  useEffect(() => {
-    if (activeLng === i18n.resolvedLanguage) return;
-    setActiveLng(i18n.resolvedLanguage);
-  }, [activeLng, i18n.resolvedLanguage]);
-
+  // Single effect to handle language changes - consolidated from duplicate effects
   useEffect(() => {
     if (!lng || i18n.resolvedLanguage === lng) return;
     i18n.changeLanguage(lng);
@@ -68,56 +58,8 @@ export function useTranslation<
 
   useEffect(() => {
     if (cookies.i18next === lng) return;
-    setCookie(cookieName, lng, { path: "/" });
+    setCookie(cookieName, lng, { path: '/' });
   }, [lng, cookies.i18next, setCookie]);
 
   return ret;
 }
-
-// export function useTranslation<
-//   Ns extends FlatNamespace,
-//   KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined
-// >(
-//   lng: string,
-//   ns?: Ns,
-//   options?: UseTranslationOptions<KPrefix>
-// ): UseTranslationResponse<FallbackNs<Ns>, KPrefix> {
-//   const [cookies, setCookie] = useCookies([cookieName]);
-//   const ret = useTranslationOrg(ns, options);
-//   const { i18n } = ret;
-
-//   // console.log("lng", lng);
-//   // console.log("runsOnServerSide", runsOnServerSide);
-//   // console.log("i18n.resolvedLanguage", i18n.resolvedLanguage);
-
-//   if (runsOnServerSide && lng && i18n.resolvedLanguage !== lng) {
-//     i18n.changeLanguage(lng);
-//   } else {
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     const [activeLng, setActiveLng] = useState(i18n.resolvedLanguage);
-
-//     console.log("activeLng", activeLng);
-
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     useEffect(() => {
-//       if (activeLng === i18n.resolvedLanguage) return;
-//       console.log("setActiveLng");
-//       setActiveLng(i18n.resolvedLanguage);
-//     }, [activeLng, i18n.resolvedLanguage]);
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     useEffect(() => {
-//       if (!lng || i18n.resolvedLanguage === lng) return;
-//       console.log("changeLanguage");
-//       i18n.changeLanguage(lng);
-//     }, [lng, i18n]);
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     useEffect(() => {
-//       if (cookies.i18next === lng) return;
-//       console.log("setCookie");
-//       setCookie(cookieName, lng, { path: "/" });
-//       // eslint-disable-next-line react-hooks/exhaustive-deps
-//     }, [lng, cookies.i18next]);
-
-//   }
-//   return ret;
-// }

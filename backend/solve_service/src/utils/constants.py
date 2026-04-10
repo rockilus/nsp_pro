@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Tuple
 
 
 @dataclass
@@ -10,7 +9,7 @@ class Constants:
     NUM_MINUTES_HOUR: int = 60
     NUM_HOURS_DAY: int = 24
     NUM_DAYS_WEEK: int = 7
-    WEEK_DAYS: Tuple[str, ...] = (
+    WEEK_DAYS: tuple[str, ...] = (
         "monday",
         "tuesday",
         "wednesday",

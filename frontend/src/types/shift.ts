@@ -1,6 +1,9 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // Types
-import { AttributeT } from "./attribute";
+import { AttributeT } from './attribute';
+
+dayjs.extend(utc);
 
 export enum ShiftType {
   NORMAL = 0,
@@ -65,4 +68,22 @@ export type LinkShiftT = {
   id: string;
   teamId: string;
   shiftIds: string[];
+};
+
+// Helper to transform API data to ShiftT
+export const toShiftT = (data: any): ShiftT => {
+  return {
+    ...data,
+    startTime: dayjs.unix(data.startTime).utc(),
+    endTime: dayjs.unix(data.endTime).utc(),
+  };
+};
+
+// Helper to transform ShiftT to API data format
+export const fromShiftT = (data: ShiftT): any => {
+  return {
+    ...data,
+    startTime: data.startTime.unix(),
+    endTime: data.endTime.unix(),
+  };
 };

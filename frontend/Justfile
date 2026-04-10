@@ -1,0 +1,33 @@
+set shell := ['bash', '-lc']
+
+format:
+	echo "Running Prettier..."
+	npx prettier --write .
+
+lint:
+	echo "Running ESLint..."
+	npx eslint src && npx eslint tests
+
+typecheck:
+	echo "Running TypeScript check..."
+	npx tsc --noEmit
+
+test:
+	echo "Running Vitest..."
+	npx vitest run && npx jest
+
+
+playwright:
+	echo "Running Playwright E2E tests (Chromium, 2 retries)..."
+	npx playwright test --project=chromium --retries=2
+
+playwright-ui:
+    echo "Running Playwright UI..."
+    npx playwright test --ui
+
+all: format lint typecheck test
+all-no-test: format lint typecheck
+
+dev:
+	echo "Starting Next.js dev server on port 3000..."
+	npx next dev --turbopack --port 3000

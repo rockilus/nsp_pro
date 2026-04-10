@@ -1,31 +1,30 @@
-import React, { useState } from "react";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState } from 'react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import CloseIcon from "@mui/icons-material/Close";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import IconButton from "@mui/material/IconButton";
-import { styled } from "@mui/material/styles";
+import CloseIcon from '@mui/icons-material/Close';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import { styled } from '@mui/material/styles';
 // Components
-import AddLinkShift from "./add-link-shift";
-import LinkShiftList from "./link-shift-list";
-import TableAddButton from "../../buttons/table-add-button";
+import AddLinkShift from './add-link-shift';
+import LinkShiftList from './link-shift-list';
+import TableAddButton from '../../buttons/table-add-button';
 // Styles
-import "../../../styles/text-styles.css";
-import "./link-shift-dialog.css";
+import '../../../styles/text-styles.css';
 // Types
-import { LinkShiftT, ShiftT } from "../../../types/shift";
+import { LinkShiftT, ShiftT } from '../../../types/shift';
 
 dayjs.extend(utc);
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
-  "& .MuiDialogContent-root": {
+  '& .MuiDialogContent-root': {
     padding: theme.spacing(2),
   },
-  "& .MuiDialogActions-root": {
+  '& .MuiDialogActions-root': {
     padding: theme.spacing(1),
   },
 }));
@@ -45,7 +44,7 @@ export default function LinkShiftDialog({
   handleAddLinkShift: (linkShift: LinkShiftT) => void;
   handleDeleteLinkShift: (linkShiftId: string) => void;
 }) {
-  const { t } = useTranslation(lng, "shift-page");
+  const { t } = useTranslation(lng, 'shift-page');
 
   const [open, setOpen] = useState(false);
   const [shiftSelected1, setShiftSelected1] = useState<ShiftT | null>(null);
@@ -64,7 +63,8 @@ export default function LinkShiftDialog({
     <React.Fragment>
       <div className="ls-button-container">
         <TableAddButton
-          text={t("link_shifts")}
+          text={t('link_shifts')}
+          tooltip={t('link_shifts_tooltip')}
           handleClick={handleClickOpen}
           showIcon={false}
         />
@@ -73,16 +73,16 @@ export default function LinkShiftDialog({
         onClose={handleClose}
         aria-labelledby="customized-dialog-title"
         open={open}
-        sx={{ "& .MuiDialog-paper": { maxWidth: "700px" } }}
+        sx={{ '& .MuiDialog-paper': { maxWidth: '700px' } }}
       >
         <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-          <span className="title">{t("link_shifts")}</span>
+          <span className="title">{t('link_shifts')}</span>
         </DialogTitle>
         <IconButton
           aria-label="close"
           onClick={handleClose}
           sx={(theme) => ({
-            position: "absolute",
+            position: 'absolute',
             right: 8,
             top: 8,
             color: theme.palette.grey[500],

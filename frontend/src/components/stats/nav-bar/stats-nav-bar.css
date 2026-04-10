@@ -51,3 +51,41 @@
   align-items: center;
   margin-right: 16px;
 }
+
+/* DatePicker formatting matching schedule-selector styles (adjusted for 35px height) */
+.custom-date-picker {
+  width: 135px;
+}
+
+.custom-date-picker .MuiOutlinedInput-input {
+  font-size: 0.875rem;
+  height: 35px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Ensure MUI DatePicker root and input are 35px high and vertically centered */
+.custom-date-picker .MuiOutlinedInput-root,
+.custom-date-picker .MuiPickersInput-root,
+.custom-date-picker .MuiInputBase-root,
+.custom-date-picker .MuiPickersInputBase-root {
+  height: 35px;
+  min-height: 35px;
+  display: flex;
+  align-items: center;
+}
+.custom-date-picker .MuiOutlinedInput-input {
+  height: 35px;
+  line-height: 1;
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+}
+
+/* Ensure font-size for picker sections and inputs */
+.custom-date-picker .MuiPickersSectionList-root,
+.custom-date-picker .MuiPickersInput-root .MuiInputBase-input,
+.custom-date-picker .MuiPickersInputBase-root .MuiOutlinedInput-input,
+.custom-date-picker .MuiPickersInput-sections {
+  font-size: 0.875rem;
+}

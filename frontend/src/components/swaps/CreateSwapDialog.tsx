@@ -1,0 +1,509 @@
+'use client';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Stepper,
+  Step,
+  StepLabel,
+  Box,
+  Typography,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert,
+  Paper,
+  MobileStepper,
+  useMediaQuery,
+} from '@mui/material';
+import dayjs from 'dayjs';
+import { SwapRequestT, SwapType } from '../../types/swap';
+import { WorkerT } from '../../types/worker';
+import { AssignmentDataDictT } from '../../types/assignment';
+import { LinkShiftT } from '../../types/shift';
+import { TeamMembershipRole } from '../../types/team';
+import AssignmentSelector from './AssignmentSelector';
+import SwapDetailContent from './SwapDetailContent';
+import { RoleBased } from '../access/role-based';
+import { useTheme } from '@mui/material/styles';
+import { useTranslation } from '../../app/i18n/client';
+
+interface CreateSwapDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (swapData: {
+    offeredAssignmentIds: string[];
+    requestedAssignmentIds: string[] | null;
+    swapType: SwapType;
+    targetWorkerId: string | null;
+    comment: string;
+  }) => Promise<void>;
+  teamId: string;
+  currentUserId: string;
+  currentUserWorker: WorkerT | undefined;
+  role: TeamMembershipRole | null;
+  workers: WorkerT[];
+  assignments: AssignmentDataDictT[];
+  linkShifts: LinkShiftT[];
+  lng: string;
+}
+
+const STEP_KEYS = [
+  'step_select_offered',
+  'step_choose_type',
+  'step_target_details',
+  'step_add_comment',
+  'step_review_submit',
+] as const;
+
+export default function CreateSwapDialog({
+  open,
+  onClose,
+  onSubmit,
+  teamId,
+  currentUserId,
+  currentUserWorker,
+  role,
+  workers,
+  assignments,
+  linkShifts,
+  lng,
+}: CreateSwapDialogProps) {
+  const { t } = useTranslation(lng, 'swap-page');
+  const steps = STEP_KEYS.map((key) => t(key));
+
+  const [activeStep, setActiveStep] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Form state
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string>('');
+  const [offeredAssignmentIds, setOfferedAssignmentIds] = useState<string[]>([]);
+  const [swapType, setSwapType] = useState<SwapType>(SwapType.DIRECT);
+  const [targetWorkerId, setTargetWorkerId] = useState<string>('');
+  const [requestedAssignmentIds, setRequestedAssignmentIds] = useState<string[]>([]);
+  const [comment, setComment] = useState<string>('');
+
+  // Responsive: show compact stepper on small screens
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Initialize selected worker
+  useEffect(() => {
+    if (open && role === TeamMembershipRole.MEMBER && currentUserWorker) {
+      setSelectedWorkerId(currentUserWorker.id);
+    }
+  }, [open, role, currentUserWorker]);
+
+  // Filter assignment details for review step
+  const offeredAssignments = useMemo(() => {
+    return assignments.filter((a) => offeredAssignmentIds.includes(a.assignment.id));
+  }, [assignments, offeredAssignmentIds]);
+
+  const requestedAssignments = useMemo(() => {
+    if (swapType === SwapType.DIRECT && requestedAssignmentIds.length > 0) {
+      return assignments.filter((a) => requestedAssignmentIds.includes(a.assignment.id));
+    }
+    return [];
+  }, [assignments, requestedAssignmentIds, swapType]);
+
+  const handleNext = () => {
+    // Validation before moving to next step
+    if (activeStep === 0) {
+      if (!selectedWorkerId) {
+        setError(t('error_select_worker'));
+        return;
+      }
+      if (offeredAssignmentIds.length === 0) {
+        setError(t('error_select_offered'));
+        return;
+      }
+    }
+
+    if (activeStep === 2 && swapType === SwapType.DIRECT) {
+      if (!targetWorkerId) {
+        setError(t('error_select_target'));
+        return;
+      }
+      if (requestedAssignmentIds.length === 0) {
+        setError(t('error_select_requested'));
+        return;
+      }
+    }
+
+    setError(null);
+    // Skip target details step (step 2) for open swaps
+    if (activeStep === 1 && swapType === SwapType.OPEN) {
+      setActiveStep((prev) => prev + 2);
+    } else {
+      setActiveStep((prev) => prev + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setError(null);
+    // Skip target details step (step 2) when going back from comment step with open swap
+    if (activeStep === 3 && swapType === SwapType.OPEN) {
+      setActiveStep((prev) => prev - 2);
+    } else {
+      setActiveStep((prev) => prev - 1);
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      await onSubmit({
+        offeredAssignmentIds,
+        requestedAssignmentIds: swapType === SwapType.DIRECT ? requestedAssignmentIds : null,
+        swapType,
+        targetWorkerId: swapType === SwapType.DIRECT ? targetWorkerId : null,
+        comment,
+      });
+
+      handleClose();
+    } catch (err) {
+      console.error('Failed to create swap:', err);
+      setError(err instanceof Error ? err.message : t('error_create_swap'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    // Reset form
+    setActiveStep(0);
+    setSelectedWorkerId('');
+    setOfferedAssignmentIds([]);
+    setSwapType(SwapType.DIRECT);
+    setTargetWorkerId('');
+    setRequestedAssignmentIds([]);
+    setComment('');
+    setError(null);
+    onClose();
+  };
+
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 0:
+        // Step 1: Worker selection and offered assignments
+        return (
+          <Box>
+            <RoleBased role={role} allowedRoles={[TeamMembershipRole.OWNER]}>
+              <FormControl fullWidth sx={{ mb: 3 }}>
+                <InputLabel>{t('label_select_worker')}</InputLabel>
+                <Select
+                  value={selectedWorkerId}
+                  label={t('label_select_worker')}
+                  onChange={(e) => {
+                    setSelectedWorkerId(e.target.value);
+                    setOfferedAssignmentIds([]); // Reset selections
+                  }}
+                  data-testid="worker-select"
+                >
+                  {workers.map((worker) => (
+                    <MenuItem
+                      key={worker.id}
+                      value={worker.id}
+                      data-testid={`worker-option-${worker.id}`}
+                    >
+                      {worker.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </RoleBased>
+
+            {selectedWorkerId && (
+              <Box data-testid="assignment-selector">
+                <Typography variant="subtitle2" gutterBottom>
+                  {t('label_select_offered')}
+                </Typography>
+                <AssignmentSelector
+                  selectedAssignmentIds={offeredAssignmentIds}
+                  onSelectionChange={setOfferedAssignmentIds}
+                  assignments={assignments.filter(
+                    (a) =>
+                      a.assignment.workerId === selectedWorkerId &&
+                      a.assignment.date.isAfter(dayjs(), 'day'),
+                  )}
+                  linkShifts={linkShifts}
+                  allowMultiple={true}
+                  lng={lng}
+                />
+              </Box>
+            )}
+          </Box>
+        );
+
+      case 1:
+        // Step 2: Swap type selection
+        return (
+          <Box>
+            {/* <Typography
+              variant="subtitle1"
+              gutterBottom
+              data-testid="swap-type-heading"
+            >
+              Choose Swap Type
+            </Typography> */}
+            <RadioGroup
+              value={swapType}
+              onChange={(e) => {
+                setSwapType(e.target.value as SwapType);
+                // Reset step 3 data when changing type
+                setTargetWorkerId('');
+                setRequestedAssignmentIds([]);
+              }}
+              data-testid="swap-type-radio-group"
+            >
+              <Paper sx={{ p: 2, mb: 2 }}>
+                <FormControlLabel
+                  value={SwapType.DIRECT}
+                  control={<Radio data-testid="direct-swap-radio" />}
+                  label={
+                    <Box>
+                      <Typography variant="body1" fontWeight="medium">
+                        {t('type_direct')}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('type_direct_desc')}
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </Paper>
+              <Paper sx={{ p: 2 }}>
+                <FormControlLabel
+                  value={SwapType.OPEN}
+                  control={<Radio data-testid="open-swap-radio" />}
+                  label={
+                    <Box>
+                      <Typography variant="body1" fontWeight="medium">
+                        {t('type_open')}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('type_open_desc')}
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </Paper>
+            </RadioGroup>
+          </Box>
+        );
+
+      case 2:
+        // Step 3: Target details (only for direct swap)
+        if (swapType === SwapType.OPEN) {
+          return <Alert severity="info">{t('open_swap_info')}</Alert>;
+        }
+
+        return (
+          <Box>
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <InputLabel>{t('label_target_worker')}</InputLabel>
+              <Select
+                value={targetWorkerId}
+                label={t('label_target_worker')}
+                onChange={(e) => {
+                  setTargetWorkerId(e.target.value);
+                  setRequestedAssignmentIds([]); // Reset selections
+                }}
+              >
+                {workers
+                  .filter((w) => w.id !== selectedWorkerId)
+                  .map((worker) => (
+                    <MenuItem
+                      key={worker.id}
+                      value={worker.id}
+                      data-testid={`worker-option-${worker.id}`}
+                    >
+                      {worker.name}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+
+            {targetWorkerId && (
+              <>
+                <Typography variant="subtitle2" gutterBottom>
+                  {t('label_requested_assignments')}
+                </Typography>
+                <AssignmentSelector
+                  selectedAssignmentIds={requestedAssignmentIds}
+                  onSelectionChange={setRequestedAssignmentIds}
+                  assignments={assignments.filter(
+                    (a) =>
+                      a.assignment.workerId === targetWorkerId &&
+                      a.assignment.date.isAfter(dayjs(), 'day'),
+                  )}
+                  linkShifts={linkShifts}
+                  allowMultiple={true}
+                  lng={lng}
+                />
+              </>
+            )}
+          </Box>
+        );
+
+      case 3:
+        // Step 4: Comment
+        return (
+          <Box>
+            {!isMobile && (
+              <Typography variant="subtitle2" gutterBottom>
+                {t('label_add_comment')}
+              </Typography>
+            )}
+            <TextField
+              multiline
+              rows={4}
+              fullWidth
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder={t('placeholder_comment')}
+              variant="outlined"
+            />
+          </Box>
+        );
+
+      case 4:
+        // Step 5: Review - using SwapDetailContent for preview
+        // Create a mock swap object for preview
+        const mockSwap: SwapRequestT = {
+          id: 'preview',
+          teamId: teamId,
+          swapType: swapType,
+          offeredAssignmentIds: offeredAssignmentIds,
+          requestedAssignmentIds: swapType === SwapType.DIRECT ? requestedAssignmentIds : null,
+          targetWorkerId: swapType === SwapType.DIRECT ? targetWorkerId : null,
+          offeringWorkerId: '',
+          createdByUserId: currentUserId,
+          comment: comment,
+          status: 'ACTIVE' as any,
+          bids: [],
+          auditData: [],
+          createdAt: dayjs(),
+          completedAt: null,
+          completedByUserId: null,
+          revertedAt: null,
+          revertedByUserId: null,
+          obsolete: false,
+        };
+
+        return (
+          <SwapDetailContent
+            swap={mockSwap}
+            currentUserId={currentUserId}
+            workers={workers}
+            assignments={assignments}
+            linkShifts={linkShifts}
+            reviewMode={true}
+            showTitle={false}
+            lng={lng}
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullScreen={isMobile}
+      maxWidth="md"
+      fullWidth
+      data-testid="create-swap-dialog"
+    >
+      <DialogTitle>{t('dialog_title_create')}</DialogTitle>
+      <DialogContent>
+        <Box>
+          {isMobile ? (
+            <Box
+              sx={{
+                mb: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
+              <Typography variant="subtitle2">
+                {steps[Math.min(activeStep, steps.length - 1)]}
+              </Typography>
+              <MobileStepper
+                variant="dots"
+                steps={steps.length}
+                position="static"
+                activeStep={activeStep}
+                sx={{ bgcolor: 'transparent', width: 'auto' }}
+                backButton={<></>}
+                nextButton={<></>}
+              />
+            </Box>
+          ) : (
+            <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          )}
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          {renderStepContent()}
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} disabled={loading} data-testid="cancel-button">
+          {t('btn_cancel')}
+        </Button>
+        {activeStep > 0 && (
+          <Button onClick={handleBack} disabled={loading} data-testid="back-button">
+            {t('btn_back')}
+          </Button>
+        )}
+        {activeStep < steps.length - 1 ? (
+          <Button
+            onClick={handleNext}
+            variant="contained"
+            disabled={loading}
+            data-testid="next-button"
+          >
+            {t('btn_next')}
+          </Button>
+        ) : (
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            data-testid="submit-button"
+          >
+            {loading ? t('btn_creating') : t('btn_create_swap')}
+          </Button>
+        )}
+      </DialogActions>
+    </Dialog>
+  );
+}

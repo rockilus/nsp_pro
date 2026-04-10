@@ -1,21 +1,21 @@
-import React from "react";
+import React from 'react';
 // MUI
-import Box from "@mui/material/Box";
+import Box from '@mui/material/Box';
 // Components
-import BlockDisplayShiftWorkerOption from "./block-display-shift-worker-option";
-import BlockDisplayList from "./block-display-list";
-import BlockDisplayString from "./block-display-string";
-import BlockDisplayNumber from "./block-display-number";
-import { blockDisplayText } from "../../../data-display/block-display";
+import BlockDisplayShiftWorkerOption from './block-display-shift-worker-option';
+import BlockDisplayList from './block-display-list';
+import BlockDisplayString from './block-display-string';
+import BlockDisplayNumber from './block-display-number';
+import { blockDisplayText } from '../../../data-display/block-display';
 // Types
 import {
   TemplateBlockT,
   BlockT,
   BlockNameOptions,
   BlockTypeOptions,
-} from "../../../../types/constraint";
-import { WorkerT } from "../../../../types/worker";
-import { ShiftT } from "../../../../types/shift";
+} from '../../../../types/constraint';
+import { WorkerT } from '../../../../types/worker';
+import { ShiftT } from '../../../../types/shift';
 
 export default function BlockDisplay({
   lng,
@@ -39,7 +39,7 @@ export default function BlockDisplay({
   handleRemoveError: (index: number) => void;
 }) {
   return (
-    <Box sx={{ height: "100%" }}>
+    <Box sx={{ height: '100%' }} data-testid={`constraint-block-display-${index}`}>
       {templateBlock.name === BlockNameOptions.TEXT ? (
         blockDisplayText(templateBlock.placeholder as string)
       ) : templateBlock.type === BlockTypeOptions.SHIFT_WORKER_OPTION ? (

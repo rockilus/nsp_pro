@@ -1,23 +1,21 @@
 from datetime import datetime, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
-from shared.database.repositories.attribute import (
-    AttributeRepository,
-)
+from shared.database.interface import DatabaseInterface
+from shared.database.repositories.attribute import AttributeRepository
 from shared.database.repositories.dimension import (
     DimensionRepository,
 )
 from shared.database.repositories.shift import ShiftRepository
 from shared.database.schemas.attribute import AttributeSchema
-from shared.schemas.schemas.attribute import Attribute, AttributeOwnerType
-from shared.schemas.schemas.dimension import (
+from shared.schemas.core.attribute import Attribute, AttributeOwnerType
+from shared.schemas.core.dimension import (
     Dimension,
     DimensionEntryType,
     DimensionType,
 )
-from shared.schemas.schemas.shift import (
+from shared.schemas.core.shift import (
     Shift,
     ShiftLeaveType,
     ShiftRestType,
@@ -32,29 +30,38 @@ class TestAttributeRepository:
     shift_repo: ShiftRepository
     dimension_repo: DimensionRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = AttributeRepository()
-        self.shift_repo = ShiftRepository()
-        self.dimension_repo = DimensionRepository()
+        self.repo = AttributeRepository(mongodb_container)
+        self.shift_repo = ShiftRepository(mongodb_container)
+        self.dimension_repo = DimensionRepository(mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
-        db.drop_collection(self.shift_repo.collection)
-        db.drop_collection(self.dimension_repo.collection)
+        collection_names = [
+            "attributes",
+            "shifts",
+            "dimensions",
+        ]
+        try:
+            for name in collection_names:
+                collection = db.get_collection(name)  # type: ignore
+                collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_attribute(self):
         """Test creating an attribute."""
         attribute = Attribute(
-            id=None,
+            id="test_id",
             value="test_value",
             owner_type=AttributeOwnerType.SHIFT,
             owner_id="owner1",
@@ -77,7 +84,7 @@ class TestAttributeRepository:
         """Test creating multiple attributes."""
         attributes = [
             Attribute(
-                id=None,
+                id="attr1",
                 value="value1",
                 owner_type=AttributeOwnerType.SHIFT,
                 owner_id="owner1",
@@ -85,7 +92,7 @@ class TestAttributeRepository:
                 dim_entry_ids=["entry1"],
             ),
             Attribute(
-                id=None,
+                id="attr2",
                 value="value2",
                 owner_type=AttributeOwnerType.SHIFT,
                 owner_id="owner2",

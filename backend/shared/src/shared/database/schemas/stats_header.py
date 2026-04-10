@@ -4,7 +4,7 @@ from shared.database.schemas.base import DocumentBaseSchema
 from shared.database.schemas.constraint_build import (
     ShiftWorkerOptionSchema,
 )
-from shared.schemas.schemas.stats import (
+from shared.schemas.core.stats import (
     HeaderUnitOptions,
     StatsHeader,
     StatsUnitOptions,

@@ -1,10 +1,11 @@
-from typing import List
-
 from ortools.sat.python import cp_model  # type: ignore
-from shared.schemas import ConstraintOperator, ConstraintSeq
+from shared.schemas.core import ConstraintOperator, ConstraintSeq
 
 from engine.model.add_constraint import AddConstraint
-from engine.model.utils.model_utils import build_var_name_constraint, build_var_name_seq
+from engine.model.utils.model_utils import (
+    build_var_name_constraint,
+    build_var_name_seq,
+)
 from engine.types import ObjectiveCategory
 
 
@@ -18,7 +19,7 @@ class AddConstraintSeq(AddConstraint):
     def _add_constraint_seq_to_model(
         self,
         constraint: ConstraintSeq,
-        cstr_vars: List[cp_model.IntVar],
+        cstr_vars: list[cp_model.IntVar],
         hard_to_soft: bool,
     ) -> None:
         if constraint.hard and not hard_to_soft:
@@ -43,25 +44,24 @@ class AddConstraintSeq(AddConstraint):
                     + "not implemented"
                 )
         # pylint: disable=R0801
-        else:
-            if constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
-                self._add_constraint_seq_less_than_or_equal_soft_to_model(
-                    constraint, cstr_vars
-                )
-            elif constraint.operator == ConstraintOperator.EQUAL:
-                self._add_constraint_seq_less_than_or_equal_soft_to_model(
-                    constraint, cstr_vars
-                )
-                self._add_constraint_seq_greater_than_or_equal_soft_to_model(
-                    constraint, cstr_vars
-                )
-            elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
-                self._add_constraint_seq_greater_than_or_equal_soft_to_model(
-                    constraint, cstr_vars
-                )
+        elif constraint.operator == ConstraintOperator.LESS_THAN_OR_EQUAL:
+            self._add_constraint_seq_less_than_or_equal_soft_to_model(
+                constraint, cstr_vars
+            )
+        elif constraint.operator == ConstraintOperator.EQUAL:
+            self._add_constraint_seq_less_than_or_equal_soft_to_model(
+                constraint, cstr_vars
+            )
+            self._add_constraint_seq_greater_than_or_equal_soft_to_model(
+                constraint, cstr_vars
+            )
+        elif constraint.operator == ConstraintOperator.GREATER_THAN_OR_EQUAL:
+            self._add_constraint_seq_greater_than_or_equal_soft_to_model(
+                constraint, cstr_vars
+            )
 
     def _add_constraint_seq_less_than_or_equal_hard_to_model(
-        self, constraint: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
+        self, constraint: ConstraintSeq, cstr_vars: list[cp_model.IntVar]
     ) -> None:
         for start in range(len(cstr_vars) - constraint.target_value):
             self.model.AddBoolOr(
@@ -72,7 +72,7 @@ class AddConstraintSeq(AddConstraint):
             )
 
     def _add_constraint_seq_greater_than_or_equal_hard_to_model(
-        self, constraint: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
+        self, constraint: ConstraintSeq, cstr_vars: list[cp_model.IntVar]
     ) -> None:
         for length in range(1, constraint.target_value):
             for start in range(len(cstr_vars) - length + 1):
@@ -81,7 +81,7 @@ class AddConstraintSeq(AddConstraint):
                 )
 
     def _add_constraint_seq_less_than_or_equal_soft_to_model(
-        self, constraint: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
+        self, constraint: ConstraintSeq, cstr_vars: list[cp_model.IntVar]
     ) -> None:
         # i = 0
         # for length in range(constraint.target_value + 1, len(cstr_vars) + 1):
@@ -117,7 +117,7 @@ class AddConstraintSeq(AddConstraint):
         # print("num iter less than", i)
 
     def _add_constraint_seq_greater_than_or_equal_soft_to_model(
-        self, constraint: ConstraintSeq, cstr_vars: List[cp_model.IntVar]
+        self, constraint: ConstraintSeq, cstr_vars: list[cp_model.IntVar]
     ) -> None:
         # i = 0
         for length in range(1, constraint.target_value):
@@ -150,8 +150,8 @@ class AddConstraintSeq(AddConstraint):
 
     @staticmethod
     def _negated_bounded_span(
-        cstr_vars: List[cp_model.IntVar], start: int, length: int
-    ) -> List[cp_model.IntVar]:
+        cstr_vars: list[cp_model.IntVar], start: int, length: int
+    ) -> list[cp_model.IntVar]:
         sequence = []
         if start > 0:
             sequence.append(cstr_vars[start - 1])

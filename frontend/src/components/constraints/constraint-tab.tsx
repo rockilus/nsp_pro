@@ -1,22 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from 'react';
+// Mobile
+import { useIsMobile } from '../../hooks/useIsMobile';
+import MobileConstraintTab from './mobile/mobile-constraint-tab';
 // Components
-import ConstraintList from "./constraint-list/constraint-list";
-import NewConstraint from "./edit-constraint/new-constraint";
+import ConstraintList from './constraint-list/constraint-list';
+import NewConstraint from './edit-constraint/new-constraint';
+import TableAddButton from '../buttons/table-add-button';
 // Skeletons
-import TablesSkeleton from "../skeletons/tables-skeleton";
-// Actions
+import TablesSkeleton from '../skeletons/tables-skeleton';
+// New hooks (authenticated)
 import {
-  getConstraintsTabData,
-  addConstraint,
-  updateConstraint,
-  deleteConstraint,
-} from "../../app/lib/constraint";
+  useGetConstraintsTabData,
+  useAddConstraint,
+  useUpdateConstraint,
+  useDeleteConstraint,
+} from '../../hooks/useConstraint';
 // Styles
-import "../../styles/tab-container-styles.css";
+import '../../styles/tab-container-styles.css';
+import './constraint-tab.css';
 // Types
-import { ConstraintT, TemplateT } from "../../types/constraint";
-import { WorkerT } from "../../types/worker";
-import { ShiftT } from "../../types/shift";
+import { ConstraintT, TemplateT } from '../../types/constraint';
+import { WorkerT } from '../../types/worker';
+import { ShiftT } from '../../types/shift';
+import { useTranslation } from '../../app/i18n/client';
 
 export default function ConstraintTab({
   lng,
@@ -25,12 +31,19 @@ export default function ConstraintTab({
   lng: string;
   selectedTeamId: string | null;
 }) {
+  const { t } = useTranslation(lng, 'constraint-page');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [templates, setTemplates] = useState<TemplateT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
   const [addingConstraint, setAddingConstraint] = useState<boolean>(false);
   const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
+
+  // Authenticated hooks
+  const getConstraintsTabData = useGetConstraintsTabData();
+  const addConstraint = useAddConstraint();
+  const updateConstraint = useUpdateConstraint();
+  const deleteConstraint = useDeleteConstraint();
 
   const handleOpenAddConstraint = () => {
     setAddingConstraint(true);
@@ -40,95 +53,122 @@ export default function ConstraintTab({
     setAddingConstraint(false);
   };
 
+  // Load data when team changes
+  const loadConstraintsData = useCallback(async () => {
+    if (!selectedTeamId) return;
+
+    setIsLoading(true);
+    try {
+      const data = await getConstraintsTabData(selectedTeamId);
+      setTemplates(data.templates);
+      setConstraints(data.constraints);
+      setWorkers(data.workers);
+      setShifts(data.shifts);
+    } catch (error) {
+      console.error('Failed to load constraints data:', error);
+      // TODO: Add error handling/notification
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedTeamId, getConstraintsTabData]);
+
   //////////////////////////
   // Constraint Actions
   //////////////////////////
 
   const handleAddConstraint = async (constraint: ConstraintT) => {
-    const newConstraint = await addConstraint(constraint);
-    setConstraints([...constraints, newConstraint]);
+    try {
+      const newConstraint = await addConstraint(constraint);
+      setConstraints([...constraints, newConstraint]);
+      setAddingConstraint(false);
+    } catch (error) {
+      console.error('Failed to add constraint:', error);
+      // TODO: Add error handling/notification
+    }
   };
 
   const handleUpdateConstraint = async (updatedConstraint: ConstraintT) => {
-    const newConstraint = await updateConstraint(updatedConstraint);
-    setConstraints((prevConstraints) =>
-      prevConstraints.map((constraint) =>
-        constraint.id === newConstraint.id ? newConstraint : constraint
-      )
-    );
+    try {
+      const newConstraint = await updateConstraint(updatedConstraint);
+      setConstraints((prevConstraints) =>
+        prevConstraints.map((constraint) =>
+          constraint.id === newConstraint.id ? newConstraint : constraint,
+        ),
+      );
+      setAddingConstraint(false);
+    } catch (error) {
+      console.error('Failed to update constraint:', error);
+      // TODO: Add error handling/notification
+    }
   };
 
   const handleDeleteConstraint = async (constraintId: string) => {
-    if (!selectedTeamId) {
-      throw new Error("Team not selected");
+    if (!selectedTeamId) return;
+
+    try {
+      await deleteConstraint(constraintId, selectedTeamId);
+      setConstraints((prevConstraints) =>
+        prevConstraints.filter((constraint) => constraint.id !== constraintId),
+      );
+    } catch (error) {
+      console.error('Failed to delete constraint:', error);
+      // TODO: Add error handling/notification
     }
-    await deleteConstraint(constraintId, selectedTeamId);
-    setConstraints((prevConstraints) =>
-      prevConstraints.filter((constraint) => constraint.id !== constraintId)
-    );
   };
 
+  // Load data on mount and when selectedTeamId changes
   useEffect(() => {
-    const fetchConstraintsTabData = async () => {
-      setIsLoading(true);
-      if (selectedTeamId) {
-        const {
-          templates: fetchedTemplates,
-          constraints: fetchedConstraints,
-          workers: fetchedWorkers,
-          shifts: fetchedShifts,
-        }: {
-          templates: TemplateT[];
-          constraints: ConstraintT[];
-          workers: WorkerT[];
-          shifts: ShiftT[];
-        } = await getConstraintsTabData(selectedTeamId);
-        setTemplates(fetchedTemplates);
-        setConstraints(fetchedConstraints);
-        setWorkers(fetchedWorkers);
-        setShifts(fetchedShifts);
-      }
-      setIsLoading(false);
-    };
-    fetchConstraintsTabData();
-  }, [selectedTeamId]);
+    loadConstraintsData();
+  }, [loadConstraintsData]);
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return <MobileConstraintTab lng={lng} selectedTeamId={selectedTeamId} />;
+  }
 
   return (
-    <div className="tab-container">
+    <>
       {isLoading ? (
-        <TablesSkeleton numTables={1} numInternalRows={3} />
+        <div data-testid="constraints-loading">
+          <TablesSkeleton numTables={1} numInternalRows={5} />
+        </div>
+      ) : !selectedTeamId ? (
+        <div>Please select a team</div>
       ) : (
-        selectedTeamId && (
-          <div>
-            {addingConstraint && (
-              <div>
-                <NewConstraint
-                  lng={lng}
-                  workers={workers}
-                  shifts={shifts}
-                  selectedTeamId={selectedTeamId}
-                  templates={templates}
-                  handleCloseAddConstraint={handleCloseAddConstraint}
-                  handleAddConstraint={handleAddConstraint}
-                  handleUpdateConstraint={handleUpdateConstraint}
-                />
-                <div className="divider" />
-              </div>
-            )}
-            <ConstraintList
-              lng={lng}
-              workers={workers}
-              shifts={shifts}
-              constraints={constraints}
-              constraintTemplates={templates}
-              handleOpenAddConstraint={handleOpenAddConstraint}
-              handleAddConstraint={handleAddConstraint}
-              handleUpdateConstraint={handleUpdateConstraint}
-              handleDeleteConstraint={handleDeleteConstraint}
+        <div className="tab-container" data-testid="constraint-tab">
+          <div className="title-container" data-testid="constraints-page-heading">
+            <span className="title">{t('constraints')}</span>
+            <TableAddButton
+              text={t('constraint')}
+              handleClick={handleOpenAddConstraint}
+              dataTestId="add-constraint-button"
             />
           </div>
-        )
+
+          <ConstraintList
+            lng={lng}
+            workers={workers}
+            shifts={shifts}
+            constraints={constraints}
+            constraintTemplates={templates}
+            handleUpdateConstraint={handleUpdateConstraint}
+            handleDeleteConstraint={handleDeleteConstraint}
+          />
+
+          <NewConstraint
+            lng={lng}
+            workers={workers}
+            shifts={shifts}
+            selectedTeamId={selectedTeamId}
+            templates={templates}
+            open={addingConstraint}
+            handleCloseAddConstraint={handleCloseAddConstraint}
+            handleAddConstraint={handleAddConstraint}
+            handleUpdateConstraint={handleUpdateConstraint}
+          />
+        </div>
       )}
-    </div>
+    </>
   );
 }

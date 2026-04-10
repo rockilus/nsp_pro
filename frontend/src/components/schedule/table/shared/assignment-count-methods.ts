@@ -1,17 +1,15 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 // Types
-import {
-  AssignmentT,
-  DailyShiftDemandT,
-  ScheduleStatus,
-} from "../../../../types/schedule";
-import { ShiftT, ShiftType } from "../../../../types/shift";
+import { ScheduleStatus, periodDateT } from '../../../../types/schedule';
+import { ShiftDemandDTO } from '@/types/shiftDemand';
+import { AssignmentT } from '@/types/assignment';
+import { ShiftT, ShiftType } from '../../../../types/shift';
 
 export const countShifts = (
   shifts: ShiftT[],
   assignments: AssignmentT[],
-  dsds: DailyShiftDemandT[],
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[]
+  shiftDemands: ShiftDemandDTO[],
+  periodDates: periodDateT[],
 ) => {
   const out: {
     [date: string]: {
@@ -29,12 +27,11 @@ export const countShifts = (
   } = {};
 
   const shiftsWorkNotDeleted = shifts.filter(
-    (s) =>
-      [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
+    (s) => [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted,
   );
 
   periodDates.forEach((periodDate) => {
-    const dateStr = periodDate.date.format("YYYY-MM-DD");
+    const dateStr = periodDate.date.format('YYYY-MM-DD');
 
     if (!out[dateStr]) {
       out[dateStr] = { total: { actual: 0, target: 0, staffingTotal: 0 } };
@@ -47,13 +44,12 @@ export const countShifts = (
     shiftsWorkNotDeleted.forEach((shift) => {
       const shiftAssignments = assignments.filter(
         (assignment) =>
-          assignment.shiftId === shift.id &&
-          assignment.date.isSame(periodDate.date, "day")
+          assignment.shiftId === shift.id && assignment.date.isSame(periodDate.date, 'day'),
       );
 
       const shiftStaffingTotal = shift.staffing.reduce(
         (sum, staffing) => sum + staffing.staffing,
-        0
+        0,
       );
 
       if (!out[dateStr][shift.id]) {
@@ -64,20 +60,19 @@ export const countShifts = (
         };
       }
 
-      const shiftActualCount = Math.floor(
-        shiftAssignments.length / shiftStaffingTotal
-      );
+      const shiftActualCount =
+        shiftStaffingTotal > 0 ? Math.floor(shiftAssignments.length / shiftStaffingTotal) : 0;
       out[dateStr][shift.id].actual += shiftActualCount;
       totalActual += shiftActualCount;
 
-      dsds
+      shiftDemands
         .filter(
-          (dsd) =>
-            dsd.shiftId === shift.id && dsd.date.isSame(periodDate.date, "day")
+          (demand) =>
+            demand.shiftId === shift.id && dayjs.unix(demand.date).isSame(periodDate.date, 'day'),
         )
-        .forEach((dsd) => {
-          out[dateStr][shift.id].target += dsd.count;
-          totalTarget += dsd.count;
+        .forEach((demand) => {
+          out[dateStr][shift.id].target += demand.count;
+          totalTarget += demand.count;
         });
 
       totalStaffing += shiftStaffingTotal;
@@ -94,23 +89,22 @@ export const countShifts = (
 export const countShiftsTotalPeriod = (
   shifts: ShiftT[],
   assignments: AssignmentT[],
-  dsds: DailyShiftDemandT[],
+  shiftDemands: ShiftDemandDTO[],
   startDate: dayjs.Dayjs,
-  endDate: dayjs.Dayjs
+  endDate: dayjs.Dayjs,
 ) => {
   const shiftsWorkNotDeleted = shifts.filter(
-    (s) =>
-      [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
+    (s) => [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted,
   );
   const countTarget = shiftsWorkNotDeleted.reduce((totalSum, shift) => {
-    const shiftSum = dsds
+    const shiftSum = shiftDemands
       .filter(
-        (dsd) =>
-          dsd.shiftId === shift.id &&
-          dsd.date.isSameOrAfter(startDate, "day") &&
-          dsd.date.isSameOrBefore(endDate, "day")
+        (demand) =>
+          demand.shiftId === shift.id &&
+          dayjs.unix(demand.date).isSameOrAfter(startDate, 'day') &&
+          dayjs.unix(demand.date).isSameOrBefore(endDate, 'day'),
       )
-      .reduce((sum, dsd) => sum + dsd.count, 0);
+      .reduce((sum, demand) => sum + demand.count, 0);
     return totalSum + shiftSum;
   }, 0);
 
@@ -119,18 +113,15 @@ export const countShiftsTotalPeriod = (
     const totalAssignments = assignments.filter(
       (assignment) =>
         assignment.shiftId === shift.id &&
-        assignment.date.isSameOrAfter(startDate, "day") &&
-        assignment.date.isSameOrBefore(endDate, "day")
+        assignment.date.isSameOrAfter(startDate, 'day') &&
+        assignment.date.isSameOrBefore(endDate, 'day'),
     ).length;
 
     // Calculate the total staffing requirement for the shift
-    const totalStaffing = shift.staffing.reduce(
-      (sum, staffing) => sum + staffing.staffing,
-      0
-    );
+    const totalStaffing = shift.staffing.reduce((sum, staffing) => sum + staffing.staffing, 0);
 
     // Calculate the actual count by dividing total assignments by total staffing and rounding down
-    const shiftActualCount = Math.floor(totalAssignments / totalStaffing);
+    const shiftActualCount = totalStaffing > 0 ? Math.floor(totalAssignments / totalStaffing) : 0;
 
     return totalSum + shiftActualCount;
   }, 0);
@@ -141,10 +132,10 @@ export const countShiftsTotalPeriod = (
 export const countStaffings = (
   shifts: ShiftT[],
   assignments: AssignmentT[],
-  dsds: DailyShiftDemandT[],
-  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[]
+  shiftDemands: ShiftDemandDTO[],
+  periodDates: { date: dayjs.Dayjs; scheduleStatus: ScheduleStatus | null }[],
 ) => {
-  console.log("countStaffings called");
+  console.log('countStaffings called');
 
   const out: {
     [date: string]: {
@@ -162,19 +153,18 @@ export const countStaffings = (
   } = {};
 
   const shiftsWorkNotDeleted = shifts.filter(
-    (s) =>
-      [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted
+    (s) => [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted,
   );
   const shiftMap: { [key: string]: ShiftT } = shiftsWorkNotDeleted.reduce(
     (map, shift) => {
       map[shift.id] = shift;
       return map;
     },
-    {} as { [key: string]: ShiftT }
+    {} as { [key: string]: ShiftT },
   );
 
   periodDates.forEach((periodDate) => {
-    const dateStr = periodDate.date.format("YYYY-MM-DD");
+    const dateStr = periodDate.date.format('YYYY-MM-DD');
 
     if (!out[dateStr]) {
       out[dateStr] = { total: { actual: 0, target: 0, staffingTotal: 0 } };
@@ -187,13 +177,12 @@ export const countStaffings = (
     shiftsWorkNotDeleted.forEach((shift) => {
       const shiftAssignments = assignments.filter(
         (assignment) =>
-          assignment.shiftId === shift.id &&
-          assignment.date.isSame(periodDate.date, "day")
+          assignment.shiftId === shift.id && assignment.date.isSame(periodDate.date, 'day'),
       );
 
       const shiftStaffingTotal = shift.staffing.reduce(
         (sum, staffing) => sum + staffing.staffing,
-        0
+        0,
       );
 
       if (!out[dateStr][shift.id]) {
@@ -208,21 +197,20 @@ export const countStaffings = (
       out[dateStr][shift.id].actual += shiftActualCount;
       totalActual += shiftActualCount;
 
-      dsds
+      shiftDemands
         .filter(
-          (dsd) =>
-            dsd.shiftId === shift.id && dsd.date.isSame(periodDate.date, "day")
+          (demand) =>
+            demand.shiftId === shift.id && dayjs.unix(demand.date).isSame(periodDate.date, 'day'),
         )
-        .forEach((dsd) => {
-          const shift = shiftMap[dsd.shiftId];
+        .forEach((demand) => {
+          const shift = shiftMap[demand.shiftId];
           if (shift && shift.staffing.length > 0) {
             // Sum all staffing counts for this shift
             const shiftTarget =
               shift.staffing.reduce(
-                (shiftTotal, staffingEntry) =>
-                  shiftTotal + staffingEntry.staffing,
-                0
-              ) * dsd.count;
+                (shiftTotal, staffingEntry) => shiftTotal + staffingEntry.staffing,
+                0,
+              ) * demand.count;
             out[dateStr][shift.id].target += shiftTarget;
             totalTarget += shiftTarget;
           }

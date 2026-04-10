@@ -1,97 +1,108 @@
-import React, { useState } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
+import Box from '@mui/material/Box';
 // Components
-import PopoverSelectShifts from "./popover-select-shifts";
-import { blockDislayValue } from "./block-display";
-import ShiftOptionsEdit from "./shift-options-edit";
+import PopoverSelectShifts from './popover-select-shifts';
+import { blockDislayValue } from './block-display';
+import ShiftOptionsEdit from './shift-options-edit';
 // Utils
 import {
-  getShiftWorkerOptionDisplayName,
   expandBoolDimOptions,
   groupByCategoryName,
-} from "../../constraints/shift-worker-option-utils/shift-worker-option-utils";
+} from '../../constraints/shift-worker-option-utils/shift-worker-option-utils';
+import { getShiftWorkerOptionDisplayText } from '../../../utils/shift-worker-option-display';
 // Types
-import { ShiftWorkerOptionT } from "../../../types/constraint";
+import { ShiftWorkerOptionT } from '../../../types/constraint';
+import { WorkerT } from '../../../types/worker';
+import { ShiftT } from '../../../types/shift';
 
-export default function ShiftOptionsDisplay({
+const ShiftOptionsDisplay = ({
   lng,
   selectedShifts,
   statsShiftOptions,
+  workers,
+  shifts,
   disabled,
   handleEditSelectedShifts,
 }: {
   lng: string;
   selectedShifts: ShiftWorkerOptionT[];
   statsShiftOptions: ShiftWorkerOptionT[];
+  workers: WorkerT[];
+  shifts: ShiftT[];
   disabled: boolean;
   handleEditSelectedShifts: (selectedShifts: ShiftWorkerOptionT[]) => void;
-}) {
-  const { t } = useTranslation(lng, "stats-page");
+}) => {
+  const { t } = useTranslation(lng, 'stats-page');
 
   const [open, setOpen] = useState(false);
   const [selectedShiftsState, setSelectedShiftsState] =
     useState<ShiftWorkerOptionT[]>(selectedShifts);
 
-  const blockDisplay = () => {
+  // Memoize the grouped shift options computation
+  const groupedStatsShiftOptions = useMemo(
+    () => groupByCategoryName(expandBoolDimOptions(statsShiftOptions)),
+    [statsShiftOptions],
+  );
+
+  // Memoize the block display content
+  const blockDisplayContent = useMemo(() => {
     return (
-      <div className="block-display">
+      <div className="block-display" data-testid="shift-options-display-block">
         {selectedShiftsState.length !== 0
           ? blockDislayValue(
               selectedShiftsState
                 .map((item) =>
-                  typeof item === "object" && "name" in item
-                    ? getShiftWorkerOptionDisplayName(item, t("not"))
-                    : ""
+                  typeof item === 'object' && 'name' in item
+                    ? getShiftWorkerOptionDisplayText(item, workers, shifts, t('not'))
+                    : '',
                 )
-                .join(", "),
-              disabled
+                .join(', '),
+              disabled,
             )
-          : t("select_shift")}
+          : t('select_shift')}
       </div>
     );
-  };
+  }, [selectedShiftsState, workers, shifts, disabled, t]);
 
-  const handleConfirmEditSelectedShifts = () => {
+  const handleConfirmEditSelectedShifts = useCallback(() => {
     if (disabled) {
       return;
     }
     handleEditSelectedShifts(selectedShiftsState);
     setOpen(false);
-  };
+  }, [disabled, handleEditSelectedShifts, selectedShiftsState]);
 
-  const handleEditSelectedShiftsState = (
-    selectedShifts: ShiftWorkerOptionT[]
-  ) => {
+  const handleEditSelectedShiftsState = useCallback((selectedShifts: ShiftWorkerOptionT[]) => {
     setSelectedShiftsState(selectedShifts);
-  };
+  }, []);
 
-  const handleOpenPopover = () => {
+  const handleOpenPopover = useCallback(() => {
     if (disabled) {
       return;
     }
     setOpen(true);
-  };
+  }, [disabled]);
 
-  const handleClosePopover = () => {
+  const handleClosePopover = useCallback(() => {
     if (disabled) {
       return;
     }
     handleEditSelectedShifts(selectedShiftsState);
     setOpen(false);
-  };
+  }, [disabled, handleEditSelectedShifts, selectedShiftsState]);
 
   return (
     <PopoverSelectShifts
-      buttonContent={blockDisplay()}
+      buttonContent={blockDisplayContent}
       content={
         <ShiftOptionsEdit
           lng={lng}
           selectedShifts={selectedShiftsState}
-          statsShiftOptions={groupByCategoryName(
-            expandBoolDimOptions(statsShiftOptions)
-          )}
+          statsShiftOptions={groupedStatsShiftOptions}
+          workers={workers}
+          shifts={shifts}
           handleConfirmEditSelectedShifts={handleConfirmEditSelectedShifts}
           handleEditSelectedShiftsState={handleEditSelectedShiftsState}
         />
@@ -102,4 +113,8 @@ export default function ShiftOptionsDisplay({
       handleClosePopover={handleClosePopover}
     />
   );
-}
+};
+
+ShiftOptionsDisplay.displayName = 'ShiftOptionsDisplay';
+
+export default React.memo(ShiftOptionsDisplay);

@@ -35,3 +35,12 @@ Lint and unit test
 ```
 cd backend && make check
 ```
+
+Run localstack:
+ACTIVATE_PRO=0 localstack start
+
+To run tests in local:
+docker-compose -f docker-compose.tests.local.yml up
+
+Run playwright in UI mode:
+npx playwright test --ui

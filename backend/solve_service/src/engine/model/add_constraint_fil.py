@@ -1,7 +1,5 @@
-from typing import List
-
 from ortools.sat.python import cp_model  # type: ignore
-from shared.schemas import ConstraintFil
+from shared.schemas.core import ConstraintFil
 
 from engine.model.add_constraint import AddConstraint
 from engine.model.utils.model_utils import build_var_name_constraint
@@ -21,7 +19,7 @@ class AddConstraintFil(AddConstraint):
     def _add_constraint_fil_to_model(
         self,
         constraint: ConstraintFil,
-        cstr_vars: List[cp_model.IntVar],
+        cstr_vars: list[cp_model.IntVar],
         hard_to_soft: bool,
     ) -> None:
         if constraint.hard and not hard_to_soft:

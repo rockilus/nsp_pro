@@ -1,12 +1,13 @@
 from typing import Dict, List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import (
     BaseRepository,
 )
 from shared.database.schemas.shift_demand import (
     ShiftDemandSchema,
 )
-from shared.schemas.schemas.coverage import (
+from shared.schemas.core.shift_demand import (
     ShiftDemand,
 )
 
@@ -14,8 +15,8 @@ from shared.schemas.schemas.coverage import (
 class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
     """Repository for shift demand documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("shift_demands", ShiftDemandSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "shift_demands", ShiftDemandSchema)
 
     def create_shift_demand(self, shift_demand: ShiftDemand) -> ShiftDemand:
         """Create a new shift demand."""
@@ -77,9 +78,12 @@ class ShiftDemandRepository(BaseRepository[ShiftDemandSchema]):
                 f"Shift demand with id {shift_demand_id} not found or already deleted"
             )
 
-    def delete_shift_demands_by_coverage_id(self, coverage_id: str) -> None:
-        """Delete shift demands by coverage ID."""
+    def delete_shift_demands_by_coverage_id(self, coverage_id: str) -> List[str]:
+        """Delete shift demands by coverage ID and return their IDs."""
+        shift_demands = self.find_all({"coverage": coverage_id})
+        shift_demand_ids = [sd.id for sd in shift_demands if sd.id is not None]
         self.collection.delete_many({"coverage": coverage_id})
+        return shift_demand_ids
 
     def delete_shift_demands_by_shift_id(self, shift_id: str) -> None:
         """Delete shift demands by shift ID."""

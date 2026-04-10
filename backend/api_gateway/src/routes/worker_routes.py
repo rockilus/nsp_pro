@@ -1,32 +1,22 @@
 import time as time_module
-from dataclasses import asdict
-from datetime import datetime, time, timezone
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-import humps
-from fastapi import APIRouter, Depends
-from pydantic import TypeAdapter
+from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
+from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas import Attribute, Worker
-from shared.schemas.errors import handle_create_schema_object_error
+from shared.schemas.core import Worker
+from shared.schemas.dto import WorkerDTO
 
-from errors import (
-    MessageTypeError,
-    NotAuthorizedError,
-    handle_message_errors,
-    handle_routes_errors,
+from src.dependencies import (
+    get_db_collections,
+    get_user_context,
+    get_worker_service,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
-)
-from integrations.authorization import authz_check
-from routes.api_model import WorkerMessage
-from routes.attribute_routes import core_to_msg_attribute
-from scripts.setup_database import attribute_db, worker_db
-from services.worker_services import create_worker as create_worker_service
-from services.worker_services import delete_worker as delete_worker_service
-from services.worker_services import update_worker as update_worker_service
+from src.errors import NotAuthorizedError, handle_routes_errors
+from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
+from src.services.worker_service import WorkerService
 
 router = APIRouter()
 
@@ -34,69 +24,95 @@ router = APIRouter()
 @router.post("/workers/teams/{team_id}")
 async def create_worker(
     team_id: str,
-    worker: WorkerMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> WorkerMessage:
+    worker: WorkerDTO,
+    user_context: UserContext = Depends(get_user_context),
+    worker_service: WorkerService = Depends(get_worker_service),
+) -> WorkerDTO:
+    """
+    Create a new worker for the specified team.
+
+    Authorization includes automatic retry logic based on configuration
+    to handle policy sync timing issues with Permit.io.
+    """
     try:
+        log_info(f"Creating worker for team {team_id}, user {user_context.user_id}")
+
+        # Simple authorization check - retry logic is handled internally
         if not await authz_check(
-            session.get_user_id(), "create-worker", "team", team_id
+            user_context.user_id, "create-worker", "team", team_id
         ):
+            log_info(
+                f"Authorization denied for user {user_context.user_id} "
+                f"to create worker in team {team_id}"
+            )
             raise NotAuthorizedError("You do not have permission to create a worker")
-        w_data = msg_to_core_worker(worker)
-        worker_created, a_bool = create_worker_service(w_data)
-        response = core_to_msg_worker_and_attributes(worker_created, a_bool)
+
+        log_info(
+            f"Authorization successful for user {user_context.user_id} "
+            f"to create worker in team {team_id}"
+        )
+
+        w_data = Worker.from_dto(worker)
+        worker_created, a_bool = worker_service.create_worker(w_data)
+        response = worker_created.to_dto(a_bool)
+
+        log_info(f"Worker created successfully for team {team_id}: {worker_created.id}")
+
+    except NotAuthorizedError:
+        # Re-raise authorization errors without additional logging
+        raise
     except Exception as e:
-        log_info("Failed to create worker")
+        log_info(f"Failed to create worker for team {team_id}: {str(e)}")
         handle_routes_errors(e)
+
     return response
 
 
 @router.get("/workers/teams/{team_id}")
 async def get_workers(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> List[WorkerMessage]:
-    try:
-        if not await authz_check(
-            session.get_user_id(), "read-workers", "team", team_id
-        ):
-            raise NotAuthorizedError("You do not have permission to get workers")
-        workers = worker_db.get_workers_not_deleted(team_id)
-        attributes = [
-            attribute_db.get_attributes_by_owner_id(worker.id) for worker in workers
-        ]
-        response = [
-            core_to_msg_worker_and_attributes(w, wp)
-            for w, wp in zip(workers, attributes)
-        ]
-    except Exception as e:
-        log_info("Failed to get workers")
-        handle_routes_errors(e)
-    return response
+    worker_id: Optional[str] = Query(None, description="Optional worker ID to filter"),
+    include_deleted: bool = Query(False, description="Include deleted workers"),
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> List[WorkerDTO]:
+    """
+    Get workers for a team with optional filtering.
 
+    Args:
+        team_id: Team ID to get workers for
+        worker_id: Optional worker ID to filter by specific worker
+        include_deleted: Whether to include deleted workers (default: False)
 
-@router.get("/workers/all/teams/{team_id}")
-async def get_all_workers(
-    team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> List[WorkerMessage]:
+    Returns:
+        List of workers matching the criteria
+    """
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-workers", "team", team_id
-        ):
+        if not await authz_check(user_context.user_id, "read-workers", "team", team_id):
             raise NotAuthorizedError("You do not have permission to get workers")
+
         start_time = time_module.time()
-        workers = worker_db.get_workers(team_id)
+
+        # Fetch workers based on include_deleted flag
+        if include_deleted:
+            workers = db_collections.worker_db.get_workers(team_id)
+        else:
+            workers = db_collections.worker_db.get_workers_not_deleted(team_id)
+
+        # Filter by specific worker if worker_id provided
+        if worker_id:
+            workers = [w for w in workers if w.id == worker_id]
+
+        # Get attributes for all workers
         attributes = [
-            attribute_db.get_attributes_by_owner_id(worker.id) for worker in workers
+            db_collections.attribute_db.get_attributes_by_owner_id(worker.id)
+            for worker in workers
         ]
-        response = [
-            core_to_msg_worker_and_attributes(w, wp)
-            for w, wp in zip(workers, attributes)
-        ]
+        response = [w.to_dto(attr) for w, attr in zip(workers, attributes)]
+
         end_time = time_module.time()
-        time_taken = round(end_time - start_time)
-        print(f"Time taken to get workers: {time_taken} seconds")
+        time_taken = round(end_time - start_time, 2)
+        log_info(f"Time taken to get workers: {time_taken} seconds")
     except Exception as e:
         log_info("Failed to get workers")
         handle_routes_errors(e)
@@ -106,20 +122,62 @@ async def get_all_workers(
 @router.put("/workers/{worker_id}/teams/{team_id}")
 async def update_worker(
     team_id: str,
-    worker: WorkerMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> WorkerMessage:
+    worker: WorkerDTO,
+    user_context: UserContext = Depends(get_user_context),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+    worker_service: WorkerService = Depends(get_worker_service),
+) -> WorkerDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-worker", "team", team_id
+            user_context.user_id, "update-worker", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update a worker")
-        w_data = msg_to_core_worker(worker)
-        updated_worker = update_worker_service(w_data)
-        attributes = attribute_db.get_attributes_by_owner_id(updated_worker.id)
-        response = core_to_msg_worker_and_attributes(updated_worker, attributes)
+        w_data = Worker.from_dto(worker)
+        updated_worker = worker_service.update_worker(w_data)
+        attributes = db_collections.attribute_db.get_attributes_by_owner_id(
+            updated_worker.id
+        )
+        response = updated_worker.to_dto(attributes)
     except Exception as e:
         log_info("Failed to update worker")
+        handle_routes_errors(e)
+    return response
+
+
+class WorkerAttachRequest(BaseModel):
+    user_id: str
+    # team_id: str
+
+
+# pylint: disable=too-many-arguments, too-many-positional-arguments
+@router.post("/workers/{worker_id}/attach_user/teams/{team_id}")
+async def attach_user_to_worker(
+    worker_id: str,
+    request: WorkerAttachRequest,
+    # user_id: str,
+    team_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    worker_service: WorkerService = Depends(get_worker_service),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
+) -> List[WorkerDTO]:
+    try:
+        if not await authz_check(
+            user_context.user_id, "update-worker", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to add a user to this worker"
+            )
+        user_id = request.user_id
+        updated_workers = worker_service.attach_user_to_worker(
+            worker_id, user_id, team_id
+        )
+        attributes = [
+            db_collections.attribute_db.get_attributes_by_owner_id(owner_id=w.id)
+            for w in updated_workers
+        ]
+        response = [w.to_dto(attr) for w, attr in zip(updated_workers, attributes)]
+    except Exception as e:
+        log_info("Failed to add user to worker")
         handle_routes_errors(e)
     return response
 
@@ -128,64 +186,16 @@ async def update_worker(
 async def delete_worker(
     worker_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
+    worker_service: WorkerService = Depends(get_worker_service),
 ) -> Dict:
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-worker", "team", team_id
+            user_context.user_id, "delete-worker", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to delete a worker")
-        delete_worker_service(worker_id)
+        worker_service.delete_worker(worker_id)
     except Exception as e:
         log_info("Failed to delete worker")
         handle_routes_errors(e)
     return {"message": "Worker deleted"}
-
-
-# Mappers
-# core to message
-def core_to_msg_worker_and_attributes(
-    worker: Worker, attributes: List[Attribute]
-) -> WorkerMessage:
-    try:
-        data = asdict(worker)
-    except Exception as e:
-        log_info("Failed to convert Worker to dictionary")
-        raise MessageTypeError(str(e)) from e
-    data["employment_start_date"] = datetime.combine(
-        worker.employment_start_date, time.min, tzinfo=timezone.utc
-    ).timestamp()
-    data["employment_end_date"] = (
-        datetime.combine(worker.employment_end_date, time.min, timezone.utc).timestamp()
-        if worker.employment_end_date
-        else None
-    )
-    data["attributes"] = [core_to_msg_attribute(a) for a in attributes]
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(WorkerMessage)
-    try:
-        w_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert Worker to WorkerMessage")
-        handle_message_errors(e)
-    return w_msg
-
-
-# message to core
-def msg_to_core_worker(msg: WorkerMessage) -> Worker:
-    data_snake = humps.decamelize(msg.model_dump())
-    data_snake = {k: v for k, v in data_snake.items() if k != "attributes"}
-    data_snake["employment_start_date"] = datetime.fromtimestamp(
-        data_snake["employment_start_date"], timezone.utc
-    ).date()
-    data_snake["employment_end_date"] = (
-        datetime.fromtimestamp(data_snake["employment_end_date"], timezone.utc).date()
-        if data_snake["employment_end_date"]
-        else None
-    )
-    try:
-        worker = Worker(**data_snake)
-    except Exception as e:
-        log_info("Failed to convert WorkerMessage to Worker")
-        handle_create_schema_object_error(e)
-    return worker

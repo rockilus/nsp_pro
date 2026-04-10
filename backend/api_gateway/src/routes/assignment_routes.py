@@ -1,28 +1,42 @@
 import time as time_module
-from dataclasses import asdict
-from datetime import date, datetime, time, timezone
-from typing import Dict, List, Optional
+from datetime import date
+from typing import List, Optional
 
-import humps
 from fastapi import APIRouter, Depends, Query
-from pydantic import TypeAdapter
 from shared.logger import log_info
-from shared.schemas import Assignment
-from shared.schemas.errors import handle_create_schema_object_error
+from shared.schemas.core import (
+    Assignment,
+    RecurrenceRule,
+    RecurrenceUpdateScope,
+    ShiftType,
+)
+from shared.schemas.dto import (
+    AssignmentDTO,
+    AssignmentsRecurrencesResultDTO,
+    BulkAssignmentCreateDTO,
+    BulkAssignmentDeleteDTO,
+    BulkAssignmentUpdateDTO,
+    RecurrenceRuleDTO,
+)
+from shared.schemas.dto.replacement import ReplacementCandidateDTO
 
-from errors import (
-    MessageTypeError,
-    NotAuthorizedError,
-    handle_message_errors,
-    handle_routes_errors,
+from src.dependencies import (
+    get_assignment_service,
+    get_replacement_service,
+    get_user_context,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
+from src.dependencies.notification_service import get_notification_service
+from src.errors import NotAuthorizedError, handle_routes_errors
+from src.integrations.authorization import authz_check
+from src.security.user_context import UserContext
+from src.services.assignment_service import AssignmentService
+from src.services.notification_service import (
+    AssignmentOperation,
+    NotificationService,
 )
-from integrations.authorization import authz_check
-from routes.api_model import AssignmentMessage
-from scripts.setup_database import assignment_db
+from src.services.replacement_service import ReplacementService
+
+# pylint: disable=too-many-arguments, too-many-positional-arguments
 
 router = APIRouter()
 
@@ -30,19 +44,30 @@ router = APIRouter()
 @router.post("/assignments/teams/{team_id}", status_code=201)
 async def create_assignment(
     team_id: str,
-    assignment: AssignmentMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> AssignmentMessage:
+    assignment: AssignmentDTO,
+    recurrence: Optional[RecurrenceRuleDTO] = None,
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
+) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-assignment", "team", team_id
+            user_context.user_id, "create-assignment", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to create an assignment",
             )
-        a_data = msg_to_core_assignment(assignment)
-        a_created = assignment_db.create_assignment(a_data)
-        response = core_to_msg_assignment(a_created)
+        a_data = Assignment.from_dto(assignment)
+        r_data: Optional[RecurrenceRule] = None
+        if recurrence:
+            r_data = RecurrenceRule.from_dto(recurrence)
+        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
+        ops = [
+            AssignmentOperation(before=None, after=a)
+            for a in ar_result.assignments_created
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
+        response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to create assignment")
         handle_routes_errors(e)
@@ -52,25 +77,68 @@ async def create_assignment(
 @router.get("/assignments/teams/{team_id}")
 async def get_assignments(
     team_id: str,
-    start_date: Optional[date] = Query(None, alias="start_date"),
-    end_date: Optional[date] = Query(None, alias="end_date"),
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> List[AssignmentMessage]:
+    start_date: date = Query(..., alias="start_date"),
+    end_date: date = Query(..., alias="end_date"),
+    include_campaign: bool = Query(False, alias="include_campaign"),
+    worker_id: Optional[str] = Query(None, alias="worker_id"),
+    shift_type: Optional[List[int]] = Query(None, alias="shift_type"),
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(
+        get_assignment_service,
+    ),
+) -> AssignmentsRecurrencesResultDTO:
     try:
-        if not await authz_check(
-            session.get_user_id(), "read-assignments", "team", team_id
-        ):
-            raise NotAuthorizedError(
-                "You do not have permission to get assignments",
-            )
-        start_time = time_module.time()
-        if start_date is None or end_date is None:
-            assignments = assignment_db.get_assignments(team_id)
+        # Validate date range
+        if end_date < start_date:
+            raise ValueError("end_date must be greater than or equal to start_date")
+
+        # Prevent abuse: reject ranges > 6 months
+        max_range_days = 365
+        if (end_date - start_date).days > max_range_days:
+            raise ValueError(f"Date range cannot exceed {max_range_days} days")
+
+        # Authorization strategy:
+        # - If requesting campaign data (`include_campaign`), require full
+        #   `read-assignments` permission and deny otherwise.
+        # - For non-campaign requests prefer the faster
+        #   `read-assignments-validated` check (fast path for members). If
+        #   that fails, fall back to checking full `read-assignments` so
+        #   admins/privileged users are still allowed.
+        if include_campaign:
+            if not await authz_check(
+                user_context.user_id, "read-assignments", "team", team_id
+            ):
+                raise NotAuthorizedError(
+                    "You do not have permission to get campaign assignments",
+                )
         else:
-            assignments = assignment_db.get_assignments_by_dates(
-                team_id, start_date, end_date
-            )
-        response = [core_to_msg_assignment(a) for a in assignments]
+            # Fast path: validated members
+            if not await authz_check(
+                user_context.user_id,
+                "read-assignments-validated",
+                "team",
+                team_id,
+            ):
+                # Fall back to full permission for privileged users
+                if not await authz_check(
+                    user_context.user_id, "read-assignments", "team", team_id
+                ):
+                    raise NotAuthorizedError(
+                        "You do not have permission to get assignments",
+                    )
+
+        start_time = time_module.time()
+        ar_result = assignment_service.get_assignments_and_recurrences(
+            team_id,
+            start_date,
+            end_date,
+            include_campaign,
+            worker_id,
+            shift_types=(
+                [ShiftType(v) for v in shift_type] if shift_type is not None else None
+            ),
+        )
+        response = ar_result.to_dto()
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
         print(f"Time taken to get assignments: {time_taken} seconds")
@@ -80,22 +148,149 @@ async def get_assignments(
     return response
 
 
+@router.post("/assignments/bulk/teams/{team_id}", status_code=201)
+async def bulk_create_assignments(
+    team_id: str,
+    body: BulkAssignmentCreateDTO,
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
+) -> AssignmentsRecurrencesResultDTO:
+    try:
+        if not await authz_check(
+            user_context.user_id, "create-assignment", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to create assignments",
+            )
+        assignments = [Assignment.from_dto(a) for a in body.assignments]
+        ar_result = assignment_service.bulk_create_assignments(assignments)
+        ops = [
+            AssignmentOperation(before=None, after=a)
+            for a in ar_result.assignments_created
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
+        response = ar_result.to_dto()
+    except Exception as e:
+        log_info("Failed to bulk create assignments")
+        handle_routes_errors(e)
+    return response
+
+
+@router.put("/assignments/bulk/teams/{team_id}")
+async def bulk_update_assignments(
+    team_id: str,
+    body: BulkAssignmentUpdateDTO,
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
+) -> AssignmentsRecurrencesResultDTO:
+    try:
+        if not await authz_check(
+            user_context.user_id, "update-assignment", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update assignments",
+            )
+        assignments = [Assignment.from_dto(a) for a in body.assignments]
+        # Pre-fetch "before" state
+        ids = [a.id for a in assignments if a.id]
+        before_map: dict[str, Assignment] = {}
+        if ids:
+            asgn_db = assignment_service.collection.assignment_db
+            before_list = asgn_db.get_assignments_by_ids(ids)
+            before_map = {a.id: a for a in before_list}
+        ar_result = assignment_service.bulk_update_assignments(assignments)
+        ops = [
+            AssignmentOperation(
+                before=before_map.get(a.id),
+                after=a,
+            )
+            for a in ar_result.assignments_updated
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
+        response = ar_result.to_dto()
+    except Exception as e:
+        log_info("Failed to bulk update assignments")
+        handle_routes_errors(e)
+    return response
+
+
+@router.delete("/assignments/bulk/teams/{team_id}")
+async def bulk_delete_assignments(
+    team_id: str,
+    body: BulkAssignmentDeleteDTO,
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
+) -> AssignmentsRecurrencesResultDTO:
+    try:
+        if not await authz_check(
+            user_context.user_id, "delete-assignment", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to delete assignments",
+            )
+        # Pre-fetch "before" state
+        before_list = (
+            assignment_service.collection.assignment_db.get_assignments_by_ids(body.ids)
+        )
+        ar_result = assignment_service.bulk_delete_assignments(body.ids)
+        ops = [AssignmentOperation(before=a, after=None) for a in before_list]
+        await notification_service.notify_assignment_crud(ops, team_id)
+        response = ar_result.to_dto()
+    except Exception as e:
+        log_info("Failed to bulk delete assignments")
+        handle_routes_errors(e)
+    return response
+
+
+# pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
 @router.put("/assignments/{assignment_id}/teams/{team_id}")
 async def update_assignment(
     team_id: str,
-    assignment_api: AssignmentMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> AssignmentMessage:
+    assignment: AssignmentDTO,
+    recurrence: Optional[RecurrenceRuleDTO] = None,
+    recurrence_update_scope: Optional[int] = Query(
+        None, alias="recurrence_update_scope"
+    ),
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
+) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "update-assignment", "team", team_id
+            user_context.user_id, "update-assignment", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to update an assignment",
             )
-        assignment_data = msg_to_core_assignment(assignment_api)
-        updated_assignment = assignment_db.update_assignment(assignment_data)
-        response = core_to_msg_assignment(updated_assignment)
+        assignment_data = Assignment.from_dto(assignment)
+        # Pre-fetch "before" state
+        before_assignment = (
+            assignment_service.collection.assignment_db.get_assignment_by_id(
+                assignment_data.id
+            )
+            if assignment_data.id
+            else None
+        )
+        recurrence_update_scope_data = (
+            RecurrenceUpdateScope(recurrence_update_scope)
+            if recurrence_update_scope
+            else None
+        )
+        recurrence_data = RecurrenceRule.from_dto(recurrence) if recurrence else None
+        ar_result = assignment_service.update_assignment_and_recurrence(
+            assignment_new=assignment_data,
+            recurrence_update_scope=recurrence_update_scope_data,
+            recurrence=recurrence_data,
+        )
+        ops = [
+            AssignmentOperation(before=before_assignment, after=a)
+            for a in ar_result.assignments_updated
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
+        response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to update assignment")
         handle_routes_errors(e)
@@ -106,50 +301,66 @@ async def update_assignment(
 async def delete_assignment(
     assignment_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> Dict:
+    recurrence_id: Optional[str] = Query(None, alias="recurrence_id"),
+    recurrence_update_scope: Optional[int] = Query(
+        None, alias="recurrence_update_scope"
+    ),
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(get_notification_service),
+) -> AssignmentsRecurrencesResultDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-assignment", "team", team_id
+            user_context.user_id, "delete-assignment", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to delete an assignment",
             )
-        assignment_db.delete_assignment(assignment_id)
+        # Pre-fetch "before" state
+        before_assignment = (
+            assignment_service.collection.assignment_db.get_assignment_by_id(
+                assignment_id
+            )
+        )
+        recurrence_update_scope_data = (
+            RecurrenceUpdateScope(recurrence_update_scope)
+            if recurrence_update_scope
+            else None
+        )
+        ar_result = assignment_service.delete_assignment_and_recurrence(
+            assignment_id=assignment_id,
+            recurrence_id=recurrence_id,
+            recurrence_update_scope=recurrence_update_scope_data,
+        )
+        ops = [AssignmentOperation(before=before_assignment, after=None)]
+        await notification_service.notify_assignment_crud(ops, team_id)
+        response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to delete assignment")
         handle_routes_errors(e)
-    return {"message": "Assignment deleted"}
+    return response
 
 
-# Mappers
-# core to message
-def core_to_msg_assignment(assignment: Assignment) -> AssignmentMessage:
+@router.get("/assignments/{assignment_id}/replacement-candidates/teams/{team_id}")
+async def get_replacement_candidates(
+    assignment_id: str,
+    team_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    replacement_service: ReplacementService = Depends(get_replacement_service),
+) -> list[ReplacementCandidateDTO]:
     try:
-        data = asdict(assignment)
+        if not await authz_check(
+            user_context.user_id, "check-replacements", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to check replacement candidates",
+            )
+        candidates = replacement_service.get_replacement_candidates(
+            assignment_id=assignment_id,
+            team_id=team_id,
+        )
+        response = [candidate.to_dto() for candidate in candidates]
     except Exception as e:
-        log_info("Failed to convert Assignment to dictionary")
-        raise MessageTypeError(str(e)) from e
-    data["date"] = datetime.combine(
-        assignment.date, time.min, tzinfo=timezone.utc
-    ).timestamp()
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(AssignmentMessage)
-    try:
-        a_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert Assignment to AssignmentMessage")
-        handle_message_errors(e)
-    return a_msg
-
-
-# message to core
-def msg_to_core_assignment(msg: AssignmentMessage) -> Assignment:
-    data_snake = humps.decamelize(msg.model_dump())
-    data_snake["date"] = datetime.fromtimestamp(data_snake["date"], timezone.utc).date()
-    try:
-        assignment = Assignment(**data_snake)
-    except Exception as e:
-        log_info("Failed to convert AssignmentMessage to Assignment")
-        handle_create_schema_object_error(e)
-    return assignment
+        log_info(f"Failed to get replacement candidates for assignment {assignment_id}")
+        handle_routes_errors(e)
+    return response

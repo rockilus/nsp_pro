@@ -1,4 +1,4 @@
-from shared.schemas import (
+from shared.schemas.core import (
     ConfigurationConstraintPenalty,
     CoveragePenalty,
     Penalties,
@@ -10,16 +10,16 @@ from shared.schemas import (
 # pylint: disable=R0801
 penalties = Penalties(
     user_constraint=UserConstraintPenalty(
-        eve=Penalty(hard=100, soft=10),
-        fai=Penalty(hard=100, soft=10),
-        fil=Penalty(hard=100, soft=10),
-        ord=Penalty(hard=100, soft=10),
-        seq=Penalty(hard=100, soft=10),
-        sum=Penalty(hard=100, soft=10),
-        request=Penalty(hard=100, soft=10),
+        eve=Penalty(hard=1000, soft=10),
+        fai=Penalty(hard=1000, soft=10),
+        fil=Penalty(hard=1000, soft=10),
+        ord=Penalty(hard=1000, soft=10),
+        seq=Penalty(hard=1000, soft=10),
+        sum=Penalty(hard=1000, soft=10),
+        request=Penalty(hard=10000, soft=10),
     ),
     configuration_constraint=ConfigurationConstraintPenalty(
-        coverage=CoveragePenalty(duty=1000, normal=200),
+        coverage=CoveragePenalty(duty=100000, normal=20000),
         duty_recup=10000,
         worker_shift_filter=10000,
         link_shift=5,
@@ -31,8 +31,11 @@ penalties = Penalties(
     ),
     system_constraint=SystemConstraintPenalty(
         weekly_target_work_time=5,
-        monthly_target_nb_duties=1,
+        monthly_target_nb_duties=100,
+        max_weekly_nb_duties=100,
+        max_week_day_nb_duties=50,
         special_days_target_nb_duties=1,
+        duty_consecutive_gap=200,
     ),
 )
 

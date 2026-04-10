@@ -1,0 +1,50 @@
+.nav-links-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-link-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  padding: 0 5px;
+}
+
+.nav-link-link {
+  border-radius: 4px;
+  padding: 5px 0;
+}
+
+.nav-link-link:hover {
+  background-color: #f5f5f5;
+}
+
+.nav-link-container.active {
+  border-bottom: 5px solid #1976d2;
+}
+
+.nav-link-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #3c4043;
+  margin: 1px 5px 0 5px;
+}
+
+.nav-link-label.active {
+  font-weight: 600;
+}
+
+/* Mobile drawer list styles */
+.MuiList-root {
+  padding: 0;
+}
+.MuiListItem-root {
+  padding: 0;
+}
+.MuiListItemButton-root {
+  padding: 12px 16px;
+}

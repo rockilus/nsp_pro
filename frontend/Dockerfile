@@ -1,58 +1,38 @@
-FROM node:18-alpine AS base
+FROM node:24-alpine AS builder
 
-# Install dependencies only when needed
-FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
-
-# Install dependencies based on the preferred package manager
-COPY package.json package-lock.json* ./
-RUN npm ci
-
-
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-ENV NEXT_TELEMETRY_DISABLED=1
+# Environment
+ARG NEXT_PUBLIC_NODE_ENV
+# API Configuration
+ARG NEXT_PUBLIC_API_URL
+# Development Authentication - must match backend DEV_USER_ID
+ARG NEXT_PUBLIC_DEV_USER_ID
+ARG NEXT_PUBLIC_DEV_API_KEY
+# Production Cognito Config (not used in development but kept for compatibility)
+ARG NEXT_PUBLIC_COGNITO_AUTHORITY
+ARG NEXT_PUBLIC_COGNITO_CLIENT_ID
+ARG NEXT_PUBLIC_REDIRECT_URI
+ARG NEXT_PUBLIC_LOGOUT_REDIRECT_URI
 
+# Environment
+ENV NEXT_PUBLIC_NODE_ENV=${NEXT_PUBLIC_NODE_ENV}
+# API Configuration
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+# Development Authentication - must match backend DEV_USER_ID
+ENV NEXT_PUBLIC_DEV_USER_ID=${NEXT_PUBLIC_DEV_USER_ID}
+ENV NEXT_PUBLIC_DEV_API_KEY=${NEXT_PUBLIC_DEV_API_KEY}
+# Production Cognito Config (not used in development but kept for compatibility)
+ENV NEXT_PUBLIC_COGNITO_AUTHORITY=${NEXT_PUBLIC_COGNITO_AUTHORITY}
+ENV NEXT_PUBLIC_COGNITO_CLIENT_ID=${NEXT_PUBLIC_COGNITO_CLIENT_ID}
+ENV NEXT_PUBLIC_REDIRECT_URI=${NEXT_PUBLIC_REDIRECT_URI}
+ENV NEXT_PUBLIC_LOGOUT_REDIRECT_URI=${NEXT_PUBLIC_LOGOUT_REDIRECT_URI}
+
+RUN npm install
 RUN npm run build
 
-# Production image, copy all the files and run next
-FROM base AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-
-# Set the correct permission for prerender cache
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
+FROM nginx:alpine
+COPY --from=builder /app/out /usr/share/nginx/html
 EXPOSE 3000
-
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD ["node", "server.js"]
+CMD ["nginx", "-g", "daemon off;"]

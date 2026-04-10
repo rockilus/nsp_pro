@@ -1,20 +1,22 @@
 from typing import List, Tuple
 
 from shared.augment.blocks_to_string import blocks_to_string
-from shared.schemas.schemas.attribute import Attribute, AttributeOwnerType
-from shared.schemas.schemas.constraint import (
+from shared.schemas.core.attribute import Attribute, AttributeOwnerType
+from shared.schemas.core.constraint import (
     Block,
     BlockNameOptions,
     ConstraintBuild,
     ConstraintBuildAugmented,
+    ConstraintType,
     MissingAttribute,
     ShiftWorkerOption,
     SWOIdTypes,
 )
-from shared.schemas.schemas.dimension import Dimension, DimensionEntryType, DimEntry
-from shared.schemas.schemas.shift import Shift, ShiftType
-from shared.schemas.schemas.team import Specialty
-from shared.schemas.schemas.worker import Worker
+from shared.schemas.core.dim_entry import DimEntry
+from shared.schemas.core.dimension import Dimension, DimensionEntryType
+from shared.schemas.core.shift import Shift, ShiftType
+from shared.schemas.core.specialty import Specialty
+from shared.schemas.core.worker import Worker
 
 
 # pylint: disable=too-many-arguments
@@ -44,6 +46,8 @@ def cb_to_cb_augmented(
         attributes,
         specialties,
     )
+    if cb.constraint_type in [ConstraintType.FAI, ConstraintType.EVE]:
+        active = False
     return ConstraintBuildAugmented(
         id=cb.id,
         team_id=cb.team_id,
@@ -132,7 +136,8 @@ def build_missing_attributes_and_active_owner(
         raise ValueError("Block value list does not contain ShiftWorkerOption")
     if (
         any(
-            b.name in ["all workers", "all shifts"] for b in block.value  # type: ignore
+            b.name in ["all workers", "all shifts"]  # type: ignore
+            for b in block.value
         )
         and len([o for o in owners if not o.deleted]) > 0
     ):
@@ -223,7 +228,9 @@ def build_missing_attributes_and_active_owner(
     active = active or new_active
 
     swos_duty = [
-        swo for swo in block.value if swo.id_type == SWOIdTypes.DUTY  # type: ignore
+        swo
+        for swo in block.value
+        if swo.id_type == SWOIdTypes.DUTY  # type: ignore
     ]
     if not all(isinstance(swo.name, bool) for swo in swos_duty):  # type: ignore
         raise ValueError("Duty name is not a boolean in SWO")
@@ -298,7 +305,9 @@ def build_missing_attributes_deleted_dimension(
 ) -> MissingAttribute:
     if dimension.entry_type == DimensionEntryType.DIM_ENTRIES:
         a_values_constraint = [
-            swo.name for swo in block.value if swo.id == dimension.id  # type: ignore
+            swo.name  # type: ignore
+            for swo in block.value  # type: ignore
+            if swo.id == dimension.id  # type: ignore
         ]
     elif dimension.entry_type == DimensionEntryType.BOOL:
         a_values_constraint = list(
@@ -310,7 +319,9 @@ def build_missing_attributes_deleted_dimension(
         )
     else:
         a_values_constraint = [
-            swo.name for swo in block.value if swo.id == dimension.id  # type: ignore
+            swo.name  # type: ignore
+            for swo in block.value  # type: ignore
+            if swo.id == dimension.id  # type: ignore
         ]
     return MissingAttribute(
         dimension_id=dimension.id,
@@ -376,7 +387,9 @@ def build_missing_attributes_and_active_dimension_dim_entry(
     if not all(isinstance(swo, ShiftWorkerOption) for swo in block.value):
         raise ValueError("Block value list does not contain ShiftWorkerOption")
     a_values_constraint = [
-        swo.name for swo in block.value if swo.id == dimension.id  # type: ignore
+        swo.name  # type: ignore
+        for swo in block.value
+        if swo.id == dimension.id  # type: ignore
     ]
     if any(value is None for value in a_values_constraint):
         raise ValueError("Attribute value from block is missing")
@@ -395,8 +408,8 @@ def build_missing_attributes_and_active_dimension_dim_entry(
             dimension_id=dimension.id,
             is_bool=False,
             dim_name=dimension.name,
-            category=owner_type,
-            attribute_values=missing_values,  # type: ignore
+            category=owner_type,  # type: ignore
+            attribute_values=missing_values,
         )
     else:
         mp = None
@@ -415,7 +428,9 @@ def build_missing_attributes_and_active_dimension_str_int(
     if not all(isinstance(swo, ShiftWorkerOption) for swo in block.value):
         raise ValueError("Block value list does not contain ShiftWorkerOption")
     a_values_constraint = [
-        swo.name for swo in block.value if swo.id == dimension.id  # type: ignore
+        swo.name  # type: ignore
+        for swo in block.value
+        if swo.id == dimension.id  # type: ignore
     ]
     if any(value is None for value in a_values_constraint):
         raise ValueError("Attribute value from block is missing")

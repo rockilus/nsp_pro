@@ -4,20 +4,18 @@ import os
 import random
 import time
 from dataclasses import asdict
-from typing import Dict, List, Type
 
-from shared.schemas import SolverParams
+from shared.schemas.core import SolverParams
 
-from engine import Engine
+from engine import Engine, SolverRun
 from engine import Inputs as InputsEngine
-from engine import SolverRun
 
 
 class SolverParameterTester:
     def __init__(
         self,
         inputs: InputsEngine,
-        engine_cls: Type[Engine],
+        engine_cls: type[Engine],
         dir_path_output: str = "solver_parameter_tuning/parameter_test_output",
         num_runs: int = 1,
     ):
@@ -30,7 +28,7 @@ class SolverParameterTester:
     def run_solver_with_params(
         self, params: SolverParams, test_name: str, iter_num: int
     ) -> SolverRun:
-        print(f"Running test: {test_name} {iter_num+1}/{self.num_runs}")
+        print(f"Running test: {test_name} {iter_num + 1}/{self.num_runs}")
         new_inputs = copy.deepcopy(self.inputs)
         new_inputs.model_config.solver_params = params
         engine = self.engine_cls()
@@ -44,23 +42,19 @@ class SolverParameterTester:
     # pylint: disable=too-many-locals
     def test_solver_parameters(
         self,
-        parameter_tests: Dict[str, List] | None = None,
-        solver_params_list: List[SolverParams] | None = None,
+        parameter_tests: dict[str, list] | None = None,
+        solver_params_list: list[SolverParams] | None = None,
         run_base_case: bool = True,
         run_default_case: bool = True,
-    ) -> Dict[str, SolverRun]:
+    ) -> dict[str, SolverRun]:
         results = {}
         base_params = self.inputs.model_config.solver_params
         default_params = SolverParams(
             # fmt: off
-            max_time_in_seconds=self.inputs.model_config.solver_params
-            .max_time_in_seconds,
-            num_search_workers=self.inputs.model_config.solver_params
-            .num_search_workers,
-            log_search_progress=self.inputs.model_config.solver_params
-            .log_search_progress,
-            log_subsolver_statistics=self.inputs.model_config.solver_params
-            .log_subsolver_statistics,
+            max_time_in_seconds=self.inputs.model_config.solver_params.max_time_in_seconds,
+            num_search_workers=self.inputs.model_config.solver_params.num_search_workers,
+            log_search_progress=self.inputs.model_config.solver_params.log_search_progress,
+            log_subsolver_statistics=self.inputs.model_config.solver_params.log_subsolver_statistics,
             # fmt: on
             random_seed=self.inputs.model_config.solver_params.random_seed,
         )
@@ -122,13 +116,13 @@ class SolverParameterTester:
 # pylint: disable=too-many-arguments
 def run_parameter_tests(
     inputs: InputsEngine,
-    engine_cls: Type[Engine],
+    engine_cls: type[Engine],
     dir_path_output: str,
     num_runs: int = 1,
     run_base_case: bool = True,
     run_default_case: bool = True,
-    parameter_tests: Dict[str, List] | None = None,
-    solver_params_list: List[SolverParams] | None = None,
+    parameter_tests: dict[str, list] | None = None,
+    solver_params_list: list[SolverParams] | None = None,
 ) -> None:
     start_time = time.time()
     tester = SolverParameterTester(inputs, engine_cls, dir_path_output, num_runs)

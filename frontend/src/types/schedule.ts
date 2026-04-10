@@ -1,87 +1,25 @@
-import { ReactNode } from "react";
-import dayjs from "dayjs";
+import { ReactNode } from 'react';
+import dayjs from 'dayjs';
 // Types
-import { ShiftT } from "./shift";
-import { WorkerT } from "./worker";
-import { RequestT } from "./request";
-
-// Assignment
-export type AssignmentT = {
-  id: string;
-  teamId: string;
-  scheduleId: string;
-  workerId: string;
-  date: dayjs.Dayjs;
-  shiftId: string;
-  fixed: boolean;
-};
-
-// Daily Shift Demand
-export enum DSDSourceType {
-  SHIFT_DEMAND = 0,
-  DIRECT_REQUIREMENT = 1,
-}
-
-export type DailyShiftDemandT = {
-  id: string;
-  teamId: string;
-  scheduleId: string;
-  shiftDemandId: string | null;
-  coverageSelectorId: string | null;
-  sourceType: DSDSourceType;
-  date: dayjs.Dayjs;
-  shiftId: string;
-  count: number;
-};
-
-// Breach
-export type VariableT = {
-  workerId: string | null;
-  date: dayjs.Dayjs;
-  shiftId: string;
-};
-
-export enum ObjectiveCategory {
-  CONSTRAINT = 0,
-  REQUEST = 1,
-  DAILY_SHIFT_DEMAND = 2,
-  DAILY_SHIFT_DEMAND_SPE = 3,
-  WORK_TIME_CONTRACT = 4,
-  WORK_TIME_DESIRED = 5,
-  DUTIES_PER_MONTH = 6,
-  LINK_SHIFT = 7,
-}
-
-export type BreachT = {
-  id: string;
-  scheduleId: string;
-  objectiveId: string | null;
-  objectiveCategory: ObjectiveCategory;
-  variables: VariableT[];
-  description: string;
-  hardToSoft: boolean | null;
-};
+import { ShiftT } from './shift';
+import { RequestT } from './request';
+import {
+  AssignmentT,
+  AssignmentsRecurrencesResultT,
+  toAssignmentsRecurrencesResultT,
+} from './assignment';
+import { BreachT } from './breach';
+import { DemandsResultT } from './shiftDemand';
+import { ShiftDemandDTO } from './shiftDemand';
+import { WorkerT } from './worker';
+import { RecurrenceRuleT } from './recurrence';
+import { MAX_SCHEDULE_DURATION_MONTHS } from '../constants/constants';
 
 // Schedule
 export type QuickStaffingT = {
   workerId: string;
   shiftId: string;
   target: number;
-};
-
-export enum SolveDetailsStatus {
-  PENDING = 0,
-  STARTED = 1,
-  RETRY = 2,
-  FAILURE = 3,
-  SUCCESS = 4,
-}
-
-export type SolveDetailsT = {
-  taskId: string;
-  status: SolveDetailsStatus;
-  updatedAt: dayjs.Dayjs;
-  result: { [key: string]: any } | null;
 };
 
 export enum ScheduleSolveStatus {
@@ -102,14 +40,15 @@ export type ScheduleT = {
   teamId: string;
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
-  lastModifiedDates: number;
-  solveDetails: SolveDetailsT | null;
-  solveStatus: ScheduleSolveStatus;
   status: ScheduleStatus;
   missingCoverageDates: dayjs.Dayjs[];
   constraintBuildIds: string[];
   quickStaffings: QuickStaffingT[];
-  lastUpdatedDsds: number | null;
+  createdAt: dayjs.Dayjs;
+  updatedAt: dayjs.Dayjs;
+  createdBy: string;
+  requestDeadline?: dayjs.Dayjs;
+  lastReminderSentAt?: dayjs.Dayjs;
 };
 
 // Solution
@@ -153,20 +92,176 @@ export type WorkTimeTableT = {
   nbWeeks: number;
 };
 
-export type LHSTabContentT = {
-  name: string;
-  label: string;
-  content: ReactNode | null;
+export type periodDateT = {
+  date: dayjs.Dayjs;
+  scheduleId: string | null;
+  scheduleStatus: ScheduleStatus | null;
 };
 
-export type AssignmentDataDictT = {
+export type PeriodT = {
+  startDate: dayjs.Dayjs;
+  endDate: dayjs.Dayjs;
+};
+
+export type DuplicateOptionsT = {
+  copyAssignments: boolean;
+  copyDemands: boolean;
+};
+
+export type DuplicateRequestT = {
+  sourcePeriod: PeriodT;
+  targetPeriod: PeriodT;
+  options: DuplicateOptionsT;
+};
+
+export type AssignmentDataT = {
   worker: WorkerT;
   shift: ShiftT;
   assignment: AssignmentT;
+  recurrence: RecurrenceRuleT | null;
   breaches: BreachT[];
   requests: RequestT[];
 };
 
-export type AssignmentDictT = {
-  [key: string]: AssignmentDataDictT[];
+export type AssignmentsDictT = {
+  [key: string]: AssignmentDataT[];
+};
+
+// New ShiftDemandDTO-based types
+export type ShiftDemandsDataT = {
+  shiftDemand: ShiftDemandDTO;
+  shift: ShiftT;
+};
+
+export type ShiftDemandsDictT = {
+  [key: string]: ShiftDemandsDataT;
+};
+
+export type ScheduleCellDataT = {
+  assignmentsData: AssignmentDataT[];
+  shiftDemandsData: ShiftDemandsDataT | null;
+  requests: RequestT[];
+};
+
+export type ScheduleCellsDictT = {
+  [key: string]: ScheduleCellDataT;
+};
+
+export type ScheduleViewSettingsT = {
+  timeFrame: 'week' | 'month';
+  groupBy: 'shift' | 'worker';
+  showBreaches: boolean;
+  showAssignments: boolean;
+  showDailyShiftDemands: boolean;
+  showRequests: boolean;
+  periodStartDate: dayjs.Dayjs;
+  // Mobile-specific settings
+  mobileSelectedView?: 'worker' | 'team';
+  mobileSelectedWorkerId?: string | null;
+  mobileWeekStart?: string | null; // ISO date string for landscape week start
+};
+
+export type DuplicateResultT = {
+  assignments: AssignmentsRecurrencesResultT | null;
+  demands: DemandsResultT | null;
+};
+
+export const toScheduleT = (data: any): ScheduleT => {
+  return {
+    ...data,
+    startDate: dayjs.unix(data.startDate).utc(),
+    endDate: dayjs.unix(data.endDate).utc(),
+    missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
+      dayjs.unix(timeStamp).utc(),
+    ),
+    createdAt: dayjs.unix(data.createdAt).utc(),
+    updatedAt: dayjs.unix(data.updatedAt).utc(),
+    requestDeadline:
+      data.requestDeadline != null ? dayjs.unix(data.requestDeadline).utc() : undefined,
+    lastReminderSentAt:
+      data.lastReminderSentAt != null ? dayjs.unix(data.lastReminderSentAt).utc() : undefined,
+  };
+};
+
+export const fromScheduleT = (data: ScheduleT): any => {
+  return {
+    ...data,
+    startDate: data.startDate.unix(),
+    endDate: data.endDate.unix(),
+    missingCoverageDates: data.missingCoverageDates.map((date: dayjs.Dayjs) => date.unix()),
+    createdAt: data.createdAt.unix(),
+    updatedAt: data.updatedAt.unix(),
+    requestDeadline: data.requestDeadline?.unix() ?? null,
+  };
+};
+
+export type RequestDeadlineT = {
+  deadlineDate: dayjs.Dayjs | null;
+  periodStartDate?: dayjs.Dayjs | null;
+  periodEndDate?: dayjs.Dayjs | null;
+};
+
+export const toRequestDeadlineT = (data: any): RequestDeadlineT => {
+  return {
+    deadlineDate: data.deadlineDate != null ? dayjs.unix(data.deadlineDate).utc() : null,
+    periodStartDate: data.periodStartDate != null ? dayjs.unix(data.periodStartDate).utc() : null,
+    periodEndDate: data.periodEndDate != null ? dayjs.unix(data.periodEndDate).utc() : null,
+  };
+};
+
+export const fromExportOptionsT = (data: ExportOptionsT): any => {
+  return {
+    ...data,
+    startDate: data.startDate.unix(),
+    endDate: data.endDate.unix(),
+  };
+};
+
+export const fromPeriodT = (data: PeriodT): any => {
+  return {
+    ...data,
+    startDate: data.startDate.unix(),
+    endDate: data.endDate.unix(),
+  };
+};
+
+export const fromDuplicateRequestT = (data: DuplicateRequestT): any => {
+  return {
+    ...data,
+    sourcePeriod: fromPeriodT(data.sourcePeriod),
+    targetPeriod: fromPeriodT(data.targetPeriod),
+  };
+};
+
+export const toDuplicateResultT = (data: any): DuplicateResultT => {
+  return {
+    assignments: data.assignments ? toAssignmentsRecurrencesResultT(data.assignments) : null,
+    demands: data.demands ? data.demands : null,
+  };
+};
+
+/**
+ * Validate that a schedule duration does not exceed the maximum allowed months.
+ * Throws an Error when invalid.
+ */
+export const validateScheduleDuration = (schedule: ScheduleT): void => {
+  const maxEnd = schedule.startDate.add(MAX_SCHEDULE_DURATION_MONTHS, 'month');
+  if (schedule.endDate.isAfter(maxEnd)) {
+    throw new Error(`Schedule duration must be at most ${MAX_SCHEDULE_DURATION_MONTHS} months`);
+  }
+};
+
+/**
+ * Return the latest end date among an array of schedules.
+ * Returns `null` when the array is empty or not provided.
+ */
+export const getLatestScheduleEndDate = (
+  schedules: ScheduleT[] | null | undefined,
+): dayjs.Dayjs | null => {
+  if (!schedules || schedules.length === 0) return null;
+
+  return schedules.reduce((latest: dayjs.Dayjs | null, s: ScheduleT) => {
+    if (!latest) return s.endDate;
+    return s.endDate.isAfter(latest) ? s.endDate : latest;
+  }, null);
 };

@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useTranslation } from "../../../app/i18n/client";
+import React, { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from '../../../app/i18n/client';
 // MUI
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 // Components
-import BlockDisplay from "./constraint-blocks/block-display";
+import BlockDisplay from './constraint-blocks/block-display';
 // Types
 import {
   ConstraintT,
@@ -14,9 +14,9 @@ import {
   ShiftWorkerOptionT,
   BlockNameOptions,
   BlockTypeOptions,
-} from "../../../types/constraint";
-import { WorkerT } from "../../../types/worker";
-import { ShiftT } from "../../../types/shift";
+} from '../../../types/constraint';
+import { WorkerT } from '../../../types/worker';
+import { ShiftT } from '../../../types/shift';
 
 export default function ConstraintEdit({
   lng,
@@ -26,6 +26,7 @@ export default function ConstraintEdit({
   template,
   handleAddConstraint,
   handleUpdateConstraint,
+  'data-testid': dataTestId,
 }: {
   lng: string;
   workers: WorkerT[];
@@ -34,40 +35,74 @@ export default function ConstraintEdit({
   template: TemplateT | null;
   handleAddConstraint: (constraint: ConstraintT) => void;
   handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
+  'data-testid'?: string;
 }) {
-  const { t } = useTranslation(lng, "constraint-page");
+  // Use a key based on incoming props so the inner component remounts
+  // whenever `constraint` or `template` change. This avoids calling
+  // setState synchronously inside an effect.
+  const formKey = JSON.stringify([constraint, template]);
+
+  return (
+    <ConstraintEditInner
+      key={formKey}
+      lng={lng}
+      workers={workers}
+      shifts={shifts}
+      constraint={constraint}
+      template={template}
+      handleAddConstraint={handleAddConstraint}
+      handleUpdateConstraint={handleUpdateConstraint}
+      data-testid={dataTestId}
+    />
+  );
+}
+
+function ConstraintEditInner({
+  lng,
+  workers,
+  shifts,
+  constraint,
+  template,
+  handleAddConstraint,
+  handleUpdateConstraint,
+  'data-testid': dataTestId,
+}: {
+  lng: string;
+  workers: WorkerT[];
+  shifts: ShiftT[];
+  constraint: ConstraintT;
+  template: TemplateT | null;
+  handleAddConstraint: (constraint: ConstraintT) => void;
+  handleUpdateConstraint: (updatedConstraint: ConstraintT) => void;
+  'data-testid'?: string;
+}) {
+  const { t } = useTranslation(lng, 'constraint-page');
   const [errors, setErrors] = useState<number[]>([]);
 
   const initialBlockValue = (
-    templateBlock: TemplateBlockT
+    templateBlock: TemplateBlockT,
   ): string | number | string[] | ShiftWorkerOptionT[] => {
     if (templateBlock.type === BlockTypeOptions.STRING) {
       if (templateBlock.name === BlockNameOptions.TEXT) {
         return templateBlock.placeholder;
       } else {
-        return "";
+        return '';
       }
     } else if (templateBlock.type === BlockTypeOptions.SHIFT_WORKER_OPTION) {
       return [];
     } else {
-      if (
-        templateBlock.options.length === 0 &&
-        templateBlock.type !== BlockTypeOptions.NUMBER
-      ) {
+      if (templateBlock.options.length === 0 && templateBlock.type !== BlockTypeOptions.NUMBER) {
         return templateBlock.placeholder;
-      } else if (
-        Array.isArray(templateBlock.options) &&
-        templateBlock.options.length === 1
-      ) {
+      } else if (Array.isArray(templateBlock.options) && templateBlock.options.length === 1) {
         return templateBlock.options[0] as string;
       } else {
-        return templateBlock.type === BlockTypeOptions.LIST ? [] : "";
+        return templateBlock.type === BlockTypeOptions.LIST ? [] : '';
       }
     }
   };
 
   const initialConstraintState = useCallback((): ConstraintT => {
-    if (constraint.id === "") {
+    if (constraint.id === '') {
       const blocks: BlockT[] = [];
       if (template && template.blocks) {
         for (let block of template.blocks) {
@@ -84,19 +119,17 @@ export default function ConstraintEdit({
     }
   }, [constraint, template]);
 
-  const [constraintState, setConstraintState] = useState(
-    initialConstraintState
-  );
+  // Initialize state lazily using the callback above. Because the inner
+  // component is remounted when `constraint` or `template` change (via
+  // the `key` on the parent), we don't need to call setState inside an
+  // effect to sync props -> state.
+  const [constraintState, setConstraintState] = useState<ConstraintT>(initialConstraintState);
 
   const validateConstraint = (): boolean => {
     const updatedErrors: number[] = [];
     if (template) {
-      console.log("constraintState", constraintState);
-
       template.blocks.map((block, index) => {
         const value = constraintState.blocks[index].value;
-        console.log("index", index);
-        console.log("value", value);
         if (block.name === BlockNameOptions.TEXT) {
           return;
         }
@@ -111,14 +144,12 @@ export default function ConstraintEdit({
           block.type === BlockTypeOptions.STRING ||
           block.type === BlockTypeOptions.NUMBER
         ) {
-          if (value === "") {
+          if (value === '') {
             updatedErrors.push(index);
           }
         }
       });
       setErrors(updatedErrors);
-      console.log("updatedErrors", updatedErrors);
-
       return updatedErrors.length === 0;
     } else {
       return false;
@@ -131,16 +162,11 @@ export default function ConstraintEdit({
   };
 
   const handleSaveConstraint = () => {
-    console.log("handleSaveConstraint");
-
     const valid = validateConstraint();
-    console.log("valid", valid);
-    console.log("errors", errors);
-
     if (!valid) {
       return;
     }
-    if (constraint.id === "") {
+    if (constraint.id === '') {
       handleAddConstraint(constraintState);
     } else {
       handleUpdateConstraint(constraintState);
@@ -161,37 +187,32 @@ export default function ConstraintEdit({
     } else {
       setConstraintState({
         ...constraintState,
-        blocks: constraintState.blocks.map((b) =>
-          b.name === block.name ? block : b
-        ),
+        blocks: constraintState.blocks.map((b) => (b.name === block.name ? block : b)),
       });
     }
   };
 
-  useEffect(() => {
-    setConstraintState(initialConstraintState());
-    setErrors([]);
-  }, [initialConstraintState]);
-
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        width: "100%",
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
       }}
+      data-testid={dataTestId || 'constraint-edit-form'}
     >
-      <div style={{ display: "flex", flexDirection: "row" }}>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
         {template?.blocks.map((templateBlock, index) => (
           <div
             key={index}
             style={{
-              display: "flex",
-              alignItems: "center",
-              marginRight: "5px",
+              display: 'flex',
+              alignItems: 'center',
+              marginRight: '5px',
             }}
+            data-testid={`constraint-block-${index}`}
           >
             <BlockDisplay
               lng={lng}
@@ -210,9 +231,10 @@ export default function ConstraintEdit({
       <Button
         variant="contained"
         onClick={handleSaveConstraint}
-        sx={{ textTransform: "none", height: 35, width: 60 }}
+        sx={{ textTransform: 'none', height: 35, width: 60 }}
+        data-testid="save-constraint-button"
       >
-        {constraint.id === "" ? t("add") : t("save")}
+        {constraint.id === '' ? t('add') : t('save')}
       </Button>
     </Box>
   );

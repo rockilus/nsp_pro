@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">Nouvelle Demande Reçue</div>
+        <div class="email-body">
+            <p>Bonjour {recipient_name},</p>
+            <p><strong>{worker_name}</strong> a créé une nouvelle demande pour le <strong>{start_date}</strong> dans l'équipe <strong>{team_name}</strong>.</p>
+            <p>Cliquez sur le bouton ci-dessous pour examiner la demande :</p>
+            <a href="{notification_link}" class="cta-button">Voir les Demandes</a>
+        </div>
+        <div class="email-footer">
+            <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+            <p>Merci,<br>L'Équipe Rockilus</p>
+        </div>
+    </div>
+</body>
+</html>

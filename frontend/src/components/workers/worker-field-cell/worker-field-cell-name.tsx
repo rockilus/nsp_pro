@@ -1,10 +1,10 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from 'react';
 // MUI
-import Box from "@mui/material/Box";
-import TableCell from "@mui/material/TableCell";
-import TextField from "@mui/material/TextField";
+import Box from '@mui/material/Box';
+import TableCell from '@mui/material/TableCell';
+import TextField from '@mui/material/TextField';
 // Types
-import { WorkerT } from "../../../types/worker";
+import { WorkerT } from '../../../types/worker';
 
 export default function WorkerFieldCellName({
   worker,
@@ -38,7 +38,8 @@ export default function WorkerFieldCellName({
     <TableCell
       component="th"
       scope="row"
-      onClick={() => setEditing({ [worker.id]: "name" })}
+      data-testid="worker-name-cell"
+      onClick={() => setEditing({ [worker.id]: 'name' })}
       sx={{ paddingY: 0 }}
     >
       {editing ? (
@@ -50,17 +51,26 @@ export default function WorkerFieldCellName({
           onChange={(e) => setValueState(e.target.value)}
           onBlur={handleEditConfirm}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               handleEditConfirm();
-            } else if (e.key === "Escape") {
+            } else if (e.key === 'Escape') {
               handleEditCancel();
             }
           }}
           autoFocus
+          inputProps={{
+            'data-testid': `worker-name-input-${worker.id}`,
+            'data-state': 'editing',
+          }}
         />
       ) : (
-        <Box sx={{ minHeight: 45, display: "flex", alignItems: "center" }}>
-          {worker.name}
+        <Box
+          sx={{ minHeight: 45, display: 'flex', alignItems: 'center' }}
+          data-testid={`worker-name-display-${worker.id}`}
+          data-state="display"
+          data-worker-name={worker.name || 'Unnamed Worker'}
+        >
+          {worker.name || 'Unnamed Worker'}
         </Box>
       )}
     </TableCell>

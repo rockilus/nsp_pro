@@ -1,49 +1,57 @@
 import time as time_module
-from dataclasses import asdict
-from datetime import datetime, time, timezone
-from typing import List
+from typing import List, Optional
 
-import humps
-from fastapi import APIRouter, Depends
-from pydantic import TypeAdapter
+from fastapi import APIRouter, Depends, Query
 from shared.logger import log_info
-from shared.schemas import Request, RequestAugmented, RequestStatus
-from shared.schemas.errors import handle_create_schema_object_error
+from shared.schemas.core import Request
+from shared.schemas.dto import RequestDTO
 
-from errors import (
-    MessageTypeError,
+from src.dependencies import get_request_service, get_user_context
+from src.errors import (
     NotAuthorizedError,
-    handle_message_errors,
     handle_routes_errors,
 )
-from integrations.authentication import (
-    SessionContainerType,
-    authn_verify_session,
+from src.integrations.authorization import (
+    authz_check,
+    authz_role_assignments_list,
 )
-from integrations.authorization import authz_check
-from routes.api_model import RequestMessage
-from scripts.setup_database import request_db
-from services.request_services import create_request as create_request_service
-from services.request_services import get_requests as get_request_service
-from services.request_services import update_request as update_request_service
+from src.security.user_context import UserContext
+from src.services.request_service import RequestService
 
 router = APIRouter()
 
 
+# pylint: disable=R0801
 @router.post("/requests/teams/{team_id}", status_code=201)
 async def create_request(
     team_id: str,
-    req: RequestMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> RequestMessage:
+    req: RequestDTO,
+    user_context: UserContext = Depends(get_user_context),
+    request_service: RequestService = Depends(get_request_service),
+) -> RequestDTO:
     try:
         if not await authz_check(
-            session.get_user_id(), "create-request", "team", team_id
+            user_id=user_context.user_id,
+            action="create-request",
+            resource="team",
+            resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to create a request")
-        r_data = msg_to_core_request(req)
-        request = create_request_service(r_data)
-        response = core_to_msg_request_augmented(request)
+
+        roles = await authz_role_assignments_list(
+            user_id=user_context.effective_user_id,
+            resource="team",
+            resource_instance_key=team_id,
+        )
+        if len(roles) != 1:
+            raise NotAuthorizedError("You do not have permission to create a request")
+        r_data = Request.from_dto(req)
+        request = await request_service.create_request(
+            request=r_data,
+            author_id=user_context.effective_user_id,
+            team_role=roles[0],
+        )
+        response = request.to_dto()
     except Exception as e:
         log_info("Failed to create request")
         handle_routes_errors(e)
@@ -53,16 +61,47 @@ async def create_request(
 @router.get("/requests/teams/{team_id}")
 async def get_requests(
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
-) -> List[RequestMessage]:
+    worker_id: Optional[str] = Query(
+        None, description="Optional worker ID to filter requests"
+    ),
+    user_context: UserContext = Depends(get_user_context),
+    request_service: RequestService = Depends(get_request_service),
+) -> List[RequestDTO]:
     try:
         if not await authz_check(
-            session.get_user_id(), "read-requests", "team", team_id
+            user_context.user_id, "read-requests", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get requests")
+
+        # Get user role to determine filtering behavior
+        roles = await authz_role_assignments_list(
+            user_id=user_context.effective_user_id,
+            resource="team",
+            resource_instance_key=team_id,
+        )
+        if len(roles) != 1:
+            raise NotAuthorizedError("You do not have permission to get requests")
+
+        team_role = roles[0]
+
+        # If member role, auto-detect their worker and filter
+        filter_worker_id = None
+        if team_role == "member":
+            # Get workers linked to this user
+            workers = request_service.collection.worker_db.get_workers_by_team_and_user(
+                team_id=team_id, user_id=user_context.effective_user_id
+            )
+            if workers:
+                # Use first worker (assumption: one worker per user per team)
+                filter_worker_id = workers[0].id
+            # If no worker found, filter_worker_id stays None (returns empty)
+        elif worker_id:
+            # Owner explicitly filtering by worker_id
+            filter_worker_id = worker_id
+
         start_time = time_module.time()
-        requests = get_request_service(team_id)
-        response = [core_to_msg_request_augmented(r) for r in requests]
+        requests = request_service.get_requests(team_id, worker_id=filter_worker_id)
+        response = [r.to_dto() for r in requests]
         end_time = time_module.time()
         time_taken = round(end_time - start_time)
         print(f"Time taken to get requests: {time_taken} seconds")
@@ -75,19 +114,111 @@ async def get_requests(
 @router.put("/requests/{request_id}/teams/{team_id}")
 async def update_request(
     team_id: str,
-    updated_request: RequestMessage,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    updated_request: RequestDTO,
+    user_context: UserContext = Depends(get_user_context),
+    request_service: RequestService = Depends(get_request_service),
 ):
     try:
         if not await authz_check(
-            session.get_user_id(), "update-request", "team", team_id
+            user_id=user_context.user_id,
+            action="update-request",
+            resource="team",
+            resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to update a request")
-        r_data = msg_to_core_request(updated_request)
-        request = update_request_service(r_data)
-        response = core_to_msg_request_augmented(request)
+        roles = await authz_role_assignments_list(
+            user_id=user_context.effective_user_id,
+            resource="team",
+            resource_instance_key=team_id,
+        )
+        if len(roles) != 1:
+            raise NotAuthorizedError("You do not have permission to create a request")
+        r_data = Request.from_dto(updated_request)
+        request = request_service.update_request(
+            request=r_data,
+            author_id=user_context.effective_user_id,
+            team_role=roles[0],
+        )
+        response = request.to_dto()
     except Exception as e:
         log_info("Failed to update request")
+        handle_routes_errors(e)
+    return response
+
+
+@router.post("/requests/{request_id}/teams/{team_id}/accept", status_code=200)
+async def accept_request(
+    request_id: str,
+    team_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    request_service: RequestService = Depends(get_request_service),
+) -> dict:
+    try:
+        if not await authz_check(
+            user_id=user_context.user_id,
+            action="approve-request",
+            resource="team",
+            resource_id=team_id,
+        ):
+            raise NotAuthorizedError("You do not have permission to approve a request")
+        request, assignments = await request_service.approve_request(
+            request_id=request_id
+        )
+        response = {
+            "request": request.to_dto(),
+            "assignments": ([a.to_dto() for a in assignments] if assignments else []),
+        }
+    except Exception as e:
+        log_info("Failed to approve request")
+        handle_routes_errors(e)
+    return response
+
+
+@router.post("/requests/{request_id}/teams/{team_id}/deny", status_code=200)
+async def deny_request(
+    request_id: str,
+    team_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    request_service: RequestService = Depends(get_request_service),
+) -> RequestDTO:
+    try:
+        if not await authz_check(
+            user_id=user_context.user_id,
+            action="deny-request",
+            resource="team",
+            resource_id=team_id,
+        ):
+            raise NotAuthorizedError("You do not have permission to deny a request")
+        request = await request_service.deny_request(request_id=request_id)
+        response = request.to_dto()
+    except Exception as e:
+        log_info("Failed to deny request")
+        handle_routes_errors(e)
+    return response
+
+
+@router.post("/requests/{request_id}/teams/{team_id}/rescind", status_code=200)
+async def rescind_request(
+    request_id: str,
+    team_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    request_service: RequestService = Depends(get_request_service),
+) -> dict:
+    try:
+        if not await authz_check(
+            user_id=user_context.user_id,
+            action="rescind-request",
+            resource="team",
+            resource_id=team_id,
+        ):
+            raise NotAuthorizedError("You do not have permission to rescind a request")
+        request, deleted_ids = request_service.rescind_request(request_id=request_id)
+        response = {
+            "request": request.to_dto(),
+            "assignmentsDeletedIds": deleted_ids,
+        }
+    except Exception as e:
+        log_info("Failed to rescind request")
         handle_routes_errors(e)
     return response
 
@@ -96,59 +227,30 @@ async def update_request(
 async def delete_request(
     request_id: str,
     team_id: str,
-    session: SessionContainerType = Depends(authn_verify_session()),
+    user_context: UserContext = Depends(get_user_context),
+    request_service: RequestService = Depends(get_request_service),
 ):
     try:
         if not await authz_check(
-            session.get_user_id(), "delete-request", "team", team_id
+            user_id=user_context.user_id,
+            action="delete-request",
+            resource="team",
+            resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to delete a request")
-        request_db.delete_request(request_id)
+        roles = await authz_role_assignments_list(
+            user_id=user_context.effective_user_id,
+            resource="team",
+            resource_instance_key=team_id,
+        )
+        if len(roles) != 1:
+            raise NotAuthorizedError("You do not have permission to create a request")
+        request_service.delete_request(
+            request_id=request_id,
+            author_id=user_context.effective_user_id,
+            team_role=roles[0],
+        )
     except Exception as e:
         log_info("Failed to delete request")
         handle_routes_errors(e)
     return {"message": "Request deleted successfully"}
-
-
-# Mappers
-# core to message
-def core_to_msg_request_augmented(request: RequestAugmented) -> RequestMessage:
-    try:
-        data = asdict(request)
-    except Exception as e:
-        log_info("Failed to convert Request to dictionary")
-        raise MessageTypeError(str(e)) from e
-    data["start_date"] = datetime.combine(
-        request.start_date, time.min, tzinfo=timezone.utc
-    ).timestamp()
-    data["end_date"] = datetime.combine(
-        request.end_date, time.min, tzinfo=timezone.utc
-    ).timestamp()
-    as_dict = humps.camelize(data)
-    validator = TypeAdapter(RequestMessage)
-    try:
-        r_msg = validator.validate_python(as_dict)
-    except Exception as e:
-        log_info("Failed to convert Request to RequestMessage")
-        handle_message_errors(e)
-    return r_msg
-
-
-# message to core
-def msg_to_core_request(msg: RequestMessage) -> Request:
-    # pylint: disable=R0801
-    data_snake = humps.decamelize(msg.model_dump())
-    data_snake["start_date"] = datetime.fromtimestamp(
-        data_snake["start_date"], timezone.utc
-    ).date()
-    data_snake["end_date"] = datetime.fromtimestamp(
-        data_snake["end_date"], timezone.utc
-    ).date()
-    data_snake["status"] = RequestStatus(data_snake["status"])
-    data_snake.pop("active")
-    try:
-        request = Request(**data_snake)
-    except Exception as e:
-        log_info("Failed to convert RequestMessage to Request")
-        handle_create_schema_object_error(e)
-    return request

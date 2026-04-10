@@ -1,15 +1,22 @@
 from typing import Any, Dict, List, Mapping, Sequence
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.attribute import AttributeSchema
-from shared.schemas.schemas.attribute import Attribute
+from shared.schemas.core.attribute import Attribute
 
 
 class AttributeRepository(BaseRepository[AttributeSchema]):
-    """Repository for attribute documents using PyMongo."""
+    """Repository for attribute documents using modern database interface."""
 
-    def __init__(self):
-        super().__init__("attributes", AttributeSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        """
+        Initialize AttributeRepository.
+
+        Args:
+            database_interface: Database interface instance
+        """
+        super().__init__(database_interface, "attributes", AttributeSchema)
 
     def create_attribute(self, attribute: Attribute) -> Attribute:
         """Create a new attribute."""

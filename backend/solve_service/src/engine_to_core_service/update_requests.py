@@ -1,13 +1,12 @@
 from datetime import timedelta
-from typing import List
 
-from shared.schemas import Assignment, Request, RequestStatus
+from shared.schemas.core import Assignment, Request, RequestStatus
 
 
 def update_requests_and_build_request_breaches(
-    assignments: List[Assignment], requests: List[Request]
-) -> List[Request]:
-    out: List[Request] = []
+    assignments: list[Assignment], requests: list[Request]
+) -> list[Request]:
+    out: list[Request] = []
     for r in requests:
         dates = [
             r.start_date + timedelta(days=i)
@@ -22,13 +21,12 @@ def update_requests_and_build_request_breaches(
         ]
         if r.negative:
             if len(a_filtered) > 0:
-                r.status = RequestStatus.REJECTED
+                r.status = RequestStatus.DENIED
             else:
                 r.status = RequestStatus.APPROVED
+        elif len(a_filtered) < len(dates):
+            r.status = RequestStatus.DENIED
         else:
-            if len(a_filtered) < len(dates):
-                r.status = RequestStatus.REJECTED
-            else:
-                r.status = RequestStatus.APPROVED
+            r.status = RequestStatus.APPROVED
         out.append(r)
     return out

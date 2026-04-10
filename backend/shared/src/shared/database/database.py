@@ -1,96 +1,88 @@
-from typing import Optional
+# from typing import Optional
 
-from pymongo import MongoClient
-from pymongo.database import Database
-from pymongo.errors import ConnectionFailure
+# from pymongo import MongoClient
+# from pymongo.database import Database
+# from pymongo.errors import ConnectionFailure
+
+# from shared.database.interface import DatabaseInterface
 
 
-class MongoDB:
-    """MongoDB database connection manager."""
+# class MongoDBInstance(DatabaseInterface):
+#     """MongoDB database connection manager instance."""
 
-    _client: Optional[MongoClient] = None
-    _db: Optional[Database] = None
+#     def __init__(self, uri: str, db_name: str, timeoutMS: Optional[int] = None):
+#         """Initialize MongoDB connection."""
+#         self._client: Optional[MongoClient] = None
+#         self._db: Optional[Database] = None
+#         self._connect(uri, db_name, timeoutMS)
 
-    @classmethod
-    def connect(
-        cls, uri: str, db_name: str, timeoutMS: Optional[int] = None
-    ) -> Database:
-        """Connect to MongoDB and return database instance."""
-        if cls._client is None:
-            try:
-                new_client = MongoClient(uri, timeoutMS=timeoutMS)
-                new_db = new_client[db_name]
-                cls._client = new_client
-                cls._db = new_db
-                # cls._client.list_database_names()
-                cls._client.admin.command("ping")
-            except ConnectionFailure as e:
-                cls._client = None
-                cls._db = None
-                raise e
-        if cls._db is None:
-            raise ValueError("Database connection failed.")
-        return cls._db
+#     def _connect(
+# self, uri: str, db_name: str, timeoutMS: Optional[int] = None
+# ) -> None:
+#         """Connect to MongoDB."""
+#         try:
+#             self._client = MongoClient(uri, timeoutMS=timeoutMS)
+#             self._db = self._client[db_name]
+#             self._client.admin.command("ping")
+#         except ConnectionFailure as e:
+#             self._client = None
+#             self._db = None
+#             raise e
 
-    @classmethod
-    def get_database(cls) -> Database:
-        """Get database instance, connecting if necessary."""
-        if cls._db is None:
-            raise ValueError("No database connection. Call connect() first.")
-        return cls._db
+#     def get_database(self) -> Database:
+#         """Get database instance."""
+#         if self._db is None:
+#             raise ValueError("Database connection failed.")
+#         return self._db
 
-    @classmethod
-    def close(cls) -> None:
-        """Close the database connection."""
-        if cls._client is not None:
-            cls._client.close()  # type: ignore
-            cls._client = None
-            cls._db = None
+#     def close(self) -> None:
+#         """Close the database connection."""
+#         if self._client is not None:
+#             self._client.close()  # type: ignore
+#             self._client = None
+#             self._db = None
 
-    @classmethod
-    def check_health(cls) -> bool:
-        """Check the health of the database connection."""
-        if cls._client is None:
-            raise ValueError("No database connection. Call connect() first.")
-        try:
-            cls._client.admin.command("ping")
-            return True
-        except Exception:
-            return False
+#     def check_health(self) -> bool:
+#         """Check the health of the database connection."""
+#         if self._client is None:
+#             return False
+#         try:
+#             self._client.admin.command("ping")
+#             return True
+#         except ConnectionFailure:
+#             return False
 
 
 # class MongoDB:
-#     def __init__(self, uri: str, database_name: str):
-#         self.client = MongoClient(uri)
-#         self.db = self.client[database_name]
+#     """Legacy MongoDB singleton manager for backward compatibility."""
 
-#     def get_collection(self, name: str):
-#         return self.db[name]
-
-#     def close(self):
-#         self.client.close()
-
-
-# class MongoDBManager:
-#     """Encapsulates the MongoDB singleton logic without using globals."""
-
-#     _instance: Optional[MongoDB] = None
+#     _singleton_instance: Optional[MongoDBInstance] = None
 
 #     @classmethod
-#     def init_mongo(cls, uri: str, database_name: str) -> None:
-#         if cls._instance is None:
-#             cls._instance = MongoDB(uri, database_name)
+#     def connect(
+#         cls, uri: str, db_name: str, timeoutMS: Optional[int] = None
+#     ) -> Database:
+#         """Legacy singleton connect method."""
+#         cls._singleton_instance = MongoDBInstance(uri, db_name, timeoutMS)
+#         return cls._singleton_instance.get_database()
 
 #     @classmethod
-#     def get_mongo(cls) -> MongoDB:
-#         if cls._instance is None:
-#             raise RuntimeError(
-#                 "MongoDB not initialized. Call MongoDBManager.init_mongo first."
-#             )
-#         return cls._instance
+#     def get_database(cls) -> Database:
+#         """Legacy singleton get_database method."""
+#         if cls._singleton_instance is None:
+#             raise ValueError("No database connection. Call connect() first.")
+#         return cls._singleton_instance.get_database()
 
 #     @classmethod
 #     def close(cls) -> None:
-#         if cls._instance:
-#             cls._instance.close()
-#             cls._instance = None
+#         """Legacy singleton close method."""
+#         if cls._singleton_instance is not None:
+#             cls._singleton_instance.close()
+#             cls._singleton_instance = None
+
+#     @classmethod
+#     def check_health(cls) -> bool:
+#         """Legacy singleton health check method."""
+#         if cls._singleton_instance is None:
+#             return False
+#         return cls._singleton_instance.check_health()

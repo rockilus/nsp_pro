@@ -1,0 +1,27 @@
+/* Main Container */
+.request-calendar {
+  width: 100%;
+  font-family: 'Inter', Arial, sans-serif;
+  overflow: visible;
+}
+
+/* Scrollbar styling - aligned with ShiftDemandTable */
+.request-calendar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.request-calendar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.request-calendar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  transition: background 0.2s ease-in-out;
+}
+
+.request-calendar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}

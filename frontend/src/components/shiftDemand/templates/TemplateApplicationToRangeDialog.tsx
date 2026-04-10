@@ -1,0 +1,319 @@
+/**
+ * Template Application to Date Range Dialog
+ *
+ * Dialog for applying a template to a specific date range with:
+ * - Date range selection (start and end dates)
+ * - Overwrite existing demands option
+ * - Preview of application impact
+ * - Warning messages about overwriting
+ */
+
+import React, { useState, useMemo } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Box,
+  Typography,
+  FormControlLabel,
+  Switch,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs, { Dayjs } from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import { useTranslation } from '../../../app/i18n/client';
+
+// Configure dayjs for UTC handling
+dayjs.extend(utc);
+dayjs.extend(timezone);
+import {
+  ShiftDemandTemplateDTO,
+  ApplyTemplateToDateRangeDTO,
+  TemplateApplicationResult,
+  TemplateType,
+} from '../../../types/shift-demand-template';
+
+interface TemplateApplicationToRangeDialogProps {
+  lng: string;
+  open: boolean;
+  onClose: () => void;
+  template: ShiftDemandTemplateDTO;
+  teamId: string;
+  onApplicationComplete: (result: TemplateApplicationResult) => void;
+  onError: (error: string) => void;
+  onApplyTemplate: (request: ApplyTemplateToDateRangeDTO) => Promise<TemplateApplicationResult>;
+}
+
+export default function TemplateApplicationToRangeDialog({
+  lng,
+  open,
+  onClose,
+  template,
+  teamId,
+  onApplicationComplete,
+  onError,
+  onApplyTemplate,
+}: TemplateApplicationToRangeDialogProps) {
+  const { t } = useTranslation(lng, 'shift-demand-templates');
+
+  // State management
+  // Default start date one month from today (UTC) and end date defaults to same
+  const defaultStart = dayjs.utc().add(1, 'month').startOf('day');
+  const [startDate, setStartDate] = useState<Dayjs | null>(defaultStart);
+  const [endDate, setEndDate] = useState<Dayjs | null>(defaultStart);
+  const [overwriteExisting, setOverwriteExisting] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  // Validation and preview calculations
+  const validation = useMemo(() => {
+    const errors: string[] = [];
+
+    if (!startDate || !endDate) {
+      errors.push(t('date_range_required'));
+    } else {
+      if (endDate.isBefore(startDate)) {
+        errors.push(t('end_date_before_start_date'));
+      }
+
+      // Start date must not be in the past (compare to UTC start of today)
+      if (startDate.isBefore(dayjs.utc().startOf('day'))) {
+        errors.push(t('start_date_in_past'));
+      }
+
+      const daysDiff = endDate.diff(startDate, 'days') + 1;
+      if (daysDiff > 365) {
+        errors.push(t('date_range_too_long'));
+      }
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }, [startDate, endDate, t]);
+
+  const previewData = useMemo(() => {
+    if (!startDate || !endDate || !validation.isValid) return null;
+
+    const totalDays = endDate.diff(startDate, 'days') + 1;
+    const weekCount = Math.ceil(totalDays / 7);
+
+    return {
+      totalDays,
+      weekCount,
+      templateWeeks: template.weeksData.length,
+      templateType: template.templateType,
+      estimatedDemands: Math.ceil(totalDays / 7) * template.weeksData.length * 2, // Rough estimate
+    };
+  }, [startDate, endDate, template, validation.isValid]);
+
+  // Event handlers
+  const handleStartDateChange = (newDate: Dayjs | null) => {
+    // Always work in UTC to avoid timezone issues
+    const utcDate = newDate ? dayjs.utc(newDate.format('YYYY-MM-DD')) : null;
+    setStartDate(utcDate);
+    // Auto-adjust end date if it becomes invalid
+    if (utcDate && endDate && endDate.isBefore(utcDate)) {
+      // Ensure end date is on or after the new start date — make it the same day
+      setEndDate(utcDate);
+    }
+  };
+
+  const handleEndDateChange = (newDate: Dayjs | null) => {
+    // Always work in UTC to avoid timezone issues
+    const utcDate = newDate ? dayjs.utc(newDate.format('YYYY-MM-DD')) : null;
+    setEndDate(utcDate);
+  };
+
+  const handleApply = async () => {
+    if (!validation.isValid || !startDate || !endDate) return;
+
+    setLoading(true);
+    try {
+      const request: ApplyTemplateToDateRangeDTO = {
+        templateId: template.id,
+        startDate: startDate.startOf('day').valueOf(), // Already UTC, so just get start of day
+        endDate: endDate.endOf('day').valueOf(), // Already UTC, so just get end of day
+        overwriteExisting,
+      };
+
+      // Debug logging for timezone verification
+      console.log('Template Application - UTC Dates:', {
+        startDateISO: startDate.toISOString(),
+        endDateISO: endDate.toISOString(),
+        startTimestamp: request.startDate,
+        endTimestamp: request.endDate,
+        startDateFromTimestamp: new Date(request.startDate).toISOString(),
+        endDateFromTimestamp: new Date(request.endDate).toISOString(),
+      });
+
+      const result = await onApplyTemplate(request);
+
+      onApplicationComplete(result);
+      onClose();
+    } catch (error) {
+      console.error('Failed to apply template to date range:', error);
+      onError(error instanceof Error ? error.message : t('template_application_failed'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (!loading) {
+      onClose();
+    }
+  };
+
+  const formatTemplateType = (type: TemplateType): string => {
+    switch (type) {
+      case TemplateType.STANDARD:
+        return t('template_type_standard');
+      case TemplateType.EVEN_ODD:
+        return t('template_type_even_odd');
+      default:
+        return type;
+    }
+  };
+
+  return (
+    <Dialog
+      data-testid="template-application-dialog"
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: { minHeight: '500px' },
+      }}
+    >
+      <DialogTitle>
+        <Typography variant="h6">{t('apply_template')}</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          {t('template_name')}: <strong>{template.name}</strong> • {t('template_type')}:{' '}
+          <strong>{formatTemplateType(template.templateType)}</strong> • {t('weeks')}:{' '}
+          <strong>{template.weeksData.length}</strong>
+        </Typography>
+      </DialogTitle>
+
+      <DialogContent>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {/* Preview */}
+          {previewData && (
+            <Box>
+              {template.templateType === TemplateType.STANDARD && (
+                <Typography variant="body2" color="text.secondary">
+                  {t('standard_template_range_explanation', {
+                    weeks: template.weeksData.length,
+                  })}
+                </Typography>
+              )}
+
+              {template.templateType === TemplateType.EVEN_ODD && (
+                <Typography variant="body2" color="text.secondary">
+                  {t('even_odd_template_range_explanation')}
+                </Typography>
+              )}
+            </Box>
+          )}
+          {/* Date Range Selection */}
+          <Box>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <DatePicker
+                label={t('start_date')}
+                value={startDate}
+                onChange={handleStartDateChange}
+                timezone="UTC"
+                minDate={dayjs.utc().startOf('day')}
+                slotProps={{
+                  textField: {
+                    error: validation.errors.some(
+                      (e) => e.includes('required') || e.includes('before'),
+                    ),
+                    sx: { minWidth: 200 },
+                    inputProps: {
+                      'data-testid': 'template-application-start-date',
+                    },
+                  },
+                }}
+              />
+              <DatePicker
+                label={t('end_date')}
+                value={endDate}
+                onChange={handleEndDateChange}
+                minDate={startDate || undefined}
+                timezone="UTC"
+                slotProps={{
+                  textField: {
+                    error: validation.errors.some(
+                      (e) => e.includes('required') || e.includes('before'),
+                    ),
+                    sx: { minWidth: 200 },
+                    inputProps: {
+                      'data-testid': 'template-application-end-date',
+                    },
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+
+          {/* Options */}
+          <Box>
+            <FormControlLabel
+              data-testid="template-application-overwrite-switch"
+              control={
+                <Switch
+                  checked={overwriteExisting}
+                  onChange={(e) => setOverwriteExisting(e.target.checked)}
+                  color="warning"
+                />
+              }
+              label={t('overwrite_existing_demands')}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              {overwriteExisting
+                ? t('overwrite_range_warning')
+                : t('merge_template_with_existing_warning')}
+            </Typography>
+          </Box>
+
+          {/* Validation Errors */}
+          {validation.errors.length > 0 && (
+            <Alert severity="error">
+              <ul style={{ margin: 0, paddingLeft: 20 }}>
+                {validation.errors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
+        </Box>
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, pb: 3 }}>
+        <Button
+          data-testid="template-application-cancel-button"
+          onClick={handleClose}
+          disabled={loading}
+        >
+          {t('cancel')}
+        </Button>
+        <Button
+          data-testid="template-application-apply-button"
+          onClick={handleApply}
+          variant="contained"
+          disabled={!validation.isValid || loading}
+          startIcon={loading ? <CircularProgress size={16} /> : null}
+        >
+          {loading ? t('applying') : t('apply')}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}

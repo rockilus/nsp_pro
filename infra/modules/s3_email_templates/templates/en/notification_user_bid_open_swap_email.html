@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{subject}</title>
+    <link rel="stylesheet" href="../styles/email_common.css">
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">New Bid on Your Open Swap</div>
+        <div class="email-body">
+            <p>Hi {recipient_name},</p>
+            <p><strong>{bidder_name}</strong> has bid on your open swap request for shift <strong>{shift_name}</strong> on <strong>{date}</strong> in team <strong>{team_name}</strong>.</p>
+            <p>Click the button below to review the bid:</p>
+            <a href="{notification_link}" class="cta-button">View Swaps</a>
+        </div>
+        <div class="email-footer">
+            <p>If you have any questions, feel free to reach out to us.</p>
+            <p>Thank you,<br>The Rockilus Team</p>
+        </div>
+    </div>
+</body>
+</html>

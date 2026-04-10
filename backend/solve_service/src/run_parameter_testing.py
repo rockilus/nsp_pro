@@ -1,8 +1,11 @@
 import json
 import os
-from typing import Dict, List
 
-from shared.schemas import EngineInputs, EngineInputsAugmented, SolverParams
+from shared.schemas.core import (
+    EngineInputs,
+    EngineInputsAugmented,
+    SolverParams,
+)
 
 from core_to_engine_service import core_to_engine_inputs
 from engine import Engine
@@ -13,15 +16,15 @@ from solver_parameter_tuning.parameter_testing_v2 import run_parameter_tests
 # from math import inf
 
 
-params_test_limits: Dict[str, List] = {
+params_test_limits: dict[str, list] = {
     "interleave_search": [True, False],
 }
 
-params_test_other: Dict[str, List] = {
+params_test_other: dict[str, list] = {
     "random_seed": [None, 1],
 }
 
-params_test_mutlithread: Dict[str, List] = {  # done
+params_test_mutlithread: dict[str, list] = {  # done
     "num_search_workers": [1, 2, 4, 8],
     "subsolvers": [
         None,  # Best
@@ -46,13 +49,13 @@ params_test_mutlithread: Dict[str, List] = {  # done
 }
 
 
-params_test_presolve: Dict[str, List] = {  # done
+params_test_presolve: dict[str, list] = {  # done
     "max_presolve_iterations": [1, 2, 3],  # 3
     # "cp_model_probing_level": [2, 3],  # 3
     # "detect_table_with_cost": [True, False],  # True
 }
 
-params_test_restart: Dict[str, List] = {  # done
+params_test_restart: dict[str, list] = {  # done
     # "restart_algorithms": [
     #     None,
     #     ["LUBY_RESTART"],  # Best
@@ -62,11 +65,11 @@ params_test_restart: Dict[str, List] = {  # done
     "restart_period": [40, 50, 60],  # 50
 }
 
-params_test_lp_relax: Dict[str, List] = {
+params_test_lp_relax: dict[str, list] = {
     "linearization_level": [0, 1],
     "cut_level": [1, 2],
 }
-params_test_lns: Dict[str, List] = {
+params_test_lns: dict[str, list] = {
     "lns_initial_difficulty": [0.4, 0.5],
     "lns_initial_deterministic_limit": [0.1, 0.15, 0.2],
     # "use_symmetry_in_lp": [True, False],
@@ -74,20 +77,20 @@ params_test_lns: Dict[str, List] = {
     "diversify_lns_params": [True, False],
 }
 
-params_test_cp: Dict[str, List] = {
+params_test_cp: dict[str, list] = {
     "violation_ls_compound_move_probability": [0.5, 0.6, 0.7, 0.8],
     "feasibility_jump_var_perburbation_range_ratio": [0.05, 0.1, 0.2],
     "instantiate_all_variables": [True, False],
     "optimize_with_core": [True, False],
 }
 
-params_test_max_sat: Dict[str, List] = {
+params_test_max_sat: dict[str, list] = {
     "core_minimization_level": [1, 2],
 }
 
 
 # pylint: disable=R0801
-params_tests_all: Dict[str, List] = {
+params_tests_all: dict[str, list] = {
     # LIMITS
     "interleave_search": [True, False],
     # OTHER PARAMETERs
@@ -174,7 +177,7 @@ params_tests_all: Dict[str, List] = {
     "core_minimization_level": [1, 2],
 }
 
-parameter_tests: Dict[str, List] = {
+parameter_tests: dict[str, list] = {
     # **params_test_mutlithread,
     # **params_test_presolve,
     # **params_test_restart,
@@ -184,7 +187,7 @@ parameter_tests: Dict[str, List] = {
     # **params_test_max_sat,
 }
 
-solver_params_list: List[SolverParams] = [
+solver_params_list: list[SolverParams] = [
     # SolverParams(
     #     core_minimization_level=1,
     #     cp_model_probing_level=2,
@@ -306,7 +309,7 @@ if __name__ == "__main__":
         current_folder,
         "solver_parameter_tuning/parameter_test_output",
     )
-    with open(file_path_test_data, "r", encoding="utf-8") as f:
+    with open(file_path_test_data, encoding="utf-8") as f:
         engine_inputs = EngineInputs.from_dict(json.load(f))
     ei_augmented = EngineInputsAugmented.from_engine_inputs(
         engine_inputs, penalties, model_config

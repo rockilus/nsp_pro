@@ -1,21 +1,26 @@
 from datetime import date
-from typing import Dict, List, Tuple
 
-from shared.schemas import DailyShiftDemand, LinkShift, Shift, Worker, WorkerDates
+from shared.schemas.core import (
+    LinkShift,
+    Shift,
+    ShiftDemandNew,
+    Worker,
+    WorkerDates,
+)
 
 
 # pylint: disable=too-many-arguments
 def build_link_shift_pairs(
-    workers_not_deleted: List[Worker],
-    worker_ids_to_worker_dates: Dict[str, WorkerDates],
-    shifts_not_deleted: List[Shift],
-    link_shifts: List[LinkShift],
-    daily_shift_demands: List[DailyShiftDemand],
+    workers_not_deleted: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts_not_deleted: list[Shift],
+    link_shifts: list[LinkShift],
+    daily_shift_demands: list[ShiftDemandNew],
     penalty: int,
-) -> List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]]:
-    out: List[Tuple[Tuple[str, str, str], Tuple[str, str, str], str, int]] = []
+) -> list[tuple[tuple[str, str, str], tuple[str, str, str], str, int]]:
+    out: list[tuple[tuple[str, str, str], tuple[str, str, str], str, int]] = []
 
-    shift_demand_dates: Dict[str, List[date]] = {}
+    shift_demand_dates: dict[str, list[date]] = {}
     for demand in daily_shift_demands:
         if demand.shift_id not in shift_demand_dates:
             shift_demand_dates[demand.shift_id] = []

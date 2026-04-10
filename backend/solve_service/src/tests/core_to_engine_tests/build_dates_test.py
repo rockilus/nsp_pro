@@ -1,11 +1,11 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
-from shared.schemas import (
+from shared.schemas.core import (
     Assignment,
+    AssignmentSource,
     EngineInputsAugmented,
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
     WorkerDates,
 )
@@ -21,7 +21,7 @@ class TestBuildDates:
     @pytest.mark.parametrize("sample_data", test_data_set_1)
     def test_build_dates(self, sample_data: EngineInputsAugmented) -> None:
         schedule = sample_data.schedule
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
 
@@ -51,6 +51,7 @@ class TestBuildDates:
                 shift_id="s0",
                 date=date_a_0,
                 fixed=True,
+                source=AssignmentSource.MANUAL,
             ),
             Assignment(
                 id="a1",
@@ -60,6 +61,7 @@ class TestBuildDates:
                 shift_id="s1",
                 date=date_a_1,
                 fixed=True,
+                source=AssignmentSource.MANUAL,
             ),
         ]
 
@@ -86,16 +88,15 @@ class TestBuildDates:
             team_id="t0",
             start_date=date(2025, 1, 1),
             end_date=date(2025, 1, 1),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED,
             status=ScheduleStatus.CAMPAIGN,
             missing_coverage_dates=[],
             constraint_build_ids=[],
             quick_staffings=[],
-            last_modified_dates=datetime.now(timezone.utc),
-            last_updated_dsds=None,
+            created_by="user1",
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )
-        fixed_assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        fixed_assignments = sample_data.as_hist + sample_data.as_campaign_fixed
 
         dates_hist, dates_campaign = build_dates(schedule, fixed_assignments)
 
@@ -114,7 +115,7 @@ class TestBuildWorkerIdsToWorkerDates:
     ) -> None:
         schedule = sample_data.schedule
         workers = sample_data.workers
-        assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        assignments = sample_data.as_hist + sample_data.as_campaign_fixed
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -146,6 +147,7 @@ class TestBuildWorkerIdsToWorkerDates:
                 shift_id="s0",
                 date=date(2024, 12, 31),
                 fixed=True,
+                source=AssignmentSource.MANUAL,
             ),
             Assignment(
                 id="a1",
@@ -155,6 +157,7 @@ class TestBuildWorkerIdsToWorkerDates:
                 shift_id="s0",
                 date=date(2024, 12, 30),
                 fixed=True,
+                source=AssignmentSource.MANUAL,
             ),
         ]
         dates_campaign = [
@@ -182,7 +185,7 @@ class TestBuildWorkerIdsToWorkerDates:
         schedule = sample_data.schedule
         workers = sample_data.workers
         workers[0].employment_end_date = date(2025, 1, 15)
-        assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        assignments = sample_data.as_hist + sample_data.as_campaign_fixed
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)
@@ -207,7 +210,7 @@ class TestBuildWorkerIdsToWorkerDates:
         schedule = sample_data.schedule
         workers = sample_data.workers
         workers[0].deleted = True
-        assignments = sample_data.as_hist + sample_data.as_wip_fixed
+        assignments = sample_data.as_hist + sample_data.as_campaign_fixed
         dates_campaign = [
             schedule.start_date + timedelta(days=i)
             for i in range((schedule.end_date - schedule.start_date).days + 1)

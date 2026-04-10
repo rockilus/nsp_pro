@@ -1,39 +1,25 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-// Stores
-import { useTeamStore } from "../../../../providers/team-store-provider";
-// Actions
-import { getSelectedTeamId } from "../../../lib/team";
+import React from 'react';
 // Components
-import ShiftTab from "../../../../components/shifts/shift-tab";
+import ShiftTab from '../../../../components/shifts/shift-tab';
+import { AccessGuard } from '@/components/access/access-guard';
+// Context
+import { useTeam } from '@/context/TeamContext';
 // Styles
-import "../../../../styles/page.css";
+import '../../../../styles/page.css';
 
-export default function Page({
-  params: { lng },
-}: {
-  params: {
-    lng: string;
-  };
-}) {
-  const selectedTeamId = useTeamStore((state) => state.selectedTeamId);
-  const setSelectedTeamId = useTeamStore((state) => state.setSelectedTeamId);
-
-  useEffect(() => {
-    const fetchTeamId = async () => {
-      if (!selectedTeamId) {
-        const teamId = await getSelectedTeamId();
-        setSelectedTeamId(teamId);
-      }
-    };
-
-    fetchTeamId();
-  }, [selectedTeamId, setSelectedTeamId]);
+export default function Page({ params }: { params: Promise<{ lng: string }> }) {
+  const { selectedTeam } = useTeam();
+  const { lng } = React.use(params as Promise<{ lng: string }>);
 
   return (
-    <div className="page-layout">
-      <ShiftTab lng={lng} selectedTeamId={selectedTeamId} />
-    </div>
+    selectedTeam && (
+      <AccessGuard route="/shifts" teamWithMembership={selectedTeam}>
+        <div className="page-layout">
+          <ShiftTab lng={lng} selectedTeamId={selectedTeam?.team.id || null} />
+        </div>
+      </AccessGuard>
+    )
   );
 }

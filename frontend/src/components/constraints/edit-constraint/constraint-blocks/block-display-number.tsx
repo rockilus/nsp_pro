@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // Components
-import BlockEditQty from "./block-edit-qty";
-import GetBlockNameLabel from "../../../data-display/get-block-name-label";
-import PopoverBoxAnchorElOver from "../../../inputs/popover-box-anchor-el-over";
+import BlockEditQty from './block-edit-qty';
+import GetBlockNameLabel from '../../../data-display/get-block-name-label';
+import PopoverBoxAnchorElOver from '../../../inputs/popover-box-anchor-el-over';
 import {
   blockDisplayName,
   blockDisplayPlaceholder,
   blockDislayValue,
-} from "../../../data-display/block-display";
+} from '../../../data-display/block-display';
 // Types
-import { TemplateBlockT, BlockT } from "../../../../types/constraint";
+import { TemplateBlockT, BlockT } from '../../../../types/constraint';
 
 export default function BlockDisplayNumber({
   lng,
@@ -33,10 +33,18 @@ export default function BlockDisplayNumber({
   const blockDisplay = () => {
     return (
       <div>
-        {block && block.value !== ""
+        {block && block.value !== ''
           ? blockDislayValue(block.value as number)
-          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
-        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
+          : blockDisplayPlaceholder(
+              templateBlock.placeholder,
+              error,
+              `constraint-block-placeholder-${index}`,
+            )}
+        {blockDisplayName(
+          GetBlockNameLabel(lng, templateBlock.name),
+          error,
+          `constraint-block-name-${index}`,
+        )}
       </div>
     );
   };
@@ -61,6 +69,7 @@ export default function BlockDisplayNumber({
       }
       open={open}
       setOpen={setOpen}
+      data-testid={`number-block-${templateBlock.name}-${index}`}
     />
   );
 }

@@ -1,10 +1,11 @@
 from typing import List
 
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
 from shared.database.schemas.stats_header import (
     StatsHeaderSchema,
 )
-from shared.schemas.schemas.stats import (
+from shared.schemas.core.stats import (
     HeaderUnitOptions,
     StatsHeader,
     StatsUnitOptions,
@@ -14,8 +15,8 @@ from shared.schemas.schemas.stats import (
 class StatsHeaderRepository(BaseRepository[StatsHeaderSchema]):
     """Repository for stats header documents using PyMongo."""
 
-    def __init__(self):
-        super().__init__("stats_headers", StatsHeaderSchema)
+    def __init__(self, database_interface: DatabaseInterface):
+        super().__init__(database_interface, "stats_headers", StatsHeaderSchema)
 
     def create_stats_header(self, stats_header: StatsHeader) -> StatsHeader:
         """Create a new stats header."""

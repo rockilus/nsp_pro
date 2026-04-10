@@ -1,245 +1,185 @@
-import React, { useState, useEffect } from "react";
-import { useTranslation } from "../../app/i18n/client";
-// MUI
-import Button from "@mui/material/Button";
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../../app/i18n/client';
+// shadcn/ui
+import { Button } from '@/components/ui/button';
 // Components
-import CoverageCampaignConfig from "./coverage-campaign-config";
-import ScheduleSelector from "./schedule-selector";
-import ConstraintSelector from "./constraint-selector";
+import CampaignParametersPanel from './campaign-parameters-panel';
+import ConstraintSelector from './constraint-selector';
+import WorkTimeTable from './work-time-table';
+import MobileNavAppBar from '../app-bar/mobile-nav-app-bar';
+// Hooks
+import { useIsMobile } from '../../hooks/useIsMobile';
 // Skeletons
-import TablesSkeleton from "../skeletons/tables-skeleton";
-// Actions
-import {
-  getCampaignTabData,
-  addCoverageSelector,
-  updateCoverageSelector,
-  deleteCoverageSelector,
-} from "../../app/lib/campaign";
-import {
-  addSchedule,
-  updateSchedule,
-  getWorkTimeTable,
-} from "../../app/lib/schedule";
+import TablesSkeleton from '../skeletons/tables-skeleton';
+// New hooks (authenticated)
+import { useGetCampaignTabData, useGetCampaignTabDataNoSolver } from '../../hooks/useCampaign';
+// Hooks
+import { useCreateSchedule, useUpdateSchedule, useGetWorkTimeTable } from '../../hooks/useSchedule';
+import { clearGenerationSelection } from '../../app/lib/hooks/useGenerationSelection';
 // Styles
-import "../../styles/tab-container-styles.css";
+import '../../styles/tab-container-styles.css';
 // Types
-import { CoverageSelectorT } from "../../types/campaign";
-import { CoverageT } from "../../types/coverage";
-import { ScheduleT, WorkTimeTableT } from "../../types/schedule";
-import { ConstraintT } from "../../types/constraint";
+import { ScheduleT, WorkTimeTableT } from '../../types/schedule';
+import { ConstraintT } from '../../types/constraint';
+import { TeamWithMembership } from '@/types/team';
 
 export default function CampaignTab({
   lng,
-  selectedTeamId,
+  teamWithMembership,
 }: {
   lng: string;
-  selectedTeamId: string | null;
+  teamWithMembership: TeamWithMembership;
 }) {
-  const { t } = useTranslation(lng, "campaign-page");
+  const { t } = useTranslation(lng, 'campaign-page');
+  const isMobile = useIsMobile();
+
+  // Campaign hooks
+  const getCampaignTabData = useGetCampaignTabData();
+  const getCampaignTabDataNoSolver = useGetCampaignTabDataNoSolver();
+
+  // Schedule hooks
+  const createSchedule = useCreateSchedule();
+  const updateSchedule = useUpdateSchedule();
+  const getWorkTimeTable = useGetWorkTimeTable();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(
-    null
-  );
+  const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(null);
   const [schedulesValidated, setSchedulesValidated] = useState<ScheduleT[]>([]);
-  const [coverages, setCoverages] = useState<CoverageT[]>([]);
   const [constraints, setConstraints] = useState<ConstraintT[]>([]);
-  const [coverageSelectors, setCoverageSelectors] = useState<
-    CoverageSelectorT[]
-  >([]);
-  const [workTimeTable, setWorkTimeTable] = useState<WorkTimeTableT | null>(
-    null
-  );
+  const [workTimeTable, setWorkTimeTable] = useState<WorkTimeTableT | null>(null);
 
   //////////////////////////
   // Schedule Actions
   //////////////////////////
 
   const handleAddSchedule = async () => {
-    if (!selectedTeamId) {
-      throw new Error("Team not selected");
+    try {
+      const newSchedule = await createSchedule(teamWithMembership.team.id);
+      clearGenerationSelection(newSchedule.id);
+      setScheduleCampaign(newSchedule);
+      const newWorkTimeTable = await getWorkTimeTable(newSchedule.id, teamWithMembership.team.id);
+      setWorkTimeTable(newWorkTimeTable);
+    } catch (error) {
+      console.error('Failed to create schedule:', error);
+      // TODO: Add user-facing error notification
     }
-    const newSchedule = await addSchedule(selectedTeamId);
-    setScheduleCampaign(newSchedule);
-    const newWorkTimeTable = await getWorkTimeTable(
-      newSchedule.id,
-      selectedTeamId
-    );
-    setWorkTimeTable(newWorkTimeTable);
   };
 
   const handleUpdateSchedule = async (schedule: ScheduleT) => {
-    const { schedule: newSchedule, coverageSelectors: newCoverageSelectors } =
-      await updateSchedule(schedule);
-    setScheduleCampaign(newSchedule);
-    setCoverageSelectors((prevCSs) =>
-      prevCSs.map((cs) => {
-        const newCS = newCoverageSelectors.find((newCS) => newCS.id === cs.id);
-        return newCS ? newCS : cs;
-      })
-    );
-    const newWorkTimeTable = await getWorkTimeTable(
-      newSchedule.id,
-      newSchedule.teamId
-    );
-    setWorkTimeTable(newWorkTimeTable);
-  };
-
-  //////////////////////////
-  // Coverage Selector Actions
-  //////////////////////////
-
-  const handleAddCoverageSelector = async (
-    coverageSelector: CoverageSelectorT
-  ) => {
-    if (!selectedTeamId) {
-      throw new Error("Team not selected");
-    }
-    const newCoverageSelector = await addCoverageSelector(
-      coverageSelector,
-      selectedTeamId
-    );
-    setCoverageSelectors([...coverageSelectors, newCoverageSelector]);
-    const newWorkTimeTable = await getWorkTimeTable(
-      newCoverageSelector.scheduleId,
-      selectedTeamId
-    );
-    setWorkTimeTable(newWorkTimeTable);
-  };
-
-  const handleUpdateCoverageSelector = async (
-    coverageSelector: CoverageSelectorT
-  ) => {
-    if (!selectedTeamId) {
-      throw new Error("Team not selected");
-    }
-    const newCoverageSelector = await updateCoverageSelector(
-      coverageSelector,
-      selectedTeamId
-    );
-    setCoverageSelectors((prevCoverageSelectors) =>
-      prevCoverageSelectors.map((coverageSelector) =>
-        coverageSelector.id === newCoverageSelector.id
-          ? newCoverageSelector
-          : coverageSelector
-      )
-    );
-    const newWorkTimeTable = await getWorkTimeTable(
-      newCoverageSelector.scheduleId,
-      selectedTeamId
-    );
-    setWorkTimeTable(newWorkTimeTable);
-  };
-
-  const handleDeleteCoverageSelector = async (coverageSelectorId: string) => {
-    if (!selectedTeamId) {
-      throw new Error("Team not selected");
-    }
-    await deleteCoverageSelector(coverageSelectorId, selectedTeamId);
-    setCoverageSelectors((prevCoverageSelectors) =>
-      prevCoverageSelectors.filter(
-        (coverageSelector) => coverageSelector.id !== coverageSelectorId
-      )
-    );
-    if (scheduleCampaign) {
-      const newWorkTimeTable = await getWorkTimeTable(
-        scheduleCampaign.id,
-        selectedTeamId
-      );
+    try {
+      const newSchedule = await updateSchedule(schedule);
+      setScheduleCampaign(newSchedule);
+      const newWorkTimeTable = await getWorkTimeTable(newSchedule.id, newSchedule.teamId);
       setWorkTimeTable(newWorkTimeTable);
+    } catch (error) {
+      console.error('Failed to update schedule:', error);
+      // TODO: Add user-facing error notification
     }
+  };
+
+  const handleDeadlineSet = (updatedSchedule: ScheduleT) => {
+    setScheduleCampaign(updatedSchedule);
+  };
+
+  const handleDeadlineExtended = (updatedSchedule: ScheduleT) => {
+    setScheduleCampaign(updatedSchedule);
+  };
+
+  const handleReminderSent = (updatedSchedule: ScheduleT) => {
+    setScheduleCampaign(updatedSchedule);
   };
 
   useEffect(() => {
     const fetchCampaignTabData = async () => {
       setIsLoading(true);
-      if (selectedTeamId) {
-        const out: {
-          scheduleCampaign: ScheduleT | null;
-          schedulesValidated: ScheduleT[];
-          coverages: CoverageT[];
-          constraints: ConstraintT[];
-          coverageSelectors: CoverageSelectorT[];
-        } = await getCampaignTabData(selectedTeamId);
-        if (out) {
-          const {
-            scheduleCampaign: fetchedScheduleCampaign,
-            schedulesValidated: fetchedSchedulesValidated,
-            coverages: fetchedCoverages,
-            constraints: fetchedConstraints,
-            coverageSelectors: fetchedCoverageSelectors,
-          } = out;
-          setScheduleCampaign(fetchedScheduleCampaign);
-          setSchedulesValidated(fetchedSchedulesValidated);
-          setCoverages(fetchedCoverages);
-          setConstraints(fetchedConstraints);
-          setCoverageSelectors(fetchedCoverageSelectors);
+
+      try {
+        if (teamWithMembership.team.useSolver) {
+          const data = await getCampaignTabData(teamWithMembership.team.id);
+          setScheduleCampaign(data.scheduleCampaign);
+          setSchedulesValidated(data.schedulesValidated);
+          setConstraints(data.constraints);
+        } else {
+          const data = await getCampaignTabDataNoSolver(teamWithMembership.team.id);
+          setScheduleCampaign(data.scheduleCampaign);
+          setSchedulesValidated(data.schedulesValidated);
         }
+      } catch (error) {
+        console.error('Failed to fetch campaign tab data:', error);
+        // TODO: Add user-facing error notification
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
+
     fetchCampaignTabData();
-  }, [selectedTeamId]);
+  }, [teamWithMembership, getCampaignTabData, getCampaignTabDataNoSolver]);
 
   useEffect(() => {
-    if (scheduleCampaign && selectedTeamId && !workTimeTable) {
+    if (scheduleCampaign && !workTimeTable) {
       const fetchWorkTimeTable = async () => {
-        const newWorkTimeTable = await getWorkTimeTable(
-          scheduleCampaign.id,
-          selectedTeamId
-        );
-        setWorkTimeTable(newWorkTimeTable);
+        try {
+          const newWorkTimeTable = await getWorkTimeTable(
+            scheduleCampaign.id,
+            teamWithMembership.team.id,
+          );
+          setWorkTimeTable(newWorkTimeTable);
+        } catch (error) {
+          console.error('Failed to fetch work time table:', error);
+          // Handle error appropriately
+        }
       };
       fetchWorkTimeTable();
     }
-  }, [scheduleCampaign, selectedTeamId, workTimeTable]);
+  }, [scheduleCampaign, teamWithMembership, workTimeTable, getWorkTimeTable]);
 
   return (
-    <div className="tab-container">
-      {isLoading ? (
-        <TablesSkeleton numTables={3} numInternalRows={3} />
-      ) : scheduleCampaign ? (
-        <div>
-          <ScheduleSelector
-            lng={lng}
-            scheduleCampaign={scheduleCampaign}
-            schedulesValidated={schedulesValidated}
-            workTimeTable={workTimeTable}
-            handleUpdateSchedule={handleUpdateSchedule}
-          />
-          <div className="divider" />
-          <CoverageCampaignConfig
-            lng={lng}
-            schedule={scheduleCampaign}
-            coverageSelectors={coverageSelectors}
-            coverages={coverages}
-            handleAddCoverageSelector={handleAddCoverageSelector}
-            handleUpdateCoverageSelector={handleUpdateCoverageSelector}
-            handleDeleteCoverageSelector={handleDeleteCoverageSelector}
-          />
-          <div className="divider" />
-          <ConstraintSelector
-            lng={lng}
-            schedule={scheduleCampaign}
-            constraints={constraints}
-            handleUpdateSchedule={handleUpdateSchedule}
-          />
-        </div>
-      ) : (
-        <Button
-          variant="contained"
-          onClick={handleAddSchedule}
-          sx={{
-            paddingLeft: 0.3,
-            paddingRight: 1,
-            margin: "8px",
-            height: "35px",
-            textTransform: "none",
-          }}
-        >
-          {t("start_new_campaign")}
-        </Button>
-      )}
-    </div>
+    <>
+      {isMobile && <MobileNavAppBar lng={lng} />}
+      <div className="tab-container" data-testid="campaign-page-heading">
+        {isLoading ? (
+          <TablesSkeleton numTables={3} numInternalRows={3} />
+        ) : scheduleCampaign ? (
+          <div>
+            <CampaignParametersPanel
+              lng={lng}
+              scheduleCampaign={scheduleCampaign}
+              schedulesValidated={schedulesValidated}
+              handleUpdateSchedule={handleUpdateSchedule}
+              onDeadlineSet={handleDeadlineSet}
+              onDeadlineExtended={handleDeadlineExtended}
+              onReminderSent={handleReminderSent}
+            />
+            {workTimeTable && (
+              <div style={{ marginTop: '16px' }}>
+                <span className="title">{t('supply_and_demand')}</span>
+                {isMobile ? (
+                  <div style={{ overflowX: 'auto', width: '100%' }}>
+                    <WorkTimeTable lng={lng} data={workTimeTable} />
+                  </div>
+                ) : (
+                  <WorkTimeTable lng={lng} data={workTimeTable} />
+                )}
+              </div>
+            )}
+            {teamWithMembership.team.useSolver && (
+              <>
+                <div className="divider" />
+                <ConstraintSelector
+                  lng={lng}
+                  schedule={scheduleCampaign}
+                  constraints={constraints}
+                  handleUpdateSchedule={handleUpdateSchedule}
+                />
+              </>
+            )}
+          </div>
+        ) : (
+          <Button variant="default" onClick={handleAddSchedule} className="m-2 h-[35px]">
+            {t('start_new_campaign')}
+          </Button>
+        )}
+      </div>
+    </>
   );
 }

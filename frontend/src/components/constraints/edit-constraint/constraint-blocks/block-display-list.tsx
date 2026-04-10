@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 // Components
-import BlockEditList from "./block-edit-list";
-import GetBlockNameLabel from "../../../data-display/get-block-name-label";
-import PopoverBoxAnchorElOver from "../../../inputs/popover-box-anchor-el-over";
+import BlockEditList from './block-edit-list';
+import GetBlockNameLabel from '../../../data-display/get-block-name-label';
+import PopoverBoxAnchorElOver from '../../../inputs/popover-box-anchor-el-over';
 import {
   blockDisplayName,
   blockDisplayPlaceholder,
   blockDislayValue,
-} from "../../../data-display/block-display";
+} from '../../../data-display/block-display';
 // Types
-import { TemplateBlockT, BlockT } from "../../../../types/constraint";
+import { TemplateBlockT, BlockT } from '../../../../types/constraint';
 
 export default function BlockDisplayList({
   lng,
@@ -34,9 +34,17 @@ export default function BlockDisplayList({
     return (
       <div>
         {block && Array.isArray(block.value) && block.value.length !== 0
-          ? blockDislayValue(block.value.join(", "))
-          : blockDisplayPlaceholder(templateBlock.placeholder, error)}
-        {blockDisplayName(GetBlockNameLabel(lng, templateBlock.name), error)}
+          ? blockDislayValue(block.value.join(', '))
+          : blockDisplayPlaceholder(
+              templateBlock.placeholder,
+              error,
+              `constraint-block-placeholder-${index}`,
+            )}
+        {blockDisplayName(
+          GetBlockNameLabel(lng, templateBlock.name),
+          error,
+          `constraint-block-name-${index}`,
+        )}
       </div>
     );
   };

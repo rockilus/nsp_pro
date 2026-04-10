@@ -1,0 +1,27 @@
+.add-member-dialog-name {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.attach-worker-button {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #3c4043;
+  align-self: flex-start;
+  width: auto;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.attach-worker-button:hover {
+  text-decoration: underline;
+}
+
+.attach-worker-select {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}

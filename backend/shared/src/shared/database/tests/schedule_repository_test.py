@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-import pytest
+import pytest_asyncio
 
-from shared.database.database import MongoDB
+from shared.database.interface import DatabaseInterface
 from shared.database.repositories.schedule import (
     ScheduleRepository,
 )
@@ -10,9 +10,8 @@ from shared.database.schemas.schedule import (
     QuickStaffingSchema,
     ScheduleSchema,
 )
-from shared.schemas.schemas.schedule import (
+from shared.schemas.core.schedule import (
     Schedule,
-    ScheduleSolveStatus,
     ScheduleStatus,
 )
 
@@ -20,36 +19,40 @@ from shared.schemas.schemas.schedule import (
 class TestScheduleRepository:
     repo: ScheduleRepository
 
-    @pytest.fixture(autouse=True)
-    def setup(self, mongodb_container):
+    @pytest_asyncio.fixture(autouse=True)
+    async def setup(self, mongodb_container: DatabaseInterface):
         """Setup test environment before each test."""
         assert mongodb_container is not None
-        db = MongoDB.get_database()
+        db = mongodb_container.get_database()
 
         # Create repository
-        self.repo = ScheduleRepository()
+        self.repo = ScheduleRepository(database_interface=mongodb_container)
 
         # Yield to test
         yield
 
         # Cleanup
-        db.drop_collection(self.repo.collection)
+        try:
+            collection = db.get_collection("schedules")  # type: ignore
+            collection.delete_many({})
+        except Exception:  # pylint: disable=broad-except
+            # If collection doesn't exist, that's fine
+            pass
 
     def test_create_schedule(self):
         """Test creating a schedule."""
         schedule = Schedule(
-            id=None,
+            id="test_id",
             team_id="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).date(),
-            last_modified_dates=datetime.now(timezone.utc),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED,
             status=ScheduleStatus.CAMPAIGN,
             missing_coverage_dates=[],
             constraint_build_ids=[],
             quick_staffings=[],
-            last_updated_dsds=None,
+            created_by="user1",
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
 
         result = self.repo.create_schedule(schedule)
@@ -67,18 +70,17 @@ class TestScheduleRepository:
             team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-            last_modified_dates=datetime.now(timezone.utc).timestamp(),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
             constraint_builds=[],
             quick_staffings=[],
-            last_updated_dsds=None,
+            created_at=datetime.now(timezone.utc).timestamp(),
+            updated_at=datetime.now(timezone.utc).timestamp(),
+            created_by="user1",
         )
         created = self.repo.create(schedule)
 
-        found = self.repo.get_schedule_by_id(created.id)
+        found = self.repo.get_schedule_by_id(str(created.id))
 
         assert found is not None
         assert found.id == created.id
@@ -90,39 +92,36 @@ class TestScheduleRepository:
             team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-            last_modified_dates=datetime.now(timezone.utc).timestamp(),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
             constraint_builds=[],
             quick_staffings=[],
-            last_updated_dsds=None,
+            created_at=datetime.now(timezone.utc).timestamp(),
+            updated_at=datetime.now(timezone.utc).timestamp(),
+            created_by="user1",
         )
         created = self.repo.create(schedule)
 
         updated_schedule = Schedule(
-            id=created.id,
+            id=str(created.id),
             team_id="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).date(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).date(),
-            last_modified_dates=datetime.now(timezone.utc),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.SOLVED,
             status=ScheduleStatus.VALIDATED,
             missing_coverage_dates=[],
             constraint_build_ids=[],
             quick_staffings=[],
-            last_updated_dsds=None,
+            created_by="user1",
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
 
         result = self.repo.update_schedule(updated_schedule)
 
-        assert result.solve_status == ScheduleSolveStatus.SOLVED
         assert result.status == ScheduleStatus.VALIDATED
 
         from_db = self.repo.collection.find_one({"_id": created.id})
-        assert from_db["solve_status"] == ScheduleSolveStatus.SOLVED.value
+        assert from_db is not None
         assert from_db["status"] == ScheduleStatus.VALIDATED.value
 
     def test_delete_schedule(self):
@@ -131,18 +130,17 @@ class TestScheduleRepository:
             team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-            last_modified_dates=datetime.now(timezone.utc).timestamp(),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
             constraint_builds=[],
             quick_staffings=[],
-            last_updated_dsds=None,
+            created_at=datetime.now(timezone.utc).timestamp(),
+            updated_at=datetime.now(timezone.utc).timestamp(),
+            created_by="user1",
         )
         created = self.repo.create(schedule)
 
-        self.repo.delete_schedule(created.id)
+        self.repo.delete_schedule(str(created.id))
 
         assert self.repo.collection.find_one({"_id": created.id}) is None
 
@@ -153,27 +151,25 @@ class TestScheduleRepository:
                 team="team1",
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-                last_modified_dates=datetime.now(timezone.utc).timestamp(),
-                solve_details=None,
-                solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
                 constraint_builds=[],
                 quick_staffings=[],
-                last_updated_dsds=None,
+                created_at=datetime.now(timezone.utc).timestamp(),
+                updated_at=datetime.now(timezone.utc).timestamp(),
+                created_by="user1",
             ),
             ScheduleSchema(
                 team="team1",
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-                last_modified_dates=datetime.now(timezone.utc).timestamp(),
-                solve_details=None,
-                solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
                 constraint_builds=[],
                 quick_staffings=[],
-                last_updated_dsds=None,
+                created_at=datetime.now(timezone.utc).timestamp(),
+                updated_at=datetime.now(timezone.utc).timestamp(),
+                created_by="user1",
             ),
         ]
         self.repo.create_many(schedules)
@@ -188,14 +184,13 @@ class TestScheduleRepository:
             team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-            last_modified_dates=datetime.now(timezone.utc).timestamp(),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
             constraint_builds=[],
             quick_staffings=[],
-            last_updated_dsds=None,
+            created_at=datetime.now(timezone.utc).timestamp(),
+            updated_at=datetime.now(timezone.utc).timestamp(),
+            created_by="user1",
         )
         self.repo.create(schedule)
 
@@ -210,14 +205,13 @@ class TestScheduleRepository:
             team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-            last_modified_dates=datetime.now(timezone.utc).timestamp(),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
             constraint_builds=["cb1"],
             quick_staffings=[],
-            last_updated_dsds=None,
+            created_at=datetime.now(timezone.utc).timestamp(),
+            updated_at=datetime.now(timezone.utc).timestamp(),
+            created_by="user1",
         )
         self.repo.create(schedule)
 
@@ -233,27 +227,25 @@ class TestScheduleRepository:
                 team="team1",
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-                last_modified_dates=datetime.now(timezone.utc).timestamp(),
-                solve_details=None,
-                solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
                 constraint_builds=[],
                 quick_staffings=[],
-                last_updated_dsds=None,
+                created_at=datetime.now(timezone.utc).timestamp(),
+                updated_at=datetime.now(timezone.utc).timestamp(),
+                created_by="user1",
             ),
             ScheduleSchema(
                 team="team1",
                 start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
                 end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-                last_modified_dates=datetime.now(timezone.utc).timestamp(),
-                solve_details=None,
-                solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
                 status=ScheduleStatus.CAMPAIGN.value,
                 missing_coverage_dates=[],
                 constraint_builds=[],
                 quick_staffings=[],
-                last_updated_dsds=None,
+                created_at=datetime.now(timezone.utc).timestamp(),
+                updated_at=datetime.now(timezone.utc).timestamp(),
+                created_by="user1",
             ),
         ]
         self.repo.create_many(schedules)
@@ -272,16 +264,15 @@ class TestScheduleRepository:
             team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-            last_modified_dates=datetime.now(timezone.utc).timestamp(),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
             constraint_builds=[],
             quick_staffings=[
                 QuickStaffingSchema(worker_id="worker1", shift_id="shift1", target=1)
             ],
-            last_updated_dsds=None,
+            created_at=datetime.now(timezone.utc).timestamp(),
+            updated_at=datetime.now(timezone.utc).timestamp(),
+            created_by="user1",
         )
         self.repo.create(schedule)
 
@@ -298,16 +289,15 @@ class TestScheduleRepository:
             team="team1",
             start_date=datetime(2023, 1, 1, tzinfo=timezone.utc).timestamp(),
             end_date=datetime(2023, 1, 31, tzinfo=timezone.utc).timestamp(),
-            last_modified_dates=datetime.now(timezone.utc).timestamp(),
-            solve_details=None,
-            solve_status=ScheduleSolveStatus.NOT_SOLVED.value,
             status=ScheduleStatus.CAMPAIGN.value,
             missing_coverage_dates=[],
             constraint_builds=[],
             quick_staffings=[
                 QuickStaffingSchema(worker_id="worker1", shift_id="shift1", target=1)
             ],
-            last_updated_dsds=None,
+            created_at=datetime.now(timezone.utc).timestamp(),
+            updated_at=datetime.now(timezone.utc).timestamp(),
+            created_by="user1",
         )
         self.repo.create(schedule)
 
