@@ -162,6 +162,8 @@ Browser → CloudFront → S3 (Next.js static export)
 
 **Authorization flow:** Cognito handles AuthN; Permit.io handles AuthZ (role-based access control enforcement in `api_gateway`).
 
+**IMPORTANT:** We are migrating from permit.io to cerbos for authz. Policies will be stored in cerbos-policies. We will completely remove permit.io to replace it with cerbos, keep that in mind when organizing your code.
+
 **Data flow example:** API Gateway accepts schedule create → enqueues SQS message → solve_service consumes → OR-Tools solver runs → writes assignments/results to DocumentDB.
 
 **DB:** MongoDB locally via `init-mongo.js` seed; AWS DocumentDB in staging/production.
