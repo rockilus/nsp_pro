@@ -8,7 +8,7 @@ from src.integrations.authorization.cerbos_authz_service import (  # noqa: E501
 from src.integrations.authorization.cerbos_client import get_cerbos_client
 
 
-def get_cerbos_authz_service(
+async def get_cerbos_authz_service(
     db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> CerbosAuthzService:
     return CerbosAuthzService(

@@ -1,5 +1,6 @@
+from cerbos.engine.v1.engine_pb2 import Principal  # type: ignore[import]
+from cerbos.engine.v1.engine_pb2 import Resource  # type: ignore[import]
 from cerbos.sdk.grpc.client import AsyncCerbosClient  # type: ignore[import]
-from cerbos.sdk.model import Principal, Resource  # type: ignore[import]
 from shared.database.repositories.team_membership import (  # type: ignore
     TeamMembershipRepository,
 )
@@ -54,7 +55,7 @@ class CerbosAuthzService:
             )
             return False
 
-        principal = Principal(id=user_id, roles=roles)
+        principal = Principal(id=user_id, roles=list(roles))
         resource = Resource(id=resource_id, kind=resource_kind)
 
         return await self._client.is_allowed(action, principal, resource)
