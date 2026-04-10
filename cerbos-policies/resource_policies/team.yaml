@@ -26,6 +26,10 @@ resourcePolicy:
 
     # Team leaders only: team management + worker management + dimension management
     - actions:
+        - create-stats-header
+        - read-shift-options
+        - read-stats
+        - delete-stats-header
         - approve-request
         - deny-request
         - update-team        # team settings
@@ -63,6 +67,7 @@ resourcePolicy:
         - approve-request
         - deny-request
         - rescind-request
+        - solve-schedule
         - create-schedule
         - read-schedules
         - update-schedule
@@ -77,12 +82,20 @@ resourcePolicy:
         - read-breaches
         - update-breach
         - delete-breach
+        - read-multitasking-groups
+        - create-multitasking-group
+        - update-multitasking-group
+        - delete-multitasking-group
       effect: EFFECT_ALLOW
       roles:
         - leader
 
     # Super admins: full access to all team actions
     - actions:
+        - create-stats-header
+        - read-shift-options
+        - read-stats
+        - delete-stats-header
         - read-team
         - read-team-users
         - read-own-worker
@@ -135,6 +148,7 @@ resourcePolicy:
         - create-schedule
         - duplicate-period
         - validate-schedule
+        - solve-schedule
         - update-schedule
         - delete-schedule
         - create-specialty
@@ -144,6 +158,10 @@ resourcePolicy:
         - read-breaches
         - update-breach
         - delete-breach
+        - read-multitasking-groups
+        - create-multitasking-group
+        - update-multitasking-group
+        - delete-multitasking-group
       effect: EFFECT_ALLOW
       roles:
         - super_admin

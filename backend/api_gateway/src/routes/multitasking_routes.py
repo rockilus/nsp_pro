@@ -45,7 +45,7 @@ async def get_shift_demand_concurrency(
         # Check authorization
         if not await authz_check(
             user_context.user_id,
-            "read-shift-demands",
+            "read-shift-demands",  # concurrency data falls under shift-demand reads
             "team",
             core_request.team_id,
         ):
@@ -68,7 +68,9 @@ async def get_shift_demand_concurrency(
             status_code=400, detail=f"Invalid request data: {str(e)}"
         ) from e
     except NotAuthorizedError as e:
-        log_info(f"Authorization error in get_shift_demand_concurrency: {str(e)}")
+        log_info(
+            f"Authorization error in get_shift_demand_concurrency: {str(e)}"
+        )
         raise HTTPException(status_code=403, detail=str(e)) from e
     except Exception as e:
         log_info(f"Failed to get shift demand concurrency: {str(e)}")
@@ -92,8 +94,7 @@ async def create_multitasking_group(
         # Authorization: user must be able to manage multitasking groups for the team
         if not await authz_check(
             user_context.user_id,
-            # "manage-multitasking-groups",
-            "read-shift-demands",
+            "create-multitasking-group",
             "team",
             request.teamId,
         ):
@@ -133,8 +134,7 @@ async def update_multitasking_group(
         # Authorization: user must be able to manage multitasking groups for the team
         if not await authz_check(
             user_context.user_id,
-            # "manage-multitasking-groups",
-            "read-shift-demands",
+            "update-multitasking-group",
             "team",
             team_id,
         ):
@@ -174,15 +174,16 @@ async def get_multitasking_groups(
     try:
         if not await authz_check(
             user_context.user_id,
-            # "read-multitasking-groups",
-            "read-shift-demands",
+            "read-multitasking-groups",
             "team",
             team_id,
         ):
             raise NotAuthorizedError(
                 "You do not have permission to view multitasking groups for this team"
             )
-        groups = service.get_multitaskings(team_id=team_id, template_id=template_id)
+        groups = service.get_multitaskings(
+            team_id=team_id, template_id=template_id
+        )
         return [g.to_dto() for g in groups]
     except NotAuthorizedError as e:
         log_info(f"Authorization error in get_multitasking_groups: {str(e)}")
@@ -209,8 +210,7 @@ async def delete_multitasking_group(
     try:
         if not await authz_check(
             user_context.user_id,
-            # "manage-multitasking-groups",
-            "read-shift-demands",
+            "delete-multitasking-group",
             "team",
             team_id,
         ):
