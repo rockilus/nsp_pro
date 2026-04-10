@@ -266,7 +266,7 @@ def cleanup(db: DatabaseCollections) -> None:
     raw_db = db.database_interface.get_database()
     for col_name in ("users", "team_memberships", "workers", "attributes"):
         try:
-            raw_db.get_collection(col_name).delete_many({})
+            raw_db[col_name].delete_many({})
         except Exception:  # pylint: disable=broad-except
             pass
 
