@@ -28,6 +28,10 @@ resourcePolicy:
 
     # Team leaders only: team management + worker management + dimension management
     - actions:
+        - create-team-invitation
+        - read-team-invitations
+        - resend-team-invitation
+        - delete-team-invitation
         - create-stats-header
         - read-shift-options
         - read-stats
@@ -98,6 +102,10 @@ resourcePolicy:
 
     # Super admins: full access to all team actions
     - actions:
+        - create-team-invitation
+        - read-team-invitations
+        - resend-team-invitation
+        - delete-team-invitation
         - create-stats-header
         - read-shift-options
         - read-stats
