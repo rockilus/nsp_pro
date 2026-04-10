@@ -11,7 +11,9 @@ from shared.schemas.dto import (
 
 from src.dependencies import get_team_invitation_service, get_user_context
 from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
-from src.integrations.authorization.cerbos_authz_service import CerbosAuthzService
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.audit import log_impersonated_action
 from src.security.user_context import UserContext
 from src.services.team_invitation_service import TeamInvitationService
@@ -19,7 +21,9 @@ from src.services.team_invitation_service import TeamInvitationService
 router = APIRouter()
 
 
-@router.post("/team-invitations/teams/{team_id}", response_model=TeamInvitationDTO)
+@router.post(
+    "/team-invitations/teams/{team_id}", response_model=TeamInvitationDTO
+)
 async def create_team_invitation(
     team_id: str,
     invitation: TeamInvitationDTO,
@@ -55,7 +59,9 @@ async def create_team_invitation(
     return response
 
 
-@router.get("/team-invitations/pending", response_model=List[EnrichedTeamInvitationDTO])
+@router.get(
+    "/team-invitations/pending", response_model=List[EnrichedTeamInvitationDTO]
+)
 async def get_user_pending_invitations(
     user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
@@ -84,7 +90,9 @@ async def get_user_pending_invitations(
     return response
 
 
-@router.get("/team-invitations/teams/{team_id}", response_model=List[TeamInvitationDTO])
+@router.get(
+    "/team-invitations/teams/{team_id}", response_model=List[TeamInvitationDTO]
+)
 async def get_team_invitations(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
@@ -175,7 +183,9 @@ async def reject_team_invitation(
                 detail="Token is required.",
             )
         log_impersonated_action(user_context, "reject_team_invitation")
-        success = service.reject_team_invitation(user_context.effective_user_id, token)
+        success = service.reject_team_invitation(
+            user_context.effective_user_id, token
+        )
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
