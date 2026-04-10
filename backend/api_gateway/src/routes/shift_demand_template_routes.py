@@ -21,8 +21,11 @@ from src.dependencies import (
     get_shift_demand_template_service,
     get_user_context,
 )
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.shift_demand_template_service import (
     ShiftDemandTemplateService,
@@ -38,10 +41,11 @@ async def create_template(
     template_dto: ShiftDemandTemplateCreateDTO,
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ShiftDemandTemplateDTO:
     """Create a new shift demand template."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create templates")
@@ -103,10 +107,11 @@ async def get_templates_by_team(
     ),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[ShiftDemandTemplateDTO]:
     """Get all templates for a team, optionally filtered by type."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read templates")
@@ -141,10 +146,11 @@ async def get_template_by_id(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ShiftDemandTemplateDTO:
     """Get a specific template by ID."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read templates")
@@ -195,10 +201,11 @@ async def update_template(
     template_dto: ShiftDemandTemplateUpdateDTO,
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ShiftDemandTemplateDTO:
     """Update an existing template."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update templates")
@@ -271,10 +278,11 @@ async def delete_template(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> None:
     """Delete a template."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "delete-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to delete templates")
@@ -340,10 +348,11 @@ async def apply_demands_to_template_week(
     apply_dto: ApplyDemandsToTemplateWeekDTO,
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ShiftDemandTemplateDTO:
     """Apply existing shift demands from a source week to a template week."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update templates")
@@ -429,11 +438,12 @@ async def apply_template_to_date_range(
     apply_dto: ApplyTemplateToDateRangeDTO,
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandTemplateService = Depends(get_shift_demand_template_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> TemplateApplicationResult:
     """Apply a template to a specific date range."""
     try:
         # Check permissions for creating shift demands
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to apply templates")

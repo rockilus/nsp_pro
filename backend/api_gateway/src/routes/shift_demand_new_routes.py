@@ -50,9 +50,7 @@ async def create_shift_demand(
                 status_code=400,
                 detail={
                     "error": "team_id_mismatch",
-                    "message": (
-                        "Team ID in path must match team ID in request body"
-                    ),
+                    "message": ("Team ID in path must match team ID in request body"),
                     "path_team_id": team_id,
                     "body_team_id": demand_dto.teamId,
                 },
@@ -64,9 +62,7 @@ async def create_shift_demand(
         # Create through service
         created_demand = service.create_shift_demand(demand)
 
-        log_info(
-            f"Created shift demand {created_demand.id} for team {team_id}"
-        )
+        log_info(f"Created shift demand {created_demand.id} for team {team_id}")
         return created_demand.to_dto()
 
     except NotAuthorizedError:
@@ -99,12 +95,8 @@ async def create_shift_demand(
 @router.get("/shift-demands-new/teams/{team_id}/period")
 async def get_shift_demands_by_period(
     team_id: str,
-    start_date: date = Query(
-        ..., description="Start date of the period (YYYY-MM-DD)"
-    ),
-    end_date: date = Query(
-        ..., description="End date of the period (YYYY-MM-DD)"
-    ),
+    start_date: date = Query(..., description="Start date of the period (YYYY-MM-DD)"),
+    end_date: date = Query(..., description="End date of the period (YYYY-MM-DD)"),
     buffer_days: int = Query(7, description="Buffer days for navigation"),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
@@ -115,9 +107,7 @@ async def get_shift_demands_by_period(
         if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shift demands"
-            )
+            raise NotAuthorizedError("You do not have permission to read shift demands")
 
         demands = service.get_shift_demands_by_period(
             team_id=team_id,
@@ -137,12 +127,8 @@ async def get_shift_demands_by_period(
 @router.get("/shift-demands-new/teams/{team_id}/matrix")
 async def get_shift_demands_matrix(
     team_id: str,
-    start_date: date = Query(
-        ..., description="Start date of the period (YYYY-MM-DD)"
-    ),
-    end_date: date = Query(
-        ..., description="End date of the period (YYYY-MM-DD)"
-    ),
+    start_date: date = Query(..., description="Start date of the period (YYYY-MM-DD)"),
+    end_date: date = Query(..., description="End date of the period (YYYY-MM-DD)"),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
@@ -152,9 +138,7 @@ async def get_shift_demands_matrix(
         if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shift demands"
-            )
+            raise NotAuthorizedError("You do not have permission to read shift demands")
 
         return service.get_shift_demands_matrix(
             team_id=team_id,
@@ -168,9 +152,7 @@ async def get_shift_demands_matrix(
         # raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
-@router.put(
-    "/shift-demands-new/{demand_id}/teams/{team_id}", response_model=None
-)
+@router.put("/shift-demands-new/{demand_id}/teams/{team_id}", response_model=None)
 async def update_shift_demand(
     team_id: str,
     demand_id: str,
@@ -194,9 +176,7 @@ async def update_shift_demand(
                 status_code=400,
                 detail={
                     "error": "team_change_not_allowed",
-                    "message": (
-                        "Cannot change team ID through update operation"
-                    ),
+                    "message": ("Cannot change team ID through update operation"),
                     "current_team_id": team_id,
                     "requested_team_id": demand_dto.teamId,
                 },
@@ -220,9 +200,7 @@ async def update_shift_demand(
                 status_code=403,
                 detail={
                     "error": "forbidden",
-                    "message": (
-                        "Shift demand does not belong to specified team"
-                    ),
+                    "message": ("Shift demand does not belong to specified team"),
                     "demand_id": demand_id,
                     "team_id": team_id,
                 },
@@ -247,9 +225,7 @@ async def update_shift_demand(
     except HTTPException:
         raise
     except ValueError as e:
-        log_info(
-            f"Validation error updating shift demand {demand_id}: {str(e)}"
-        )
+        log_info(f"Validation error updating shift demand {demand_id}: {str(e)}")
         raise HTTPException(
             status_code=400,
             detail={
@@ -273,9 +249,7 @@ async def update_shift_demand(
         # ) from e
 
 
-@router.delete(
-    "/shift-demands-new/{demand_id}/teams/{team_id}", status_code=204
-)
+@router.delete("/shift-demands-new/{demand_id}/teams/{team_id}", status_code=204)
 async def delete_shift_demand(
     team_id: str,
     demand_id: str,
@@ -339,14 +313,11 @@ async def bulk_upsert_shift_demands(
 
         # Convert DTOs to domain models
         demands = [
-            ShiftDemandNew.from_create_dto(demand_dto)
-            for demand_dto in demands_dto
+            ShiftDemandNew.from_create_dto(demand_dto) for demand_dto in demands_dto
         ]
 
         # Process bulk upsert through service
-        created, updated, deleted_ids = service.bulk_upsert_shift_demands(
-            demands
-        )
+        created, updated, deleted_ids = service.bulk_upsert_shift_demands(demands)
 
         # Convert result to response DTO
         return ShiftDemandsResultDTO(
@@ -437,9 +408,7 @@ async def get_team_shift_summary(
         if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shift demands"
-            )
+            raise NotAuthorizedError("You do not have permission to read shift demands")
 
         return service.get_team_shift_summary(
             team_id=team_id,
@@ -468,9 +437,7 @@ async def get_demands_by_shift_and_date_range(
         if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shift demands"
-            )
+            raise NotAuthorizedError("You do not have permission to read shift demands")
 
         demands = service.get_demands_by_shift_and_date_range(
             team_id=team_id,
@@ -537,9 +504,7 @@ async def get_demands_by_source(
         if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shift demands"
-            )
+            raise NotAuthorizedError("You do not have permission to read shift demands")
 
         demands = service.get_demands_by_source(
             team_id=team_id,
@@ -560,9 +525,7 @@ async def prefetch_for_navigation(
     team_id: str,
     current_start: date = Query(..., description="Current period start date"),
     current_end: date = Query(..., description="Current period end date"),
-    prefetch_periods: int = Query(
-        2, description="Number of periods to prefetch"
-    ),
+    prefetch_periods: int = Query(2, description="Number of periods to prefetch"),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
@@ -572,9 +535,7 @@ async def prefetch_for_navigation(
         if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read shift demands"
-            )
+            raise NotAuthorizedError("You do not have permission to read shift demands")
 
         service.prefetch_for_navigation(
             team_id=team_id,
