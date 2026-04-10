@@ -74,7 +74,7 @@ export default function WorkerTable({
         className="worker-table-container"
         sx={{ height: tableHeight, overflow: 'auto' }}
       >
-        <Table className="worker-table" aria-label="worker table">
+        <Table className="worker-table" aria-label="worker table" data-testid="worker-table">
           <WorkerTableHeader
             lng={lng}
             selectedTeamId={selectedTeamId}
@@ -119,6 +119,7 @@ export default function WorkerTable({
                 <TableCell
                   colSpan={defaultWorkerFields.length + dimensionsDisplayed.length + 1}
                   sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}
+                  data-testid="worker-table-empty-state"
                 >
                   {t('no_workers_found')}
                 </TableCell>

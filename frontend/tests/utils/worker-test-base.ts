@@ -220,16 +220,13 @@ export class WorkerTestBase {
    * Creates a worker via the UI by clicking the +Worker button
    */
   async createWorkerViaUI(page: Page): Promise<void> {
-    const addWorkerButton = page.getByRole('button', {
-      name: 'Worker',
-      exact: true,
-    });
+    const addWorkerButton = page.locator('[data-testid="add-worker-button"]');
     await expect(addWorkerButton).toBeEnabled();
     await addWorkerButton.click();
 
     // Wait for the worker to appear in the table
-    await page.waitForSelector('[aria-label="worker table"]');
-    const workerRows = page.locator('[aria-label="worker table"] tbody tr');
+    await page.waitForSelector('[data-testid="worker-table"]');
+    const workerRows = page.locator('[data-testid="worker-table"] tbody tr');
     await expect(workerRows).toHaveCount(1);
   }
 
@@ -237,7 +234,7 @@ export class WorkerTestBase {
    * Gets the worker table element
    */
   getWorkerTable(page: Page) {
-    return page.locator('[aria-label="worker table"]');
+    return page.locator('[data-testid="worker-table"]');
   }
 
   /**
@@ -266,13 +263,29 @@ export class WorkerTestBase {
   }
 
   /**
+   * Gets the name display element (for reading text)
+   */
+  getWorkerNameDisplay(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-name-display-"]');
+  }
+
+  /**
+   * Gets the name input element (for editing)
+   */
+  getWorkerNameInput(page: Page, rowIndex: number = 0) {
+    const row = this.getWorkerRow(page, rowIndex);
+    return row.locator('[data-testid^="worker-name-input-"]');
+  }
+
+  /**
    * Gets the acronym cell for a worker row
    */
   getWorkerAcronymCell(page: Page, rowIndex: number = 0) {
     const row = this.getWorkerRow(page, rowIndex);
 
     // Prioritize the table cell itself for interaction, not the inner elements
-    const byCellTestId = row.locator('[data-testid="worker-acronym-cell"]');
+    const byCellTestId = row.locator('[data-testid^="worker-acronym-cell-"]');
     const secondCell = row.locator('td, th').nth(1);
 
     return byCellTestId.or(secondCell);
@@ -705,9 +718,7 @@ export class WorkerTestBase {
     // Wait for the table to reflect the correct state
     if (initialCount === 1) {
       // Last worker being deleted - wait for empty state
-      await expect(page.locator('text=no_workers_found')).toBeVisible({
-        timeout: 1000,
-      });
+      await expect(page.locator('[data-testid="worker-table-empty-state"]')).toBeVisible();
     } else {
       // Wait for row count to decrease
       await expect(this.getWorkerRows(page)).toHaveCount(initialCount - 1, {

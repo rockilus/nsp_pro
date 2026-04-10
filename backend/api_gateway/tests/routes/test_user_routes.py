@@ -2,33 +2,19 @@
 Integration tests for user_routes.py — authz enforcement.
 
 Strategy:
-- Real MongoDB + real Cerbos PDP (docker containers) started once per session.
-- Cerbos runs with the actual policies from cerbos-policies/.
-- `get_user_context` overridden to bypass API-key authn; identity is set via
-  X-Dev-User-ID header. These tests cover authz, not authn.
-- `get_cerbos_authz_service` overridden to create a fresh AsyncCerbosClient per
-  make_app() call, avoiding gRPC event-loop reuse issues across TestClient
-  instances.
+- Real MongoDB + real Cerbos PDP containers started once per session via the
+  session-scoped `db_interface` fixture in conftest.py.
+- `get_user_context` overridden (via make_app in conftest) to bypass API-key
+  authn; identity is controlled via X-Dev-User-ID header.
 - `get_user_service` overridden for routes that make Cognito calls
   (change-password) to keep tests self-contained.
 """
 
-import os
-import subprocess
-import time
-import urllib.error
-import urllib.request
 from datetime import date, datetime, timezone
-from typing import AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest_asyncio
-from cerbos.sdk.grpc.client import AsyncCerbosClient  # type: ignore[import]
-from fastapi import FastAPI, Header
 from fastapi.testclient import TestClient
-from shared.database.config import DatabaseConfig, DatabaseType
 from shared.database.database_collections import DatabaseCollections
-from shared.database.factory import DatabaseFactory
 from shared.database.interface import DatabaseInterface
 from shared.schemas.core.team_membership import (
     TeamMembership,
@@ -37,163 +23,7 @@ from shared.schemas.core.team_membership import (
 from shared.schemas.core.user import Language, User
 from shared.schemas.core.worker import Worker
 
-from src.app import create_app
-from src.dependencies.auth_dependencies import get_user_context
-from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
-from src.dependencies.user_service import get_user_service
-from src.integrations.authorization.cerbos_authz_service import (
-    CerbosAuthzService,
-)
-from src.security.user_context import UserContext
-
-
-# ---------------------------------------------------------------------------
-# Session-scoped MongoDB fixture (mirrors shared/database/tests/conftest.py)
-# ---------------------------------------------------------------------------
-
-MONGO_PORT = 27019
-MONGO_URI = f"mongodb://testuser:testpass@localhost:{MONGO_PORT}/"
-MONGO_DB = "api_test_db"
-
-CERBOS_GRPC_HOST = "localhost:3594"
-CERBOS_HTTP_HEALTH = "http://localhost:3595/_cerbos/health"
-
-
-def dev_headers(user_id: str) -> dict:
-    """Return the minimum headers for a test request (user identity only)."""
-    return {"X-Dev-User-ID": user_id}
-
-
-@pytest_asyncio.fixture(scope="session")
-async def db_interface() -> AsyncGenerator[DatabaseInterface, None]:
-    """Spin up (or reuse) a MongoDB container for the test session."""
-    if "MONGO_URI" in os.environ:
-        config = DatabaseConfig(
-            database_type=DatabaseType.MONGODB,
-            mongodb_uri=os.environ["MONGO_URI"],
-            database_name=MONGO_DB,
-        )
-        provider = DatabaseFactory.create_provider(config)
-        await provider.connect()
-        if not await provider.health_check():
-            raise ValueError("Failed to connect to MongoDB (CI)")
-        try:
-            yield provider
-        finally:
-            await provider.disconnect()
-    else:
-        compose_file = os.path.join(os.path.dirname(__file__), "docker-compose.yml")
-        command = [
-            "docker-compose",
-            "-f",
-            compose_file,
-            "up",
-            "-d",
-            "mongodb-api-tests",
-            "cerbos-api-tests",
-        ]
-        try:
-            result = subprocess.run(
-                command,
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            print(result.stdout.decode("utf-8"))
-        except subprocess.CalledProcessError as exc:
-            raise RuntimeError(
-                f"Failed to start containers: {exc.stderr.decode()}"
-            ) from exc
-
-        config = DatabaseConfig(
-            database_type=DatabaseType.MONGODB,
-            mongodb_uri=MONGO_URI,
-            database_name=MONGO_DB,
-        )
-
-        provider = None
-        for _ in range(5):
-            try:
-                provider = DatabaseFactory.create_provider(config)
-                await provider.connect()
-                if await provider.health_check():
-                    break
-                await provider.disconnect()
-                provider = None
-            except Exception:  # pylint: disable=broad-except
-                pass
-            time.sleep(2)
-
-        if provider is None or not await provider.health_check():
-            raise RuntimeError("Failed to connect to MongoDB after retries")
-
-        # Wait for Cerbos PDP to be healthy
-        for _ in range(15):
-            try:
-                urllib.request.urlopen(CERBOS_HTTP_HEALTH, timeout=2)  # noqa: S310
-                break
-            except (urllib.error.URLError, OSError):
-                time.sleep(2)
-        else:
-            raise RuntimeError("Cerbos PDP did not become healthy in time")
-
-        try:
-            yield provider
-        finally:
-            await provider.disconnect()
-
-
-# ---------------------------------------------------------------------------
-# App factory helpers
-# ---------------------------------------------------------------------------
-
-
-def make_app(
-    db_interface: DatabaseInterface,
-    *,
-    user_service_override=None,
-) -> FastAPI:
-    """
-    Create a FastAPI app for testing with:
-    - Real DatabaseCollections backed by the test MongoDB.
-    - `get_user_context` overridden to bypass API-key authn; identity is
-      controlled via X-Dev-User-ID header.
-    - Real Cerbos PDP (localhost:3594) with actual policies loaded.
-      A fresh AsyncCerbosClient is created per make_app() call to avoid
-      gRPC channel / event-loop reuse issues across TestClient instances.
-    - Optional override for get_user_service (needed for Cognito-backed routes).
-    """
-    db_collections = DatabaseCollections(db_interface)
-    app = create_app()
-    app.state.db_collections = db_collections
-
-    # Override authn: skip API-key validation; read identity from header only
-    async def _get_user_context_override(
-        x_dev_user_id: str = Header(None, alias="X-Dev-User-ID"),
-    ) -> UserContext:
-        user_id = x_dev_user_id or "test-user"
-        return UserContext(user_id=user_id, email="test@example.com", groups=["user"])
-
-    app.dependency_overrides[get_user_context] = _get_user_context_override
-
-    # Fresh client per make_app() call — avoids singleton event-loop issues.
-    # Uses the real Cerbos PDP with actual policies from cerbos-policies/.
-    # Must be async: AsyncCerbosClient creates a gRPC channel that needs the
-    # running event loop (grpc.aio.insecure_channel) at construction time.
-    async def _get_real_authz_service() -> CerbosAuthzService:
-        client = AsyncCerbosClient(host=CERBOS_GRPC_HOST, tls_verify=False)
-        return CerbosAuthzService(
-            client=client,
-            user_db=db_collections.user_db,
-            team_membership_db=db_collections.team_membership_db,
-        )
-
-    app.dependency_overrides[get_cerbos_authz_service] = _get_real_authz_service
-
-    if user_service_override is not None:
-        app.dependency_overrides[get_user_service] = lambda: user_service_override
-
-    return app
+from .conftest import dev_headers, make_app
 
 
 # ---------------------------------------------------------------------------
@@ -277,7 +107,9 @@ def cleanup(db: DatabaseCollections) -> None:
 
 
 class TestGetCurrentUser:
-    def test_returns_user_when_authorized(self, db_interface: DatabaseInterface):
+    def test_returns_user_when_authorized(
+        self, db_interface: DatabaseInterface
+    ):
         """Authenticated user can read their own profile — real policy allows."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_alice", email="alice@example.com")
@@ -285,7 +117,9 @@ class TestGetCurrentUser:
         client = TestClient(app)
 
         try:
-            response = client.get("/users/me", headers=dev_headers("user_alice"))
+            response = client.get(
+                "/users/me", headers=dev_headers("user_alice")
+            )
             assert response.status_code == 200
             data = response.json()
             assert data["id"] == "user_alice"
@@ -293,7 +127,9 @@ class TestGetCurrentUser:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
+    def test_returns_403_when_user_not_in_db(
+        self, db_interface: DatabaseInterface
+    ):
         """
         AuthzService short-circuits before calling the PDP when the requesting
         user has no DB record — the route must return 403.
@@ -374,7 +210,9 @@ class TestGetUserWorkerForTeam:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_grace", email="grace@example.com")
         seed_membership(db, "user_grace", "team_1", TeamMembershipRole.MEMBER)
-        created_worker = seed_worker(db, "worker_grace", "team_1", "user_grace")
+        created_worker = seed_worker(
+            db, "worker_grace", "team_1", "user_grace"
+        )
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -413,7 +251,9 @@ class TestGetUserWorkerForTeam:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_no_team_membership(self, db_interface: DatabaseInterface):
+    def test_returns_403_when_no_team_membership(
+        self, db_interface: DatabaseInterface
+    ):
         """
         User has no membership in the team → AuthzService short-circuits before
         calling the PDP (membership lookup returns None) → 403.
@@ -458,7 +298,9 @@ class TestChangeUserPassword:
         mock_service.change_user_password = AsyncMock(return_value=None)
         return mock_service
 
-    def test_changes_password_when_authorized(self, db_interface: DatabaseInterface):
+    def test_changes_password_when_authorized(
+        self, db_interface: DatabaseInterface
+    ):
         """Authenticated user can change their own password — real policy allows."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_kate", email="kate@example.com")
@@ -476,11 +318,15 @@ class TestChangeUserPassword:
                 headers=dev_headers("user_kate"),
             )
             assert response.status_code == 200
-            assert response.json()["message"] == "Password updated successfully"
+            assert (
+                response.json()["message"] == "Password updated successfully"
+            )
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
+    def test_returns_403_when_user_not_in_db(
+        self, db_interface: DatabaseInterface
+    ):
         """
         AuthzService short-circuits before calling the PDP when the requesting
         user has no DB record → 403.

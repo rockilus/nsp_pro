@@ -7,7 +7,7 @@ resourcePolicy:
     - user_derived_roles
   rules:
     # Self-service: any authenticated user can read/update/change-password their own record
-    - actions: ["read", "update", "change-password", "create-team", "read-teams"]
+    - actions: ["read", "update", "change-password", "create-team", "read-teams", "leave-team"]
       effect: EFFECT_ALLOW
       derivedRoles:
         - owner

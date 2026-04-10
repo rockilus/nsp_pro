@@ -49,7 +49,7 @@ export default function WorkerFieldCellAcronym({
     <TableCell
       component="th"
       scope="row"
-      data-testid="worker-acronym-cell"
+      data-testid={`worker-acronym-cell-${worker.id}`}
       onClick={() => {
         if (!isUpdating) {
           // initialize local edit value from prop when entering edit mode
