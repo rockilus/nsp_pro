@@ -17,6 +17,7 @@ resourcePolicy:
         - read-requests
         - update-request
         - delete-request
+        - read-assignments-validated
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -28,6 +29,11 @@ resourcePolicy:
         - approve-request
         - deny-request
         - update-team        # team settings
+        - read-assignments
+        - create-assignment
+        - update-assignment
+        - delete-assignment
+        - check-replacements
         - remove-user        # member management
         - create-worker      # worker management
         - update-worker
@@ -64,6 +70,13 @@ resourcePolicy:
         - read-schedule-work-times
         - duplicate-period
         - validate-schedule
+        - create-specialty
+        - read-specialties
+        - update-specialty
+        - delete-specialty
+        - read-breaches
+        - update-breach
+        - delete-breach
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -82,6 +95,12 @@ resourcePolicy:
         - deny-request
         - rescind-request
         - delete-request
+        - read-assignments
+        - read-assignments-validated
+        - create-assignment
+        - update-assignment
+        - delete-assignment
+        - check-replacements
         - update-team
         - remove-user
         - create-worker
@@ -118,6 +137,13 @@ resourcePolicy:
         - validate-schedule
         - update-schedule
         - delete-schedule
+        - create-specialty
+        - read-specialties
+        - update-specialty
+        - delete-specialty
+        - read-breaches
+        - update-breach
+        - delete-breach
       effect: EFFECT_ALLOW
       roles:
         - super_admin
