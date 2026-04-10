@@ -13,6 +13,7 @@ from src.dependencies import (
     get_user_context,
     get_user_service,
     verify_service_authentication,
+    get_cerbos_authz_service,
 )
 from src.errors import (
     NotAuthorizedError,
@@ -20,6 +21,9 @@ from src.errors import (
     handle_routes_errors,
 )
 from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (  # noqa: E501
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.user_service import UserService
 
@@ -35,7 +39,9 @@ class NewUserInput(BaseModel):
     language: Optional[str] = None
 
 
-@router.post("/users/onboard", dependencies=[Depends(verify_service_authentication)])
+@router.post(
+    "/users/onboard", dependencies=[Depends(verify_service_authentication)]
+)
 async def onboard_new_user(
     user_input: NewUserInput,
     user_service: UserService = Depends(get_user_service),
@@ -49,25 +55,34 @@ async def onboard_new_user(
             language=user_input.language,
         )
 
-        log_info(f"Successfully processed onboard request for user {user_input.email}")
+        log_info(
+            f"Successfully processed onboard request for user {user_input.email}"
+        )
         return {"status": "success", "message": "User onboarded successfully"}
 
     except Exception as e:
         log_info(f"Failed to onboard user {user_input.email}: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error") from e
+        raise HTTPException(
+            status_code=500, detail="Internal server error"
+        ) from e
 
 
 @router.get("/users/me")
 async def get_current_user(
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    authz_service: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> UserDTO:
     try:
-        if not await authz_check(
+        if not await authz_service.check(
             user_context.user_id, "read", "user", user_context.user_id
         ):
-            raise NotAuthorizedError("You do not have permission to read the user")
-        user = db_collections.user_db.get_user_by_id(user_context.effective_user_id)
+            raise NotAuthorizedError(
+                "You do not have permission to read the user"
+            )
+        user = db_collections.user_db.get_user_by_id(
+            user_context.effective_user_id
+        )
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
         response = user.to_dto()
@@ -93,8 +108,12 @@ async def update_user(
     try:
         if user_context.effective_user_id != user_id:
             raise NotAuthorizedError("You can only update your own profile")
-        if not await authz_check(user_context.user_id, "update", "user", user_id):
-            raise NotAuthorizedError("You do not have permission to update this user")
+        if not await authz_check(
+            user_context.user_id, "update", "user", user_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update this user"
+            )
         updated_user = await user_service.update_user(
             user_id=user_id,
             update_dto=user_update,
@@ -118,7 +137,9 @@ async def get_user_worker_for_team(
     """
     try:
         # Check permission to read workers for this team
-        if not await authz_check(user_context.user_id, "read-workers", "team", team_id):
+        if not await authz_check(
+            user_context.user_id, "read-workers", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to access workers for this team"
             )
@@ -148,7 +169,9 @@ async def get_user_worker_for_team(
             )
 
         # Get attributes for the worker
-        attributes = db_collections.attribute_db.get_attributes_by_owner_id(worker.id)
+        attributes = db_collections.attribute_db.get_attributes_by_owner_id(
+            worker.id
+        )
         response = worker.to_dto(attributes)
 
     except Exception as e:

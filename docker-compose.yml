@@ -97,6 +97,22 @@ services:
       timeout: 5s
       retries: 5
 
+  # Cerbos AuthZ (side-by-side with Permit during migration)
+  cerbos:
+    image: ghcr.io/cerbos/cerbos:latest
+    container_name: cerbos
+    ports:
+      - "3592:3592"  # gRPC
+      - "3593:3593"  # HTTP / playground
+    volumes:
+      - ./cerbos-policies:/policies:ro
+    command: server --config=/policies/.cerbos.yaml
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://cerbos:3593/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # FastAPI Backend
   fastapi:
     build:
@@ -115,6 +131,7 @@ services:
       - mongodb
       - localstack-init
       - permit
+      - cerbos
     # Add a health check to ensure it's ready before tests run
     healthcheck:
       test: ["CMD", "curl", "http://fastapi:4000/health"]
