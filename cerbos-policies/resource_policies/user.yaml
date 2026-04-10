@@ -6,8 +6,8 @@ resourcePolicy:
   importDerivedRoles:
     - user_derived_roles
   rules:
-    # Self-service: any authenticated user can read/update their own record
-    - actions: ["read", "update"]
+    # Self-service: any authenticated user can read/update/change-password their own record
+    - actions: ["read", "update", "change-password"]
       effect: EFFECT_ALLOW
       derivedRoles:
         - owner

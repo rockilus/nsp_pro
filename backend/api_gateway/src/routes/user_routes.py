@@ -20,8 +20,7 @@ from src.errors import (
     PasswordsDoNotMatchError,
     handle_routes_errors,
 )
-from src.integrations.authorization import authz_check
-from src.integrations.authorization.cerbos_authz_service import (  # noqa: E501
+from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
 from src.security.user_context import UserContext
@@ -98,6 +97,7 @@ async def update_user(
     user_update: UserUpdateDTO,
     user_context: UserContext = Depends(get_user_context),
     user_service: UserService = Depends(get_user_service),
+    authz_service: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> UserDTO:
     """Update the authenticated user's own profile.
 
@@ -108,7 +108,7 @@ async def update_user(
     try:
         if user_context.effective_user_id != user_id:
             raise NotAuthorizedError("You can only update your own profile")
-        if not await authz_check(
+        if not await authz_service.check(
             user_context.user_id, "update", "user", user_id
         ):
             raise NotAuthorizedError(
@@ -130,15 +130,17 @@ async def get_user_worker_for_team(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    authz_service: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> WorkerDTO | None:
     """
     Get the worker associated with the authenticated user for a specific team.
     Returns None if no worker is linked to the user for this team.
     """
     try:
-        # Check permission to read workers for this team
-        if not await authz_check(
-            user_context.user_id, "read-workers", "team", team_id
+        # Check that the caller is a member of the team (any role grants access
+        # to their own worker profile in that team)
+        if not await authz_service.check(
+            user_context.user_id, "read-own-worker", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to access workers for this team"
@@ -187,10 +189,12 @@ async def change_user_password(
     password_data: PasswordDataDTO,
     user_context: UserContext = Depends(get_user_context),
     user_service: UserService = Depends(get_user_service),
+    authz_service: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Dict:
     try:
-        # Authorization: Users can only change their own password
-        if user_context.user_id != user_id:
+        if not await authz_service.check(
+            user_context.user_id, "change-password", "user", user_id
+        ):
             raise NotAuthorizedError("You can only change your own password")
 
         # Convert DTO to core model

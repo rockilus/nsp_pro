@@ -1,0 +1,19 @@
+---
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: "default"
+  resource: team
+  rules:
+    # Any team member (leader or member) can read their own associated worker profile
+    - actions: ["read-own-worker"]
+      effect: EFFECT_ALLOW
+      roles:
+        - leader
+        - member
+
+    # Super admins can perform any action on any team resource
+    - actions:
+        - read-own-worker
+      effect: EFFECT_ALLOW
+      roles:
+        - super_admin
