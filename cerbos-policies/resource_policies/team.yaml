@@ -10,18 +10,26 @@ resourcePolicy:
         - read-team-users
         - read-own-worker
         - read-workers       # workers list
+        - read-dimensions
       effect: EFFECT_ALLOW
       roles:
         - leader
         - member
 
-    # Team leaders only: team management + worker management
+    # Team leaders only: team management + worker management + dimension management
     - actions:
         - update-team        # team settings
         - remove-user        # member management
         - create-worker      # worker management
         - update-worker
         - delete-worker
+        - create-dimension
+        - update-dimension
+        - delete-dimension
+        - create-dim-entry
+        - update-dim-entry
+        - delete-dim-entry
+        - update-attribute
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -32,11 +40,19 @@ resourcePolicy:
         - read-team-users
         - read-own-worker
         - read-workers
+        - read-dimensions
         - update-team
         - remove-user
         - create-worker
         - update-worker
         - delete-worker
+        - create-dimension
+        - update-dimension
+        - delete-dimension
+        - create-dim-entry
+        - update-dim-entry
+        - delete-dim-entry
+        - update-attribute
       effect: EFFECT_ALLOW
       roles:
         - super_admin

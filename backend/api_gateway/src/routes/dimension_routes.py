@@ -16,12 +16,19 @@ from shared.schemas.dto import (
     NewDimensionDTO,
 )
 
-from src.dependencies import get_db_collections, get_dimension_service, get_user_context
+from src.dependencies import (
+    get_db_collections,
+    get_dimension_service,
+    get_user_context,
+)
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.dimension_service import DimensionService
 
@@ -37,12 +44,15 @@ async def create_dimension(
     dimension_service: DimensionService = Depends(
         get_dimension_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> NewDimensionDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-dimension", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to create a dimension")
+            raise NotAuthorizedError(
+                "You do not have permission to create a dimension"
+            )
         d_data = Dimension.from_dto(dimension)
         des_data = [DimEntry.from_dto(de) for de in dim_entries]
         new_dimension = dimension_service.create_dimension(d_data, des_data)
@@ -61,9 +71,10 @@ async def get_dimensions(
     db_collections: DatabaseCollections = Depends(
         get_db_collections,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> DimensionsAndDimEntriesDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-dimensions", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -76,10 +87,8 @@ async def get_dimensions(
                 int(dt) for dtq in dim_types_query for dt in dtq.split(",")
             ]
             dt_data = [DimensionType(dt) for dt in dim_types_int]
-        dimensions = (
-            db_collections.dimension_db.get_dimensions_by_dim_types_not_deleted(
-                dt_data, team_id
-            )
+        dimensions = db_collections.dimension_db.get_dimensions_by_dim_types_not_deleted(
+            dt_data, team_id
         )
         dim_entries = db_collections.dim_entry_db.get_dim_entries_by_dim_ids(
             [d.id for d in dimensions]
@@ -102,14 +111,19 @@ async def update_dimension(
     db_collections: DatabaseCollections = Depends(
         get_db_collections,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> DimensionDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-dimension", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to update a dimension")
+            raise NotAuthorizedError(
+                "You do not have permission to update a dimension"
+            )
         d_data = Dimension.from_dto(dimension)
-        updated_dimension = db_collections.dimension_db.update_dimension(d_data)
+        updated_dimension = db_collections.dimension_db.update_dimension(
+            d_data
+        )
         response = updated_dimension.to_dto()
     except Exception as e:
         log_info("Failed to update dimension")
@@ -125,9 +139,10 @@ async def delete_dimension(
     dimension_service: DimensionService = Depends(
         get_dimension_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Dict:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "delete-dimension", "team", team_id
         ):
             raise HTTPException(
