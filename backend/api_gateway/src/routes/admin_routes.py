@@ -24,11 +24,14 @@ from shared.schemas.dto.user import UserDTO
 
 from src.config import config
 from src.dependencies import (
+    get_cerbos_authz_service,
     get_db_collections,
     get_user_context,
 )
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.impersonation_token import create_impersonation_token
 from src.security.user_context import UserContext
 
@@ -48,6 +51,7 @@ async def start_impersonation(
     target_user_id: str,
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    authz_service: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ImpersonationTokenResponse:
     """
     Start accessing a user's account as a super-admin.
@@ -63,7 +67,9 @@ async def start_impersonation(
     try:
         admin_user_id = user_context.user_id
 
-        if not await authz_check(admin_user_id, "create-impersonation", "admin"):
+        if not await authz_service.check(
+            admin_user_id, "create-impersonation", "admin", "admin"
+        ):
             raise HTTPException(
                 status_code=403,
                 detail="You do not have permission to access user accounts",
@@ -72,7 +78,9 @@ async def start_impersonation(
         # Verify the target user exists before issuing a token
         target_user = db_collections.user_db.get_user_by_id(target_user_id)
         if target_user is None:
-            raise HTTPException(status_code=404, detail="Target user not found")
+            raise HTTPException(
+                status_code=404, detail="Target user not found"
+            )
 
         # Prevent admins from impersonating themselves
         if admin_user_id == target_user_id:
@@ -88,7 +96,9 @@ async def start_impersonation(
             ttl_seconds=config.impersonation_token_ttl_seconds,
         )
 
-        log_info(f"Admin {admin_user_id} started impersonating user {target_user_id}")
+        log_info(
+            f"Admin {admin_user_id} started impersonating user {target_user_id}"
+        )
 
         response = ImpersonationTokenResponse(
             token=token,
@@ -105,6 +115,7 @@ async def start_impersonation(
 @router.delete("/admin/users/impersonate")
 async def stop_impersonation(
     user_context: UserContext = Depends(get_user_context),
+    authz_service: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Dict:
     """
     Stop impersonating and restore the admin's own session.
@@ -118,7 +129,9 @@ async def stop_impersonation(
     try:
         admin_user_id = user_context.user_id
 
-        if not await authz_check(admin_user_id, "delete-impersonation", "admin"):
+        if not await authz_service.check(
+            admin_user_id, "delete-impersonation", "admin", "admin"
+        ):
             raise HTTPException(
                 status_code=403,
                 detail="You do not have permission to stop impersonation",
@@ -139,6 +152,7 @@ async def stop_impersonation(
 async def list_all_users(
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    authz_service: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[UserDTO]:
     """
     Admin endpoint: list all users in the database.
@@ -146,7 +160,9 @@ async def list_all_users(
     """
     response: List[UserDTO]
     try:
-        if not await authz_check(user_context.user_id, "read-users", "admin"):
+        if not await authz_service.check(
+            user_context.user_id, "read-users", "admin", "admin"
+        ):
             raise HTTPException(
                 status_code=403,
                 detail="You do not have permission to list users",
