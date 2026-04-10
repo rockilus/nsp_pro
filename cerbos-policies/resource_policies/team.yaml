@@ -17,6 +17,19 @@ resourcePolicy:
       roles:
         - leader
 
+    # Only team leaders can manage workers
+    - actions: ["create-worker", "update-worker", "delete-worker"]
+      effect: EFFECT_ALLOW
+      roles:
+        - leader
+
+    # Any team member can read workers
+    - actions: ["read-workers"]
+      effect: EFFECT_ALLOW
+      roles:
+        - leader
+        - member
+
     # Super admins can perform any action on any team resource
     - actions:
         - read-team
@@ -24,6 +37,10 @@ resourcePolicy:
         - update-team
         - remove-user
         - read-own-worker
+        - create-worker
+        - read-workers
+        - update-worker
+        - delete-worker
       effect: EFFECT_ALLOW
       roles:
         - super_admin
