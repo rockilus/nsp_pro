@@ -67,9 +67,7 @@ async def db_interface() -> AsyncGenerator[DatabaseInterface, None]:
         finally:
             await provider.disconnect()
     else:
-        compose_file = os.path.join(
-            os.path.dirname(__file__), "docker-compose.yml"
-        )
+        compose_file = os.path.join(os.path.dirname(__file__), "docker-compose.yml")
         command = [
             "docker-compose",
             "-f",
@@ -117,9 +115,7 @@ async def db_interface() -> AsyncGenerator[DatabaseInterface, None]:
         # Wait for Cerbos PDP to be healthy
         for _ in range(15):
             try:
-                urllib.request.urlopen(
-                    CERBOS_HTTP_HEALTH, timeout=2
-                )  # noqa: S310
+                urllib.request.urlopen(CERBOS_HTTP_HEALTH, timeout=2)  # noqa: S310
                 break
             except (urllib.error.URLError, OSError):
                 time.sleep(2)
@@ -164,9 +160,7 @@ def make_app(
         x_dev_user_id: str = Header(None, alias="X-Dev-User-ID"),
     ) -> UserContext:
         user_id = x_dev_user_id or "test-user"
-        return UserContext(
-            user_id=user_id, email="test@example.com", groups=["user"]
-        )
+        return UserContext(user_id=user_id, email="test@example.com", groups=["user"])
 
     app.dependency_overrides[get_user_context] = _get_user_context_override
 
@@ -180,19 +174,13 @@ def make_app(
             team_membership_db=db_collections.team_membership_db,
         )
 
-    app.dependency_overrides[get_cerbos_authz_service] = (
-        _get_real_authz_service
-    )
+    app.dependency_overrides[get_cerbos_authz_service] = _get_real_authz_service
 
     if user_service_override is not None:
-        app.dependency_overrides[get_user_service] = (
-            lambda: user_service_override
-        )
+        app.dependency_overrides[get_user_service] = lambda: user_service_override
 
     if team_service_override is not None:
-        app.dependency_overrides[get_team_service] = (
-            lambda: team_service_override
-        )
+        app.dependency_overrides[get_team_service] = lambda: team_service_override
 
     return app
 

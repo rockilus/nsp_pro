@@ -11,9 +11,11 @@ class TeamMembershipService(BaseService):
     async def create_team_membership(
         self, membership: TeamMembership
     ) -> TeamMembership:
-        existing_membership = self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
-            user_id=membership.user_id,
-            team_id=membership.team_id,
+        existing_membership = (
+            self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
+                user_id=membership.user_id,
+                team_id=membership.team_id,
+            )
         )
         if existing_membership:
             return existing_membership

@@ -35,9 +35,7 @@ class UserService(BaseService):
         existing_user = self.collection.user_db.get_user_by_id(user_id)
         if existing_user is not None:
             # Log for audit purposes
-            log_info(
-                f"User with id {user_id} already exists, returning existing user"
-            )
+            log_info(f"User with id {user_id} already exists, returning existing user")
             return existing_user
 
         user_language = language if language else "fr"
@@ -57,9 +55,7 @@ class UserService(BaseService):
         new_user = self.collection.user_db.create_user(user)
         return new_user
 
-    async def update_user(
-        self, user_id: str, update_dto: UserUpdateDTO
-    ) -> User:
+    async def update_user(self, user_id: str, update_dto: UserUpdateDTO) -> User:
         existing_user = self.collection.user_db.get_user_by_id(user_id)
         if existing_user is None:
             raise UserNotFoundError(f"User with id {user_id} not found")

@@ -50,9 +50,7 @@ async def create_dimension(
         if not await authz.check(
             user_context.user_id, "create-dimension", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create a dimension"
-            )
+            raise NotAuthorizedError("You do not have permission to create a dimension")
         d_data = Dimension.from_dto(dimension)
         des_data = [DimEntry.from_dto(de) for de in dim_entries]
         new_dimension = dimension_service.create_dimension(d_data, des_data)
@@ -87,8 +85,10 @@ async def get_dimensions(
                 int(dt) for dtq in dim_types_query for dt in dtq.split(",")
             ]
             dt_data = [DimensionType(dt) for dt in dim_types_int]
-        dimensions = db_collections.dimension_db.get_dimensions_by_dim_types_not_deleted(
-            dt_data, team_id
+        dimensions = (
+            db_collections.dimension_db.get_dimensions_by_dim_types_not_deleted(
+                dt_data, team_id
+            )
         )
         dim_entries = db_collections.dim_entry_db.get_dim_entries_by_dim_ids(
             [d.id for d in dimensions]
@@ -117,13 +117,9 @@ async def update_dimension(
         if not await authz.check(
             user_context.user_id, "update-dimension", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update a dimension"
-            )
+            raise NotAuthorizedError("You do not have permission to update a dimension")
         d_data = Dimension.from_dto(dimension)
-        updated_dimension = db_collections.dimension_db.update_dimension(
-            d_data
-        )
+        updated_dimension = db_collections.dimension_db.update_dimension(d_data)
         response = updated_dimension.to_dto()
     except Exception as e:
         log_info("Failed to update dimension")

@@ -27,9 +27,7 @@ async def update_attribute(
         if not await authz.check(
             user_context.user_id, "update-attribute", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update attributes"
-            )
+            raise NotAuthorizedError("You do not have permission to update attributes")
         sp_data = Attribute.from_dto(attribute)
         new_sp = attribute_service.create_or_update_attribute(sp_data)
         response = new_sp.to_dto()

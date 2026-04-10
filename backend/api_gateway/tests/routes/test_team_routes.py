@@ -133,9 +133,7 @@ class TestCreateTeam:
 
     _PAYLOAD = {"team_name": "My New Team"}
 
-    def test_creates_team_when_authorized(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_creates_team_when_authorized(self, db_interface: DatabaseInterface):
         """Authenticated user with a DB record may create a team."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_create_ok")
@@ -150,9 +148,7 @@ class TestCreateTeam:
                         createdAt=1704067200.0,
                         useSolver=True,
                     ),
-                    membership=MembershipForTeamWithMembershipDTO(
-                        role="owner"
-                    ),
+                    membership=MembershipForTeamWithMembershipDTO(role="owner"),
                 )
             )
         )
@@ -169,13 +165,9 @@ class TestCreateTeam:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         """AuthzService short-circuits before PDP when requesting user has no DB record."""
-        app = make_app(
-            db_interface, team_service_override=make_mock_team_service()
-        )
+        app = make_app(db_interface, team_service_override=make_mock_team_service())
         client = TestClient(app)
 
         response = client.post(
@@ -196,33 +188,23 @@ class TestGetTeams:
     the real service calls Permit.io (authz_role_assignment_get_user_team_ids).
     """
 
-    def test_returns_teams_when_authorized(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_teams_when_authorized(self, db_interface: DatabaseInterface):
         """Authenticated user with a DB record may list teams."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_get_teams_ok")
-        app = make_app(
-            db_interface, team_service_override=make_mock_team_service()
-        )
+        app = make_app(db_interface, team_service_override=make_mock_team_service())
         client = TestClient(app)
 
         try:
-            response = client.get(
-                "/teams", headers=dev_headers("user_get_teams_ok")
-            )
+            response = client.get("/teams", headers=dev_headers("user_get_teams_ok"))
             assert response.status_code == 200
             assert response.json() == []
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         """Ghost user → 403 before PDP is consulted."""
-        app = make_app(
-            db_interface, team_service_override=make_mock_team_service()
-        )
+        app = make_app(db_interface, team_service_override=make_mock_team_service())
         client = TestClient(app)
 
         response = client.get("/teams", headers=dev_headers("ghost_get_teams"))
@@ -238,9 +220,7 @@ class TestGetTeamsWithMemberships:
     """get_user_teams_with_memberships checks: authz "read-teams" on resource "user".
     Uses the real service (no external side-effects)."""
 
-    def test_returns_memberships_when_authorized(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_memberships_when_authorized(self, db_interface: DatabaseInterface):
         """User with a DB record gets their team memberships."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_twm_ok")
@@ -261,9 +241,7 @@ class TestGetTeamsWithMemberships:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -287,9 +265,7 @@ class TestGetTeam:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_gt_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_gt_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_gt_member", team.id, TeamMembershipRole.MEMBER)
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -307,9 +283,7 @@ class TestGetTeam:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_gt_leader")
         team = seed_team(db)
-        seed_membership(
-            db, "user_gt_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_gt_leader", team.id, TeamMembershipRole.OWNER)
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -339,15 +313,11 @@ class TestGetTeam:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         app = make_app(db_interface)
         client = TestClient(app)
 
-        response = client.get(
-            "/teams/team_gt_any", headers=dev_headers("ghost_gt")
-        )
+        response = client.get("/teams/team_gt_any", headers=dev_headers("ghost_gt"))
         assert response.status_code == 403
 
 
@@ -364,9 +334,7 @@ class TestGetTeamUsers:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_gtu_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_gtu_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_gtu_member", team.id, TeamMembershipRole.MEMBER)
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -385,9 +353,7 @@ class TestGetTeamUsers:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_gtu_leader")
         team = seed_team(db)
-        seed_membership(
-            db, "user_gtu_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_gtu_leader", team.id, TeamMembershipRole.OWNER)
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -442,9 +408,7 @@ class TestUpdateTeam:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ut_leader")
         team = seed_team(db, created_by_user_id="user_ut_leader")
-        seed_membership(
-            db, "user_ut_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_ut_leader", team.id, TeamMembershipRole.OWNER)
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -464,9 +428,7 @@ class TestUpdateTeam:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ut_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_ut_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_ut_member", team.id, TeamMembershipRole.MEMBER)
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -513,9 +475,7 @@ class TestLeaveTeam:
     notifications and performs external lookups.
     """
 
-    def test_leaves_team_when_authorized(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_leaves_team_when_authorized(self, db_interface: DatabaseInterface):
         """Authenticated user with a DB record may leave a team."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_lt_member")
@@ -535,9 +495,7 @@ class TestLeaveTeam:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         """Ghost user → 403 (AuthzService short-circuits before PDP)."""
         mock_ts = make_mock_team_service()
         app = make_app(db_interface, team_service_override=mock_ts)
@@ -566,12 +524,8 @@ class TestRemoveUserFromTeam:
         seed_user(db, "user_rut_leader")
         seed_user(db, "user_rut_target", email="target@example.com")
         team = seed_team(db)
-        seed_membership(
-            db, "user_rut_leader", team.id, TeamMembershipRole.OWNER
-        )
-        seed_membership(
-            db, "user_rut_target", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_rut_leader", team.id, TeamMembershipRole.OWNER)
+        seed_membership(db, "user_rut_target", team.id, TeamMembershipRole.MEMBER)
         mock_ts = make_mock_team_service()
         app = make_app(db_interface, team_service_override=mock_ts)
         client = TestClient(app)
@@ -583,8 +537,7 @@ class TestRemoveUserFromTeam:
             )
             assert response.status_code == 200
             assert (
-                response.json()["message"]
-                == "User successfully removed from the team"
+                response.json()["message"] == "User successfully removed from the team"
             )
         finally:
             cleanup(db)
@@ -595,12 +548,8 @@ class TestRemoveUserFromTeam:
         seed_user(db, "user_rut_member")
         seed_user(db, "user_rut_target2", email="target2@example.com")
         team = seed_team(db)
-        seed_membership(
-            db, "user_rut_member", team.id, TeamMembershipRole.MEMBER
-        )
-        seed_membership(
-            db, "user_rut_target2", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_rut_member", team.id, TeamMembershipRole.MEMBER)
+        seed_membership(db, "user_rut_target2", team.id, TeamMembershipRole.MEMBER)
         mock_ts = make_mock_team_service()
         app = make_app(db_interface, team_service_override=mock_ts)
         client = TestClient(app)
@@ -632,9 +581,7 @@ class TestRemoveUserFromTeam:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         """Ghost requester → 403."""
         mock_ts = make_mock_team_service()
         app = make_app(db_interface, team_service_override=mock_ts)

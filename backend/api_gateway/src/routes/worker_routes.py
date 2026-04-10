@@ -52,8 +52,6 @@ async def create_worker(
             f"Worker created successfully for team {team_id}: {worker_created.id}"
         )
 
-    except NotAuthorizedError:
-        raise
     except Exception as e:
         log_info(f"Failed to create worker for team {team_id}: {str(e)}")
         handle_routes_errors(e)

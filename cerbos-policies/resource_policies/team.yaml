@@ -11,6 +11,7 @@ resourcePolicy:
         - read-own-worker
         - read-workers       # workers list
         - read-dimensions
+        - read-shifts
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -30,6 +31,9 @@ resourcePolicy:
         - update-dim-entry
         - delete-dim-entry
         - update-attribute
+        - create-shift
+        - update-shift
+        - delete-shift
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -53,6 +57,10 @@ resourcePolicy:
         - update-dim-entry
         - delete-dim-entry
         - update-attribute
+        - read-shifts
+        - create-shift
+        - update-shift
+        - delete-shift
       effect: EFFECT_ALLOW
       roles:
         - super_admin

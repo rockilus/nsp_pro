@@ -37,9 +37,7 @@ async def create_dim_entry(
         if not await authz.check(
             user_context.user_id, "create-dim-entry", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create a dim entry"
-            )
+            raise NotAuthorizedError("You do not have permission to create a dim entry")
         de_data = DimEntry.from_dto(dim_entry)
         de_created = dim_entry_service.create_dim_entry(de_data)
         response = de_created.to_dto()
@@ -64,9 +62,7 @@ async def update_dim_entry(
         if not await authz.check(
             user_context.user_id, "update-dim-entry", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update a dim_entry"
-            )
+            raise NotAuthorizedError("You do not have permission to update a dim_entry")
         de_data = DimEntry.from_dto(dim_entry)
         updated_de = db_collections.dim_entry_db.update_dim_entry(de_data)
         response = updated_de.to_dto()

@@ -107,9 +107,7 @@ def cleanup(db: DatabaseCollections) -> None:
 
 
 class TestGetCurrentUser:
-    def test_returns_user_when_authorized(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_user_when_authorized(self, db_interface: DatabaseInterface):
         """Authenticated user can read their own profile — real policy allows."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_alice", email="alice@example.com")
@@ -117,9 +115,7 @@ class TestGetCurrentUser:
         client = TestClient(app)
 
         try:
-            response = client.get(
-                "/users/me", headers=dev_headers("user_alice")
-            )
+            response = client.get("/users/me", headers=dev_headers("user_alice"))
             assert response.status_code == 200
             data = response.json()
             assert data["id"] == "user_alice"
@@ -127,9 +123,7 @@ class TestGetCurrentUser:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         """
         AuthzService short-circuits before calling the PDP when the requesting
         user has no DB record — the route must return 403.
@@ -210,9 +204,7 @@ class TestGetUserWorkerForTeam:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_grace", email="grace@example.com")
         seed_membership(db, "user_grace", "team_1", TeamMembershipRole.MEMBER)
-        created_worker = seed_worker(
-            db, "worker_grace", "team_1", "user_grace"
-        )
+        created_worker = seed_worker(db, "worker_grace", "team_1", "user_grace")
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -251,9 +243,7 @@ class TestGetUserWorkerForTeam:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_no_team_membership(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_no_team_membership(self, db_interface: DatabaseInterface):
         """
         User has no membership in the team → AuthzService short-circuits before
         calling the PDP (membership lookup returns None) → 403.
@@ -298,9 +288,7 @@ class TestChangeUserPassword:
         mock_service.change_user_password = AsyncMock(return_value=None)
         return mock_service
 
-    def test_changes_password_when_authorized(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_changes_password_when_authorized(self, db_interface: DatabaseInterface):
         """Authenticated user can change their own password — real policy allows."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_kate", email="kate@example.com")
@@ -318,15 +306,11 @@ class TestChangeUserPassword:
                 headers=dev_headers("user_kate"),
             )
             assert response.status_code == 200
-            assert (
-                response.json()["message"] == "Password updated successfully"
-            )
+            assert response.json()["message"] == "Password updated successfully"
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         """
         AuthzService short-circuits before calling the PDP when the requesting
         user has no DB record → 403.
