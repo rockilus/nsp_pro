@@ -315,8 +315,8 @@ resource "aws_ecs_task_definition" "permit_pdp" {
   ])
 
   runtime_platform {
-    cpu_architecture        = var.solve_service_cpu_architecture
-    operating_system_family = var.solve_service_operating_system_family
+    cpu_architecture        = var.permit_pdp_cpu_architecture
+    operating_system_family = var.permit_pdp_operating_system_family
   }
 
   # tags = merge(var.tags, {
