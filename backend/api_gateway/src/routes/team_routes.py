@@ -82,7 +82,7 @@ async def get_teams(
                 "You do not have permission to read teams"
             )
         start_time_get_teams = time.time()
-        teams = await team_service.get_user_teams(
+        teams = team_service.get_user_teams(
             user_id=user_context.effective_user_id
         )
         end_time_get_teams = time.time()

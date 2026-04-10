@@ -46,7 +46,7 @@ export default function WorkerSpecialtyHeaderCell({
   const cellContent = () => (
     <div className="table-header-default flex items-center justify-between">
       <Tooltip title={t('specialties_tooltip')} placement="top">
-        <span>{t('specialties')}</span>
+        <span data-testid="worker-specialty-header-cell">{t('specialties')}</span>
       </Tooltip>
       <div className="flex items-center gap-1">
         {onSort && onFilter && column && (
@@ -70,7 +70,6 @@ export default function WorkerSpecialtyHeaderCell({
       component="th"
       scope="row"
       className="worker-table-header"
-      data-testid="worker-specialty-header-cell"
       sx={{
         paddingY: 0,
         padding: '6px 8px',
