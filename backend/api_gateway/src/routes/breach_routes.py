@@ -36,9 +36,7 @@ async def get_objective_breaches(
                 "You do not have permission to get objective breaches",
             )
         start_time = time_module.time()
-        schedule_campaign = db_collections.schedule_db.get_schedule_campaign(
-            team_id
-        )
+        schedule_campaign = db_collections.schedule_db.get_schedule_campaign(team_id)
         if not schedule_campaign:
             return []
         breaches = db_collections.breach_db.get_breaches_by_schedule_id(

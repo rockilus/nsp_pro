@@ -18,6 +18,8 @@ resourcePolicy:
         - update-request
         - delete-request
         - read-assignments-validated
+        - create-swap
+        - read-swap
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -32,12 +34,16 @@ resourcePolicy:
         - delete-stats-header
         - approve-request
         - deny-request
+        - validate-swap
+        - approve-swap
         - update-team        # team settings
         - read-assignments
         - create-assignment
         - update-assignment
         - delete-assignment
         - check-replacements
+        - validate-swap
+        - approve-swap
         - remove-user        # member management
         - create-worker      # worker management
         - update-worker
@@ -114,6 +120,10 @@ resourcePolicy:
         - update-assignment
         - delete-assignment
         - check-replacements
+        - create-swap
+        - read-swap
+        - validate-swap
+        - approve-swap
         - update-team
         - remove-user
         - create-worker

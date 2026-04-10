@@ -12,9 +12,11 @@ class TeamMembershipService(BaseService):
     async def create_team_membership(
         self, membership: TeamMembership
     ) -> TeamMembership:
-        existing_membership = self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
-            user_id=membership.user_id,
-            team_id=membership.team_id,
+        existing_membership = (
+            self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
+                user_id=membership.user_id,
+                team_id=membership.team_id,
+            )
         )
         if existing_membership:
             return existing_membership
@@ -43,8 +45,10 @@ class TeamMembershipService(BaseService):
 
     def get_user_team_role(self, user_id: str, team_id: str) -> str | None:
         """Return the authz role ('leader' or 'member'), or None."""
-        membership = self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
-            user_id, team_id
+        membership = (
+            self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
+                user_id, team_id
+            )
         )
         if membership is None:
             return None

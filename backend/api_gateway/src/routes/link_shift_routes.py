@@ -71,9 +71,7 @@ async def get_link_shifts(
             "team",
             team_id,
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to get link shifts"
-            )
+            raise NotAuthorizedError("You do not have permission to get link shifts")
         link_shifts = db_collections.link_shift_db.get_link_shifts(team_id)
         response = [ls.to_dto() for ls in link_shifts]
     except Exception as e:

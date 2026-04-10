@@ -180,16 +180,12 @@ class TestCreateDimension:
     Only leaders are allowed by policy. Uses mock service (avoids cascades).
     """
 
-    def test_creates_dimension_when_leader(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_creates_dimension_when_leader(self, db_interface: DatabaseInterface):
         """Team owner (Cerbos role: leader) may create a dimension."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_cd_leader")
         team = seed_team(db, created_by_user_id="user_cd_leader")
-        seed_membership(
-            db, "user_cd_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_cd_leader", team.id, TeamMembershipRole.OWNER)
         mock_ds = make_mock_dimension_service(team.id)
         app = make_app(db_interface, dimension_service_override=mock_ds)
         client = TestClient(app)
@@ -213,9 +209,7 @@ class TestCreateDimension:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_cd_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_cd_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_cd_member", team.id, TeamMembershipRole.MEMBER)
         mock_ds = make_mock_dimension_service(team.id)
         app = make_app(db_interface, dimension_service_override=mock_ds)
         client = TestClient(app)
@@ -256,9 +250,7 @@ class TestCreateDimension:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         """AuthzService short-circuits before PDP when requesting user has no DB record."""
         mock_ds = make_mock_dimension_service()
         app = make_app(db_interface, dimension_service_override=mock_ds)
@@ -285,16 +277,12 @@ class TestGetDimensions:
     Both leaders and members are allowed by policy. Uses real DB collections.
     """
 
-    def test_returns_dimensions_for_leader(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_dimensions_for_leader(self, db_interface: DatabaseInterface):
         """Team owner (Cerbos role: leader) may read dimensions."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_gd_leader")
         team = seed_team(db)
-        seed_membership(
-            db, "user_gd_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_gd_leader", team.id, TeamMembershipRole.OWNER)
         seed_dimension(db, team.id, name="Leader Dimension")
         app = make_app(db_interface)
         client = TestClient(app)
@@ -307,22 +295,16 @@ class TestGetDimensions:
             assert response.status_code == 200
             data = response.json()
             assert "dimensions" in data
-            assert any(
-                d["name"] == "Leader Dimension" for d in data["dimensions"]
-            )
+            assert any(d["name"] == "Leader Dimension" for d in data["dimensions"])
         finally:
             cleanup(db)
 
-    def test_returns_dimensions_for_member(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_dimensions_for_member(self, db_interface: DatabaseInterface):
         """Team member (Cerbos role: member) may also read dimensions."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_gd_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_gd_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_gd_member", team.id, TeamMembershipRole.MEMBER)
         seed_dimension(db, team.id, name="Member Dimension")
         app = make_app(db_interface)
         client = TestClient(app)
@@ -355,9 +337,7 @@ class TestGetDimensions:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -378,16 +358,12 @@ class TestUpdateDimension:
     Only leaders are allowed by policy. Uses real DB (simple update write).
     """
 
-    def test_updates_dimension_when_leader(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_updates_dimension_when_leader(self, db_interface: DatabaseInterface):
         """Team owner (Cerbos role: leader) may update a dimension."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ud_leader")
         team = seed_team(db, created_by_user_id="user_ud_leader")
-        seed_membership(
-            db, "user_ud_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_ud_leader", team.id, TeamMembershipRole.OWNER)
         dimension = seed_dimension(db, team.id, name="Original Name")
         app = make_app(db_interface)
         client = TestClient(app)
@@ -417,9 +393,7 @@ class TestUpdateDimension:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ud_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_ud_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_ud_member", team.id, TeamMembershipRole.MEMBER)
         dimension = seed_dimension(db, team.id)
         app = make_app(db_interface)
         client = TestClient(app)
@@ -471,9 +445,7 @@ class TestUpdateDimension:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -496,16 +468,12 @@ class TestDeleteDimension:
     and attributes).
     """
 
-    def test_deletes_dimension_when_leader(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_deletes_dimension_when_leader(self, db_interface: DatabaseInterface):
         """Team owner (Cerbos role: leader) may delete a dimension."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_dd_leader")
         team = seed_team(db, created_by_user_id="user_dd_leader")
-        seed_membership(
-            db, "user_dd_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_dd_leader", team.id, TeamMembershipRole.OWNER)
         mock_ds = make_mock_dimension_service(team.id)
         app = make_app(db_interface, dimension_service_override=mock_ds)
         client = TestClient(app)
@@ -526,9 +494,7 @@ class TestDeleteDimension:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_dd_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_dd_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_dd_member", team.id, TeamMembershipRole.MEMBER)
         mock_ds = make_mock_dimension_service(team.id)
         app = make_app(db_interface, dimension_service_override=mock_ds)
         client = TestClient(app)
@@ -561,9 +527,7 @@ class TestDeleteDimension:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         mock_ds = make_mock_dimension_service()
         app = make_app(db_interface, dimension_service_override=mock_ds)
         client = TestClient(app)

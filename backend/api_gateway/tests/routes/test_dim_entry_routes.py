@@ -167,16 +167,12 @@ class TestCreateDimEntry:
     dimension existence — a real dimension is seeded).
     """
 
-    def test_creates_dim_entry_when_leader(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_creates_dim_entry_when_leader(self, db_interface: DatabaseInterface):
         """Team owner (Cerbos role: leader) may create a dim entry."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_cde_leader")
         team = seed_team(db, created_by_user_id="user_cde_leader")
-        seed_membership(
-            db, "user_cde_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_cde_leader", team.id, TeamMembershipRole.OWNER)
         dimension = seed_dimension(db, team.id)
         app = make_app(db_interface)
         client = TestClient(app)
@@ -204,9 +200,7 @@ class TestCreateDimEntry:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_cde_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_cde_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_cde_member", team.id, TeamMembershipRole.MEMBER)
         dimension = seed_dimension(db, team.id)
         app = make_app(db_interface)
         client = TestClient(app)
@@ -254,9 +248,7 @@ class TestCreateDimEntry:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -283,16 +275,12 @@ class TestUpdateDimEntry:
     Only leaders are allowed by policy. Uses real DB (simple update write).
     """
 
-    def test_updates_dim_entry_when_leader(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_updates_dim_entry_when_leader(self, db_interface: DatabaseInterface):
         """Team owner (Cerbos role: leader) may update a dim entry."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ude_leader")
         team = seed_team(db, created_by_user_id="user_ude_leader")
-        seed_membership(
-            db, "user_ude_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_ude_leader", team.id, TeamMembershipRole.OWNER)
         dimension = seed_dimension(db, team.id)
         dim_entry = seed_dim_entry(db, dimension.id, name="Original Entry")
         app = make_app(db_interface)
@@ -321,9 +309,7 @@ class TestUpdateDimEntry:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ude_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_ude_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_ude_member", team.id, TeamMembershipRole.MEMBER)
         dimension = seed_dimension(db, team.id)
         dim_entry = seed_dim_entry(db, dimension.id)
         app = make_app(db_interface)
@@ -373,9 +359,7 @@ class TestUpdateDimEntry:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         app = make_app(db_interface)
         client = TestClient(app)
 
@@ -402,16 +386,12 @@ class TestDeleteDimEntry:
     Only leaders are allowed by policy. Uses mock service (cascades to attributes).
     """
 
-    def test_deletes_dim_entry_when_leader(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_deletes_dim_entry_when_leader(self, db_interface: DatabaseInterface):
         """Team owner (Cerbos role: leader) may delete a dim entry."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_dde_leader")
         team = seed_team(db, created_by_user_id="user_dde_leader")
-        seed_membership(
-            db, "user_dde_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_dde_leader", team.id, TeamMembershipRole.OWNER)
         mock_des = make_mock_dim_entry_service()
         app = make_app(db_interface, dim_entry_service_override=mock_des)
         client = TestClient(app)
@@ -432,9 +412,7 @@ class TestDeleteDimEntry:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_dde_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_dde_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_dde_member", team.id, TeamMembershipRole.MEMBER)
         mock_des = make_mock_dim_entry_service()
         app = make_app(db_interface, dim_entry_service_override=mock_des)
         client = TestClient(app)
@@ -467,9 +445,7 @@ class TestDeleteDimEntry:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         mock_des = make_mock_dim_entry_service()
         app = make_app(db_interface, dim_entry_service_override=mock_des)
         client = TestClient(app)

@@ -154,16 +154,12 @@ class TestUpdateAttribute:
     shift/worker existence — out of scope for authz tests).
     """
 
-    def test_updates_attribute_when_leader(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_updates_attribute_when_leader(self, db_interface: DatabaseInterface):
         """Team owner (Cerbos role: leader) may update an attribute."""
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ua_leader")
         team = seed_team(db, created_by_user_id="user_ua_leader")
-        seed_membership(
-            db, "user_ua_leader", team.id, TeamMembershipRole.OWNER
-        )
+        seed_membership(db, "user_ua_leader", team.id, TeamMembershipRole.OWNER)
         mock_as = make_mock_attribute_service()
         app = make_app(db_interface, attribute_service_override=mock_as)
         client = TestClient(app)
@@ -184,9 +180,7 @@ class TestUpdateAttribute:
         db = DatabaseCollections(db_interface)
         seed_user(db, "user_ua_member")
         team = seed_team(db)
-        seed_membership(
-            db, "user_ua_member", team.id, TeamMembershipRole.MEMBER
-        )
+        seed_membership(db, "user_ua_member", team.id, TeamMembershipRole.MEMBER)
         mock_as = make_mock_attribute_service()
         app = make_app(db_interface, attribute_service_override=mock_as)
         client = TestClient(app)
@@ -221,9 +215,7 @@ class TestUpdateAttribute:
         finally:
             cleanup(db)
 
-    def test_returns_403_when_user_not_in_db(
-        self, db_interface: DatabaseInterface
-    ):
+    def test_returns_403_when_user_not_in_db(self, db_interface: DatabaseInterface):
         """AuthzService short-circuits before PDP when requesting user has no DB record."""
         mock_as = make_mock_attribute_service()
         app = make_app(db_interface, attribute_service_override=mock_as)

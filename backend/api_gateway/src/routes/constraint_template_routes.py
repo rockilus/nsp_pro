@@ -32,16 +32,12 @@ async def get_constraint_templates(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
-    data_fetching_service: DataFetchingService = Depends(
-        get_data_fetching_service
-    ),
+    data_fetching_service: DataFetchingService = Depends(get_data_fetching_service),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[TemplateDTO]:
     try:
         user_id = user_context.user_id
-        if not await authz.check(
-            user_id, "read-constraint-templates", "team", team_id
-        ):
+        if not await authz.check(user_id, "read-constraint-templates", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to get constraint templates"
             )

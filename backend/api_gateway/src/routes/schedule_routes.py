@@ -142,9 +142,7 @@ async def duplicate_period(
     return response
 
 
-@router.post(
-    "/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201
-)
+@router.post("/schedules/{schedule_id}/validate/teams/{team_id}", status_code=201)
 async def validate_schedule(
     schedule_id: str,
     team_id: str,
@@ -347,9 +345,7 @@ async def edit_request_deadline(
                 "You do not have permission to edit the request deadline",
             )
         # Interpret incoming epoch (seconds) as UTC datetime
-        new_deadline_date = datetime.fromtimestamp(
-            body.deadline, tz=timezone.utc
-        )
+        new_deadline_date = datetime.fromtimestamp(body.deadline, tz=timezone.utc)
         # Use edit semantics on the service: allow editing to any future datetime > now
         schedule = await schedule_service.edit_request_deadline(
             schedule_id=schedule_id, new_deadline_date=new_deadline_date

@@ -37,9 +37,7 @@ async def create_specialty(
         if not await authz.check(
             user_context.user_id, "create-specialty", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create a specialty"
-            )
+            raise NotAuthorizedError("You do not have permission to create a specialty")
         s_data = Specialty.from_dto(specialty)
         de_created = db_collections.specialty_db.create_specialty(s_data)
         response = de_created.to_dto()
@@ -61,12 +59,8 @@ async def get_specialties(
         if not await authz.check(
             user_context.user_id, "read-specialties", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read specialties"
-            )
-        specialties = db_collections.specialty_db.get_specialties_by_team_id(
-            team_id
-        )
+            raise NotAuthorizedError("You do not have permission to read specialties")
+        specialties = db_collections.specialty_db.get_specialties_by_team_id(team_id)
         response = [sp.to_dto() for sp in specialties]
     except Exception as e:
         log_info("Failed to get specialties")
@@ -87,9 +81,7 @@ async def update_specialty(
         if not await authz.check(
             user_context.user_id, "update-specialty", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update a specialty"
-            )
+            raise NotAuthorizedError("You do not have permission to update a specialty")
         de_data = Specialty.from_dto(specialty)
         updated_de = db_collections.specialty_db.update_specialty(de_data)
         response = updated_de.to_dto()
@@ -112,15 +104,9 @@ async def delete_specialty(
         if not await authz.check(
             user_context.user_id, "delete-specialty", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete a specialty"
-            )
-        workers_updated, attributes = specialty_service.delete_specialty(
-            specialty_id
-        )
-        response = [
-            w.to_dto(attr) for w, attr in zip(workers_updated, attributes)
-        ]
+            raise NotAuthorizedError("You do not have permission to delete a specialty")
+        workers_updated, attributes = specialty_service.delete_specialty(specialty_id)
+        response = [w.to_dto(attr) for w, attr in zip(workers_updated, attributes)]
     except Exception as e:
         log_info("Failed to delete specialty")
         handle_routes_errors(e)
