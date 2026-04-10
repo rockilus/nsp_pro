@@ -23,8 +23,11 @@ from shared.database.factory import DatabaseFactory
 from shared.database.interface import DatabaseInterface
 
 from src.app import create_app
+from src.dependencies.attribute_service import get_attribute_service
 from src.dependencies.auth_dependencies import get_user_context
 from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
+from src.dependencies.dim_entry_service import get_dim_entry_service
+from src.dependencies.dimension_service import get_dimension_service
 from src.dependencies.team_service import get_team_service
 from src.dependencies.user_service import get_user_service
 from src.integrations.authorization.cerbos_authz_service import (
@@ -138,6 +141,9 @@ def make_app(
     *,
     user_service_override=None,
     team_service_override=None,
+    dimension_service_override=None,
+    dim_entry_service_override=None,
+    attribute_service_override=None,
 ) -> FastAPI:
     """
     Create a FastAPI app for testing with:
@@ -150,6 +156,12 @@ def make_app(
     - Optional `user_service_override` for Cognito-backed routes.
     - Optional `team_service_override` for routes that call Permit.io or
       send notifications (create_team, get_user_teams, remove_user_from_team).
+    - Optional `dimension_service_override` for routes that cascade to
+      shifts/workers (create_dimension, delete_dimension).
+    - Optional `dim_entry_service_override` for routes that cascade to
+      attribute collections (delete_dim_entry).
+    - Optional `attribute_service_override` for routes that validate
+      shift/worker existence (update_attribute).
     """
     db_collections = DatabaseCollections(database_interface)
     app = create_app()
@@ -181,6 +193,21 @@ def make_app(
 
     if team_service_override is not None:
         app.dependency_overrides[get_team_service] = lambda: team_service_override
+
+    if dimension_service_override is not None:
+        app.dependency_overrides[get_dimension_service] = (
+            lambda: dimension_service_override
+        )
+
+    if dim_entry_service_override is not None:
+        app.dependency_overrides[get_dim_entry_service] = (
+            lambda: dim_entry_service_override
+        )
+
+    if attribute_service_override is not None:
+        app.dependency_overrides[get_attribute_service] = (
+            lambda: attribute_service_override
+        )
 
     return app
 

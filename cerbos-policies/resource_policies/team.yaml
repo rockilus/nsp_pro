@@ -12,11 +12,11 @@ resourcePolicy:
         - read-workers       # workers list
         - read-dimensions
         - read-shifts
-        - read-shift-demands
       effect: EFFECT_ALLOW
       roles:
         - leader
         - member
+
 
     # Team leaders only: team management + worker management + dimension management
     - actions:
@@ -36,8 +36,13 @@ resourcePolicy:
         - update-shift
         - delete-shift
         - create-shift-demand
+        - read-shift-demands
         - update-shift-demand
         - delete-shift-demand
+        - create-constraint
+        - read-constraints
+        - update-constraint
+        - delete-constraint
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -69,6 +74,10 @@ resourcePolicy:
         - create-shift-demand
         - update-shift-demand
         - delete-shift-demand
+        - read-constraints
+        - create-constraint
+        - update-constraint
+        - delete-constraint
       effect: EFFECT_ALLOW
       roles:
         - super_admin

@@ -10,11 +10,14 @@ from shared.schemas.dto import (
 )
 
 from src.dependencies import get_constraint_build_service, get_user_context
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.constraint_build_service import ConstraintBuildService
 
@@ -29,16 +32,19 @@ async def create_constraint(
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ConstraintBuildDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-constraint", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to create a constraint"
             )
         cb_data = ConstraintBuild.from_dto(req)
-        cb_augmented = constraint_build_service.create_constraint_build(cb_data)
+        cb_augmented = constraint_build_service.create_constraint_build(
+            cb_data
+        )
         response = cb_augmented.to_dto()
     except Exception as e:
         log_info("Failed to create constraint")
@@ -53,13 +59,18 @@ async def get_constraints(
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[ConstraintBuildDTO]:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-constraints", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to get constraints")
-        constraint_builds = constraint_build_service.get_constraint_builds(team_id)
+            raise NotAuthorizedError(
+                "You do not have permission to get constraints"
+            )
+        constraint_builds = constraint_build_service.get_constraint_builds(
+            team_id
+        )
         response = [cb.to_dto() for cb in constraint_builds]
     except Exception as e:
         log_info("Failed to get constraints")
@@ -75,9 +86,10 @@ async def update_constraint(
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ConstraintBuildDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-constraint", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -100,15 +112,18 @@ async def delete_constraint(
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ):
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "delete-constraint", "team", team_id
         ):
             raise NotAuthorizedError(
                 "You do not have permission to delete a constraint"
             )
-        constraint_build_service.delete_constraint_build(team_id, constraint_build_id)
+        constraint_build_service.delete_constraint_build(
+            team_id, constraint_build_id
+        )
     except Exception as e:
         log_info("Failed to delete constraint")
         handle_routes_errors(e)
