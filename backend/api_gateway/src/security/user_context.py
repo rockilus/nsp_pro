@@ -24,7 +24,7 @@ class UserContext:
     # Use effective_user_id (not user_id) for all data-scoped operations so that
     # when an admin is impersonating a user, data is fetched/written for the
     # target user.
-    # Always pass user_id (not effective_user_id) to authz_check so that permission
+    # Always pass user_id (not effective_user_id) to authz.check so that permission
     # decisions are made against the admin's own role, never the target user's role.
     impersonated_user_id: Optional[str] = field(default=None)
     is_impersonating: bool = field(default=False)
@@ -85,7 +85,9 @@ def extract_user_context(
         ValueError: If required user context is missing
     """
     if not x_user_sub:
-        logger.error("Missing required user context: X-User-Sub header not found")
+        logger.error(
+            "Missing required user context: X-User-Sub header not found"
+        )
         raise ValueError("User context missing - authentication required")
 
     # Parse groups if provided
@@ -93,7 +95,9 @@ def extract_user_context(
     if x_user_groups:
         # Handle comma-separated groups and clean whitespace
         user_groups = [
-            group.strip() for group in x_user_groups.split(",") if group.strip()
+            group.strip()
+            for group in x_user_groups.split(",")
+            if group.strip()
         ]
 
     user_context = UserContext(

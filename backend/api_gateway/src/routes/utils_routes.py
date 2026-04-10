@@ -17,7 +17,6 @@ from shared.database.reset_service import (
     DatabaseResetError,
     DatabaseResetService,
 )
-from shared.logger import log_info
 from shared.schemas.core import TeamMembership, TeamMembershipRole
 
 from src.config import config
@@ -25,11 +24,6 @@ from src.dependencies import (
     get_db_collections,
     get_test_service,
     get_user_context,
-)
-from src.errors import NotAuthorizedError
-from src.integrations.authorization import (
-    authz_check,
-    authz_delete_all_instances_except_user,
 )
 from src.security.user_context import UserContext
 from src.services.team_membership_service import TeamMembershipService
