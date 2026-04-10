@@ -4,15 +4,25 @@ resourcePolicy:
   version: "default"
   resource: team
   rules:
-    # Any team member (leader or member) can read their own associated worker profile
-    - actions: ["read-own-worker"]
+    # Any team member (leader or member) can read team details and user list
+    - actions: ["read-team", "read-team-users", "read-own-worker"]
       effect: EFFECT_ALLOW
       roles:
         - leader
         - member
 
+    # Only team leaders can update team settings or manage members
+    - actions: ["update-team", "remove-user"]
+      effect: EFFECT_ALLOW
+      roles:
+        - leader
+
     # Super admins can perform any action on any team resource
     - actions:
+        - read-team
+        - read-team-users
+        - update-team
+        - remove-user
         - read-own-worker
       effect: EFFECT_ALLOW
       roles:

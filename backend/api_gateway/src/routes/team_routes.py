@@ -12,9 +12,12 @@ from shared.schemas.dto import (
 )
 
 from src.dependencies import get_team_service, get_user_context
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import NotAuthorizedError  # MessageTypeError,
 from src.errors import handle_routes_errors
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.audit import log_impersonated_action
 from src.security.user_context import UserContext
 from src.services.team_service import TeamService
@@ -32,18 +35,23 @@ async def create_team(
     req: TeamCreateRequest,
     user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> TeamWithMembershipDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             action="create-team",
-            resource="user",
+            resource_kind="user",
             resource_id=user_context.user_id,
         ):
-            raise NotAuthorizedError("You do not have permission to create a team")
+            raise NotAuthorizedError(
+                "You do not have permission to create a team"
+            )
 
         if not req.team_name.strip():
-            raise HTTPException(status_code=400, detail="Team name cannot be empty")
+            raise HTTPException(
+                status_code=400, detail="Team name cannot be empty"
+            )
 
         log_impersonated_action(user_context, "create_team")
         new_team = await team_service.create_team(
@@ -60,16 +68,19 @@ async def create_team(
 async def get_teams(
     user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[TeamDTO]:
     start_time = time.time()
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             action="read-teams",
-            resource="user",
+            resource_kind="user",
             resource_id=user_context.user_id,
         ):
-            raise NotAuthorizedError("You do not have permission to read teams")
+            raise NotAuthorizedError(
+                "You do not have permission to read teams"
+            )
         start_time_get_teams = time.time()
         teams = await team_service.get_user_teams(
             user_id=user_context.effective_user_id
@@ -95,15 +106,18 @@ async def get_teams(
 async def get_user_teams_with_memberships(
     user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[TeamWithMembershipDTO]:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             action="read-teams",
-            resource="user",
+            resource_kind="user",
             resource_id=user_context.user_id,
         ):
-            raise NotAuthorizedError("You do not have permission to read teams")
+            raise NotAuthorizedError(
+                "You do not have permission to read teams"
+            )
         teams_with_memberships = team_service.get_user_teams_with_memberships(
             user_id=user_context.effective_user_id
         )
@@ -119,10 +133,15 @@ async def get_team(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> TeamDTO:
     try:
-        if not await authz_check(user_context.user_id, "read-team", "team", team_id):
-            raise NotAuthorizedError("You do not have permission to read a team")
+        if not await authz.check(
+            user_context.user_id, "read-team", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to read a team"
+            )
         team = team_service.get_team_by_id(team_id=team_id)
         if not team:
             raise HTTPException(status_code=404, detail="Team not found")
@@ -138,12 +157,15 @@ async def get_team_users_with_memberships(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[UserWithMembershipDTO]:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-team-users", "team", team_id
         ):
-            raise NotAuthorizedError("You do not have permission to view team users")
+            raise NotAuthorizedError(
+                "You do not have permission to view team users"
+            )
         users_with_memberships = team_service.get_team_users_with_memberships(
             team_id=team_id
         )
@@ -160,10 +182,15 @@ async def update_team(
     team: TeamDTO,
     user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> TeamDTO:
     try:
-        if not await authz_check(user_context.user_id, "update-team", "team", team_id):
-            raise NotAuthorizedError("You do not have permission to update a team")
+        if not await authz.check(
+            user_context.user_id, "update-team", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update a team"
+            )
         team_data = Team.from_dto(team)
         updated_team = team_service.update_team(team_data)
         response = updated_team.to_dto()
@@ -178,15 +205,18 @@ async def leave_team(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ):
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             action="leave-team",
-            resource="user",
+            resource_kind="user",
             resource_id=user_context.user_id,
         ):
-            raise NotAuthorizedError("You do not have permission to leave the team")
+            raise NotAuthorizedError(
+                "You do not have permission to leave the team"
+            )
         log_impersonated_action(user_context, "leave_team")
         await team_service.remove_user_from_team(
             user_id=user_context.effective_user_id,
@@ -205,13 +235,18 @@ async def remove_user_from_team(
     user_id: str,
     user_context: UserContext = Depends(get_user_context),
     team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ):
     try:
-        if not await authz_check(user_context.user_id, "remove-user", "team", team_id):
+        if not await authz.check(
+            user_context.user_id, "remove-user", "team", team_id
+        ):
             raise NotAuthorizedError(
                 "You do not have permission to remove a user from the team"
             )
-        await team_service.remove_user_from_team(user_id=user_id, team_id=team_id)
+        await team_service.remove_user_from_team(
+            user_id=user_id, team_id=team_id
+        )
         return {"message": "User successfully removed from the team"}
     except Exception as e:
         log_info("Failed to remove user from team")
