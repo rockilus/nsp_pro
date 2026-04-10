@@ -96,6 +96,7 @@ resourcePolicy:
         - create-multitasking-group
         - update-multitasking-group
         - delete-multitasking-group
+        - create-schedule-export
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -180,6 +181,7 @@ resourcePolicy:
         - create-multitasking-group
         - update-multitasking-group
         - delete-multitasking-group
+        - create-schedule-export
       effect: EFFECT_ALLOW
       roles:
         - super_admin
