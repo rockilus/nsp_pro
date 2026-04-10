@@ -4,41 +4,37 @@ resourcePolicy:
   version: "default"
   resource: team
   rules:
-    # Any team member (leader or member) can read team details and user list
-    - actions: ["read-team", "read-team-users", "read-own-worker"]
-      effect: EFFECT_ALLOW
-      roles:
-        - leader
-        - member
-
-    # Only team leaders can update team settings or manage members
-    - actions: ["update-team", "remove-user"]
-      effect: EFFECT_ALLOW
-      roles:
-        - leader
-
-    # Only team leaders can manage workers
-    - actions: ["create-worker", "update-worker", "delete-worker"]
-      effect: EFFECT_ALLOW
-      roles:
-        - leader
-
-    # Any team member can read workers
-    - actions: ["read-workers"]
-      effect: EFFECT_ALLOW
-      roles:
-        - leader
-        - member
-
-    # Super admins can perform any action on any team resource
+    # Any team member (leader or member): read access
     - actions:
         - read-team
         - read-team-users
+        - read-own-worker
+        - read-workers       # workers list
+      effect: EFFECT_ALLOW
+      roles:
+        - leader
+        - member
+
+    # Team leaders only: team management + worker management
+    - actions:
+        - update-team        # team settings
+        - remove-user        # member management
+        - create-worker      # worker management
+        - update-worker
+        - delete-worker
+      effect: EFFECT_ALLOW
+      roles:
+        - leader
+
+    # Super admins: full access to all team actions
+    - actions:
+        - read-team
+        - read-team-users
+        - read-own-worker
+        - read-workers
         - update-team
         - remove-user
-        - read-own-worker
         - create-worker
-        - read-workers
         - update-worker
         - delete-worker
       effect: EFFECT_ALLOW
