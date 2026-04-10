@@ -16,7 +16,6 @@ resourcePolicy:
         - create-request
         - read-requests
         - update-request
-        - rescind-request
         - delete-request
       effect: EFFECT_ALLOW
       roles:
@@ -55,6 +54,9 @@ resourcePolicy:
         - update-constraint
         - delete-constraint
         - read-constraint-templates
+        - approve-request
+        - deny-request
+        - rescind-request
       effect: EFFECT_ALLOW
       roles:
         - leader
