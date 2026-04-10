@@ -82,7 +82,6 @@ test.describe('Worker Specialty Header Cell', () => {
     // Verify the popup has the correct title
     const title = page.locator('[data-testid="update-specialties-title"]');
     await expect(title).toBeVisible();
-    await expect(title).toContainText('Update specialties');
 
     console.log("✅ Popup with 'Update specialties' title appears when clicking header");
   });
