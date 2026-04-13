@@ -9,7 +9,6 @@ services:
       - "4000:4000"
     depends_on:
       - redis
-      - permit_pdp
 
   data_fetcher:
     build:
@@ -45,9 +44,3 @@ services:
     ports:
       - "6379:6379"
 
-  permit_pdp:
-    image: permitio/pdp-v2:latest
-    ports:
-      - "7766:7000"
-    env_file:
-      - .env.docker_compose

@@ -55,15 +55,6 @@ services:
         echo "✅ SQS queues created"
         aws --endpoint-url=http://localstack:4566 sqs list-queues
 
-  permit:
-    # No ports needed
-    ports: []
-    # env_file: null
-    # Use GitHub Secrets for API keys
-    environment:
-      - PDP_API_KEY=${PDP_API_KEY}
-      - PDP_DEBUG=True # You might want this for debugging CI failures
-
   fastapi:
     # No ports needed; Playwright will access via a proxy service or the host network
     # The host network approach is simpler for Playwright
@@ -88,9 +79,8 @@ services:
       # Database Configuration - MongoDB for development
       - MONGODB_URI=mongodb://mongodb:27017
       - MONGODB_DATABASE_NAME=test
-      # Authorization - Permit
-      - PDP_URL=http://permit:7000
-      - PDP_API_KEY=${PDP_API_KEY}
+      # Authorization - Cerbos
+      - CERBOS_URL=http://cerbos:3593
       - AUTHZ_ENABLE_RETRY=True
       - AUTHZ_MAX_RETRIES=3
       - AUTHZ_INITIAL_DELAY=0.5

@@ -80,7 +80,7 @@ services:
         echo "✅ SQS queues created successfully!"
         aws --endpoint-url=http://localstack:4566 sqs list-queues
 
-  # Cerbos AuthZ (side-by-side with Permit during migration)
+  # Cerbos AuthZ
   cerbos:
     image: ghcr.io/cerbos/cerbos:latest
     container_name: cerbos
@@ -173,7 +173,7 @@ services:
   #   depends_on:
   #     fastapi:
   #       condition: service_healthy
-  #     # permit:
+
   #     #   condition: service_healthy
   #     # mongodb:
   #     #   condition: service_healthy
