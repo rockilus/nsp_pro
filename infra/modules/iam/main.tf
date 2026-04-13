@@ -61,8 +61,6 @@ resource "aws_iam_role_policy" "secrets_access_policy" {
           "secretsmanager:DescribeSecret"
         ]
         Resource = compact([
-          # permit_api_key_secret_arn and documentdb_secret_arn provided by caller
-          var.permit_api_key_secret_arn,
           var.documentdb_secret_arn,
           # optionally include impersonation JWT secret ARN when provided
           var.impersonation_jwt_secret_arn,

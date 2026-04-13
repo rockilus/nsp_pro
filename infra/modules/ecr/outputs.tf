@@ -40,12 +40,24 @@ output "solve_service_registry_id" {
   value       = aws_ecr_repository.solve_service.registry_id
 }
 
+# Cerbos PDP ECR Repository Outputs
+output "cerbos_pdp_repository_url" {
+  description = "URL of the Cerbos PDP ECR repository"
+  value       = aws_ecr_repository.cerbos_pdp.repository_url
+}
+
+output "cerbos_pdp_repository_arn" {
+  description = "ARN of the Cerbos PDP ECR repository"
+  value       = aws_ecr_repository.cerbos_pdp.arn
+}
+
 # Combined outputs for convenience
 output "repository_urls" {
   description = "Map of all ECR repository URLs"
   value = {
     main_service  = aws_ecr_repository.main_service.repository_url
     solve_service = aws_ecr_repository.solve_service.repository_url
+    cerbos_pdp    = aws_ecr_repository.cerbos_pdp.repository_url
   }
 }
 
@@ -54,5 +66,6 @@ output "repository_arns" {
   value = {
     main_service  = aws_ecr_repository.main_service.arn
     solve_service = aws_ecr_repository.solve_service.arn
+    cerbos_pdp    = aws_ecr_repository.cerbos_pdp.arn
   }
 }

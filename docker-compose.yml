@@ -80,23 +80,6 @@ services:
         echo "✅ SQS queues created successfully!"
         aws --endpoint-url=http://localstack:4566 sqs list-queues
 
-  # Permit.io PDP
-  permit:
-    image: permitio/pdp-v2:latest
-    container_name: permit
-    ports:
-      - "7766:7000"
-    env_file:
-      - .env.docker-compose.permit
-    # environment:
-    #   - PDP_API_KEY=your_api_key_here # Replace with your actual API key
-    #   - PDP_DEBUG=True
-    healthcheck:
-      test: ["CMD", "wget", "http://permit:7000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Cerbos AuthZ (side-by-side with Permit during migration)
   cerbos:
     image: ghcr.io/cerbos/cerbos:latest
@@ -130,7 +113,6 @@ services:
     depends_on:
       - mongodb
       - localstack-init
-      - permit
       - cerbos
     # Add a health check to ensure it's ready before tests run
     healthcheck:

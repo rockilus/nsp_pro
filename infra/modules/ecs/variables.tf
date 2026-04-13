@@ -194,41 +194,46 @@ variable "solve_service_operating_system_family" {
   default     = "LINUX" // Default value
 }
 
-# Permit.io PDP service configuration
-variable "permit_pdp_port" {
-  description = "Port number for the Permit.io PDP service"
+# Cerbos PDP service configuration
+variable "cerbos_pdp_grpc_port" {
+  description = "gRPC port number for the Cerbos PDP service"
   type        = number
-  default     = 7000
+  default     = 3592
 }
 
-variable "permit_pdp_cpu" {
-  description = "CPU units for the Permit.io PDP task"
+variable "cerbos_pdp_cpu" {
+  description = "CPU units for the Cerbos PDP task"
   type        = number
   default     = 256
 }
 
-variable "permit_pdp_memory" {
-  description = "Memory (MiB) for the Permit.io PDP task"
+variable "cerbos_pdp_memory" {
+  description = "Memory (MiB) for the Cerbos PDP task"
   type        = number
   default     = 512
 }
 
-variable "permit_pdp_desired_count" {
-  description = "Desired number of Permit.io PDP tasks"
+variable "cerbos_pdp_desired_count" {
+  description = "Desired number of Cerbos PDP tasks"
   type        = number
   default     = 1
 }
 
-variable "permit_pdp_cpu_architecture" {
-  description = "CPU architecture for the Permit.io PDP ECS task runtime platform"
+variable "cerbos_pdp_cpu_architecture" {
+  description = "CPU architecture for the Cerbos PDP ECS task runtime platform"
   type        = string
-  default     = "ARM64" // Default value
+  default     = "ARM64"
 }
 
-variable "permit_pdp_operating_system_family" {
-  description = "Operating system family for the Permit.io PDP ECS task runtime platform"
+variable "cerbos_pdp_operating_system_family" {
+  description = "Operating system family for the Cerbos PDP ECS task runtime platform"
   type        = string
-  default     = "LINUX" // Default value
+  default     = "LINUX"
+}
+
+variable "cerbos_pdp_image" {
+  description = "ECR image URI for the Cerbos PDP container"
+  type        = string
 }
 
 variable "log_retention_days" {
@@ -236,14 +241,6 @@ variable "log_retention_days" {
   type        = number
   default     = 30
 }
-
-# Secret ARNs for ECS task definitions
-variable "permit_api_key_secret_arn" {
-  description = "ARN of the Permit.io API key secret"
-  type        = string
-  default     = ""
-}
-
 
 variable "documentdb_secret_arn" {
   description = "ARN of the DocumentDB credentials secret"
@@ -277,8 +274,8 @@ variable "solve_service_security_group_id" {
   type        = string
 }
 
-variable "permit_pdp_security_group_id" {
-  description = "Security group ID for the Permit PDP service"
+variable "cerbos_pdp_security_group_id" {
+  description = "Security group ID for the Cerbos PDP service"
   type        = string
 }
 

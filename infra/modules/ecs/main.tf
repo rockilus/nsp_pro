@@ -75,20 +75,10 @@ resource "aws_cloudwatch_log_group" "solve_service" {
   # })
 }
 
-resource "aws_cloudwatch_log_group" "permit_pdp" {
-  name              = "/aws/ecs/${var.project_name}-${var.environment}-permit-pdp"
+resource "aws_cloudwatch_log_group" "cerbos_pdp" {
+  name              = "/aws/ecs/${var.project_name}-${var.environment}-cerbos-pdp"
   retention_in_days = 0
-  # retention_in_days = var.log_retention_days
-  log_group_class = "STANDARD"
-
-  # tags = merge(var.tags, {
-  #   Name        = "${var.project_name}-${var.environment}-permit-pdp-logs"
-  #   Component   = "CloudWatch"
-  #   Environment = var.environment
-  #   Project     = var.project_name
-  #   ManagedBy   = "Terraform"
-  #   Service     = "PermitPDP"
-  # })
+  log_group_class   = "STANDARD"
 }
 
 
@@ -113,9 +103,9 @@ resource "aws_iam_role_policy" "ecs_task_execution_logs" {
         Resource = [
           aws_cloudwatch_log_group.main_service.arn,
           aws_cloudwatch_log_group.solve_service.arn,
-          aws_cloudwatch_log_group.permit_pdp.arn,
+          aws_cloudwatch_log_group.cerbos_pdp.arn,
           "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/ecs/main-service:log-stream:",
-          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/ecs/permit-pdp:log-stream:",
+          "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/ecs/cerbos-pdp:log-stream:",
           "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/ecs/solve-service:log-stream:",
         ]
       }

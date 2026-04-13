@@ -19,14 +19,14 @@ output "solve_service_security_group_arn" {
   value       = aws_security_group.solve_service.arn
 }
 
-output "permit_pdp_security_group_id" {
-  description = "ID of the Permit PDP security group"
-  value       = aws_security_group.permit_pdp.id
+output "cerbos_pdp_security_group_id" {
+  description = "ID of the Cerbos PDP security group"
+  value       = aws_security_group.cerbos_pdp.id
 }
 
-output "permit_pdp_security_group_arn" {
-  description = "ARN of the Permit PDP security group"
-  value       = aws_security_group.permit_pdp.arn
+output "cerbos_pdp_security_group_arn" {
+  description = "ARN of the Cerbos PDP security group"
+  value       = aws_security_group.cerbos_pdp.arn
 }
 
 # Combined security group information
@@ -35,6 +35,6 @@ output "security_groups" {
   value = {
     main_service  = aws_security_group.main_service.id
     solve_service = aws_security_group.solve_service.id
-    permit_pdp    = aws_security_group.permit_pdp.id
+    cerbos_pdp    = aws_security_group.cerbos_pdp.id
   }
 }

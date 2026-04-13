@@ -85,28 +85,28 @@ resource "aws_security_group" "solve_service" {
   }
 }
 
-# Security Group for Permit PDP
-resource "aws_security_group" "permit_pdp" {
-  name_prefix = "${var.project_name}-${var.environment}-permit-pdp-"
-  description = "Security group for ${var.project_name} ${var.environment} Permit.io PDP service"
+# Security Group for Cerbos PDP
+resource "aws_security_group" "cerbos_pdp" {
+  name_prefix = "${var.project_name}-${var.environment}-cerbos-pdp-"
+  description = "Security group for ${var.project_name} ${var.environment} Cerbos PDP service"
   vpc_id      = var.vpc_id
 
-  # HTTPS egress for AWS services and Permit.io cloud sync
+  # All outbound traffic (required for ECR image pulls via NAT gateway)
   egress {
-    description = "HTTPS for AWS services and Permit.io"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
+    description = "All outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = merge(var.tags, {
-    Name        = "${var.project_name}-${var.environment}-permit-pdp-sg"
+    Name        = "${var.project_name}-${var.environment}-cerbos-pdp-sg"
     Component   = "SecurityGroup"
     Environment = var.environment
     Project     = var.project_name
     ManagedBy   = "Terraform"
-    Service     = "PermitPDP"
+    Service     = "CerbosPDP"
   })
 
   lifecycle {
@@ -114,26 +114,15 @@ resource "aws_security_group" "permit_pdp" {
   }
 }
 
-# Separate rule for Permit PDP ingress from main service
-resource "aws_security_group_rule" "permit_pdp_main_service_ingress" {
+# gRPC ingress for Cerbos PDP from main service only
+resource "aws_security_group_rule" "cerbos_pdp_main_service_ingress" {
   type                     = "ingress"
-  from_port                = var.permit_pdp_port
-  to_port                  = var.permit_pdp_port
+  from_port                = var.cerbos_pdp_grpc_port
+  to_port                  = var.cerbos_pdp_grpc_port
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.main_service.id
-  security_group_id        = aws_security_group.permit_pdp.id
-  description              = "Traffic from main service"
-}
-
-# Allow traffic from anywhere to permit PDP (if needed)
-resource "aws_security_group_rule" "permit_pdp_external_ingress" {
-  type              = "ingress"
-  from_port         = var.permit_pdp_port
-  to_port           = var.permit_pdp_port
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.permit_pdp.id
-  description       = "External traffic to Permit PDP"
+  security_group_id        = aws_security_group.cerbos_pdp.id
+  description              = "gRPC traffic from main service"
 }
 
 

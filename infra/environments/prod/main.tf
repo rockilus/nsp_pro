@@ -3,17 +3,6 @@
 # Terraform will reference existing secrets via data sources so the
 # secret values never enter Terraform state.
 
-data "aws_secretsmanager_secret" "permit_api_key" {
-  # Name must match the secret already created in AWS Secrets Manager.
-  # Example: "nsp-pro/permit-api-key" or "nsp_pro-prod-permit-api-key" depending on your naming.
-  name = var.permit_api_key_secret_name
-}
-
-
-data "aws_secretsmanager_secret_version" "permit_api_key_version" {
-  secret_id = data.aws_secretsmanager_secret.permit_api_key.id
-}
-
 # Impersonation JWT secret — this secret is created/managed out-of-band
 # (manually or by a separate process). We read it here via a data source
 # so Terraform never contains the plaintext value.
@@ -118,7 +107,6 @@ module "iam" {
   environment  = var.environment
 
   # Pass secret ARNs so the IAM policy can reference concrete resources
-  permit_api_key_secret_arn    = data.aws_secretsmanager_secret.permit_api_key.arn
   documentdb_secret_arn        = module.documentdb.credentials_secret_arn
   impersonation_jwt_secret_arn = data.aws_secretsmanager_secret.impersonation_jwt.arn
 
@@ -424,9 +412,9 @@ module "security_groups" {
   vpc_cidr_block = module.vpc.vpc_cidr_block
 
   # Service ports
-  main_service_port  = var.main_service_port
-  solve_service_port = var.solve_service_port
-  permit_pdp_port    = var.permit_pdp_port
+  main_service_port    = var.main_service_port
+  solve_service_port   = var.solve_service_port
+  cerbos_pdp_grpc_port = 3592
 
   # Network Load Balancer security group ID
   nlb_security_group_id = module.network_load_balancer.nlb_security_group_id
@@ -512,7 +500,7 @@ module "ecs" {
   # Security Group IDs from security groups module
   main_service_security_group_id  = module.security_groups.main_service_security_group_id
   solve_service_security_group_id = module.security_groups.solve_service_security_group_id
-  permit_pdp_security_group_id    = module.security_groups.permit_pdp_security_group_id
+  cerbos_pdp_security_group_id    = module.security_groups.cerbos_pdp_security_group_id
 
   # ECR repository URLs
   main_service_ecr_repository_url  = module.ecr.main_service_repository_url
@@ -542,16 +530,15 @@ module "ecs" {
   solve_service_cpu_architecture        = var.solve_service_cpu_architecture
   solve_service_operating_system_family = var.solve_service_operating_system_family
 
-  # Permit PDP service
-  permit_pdp_desired_count           = var.permit_pdp_desired_count
-  permit_pdp_port                    = var.permit_pdp_port
-  permit_pdp_cpu                     = var.permit_pdp_cpu
-  permit_pdp_memory                  = var.permit_pdp_memory
-  permit_pdp_cpu_architecture        = var.permit_pdp_cpu_architecture
-  permit_pdp_operating_system_family = var.permit_pdp_operating_system_family
+  # Cerbos PDP service
+  cerbos_pdp_desired_count           = var.cerbos_pdp_desired_count
+  cerbos_pdp_cpu                     = var.cerbos_pdp_cpu
+  cerbos_pdp_memory                  = var.cerbos_pdp_memory
+  cerbos_pdp_cpu_architecture        = var.cerbos_pdp_cpu_architecture
+  cerbos_pdp_operating_system_family = var.cerbos_pdp_operating_system_family
+  cerbos_pdp_image                   = var.cerbos_pdp_image
 
   # Secret ARNs (referencing externally-managed Secrets Manager secrets)
-  permit_api_key_secret_arn                  = data.aws_secretsmanager_secret.permit_api_key.arn
   documentdb_secret_arn                      = module.documentdb.credentials_secret_arn
   documentdb_secret_name                     = module.documentdb.credentials_secret_name
   api_gateway_backend_api_key_parameter_name = module.api_gateway.backend_api_key_parameter.name

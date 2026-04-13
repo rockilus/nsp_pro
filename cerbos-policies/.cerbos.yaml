@@ -10,4 +10,10 @@ storage:
     watchForChanges: false
 
 schema:
-  enforcement: none
+  enforcement: warn
+
+audit:
+  enabled: true
+  backend: local
+  local:
+    retentionPeriod: 168h
