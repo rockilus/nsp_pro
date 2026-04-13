@@ -11,9 +11,12 @@ from shared.schemas.core import SolveRequest
 from shared.schemas.dto import SolveTaskStatusResponseDTO
 
 from src.dependencies import get_user_context
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.dependencies.sqs_solve_service import get_sqs_solve_service
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.sqs_solve_service import APIGatewaySQSSolveService
 
@@ -34,6 +37,7 @@ async def submit_solve_request(
     body: SolveRequest,
     user_context: UserContext = Depends(get_user_context),
     sqs_solve_service: APIGatewaySQSSolveService = Depends(get_sqs_solve_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SolveTaskStatusResponseDTO:
     """
     Submit a solve request via SQS.
@@ -59,7 +63,7 @@ async def submit_solve_request(
         team_id = body.team_id
 
         # Check authorization
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "solve-schedule", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to solve a schedule")

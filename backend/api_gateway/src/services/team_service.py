@@ -1,4 +1,3 @@
-import time
 from datetime import datetime, timezone
 from typing import List
 
@@ -11,10 +10,6 @@ from shared.schemas.core import (
     UserWithMembership,
 )
 
-from src.integrations.authorization import (
-    authz_role_assignment_get_user_team_ids,
-    authz_team_resource_instance_create,
-)
 from src.services.base_service import BaseService
 from src.services.notification_builders import (
     user_left_team_event,
@@ -47,7 +42,6 @@ class TeamService(BaseService):
             use_solver=True,
         )
         new_team = self.collection.team_db.create_team(new_team)
-        await authz_team_resource_instance_create(new_team)
         membership = TeamMembership(
             id="",
             user_id=owner_id,
@@ -126,20 +120,16 @@ class TeamService(BaseService):
                 )
         return out
 
-    async def get_user_teams(self, user_id: str) -> List[Team]:
-        start_time_get_user_teams = time.time()
-        team_ids = await authz_role_assignment_get_user_team_ids(user_id, "leader")
-        end_time_get_user_teams = time.time()
-        start_time_get_teams_from_db = time.time()
-        teams = self.collection.team_db.get_teams_by_ids(team_ids)
-        end_time_get_teams_from_db = time.time()
-        total_time_get_user_teams = end_time_get_user_teams - start_time_get_user_teams
-        total_time_get_teams_from_db = (
-            end_time_get_teams_from_db - start_time_get_teams_from_db
+    def get_user_teams(self, user_id: str) -> List[Team]:
+        memberships = (
+            self.collection.team_membership_db.get_team_memberships_by_user_id(
+                user_id=user_id
+            )
         )
-        print(f"Total time to get user teams:    {total_time_get_user_teams}")
-        print(f"Total time to get teams from db: {total_time_get_teams_from_db}")
-        return teams
+        owner_team_ids = [
+            m.team_id for m in memberships if m.role == TeamMembershipRole.OWNER
+        ]
+        return self.collection.team_db.get_teams_by_ids(owner_team_ids)
 
     def update_team(self, team: Team) -> Team:
         existing_team = self.collection.team_db.get_team_by_id(team_id=team.id)

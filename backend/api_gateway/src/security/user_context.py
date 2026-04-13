@@ -24,7 +24,7 @@ class UserContext:
     # Use effective_user_id (not user_id) for all data-scoped operations so that
     # when an admin is impersonating a user, data is fetched/written for the
     # target user.
-    # Always pass user_id (not effective_user_id) to authz_check so that permission
+    # Always pass user_id (not effective_user_id) to authz.check so that permission
     # decisions are made against the admin's own role, never the target user's role.
     impersonated_user_id: Optional[str] = field(default=None)
     is_impersonating: bool = field(default=False)

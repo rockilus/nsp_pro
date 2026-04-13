@@ -18,8 +18,11 @@ from src.dependencies import (
     get_schedule_service,
     get_user_context,
 )
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.schedule_service import ScheduleService
 
@@ -41,9 +44,10 @@ async def create_schedule(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(get_schedule_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-schedule", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -64,9 +68,10 @@ async def get_schedules(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[ScheduleDTO]:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-schedules", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -88,9 +93,10 @@ async def get_work_time_table(
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> WorkTimeTableDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-schedule-work-times", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -113,9 +119,10 @@ async def duplicate_period(
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> DuplicateResultDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             "duplicate-period",
             "team",
@@ -143,9 +150,10 @@ async def validate_schedule(
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "validate-schedule", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -167,9 +175,10 @@ async def update_schedule(
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-schedule", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -192,9 +201,10 @@ async def delete_schedule(
     schedule_service: ScheduleService = Depends(
         get_schedule_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Dict:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "delete-schedule", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -212,9 +222,10 @@ async def get_request_deadline(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> RequestDeadlineDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-requests", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -268,9 +279,10 @@ async def set_request_deadline(
     body: SetDeadlineBody,
     user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(get_schedule_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-schedule", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -297,9 +309,10 @@ async def send_request_deadline_reminder(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(get_schedule_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-schedule", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -322,9 +335,10 @@ async def edit_request_deadline(
     body: SetDeadlineBody,
     user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(get_schedule_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-schedule", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -349,9 +363,10 @@ async def delete_request_deadline(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(get_schedule_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ScheduleDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-schedule", "team", team_id
         ):
             raise NotAuthorizedError(

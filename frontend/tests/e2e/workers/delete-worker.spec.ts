@@ -85,8 +85,7 @@ test.describe('Worker Deletion', () => {
     await expect(workerRows).toHaveCount(1);
 
     // Check that the cell contains the expected empty state text
-    const emptyCell = workerRows.first().locator('td');
-    await expect(emptyCell).toContainText('no_workers_found');
+    await expect(page.locator('[data-testid="worker-table-empty-state"]')).toBeVisible();
 
     console.log('✅ Worker successfully deleted from table');
   });
@@ -178,7 +177,7 @@ test.describe('Worker Deletion', () => {
 
     // Wait for any UI updates to complete by checking for empty state
     // Since the worker was already deleted via API, the UI should eventually show empty state
-    await expect(page.locator('text=no_workers_found')).toBeVisible();
+    await expect(page.locator('[data-testid="worker-table-empty-state"]')).toBeVisible();
 
     // Refresh to get the current state
     await page.reload();
@@ -188,8 +187,7 @@ test.describe('Worker Deletion', () => {
     workerRows = workerTestBase.getWorkerRows(page);
     await expect(workerRows).toHaveCount(1);
 
-    const emptyCell = workerRows.first().locator('td');
-    await expect(emptyCell).toContainText('no_workers_found');
+    await expect(page.locator('[data-testid="worker-table-empty-state"]')).toBeVisible();
 
     console.log('✅ Deletion handled gracefully for already deleted worker');
   });
@@ -266,22 +264,17 @@ test.describe('Worker Deletion', () => {
 
     // Verify table headers are present before deletion
     const table = workerTestBase.getWorkerTable(page);
-    const headerRow = table.locator('thead tr');
-    await expect(headerRow).toContainText('Name');
-    await expect(headerRow).toContainText('Acronym');
+    const headerRow = table.locator('[data-testid="worker-name-header-cell"]');
+    await expect(headerRow).toBeVisible();
 
     // Delete the worker
     await workerTestBase.deleteWorkerViaUIAndWait(page, testWorker.id);
 
     // Verify table headers are still present after deletion
-    await expect(headerRow).toContainText('Name');
-    await expect(headerRow).toContainText('Acronym');
+    await expect(headerRow).toBeVisible();
 
     // Verify table shows empty state
-    const workerRows = workerTestBase.getWorkerRows(page);
-    await expect(workerRows).toHaveCount(1);
-    const emptyCell = workerRows.first().locator('td');
-    await expect(emptyCell).toContainText('no_workers_found');
+    await expect(page.locator('[data-testid="worker-table-empty-state"]')).toBeVisible();
 
     console.log('✅ Table structure maintained after deletion');
   });

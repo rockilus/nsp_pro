@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 
 const workerTestBase = new WorkerTestBase();
 
-test.describe('Worker Creation with Database Reset', () => {
+test.describe('Worker Creation', () => {
   test.beforeAll(async () => {
     // Setup the common worker test environment
     await workerTestBase.setupWorkerTests(test.info().workerIndex);
@@ -17,15 +17,14 @@ test.describe('Worker Creation with Database Reset', () => {
 
   test('should start with an empty worker table', async ({ page }) => {
     // Verify that the table starts empty (before adding any workers)
-    await page.waitForSelector('[aria-label="worker table"]');
+    await page.waitForSelector('[data-testid="worker-table"]');
 
-    // The table should show a single row with the 'no_workers_found' message
+    // The table should show a single row with the empty state cell
     const workerRows = workerTestBase.getWorkerRows(page);
     await expect(workerRows).toHaveCount(1);
 
-    // Check that the cell contains the expected empty state text
-    const emptyCell = workerRows.first().locator('td');
-    await expect(emptyCell).toContainText('no_workers_found');
+    // Check that the empty state cell is visible
+    await expect(page.locator('[data-testid="worker-table-empty-state"]')).toBeVisible();
 
     console.log('✅ Worker table shows empty state as expected');
   });
@@ -34,63 +33,37 @@ test.describe('Worker Creation with Database Reset', () => {
     // Create a worker using the shared utility
     await workerTestBase.createWorkerViaUI(page);
 
-    // Get the newly created worker row to verify its default values
-    const workerRow = workerTestBase.getWorkerRow(page);
-
     // Verify default worker properties based on the specifications:
 
-    // 1. Name should be empty (or "Unnamed Worker" if that's the default)
-    const nameCell = workerTestBase.getWorkerNameCell(page);
-    // The name field might be an input or text field - check both possibilities
-    const nameInput = nameCell.locator('input');
-    if (await nameInput.isVisible()) {
-      await expect(nameInput).toHaveValue('');
-    }
+    // 1. Name display should show the default placeholder
+    const nameDisplay = workerTestBase.getWorkerNameDisplay(page);
+    await expect(nameDisplay).toBeVisible();
 
-    // 2. Acronym should be empty
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page);
-    const acronymInput = acronymCell.locator('input');
-    if (await acronymInput.isVisible()) {
-      await expect(acronymInput).toHaveValue('');
-    }
+    // 2. Acronym display should be visible and empty
+    const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
+    await expect(acronymDisplay).toBeVisible();
 
-    // 3. Contract start should be today's date
-    const today = dayjs().format('YYYY-MM-DD');
-    const contractStartCell = workerRow.locator('td').nth(2); // Assuming third column is contract start
-    const contractStartInput = contractStartCell.locator('input');
-    if (await contractStartInput.isVisible()) {
-      // The date might be in different formats, so we'll check if it matches today
-      const inputValue = await contractStartInput.inputValue();
-      expect(inputValue).toContain(today.split('-')[0]); // At least check the year
-    }
+    // 3. Employment start should be today's date
+    const today = dayjs().format('DD/MM/YYYY');
+    const startDisplay = workerTestBase.getWorkerEmploymentStartDisplay(page);
+    await expect(startDisplay).toBeVisible();
+    await expect(startDisplay).toContainText(today);
 
-    // 4. Weekly hours should be 39
-    const weeklyHoursCell = workerRow.locator('td').nth(5); // Adjust index based on actual column order
-    const weeklyHoursInput = weeklyHoursCell.locator('input');
-    if (await weeklyHoursInput.isVisible()) {
-      await expect(weeklyHoursInput).toHaveValue('39');
-    }
+    // 4. Weekly hours should default to 39
+    const weeklyHoursDisplay = workerTestBase.getWorkerWeeklyHoursDisplay(page);
+    await expect(weeklyHoursDisplay).toContainText('39');
 
-    // 5. Desired weekly hours should be 39
-    const desiredHoursCell = workerRow.locator('td').nth(6); // Adjust index based on actual column order
-    const desiredHoursInput = desiredHoursCell.locator('input');
-    if (await desiredHoursInput.isVisible()) {
-      await expect(desiredHoursInput).toHaveValue('39');
-    }
+    // 5. Desired weekly hours should default to 39
+    const weeklyHoursDesiredDisplay = workerTestBase.getWorkerWeeklyHoursDesiredDisplay(page);
+    await expect(weeklyHoursDesiredDisplay).toContainText('39');
 
-    // 6. Duties per month should be 4
-    const dutiesCell = workerRow.locator('td').nth(7); // Adjust index based on actual column order
-    const dutiesInput = dutiesCell.locator('input');
-    if (await dutiesInput.isVisible()) {
-      await expect(dutiesInput).toHaveValue('4');
-    }
+    // 6. Duties per month should default to 4
+    const dutiesDisplay = workerTestBase.getWorkerDutiesPerMonthDisplay(page);
+    await expect(dutiesDisplay).toContainText('4');
 
-    // 7. Annual leave should be 25
-    const leaveCell = workerRow.locator('td').nth(8); // Adjust index based on actual column order
-    const leaveInput = leaveCell.locator('input');
-    if (await leaveInput.isVisible()) {
-      await expect(leaveInput).toHaveValue('25');
-    }
+    // 7. Annual leave should default to 25
+    const annualLeaveDisplay = workerTestBase.getWorkerAnnualLeaveDisplay(page);
+    await expect(annualLeaveDisplay).toContainText('25');
 
     console.log('✅ New worker created with correct default values');
   });
@@ -99,39 +72,45 @@ test.describe('Worker Creation with Database Reset', () => {
     // First create a worker using the shared utility
     await workerTestBase.createWorkerViaUI(page);
 
-    // Get the worker name cell and edit it
-    const nameCell = workerTestBase.getWorkerNameCell(page);
-    const nameInput = nameCell.locator('input');
+    // Click the name cell to enter edit mode
+    await workerTestBase.getWorkerNameCell(page).click();
 
-    if (await nameInput.isVisible()) {
-      // Clear the current value and type a new name
-      await nameInput.fill('Test Worker');
+    // Get the name input that appears in edit mode
+    const nameInput = workerTestBase.getWorkerNameInput(page);
+    await expect(nameInput).toBeVisible();
 
-      // Press Enter or tab to trigger save
-      await nameInput.press('Tab');
+    // Clear the current value and type a new name
+    await nameInput.fill('Test Worker');
 
-      // Verify the name was updated
-      await expect(nameInput).toHaveValue('Test Worker');
-    }
+    // Press Enter to confirm the edit
+    await nameInput.press('Enter');
+
+    // After confirming, the display should show the new name
+    const nameDisplay = workerTestBase.getWorkerNameDisplay(page);
+    await expect(nameDisplay).toContainText('Test Worker');
 
     console.log('✅ Worker name updated successfully');
   });
 
   test('should display the correct table headers', async ({ page }) => {
-    // Verify that the worker table has the expected column headers
+    // Verify that the worker table has the expected column header cells via data-testid
     const table = workerTestBase.getWorkerTable(page);
-    const headerRow = table.locator('thead tr');
 
-    // Check for expected headers based on DefaultWorkerFields
-    await expect(headerRow).toContainText('Name');
-    await expect(headerRow).toContainText('Acronym');
-    await expect(headerRow).toContainText('Contract start');
-    await expect(headerRow).toContainText('Contract end');
-    await expect(headerRow).toContainText('Specialties');
-    await expect(headerRow).toContainText('Weekly hours');
-    await expect(headerRow).toContainText('Desired weekly hours');
-    await expect(headerRow).toContainText('Duties per month');
-    await expect(headerRow).toContainText('Leave (days)');
+    await expect(table.locator('[data-testid="worker-name-header-cell"]')).toBeVisible();
+    await expect(table.locator('[data-testid="worker-acronym-header-cell"]')).toBeVisible();
+    await expect(
+      table.locator('[data-testid="worker-employmentStartDate-header-cell"]'),
+    ).toBeVisible();
+    await expect(
+      table.locator('[data-testid="worker-employmentEndDate-header-cell"]'),
+    ).toBeVisible();
+    await expect(table.locator('[data-testid="worker-specialty-header-cell"]')).toBeVisible();
+    await expect(table.locator('[data-testid="worker-weeklyHours-header-cell"]')).toBeVisible();
+    await expect(
+      table.locator('[data-testid="worker-weeklyHoursDesired-header-cell"]'),
+    ).toBeVisible();
+    await expect(table.locator('[data-testid="worker-dutiesPerMonth-header-cell"]')).toBeVisible();
+    await expect(table.locator('[data-testid="worker-annualLeave-header-cell"]')).toBeVisible();
 
     console.log('✅ Table headers are correctly displayed');
   });

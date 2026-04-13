@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Callable, Coroutine
+from typing import Callable, Coroutine
 
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
@@ -13,20 +13,13 @@ from src.utils.user_utils import is_valid_email
 
 
 class UserService(BaseService):
-    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(
         self,
         collection: DatabaseCollections,
-        authz_user_sync: Callable[[User], Coroutine[Any, Any, None]],
-        authz_role_assignment_assign: Callable[
-            [str, str, str, str], Coroutine[Any, Any, None]
-        ],
-        authn_update_user_email: Callable[[str, str, str], Coroutine[Any, Any, None]],
-        authn_change_password: Callable[[str, str, str], Coroutine[Any, Any, None]],
+        authn_update_user_email: Callable[[str, str, str], Coroutine],
+        authn_change_password: Callable[[str, str, str], Coroutine],
     ):
         super().__init__(collection)
-        self.authz_user_sync = authz_user_sync
-        self.authz_role_assignment_assign = authz_role_assignment_assign
         self.authn_update_user_email = authn_update_user_email
         self.authn_change_password = authn_change_password
 
@@ -60,13 +53,6 @@ class UserService(BaseService):
             impersonating_user_id=None,
         )
         new_user = self.collection.user_db.create_user(user)
-        await self.authz_user_sync(new_user)
-        await self.authz_role_assignment_assign(
-            user_id=new_user.id,  # type: ignore[call-arg]
-            resource="user",  # type: ignore[call-arg]
-            resource_instance_key=new_user.id,  # type: ignore[call-arg]
-            role="owner",  # type: ignore[call-arg]
-        )
         return new_user
 
     async def update_user(self, user_id: str, update_dto: UserUpdateDTO) -> User:

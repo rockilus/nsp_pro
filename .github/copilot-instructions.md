@@ -64,7 +64,7 @@ Rockilus is an advanced **Workforce Management (WFM) and algorithmic scheduling 
 #### Backend — API Service
 - **Language:** Python
 - **Location:** `backend/api_gateway/`
-- **Stack:** FastAPI, AWS Cognito (AuthN), Permit.io (AuthZ), SQS enqueuing for background solving, `uv` environment manager, shared library, MongoDB typed library
+- **Stack:** FastAPI, AWS Cognito (AuthN), Cerbos (AuthZ), SQS enqueuing for background solving, `uv` environment manager, shared library, MongoDB typed library
 - **Deployed on:** AWS ECS (Dockerized, pushed to ECR)
 - **Tests:** pytest
 - **After edits:** Run `just all api_service` from `backend/`
@@ -132,7 +132,7 @@ from shared.schemas.core import (
 
 All Rockilus infrastructure is defined as Infrastructure as Code (IaC):
 - **AWS resources:** `infra/` (Terraform)
-- **Authorization (Permit.io):** `permit-policies/`
+- **Authorization (Cerbos):** `cerbos-policies/`
 
 ### Architecture Overview
 
@@ -147,7 +147,7 @@ Browser → CloudFront → S3 (Next.js static export)
         ECS Services:
           - api_gateway (FastAPI)
           - solve_service (OR-Tools solver)
-          - Permit.io PDP (AuthZ sidecar)
+          - Cerbos PDP (AuthZ sidecar)
           + Lambda (email sending)
                 ↓
         SQS (api_gateway → solve_service async messaging)
@@ -160,7 +160,16 @@ Browser → CloudFront → S3 (Next.js static export)
 Browser → CloudFront → S3 (Next.js static export)
 ```
 
-**Authorization flow:** Cognito handles AuthN; Permit.io handles AuthZ (role-based access control enforcement in `api_gateway`).
+**Authorization flow:** Cognito handles AuthN; Cerbos handles AuthZ (role-based access control enforcement in `api_gateway`).
+
+**Cerbos AuthZ details:**
+- Policies live in `cerbos-policies/` — resource policies under `resource_policies/`, derived roles under `derived_roles/`.
+- The Cerbos PDP runs as a sidecar ECS service; the `api_gateway` communicates with it via `AsyncCerbosClient` (gRPC on port 3592).
+- AuthZ logic lives in `backend/api_gateway/src/integrations/authorization/` — `cerbos_client.py` (client singleton) and `cerbos_authz_service.py` (check logic).
+- `CerbosAuthzService.check(user_id, action, resource_kind, resource_id)` is the single entry point for all authorization checks.
+- Supported resource kinds: `user`, `team`, `admin`.
+- Roles are derived from `SystemRole` (super_admin) and team memberships (`TEAM_ROLE_TO_AUTHZ_ROLE` mapping from `shared.schemas.core`).
+- When adding new protected resources or actions, add the corresponding resource policy YAML under `cerbos-policies/resource_policies/`.
 
 **Data flow example:** API Gateway accepts schedule create → enqueues SQS message → solve_service consumes → OR-Tools solver runs → writes assignments/results to DocumentDB.
 

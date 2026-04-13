@@ -13,9 +13,15 @@ from shared.schemas.dto.multitasking import (
     UpdateMultitaskingGroupRequest,
 )
 
-from src.dependencies import get_multitasking_service, get_user_context
+from src.dependencies import (
+    get_cerbos_authz_service,
+    get_multitasking_service,
+    get_user_context,
+)
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.multitasking_service import MultitaskingService
 
@@ -36,6 +42,7 @@ async def get_shift_demand_concurrency(
     request: ShiftDemandConcurrencyRequestDTO,
     user_context: UserContext = Depends(get_user_context),
     service: MultitaskingService = Depends(get_multitasking_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ShiftDemandConcurrencyResponseDTO:
     """Get shift demand concurrency data for a team within a date range."""
     try:
@@ -43,9 +50,9 @@ async def get_shift_demand_concurrency(
         core_request = ShiftDemandConcurrencyRequest.from_dto(request)
 
         # Check authorization
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
-            "read-shift-demands",
+            "read-shift-demands",  # concurrency data falls under shift-demand reads
             "team",
             core_request.team_id,
         ):
@@ -86,14 +93,14 @@ async def create_multitasking_group(
     request: CreateMultitaskingGroupRequest,
     user_context: UserContext = Depends(get_user_context),
     service: MultitaskingService = Depends(get_multitasking_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> MultitaskingGroupDTO:
     """Create a multitasking group and return all groups for the team."""
     try:
         # Authorization: user must be able to manage multitasking groups for the team
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
-            # "manage-multitasking-groups",
-            "read-shift-demands",
+            "create-multitasking-group",
             "team",
             request.teamId,
         ):
@@ -127,14 +134,14 @@ async def update_multitasking_group(
     request: UpdateMultitaskingGroupRequest,
     user_context: UserContext = Depends(get_user_context),
     service: MultitaskingService = Depends(get_multitasking_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> MultitaskingGroupDTO:
     """Update a multitasking group and return all groups for the team."""
     try:
         # Authorization: user must be able to manage multitasking groups for the team
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
-            # "manage-multitasking-groups",
-            "read-shift-demands",
+            "update-multitasking-group",
             "team",
             team_id,
         ):
@@ -169,13 +176,13 @@ async def get_multitasking_groups(
     template_id: Optional[str] = None,
     user_context: UserContext = Depends(get_user_context),
     service: MultitaskingService = Depends(get_multitasking_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[MultitaskingGroupDTO]:
     """Get all multitasking groups for a team, optionally filtered by template."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
-            # "read-multitasking-groups",
-            "read-shift-demands",
+            "read-multitasking-groups",
             "team",
             team_id,
         ):
@@ -204,13 +211,13 @@ async def delete_multitasking_group(
     group_id: str,
     user_context: UserContext = Depends(get_user_context),
     service: MultitaskingService = Depends(get_multitasking_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Dict[str, str | bool]:
     """Delete a multitasking group and return confirmation."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
-            # "manage-multitasking-groups",
-            "read-shift-demands",
+            "delete-multitasking-group",
             "team",
             team_id,
         ):

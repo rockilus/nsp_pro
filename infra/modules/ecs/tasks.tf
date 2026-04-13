@@ -70,10 +70,6 @@ resource "aws_ecs_task_definition" "main_service" {
           {
             name      = "DB_URI"
             valueFrom = var.documentdb_secret_arn
-          },
-          {
-            name      = "PDP_API_KEY"
-            valueFrom = var.permit_api_key_secret_arn
           }
         ],
         var.main_service_impersonation_secret_arn != "" ? [
@@ -246,41 +242,40 @@ resource "aws_ecs_task_definition" "solve_service" {
   # })
 }
 
-# Permit PDP Task Definition
-resource "aws_ecs_task_definition" "permit_pdp" {
-  # family = "backend-permit-pdp-task"
-  family                   = "${var.project_name}-${var.environment}-permit-pdp"
+# Cerbos PDP Task Definition
+resource "aws_ecs_task_definition" "cerbos_pdp" {
+  family                   = "${var.project_name}-${var.environment}-cerbos-pdp"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = var.permit_pdp_cpu
-  memory                   = var.permit_pdp_memory
+  cpu                      = var.cerbos_pdp_cpu
+  memory                   = var.cerbos_pdp_memory
   execution_role_arn       = var.task_execution_role_arn
   task_role_arn            = var.task_execution_role_arn
   enable_fault_injection   = false
 
   container_definitions = jsonencode([
     {
-      name = "permit-pdp-image"
-      # name  = "permit-pdp"
-      image = "permitio/pdp-v2:latest"
+      name  = "cerbos-pdp-image"
+      image = var.cerbos_pdp_image
 
       portMappings = [
         {
-          appProtocol   = "http"
-          name          = "permit-image-7000-tcp"
-          containerPort = var.permit_pdp_port
-          hostPort      = var.permit_pdp_port
+          name          = "cerbos-image-3592-grpc"
+          appProtocol   = "grpc"
+          containerPort = var.cerbos_pdp_grpc_port
+          hostPort      = var.cerbos_pdp_grpc_port
           protocol      = "tcp"
         }
       ]
 
       environment = []
+      secrets     = []
 
       logConfiguration = {
         logDriver = "awslogs"
         options = {
           "awslogs-create-group"  = "true"
-          "awslogs-group"         = aws_cloudwatch_log_group.permit_pdp.name
+          "awslogs-group"         = aws_cloudwatch_log_group.cerbos_pdp.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "ecs"
           "max-buffer-size"       = "25m"
@@ -289,23 +284,7 @@ resource "aws_ecs_task_definition" "permit_pdp" {
         secretOptions = []
       }
 
-      mountPoints = []
-
-      secrets = [
-        {
-          name      = "PDP_API_KEY"
-          valueFrom = var.permit_api_key_secret_arn
-        },
-      ]
-
-      # healthCheck = {
-      #   command     = ["CMD-SHELL", "curl -f http://localhost:${var.permit_pdp_port}/v1/health || exit 1"]
-      #   interval    = 30
-      #   timeout     = 5
-      #   retries     = 3
-      #   startPeriod = 60
-      # }
-
+      mountPoints    = []
       systemControls = []
       ulimits        = []
       volumesFrom    = []
@@ -315,18 +294,9 @@ resource "aws_ecs_task_definition" "permit_pdp" {
   ])
 
   runtime_platform {
-    cpu_architecture        = var.permit_pdp_cpu_architecture
-    operating_system_family = var.permit_pdp_operating_system_family
+    cpu_architecture        = var.cerbos_pdp_cpu_architecture
+    operating_system_family = var.cerbos_pdp_operating_system_family
   }
-
-  # tags = merge(var.tags, {
-  #   Name        = "${var.project_name}-${var.environment}-permit-pdp-task"
-  #   Component   = "ECS"
-  #   Environment = var.environment
-  #   Project     = var.project_name
-  #   ManagedBy   = "Terraform"
-  #   Service     = "PermitPDP"
-  # })
 }
 
 
@@ -572,31 +542,22 @@ resource "aws_ecs_service" "solve_service" {
 
 }
 
-# Permit PDP ECS Service
-resource "aws_ecs_service" "permit_pdp" {
-  # name = "permit-pdp"
-  name                              = "${var.project_name}-${var.environment}-permit-pdp"
+# Cerbos PDP ECS Service
+resource "aws_ecs_service" "cerbos_pdp" {
+  name                              = "${var.project_name}-${var.environment}-cerbos-pdp"
   cluster                           = aws_ecs_cluster.main.id
-  task_definition                   = aws_ecs_task_definition.permit_pdp.arn
-  desired_count                     = var.permit_pdp_desired_count
+  task_definition                   = aws_ecs_task_definition.cerbos_pdp.arn
+  desired_count                     = var.cerbos_pdp_desired_count
   availability_zone_rebalancing     = "ENABLED"
   enable_ecs_managed_tags           = true
   health_check_grace_period_seconds = 0
-  # iam_role                          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
-  # iam_role removed to allow ECS to use the service-linked role
-  propagate_tags = "NONE"
+  propagate_tags                    = "NONE"
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [var.permit_pdp_security_group_id]
-    assign_public_ip = true
+    security_groups  = [var.cerbos_pdp_security_group_id]
+    assign_public_ip = false
   }
-
-  # alarms {
-  #   alarm_names = []
-  #   enable      = false
-  #   rollback    = false
-  # }
 
   capacity_provider_strategy {
     base              = 0
@@ -613,36 +574,18 @@ resource "aws_ecs_service" "permit_pdp" {
     type = "ECS"
   }
 
-  # network_configuration {
-  #     assign_public_ip = true -> false
-  #     security_groups  = [
-  #         "sg-03edf2d02c7467810",
-  #       ] -> (known after apply)
-  #       # (1 unchanged attribute hidden)
-  #   }
-
   service_connect_configuration {
     enabled   = true
     namespace = aws_service_discovery_private_dns_namespace.main.arn
 
-    log_configuration {
-      log_driver = "awslogs"
-      options = {
-        "awslogs-create-group"  = "true"
-        "awslogs-group"         = "/ecs/permit-pdp"
-        "awslogs-region"        = "eu-west-3"
-        "awslogs-stream-prefix" = "ecs"
-      }
-    }
-
     service {
-      discovery_name        = "permit-pdp-service"
+      discovery_name        = "cerbos-pdp-service"
       ingress_port_override = 0
-      port_name             = "permit-image-7000-tcp"
+      port_name             = "cerbos-image-3592-grpc"
 
       client_alias {
-        dns_name = "permit-pdp"
-        port     = 7000
+        dns_name = "cerbos-pdp"
+        port     = var.cerbos_pdp_grpc_port
       }
     }
   }
@@ -652,17 +595,8 @@ resource "aws_ecs_service" "permit_pdp" {
   }
 
   tags = {}
-  # tags = merge(var.tags, {
-  #   Name        = "${var.project_name}-${var.environment}-permit-pdp"
-  #   Component   = "ECS"
-  #   Environment = var.environment
-  #   Project     = var.project_name
-  #   ManagedBy   = "Terraform"
-  #   Service     = "PermitPDP"
-  # })
 
   depends_on = [
     aws_service_discovery_private_dns_namespace.main,
-    # aws_service_discovery_service.permit_pdp
   ]
 }

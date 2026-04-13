@@ -8,8 +8,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.config import config
 
-# pylint: disable=unused-import
-from src.integrations.authorization import authz_services  # noqa: F401
 from src.routes import (
     router_admin,
     router_assignment,
@@ -17,7 +15,6 @@ from src.routes import (
     router_breach,
     router_constraint,
     router_constraint_template,
-    router_coverage,
     router_dim_entry,
     router_dimension,
     router_export,
@@ -29,7 +26,6 @@ from src.routes import (
     router_request,
     router_schedule,
     router_shift,
-    router_shift_demand,
     router_shift_demand_new,
     router_shift_demand_template,
     router_specialty,
@@ -81,7 +77,6 @@ def create_app(
         router_breach,
         router_constraint,
         router_constraint_template,
-        router_coverage,
         router_dim_entry,
         router_dimension,
         router_export,
@@ -93,7 +88,6 @@ def create_app(
         router_request,
         router_schedule,
         router_shift,
-        router_shift_demand,
         router_shift_demand_new,
         router_shift_demand_template,
         router_specialty,

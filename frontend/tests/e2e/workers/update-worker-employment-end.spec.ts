@@ -160,7 +160,7 @@ test.describe('Worker Employment End Date Updates', () => {
     await workerTestBase.setEmploymentEndDate(page, newDate);
 
     // Click somewhere else to trigger blur event (save)
-    const pageTitle = page.getByRole('heading', { name: 'Workers' });
+    const pageTitle = page.locator('data-testid=workers-page-heading');
     await pageTitle.click();
 
     // Wait for the editor to disappear and display to show the updated date
@@ -285,7 +285,7 @@ test.describe('Worker Employment End Date Updates', () => {
     await updatedPermanentCheckbox.click();
 
     // Save by clicking away
-    const pageTitle = page.getByRole('heading', { name: 'Workers' });
+    const pageTitle = page.locator('data-testid=workers-page-heading');
     await pageTitle.click();
 
     // Wait for the editor to disappear and display to show "Permanent"

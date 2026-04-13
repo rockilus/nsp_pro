@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import Specialty
@@ -11,11 +11,14 @@ from src.dependencies import (
     get_specialty_service,
     get_user_context,
 )
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.specialty_service import SpecialtyService
 
@@ -28,9 +31,10 @@ async def create_specialty(
     specialty: SpecialtyDTO,
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SpecialtyDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-specialty", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create a specialty")
@@ -49,9 +53,10 @@ async def get_specialties(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[SpecialtyDTO]:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-specialties", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read specialties")
@@ -69,10 +74,11 @@ async def update_specialty(
     specialty: SpecialtyDTO,
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SpecialtyDTO:
     # pylint: disable=R0801
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-specialty", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update a specialty")
@@ -91,16 +97,14 @@ async def delete_specialty(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     specialty_service: SpecialtyService = Depends(get_specialty_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[WorkerDTO]:
     # pylint: disable=R0801
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "delete-specialty", "team", team_id
         ):
-            raise HTTPException(
-                status_code=403,
-                detail="You do not have permission to delete a specialty",
-            )
+            raise NotAuthorizedError("You do not have permission to delete a specialty")
         workers_updated, attributes = specialty_service.delete_specialty(specialty_id)
         response = [w.to_dto(attr) for w, attr in zip(workers_updated, attributes)]
     except Exception as e:

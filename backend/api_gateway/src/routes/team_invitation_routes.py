@@ -10,7 +10,10 @@ from shared.schemas.dto import (
 )
 
 from src.dependencies import get_team_invitation_service, get_user_context
-from src.integrations.authorization import authz_check
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.audit import log_impersonated_action
 from src.security.user_context import UserContext
 from src.services.team_invitation_service import TeamInvitationService
@@ -24,9 +27,10 @@ async def create_team_invitation(
     invitation: TeamInvitationDTO,
     user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ):
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-team-invitation", "team", team_id
         ):
             raise HTTPException(
@@ -57,9 +61,10 @@ async def create_team_invitation(
 async def get_user_pending_invitations(
     user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ):
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             "read-team-invitations",
             "user",
@@ -86,9 +91,10 @@ async def get_team_invitations(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ):
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-team-invitations", "team", team_id
         ):
             raise HTTPException(
@@ -114,9 +120,10 @@ async def accept_team_invitation(
     request: TeamInvitationResponseRequest,
     user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> TeamWithMembershipDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             "accept-team-invitation",
             "user",
@@ -150,9 +157,10 @@ async def reject_team_invitation(
     request: TeamInvitationResponseRequest,
     user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ):
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             "reject-team-invitation",
             "user",
@@ -189,9 +197,10 @@ async def resend_team_invitation_email(
     invitation_id: str,
     user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> TeamInvitationDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "resend-team-invitation", "team", team_id
         ):
             raise HTTPException(
@@ -216,15 +225,17 @@ async def resend_team_invitation_email(
 @router.delete("/team-invitations/{invitation_id}/teams/{team_id}")
 async def delete_team_invitation(
     invitation_id: str,
+    team_id: str,
     user_context: UserContext = Depends(get_user_context),
     service: TeamInvitationService = Depends(get_team_invitation_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ):
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             "delete-team-invitation",
             "team",
-            invitation_id,
+            team_id,
         ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

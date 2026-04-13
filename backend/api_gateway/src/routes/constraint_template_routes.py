@@ -11,11 +11,14 @@ from src.dependencies import (
     get_db_collections,
     get_user_context,
 )
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.data_fetching_service import DataFetchingService
 from src.utils.constraint_utils import build_templates
@@ -30,10 +33,11 @@ async def get_constraint_templates(
     user_context: UserContext = Depends(get_user_context),
     db_collections: DatabaseCollections = Depends(get_db_collections),
     data_fetching_service: DataFetchingService = Depends(get_data_fetching_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[TemplateDTO]:
     try:
         user_id = user_context.user_id
-        if not await authz_check(user_id, "read-constraint-templates", "team", team_id):
+        if not await authz.check(user_id, "read-constraint-templates", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to get constraint templates"
             )

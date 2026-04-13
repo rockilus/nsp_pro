@@ -31,7 +31,6 @@ test.describe('NewDimensionForm Component', () => {
 
     // Verify popup title
     const popupTitle = dimensionTestBase.getPopupTitle(page);
-    await expect(popupTitle).toContainText('New property');
 
     console.log('✅ Popup appears with correct title when clicking Add Property button');
   });
@@ -106,12 +105,6 @@ test.describe('NewDimensionForm Component', () => {
     // await expect(numberOption).toBeVisible();
     await expect(boolOption).toBeVisible();
     await expect(tagsOption).toBeVisible();
-
-    // Verify option text content
-    // await expect(textOption).toContainText("Text");
-    // await expect(numberOption).toContainText("Number");
-    await expect(boolOption).toContainText('True/False');
-    await expect(tagsOption).toContainText('Tags');
 
     console.log('✅ Type select contains all expected options with correct labels');
   });

@@ -53,19 +53,9 @@ class AppConfig(BaseSettings):
         "global-bundle.pem",
         description="Path to DocumentDB CA bundle certificate",
     )
-    pdp_url: str = Field(..., description="Policy Decision Point URL")
-    pdp_api_key: str = Field(..., description="Policy Decision Point API key")
 
-    # Authorization retry configuration
-    authz_enable_retry: bool = Field(
-        True, description="Enable retry logic for authorization checks"
-    )
-    authz_max_retries: int = Field(
-        3, description="Maximum number of authorization retry attempts"
-    )
-    authz_initial_delay: float = Field(
-        0.5, description="Initial delay in seconds before first retry"
-    )
+    # Cerbos authorization
+    cerbos_host: str = Field("cerbos:3592", description="Cerbos gRPC host:port")
 
     uvicorn_reload: bool = Field(
         False,

@@ -7,8 +7,11 @@ from shared.schemas.core import ExportOptions
 from shared.schemas.dto import ExportOptionsDTO
 
 from src.dependencies import get_schedule_service, get_user_context
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.schedule_service import ScheduleService
 
@@ -22,9 +25,10 @@ async def export_schedule(
     export_options: ExportOptionsDTO,
     user_context: UserContext = Depends(get_user_context),
     schedule_service: ScheduleService = Depends(get_schedule_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> StreamingResponse:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-schedule-export", "team", team_id
         ):
             raise NotAuthorizedError(

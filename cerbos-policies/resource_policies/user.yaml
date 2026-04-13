@@ -1,0 +1,39 @@
+---
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: "default"
+  resource: user
+  importDerivedRoles:
+    - user_derived_roles
+  rules:
+    # Self-service: any authenticated user can read/update/change-password their own record
+    - actions: 
+        - read
+        - update
+        - change-password
+        - create-team
+        - read-teams
+        - leave-team
+        - read-team-invitations
+        - accept-team-invitation
+        - reject-team-invitation
+      effect: EFFECT_ALLOW
+      derivedRoles:
+        - owner
+
+    # Super admins can perform any action on any user record
+    - actions:
+        - read
+        - update
+        - delete
+        - create
+        - change-password
+        - create-team
+        - read-teams
+        - leave-team
+        - accept-team-invitation
+        - reject-team-invitation
+        - read-team-invitations
+      effect: EFFECT_ALLOW
+      roles:
+        - super_admin

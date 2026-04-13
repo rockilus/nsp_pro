@@ -1,0 +1,10 @@
+---
+apiVersion: api.cerbos.dev/v1
+derivedRoles:
+  name: user_derived_roles
+  definitions:
+    - name: owner
+      parentRoles: ["*"]
+      condition:
+        match:
+          expr: request.resource.id == request.principal.id

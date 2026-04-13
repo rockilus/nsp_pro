@@ -12,11 +12,14 @@ from shared.schemas.dto import (
 )
 
 from src.dependencies import get_shift_demand_new_service, get_user_context
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.shift_demand_new_service import ShiftDemandNewService
 
@@ -30,10 +33,11 @@ async def create_shift_demand(
     demand_dto: ShiftDemandNewCreateDTO,
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ShiftDemandNewDTO:
     """Create a new shift demand."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -96,10 +100,11 @@ async def get_shift_demands_by_period(
     buffer_days: int = Query(7, description="Buffer days for navigation"),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[ShiftDemandNewDTO]:
     """Get shift demands for a specific period with optional buffering."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
@@ -126,10 +131,11 @@ async def get_shift_demands_matrix(
     end_date: date = Query(..., description="End date of the period (YYYY-MM-DD)"),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Dict[str, Dict[str, int]]:
     """Get shift demands formatted as a matrix for grid display."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
@@ -153,10 +159,11 @@ async def update_shift_demand(
     demand_dto: ShiftDemandNewUpdateDTO,
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Union[ShiftDemandNewDTO, Response]:
     """Update an existing shift demand."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -248,10 +255,11 @@ async def delete_shift_demand(
     demand_id: str,
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> None:
     """Delete a shift demand."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "delete-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -276,10 +284,11 @@ async def bulk_upsert_shift_demands(
     demands_dto: List[ShiftDemandNewCreateDTO],
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ShiftDemandsResultDTO:
     """Bulk upsert (create or update) shift demands."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -357,10 +366,11 @@ async def copy_shift_demands_from_period(
     ),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[ShiftDemandNewDTO]:
     """Copy shift demands from one period to another."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -391,10 +401,11 @@ async def get_team_shift_summary(
     end_date: date = Query(..., description="End date of the period"),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Dict[str, Dict[str, int]]:
     """Get summary statistics for shift demands by shift."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
@@ -419,10 +430,11 @@ async def get_demands_by_shift_and_date_range(
     end_date: date = Query(..., description="End date of the period"),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[ShiftDemandNewDTO]:
     """Get demands for a specific shift within a date range."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
@@ -452,10 +464,11 @@ async def delete_demands_by_date_range(
     ),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Dict[str, int]:
     """Delete demands within a date range, optionally filtered by shifts."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "delete-shift-demand", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -484,10 +497,11 @@ async def get_demands_by_source(
     source_id: Optional[str] = Query(None, description="Optional source ID"),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[ShiftDemandNewDTO]:
     """Get demands by source type and optional source ID."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read shift demands")
@@ -514,10 +528,11 @@ async def prefetch_for_navigation(
     prefetch_periods: int = Query(2, description="Number of periods to prefetch"),
     user_context: UserContext = Depends(get_user_context),
     service: ShiftDemandNewService = Depends(get_shift_demand_new_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Dict[str, str]:
     """Prefetch shift demands for adjacent periods to improve navigation UX."""
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-shift-demands", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read shift demands")

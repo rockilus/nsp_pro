@@ -19,8 +19,11 @@ from src.dependencies import (
     get_swap_service,
     get_user_context,
 )
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import NotAuthorizedError, handle_routes_errors
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.replacement_service import ReplacementService
 from src.services.swap_service import SwapService
@@ -36,11 +39,12 @@ async def create_swap_request(
     swap_request: CreateSwapRequestDTO,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Create a new swap request."""
     try:
         # Check permission
-        if not await authz_check(user_context.user_id, "create-swap", "team", team_id):
+        if not await authz.check(user_context.user_id, "create-swap", "team", team_id):
             raise NotAuthorizedError(
                 "You do not have permission to create a swap request"
             )
@@ -72,11 +76,12 @@ async def get_swap_requests(
     status: Optional[str] = None,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> list[SwapRequestDTO]:
     """Get all swap requests for a team, optionally filtered by status."""
     try:
         # Check permission
-        if not await authz_check(user_context.user_id, "read-swap", "team", team_id):
+        if not await authz.check(user_context.user_id, "read-swap", "team", team_id):
             raise NotAuthorizedError("You do not have permission to view swap requests")
 
         # Parse status filter
@@ -101,6 +106,7 @@ async def get_swap_request(
     swap_id: str,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Get a specific swap request by ID."""
     try:
@@ -109,7 +115,7 @@ async def get_swap_request(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission for the team
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError(
@@ -129,6 +135,7 @@ async def validate_swap(
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
     replacement_service: ReplacementService = Depends(get_replacement_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapValidationResultDTO:
     """Validate a swap in PENDING_APPROVAL status to analyze its impact."""
     try:
@@ -138,7 +145,7 @@ async def validate_swap(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission - leader only
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "validate-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError(
@@ -192,6 +199,7 @@ async def add_bid_to_swap(
     bid_request: AddBidRequestDTO,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Add a bid to an open swap request."""
     try:
@@ -201,7 +209,7 @@ async def add_bid_to_swap(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError("You do not have permission to bid on swaps")
@@ -227,6 +235,7 @@ async def accept_bid(
     bid_id: str,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Accept a bid on an open swap (moves to PENDING_APPROVAL)."""
     try:
@@ -236,7 +245,7 @@ async def accept_bid(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError("You do not have permission to accept bids")
@@ -258,6 +267,7 @@ async def cancel_bid_acceptance(
     swap_id: str,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Cancel bid acceptance, returning swap to ACTIVE status."""
     try:
@@ -267,7 +277,7 @@ async def cancel_bid_acceptance(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission (reuse create-swap for creator and leaders)
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError(
@@ -289,6 +299,7 @@ async def refuse_direct_swap(
     swap_id: str,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Refuse a direct swap invitation (target worker declines)."""
     try:
@@ -297,7 +308,7 @@ async def refuse_direct_swap(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Target worker must have create-swap permission (i.e. be a team member)
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError("You do not have permission to refuse swaps")
@@ -319,6 +330,7 @@ async def accept_direct_swap(
     swap_id: str,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Accept a direct swap invitation (moves to PENDING_APPROVAL)."""
     try:
@@ -328,7 +340,7 @@ async def accept_direct_swap(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError("You do not have permission to accept swaps")
@@ -348,6 +360,7 @@ async def approve_swap(
     swap_id: str,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Approve a swap request (completes the swap)."""
     try:
@@ -357,7 +370,7 @@ async def approve_swap(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission - only team leaders can approve
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "approve-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError("You do not have permission to approve swaps")
@@ -380,6 +393,7 @@ async def delete_swap(
     swap_id: str,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> None:
     """Delete a swap request."""
     try:
@@ -389,10 +403,10 @@ async def delete_swap(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission - creator or leader can delete
-        can_create = await authz_check(
+        can_create = await authz.check(
             user_context.user_id, "create-swap", "team", swap.team_id
         )
-        can_approve = await authz_check(
+        can_approve = await authz.check(
             user_context.user_id, "approve-swap", "team", swap.team_id
         )
 
@@ -412,6 +426,7 @@ async def deny_swap(
     swap_id: str,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Deny a swap request (leader only)."""
     try:
@@ -421,7 +436,7 @@ async def deny_swap(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission - only leader can deny
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "approve-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError("You do not have permission to deny this swap")
@@ -443,6 +458,7 @@ async def revert_swap(
     swap_id: str,
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Revert a completed swap (leader only)."""
     try:
@@ -452,7 +468,7 @@ async def revert_swap(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission - only leader can revert
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "approve-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError("You do not have permission to revert this swap")
@@ -476,6 +492,7 @@ async def delete_bid(
     user_context: UserContext = Depends(get_user_context),
     swap_service: SwapService = Depends(get_swap_service),
     db_collections: DatabaseCollections = Depends(get_db_collections),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> SwapRequestDTO:
     """Delete a bid from an open swap request."""
     try:
@@ -485,7 +502,7 @@ async def delete_bid(
             raise ValueError(f"Swap request {swap_id} not found")
 
         # Check permission
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-swap", "team", swap.team_id
         ):
             raise NotAuthorizedError("You do not have permission to delete bids")

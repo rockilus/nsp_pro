@@ -17,7 +17,6 @@ from shared.database.reset_service import (
     DatabaseResetError,
     DatabaseResetService,
 )
-from shared.logger import log_info
 from shared.schemas.core import TeamMembership, TeamMembershipRole
 
 from src.config import config
@@ -25,11 +24,6 @@ from src.dependencies import (
     get_db_collections,
     get_test_service,
     get_user_context,
-)
-from src.errors import NotAuthorizedError
-from src.integrations.authorization import (
-    authz_check,
-    authz_delete_all_instances_except_user,
 )
 from src.security.user_context import UserContext
 from src.services.team_membership_service import TeamMembershipService
@@ -145,11 +139,8 @@ async def reset_database_endpoint(
         # Perform the reset operation
         if request.collections is None:
             result = await reset_service.reset_all_collections()
-            await authz_delete_all_instances_except_user(PRESERVED_USER_ID)
         else:
             result = await reset_service.reset_specific_collections(request.collections)
-            if "users" in request.collections:
-                await authz_delete_all_instances_except_user(PRESERVED_USER_ID)
 
         # Restore preserved user in DB if it existed before reset
         if preserved_user is not None and (
@@ -253,19 +244,6 @@ async def load_test_scenario(
     test_service: SolverTestScenariosService = Depends(get_test_service),
 ) -> Dict:
     try:
-        if not await authz_check(
-            user_context.user_id, "create-worker", "team", request.team_id
-        ):
-            log_info(
-                f"Authorization denied for user {user_context.user_id} "
-                f"to create worker in team {request.team_id}"
-            )
-            raise NotAuthorizedError("You do not have permission to create a worker")
-        log_info(
-            f"Loading test scenario '{request.scenario_name}' "
-            f"for team '{request.team_id}'"
-        )
-
         # Get scenario data
         try:
             scenario = test_service.create_scenario(

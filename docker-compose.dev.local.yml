@@ -28,19 +28,18 @@ services:
       timeout: 5s
       retries: 5
 
-  # Permit.io PDP
-  permit:
-    image: permitio/pdp-v2:latest
-    container_name: permit
+  # Cerbos AuthZ
+  cerbos:
+    image: ghcr.io/cerbos/cerbos:latest
+    container_name: cerbos
     ports:
-      - "7766:7000"
-    env_file:
-      - .env.docker-compose.permit
-    # environment:
-    #   - PDP_API_KEY=your_api_key_here # Replace with your actual API key
-    #   - PDP_DEBUG=True
+      - "3592:3592"  # gRPC
+      - "3593:3593"  # HTTP / playground
+    volumes:
+      - ./cerbos-policies:/policies:ro
+    command: server --config=/policies/.cerbos.yaml
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://permit:7766/health"]
+      test: ["CMD", "wget", "-qO-", "http://cerbos:3593/api/health"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -30,10 +30,10 @@ variable "solve_service_port" {
   default     = 8001
 }
 
-variable "permit_pdp_port" {
-  description = "Port for the Permit PDP service"
+variable "cerbos_pdp_grpc_port" {
+  description = "gRPC port for the Cerbos PDP service"
   type        = number
-  default     = 7000
+  default     = 3592
 }
 
 variable "nlb_security_group_id" {

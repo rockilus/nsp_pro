@@ -7,16 +7,18 @@ from shared.schemas.core import Request
 from shared.schemas.dto import RequestDTO
 
 from src.dependencies import get_request_service, get_user_context
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
+from src.dependencies.team_membership import get_team_membership_service
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authorization import (
-    authz_check,
-    authz_role_assignments_list,
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
 )
 from src.security.user_context import UserContext
 from src.services.request_service import RequestService
+from src.services.team_membership_service import TeamMembershipService
 
 router = APIRouter()
 
@@ -28,28 +30,31 @@ async def create_request(
     req: RequestDTO,
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    team_membership_service: TeamMembershipService = Depends(
+        get_team_membership_service
+    ),
 ) -> RequestDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_id=user_context.user_id,
             action="create-request",
-            resource="team",
+            resource_kind="team",
             resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to create a request")
 
-        roles = await authz_role_assignments_list(
+        team_role = team_membership_service.get_user_team_role(
             user_id=user_context.effective_user_id,
-            resource="team",
-            resource_instance_key=team_id,
+            team_id=team_id,
         )
-        if len(roles) != 1:
+        if team_role is None:
             raise NotAuthorizedError("You do not have permission to create a request")
         r_data = Request.from_dto(req)
         request = await request_service.create_request(
             request=r_data,
             author_id=user_context.effective_user_id,
-            team_role=roles[0],
+            team_role=team_role,
         )
         response = request.to_dto()
     except Exception as e:
@@ -66,23 +71,24 @@ async def get_requests(
     ),
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    team_membership_service: TeamMembershipService = Depends(
+        get_team_membership_service
+    ),
 ) -> List[RequestDTO]:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-requests", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get requests")
 
         # Get user role to determine filtering behavior
-        roles = await authz_role_assignments_list(
+        team_role = team_membership_service.get_user_team_role(
             user_id=user_context.effective_user_id,
-            resource="team",
-            resource_instance_key=team_id,
+            team_id=team_id,
         )
-        if len(roles) != 1:
+        if team_role is None:
             raise NotAuthorizedError("You do not have permission to get requests")
-
-        team_role = roles[0]
 
         # If member role, auto-detect their worker and filter
         filter_worker_id = None
@@ -117,27 +123,30 @@ async def update_request(
     updated_request: RequestDTO,
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    team_membership_service: TeamMembershipService = Depends(
+        get_team_membership_service
+    ),
 ):
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_id=user_context.user_id,
             action="update-request",
-            resource="team",
+            resource_kind="team",
             resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to update a request")
-        roles = await authz_role_assignments_list(
+        team_role = team_membership_service.get_user_team_role(
             user_id=user_context.effective_user_id,
-            resource="team",
-            resource_instance_key=team_id,
+            team_id=team_id,
         )
-        if len(roles) != 1:
-            raise NotAuthorizedError("You do not have permission to create a request")
+        if team_role is None:
+            raise NotAuthorizedError("You do not have permission to update a request")
         r_data = Request.from_dto(updated_request)
         request = request_service.update_request(
             request=r_data,
             author_id=user_context.effective_user_id,
-            team_role=roles[0],
+            team_role=team_role,
         )
         response = request.to_dto()
     except Exception as e:
@@ -152,12 +161,13 @@ async def accept_request(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> dict:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_id=user_context.user_id,
             action="approve-request",
-            resource="team",
+            resource_kind="team",
             resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to approve a request")
@@ -180,12 +190,13 @@ async def deny_request(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> RequestDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_id=user_context.user_id,
             action="deny-request",
-            resource="team",
+            resource_kind="team",
             resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to deny a request")
@@ -203,12 +214,13 @@ async def rescind_request(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> dict:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_id=user_context.user_id,
             action="rescind-request",
-            resource="team",
+            resource_kind="team",
             resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to rescind a request")
@@ -229,26 +241,29 @@ async def delete_request(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     request_service: RequestService = Depends(get_request_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    team_membership_service: TeamMembershipService = Depends(
+        get_team_membership_service
+    ),
 ):
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_id=user_context.user_id,
             action="delete-request",
-            resource="team",
+            resource_kind="team",
             resource_id=team_id,
         ):
             raise NotAuthorizedError("You do not have permission to delete a request")
-        roles = await authz_role_assignments_list(
+        team_role = team_membership_service.get_user_team_role(
             user_id=user_context.effective_user_id,
-            resource="team",
-            resource_instance_key=team_id,
+            team_id=team_id,
         )
-        if len(roles) != 1:
-            raise NotAuthorizedError("You do not have permission to create a request")
+        if team_role is None:
+            raise NotAuthorizedError("You do not have permission to delete a request")
         request_service.delete_request(
             request_id=request_id,
             author_id=user_context.effective_user_id,
-            team_role=roles[0],
+            team_role=team_role,
         )
     except Exception as e:
         log_info("Failed to delete request")

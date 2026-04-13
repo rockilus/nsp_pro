@@ -7,12 +7,6 @@ from src.errors.authn_errors.authn_errors import (
     AuthnPasswordPolicyViolationError,
     AuthnWrongCredentialsError,
 )
-from src.errors.authz_errors.authz_errors import (
-    AuthzApiErrorError,
-    AuthzConnectionError,
-    AuthzContextError,
-    AuthzKeyMissingKeyError,
-)
 from src.errors.message_errors.message_errors import (
     MessageTypeError,
     MessageValidationError,
@@ -24,6 +18,8 @@ from src.utils.constants import USER_ERROR_MESSAGE_GENERIC
 
 
 def handle_routes_errors(error: Exception) -> NoReturn:
+    if isinstance(error, HTTPException):
+        raise error
     if isinstance(error, SchemaTypeError):
         raise HTTPException(
             status_code=400,
@@ -53,10 +49,6 @@ def handle_routes_errors(error: Exception) -> NoReturn:
     if isinstance(
         error,
         (
-            AuthzConnectionError,
-            AuthzApiErrorError,
-            AuthzContextError,
-            AuthzKeyMissingKeyError,
             MessageTypeError,
             MessageValueError,
             MessageValidationError,

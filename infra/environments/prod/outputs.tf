@@ -242,9 +242,9 @@ output "ecs_main_service_url" {
   value       = module.ecs.main_service_internal_url
 }
 
-output "ecs_permit_pdp_url" {
-  description = "Internal URL for the Permit PDP service"
-  value       = module.ecs.permit_pdp_internal_url
+output "ecs_cerbos_pdp_url" {
+  description = "Internal gRPC URL for the Cerbos PDP service"
+  value       = module.ecs.cerbos_pdp_internal_url
 }
 
 output "ecs_service_discovery_namespace" {
@@ -262,15 +262,6 @@ output "ecs_deployment_info" {
   value       = module.ecs.ecs_deployment_info
   sensitive   = false
 }
-
-# Secrets Manager outputs
-output "permit_api_key_secret_arn" {
-  description = "ARN of the Permit.io API key secret"
-  value       = data.aws_secretsmanager_secret.permit_api_key.arn
-  sensitive   = false
-}
-
-
 
 # output "secrets_access_role_arn" {
 #   description = "ARN of the IAM role for accessing secrets"

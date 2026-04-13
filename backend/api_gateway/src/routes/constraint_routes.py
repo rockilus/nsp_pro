@@ -10,11 +10,14 @@ from shared.schemas.dto import (
 )
 
 from src.dependencies import get_constraint_build_service, get_user_context
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.constraint_build_service import ConstraintBuildService
 
@@ -29,9 +32,10 @@ async def create_constraint(
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ConstraintBuildDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "create-constraint", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -53,9 +57,10 @@ async def get_constraints(
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[ConstraintBuildDTO]:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "read-constraints", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to get constraints")
@@ -75,9 +80,10 @@ async def update_constraint(
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> ConstraintBuildDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "update-constraint", "team", team_id
         ):
             raise NotAuthorizedError(
@@ -100,9 +106,10 @@ async def delete_constraint(
     constraint_build_service: ConstraintBuildService = Depends(
         get_constraint_build_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ):
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id, "delete-constraint", "team", team_id
         ):
             raise NotAuthorizedError(

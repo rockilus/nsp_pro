@@ -11,11 +11,14 @@ from src.dependencies import (
     get_link_shift_service,
     get_user_context,
 )
+from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import (
     NotAuthorizedError,
     handle_routes_errors,
 )
-from src.integrations.authorization import authz_check
+from src.integrations.authorization.cerbos_authz_service import (
+    CerbosAuthzService,
+)
 from src.security.user_context import UserContext
 from src.services.link_shift_service import LinkShiftService
 
@@ -31,9 +34,10 @@ async def create_link_shift(
     link_shift_service: LinkShiftService = Depends(
         get_link_shift_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> LinkShiftDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             "create-link-shift",
             "team",
@@ -58,9 +62,10 @@ async def get_link_shifts(
     db_collections: DatabaseCollections = Depends(
         get_db_collections,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> List[LinkShiftDTO]:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             "read-link-shifts",
             "team",
@@ -83,9 +88,10 @@ async def update_link_shift(
     link_shift_service: LinkShiftService = Depends(
         get_link_shift_service,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> LinkShiftDTO:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             "update-link-shift",
             "team",
@@ -111,9 +117,10 @@ async def delete_link_shift(
     db_collections: DatabaseCollections = Depends(
         get_db_collections,
     ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> Dict:
     try:
-        if not await authz_check(
+        if not await authz.check(
             user_context.user_id,
             "delete-link-shift",
             "team",

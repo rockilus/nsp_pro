@@ -25,6 +25,20 @@ resource "aws_ecr_repository" "main_service" {
   #   })
 }
 
+# ECR Repository for Cerbos PDP
+resource "aws_ecr_repository" "cerbos_pdp" {
+  name                 = "${var.project_name}-${var.environment}-cerbos-pdp"
+  image_tag_mutability = "MUTABLE"
+
+  encryption_configuration {
+    encryption_type = "AES256"
+  }
+
+  image_scanning_configuration {
+    scan_on_push = false
+  }
+}
+
 # ECR Repository for Solve Service
 resource "aws_ecr_repository" "solve_service" {
   name                 = "${var.project_name}-${var.environment}-solve-service"

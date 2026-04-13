@@ -1,0 +1,183 @@
+---
+apiVersion: api.cerbos.dev/v1
+resourcePolicy:
+  version: "default"
+  resource: team
+  rules:
+    # Any team member (leader or member): read access
+    - actions:
+        - read-team
+        - read-team-users
+        - read-own-worker
+        - read-workers       # workers list
+        - read-dimensions
+        - read-shifts
+        - read-link-shifts
+        - create-request
+        - read-requests
+        - update-request
+        - delete-request
+        - read-assignments-validated
+        - create-swap
+        - read-swap
+      effect: EFFECT_ALLOW
+      roles:
+        - leader
+        - member
+
+
+    # Team leaders only: team management + worker management + dimension management
+    - actions:
+        - create-team-invitation
+        - read-team-invitations
+        - resend-team-invitation
+        - delete-team-invitation
+        - create-stats-header
+        - read-shift-options
+        - read-stats
+        - delete-stats-header
+        - update-team        # team settings
+        - read-assignments
+        - create-assignment
+        - update-assignment
+        - delete-assignment
+        - check-replacements
+        - validate-swap
+        - approve-swap
+        - approve-request
+        - deny-request
+        - rescind-request
+        - remove-user        # member management
+        - create-worker      # worker management
+        - update-worker
+        - delete-worker
+        - create-dimension
+        - update-dimension
+        - delete-dimension
+        - create-dim-entry
+        - update-dim-entry
+        - delete-dim-entry
+        - update-attribute
+        - create-shift
+        - update-shift
+        - delete-shift
+        - create-link-shift
+        - update-link-shift
+        - delete-link-shift
+        - create-shift-demand
+        - read-shift-demands
+        - update-shift-demand
+        - delete-shift-demand
+        - create-constraint
+        - read-constraints
+        - update-constraint
+        - delete-constraint
+        - read-constraint-templates
+        - solve-schedule
+        - create-schedule
+        - read-schedules
+        - update-schedule
+        - delete-schedule
+        - read-schedule-work-times
+        - duplicate-period
+        - validate-schedule
+        - create-specialty
+        - read-specialties
+        - update-specialty
+        - delete-specialty
+        - read-breaches
+        - update-breach
+        - delete-breach
+        - read-multitasking-groups
+        - create-multitasking-group
+        - update-multitasking-group
+        - delete-multitasking-group
+        - create-schedule-export
+      effect: EFFECT_ALLOW
+      roles:
+        - leader
+
+    # Super admins: full access to all team actions
+    - actions:
+        - create-team-invitation
+        - read-team-invitations
+        - resend-team-invitation
+        - delete-team-invitation
+        - create-stats-header
+        - read-shift-options
+        - read-stats
+        - delete-stats-header
+        - read-team
+        - read-team-users
+        - read-own-worker
+        - read-workers
+        - read-dimensions
+        - create-request
+        - read-requests
+        - update-request
+        - approve-request
+        - deny-request
+        - rescind-request
+        - delete-request
+        - read-assignments
+        - read-assignments-validated
+        - create-assignment
+        - update-assignment
+        - delete-assignment
+        - check-replacements
+        - create-swap
+        - read-swap
+        - validate-swap
+        - approve-swap
+        - update-team
+        - remove-user
+        - create-worker
+        - update-worker
+        - delete-worker
+        - create-dimension
+        - update-dimension
+        - delete-dimension
+        - create-dim-entry
+        - update-dim-entry
+        - delete-dim-entry
+        - update-attribute
+        - read-shifts
+        - create-shift
+        - update-shift
+        - delete-shift
+        - create-link-shift
+        - read-link-shifts
+        - update-link-shift
+        - delete-link-shift
+        - read-shift-demands
+        - create-shift-demand
+        - update-shift-demand
+        - delete-shift-demand
+        - read-constraints
+        - create-constraint
+        - update-constraint
+        - delete-constraint
+        - read-constraint-templates
+        - read-schedules
+        - read-schedule-work-times
+        - create-schedule
+        - duplicate-period
+        - validate-schedule
+        - solve-schedule
+        - update-schedule
+        - delete-schedule
+        - create-specialty
+        - read-specialties
+        - update-specialty
+        - delete-specialty
+        - read-breaches
+        - update-breach
+        - delete-breach
+        - read-multitasking-groups
+        - create-multitasking-group
+        - update-multitasking-group
+        - delete-multitasking-group
+        - create-schedule-export
+      effect: EFFECT_ALLOW
+      roles:
+        - super_admin

@@ -25,9 +25,9 @@ output "solve_service_task_definition_arn" {
   value       = aws_ecs_task_definition.solve_service.arn
 }
 
-output "permit_pdp_task_definition_arn" {
-  description = "ARN of the Permit PDP task definition"
-  value       = aws_ecs_task_definition.permit_pdp.arn
+output "cerbos_pdp_task_definition_arn" {
+  description = "ARN of the Cerbos PDP task definition"
+  value       = aws_ecs_task_definition.cerbos_pdp.arn
 }
 
 # Service Outputs
@@ -41,9 +41,9 @@ output "solve_service_service_id" {
   value       = aws_ecs_service.solve_service.id
 }
 
-output "permit_pdp_service_id" {
-  description = "ID of the Permit PDP ECS service"
-  value       = aws_ecs_service.permit_pdp.id
+output "cerbos_pdp_service_id" {
+  description = "ID of the Cerbos PDP ECS service"
+  value       = aws_ecs_service.cerbos_pdp.id
 }
 
 # IAM Role Outputs
@@ -89,9 +89,9 @@ output "solve_service_log_group_name" {
   value       = aws_cloudwatch_log_group.solve_service.name
 }
 
-output "permit_pdp_log_group_name" {
-  description = "Name of the Permit PDP CloudWatch log group"
-  value       = aws_cloudwatch_log_group.permit_pdp.name
+output "cerbos_pdp_log_group_name" {
+  description = "Name of the Cerbos PDP CloudWatch log group"
+  value       = aws_cloudwatch_log_group.cerbos_pdp.name
 }
 
 # Service URLs (for internal communication)
@@ -100,9 +100,9 @@ output "main_service_internal_url" {
   value       = "http://main-service.${aws_service_discovery_private_dns_namespace.main.name}:${var.main_service_port}"
 }
 
-output "permit_pdp_internal_url" {
-  description = "Internal URL for the Permit PDP service"
-  value       = "http://permit-pdp.${aws_service_discovery_private_dns_namespace.main.name}:${var.permit_pdp_port}"
+output "cerbos_pdp_internal_url" {
+  description = "Internal gRPC URL for the Cerbos PDP service"
+  value       = "cerbos-pdp.${aws_service_discovery_private_dns_namespace.main.name}:${var.cerbos_pdp_grpc_port}"
 }
 
 # Combined deployment information
@@ -112,10 +112,10 @@ output "ecs_deployment_info" {
     cluster_name                     = aws_ecs_cluster.main.name
     main_service_task_definition     = aws_ecs_task_definition.main_service.family
     solve_service_task_definition    = aws_ecs_task_definition.solve_service.family
-    permit_pdp_task_definition       = aws_ecs_task_definition.permit_pdp.family
+    cerbos_pdp_task_definition       = aws_ecs_task_definition.cerbos_pdp.family
     main_service_service_name        = aws_ecs_service.main_service.name
     solve_service_service_name       = aws_ecs_service.solve_service.name
-    permit_pdp_service_name          = aws_ecs_service.permit_pdp.name
+    cerbos_pdp_service_name          = aws_ecs_service.cerbos_pdp.name
     service_discovery_namespace_name = aws_service_discovery_private_dns_namespace.main.name
   }
   sensitive = false

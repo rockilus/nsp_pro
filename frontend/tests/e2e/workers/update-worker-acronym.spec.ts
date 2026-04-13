@@ -58,7 +58,7 @@ test.describe('Worker Acronym Updates', () => {
   }) => {
     // Get the name and acronym cells
     const nameCell = workerTestBase.getWorkerNameCell(page);
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page);
+    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
 
     // Get the current acronym to use as baseline (could be "JOH" or "JD" depending on implementation)
     const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
@@ -183,7 +183,7 @@ test.describe('Worker Acronym Updates', () => {
 
   test('should allow editing acronym by clicking on it', async ({ page }) => {
     // Get the acronym cell
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page);
+    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
     const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
 
     // Get the current acronym value (could be "JOH" or similar)
@@ -222,7 +222,7 @@ test.describe('Worker Acronym Updates', () => {
 
   test('should save acronym when clicking away (blur event)', async ({ page }) => {
     // Get the acronym cell
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page);
+    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
     const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
 
     // Click on the acronym to edit it
@@ -238,7 +238,7 @@ test.describe('Worker Acronym Updates', () => {
 
     // Click somewhere else to trigger blur event (save)
     // We'll click on the page title
-    const pageTitle = page.getByRole('heading', { name: 'Workers' });
+    const pageTitle = page.locator('data-testid=workers-page-heading');
     await pageTitle.click();
 
     // Wait for the acronym input to disappear (indicating save completed)
@@ -252,7 +252,7 @@ test.describe('Worker Acronym Updates', () => {
 
   test('should save acronym when Enter key is pressed', async ({ page }) => {
     // Get the acronym cell
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page);
+    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
     const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
 
     // Click on the acronym to edit it
@@ -280,7 +280,7 @@ test.describe('Worker Acronym Updates', () => {
 
   test('should cancel acronym editing if Escape key is pressed', async ({ page }) => {
     // Get the acronym cell
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page);
+    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
     const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
 
     // Get the current acronym value
@@ -316,7 +316,7 @@ test.describe('Worker Acronym Updates', () => {
   test('should not auto-update acronym after manual edit when name changes', async ({ page }) => {
     // Get the name and acronym cells
     const nameCell = workerTestBase.getWorkerNameCell(page);
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page);
+    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
     const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
 
     // First, manually edit the acronym to make it "custom"

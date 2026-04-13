@@ -144,13 +144,6 @@ variable "kms_key_id_sqs" {
 }
 
 
-# Name of the existing Permit API key secret in AWS Secrets Manager
-variable "permit_api_key_secret_name" {
-  description = "Name of the Permit API key secret in AWS Secrets Manager (created out-of-band)."
-  type        = string
-  default     = null
-}
-
 variable "replica_region" {
   description = "Secondary AWS region for secret replication"
   type        = string
@@ -658,69 +651,59 @@ variable "solve_service_operating_system_family" {
   }
 }
 
-# Permit PDP Service Configuration
-variable "permit_pdp_desired_count" {
-  description = "Desired number of Permit PDP tasks"
+# Cerbos PDP Service Configuration
+variable "cerbos_pdp_desired_count" {
+  description = "Desired number of Cerbos PDP tasks"
   type        = number
   default     = 1
+
   validation {
-    condition     = var.permit_pdp_desired_count >= 1 && var.permit_pdp_desired_count <= 10
-    error_message = "Permit PDP desired count must be between 1 and 10 for healthcare compliance."
+    condition     = var.cerbos_pdp_desired_count >= 1 && var.cerbos_pdp_desired_count <= 10
+    error_message = "Cerbos PDP desired count must be between 1 and 10."
   }
 }
 
-variable "permit_pdp_port" {
-  description = "Port for the Permit PDP service"
-  type        = number
-  default     = 3000
-
-  validation {
-    condition     = var.permit_pdp_port > 1024 && var.permit_pdp_port < 65536
-    error_message = "Permit PDP port must be between 1024 and 65535 for security compliance."
-  }
-}
-
-variable "permit_pdp_cpu" {
-  description = "CPU units for the Permit PDP task"
+variable "cerbos_pdp_cpu" {
+  description = "CPU units for the Cerbos PDP task"
   type        = number
   default     = 256
 
   validation {
-    condition     = var.permit_pdp_cpu >= 128 && var.permit_pdp_cpu <= 2048
-    error_message = "Permit PDP CPU must be between 128 and 2048 units for healthcare compliance."
+    condition     = var.cerbos_pdp_cpu >= 128 && var.cerbos_pdp_cpu <= 2048
+    error_message = "Cerbos PDP CPU must be between 128 and 2048 units."
   }
 }
 
-variable "permit_pdp_memory" {
-  description = "Memory (MiB) for the Permit PDP task"
+variable "cerbos_pdp_memory" {
+  description = "Memory (MiB) for the Cerbos PDP task"
   type        = number
   default     = 512
 
   validation {
-    condition     = var.permit_pdp_memory >= 256 && var.permit_pdp_memory <= 4096
-    error_message = "Permit PDP memory must be between 256 and 4096 MiB for healthcare compliance."
+    condition     = var.cerbos_pdp_memory >= 256 && var.cerbos_pdp_memory <= 4096
+    error_message = "Cerbos PDP memory must be between 256 and 4096 MiB."
   }
 }
 
-variable "permit_pdp_cpu_architecture" {
-  description = "CPU architecture for the Permit PDP task"
+variable "cerbos_pdp_cpu_architecture" {
+  description = "CPU architecture for the Cerbos PDP task"
   type        = string
-  default     = "x86_64"
+  default     = "ARM64"
 
   validation {
-    condition     = contains(["x86_64", "ARM64"], var.permit_pdp_cpu_architecture)
-    error_message = "Permit PDP CPU architecture must be either 'x86_64' or 'ARM64' for compatibility."
+    condition     = contains(["x86_64", "ARM64"], var.cerbos_pdp_cpu_architecture)
+    error_message = "Cerbos PDP CPU architecture must be either 'x86_64' or 'ARM64'."
   }
 }
 
-variable "permit_pdp_operating_system_family" {
-  description = "Operating system family for the Permit PDP task"
+variable "cerbos_pdp_operating_system_family" {
+  description = "Operating system family for the Cerbos PDP task"
   type        = string
   default     = "LINUX"
 
   validation {
-    condition     = contains(["LINUX", "WINDOWS"], var.permit_pdp_operating_system_family)
-    error_message = "Permit PDP operating system family must be either 'LINUX' or 'WINDOWS' for compatibility."
+    condition     = contains(["LINUX", "WINDOWS"], var.cerbos_pdp_operating_system_family)
+    error_message = "Cerbos PDP operating system family must be either 'LINUX' or 'WINDOWS'."
   }
 }
 

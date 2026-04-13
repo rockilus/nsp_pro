@@ -44,3 +44,17 @@ docker-compose -f docker-compose.tests.local.yml up
 
 Run playwright in UI mode:
 npx playwright test --ui
+
+
+Delete all docker containers:
+docker rm -f $(docker ps -aq)
+
+Delete all docker images:
+docker rmi $(docker images -q)
+
+Delete all docker builds:
+docker buildx prune -a
+
+Other clean up docker commands:
+docker system prune -a --volumes -f
+docker builder prune -a -f
