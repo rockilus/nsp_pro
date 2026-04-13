@@ -36,10 +36,6 @@ resourcePolicy:
         - read-shift-options
         - read-stats
         - delete-stats-header
-        - approve-request
-        - deny-request
-        - validate-swap
-        - approve-swap
         - update-team        # team settings
         - read-assignments
         - create-assignment
@@ -48,6 +44,9 @@ resourcePolicy:
         - check-replacements
         - validate-swap
         - approve-swap
+        - approve-request
+        - deny-request
+        - rescind-request
         - remove-user        # member management
         - create-worker      # worker management
         - update-worker
@@ -74,9 +73,6 @@ resourcePolicy:
         - update-constraint
         - delete-constraint
         - read-constraint-templates
-        - approve-request
-        - deny-request
-        - rescind-request
         - solve-schedule
         - create-schedule
         - read-schedules
