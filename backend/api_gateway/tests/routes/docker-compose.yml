@@ -11,14 +11,12 @@ services:
       - mongo-api-data:/data/db
 
   cerbos-api-tests:
-    image: ghcr.io/cerbos/cerbos:latest
+    build:
+      context: ../../../../cerbos-policies
     container_name: cerbos-api-tests
     ports:
       - "3594:3592"  # gRPC (avoids conflict with dev stack on 3592)
       - "3595:3593"  # HTTP healthcheck / playground
-    volumes:
-      - ../../../../cerbos-policies:/policies:ro
-    command: server --config=/policies/.cerbos.yaml
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3593/_cerbos/health"]
       interval: 5s
