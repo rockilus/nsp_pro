@@ -66,6 +66,24 @@ jobs:
         run: uv sync --locked --all-extras --dev
         working-directory: backend/api_gateway
 
+      - name: Build and start Cerbos PDP for api_gateway tests
+        run: |
+          docker build -t cerbos-api-tests ${{ github.workspace }}/cerbos-policies/
+          docker run -d \
+            --name cerbos-api-tests \
+            -p 3594:3592 \
+            -p 3595:3593 \
+            cerbos-api-tests
+
+      - name: Wait for Cerbos PDP to be healthy
+        run: |
+          for i in $(seq 1 20); do
+            curl -sf http://localhost:3595/_cerbos/health && echo "Cerbos ready" && exit 0
+            echo "Waiting for Cerbos... attempt $i"
+            sleep 2
+          done
+          echo "Cerbos PDP did not become healthy in time" && exit 1
+
       - name: Run checks api_gateway
         run: |
           just typecheck && \
@@ -73,6 +91,8 @@ jobs:
           uv run ruff format --check . && \
           just test
         working-directory: backend/api_gateway
+        env:
+          MONGO_URI: mongodb://testuser:testpass@localhost:27017/
 
       - name: Install dependencies for solve_service
         run: uv sync --locked --all-extras --dev
