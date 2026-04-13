@@ -78,9 +78,7 @@ async def start_impersonation(
         # Verify the target user exists before issuing a token
         target_user = db_collections.user_db.get_user_by_id(target_user_id)
         if target_user is None:
-            raise HTTPException(
-                status_code=404, detail="Target user not found"
-            )
+            raise HTTPException(status_code=404, detail="Target user not found")
 
         # Prevent admins from impersonating themselves
         if admin_user_id == target_user_id:
@@ -96,9 +94,7 @@ async def start_impersonation(
             ttl_seconds=config.impersonation_token_ttl_seconds,
         )
 
-        log_info(
-            f"Admin {admin_user_id} started impersonating user {target_user_id}"
-        )
+        log_info(f"Admin {admin_user_id} started impersonating user {target_user_id}")
 
         response = ImpersonationTokenResponse(
             token=token,

@@ -40,8 +40,10 @@ class CerbosAuthzService:
                 return False
             roles = {"owner"}
         elif resource_kind == "team":
-            membership = self._team_membership_db.get_team_membership_by_user_and_team_id(
-                user_id, resource_id
+            membership = (
+                self._team_membership_db.get_team_membership_by_user_and_team_id(
+                    user_id, resource_id
+                )
             )
             if membership is None:
                 return False
@@ -53,9 +55,7 @@ class CerbosAuthzService:
             # Admin actions are reserved for super_admins only.
             return False
         else:
-            log_info(
-                f"CerbosAuthzService: unknown resource kind '{resource_kind}'"
-            )
+            log_info(f"CerbosAuthzService: unknown resource kind '{resource_kind}'")
             return False
 
         principal = Principal(id=user_id, roles=list(roles))

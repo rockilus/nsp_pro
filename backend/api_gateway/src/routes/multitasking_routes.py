@@ -75,9 +75,7 @@ async def get_shift_demand_concurrency(
             status_code=400, detail=f"Invalid request data: {str(e)}"
         ) from e
     except NotAuthorizedError as e:
-        log_info(
-            f"Authorization error in get_shift_demand_concurrency: {str(e)}"
-        )
+        log_info(f"Authorization error in get_shift_demand_concurrency: {str(e)}")
         raise HTTPException(status_code=403, detail=str(e)) from e
     except Exception as e:
         log_info(f"Failed to get shift demand concurrency: {str(e)}")
@@ -191,9 +189,7 @@ async def get_multitasking_groups(
             raise NotAuthorizedError(
                 "You do not have permission to view multitasking groups for this team"
             )
-        groups = service.get_multitaskings(
-            team_id=team_id, template_id=template_id
-        )
+        groups = service.get_multitaskings(team_id=team_id, template_id=template_id)
         return [g.to_dto() for g in groups]
     except NotAuthorizedError as e:
         log_info(f"Authorization error in get_multitasking_groups: {str(e)}")

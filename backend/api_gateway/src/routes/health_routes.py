@@ -1,14 +1,13 @@
 from typing import Dict
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from shared.database.database_collections import DatabaseCollections
 
 from src.config import config
 from src.dependencies import get_db_collections
-from src.errors import AuthzConnectionError
-from src.integrations.authorization import authz_connect, authz_health_check
+from src.integrations.authorization import cerbos_health_check
 
 router = APIRouter()
 
@@ -44,8 +43,8 @@ async def health_check(
         health_status["database"].details = str(e)
 
     try:
-        await authz_health_check()
-    except AuthzConnectionError as e:
+        await cerbos_health_check()
+    except Exception as e:
         health_status["authz"].status = "error"
         health_status["authz"].details = str(e)
 
@@ -68,36 +67,6 @@ async def health_check(
         environment=config.environment,
         services=health_status,
     )
-
-
-@router.get("/check-authn-health")
-async def check_authz_health(
-    request: Request,
-    # pdp_url: str = Query(..., description="The URL of the Permit PDP")
-):
-    try:
-        print(f"Full incoming request URL: {request.url}")
-        print(f"Raw query parameters from request object: {request.url.query}")
-        print(f"Parsed query parameters from request object: {request.query_params}")
-        pdp_url = request.query_params.get("pdp_url", None)
-        if not pdp_url:
-            raise HTTPException(
-                status_code=400,
-                detail="Missing required query parameter: pdp_url",
-            )
-        print("Tenants request with pdp url: ", pdp_url)
-        permit = authz_connect(pdp_url, config.pdp_api_key)
-        resource_instance = "team: 667d626f02d5723648a0f1fc"
-        out = await permit.check(
-            user="bb2a8dd2-240d-41fc-9920-9eb51948cb22",
-            action="create-schedule",
-            resource=resource_instance,
-        )
-        return {"status": "success", "users": out}
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Unexpected error: {str(e)}"
-        ) from e
 
 
 @router.get("/check-processing-engine-health")
