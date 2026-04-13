@@ -47,28 +47,15 @@ services:
       - ./scripts/init-localstack-sqs.sh:/init-localstack-sqs.sh:ro
     entrypoint: ["/bin/bash", "/init-localstack-sqs.sh"]
 
-  # Permit.io PDP
-  permit:
-    image: permitio/pdp-v2:latest
-    container_name: permit
-    ports:
-      - "7766:7000"
-    env_file:
-      - .env.docker-compose.permit
-    # environment:
-    #   - PDP_API_KEY=your_api_key_here # Replace with your actual API key
-    #   - PDP_DEBUG=True
-
-  # Cerbos AuthZ (side-by-side with Permit during migration)
+  # Cerbos AuthZ
   cerbos:
-    image: ghcr.io/cerbos/cerbos:latest
+    build:
+      context: ./cerbos-policies
+      dockerfile: Dockerfile
     container_name: cerbos
     ports:
       - "3592:3592"  # gRPC
       - "3593:3593"  # HTTP / playground
-    volumes:
-      - ./cerbos-policies:/policies:ro
-    command: server --config=/policies/.cerbos.yaml
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://cerbos:3593/api/health"]
       interval: 10s
