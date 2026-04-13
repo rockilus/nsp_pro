@@ -536,7 +536,7 @@ module "ecs" {
   cerbos_pdp_memory                  = var.cerbos_pdp_memory
   cerbos_pdp_cpu_architecture        = var.cerbos_pdp_cpu_architecture
   cerbos_pdp_operating_system_family = var.cerbos_pdp_operating_system_family
-  cerbos_pdp_image                   = var.cerbos_pdp_image
+  cerbos_pdp_image                   = "${module.ecr.cerbos_pdp_repository_url}:latest"
 
   # Secret ARNs (referencing externally-managed Secrets Manager secrets)
   documentdb_secret_arn                      = module.documentdb.credentials_secret_arn

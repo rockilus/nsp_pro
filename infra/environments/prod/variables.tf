@@ -707,11 +707,6 @@ variable "cerbos_pdp_operating_system_family" {
   }
 }
 
-variable "cerbos_pdp_image" {
-  description = "ECR image URI for the Cerbos PDP container (e.g. <account>.dkr.ecr.<region>.amazonaws.com/<repo>:latest)"
-  type        = string
-}
-
 # SES Configuration
 variable "ses_domain_name" {
   description = "Domain name to verify with SES (e.g., rockilus.com)"
