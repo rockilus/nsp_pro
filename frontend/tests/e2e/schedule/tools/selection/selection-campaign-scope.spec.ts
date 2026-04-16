@@ -60,7 +60,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
   // that the UI loads when the view is positioned on the campaign start week.
   const farDate = campaignStart.add(6, 'month').startOf('month').add(1, 'day');
 
-  test.beforeEach(async ({}, testInfo) => {
+  test.beforeEach(async ({ page }, testInfo) => {
     const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     const scheduleTestBase = new ScheduleTestBase();
@@ -76,12 +76,20 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     // Create one assignment for today so the schedule table is rendered on page load
     const workers = scheduleTestBase.getTestWorkers();
     const shifts = scheduleTestBase.getTestShifts();
-    console.log('shift: ', shifts[0]);
 
     await scheduleTestBase.createAssignmentAndRecurrence({
       workerId: workers[0].id,
       shiftId: shifts[0].id,
       date: dayjs.utc(),
+    });
+
+    // Navigate to the schedule page and set the view to today so the table renders
+    await scheduleTestBase.actAsOwner(page);
+    await scheduleTestBase.navigateToSchedulePage(page);
+    await scheduleTestBase.setScheduleViewSettings(page, {
+      targetDate: dayjs.utc(),
+      timeFrame: 'week',
+      groupBy: 'shift',
     });
   });
 
@@ -113,17 +121,8 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     // Create the campaign schedule
     await scheduleTestBase.createCampaignSchedule(campaignStart, campaignEnd);
 
-    // Navigate to the first week of the campaign and enter selection mode
-    await scheduleTestBase.actAsOwner(page);
-    await scheduleTestBase.navigateToSchedulePage(page);
-    await scheduleTestBase.setScheduleViewSettings(page, {
-      groupBy: 'shift',
-      targetDate: campaignStart,
-      timeFrame: 'week',
-    });
+    // Enter selection mode and switch to campaign scope
     await enterSelectionMode(page);
-
-    // Switch to campaign scope
     await page.locator('[data-testid="schedule-scope-campaign"]').click();
 
     // Snapshot: no assignments in the campaign for workers[1] yet
@@ -240,14 +239,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       if (created) farCreated.push(created.id);
     }
 
-    // Navigate to the first week of the campaign (buffer covers months 1–2)
-    await scheduleTestBase.actAsOwner(page);
-    await scheduleTestBase.navigateToSchedulePage(page);
-    await scheduleTestBase.setScheduleViewSettings(page, {
-      groupBy: 'shift',
-      targetDate: campaignStart,
-      timeFrame: 'week',
-    });
+    // Enter selection mode and switch to campaign scope
     await enterSelectionMode(page);
 
     // Switch to campaign scope and select the full shifts[0] row
@@ -344,14 +336,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       if (created) farCreated.push(created.id);
     }
 
-    // Navigate to the first week of the campaign (buffer covers months 1–2)
-    await scheduleTestBase.actAsOwner(page);
-    await scheduleTestBase.navigateToSchedulePage(page);
-    await scheduleTestBase.setScheduleViewSettings(page, {
-      groupBy: 'shift',
-      targetDate: campaignStart,
-      timeFrame: 'week',
-    });
+    // Enter selection mode and switch to campaign scope
     await enterSelectionMode(page);
 
     // Switch to campaign scope and select the full shifts[0] row
