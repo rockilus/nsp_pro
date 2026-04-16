@@ -72,6 +72,17 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       createAssignments: false,
       linkMemberToWorker: false,
     });
+
+    // Create one assignment for today so the schedule table is rendered on page load
+    const workers = scheduleTestBase.getTestWorkers();
+    const shifts = scheduleTestBase.getTestShifts();
+    console.log('shift: ', shifts[0]);
+
+    await scheduleTestBase.createAssignmentAndRecurrence({
+      workerId: workers[0].id,
+      shiftId: shifts[0].id,
+      date: dayjs.utc(),
+    });
   });
 
   test.afterEach(async ({}, testInfo) => {
