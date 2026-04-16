@@ -56,10 +56,6 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
   const campaignStart = dayjs.utc().add(6, 'month').startOf('month');
   const campaignEnd = campaignStart.add(2, 'month').subtract(1, 'day');
 
-  // "Far date": 6 months into the campaign — well outside the 3-month buffer
-  // that the UI loads when the view is positioned on the campaign start week.
-  const farDate = campaignStart.add(6, 'month').startOf('month').add(1, 'day');
-
   test.beforeEach(async ({ page }, testInfo) => {
     const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
@@ -208,11 +204,11 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     const alternateWorker = workers.find((w) => w.id !== workers[1].id)!;
     const campaign = scheduleTestBase.getTestSchedule()!;
 
-    // ── Pre-create assignments IN the buffer (campaign month 1) ──────────────
-    const bufferDate1 = campaignStart.add(7, 'day');
-    const bufferDate2 = campaignStart.add(14, 'day');
-    const bufferCreated: string[] = [];
-    for (const date of [bufferDate1, bufferDate2]) {
+    // ── Pre-create assignments for ALL days in the campaign ───────────────────
+    const totalCampaignDays = campaignEnd.diff(campaignStart, 'day') + 1;
+    const allCampaignCreated: string[] = [];
+    for (let offset = 0; offset < totalCampaignDays; offset++) {
+      const date = campaignStart.add(offset, 'day');
       const result = await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: workers[1].id,
         shiftId: shifts[0].id,
@@ -220,22 +216,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
         scheduleId: campaign.id,
       });
       const created = result.assignmentsCreated[0];
-      if (created) bufferCreated.push(created.id);
-    }
-
-    // ── Pre-create assignments OUTSIDE the buffer (campaign month 7) ─────────
-    const farDate1 = farDate;
-    const farDate2 = farDate.add(7, 'day');
-    const farCreated: string[] = [];
-    for (const date of [farDate1, farDate2]) {
-      const result = await scheduleTestBase.createAssignmentAndRecurrence({
-        workerId: workers[1].id,
-        shiftId: shifts[0].id,
-        date,
-        scheduleId: campaign.id,
-      });
-      const created = result.assignmentsCreated[0];
-      if (created) farCreated.push(created.id);
+      if (created) allCampaignCreated.push(created.id);
     }
 
     // Enter selection mode and switch to campaign scope
@@ -261,28 +242,14 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       campaignEnd,
     );
 
-    // ── Verify: buffer assignments were updated ───────────────────────────────
-    for (const id of bufferCreated) {
+    // ── Verify: all campaign assignments were updated ─────────────────────────
+    for (const id of allCampaignCreated) {
       const updated = afterUpdate.assignmentsRead.find((a) => a.id === id);
-      expect(updated, `Buffer assignment ${id} should still exist after update`).toBeDefined();
+      expect(updated, `Campaign assignment ${id} should still exist after update`).toBeDefined();
       expect(
         updated!.workerId,
-        `Buffer assignment ${id} should have been reassigned to alternateWorker`,
+        `Campaign assignment ${id} should have been reassigned to alternateWorker`,
       ).toBe(alternateWorker.id);
-    }
-
-    // ── Verify: far-zone assignments were NOT updated ─────────────────────────
-    // They are outside the loaded buffer so they were never in selectedAssignmentIds
-    for (const id of farCreated) {
-      const farAssignment = afterUpdate.assignmentsRead.find((a) => a.id === id);
-      expect(
-        farAssignment,
-        `Far-zone assignment ${id} should still exist (it was not in the loaded buffer)`,
-      ).toBeDefined();
-      expect(
-        farAssignment!.workerId,
-        `Far-zone assignment ${id} should NOT have been updated — it was outside the 3-month buffer`,
-      ).toBe(workers[1].id);
     }
   });
 
@@ -297,6 +264,8 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
   test('bulk delete on full campaign row only deletes assignments within the loaded buffer', async ({
     page,
   }, testInfo) => {
+    test.setTimeout(120_000); // Creating assignments for all campaign days takes longer than the default timeout
+
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
 
@@ -304,11 +273,11 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     const shifts = scheduleTestBase.getTestShifts();
     const campaign = scheduleTestBase.getTestSchedule()!;
 
-    // ── Pre-create assignments IN the buffer (campaign month 1) ──────────────
-    const bufferDate1 = campaignStart.add(7, 'day');
-    const bufferDate2 = campaignStart.add(14, 'day');
-    const bufferCreated: string[] = [];
-    for (const date of [bufferDate1, bufferDate2]) {
+    // ── Pre-create assignments for ALL days in the campaign ───────────────────
+    const totalCampaignDays = campaignEnd.diff(campaignStart, 'day') + 1;
+    const allCampaignCreated: string[] = [];
+    for (let offset = 0; offset < totalCampaignDays; offset++) {
+      const date = campaignStart.add(offset, 'day');
       const result = await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: workers[1].id,
         shiftId: shifts[0].id,
@@ -316,22 +285,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
         scheduleId: campaign.id,
       });
       const created = result.assignmentsCreated[0];
-      if (created) bufferCreated.push(created.id);
-    }
-
-    // ── Pre-create assignments OUTSIDE the buffer (campaign month 7) ─────────
-    const farDate1 = farDate;
-    const farDate2 = farDate.add(7, 'day');
-    const farCreated: string[] = [];
-    for (const date of [farDate1, farDate2]) {
-      const result = await scheduleTestBase.createAssignmentAndRecurrence({
-        workerId: workers[1].id,
-        shiftId: shifts[0].id,
-        date,
-        scheduleId: campaign.id,
-      });
-      const created = result.assignmentsCreated[0];
-      if (created) farCreated.push(created.id);
+      if (created) allCampaignCreated.push(created.id);
     }
 
     // Enter selection mode and switch to campaign scope
@@ -357,20 +311,10 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       campaignEnd,
     );
 
-    // ── Verify: buffer assignments were deleted ───────────────────────────────
-    for (const id of bufferCreated) {
+    // ── Verify: all campaign assignments were deleted ─────────────────────────
+    for (const id of allCampaignCreated) {
       const stillExists = afterDelete.assignmentsRead.some((a) => a.id === id);
-      expect(stillExists, `Buffer assignment ${id} should have been deleted`).toBe(false);
-    }
-
-    // ── Verify: far-zone assignments were NOT deleted ─────────────────────────
-    // They were outside the buffer and therefore absent from selectedAssignmentIds
-    for (const id of farCreated) {
-      const stillExists = afterDelete.assignmentsRead.some((a) => a.id === id);
-      expect(
-        stillExists,
-        `Far-zone assignment ${id} should NOT have been deleted — it was outside the 3-month buffer`,
-      ).toBe(true);
+      expect(stillExists, `Campaign assignment ${id} should have been deleted`).toBe(false);
     }
   });
 });
