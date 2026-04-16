@@ -83,6 +83,9 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       date: dayjs.utc(),
     });
 
+    // Create the campaign schedule
+    await scheduleTestBase.createCampaignSchedule(campaignStart, campaignEnd);
+
     // Navigate to the schedule page and set the view to today so the table renders
     await scheduleTestBase.actAsOwner(page);
     await scheduleTestBase.navigateToSchedulePage(page);
@@ -117,9 +120,6 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
 
     const workers = scheduleTestBase.getTestWorkers();
     const shifts = scheduleTestBase.getTestShifts();
-
-    // Create the campaign schedule
-    await scheduleTestBase.createCampaignSchedule(campaignStart, campaignEnd);
 
     // Enter selection mode and switch to campaign scope
     await enterSelectionMode(page);
@@ -206,8 +206,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     const workers = scheduleTestBase.getTestWorkers();
     const shifts = scheduleTestBase.getTestShifts();
     const alternateWorker = workers.find((w) => w.id !== workers[1].id)!;
-
-    const campaign = await scheduleTestBase.createCampaignSchedule(campaignStart, campaignEnd);
+    const campaign = scheduleTestBase.getTestSchedule()!;
 
     // ── Pre-create assignments IN the buffer (campaign month 1) ──────────────
     const bufferDate1 = campaignStart.add(7, 'day');
@@ -303,8 +302,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
 
     const workers = scheduleTestBase.getTestWorkers();
     const shifts = scheduleTestBase.getTestShifts();
-
-    const campaign = await scheduleTestBase.createCampaignSchedule(campaignStart, campaignEnd);
+    const campaign = scheduleTestBase.getTestSchedule()!;
 
     // ── Pre-create assignments IN the buffer (campaign month 1) ──────────────
     const bufferDate1 = campaignStart.add(7, 'day');
