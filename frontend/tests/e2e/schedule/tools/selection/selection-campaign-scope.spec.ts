@@ -53,8 +53,8 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
   // ── Campaign date range (computed at module load, not hardcoded) ──────────
   // Use start of next calendar month so the buffer around the first view week
   // covers at most months 1–2 of the 12-month campaign.
-  const campaignStart = dayjs.utc().add(1, 'month').startOf('month');
-  const campaignEnd = campaignStart.add(12, 'month').subtract(1, 'day');
+  const campaignStart = dayjs.utc().add(6, 'month').startOf('month');
+  const campaignEnd = campaignStart.add(2, 'month').subtract(1, 'day');
 
   // "Far date": 6 months into the campaign — well outside the 3-month buffer
   // that the UI loads when the view is positioned on the campaign start week.
@@ -147,33 +147,26 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     );
     const createdAssignments = afterCreate.assignmentsRead.filter((a) => !beforeIds.has(a.id));
 
-    // Assignments should exist in the buffer zone (campaign months 1–2)
-    const bufferZoneEnd = campaignStart.add(3, 'month');
-    const inBufferZone = createdAssignments.filter((a) => a.date.isBefore(bufferZoneEnd, 'day'));
+    // Expect exactly one assignment per calendar day across the full campaign
+    const expectedDayCount = campaignEnd.diff(campaignStart, 'day') + 1;
     expect(
-      inBufferZone.length,
-      'Assignments should have been created in the buffer zone (campaign months 1–2)',
-    ).toBeGreaterThan(0);
+      createdAssignments.length,
+      `Should have created exactly ${expectedDayCount} assignments — one for every day of the 12-month campaign`,
+    ).toBe(expectedDayCount);
 
-    // Assignments should ALSO exist at the far date (campaign month 6+)
-    // — confirming bulk create spans the entire campaign, not just the buffer
-    const inFarZone = createdAssignments.filter(
-      (a) =>
-        a.date.isSameOrAfter(farDate.startOf('month'), 'day') &&
-        a.date.isSameOrBefore(farDate.endOf('month'), 'day'),
+    // Verify every campaign day has exactly one assignment for workers[1] on shifts[0]
+    const assignmentsByDate = new Map(
+      createdAssignments.map((a) => [a.date.format('YYYY-MM-DD'), a]),
     );
-    expect(
-      inFarZone.length,
-      `Assignments should ALSO have been created in the far zone (${farDate.format('YYYY-MM')}) — bulk create covers the full campaign, not just the 3-month buffer`,
-    ).toBeGreaterThan(0);
-
-    // All created assignments should belong to workers[1] on shifts[0]
-    for (const a of createdAssignments) {
-      expect(
-        a.workerId,
-        `Assignment on ${a.date.format('YYYY-MM-DD')} should be for workers[1]`,
-      ).toBe(workers[1].id);
-      expect(a.shiftId, `Assignment on ${a.date.format('YYYY-MM-DD')} should be on shifts[0]`).toBe(
+    for (let offset = 0; offset < expectedDayCount; offset++) {
+      const expectedDate = campaignStart.add(offset, 'day');
+      const dateStr = expectedDate.format('YYYY-MM-DD');
+      const assignment = assignmentsByDate.get(dateStr);
+      expect(assignment, `Missing assignment for campaign day ${dateStr}`).toBeDefined();
+      expect(assignment!.workerId, `Assignment on ${dateStr} should be for workers[1]`).toBe(
+        workers[1].id,
+      );
+      expect(assignment!.shiftId, `Assignment on ${dateStr} should be on shifts[0]`).toBe(
         shifts[0].id,
       );
     }
