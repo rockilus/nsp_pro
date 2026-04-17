@@ -89,6 +89,7 @@ export function ScheduleActionToolbar({
   // Count explicit selections; if campaignIntent is present, consider it as "has selections" too
   const assignmentCount = selectionState.selectedAssignmentIds.length;
   const hasAssignmentSelection = assignmentCount > 0 || !!selectionState.campaignIntent;
+  const hasCellSelection = cellCount > 0 || !!selectionState.campaignIntent;
 
   const needsEntitySelect = selectedAction === 'create' || selectedAction === 'update';
 
@@ -99,7 +100,7 @@ export function ScheduleActionToolbar({
   const validate = (): string | null => {
     switch (selectedAction) {
       case 'create':
-        if (cellCount === 0) return t('select_mode_warning_no_cell_selected');
+        if (!hasCellSelection) return t('select_mode_warning_no_cell_selected');
         if (!entityId)
           return t('select_mode_warning_no_member_shift_selected', {
             entity:

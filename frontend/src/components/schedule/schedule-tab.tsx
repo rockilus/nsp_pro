@@ -1126,7 +1126,29 @@ export default function ScheduleTab({
     async (id: string) => {
       // id is workerId (shift view) or shiftId (worker view)
       const isShiftView = scheduleViewSettings.groupBy === 'shift';
-      const assignmentsToCreate: AssignmentT[] = selectionState.selectedCells.map((cell) => ({
+
+      // When a campaign intent is active, expand it to the full campaign period.
+      // This handles the case where the visible period is outside the campaign boundary
+      // and selectedCells is empty (or only partially populated).
+      let cellsToCreate = selectionState.selectedCells;
+      if (selectionState.campaignIntent && scheduleCampaign) {
+        const { selectedRowIds } = selectionState.campaignIntent;
+        const campaignDates = buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate);
+        const allRowIds = isShiftView ? shifts.map((s) => s.id) : workers.map((w) => w.id);
+        const targetRowIds = selectedRowIds.length > 0 ? selectedRowIds : allRowIds;
+        cellsToCreate = [];
+        for (const rowId of targetRowIds) {
+          for (const pd of campaignDates) {
+            cellsToCreate.push({
+              rowId,
+              date: pd.date.format('YYYY-MM-DD'),
+              scheduleId: pd.scheduleId,
+            });
+          }
+        }
+      }
+
+      const assignmentsToCreate: AssignmentT[] = cellsToCreate.map((cell) => ({
         id: '',
         teamId: teamWithMembership.team.id,
         scheduleId: cell.scheduleId,
@@ -1140,11 +1162,16 @@ export default function ScheduleTab({
       }));
       if (assignmentsToCreate.length === 0) return;
       await bulkCreateAssignments(assignmentsToCreate, teamWithMembership.team.id);
-      setSelectionState((prev) => ({ ...prev, selectedCells: [] }));
+      setSelectionState((prev) => ({ ...prev, selectedCells: [], campaignIntent: undefined }));
     },
     [
       selectionState.selectedCells,
+      selectionState.campaignIntent,
+      scheduleCampaign,
       scheduleViewSettings.groupBy,
+      workers,
+      shifts,
+      buildDates,
       teamWithMembership.team.id,
       bulkCreateAssignments,
     ],
