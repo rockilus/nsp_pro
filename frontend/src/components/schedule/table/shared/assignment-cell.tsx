@@ -75,6 +75,7 @@ export default function AssignmentCell({
             zIndex: 5,
             '& .MuiSvgIcon-root': { fontSize: 14 },
           }}
+          data-testid={`assignment-checkbox-${assignmentData.assignment.id}`}
         />
       )}
       <span className="a-cell-title">

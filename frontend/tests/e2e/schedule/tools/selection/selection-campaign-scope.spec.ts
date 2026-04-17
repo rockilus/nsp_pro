@@ -334,34 +334,28 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     const teamId = scheduleTestBase.getTestTeam()!.teamId;
     await navigateUntilCampaignVisible(page, teamId, campaignStart, campaignEnd);
 
-    // Read the period now shown so we know which dates to assert.
-    const currentSettings = await page.evaluate((key: string) => {
-      const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : null;
-    }, `scheduleViewSettings_${teamId}`);
-    const viewStart = dayjs.utc(currentSettings.periodStartDate as string);
-    const viewEnd = viewStart.add(6, 'day');
+    // Fetch the first campaign assignment (on campaignStart) to get its ID.
+    const firstDayResult = await scheduleTestBase.getAssignmentsAndRecurrences(
+      true,
+      campaignStart,
+      campaignStart,
+      workers[1].id,
+    );
+    const firstCampaignAssignment = firstDayResult.assignmentsRead[0];
+    expect(
+      firstCampaignAssignment,
+      'First campaign assignment should exist on campaignStart',
+    ).toBeDefined();
 
-    // Verify that individual shift-cell checkboxes visible in the campaign view
-    // are checked, confirming selection persisted through navigation.
-    for (let dayOffset = 0; dayOffset <= 6; dayOffset++) {
-      const date = viewStart.add(dayOffset, 'day');
-      if (date.isBefore(campaignStart) || date.isAfter(campaignEnd)) continue;
-      const dateStr = date.format('YYYY-MM-DD');
-      const cellCheckbox = page.locator(
-        `[data-testid="shift-cell-checkbox-${shifts[0].id}-${dateStr}"]`,
-      );
-      const isVisible = await cellCheckbox.isVisible();
-      if (isVisible) {
-        await expect(
-          cellCheckbox,
-          `Cell on ${dateStr} should be checked after navigating to campaign period`,
-        ).toBeChecked();
-      }
-    }
-
-    // Suppress unused-variable warning for viewEnd (used implicitly via viewStart)
-    void viewEnd;
+    // Assert that the checkbox for the first campaign assignment is checked,
+    // confirming selection persisted through navigation.
+    const assignmentCheckbox = page.locator(
+      `[data-testid="assignment-checkbox-${firstCampaignAssignment.id}"]`,
+    );
+    await expect(
+      assignmentCheckbox,
+      'First campaign assignment checkbox should be checked after navigation',
+    ).toBeChecked();
   });
 
   // ── Bulk delete ───────────────────────────────────────────────────────────
