@@ -609,13 +609,18 @@ export default function ScheduleTab({
           const newAssignmentIds = loadedRowAssignmentIds.filter(
             (id) => !prev.selectedAssignmentIds.includes(id),
           );
+          // Only add cells for dates that fall within the campaign boundaries
+          const campaignStart = scheduleCampaign.startDate.format('YYYY-MM-DD');
+          const campaignEnd = scheduleCampaign.endDate.format('YYYY-MM-DD');
           const newCells = periodDates
-            .filter(
-              (pd) =>
-                !prev.selectedCells.some(
-                  (c) => c.rowId === rowId && c.date === pd.date.format('YYYY-MM-DD'),
-                ),
-            )
+            .filter((pd) => {
+              const d = pd.date.format('YYYY-MM-DD');
+              return (
+                d >= campaignStart &&
+                d <= campaignEnd &&
+                !prev.selectedCells.some((c) => c.rowId === rowId && c.date === d)
+              );
+            })
             .map((pd) => ({
               rowId,
               date: pd.date.format('YYYY-MM-DD'),
