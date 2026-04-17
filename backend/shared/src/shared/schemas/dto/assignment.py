@@ -53,7 +53,6 @@ class AssignmentCreateCellDTO(BaseModel):
 
     row_id: str
     date: float  # UNIX timestamp (UTC midnight)
-    schedule_id: Optional[str] = None
 
 
 class BulkAssignmentCreateDTO(BaseModel):
@@ -67,6 +66,7 @@ class BulkAssignmentCreateDTO(BaseModel):
     cells: List[AssignmentCreateCellDTO]
     entity_id: str  # worker_id (shift view) or shift_id (worker view)
     group_by: Literal["shift", "worker"]
+    intent: Optional[SelectionIntentDTO] = None
 
 
 class BulkAssignmentUpdateDTO(BaseModel):
@@ -96,3 +96,4 @@ class BulkAssignmentToggleFixedDTO(BaseModel):
     """
 
     assignment_ids: List[str]
+    intent: Optional[SelectionIntentDTO] = None

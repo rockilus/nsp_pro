@@ -1,5 +1,5 @@
-from datetime import date, timedelta
-from typing import Dict, List, Optional, Set, Tuple
+from datetime import date, datetime, timedelta, timezone
+from typing import Dict, List, Literal, Optional, Set, Tuple
 
 from shared.schemas.core import (
     Assignment,
@@ -16,7 +16,10 @@ from shared.schemas.core import (
     Shift,
     ShiftType,
 )
-from shared.schemas.dto.assignment import SelectionIntentDTO
+from shared.schemas.dto.assignment import (
+    AssignmentCreateCellDTO,
+    SelectionIntentDTO,
+)
 
 from src.services.base_service import BaseService
 from src.utils.date_utils import build_dates_list
@@ -1079,9 +1082,20 @@ class AssignmentService(BaseService):
         return ar_result
 
     def bulk_create_assignments(
-        self, assignments: List[Assignment]
+        self,
+        cells: List[AssignmentCreateCellDTO],
+        entity_id: str,
+        group_by: Literal["shift", "worker"],
+        team_id: str,
+        intent: Optional[SelectionIntentDTO] = None,
     ) -> AssignmentsRecurrencesResult:
-        """Create multiple assignments without recurrence, handling recuperation."""
+        """Create multiple assignments without recurrence, handling recuperation.
+
+        Constructs Assignment objects from the supplied cells, enforcing
+        ``source=MANUAL`` and ``fixed=False``.  When *intent* is provided the
+        backend also resolves the implicit campaign-scope selection and creates
+        assignments for those rows across the full campaign period.
+        """
         out = AssignmentsRecurrencesResult(
             assignments_created=[],
             assignments_read=[],
@@ -1092,7 +1106,78 @@ class AssignmentService(BaseService):
             recurrence_updated=None,
             recurrences_deleted_ids=[],
         )
-        for assignment in assignments:
+
+        # Build Assignment objects from explicit cells
+        assignments_to_create: List[Assignment] = [
+            Assignment(
+                id="",
+                team_id=team_id,
+                schedule_id=None,
+                worker_id=entity_id if group_by == "worker" else cell.row_id,
+                shift_id=entity_id if group_by == "shift" else cell.row_id,
+                date=datetime.fromtimestamp(cell.date, tz=timezone.utc).date(),
+                fixed=False,
+                source=AssignmentSource.MANUAL,
+                reference_assignment_id=None,
+                source_id=None,
+            )
+            for cell in cells
+        ]
+
+        # Resolve campaign-scope intent to additional assignments
+        if intent:
+            campaign = self.collection.schedule_db.get_schedule_by_id(
+                intent.campaign_id
+            )
+            if campaign:
+                campaign_dates = build_dates_list(
+                    campaign.start_date, campaign.end_date
+                )
+                if group_by == "shift":
+                    row_ids = intent.selected_row_shift_ids or [
+                        s.id
+                        for s in self.collection.shift_db.get_shifts(team_id)
+                    ]
+                else:
+                    row_ids = intent.selected_row_worker_ids or [
+                        w.id
+                        for w in self.collection.worker_db.get_workers(team_id)
+                    ]
+                # Dedup against explicit cells using (row_id, date) key
+                explicit_keys = {
+                    (
+                        a.shift_id if group_by == "shift" else a.worker_id,
+                        a.date,
+                    )
+                    for a in assignments_to_create
+                }
+                for row_id in row_ids:
+                    for d in campaign_dates:
+                        if (row_id, d) not in explicit_keys:
+                            assignments_to_create.append(
+                                Assignment(
+                                    id="",
+                                    team_id=team_id,
+                                    schedule_id=None,
+                                    worker_id=(
+                                        entity_id
+                                        if group_by == "shift"
+                                        else row_id
+                                    ),
+                                    shift_id=(
+                                        entity_id
+                                        if group_by == "worker"
+                                        else row_id
+                                    ),
+                                    date=d,
+                                    fixed=False,
+                                    source=AssignmentSource.MANUAL,
+                                    reference_assignment_id=None,
+                                    source_id=None,
+                                )
+                            )
+
+        for assignment in assignments_to_create:
             ar = self.create_assignment_and_recurrence(assignment, None)
             out.assignments_created.extend(ar.assignments_created)
         return out
@@ -1258,11 +1343,14 @@ class AssignmentService(BaseService):
     def bulk_toggle_fixed_assignments(
         self,
         assignment_ids: List[str],
+        intent: Optional[SelectionIntentDTO] = None,
     ) -> AssignmentsRecurrencesResult:
         """Flip the ``fixed`` boolean on the specified assignments.
 
         The backend fetches existing assignments by ID and toggles their
         ``fixed`` field — no assignment objects are accepted from the client.
+        When *intent* is provided the backend also resolves the implicit
+        campaign-scope selection and toggles those assignments.
         """
         out = AssignmentsRecurrencesResult(
             assignments_created=[],
@@ -1274,33 +1362,79 @@ class AssignmentService(BaseService):
             recurrence_updated=None,
             recurrences_deleted_ids=[],
         )
-        if not assignment_ids:
-            return out
 
-        existing = self.collection.assignment_db.get_assignments_by_ids(
-            assignment_ids
-        )
-        toggled: List[Assignment] = []
-        for a in existing:
-            updated = Assignment(
-                id=a.id,
-                team_id=a.team_id,
-                schedule_id=a.schedule_id,
-                worker_id=a.worker_id,
-                date=a.date,
-                shift_id=a.shift_id,
-                fixed=not a.fixed,
-                source=a.source,
-                reference_assignment_id=a.reference_assignment_id,
-                source_id=a.source_id,
+        explicit_id_set: Set[str] = set(assignment_ids)
+
+        if assignment_ids:
+            existing = self.collection.assignment_db.get_assignments_by_ids(
+                assignment_ids
             )
-            toggled.append(updated)
+            toggled: List[Assignment] = []
+            for a in existing:
+                toggled.append(
+                    Assignment(
+                        id=a.id,
+                        team_id=a.team_id,
+                        schedule_id=a.schedule_id,
+                        worker_id=a.worker_id,
+                        date=a.date,
+                        shift_id=a.shift_id,
+                        fixed=not a.fixed,
+                        source=a.source,
+                        reference_assignment_id=a.reference_assignment_id,
+                        source_id=a.source_id,
+                    )
+                )
+            if toggled:
+                self.collection.assignment_db.update_assignments(toggled)
+                out.assignments_updated.extend(toggled)
 
-        if toggled:
-            self.collection.assignment_db.update_assignments(toggled)
-            out.assignments_updated.extend(toggled)
+        if intent:
+            intent_assignments = self._resolve_intent_assignments(
+                intent=intent,
+                excluded_ids=explicit_id_set
+                | set(intent.excluded_assignment_ids),
+            )
+            intent_toggled: List[Assignment] = []
+            for a in intent_assignments:
+                intent_toggled.append(
+                    Assignment(
+                        id=a.id,
+                        team_id=a.team_id,
+                        schedule_id=a.schedule_id,
+                        worker_id=a.worker_id,
+                        date=a.date,
+                        shift_id=a.shift_id,
+                        fixed=not a.fixed,
+                        source=a.source,
+                        reference_assignment_id=a.reference_assignment_id,
+                        source_id=a.source_id,
+                    )
+                )
+            if intent_toggled:
+                self.collection.assignment_db.update_assignments(
+                    intent_toggled
+                )
+                out.assignments_updated.extend(intent_toggled)
 
         return out
+
+    def get_assignments_map(
+        self, assignment_ids: List[str]
+    ) -> Dict[str, Assignment]:
+        """Pre-fetch assignments by ID as a map keyed by ID.
+
+        Used by route handlers to capture the before-state for notification
+        diffs without duplicating the DB query pattern.
+        """
+        if not assignment_ids:
+            return {}
+        return {
+            a.id: a
+            for a in self.collection.assignment_db.get_assignments_by_ids(
+                assignment_ids
+            )
+        }
 
     def _resolve_intent_assignments(
         self,

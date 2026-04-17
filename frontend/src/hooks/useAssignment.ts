@@ -340,6 +340,7 @@ export function useBulkCreateAssignments() {
       entityId: string,
       groupBy: 'shift' | 'worker',
       teamId: string,
+      intent?: SelectionIntentPayload,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
       if (!isAuthenticated || !user?.id_token)
@@ -351,6 +352,7 @@ export function useBulkCreateAssignments() {
         entityId,
         groupBy,
         teamId,
+        intent,
       );
       queryClient.invalidateQueries({
         queryKey: assignmentsQueryKeys.teams(teamId),
@@ -411,12 +413,16 @@ export function useBulkToggleFixed() {
   const queryClient = useQueryClient();
 
   const bulkToggleFixed = useCallback(
-    async (assignmentIds: string[], teamId: string): Promise<AssignmentsRecurrencesResultT> => {
+    async (
+      assignmentIds: string[],
+      teamId: string,
+      intent?: SelectionIntentPayload,
+    ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
       if (!isAuthenticated || !user?.id_token)
         throw new Error('User not authenticated - please sign in');
 
-      const result = await AssignmentApi.bulkToggleFixed(apiClient, assignmentIds, teamId);
+      const result = await AssignmentApi.bulkToggleFixed(apiClient, assignmentIds, teamId, intent);
       queryClient.invalidateQueries({
         queryKey: assignmentsQueryKeys.teams(teamId),
       });

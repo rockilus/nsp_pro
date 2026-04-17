@@ -1125,49 +1125,34 @@ export default function ScheduleTab({
       // id is workerId (shift view) or shiftId (worker view)
       const isShiftView = scheduleViewSettings.groupBy === 'shift';
 
-      // When a campaign intent is active, expand it to the full campaign period.
-      // This handles the case where the visible period is outside the campaign boundary
-      // and selectedCells is empty (or only partially populated).
-      let cellsToCreate = selectionState.selectedCells;
-      if (selectionState.campaignIntent && scheduleCampaign) {
-        const { selectedRowIds } = selectionState.campaignIntent;
-        const campaignDates = buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate);
-        const allRowIds = isShiftView ? shifts.map((s) => s.id) : workers.map((w) => w.id);
-        const targetRowIds = selectedRowIds.length > 0 ? selectedRowIds : allRowIds;
-        cellsToCreate = [];
-        for (const rowId of targetRowIds) {
-          for (const pd of campaignDates) {
-            cellsToCreate.push({
-              rowId,
-              date: pd.date.format('YYYY-MM-DD'),
-              scheduleId: pd.scheduleId,
-            });
+      // Build intent payload if campaign intent is active — backend handles expansion
+      const intent = selectionState.campaignIntent
+        ? {
+            campaignId: selectionState.campaignIntent.campaignId,
+            selectedRowWorkerIds: isShiftView ? [] : selectionState.campaignIntent.selectedRowIds,
+            selectedRowShiftIds: isShiftView ? selectionState.campaignIntent.selectedRowIds : [],
+            excludedAssignmentIds: selectionState.campaignIntent.excludedAssignmentIds,
           }
-        }
-      }
+        : undefined;
 
-      const cells: BulkCreateCellPayload[] = cellsToCreate.map((cell) => ({
+      const cells: BulkCreateCellPayload[] = selectionState.selectedCells.map((cell) => ({
         rowId: cell.rowId,
         date: dayjs.utc(cell.date),
-        scheduleId: cell.scheduleId,
       }));
-      if (cells.length === 0) return;
+      if (cells.length === 0 && !intent) return;
       await bulkCreateAssignments(
         cells,
         id,
         scheduleViewSettings.groupBy,
         teamWithMembership.team.id,
+        intent,
       );
       setSelectionState((prev) => ({ ...prev, selectedCells: [], campaignIntent: undefined }));
     },
     [
       selectionState.selectedCells,
       selectionState.campaignIntent,
-      scheduleCampaign,
       scheduleViewSettings.groupBy,
-      workers,
-      shifts,
-      buildDates,
       teamWithMembership.team.id,
       bulkCreateAssignments,
     ],

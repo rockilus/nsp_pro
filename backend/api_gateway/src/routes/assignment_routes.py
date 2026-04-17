@@ -1,12 +1,11 @@
 import time as time_module
-from datetime import date, datetime, timezone
+from datetime import date
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from shared.logger import log_info
 from shared.schemas.core import (
     Assignment,
-    AssignmentSource,
     RecurrenceRule,
     RecurrenceUpdateScope,
     ShiftType,
@@ -19,6 +18,7 @@ from shared.schemas.dto import (
     BulkAssignmentToggleFixedDTO,
     BulkAssignmentUpdateDTO,
     RecurrenceRuleDTO,
+    SelectionIntentDTO,
 )
 from shared.schemas.dto.replacement import ReplacementCandidateDTO
 
@@ -44,6 +44,21 @@ from src.services.replacement_service import ReplacementService
 # pylint: disable=too-many-arguments, too-many-positional-arguments
 
 router = APIRouter()
+
+
+def _check_intent_ownership(
+    intent: Optional[SelectionIntentDTO],
+    team_id: str,
+    schedule_db,
+) -> None:
+    """BOLA guard: raise NotAuthorizedError if the intent campaign doesn't belong to this team."""
+    if intent is None:
+        return
+    schedule = schedule_db.get_schedule_by_id(intent.campaign_id)
+    if not schedule or schedule.team_id != team_id:
+        raise NotAuthorizedError(
+            "Campaign does not belong to the specified team"
+        )
 
 
 @router.post("/assignments/teams/{team_id}", status_code=201)
@@ -181,28 +196,12 @@ async def bulk_create_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to create assignments",
             )
-        assignments = [
-            Assignment(
-                id="",
-                team_id=team_id,
-                schedule_id=cell.schedule_id,
-                worker_id=(
-                    body.entity_id
-                    if body.group_by == "worker"
-                    else cell.row_id
-                ),
-                shift_id=(
-                    body.entity_id if body.group_by == "shift" else cell.row_id
-                ),
-                date=datetime.fromtimestamp(cell.date, tz=timezone.utc).date(),
-                fixed=False,
-                source=AssignmentSource.MANUAL,
-                reference_assignment_id=None,
-                source_id=None,
-            )
-            for cell in body.cells
-        ]
-        ar_result = assignment_service.bulk_create_assignments(assignments)
+        _check_intent_ownership(
+            body.intent, team_id, assignment_service.collection.schedule_db
+        )
+        ar_result = assignment_service.bulk_create_assignments(
+            body.cells, body.entity_id, body.group_by, team_id, body.intent
+        )
         ops = [
             AssignmentOperation(before=None, after=a)
             for a in ar_result.assignments_created
@@ -233,29 +232,18 @@ async def bulk_update_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to update assignments",
             )
-        # OWASP BOLA: verify that the campaign referenced in intent belongs to this team
-        if body.intent:
-            schedule = (
-                assignment_service.collection.schedule_db.get_schedule_by_id(
-                    body.intent.campaign_id
-                )
-            )
-            if not schedule or schedule.team_id != team_id:
-                raise NotAuthorizedError(
-                    "Campaign does not belong to the specified team",
-                )
+        _check_intent_ownership(
+            body.intent, team_id, assignment_service.collection.schedule_db
+        )
         new_worker_id: Optional[str] = (
             body.entity_id if body.group_by == "worker" else None
         )
         new_shift_id: Optional[str] = (
             body.entity_id if body.group_by == "shift" else None
         )
-        # Pre-fetch "before" state for notifications
-        before_map: dict[str, Assignment] = {}
-        if body.assignment_ids:
-            asgn_db = assignment_service.collection.assignment_db
-            before_list = asgn_db.get_assignments_by_ids(body.assignment_ids)
-            before_map = {a.id: a for a in before_list}
+        before_map = assignment_service.get_assignments_map(
+            body.assignment_ids
+        )
         ar_result = assignment_service.bulk_update_assignments(
             body.assignment_ids, new_worker_id, new_shift_id, body.intent
         )
@@ -292,27 +280,17 @@ async def bulk_delete_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to delete assignments",
             )
-        # OWASP BOLA: verify that the campaign referenced in intent belongs to this team
-        if body.intent:
-            schedule = (
-                assignment_service.collection.schedule_db.get_schedule_by_id(
-                    body.intent.campaign_id
-                )
-            )
-            if not schedule or schedule.team_id != team_id:
-                raise NotAuthorizedError(
-                    "Campaign does not belong to the specified team",
-                )
-        # Pre-fetch "before" state
-        before_list = (
-            assignment_service.collection.assignment_db.get_assignments_by_ids(
-                body.ids
-            )
+        _check_intent_ownership(
+            body.intent, team_id, assignment_service.collection.schedule_db
         )
+        before_map = assignment_service.get_assignments_map(body.ids)
         ar_result = assignment_service.bulk_delete_assignments(
             body.ids, body.intent
         )
-        ops = [AssignmentOperation(before=a, after=None) for a in before_list]
+        ops = [
+            AssignmentOperation(before=a, after=None)
+            for a in before_map.values()
+        ]
         await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
@@ -339,14 +317,14 @@ async def bulk_toggle_fixed_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to update assignments",
             )
-        before_list = (
-            assignment_service.collection.assignment_db.get_assignments_by_ids(
-                body.assignment_ids
-            )
+        _check_intent_ownership(
+            body.intent, team_id, assignment_service.collection.schedule_db
         )
-        before_map = {a.id: a for a in before_list}
-        ar_result = assignment_service.bulk_toggle_fixed_assignments(
+        before_map = assignment_service.get_assignments_map(
             body.assignment_ids
+        )
+        ar_result = assignment_service.bulk_toggle_fixed_assignments(
+            body.assignment_ids, body.intent
         )
         ops = [
             AssignmentOperation(before=before_map.get(a.id), after=a)

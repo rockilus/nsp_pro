@@ -28,7 +28,6 @@ dayjs.extend(utc);
 export interface BulkCreateCellPayload {
   rowId: string;
   date: dayjs.Dayjs;
-  scheduleId: string | null;
 }
 
 /**
@@ -212,24 +211,34 @@ export class AssignmentApi extends BaseApi {
     entityId: string,
     groupBy: 'shift' | 'worker',
     teamId: string,
+    intent?: SelectionIntentPayload,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
       throw new Error('Team ID is required');
+    }
+
+    const body: Record<string, unknown> = {
+      cells: cells.map((c) => ({
+        row_id: c.rowId,
+        date: c.date.unix(),
+      })),
+      entity_id: entityId,
+      group_by: groupBy,
+    };
+    if (intent) {
+      body.intent = {
+        campaign_id: intent.campaignId,
+        selected_row_worker_ids: intent.selectedRowWorkerIds,
+        selected_row_shift_ids: intent.selectedRowShiftIds,
+        excluded_assignment_ids: intent.excludedAssignmentIds,
+      };
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
       'post',
       `/assignments/bulk/teams/${teamId}`,
-      {
-        cells: cells.map((c) => ({
-          row_id: c.rowId,
-          date: c.date.unix(),
-          schedule_id: c.scheduleId,
-        })),
-        entity_id: entityId,
-        group_by: groupBy,
-      },
+      body,
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }
@@ -279,16 +288,27 @@ export class AssignmentApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     assignmentIds: string[],
     teamId: string,
+    intent?: SelectionIntentPayload,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
       throw new Error('Team ID is required');
+    }
+
+    const body: Record<string, unknown> = { assignment_ids: assignmentIds };
+    if (intent) {
+      body.intent = {
+        campaign_id: intent.campaignId,
+        selected_row_worker_ids: intent.selectedRowWorkerIds,
+        selected_row_shift_ids: intent.selectedRowShiftIds,
+        excluded_assignment_ids: intent.excludedAssignmentIds,
+      };
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
       'post',
       `/assignments/bulk/toggle-fixed/teams/${teamId}`,
-      { assignment_ids: assignmentIds },
+      body,
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }
