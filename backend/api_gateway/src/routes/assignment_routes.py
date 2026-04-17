@@ -1,11 +1,12 @@
 import time as time_module
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
 from shared.logger import log_info
 from shared.schemas.core import (
     Assignment,
+    AssignmentSource,
     RecurrenceRule,
     RecurrenceUpdateScope,
     ShiftType,
@@ -15,6 +16,7 @@ from shared.schemas.dto import (
     AssignmentsRecurrencesResultDTO,
     BulkAssignmentCreateDTO,
     BulkAssignmentDeleteDTO,
+    BulkAssignmentToggleFixedDTO,
     BulkAssignmentUpdateDTO,
     RecurrenceRuleDTO,
 )
@@ -51,7 +53,9 @@ async def create_assignment(
     recurrence: Optional[RecurrenceRuleDTO] = None,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-    notification_service: NotificationService = Depends(get_notification_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
@@ -65,7 +69,9 @@ async def create_assignment(
         r_data: Optional[RecurrenceRule] = None
         if recurrence:
             r_data = RecurrenceRule.from_dto(recurrence)
-        ar_result = assignment_service.create_assignment_and_recurrence(a_data, r_data)
+        ar_result = assignment_service.create_assignment_and_recurrence(
+            a_data, r_data
+        )
         ops = [
             AssignmentOperation(before=None, after=a)
             for a in ar_result.assignments_created
@@ -95,7 +101,9 @@ async def get_assignments(
     try:
         # Validate date range
         if end_date < start_date:
-            raise ValueError("end_date must be greater than or equal to start_date")
+            raise ValueError(
+                "end_date must be greater than or equal to start_date"
+            )
 
         # Prevent abuse: reject ranges > 6 months
         max_range_days = 365
@@ -140,7 +148,9 @@ async def get_assignments(
             include_campaign,
             worker_id,
             shift_types=(
-                [ShiftType(v) for v in shift_type] if shift_type is not None else None
+                [ShiftType(v) for v in shift_type]
+                if shift_type is not None
+                else None
             ),
         )
         response = ar_result.to_dto()
@@ -159,7 +169,9 @@ async def bulk_create_assignments(
     body: BulkAssignmentCreateDTO,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-    notification_service: NotificationService = Depends(get_notification_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
@@ -169,7 +181,27 @@ async def bulk_create_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to create assignments",
             )
-        assignments = [Assignment.from_dto(a) for a in body.assignments]
+        assignments = [
+            Assignment(
+                id="",
+                team_id=team_id,
+                schedule_id=cell.schedule_id,
+                worker_id=(
+                    body.entity_id
+                    if body.group_by == "worker"
+                    else cell.row_id
+                ),
+                shift_id=(
+                    body.entity_id if body.group_by == "shift" else cell.row_id
+                ),
+                date=datetime.fromtimestamp(cell.date, tz=timezone.utc).date(),
+                fixed=False,
+                source=AssignmentSource.MANUAL,
+                reference_assignment_id=None,
+                source_id=None,
+            )
+            for cell in body.cells
+        ]
         ar_result = assignment_service.bulk_create_assignments(assignments)
         ops = [
             AssignmentOperation(before=None, after=a)
@@ -189,7 +221,9 @@ async def bulk_update_assignments(
     body: BulkAssignmentUpdateDTO,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-    notification_service: NotificationService = Depends(get_notification_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
@@ -201,22 +235,30 @@ async def bulk_update_assignments(
             )
         # OWASP BOLA: verify that the campaign referenced in intent belongs to this team
         if body.intent:
-            schedule = assignment_service.collection.schedule_db.get_schedule_by_id(
-                body.intent.campaign_id
+            schedule = (
+                assignment_service.collection.schedule_db.get_schedule_by_id(
+                    body.intent.campaign_id
+                )
             )
             if not schedule or schedule.team_id != team_id:
                 raise NotAuthorizedError(
                     "Campaign does not belong to the specified team",
                 )
-        assignments = [Assignment.from_dto(a) for a in body.assignments]
-        # Pre-fetch "before" state
-        ids = [a.id for a in assignments if a.id]
+        new_worker_id: Optional[str] = (
+            body.entity_id if body.group_by == "worker" else None
+        )
+        new_shift_id: Optional[str] = (
+            body.entity_id if body.group_by == "shift" else None
+        )
+        # Pre-fetch "before" state for notifications
         before_map: dict[str, Assignment] = {}
-        if ids:
+        if body.assignment_ids:
             asgn_db = assignment_service.collection.assignment_db
-            before_list = asgn_db.get_assignments_by_ids(ids)
+            before_list = asgn_db.get_assignments_by_ids(body.assignment_ids)
             before_map = {a.id: a for a in before_list}
-        ar_result = assignment_service.bulk_update_assignments(assignments, body.intent)
+        ar_result = assignment_service.bulk_update_assignments(
+            body.assignment_ids, new_worker_id, new_shift_id, body.intent
+        )
         ops = [
             AssignmentOperation(
                 before=before_map.get(a.id),
@@ -238,7 +280,9 @@ async def bulk_delete_assignments(
     body: BulkAssignmentDeleteDTO,
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-    notification_service: NotificationService = Depends(get_notification_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
@@ -250,8 +294,10 @@ async def bulk_delete_assignments(
             )
         # OWASP BOLA: verify that the campaign referenced in intent belongs to this team
         if body.intent:
-            schedule = assignment_service.collection.schedule_db.get_schedule_by_id(
-                body.intent.campaign_id
+            schedule = (
+                assignment_service.collection.schedule_db.get_schedule_by_id(
+                    body.intent.campaign_id
+                )
             )
             if not schedule or schedule.team_id != team_id:
                 raise NotAuthorizedError(
@@ -259,14 +305,57 @@ async def bulk_delete_assignments(
                 )
         # Pre-fetch "before" state
         before_list = (
-            assignment_service.collection.assignment_db.get_assignments_by_ids(body.ids)
+            assignment_service.collection.assignment_db.get_assignments_by_ids(
+                body.ids
+            )
         )
-        ar_result = assignment_service.bulk_delete_assignments(body.ids, body.intent)
+        ar_result = assignment_service.bulk_delete_assignments(
+            body.ids, body.intent
+        )
         ops = [AssignmentOperation(before=a, after=None) for a in before_list]
         await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
     except Exception as e:
         log_info("Failed to bulk delete assignments")
+        handle_routes_errors(e)
+    return response
+
+
+@router.post("/assignments/bulk/toggle-fixed/teams/{team_id}")
+async def bulk_toggle_fixed_assignments(
+    team_id: str,
+    body: BulkAssignmentToggleFixedDTO,
+    user_context: UserContext = Depends(get_user_context),
+    assignment_service: AssignmentService = Depends(get_assignment_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+) -> AssignmentsRecurrencesResultDTO:
+    try:
+        if not await authz.check(
+            user_context.user_id, "update-assignment", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update assignments",
+            )
+        before_list = (
+            assignment_service.collection.assignment_db.get_assignments_by_ids(
+                body.assignment_ids
+            )
+        )
+        before_map = {a.id: a for a in before_list}
+        ar_result = assignment_service.bulk_toggle_fixed_assignments(
+            body.assignment_ids
+        )
+        ops = [
+            AssignmentOperation(before=before_map.get(a.id), after=a)
+            for a in ar_result.assignments_updated
+        ]
+        await notification_service.notify_assignment_crud(ops, team_id)
+        response = ar_result.to_dto()
+    except Exception as e:
+        log_info("Failed to bulk toggle fixed assignments")
         handle_routes_errors(e)
     return response
 
@@ -282,7 +371,9 @@ async def update_assignment(
     ),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-    notification_service: NotificationService = Depends(get_notification_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
@@ -306,7 +397,9 @@ async def update_assignment(
             if recurrence_update_scope
             else None
         )
-        recurrence_data = RecurrenceRule.from_dto(recurrence) if recurrence else None
+        recurrence_data = (
+            RecurrenceRule.from_dto(recurrence) if recurrence else None
+        )
         ar_result = assignment_service.update_assignment_and_recurrence(
             assignment_new=assignment_data,
             recurrence_update_scope=recurrence_update_scope_data,
@@ -334,7 +427,9 @@ async def delete_assignment(
     ),
     user_context: UserContext = Depends(get_user_context),
     assignment_service: AssignmentService = Depends(get_assignment_service),
-    notification_service: NotificationService = Depends(get_notification_service),
+    notification_service: NotificationService = Depends(
+        get_notification_service
+    ),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
 ) -> AssignmentsRecurrencesResultDTO:
     try:
@@ -369,7 +464,9 @@ async def delete_assignment(
     return response
 
 
-@router.get("/assignments/{assignment_id}/replacement-candidates/teams/{team_id}")
+@router.get(
+    "/assignments/{assignment_id}/replacement-candidates/teams/{team_id}"
+)
 async def get_replacement_candidates(
     assignment_id: str,
     team_id: str,
@@ -390,6 +487,8 @@ async def get_replacement_candidates(
         )
         response = [candidate.to_dto() for candidate in candidates]
     except Exception as e:
-        log_info(f"Failed to get replacement candidates for assignment {assignment_id}")
+        log_info(
+            f"Failed to get replacement candidates for assignment {assignment_id}"
+        )
         handle_routes_errors(e)
     return response

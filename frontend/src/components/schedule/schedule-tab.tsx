@@ -37,6 +37,7 @@ import {
   useDeleteAssignment,
   useBulkCreateAssignments,
   useBulkUpdateAssignments,
+  useBulkToggleFixed,
   useBulkDeleteAssignments,
 } from '../../hooks/useAssignment';
 import { useAssignmentsByPeriod, assignmentsQueryKeys } from '../../app/lib/hooks/useAssignments';
@@ -81,12 +82,7 @@ import {
 import { BreachT } from '@/types/breach';
 import { TeamMembershipRole } from '@/types/team';
 import { ShiftDemandCreateDTO, ShiftDemandUpdateDTO } from '@/types/shiftDemand';
-import {
-  AssignmentT,
-  AssignmentSource,
-  AssignmentsRecurrencesResultT,
-  CreateAssignmentT,
-} from '@/types/assignment';
+import { AssignmentT, AssignmentsRecurrencesResultT, CreateAssignmentT } from '@/types/assignment';
 import { RequestT } from '../../types/request';
 import { RecurrenceRuleT, RecurrenceUpdateScope } from '@/types/recurrence';
 import { SpecialtyT } from '@/types/specialty';
@@ -105,6 +101,7 @@ import {
   SelectionScope,
   CampaignSelectionIntent,
 } from '../../types/scheduleSelection';
+import { BulkCreateCellPayload } from '@/app/lib/api/assignmentApi';
 import { SolveScopeType } from '../../types/solveTaskStatus';
 
 dayjs.extend(utc);
@@ -141,6 +138,7 @@ export default function ScheduleTab({
   const deleteAssignment = useDeleteAssignment();
   const bulkCreateAssignments = useBulkCreateAssignments();
   const bulkUpdateAssignments = useBulkUpdateAssignments();
+  const bulkToggleFixed = useBulkToggleFixed();
   const bulkDeleteAssignments = useBulkDeleteAssignments();
 
   // Request hooks
@@ -1148,20 +1146,18 @@ export default function ScheduleTab({
         }
       }
 
-      const assignmentsToCreate: AssignmentT[] = cellsToCreate.map((cell) => ({
-        id: '',
-        teamId: teamWithMembership.team.id,
-        scheduleId: cell.scheduleId,
-        workerId: isShiftView ? id : cell.rowId,
-        shiftId: isShiftView ? cell.rowId : id,
+      const cells: BulkCreateCellPayload[] = cellsToCreate.map((cell) => ({
+        rowId: cell.rowId,
         date: dayjs.utc(cell.date),
-        fixed: false,
-        source: AssignmentSource.MANUAL,
-        referenceAssignmentId: null,
-        sourceId: null,
+        scheduleId: cell.scheduleId,
       }));
-      if (assignmentsToCreate.length === 0) return;
-      await bulkCreateAssignments(assignmentsToCreate, teamWithMembership.team.id);
+      if (cells.length === 0) return;
+      await bulkCreateAssignments(
+        cells,
+        id,
+        scheduleViewSettings.groupBy,
+        teamWithMembership.team.id,
+      );
       setSelectionState((prev) => ({ ...prev, selectedCells: [], campaignIntent: undefined }));
     },
     [
@@ -1181,13 +1177,6 @@ export default function ScheduleTab({
     async (id: string) => {
       // id is workerId (shift view) or shiftId (worker view)
       const isShiftView = scheduleViewSettings.groupBy === 'shift';
-      const assignmentsToUpdate: AssignmentT[] = assignments
-        .filter((a) => selectionState.selectedAssignmentIds.includes(a.id))
-        .map((a) => ({
-          ...a,
-          workerId: isShiftView ? id : a.workerId,
-          shiftId: isShiftView ? a.shiftId : id,
-        }));
 
       // Build intent payload if campaign intent is present
       const intent = selectionState.campaignIntent
@@ -1199,8 +1188,14 @@ export default function ScheduleTab({
           }
         : undefined;
 
-      if (assignmentsToUpdate.length === 0 && !intent) return;
-      await bulkUpdateAssignments(assignmentsToUpdate, teamWithMembership.team.id, intent);
+      if (selectionState.selectedAssignmentIds.length === 0 && !intent) return;
+      await bulkUpdateAssignments(
+        selectionState.selectedAssignmentIds,
+        id,
+        scheduleViewSettings.groupBy,
+        teamWithMembership.team.id,
+        intent,
+      );
       setSelectionState((prev) => ({
         ...prev,
         selectedAssignmentIds: [],
@@ -1211,7 +1206,6 @@ export default function ScheduleTab({
       selectionState.selectedAssignmentIds,
       selectionState.campaignIntent,
       scheduleViewSettings.groupBy,
-      assignments,
       teamWithMembership.team.id,
       bulkUpdateAssignments,
     ],
@@ -1267,17 +1261,10 @@ export default function ScheduleTab({
   const handleBulkToggleFixed = useCallback(async () => {
     // toggleFixed with campaign intent: only apply to explicit (loaded) assignments
     // since we can't know the current fixed state of unloaded intent-resolved assignments.
-    const assignmentsToUpdate: AssignmentT[] = assignments
-      .filter((a) => selectionState.selectedAssignmentIds.includes(a.id))
-      .map((a) => ({ ...a, fixed: !a.fixed }));
-    if (assignmentsToUpdate.length === 0) return;
-    await bulkUpdateAssignments(assignmentsToUpdate, teamWithMembership.team.id);
-  }, [
-    selectionState.selectedAssignmentIds,
-    assignments,
-    teamWithMembership.team.id,
-    bulkUpdateAssignments,
-  ]);
+    const selectedIds = selectionState.selectedAssignmentIds;
+    if (selectedIds.length === 0) return;
+    await bulkToggleFixed(selectedIds, teamWithMembership.team.id);
+  }, [selectionState.selectedAssignmentIds, teamWithMembership.team.id, bulkToggleFixed]);
 
   const updateSelectedPeriod = (newPeriodStart: dayjs.Dayjs, newPeriodEnd: dayjs.Dayjs) => {
     updateScheduleViewSettings({

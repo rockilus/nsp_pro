@@ -3,6 +3,7 @@ from shared.schemas.dto.assignment import (
     AssignmentsRecurrencesResultDTO,
     BulkAssignmentCreateDTO,
     BulkAssignmentDeleteDTO,
+    BulkAssignmentToggleFixedDTO,
     BulkAssignmentUpdateDTO,
     SelectionIntentDTO,
 )

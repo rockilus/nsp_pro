@@ -7,7 +7,6 @@ import utc from 'dayjs/plugin/utc';
 import {
   AssignmentT,
   fromAssignmentT,
-  toAssignmentT,
   AssignmentsRecurrencesResultT,
   toAssignmentsRecurrencesResultT,
 } from '../../../types/assignment';
@@ -20,6 +19,17 @@ import { ReplacementCandidateT, toReplacementCandidateT } from '../../../types/r
 import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 dayjs.extend(utc);
+
+/**
+ * A single (row, date) cell selected for bulk assignment creation.
+ * ``rowId`` is a shift ID when ``groupBy="shift"`` or a worker ID when
+ * ``groupBy="worker"``.
+ */
+export interface BulkCreateCellPayload {
+  rowId: string;
+  date: dayjs.Dayjs;
+  scheduleId: string | null;
+}
 
 /**
  * Implicit campaign-scope selection criteria sent to the backend.
@@ -198,7 +208,9 @@ export class AssignmentApi extends BaseApi {
    */
   static async bulkCreateAssignments(
     apiClient: AuthenticatedApiClient,
-    assignments: AssignmentT[],
+    cells: BulkCreateCellPayload[],
+    entityId: string,
+    groupBy: 'shift' | 'worker',
     teamId: string,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
@@ -209,7 +221,15 @@ export class AssignmentApi extends BaseApi {
       apiClient,
       'post',
       `/assignments/bulk/teams/${teamId}`,
-      { assignments: assignments.map(fromAssignmentT) },
+      {
+        cells: cells.map((c) => ({
+          row_id: c.rowId,
+          date: c.date.unix(),
+          schedule_id: c.scheduleId,
+        })),
+        entity_id: entityId,
+        group_by: groupBy,
+      },
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }
@@ -219,7 +239,9 @@ export class AssignmentApi extends BaseApi {
    */
   static async bulkUpdateAssignments(
     apiClient: AuthenticatedApiClient,
-    assignments: AssignmentT[],
+    assignmentIds: string[],
+    entityId: string,
+    groupBy: 'shift' | 'worker',
     teamId: string,
     intent?: SelectionIntentPayload,
   ): Promise<AssignmentsRecurrencesResultT> {
@@ -227,7 +249,11 @@ export class AssignmentApi extends BaseApi {
       throw new Error('Team ID is required');
     }
 
-    const body: Record<string, unknown> = { assignments: assignments.map(fromAssignmentT) };
+    const body: Record<string, unknown> = {
+      assignment_ids: assignmentIds,
+      entity_id: entityId,
+      group_by: groupBy,
+    };
     if (intent) {
       body.intent = {
         campaign_id: intent.campaignId,
@@ -242,6 +268,27 @@ export class AssignmentApi extends BaseApi {
       'put',
       `/assignments/bulk/teams/${teamId}`,
       body,
+    );
+    return toAssignmentsRecurrencesResultT(responseData);
+  }
+
+  /**
+   * Bulk toggle fixed status of assignments (authenticated)
+   */
+  static async bulkToggleFixed(
+    apiClient: AuthenticatedApiClient,
+    assignmentIds: string[],
+    teamId: string,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    if (!teamId) {
+      throw new Error('Team ID is required');
+    }
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      'post',
+      `/assignments/bulk/toggle-fixed/teams/${teamId}`,
+      { assignment_ids: assignmentIds },
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }
