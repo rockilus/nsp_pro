@@ -348,12 +348,15 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     ).toBeDefined();
 
     // Assert that the checkbox for the first campaign assignment is checked,
-    // confirming selection persisted through navigation.
+    // confirming selection persisted through navigation. Target the native
+    // input inside the MUI Checkbox wrapper since the data-testid is on the
+    // wrapper element.
     const assignmentCheckbox = page.locator(
       `[data-testid="assignment-checkbox-${firstCampaignAssignment.id}"]`,
     );
+    const assignmentCheckboxInput = assignmentCheckbox.locator('input[type="checkbox"], input');
     await expect(
-      assignmentCheckbox,
+      assignmentCheckboxInput,
       'First campaign assignment checkbox should be checked after navigation',
     ).toBeChecked();
   });
