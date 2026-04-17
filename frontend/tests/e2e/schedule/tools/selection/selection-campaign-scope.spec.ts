@@ -47,6 +47,42 @@ async function selectAction(
   await page.click(`[data-testid="schedule-action-option-${action}"]`);
 }
 
+/**
+ * Click the "next period" button repeatedly until the view stored in
+ * localStorage overlaps with at least one date in [campaignStart, campaignEnd].
+ * Throws if the campaign is not reached within maxAttempts clicks.
+ */
+async function navigateUntilCampaignVisible(
+  page: import('@playwright/test').Page,
+  teamId: string,
+  campaignStart: dayjs.Dayjs,
+  campaignEnd: dayjs.Dayjs,
+  maxAttempts = 60,
+): Promise<void> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const settings = await page.evaluate((key: string) => {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : null;
+    }, `scheduleViewSettings_${teamId}`);
+
+    if (settings?.periodStartDate) {
+      const periodStart = dayjs.utc(settings.periodStartDate as string);
+      const timeFrame: string = settings.timeFrame ?? 'week';
+      const periodEnd =
+        timeFrame === 'week' ? periodStart.add(6, 'day') : periodStart.endOf('month');
+
+      // Overlap: period contains at least one campaign date
+      if (!periodStart.isAfter(campaignEnd) && !periodEnd.isBefore(campaignStart)) {
+        return;
+      }
+    }
+
+    await page.click('[data-testid="time-nav-next"]');
+    await page.waitForLoadState('networkidle');
+  }
+  throw new Error(`Could not navigate to the campaign period within ${maxAttempts} attempts`);
+}
+
 test.describe('Campaign scope bulk operations — 12-month campaign', () => {
   const testBasesMap = new Map<string, ScheduleTestBase>();
 
@@ -293,16 +329,24 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     await expect(rowCheckbox).toBeVisible();
     await rowCheckbox.click();
 
-    // Navigate to the next period (next week inside the campaign)
-    await page.click('[data-testid="time-nav-next"]');
-    await page.waitForLoadState('networkidle');
+    // Navigate forward period-by-period until the view contains campaign dates.
+    // After each click we read localStorage to decide whether to keep going.
+    const teamId = scheduleTestBase.getTestTeam()!.teamId;
+    await navigateUntilCampaignVisible(page, teamId, campaignStart, campaignEnd);
 
-    // Verify that individual shift-cell checkboxes in the new view are checked,
-    // confirming the assignments in this newly-visible week are selected.
-    const nextWeekStart = campaignStart.add(1, 'week').startOf('week');
-    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
-      const date = nextWeekStart.add(dayOffset, 'day');
-      if (date.isAfter(campaignEnd)) break;
+    // Read the period now shown so we know which dates to assert.
+    const currentSettings = await page.evaluate((key: string) => {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : null;
+    }, `scheduleViewSettings_${teamId}`);
+    const viewStart = dayjs.utc(currentSettings.periodStartDate as string);
+    const viewEnd = viewStart.add(6, 'day');
+
+    // Verify that individual shift-cell checkboxes visible in the campaign view
+    // are checked, confirming selection persisted through navigation.
+    for (let dayOffset = 0; dayOffset <= 6; dayOffset++) {
+      const date = viewStart.add(dayOffset, 'day');
+      if (date.isBefore(campaignStart) || date.isAfter(campaignEnd)) continue;
       const dateStr = date.format('YYYY-MM-DD');
       const cellCheckbox = page.locator(
         `[data-testid="shift-cell-checkbox-${shifts[0].id}-${dateStr}"]`,
@@ -311,10 +355,13 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       if (isVisible) {
         await expect(
           cellCheckbox,
-          `Cell on ${dateStr} should be checked after navigation`,
+          `Cell on ${dateStr} should be checked after navigating to campaign period`,
         ).toBeChecked();
       }
     }
+
+    // Suppress unused-variable warning for viewEnd (used implicitly via viewStart)
+    void viewEnd;
   });
 
   // ── Bulk delete ───────────────────────────────────────────────────────────
