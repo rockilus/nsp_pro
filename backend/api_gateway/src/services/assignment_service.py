@@ -16,6 +16,7 @@ from shared.schemas.core import (
     Shift,
     ShiftType,
 )
+from shared.schemas.dto.assignment import SelectionIntentDTO
 
 from src.services.base_service import BaseService
 from src.utils.date_utils import build_dates_list
@@ -1028,9 +1029,16 @@ class AssignmentService(BaseService):
         return out
 
     def bulk_update_assignments(
-        self, assignments: List[Assignment]
+        self,
+        assignments: List[Assignment],
+        intent: Optional[SelectionIntentDTO] = None,
     ) -> AssignmentsRecurrencesResult:
-        """Update multiple assignments without recurrence, handling recuperation."""
+        """Update multiple assignments without recurrence, handling recuperation.
+
+        When *intent* is provided the backend also resolves the implicit
+        campaign-scope selection server-side and applies the same update
+        (worker / shift change) to those assignments.
+        """
         out = AssignmentsRecurrencesResult(
             assignments_created=[],
             assignments_read=[],
@@ -1041,6 +1049,10 @@ class AssignmentService(BaseService):
             recurrence_updated=None,
             recurrences_deleted_ids=[],
         )
+
+        # Track explicit IDs so intent resolution skips them (dedup)
+        explicit_ids: Set[str] = {a.id for a in assignments if a.id}
+
         for assignment in assignments:
             ar = self.update_assignment_and_recurrence(
                 assignment_new=assignment,
@@ -1050,12 +1062,65 @@ class AssignmentService(BaseService):
             out.assignments_created.extend(ar.assignments_created)
             out.assignments_updated.extend(ar.assignments_updated)
             out.assignments_deleted_ids.extend(ar.assignments_deleted_ids)
+
+        if intent:
+            intent_assignments = self._resolve_intent_assignments(
+                intent=intent,
+                excluded_ids=explicit_ids | set(intent.excluded_assignment_ids),
+            )
+            # Derive the update transformation from the explicit assignments list.
+            # We look at the first explicit assignment to determine what changed.
+            new_worker_id: Optional[str] = None
+            new_shift_id: Optional[str] = None
+            if assignments:
+                # Compare the new assignment with the original stored record to
+                # detect what field was changed (worker or shift).
+                sample_new = assignments[0]
+                sample_old = (
+                    self.collection.assignment_db.get_assignment_by_id(sample_new.id)
+                    if sample_new.id
+                    else None
+                )
+                if sample_old:
+                    if sample_new.worker_id != sample_old.worker_id:
+                        new_worker_id = sample_new.worker_id
+                    if sample_new.shift_id != sample_old.shift_id:
+                        new_shift_id = sample_new.shift_id
+
+            intent_updated: List[Assignment] = []
+            for a in intent_assignments:
+                updated = Assignment(
+                    id=a.id,
+                    team_id=a.team_id,
+                    schedule_id=a.schedule_id,
+                    worker_id=(
+                        new_worker_id if new_worker_id is not None else a.worker_id
+                    ),
+                    date=a.date,
+                    shift_id=(new_shift_id if new_shift_id is not None else a.shift_id),
+                    fixed=a.fixed,
+                    source=a.source,
+                    reference_assignment_id=a.reference_assignment_id,
+                    source_id=a.source_id,
+                )
+                intent_updated.append(updated)
+
+            if intent_updated:
+                self.collection.assignment_db.update_assignments(intent_updated)
+                out.assignments_updated.extend(intent_updated)
+
         return out
 
     def bulk_delete_assignments(
-        self, assignment_ids: List[str]
+        self,
+        assignment_ids: List[str],
+        intent: Optional[SelectionIntentDTO] = None,
     ) -> AssignmentsRecurrencesResult:
-        """Delete multiple assignments (this occurrence only, no recurrence cascade)."""
+        """Delete multiple assignments (this occurrence only, no recurrence cascade).
+
+        When *intent* is provided the backend also resolves the implicit
+        campaign-scope selection server-side and deletes those assignments.
+        """
         out = AssignmentsRecurrencesResult(
             assignments_created=[],
             assignments_read=[],
@@ -1066,6 +1131,9 @@ class AssignmentService(BaseService):
             recurrence_updated=None,
             recurrences_deleted_ids=[],
         )
+
+        explicit_id_set = set(assignment_ids)
+
         for assignment_id in assignment_ids:
             ar = self.delete_assignment_and_recurrence(
                 assignment_id=assignment_id,
@@ -1075,7 +1143,42 @@ class AssignmentService(BaseService):
             out.assignments_deleted_ids.extend(ar.assignments_deleted_ids)
             out.assignments_created.extend(ar.assignments_created)
             out.assignments_updated.extend(ar.assignments_updated)
+
+        if intent:
+            intent_assignments = self._resolve_intent_assignments(
+                intent=intent,
+                excluded_ids=explicit_id_set | set(intent.excluded_assignment_ids),
+            )
+            intent_ids = [a.id for a in intent_assignments if a.id]
+            if intent_ids:
+                for assignment_id in intent_ids:
+                    ar = self.delete_assignment_and_recurrence(
+                        assignment_id=assignment_id,
+                        recurrence_id=None,
+                        recurrence_update_scope=None,
+                    )
+                    out.assignments_deleted_ids.extend(ar.assignments_deleted_ids)
+                    out.assignments_created.extend(ar.assignments_created)
+                    out.assignments_updated.extend(ar.assignments_updated)
+
         return out
+
+    def _resolve_intent_assignments(
+        self,
+        intent: SelectionIntentDTO,
+        excluded_ids: Set[str],
+    ) -> List[Assignment]:
+        """Resolve a SelectionIntentDTO to a concrete list of Assignments.
+
+        Delegates to the repository which builds the appropriate MongoDB query.
+        """
+        all_excluded = list(excluded_ids | set(intent.excluded_assignment_ids))
+        return self.collection.assignment_db.get_assignments_by_campaign_intent(
+            campaign_id=intent.campaign_id,
+            selected_row_worker_ids=intent.selected_row_worker_ids,
+            selected_row_shift_ids=intent.selected_row_shift_ids,
+            excluded_assignment_ids=all_excluded,
+        )
 
     def _handle_recurrence_delete(
         self,

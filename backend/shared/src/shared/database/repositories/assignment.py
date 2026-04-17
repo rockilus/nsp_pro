@@ -241,6 +241,32 @@ class AssignmentRepository(BaseRepository[AssignmentSchema]):
         )
         return [assignment.to_core() for assignment in assignments]
 
+    def get_assignments_by_campaign_intent(
+        self,
+        campaign_id: str,
+        selected_row_worker_ids: List[str],
+        selected_row_shift_ids: List[str],
+        excluded_assignment_ids: List[str],
+    ) -> List[Assignment]:
+        """Resolve an implicit campaign-scope selection to a concrete list.
+
+        Queries assignments belonging to *campaign_id* (stored in the
+        ``schedule`` field), filtered by optional row lists and excluding
+        any IDs in *excluded_assignment_ids*.  An empty row list means
+        \"all rows\".
+        """
+        query: Dict[str, Any] = {"schedule": campaign_id}
+
+        if selected_row_worker_ids:
+            query["worker"] = {"$in": selected_row_worker_ids}
+        if selected_row_shift_ids:
+            query["shift"] = {"$in": selected_row_shift_ids}
+        if excluded_assignment_ids:
+            query["_id"] = {"$nin": excluded_assignment_ids}
+
+        assignments = self.find_all(query)
+        return [a.to_core() for a in assignments]
+
     def update_assignment(self, assignment: Assignment) -> Assignment:
         """Update an assignment."""
         assignment_schema = AssignmentSchema.from_core(assignment)

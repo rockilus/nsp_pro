@@ -86,7 +86,9 @@ export function ScheduleActionToolbar({
   const optionId = (opt: WorkerT | ShiftT) => opt.id;
 
   const cellCount = selectionState.selectedCells.length;
+  // Count explicit selections; if campaignIntent is present, consider it as "has selections" too
   const assignmentCount = selectionState.selectedAssignmentIds.length;
+  const hasAssignmentSelection = assignmentCount > 0 || !!selectionState.campaignIntent;
 
   const needsEntitySelect = selectedAction === 'create' || selectedAction === 'update';
 
@@ -107,7 +109,7 @@ export function ScheduleActionToolbar({
           });
         return null;
       case 'update':
-        if (assignmentCount === 0) return t('select_mode_warning_no_assignment_selected');
+        if (!hasAssignmentSelection) return t('select_mode_warning_no_assignment_selected');
         if (!entityId)
           return t('select_mode_warning_no_member_shift_selected', {
             entity:
@@ -116,7 +118,7 @@ export function ScheduleActionToolbar({
         return null;
       case 'toggleFixed':
       case 'delete':
-        if (assignmentCount === 0) return t('select_mode_warning_no_assignment_selected');
+        if (!hasAssignmentSelection) return t('select_mode_warning_no_assignment_selected');
         return null;
     }
   };

@@ -21,6 +21,22 @@ import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 dayjs.extend(utc);
 
+/**
+ * Implicit campaign-scope selection criteria sent to the backend.
+ * Exactly one of selectedRowWorkerIds / selectedRowShiftIds is populated
+ * (depending on the current groupBy setting). An empty list means
+ * "all rows in the campaign".
+ */
+export interface SelectionIntentPayload {
+  campaignId: string;
+  /** empty = all workers; populated in worker-view row selection */
+  selectedRowWorkerIds: string[];
+  /** empty = all shifts; populated in shift-view row selection */
+  selectedRowShiftIds: string[];
+  /** IDs of individual assignments deselected from the implicit set */
+  excludedAssignmentIds: string[];
+}
+
 export class AssignmentApi extends BaseApi {
   /**
    * Add assignment with optional recurrence (authenticated)
@@ -205,16 +221,27 @@ export class AssignmentApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     assignments: AssignmentT[],
     teamId: string,
+    intent?: SelectionIntentPayload,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
       throw new Error('Team ID is required');
+    }
+
+    const body: Record<string, unknown> = { assignments: assignments.map(fromAssignmentT) };
+    if (intent) {
+      body.intent = {
+        campaign_id: intent.campaignId,
+        selected_row_worker_ids: intent.selectedRowWorkerIds,
+        selected_row_shift_ids: intent.selectedRowShiftIds,
+        excluded_assignment_ids: intent.excludedAssignmentIds,
+      };
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
       'put',
       `/assignments/bulk/teams/${teamId}`,
-      { assignments: assignments.map(fromAssignmentT) },
+      body,
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }
@@ -226,16 +253,27 @@ export class AssignmentApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     assignmentIds: string[],
     teamId: string,
+    intent?: SelectionIntentPayload,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
       throw new Error('Team ID is required');
+    }
+
+    const body: Record<string, unknown> = { ids: assignmentIds };
+    if (intent) {
+      body.intent = {
+        campaign_id: intent.campaignId,
+        selected_row_worker_ids: intent.selectedRowWorkerIds,
+        selected_row_shift_ids: intent.selectedRowShiftIds,
+        excluded_assignment_ids: intent.excludedAssignmentIds,
+      };
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
       'delete',
       `/assignments/bulk/teams/${teamId}`,
-      { ids: assignmentIds },
+      body,
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }

@@ -4,6 +4,7 @@ from shared.schemas.dto.assignment import (
     BulkAssignmentCreateDTO,
     BulkAssignmentDeleteDTO,
     BulkAssignmentUpdateDTO,
+    SelectionIntentDTO,
 )
 from shared.schemas.dto.attribute import AttributeDTO
 from shared.schemas.dto.breach import BreachDTO
@@ -94,6 +95,7 @@ __all__ = [
     "BulkAssignmentCreateDTO",
     "BulkAssignmentDeleteDTO",
     "BulkAssignmentUpdateDTO",
+    "SelectionIntentDTO",
     "AttributeDTO",
     "BreachDTO",
     "BlockDTO",

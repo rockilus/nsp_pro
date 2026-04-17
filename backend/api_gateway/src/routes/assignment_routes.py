@@ -199,6 +199,15 @@ async def bulk_update_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to update assignments",
             )
+        # OWASP BOLA: verify that the campaign referenced in intent belongs to this team
+        if body.intent:
+            schedule = assignment_service.collection.schedule_db.get_schedule_by_id(
+                body.intent.campaign_id
+            )
+            if not schedule or schedule.team_id != team_id:
+                raise NotAuthorizedError(
+                    "Campaign does not belong to the specified team",
+                )
         assignments = [Assignment.from_dto(a) for a in body.assignments]
         # Pre-fetch "before" state
         ids = [a.id for a in assignments if a.id]
@@ -207,7 +216,7 @@ async def bulk_update_assignments(
             asgn_db = assignment_service.collection.assignment_db
             before_list = asgn_db.get_assignments_by_ids(ids)
             before_map = {a.id: a for a in before_list}
-        ar_result = assignment_service.bulk_update_assignments(assignments)
+        ar_result = assignment_service.bulk_update_assignments(assignments, body.intent)
         ops = [
             AssignmentOperation(
                 before=before_map.get(a.id),
@@ -239,11 +248,20 @@ async def bulk_delete_assignments(
             raise NotAuthorizedError(
                 "You do not have permission to delete assignments",
             )
+        # OWASP BOLA: verify that the campaign referenced in intent belongs to this team
+        if body.intent:
+            schedule = assignment_service.collection.schedule_db.get_schedule_by_id(
+                body.intent.campaign_id
+            )
+            if not schedule or schedule.team_id != team_id:
+                raise NotAuthorizedError(
+                    "Campaign does not belong to the specified team",
+                )
         # Pre-fetch "before" state
         before_list = (
             assignment_service.collection.assignment_db.get_assignments_by_ids(body.ids)
         )
-        ar_result = assignment_service.bulk_delete_assignments(body.ids)
+        ar_result = assignment_service.bulk_delete_assignments(body.ids, body.intent)
         ops = [AssignmentOperation(before=a, after=None) for a in before_list]
         await notification_service.notify_assignment_crud(ops, team_id)
         response = ar_result.to_dto()
