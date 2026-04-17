@@ -47,7 +47,7 @@ just all
 
 ### Local stack
 ```bash
-docker-compose up --build         # full stack (MongoDB, Cerbos PDP, services)
+docker-compose -f docker-compose.yml up --build   # full stack (MongoDB, Cerbos PDP, services)
 ```
 
 ---
@@ -121,6 +121,10 @@ from shared.schemas.core import (
 - **Design tokens** from `src/app/globals.css` — use CSS variables (`var(--color-primary)`) not hardcoded colors.
 - Support **light and dark themes**; validate both modes. Ensure responsive layouts across desktop/tablet/mobile.
 
+**Rockilus Web (`rockilus-web/`) additional rules:**
+- Marketing components go under `rockilus-web/components/marketing/`; future app logic under `rockilus-web/components/app/`.
+- Third-party integrations requiring server-side secrets must be proxied through `api_gateway` or handled via secure client-side flows — never embed secrets in the static export.
+
 ---
 
 ## Backend Rules
@@ -132,6 +136,17 @@ from shared.schemas.core import (
 - Periods are `List[List[date]]` — preserve this shape throughout the solver pipeline.
 - Use shared `db` connectors from `backend/shared` for all DB access.
 - When adding new protected resources or actions, add a resource policy YAML under `cerbos-policies/resource_policies/`.
+
+---
+
+## Quality Gates
+
+Before marking any task done:
+- Run the relevant `just` command(s) for all affected services.
+- No hardcoded user-facing strings on any frontend — use i18n.
+- No server-side code in either Next.js app (static export constraint).
+- Any cross-service payload change must start with a shared DTO update in `backend/shared/`.
+- Solver date/time logic must be timezone-explicit — never assume UTC silently.
 
 ---
 
