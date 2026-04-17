@@ -85,15 +85,26 @@ export default function WorkerTableRow({
         isSelectionActive={selectionState?.isActive}
         isRowSelected={
           !!selectionState?.isActive &&
-          periodDates.length > 0 &&
-          periodDates.every((pd) =>
-            selectionState.selectedCells.some(
-              (c) => c.rowId === worker.id && c.date === pd.date.format('YYYY-MM-DD'),
-            ),
-          )
+          // Campaign intent: row is covered by the active intent
+          ((!!selectionState.campaignIntent &&
+            (selectionState.campaignIntent.selectedRowIds.length === 0 ||
+              selectionState.campaignIntent.selectedRowIds.includes(worker.id))) ||
+            // View scope: all visible period cells are explicitly selected
+            (periodDates.length > 0 &&
+              periodDates.every((pd) =>
+                selectionState.selectedCells.some(
+                  (c) => c.rowId === worker.id && c.date === pd.date.format('YYYY-MM-DD'),
+                ),
+              )))
         }
         isRowIndeterminate={
           !!selectionState?.isActive &&
+          // Not indeterminate when row is fully campaign-intent-selected
+          !(
+            !!selectionState.campaignIntent &&
+            (selectionState.campaignIntent.selectedRowIds.length === 0 ||
+              selectionState.campaignIntent.selectedRowIds.includes(worker.id))
+          ) &&
           !periodDates.every((pd) =>
             selectionState.selectedCells.some(
               (c) => c.rowId === worker.id && c.date === pd.date.format('YYYY-MM-DD'),

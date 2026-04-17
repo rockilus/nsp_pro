@@ -444,6 +444,83 @@ export default function ScheduleTab({
   // Selection Mode Handlers
   //////////////////////////
 
+  // Keep refs to avoid stale closures in the navigation-sync effect below
+  // while preventing the effect from re-firing on every intent change
+  // (the handlers already handle that case with immediate updates).
+  const campaignIntentRef = React.useRef(selectionState.campaignIntent);
+  const scheduleCampaignRef = React.useRef(scheduleCampaign);
+  const groupByRef = React.useRef(scheduleViewSettings.groupBy);
+  const workersRef = React.useRef(workers);
+  const shiftsRef = React.useRef(shifts);
+  campaignIntentRef.current = selectionState.campaignIntent;
+  scheduleCampaignRef.current = scheduleCampaign;
+  groupByRef.current = scheduleViewSettings.groupBy;
+  workersRef.current = workers;
+  shiftsRef.current = shifts;
+
+  // When the user navigates to a different period, re-derive selectedCells and
+  // selectedAssignmentIds from the active campaign intent so that newly visible
+  // rows and assignments appear highlighted automatically.
+  useEffect(() => {
+    const intent = campaignIntentRef.current;
+    if (!intent) return;
+
+    const campaign = scheduleCampaignRef.current;
+    if (!campaign) return;
+
+    const isWorkerView = groupByRef.current === 'worker';
+    const allRowIds = isWorkerView
+      ? workersRef.current.map((w) => w.id)
+      : shiftsRef.current.map((s) => s.id);
+    const targetRowIds =
+      intent.selectedRowIds.length > 0 ? new Set(intent.selectedRowIds) : new Set(allRowIds);
+    const excludedSet = new Set(intent.excludedAssignmentIds);
+
+    // Only consider period dates that fall within the campaign boundaries
+    const campaignStart = campaign.startDate.format('YYYY-MM-DD');
+    const campaignEnd = campaign.endDate.format('YYYY-MM-DD');
+    const visibleCampaignDates = periodDates.filter((pd) => {
+      const d = pd.date.format('YYYY-MM-DD');
+      return d >= campaignStart && d <= campaignEnd;
+    });
+
+    if (visibleCampaignDates.length === 0) {
+      // Navigated completely outside the campaign — clear visual cells/assignments
+      setSelectionState((prev) => ({
+        ...prev,
+        selectedCells: [],
+        selectedAssignmentIds: [],
+      }));
+      return;
+    }
+
+    const visibleDateSet = new Set(visibleCampaignDates.map((pd) => pd.date.format('YYYY-MM-DD')));
+
+    // Assignments in the visible campaign dates matching the intent
+    const matchingIds = assignments
+      .filter((a) => {
+        if (!visibleDateSet.has(a.date.format('YYYY-MM-DD'))) return false;
+        if (excludedSet.has(a.id)) return false;
+        return targetRowIds.has(isWorkerView ? a.workerId : a.shiftId);
+      })
+      .map((a) => a.id);
+
+    // Cells: targeted rows × visible campaign dates only
+    const newCells: SelectedScheduleCell[] = [];
+    for (const rowId of targetRowIds) {
+      for (const pd of visibleCampaignDates) {
+        newCells.push({ rowId, date: pd.date.format('YYYY-MM-DD'), scheduleId: pd.scheduleId });
+      }
+    }
+
+    setSelectionState((prev) => ({
+      ...prev,
+      selectedCells: newCells,
+      selectedAssignmentIds: matchingIds,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periodDates, assignments]);
+
   const handleToggleSelectionMode = useCallback(() => {
     setSelectionState((prev) => ({
       isActive: !prev.isActive,
@@ -506,7 +583,7 @@ export default function ScheduleTab({
           const isAllSelected = intent.selectedRowIds.length === 0 && !!prev.campaignIntent;
 
           if (isRowSelected || isAllSelected) {
-            // Deselect: remove row from intent and remove its loaded assignments
+            // Deselect: remove row from intent, remove its loaded assignments and cells
             const loadedSet = new Set(loadedRowAssignmentIds);
             const newSelectedRowIds = isAllSelected
               ? [] // clearing "all" by toggling a single row: fallback to removing just this one
@@ -517,12 +594,13 @@ export default function ScheduleTab({
                 : undefined;
             return {
               ...prev,
+              selectedCells: prev.selectedCells.filter((c) => c.rowId !== rowId),
               selectedAssignmentIds: prev.selectedAssignmentIds.filter((id) => !loadedSet.has(id)),
               campaignIntent: newIntent,
             };
           }
 
-          // Select: add row to intent and load visible assignments
+          // Select: add row to intent, add visible assignments + cells for current period
           const newIntent: CampaignSelectionIntent = {
             ...intent,
             campaignId: scheduleCampaign.id,
@@ -531,8 +609,21 @@ export default function ScheduleTab({
           const newAssignmentIds = loadedRowAssignmentIds.filter(
             (id) => !prev.selectedAssignmentIds.includes(id),
           );
+          const newCells = periodDates
+            .filter(
+              (pd) =>
+                !prev.selectedCells.some(
+                  (c) => c.rowId === rowId && c.date === pd.date.format('YYYY-MM-DD'),
+                ),
+            )
+            .map((pd) => ({
+              rowId,
+              date: pd.date.format('YYYY-MM-DD'),
+              scheduleId: pd.scheduleId,
+            }));
           return {
             ...prev,
+            selectedCells: [...prev.selectedCells, ...newCells],
             selectedAssignmentIds: [...prev.selectedAssignmentIds, ...newAssignmentIds],
             campaignIntent: newIntent,
           };
@@ -660,12 +751,26 @@ export default function ScheduleTab({
   const handleSelectAll = useCallback(
     (rowIds: string[], scope: SelectionScope) => {
       if (scope === 'campaign' && scheduleCampaign) {
+        // rowIds = [] means deselect all (called when isAllSelected is true)
+        if (rowIds.length === 0) {
+          setSelectionState((prev) => ({
+            ...prev,
+            selectedCells: [],
+            selectedAssignmentIds: [],
+            campaignIntent: undefined,
+          }));
+          return;
+        }
+
         // Campaign scope: set implicit intent covering all rows.
-        // Also populate explicit IDs with loaded assignments for immediate visual feedback.
+        // Populate explicit IDs with loaded campaign assignments; cells for current period only.
         const isWorkerView = scheduleViewSettings.groupBy === 'worker';
         const rowIdSet = new Set(rowIds);
-        const campaignDates = buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate);
-        const campaignDateSet = new Set(campaignDates.map((pd) => pd.date.format('YYYY-MM-DD')));
+        const campaignDateSet = new Set(
+          buildDates(scheduleCampaign.startDate, scheduleCampaign.endDate).map((pd) =>
+            pd.date.format('YYYY-MM-DD'),
+          ),
+        );
         const loadedAssignmentIds = assignments
           .filter((a) => {
             const rowMatch = isWorkerView ? rowIdSet.has(a.workerId) : rowIdSet.has(a.shiftId);
@@ -673,8 +778,23 @@ export default function ScheduleTab({
           })
           .map((a) => a.id);
 
+        // Cells for visible rows × current period (within campaign boundaries)
+        const newCells: SelectedScheduleCell[] = [];
+        for (const rowId of rowIds) {
+          for (const pd of periodDates) {
+            if (campaignDateSet.has(pd.date.format('YYYY-MM-DD'))) {
+              newCells.push({
+                rowId,
+                date: pd.date.format('YYYY-MM-DD'),
+                scheduleId: pd.scheduleId,
+              });
+            }
+          }
+        }
+
         setSelectionState((prev) => ({
           ...prev,
+          selectedCells: newCells,
           selectedAssignmentIds: loadedAssignmentIds,
           campaignIntent: {
             campaignId: scheduleCampaign.id,
