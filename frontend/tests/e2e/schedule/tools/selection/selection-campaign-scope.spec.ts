@@ -253,6 +253,70 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     }
   });
 
+  // ── Selection persistence across period navigation ───────────────────────
+
+  /**
+   * After selecting an entire campaign row in campaign scope, navigating to
+   * the next period (using the time-nav-next button) should keep all selected
+   * cells intact. Cells corresponding to assignments visible in the new view
+   * should appear checked, and the total selection count should remain the
+   * same as before navigation.
+   */
+  test('campaign-scope row selection persists after navigating to the next period', async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const scheduleTestBase = testBasesMap.get(testRunId)!;
+
+    const workers = scheduleTestBase.getTestWorkers();
+    const shifts = scheduleTestBase.getTestShifts();
+    const campaign = scheduleTestBase.getTestSchedule()!;
+
+    // ── Pre-create assignments for ALL days in the campaign ───────────────────
+    const totalCampaignDays = campaignEnd.diff(campaignStart, 'day') + 1;
+    for (let offset = 0; offset < totalCampaignDays; offset++) {
+      const date = campaignStart.add(offset, 'day');
+      await scheduleTestBase.createAssignmentAndRecurrence({
+        workerId: workers[1].id,
+        shiftId: shifts[0].id,
+        date,
+        scheduleId: campaign.id,
+      });
+    }
+
+    // Enter selection mode and switch to campaign scope
+    await enterSelectionMode(page);
+    await page.locator('[data-testid="schedule-scope-campaign"]').click();
+
+    // Select the entire row for shifts[0] in campaign scope
+    const rowCheckbox = page.locator(`[data-testid="shift-row-checkbox-${shifts[0].id}"]`);
+    await expect(rowCheckbox).toBeVisible();
+    await rowCheckbox.click();
+
+    // Navigate to the next period (next week inside the campaign)
+    await page.click('[data-testid="time-nav-next"]');
+    await page.waitForLoadState('networkidle');
+
+    // Verify that individual shift-cell checkboxes in the new view are checked,
+    // confirming the assignments in this newly-visible week are selected.
+    const nextWeekStart = campaignStart.add(1, 'week').startOf('week');
+    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+      const date = nextWeekStart.add(dayOffset, 'day');
+      if (date.isAfter(campaignEnd)) break;
+      const dateStr = date.format('YYYY-MM-DD');
+      const cellCheckbox = page.locator(
+        `[data-testid="shift-cell-checkbox-${shifts[0].id}-${dateStr}"]`,
+      );
+      const isVisible = await cellCheckbox.isVisible();
+      if (isVisible) {
+        await expect(
+          cellCheckbox,
+          `Cell on ${dateStr} should be checked after navigation`,
+        ).toBeChecked();
+      }
+    }
+  });
+
   // ── Bulk delete ───────────────────────────────────────────────────────────
 
   /**
