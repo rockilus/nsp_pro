@@ -237,7 +237,8 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
 
     const workers = scheduleTestBase.getTestWorkers();
     const shifts = scheduleTestBase.getTestShifts();
-    const alternateWorker = workers.find((w) => w.id !== workers[1].id)!;
+    const initialWorker = workers[1];
+    const alternateWorker = workers.find((w) => w.id !== initialWorker.id)!;
     const campaign = scheduleTestBase.getTestSchedule()!;
 
     // ── Pre-create assignments for ALL days in the campaign ───────────────────
@@ -246,7 +247,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
     for (let offset = 0; offset < totalCampaignDays; offset++) {
       const date = campaignStart.add(offset, 'day');
       const result = await scheduleTestBase.createAssignmentAndRecurrence({
-        workerId: workers[1].id,
+        workerId: initialWorker.id,
         shiftId: shifts[0].id,
         date,
         scheduleId: campaign.id,
@@ -278,9 +279,15 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       campaignEnd,
     );
 
+    console.log('initial worker id:', initialWorker.id);
+    console.log('alternate worker id:', alternateWorker.id);
+
     // ── Verify: all campaign assignments were updated ─────────────────────────
     for (const id of allCampaignCreated) {
       const updated = afterUpdate.assignmentsRead.find((a) => a.id === id);
+
+      console.log(updated);
+
       expect(updated, `Campaign assignment ${id} should still exist after update`).toBeDefined();
       expect(
         updated!.workerId,
