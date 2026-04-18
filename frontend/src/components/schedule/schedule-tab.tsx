@@ -20,7 +20,6 @@ import {
   ScheduleItemDialogData,
   CreateAssignmentData,
 } from './dialogs/schedule-item-types';
-import NoAssignmentsDisplay from './no-assignments-display';
 import { getPeriodStartEndDates } from './schedule-utils';
 import { computePeriodEndDate } from '../../app/lib/utils/scheduleViewSettingsUtils';
 import { ScheduleActionToolbar } from './toolbar/ScheduleActionToolbar';
@@ -1581,16 +1580,6 @@ export default function ScheduleTab({
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           {isLoadingAssignments || (teamWithMembership.team.useSolver && isLoadingShiftDemands) ? (
             <ScheduleTableSkeleton />
-          ) : assignments.length === 0 && requests.length === 0 && shiftDemands.length === 0 ? (
-            <NoAssignmentsDisplay
-              lng={lng}
-              teamWithMembership={teamWithMembership}
-              scheduleId={null}
-              workers={workers}
-              shifts={shifts}
-              handleCreateAssignment={handleCreateAssignment}
-              handleCreateShiftDemand={handleCreateShiftDemand}
-            />
           ) : (
             <ScheduleDisplay
               lng={lng}

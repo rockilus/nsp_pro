@@ -139,92 +139,17 @@ test.describe('Schedule Page - Owner without Assignments', () => {
     testBasesMap.delete(testRunId);
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
-  test('should display no assignments message for owner', async ({ page }) => {
+  test('should display schedule table for owner with no assignments', async ({ page }) => {
     // Wait for the schedule page to render
     await page.waitForSelector('[data-testid="schedule-page-heading"]', {
       timeout: 10000,
     });
 
-    // Verify that the no assignments display for owner is visible
-    const noAssignmentsDisplay = page.locator('[data-testid="no-assignments-display-owner"]');
-    await expect(noAssignmentsDisplay).toBeVisible();
+    // Verify the schedule table is visible even with no assignments
+    const scheduleTable = page.locator('[data-testid="schedule-table-worker"]');
+    await expect(scheduleTable).toBeVisible();
 
-    // Verify the message content
-    const message = page.locator('[data-testid="no-assignments-owner-text"]');
-    await expect(message).toBeVisible();
-    await expect(message).toContainText(/No assignments yet/i);
-    await expect(message).toContainText(/Start a new campaign/i);
-    await expect(message).toContainText(/create your first assignment/i);
-
-    console.log('✅ No assignments message displayed correctly for owner');
-  });
-
-  test("should display 'Create campaign' button for owner without assignments", async ({
-    page,
-  }) => {
-    // Wait for the schedule page to render
-    await page.waitForSelector('[data-testid="schedule-page-heading"]', {
-      timeout: 10000,
-    });
-
-    // Verify that the "Create campaign" button is visible
-    const createCampaignButton = page.locator('[data-testid="create-campaign-button"]');
-    await expect(createCampaignButton).toBeVisible();
-
-    console.log('✅ Create campaign button displayed correctly for owner');
-  });
-
-  test("should navigate to campaign page when 'Create campaign' button is clicked", async ({
-    page,
-  }) => {
-    // Wait for the schedule page to render
-    await page.waitForSelector('[data-testid="schedule-page-heading"]', {
-      timeout: 10000,
-    });
-
-    // Click the "Create campaign" button
-    const createCampaignButton = page.locator('[data-testid="create-campaign-button"]');
-    await createCampaignButton.click();
-
-    // Wait for navigation and verify we're on the campaign page
-    await page.waitForURL(/\/plan\/campaign/, { timeout: 10000 });
-    expect(page.url()).toContain('/plan/campaign');
-
-    console.log('✅ Successfully navigated to campaign page');
-  });
-
-  test("should display 'Create assignment' button for owner without assignments", async ({
-    page,
-  }) => {
-    // Wait for the schedule page to render
-    await page.waitForSelector('[data-testid="schedule-page-heading"]', {
-      timeout: 10000,
-    });
-
-    // Verify that the "Create assignment" button is visible
-    const createAssignmentButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(createAssignmentButton).toBeVisible();
-
-    console.log('✅ Create assignment button displayed correctly for owner');
-  });
-
-  test("should open create assignment dialog when 'Create assignment' button is clicked", async ({
-    page,
-  }) => {
-    // Wait for the schedule page to render
-    await page.waitForSelector('[data-testid="schedule-page-heading"]', {
-      timeout: 10000,
-    });
-
-    // Click the "Create assignment" button
-    const createAssignmentButton = page.locator('[data-testid="create-assignment-button"]');
-    await createAssignmentButton.click();
-
-    // Verify that the create assignment dialog is visible
-    const dialog = page.locator('[data-testid="assignment-form"]');
-    await expect(dialog).toBeVisible({ timeout: 5000 });
-
-    console.log('✅ Create assignment dialog opened correctly');
+    console.log('✅ Schedule table displayed correctly for owner with no assignments');
   });
 
   test('should create assignment and display schedule table when form is filled and saved', async ({
@@ -240,11 +165,11 @@ test.describe('Schedule Page - Owner without Assignments', () => {
       timeout: 10000,
     });
 
-    // Verify no schedule table exists initially
-    const scheduleTableBefore = page.locator('[data-testid="schedule-table-shift"]');
-    await expect(scheduleTableBefore).not.toBeVisible();
+    // Verify the schedule table is already visible (table shows even without assignments)
+    const scheduleTableBefore = page.locator('[data-testid="schedule-table-worker"]');
+    await expect(scheduleTableBefore).toBeVisible();
 
-    // Click the "Create assignment" button to open the dialog
+    // Open create assignment dialog via the schedule nav bar
     const createAssignmentButton = page.locator('[data-testid="create-assignment-button"]');
     await createAssignmentButton.click();
 
@@ -281,8 +206,8 @@ test.describe('Schedule Page - Owner without Assignments', () => {
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
-    // Verify that the schedule table now appears
-    const scheduleTableAfter = page.locator('[data-testid="schedule-table-shift"]');
+    // Verify the schedule table is still visible after assignment creation
+    const scheduleTableAfter = page.locator('[data-testid="schedule-table-worker"]');
     await expect(scheduleTableAfter).toBeVisible({ timeout: 10000 });
 
     console.log('✅ Assignment created successfully and schedule table is now visible');
@@ -321,7 +246,7 @@ test.describe('Schedule Page - Member with Worker Profile but No Assignments', (
     await scheduleTestBase.navigateToSchedulePage(page);
   });
 
-  test("should display 'No assignments yet' message for member with worker profile", async ({
+  test('should display schedule table for member with worker profile but no assignments', async ({
     page,
   }) => {
     // Wait for the schedule page to render
@@ -329,14 +254,13 @@ test.describe('Schedule Page - Member with Worker Profile but No Assignments', (
       timeout: 10000,
     });
 
-    // Verify that the no assignments display for member is visible
-    const noAssignmentsDisplay = page.locator('[data-testid="no-assignments-display-member"]');
-    await expect(noAssignmentsDisplay).toBeVisible();
+    // Verify the schedule table is visible even when there are no assignments
+    const scheduleTable = page.locator('[data-testid="schedule-table-worker"]');
+    await expect(scheduleTable).toBeVisible();
 
-    // Verify the message content
-    await expect(noAssignmentsDisplay).toContainText(/No assignments yet/i);
-
-    console.log('✅ No assignments message displayed correctly for member with worker profile');
+    console.log(
+      '✅ Schedule table displayed correctly for member with worker profile but no assignments',
+    );
   });
 
   test('should NOT display action buttons for member with worker profile', async ({ page }) => {

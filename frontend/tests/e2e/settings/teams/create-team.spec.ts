@@ -124,9 +124,9 @@ test.describe('Teams Settings Page with Database Reset', () => {
     const scheduleNavLink = page.locator('[data-testid="nav-link-schedule"]');
     await expect(scheduleNavLink).toBeVisible();
 
-    // Verify that the no assignments display for owner is visible
-    const noAssignmentsDisplay = page.locator('[data-testid="no-assignments-display-owner"]');
-    await expect(noAssignmentsDisplay).toBeVisible();
+    // Verify the schedule table is visible even with a brand-new empty team
+    const scheduleTable = page.locator('[data-testid="schedule-table-worker"]');
+    await expect(scheduleTable).toBeVisible();
   });
 
   test('should open the team settings when the "Settings" button is pressed', async ({ page }) => {
