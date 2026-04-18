@@ -436,17 +436,20 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
   // ══════════════════════════════════════════════════════════════════════════
   // Scenario 1: Combo non-campaign + campaign via intent
   //
-  // Steps: switch to campaign scope → select entire row → switch back to view
-  // scope → select one cell in today (outside campaign).
+  // Steps (all in campaign scope): stay in today's view → switch to campaign
+  // scope → select entire shifts[0] row (produces campaignIntent) → also click
+  // one cell for today (outside the campaign date range but visible in the
+  // current week) while remaining in campaign scope.
   //
-  // Key behaviour: handleScopeChange resets ALL selection state (selectedCells,
-  // selectedAssignmentIds, campaignIntent) when switching scope. After switching
-  // back to view scope the campaign selection is gone; only the view-scope cell
-  // is in the selection. Every action therefore operates only on today's cell.
+  // Key behaviour: handleCellSelect does NOT clear campaignIntent. The result
+  // is a hybrid selection: the full campaign for shifts[0] via campaignIntent
+  // PLUS one explicit cell for today (which is outside the campaign). Actions
+  // therefore operate on BOTH the campaign (via intent) and today's cell/
+  // assignment (via explicit selectedCells / selectedAssignmentIds).
   // ══════════════════════════════════════════════════════════════════════════
 
   test.describe('Combo non-campaign + campaign via intent', () => {
-    test('create: scope switch clears campaign selection — only non-campaign cell is created', async ({
+    test('create: campaign intent + today explicit cell creates full campaign AND today assignment', async ({
       page,
     }, testInfo) => {
       const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
@@ -457,60 +460,69 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
 
       await enterSelectionMode(page);
 
-      // Campaign scope: select entire shifts[0] row (produces campaignIntent)
+      // Switch to campaign scope and select the entire shifts[0] row (produces campaignIntent)
       await page.locator('[data-testid="schedule-scope-campaign"]').click();
       const rowCheckbox = page.locator(`[data-testid="shift-row-checkbox-${shifts[0].id}"]`);
       await expect(rowCheckbox).toBeVisible();
       await rowCheckbox.click();
 
-      // Select one cell in today's view (the only cell now in the selection)
+      // Still in campaign scope: also select today's cell (outside campaign range)
       await page.locator(`[data-testid="shift-cell-checkbox-${shifts[0].id}-${todayStr}"]`).click();
 
       // Snapshot before create
-      const beforeCreate = await scheduleTestBase.getAssignmentsAndRecurrences(
+      const beforeCampaign = await scheduleTestBase.getAssignmentsAndRecurrences(
         true,
         campaignStart,
         campaignEnd,
         workers[1].id,
       );
-      const beforeIds = new Set(beforeCreate.assignmentsRead.map((a) => a.id));
+      const beforeCampaignIds = new Set(beforeCampaign.assignmentsRead.map((a) => a.id));
+
+      const beforeToday = await scheduleTestBase.getAssignmentsAndRecurrences(
+        false,
+        today.startOf('day'),
+        today.endOf('day'),
+        workers[1].id,
+      );
+      const beforeTodayIds = new Set(beforeToday.assignmentsRead.map((a) => a.id));
 
       // Create for workers[1]
       await page.click('[data-testid="schedule-entity-select"]');
       await page.locator(`[data-testid="schedule-entity-option-${workers[1].id}"]`).click();
       await page.click('[data-testid="schedule-action-main-button"]');
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(5000);
 
-      // Verify: NO campaign assignments were created (campaign selection was cleared)
-      const afterCreate = await scheduleTestBase.getAssignmentsAndRecurrences(
+      // Verify: full campaign created via campaignIntent
+      const afterCampaign = await scheduleTestBase.getAssignmentsAndRecurrences(
         true,
         campaignStart,
         campaignEnd,
         workers[1].id,
       );
-      const createdInCampaign = afterCreate.assignmentsRead.filter((a) => !beforeIds.has(a.id));
+      const createdInCampaign = afterCampaign.assignmentsRead.filter(
+        (a) => !beforeCampaignIds.has(a.id),
+      );
+      const expectedDayCount = campaignEnd.diff(campaignStart, 'day') + 1;
       expect(
         createdInCampaign.length,
-        'No campaign assignments should have been created after scope switch cleared the campaign selection',
-      ).toBe(0);
+        `Should have created ${expectedDayCount} assignments for the full campaign via campaignIntent`,
+      ).toBe(expectedDayCount);
 
-      // Verify: today's assignment was created
-      const todayResult = await scheduleTestBase.getAssignmentsAndRecurrences(
+      // Verify: today's assignment was also created via explicit cell
+      const afterToday = await scheduleTestBase.getAssignmentsAndRecurrences(
         false,
         today.startOf('day'),
         today.endOf('day'),
         workers[1].id,
       );
-      const todayAssignment = todayResult.assignmentsRead.find(
-        (a) => a.shiftId === shifts[0].id && a.date.format('YYYY-MM-DD') === todayStr,
-      );
+      const createdToday = afterToday.assignmentsRead.filter((a) => !beforeTodayIds.has(a.id));
       expect(
-        todayAssignment,
-        "Today's assignment should have been created from the view-scope cell",
-      ).toBeDefined();
+        createdToday.length,
+        "Today's assignment should also have been created from the explicit cell outside the campaign",
+      ).toBeGreaterThanOrEqual(1);
     });
 
-    test('update: scope switch clears campaign selection — only non-campaign assignment is updated', async ({
+    test('update: campaign intent + today explicit assignment updates full campaign AND today', async ({
       page,
     }, testInfo) => {
       const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
@@ -519,7 +531,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       const today = dayjs.utc();
       const campaign = scheduleTestBase.getTestSchedule()!;
 
-      // Pre-create: today's assignment + one campaign assignment for workers[0]
+      // Pre-create today's assignment + all campaign assignments for workers[0]
       const todayResult = await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: workers[0].id,
         shiftId: shifts[0].id,
@@ -527,13 +539,18 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       });
       const todayAssignmentId = todayResult.assignmentsCreated[0]?.id;
 
-      const campaignResult = await scheduleTestBase.createAssignmentAndRecurrence({
-        workerId: workers[0].id,
-        shiftId: shifts[0].id,
-        date: campaignStart,
-        scheduleId: campaign.id,
-      });
-      const campaignAssignmentId = campaignResult.assignmentsCreated[0]?.id;
+      const totalCampaignDays = campaignEnd.diff(campaignStart, 'day') + 1;
+      const campaignIds: string[] = [];
+      for (let offset = 0; offset < totalCampaignDays; offset++) {
+        const result = await scheduleTestBase.createAssignmentAndRecurrence({
+          workerId: workers[0].id,
+          shiftId: shifts[0].id,
+          date: campaignStart.add(offset, 'day'),
+          scheduleId: campaign.id,
+        });
+        const id = result.assignmentsCreated[0]?.id;
+        if (id) campaignIds.push(id);
+      }
 
       await scheduleTestBase.setScheduleViewSettings(page, {
         targetDate: today,
@@ -542,60 +559,55 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       });
       await enterSelectionMode(page);
 
-      // Campaign scope: select row
+      // Switch to campaign scope and select the full row (produces campaignIntent)
       await page.locator('[data-testid="schedule-scope-campaign"]').click();
       const rowCheckbox = page.locator(`[data-testid="shift-row-checkbox-${shifts[0].id}"]`);
       await expect(rowCheckbox).toBeVisible();
       await rowCheckbox.click();
 
-      // Switch back to view scope (clears campaign selection)
-      await page.locator('[data-testid="schedule-scope-view"]').click();
-
-      // Select today's assignment
+      // Still in campaign scope: also select today's assignment (outside campaign)
       if (todayAssignmentId) {
         await page.locator(`[data-testid="assignment-cell-${todayAssignmentId}"]`).click();
       }
 
-      // Update to workers[1]
       await selectAction(page, 'update');
       await page.click('[data-testid="schedule-entity-select"]');
       await page.locator(`[data-testid="schedule-entity-option-${workers[1].id}"]`).click();
       await page.click('[data-testid="schedule-action-main-button"]');
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(3000);
 
-      // Today's assignment should be updated to workers[1]
-      const afterUpdate = await scheduleTestBase.getAssignmentsAndRecurrences(
+      // All campaign assignments should be updated to workers[1]
+      const afterCampaign = await scheduleTestBase.getAssignmentsAndRecurrences(
+        true,
+        campaignStart,
+        campaignEnd,
+      );
+      for (const id of campaignIds) {
+        const updated = afterCampaign.assignmentsRead.find((a) => a.id === id);
+        expect(updated, `Campaign assignment ${id} should still exist`).toBeDefined();
+        expect(
+          updated!.workerId,
+          `Campaign assignment ${id} should be updated to workers[1] via campaignIntent`,
+        ).toBe(workers[1].id);
+      }
+
+      // Today's assignment should also be updated
+      const afterToday = await scheduleTestBase.getAssignmentsAndRecurrences(
         false,
         today.startOf('day'),
         today.endOf('day'),
       );
       if (todayAssignmentId) {
-        const updated = afterUpdate.assignmentsRead.find((a) => a.id === todayAssignmentId);
+        const updated = afterToday.assignmentsRead.find((a) => a.id === todayAssignmentId);
         expect(updated, "Today's assignment should still exist").toBeDefined();
-        expect(updated!.workerId, "Today's assignment should be updated to workers[1]").toBe(
-          workers[1].id,
-        );
-      }
-
-      // Campaign assignment should remain unchanged (campaign selection was cleared by scope switch)
-      const afterCampaign = await scheduleTestBase.getAssignmentsAndRecurrences(
-        true,
-        campaignStart,
-        campaignStart,
-      );
-      if (campaignAssignmentId) {
-        const campaignAssignment = afterCampaign.assignmentsRead.find(
-          (a) => a.id === campaignAssignmentId,
-        );
-        expect(campaignAssignment, 'Campaign assignment should still exist').toBeDefined();
         expect(
-          campaignAssignment!.workerId,
-          'Campaign assignment should remain for workers[0] — scope switch cleared the campaign selection',
-        ).toBe(workers[0].id);
+          updated!.workerId,
+          "Today's assignment should be updated to workers[1] via explicit selection",
+        ).toBe(workers[1].id);
       }
     });
 
-    test('toggleFixed: scope switch clears campaign selection — only non-campaign assignment is toggled', async ({
+    test('toggleFixed: campaign intent + today explicit assignment toggles loaded campaign assignments AND today', async ({
       page,
     }, testInfo) => {
       const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
@@ -604,7 +616,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       const today = dayjs.utc();
       const campaign = scheduleTestBase.getTestSchedule()!;
 
-      // Pre-create unfixed today + unfixed campaign assignment for workers[0]
+      // Pre-create unfixed today's assignment + unfixed assignments for the first visible week of the campaign
       const todayResult = await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: workers[0].id,
         shiftId: shifts[0].id,
@@ -613,14 +625,19 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       });
       const todayAssignmentId = todayResult.assignmentsCreated[0]?.id;
 
-      const campaignResult = await scheduleTestBase.createAssignmentAndRecurrence({
-        workerId: workers[0].id,
-        shiftId: shifts[0].id,
-        date: campaignStart,
-        scheduleId: campaign.id,
-        fixed: false,
-      });
-      const campaignAssignmentId = campaignResult.assignmentsCreated[0]?.id;
+      const visibleDays = Math.min(7, campaignEnd.diff(campaignStart, 'day') + 1);
+      const visibleCampaignIds: string[] = [];
+      for (let offset = 0; offset < visibleDays; offset++) {
+        const result = await scheduleTestBase.createAssignmentAndRecurrence({
+          workerId: workers[0].id,
+          shiftId: shifts[0].id,
+          date: campaignStart.add(offset, 'day'),
+          scheduleId: campaign.id,
+          fixed: false,
+        });
+        const id = result.assignmentsCreated[0]?.id;
+        if (id) visibleCampaignIds.push(id);
+      }
 
       await scheduleTestBase.setScheduleViewSettings(page, {
         targetDate: today,
@@ -629,13 +646,13 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       });
       await enterSelectionMode(page);
 
-      // Campaign scope: select row → switch to view scope (clears) → select today's assignment
+      // Switch to campaign scope and select the full row
       await page.locator('[data-testid="schedule-scope-campaign"]').click();
-      await expect(
-        page.locator(`[data-testid="shift-row-checkbox-${shifts[0].id}"]`),
-      ).toBeVisible();
-      await page.locator(`[data-testid="shift-row-checkbox-${shifts[0].id}"]`).click();
-      await page.locator('[data-testid="schedule-scope-view"]').click();
+      const rowCheckbox = page.locator(`[data-testid="shift-row-checkbox-${shifts[0].id}"]`);
+      await expect(rowCheckbox).toBeVisible();
+      await rowCheckbox.click();
+
+      // Still in campaign scope: also select today's assignment (outside campaign)
       if (todayAssignmentId) {
         await page.locator(`[data-testid="assignment-cell-${todayAssignmentId}"]`).click();
       }
@@ -644,7 +661,22 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       await page.click('[data-testid="schedule-action-main-button"]');
       await page.waitForTimeout(2000);
 
-      // Today's assignment should be toggled to fixed
+      const afterToggle = await scheduleTestBase.getAssignmentsAndRecurrences(
+        true,
+        campaignStart,
+        campaignEnd,
+      );
+
+      // Visible campaign assignments should be toggled (they were in selectedAssignmentIds from the row select)
+      for (const id of visibleCampaignIds) {
+        const toggled = afterToggle.assignmentsRead.find((a) => a.id === id);
+        expect(toggled, `Campaign assignment ${id} should exist`).toBeDefined();
+        expect(toggled!.fixed, `Campaign assignment ${id} should have been toggled to fixed`).toBe(
+          true,
+        );
+      }
+
+      // Today's assignment should also be toggled (it was added to selectedAssignmentIds)
       const afterToday = await scheduleTestBase.getAssignmentsAndRecurrences(
         false,
         today.startOf('day'),
@@ -653,28 +685,14 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       if (todayAssignmentId) {
         const toggled = afterToday.assignmentsRead.find((a) => a.id === todayAssignmentId);
         expect(toggled, "Today's assignment should exist").toBeDefined();
-        expect(toggled!.fixed, "Today's assignment should have been toggled to fixed").toBe(true);
-      }
-
-      // Campaign assignment fixed flag should be unchanged
-      const afterCampaign = await scheduleTestBase.getAssignmentsAndRecurrences(
-        true,
-        campaignStart,
-        campaignStart,
-      );
-      if (campaignAssignmentId) {
-        const campaignAssignment = afterCampaign.assignmentsRead.find(
-          (a) => a.id === campaignAssignmentId,
-        );
-        expect(campaignAssignment, 'Campaign assignment should still exist').toBeDefined();
         expect(
-          campaignAssignment!.fixed,
-          'Campaign assignment fixed flag should be unchanged — scope switch cleared the campaign selection',
-        ).toBe(false);
+          toggled!.fixed,
+          "Today's assignment should have been toggled to fixed via explicit selection",
+        ).toBe(true);
       }
     });
 
-    test('delete: scope switch clears campaign selection — only non-campaign assignment is deleted', async ({
+    test('delete: campaign intent + today explicit assignment deletes full campaign AND today', async ({
       page,
     }, testInfo) => {
       const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
@@ -683,7 +701,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       const today = dayjs.utc();
       const campaign = scheduleTestBase.getTestSchedule()!;
 
-      // Pre-create today + campaign assignment for workers[0]
+      // Pre-create today's assignment + all campaign assignments for workers[0]
       const todayResult = await scheduleTestBase.createAssignmentAndRecurrence({
         workerId: workers[0].id,
         shiftId: shifts[0].id,
@@ -691,13 +709,18 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       });
       const todayAssignmentId = todayResult.assignmentsCreated[0]?.id;
 
-      const campaignResult = await scheduleTestBase.createAssignmentAndRecurrence({
-        workerId: workers[0].id,
-        shiftId: shifts[0].id,
-        date: campaignStart,
-        scheduleId: campaign.id,
-      });
-      const campaignAssignmentId = campaignResult.assignmentsCreated[0]?.id;
+      const totalCampaignDays = campaignEnd.diff(campaignStart, 'day') + 1;
+      const campaignIds: string[] = [];
+      for (let offset = 0; offset < totalCampaignDays; offset++) {
+        const result = await scheduleTestBase.createAssignmentAndRecurrence({
+          workerId: workers[0].id,
+          shiftId: shifts[0].id,
+          date: campaignStart.add(offset, 'day'),
+          scheduleId: campaign.id,
+        });
+        const id = result.assignmentsCreated[0]?.id;
+        if (id) campaignIds.push(id);
+      }
 
       await scheduleTestBase.setScheduleViewSettings(page, {
         targetDate: today,
@@ -706,13 +729,13 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       });
       await enterSelectionMode(page);
 
-      // Campaign scope: select row → switch back to view scope (clears) → select today's assignment
+      // Switch to campaign scope and select the full row (produces campaignIntent)
       await page.locator('[data-testid="schedule-scope-campaign"]').click();
-      await expect(
-        page.locator(`[data-testid="shift-row-checkbox-${shifts[0].id}"]`),
-      ).toBeVisible();
-      await page.locator(`[data-testid="shift-row-checkbox-${shifts[0].id}"]`).click();
-      await page.locator('[data-testid="schedule-scope-view"]').click();
+      const rowCheckbox = page.locator(`[data-testid="shift-row-checkbox-${shifts[0].id}"]`);
+      await expect(rowCheckbox).toBeVisible();
+      await rowCheckbox.click();
+
+      // Still in campaign scope: also select today's assignment (outside campaign)
       if (todayAssignmentId) {
         await page.locator(`[data-testid="assignment-cell-${todayAssignmentId}"]`).click();
       }
@@ -721,9 +744,23 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       await page.click('[data-testid="schedule-action-main-button"]');
       await expect(page.locator('[data-testid="schedule-delete-confirm-button"]')).toBeVisible();
       await page.click('[data-testid="schedule-delete-confirm-button"]');
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(3000);
 
-      // Today's assignment should be deleted
+      // All campaign assignments should be deleted via campaignIntent
+      const afterCampaign = await scheduleTestBase.getAssignmentsAndRecurrences(
+        true,
+        campaignStart,
+        campaignEnd,
+      );
+      for (const id of campaignIds) {
+        const stillExists = afterCampaign.assignmentsRead.some((a) => a.id === id);
+        expect(
+          stillExists,
+          `Campaign assignment ${id} should have been deleted via campaignIntent`,
+        ).toBe(false);
+      }
+
+      // Today's assignment should also be deleted via explicit selection
       const afterToday = await scheduleTestBase.getAssignmentsAndRecurrences(
         false,
         today.startOf('day'),
@@ -733,24 +770,8 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
         const stillExists = afterToday.assignmentsRead.some((a) => a.id === todayAssignmentId);
         expect(
           stillExists,
-          "Today's assignment should have been deleted by the view-scope delete",
+          "Today's assignment should have been deleted via explicit selection",
         ).toBe(false);
-      }
-
-      // Campaign assignment should still exist (campaign selection was cleared on scope switch)
-      const afterCampaign = await scheduleTestBase.getAssignmentsAndRecurrences(
-        true,
-        campaignStart,
-        campaignStart,
-      );
-      if (campaignAssignmentId) {
-        const campaignAssignment = afterCampaign.assignmentsRead.find(
-          (a) => a.id === campaignAssignmentId,
-        );
-        expect(
-          campaignAssignment,
-          'Campaign assignment should survive — scope switch cleared the campaign selection before delete',
-        ).toBeDefined();
       }
     });
   });
@@ -758,14 +779,15 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
   // ══════════════════════════════════════════════════════════════════════════
   // Scenario 2: Combo non-campaign + campaign via individual selection
   //
-  // Steps: select one cell/assignment in today's view → navigate to the
+  // Steps (all in campaign scope): switch to campaign scope → select one cell
+  // for today (outside campaign, visible in current week) → navigate to the
   // campaign period via the time-nav-next button (no scope change, no reload)
-  // → select one cell/assignment in the campaign.
+  // → select one campaign-date cell.
   //
-  // Key behaviour: individual selections (handleCellSelect /
-  // handleAssignmentSelect) are NOT cleared on navigation. After navigating,
-  // selectedCells contains both the today-cell and the campaign-cell, and
-  // selectedAssignmentIds contains both assignment IDs.
+  // Key behaviour: individual cell/assignment selections are NOT cleared on
+  // navigation, and campaign scope stays active throughout. After navigating,
+  // selectedCells contains both the today-cell (outside campaign) and the
+  // campaign-date cell. Actions operate on both.
   // ══════════════════════════════════════════════════════════════════════════
 
   test.describe('Combo non-campaign + campaign via individual selection', () => {
@@ -782,13 +804,16 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
 
       await enterSelectionMode(page);
 
-      // Select today's cell in view scope
+      // Switch to campaign scope first and stay there
+      await page.locator('[data-testid="schedule-scope-campaign"]').click();
+
+      // Select today's cell in campaign scope (outside campaign range, but visible in current week)
       await page.locator(`[data-testid="shift-cell-checkbox-${shifts[0].id}-${todayStr}"]`).click();
 
-      // Navigate to campaign period without changing scope
+      // Navigate to campaign period (no scope change, no reload)
       await navigateUntilCampaignVisible(page, teamId, campaignStart, campaignEnd);
 
-      // Select the campaign-date cell in the same view scope
+      // Select the campaign-date cell (still in campaign scope)
       await page
         .locator(`[data-testid="shift-cell-checkbox-${shifts[0].id}-${campaignDateStr}"]`)
         .click();
@@ -878,15 +903,18 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       });
       await enterSelectionMode(page);
 
-      // Select today's assignment
+      // Switch to campaign scope and stay there
+      await page.locator('[data-testid="schedule-scope-campaign"]').click();
+
+      // Select today's assignment in campaign scope (outside campaign range)
       if (todayAssignmentId) {
         await page.locator(`[data-testid="assignment-cell-${todayAssignmentId}"]`).click();
       }
 
-      // Navigate to campaign period via UI
+      // Navigate to campaign period via UI (no scope change)
       await navigateUntilCampaignVisible(page, teamId, campaignStart, campaignEnd);
 
-      // Select the campaign assignment
+      // Select the campaign assignment (still in campaign scope)
       if (campaignAssignmentId) {
         await page.locator(`[data-testid="assignment-cell-${campaignAssignmentId}"]`).click();
       }
@@ -955,12 +983,18 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       });
       await enterSelectionMode(page);
 
+      // Switch to campaign scope and stay there
+      await page.locator('[data-testid="schedule-scope-campaign"]').click();
+
+      // Select today's assignment in campaign scope (outside campaign range)
       if (todayAssignmentId) {
         await page.locator(`[data-testid="assignment-cell-${todayAssignmentId}"]`).click();
       }
 
+      // Navigate to campaign period via UI (no scope change)
       await navigateUntilCampaignVisible(page, teamId, campaignStart, campaignEnd);
 
+      // Select the campaign assignment (still in campaign scope)
       if (campaignAssignmentId) {
         await page.locator(`[data-testid="assignment-cell-${campaignAssignmentId}"]`).click();
       }
@@ -1024,12 +1058,18 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       });
       await enterSelectionMode(page);
 
+      // Switch to campaign scope and stay there
+      await page.locator('[data-testid="schedule-scope-campaign"]').click();
+
+      // Select today's assignment in campaign scope (outside campaign range)
       if (todayAssignmentId) {
         await page.locator(`[data-testid="assignment-cell-${todayAssignmentId}"]`).click();
       }
 
+      // Navigate to campaign period via UI (no scope change)
       await navigateUntilCampaignVisible(page, teamId, campaignStart, campaignEnd);
 
+      // Select the campaign assignment (still in campaign scope)
       if (campaignAssignmentId) {
         await page.locator(`[data-testid="assignment-cell-${campaignAssignmentId}"]`).click();
       }
