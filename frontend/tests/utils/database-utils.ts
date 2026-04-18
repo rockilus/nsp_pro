@@ -827,20 +827,23 @@ export class DatabaseTestUtils {
   /**
    * Create a shift using the existing ShiftApi for consistent behavior
    */
-  async createShift(shiftData: {
-    teamId: string;
-    name: string;
-    startTime: dayjs.Dayjs;
-    endTime: dayjs.Dayjs;
-    shiftType: ShiftType;
-    staffing?: StaffingT[];
-    restType?: ShiftRestType;
-    leaveType?: ShiftLeaveType;
-    color?: string;
-    acronym?: string;
-    recuperationTime?: number;
-    recuperationDutyId?: string | null;
-  }): Promise<ShiftT> {
+  async createShift(
+    shiftData: {
+      teamId: string;
+      name: string;
+      startTime: dayjs.Dayjs;
+      endTime: dayjs.Dayjs;
+      shiftType: ShiftType;
+      staffing?: StaffingT[];
+      restType?: ShiftRestType;
+      leaveType?: ShiftLeaveType;
+      color?: string;
+      acronym?: string;
+      recuperationTime?: number;
+      recuperationDutyId?: string | null;
+    },
+    actingUserId?: string,
+  ): Promise<ShiftT> {
     try {
       const shift: ShiftT = {
         id: '', // Will be set by the API
@@ -861,8 +864,14 @@ export class DatabaseTestUtils {
         attributes: [],
       };
 
-      // Use the existing ShiftApi with our test client
-      const result: ShiftT = await ShiftApi.addShift(this.testApiClient, shift);
+      // Use the existing ShiftApi with either the acting user (if provided)
+      // or the default test client. This allows tests to create shifts as the
+      // team owner/leader when needed (so Cerbos authorization passes).
+      const apiClient = actingUserId
+        ? this.createAuthenticatedClientForUser(actingUserId)
+        : this.testApiClient;
+
+      const result: ShiftT = await ShiftApi.addShift(apiClient, shift);
 
       return result;
     } catch (error) {
