@@ -95,6 +95,7 @@ __all__ = [
     "AssignmentsRecurrencesResultDTO",
     "BulkAssignmentCreateDTO",
     "BulkAssignmentDeleteDTO",
+    "BulkAssignmentToggleFixedDTO",
     "BulkAssignmentUpdateDTO",
     "SelectionIntentDTO",
     "AttributeDTO",
