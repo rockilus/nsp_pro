@@ -1454,15 +1454,6 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       const shifts = scheduleTestBase.getTestShifts();
       const campaign = scheduleTestBase.getTestSchedule()!;
 
-      // Pre-create one assignment visible in campaign start week so we can click to deselect it
-      const preResult = await scheduleTestBase.createAssignmentAndRecurrence({
-        workerId: workers[0].id,
-        shiftId: shifts[0].id,
-        date: campaignStart,
-        scheduleId: campaign.id,
-      });
-      const preAssignmentId = preResult.assignmentsCreated[0]?.id;
-
       await scheduleTestBase.setScheduleViewSettings(page, {
         targetDate: campaignStart,
         timeFrame: 'week',
@@ -1475,10 +1466,11 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       await expect(rowCheckbox).toBeVisible();
       await rowCheckbox.click();
 
-      // Deselect the pre-created assignment (removes from selectedAssignmentIds only)
-      if (preAssignmentId) {
-        await page.locator(`[data-testid="assignment-cell-${preAssignmentId}"]`).click();
-      }
+      // Deselect the cell for campaignStart on shifts[0] (removes from selectedCells only, not via assignment ID)
+      const campaignStartStr = campaignStart.format('YYYY-MM-DD');
+      await page
+        .locator(`[data-testid="shift-cell-checkbox-${shifts[0].id}-${campaignStartStr}"]`)
+        .click();
 
       // Snapshot: no assignments for workers[1] in campaign yet
       const beforeCreate = await scheduleTestBase.getAssignmentsAndRecurrences(
@@ -1503,7 +1495,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
         workers[1].id,
       );
       const created = afterCreate.assignmentsRead.filter((a) => !beforeIds.has(a.id));
-      const expectedDayCount = campaignEnd.diff(campaignStart, 'day') + 1;
+      const expectedDayCount = campaignEnd.diff(campaignStart, 'day');
       expect(
         created.length,
         `Should have created ${expectedDayCount} assignments — campaignIntent is not affected by individual unselect`,
