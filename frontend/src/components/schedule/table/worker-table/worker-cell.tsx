@@ -183,6 +183,9 @@ export default function WorkerCell({
               zIndex: 10,
               pointerEvents: 'auto',
             }}
+            data-testid={`add-assignment-button-${worker.id}-${periodDate.date.format(
+              'YYYY-MM-DD',
+            )}`}
             onClick={() =>
               handleOpenCreateAssignment({
                 scheduleId: periodDate.scheduleId,
