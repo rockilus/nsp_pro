@@ -1758,10 +1758,15 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       await expect(rowCheckbox).toBeVisible();
       await rowCheckbox.click();
 
-      // Unselect then reselect
+      // Unselect then reselect the cell checkbox (not the assignment element)
       if (preAssignmentId) {
-        await page.locator(`[data-testid="assignment-cell-${preAssignmentId}"]`).click();
-        await page.locator(`[data-testid="assignment-cell-${preAssignmentId}"]`).click();
+        const campaignStartStr = campaignStart.format('YYYY-MM-DD');
+        await page
+          .locator(`[data-testid="shift-cell-checkbox-${shifts[0].id}-${campaignStartStr}"]`)
+          .click();
+        await page
+          .locator(`[data-testid="shift-cell-checkbox-${shifts[0].id}-${campaignStartStr}"]`)
+          .click();
       }
 
       const beforeCreate = await scheduleTestBase.getAssignmentsAndRecurrences(
