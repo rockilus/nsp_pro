@@ -1151,9 +1151,20 @@ class AssignmentService(BaseService):
                     )
                     for a in assignments_to_create
                 }
+                # Build set of cells explicitly deselected by the user (no existing assignment)
+                excluded_cell_keys = {
+                    (
+                        c.row_id,
+                        datetime.fromtimestamp(c.date, tz=timezone.utc).date(),
+                    )
+                    for c in intent.excluded_cells
+                }
                 for row_id in row_ids:
                     for d in campaign_dates:
-                        if (row_id, d) not in explicit_keys:
+                        if (row_id, d) not in explicit_keys and (
+                            row_id,
+                            d,
+                        ) not in excluded_cell_keys:
                             assignments_to_create.append(
                                 Assignment(
                                     id="",

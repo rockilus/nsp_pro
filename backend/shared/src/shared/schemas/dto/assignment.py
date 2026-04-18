@@ -29,6 +29,17 @@ class AssignmentsRecurrencesResultDTO(BaseModel):
     recurrencesDeletedIds: List[str]
 
 
+class ExcludedCellDTO(BaseModel):
+    """A single (row, date) cell explicitly deselected by the user.
+
+    Used in bulk-create intent to skip cells that have no assignment yet
+    and therefore cannot be represented by an excluded_assignment_id.
+    """
+
+    row_id: str
+    date: float  # UNIX timestamp (UTC midnight)
+
+
 class SelectionIntentDTO(BaseModel):
     """Implicit campaign-scope selection criteria resolved server-side.
 
@@ -41,6 +52,8 @@ class SelectionIntentDTO(BaseModel):
     selected_row_worker_ids: List[str] = []  # empty = all workers in campaign
     selected_row_shift_ids: List[str] = []  # empty = all shifts in campaign
     excluded_assignment_ids: List[str] = []
+    # Cells without assignments deselected by the user; consumed by bulk-create only
+    excluded_cells: List[ExcludedCellDTO] = []
 
 
 class AssignmentCreateCellDTO(BaseModel):

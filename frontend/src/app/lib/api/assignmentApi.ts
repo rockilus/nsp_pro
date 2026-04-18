@@ -44,6 +44,8 @@ export interface SelectionIntentPayload {
   selectedRowShiftIds: string[];
   /** IDs of individual assignments deselected from the implicit set */
   excludedAssignmentIds: string[];
+  /** Empty cells (no existing assignment) deselected by the user; used by bulk-create only */
+  excludedCells: { rowId: string; date: string }[];
 }
 
 export class AssignmentApi extends BaseApi {
@@ -231,6 +233,10 @@ export class AssignmentApi extends BaseApi {
         selected_row_worker_ids: intent.selectedRowWorkerIds,
         selected_row_shift_ids: intent.selectedRowShiftIds,
         excluded_assignment_ids: intent.excludedAssignmentIds,
+        excluded_cells: intent.excludedCells.map((c) => ({
+          row_id: c.rowId,
+          date: dayjs.utc(c.date).unix(),
+        })),
       };
     }
 

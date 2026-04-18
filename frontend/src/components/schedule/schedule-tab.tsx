@@ -529,18 +529,89 @@ export default function ScheduleTab({
     setSelectionScope('view');
   }, []);
 
-  const handleCellSelect = useCallback((rowId: string, date: string, scheduleId: string | null) => {
-    setSelectionState((prev) => {
-      const key = `${rowId}-${date}`;
-      const exists = prev.selectedCells.some((c) => c.rowId === rowId && c.date === date);
-      return {
-        ...prev,
-        selectedCells: exists
-          ? prev.selectedCells.filter((c) => !(c.rowId === rowId && c.date === date))
-          : [...prev.selectedCells, { rowId, date, scheduleId }],
-      };
-    });
-  }, []);
+  const handleCellSelect = useCallback(
+    (rowId: string, date: string, scheduleId: string | null) => {
+      const isWorkerView = scheduleViewSettings.groupBy === 'worker';
+      // Find the assignment for this cell (needed to update campaignIntent exclusions)
+      const cellAssignment = assignments.find((a) => {
+        const rowMatch = isWorkerView ? a.workerId === rowId : a.shiftId === rowId;
+        return rowMatch && a.date.format('YYYY-MM-DD') === date;
+      });
+
+      setSelectionState((prev) => {
+        const exists = prev.selectedCells.some((c) => c.rowId === rowId && c.date === date);
+
+        if (exists) {
+          // Removing a cell — update campaignIntent exclusions
+          let newIntent = prev.campaignIntent;
+          if (prev.campaignIntent) {
+            if (cellAssignment) {
+              // Cell has an existing assignment: add to excludedAssignmentIds
+              newIntent = {
+                ...prev.campaignIntent,
+                excludedAssignmentIds: prev.campaignIntent.excludedAssignmentIds.includes(
+                  cellAssignment.id,
+                )
+                  ? prev.campaignIntent.excludedAssignmentIds
+                  : [...prev.campaignIntent.excludedAssignmentIds, cellAssignment.id],
+              };
+            } else {
+              // Empty cell (no assignment yet): add to excludedCells
+              const alreadyExcluded = prev.campaignIntent.excludedCells.some(
+                (c) => c.rowId === rowId && c.date === date,
+              );
+              newIntent = {
+                ...prev.campaignIntent,
+                excludedCells: alreadyExcluded
+                  ? prev.campaignIntent.excludedCells
+                  : [...prev.campaignIntent.excludedCells, { rowId, date }],
+              };
+            }
+          }
+          return {
+            ...prev,
+            selectedCells: prev.selectedCells.filter(
+              (c) => !(c.rowId === rowId && c.date === date),
+            ),
+            selectedAssignmentIds: cellAssignment
+              ? prev.selectedAssignmentIds.filter((id) => id !== cellAssignment.id)
+              : prev.selectedAssignmentIds,
+            campaignIntent: newIntent,
+          };
+        } else {
+          // Adding a cell back — remove from campaignIntent exclusions
+          let newIntent = prev.campaignIntent;
+          if (prev.campaignIntent) {
+            if (cellAssignment) {
+              newIntent = {
+                ...prev.campaignIntent,
+                excludedAssignmentIds: prev.campaignIntent.excludedAssignmentIds.filter(
+                  (id) => id !== cellAssignment.id,
+                ),
+              };
+            } else {
+              newIntent = {
+                ...prev.campaignIntent,
+                excludedCells: prev.campaignIntent.excludedCells.filter(
+                  (c) => !(c.rowId === rowId && c.date === date),
+                ),
+              };
+            }
+          }
+          return {
+            ...prev,
+            selectedCells: [...prev.selectedCells, { rowId, date, scheduleId }],
+            selectedAssignmentIds:
+              cellAssignment && !prev.selectedAssignmentIds.includes(cellAssignment.id)
+                ? [...prev.selectedAssignmentIds, cellAssignment.id]
+                : prev.selectedAssignmentIds,
+            campaignIntent: newIntent,
+          };
+        }
+      });
+    },
+    [assignments, scheduleViewSettings.groupBy],
+  );
 
   const handleAssignmentSelect = useCallback((assignmentId: string) => {
     setSelectionState((prev) => {
@@ -575,6 +646,7 @@ export default function ScheduleTab({
             campaignId: scheduleCampaign.id,
             selectedRowIds: [],
             excludedAssignmentIds: [],
+            excludedCells: [],
           };
           const isRowSelected = intent.selectedRowIds.includes(rowId);
           const isAllSelected = intent.selectedRowIds.length === 0 && !!prev.campaignIntent;
@@ -802,6 +874,7 @@ export default function ScheduleTab({
             campaignId: scheduleCampaign.id,
             selectedRowIds: [], // empty = all rows
             excludedAssignmentIds: [],
+            excludedCells: [],
           },
         }));
         return;
@@ -1131,6 +1204,7 @@ export default function ScheduleTab({
             selectedRowWorkerIds: isShiftView ? [] : selectionState.campaignIntent.selectedRowIds,
             selectedRowShiftIds: isShiftView ? selectionState.campaignIntent.selectedRowIds : [],
             excludedAssignmentIds: selectionState.campaignIntent.excludedAssignmentIds,
+            excludedCells: selectionState.campaignIntent.excludedCells,
           }
         : undefined;
 
@@ -1169,6 +1243,7 @@ export default function ScheduleTab({
             selectedRowWorkerIds: isShiftView ? [] : selectionState.campaignIntent.selectedRowIds,
             selectedRowShiftIds: isShiftView ? selectionState.campaignIntent.selectedRowIds : [],
             excludedAssignmentIds: selectionState.campaignIntent.excludedAssignmentIds,
+            excludedCells: selectionState.campaignIntent.excludedCells,
           }
         : undefined;
 
@@ -1208,6 +1283,7 @@ export default function ScheduleTab({
               ? selectionState.campaignIntent.selectedRowIds
               : [],
           excludedAssignmentIds: selectionState.campaignIntent.excludedAssignmentIds,
+          excludedCells: selectionState.campaignIntent.excludedCells,
         }
       : undefined;
 
@@ -1251,6 +1327,7 @@ export default function ScheduleTab({
           selectedRowWorkerIds: isShiftView ? [] : selectionState.campaignIntent.selectedRowIds,
           selectedRowShiftIds: isShiftView ? selectionState.campaignIntent.selectedRowIds : [],
           excludedAssignmentIds: selectionState.campaignIntent.excludedAssignmentIds,
+          excludedCells: selectionState.campaignIntent.excludedCells,
         }
       : undefined;
 

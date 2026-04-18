@@ -17,6 +17,8 @@ export interface CampaignSelectionIntent {
   selectedRowIds: string[];
   /** IDs of individual assignments deselected from the implicit set */
   excludedAssignmentIds: string[];
+  /** Empty cells (no existing assignment) deselected by the user; used by bulk-create only */
+  excludedCells: { rowId: string; date: string }[];
 }
 
 export interface ScheduleSelectionState {
