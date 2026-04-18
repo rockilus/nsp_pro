@@ -1691,13 +1691,28 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
         campaignEnd,
       );
 
-      // All campaign assignments deleted — campaignIntent.excludedAssignmentIds is empty
-      for (const id of allIds) {
-        const stillExists = afterDelete.assignmentsRead.some((a) => a.id === id);
-        expect(
-          stillExists,
-          `Campaign assignment ${id} should have been deleted — excludedAssignmentIds is not set by handleAssignmentSelect`,
-        ).toBe(false);
+      // All campaign assignments should be deleted except the one we deselected
+      // (handleAssignmentSelect should add it to campaignIntent.excludedAssignmentIds)
+      if (!firstId) {
+        for (const id of allIds) {
+          const stillExists = afterDelete.assignmentsRead.some((a) => a.id === id);
+          expect(
+            stillExists,
+            `Campaign assignment ${id} should have been deleted — expected no preserved assignment`,
+          ).toBe(false);
+        }
+      } else {
+        for (const id of allIds) {
+          const stillExists = afterDelete.assignmentsRead.some((a) => a.id === id);
+          if (id === firstId) {
+            expect(
+              stillExists,
+              `Deselected campaign assignment ${id} should NOT have been deleted`,
+            ).toBe(true);
+          } else {
+            expect(stillExists, `Campaign assignment ${id} should have been deleted`).toBe(false);
+          }
+        }
       }
     });
   });
