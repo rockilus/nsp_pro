@@ -1244,12 +1244,33 @@ export default function ScheduleTab({
   }, []);
 
   const handleBulkToggleFixed = useCallback(async () => {
-    // toggleFixed with campaign intent: only apply to explicit (loaded) assignments
-    // since we can't know the current fixed state of unloaded intent-resolved assignments.
-    const selectedIds = selectionState.selectedAssignmentIds;
-    if (selectedIds.length === 0) return;
-    await bulkToggleFixed(selectedIds, teamWithMembership.team.id);
-  }, [selectionState.selectedAssignmentIds, teamWithMembership.team.id, bulkToggleFixed]);
+    const isShiftView = scheduleViewSettings.groupBy === 'shift';
+
+    const intent = selectionState.campaignIntent
+      ? {
+          campaignId: selectionState.campaignIntent.campaignId,
+          selectedRowWorkerIds: isShiftView ? [] : selectionState.campaignIntent.selectedRowIds,
+          selectedRowShiftIds: isShiftView ? selectionState.campaignIntent.selectedRowIds : [],
+          excludedAssignmentIds: selectionState.campaignIntent.excludedAssignmentIds,
+        }
+      : undefined;
+
+    if (selectionState.selectedAssignmentIds.length === 0 && !intent) return;
+
+    await bulkToggleFixed(selectionState.selectedAssignmentIds, teamWithMembership.team.id, intent);
+
+    setSelectionState((prev) => ({
+      ...prev,
+      selectedAssignmentIds: [],
+      campaignIntent: undefined,
+    }));
+  }, [
+    selectionState.selectedAssignmentIds,
+    selectionState.campaignIntent,
+    scheduleViewSettings.groupBy,
+    teamWithMembership.team.id,
+    bulkToggleFixed,
+  ]);
 
   const updateSelectedPeriod = (newPeriodStart: dayjs.Dayjs, newPeriodEnd: dayjs.Dayjs) => {
     updateScheduleViewSettings({
