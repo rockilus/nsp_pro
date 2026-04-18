@@ -1553,14 +1553,21 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
         campaignEnd,
       );
 
-      // All campaign assignments should be updated — campaignIntent.excludedAssignmentIds is empty
+      // All campaign assignments should be updated except the one we deselected
       for (const id of allIds) {
         const updated = afterUpdate.assignmentsRead.find((a) => a.id === id);
         expect(updated, `Campaign assignment ${id} should still exist`).toBeDefined();
-        expect(
-          updated!.workerId,
-          `Campaign assignment ${id} should be updated to workers[1] — excludedAssignmentIds is not set by handleAssignmentSelect`,
-        ).toBe(workers[1].id);
+        if (id === firstId) {
+          expect(
+            updated!.workerId,
+            `Deselected campaign assignment ${id} should NOT have been updated`,
+          ).toBe(workers[0].id);
+        } else {
+          expect(
+            updated!.workerId,
+            `Campaign assignment ${id} should be updated to workers[1]`,
+          ).toBe(workers[1].id);
+        }
       }
     });
 
