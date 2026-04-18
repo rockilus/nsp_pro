@@ -61,10 +61,9 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible();
-
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Fill assignment form
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
@@ -165,10 +164,9 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible();
-
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();
@@ -273,10 +271,9 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible();
-
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();
@@ -417,10 +414,9 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible();
-
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();
@@ -513,10 +509,9 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible();
-
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();

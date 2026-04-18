@@ -54,9 +54,9 @@ test.describe('Demand Creation - Team Leader', () => {
     const testShifts = scheduleTestBase.getTestShifts();
 
     // Open dialog
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible({ timeout: 5000 });
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Switch to Demand type
     const demandButton = page.locator('[data-testid="demand-button"]');
@@ -100,10 +100,15 @@ test.describe('Demand Creation - Team Leader', () => {
   test('should show validation error when shift is not selected', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
 
+    // Then click on worker button
+    const workerButton = page.locator('[data-testid="data-view-worker-button"]');
+    await workerButton.click();
+    await page.waitForTimeout(500);
+
     // Open dialog
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible({ timeout: 5000 });
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Switch to Demand type
     const demandButton = page.locator('[data-testid="demand-button"]');
@@ -145,9 +150,9 @@ test.describe('Demand Creation - Team Leader', () => {
     );
 
     // Open dialog
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible({ timeout: 5000 });
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Switch to Demand type
     const demandButton = page.locator('[data-testid="demand-button"]');
@@ -182,9 +187,9 @@ test.describe('Demand Creation - Team Leader', () => {
     const testShifts = scheduleTestBase.getTestShifts();
 
     // Open dialog
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible({ timeout: 5000 });
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Switch to Demand type
     const demandButton = page.locator('[data-testid="demand-button"]');

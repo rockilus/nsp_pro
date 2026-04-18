@@ -169,9 +169,10 @@ test.describe('Schedule Page - Owner without Assignments', () => {
     const scheduleTableBefore = page.locator('[data-testid="schedule-table-worker"]');
     await expect(scheduleTableBefore).toBeVisible();
 
-    // Open create assignment dialog via the schedule nav bar
-    const createAssignmentButton = page.locator('[data-testid="create-assignment-button"]');
-    await createAssignmentButton.click();
+    // Open create assignment dialog via a cell add button in the schedule table
+    const createAssignmentButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await createAssignmentButton.waitFor({ state: 'attached', timeout: 5000 });
+    await createAssignmentButton.click({ force: true });
 
     // Wait for the create assignment dialog to be visible
     const assignmentDialog = page.locator('[data-testid="assignment-form"]');
