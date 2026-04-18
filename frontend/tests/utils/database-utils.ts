@@ -144,6 +144,15 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Override the default test API client to act as a specific user.
+   * Useful in tests where subsequent helper calls should be performed
+   * using the team's owner/leader identity.
+   */
+  setTestApiClientUser(userId: string): void {
+    this.testApiClient = this.createAuthenticatedClientForUser(userId);
+  }
+
+  /**
    * Make an authenticated request to the API
    * This is a convenience method for test scenarios where direct API calls are needed
    * and there's no existing API wrapper method
@@ -643,18 +652,21 @@ export class DatabaseTestUtils {
   /**
    * Create a worker using the existing WorkerApi for consistent behavior
    */
-  async createWorker(workerData: {
-    teamId: string;
-    name: string;
-    acronym?: string;
-    employmentStartDate?: Date;
-    employmentEndDate?: Date | null;
-    weeklyHours?: number;
-    weeklyHoursDesired?: number;
-    dutiesPerMonth?: number;
-    annualLeave?: number;
-    specialtyIds?: string[];
-  }): Promise<WorkerT> {
+  async createWorker(
+    workerData: {
+      teamId: string;
+      name: string;
+      acronym?: string;
+      employmentStartDate?: Date;
+      employmentEndDate?: Date | null;
+      weeklyHours?: number;
+      weeklyHoursDesired?: number;
+      dutiesPerMonth?: number;
+      annualLeave?: number;
+      specialtyIds?: string[];
+    },
+    actingUserId?: string,
+  ): Promise<WorkerT> {
     try {
       // Create a WorkerT object with defaults
       const worker: WorkerT = {
@@ -679,8 +691,13 @@ export class DatabaseTestUtils {
         attributes: [],
       };
 
-      // Use the existing WorkerApi with our test client
-      const result: WorkerT = await WorkerApi.addWorker(this.testApiClient, worker);
+      // Use the existing WorkerApi with either the acting user (if provided)
+      // or the default test client.
+      const apiClient = actingUserId
+        ? this.createAuthenticatedClientForUser(actingUserId)
+        : this.testApiClient;
+
+      const result: WorkerT = await WorkerApi.addWorker(apiClient, worker);
 
       return result;
     } catch (error) {

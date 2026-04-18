@@ -69,6 +69,10 @@ test.beforeEach(async ({}, testInfo) => {
     ownerUserId: user1.user_id,
   });
 
+  // Use the team owner as the default API client for subsequent helper calls
+  // (so createWorker / createShift etc. are executed as the leader)
+  dbUtils.setTestApiClientUser(user1.user_id);
+
   // Ensure the team has at least two normal shifts for the tests
   await dbUtils.createShift(
     {
