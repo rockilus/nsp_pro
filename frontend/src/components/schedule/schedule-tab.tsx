@@ -616,11 +616,35 @@ export default function ScheduleTab({
   const handleAssignmentSelect = useCallback((assignmentId: string) => {
     setSelectionState((prev) => {
       const exists = prev.selectedAssignmentIds.includes(assignmentId);
+
+      // Update campaignIntent exclusions when toggling via the assignment-level checkbox
+      let newIntent = prev.campaignIntent;
+      if (prev.campaignIntent) {
+        if (exists) {
+          // Deselecting: add to excludedAssignmentIds
+          newIntent = {
+            ...prev.campaignIntent,
+            excludedAssignmentIds: prev.campaignIntent.excludedAssignmentIds.includes(assignmentId)
+              ? prev.campaignIntent.excludedAssignmentIds
+              : [...prev.campaignIntent.excludedAssignmentIds, assignmentId],
+          };
+        } else {
+          // Re-selecting: remove from excludedAssignmentIds
+          newIntent = {
+            ...prev.campaignIntent,
+            excludedAssignmentIds: prev.campaignIntent.excludedAssignmentIds.filter(
+              (id) => id !== assignmentId,
+            ),
+          };
+        }
+      }
+
       return {
         ...prev,
         selectedAssignmentIds: exists
           ? prev.selectedAssignmentIds.filter((id) => id !== assignmentId)
           : [...prev.selectedAssignmentIds, assignmentId],
+        campaignIntent: newIntent,
       };
     });
   }, []);
