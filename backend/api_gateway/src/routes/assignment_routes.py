@@ -236,10 +236,10 @@ async def bulk_update_assignments(
             body.intent, team_id, assignment_service.collection.schedule_db
         )
         new_worker_id: Optional[str] = (
-            body.entity_id if body.group_by == "worker" else None
+            body.entity_id if body.group_by == "shift" else None
         )
         new_shift_id: Optional[str] = (
-            body.entity_id if body.group_by == "shift" else None
+            body.entity_id if body.group_by == "worker" else None
         )
         before_map = assignment_service.get_assignments_map(
             body.assignment_ids
