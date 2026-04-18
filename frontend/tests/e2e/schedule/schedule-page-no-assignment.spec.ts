@@ -146,7 +146,7 @@ test.describe('Schedule Page - Owner without Assignments', () => {
     });
 
     // Verify the schedule table is visible even with no assignments
-    const scheduleTable = page.locator('[data-testid="schedule-table-worker"]');
+    const scheduleTable = page.locator('[data-testid="schedule-table-shift"]');
     await expect(scheduleTable).toBeVisible();
 
     console.log('✅ Schedule table displayed correctly for owner with no assignments');
@@ -166,7 +166,7 @@ test.describe('Schedule Page - Owner without Assignments', () => {
     });
 
     // Verify the schedule table is already visible (table shows even without assignments)
-    const scheduleTableBefore = page.locator('[data-testid="schedule-table-worker"]');
+    const scheduleTableBefore = page.locator('[data-testid="schedule-table-shift"]');
     await expect(scheduleTableBefore).toBeVisible();
 
     // Open create assignment dialog via a cell add button in the schedule table
@@ -208,7 +208,7 @@ test.describe('Schedule Page - Owner without Assignments', () => {
     await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
     // Verify the schedule table is still visible after assignment creation
-    const scheduleTableAfter = page.locator('[data-testid="schedule-table-worker"]');
+    const scheduleTableAfter = page.locator('[data-testid="schedule-table-shift"]');
     await expect(scheduleTableAfter).toBeVisible({ timeout: 10000 });
 
     console.log('✅ Assignment created successfully and schedule table is now visible');
@@ -256,7 +256,7 @@ test.describe('Schedule Page - Member with Worker Profile but No Assignments', (
     });
 
     // Verify the schedule table is visible even when there are no assignments
-    const scheduleTable = page.locator('[data-testid="schedule-table-worker"]');
+    const scheduleTable = page.locator('[data-testid="schedule-table-shift"]');
     await expect(scheduleTable).toBeVisible();
 
     console.log(
