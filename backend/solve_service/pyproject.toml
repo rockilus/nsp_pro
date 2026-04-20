@@ -57,3 +57,8 @@ disable_error_code = ["attr-defined"]
 [[tool.mypy.overrides]]
 module = "ortools.*"
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+markers = [
+	"unit: mark a test as a unit test",
+]
