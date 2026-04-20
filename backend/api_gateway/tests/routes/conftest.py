@@ -120,7 +120,7 @@ async def db_interface() -> AsyncGenerator[DatabaseInterface, None]:
             try:
                 urllib.request.urlopen(CERBOS_HTTP_HEALTH, timeout=2)  # noqa: S310
                 break
-            except (urllib.error.URLError, OSError):
+            except urllib.error.URLError, OSError:
                 time.sleep(2)
         else:
             raise RuntimeError("Cerbos PDP did not become healthy in time")
