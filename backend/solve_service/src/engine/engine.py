@@ -30,7 +30,7 @@ class Engine:
         print(f"Branches:        {model.solver.NumBranches()}")
         print(f"Wall time:       {model.solver.WallTime()} s")
         print(f"Objective value: {model.solver.ObjectiveValue()}")
-        print(f"Status:          {model.solver.StatusName()}")
+        print(f"Status:          {model.solver.StatusName(model.status)}")
         # save_model_to_text(
         #     model.model,
         #     os.getcwd()

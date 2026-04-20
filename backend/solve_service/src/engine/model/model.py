@@ -4,8 +4,6 @@
 from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
 
-# pylint: disable=no-name-in-module
-from ortools.sat.sat_parameters_pb2 import SatParameters  # type: ignore
 from shared.schemas.core import SolverParams, SolveStrategy
 
 from engine.model.add_constraint_factory import AddConstraintFactory
@@ -376,7 +374,9 @@ class Model:
 
     def add_duty_recup_constraints(
         self,
-        duty_recup_pairs: list[tuple[tuple[str, str, str], tuple[str, str, str], int]],
+        duty_recup_pairs: list[
+            tuple[tuple[str, str, str], tuple[str, str, str], int]
+        ],
         hard_to_soft: bool,
     ) -> None:
         for duty, recup, penalty in duty_recup_pairs:
@@ -397,7 +397,9 @@ class Model:
 
     def add_link_shift_constraints(
         self,
-        ls_pairs: list[tuple[tuple[str, str, str], tuple[str, str, str], str, int]],
+        ls_pairs: list[
+            tuple[tuple[str, str, str], tuple[str, str, str], str, int]
+        ],
     ) -> None:
         for s1, s2, ls_id, penalty in ls_pairs:
             s1_var = self.variables[s1]
@@ -427,7 +429,10 @@ class Model:
                 constraint_vars = [self.variables[a] for a in p_assignments]
                 if not hard_to_soft:
                     self.model.Add(
-                        sum(v * dur for v, dur in zip(constraint_vars, p_durations))
+                        sum(
+                            v * dur
+                            for v, dur in zip(constraint_vars, p_durations)
+                        )
                         <= p_target
                     )
                 else:
@@ -449,7 +454,9 @@ class Model:
                     )
                     self.model.Add(
                         weighted_sum
-                        == sum(v * d for v, d in zip(constraint_vars, p_durations))
+                        == sum(
+                            v * d for v, d in zip(constraint_vars, p_durations)
+                        )
                     )
                     weighted_sum_x100 = self.model.NewIntVar(
                         0,
@@ -563,7 +570,9 @@ class Model:
             )
             max_excess = self.model.NewIntVar(
                 0,
-                len(cstr_vars) * Constants.NUM_HOURS_DAY * Constants.NUM_MINUTES_HOUR,
+                len(cstr_vars)
+                * Constants.NUM_HOURS_DAY
+                * Constants.NUM_MINUTES_HOUR,
                 var_name,
             )
             self.model.AddMaxEquality(max_excess, excesses)
@@ -592,7 +601,9 @@ class Model:
                         * Constants.NUM_MINUTES_HOUR,
                         "",
                     )
-                    self.model.Add(delta == sum(v for v in constraint_vars) - p_target)
+                    self.model.Add(
+                        delta == sum(v for v in constraint_vars) - p_target
+                    )
                     excess = self.model.NewIntVar(
                         0,
                         len(constraint_vars)
@@ -610,7 +621,9 @@ class Model:
         for constraint in constraints:
             excesses = []
             cstr_vars = []
-            for assignments, target in zip(constraint.assignments, constraint.targets):
+            for assignments, target in zip(
+                constraint.assignments, constraint.targets
+            ):
                 constraint_vars = [self.variables[a] for a in assignments]
                 cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
@@ -673,7 +686,9 @@ class Model:
         for week in weeks_vars:
             for worker_assignments in week:
                 if worker_assignments:
-                    max_assignments = max(max_assignments, len(worker_assignments))
+                    max_assignments = max(
+                        max_assignments, len(worker_assignments)
+                    )
         if max_assignments == 0:
             return
 
@@ -690,7 +705,9 @@ class Model:
                     continue
                 # Collect boolean vars for this worker-week
                 constraint_vars = [
-                    self.variables[a] for a in worker_assignments if a in self.variables
+                    self.variables[a]
+                    for a in worker_assignments
+                    if a in self.variables
                 ]
                 if not constraint_vars:
                     continue
@@ -717,7 +734,9 @@ class Model:
             hard_to_soft=None,
             meta={"type": "primary"},
         )
-        global_max = self.model.NewIntVar(0, max_assignments, global_varname_json)
+        global_max = self.model.NewIntVar(
+            0, max_assignments, global_varname_json
+        )
         self.model.AddMaxEquality(global_max, week_max_vars)
         self.obj.int_vars.append(global_max)
         self.obj.int_coeffs.append(penalty)
@@ -743,7 +762,9 @@ class Model:
                 )
                 exceeds = self.model.NewBoolVar(step_varname_json)
                 self.model.Add(sum_var >= threshold).OnlyEnforceIf(exceeds)
-                self.model.Add(sum_var < threshold).OnlyEnforceIf(exceeds.Not())
+                self.model.Add(sum_var < threshold).OnlyEnforceIf(
+                    exceeds.Not()
+                )
                 # Quadratic-like penalty: threshold^2
                 self.obj.bool_vars.append(exceeds)
                 self.obj.bool_coeffs.append(
@@ -756,7 +777,9 @@ class Model:
         for constraint in constraints:
             excesses = []
             cstr_vars = []
-            for assignments, target in zip(constraint.assignments, constraint.targets):
+            for assignments, target in zip(
+                constraint.assignments, constraint.targets
+            ):
                 constraint_vars = [self.variables[a] for a in assignments]
                 cstr_vars.extend(constraint_vars)
                 excess = self.model.NewIntVar(
@@ -789,7 +812,9 @@ class Model:
     def add_consecutive_duty_gap_constraints(
         self,
         constraint: tuple[
-            list[tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]],
+            list[
+                tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]
+            ],
             int,
         ],
     ) -> None:
@@ -805,7 +830,9 @@ class Model:
             return
 
         for vars_d, vars_next in pairs:
-            model_vars_d = [self.variables[a] for a in vars_d if a in self.variables]
+            model_vars_d = [
+                self.variables[a] for a in vars_d if a in self.variables
+            ]
             model_vars_next = [
                 self.variables[a] for a in vars_next if a in self.variables
             ]
@@ -820,8 +847,12 @@ class Model:
 
             # excess is 1 iff both days have a duty
             excess = self.model.NewBoolVar("")
-            self.model.Add(has_duty_d + has_duty_next >= 2).OnlyEnforceIf(excess)
-            self.model.Add(has_duty_d + has_duty_next < 2).OnlyEnforceIf(excess.Not())
+            self.model.Add(has_duty_d + has_duty_next >= 2).OnlyEnforceIf(
+                excess
+            )
+            self.model.Add(has_duty_d + has_duty_next < 2).OnlyEnforceIf(
+                excess.Not()
+            )
             self.obj.bool_vars.append(excess)
             self.obj.bool_coeffs.append(penalty)
 
@@ -840,7 +871,9 @@ class Model:
                 #     None, [cstr_var], "worker_shift_filter"
                 # )
                 var_name = ""
-                cstr_vars: list[cp_model.IntVar | cp_model.NotBooleanVariable] = [
+                cstr_vars: list[
+                    cp_model.IntVar | cp_model.NotBooleanVariable
+                ] = [
                     cstr_var.Not()  # type: ignore
                 ]
                 lit = self.model.NewBoolVar(var_name)
@@ -869,7 +902,9 @@ class Model:
                 c_fil, hard_to_soft
             )
         for c_fai in constraints.fai:
-            self.add_constraint_factory.add_constraint_fai.add_constraint(c_fai)
+            self.add_constraint_factory.add_constraint_fai.add_constraint(
+                c_fai
+            )
 
     def add_objective(self) -> None:
         self.model.Minimize(
@@ -884,8 +919,10 @@ class Model:
             )
         )
 
-    def build_solver_params(self, params: SolverParams) -> SatParameters:
-        out = SatParameters()
+    def build_solver_params(
+        self, params: SolverParams
+    ) -> cp_model.SatParameters:
+        out = cp_model.SatParameters()
 
         out.max_time_in_seconds = params.max_time_in_seconds
         out.num_search_workers = params.num_search_workers
@@ -898,13 +935,24 @@ class Model:
             for subsolver in params.ignore_subsolvers:
                 out.ignore_subsolvers.append(subsolver)
         if params.restart_algorithms:
-            out.restart_algorithms.extend(params.restart_algorithms)
-        # out.restart_algorithms.extend(["LUBY_RESTART"])
+            # OR-Tools 9.15: repeated field expects integer enum values, not strings.
+            # Use sat_parameters_pb2 only as an enum registry (not for construction).
+            import ortools.sat.sat_parameters_pb2 as _pb2  # type: ignore  # noqa: PLC0415
+
+            for ra in params.restart_algorithms:
+                if isinstance(ra, str):
+                    out.restart_algorithms.append(
+                        getattr(_pb2.SatParameters, ra)
+                    )
+                else:
+                    out.restart_algorithms.append(int(ra))
         out.restart_period = params.restart_period
         out.linearization_level = params.linearization_level
         out.cut_level = params.cut_level
         out.lns_initial_difficulty = params.lns_initial_difficulty
-        out.lns_initial_deterministic_limit = params.lns_initial_deterministic_limit
+        out.lns_initial_deterministic_limit = (
+            params.lns_initial_deterministic_limit
+        )
         out.instantiate_all_variables = params.instantiate_all_variables
         out.use_lns_only = params.use_lns_only
         out.use_combined_no_overlap = params.use_combined_no_overlap
@@ -927,7 +975,9 @@ class Model:
         out.core_minimization_level = params.core_minimization_level
         if params.random_seed is not None:
             out.random_seed = params.random_seed
-        out.probing_deterministic_time_limit = params.probing_deterministic_time_limit
+        out.probing_deterministic_time_limit = (
+            params.probing_deterministic_time_limit
+        )
         out.max_presolve_iterations = params.max_presolve_iterations
         out.cp_model_probing_level = params.cp_model_probing_level
         out.detect_table_with_cost = params.detect_table_with_cost
@@ -964,7 +1014,12 @@ class Model:
         beta = 21.6e-05  # seconds per constraint
         gamma = 12.0e-05  # seconds per objective var
 
-        estimate = t0 + alpha * num_vars + beta * num_constraints + gamma * num_obj_vars
+        estimate = (
+            t0
+            + alpha * num_vars
+            + beta * num_constraints
+            + gamma * num_obj_vars
+        )
 
         print(
             f"[Model] time_limit_estimate: {estimate:.2f} s - "
@@ -1036,7 +1091,9 @@ class Model:
         solution_callback = SolverSolutionCallback(
             limit=self.model_config.custom_solver_params.limit_number_solution
         )
-        solver_params = self.build_solver_params(self.model_config.solver_params)
+        solver_params = self.build_solver_params(
+            self.model_config.solver_params
+        )
         self.solver.parameters = solver_params
 
         def log_callback(string: str) -> None:
@@ -1045,8 +1102,8 @@ class Model:
 
         self.solver.log_callback = log_callback
 
-        self.status = self.solver.Solve(  # type: ignore # [CHECK IF OK]
-            self.model, solution_callback
+        self.status = self.solver.solve(  # type: ignore # [CHECK IF OK]
+            model=self.model, solution_callback=solution_callback
         )
 
         # self.bt.total_end = time.time()
@@ -1077,7 +1134,7 @@ class Model:
         print(f"Branches:        {self.solver.NumBranches()}")
         print(f"Wall time:       {self.solver.WallTime()} s")
         print(f"Objective value: {self.solver.ObjectiveValue()}")
-        print(f"Status:          {self.solver.StatusName()}")
+        print(f"Status:          {self.solver.StatusName(self.status)}")
         print("\n")
 
     # def set_up_model(self, inputs: Inputs) -> None:
