@@ -4,8 +4,6 @@
 from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
 
-# pylint: disable=no-name-in-module
-from ortools.sat.sat_parameters_pb2 import SatParameters  # type: ignore
 from shared.schemas.core import SolverParams, SolveStrategy
 
 from engine.model.add_constraint_factory import AddConstraintFactory
@@ -884,8 +882,8 @@ class Model:
             )
         )
 
-    def build_solver_params(self, params: SolverParams) -> SatParameters:
-        out = SatParameters()
+    def build_solver_params(self, params: SolverParams) -> cp_model.SatParameters:
+        out = cp_model.SatParameters()
 
         out.max_time_in_seconds = params.max_time_in_seconds
         out.num_search_workers = params.num_search_workers
@@ -898,8 +896,15 @@ class Model:
             for subsolver in params.ignore_subsolvers:
                 out.ignore_subsolvers.append(subsolver)
         if params.restart_algorithms:
-            out.restart_algorithms.extend(params.restart_algorithms)
-        # out.restart_algorithms.extend(["LUBY_RESTART"])
+            # OR-Tools 9.15: repeated field expects integer enum values, not strings.
+            # Use sat_parameters_pb2 only as an enum registry (not for construction).
+            import ortools.sat.sat_parameters_pb2 as _pb2  # type: ignore  # noqa: PLC0415
+
+            for ra in params.restart_algorithms:
+                if isinstance(ra, str):
+                    out.restart_algorithms.append(getattr(_pb2.SatParameters, ra))
+                else:
+                    out.restart_algorithms.append(int(ra))
         out.restart_period = params.restart_period
         out.linearization_level = params.linearization_level
         out.cut_level = params.cut_level
@@ -1045,8 +1050,8 @@ class Model:
 
         self.solver.log_callback = log_callback
 
-        self.status = self.solver.Solve(  # type: ignore # [CHECK IF OK]
-            self.model, solution_callback
+        self.status = self.solver.solve(  # type: ignore # [CHECK IF OK]
+            model=self.model, solution_callback=solution_callback
         )
 
         # self.bt.total_end = time.time()
@@ -1077,7 +1082,7 @@ class Model:
         print(f"Branches:        {self.solver.NumBranches()}")
         print(f"Wall time:       {self.solver.WallTime()} s")
         print(f"Objective value: {self.solver.ObjectiveValue()}")
-        print(f"Status:          {self.solver.StatusName()}")
+        print(f"Status:          {self.solver.StatusName(self.status)}")
         print("\n")
 
     # def set_up_model(self, inputs: Inputs) -> None:

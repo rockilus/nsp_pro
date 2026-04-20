@@ -279,7 +279,7 @@ def _apply_work_demand_requests(
                 shifts=shifts,
                 shift_dim_dict=dim_to_attr_value_to_shift,
             )
-        except (ValueError, KeyError, IndexError):
+        except ValueError, KeyError, IndexError:
             continue
 
         # Filter to valid shift IDs

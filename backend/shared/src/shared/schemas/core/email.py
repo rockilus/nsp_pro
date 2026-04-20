@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EmailType(str, Enum):
@@ -84,12 +84,7 @@ class EmailMessage(BaseModel):
     message_id: Optional[str] = Field(default=None, description="SQS message ID")
     retry_count: int = Field(default=0, description="Number of retry attempts")
 
-    # pylint: disable=too-few-public-methods
-    class Config:
-        """Pydantic configuration."""
-
-        use_enum_values = True
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    model_config = ConfigDict(use_enum_values=True)
 
     def to_dict(self) -> dict:
         """

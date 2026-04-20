@@ -135,7 +135,7 @@ class Output:
             }:
                 try:
                     extracted_values[key] = int(value)
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     pass
             elif key in {
                 "walltime",
@@ -145,7 +145,7 @@ class Output:
             }:
                 try:
                     extracted_values[key] = float(value)
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     pass
             else:
                 extracted_values[key] = value  # Keep as string for status & fingerprint

@@ -10,7 +10,7 @@ from __future__ import annotations
 import time
 from typing import Any, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ShiftDemandConcurrencyDTO(BaseModel):
@@ -125,9 +125,8 @@ class MultitaskingGroupDTO(BaseModel):
             raise ValueError(f"Invalid multitasking group type: {v}")
         return v
 
-    # pylint: disable=too-few-public-methods
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "group_123",
                 "type": "shift_demand_template",
@@ -139,6 +138,7 @@ class MultitaskingGroupDTO(BaseModel):
                 "notes": "Example multitasking group for template.",
             }
         }
+    )
 
 
 class CreateMultitaskingGroupRequest(BaseModel):

@@ -41,12 +41,6 @@ class AWSConfig(BaseModel):
         description="DocumentDB credentials secret name",
     )
 
-    class Config:
-        """Pydantic configuration."""
-
-        env_prefix = "AWS_"
-        case_sensitive = False
-
     @classmethod
     def from_environment(cls) -> "AWSConfig":
         """Create AWS config from environment variables.

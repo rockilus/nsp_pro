@@ -6,7 +6,6 @@ Includes conversion to/from core Pydantic models in shared.schemas.core.sqs_mess
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from bson import ObjectId
 from pydantic import BaseModel
 
 from shared.database.schemas.assignment import AssignmentSchema
@@ -114,11 +113,6 @@ class SolveTaskStatusSchema(DocumentBaseSchema):
     error_message: Optional[str] = None
     result: Optional[ResultModelSchema] = None
     solver_output_status: Optional[SolverOutputMetadataSchema] = None
-
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        allow_population_by_field_name = True
 
     @classmethod
     def from_core(cls, core: SolveTaskStatus) -> "SolveTaskStatusSchema":

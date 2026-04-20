@@ -4,7 +4,7 @@ import json
 from typing import Any, Dict, Optional
 
 from botocore.exceptions import BotoCoreError, ClientError
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 from shared.logger import log_error, log_info
 
@@ -20,7 +20,7 @@ class DocumentDBCredentials(BaseModel):
     host: str = Field(..., description="Database host")
     port: str = Field(..., description="Database port")
 
-    @validator("port")
+    @field_validator("port")
     @classmethod
     def validate_port(cls, v: str) -> str:
         """Validate port is a valid number.
@@ -77,12 +77,10 @@ class DocumentDBCredentials(BaseModel):
                 "Invalid credential data format", original_error=e
             ) from e
 
-    # pylint: disable=too-few-public-methods
-    class Config:
-        """Pydantic configuration."""
-
-        # Prevent password from being logged
-        fields = {"password": {"write_only": True}}
+    @field_serializer("password", when_used="json")
+    def _serialize_password(self, v: str) -> str:
+        """Prevent password from being logged in JSON output."""
+        return "***"
 
 
 class SecretsManager:

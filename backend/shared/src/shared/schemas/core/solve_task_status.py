@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Any, Dict, List, Literal, Optional
 
 import humps
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
 from shared.schemas.core.assignment import Assignment
 from shared.schemas.core.breach import Breach
@@ -88,11 +88,7 @@ class SQSSolveMessage(BaseModel):
         default=None, description="Scope for partial campaign solve"
     )
 
-    class Config:
-        """Pydantic configuration."""
-
-        use_enum_values = True
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    model_config = ConfigDict(use_enum_values=True)
 
     def to_dict(self) -> dict:
         """
@@ -160,11 +156,7 @@ class SQSSolveResponse(BaseModel):
         default=None, description="Performance and quality metrics"
     )
 
-    class Config:
-        """Pydantic configuration."""
-
-        use_enum_values = True
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class SQSHealthCheck(BaseModel):
@@ -185,11 +177,6 @@ class SQSHealthCheck(BaseModel):
         default_factory=datetime.utcnow,
         description="When the health check was performed",
     )
-
-    class Config:
-        """Pydantic configuration."""
-
-        json_encoders = {datetime: lambda v: v.isoformat()}
 
 
 class SolveRequestStatus(str, Enum):
@@ -288,9 +275,7 @@ class SolveTaskStatus(BaseModel):
     solver_output_metadata: Optional[SolverOutputMetadata] = None
     id: Optional[str]
 
-    class Config:
-        use_enum_values = True
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    model_config = ConfigDict(use_enum_values=True)
 
     def to_response_dto(
         self, requests_augmented: Optional[List[RequestAugmented]] = None
