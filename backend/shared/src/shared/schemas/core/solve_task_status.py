@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Any, Dict, List, Literal, Optional
 
 import humps
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
 from shared.schemas.core.assignment import Assignment
 from shared.schemas.core.breach import Breach
@@ -83,16 +83,14 @@ class SQSSolveMessage(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc),
         description="When the request was created",
     )
-    message_id: Optional[str] = Field(default=None, description="SQS message ID")
+    message_id: Optional[str] = Field(
+        default=None, description="SQS message ID"
+    )
     solve_scope: Optional[SolveScope] = Field(
         default=None, description="Scope for partial campaign solve"
     )
 
-    class Config:
-        """Pydantic configuration."""
-
-        use_enum_values = True
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    model_config = ConfigDict(use_enum_values=True)
 
     def to_dict(self) -> dict:
         """
@@ -111,7 +109,9 @@ class SQSSolveMessage(BaseModel):
         Create an instance from a dict representation.
         Converts created_at from float timestamp back to datetime.
         """
-        if "created_at" in data and isinstance(data["created_at"], (int, float)):
+        if "created_at" in data and isinstance(
+            data["created_at"], (int, float)
+        ):
             data["created_at"] = datetime.fromtimestamp(
                 data["created_at"], tz=timezone.utc
             )
@@ -160,11 +160,7 @@ class SQSSolveResponse(BaseModel):
         default=None, description="Performance and quality metrics"
     )
 
-    class Config:
-        """Pydantic configuration."""
-
-        use_enum_values = True
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class SQSHealthCheck(BaseModel):
@@ -180,16 +176,13 @@ class SQSHealthCheck(BaseModel):
     queue_messages_delayed: Optional[int] = Field(
         default=None, description="Number of delayed messages"
     )
-    error: Optional[str] = Field(default=None, description="Error message if unhealthy")
+    error: Optional[str] = Field(
+        default=None, description="Error message if unhealthy"
+    )
     timestamp: datetime = Field(
         default_factory=datetime.utcnow,
         description="When the health check was performed",
     )
-
-    class Config:
-        """Pydantic configuration."""
-
-        json_encoders = {datetime: lambda v: v.isoformat()}
 
 
 class SolveRequestStatus(str, Enum):
@@ -227,7 +220,9 @@ class ResultModel(BaseModel):
             assignments=[a.to_dto() for a in self.assignments],
             breaches=[b.to_dto() for b in self.breaches],
             requests=(
-                [r.to_dto() for r in requests_augmented] if requests_augmented else []
+                [r.to_dto() for r in requests_augmented]
+                if requests_augmented
+                else []
             ),
         )
 
@@ -288,9 +283,7 @@ class SolveTaskStatus(BaseModel):
     solver_output_metadata: Optional[SolverOutputMetadata] = None
     id: Optional[str]
 
-    class Config:
-        use_enum_values = True
-        json_encoders = {datetime: lambda v: v.isoformat()}
+    model_config = ConfigDict(use_enum_values=True)
 
     def to_response_dto(
         self, requests_augmented: Optional[List[RequestAugmented]] = None
@@ -299,7 +292,9 @@ class SolveTaskStatus(BaseModel):
         Convert this SolveTaskStatus to a SolveTaskStatusResponseDTO for API responses.
         """
         data = self.model_dump()
-        data["started_at"] = self.started_at.timestamp() if self.started_at else None
+        data["started_at"] = (
+            self.started_at.timestamp() if self.started_at else None
+        )
         data["completed_at"] = (
             self.completed_at.timestamp() if self.completed_at else None
         )

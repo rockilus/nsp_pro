@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from pydantic import Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
 from shared.database.schemas.base import DocumentBaseSchema
 from shared.schemas.core.multitasking import (
@@ -74,8 +74,12 @@ class MultitaskingGroupSchema(DocumentBaseSchema):
             team_id=self.team_id,
             related_ids=list(self.related_ids),
             shift_demand_template_id=self.shift_demand_template_id,
-            created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
-            updated_at=datetime.fromtimestamp(self.updated_at, tz=timezone.utc),
+            created_at=datetime.fromtimestamp(
+                self.created_at, tz=timezone.utc
+            ),
+            updated_at=datetime.fromtimestamp(
+                self.updated_at, tz=timezone.utc
+            ),
             notes=self.notes,
         )
 
@@ -93,9 +97,8 @@ class MultitaskingGroupSchema(DocumentBaseSchema):
             notes=group.notes,
         )
 
-    # pylint: disable=too-few-public-methods
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "group_123",
                 "type": "shift_demand_template",
@@ -107,3 +110,4 @@ class MultitaskingGroupSchema(DocumentBaseSchema):
                 "notes": "Example multitasking group for template.",
             }
         }
+    )

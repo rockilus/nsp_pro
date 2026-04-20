@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 readme = "README.md"
 authors = [ { name = "FelipeKha", email = "felipe.kharaba@icloud.com" } ]
-requires-python = ">=3.13,<=3.14"
+requires-python = ">=3.14"
 dependencies = [
 	"pyhumps>=3.8.0,<4.0.0",
 	"uvicorn>=0.23.2,<1.0.0",
@@ -53,5 +53,5 @@ target-version = "py313"
 # lint.select = ["E", "F", "I", "N", "UP", "PL"]
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 check_untyped_defs = true

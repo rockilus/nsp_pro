@@ -2,7 +2,7 @@ Metadata-Version: 2.4
 Name: shared
 Version: 0.1.403
 Author: Felipe Kharaba
-Requires-Python: <=3.14,>=3.13
+Requires-Python: >=3.13
 Description-Content-Type: text/markdown
 Requires-Dist: loguru<0.8.0,>=0.7.2
 Requires-Dist: mongo-types<0.16.0,>=0.15.1

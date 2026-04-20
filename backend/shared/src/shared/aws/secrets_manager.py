@@ -4,7 +4,7 @@ import json
 from typing import Any, Dict, Optional
 
 from botocore.exceptions import BotoCoreError, ClientError
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 from shared.logger import log_error, log_info
 
@@ -20,7 +20,7 @@ class DocumentDBCredentials(BaseModel):
     host: str = Field(..., description="Database host")
     port: str = Field(..., description="Database port")
 
-    @validator("port")
+    @field_validator("port")
     @classmethod
     def validate_port(cls, v: str) -> str:
         """Validate port is a valid number.
@@ -57,7 +57,9 @@ class DocumentDBCredentials(BaseModel):
                                       or invalid
         """
         required_fields = ["username", "password", "host", "port"]
-        missing_fields = [field for field in required_fields if field not in data]
+        missing_fields = [
+            field for field in required_fields if field not in data
+        ]
 
         if missing_fields:
             raise DocumentDBCredentialsError(
@@ -77,12 +79,10 @@ class DocumentDBCredentials(BaseModel):
                 "Invalid credential data format", original_error=e
             ) from e
 
-    # pylint: disable=too-few-public-methods
-    class Config:
-        """Pydantic configuration."""
-
-        # Prevent password from being logged
-        fields = {"password": {"write_only": True}}
+    @field_serializer("password", when_used="json")
+    def _serialize_password(self, v: str) -> str:
+        """Prevent password from being logged in JSON output."""
+        return "***"
 
 
 class SecretsManager:
@@ -105,7 +105,9 @@ class SecretsManager:
             Configured boto3 Secrets Manager client
         """
         if self._client is None:
-            self._client = self.aws_config.create_boto3_client("secretsmanager")
+            self._client = self.aws_config.create_boto3_client(
+                "secretsmanager"
+            )
         return self._client
 
     def get_secret(self, secret_name: str) -> str:
@@ -134,7 +136,9 @@ class SecretsManager:
 
         except (BotoCoreError, ClientError) as e:
             error_code = (
-                getattr(e, "response", {}).get("Error", {}).get("Code", "Unknown")
+                getattr(e, "response", {})
+                .get("Error", {})
+                .get("Code", "Unknown")
             )
             log_error(f"AWS error retrieving secret: {error_code}")
 
@@ -195,7 +199,9 @@ class SecretsManager:
             credentials_dict = self.get_secret_dict(secret_name)
             credentials = DocumentDBCredentials.from_dict(credentials_dict)
 
-            log_info("DocumentDB credentials retrieved and validated successfully")
+            log_info(
+                "DocumentDB credentials retrieved and validated successfully"
+            )
             return credentials
 
         except SecretsManagerError as e:

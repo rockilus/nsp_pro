@@ -17,7 +17,9 @@ class AWSConfig(BaseModel):
     """AWS configuration settings."""
 
     region: str = Field(default="eu-west-3", description="AWS region")
-    aws_access_key_id: Optional[str] = Field(None, description="AWS access key ID")
+    aws_access_key_id: Optional[str] = Field(
+        None, description="AWS access key ID"
+    )
     aws_secret_access_key: Optional[str] = Field(
         None, description="AWS secret access key"
     )
@@ -40,12 +42,6 @@ class AWSConfig(BaseModel):
         # default="rockilus/prod/documentdb/credentials",
         description="DocumentDB credentials secret name",
     )
-
-    class Config:
-        """Pydantic configuration."""
-
-        env_prefix = "AWS_"
-        case_sensitive = False
 
     @classmethod
     def from_environment(cls) -> "AWSConfig":
@@ -120,7 +116,9 @@ class AWSConfig(BaseModel):
 
         except (BotoCoreError, ClientError) as e:
             error_code = (
-                getattr(e, "response", {}).get("Error", {}).get("Code", "Unknown")
+                getattr(e, "response", {})
+                .get("Error", {})
+                .get("Code", "Unknown")
             )
             log_error(
                 f"Failed to retrieve AWS credentials from boto3 session: {error_code}"

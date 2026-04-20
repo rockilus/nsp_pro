@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 readme = "README.md"
 authors = [ { name = "Felipe Kharaba" } ]
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
 	"pydantic>=2.10.6,<3.0.0",
 	"shared",
@@ -45,7 +45,7 @@ target-version = "py313"
 
 [tool.mypy]
 # Global settings for this service
-python_version = "3.13"
+python_version = "3.14"
 ignore_missing_imports = true
 check_untyped_defs = true
 

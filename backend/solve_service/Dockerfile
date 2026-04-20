@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 # Install `uv`
 # The installer requires curl (and certificates) to download the release archive

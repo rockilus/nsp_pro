@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any, Dict, Optional, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -13,9 +12,6 @@ class BaseSchema(BaseModel):
         populate_by_name=True,
         validate_assignment=True,
         arbitrary_types_allowed=True,
-        json_encoders={
-            datetime: lambda dt: dt.isoformat(),
-        },
     )
 
     @classmethod

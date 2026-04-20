@@ -10,7 +10,7 @@ from __future__ import annotations
 import time
 from typing import Any, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ShiftDemandConcurrencyDTO(BaseModel):
@@ -27,7 +27,9 @@ class ShiftDemandConcurrencyResponseDTO(BaseModel):  # OK
     """Response containing all shift demand concurrency data for a period."""
 
     teamId: str = Field(..., description="Team ID")
-    startDate: int = Field(..., description="Period start date (Unix timestamp)")
+    startDate: int = Field(
+        ..., description="Period start date (Unix timestamp)"
+    )
     endDate: int = Field(..., description="Period end date (Unix timestamp)")
     concurrencyList: List[ShiftDemandConcurrencyDTO] = Field(
         default_factory=list,
@@ -87,7 +89,9 @@ class MultitaskingGroupDTO(BaseModel):
     DTO for multitasking group, supporting shift demands, templates, and assignments.
     """
 
-    id: Optional[str] = Field(default=None, description="Multitasking group ID")
+    id: Optional[str] = Field(
+        default=None, description="Multitasking group ID"
+    )
     type: str = Field(
         ...,
         description="Type of multitasking group (shift_demand, "
@@ -103,7 +107,9 @@ class MultitaskingGroupDTO(BaseModel):
         description="ID of the associated shift demand template, if applicable",
     )
     createdAt: int = Field(..., description="Creation timestamp (Unix epoch)")
-    updatedAt: int = Field(..., description="Last update timestamp (Unix epoch)")
+    updatedAt: int = Field(
+        ..., description="Last update timestamp (Unix epoch)"
+    )
     notes: Optional[str] = Field(default=None, description="Optional notes")
 
     @field_validator("relatedIds")
@@ -125,9 +131,8 @@ class MultitaskingGroupDTO(BaseModel):
             raise ValueError(f"Invalid multitasking group type: {v}")
         return v
 
-    # pylint: disable=too-few-public-methods
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "id": "group_123",
                 "type": "shift_demand_template",
@@ -139,6 +144,7 @@ class MultitaskingGroupDTO(BaseModel):
                 "notes": "Example multitasking group for template.",
             }
         }
+    )
 
 
 class CreateMultitaskingGroupRequest(BaseModel):
@@ -206,7 +212,9 @@ class UpdateMultitaskingGroupRequest(BaseModel):
 
     @field_validator("relatedIds")
     @classmethod
-    def validate_related_ids(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+    def validate_related_ids(
+        cls, v: Optional[List[str]]
+    ) -> Optional[List[str]]:
         if v is not None and len(set(v)) < 2:
             raise ValueError("relatedIds must have at least 2 unique items")
         return list(set(v)) if v is not None else v
