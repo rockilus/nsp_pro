@@ -74,12 +74,8 @@ class MultitaskingGroupSchema(DocumentBaseSchema):
             team_id=self.team_id,
             related_ids=list(self.related_ids),
             shift_demand_template_id=self.shift_demand_template_id,
-            created_at=datetime.fromtimestamp(
-                self.created_at, tz=timezone.utc
-            ),
-            updated_at=datetime.fromtimestamp(
-                self.updated_at, tz=timezone.utc
-            ),
+            created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
+            updated_at=datetime.fromtimestamp(self.updated_at, tz=timezone.utc),
             notes=self.notes,
         )
 
