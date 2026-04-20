@@ -124,7 +124,7 @@ def _validate_ca_content(content: bytes) -> bool:
             and "-----END CERTIFICATE-----" in content_str
             and len(content_str) > 1000  # Reasonable minimum size
         )
-    except (UnicodeDecodeError, ValueError):
+    except UnicodeDecodeError, ValueError:
         return False
 
 
@@ -167,7 +167,7 @@ def download_documentdb_ca_bundle(
         if not os.path.exists(dir_path):
             try:
                 os.makedirs(dir_path, exist_ok=True)
-            except (OSError, PermissionError):
+            except OSError, PermissionError:
                 print(f"Cannot create directory {dir_path}, using temp")
                 ca_bundle_path = os.path.join(
                     tempfile.gettempdir(), "global-bundle.pem"
