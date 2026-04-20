@@ -6,7 +6,11 @@ import { AssignmentT, AssignmentsRecurrencesResultT } from '../types/assignment'
 import { RecurrenceRuleT, RecurrenceUpdateScope } from '../types/recurrence';
 import { ReplacementCandidateT } from '../types/replacement';
 // API Client
-import { AssignmentApi } from '../app/lib/api/assignmentApi';
+import {
+  AssignmentApi,
+  BulkCreateCellPayload,
+  SelectionIntentPayload,
+} from '../app/lib/api/assignmentApi';
 import { useApiClient } from '../app/lib/api-client';
 // Auth Context
 import { useAuth } from '../contexts/auth-context';
@@ -331,12 +335,25 @@ export function useBulkCreateAssignments() {
   const queryClient = useQueryClient();
 
   const bulkCreateAssignments = useCallback(
-    async (assignments: AssignmentT[], teamId: string): Promise<AssignmentsRecurrencesResultT> => {
+    async (
+      cells: BulkCreateCellPayload[],
+      entityId: string,
+      groupBy: 'shift' | 'worker',
+      teamId: string,
+      intent?: SelectionIntentPayload,
+    ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
       if (!isAuthenticated || !user?.id_token)
         throw new Error('User not authenticated - please sign in');
 
-      const result = await AssignmentApi.bulkCreateAssignments(apiClient, assignments, teamId);
+      const result = await AssignmentApi.bulkCreateAssignments(
+        apiClient,
+        cells,
+        entityId,
+        groupBy,
+        teamId,
+        intent,
+      );
       queryClient.invalidateQueries({
         queryKey: assignmentsQueryKeys.teams(teamId),
       });
@@ -357,12 +374,25 @@ export function useBulkUpdateAssignments() {
   const queryClient = useQueryClient();
 
   const bulkUpdateAssignments = useCallback(
-    async (assignments: AssignmentT[], teamId: string): Promise<AssignmentsRecurrencesResultT> => {
+    async (
+      assignmentIds: string[],
+      entityId: string,
+      groupBy: 'shift' | 'worker',
+      teamId: string,
+      intent?: SelectionIntentPayload,
+    ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
       if (!isAuthenticated || !user?.id_token)
         throw new Error('User not authenticated - please sign in');
 
-      const result = await AssignmentApi.bulkUpdateAssignments(apiClient, assignments, teamId);
+      const result = await AssignmentApi.bulkUpdateAssignments(
+        apiClient,
+        assignmentIds,
+        entityId,
+        groupBy,
+        teamId,
+        intent,
+      );
       queryClient.invalidateQueries({
         queryKey: assignmentsQueryKeys.teams(teamId),
       });
@@ -375,6 +405,36 @@ export function useBulkUpdateAssignments() {
 }
 
 /**
+ * Hook for bulk toggling the fixed status of assignments
+ */
+export function useBulkToggleFixed() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+  const queryClient = useQueryClient();
+
+  const bulkToggleFixed = useCallback(
+    async (
+      assignmentIds: string[],
+      teamId: string,
+      intent?: SelectionIntentPayload,
+    ): Promise<AssignmentsRecurrencesResultT> => {
+      if (loading) throw new Error('Authentication still loading - please wait');
+      if (!isAuthenticated || !user?.id_token)
+        throw new Error('User not authenticated - please sign in');
+
+      const result = await AssignmentApi.bulkToggleFixed(apiClient, assignmentIds, teamId, intent);
+      queryClient.invalidateQueries({
+        queryKey: assignmentsQueryKeys.teams(teamId),
+      });
+      return result;
+    },
+    [apiClient, isAuthenticated, loading, user, queryClient],
+  );
+
+  return bulkToggleFixed;
+}
+
+/**
  * Hook for bulk deleting assignments
  */
 export function useBulkDeleteAssignments() {
@@ -383,12 +443,21 @@ export function useBulkDeleteAssignments() {
   const queryClient = useQueryClient();
 
   const bulkDeleteAssignments = useCallback(
-    async (assignmentIds: string[], teamId: string): Promise<AssignmentsRecurrencesResultT> => {
+    async (
+      assignmentIds: string[],
+      teamId: string,
+      intent?: SelectionIntentPayload,
+    ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
       if (!isAuthenticated || !user?.id_token)
         throw new Error('User not authenticated - please sign in');
 
-      const result = await AssignmentApi.bulkDeleteAssignments(apiClient, assignmentIds, teamId);
+      const result = await AssignmentApi.bulkDeleteAssignments(
+        apiClient,
+        assignmentIds,
+        teamId,
+        intent,
+      );
       queryClient.invalidateQueries({
         queryKey: assignmentsQueryKeys.teams(teamId),
       });

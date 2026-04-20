@@ -144,6 +144,15 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Override the default test API client to act as a specific user.
+   * Useful in tests where subsequent helper calls should be performed
+   * using the team's owner/leader identity.
+   */
+  setTestApiClientUser(userId: string): void {
+    this.testApiClient = this.createAuthenticatedClientForUser(userId);
+  }
+
+  /**
    * Make an authenticated request to the API
    * This is a convenience method for test scenarios where direct API calls are needed
    * and there's no existing API wrapper method
@@ -643,18 +652,21 @@ export class DatabaseTestUtils {
   /**
    * Create a worker using the existing WorkerApi for consistent behavior
    */
-  async createWorker(workerData: {
-    teamId: string;
-    name: string;
-    acronym?: string;
-    employmentStartDate?: Date;
-    employmentEndDate?: Date | null;
-    weeklyHours?: number;
-    weeklyHoursDesired?: number;
-    dutiesPerMonth?: number;
-    annualLeave?: number;
-    specialtyIds?: string[];
-  }): Promise<WorkerT> {
+  async createWorker(
+    workerData: {
+      teamId: string;
+      name: string;
+      acronym?: string;
+      employmentStartDate?: Date;
+      employmentEndDate?: Date | null;
+      weeklyHours?: number;
+      weeklyHoursDesired?: number;
+      dutiesPerMonth?: number;
+      annualLeave?: number;
+      specialtyIds?: string[];
+    },
+    actingUserId?: string,
+  ): Promise<WorkerT> {
     try {
       // Create a WorkerT object with defaults
       const worker: WorkerT = {
@@ -679,8 +691,13 @@ export class DatabaseTestUtils {
         attributes: [],
       };
 
-      // Use the existing WorkerApi with our test client
-      const result: WorkerT = await WorkerApi.addWorker(this.testApiClient, worker);
+      // Use the existing WorkerApi with either the acting user (if provided)
+      // or the default test client.
+      const apiClient = actingUserId
+        ? this.createAuthenticatedClientForUser(actingUserId)
+        : this.testApiClient;
+
+      const result: WorkerT = await WorkerApi.addWorker(apiClient, worker);
 
       return result;
     } catch (error) {
@@ -827,20 +844,23 @@ export class DatabaseTestUtils {
   /**
    * Create a shift using the existing ShiftApi for consistent behavior
    */
-  async createShift(shiftData: {
-    teamId: string;
-    name: string;
-    startTime: dayjs.Dayjs;
-    endTime: dayjs.Dayjs;
-    shiftType: ShiftType;
-    staffing?: StaffingT[];
-    restType?: ShiftRestType;
-    leaveType?: ShiftLeaveType;
-    color?: string;
-    acronym?: string;
-    recuperationTime?: number;
-    recuperationDutyId?: string | null;
-  }): Promise<ShiftT> {
+  async createShift(
+    shiftData: {
+      teamId: string;
+      name: string;
+      startTime: dayjs.Dayjs;
+      endTime: dayjs.Dayjs;
+      shiftType: ShiftType;
+      staffing?: StaffingT[];
+      restType?: ShiftRestType;
+      leaveType?: ShiftLeaveType;
+      color?: string;
+      acronym?: string;
+      recuperationTime?: number;
+      recuperationDutyId?: string | null;
+    },
+    actingUserId?: string,
+  ): Promise<ShiftT> {
     try {
       const shift: ShiftT = {
         id: '', // Will be set by the API
@@ -861,8 +881,14 @@ export class DatabaseTestUtils {
         attributes: [],
       };
 
-      // Use the existing ShiftApi with our test client
-      const result: ShiftT = await ShiftApi.addShift(this.testApiClient, shift);
+      // Use the existing ShiftApi with either the acting user (if provided)
+      // or the default test client. This allows tests to create shifts as the
+      // team owner/leader when needed (so Cerbos authorization passes).
+      const apiClient = actingUserId
+        ? this.createAuthenticatedClientForUser(actingUserId)
+        : this.testApiClient;
+
+      const result: ShiftT = await ShiftApi.addShift(apiClient, shift);
 
       return result;
     } catch (error) {

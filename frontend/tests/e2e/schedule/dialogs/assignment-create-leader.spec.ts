@@ -54,11 +54,11 @@ test.describe('Assignment Creation - Team Leader', () => {
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
 
-    // Open dialog (implementation may vary - adjust selector as needed)
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible({ timeout: 5000 });
+    // Open dialog via cell add button (visible on hover in the schedule table)
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
 
-    await addButton.click();
+    await addButton.click({ force: true });
 
     // Verify Assignment type is selected by default or select it
     const assignmentButton = page.locator('[data-testid="assignment-button"]');
@@ -120,10 +120,9 @@ test.describe('Assignment Creation - Team Leader', () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testShifts = scheduleTestBase.getTestShifts();
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible({ timeout: 5000 });
-
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     const assignmentButton = page.locator('[data-testid="assignment-button"]');
     if (await assignmentButton.isVisible()) {
@@ -164,10 +163,13 @@ test.describe('Assignment Creation - Team Leader', () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible({ timeout: 5000 });
+    const workerButton = page.locator('[data-testid="data-view-worker-button"]');
+    await workerButton.click();
+    await page.waitForTimeout(500);
 
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     const assignmentButton = page.locator('[data-testid="assignment-button"]');
     if (await assignmentButton.isVisible()) {
@@ -208,10 +210,9 @@ test.describe('Assignment Creation - Team Leader', () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible({ timeout: 5000 });
-
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Close dialog without creating
     const closeButton = page.locator('[data-testid="close-dialog-button"]');
@@ -240,10 +241,9 @@ test.describe('Assignment Creation - Team Leader', () => {
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]');
-    await expect(addButton).toBeVisible({ timeout: 5000 });
-
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     const assignmentButton = page.locator('[data-testid="assignment-button"]');
     if (await assignmentButton.isVisible()) {

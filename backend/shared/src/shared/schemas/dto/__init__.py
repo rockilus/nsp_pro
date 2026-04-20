@@ -3,7 +3,9 @@ from shared.schemas.dto.assignment import (
     AssignmentsRecurrencesResultDTO,
     BulkAssignmentCreateDTO,
     BulkAssignmentDeleteDTO,
+    BulkAssignmentToggleFixedDTO,
     BulkAssignmentUpdateDTO,
+    SelectionIntentDTO,
 )
 from shared.schemas.dto.attribute import AttributeDTO
 from shared.schemas.dto.breach import BreachDTO
@@ -93,7 +95,9 @@ __all__ = [
     "AssignmentsRecurrencesResultDTO",
     "BulkAssignmentCreateDTO",
     "BulkAssignmentDeleteDTO",
+    "BulkAssignmentToggleFixedDTO",
     "BulkAssignmentUpdateDTO",
+    "SelectionIntentDTO",
     "AttributeDTO",
     "BreachDTO",
     "BlockDTO",

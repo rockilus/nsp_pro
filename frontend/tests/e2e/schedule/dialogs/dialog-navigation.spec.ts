@@ -67,11 +67,9 @@ test.describe('ScheduleItemDialog Navigation', () => {
 
     // Try to find and click a schedule cell or add button
     // This is a placeholder - adjust based on actual schedule page structure
-    const addButton = page.locator('[data-testid="create-assignment-button"]').first();
-
-    // Assert button is visible - test will fail if not found
-    await expect(addButton).toBeVisible();
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Verify dialog opens
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
@@ -84,11 +82,9 @@ test.describe('ScheduleItemDialog Navigation', () => {
     const testRunId = (testInfo as any).testRunId as string;
 
     // Open dialog in CREATE mode (implementation-specific)
-    const addButton = page.locator('[data-testid="create-assignment-button"]').first();
-
-    // Assert button is visible - test will fail if not found
-    await expect(addButton).toBeVisible();
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Verify type toggle buttons are visible
     const assignmentButton = page.locator('[data-testid="assignment-button"]');
@@ -105,11 +101,9 @@ test.describe('ScheduleItemDialog Navigation', () => {
   test('should switch between Assignment/Demand/Request types', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]').first();
-
-    // Assert button is visible - test will fail if not found
-    await expect(addButton).toBeVisible();
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Click Demand button
     const demandButton = page.locator('[data-testid="demand-button"]');
@@ -141,11 +135,9 @@ test.describe('ScheduleItemDialog Navigation', () => {
   test('should close dialog when clicking close button', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]').first();
-
-    // Assert button is visible - test will fail if not found
-    await expect(addButton).toBeVisible();
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Verify dialog is open
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
@@ -164,11 +156,9 @@ test.describe('ScheduleItemDialog Navigation', () => {
   test('should close dialog when pressing ESC key', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
 
-    const addButton = page.locator('[data-testid="create-assignment-button"]').first();
-
-    // Assert button is visible - test will fail if not found
-    await expect(addButton).toBeVisible();
-    await addButton.click();
+    const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
+    await addButton.waitFor({ state: 'attached', timeout: 5000 });
+    await addButton.click({ force: true });
 
     // Verify dialog is open
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');

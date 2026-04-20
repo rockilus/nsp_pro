@@ -7,7 +7,6 @@ import utc from 'dayjs/plugin/utc';
 import {
   AssignmentT,
   fromAssignmentT,
-  toAssignmentT,
   AssignmentsRecurrencesResultT,
   toAssignmentsRecurrencesResultT,
 } from '../../../types/assignment';
@@ -20,6 +19,34 @@ import { ReplacementCandidateT, toReplacementCandidateT } from '../../../types/r
 import { BaseApi, AuthenticatedApiClient } from './baseApi';
 
 dayjs.extend(utc);
+
+/**
+ * A single (row, date) cell selected for bulk assignment creation.
+ * ``rowId`` is a shift ID when ``groupBy="shift"`` or a worker ID when
+ * ``groupBy="worker"``.
+ */
+export interface BulkCreateCellPayload {
+  rowId: string;
+  date: dayjs.Dayjs;
+}
+
+/**
+ * Implicit campaign-scope selection criteria sent to the backend.
+ * Exactly one of selectedRowWorkerIds / selectedRowShiftIds is populated
+ * (depending on the current groupBy setting). An empty list means
+ * "all rows in the campaign".
+ */
+export interface SelectionIntentPayload {
+  campaignId: string;
+  /** empty = all workers; populated in worker-view row selection */
+  selectedRowWorkerIds: string[];
+  /** empty = all shifts; populated in shift-view row selection */
+  selectedRowShiftIds: string[];
+  /** IDs of individual assignments deselected from the implicit set */
+  excludedAssignmentIds: string[];
+  /** Empty cells (no existing assignment) deselected by the user; used by bulk-create only */
+  excludedCells: { rowId: string; date: string }[];
+}
 
 export class AssignmentApi extends BaseApi {
   /**
@@ -182,18 +209,42 @@ export class AssignmentApi extends BaseApi {
    */
   static async bulkCreateAssignments(
     apiClient: AuthenticatedApiClient,
-    assignments: AssignmentT[],
+    cells: BulkCreateCellPayload[],
+    entityId: string,
+    groupBy: 'shift' | 'worker',
     teamId: string,
+    intent?: SelectionIntentPayload,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
       throw new Error('Team ID is required');
+    }
+
+    const body: Record<string, unknown> = {
+      cells: cells.map((c) => ({
+        row_id: c.rowId,
+        date: c.date.unix(),
+      })),
+      entity_id: entityId,
+      group_by: groupBy,
+    };
+    if (intent) {
+      body.intent = {
+        campaign_id: intent.campaignId,
+        selected_row_worker_ids: intent.selectedRowWorkerIds,
+        selected_row_shift_ids: intent.selectedRowShiftIds,
+        excluded_assignment_ids: intent.excludedAssignmentIds,
+        excluded_cells: intent.excludedCells.map((c) => ({
+          row_id: c.rowId,
+          date: dayjs.utc(c.date).unix(),
+        })),
+      };
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
       'post',
       `/assignments/bulk/teams/${teamId}`,
-      { assignments: assignments.map(fromAssignmentT) },
+      body,
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }
@@ -203,18 +254,67 @@ export class AssignmentApi extends BaseApi {
    */
   static async bulkUpdateAssignments(
     apiClient: AuthenticatedApiClient,
-    assignments: AssignmentT[],
+    assignmentIds: string[],
+    entityId: string,
+    groupBy: 'shift' | 'worker',
     teamId: string,
+    intent?: SelectionIntentPayload,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
       throw new Error('Team ID is required');
+    }
+
+    const body: Record<string, unknown> = {
+      assignment_ids: assignmentIds,
+      entity_id: entityId,
+      group_by: groupBy,
+    };
+    if (intent) {
+      body.intent = {
+        campaign_id: intent.campaignId,
+        selected_row_worker_ids: intent.selectedRowWorkerIds,
+        selected_row_shift_ids: intent.selectedRowShiftIds,
+        excluded_assignment_ids: intent.excludedAssignmentIds,
+      };
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
       'put',
       `/assignments/bulk/teams/${teamId}`,
-      { assignments: assignments.map(fromAssignmentT) },
+      body,
+    );
+    return toAssignmentsRecurrencesResultT(responseData);
+  }
+
+  /**
+   * Bulk toggle fixed status of assignments (authenticated)
+   */
+  static async bulkToggleFixed(
+    apiClient: AuthenticatedApiClient,
+    assignmentIds: string[],
+    teamId: string,
+    intent?: SelectionIntentPayload,
+  ): Promise<AssignmentsRecurrencesResultT> {
+    if (!teamId) {
+      throw new Error('Team ID is required');
+    }
+
+    const body: Record<string, unknown> = { assignment_ids: assignmentIds };
+    if (intent) {
+      body.intent = {
+        campaign_id: intent.campaignId,
+        selected_row_worker_ids: intent.selectedRowWorkerIds,
+        selected_row_shift_ids: intent.selectedRowShiftIds,
+        excluded_assignment_ids: intent.excludedAssignmentIds,
+      };
+    }
+
+    const responseData = await this.makeRequest<any>(
+      apiClient,
+      'post',
+      `/assignments/bulk/toggle-fixed/teams/${teamId}`,
+      body,
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }
@@ -226,16 +326,27 @@ export class AssignmentApi extends BaseApi {
     apiClient: AuthenticatedApiClient,
     assignmentIds: string[],
     teamId: string,
+    intent?: SelectionIntentPayload,
   ): Promise<AssignmentsRecurrencesResultT> {
     if (!teamId) {
       throw new Error('Team ID is required');
+    }
+
+    const body: Record<string, unknown> = { ids: assignmentIds };
+    if (intent) {
+      body.intent = {
+        campaign_id: intent.campaignId,
+        selected_row_worker_ids: intent.selectedRowWorkerIds,
+        selected_row_shift_ids: intent.selectedRowShiftIds,
+        excluded_assignment_ids: intent.excludedAssignmentIds,
+      };
     }
 
     const responseData = await this.makeRequest<any>(
       apiClient,
       'delete',
       `/assignments/bulk/teams/${teamId}`,
-      { ids: assignmentIds },
+      body,
     );
     return toAssignmentsRecurrencesResultT(responseData);
   }

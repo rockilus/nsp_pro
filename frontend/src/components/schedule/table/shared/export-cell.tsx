@@ -223,16 +223,27 @@ export default function ExportCell({
   }, [isSelectionActive, selectionScope, scheduleCampaign, periodDates]);
 
   const isAllSelected = useMemo(() => {
-    if (!rowIds?.length || !targetDates.length) return false;
+    if (!rowIds?.length) return false;
+    // Campaign scope: derive from intent — all rows are selected when selectedRowIds is empty
+    if (selectionScope === 'campaign' && selectionState?.campaignIntent) {
+      return selectionState.campaignIntent.selectedRowIds.length === 0;
+    }
+    if (!targetDates.length) return false;
     return rowIds.every((rowId) =>
       targetDates.every((date) =>
         selectionState?.selectedCells.some((c) => c.rowId === rowId && c.date === date),
       ),
     );
-  }, [rowIds, targetDates, selectionState]);
+  }, [rowIds, targetDates, selectionScope, selectionState]);
 
   const isSomeSelected = useMemo(() => {
-    if (!rowIds?.length || !targetDates.length) return false;
+    if (!rowIds?.length) return false;
+    // Campaign scope: derive from intent
+    if (selectionScope === 'campaign' && selectionState?.campaignIntent) {
+      // Some rows selected but not all
+      return selectionState.campaignIntent.selectedRowIds.length > 0;
+    }
+    if (!targetDates.length) return false;
     const hasSomeCell = rowIds.some((rowId) =>
       targetDates.some((date) =>
         selectionState?.selectedCells.some((c) => c.rowId === rowId && c.date === date),
@@ -240,7 +251,7 @@ export default function ExportCell({
     );
     const hasSomeAssignment = (selectionState?.selectedAssignmentIds.length ?? 0) > 0;
     return (hasSomeCell || hasSomeAssignment) && !isAllSelected;
-  }, [rowIds, targetDates, selectionState, isAllSelected]);
+  }, [rowIds, targetDates, selectionScope, selectionState, isAllSelected]);
 
   const handleSelectAllChange = () => {
     if (isAllSelected) {
