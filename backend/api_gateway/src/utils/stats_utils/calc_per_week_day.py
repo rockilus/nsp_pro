@@ -43,14 +43,18 @@ def calc_stats_per_week(
     nb_days: bool = False,
     rest_days: bool = False,
 ) -> Tuple[np.ndarray, Dict[Tuple[int, int], int]]:
-    # Get the year and week number for each date
-    year_week_numbers = np.array([(d.year, d.isocalendar()[1]) for d in dates])
+    # Get the ISO year and week number for each date (use ISO year to handle year-boundary weeks correctly)
+    year_week_numbers = np.array(
+        [(d.isocalendar()[0], d.isocalendar()[1]) for d in dates]
+    )
 
     # Get the unique year-week number pairs
     unique_year_week_numbers = np.unique(year_week_numbers, axis=0)
 
     # Sum the shifts for each worker for each unique year-week number pair
-    out = np.zeros((a_array.shape[0], len(unique_year_week_numbers)), dtype=int)
+    out = np.zeros(
+        (a_array.shape[0], len(unique_year_week_numbers)), dtype=int
+    )
     for i, year_week_number in enumerate(unique_year_week_numbers):
         # Get a mask of the dates that are in the current year and week
         mask = np.all(year_week_numbers == year_week_number, axis=1)
