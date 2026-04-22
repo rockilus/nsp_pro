@@ -17,6 +17,10 @@
   height: 20px;
 }
 
+.column-header.week {
+  font-size: 0.75rem;
+}
+
 .column-header-custom-info {
   display: flex;
   flex-direction: column;

@@ -235,7 +235,9 @@ export default function StatsTable({
                 }}
               >
                 <div className="column-header-container">
-                  <span className={`column-header ${quickStats ? 'quick-stats' : ''}`}>
+                  <span
+                    className={`column-header ${quickStats ? 'quick-stats' : ''} ${header.headerUnit === HeaderUnitOptions.WEEK ? 'week' : ''}`}
+                  >
                     {header.headerUnit === HeaderUnitOptions.SHIFT
                       ? shifts.find((s) => s.id === header.value)?.name
                       : translateHeaderValue(header.value)}
