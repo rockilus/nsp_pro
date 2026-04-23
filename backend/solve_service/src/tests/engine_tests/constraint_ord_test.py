@@ -592,29 +592,47 @@ class TestConstraintOrdWithFixture:
 
         assert outputs.is_solution is True
 
-        # Check that for each demand for a duty shift on a friday:
-        # - A duty is assigned
-        # - The worker assigned is assigned an off shift the day before
-        for demand in ei_scoped.shift_demands:
-            if demand.shift_id == "s_duty" and demand.date.weekday() == 4:
-                a_duty = next(
-                    (
-                        a
-                        for a in outputs.assignments
-                        if a.date == demand.date and a.shift_id == "s_duty"
-                    ),
-                    None,
-                )
-                assert a_duty is not None
+        # Find all duty demands that fall on a Friday inside the campaign
+        friday_demands = [
+            d
+            for d in ei_scoped.shift_demands
+            if d.shift_id == "s_duty"
+            and d.date.weekday() == 4
+            and ei_scoped.schedule.start_date
+            <= d.date
+            <= ei_scoped.schedule.end_date
+            and ei_scoped.schedule.start_date
+            <= d.date - timedelta(days=1)
+            <= ei_scoped.schedule.end_date
+        ]
 
-                a_off = next(
-                    (
-                        a
-                        for a in outputs.assignments
-                        if a.worker_id == a_duty.worker_id
-                        and a.date == demand.date - timedelta(days=1)
-                        and a.shift_id == "s_off"
-                    ),
-                    None,
-                )
-                assert a_off is not None
+        # Ensure our test campaign contains at least one such demand
+        assert (
+            len(friday_demands) > 0
+        ), "Test campaign contains no Friday duty demands with the previous day also in the campaign"
+
+        # Check that the Friday demand and the previous day are inside the campaign
+        for demand in friday_demands:
+            # For each validated demand: a duty should be assigned and the same worker
+            # should have an off shift the day before
+            a_duty = next(
+                (
+                    a
+                    for a in outputs.assignments
+                    if a.date == demand.date and a.shift_id == "s_duty"
+                ),
+                None,
+            )
+            assert a_duty is not None
+
+            a_off = next(
+                (
+                    a
+                    for a in outputs.assignments
+                    if a.worker_id == a_duty.worker_id
+                    and a.date == prev_day
+                    and a.shift_id == "s_off"
+                ),
+                None,
+            )
+            assert a_off is not None
