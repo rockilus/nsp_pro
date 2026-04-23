@@ -25,9 +25,9 @@ from shared.schemas.core.notification_preferences import NotificationKey
 from src.config import config
 from src.services.base_service import BaseService
 from src.services.notification_builders import (
-    campaign_request_deadline_updated_event,
     campaign_request_deadline_reminder_event,
     campaign_request_deadline_set_event,
+    campaign_request_deadline_updated_event,
     swap_ready_for_review_event,
     user_accepted_direct_swap_event,
     user_accepted_request_event,

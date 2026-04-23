@@ -1,5 +1,7 @@
-from cerbos.engine.v1.engine_pb2 import Principal  # type: ignore[import]
-from cerbos.engine.v1.engine_pb2 import Resource  # type: ignore[import]
+from cerbos.engine.v1.engine_pb2 import (
+    Principal,  # type: ignore[import]
+    Resource,  # type: ignore[import]
+)
 from cerbos.sdk.grpc.client import AsyncCerbosClient  # type: ignore[import]
 from shared.database.repositories.team_membership import (  # type: ignore
     TeamMembershipRepository,

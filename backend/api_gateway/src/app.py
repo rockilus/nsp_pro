@@ -7,7 +7,6 @@ from shared.logger import log_middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.config import config
-
 from src.routes import (
     router_admin,
     router_assignment,

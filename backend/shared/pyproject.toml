@@ -36,3 +36,15 @@ include = ["shared*"]
 dev = [
     "ruff>=0.15.8",
 ]
+
+[tool.ruff]
+line-length = 88
+target-version = "py314"
+lint.extend-select = ["I"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known_first_party = ["shared"]
+combine_as_imports = true
+multi_line_output = 3

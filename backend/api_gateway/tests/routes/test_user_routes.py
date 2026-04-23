@@ -25,7 +25,6 @@ from shared.schemas.core.worker import Worker
 
 from .conftest import dev_headers, make_app
 
-
 # ---------------------------------------------------------------------------
 # Seed helpers
 # ---------------------------------------------------------------------------

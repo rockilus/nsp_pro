@@ -1,5 +1,5 @@
-import time
 import inspect
+import time
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,8 +14,10 @@ from shared.schemas.dto import (
 
 from src.dependencies import get_team_service, get_user_context
 from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
-from src.errors import NotAuthorizedError  # MessageTypeError,
-from src.errors import handle_routes_errors
+from src.errors import (
+    NotAuthorizedError,  # MessageTypeError,
+    handle_routes_errors,
+)
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
