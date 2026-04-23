@@ -170,6 +170,7 @@ def core_to_engine_inputs(
         _scope_ctx = preprocess_scope(
             scope=solve_scope,
             workers_not_deleted=workers_not_deleted,
+            dates_campaign=dates_campaign,
             shifts_not_deleted=shifts_not_deleted,
             demands=engine_inputs.shift_demands,
             var_model=variables.assignments,
