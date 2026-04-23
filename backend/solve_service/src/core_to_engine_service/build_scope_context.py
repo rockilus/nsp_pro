@@ -5,6 +5,8 @@ Scope pre-processing for partial campaign solves.
 `apply_scope_mutations` applies the derived ScopeContext to engine_inputs in-place.
 """
 
+from datetime import date
+
 from shared.schemas.core import (
     Assignment,
     Shift,
@@ -182,6 +184,7 @@ def _build_scope_context(
 def preprocess_scope(
     scope: SolveScope,
     workers_not_deleted: list[Worker],
+    dates_campaign: list[date],
     shifts_not_deleted: list[Shift],
     demands: list[ShiftDemandNew],
     var_model: list[tuple[str, str, str]],
@@ -235,6 +238,22 @@ def preprocess_scope(
         variables = variables | _expand_to_workers(
             {(s_id, d) for s_id in recup_ids for d in duty_dates_in_scope}, W
         )
+
+    # OFF shifts addendum — include OFF/rest shifts for all in-scope dates and
+    # workers so that workers can be explicitly assigned the OFF/rest slot on
+    # scope dates. This mirrors the RECUPERATION addendum above.
+    off_ids = {
+        s.id
+        for s in shifts_not_deleted
+        if s.shift_type == ShiftType.REST and s.rest_type == ShiftRestType.OFF
+    }
+    if off_ids:
+        dates_in_scope = {d for (_, d, _) in variables}
+        if dates_in_scope:
+            variables = variables | _expand_to_workers(
+                {(s_id, d.isoformat()) for s_id in off_ids for d in dates_campaign},
+                W,
+            )
 
     # Ensure variables are constrained to the provided `var_model` (if any).
     # `var_model` is a list of (worker_id, date_iso, shift_id) tuples that

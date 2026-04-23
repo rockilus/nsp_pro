@@ -3,7 +3,6 @@
 # from google.protobuf import text_format  # type: ignore
 from google.protobuf import text_format  # type: ignore
 from ortools.sat.python import cp_model  # type: ignore
-
 from shared.schemas.core import SolverParams, SolveStrategy
 
 from engine.model.add_constraint_factory import AddConstraintFactory

@@ -1,7 +1,7 @@
 from cerbos.sdk.grpc.client import AsyncCerbosClient  # type: ignore[import]
+from shared.logger import log_info
 
 from src.config import config
-from shared.logger import log_info
 
 _instances: dict[str, AsyncCerbosClient] = {}
 

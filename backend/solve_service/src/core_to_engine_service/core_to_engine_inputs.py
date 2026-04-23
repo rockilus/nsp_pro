@@ -31,6 +31,7 @@ from core_to_engine_service.build_engine_shift_demands import (
 )
 from core_to_engine_service.build_engine_variables import (
     build_engine_variables,
+    build_no_overlap_shift_intervals,
 )
 from core_to_engine_service.build_engine_work_loads import (
     build_engine_work_loads,
@@ -161,6 +162,7 @@ def core_to_engine_inputs(
         _scope_ctx = preprocess_scope(
             scope=solve_scope,
             workers_not_deleted=workers_not_deleted,
+            dates_campaign=dates_campaign,
             shifts_not_deleted=shifts_not_deleted,
             demands=engine_inputs.shift_demands,
             var_model=variables.assignments,
@@ -274,32 +276,29 @@ def core_to_engine_inputs(
 
     # Constraints:
     constraints = build_engine_constraints(
-        engine_inputs.cbs_augmented,
-        engine_inputs.schedule,
-        engine_inputs.workers,
-        dim_to_attr_value_to_worker,
-        dates_hist,
-        dates_campaign,
-        periods_weekly,
-        periods_monthly,
-        periods_yearly,
-        worker_ids_to_worker_dates,
-        engine_inputs.shifts,
-        dim_to_attr_value_to_shift,
-        engine_inputs.penalties,
+        cbs_augmented=engine_inputs.cbs_augmented,
+        schedule=engine_inputs.schedule,
+        workers=engine_inputs.workers,
+        dim_to_attr_value_to_worker=dim_to_attr_value_to_worker,
+        dates_hist=dates_hist,
+        dates_campaign=dates_campaign,
+        periods_weekly=periods_weekly,
+        periods_monthly=periods_monthly,
+        periods_yearly=periods_yearly,
+        worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+        shifts=engine_inputs.shifts,
+        dim_to_attr_value_to_shift=dim_to_attr_value_to_shift,
+        penalties=engine_inputs.penalties,
     )
 
     inputs = InputsEngine(
         ModelSetupEngine(
             variables=variables,
-            no_overlap_shift_intervals=[
-                [
-                    (w_id, d.isoformat(), s_id)
-                    for d in worker_ids_to_worker_dates[w_id].dates_campaign
-                    for s_id in shift_not_deleted_ids
-                ]
-                for w_id in worker_not_deleted_ids
-            ],
+            no_overlap_shift_intervals=build_no_overlap_shift_intervals(
+                worker_ids_to_worker_dates,
+                shift_not_deleted_ids,
+                worker_not_deleted_ids,
+            ),
             # fixed_values={},
             fixed_values=fixed_values,
             sol_hint=SolHint(

@@ -43,8 +43,10 @@ def calc_stats_per_week(
     nb_days: bool = False,
     rest_days: bool = False,
 ) -> Tuple[np.ndarray, Dict[Tuple[int, int], int]]:
-    # Get the year and week number for each date
-    year_week_numbers = np.array([(d.year, d.isocalendar()[1]) for d in dates])
+    # Get the ISO year and week number for each date (use ISO year to handle year-boundary weeks correctly)
+    year_week_numbers = np.array(
+        [(d.isocalendar()[0], d.isocalendar()[1]) for d in dates]
+    )
 
     # Get the unique year-week number pairs
     unique_year_week_numbers = np.unique(year_week_numbers, axis=0)

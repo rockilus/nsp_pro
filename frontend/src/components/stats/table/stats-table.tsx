@@ -130,9 +130,18 @@ export default function StatsTable({
     };
 
     if (matchWeek) {
-      const year = matchWeek[1];
-      const week = matchWeek[2];
-      return `${year} ${t('week_short')}${week}`;
+      const year = parseInt(matchWeek[1], 10);
+      const week = parseInt(matchWeek[2], 10);
+      // ISO week start (Monday): Jan 4 is always in W1; find that week's Monday
+      const jan4 = new Date(year, 0, 4);
+      const jan4DayOfWeek = jan4.getDay() === 0 ? 7 : jan4.getDay(); // 1=Mon … 7=Sun
+      const w1Monday = new Date(jan4.getTime() - (jan4DayOfWeek - 1) * 86400000);
+      const weekStart = new Date(w1Monday.getTime() + (week - 1) * 7 * 86400000);
+      const weekEnd = new Date(weekStart.getTime() + 6 * 86400000);
+      return new Intl.DateTimeFormat(lng, { month: 'short', day: 'numeric' }).formatRange(
+        weekStart,
+        weekEnd,
+      );
     }
 
     if (matchMonth) {
@@ -226,7 +235,9 @@ export default function StatsTable({
                 }}
               >
                 <div className="column-header-container">
-                  <span className={`column-header ${quickStats ? 'quick-stats' : ''}`}>
+                  <span
+                    className={`column-header ${quickStats ? 'quick-stats' : ''} ${header.headerUnit === HeaderUnitOptions.WEEK ? 'week' : ''}`}
+                  >
                     {header.headerUnit === HeaderUnitOptions.SHIFT
                       ? shifts.find((s) => s.id === header.value)?.name
                       : translateHeaderValue(header.value)}

@@ -50,7 +50,15 @@ build-backend = "hatchling.build"
 [tool.ruff]
 line-length = 88
 target-version = "py314"
+lint.extend-select = ["I"]
 # lint.select = ["E", "F", "I", "N", "UP", "PL"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+known_first_party = ["api_gateway", "shared"]
+combine_as_imports = true
+multi_line_output = 3
 
 [tool.mypy]
 python_version = "3.14"

@@ -9,11 +9,11 @@ from shared.schemas.dto import WorkerDTO
 from shared.schemas.dto.user import PasswordDataDTO, UserDTO, UserUpdateDTO
 
 from src.dependencies import (
+    get_cerbos_authz_service,
     get_db_collections,
     get_user_context,
     get_user_service,
     verify_service_authentication,
-    get_cerbos_authz_service,
 )
 from src.errors import (
     NotAuthorizedError,
