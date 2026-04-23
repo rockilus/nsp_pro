@@ -5,6 +5,8 @@ Scope pre-processing for partial campaign solves.
 `apply_scope_mutations` applies the derived ScopeContext to engine_inputs in-place.
 """
 
+from datetime import date
+
 from shared.schemas.core import (
     Assignment,
     Shift,
@@ -17,7 +19,6 @@ from shared.schemas.core import (
 )
 
 from engine import ScopeContext
-from datetime import date
 
 # pylint: disable=too-many-arguments
 

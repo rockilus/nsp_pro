@@ -1,9 +1,13 @@
 from collections.abc import Callable
 from copy import deepcopy
 from datetime import UTC, date, datetime, timedelta
+
 import pytest
 from shared.augment import requests_to_requests_augmented
 from shared.schemas.core import (
+    Block,
+    BlockNameOptions,
+    BlockTypeOptions,
     ConstraintBuildAugmented,
     ConstraintFai,
     ConstraintFil,
@@ -11,34 +15,31 @@ from shared.schemas.core import (
     ConstraintOrd,
     ConstraintSeq,
     ConstraintSum,
+    ConstraintType,
     EngineInputsAugmented,
+    ModelConfig,
+    Penalties,
     Request,
     RequestStatus,
     ShiftWorkerOption,
-    SWOIdTypes,
-    Penalties,
-    ModelConfig,
-    Block,
-    BlockNameOptions,
-    BlockTypeOptions,
-    ConstraintType,
     SolveScope,
     SolveScopeType,
+    SWOIdTypes,
 )
 from shared.schemas.core.request import FulfillmentStatus, RequestType
 
+from core_to_engine_service import core_to_engine_inputs
 from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache
+from engine.engine import Engine
+from engine_to_core_service.build_breaches.build_breaches import build_breaches
 from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
 )
-from tests.engine_tests.constraint_ord_fixture import build_ei_scoped
-from core_to_engine_service import core_to_engine_inputs
-from engine.engine import Engine
-from engine_to_core_service.build_breaches.build_breaches import build_breaches
 from engine_to_core_service.build_campaign_assignments import (
     build_campaign_assignments,
 )
+from tests.engine_tests.constraint_ord_fixture import build_ei_scoped
 
 
 class TestConstraintOrd:
