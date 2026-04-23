@@ -28,16 +28,10 @@ from shared.schemas.core import (
 )
 from shared.schemas.core.request import FulfillmentStatus, RequestType
 
-from core_to_engine_service import core_to_engine_inputs
 from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache
-from engine.engine import Engine
-from engine_to_core_service.build_breaches.build_breaches import build_breaches
 from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
-)
-from engine_to_core_service.build_campaign_assignments import (
-    build_campaign_assignments,
 )
 from tests.engine_tests.constraint_ord_fixture import build_ei_scoped
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
@@ -55,9 +49,7 @@ class TestConstraintOrd:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[
-            [EngineInputsAugmented], Outputs
-        ],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_ord_with_expected_output
         engine_inputs.cbs_augmented = [cba]
@@ -77,12 +69,8 @@ class TestConstraintOrd:
                 )
             ],
             worker_id=constraint.constraint_variables[0][0][0],
-            start_date=date.fromisoformat(
-                constraint.constraint_variables[0][0][1]
-            ),
-            end_date=date.fromisoformat(
-                constraint.constraint_variables[0][0][1]
-            ),
+            start_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
+            end_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
             negative=False,
             hard=True,
             status=RequestStatus.DEFERRED,
@@ -161,9 +149,7 @@ class TestConstraintOrd:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[
-            [EngineInputsAugmented], Outputs
-        ],
+        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
     ) -> None:
         cba, constraint = constraint_ord_with_expected_output
         cba_soft = deepcopy(cba)
@@ -184,12 +170,8 @@ class TestConstraintOrd:
                 )
             ],
             worker_id=constraint.constraint_variables[0][0][0],
-            start_date=date.fromisoformat(
-                constraint.constraint_variables[0][0][1]
-            ),
-            end_date=date.fromisoformat(
-                constraint.constraint_variables[0][0][1]
-            ),
+            start_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
+            end_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
             negative=False,
             hard=True,
             status=RequestStatus.DEFERRED,
@@ -291,12 +273,8 @@ class TestConstraintOrd:
                 )
             ],
             worker_id=c_fixture.constraint_variables[0][0][0],
-            start_date=date.fromisoformat(
-                c_fixture.constraint_variables[0][0][1]
-            ),
-            end_date=date.fromisoformat(
-                c_fixture.constraint_variables[0][0][1]
-            ),
+            start_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
+            end_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
             negative=False,
             hard=True,
             status=RequestStatus.DEFERRED,
@@ -323,9 +301,7 @@ class TestConstraintOrd:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = (
-            engine_inputs.penalties.user_constraint.ord.soft
-        )
+        constraint_soft.penalty = engine_inputs.penalties.user_constraint.ord.soft
 
         if constraint.operator == ConstraintOperator.YES:
             constraint_soft.operator = ConstraintOperator.NO
@@ -434,12 +410,8 @@ class TestConstraintOrd:
                 )
             ],
             worker_id=c_fixture.constraint_variables[0][0][0],
-            start_date=date.fromisoformat(
-                c_fixture.constraint_variables[0][0][1]
-            ),
-            end_date=date.fromisoformat(
-                c_fixture.constraint_variables[0][0][1]
-            ),
+            start_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
+            end_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
             negative=False,
             hard=True,
             status=RequestStatus.DEFERRED,
@@ -604,18 +576,16 @@ class TestConstraintOrdWithFixture:
             for d in ei_scoped.shift_demands
             if d.shift_id == "s_duty"
             and d.date.weekday() == 4
-            and ei_scoped.schedule.start_date
-            <= d.date
-            <= ei_scoped.schedule.end_date
+            and ei_scoped.schedule.start_date <= d.date <= ei_scoped.schedule.end_date
             and ei_scoped.schedule.start_date
             <= d.date - timedelta(days=1)
             <= ei_scoped.schedule.end_date
         ]
 
         # Ensure our test campaign contains at least one such demand
-        assert (
-            len(friday_demands) > 0
-        ), "Test campaign contains no Friday duty demands with the previous day also in the campaign"
+        assert len(friday_demands) > 0, (
+            "Test campaign contains no Friday duty demands with the previous day also in the campaign"
+        )
 
         # Check that the Friday demand and the previous day are inside the campaign
         for demand in friday_demands:
@@ -753,18 +723,16 @@ class TestConstraintOrdWithFixture:
             for d in ei_scoped.shift_demands
             if d.shift_id == "s_duty"
             and d.date.weekday() == 4
-            and ei_scoped.schedule.start_date
-            <= d.date
-            <= ei_scoped.schedule.end_date
+            and ei_scoped.schedule.start_date <= d.date <= ei_scoped.schedule.end_date
             and ei_scoped.schedule.start_date
             <= d.date - timedelta(days=1)
             <= ei_scoped.schedule.end_date
         ]
 
         # Ensure our test campaign contains at least one such demand
-        assert (
-            len(friday_demands) > 0
-        ), "Test campaign contains no Friday duty demands with the previous day also in the campaign"
+        assert len(friday_demands) > 0, (
+            "Test campaign contains no Friday duty demands with the previous day also in the campaign"
+        )
 
         # Check that the Friday demand and the previous day are inside the campaign
         for demand in friday_demands:
@@ -903,18 +871,16 @@ class TestConstraintOrdWithFixture:
             for d in ei_scoped.shift_demands
             if d.shift_id == "s_duty"
             and d.date.weekday() == 4
-            and ei_scoped.schedule.start_date
-            <= d.date
-            <= ei_scoped.schedule.end_date
+            and ei_scoped.schedule.start_date <= d.date <= ei_scoped.schedule.end_date
             and ei_scoped.schedule.start_date
             <= d.date - timedelta(days=1)
             <= ei_scoped.schedule.end_date
         ]
 
         # Ensure our test campaign contains at least one such demand
-        assert (
-            len(friday_demands) > 0
-        ), "Test campaign contains no Friday duty demands with the previous day also in the campaign"
+        assert len(friday_demands) > 0, (
+            "Test campaign contains no Friday duty demands with the previous day also in the campaign"
+        )
 
         # Check that the Friday demand and the previous day are inside the campaign
         for demand in friday_demands:

@@ -4,9 +4,6 @@ from shared.schemas.core.solve_task_status import SolveScope
 from core_to_engine_service import core_to_engine_inputs
 from engine.engine import Engine, Outputs
 from engine_to_core_service.build_breaches.build_breaches import build_breaches
-from engine_to_core_service.build_breaches.build_breaches_model import (
-    _parse_breaches_engine,
-)
 from engine_to_core_service.build_campaign_assignments import (
     build_campaign_assignments,
 )

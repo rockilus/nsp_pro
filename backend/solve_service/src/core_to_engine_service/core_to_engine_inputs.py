@@ -31,6 +31,7 @@ from core_to_engine_service.build_engine_shift_demands import (
 )
 from core_to_engine_service.build_engine_variables import (
     build_engine_variables,
+    build_no_overlap_shift_intervals,
 )
 from core_to_engine_service.build_engine_work_loads import (
     build_engine_work_loads,
@@ -293,14 +294,11 @@ def core_to_engine_inputs(
     inputs = InputsEngine(
         ModelSetupEngine(
             variables=variables,
-            no_overlap_shift_intervals=[
-                [
-                    (w_id, d.isoformat(), s_id)
-                    for d in worker_ids_to_worker_dates[w_id].dates_campaign
-                    for s_id in shift_not_deleted_ids
-                ]
-                for w_id in worker_not_deleted_ids
-            ],
+            no_overlap_shift_intervals=build_no_overlap_shift_intervals(
+                worker_ids_to_worker_dates,
+                shift_not_deleted_ids,
+                worker_not_deleted_ids,
+            ),
             # fixed_values={},
             fixed_values=fixed_values,
             sol_hint=SolHint(

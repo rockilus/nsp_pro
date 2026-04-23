@@ -12,6 +12,21 @@ from engine import Variables as VariablesEngine
 from utils.constants import Constants
 
 
+def build_no_overlap_shift_intervals(
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shift_not_deleted_ids: list[str],
+    worker_not_deleted_ids: list[str],
+) -> list[list[tuple[str, str, str]]]:
+    return [
+        [
+            (w_id, d.isoformat(), s_id)
+            for d in worker_ids_to_worker_dates[w_id].dates_campaign
+            for s_id in shift_not_deleted_ids
+        ]
+        for w_id in worker_not_deleted_ids
+    ]
+
+
 # pylint: disable=too-many-locals
 def build_engine_variables(
     workers: list[Worker],
