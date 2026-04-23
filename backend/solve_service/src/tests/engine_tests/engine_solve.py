@@ -10,6 +10,8 @@ def engine_solve_engine_inputs(
     engine_inputs: EngineInputsAugmented,
     solve_scope: SolveScope | None = None,
 ) -> Outputs:
-    inputs, _ = core_to_engine_inputs(engine_inputs, solve_scope)
+    inputs, _ = core_to_engine_inputs(
+        engine_inputs=engine_inputs, solve_scope=solve_scope
+    )
     engine = Engine()
     return engine.solve(inputs)

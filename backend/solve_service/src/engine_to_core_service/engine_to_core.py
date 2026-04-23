@@ -48,19 +48,21 @@ def engine_to_core(
     list[RequestAugmented],
     SolverOutputMetadata,
 ]:
-    as_campaign = build_campaign_assignments(schedule, outputs.assignments)
+    as_campaign = build_campaign_assignments(
+        schedule=schedule, as_engine=outputs.assignments
+    )
     assignments = as_hist + as_campaign
     breaches = build_breaches(
-        schedule,
-        workers,
-        shifts,
-        link_shifts,
-        daily_shift_demand,
-        assignments,
-        requests,
-        outputs.breaches,
-        processing_cache,
-        outputs,
+        schedule=schedule,
+        workers=workers,
+        shifts=shifts,
+        link_shifts=link_shifts,
+        daily_shift_demand=daily_shift_demand,
+        assignments=assignments,
+        requests=requests,
+        breaches_engine=outputs.breaches,
+        processing_cache=processing_cache,
+        outputs=outputs,
         engine_inputs=engine_inputs,
         inputs=inputs,
     )

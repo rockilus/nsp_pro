@@ -37,6 +37,12 @@ from tests.engine_tests.constraint_ord_fixture import build_ei_scoped
 from core_to_engine_service.build_engine_constraints import (
     build_engine_constraints,
 )
+from core_to_engine_service import core_to_engine_inputs
+from engine.engine import Engine, Outputs
+from engine_to_core_service.build_breaches.build_breaches import build_breaches
+from engine_to_core_service.build_campaign_assignments import (
+    build_campaign_assignments,
+)
 
 
 class TestConstraintOrd:
@@ -588,9 +594,33 @@ class TestConstraintOrdWithFixture:
         )
         ei_scoped.cbs_augmented = [test_cba]
         scope = SolveScope(scope_type=SolveScopeType.DUTIES)
-        outputs = engine_solve_engine_inputs(ei_scoped, solve_scope=scope)
+
+        inputs, processing_cache = core_to_engine_inputs(
+            engine_inputs=ei_scoped, solve_scope=scope
+        )
+        engine = Engine()
+        outputs = engine.solve(inputs)
+        # outputs = engine_solve_engine_inputs(ei_scoped, solve_scope=scope)
 
         assert outputs.is_solution is True
+
+        assignments = build_campaign_assignments(
+            schedule=ei_scoped.schedule, as_engine=outputs.assignments
+        )
+        build_breaches(
+            schedule=ei_scoped.schedule,
+            workers=ei_scoped.workers,
+            shifts=ei_scoped.shifts,
+            link_shifts=ei_scoped.link_shifts,
+            daily_shift_demand=ei_scoped.shift_demands,
+            assignments=assignments,
+            requests=ei_scoped.requests_work,
+            breaches_engine=outputs.breaches,
+            processing_cache=processing_cache,
+            outputs=outputs,
+            engine_inputs=ei_scoped,
+            inputs=inputs,
+        )
 
         # Find all duty demands that fall on a Friday inside the campaign
         friday_demands = [
@@ -613,6 +643,7 @@ class TestConstraintOrdWithFixture:
 
         # Check that the Friday demand and the previous day are inside the campaign
         for demand in friday_demands:
+            prev_day = demand.date - timedelta(days=1)
             # For each validated demand: a duty should be assigned and the same worker
             # should have an off shift the day before
             a_duty = next(
