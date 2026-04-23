@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from copy import deepcopy
-from datetime import UTC, date, datetime
-
+from datetime import UTC, date, datetime, timedelta
+import pytest
 from shared.augment import requests_to_requests_augmented
 from shared.schemas.core import (
     ConstraintBuildAugmented,
@@ -16,6 +16,14 @@ from shared.schemas.core import (
     RequestStatus,
     ShiftWorkerOption,
     SWOIdTypes,
+    Penalties,
+    ModelConfig,
+    Block,
+    BlockNameOptions,
+    BlockTypeOptions,
+    ConstraintType,
+    SolveScope,
+    SolveScopeType,
 )
 from shared.schemas.core.request import FulfillmentStatus, RequestType
 
@@ -24,9 +32,13 @@ from engine import Outputs, ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
 )
+from tests.engine_tests.engine_solve import engine_solve_engine_inputs
+from tests.engine_tests.constraint_ord_fixture import build_ei_scoped
+from core_to_engine_service.build_engine_constraints import (
+    build_engine_constraints,
+)
 
 
-# pylint: disable=R0801
 class TestConstraintOrd:
     def test_constraint_ord_hard(
         self,
@@ -39,7 +51,9 @@ class TestConstraintOrd:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[
+            [EngineInputsAugmented], Outputs
+        ],
     ) -> None:
         cba, constraint = constraint_ord_with_expected_output
         engine_inputs.cbs_augmented = [cba]
@@ -59,8 +73,12 @@ class TestConstraintOrd:
                 )
             ],
             worker_id=constraint.constraint_variables[0][0][0],
-            start_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
-            end_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
+            start_date=date.fromisoformat(
+                constraint.constraint_variables[0][0][1]
+            ),
+            end_date=date.fromisoformat(
+                constraint.constraint_variables[0][0][1]
+            ),
             negative=False,
             hard=True,
             status=RequestStatus.DEFERRED,
@@ -139,7 +157,9 @@ class TestConstraintOrd:
             | ConstraintSeq
             | ConstraintSum,
         ],
-        run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
+        run_engine_solve_from_engine_inputs: Callable[
+            [EngineInputsAugmented], Outputs
+        ],
     ) -> None:
         cba, constraint = constraint_ord_with_expected_output
         cba_soft = deepcopy(cba)
@@ -160,8 +180,12 @@ class TestConstraintOrd:
                 )
             ],
             worker_id=constraint.constraint_variables[0][0][0],
-            start_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
-            end_date=date.fromisoformat(constraint.constraint_variables[0][0][1]),
+            start_date=date.fromisoformat(
+                constraint.constraint_variables[0][0][1]
+            ),
+            end_date=date.fromisoformat(
+                constraint.constraint_variables[0][0][1]
+            ),
             negative=False,
             hard=True,
             status=RequestStatus.DEFERRED,
@@ -263,8 +287,12 @@ class TestConstraintOrd:
                 )
             ],
             worker_id=c_fixture.constraint_variables[0][0][0],
-            start_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
-            end_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
+            start_date=date.fromisoformat(
+                c_fixture.constraint_variables[0][0][1]
+            ),
+            end_date=date.fromisoformat(
+                c_fixture.constraint_variables[0][0][1]
+            ),
             negative=False,
             hard=True,
             status=RequestStatus.DEFERRED,
@@ -291,7 +319,9 @@ class TestConstraintOrd:
         constraint_soft = deepcopy(constraint)
         constraint_soft.id += "_soft"
         constraint_soft.hard = False
-        constraint_soft.penalty = engine_inputs.penalties.user_constraint.ord.soft
+        constraint_soft.penalty = (
+            engine_inputs.penalties.user_constraint.ord.soft
+        )
 
         if constraint.operator == ConstraintOperator.YES:
             constraint_soft.operator = ConstraintOperator.NO
@@ -400,8 +430,12 @@ class TestConstraintOrd:
                 )
             ],
             worker_id=c_fixture.constraint_variables[0][0][0],
-            start_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
-            end_date=date.fromisoformat(c_fixture.constraint_variables[0][0][1]),
+            start_date=date.fromisoformat(
+                c_fixture.constraint_variables[0][0][1]
+            ),
+            end_date=date.fromisoformat(
+                c_fixture.constraint_variables[0][0][1]
+            ),
             negative=False,
             hard=True,
             status=RequestStatus.DEFERRED,
@@ -447,3 +481,140 @@ class TestConstraintOrd:
         breaches = _parse_breaches_engine(engine_inputs.schedule, out.breaches)
         penalty = engine_inputs.penalties.user_constraint.ord.hard
         assert out.objective_value == penalty * len(breaches)
+
+
+class TestConstraintOrdWithFixture:
+    @pytest.fixture
+    def ei_scoped(
+        self, penalties_fix: Penalties, model_config_fix: ModelConfig
+    ) -> EngineInputsAugmented:
+        return build_ei_scoped(penalties_fix, model_config_fix)
+
+    def test_constraint_ord_duty_then_off_1_day_before(
+        self, ei_scoped: EngineInputsAugmented
+    ) -> None:
+        test_cba = ConstraintBuildAugmented(
+            id="c_ord_0",
+            team_id="t0",
+            constraint_type=ConstraintType.ORD,
+            template_id="4",
+            language="fr",
+            blocks=[
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="Si",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_REFERENCE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name=True,
+                            id="",
+                            id_type=SWOIdTypes.DUTY,
+                            is_bool_dim=True,
+                            category_name="Duties",
+                        ),
+                    ],
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="le",
+                ),
+                Block(
+                    name=BlockNameOptions.WEEKDAY,
+                    type=BlockTypeOptions.STRING,
+                    value="friday",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="alors",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_RELATIVE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="Off",
+                            id="s_off",
+                            id_type=SWOIdTypes.SHIFT,
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=1,
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="jour",
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="before",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="pour",
+                ),
+                Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="all workers",
+                            id="",
+                            id_type=SWOIdTypes.NONE,
+                            is_bool_dim=False,
+                            category_name="All",
+                        ),
+                    ],
+                ),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+            missing_attributes=[],
+        )
+        ei_scoped.cbs_augmented = [test_cba]
+        scope = SolveScope(scope_type=SolveScopeType.DUTIES)
+        outputs = engine_solve_engine_inputs(ei_scoped, solve_scope=scope)
+
+        assert outputs.is_solution is True
+
+        # Check that for each demand for a duty shift on a friday:
+        # - A duty is assigned
+        # - The worker assigned is assigned an off shift the day before
+        for demand in ei_scoped.shift_demands:
+            if demand.shift_id == "s_duty" and demand.date.weekday() == 4:
+                a_duty = next(
+                    (
+                        a
+                        for a in outputs.assignments
+                        if a.date == demand.date and a.shift_id == "s_duty"
+                    ),
+                    None,
+                )
+                assert a_duty is not None
+
+                a_off = next(
+                    (
+                        a
+                        for a in outputs.assignments
+                        if a.worker_id == a_duty.worker_id
+                        and a.date == demand.date - timedelta(days=1)
+                        and a.shift_id == "s_off"
+                    ),
+                    None,
+                )
+                assert a_off is not None
