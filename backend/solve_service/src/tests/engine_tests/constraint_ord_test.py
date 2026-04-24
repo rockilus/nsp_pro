@@ -936,3 +936,152 @@ class TestConstraintOrdWithFixture:
                 None,
             )
             assert a_off is not None
+
+    def test_constraint_ord_duty_then_off_2_day_after_no_scope(
+        self, ei_scoped: EngineInputsAugmented
+    ) -> None:
+        test_cba = ConstraintBuildAugmented(
+            id="c_ord_0",
+            team_id="t0",
+            constraint_type=ConstraintType.ORD,
+            template_id="4",
+            language="fr",
+            blocks=[
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="Si",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_REFERENCE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name=True,
+                            id="",
+                            id_type=SWOIdTypes.DUTY,
+                            is_bool_dim=True,
+                            category_name="Duties",
+                        ),
+                    ],
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="le",
+                ),
+                Block(
+                    name=BlockNameOptions.WEEKDAY,
+                    type=BlockTypeOptions.STRING,
+                    value="saturday",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="alors",
+                ),
+                Block(
+                    name=BlockNameOptions.SHIFT_RELATIVE,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="Off",
+                            id="s_off",
+                            id_type=SWOIdTypes.SHIFT,
+                            is_bool_dim=False,
+                            category_name="Shifts",
+                        ),
+                    ],
+                ),
+                Block(
+                    name=BlockNameOptions.NUMBER,
+                    type=BlockTypeOptions.NUMBER,
+                    value=2,
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="jour",
+                ),
+                Block(
+                    name=BlockNameOptions.TIMING,
+                    type=BlockTypeOptions.STRING,
+                    value="after",
+                ),
+                Block(
+                    name=BlockNameOptions.TEXT,
+                    type=BlockTypeOptions.STRING,
+                    value="pour",
+                ),
+                Block(
+                    name=BlockNameOptions.WORKER,
+                    type=BlockTypeOptions.SHIFT_WORKER_OPTION,
+                    value=[
+                        ShiftWorkerOption(
+                            name="all workers",
+                            id="",
+                            id_type=SWOIdTypes.NONE,
+                            is_bool_dim=False,
+                            category_name="All",
+                        ),
+                    ],
+                ),
+            ],
+            text="",
+            hard=True,
+            priority="medium",
+            active=True,
+            missing_attributes=[],
+        )
+        ei_scoped.cbs_augmented = [test_cba]
+
+        outputs = engine_solve_engine_inputs(ei_scoped)
+
+        assert outputs.is_solution is True
+        assert outputs.objective_value == 0
+
+        # Find all duty demands that fall on a Saturday inside the campaign
+        saturday_demands = [
+            d
+            for d in ei_scoped.shift_demands
+            if d.shift_id == "s_duty"
+            and d.date.weekday() == 5
+            and ei_scoped.schedule.start_date
+            <= d.date
+            <= ei_scoped.schedule.end_date
+            and ei_scoped.schedule.start_date
+            <= d.date + timedelta(days=2)
+            <= ei_scoped.schedule.end_date
+        ]
+
+        # Ensure our test campaign contains at least one such demand
+        assert (
+            len(saturday_demands) > 0
+        ), "Test campaign contains no Saturday duty demands with the previous day also in the campaign"
+
+        # Check that the Saturday demand and the previous day are inside the campaign
+        for demand in saturday_demands:
+            next_2_day = demand.date + timedelta(days=2)
+            # For each validated demand: a duty should be assigned and the same worker
+            # should have an off shift the day before
+            a_duty = next(
+                (
+                    a
+                    for a in outputs.assignments
+                    if a.date == demand.date and a.shift_id == "s_duty"
+                ),
+                None,
+            )
+            assert a_duty is not None
+
+            a_off = next(
+                (
+                    a
+                    for a in outputs.assignments
+                    if a.worker_id == a_duty.worker_id
+                    and a.date == next_2_day
+                    and a.shift_id == "s_off"
+                ),
+                None,
+            )
+            assert a_off is not None
