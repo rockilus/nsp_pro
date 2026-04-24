@@ -295,9 +295,11 @@ def core_to_engine_inputs(
         ModelSetupEngine(
             variables=variables,
             no_overlap_shift_intervals=build_no_overlap_shift_intervals(
-                worker_ids_to_worker_dates,
-                shift_not_deleted_ids,
-                worker_not_deleted_ids,
+                worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+                shifts_not_deleted=shifts_not_deleted,
+                worker_not_deleted_ids=worker_not_deleted_ids,
+                multitasking_groups=engine_inputs.multitasking_groups,
+                shift_demands=engine_inputs.shift_demands,
             ),
             # fixed_values={},
             fixed_values=fixed_values,

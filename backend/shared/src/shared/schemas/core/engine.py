@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Dict, List
 
@@ -13,6 +13,7 @@ from shared.schemas.core.dim_entry import DimEntry
 from shared.schemas.core.dimension import Dimension
 from shared.schemas.core.link_shift import LinkShift
 from shared.schemas.core.model_output import ModelOutput
+from shared.schemas.core.multitasking import MultitaskingGroup
 from shared.schemas.core.request import Request, RequestAugmented
 from shared.schemas.core.schedule import Schedule
 from shared.schemas.core.shift import Shift
@@ -176,6 +177,9 @@ class EngineInputs:
     requests_work: List[RequestAugmented]
     requests_leave: List[Request]
     model_output: ModelOutput | None
+    multitasking_groups: List[MultitaskingGroup] = field(
+        default_factory=list, kw_only=True
+    )
 
     def to_dict(self) -> Dict:
         return {
@@ -202,6 +206,7 @@ class EngineInputs:
             "model_output": (
                 self.model_output.to_dict() if self.model_output else None
             ),
+            "multitasking_groups": [g.to_dict() for g in self.multitasking_groups],
         }
 
     @classmethod
@@ -243,6 +248,10 @@ class EngineInputs:
                 if data["model_output"]
                 else None
             ),
+            multitasking_groups=[
+                MultitaskingGroup.from_dict(g)
+                for g in data.get("multitasking_groups", [])
+            ],
         )
 
 
@@ -274,6 +283,7 @@ class EngineInputsAugmented(EngineInputs):
             requests_work=engine_inputs.requests_work,
             requests_leave=engine_inputs.requests_leave,
             model_output=engine_inputs.model_output,
+            multitasking_groups=engine_inputs.multitasking_groups,
             penalties=penalties,
             model_config=model_config,
         )

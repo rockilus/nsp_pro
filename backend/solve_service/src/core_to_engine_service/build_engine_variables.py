@@ -7,6 +7,11 @@ from shared.schemas.core import (
     Worker,
     WorkerDates,
 )
+from shared.schemas.core.multitasking import (
+    MultitaskingGroup,
+    MultitaskingGroupType,
+)
+from shared.schemas.core.shift_demand_new import ShiftDemandNew
 
 from engine import Variables as VariablesEngine
 from utils.constants import Constants
@@ -14,17 +19,99 @@ from utils.constants import Constants
 
 def build_no_overlap_shift_intervals(
     worker_ids_to_worker_dates: dict[str, WorkerDates],
-    shift_not_deleted_ids: list[str],
+    shifts_not_deleted: list[Shift],
     worker_not_deleted_ids: list[str],
+    multitasking_groups: list[MultitaskingGroup],
+    shift_demands: list[ShiftDemandNew],
 ) -> list[list[tuple[str, str, str]]]:
-    return [
-        [
-            (w_id, d.isoformat(), s_id)
-            for d in worker_ids_to_worker_dates[w_id].dates_campaign
-            for s_id in shift_not_deleted_ids
-        ]
-        for w_id in worker_not_deleted_ids
+    """
+    Returns a list where each element is one AddNoOverlap group (list of assignment tuples).
+    Multiple groups per worker are produced when multitasking groups are present.
+
+    LAYER 1 — Type-based filtering:
+      Only DUTY, NORMAL, and LEAVE shifts enter any no-overlap group.
+      REST shifts (OFF and RECUPERATION) are excluded entirely.
+
+    LAYER 2 — MultitaskingGroup-based partitioning:
+      Shifts inside the same group are never placed in the same AddNoOverlap call.
+    """
+    # ── Step 1: Build demand_id → shift_id index ─────────────────────────────
+    demand_id_to_shift_id: dict[str, str] = {
+        d.id: d.shift_id for d in shift_demands if d.id is not None
+    }
+
+    # ── Step 2: Collect grouped shift_ids, keyed by group index ──────────────
+    # Implicit REST group: all REST shifts (OFF + RECUPERATION) share one group so
+    # that OFF and RECUPERATION can overlap each other, but neither can overlap
+    # with any work shift (DUTY, NORMAL, LEAVE).
+    grouped: list[set[str]] = []
+    rest_shift_ids: set[str] = {
+        s.id for s in shifts_not_deleted if s.shift_type == ShiftType.REST
+    }
+    if rest_shift_ids:
+        grouped.append(rest_shift_ids)
+
+    for mg in multitasking_groups:
+        if mg.type.value != MultitaskingGroupType.SHIFT_DEMAND.value:
+            continue
+        shift_ids_in_group: set[str] = set()
+        for demand_id in mg.related_ids:
+            sid = demand_id_to_shift_id.get(demand_id)
+            if sid:
+                shift_ids_in_group.add(sid)
+        if len(shift_ids_in_group) >= 2:
+            grouped.append(shift_ids_in_group)
+
+    # ── Step 3: Identify all shift_ids that appear in ANY group ──────────────
+    all_grouped_shift_ids: set[str] = set().union(*grouped) if grouped else set()
+
+    # ── Step 4: Build the "no-overlap eligible" shift list (Layer 1 filter) ──
+    # All non-deleted shifts participate. REST shifts are handled via the implicit
+    # group above — excluded from base and placed in their own focal lists.
+    no_overlap_eligible: list[Shift] = list(shifts_not_deleted)
+
+    base_shifts: list[Shift] = [
+        s for s in no_overlap_eligible if s.id not in all_grouped_shift_ids
     ]
+    grouped_shifts: list[Shift] = [
+        s for s in no_overlap_eligible if s.id in all_grouped_shift_ids
+    ]
+    base_ids: list[str] = [s.id for s in base_shifts]
+
+    result: list[list[tuple[str, str, str]]] = []
+
+    for w_id in worker_not_deleted_ids:
+        dates = worker_ids_to_worker_dates[w_id].dates_campaign
+
+        # ── Group A: Base shifts for this worker ─────────────────────────────
+        if base_ids:
+            result.append(
+                [(w_id, d.isoformat(), s_id) for d in dates for s_id in base_ids]
+            )
+
+        # ── Group B: One AddNoOverlap per grouped shift ───────────────────────
+        for s in grouped_shifts:
+            co_grouped_ids: set[str] = set()
+            for g in grouped:
+                if s.id in g:
+                    co_grouped_ids.update(g)
+            co_grouped_ids.discard(s.id)
+
+            cross_group_ids = [
+                other.id
+                for other in grouped_shifts
+                if other.id not in co_grouped_ids and other.id != s.id
+            ]
+
+            group_list = [
+                (w_id, d.isoformat(), s_id)
+                for d in dates
+                for s_id in base_ids + cross_group_ids + [s.id]
+            ]
+            if len(group_list) >= 2:
+                result.append(group_list)
+
+    return result
 
 
 # pylint: disable=too-many-locals

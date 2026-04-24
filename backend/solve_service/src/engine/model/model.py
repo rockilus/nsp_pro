@@ -368,8 +368,17 @@ class Model:
     def no_interval_overlap(
         self, no_overlap_shift_intervals: list[list[tuple[str, str, str]]]
     ) -> None:
-        for w_assignments in no_overlap_shift_intervals:
-            self.model.AddNoOverlap([self.intervals[a] for a in w_assignments])
+        for group in no_overlap_shift_intervals:
+            interval_vars = [
+                self.intervals[a]
+                for a in group
+                if a
+                in self.intervals  # guard: history assignments have no interval var
+            ]
+            if len(interval_vars) < 2:
+                # AddNoOverlap with 0 or 1 intervals is a no-op; skip to keep the model proto lean.
+                continue
+            self.model.AddNoOverlap(interval_vars)
 
     def add_duty_recup_constraints(
         self,

@@ -1,5 +1,6 @@
 import calendar
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
+from typing import List
 
 from shared.schemas.core import (
     EngineInputsAugmented,
@@ -17,11 +18,8 @@ from shared.schemas.core import (
     Worker,
 )
 
-# pylint: disable=R0801
-
 
 def _test_month_start() -> date:
-    """Return the first day of the month two months from today."""
     today = date.today()
     month = today.month + 2
     year = today.year + (month - 1) // 12
@@ -29,7 +27,7 @@ def _test_month_start() -> date:
     return date(year, month, 1)
 
 
-def build_ei_scoped(
+def build_ei_no_overlap(
     penalties: Penalties, model_config: ModelConfig
 ) -> EngineInputsAugmented:
     start = _test_month_start()
@@ -37,7 +35,7 @@ def build_ei_scoped(
     end = date(start.year, start.month, last_day)
 
     schedule = Schedule(
-        id="sch_s",
+        id="sch_noov",
         team_id="t0",
         start_date=start,
         end_date=end,
@@ -45,17 +43,17 @@ def build_ei_scoped(
         missing_coverage_dates=[],
         constraint_build_ids=[],
         quick_staffings=[],
-        created_by="user1",
+        created_by="test",
         created_at=datetime(start.year, start.month, 1),
         updated_at=datetime(start.year, start.month, 1),
     )
 
-    workers = [
+    workers: List[Worker] = [
         Worker(
-            id=f"w{i}",
+            id="w0",
             team_id="t0",
-            name=f"Worker {i}",
-            acronym=f"W{i}",
+            name="Worker 0",
+            acronym="W0",
             acronym_custom=False,
             employment_start_date=start,
             employment_end_date=None,
@@ -66,15 +64,13 @@ def build_ei_scoped(
             specialty_ids=[],
             deleted=False,
         )
-        for i in range(10)
     ]
 
-    # Anchor datetimes for shift start/end times (time-of-day only)
     day1 = datetime(start.year, start.month, 1)
     day2 = day1 + timedelta(days=1)
     day3 = day1 + timedelta(days=2)
 
-    shifts = [
+    shifts: List[Shift] = [
         Shift(
             id="s_morning",
             team_id="t0",
@@ -149,11 +145,9 @@ def build_ei_scoped(
             name="Off",
             acronym="O",
             acronym_custom=False,
-            start_time=datetime.now(timezone.utc).replace(
-                hour=0, minute=0, second=0, microsecond=0
-            ),
-            end_time=(datetime.now(timezone.utc) + timedelta(days=1)).replace(
-                hour=0, minute=0, second=0, microsecond=0
+            start_time=datetime(day1.year, day1.month, day1.day, 0, 0),
+            end_time=(
+                datetime(day1.year, day1.month, day1.day, 0, 0) + timedelta(days=1)
             ),
             staffing=[],
             color="grey",
@@ -164,13 +158,30 @@ def build_ei_scoped(
             recuperation_duty_id=None,
             deleted=False,
         ),
+        Shift(
+            id="s_leave",
+            team_id="t0",
+            name="Leave",
+            acronym="L",
+            acronym_custom=False,
+            start_time=datetime(day1.year, day1.month, day1.day, 9, 0),
+            end_time=datetime(day1.year, day1.month, day1.day, 17, 0),
+            staffing=[],
+            color="pink",
+            shift_type=ShiftType.LEAVE,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.VACATION,
+            recuperation_time=0,
+            recuperation_duty_id=None,
+            deleted=False,
+        ),
     ]
 
-    # Build shift demands
-    shift_demands = []
+    # Build shift demands: duty every day, morning/aftern on weekdays
+    shift_demands: List[ShiftDemandNew] = []
     current = start
     while current <= end:
-        if current.weekday() < 5:  # weekday (Mon–Fri)
+        if current.weekday() < 5:
             for shift_id in ("s_morning", "s_afternoon"):
                 shift_demands.append(
                     ShiftDemandNew(
@@ -186,7 +197,6 @@ def build_ei_scoped(
                         updated_at=datetime.now(),
                     )
                 )
-        # Duty every calendar day
         shift_demands.append(
             ShiftDemandNew(
                 id=f"dsd_s_duty_{current}",
