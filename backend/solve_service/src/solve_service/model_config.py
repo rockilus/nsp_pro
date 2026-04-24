@@ -32,9 +32,7 @@ if (pytest_mode and environment == "production") or (
 print(f"num_search_workers: {num_search_workers}")
 
 
-def get_max_time_in_seconds(
-    is_test: bool, in_github: bool, cur_env: str
-) -> int:
+def get_max_time_in_seconds(is_test: bool, in_github: bool, cur_env: str) -> int:
     if is_test:
         if not in_github:
             return 3
