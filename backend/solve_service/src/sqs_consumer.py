@@ -7,7 +7,6 @@ for solve requests and processes them using the existing solve logic.
 
 import asyncio
 import time
-from copy import deepcopy
 from datetime import UTC, datetime
 
 from loguru import logger
@@ -27,12 +26,8 @@ from shared.schemas.core.solve_task_status import (
 )
 from shared.services.sqs_solve_service import SQSSolveService
 
-from core_to_engine_service.calculate_worker_nb_duties import (
-    calculate_auto_gap,
-)
 from db_operations.get_engine_inputs import get_engine_inputs
 from db_operations.save_engine_outputs import save_engine_outputs
-from solve_service.model_config import model_config
 from solve_service.solve_schedule import solve_schedule
 
 
@@ -184,34 +179,17 @@ class SQSSolveConsumer:
             schedule=schedule,
             collections=self.collections,
         )
-        # Load team generation settings and build an effective model config override
+        # Load team generation settings
         team_settings = (
             self.collections.team_generation_settings_db.get_by_team_id(
                 schedule.team_id
             )
             or TeamGenerationSettings.default(schedule.team_id)
         )
-        effective_config = deepcopy(model_config)
-        gap_mode = team_settings.duty_consecutive_gap_mode
-        if gap_mode == "off":
-            effective_config.system_constraints.duty_consecutive_gap = False
-        elif gap_mode == "set":
-            effective_config.system_constraints.duty_consecutive_gap = True
-            effective_config.system_constraints.duty_consecutive_gap_min_days = (
-                team_settings.duty_consecutive_gap_days
-            )
-        elif gap_mode == "auto":
-            effective_config.system_constraints.duty_consecutive_gap = True
-            effective_config.system_constraints.duty_consecutive_gap_min_days = (
-                calculate_auto_gap()
-            )
-        effective_config.system_constraints.duty_scope_skip_work_time = (
-            not team_settings.duty_scope_work_time
-        )
         engine_outputs, processing_cache = solve_schedule(
             engine_inputs=engine_inputs,
             solve_scope=message.solve_scope,
-            model_config_override=effective_config,
+            team_settings=team_settings,
         )
         schedule_solve_status, assignments, breaches, solver_output = (
             save_engine_outputs(

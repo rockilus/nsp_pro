@@ -8,6 +8,7 @@ from shared.schemas.core import (
     ShiftDemandNew,
     ShiftRestType,
     ShiftType,
+    TeamGenerationSettings,
 )
 from shared.schemas.core.solve_task_status import SolveScope, SolveScopeType
 
@@ -57,6 +58,7 @@ from core_to_engine_service.calculate_worker_nb_duties import (
     build_max_week_day_nb_duties_vars,
     build_max_weekly_nb_duties_vars,
     build_nb_duties_constraints,
+    calculate_auto_gap,
     calculate_worker_nb_duties,
 )
 from core_to_engine_service.calculate_worker_special_days import (
@@ -80,7 +82,9 @@ from engine import ModelSetup as ModelSetupEngine
 def core_to_engine_inputs(
     engine_inputs: EngineInputsAugmented,
     solve_scope: SolveScope | None = None,
+    team_settings: TeamGenerationSettings | None = None,
 ) -> tuple[InputsEngine, ProcessingCache]:
+    _team_settings = team_settings or TeamGenerationSettings.default("")
     # Workers
     workers_not_deleted = [w for w in engine_inputs.workers if not w.deleted]
     worker_not_deleted_ids = [
@@ -255,6 +259,12 @@ def core_to_engine_inputs(
         else []
     )
 
+    _gap_enabled = _team_settings.duty_consecutive_gap_mode != "off"
+    _gap_days = (
+        _team_settings.duty_consecutive_gap_days
+        if _team_settings.duty_consecutive_gap_mode == "set"
+        else calculate_auto_gap()
+    )
     duty_consecutive_gap_vars = (
         build_consecutive_duty_gap_vars(
             workers_not_deleted,
@@ -262,9 +272,9 @@ def core_to_engine_inputs(
             dates_campaign,
             dates_hist,
             ws_to_dates,
-            engine_inputs.model_config.system_constraints.duty_consecutive_gap_min_days,
+            _gap_days,
         )
-        if engine_inputs.model_config.system_constraints.duty_consecutive_gap
+        if _gap_enabled
         else []
     )
 
@@ -359,7 +369,7 @@ def core_to_engine_inputs(
                 )
                 if engine_inputs.model_config.configuration_constraints.work_loads
                 and not (
-                    engine_inputs.model_config.system_constraints.duty_scope_skip_work_time
+                    not _team_settings.duty_scope_work_time
                     and solve_scope is not None
                     and solve_scope.scope_type == SolveScopeType.DUTIES
                 )
@@ -432,7 +442,7 @@ def core_to_engine_inputs(
                 )
                 if engine_inputs.model_config.system_constraints.weekly_target_work_time
                 and not (
-                    engine_inputs.model_config.system_constraints.duty_scope_skip_work_time
+                    not _team_settings.duty_scope_work_time
                     and solve_scope is not None
                     and solve_scope.scope_type == SolveScopeType.DUTIES
                 )

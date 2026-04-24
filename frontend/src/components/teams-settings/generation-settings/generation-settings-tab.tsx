@@ -6,7 +6,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { GapMode, TeamGenerationSettingsT } from '@/types/team-generation-settings';
 import {
@@ -30,8 +29,6 @@ export default function GenerationSettingsTab({
   const { t } = useTranslation(lng, 'teams-page');
 
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [settings, setSettings] =
     useState<Omit<TeamGenerationSettingsT, 'team_id'>>(DEFAULT_SETTINGS);
 
@@ -58,19 +55,20 @@ export default function GenerationSettingsTab({
     handleFetch();
   }, [handleFetch]);
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    setSaved(false);
-    try {
-      await updateSettingsFn(selectedTeamId, { team_id: selectedTeamId, ...settings });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-    } catch (err) {
-      console.error('Failed to save generation settings:', err);
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  const handleUpdate = useCallback(
+    async (patch: Partial<Omit<TeamGenerationSettingsT, 'team_id'>>) => {
+      try {
+        await updateSettingsFn(selectedTeamId, {
+          team_id: selectedTeamId,
+          ...settings,
+          ...patch,
+        });
+      } catch (err) {
+        console.error('Failed to save generation settings:', err);
+      }
+    },
+    [selectedTeamId, settings, updateSettingsFn],
+  );
 
   if (isLoading) {
     return <div className="p-6 text-sm text-muted-foreground">{t('loading') || '…'}</div>;
@@ -97,9 +95,11 @@ export default function GenerationSettingsTab({
           <Checkbox
             id="duty_scope_work_time"
             checked={settings.duty_scope_work_time}
-            onCheckedChange={(checked) =>
-              setSettings((s) => ({ ...s, duty_scope_work_time: Boolean(checked) }))
-            }
+            onCheckedChange={(checked) => {
+              const value = Boolean(checked);
+              setSettings((s) => ({ ...s, duty_scope_work_time: value }));
+              handleUpdate({ duty_scope_work_time: value });
+            }}
           />
         </div>
       </section>
@@ -120,9 +120,11 @@ export default function GenerationSettingsTab({
           </div>
           <RadioGroup
             value={settings.duty_consecutive_gap_mode}
-            onValueChange={(val) =>
-              setSettings((s) => ({ ...s, duty_consecutive_gap_mode: val as GapMode }))
-            }
+            onValueChange={(val) => {
+              const value = val as GapMode;
+              setSettings((s) => ({ ...s, duty_consecutive_gap_mode: value }));
+              handleUpdate({ duty_consecutive_gap_mode: value });
+            }}
             className="space-y-2"
           >
             <div className="flex items-center gap-2">
@@ -159,6 +161,10 @@ export default function GenerationSettingsTab({
                     duty_consecutive_gap_days: Math.max(1, parseInt(e.target.value, 10) || 1),
                   }))
                 }
+                onBlur={(e) => {
+                  const value = Math.max(1, parseInt(e.target.value, 10) || 1);
+                  handleUpdate({ duty_consecutive_gap_days: value });
+                }}
                 className="w-24"
               />
               <span className="text-sm text-muted-foreground">{t('days')}</span>
@@ -166,13 +172,6 @@ export default function GenerationSettingsTab({
           )}
         </div>
       </section>
-
-      {/* Save button */}
-      <div className="pt-2">
-        <Button onClick={handleSave} disabled={isSaving}>
-          {isSaving ? t('saving') : saved ? t('saved') : t('save')}
-        </Button>
-      </div>
     </div>
   );
 }

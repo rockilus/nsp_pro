@@ -32,7 +32,9 @@ if (pytest_mode and environment == "production") or (
 print(f"num_search_workers: {num_search_workers}")
 
 
-def get_max_time_in_seconds(is_test: bool, in_github: bool, cur_env: str) -> int:
+def get_max_time_in_seconds(
+    is_test: bool, in_github: bool, cur_env: str
+) -> int:
     if is_test:
         if not in_github:
             return 3
@@ -99,8 +101,6 @@ model_config = ModelConfig(
         max_weekly_nb_duties=not test_mode,
         max_week_day_nb_duties=not test_mode,
         special_days_target_nb_duties=not test_mode,
-        duty_consecutive_gap=not test_mode,
-        duty_consecutive_gap_min_days=2,
     ),
 )
 
