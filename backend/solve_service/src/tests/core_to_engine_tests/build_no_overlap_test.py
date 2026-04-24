@@ -83,7 +83,8 @@ def _make_multitasking_group(
 
 
 class TestLayer1TypeFiltering:
-    """DUTY, NORMAL, LEAVE shifts enter no-overlap groups; REST is excluded."""
+    """REST shifts participate via an implicit group; OFF and RECUPERATION can overlap
+    each other but not work shifts (DUTY, NORMAL, LEAVE)."""
 
     def _run(
         self,
@@ -126,18 +127,21 @@ class TestLayer1TypeFiltering:
         shift_ids = {t[2] for t in groups[0]}
         assert "leave_a" in shift_ids
 
-    def test_rest_off_shift_excluded(self) -> None:
+    def test_rest_off_shift_cannot_overlap_work(self) -> None:
+        """OFF shift must share a no-overlap group with work shifts."""
         off_shift = _make_shift(
             "off_a", shift_type=ShiftType.REST, rest_type=ShiftRestType.OFF
         )
         normal = _make_shift("normal_a")
         groups = self._run([off_shift, normal])
-        assert len(groups) == 1
-        shift_ids = {t[2] for t in groups[0]}
-        assert "off_a" not in shift_ids
-        assert "normal_a" in shift_ids
+        d = CAMPAIGN_DATE.isoformat()
+        # off_a is the focal shift in its group; normal_a is a base shift → both in same list
+        assert any(
+            ("w0", d, "off_a") in g and ("w0", d, "normal_a") in g for g in groups
+        ), "off_a and normal_a must share a no-overlap group"
 
-    def test_rest_recuperation_shift_excluded(self) -> None:
+    def test_rest_recuperation_shift_cannot_overlap_work(self) -> None:
+        """RECUPERATION shift must share a no-overlap group with work shifts."""
         recup = _make_shift(
             "recup_a",
             shift_type=ShiftType.REST,
@@ -145,12 +149,33 @@ class TestLayer1TypeFiltering:
         )
         normal = _make_shift("normal_a")
         groups = self._run([recup, normal])
-        assert len(groups) == 1
-        shift_ids = {t[2] for t in groups[0]}
-        assert "recup_a" not in shift_ids
-        assert "normal_a" in shift_ids
+        d = CAMPAIGN_DATE.isoformat()
+        assert any(
+            ("w0", d, "recup_a") in g and ("w0", d, "normal_a") in g for g in groups
+        ), "recup_a and normal_a must share a no-overlap group"
+
+    def test_off_and_recuperation_can_overlap_each_other(self) -> None:
+        """OFF and RECUPERATION share the implicit REST group → never in the same
+        AddNoOverlap list → they ARE allowed to overlap."""
+        off_shift = _make_shift(
+            "off_a", shift_type=ShiftType.REST, rest_type=ShiftRestType.OFF
+        )
+        recup = _make_shift(
+            "recup_a",
+            shift_type=ShiftType.REST,
+            rest_type=ShiftRestType.RECUPERATION,
+        )
+        groups = self._run([off_shift, recup])
+        d = CAMPAIGN_DATE.isoformat()
+        # They must NEVER appear in the same inner list
+        assert not any(
+            ("w0", d, "off_a") in g and ("w0", d, "recup_a") in g for g in groups
+        ), "off_a and recup_a must NOT share a no-overlap group (they can overlap)"
 
     def test_only_rest_shifts_produce_no_groups(self) -> None:
+        """With only REST shifts and no work base, no effective constraints are emitted.
+        Each REST shift's focal list has only itself (1 tuple) → guarded out by Phase D.
+        """
         shifts = [
             _make_shift(
                 "off_a", shift_type=ShiftType.REST, rest_type=ShiftRestType.OFF
@@ -162,6 +187,7 @@ class TestLayer1TypeFiltering:
             ),
         ]
         groups = self._run(shifts)
+        # Each focal list contains 1 tuple (itself only) → filtered by len >= 2 guard
         assert groups == []
 
     def test_no_shifts_produce_no_groups(self) -> None:

@@ -41,7 +41,16 @@ def build_no_overlap_shift_intervals(
     }
 
     # ── Step 2: Collect grouped shift_ids, keyed by group index ──────────────
+    # Implicit REST group: all REST shifts (OFF + RECUPERATION) share one group so
+    # that OFF and RECUPERATION can overlap each other, but neither can overlap
+    # with any work shift (DUTY, NORMAL, LEAVE).
     grouped: list[set[str]] = []
+    rest_shift_ids: set[str] = {
+        s.id for s in shifts_not_deleted if s.shift_type == ShiftType.REST
+    }
+    if rest_shift_ids:
+        grouped.append(rest_shift_ids)
+
     for mg in multitasking_groups:
         if mg.type.value != MultitaskingGroupType.SHIFT_DEMAND.value:
             continue
@@ -57,11 +66,9 @@ def build_no_overlap_shift_intervals(
     all_grouped_shift_ids: set[str] = set().union(*grouped) if grouped else set()
 
     # ── Step 4: Build the "no-overlap eligible" shift list (Layer 1 filter) ──
-    no_overlap_eligible: list[Shift] = [
-        s
-        for s in shifts_not_deleted
-        if s.shift_type in (ShiftType.DUTY, ShiftType.NORMAL, ShiftType.LEAVE)
-    ]
+    # All non-deleted shifts participate. REST shifts are handled via the implicit
+    # group above — excluded from base and placed in their own focal lists.
+    no_overlap_eligible: list[Shift] = list(shifts_not_deleted)
 
     base_shifts: list[Shift] = [
         s for s in no_overlap_eligible if s.id not in all_grouped_shift_ids
