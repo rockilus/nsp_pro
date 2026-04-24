@@ -68,6 +68,7 @@ src/shared/database/repositories/specialty.py
 src/shared/database/repositories/stats_header.py
 src/shared/database/repositories/swap.py
 src/shared/database/repositories/team.py
+src/shared/database/repositories/team_generation_settings.py
 src/shared/database/repositories/team_invitation.py
 src/shared/database/repositories/team_membership.py
 src/shared/database/repositories/user.py
@@ -101,6 +102,7 @@ src/shared/database/schemas/specialty.py
 src/shared/database/schemas/stats_header.py
 src/shared/database/schemas/swap.py
 src/shared/database/schemas/team.py
+src/shared/database/schemas/team_generation_settings.py
 src/shared/database/schemas/team_invitation.py
 src/shared/database/schemas/team_membership.py
 src/shared/database/schemas/user.py
@@ -174,6 +176,7 @@ src/shared/schemas/core/stats.py
 src/shared/schemas/core/swap.py
 src/shared/schemas/core/task.py
 src/shared/schemas/core/team.py
+src/shared/schemas/core/team_generation_settings.py
 src/shared/schemas/core/team_invitation.py
 src/shared/schemas/core/team_membership.py
 src/shared/schemas/core/user.py
@@ -201,6 +204,7 @@ src/shared/schemas/dto/specialty.py
 src/shared/schemas/dto/stats.py
 src/shared/schemas/dto/swap.py
 src/shared/schemas/dto/team.py
+src/shared/schemas/dto/team_generation_settings.py
 src/shared/schemas/dto/team_invitation.py
 src/shared/schemas/dto/user.py
 src/shared/schemas/dto/worker.py

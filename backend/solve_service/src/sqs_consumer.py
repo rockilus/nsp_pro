@@ -7,6 +7,7 @@ for solve requests and processes them using the existing solve logic.
 
 import asyncio
 import time
+from copy import deepcopy
 from datetime import UTC, datetime
 
 from loguru import logger
@@ -16,6 +17,7 @@ from shared.schemas.core import (
     Breach,
     SQSSolveMessage,
     SQSSolveQueueMessage,
+    TeamGenerationSettings,
 )
 from shared.schemas.core.solve_task_status import (
     ResultModel,
@@ -25,8 +27,12 @@ from shared.schemas.core.solve_task_status import (
 )
 from shared.services.sqs_solve_service import SQSSolveService
 
+from core_to_engine_service.calculate_worker_nb_duties import (
+    calculate_auto_gap,
+)
 from db_operations.get_engine_inputs import get_engine_inputs
 from db_operations.save_engine_outputs import save_engine_outputs
+from solve_service.model_config import model_config
 from solve_service.solve_schedule import solve_schedule
 
 
@@ -81,7 +87,9 @@ class SQSSolveConsumer:
                 logger.error(f"Error in SQS consumer loop: {e}")
                 await asyncio.sleep(5)  # Wait before retrying
 
-    async def _process_message(self, message_data: SQSSolveQueueMessage) -> None:
+    async def _process_message(
+        self, message_data: SQSSolveQueueMessage
+    ) -> None:
         """
         Process a single solve request message.
 
@@ -117,7 +125,9 @@ class SQSSolveConsumer:
             )
 
             # Delete message from queue
-            await self.sqs_solve_service.delete_message(receipt_handle=receipt_handle)
+            await self.sqs_solve_service.delete_message(
+                receipt_handle=receipt_handle
+            )
 
             logger.info(
                 f"Successfully processed solve request for schedule "
@@ -132,7 +142,9 @@ class SQSSolveConsumer:
 
             # Update schedule with failure
             try:
-                await self._update_schedule_failure(message_id=message_id, error=str(e))
+                await self._update_schedule_failure(
+                    message_id=message_id, error=str(e)
+                )
             except Exception as update_exc:
                 logger.error(
                     f"Failed to update schedule failure for message {message_id}: "
@@ -172,9 +184,34 @@ class SQSSolveConsumer:
             schedule=schedule,
             collections=self.collections,
         )
+        # Load team generation settings and build an effective model config override
+        team_settings = (
+            self.collections.team_generation_settings_db.get_by_team_id(
+                schedule.team_id
+            )
+            or TeamGenerationSettings.default(schedule.team_id)
+        )
+        effective_config = deepcopy(model_config)
+        gap_mode = team_settings.duty_consecutive_gap_mode
+        if gap_mode == "off":
+            effective_config.system_constraints.duty_consecutive_gap = False
+        elif gap_mode == "set":
+            effective_config.system_constraints.duty_consecutive_gap = True
+            effective_config.system_constraints.duty_consecutive_gap_min_days = (
+                team_settings.duty_consecutive_gap_days
+            )
+        elif gap_mode == "auto":
+            effective_config.system_constraints.duty_consecutive_gap = True
+            effective_config.system_constraints.duty_consecutive_gap_min_days = (
+                calculate_auto_gap()
+            )
+        effective_config.system_constraints.duty_scope_skip_work_time = (
+            not team_settings.duty_scope_work_time
+        )
         engine_outputs, processing_cache = solve_schedule(
             engine_inputs=engine_inputs,
             solve_scope=message.solve_scope,
+            model_config_override=effective_config,
         )
         schedule_solve_status, assignments, breaches, solver_output = (
             save_engine_outputs(
@@ -242,10 +279,8 @@ class SQSSolveConsumer:
             result: The solve results
             task_id: The task/message ID
         """
-        solve_task_status = (
-            self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
-                solve_id=message_id
-            )
+        solve_task_status = self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
+            solve_id=message_id
         )
         if not solve_task_status:
             raise ValueError(f"Solve task with id {message_id} not found")
@@ -271,10 +306,8 @@ class SQSSolveConsumer:
             error: The error message
             task_id: The task/message ID
         """
-        solve_task_status = (
-            self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
-                solve_id=message_id
-            )
+        solve_task_status = self.collections.solve_task_status_db.get_solve_task_status_by_solve_id(
+            solve_id=message_id
         )
         if not solve_task_status:
             raise ValueError(f"Solve task with id {message_id} not found")

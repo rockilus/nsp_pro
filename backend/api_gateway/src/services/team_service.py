@@ -4,11 +4,13 @@ from typing import List
 from shared.schemas.core import (
     MembershipForTeamWithMembership,
     Team,
+    TeamGenerationSettings,
     TeamMembership,
     TeamMembershipRole,
     TeamWithMembership,
     UserWithMembership,
 )
+from shared.schemas.dto import TeamGenerationSettingsDTO
 
 from src.services.base_service import BaseService
 from src.services.notification_builders import (
@@ -33,7 +35,9 @@ class TeamService(BaseService):
         self.team_membership_service = team_membership_service
         self.notification_service = notification_service
 
-    async def create_team(self, team_name: str, owner_id: str) -> TeamWithMembership:
+    async def create_team(
+        self, team_name: str, owner_id: str
+    ) -> TeamWithMembership:
         new_team = Team(
             id="",
             name=team_name,
@@ -60,7 +64,9 @@ class TeamService(BaseService):
     def get_team_by_id(self, team_id: str) -> Team | None:
         return self.collection.team_db.get_team_by_id(team_id=team_id)
 
-    def get_user_teams_with_memberships(self, user_id: str) -> List[TeamWithMembership]:
+    def get_user_teams_with_memberships(
+        self, user_id: str
+    ) -> List[TeamWithMembership]:
         memberships = (
             self.collection.team_membership_db.get_team_memberships_by_user_id(
                 user_id=user_id
@@ -90,7 +96,9 @@ class TeamService(BaseService):
                 )
         return out
 
-    def get_team_users_with_memberships(self, team_id: str) -> List[UserWithMembership]:
+    def get_team_users_with_memberships(
+        self, team_id: str
+    ) -> List[UserWithMembership]:
         memberships = (
             self.collection.team_membership_db.get_team_memberships_by_team_id(
                 team_id=team_id
@@ -127,7 +135,9 @@ class TeamService(BaseService):
             )
         )
         owner_team_ids = [
-            m.team_id for m in memberships if m.role == TeamMembershipRole.OWNER
+            m.team_id
+            for m in memberships
+            if m.role == TeamMembershipRole.OWNER
         ]
         return self.collection.team_db.get_teams_by_ids(owner_team_ids)
 
@@ -144,10 +154,8 @@ class TeamService(BaseService):
     async def remove_user_from_team(
         self, user_id: str, team_id: str, is_self_leave: bool = False
     ) -> None:
-        membership = (
-            self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
-                user_id=user_id, team_id=team_id
-            )
+        membership = self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
+            user_id=user_id, team_id=team_id
         )
         if membership is None:
             # pylint: disable=broad-exception-raised
@@ -155,7 +163,9 @@ class TeamService(BaseService):
         if membership.role == TeamMembershipRole.OWNER:
             # pylint: disable=broad-exception-raised
             raise Exception("Cannot leave team as owner")
-        await self.team_membership_service.delete_team_membership(membership.id)
+        await self.team_membership_service.delete_team_membership(
+            membership.id
+        )
         worker = self.collection.worker_db.get_workers_by_team_and_user(
             team_id=team_id, user_id=user_id
         )
@@ -166,19 +176,21 @@ class TeamService(BaseService):
         team = self.collection.team_db.get_team_by_id(team_id=team_id)
         team_name = team.name if team else ""
         if is_self_leave:
-            removed_user = self.collection.user_db.get_user_by_id(user_id=user_id)
+            removed_user = self.collection.user_db.get_user_by_id(
+                user_id=user_id
+            )
             user_name = (
                 f"{removed_user.first_name} {removed_user.last_name}"
                 if removed_user
                 else ""
             )
-            memberships = (
-                self.collection.team_membership_db.get_team_memberships_by_team_id(
-                    team_id
-                )
+            memberships = self.collection.team_membership_db.get_team_memberships_by_team_id(
+                team_id
             )
             owner_user_ids = [
-                m.user_id for m in memberships if m.role == TeamMembershipRole.OWNER
+                m.user_id
+                for m in memberships
+                if m.role == TeamMembershipRole.OWNER
             ]
             if owner_user_ids:
                 await self.notification_service.dispatch(
@@ -197,3 +209,29 @@ class TeamService(BaseService):
                     removed_user_id=user_id,
                 )
             )
+
+    def get_generation_settings(self, team_id: str) -> TeamGenerationSettings:
+        """Return team generation settings, using defaults if no document exists."""
+        settings = self.collection.team_generation_settings_db.get_by_team_id(
+            team_id
+        )
+        return (
+            settings
+            if settings is not None
+            else TeamGenerationSettings.default(team_id)
+        )
+
+    def update_generation_settings(
+        self, team_id: str, dto: TeamGenerationSettingsDTO
+    ) -> TeamGenerationSettings:
+        """Validate team exists then upsert generation settings."""
+        team = self.collection.team_db.get_team_by_id(team_id)
+        if team is None:
+            raise ValueError(f"Team {team_id} not found")
+        settings = TeamGenerationSettings(
+            team_id=team_id,
+            duty_scope_work_time=dto.duty_scope_work_time,
+            duty_consecutive_gap_mode=dto.duty_consecutive_gap_mode,
+            duty_consecutive_gap_days=dto.duty_consecutive_gap_days,
+        )
+        return self.collection.team_generation_settings_db.upsert(settings)
