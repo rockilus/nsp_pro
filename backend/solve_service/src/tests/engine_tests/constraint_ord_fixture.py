@@ -29,18 +29,6 @@ def _test_month_start() -> date:
     return date(year, month, 1)
 
 
-def first_monday(start: date) -> date:
-    """Return the first Monday on or after *start*."""
-    days_ahead = (0 - start.weekday()) % 7
-    return start + timedelta(days=days_ahead)
-
-
-def first_saturday(start: date) -> date:
-    """Return the first Saturday on or after *start*."""
-    days_ahead = (5 - start.weekday()) % 7
-    return start + timedelta(days=days_ahead)
-
-
 def build_ei_scoped(
     penalties: Penalties, model_config: ModelConfig
 ) -> EngineInputsAugmented:
