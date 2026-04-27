@@ -354,13 +354,13 @@ def core_to_engine_inputs(
                     w_to_work_times,
                     w_to_nb_duties,
                     engine_inputs.penalties,
+                    skip_work_time=(
+                        not _team_settings.duty_scope_work_time
+                        and solve_scope is not None
+                        and solve_scope.scope_type == SolveScopeType.DUTIES
+                    ),
                 )
                 if engine_inputs.model_config.configuration_constraints.work_loads
-                and not (
-                    not _team_settings.duty_scope_work_time
-                    and solve_scope is not None
-                    and solve_scope.scope_type == SolveScopeType.DUTIES
-                )
                 else None
             ),
             shift_demands=build_engine_shift_demands(
