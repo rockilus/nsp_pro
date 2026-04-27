@@ -262,7 +262,8 @@ def core_to_engine_inputs(
             ws_to_dates,
             _gap_days,
         )
-        if _gap_enabled
+        if engine_inputs.model_config.system_constraints.duty_consecutive_gap
+        and _gap_enabled
         else []
     )
 
