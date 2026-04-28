@@ -25,3 +25,10 @@ jest.mock('next/router', () => ({
 
 // Global test utilities
 global.fetch = jest.fn();
+
+// Suppress MUI TouchRipple state-update warnings in tests by mocking it
+jest.mock('@mui/material/ButtonBase/TouchRipple', () => {
+  return function DummyTouchRipple() {
+    return null;
+  };
+});
