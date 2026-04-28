@@ -41,7 +41,7 @@ export default function GapSetting({ id, mode, days, onChange, label, descriptio
         {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
 
         {enabled && (
-          <div className="mt-3 pl-1">
+          <div className="mt-1 pl-1">
             <label className="mr-3 text-sm text-muted-foreground"> </label>
             <div className="flex items-center gap-3">
               <select

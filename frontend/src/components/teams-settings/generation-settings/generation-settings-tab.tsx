@@ -78,7 +78,7 @@ export default function GenerationSettingsTab({
       <section className="space-y-6">
         <SectionTitle title={t('duties_generation') || t('duty_scope_section')} />
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <CheckboxSetting
             id="duty_scope_work_time"
             checked={settings.duty_scope_work_time}
