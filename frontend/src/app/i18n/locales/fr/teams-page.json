@@ -43,6 +43,7 @@
   "saved": "Enregistré !",
   "schedule_generation": "Génération des plannings",
   "schedule_generation_desc": "Configurez le fonctionnement de l'algorithme de génération pour cette équipe.",
+  "duties_generation": "Génération des gardes",
   "duty_scope_section": "Périmètre des gardes",
   "duty_scope_section_desc": "Contrôle les contraintes appliquées lors de la résolution du périmètre gardes uniquement.",
   "duty_scope_work_time": "Contraintes de temps de travail",

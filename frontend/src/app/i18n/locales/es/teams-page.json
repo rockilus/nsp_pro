@@ -43,6 +43,7 @@
   "saved": "¡Guardado!",
   "schedule_generation": "Generación de horarios",
   "schedule_generation_desc": "Configura cómo funciona el algoritmo de generación de horarios para este equipo.",
+  "duties_generation": "Generación de guardias",
   "duty_scope_section": "Alcance de guardias",
   "duty_scope_section_desc": "Controla qué restricciones se aplican al resolver únicamente el alcance de guardias.",
   "duty_scope_work_time": "Restricciones de tiempo de trabajo",

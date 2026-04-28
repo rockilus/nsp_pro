@@ -43,6 +43,7 @@
   "saved": "Saved!",
   "schedule_generation": "Schedule generation",
   "schedule_generation_desc": "Configure how the schedule generation algorithm works for this team.",
+  "duties_generation": "Duties generation",
   "duty_scope_section": "Duties scope",
   "duty_scope_section_desc": "Controls which constraints apply when solving only the duties scope.",
   "duty_scope_work_time": "Work time constraints",
