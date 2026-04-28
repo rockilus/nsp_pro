@@ -2,10 +2,6 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from '@/app/i18n/client';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import SectionTitle from './section-title';
 import CheckboxSetting from './checkbox-setting';
 import GapSetting from './gap-setting';
@@ -78,12 +74,11 @@ export default function GenerationSettingsTab({
 
   return (
     <div className="max-w-2xl space-y-8 p-6">
-      {/* Section: Duties scope */}
-      <section className="space-y-4">
-        <SectionTitle title={t('duty_scope_section')} />
+      {/* Section: Duties generation (single section for related settings) */}
+      <section className="space-y-6">
+        <SectionTitle title={t('duties_generation') || t('duty_scope_section')} />
 
-        {/* Setting row: work time constraints */}
-        <div>
+        <div className="space-y-4">
           <CheckboxSetting
             id="duty_scope_work_time"
             checked={settings.duty_scope_work_time}
@@ -95,14 +90,7 @@ export default function GenerationSettingsTab({
             label={t('duty_scope_work_time')}
             description={t('duty_scope_work_time_desc')}
           />
-        </div>
-      </section>
 
-      {/* Section: Duty gap */}
-      <section className="space-y-4">
-        <SectionTitle title={t('duty_gap_section')} />
-
-        <div>
           <GapSetting
             id="duty_consecutive_gap"
             mode={settings.duty_consecutive_gap_mode}
