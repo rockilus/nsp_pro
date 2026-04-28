@@ -8,6 +8,7 @@ from shared.logger import log_info
 from shared.schemas.core import Team
 from shared.schemas.dto import (
     TeamDTO,
+    TeamGenerationSettingsDTO,
     TeamWithMembershipDTO,
     UserWithMembershipDTO,
 )
@@ -244,3 +245,54 @@ async def remove_user_from_team(
 # def delete_team(team_id: str) -> Dict:
 #     delete_team_service(team_id)
 #     return {"message": "Team deleted"}
+
+
+@router.get("/teams/{team_id}/generation-settings")
+async def get_team_generation_settings(
+    team_id: str,
+    user_context: UserContext = Depends(get_user_context),
+    team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+) -> TeamGenerationSettingsDTO:
+    try:
+        if not await authz.check(user_context.user_id, "read-team", "team", team_id):
+            raise NotAuthorizedError(
+                "You do not have permission to read team generation settings"
+            )
+        settings = team_service.get_generation_settings(team_id=team_id)
+        response = TeamGenerationSettingsDTO(
+            team_id=settings.team_id,
+            duty_scope_work_time=settings.duty_scope_work_time,
+            duty_consecutive_gap_mode=settings.duty_consecutive_gap_mode,
+            duty_consecutive_gap_days=settings.duty_consecutive_gap_days,
+        )
+    except Exception as e:
+        log_info("Failed to get team generation settings")
+        handle_routes_errors(e)
+    return response
+
+
+@router.put("/teams/{team_id}/generation-settings")
+async def update_team_generation_settings(
+    team_id: str,
+    body: TeamGenerationSettingsDTO,
+    user_context: UserContext = Depends(get_user_context),
+    team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+) -> TeamGenerationSettingsDTO:
+    try:
+        if not await authz.check(user_context.user_id, "update-team", "team", team_id):
+            raise NotAuthorizedError(
+                "You do not have permission to update team generation settings"
+            )
+        settings = team_service.update_generation_settings(team_id=team_id, dto=body)
+        response = TeamGenerationSettingsDTO(
+            team_id=settings.team_id,
+            duty_scope_work_time=settings.duty_scope_work_time,
+            duty_consecutive_gap_mode=settings.duty_consecutive_gap_mode,
+            duty_consecutive_gap_days=settings.duty_consecutive_gap_days,
+        )
+    except Exception as e:
+        log_info("Failed to update team generation settings")
+        handle_routes_errors(e)
+    return response

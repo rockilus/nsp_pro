@@ -4,11 +4,13 @@ from typing import List
 from shared.schemas.core import (
     MembershipForTeamWithMembership,
     Team,
+    TeamGenerationSettings,
     TeamMembership,
     TeamMembershipRole,
     TeamWithMembership,
     UserWithMembership,
 )
+from shared.schemas.dto import TeamGenerationSettingsDTO
 
 from src.services.base_service import BaseService
 from src.services.notification_builders import (
@@ -197,3 +199,27 @@ class TeamService(BaseService):
                     removed_user_id=user_id,
                 )
             )
+
+    def get_generation_settings(self, team_id: str) -> TeamGenerationSettings:
+        """Return team generation settings, using defaults if no document exists."""
+        settings = self.collection.team_generation_settings_db.get_by_team_id(team_id)
+        return (
+            settings
+            if settings is not None
+            else TeamGenerationSettings.default(team_id)
+        )
+
+    def update_generation_settings(
+        self, team_id: str, dto: TeamGenerationSettingsDTO
+    ) -> TeamGenerationSettings:
+        """Validate team exists then upsert generation settings."""
+        team = self.collection.team_db.get_team_by_id(team_id)
+        if team is None:
+            raise ValueError(f"Team {team_id} not found")
+        settings = TeamGenerationSettings(
+            team_id=team_id,
+            duty_scope_work_time=dto.duty_scope_work_time,
+            duty_consecutive_gap_mode=dto.duty_consecutive_gap_mode,
+            duty_consecutive_gap_days=dto.duty_consecutive_gap_days,
+        )
+        return self.collection.team_generation_settings_db.upsert(settings)

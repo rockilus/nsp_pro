@@ -16,6 +16,7 @@ from shared.schemas.core import (
     Breach,
     SQSSolveMessage,
     SQSSolveQueueMessage,
+    TeamGenerationSettings,
 )
 from shared.schemas.core.solve_task_status import (
     ResultModel,
@@ -172,9 +173,14 @@ class SQSSolveConsumer:
             schedule=schedule,
             collections=self.collections,
         )
+        # Load team generation settings
+        team_settings = self.collections.team_generation_settings_db.get_by_team_id(
+            schedule.team_id
+        ) or TeamGenerationSettings.default(schedule.team_id)
         engine_outputs, processing_cache = solve_schedule(
             engine_inputs=engine_inputs,
             solve_scope=message.solve_scope,
+            team_settings=team_settings,
         )
         schedule_solve_status, assignments, breaches, solver_output = (
             save_engine_outputs(

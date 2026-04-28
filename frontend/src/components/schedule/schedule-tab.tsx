@@ -515,7 +515,6 @@ export default function ScheduleTab({
       selectedCells: newCells,
       selectedAssignmentIds: matchingIds,
     }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [periodDates, assignments]);
 
   const handleToggleSelectionMode = useCallback(() => {

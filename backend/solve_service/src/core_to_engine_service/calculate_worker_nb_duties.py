@@ -69,6 +69,15 @@ def build_nb_duties_constraints(
     return list(p_index_to_gadtc.values())
 
 
+def calculate_auto_gap() -> int:
+    """Placeholder: auto-calculate the minimum gap between duties.
+
+    TODO: implement algorithmic derivation from schedule/worker data.
+    Returns a fixed default of 2 days for now.
+    """
+    return 2
+
+
 # pylint: disable=too-many-locals, too-many-arguments, R0801
 def calculate_worker_nb_duties(
     schedule: Schedule,

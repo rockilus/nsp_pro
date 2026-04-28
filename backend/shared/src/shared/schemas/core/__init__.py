@@ -188,6 +188,7 @@ from shared.schemas.core.team import (
     Team,
     TeamWithMembership,
 )
+from shared.schemas.core.team_generation_settings import TeamGenerationSettings
 from shared.schemas.core.team_invitation import (
     EnrichedTeamInvitation,
     TeamInvitation,
@@ -363,6 +364,7 @@ __all__ = [
     "SQSSolveMessage",
     "SQSSolveQueueMessage",
     "WorkerDateCell",
+    "TeamGenerationSettings",
     "TeamWithMembership",
     "Team",
     "MembershipForTeamWithMembership",

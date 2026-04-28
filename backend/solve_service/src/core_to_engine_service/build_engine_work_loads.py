@@ -20,37 +20,53 @@ def build_engine_work_loads(
     w_to_work_times: dict[str, dict[str, list[int]]],
     w_to_nb_duties: dict[str, dict[str, list[int]]],
     penalties: Penalties,
+    skip_work_time: bool = False,
 ) -> WorkLoadsEngine:
+    empty_work_time = WorkTimeEngine(
+        assignments=[], targets=[], durations=[], penalty=0
+    )
     return WorkLoadsEngine(
-        weekly_work_time_contractual=build_engine_work_time(
-            workers_not_deleted,
-            periods_weekly,
-            ws_to_dates,
-            shifts_work,
-            shift_id_to_duration_dict,
-            w_to_work_times,
-            "contract",
-            penalties.configuration_constraint.weekly_worktime_contract,
+        weekly_work_time_contractual=(
+            empty_work_time
+            if skip_work_time
+            else build_engine_work_time(
+                workers_not_deleted,
+                periods_weekly,
+                ws_to_dates,
+                shifts_work,
+                shift_id_to_duration_dict,
+                w_to_work_times,
+                "contract",
+                penalties.configuration_constraint.weekly_worktime_contract,
+            )
         ),
-        weekly_work_time_desired=build_engine_work_time(
-            workers_not_deleted,
-            periods_weekly,
-            ws_to_dates,
-            shifts_work,
-            shift_id_to_duration_dict,
-            w_to_work_times,
-            "desired",
-            penalties.configuration_constraint.weekly_worktime_desired,
+        weekly_work_time_desired=(
+            empty_work_time
+            if skip_work_time
+            else build_engine_work_time(
+                workers_not_deleted,
+                periods_weekly,
+                ws_to_dates,
+                shifts_work,
+                shift_id_to_duration_dict,
+                w_to_work_times,
+                "desired",
+                penalties.configuration_constraint.weekly_worktime_desired,
+            )
         ),
-        weekly_work_time_max=build_engine_work_time(
-            workers_not_deleted,
-            periods_weekly,
-            ws_to_dates,
-            shifts_work,
-            shift_id_to_duration_dict,
-            w_to_work_times,
-            "max",
-            penalties.configuration_constraint.weekly_worktime_max,
+        weekly_work_time_max=(
+            empty_work_time
+            if skip_work_time
+            else build_engine_work_time(
+                workers_not_deleted,
+                periods_weekly,
+                ws_to_dates,
+                shifts_work,
+                shift_id_to_duration_dict,
+                w_to_work_times,
+                "max",
+                penalties.configuration_constraint.weekly_worktime_max,
+            )
         ),
         monthly_nb_duties_desired=build_engine_nb_duties(
             workers_not_deleted,

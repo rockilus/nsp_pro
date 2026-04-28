@@ -69,6 +69,11 @@ export default function TeamSettingsLayout({
       label: t('users') || 'Members',
       href: `/${lng}/plan/teams/members?teamId=${teamId}`,
     },
+    {
+      name: 'generation-settings',
+      label: t('schedule_generation') || 'Schedule generation',
+      href: `/${lng}/plan/teams/generation-settings?teamId=${teamId}`,
+    },
   ];
 
   return (

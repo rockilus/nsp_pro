@@ -79,6 +79,9 @@ from shared.schemas.dto.team import (
     TeamDTO,
     TeamWithMembershipDTO,
 )
+from shared.schemas.dto.team_generation_settings import (
+    TeamGenerationSettingsDTO,
+)
 from shared.schemas.dto.team_invitation import (
     EnrichedTeamInvitationDTO,
     TeamInvitationDTO,
@@ -150,6 +153,7 @@ __all__ = [
     "StatsValueDTO",
     "MembershipForTeamWithMembershipDTO",
     "TeamDTO",
+    "TeamGenerationSettingsDTO",
     "TeamWithMembershipDTO",
     "EnrichedTeamInvitationDTO",
     "TeamInvitationDTO",

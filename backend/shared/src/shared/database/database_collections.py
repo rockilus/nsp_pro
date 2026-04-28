@@ -44,6 +44,9 @@ from shared.database.repositories.specialty import SpecialtyRepository
 from shared.database.repositories.stats_header import StatsHeaderRepository
 from shared.database.repositories.swap import SwapRepository
 from shared.database.repositories.team import TeamRepository
+from shared.database.repositories.team_generation_settings import (
+    TeamGenerationSettingsRepository,
+)
 from shared.database.repositories.team_invitation import (
     TeamInvitationRepository,
 )
@@ -88,6 +91,7 @@ class DatabaseCollections:
     worker_db: WorkerRepository
     notification_db: NotificationRepository
     notification_preferences_db: NotificationPreferencesRepository
+    team_generation_settings_db: TeamGenerationSettingsRepository
 
     def __init__(self, database_interface: DatabaseInterface):
         """
@@ -135,6 +139,9 @@ class DatabaseCollections:
         self.worker_db = WorkerRepository(database_interface)
         self.notification_db = NotificationRepository(database_interface)
         self.notification_preferences_db = NotificationPreferencesRepository(
+            database_interface
+        )
+        self.team_generation_settings_db = TeamGenerationSettingsRepository(
             database_interface
         )
 

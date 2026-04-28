@@ -44,7 +44,6 @@ class SystemConstraints:
     max_week_day_nb_duties: bool
     special_days_target_nb_duties: bool
     duty_consecutive_gap: bool = False
-    duty_consecutive_gap_min_days: int = 1
 
 
 @dataclass
