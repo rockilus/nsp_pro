@@ -45,7 +45,7 @@ export default function GapSetting({ id, mode, days, onChange, label, descriptio
             <select
               value={selected}
               onChange={(e) => onChange(e.target.value as GapMode, days)}
-              className="rounded border p-1 text-sm"
+              className="h-8 rounded border p-1 text-sm"
             >
               <option value="auto">Auto</option>
               <option value="set">Set</option>
@@ -59,7 +59,7 @@ export default function GapSetting({ id, mode, days, onChange, label, descriptio
                   max={30}
                   value={days}
                   onChange={(e) => onChange('set', Math.max(1, parseInt(e.target.value, 10) || 1))}
-                  className="w-24"
+                  className="h-8 w-24"
                 />
                 <span className="text-sm text-muted-foreground">days</span>
               </div>
