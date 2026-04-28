@@ -41,34 +41,29 @@ export default function GapSetting({ id, mode, days, onChange, label, descriptio
         {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
 
         {enabled && (
-          <div className="mt-1 pl-1">
-            <label className="mr-3 text-sm text-muted-foreground"> </label>
-            <div className="flex items-center gap-3">
-              <select
-                value={selected}
-                onChange={(e) => onChange(e.target.value as GapMode, days)}
-                className="rounded border p-1 text-sm"
-              >
-                <option value="auto">Auto</option>
-                <option value="set">Set</option>
-              </select>
+          <div className="mt-2 flex items-center gap-3">
+            <select
+              value={selected}
+              onChange={(e) => onChange(e.target.value as GapMode, days)}
+              className="rounded border p-1 text-sm"
+            >
+              <option value="auto">Auto</option>
+              <option value="set">Set</option>
+            </select>
 
-              {selected === 'set' && (
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min={1}
-                    max={30}
-                    value={days}
-                    onChange={(e) =>
-                      onChange('set', Math.max(1, parseInt(e.target.value, 10) || 1))
-                    }
-                    className="w-24"
-                  />
-                  <span className="text-sm text-muted-foreground">days</span>
-                </div>
-              )}
-            </div>
+            {selected === 'set' && (
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={days}
+                  onChange={(e) => onChange('set', Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground">days</span>
+              </div>
+            )}
           </div>
         )}
       </div>
