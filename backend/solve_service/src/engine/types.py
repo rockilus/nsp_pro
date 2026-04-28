@@ -331,5 +331,7 @@ class ProcessingCache:
     w_to_work_times: dict[str, dict[str, list[int]]]
     w_to_nb_duties: dict[str, dict[str, list[int]]]
     shift_id_to_duration: dict[str, int]
-    dim_to_attr_value_to_shift: dict[str, dict[str | int | float | bool, list[str]]]
+    dim_to_attr_value_to_shift: dict[
+        str, dict[str | int | float | bool, list[str]]
+    ]
     scope_ctx: "ScopeContext | None" = None
