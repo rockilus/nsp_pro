@@ -35,6 +35,8 @@
   "unknown": "Desconocido",
   "work": "Trabajo",
   "worker": "Miembro",
+  "week": "Semana",
+  "workers": "Miembros",
   "request_deadline_banner_period": "Periodo: {{period}}",
   "request_deadline_banner_submission": "Plazo de entrega: Por favor, envíe sus solicitudes antes del {{deadline}}.",
   "submitted_on": "Enviado el",
