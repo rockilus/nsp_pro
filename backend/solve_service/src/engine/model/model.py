@@ -304,6 +304,9 @@ class Model:
                 constraint=inputs.system_constraints.duty_consecutive_gap,
                 # obj_category=ObjectiveCategory.DUTY_CONSECUTIVE_GAP,
             )
+            self.add_off_shift_penalty_constraints(
+                constraint=inputs.system_constraints.off_shift_penalty,
+            )
         except Exception:
             # be defensive: if structure is missing or empty, skip
             pass
@@ -829,6 +832,37 @@ class Model:
             self.model.Add(has_duty_d + has_duty_next >= 2).OnlyEnforceIf(excess)
             self.model.Add(has_duty_d + has_duty_next < 2).OnlyEnforceIf(excess.Not())
             self.obj.bool_vars.append(excess)
+            self.obj.bool_coeffs.append(penalty)
+
+    def add_off_shift_penalty_constraints(
+        self,
+        constraint: tuple[list[tuple[str, str, str]], int],
+    ) -> None:
+        """Add a soft penalty for each free OFF shift assignment.
+
+        Penalises OFF variables that are whitelisted by user constraints but not
+        hard-fixed to 0, discouraging the solver from assigning them when the
+        constraint antecedent does not fire.
+
+        Input: (vars_list, penalty) where vars_list contains (worker, date, shift)
+        tuples for free OFF shift variables and penalty is the per-assignment cost.
+        """
+        if not constraint:
+            return
+        vars_list, penalty = constraint
+        if not vars_list or penalty == 0:
+            return
+        for var in vars_list:
+            if var not in self.variables:
+                continue
+            var_name = build_var_name_generic(
+                objective_id=None,
+                cstr_vars=[self.variables[var]],
+                category=ObjectiveCategory.OFF_SHIFT_PENALTY,
+            )
+            named_var = self.model.NewBoolVar(var_name)
+            self.model.Add(named_var == self.variables[var])
+            self.obj.bool_vars.append(named_var)
             self.obj.bool_coeffs.append(penalty)
 
     def add_worker_shift_filter_constraints(

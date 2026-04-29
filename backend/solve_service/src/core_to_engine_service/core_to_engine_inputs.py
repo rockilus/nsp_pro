@@ -2,6 +2,7 @@ from shared.constraint_parser import (
     build_dim_to_attr_value_to_owner,
 )
 from shared.schemas.core import (
+    Constraints,
     EngineInputsAugmented,
     RequestStatus,
     Shift,
@@ -275,6 +276,33 @@ def core_to_engine_inputs(
         else []
     )
 
+    # Constraints — built before fixed values so the OFF-shift whitelist
+    # extracted from parsed constraints can be passed to core_to_engine_fixed_values.
+    constraints = build_engine_constraints(
+        cbs_augmented=engine_inputs.cbs_augmented,
+        schedule=engine_inputs.schedule,
+        workers=engine_inputs.workers,
+        dim_to_attr_value_to_worker=dim_to_attr_value_to_worker,
+        dates_hist=dates_hist,
+        dates_campaign=dates_campaign,
+        periods_weekly=periods_weekly,
+        periods_monthly=periods_monthly,
+        periods_yearly=periods_yearly,
+        worker_ids_to_worker_dates=worker_ids_to_worker_dates,
+        shifts=engine_inputs.shifts,
+        dim_to_attr_value_to_shift=dim_to_attr_value_to_shift,
+        penalties=engine_inputs.penalties,
+    )
+
+    # Build whitelist of OFF-shift variables referenced in parsed constraints
+    # so they are not pre-fixed to 0 (e.g. "if duty on saturday → off next monday").
+    off_shift_ids = {
+        s.id
+        for s in shifts_not_deleted
+        if s.shift_type == ShiftType.REST and s.rest_type == ShiftRestType.OFF
+    }
+    constraint_off_vars = _extract_constraint_off_vars(constraints, off_shift_ids)
+
     # Fixed assignments
     fixed_values = core_to_engine_fixed_values(
         workers=engine_inputs.workers,
@@ -291,23 +319,20 @@ def core_to_engine_inputs(
         attributes=engine_inputs.attributes,
         var_model=variables.assignments,
         scope_ctx=_scope_ctx,
+        constraint_off_vars=constraint_off_vars,
     )
 
-    # Constraints:
-    constraints = build_engine_constraints(
-        cbs_augmented=engine_inputs.cbs_augmented,
-        schedule=engine_inputs.schedule,
-        workers=engine_inputs.workers,
-        dim_to_attr_value_to_worker=dim_to_attr_value_to_worker,
-        dates_hist=dates_hist,
-        dates_campaign=dates_campaign,
-        periods_weekly=periods_weekly,
-        periods_monthly=periods_monthly,
-        periods_yearly=periods_yearly,
-        worker_ids_to_worker_dates=worker_ids_to_worker_dates,
-        shifts=engine_inputs.shifts,
-        dim_to_attr_value_to_shift=dim_to_attr_value_to_shift,
-        penalties=engine_inputs.penalties,
+    # Free OFF vars: whitelisted by constraints but not hard-fixed to 0.
+    # The solver can assign these freely; penalise them to discourage spurious
+    # OFF assignments when the constraint antecedent does not fire.
+    free_off_vars = (
+        [
+            var
+            for var in variables.assignments
+            if var[2] in off_shift_ids and var not in fixed_values
+        ]
+        if engine_inputs.model_config.system_constraints.off_shift_penalty
+        else []
     )
 
     inputs = InputsEngine(
@@ -506,6 +531,11 @@ def core_to_engine_inputs(
                 duty_consecutive_gap_vars,
                 engine_inputs.penalties.system_constraint.duty_consecutive_gap,
             ),
+            # off_shift_penalty: tuple (free OFF vars, penalty)
+            off_shift_penalty=(
+                free_off_vars,
+                engine_inputs.penalties.system_constraint.off_shift_penalty,
+            ),
         ),
         model_config=engine_inputs.model_config,
     )
@@ -536,3 +566,54 @@ def _build_shift_id_to_duration_dict(shifts: list[Shift]) -> dict[str, int]:
     return {
         s.id: int((s.end_time - s.start_time).total_seconds() // 60 - 1) for s in shifts
     }
+
+
+def _extract_constraint_off_vars(
+    constraints: Constraints,
+    off_shift_ids: set[str],
+) -> set[tuple[str, str, str]]:
+    """Return the set of (worker_id, date_iso, shift_id) tuples that reference
+    an OFF shift in any parsed user constraint.
+
+    These variables must remain free (not pre-fixed to 0) so that constraints
+    such as "if duty on saturday → off next monday" can still be satisfied.
+
+    Variable shapes per constraint type:
+      - ConstraintSum / ConstraintSeq / ConstraintFai: List[List[Tuple]]
+      - ConstraintOrd: List[Tuple[Tuple, Tuple]]  (var_ref, var_rel pairs)
+      - ConstraintFil: List[Tuple]  (flat)
+    """
+    result: set[tuple[str, str, str]] = set()
+
+    # Sum, Seq, Fai: outer list of periods/groups, inner list of variable tuples
+    for c_sum in constraints.sum:
+        for group in c_sum.constraint_variables:
+            for var in group:
+                if var[2] in off_shift_ids:
+                    result.add(var)
+    for c_seq in constraints.seq:
+        for group in c_seq.constraint_variables:
+            for var in group:
+                if var[2] in off_shift_ids:
+                    result.add(var)
+    for c_fai in constraints.fai:
+        for group in c_fai.constraint_variables:
+            for var in group:
+                if var[2] in off_shift_ids:
+                    result.add(var)
+
+    # Ord: list of (var_ref, var_rel) pairs — extract both sides
+    for c_ord in constraints.ord:
+        for var_ref, var_rel in c_ord.constraint_variables:
+            if var_ref[2] in off_shift_ids:
+                result.add(var_ref)
+            if var_rel[2] in off_shift_ids:
+                result.add(var_rel)
+
+    # Fil: flat list of variable tuples
+    for c_fil in constraints.fil:
+        for var in c_fil.constraint_variables:
+            if var[2] in off_shift_ids:
+                result.add(var)
+
+    return result

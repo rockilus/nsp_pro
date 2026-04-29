@@ -650,6 +650,11 @@ def debug_breaches(
                     processed = True
                     break
 
+        elif b.objective_category == ObjectiveCategory.OFF_SHIFT_PENALTY:
+            _, penalty = inputs.system_constraints.off_shift_penalty
+            val = penalty
+            processed = True
+
         stats[cat]["total"] += val
         total_calc += val
         # collect per-constraint-type stats for CONSTRAINT objective category

@@ -188,6 +188,8 @@ def _build_breach_description(
         )
     if breach.objective_category == ObjectiveCategory.DUTY_RECUP:
         return _build_description_duty_recup_breach(workers, shifts, breach)
+    if breach.objective_category == ObjectiveCategory.OFF_SHIFT_PENALTY:
+        return _build_description_off_shift_penalty_breach(workers, shifts, breach)
     return f"{breach.objective_category} constraint not implemented yet"
 
 
@@ -616,6 +618,19 @@ def _build_description_duty_recup_breach(
         duty_var.date.strftime("%b %d"),
     ]
     return " ".join(string_list)
+
+
+def _build_description_off_shift_penalty_breach(
+    workers: list[Worker],
+    shifts: list[Shift],
+    breach: Breach,
+) -> str:
+    var = breach.variables[0]
+    w = next((w for w in workers if w.id == var.worker_id), None)
+    s = next((s for s in shifts if s.id == var.shift_id), None)
+    worker_name = w.name if w is not None else var.worker_id
+    shift_name = s.name if s is not None else var.shift_id
+    return f"OFF shift assigned: {worker_name} on {var.date.strftime('%b %d')} ({shift_name})"
 
 
 # class Breach:

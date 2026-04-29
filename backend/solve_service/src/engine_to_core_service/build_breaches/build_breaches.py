@@ -84,6 +84,7 @@ def build_breaches(
             ObjectiveCategory.SPECIAL_DAYS_TARGET,
             ObjectiveCategory.MAX_WEEKLY_NB_DUTIES,
             ObjectiveCategory.MAX_WEEK_DAY_NB_DUTIES,
+            ObjectiveCategory.OFF_SHIFT_PENALTY,
         ]
     ]
     # return breaches_model + breaches_not_model

@@ -15,6 +15,7 @@ from shared.schemas.core import (
     Shift,
     ShiftDemandNew,
     ShiftLeaveType,
+    ShiftRestType,
     ShiftType,
     Worker,
     WorkerDates,
@@ -342,6 +343,79 @@ def _zero_unrequested_leave_shifts(
                     out[w.id, d.isoformat(), s.id] = 0
 
 
+def _zero_unrequested_off_shifts(
+    out: dict[tuple[str, str, str], int],
+    workers_not_deleted: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts: list[Shift],
+    requests: list[Request],
+    approved_requests: list[Request],
+    constraint_off_vars: set[tuple[str, str, str]],
+) -> None:
+    """Set OFF shifts (ShiftType.REST + ShiftRestType.OFF) to 0 unless backed
+    by an approved request or referenced in a parsed user constraint.
+
+    This prevents the solver from freely assigning OFF shifts as slack, while
+    preserving correctness for:
+      - Approved leave/work-demand requests that target an OFF shift
+      - Constraints such as "if duty on saturday → off next monday"
+      - Historical assignments already set to 1 in `out`
+
+    Args:
+        out: Fixed values dict (modified in-place).
+        workers_not_deleted: Active workers.
+        worker_ids_to_worker_dates: Mapping worker ID → date ranges.
+        shifts: All non-deleted shifts.
+        requests: All leave requests (for checking request-backed OFF shifts).
+        approved_requests: Approved requests (leave + work-demand).
+        constraint_off_vars: Set of (worker_id, date_iso, shift_id) tuples
+            referencing OFF shifts in parsed user constraints.
+    """
+    off_shifts = [
+        s
+        for s in shifts
+        if s.shift_type == ShiftType.REST and s.rest_type == ShiftRestType.OFF
+    ]
+    if not off_shifts:
+        return
+
+    # Build a quick lookup: (worker_id, shift_id) → set of covered date ranges
+    # from approved requests, to avoid O(n^3) inner loop.
+    # We use a flat set of (worker_id, date_iso, shift_id) for O(1) lookup.
+    request_backed: set[tuple[str, str, str]] = set()
+    for req in approved_requests:
+        if not req.shift_id:
+            continue
+        if req.worker_id not in worker_ids_to_worker_dates:
+            continue
+        for d in _filter_campaign_dates(req, worker_ids_to_worker_dates):
+            request_backed.add((req.worker_id, d.isoformat(), req.shift_id))
+
+    # Also include plain leave requests (non-approved) that back the shift,
+    # mirroring _zero_unrequested_leave_shifts which checks all requests.
+    for req in requests:
+        if not req.shift_id:
+            continue
+        if req.worker_id not in worker_ids_to_worker_dates:
+            continue
+        for d in _filter_campaign_dates(req, worker_ids_to_worker_dates):
+            request_backed.add((req.worker_id, d.isoformat(), req.shift_id))
+
+    for w in workers_not_deleted:
+        for d in worker_ids_to_worker_dates[w.id].dates_campaign:
+            for s in off_shifts:
+                key = (w.id, d.isoformat(), s.id)
+                # Keep free if: already explicitly set to 1 (historical assignment),
+                # backed by a request, or referenced in a parsed constraint.
+                if out.get(key) == 1:
+                    continue
+                if key in request_backed:
+                    continue
+                if key in constraint_off_vars:
+                    continue
+                out[key] = 0
+
+
 def _zero_shifts_without_demand(
     out: dict[tuple[str, str, str], int],
     workers_not_deleted: list[Worker],
@@ -397,6 +471,7 @@ def core_to_engine_fixed_values(
     attributes: list[Attribute],
     var_model: list[tuple[str, str, str]],
     scope_ctx: ScopeContext | None = None,
+    constraint_off_vars: set[tuple[str, str, str]] | None = None,
 ) -> dict[tuple[str, str, str], int]:
     """
     Build fixed values dictionary for the solver.
@@ -455,13 +530,22 @@ def core_to_engine_fixed_values(
         dim_to_attr_value_to_shift,
     )
 
-    # Cleanup: zero out unrequested leaves and shifts without demand
+    # Cleanup: zero out unrequested leaves, OFF shifts, and shifts without demand
     _zero_unrequested_leave_shifts(
         out,
         workers_not_deleted,
         worker_ids_to_worker_dates,
         shifts_not_deleted,
         requests,
+    )
+    _zero_unrequested_off_shifts(
+        out,
+        workers_not_deleted,
+        worker_ids_to_worker_dates,
+        shifts_not_deleted,
+        requests,
+        approved_requests,
+        constraint_off_vars or set(),
     )
     _zero_shifts_without_demand(
         out,

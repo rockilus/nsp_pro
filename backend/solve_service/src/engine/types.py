@@ -160,6 +160,10 @@ class SystemConstraintInputs:
         ],  # (day_d_vars, day_d+k_vars) pairs
         int,
     ] = field(default_factory=lambda: ([], 0))
+    off_shift_penalty: tuple[
+        list[tuple[str, str, str]],  # free OFF assignment vars
+        int,
+    ] = field(default_factory=lambda: ([], 0))
 
 
 @dataclass
@@ -212,6 +216,7 @@ class ObjectiveCategory(Enum):
     MAX_WEEKLY_NB_DUTIES = 12
     MAX_WEEK_DAY_NB_DUTIES = 13
     DUTY_CONSECUTIVE_GAP = 14
+    OFF_SHIFT_PENALTY = 15
 
 
 # pylint: disable=R0801
