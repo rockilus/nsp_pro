@@ -248,10 +248,18 @@ def core_to_engine_inputs(
     )
 
     _gap_enabled = _team_settings.duty_consecutive_gap_mode != "off"
-    _gap_days = (
+    # _gap_days is either a scalar int ("set" mode, user-defined) or a dict
+    # mapping worker_id -> gap in days ("auto" mode, calculated per worker).
+    # build_consecutive_duty_gap_vars handles both types, so no further
+    # branching is needed at the call site below.
+    _gap_days: int | dict[str, int] = (
         _team_settings.duty_consecutive_gap_days
         if _team_settings.duty_consecutive_gap_mode == "set"
-        else calculate_auto_gap()
+        else calculate_auto_gap(
+            workers_not_deleted,
+            w_to_nb_duties,
+            periods_monthly,
+        )
     )
     duty_consecutive_gap_vars = (
         build_consecutive_duty_gap_vars(
@@ -416,6 +424,8 @@ def core_to_engine_inputs(
             ),
         ),
         system_constraints=SystemConstraintInputs(
+            # Weekly target work time, can be deactivated when solving fo duties
+            # only in team settings
             # weekly_target_work_time=[],
             weekly_target_work_time=(
                 build_work_time_constraints(
@@ -437,6 +447,7 @@ def core_to_engine_inputs(
                 )
                 else []
             ),
+            # Monthly target nb duties per worker
             # monthly_target_nb_duties=[],
             monthly_target_nb_duties=(
                 build_nb_duties_constraints(
@@ -454,6 +465,10 @@ def core_to_engine_inputs(
                 # fmt: on
                 else []
             ),
+            # Constraint to minimize the max number of duties per week across
+            # workers (ensure fairness across workers), and minimize the max
+            # number of duties per week for each worker (ensure even spreading
+            # of duties through time)
             # max_weekly_nb_duties: tuple (weeks x workers x assignments, penalty)
             # max_weekly_nb_duties=([], 0),
             max_weekly_nb_duties=(
