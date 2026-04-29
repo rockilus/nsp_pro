@@ -36,6 +36,7 @@ penalties = Penalties(
         max_week_day_nb_duties=50,
         special_days_target_nb_duties=30,
         duty_consecutive_gap=200,
+        off_shift_penalty=1,
     ),
 )
 

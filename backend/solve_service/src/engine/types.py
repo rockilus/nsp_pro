@@ -160,6 +160,10 @@ class SystemConstraintInputs:
         ],  # (day_d_vars, day_d+k_vars) pairs
         int,
     ] = field(default_factory=lambda: ([], 0))
+    off_shift_penalty: tuple[
+        list[tuple[str, str, str]],  # free OFF assignment vars
+        int,
+    ] = field(default_factory=lambda: ([], 0))
 
 
 @dataclass
@@ -212,6 +216,7 @@ class ObjectiveCategory(Enum):
     MAX_WEEKLY_NB_DUTIES = 12
     MAX_WEEK_DAY_NB_DUTIES = 13
     DUTY_CONSECUTIVE_GAP = 14
+    OFF_SHIFT_PENALTY = 15
 
 
 # pylint: disable=R0801
@@ -331,5 +336,7 @@ class ProcessingCache:
     w_to_work_times: dict[str, dict[str, list[int]]]
     w_to_nb_duties: dict[str, dict[str, list[int]]]
     shift_id_to_duration: dict[str, int]
-    dim_to_attr_value_to_shift: dict[str, dict[str | int | float | bool, list[str]]]
+    dim_to_attr_value_to_shift: dict[
+        str, dict[str | int | float | bool, list[str]]
+    ]
     scope_ctx: "ScopeContext | None" = None

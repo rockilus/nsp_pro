@@ -336,6 +336,15 @@ def core_to_engine_inputs(
         constraint_off_vars=constraint_off_vars,
     )
 
+    # Free OFF vars: whitelisted by constraints but not hard-fixed to 0.
+    # The solver can assign these freely; penalise them to discourage spurious
+    # OFF assignments when the constraint antecedent does not fire.
+    free_off_vars = [
+        var
+        for var in variables.assignments
+        if var[2] in off_shift_ids and var not in fixed_values
+    ]
+
     inputs = InputsEngine(
         ModelSetupEngine(
             variables=variables,
@@ -531,6 +540,11 @@ def core_to_engine_inputs(
             duty_consecutive_gap=(
                 duty_consecutive_gap_vars,
                 engine_inputs.penalties.system_constraint.duty_consecutive_gap,
+            ),
+            # off_shift_penalty: tuple (free OFF vars, penalty)
+            off_shift_penalty=(
+                free_off_vars,
+                engine_inputs.penalties.system_constraint.off_shift_penalty,
             ),
         ),
         model_config=engine_inputs.model_config,
