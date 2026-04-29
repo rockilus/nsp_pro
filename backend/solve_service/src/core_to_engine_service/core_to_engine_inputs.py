@@ -325,11 +325,15 @@ def core_to_engine_inputs(
     # Free OFF vars: whitelisted by constraints but not hard-fixed to 0.
     # The solver can assign these freely; penalise them to discourage spurious
     # OFF assignments when the constraint antecedent does not fire.
-    free_off_vars = [
-        var
-        for var in variables.assignments
-        if var[2] in off_shift_ids and var not in fixed_values
-    ]
+    free_off_vars = (
+        [
+            var
+            for var in variables.assignments
+            if var[2] in off_shift_ids and var not in fixed_values
+        ]
+        if engine_inputs.model_config.system_constraints.off_shift_penalty
+        else []
+    )
 
     inputs = InputsEngine(
         ModelSetupEngine(
