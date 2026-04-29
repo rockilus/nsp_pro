@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Loader2, Plus, Minus } from 'lucide-react';
 import { useTranslation } from '../../app/i18n/client';
 import { ShiftT, ShiftType } from '../../types/shift';
@@ -287,19 +286,12 @@ function ShiftDemandRowHeader({
         />
       )}
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            className="min-w-0 flex-1 truncate py-2 text-sm font-[550] text-foreground"
-            data-testid={`shift-demand-name-${shift.id}`}
-          >
-            {shift.name || shift.acronym}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent side="right">
-          <p>{shift.name}</p>
-        </TooltipContent>
-      </Tooltip>
+      <span
+        className="min-w-0 flex-1 truncate py-2 text-sm font-[550] text-foreground"
+        data-testid={`shift-demand-name-${shift.id}`}
+      >
+        {shift.name || shift.acronym}
+      </span>
 
       <div className="flex flex-shrink-0 flex-col items-start py-2 pr-2 text-[11px] leading-tight text-muted-foreground">
         <span>{shift.startTime.format('HH:mm')}</span>
@@ -347,8 +339,6 @@ function ShiftDemandRow({
   isRowSelected,
   savingCells,
 }: ShiftDemandRowProps) {
-  const shiftTotal = dates.reduce((sum, date) => sum + getDemandValue(shift.id, date), 0);
-
   return (
     <div className="flex min-h-[40px] items-stretch border-b border-border/50">
       <ShiftDemandRowHeader
@@ -389,10 +379,6 @@ function ShiftDemandRow({
             />
           );
         })}
-      </div>
-      {/* Total column */}
-      <div className="flex w-[60px] min-w-[60px] shrink-0 items-center justify-center border-l border-border/50 text-sm font-semibold text-foreground">
-        {shiftTotal}
       </div>
     </div>
   );
@@ -514,11 +500,6 @@ export default function ShiftDemandTable({
         onSort={onSort}
         onFilter={onFilter}
         leadingColumnContent={leadingColumnContent}
-        trailingColumnHeader={
-          <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-            {t('total')}
-          </span>
-        }
         isBulkMode={bulkChangeState.isActive}
         isColumnSelected={isColumnSelected}
         onColumnSelect={selectAllColumnCells}
