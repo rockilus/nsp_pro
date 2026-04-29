@@ -192,13 +192,13 @@ export class ShiftDemandTestBase {
    */
   getSelectionCheckboxes(page: Page) {
     return {
-      selectAll: page.locator('[data-testid="select-all-checkbox"] input'),
+      selectAll: page.locator('[data-testid="select-all-checkbox"]'),
       rowSelect: (shiftId: string) =>
-        page.locator(`[data-testid="row-select-checkbox-${shiftId}"] input`),
+        page.locator(`[data-testid="row-select-checkbox-${shiftId}"]`),
       columnSelect: (date: string) =>
-        page.locator(`[data-testid="column-select-checkbox-${date}"] input`),
+        page.locator(`[data-testid="column-select-checkbox-${date}"]`),
       cellSelect: (shiftId: string, date: string) =>
-        page.locator(`[data-testid="cell-select-checkbox-${shiftId}-${date}"] input`),
+        page.locator(`[data-testid="cell-select-checkbox-${shiftId}-${date}"]`),
     };
   }
 

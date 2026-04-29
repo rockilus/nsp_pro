@@ -11,22 +11,10 @@ import {
   getShiftColors,
 } from '../../utils/shift-worker-option-display';
 import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
-import ColumnSortFilterMenu from '../table/ColumnSortFilterMenu';
 import { useTranslation } from '../../app/i18n/client';
+import CalendarTableHeader from '../calendar/CalendarTableHeader';
 
 dayjs.extend(isoWeek);
-
-// Locale-aware weekday abbreviations (3 chars, Mon-first order)
-const WEEKDAY_SHORT: Record<string, readonly string[]> = {
-  en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-  fr: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-  es: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
-};
-
-function getWeekdayShort(d: Dayjs, lng?: string): string {
-  const abbrevs = WEEKDAY_SHORT[lng ?? 'en'] ?? WEEKDAY_SHORT['en'];
-  return abbrevs[d.isoWeekday() - 1]; // isoWeekday: 1=Mon … 7=Sun
-}
 
 type StaffingSummary = {
   [date: string]: {
@@ -81,17 +69,6 @@ interface RequestCalendarRowProps {
   teamId?: string;
   onCellClick: (workerId: string, date: Dayjs) => void;
   onRequestClick: (request: RequestT) => void;
-}
-
-interface RequestCalendarHeaderProps {
-  lng?: string;
-  days: Dayjs[];
-  // Filter/Sort props
-  currentSort?: TableSort;
-  currentFilter?: ColumnFilter;
-  onSort?: (sort: TableSort | null) => void;
-  onFilter?: (filter: ColumnFilter) => void;
-  workerColumn?: ColumnDefinition;
 }
 
 interface RequestCalendarBodyProps {
@@ -362,113 +339,6 @@ function RequestCalendarRow({
   );
 }
 
-// Helper: group `days` by ISO week number, returning spans for the week header row
-function buildWeekGroups(days: Dayjs[]): Array<{ weekNum: number; count: number }> {
-  const groups: Array<{ weekNum: number; count: number }> = [];
-  for (const d of days) {
-    const w = d.isoWeek();
-    if (groups.length === 0 || groups[groups.length - 1].weekNum !== w) {
-      groups.push({ weekNum: w, count: 1 });
-    } else {
-      groups[groups.length - 1].count += 1;
-    }
-  }
-  return groups;
-}
-
-// Header component
-function RequestCalendarHeader({
-  lng,
-  days,
-  currentSort,
-  currentFilter,
-  onSort,
-  onFilter,
-  workerColumn,
-}: RequestCalendarHeaderProps) {
-  const { t } = useTranslation(lng || 'en', 'request-page');
-  const today = dayjs();
-  const weekGroups = buildWeekGroups(days);
-
-  return (
-    // Outer wrapper: no bottom border here — each sub-row carries its own border
-    <div className="sticky top-0 z-[3] bg-card">
-      {/* Week group row */}
-      <div className="flex border-b border-border/50">
-        {/* Sticky corner — keeps the empty cell fixed while scrolling horizontally */}
-        <div className="sticky left-0 z-[4] w-[180px] max-w-[220px] min-w-[180px] shrink-0 border-r border-border/50 bg-card" />
-        {/* Week spans */}
-        <div className="flex flex-1">
-          {weekGroups.map(({ weekNum, count }, idx) => (
-            <div
-              key={`week-${weekNum}-${idx}`}
-              className={cn(
-                'flex items-center justify-center truncate overflow-hidden border-r border-border/50 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground',
-                idx > 0 && 'border-l-2 border-l-border',
-              )}
-              style={{ flex: count, minWidth: `${count * 60}px` }}
-            >
-              <span className="truncate">
-                {count >= 2 ? `${t('week')} ${weekNum}` : `W${weekNum}`}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Day header row — border-b here covers the full content width */}
-      <div className="flex border-b-2 border-border">
-        {/* Worker column header */}
-        <div className="sticky left-0 z-[4] flex w-[180px] max-w-[220px] min-w-[180px] shrink-0 items-center justify-between border-r border-border/50 bg-card px-2 py-1">
-          <span className="text-sm text-foreground">{t('workers')}</span>
-          {workerColumn && onSort && onFilter && (
-            <ColumnSortFilterMenu
-              column={workerColumn}
-              currentSort={currentSort}
-              currentFilter={currentFilter}
-              onSort={onSort}
-              onFilter={onFilter}
-            />
-          )}
-        </div>
-        {/* Day cells */}
-        <div className="flex flex-1">
-          {days.map((d) => {
-            const isWeekend = d.day() === 0 || d.day() === 6;
-            const isToday = d.isSame(today, 'day');
-            const isWeekBoundary = d.isoWeekday() === 1;
-            return (
-              <div
-                key={d.format('YYYY-MM-DD')}
-                className={cn(
-                  'flex h-14 min-w-[60px] flex-1 flex-col items-center justify-center border-r border-border/50 px-2',
-                  isWeekend ? 'bg-muted' : 'bg-card',
-                  isWeekBoundary && 'border-l-2 border-l-border',
-                )}
-                data-testid={`date-header-${d.format('YYYY-MM-DD')}`}
-              >
-                {/* 3-char weekday abbreviation — above the day number */}
-                <div className="mb-0.5 text-[11px] leading-none text-muted-foreground">
-                  {getWeekdayShort(d, lng)}
-                </div>
-                {/* Day number — circle highlight for today */}
-                <div
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-full text-sm leading-none font-semibold',
-                    isToday ? 'bg-primary text-primary-foreground' : 'text-foreground',
-                  )}
-                >
-                  {d.date()}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // Body component
 function RequestCalendarBody({
   workers,
@@ -569,6 +439,40 @@ function StaffingSummaryRows({ days, staffingSummary, isCalculating }: StaffingS
   );
 }
 
+// Thin wrapper so the shared CalendarTableHeader can read the 'workers' i18n label
+// from this page's namespace without leaking request-page concerns into the shared component.
+function CalendarTableHeaderWithWorkerLabel({
+  lng,
+  days,
+  workerColumn,
+  currentSort,
+  currentFilter,
+  onSort,
+  onFilter,
+}: {
+  lng?: string;
+  days: Dayjs[];
+  workerColumn?: ColumnDefinition;
+  currentSort?: TableSort;
+  currentFilter?: ColumnFilter;
+  onSort?: (sort: TableSort | null) => void;
+  onFilter?: (filter: ColumnFilter) => void;
+}) {
+  const { t } = useTranslation(lng || 'en', 'request-page');
+  return (
+    <CalendarTableHeader
+      lng={lng}
+      days={days}
+      rowHeaderLabel={t('workers')}
+      rowColumn={workerColumn}
+      currentSort={currentSort}
+      currentFilter={currentFilter}
+      onSort={onSort}
+      onFilter={onFilter}
+    />
+  );
+}
+
 // Main table component
 export default function RequestCalendarTable({
   workers,
@@ -599,7 +503,7 @@ export default function RequestCalendarTable({
       )}
     >
       {/* Calendar Header */}
-      <RequestCalendarHeader
+      <CalendarTableHeaderWithWorkerLabel
         lng={lng}
         days={days}
         currentSort={currentSort}
