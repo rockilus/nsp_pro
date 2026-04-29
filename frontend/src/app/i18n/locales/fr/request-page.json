@@ -35,6 +35,7 @@
   "unknown": "Inconnu",
   "work": "Travail",
   "worker": "Membre",
+  "workers": "Membres",
   "request_deadline_banner_period": "Période : {{period}}",
   "request_deadline_banner_submission": "Date limite d'envoi : Merci de soumettre vos demandes avant le {{deadline}}.",
   "submitted_on": "Soumis le",
