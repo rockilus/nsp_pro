@@ -260,10 +260,18 @@ def core_to_engine_inputs(
     )
 
     _gap_enabled = _team_settings.duty_consecutive_gap_mode != "off"
-    _gap_days = (
+    # _gap_days is either a scalar int ("set" mode, user-defined) or a dict
+    # mapping worker_id -> gap in days ("auto" mode, calculated per worker).
+    # build_consecutive_duty_gap_vars handles both types, so no further
+    # branching is needed at the call site below.
+    _gap_days: int | dict[str, int] = (
         _team_settings.duty_consecutive_gap_days
         if _team_settings.duty_consecutive_gap_mode == "set"
-        else calculate_auto_gap()
+        else calculate_auto_gap(
+            workers_not_deleted,
+            w_to_nb_duties,
+            periods_monthly,
+        )
     )
     duty_consecutive_gap_vars = (
         build_consecutive_duty_gap_vars(

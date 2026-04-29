@@ -69,13 +69,70 @@ def build_nb_duties_constraints(
     return list(p_index_to_gadtc.values())
 
 
-def calculate_auto_gap() -> int:
-    """Placeholder: auto-calculate the minimum gap between duties.
+def calculate_auto_gap(
+    workers: list[Worker],
+    w_to_nb_duties: dict[str, dict[str, list[int]]],
+    periods_monthly: list[list[date]],
+) -> dict[str, int]:
+    """Calculate a per-worker minimum duty gap for the campaign.
 
-    TODO: implement algorithmic derivation from schedule/worker data.
-    Returns a fixed default of 2 days for now.
+    Strategy (Option B — "N+1 duties" slack):
+      For each worker we compute how many days apart their duties should
+      naturally fall if we spread them evenly over the campaign, then give
+      the solver a bit of breathing room by pretending the worker has one
+      extra duty (denominator = desired + 1).  This shrinks the enforced
+      gap just enough so the solver is not over-constrained while still
+      preventing duties from clumping.
+
+    Formula per worker:
+      total_days   = sum of all monthly period lengths in the campaign
+      total_desired = sum of w_to_nb_duties[w.id]["desired"] across periods
+                      (already leave-adjusted via the coefficient in
+                      calculate_worker_nb_duties — workers on long leave
+                      automatically get fewer desired duties and thus a
+                      larger natural gap)
+      raw_gap = floor(total_days / (total_desired + 1))
+      gap     = clamp(raw_gap, min=1, max=14)
+
+    Clamps:
+      • min=1  prevents a vacuous 0-day gap (no constraint at all)
+      • max=14 prevents a uselessly large gap for workers with very few duties
+
+    Args:
+        workers:          List of non-deleted workers.
+        w_to_nb_duties:   Output of calculate_worker_nb_duties — maps
+                          worker_id → {"desired": [...], "max": [...], "target": [...]}.
+        periods_monthly:  Monthly period lists (same as those passed to
+                          calculate_worker_nb_duties).
+
+    Returns:
+        dict mapping worker_id → gap in days (int, in [1, 14]).
     """
-    return 2
+    # Total number of campaign days is the same for all workers — it is the
+    # raw sum of monthly period lengths, not leave-adjusted.  Leave is already
+    # baked into the "desired" figures, so we do not double-deduct it here.
+    total_campaign_days = sum(len(p) for p in periods_monthly)
+
+    worker_gaps: dict[str, int] = {}
+    for w in workers:
+        # Sum the desired duty counts across all periods for this worker.
+        # w_to_nb_duties may be missing a worker if they have no duty data;
+        # treat that as 0 desired duties → fall back to the maximum gap cap.
+        desired_duties = sum(w_to_nb_duties.get(w.id, {}).get("desired", []))
+
+        if desired_duties == 0 or total_campaign_days == 0:
+            # Worker has no duties to schedule: cap the gap to avoid a
+            # vacuous constraint that would still generate many pair variables.
+            worker_gaps[w.id] = 14
+        else:
+            # Denominator is desired + 1: act as if the worker is one duty
+            # busier than planned.  For a worker with 2 duties/month (30 days):
+            #   floor(30 / 3) = 10  instead of  floor(30 / 2) = 15
+            # This retains meaningful spread while giving the solver slack.
+            raw_gap = total_campaign_days // (desired_duties + 1)
+            worker_gaps[w.id] = max(1, min(14, raw_gap))
+
+    return worker_gaps
 
 
 # pylint: disable=too-many-locals, too-many-arguments, R0801
@@ -132,7 +189,9 @@ def calculate_worker_nb_duties(
             )
             adjusted_max_nb_duties = math.ceil(80 * coefficient)
 
-            worker_nb_duties[worker.id]["desired"].append(adjusted_desired_nb_duties)
+            worker_nb_duties[worker.id]["desired"].append(
+                adjusted_desired_nb_duties
+            )
             worker_nb_duties[worker.id]["max"].append(adjusted_max_nb_duties)
             worker_nb_duties[worker.id]["target"].append(
                 target_work_times[worker.id][period_index]
@@ -153,7 +212,9 @@ def calculate_proportional_nb_duties(
     # Build quick lookup for shifts by id
     shift_dict = {s.id: s for s in shifts}
     for period_index, period in enumerate(periods):
-        shift_duty_ids = [s.id for s in shifts if s.shift_type == ShiftType.DUTY]
+        shift_duty_ids = [
+            s.id for s in shifts if s.shift_type == ShiftType.DUTY
+        ]
         period_dsds_duty = [
             dsd
             for dsd in shift_demands
@@ -166,7 +227,9 @@ def calculate_proportional_nb_duties(
                 continue
             # total staffing for the shift (sum of staffing entries)
             total_staffing = (
-                sum(s.staffing for s in shift.staffing) if shift.staffing else 0
+                sum(s.staffing for s in shift.staffing)
+                if shift.staffing
+                else 0
             )
             if total_staffing == 0:
                 # no staffing configured -> contributes 0
@@ -175,7 +238,10 @@ def calculate_proportional_nb_duties(
 
         period_index_to_required_nb_duties[period_index] = total_required
     total_period_desired_nb_duties: list[float] = [
-        sum(worker.duties_per_month * w_id_to_coef[worker.id][i] for worker in workers)
+        sum(
+            worker.duties_per_month * w_id_to_coef[worker.id][i]
+            for worker in workers
+        )
         for i in range(len(periods))
     ]
 
@@ -194,7 +260,9 @@ def calculate_proportional_nb_duties(
                 target_nb_duties = 0.0
             if worker.id not in w_id_to_target_nb_duties_by_period:
                 w_id_to_target_nb_duties_by_period[worker.id] = []
-            w_id_to_target_nb_duties_by_period[worker.id].append(target_nb_duties)
+            w_id_to_target_nb_duties_by_period[worker.id].append(
+                target_nb_duties
+            )
 
     return round_proportional_times(w_id_to_target_nb_duties_by_period)
 
@@ -241,7 +309,8 @@ def build_max_weekly_nb_duties_vars(
                     if key not in ws_to_dates:
                         continue
                     wdates = (
-                        ws_to_dates[key].dates_hist + ws_to_dates[key].dates_campaign
+                        ws_to_dates[key].dates_hist
+                        + ws_to_dates[key].dates_campaign
                     )
                     if d in wdates:
                         worker_assignments.append((w.id, d.isoformat(), s.id))
@@ -286,7 +355,8 @@ def build_max_week_day_nb_duties_vars(
                     if key not in ws_to_dates:
                         continue
                     wdates = (
-                        ws_to_dates[key].dates_hist + ws_to_dates[key].dates_campaign
+                        ws_to_dates[key].dates_hist
+                        + ws_to_dates[key].dates_campaign
                     )
                     if d in wdates:
                         worker_assignments.append((w.id, d.isoformat(), s.id))
@@ -303,25 +373,53 @@ def build_consecutive_duty_gap_vars(
     dates_campaign: list[date],
     dates_hist: list[date],
     ws_to_dates: dict[tuple[str, str], WorkerDates],
-    min_gap_days: int = 1,
+    min_gap_days: int | dict[str, int] = 1,
 ) -> list[tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]]:
     """Builds (day_d_vars, day_d+k_vars) pairs for consecutive duty gap penalty.
 
     For each worker, for each date d in (dates_hist + dates_campaign) and for
-    each k in 1..min_gap_days, if d+k is a campaign date we collect duty vars
-    on d and on d+k. The pair is included only when both sides are non-empty.
+    each k in 1..worker_gap, if d+k is a campaign date we collect duty vars
+    on d and on d+k.  The pair is included only when both sides are non-empty.
+
     Historical dates are naturally handled: if d is historical, the duty var is
     fixed by the solver, which pushes campaign assignments away from h+k dates
     that follow a historical duty.
+
+    Args:
+        worker_not_deleted:      Non-deleted workers.
+        shift_duties_not_deleted: Non-deleted duty shifts.
+        dates_campaign:          Campaign dates (mutable by solver).
+        dates_hist:              Historical dates (fixed by solver).
+        ws_to_dates:             (worker_id, shift_id) → WorkerDates mapping.
+        min_gap_days:            Either a single int applied to every worker, or
+                                 a dict mapping worker_id → gap in days.  The
+                                 dict form (produced by calculate_auto_gap) allows
+                                 per-worker gaps so that high-load workers get a
+                                 tighter gap and low-load workers get a wider one.
     """
 
     campaign_date_set = set(dates_campaign)
     all_dates = dates_hist + dates_campaign
-    pairs: list[tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]] = []
+    pairs: list[
+        tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]
+    ] = []
 
     for w in worker_not_deleted:
+        # Resolve this worker's gap: use their individual value when the caller
+        # provides a dict (auto mode), or fall back to the global scalar (set mode).
+        if isinstance(min_gap_days, dict):
+            # Default to 1 if the worker somehow has no entry in the dict —
+            # this should not happen in practice but guards against key errors.
+            worker_gap = min_gap_days.get(w.id, 1)
+        else:
+            worker_gap = min_gap_days
+
         for d in all_dates:
-            for k in range(1, min_gap_days + 1):
+            # k runs from 1 to worker_gap inclusive.  Each k generates one pair
+            # (day d, day d+k), meaning d+k must be a rest day if d has a duty.
+            # Using multiple k values for a single gap > 1 is intentional: it
+            # penalises *every* forbidden near-neighbour, not just the closest one.
+            for k in range(1, worker_gap + 1):
                 d_next = d + timedelta(days=k)
                 if d_next not in campaign_date_set:
                     continue
@@ -332,7 +430,8 @@ def build_consecutive_duty_gap_vars(
                     if key not in ws_to_dates:
                         continue
                     wdates = (
-                        ws_to_dates[key].dates_hist + ws_to_dates[key].dates_campaign
+                        ws_to_dates[key].dates_hist
+                        + ws_to_dates[key].dates_campaign
                     )
                     if d in wdates:
                         vars_d.append((w.id, d.isoformat(), s.id))
