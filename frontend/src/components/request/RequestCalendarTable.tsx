@@ -16,6 +16,18 @@ import { useTranslation } from '../../app/i18n/client';
 
 dayjs.extend(isoWeek);
 
+// Locale-aware weekday abbreviations (3 chars, Mon-first order)
+const WEEKDAY_SHORT: Record<string, readonly string[]> = {
+  en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  fr: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+  es: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+};
+
+function getWeekdayShort(d: Dayjs, lng?: string): string {
+  const abbrevs = WEEKDAY_SHORT[lng ?? 'en'] ?? WEEKDAY_SHORT['en'];
+  return abbrevs[d.isoWeekday() - 1]; // isoWeekday: 1=Mon … 7=Sun
+}
+
 type StaffingSummary = {
   [date: string]: {
     demand: number;
@@ -381,31 +393,33 @@ function RequestCalendarHeader({
   const weekGroups = buildWeekGroups(days);
 
   return (
-    <div className="sticky top-0 z-[3] border-b-2 border-border bg-card">
+    // Outer wrapper: no bottom border here — each sub-row carries its own border
+    <div className="sticky top-0 z-[3] bg-card">
       {/* Week group row */}
-      <div className="flex">
-        {/* Empty corner cell aligned with worker name column */}
-        <div className="w-[180px] max-w-[220px] min-w-[180px] shrink-0 border-r border-border/50" />
+      <div className="flex border-b border-border/50">
+        {/* Sticky corner — keeps the empty cell fixed while scrolling horizontally */}
+        <div className="sticky left-0 z-[4] w-[180px] max-w-[220px] min-w-[180px] shrink-0 border-r border-border/50 bg-card" />
         {/* Week spans */}
         <div className="flex flex-1">
           {weekGroups.map(({ weekNum, count }, idx) => (
             <div
               key={`week-${weekNum}-${idx}`}
               className={cn(
-                'flex items-center border-r border-border/50 bg-muted/50 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground',
-                // Thick left border marks week boundary (all groups except the first)
+                'flex items-center truncate overflow-hidden border-r border-border/50 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground',
                 idx > 0 && 'border-l-2 border-l-border',
               )}
               style={{ minWidth: `${count * 60}px`, width: `${count * 60}px` }}
             >
-              W{weekNum}
+              <span className="truncate">
+                {count >= 2 ? `${t('week')} ${weekNum}` : `W${weekNum}`}
+              </span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Day header row */}
-      <div className="flex">
+      {/* Day header row — border-b here covers the full content width */}
+      <div className="flex border-b-2 border-border">
         {/* Worker column header */}
         <div className="sticky left-0 z-[4] flex w-[180px] max-w-[220px] min-w-[180px] shrink-0 items-center justify-between border-r border-border/50 bg-card px-2 py-1">
           <span className="text-sm text-foreground">{t('workers')}</span>
@@ -435,6 +449,10 @@ function RequestCalendarHeader({
                 )}
                 data-testid={`date-header-${d.format('YYYY-MM-DD')}`}
               >
+                {/* 3-char weekday abbreviation — above the day number */}
+                <div className="mb-0.5 text-[11px] leading-none text-muted-foreground">
+                  {getWeekdayShort(d, lng)}
+                </div>
                 {/* Day number — circle highlight for today */}
                 <div
                   className={cn(
@@ -443,10 +461,6 @@ function RequestCalendarHeader({
                   )}
                 >
                   {d.date()}
-                </div>
-                {/* 3-char weekday abbreviation */}
-                <div className="mt-0.5 text-[11px] leading-none text-muted-foreground">
-                  {d.format('ddd')}
                 </div>
               </div>
             );

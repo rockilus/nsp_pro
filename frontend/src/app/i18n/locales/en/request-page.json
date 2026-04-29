@@ -35,6 +35,7 @@
   "unknown": "Unknown",
   "work": "Work",
   "worker": "Member",
+  "week": "Week",
   "workers": "Members",
   "request_deadline_banner_period": "For period: {{period}}",
   "request_deadline_banner_submission": "Submission Deadline: Please submit your requests by {{deadline}}.",
