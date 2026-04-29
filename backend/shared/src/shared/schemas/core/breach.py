@@ -64,6 +64,7 @@ class ObjectiveCategory(Enum):
     MAX_WEEKLY_NB_DUTIES = 12
     MAX_WEEK_DAY_NB_DUTIES = 13
     DUTY_CONSECUTIVE_GAP = 14
+    OFF_SHIFT_PENALTY = 15
 
 
 # pylint: disable=R0801
