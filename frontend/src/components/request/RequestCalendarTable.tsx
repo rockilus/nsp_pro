@@ -270,9 +270,7 @@ function RequestCalendarCell({
         // Past empty
         isPastEmpty && 'cursor-not-allowed !bg-muted/50 opacity-50',
         // Clickable empty
-        !request &&
-          (canAddRequest || canEditRequest) &&
-          'group cursor-pointer hover:rounded hover:border-dashed hover:border-primary/50 hover:bg-primary/[0.08]',
+        !request && (canAddRequest || canEditRequest) && 'group cursor-pointer',
         // Clickable request
         request && (canAddRequest || canEditRequest) && 'cursor-pointer',
       )}
@@ -296,11 +294,11 @@ function RequestCalendarCell({
       onClick={handleClick}
       title={getTitle()}
     >
-      {/* '+' indicator for clickable empty cells */}
+      {/* Add button for clickable empty cells — inset so it has room from the cell border */}
       {!request && (canAddRequest || canEditRequest) && (
-        <span className="absolute text-base font-bold text-primary/70 opacity-0 transition-opacity group-hover:opacity-100">
-          +
-        </span>
+        <div className="absolute inset-1 flex items-center justify-center rounded border border-dashed border-primary/50 bg-primary/[0.08] opacity-0 transition-opacity group-hover:opacity-100">
+          <span className="text-sm leading-none font-bold text-primary/70">+</span>
+        </div>
       )}
       {request && requestEmojis && (
         <div className="z-[1] flex items-center justify-center gap-0.5 text-base leading-none">
