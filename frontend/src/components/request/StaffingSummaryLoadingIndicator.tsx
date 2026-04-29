@@ -18,7 +18,7 @@ export const StaffingSummaryLoadingIndicator: React.FC<{ days: Dayjs[] }> = ({ d
           {days.map((_, i) => (
             <div
               key={`loading-cell-${rowIndex}-${i}`}
-              className="flex min-h-[40px] min-w-[60px] items-center justify-center border-r border-border/50 p-1"
+              className="flex min-h-[40px] min-w-[60px] flex-1 items-center justify-center border-r border-border/50 p-1"
             >
               <Skeleton className="h-4 w-6" />
             </div>

@@ -256,7 +256,7 @@ function RequestCalendarCell({
       key={date.date()}
       className={cn(
         // Base cell
-        'relative flex min-h-[40px] min-w-[60px] items-center justify-center border-r border-border/50 p-1 text-sm transition-all duration-200',
+        'relative flex min-h-[40px] min-w-[60px] flex-1 items-center justify-center border-r border-border/50 p-1 text-sm transition-all duration-200',
         // Week boundary: thick left border on Mondays (except the very first cell)
         isWeekBoundary && 'border-l-2 border-l-border',
         // Weekend background
@@ -325,7 +325,7 @@ function RequestCalendarRow({
   onRequestClick,
 }: RequestCalendarRowProps) {
   return (
-    <div className="flex min-h-[40px] items-stretch border-b border-border/50 transition-colors hover:bg-black/[0.04]">
+    <div className="flex min-h-[40px] items-stretch border-b border-border/50">
       {/* Sticky worker name column */}
       <div
         className="sticky left-0 z-[2] flex w-[180px] max-w-[220px] min-w-[180px] shrink-0 items-center overflow-hidden border-r border-border/50 bg-card px-3 py-2 text-sm font-medium whitespace-nowrap text-foreground"
@@ -405,10 +405,10 @@ function RequestCalendarHeader({
             <div
               key={`week-${weekNum}-${idx}`}
               className={cn(
-                'flex items-center truncate overflow-hidden border-r border-border/50 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground',
+                'flex items-center justify-center truncate overflow-hidden border-r border-border/50 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground',
                 idx > 0 && 'border-l-2 border-l-border',
               )}
-              style={{ minWidth: `${count * 60}px`, width: `${count * 60}px` }}
+              style={{ flex: count, minWidth: `${count * 60}px` }}
             >
               <span className="truncate">
                 {count >= 2 ? `${t('week')} ${weekNum}` : `W${weekNum}`}
@@ -443,7 +443,7 @@ function RequestCalendarHeader({
               <div
                 key={d.format('YYYY-MM-DD')}
                 className={cn(
-                  'flex h-14 min-w-[60px] flex-col items-center justify-center border-r border-border/50 px-2',
+                  'flex h-14 min-w-[60px] flex-1 flex-col items-center justify-center border-r border-border/50 px-2',
                   isWeekend ? 'bg-muted' : 'bg-card',
                   isWeekBoundary && 'border-l-2 border-l-border',
                 )}
@@ -507,7 +507,7 @@ function RequestCalendarBody({
 
 // Shared cell class for summary rows
 const summaryCellClass =
-  'min-w-[60px] min-h-[40px] flex items-center justify-center border-r border-border/50 text-sm font-semibold';
+  'flex-1 min-w-[60px] min-h-[40px] flex items-center justify-center border-r border-border/50 text-sm font-semibold';
 
 // Shared row label class for summary rows
 const summaryLabelClass =
