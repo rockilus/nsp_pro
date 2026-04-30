@@ -131,7 +131,7 @@ function ShiftDemandCell({
   return (
     <div
       className={cn(
-        'relative flex min-h-[40px] min-w-[60px] flex-1 items-center justify-center border-r border-border/50 p-1 transition-all duration-200',
+        'relative flex min-h-[40px] items-center justify-center border-r border-border/50 p-1 transition-all duration-200',
         isWeekend && 'bg-muted',
         isWeekBoundary && 'border-l-2 border-l-border',
         isMultitaskingMode && !isSelectable && 'pointer-events-none opacity-40',
@@ -333,51 +333,52 @@ function ShiftDemandRow({
   savingCells,
 }: ShiftDemandRowProps) {
   return (
-    <div className="flex min-h-[40px] items-stretch border-b border-border/50">
+    <div
+      className="min-h-[40px] border-b border-border/50"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `180px repeat(${dates.length}, minmax(60px, 1fr))`,
+      }}
+    >
       <ShiftDemandRowHeader
         shift={shift}
         isBulkMode={bulkChangeState.isActive}
         isRowSelected={isRowSelected(shift.id)}
         onSelectRow={selectAllRowCells}
       />
-      <div className="flex flex-1">
-        {dates.map((date) => {
-          const value = getDemandValue(shift.id, date);
-          const isWeekend = date.day() === 0 || date.day() === 6;
-          const isSelected = isCellSelected(shift.id, date);
-          const cellKey = `${shift.id}-${date.format('YYYY-MM-DD')}`;
-          const isSaving = savingCells.has(cellKey);
+      {/* Day cells — direct grid children */}
+      {dates.map((date) => {
+        const value = getDemandValue(shift.id, date);
+        const isWeekend = date.day() === 0 || date.day() === 6;
+        const isSelected = isCellSelected(shift.id, date);
+        const cellKey = `${shift.id}-${date.format('YYYY-MM-DD')}`;
+        const isSaving = savingCells.has(cellKey);
 
-          return (
-            <ShiftDemandCell
-              key={date.toISOString()}
-              shiftId={shift.id}
-              date={date}
-              value={value}
-              isWeekend={isWeekend}
-              isSelected={isSelected}
-              isBulkMode={bulkChangeState.isActive}
-              isSaving={isSaving}
-              shift={shift}
-              isMultitaskingMode={multitaskingState?.isActive || false}
-              isSelectable={
-                isShiftDemandSelectable ? isShiftDemandSelectable(shift.id, date) : true
-              }
-              isMultitaskingSelected={
-                isShiftDemandSelected ? isShiftDemandSelected(shift.id, date) : false
-              }
-              onCellChange={handleCellChange}
-              onToggleSelection={toggleCellSelection}
-              onToggleMultitaskingSelection={onToggleShiftDemandSelection}
-            />
-          );
-        })}
-      </div>
+        return (
+          <ShiftDemandCell
+            key={date.toISOString()}
+            shiftId={shift.id}
+            date={date}
+            value={value}
+            isWeekend={isWeekend}
+            isSelected={isSelected}
+            isBulkMode={bulkChangeState.isActive}
+            isSaving={isSaving}
+            shift={shift}
+            isMultitaskingMode={multitaskingState?.isActive || false}
+            isSelectable={isShiftDemandSelectable ? isShiftDemandSelectable(shift.id, date) : true}
+            isMultitaskingSelected={
+              isShiftDemandSelected ? isShiftDemandSelected(shift.id, date) : false
+            }
+            onCellChange={handleCellChange}
+            onToggleSelection={toggleCellSelection}
+            onToggleMultitaskingSelection={onToggleShiftDemandSelection}
+          />
+        );
+      })}
     </div>
   );
 }
-
-// ─── Body ─────────────────────────────────────────────────────────────────────
 
 interface ShiftDemandBodyProps {
   shifts: ShiftT[];

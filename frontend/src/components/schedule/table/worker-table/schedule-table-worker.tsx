@@ -248,7 +248,13 @@ function WorkerRow({
       ));
 
   return (
-    <div className="flex border-b border-border/50">
+    <div
+      className="border-b border-border/50"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `180px repeat(${periodDates.length}, minmax(60px, 1fr))`,
+      }}
+    >
       <CalendarRowHeaderCell
         data-testid={`worker-row-header-${worker.id}`}
         isBulkMode={!!selectionState?.isActive}
@@ -273,47 +279,41 @@ function WorkerRow({
         />
       </CalendarRowHeaderCell>
 
-      {/* Day cells */}
-      <div className="flex flex-1">
-        {periodDates.map((pDate, dateIndex) => {
-          const scheduleCellDataKey = generateOwnerIdDateKey(worker.id, pDate.date);
-          const scheduleCellData = scheduleCellsDict[scheduleCellDataKey] ?? null;
-          return (
-            <WorkerCell
-              key={dateIndex}
-              periodDate={pDate}
-              worker={worker}
-              shifts={shifts}
-              scheduleCellData={scheduleCellData}
-              scheduleViewSettings={scheduleViewSettings}
-              teamWithMembership={teamWithMembership}
-              handleAssignmentSelection={handleAssignmentSelection}
-              handleRequestSelection={handleRequestSelection}
-              handleOpenCreateAssignment={handleOpenCreateAssignment}
-              selectionState={selectionState}
-              handleCellSelect={handleCellSelect}
-              handleAssignmentSelect={handleAssignmentSelect}
-              isCustomSolveModeActive={isCustomSolveModeActive}
-              isCustomCellSelected={customSolveSelectedCells.some(
-                (c) => c.rowId === worker.id && c.date === pDate.date.format('YYYY-MM-DD'),
-              )}
-              onCustomCellSelect={() =>
-                handleCustomCellSelect?.(
-                  worker.id,
-                  pDate.date.format('YYYY-MM-DD'),
-                  pDate.scheduleId,
-                )
-              }
-              isDateInCampaign={
-                scheduleCampaign
-                  ? !pDate.date.isBefore(scheduleCampaign.startDate, 'day') &&
-                    !pDate.date.isAfter(scheduleCampaign.endDate, 'day')
-                  : false
-              }
-            />
-          );
-        })}
-      </div>
+      {/* Day cells — direct grid children */}
+      {periodDates.map((pDate, dateIndex) => {
+        const scheduleCellDataKey = generateOwnerIdDateKey(worker.id, pDate.date);
+        const scheduleCellData = scheduleCellsDict[scheduleCellDataKey] ?? null;
+        return (
+          <WorkerCell
+            key={dateIndex}
+            periodDate={pDate}
+            worker={worker}
+            shifts={shifts}
+            scheduleCellData={scheduleCellData}
+            scheduleViewSettings={scheduleViewSettings}
+            teamWithMembership={teamWithMembership}
+            handleAssignmentSelection={handleAssignmentSelection}
+            handleRequestSelection={handleRequestSelection}
+            handleOpenCreateAssignment={handleOpenCreateAssignment}
+            selectionState={selectionState}
+            handleCellSelect={handleCellSelect}
+            handleAssignmentSelect={handleAssignmentSelect}
+            isCustomSolveModeActive={isCustomSolveModeActive}
+            isCustomCellSelected={customSolveSelectedCells.some(
+              (c) => c.rowId === worker.id && c.date === pDate.date.format('YYYY-MM-DD'),
+            )}
+            onCustomCellSelect={() =>
+              handleCustomCellSelect?.(worker.id, pDate.date.format('YYYY-MM-DD'), pDate.scheduleId)
+            }
+            isDateInCampaign={
+              scheduleCampaign
+                ? !pDate.date.isBefore(scheduleCampaign.startDate, 'day') &&
+                  !pDate.date.isAfter(scheduleCampaign.endDate, 'day')
+                : false
+            }
+          />
+        );
+      })}
     </div>
   );
 }

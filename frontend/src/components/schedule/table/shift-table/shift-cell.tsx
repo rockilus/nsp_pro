@@ -65,7 +65,7 @@ export default function ShiftCell({
 
   return (
     <div
-      className="cell-hover-container relative min-w-[60px] flex-1 border-r border-border/50"
+      className="cell-hover-container relative border-r border-border/50"
       data-testid={`shift-cell-${shift.id}-${periodDate.date.format('YYYY-MM-DD')}`}
       style={{
         backgroundColor: isCellSelected ? 'rgba(25, 118, 210, 0.08)' : undefined,

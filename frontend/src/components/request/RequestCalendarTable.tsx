@@ -234,7 +234,7 @@ function RequestCalendarCell({
       key={date.date()}
       className={cn(
         // Base cell
-        'relative flex min-h-[40px] min-w-[60px] flex-1 items-center justify-center border-r border-border/50 p-1 text-sm transition-all duration-200',
+        'relative flex min-h-[40px] items-center justify-center border-r border-border/50 p-1 text-sm transition-all duration-200',
         // Week boundary: thick left border on Mondays (except the very first cell)
         isWeekBoundary && 'border-l-2 border-l-border',
         // Weekend background
@@ -301,7 +301,13 @@ function RequestCalendarRow({
   onRequestClick,
 }: RequestCalendarRowProps) {
   return (
-    <div className="flex min-h-[40px] items-stretch border-b border-border/50">
+    <div
+      className="min-h-[40px] border-b border-border/50"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `180px repeat(${days.length}, minmax(60px, 1fr))`,
+      }}
+    >
       {/* Sticky worker name column */}
       <CalendarRowHeaderCell>
         <span
@@ -311,33 +317,31 @@ function RequestCalendarRow({
           {worker.name}
         </span>
       </CalendarRowHeaderCell>
-      {/* Day cells */}
-      <div className="flex flex-1">
-        {days.map((d) => {
-          const request = getRequestForDay(worker.id, d);
-          const isEmpty = !request;
-          const isPast = d.isBefore(dayjs().utc(), 'day');
-          const canAddRequest =
-            isEmpty && !isPast && !worker.deleted && !!handleAddRequest && !!lng && !!teamId;
-          const canEditRequest = !!request && !!handleUpdateRequest && !!lng && !!teamId;
+      {/* Day cells — direct grid children */}
+      {days.map((d) => {
+        const request = getRequestForDay(worker.id, d);
+        const isEmpty = !request;
+        const isPast = d.isBefore(dayjs().utc(), 'day');
+        const canAddRequest =
+          isEmpty && !isPast && !worker.deleted && !!handleAddRequest && !!lng && !!teamId;
+        const canEditRequest = !!request && !!handleUpdateRequest && !!lng && !!teamId;
 
-          return (
-            <RequestCalendarCell
-              key={d.date()}
-              worker={worker}
-              date={d}
-              request={request}
-              shifts={shifts}
-              canAddRequest={canAddRequest}
-              canEditRequest={canEditRequest}
-              isPast={isPast}
-              isEmpty={isEmpty}
-              onCellClick={onCellClick}
-              onRequestClick={onRequestClick}
-            />
-          );
-        })}
-      </div>
+        return (
+          <RequestCalendarCell
+            key={d.date()}
+            worker={worker}
+            date={d}
+            request={request}
+            shifts={shifts}
+            canAddRequest={canAddRequest}
+            canEditRequest={canEditRequest}
+            isPast={isPast}
+            isEmpty={isEmpty}
+            onCellClick={onCellClick}
+            onRequestClick={onRequestClick}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -376,13 +380,13 @@ function RequestCalendarBody({
   );
 }
 
-// Shared cell class for summary rows
+// Shared cell class for summary rows — grid track handles sizing
 const summaryCellClass =
-  'flex-1 min-w-[60px] min-h-[40px] flex items-center justify-center border-r border-border/50 text-sm font-semibold';
+  'min-h-[40px] flex items-center justify-center border-r border-border/50 text-sm font-semibold';
 
-// Shared row label class for summary rows
+// Shared row label class for summary rows — sticky left-0 works in CSS grid
 const summaryLabelClass =
-  'w-[180px] min-w-[180px] max-w-[220px] shrink-0 flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground bg-muted/50 border-r border-border/80 sticky left-0 z-[2]';
+  'flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground bg-muted/50 border-r border-border/80 sticky left-0 z-[2]';
 
 // Staffing summary rows component
 function StaffingSummaryRows({ days, staffingSummary, isCalculating }: StaffingSummaryRowsProps) {
@@ -402,40 +406,45 @@ function StaffingSummaryRows({ days, staffingSummary, isCalculating }: StaffingS
   return (
     <>
       {summaryRows.map(({ key, label }) => (
-        <div key={key} className="flex min-h-[40px] items-stretch border-b border-border/50">
+        <div
+          key={key}
+          className="min-h-[40px] border-b border-border/50"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `180px repeat(${days.length}, minmax(60px, 1fr))`,
+          }}
+        >
           <div className={summaryLabelClass} title={label}>
             {label}
           </div>
-          <div className="flex flex-1">
-            {days.map((d) => {
-              const dateKey = d.format('YYYY-MM-DD');
-              const summary = staffingSummary[dateKey] || { demand: 0, available: 0, delta: 0 };
-              const value = summary[key];
-              const isWeekBoundary = d.isoWeekday() === 1;
+          {days.map((d) => {
+            const dateKey = d.format('YYYY-MM-DD');
+            const summary = staffingSummary[dateKey] || { demand: 0, available: 0, delta: 0 };
+            const value = summary[key];
+            const isWeekBoundary = d.isoWeekday() === 1;
 
-              // Delta-specific colour coding
-              let deltaClass = '';
-              if (key === 'delta') {
-                deltaClass =
-                  value < 0
-                    ? 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
-                    : 'bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-300';
-              }
+            // Delta-specific colour coding
+            let deltaClass = '';
+            if (key === 'delta') {
+              deltaClass =
+                value < 0
+                  ? 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
+                  : 'bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-300';
+            }
 
-              return (
-                <div
-                  key={dateKey}
-                  className={cn(
-                    summaryCellClass,
-                    isWeekBoundary && 'border-l-2 border-l-border',
-                    deltaClass,
-                  )}
-                >
-                  {value}
-                </div>
-              );
-            })}
-          </div>
+            return (
+              <div
+                key={dateKey}
+                className={cn(
+                  summaryCellClass,
+                  isWeekBoundary && 'border-l-2 border-l-border',
+                  deltaClass,
+                )}
+              >
+                {value}
+              </div>
+            );
+          })}
         </div>
       ))}
     </>

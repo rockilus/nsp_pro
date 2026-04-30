@@ -52,7 +52,7 @@ export default function CalendarRowHeaderCell({
     <div
       data-testid={testId}
       className={cn(
-        'sticky left-0 z-[2] flex w-[180px] max-w-[220px] min-w-[180px] shrink-0 items-center gap-1 border-r border-border/50 bg-card px-2',
+        'sticky left-0 z-[2] flex items-center gap-1 border-r border-border/50 bg-card px-2',
         className,
       )}
     >

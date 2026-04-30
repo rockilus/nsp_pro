@@ -119,7 +119,7 @@ export default function DemandsHeaderCell({
   }, [shifts]);
 
   return (
-    <div className="min-w-[60px] flex-1 border-r border-border/50 p-0">
+    <div className="border-r border-border/50 p-0">
       <div className="container-dsd-cell">
         <button type="button" onClick={handleClick} className="dsd-popover-button">
           <DSDPopoverButton counts={counts} />

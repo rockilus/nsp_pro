@@ -49,30 +49,35 @@ export default function DailyShiftDemandRow({
   }, [shifts, assignments, shiftDemands, periodDates, scheduleViewSettings]);
 
   return (
-    <div className="flex border-b border-border/50 bg-card" data-testid="shift-count-row">
+    <div
+      className="border-b border-border/50 bg-card"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: `180px repeat(${periodDates.length}, minmax(60px, 1fr))`,
+      }}
+      data-testid="shift-count-row"
+    >
       <CalendarRowHeaderCell data-testid="shift-count-row-label" className="py-1">
         <span className="dsd-row-label text-xs font-medium text-muted-foreground">
           {scheduleViewSettings.groupBy === 'shift' ? t('shift_count') : t('worker_count')}
         </span>
       </CalendarRowHeaderCell>
-      <div className="flex flex-1">
-        {periodDates.map((pDate, dateIndex) => {
-          const dateStr = pDate.date.format('YYYY-MM-DD');
-          return (
-            <DemandsHeaderCell
-              key={dateIndex}
-              lng={lng}
-              shifts={shifts}
-              counts={
-                counts[dateStr] || {
-                  total: { actual: 0, target: 0, staffingTotal: 0 },
-                }
+      {periodDates.map((pDate, dateIndex) => {
+        const dateStr = pDate.date.format('YYYY-MM-DD');
+        return (
+          <DemandsHeaderCell
+            key={dateIndex}
+            lng={lng}
+            shifts={shifts}
+            counts={
+              counts[dateStr] || {
+                total: { actual: 0, target: 0, staffingTotal: 0 },
               }
-              scheduleViewSettings={scheduleViewSettings}
-            />
-          );
-        })}
-      </div>
+            }
+            scheduleViewSettings={scheduleViewSettings}
+          />
+        );
+      })}
     </div>
   );
 }
