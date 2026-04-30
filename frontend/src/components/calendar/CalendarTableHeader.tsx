@@ -60,6 +60,8 @@ export interface CalendarTableHeaderProps {
   onColumnSelect?: (date: Dayjs) => void;
   /** When true, each date column shows a custom-solve sparkle button */
   isCustomSolveMode?: boolean;
+  /** Optional predicate — when provided, the sparkle is only rendered for days where this returns true */
+  isCustomSolveDay?: (date: Dayjs) => boolean;
   isCustomColumnSelected?: (date: Dayjs) => boolean;
   isCustomColumnIndeterminate?: (date: Dayjs) => boolean;
   onCustomColumnSelect?: (date: Dayjs) => void;
@@ -81,6 +83,7 @@ export default function CalendarTableHeader({
   isColumnIndeterminate,
   onColumnSelect,
   isCustomSolveMode = false,
+  isCustomSolveDay,
   isCustomColumnSelected,
   isCustomColumnIndeterminate,
   onCustomColumnSelect,
@@ -176,32 +179,34 @@ export default function CalendarTableHeader({
                 />
               )}
               {/* Custom-solve column sparkle */}
-              {isCustomSolveMode && onCustomColumnSelect && (
-                <button
-                  data-testid={`date-column-sparkle-${dateKey}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onCustomColumnSelect(d);
-                  }}
-                  className="mb-0.5 cursor-pointer border-none bg-transparent p-0"
-                  style={{
-                    color: isCustomColumnSelected?.(d)
-                      ? '#1976d2'
-                      : isCustomColumnIndeterminate?.(d)
-                        ? '#42a5f5'
-                        : '#9e9e9e',
-                  }}
-                >
-                  <Sparkle
-                    size={12}
-                    fill={
-                      isCustomColumnSelected?.(d) || isCustomColumnIndeterminate?.(d)
-                        ? 'currentColor'
-                        : 'none'
-                    }
-                  />
-                </button>
-              )}
+              {isCustomSolveMode &&
+                onCustomColumnSelect &&
+                (!isCustomSolveDay || isCustomSolveDay(d)) && (
+                  <button
+                    data-testid={`date-column-sparkle-${dateKey}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCustomColumnSelect(d);
+                    }}
+                    className="mb-0.5 cursor-pointer border-none bg-transparent p-0"
+                    style={{
+                      color: isCustomColumnSelected?.(d)
+                        ? '#1976d2'
+                        : isCustomColumnIndeterminate?.(d)
+                          ? '#42a5f5'
+                          : '#9e9e9e',
+                    }}
+                  >
+                    <Sparkle
+                      size={12}
+                      fill={
+                        isCustomColumnSelected?.(d) || isCustomColumnIndeterminate?.(d)
+                          ? 'currentColor'
+                          : 'none'
+                      }
+                    />
+                  </button>
+                )}
               {/* 3-char weekday abbreviation */}
               <div className="mb-0.5 text-[11px] leading-none text-muted-foreground">
                 {getWeekdayShort(d, lng)}

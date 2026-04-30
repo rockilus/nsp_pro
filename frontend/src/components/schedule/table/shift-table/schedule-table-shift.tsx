@@ -562,6 +562,11 @@ export default function ScheduleTableShift({
           )
         }
         isCustomSolveMode={isCustomSolveModeActive}
+        isCustomSolveDay={(d) =>
+          scheduleCampaign !== null &&
+          !d.isBefore(scheduleCampaign.startDate, 'day') &&
+          !d.isAfter(scheduleCampaign.endDate, 'day')
+        }
         isCustomColumnSelected={(d) => {
           const date = d.format('YYYY-MM-DD');
           return (
