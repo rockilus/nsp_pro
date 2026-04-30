@@ -1,6 +1,8 @@
 import React from 'react';
 import { useTranslation } from '../../../../app/i18n/client';
+import { Sparkle } from 'lucide-react';
 // shadcn/ui
+import { Checkbox } from '../../../ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../ui/tooltip';
 // Components
 import CalendarTableHeader from '../../../calendar/CalendarTableHeader';
@@ -400,6 +402,109 @@ export default function ScheduleTableShift({
 
   const days = periodDates.map((pd) => pd.date);
 
+  const isAllShiftsSelected =
+    !!selectionState?.isActive &&
+    shiftsForHeader.length > 0 &&
+    ((!!selectionState.campaignIntent &&
+      selectionState.campaignIntent.selectedRowIds.length === 0) ||
+      shiftsForHeader.every(
+        (s) =>
+          periodDates.length > 0 &&
+          periodDates.every((pd) =>
+            selectionState.selectedCells.some(
+              (c) => c.rowId === s.id && c.date === pd.date.format('YYYY-MM-DD'),
+            ),
+          ),
+      ));
+
+  const isSomeShiftsSelected =
+    !!selectionState?.isActive &&
+    !isAllShiftsSelected &&
+    (selectionState.selectedCells.length > 0 || selectionState.selectedAssignmentIds.length > 0);
+
+  // Build campaign date strings for generation-mode checks (mirrors handleCustomRowSelect logic)
+  const customTargetDates: Array<{ date: string; scheduleId: string | null }> = scheduleCampaign
+    ? (() => {
+        const result: Array<{ date: string; scheduleId: string | null }> = [];
+        let d = scheduleCampaign.startDate;
+        while (!d.isAfter(scheduleCampaign.endDate, 'day')) {
+          result.push({ date: d.format('YYYY-MM-DD'), scheduleId: scheduleCampaign.id });
+          d = d.add(1, 'day');
+        }
+        return result;
+      })()
+    : periodDates.map((pd) => ({ date: pd.date.format('YYYY-MM-DD'), scheduleId: pd.scheduleId }));
+
+  const isAllShiftsCustomSelected =
+    isCustomSolveModeActive &&
+    shiftsForHeader.length > 0 &&
+    customTargetDates.length > 0 &&
+    shiftsForHeader.every((s) =>
+      customTargetDates.every((d) =>
+        customSolveSelectedCells.some((c) => c.rowId === s.id && c.date === d.date),
+      ),
+    );
+
+  const someShiftsCustomSelected =
+    isCustomSolveModeActive &&
+    shiftsForHeader.some((s) =>
+      customTargetDates.some((d) =>
+        customSolveSelectedCells.some((c) => c.rowId === s.id && c.date === d.date),
+      ),
+    );
+
+  const leadingColumnContent =
+    !!selectionState?.isActive || isCustomSolveModeActive ? (
+      <>
+        {!!selectionState?.isActive && (
+          <Checkbox
+            data-testid="shift-select-all-checkbox"
+            checked={isAllShiftsSelected ? true : isSomeShiftsSelected ? 'indeterminate' : false}
+            onCheckedChange={() =>
+              handleSelectAll(
+                isAllShiftsSelected ? [] : shiftsForHeader.map((s) => s.id),
+                selectionScope ?? 'view',
+              )
+            }
+            className="h-3.5 w-3.5"
+          />
+        )}
+        {isCustomSolveModeActive && handleCustomSelectAll && (
+          <button
+            data-testid="shift-custom-select-all"
+            onClick={() => {
+              if (isAllShiftsCustomSelected) {
+                handleCustomSelectAll([]);
+              } else {
+                handleCustomSelectAll(
+                  customTargetDates.flatMap((d) =>
+                    shiftsForHeader.map((s) => ({
+                      rowId: s.id,
+                      date: d.date,
+                      scheduleId: d.scheduleId,
+                    })),
+                  ),
+                );
+              }
+            }}
+            className="cursor-pointer border-none bg-transparent p-0"
+            style={{
+              color: isAllShiftsCustomSelected
+                ? '#1976d2'
+                : someShiftsCustomSelected
+                  ? '#42a5f5'
+                  : '#9e9e9e',
+            }}
+          >
+            <Sparkle
+              size={12}
+              fill={isAllShiftsCustomSelected || someShiftsCustomSelected ? 'currentColor' : 'none'}
+            />
+          </button>
+        )}
+      </>
+    ) : null;
+
   return (
     <div
       className="flex h-[calc(100vh-104px)] w-full flex-col overflow-auto"
@@ -415,13 +520,25 @@ export default function ScheduleTableShift({
         currentFilter={currentFilter ?? undefined}
         onSort={onSort}
         onFilter={(f) => onFilter(f)}
-        leadingColumnContent={null}
+        leadingColumnContent={leadingColumnContent}
         isBulkMode={!!selectionState?.isActive}
         isColumnSelected={(d) => {
           const date = d.format('YYYY-MM-DD');
           return shiftsForHeader.every((s) =>
             selectionState?.selectedCells.some((c) => c.rowId === s.id && c.date === date),
           );
+        }}
+        isColumnIndeterminate={(d) => {
+          const date = d.format('YYYY-MM-DD');
+          const some = shiftsForHeader.some((s) =>
+            selectionState?.selectedCells.some((c) => c.rowId === s.id && c.date === date),
+          );
+          const all =
+            shiftsForHeader.length > 0 &&
+            shiftsForHeader.every((s) =>
+              selectionState?.selectedCells.some((c) => c.rowId === s.id && c.date === date),
+            );
+          return some && !all;
         }}
         onColumnSelect={(d) =>
           handleColumnSelect(

@@ -4,7 +4,9 @@ import { calendarGridTemplate } from '../../../../constants/constants';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { useTranslation } from '../../../../app/i18n/client';
+import { Sparkle } from 'lucide-react';
 // shadcn/ui
+import { Checkbox } from '../../../ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../ui/tooltip';
 // Components
 import CalendarTableHeader from '../../../calendar/CalendarTableHeader';
@@ -437,6 +439,111 @@ export default function ScheduleTableWorker({
 
   const days = periodDates.map((pd) => pd.date);
 
+  const isAllWorkersSelected =
+    !!selectionState?.isActive &&
+    workersForHeader.length > 0 &&
+    ((!!selectionState.campaignIntent &&
+      selectionState.campaignIntent.selectedRowIds.length === 0) ||
+      workersForHeader.every(
+        (w) =>
+          periodDates.length > 0 &&
+          periodDates.every((pd) =>
+            selectionState.selectedCells.some(
+              (c) => c.rowId === w.id && c.date === pd.date.format('YYYY-MM-DD'),
+            ),
+          ),
+      ));
+
+  const isSomeWorkersSelected =
+    !!selectionState?.isActive &&
+    !isAllWorkersSelected &&
+    (selectionState.selectedCells.length > 0 || selectionState.selectedAssignmentIds.length > 0);
+
+  // Build campaign date strings for generation-mode checks (mirrors handleCustomRowSelect logic)
+  const customTargetDates: Array<{ date: string; scheduleId: string | null }> = scheduleCampaign
+    ? (() => {
+        const result: Array<{ date: string; scheduleId: string | null }> = [];
+        let d = scheduleCampaign.startDate;
+        while (!d.isAfter(scheduleCampaign.endDate, 'day')) {
+          result.push({ date: d.format('YYYY-MM-DD'), scheduleId: scheduleCampaign.id });
+          d = d.add(1, 'day');
+        }
+        return result;
+      })()
+    : periodDates.map((pd) => ({ date: pd.date.format('YYYY-MM-DD'), scheduleId: pd.scheduleId }));
+
+  const isAllWorkersCustomSelected =
+    isCustomSolveModeActive &&
+    workersForHeader.length > 0 &&
+    customTargetDates.length > 0 &&
+    workersForHeader.every((w) =>
+      customTargetDates.every((d) =>
+        customSolveSelectedCells.some((c) => c.rowId === w.id && c.date === d.date),
+      ),
+    );
+
+  const someWorkersCustomSelected =
+    isCustomSolveModeActive &&
+    workersForHeader.some((w) =>
+      customTargetDates.some((d) =>
+        customSolveSelectedCells.some((c) => c.rowId === w.id && c.date === d.date),
+      ),
+    );
+
+  const leadingColumnContent =
+    !!selectionState?.isActive || isCustomSolveModeActive ? (
+      <>
+        {!!selectionState?.isActive && (
+          <Checkbox
+            data-testid="worker-select-all-checkbox"
+            checked={isAllWorkersSelected ? true : isSomeWorkersSelected ? 'indeterminate' : false}
+            onCheckedChange={() =>
+              handleSelectAll(
+                isAllWorkersSelected ? [] : workersForHeader.map((w) => w.id),
+                selectionScope ?? 'view',
+              )
+            }
+            className="h-3.5 w-3.5"
+          />
+        )}
+        {isCustomSolveModeActive && handleCustomSelectAll && (
+          <button
+            data-testid="worker-custom-select-all"
+            onClick={() => {
+              if (isAllWorkersCustomSelected) {
+                handleCustomSelectAll([]);
+              } else {
+                handleCustomSelectAll(
+                  customTargetDates.flatMap((d) =>
+                    workersForHeader.map((w) => ({
+                      rowId: w.id,
+                      date: d.date,
+                      scheduleId: d.scheduleId,
+                    })),
+                  ),
+                );
+              }
+            }}
+            className="cursor-pointer border-none bg-transparent p-0"
+            style={{
+              color: isAllWorkersCustomSelected
+                ? '#1976d2'
+                : someWorkersCustomSelected
+                  ? '#42a5f5'
+                  : '#9e9e9e',
+            }}
+          >
+            <Sparkle
+              size={12}
+              fill={
+                isAllWorkersCustomSelected || someWorkersCustomSelected ? 'currentColor' : 'none'
+              }
+            />
+          </button>
+        )}
+      </>
+    ) : null;
+
   return (
     <div
       className="flex h-[calc(100vh-104px)] w-full flex-col overflow-auto"
@@ -452,13 +559,25 @@ export default function ScheduleTableWorker({
         currentFilter={currentFilter ?? undefined}
         onSort={onSort}
         onFilter={(f) => onFilter(f)}
-        leadingColumnContent={null}
+        leadingColumnContent={leadingColumnContent}
         isBulkMode={!!selectionState?.isActive}
         isColumnSelected={(d) => {
           const date = d.format('YYYY-MM-DD');
           return workersForHeader.every((w) =>
             selectionState?.selectedCells.some((c) => c.rowId === w.id && c.date === date),
           );
+        }}
+        isColumnIndeterminate={(d) => {
+          const date = d.format('YYYY-MM-DD');
+          const some = workersForHeader.some((w) =>
+            selectionState?.selectedCells.some((c) => c.rowId === w.id && c.date === date),
+          );
+          const all =
+            workersForHeader.length > 0 &&
+            workersForHeader.every((w) =>
+              selectionState?.selectedCells.some((c) => c.rowId === w.id && c.date === date),
+            );
+          return some && !all;
         }}
         onColumnSelect={(d) =>
           handleColumnSelect(

@@ -56,6 +56,7 @@ export interface CalendarTableHeaderProps {
   /** When true, each date column shows a column-select checkbox */
   isBulkMode?: boolean;
   isColumnSelected?: (date: Dayjs) => boolean;
+  isColumnIndeterminate?: (date: Dayjs) => boolean;
   onColumnSelect?: (date: Dayjs) => void;
   /** When true, each date column shows a custom-solve sparkle button */
   isCustomSolveMode?: boolean;
@@ -77,6 +78,7 @@ export default function CalendarTableHeader({
   trailingColumnHeader,
   isBulkMode = false,
   isColumnSelected,
+  isColumnIndeterminate,
   onColumnSelect,
   isCustomSolveMode = false,
   isCustomColumnSelected,
@@ -151,6 +153,8 @@ export default function CalendarTableHeader({
           const isWeekBoundary = d.isoWeekday() === 1;
           const dateKey = d.format('YYYY-MM-DD');
           const colSelected = isColumnSelected ? isColumnSelected(d) : false;
+          const colIndeterminate =
+            !colSelected && (isColumnIndeterminate ? isColumnIndeterminate(d) : false);
 
           return (
             <div
@@ -166,7 +170,7 @@ export default function CalendarTableHeader({
               {isBulkMode && onColumnSelect && (
                 <Checkbox
                   data-testid={`column-select-checkbox-${dateKey}`}
-                  checked={colSelected}
+                  checked={colSelected ? true : colIndeterminate ? 'indeterminate' : false}
                   onCheckedChange={() => onColumnSelect(d)}
                   className="mb-0.5 h-3.5 w-3.5"
                 />
