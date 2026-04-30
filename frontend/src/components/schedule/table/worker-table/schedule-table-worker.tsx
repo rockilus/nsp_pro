@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import dayjs from 'dayjs';
 import { calendarGridTemplate } from '../../../../constants/constants';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -33,6 +33,7 @@ import {
   SelectionScope,
 } from '@/types/scheduleSelection';
 import { ColumnDefinition, ColumnFilter, TableSort } from '@/types/filter';
+import { useLocalStorageState } from '@/app/lib/hooks/useLocalStorageState';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -382,8 +383,15 @@ export default function ScheduleTableWorker({
   handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   const { t } = useTranslation(lng, 'schedule-page');
-  const [currentSort, setCurrentSort] = useState<TableSort | null>(null);
-  const [currentFilter, setCurrentFilter] = useState<ColumnFilter | null>(null);
+  const teamId = teamWithMembership.team.id;
+  const [currentSort, setCurrentSort] = useLocalStorageState<TableSort | null>(
+    `scheduleViewSettings_${teamId}_workerTableSort`,
+    null,
+  );
+  const [currentFilter, setCurrentFilter] = useLocalStorageState<ColumnFilter | null>(
+    `scheduleViewSettings_${teamId}_workerTableFilter`,
+    null,
+  );
 
   const workerColumn: ColumnDefinition = {
     id: 'name',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from '../../../../app/i18n/client';
 // shadcn/ui
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../ui/tooltip';
@@ -36,6 +36,7 @@ import {
 // Constants
 import { ShiftColorMappings, calendarGridTemplate } from '../../../../constants/constants';
 import { ColumnDefinition, ColumnFilter, TableSort } from '@/types/filter';
+import { useLocalStorageState } from '@/app/lib/hooks/useLocalStorageState';
 
 // ─── Inline ShiftRowHeader content ──────────────────────────────────────────
 
@@ -345,8 +346,15 @@ export default function ScheduleTableShift({
   handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
   const { t } = useTranslation(lng, 'schedule-page');
-  const [currentSort, setCurrentSort] = useState<TableSort | null>(null);
-  const [currentFilter, setCurrentFilter] = useState<ColumnFilter | null>(null);
+  const teamId = teamWithMembership.team.id;
+  const [currentSort, setCurrentSort] = useLocalStorageState<TableSort | null>(
+    `scheduleViewSettings_${teamId}_shiftTableSort`,
+    null,
+  );
+  const [currentFilter, setCurrentFilter] = useLocalStorageState<ColumnFilter | null>(
+    `scheduleViewSettings_${teamId}_shiftTableFilter`,
+    null,
+  );
 
   const shiftColumn: ColumnDefinition = {
     id: 'name',
