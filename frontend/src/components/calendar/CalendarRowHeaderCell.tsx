@@ -52,7 +52,8 @@ export default function CalendarRowHeaderCell({
     <div
       data-testid={testId}
       className={cn(
-        'sticky left-0 z-[2] flex items-center gap-1 border-r border-border/50 bg-card px-2',
+        // Fixed-width sticky left header so all calendar tables align
+        'sticky left-0 z-[2] flex w-[180px] flex-shrink-0 items-center gap-1 border-r border-border/50 bg-card px-2',
         className,
       )}
     >
@@ -83,7 +84,7 @@ export default function CalendarRowHeaderCell({
           />
         </button>
       )}
-      <div className="min-w-0 flex-1">{children}</div>
+      <div className="w-full min-w-0">{children}</div>
     </div>
   );
 }

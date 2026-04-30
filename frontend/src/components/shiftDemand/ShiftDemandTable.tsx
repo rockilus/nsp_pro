@@ -275,14 +275,14 @@ function ShiftDemandRowHeader({
       onSelect={() => onSelectRow(shift.id)}
       checkboxTestId={`row-select-checkbox-${shift.id}`}
     >
-      <div className="flex min-w-0 flex-1 items-center gap-1">
+      <div className="flex w-full min-w-0 items-center gap-1">
         {/* Shift type colour bar */}
         <div
           className={cn('w-1 flex-shrink-0 self-stretch rounded-sm', !isDutyShift && 'invisible')}
           style={isDutyShift ? { backgroundColor: sample } : undefined}
         />
         <span
-          className="min-w-0 flex-1 truncate py-2 text-sm font-[550] text-foreground"
+          className="w-full min-w-0 py-2 text-sm font-[550] break-words text-foreground"
           data-testid={`shift-demand-name-${shift.id}`}
         >
           {shift.name || shift.acronym}

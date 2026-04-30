@@ -312,7 +312,7 @@ function RequestCalendarRow({
       {/* Sticky worker name column */}
       <CalendarRowHeaderCell>
         <span
-          className="truncate py-2 text-sm font-medium whitespace-nowrap text-foreground"
+          className="py-2 text-sm font-medium break-words whitespace-normal text-foreground"
           title={worker.name}
         >
           {worker.name}

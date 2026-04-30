@@ -70,7 +70,7 @@ function ShiftRowHeaderContent({
     : { countActual: 0, countTarget: 0 };
 
   return (
-    <div className="flex min-w-0 flex-1 flex-row items-center">
+    <div className="flex w-full min-w-0 flex-row items-center">
       {/* Colored type marker - reserve space for alignment like shift-demand header */}
       <div
         className={
@@ -81,9 +81,9 @@ function ShiftRowHeaderContent({
         style={shift.shiftType === ShiftType.DUTY ? { backgroundColor: sample } : undefined}
       />
       {/* Left: name + stats */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex w-full min-w-0 flex-col">
         <span
-          className="truncate text-[0.9rem] font-semibold text-foreground"
+          className="text-[0.9rem] font-semibold break-words text-foreground"
           data-testid={`shift-name-${shift.id}`}
         >
           {shift.name} ({shift.acronym})

@@ -99,9 +99,9 @@ function WorkerRowHeaderContent({
   })();
 
   return (
-    <div className="flex min-w-0 flex-col pl-1">
+    <div className="flex w-full min-w-0 flex-col pl-1">
       <span
-        className="truncate text-[0.9rem] font-semibold text-foreground"
+        className="text-[0.9rem] font-semibold break-words text-foreground"
         data-testid={`worker-name-${worker.id}`}
       >
         {worker.name} ({worker.acronym})
