@@ -392,26 +392,29 @@ export default function ScheduleTableWorker({
   const { t } = useTranslation(lng, 'schedule-page');
   const teamId = teamWithMembership.team.id;
 
+  const allWorkersForHeader = getRelevantWorkers(workers, assignments, scheduleCampaign);
+
   const workerColumn: ColumnDefinition = {
-    id: 'name',
+    id: 'worker',
     label: t('worker'),
-    type: 'text',
-    getValue: (w: WorkerT) => w.name,
+    type: 'select',
+    getValue: (w: WorkerT) => w.id,
+    getDisplayValue: (w: WorkerT) => w.name,
+    getOptions: () => allWorkersForHeader.map((w) => ({ value: w.id, label: w.name })),
   };
 
-  const allWorkersForHeader = getRelevantWorkers(workers, assignments, scheduleCampaign);
   const workersForHeader = (() => {
     let result = allWorkersForHeader;
     if (
       currentFilter &&
-      currentFilter.id === 'name' &&
-      typeof currentFilter.value === 'string' &&
-      currentFilter.value
+      currentFilter.id === 'worker' &&
+      Array.isArray(currentFilter.value) &&
+      currentFilter.value.length > 0
     ) {
-      const needle = currentFilter.value.toLowerCase();
-      result = result.filter((w) => w.name.toLowerCase().includes(needle));
+      const selectedIds = currentFilter.value as string[];
+      result = result.filter((w) => selectedIds.includes(w.id));
     }
-    if (currentSort && currentSort.columnId === 'name') {
+    if (currentSort && currentSort.columnId === 'worker') {
       result = [...result].sort((a, b) =>
         currentSort.direction === 'asc'
           ? a.name.localeCompare(b.name)

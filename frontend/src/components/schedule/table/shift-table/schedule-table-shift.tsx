@@ -355,26 +355,29 @@ export default function ScheduleTableShift({
   const { t } = useTranslation(lng, 'schedule-page');
   const teamId = teamWithMembership.team.id;
 
+  const allShiftsForHeader = getRelevantShifts(shifts, assignments);
+
   const shiftColumn: ColumnDefinition = {
-    id: 'name',
+    id: 'shift',
     label: t('shift'),
-    type: 'text',
-    getValue: (s: ShiftT) => s.name,
+    type: 'select',
+    getValue: (s: ShiftT) => s.id,
+    getDisplayValue: (s: ShiftT) => s.name,
+    getOptions: () => allShiftsForHeader.map((s) => ({ value: s.id, label: s.name })),
   };
 
-  const allShiftsForHeader = getRelevantShifts(shifts, assignments);
   const shiftsForHeader = (() => {
     let result = allShiftsForHeader;
     if (
       currentFilter &&
-      currentFilter.id === 'name' &&
-      typeof currentFilter.value === 'string' &&
-      currentFilter.value
+      currentFilter.id === 'shift' &&
+      Array.isArray(currentFilter.value) &&
+      currentFilter.value.length > 0
     ) {
-      const needle = currentFilter.value.toLowerCase();
-      result = result.filter((s) => s.name.toLowerCase().includes(needle));
+      const selectedIds = currentFilter.value as string[];
+      result = result.filter((s) => selectedIds.includes(s.id));
     }
-    if (currentSort && currentSort.columnId === 'name') {
+    if (currentSort && currentSort.columnId === 'shift') {
       result = [...result].sort((a, b) =>
         currentSort.direction === 'asc'
           ? a.name.localeCompare(b.name)
