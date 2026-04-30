@@ -237,10 +237,29 @@ export default function StatsTable({
                 <div className="column-header-container">
                   <span
                     className={`column-header ${quickStats ? 'quick-stats' : ''} ${header.headerUnit === HeaderUnitOptions.WEEK ? 'week' : ''}`}
+                    style={
+                      header.headerUnit === HeaderUnitOptions.WEEK
+                        ? {
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '1px',
+                          }
+                        : undefined
+                    }
                   >
-                    {header.headerUnit === HeaderUnitOptions.SHIFT
-                      ? shifts.find((s) => s.id === header.value)?.name
-                      : translateHeaderValue(header.value)}
+                    {header.headerUnit === HeaderUnitOptions.SHIFT ? (
+                      shifts.find((s) => s.id === header.value)?.name
+                    ) : header.headerUnit === HeaderUnitOptions.WEEK ? (
+                      <>
+                        <span>{translateHeaderValue(header.value)}</span>
+                        <span style={{ fontSize: '0.65rem', opacity: 0.6, fontWeight: 400 }}>
+                          W{header.value.match(/W(\d+)/)?.[1]}
+                        </span>
+                      </>
+                    ) : (
+                      translateHeaderValue(header.value)
+                    )}
                   </span>
                   {statsOptions.showFavorites && (
                     <div className="column-header-custom-info">
