@@ -1,6 +1,7 @@
 import React from 'react';
 import { Dayjs } from 'dayjs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { calendarGridTemplate } from '@/constants/constants';
 
 export const StaffingSummaryLoadingIndicator: React.FC<{ days: Dayjs[] }> = ({ days }) => (
   <>
@@ -10,7 +11,7 @@ export const StaffingSummaryLoadingIndicator: React.FC<{ days: Dayjs[] }> = ({ d
         className="min-h-[40px] border-b border-border/50"
         style={{
           display: 'grid',
-          gridTemplateColumns: `180px repeat(${days.length}, minmax(60px, 1fr))`,
+          gridTemplateColumns: calendarGridTemplate(days.length),
         }}
       >
         {/* Row label skeleton */}

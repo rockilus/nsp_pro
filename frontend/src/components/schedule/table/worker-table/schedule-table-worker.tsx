@@ -1,5 +1,6 @@
 import React from 'react';
 import dayjs from 'dayjs';
+import { calendarGridTemplate } from '../../../../constants/constants';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { useTranslation } from '../../../../app/i18n/client';
@@ -252,7 +253,7 @@ function WorkerRow({
       className="border-b border-border/50"
       style={{
         display: 'grid',
-        gridTemplateColumns: `180px repeat(${periodDates.length}, minmax(60px, 1fr))`,
+        gridTemplateColumns: calendarGridTemplate(periodDates.length),
       }}
     >
       <CalendarRowHeaderCell

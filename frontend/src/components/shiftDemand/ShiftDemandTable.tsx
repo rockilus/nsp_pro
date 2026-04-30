@@ -8,7 +8,7 @@ import { Loader2, Plus, Minus } from 'lucide-react';
 import { useTranslation } from '../../app/i18n/client';
 import { ShiftT, ShiftType } from '../../types/shift';
 import { MultitaskingSelectionState } from '../../types/multitasking';
-import { ShiftColorMappings } from '../../constants/constants';
+import { ShiftColorMappings, calendarGridTemplate } from '../../constants/constants';
 import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
 import CalendarTableHeader from '../calendar/CalendarTableHeader';
 import CalendarRowHeaderCell from '../calendar/CalendarRowHeaderCell';
@@ -337,7 +337,7 @@ function ShiftDemandRow({
       className="min-h-[40px] border-b border-border/50"
       style={{
         display: 'grid',
-        gridTemplateColumns: `180px repeat(${dates.length}, minmax(60px, 1fr))`,
+        gridTemplateColumns: calendarGridTemplate(dates.length),
       }}
     >
       <ShiftDemandRowHeader

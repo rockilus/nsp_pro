@@ -34,7 +34,7 @@ import {
   SelectionScope,
 } from '../../../../types/scheduleSelection';
 // Constants
-import { ShiftColorMappings } from '../../../../constants/constants';
+import { ShiftColorMappings, calendarGridTemplate } from '../../../../constants/constants';
 
 // ─── Inline ShiftRowHeader content ──────────────────────────────────────────
 
@@ -216,7 +216,7 @@ function ShiftRow({
       className="border-b border-border/50"
       style={{
         display: 'grid',
-        gridTemplateColumns: `180px repeat(${periodDates.length}, minmax(60px, 1fr))`,
+        gridTemplateColumns: calendarGridTemplate(periodDates.length),
       }}
     >
       <CalendarRowHeaderCell

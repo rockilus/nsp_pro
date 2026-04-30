@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from '../../../../app/i18n/client';
+import { calendarGridTemplate } from '../../../../constants/constants';
 // Components
 import DemandsHeaderCell from './demands-header-cell';
 import { countShifts, countStaffings } from './assignment-count-methods';
@@ -53,7 +54,7 @@ export default function DailyShiftDemandRow({
       className="border-b border-border/50 bg-card"
       style={{
         display: 'grid',
-        gridTemplateColumns: `180px repeat(${periodDates.length}, minmax(60px, 1fr))`,
+        gridTemplateColumns: calendarGridTemplate(periodDates.length),
       }}
       data-testid="shift-count-row"
     >

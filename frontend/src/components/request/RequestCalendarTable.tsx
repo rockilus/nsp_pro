@@ -1,5 +1,6 @@
 import React from 'react';
 import dayjs, { Dayjs } from 'dayjs';
+import { calendarGridTemplate } from '@/constants/constants';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { cn } from '@/lib/utils';
 import { StaffingSummaryLoadingIndicator } from './StaffingSummaryLoadingIndicator';
@@ -305,7 +306,7 @@ function RequestCalendarRow({
       className="min-h-[40px] border-b border-border/50"
       style={{
         display: 'grid',
-        gridTemplateColumns: `180px repeat(${days.length}, minmax(60px, 1fr))`,
+        gridTemplateColumns: calendarGridTemplate(days.length),
       }}
     >
       {/* Sticky worker name column */}
@@ -411,7 +412,7 @@ function StaffingSummaryRows({ days, staffingSummary, isCalculating }: StaffingS
           className="min-h-[40px] border-b border-border/50"
           style={{
             display: 'grid',
-            gridTemplateColumns: `180px repeat(${days.length}, minmax(60px, 1fr))`,
+            gridTemplateColumns: calendarGridTemplate(days.length),
           }}
         >
           <div className={summaryLabelClass} title={label}>

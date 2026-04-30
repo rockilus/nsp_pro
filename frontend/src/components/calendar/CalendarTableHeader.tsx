@@ -7,6 +7,7 @@ import { Sparkle } from 'lucide-react';
 import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
 import ColumnSortFilterMenu from '../table/ColumnSortFilterMenu';
 import { useTranslation } from '../../app/i18n/client';
+import { calendarGridTemplate, CALENDAR_DAY_CELL_MIN_WIDTH } from '../../constants/constants';
 
 dayjs.extend(isoWeek);
 
@@ -86,9 +87,10 @@ export default function CalendarTableHeader({
   const today = dayjs();
   const weekGroups = buildWeekGroups(days);
 
-  const gridTemplate = `180px repeat(${days.length}, minmax(60px, 1fr))${
-    trailingColumnHeader !== undefined ? ' 60px' : ''
-  }`;
+  const gridTemplate = calendarGridTemplate(
+    days.length,
+    trailingColumnHeader !== undefined ? CALENDAR_DAY_CELL_MIN_WIDTH : undefined,
+  );
 
   return (
     <div className="sticky top-0 z-[3] bg-card" data-testid="calendar-table-header">
