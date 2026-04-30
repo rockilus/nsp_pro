@@ -1,6 +1,8 @@
 import React from 'react';
-import { Box, Chip, Button } from '@mui/material';
-import { Clear as ClearIcon, Sort as SortIcon } from '@mui/icons-material';
+import { ArrowUpDown, X, RotateCcw } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useTranslation } from '../../app/i18n/client';
 import { ColumnFilter, TableSort } from '../../types/filter';
 
 interface TableFilterBarProps {
@@ -9,7 +11,10 @@ interface TableFilterBarProps {
   onRemoveFilter: (filterId: string) => void;
   onRemoveSort: () => void;
   onResetAll: () => void;
-  hideSort?: boolean; // Optional prop to hide the sort chip
+  hideSort?: boolean;
+  /** Render inline without the outer container div (for embedding in flex toolbars) */
+  inline?: boolean;
+  lng?: string;
 }
 
 export default function TableFilterBar({
@@ -19,65 +24,80 @@ export default function TableFilterBar({
   onRemoveSort,
   onResetAll,
   hideSort = false,
+  inline = false,
+  lng,
 }: TableFilterBarProps) {
+  const { t } = useTranslation(lng || 'en', 'shift-demands');
+
   const hasActiveFilters = filters.length > 0 || (!hideSort && sort !== null);
 
   if (!hasActiveFilters) {
     return null;
   }
 
-  return (
-    <Box
-      sx={{ p: 2, backgroundColor: 'grey.50', borderRadius: 1, mb: 2 }}
-      data-testid="table-filter-bar"
+  const content = (
+    <div
+      className={cn(
+        'flex flex-wrap items-center gap-1.5',
+        !inline && 'max-h-20 overflow-x-hidden overflow-y-auto',
+      )}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'flex-start',
-          gap: 1,
-          maxHeight: '80px', // Approximately 2 lines of chips (32px each + gap)
-          overflowY: 'auto',
-          overflowX: 'hidden',
-        }}
-      >
-        {!hideSort && sort && (
-          <Chip
-            icon={<SortIcon />}
-            label={`Sort: ${sort.label} ${sort.direction === 'asc' ? '↑' : '↓'}`}
-            onDelete={onRemoveSort}
-            variant="outlined"
-            color="primary"
-            data-testid="sort-chip"
-          />
-        )}
-
-        {filters.map((filter) => (
-          <Chip
-            key={filter.id}
-            label={filter.label}
-            onDelete={() => onRemoveFilter(filter.id)}
-            variant="outlined"
-            color="secondary"
-            data-testid={`filter-chip-${filter.id}`}
-          />
-        ))}
-
-        <Button
-          size="small"
-          onClick={onResetAll}
-          startIcon={<ClearIcon />}
-          sx={{
-            ml: 'auto',
-            flexShrink: 0, // Prevent button from shrinking
-            alignSelf: 'flex-start', // Keep button at top when scrolling
-          }}
-          data-testid="reset-all-filters-button"
+      {!hideSort && sort && (
+        <span
+          className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/8 px-2.5 py-0.5 text-xs font-medium text-primary"
+          data-testid="sort-chip"
         >
-          Reset
-        </Button>
-      </Box>
-    </Box>
+          <ArrowUpDown className="size-3 shrink-0" />
+          {sort.label} {sort.direction === 'asc' ? '↑' : '↓'}
+          <button
+            type="button"
+            onClick={onRemoveSort}
+            className="ml-0.5 rounded-full p-0.5 hover:bg-primary/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            aria-label="Remove sort"
+          >
+            <X className="size-3" />
+          </button>
+        </span>
+      )}
+
+      {filters.map((filter) => (
+        <span
+          key={filter.id}
+          className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground"
+          data-testid={`filter-chip-${filter.id}`}
+        >
+          {filter.label}
+          <button
+            type="button"
+            onClick={() => onRemoveFilter(filter.id)}
+            className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            aria-label={`Remove filter ${filter.label}`}
+          >
+            <X className="size-3" />
+          </button>
+        </span>
+      ))}
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onResetAll}
+        className="ml-auto shrink-0 self-start text-muted-foreground"
+        data-testid="reset-all-filters-button"
+      >
+        <RotateCcw className="size-3" />
+        {t('reset')}
+      </Button>
+    </div>
+  );
+
+  if (inline) {
+    return content;
+  }
+
+  return (
+    <div className="rounded-md bg-muted/50 px-3 py-2" data-testid="table-filter-bar">
+      {content}
+    </div>
   );
 }

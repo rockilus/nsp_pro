@@ -3,6 +3,7 @@ import { useTranslation } from '../../../../app/i18n/client';
 // shadcn/ui
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../ui/tooltip';
 // Components
+import TableFilterBar from '../../../table/TableFilterBar';
 import CalendarTableHeader from '../../../calendar/CalendarTableHeader';
 import CalendarRowHeaderCell from '../../../calendar/CalendarRowHeaderCell';
 import DailyShiftDemandRow from '../shared/daily-shift-demand-row';
@@ -457,6 +458,21 @@ export default function ScheduleTableShift({
           )
         }
       />
+
+      {/* Active filter/sort indicator */}
+      {(currentSort || currentFilter) && (
+        <TableFilterBar
+          lng={lng}
+          filters={currentFilter ? [currentFilter] : []}
+          sort={currentSort ?? null}
+          onRemoveFilter={() => setCurrentFilter(null)}
+          onRemoveSort={() => setCurrentSort(null)}
+          onResetAll={() => {
+            setCurrentSort(null);
+            setCurrentFilter(null);
+          }}
+        />
+      )}
 
       {/* Shift demand row */}
       <RoleBased

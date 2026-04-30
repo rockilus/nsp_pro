@@ -472,6 +472,7 @@ export const RequestCalendar: React.FC<RequestCalendarProps> = ({
 
       {/* Filter Bar - shows active filters and sorting */}
       <TableFilterBar
+        lng={lng}
         filters={tableState.filters}
         sort={tableState.sort}
         onRemoveFilter={removeFilter}

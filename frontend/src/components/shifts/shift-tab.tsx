@@ -549,6 +549,7 @@ export default function ShiftTab({
             {((shiftView === 'work' && showWorkFilterToolbar) ||
               (shiftView === 'rest' && showRestFilterToolbar)) && (
               <TableFilterBar
+                lng={lng}
                 filters={shiftView === 'work' ? workTableState.filters : restTableState.filters}
                 sort={shiftView === 'work' ? workTableState.sort : restTableState.sort}
                 onRemoveFilter={shiftView === 'work' ? removeWorkFilter : removeRestFilter}

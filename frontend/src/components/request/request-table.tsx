@@ -560,6 +560,7 @@ export default function RequestTable({
   return (
     <div className="w-full">
       <TableFilterBar
+        lng={lng}
         filters={tableState.filters}
         sort={tableState.sort}
         onRemoveFilter={removeFilter}

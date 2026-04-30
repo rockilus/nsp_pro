@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Paper, Divider } from '@mui/material';
-import { FilterSortSection } from '../toolbar/FilterSortSection';
+import TableFilterBar from '../../table/TableFilterBar';
 import { BulkSelectionSection } from '../toolbar/BulkSelectionSection';
 import { ColumnFilter, TableSort } from '../../../types/filter';
 
@@ -72,13 +72,14 @@ export function TemplateActionToolbar({
       >
         {/* Left side - Filters and Sort */}
         {showFilters && hasFiltersOrSort && (
-          <FilterSortSection
+          <TableFilterBar
             lng={lng}
             filters={filters}
             sort={sort}
             onRemoveFilter={onRemoveFilter}
             onRemoveSort={onRemoveSort}
             onResetAll={onResetAll}
+            inline
           />
         )}
 
