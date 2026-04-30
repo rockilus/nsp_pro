@@ -21,7 +21,7 @@ import { ConstraintColorsT } from '../types/constraint';
 
 // Calendar table layout
 export const CALENDAR_ROW_HEADER_WIDTH = 180; // px — sticky left column (worker/shift name)
-export const CALENDAR_DAY_CELL_MIN_WIDTH = 60; // px — minimum width per day column
+export const CALENDAR_DAY_CELL_MIN_WIDTH = 40; // px — minimum width per day column
 
 /** Builds the CSS grid template for a calendar row with `n` day columns. */
 export function calendarGridTemplate(n: number, trailingColumn?: number): string {

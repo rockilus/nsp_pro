@@ -32,7 +32,7 @@ const DSDPopoverButton: React.FC<{ counts: CountsT }> = ({ counts }) => {
     <span
       className={`dsd-stats-total ${counts.total.actual !== counts.total.target ? 'breach' : ''}`}
     >
-      {`${counts.total.actual} / ${counts.total.target}`}
+      {`${counts.total.actual}/${counts.total.target}`}
     </span>
   );
 };
