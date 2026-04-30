@@ -71,10 +71,15 @@ function ShiftRowHeaderContent({
 
   return (
     <div className="flex min-w-0 flex-1 flex-row items-center">
-      {/* Colored type marker */}
-      {shift.shiftType === ShiftType.DUTY && (
-        <div className="mr-1 h-full w-1 shrink-0 rounded-sm" style={{ backgroundColor: sample }} />
-      )}
+      {/* Colored type marker - reserve space for alignment like shift-demand header */}
+      <div
+        className={
+          shift.shiftType === ShiftType.DUTY
+            ? 'mr-1 w-1 flex-shrink-0 self-stretch rounded-sm'
+            : 'invisible mr-1 w-1 flex-shrink-0 self-stretch rounded-sm'
+        }
+        style={shift.shiftType === ShiftType.DUTY ? { backgroundColor: sample } : undefined}
+      />
       {/* Left: name + stats */}
       <div className="flex min-w-0 flex-1 flex-col">
         <span
