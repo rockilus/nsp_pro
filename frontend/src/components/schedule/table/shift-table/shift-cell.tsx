@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 // MUI
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import Checkbox from '@mui/material/Checkbox';
@@ -58,6 +59,7 @@ export default function ShiftCell({
 }) {
   const isSelectionActive = !!selectionState?.isActive;
   const dateStr = periodDate.date.format('YYYY-MM-DD');
+  const isWeekend = periodDate.date.day() === 0 || periodDate.date.day() === 6;
   const isCellSelected =
     selectionState?.selectedCells.some((c) => c.rowId === shift.id && c.date === dateStr) ?? false;
   const hasAssignments =
@@ -65,7 +67,10 @@ export default function ShiftCell({
 
   return (
     <div
-      className="cell-hover-container relative border-r border-border/50"
+      className={cn(
+        'cell-hover-container relative border-r border-border/50',
+        isWeekend && 'bg-muted',
+      )}
       data-testid={`shift-cell-${shift.id}-${periodDate.date.format('YYYY-MM-DD')}`}
       style={{
         backgroundColor: isCellSelected ? 'rgba(25, 118, 210, 0.08)' : undefined,

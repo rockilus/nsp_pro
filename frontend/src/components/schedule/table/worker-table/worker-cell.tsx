@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 import { Sparkle } from 'lucide-react';
 // MUI
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -57,6 +58,7 @@ export default function WorkerCell({
 }) {
   const isSelectionActive = !!selectionState?.isActive;
   const dateStr = periodDate.date.format('YYYY-MM-DD');
+  const isWeekend = periodDate.date.day() === 0 || periodDate.date.day() === 6;
   const isCellSelected =
     selectionState?.selectedCells.some((c) => c.rowId === worker.id && c.date === dateStr) ?? false;
   const hasAssignments =
@@ -94,7 +96,10 @@ export default function WorkerCell({
 
   return (
     <div
-      className="cell-hover-container relative border-r border-border/50"
+      className={cn(
+        'cell-hover-container relative border-r border-border/50',
+        isWeekend && 'bg-muted',
+      )}
       data-testid={`worker-cell-${worker.id}-${dateStr}`}
       style={{
         backgroundColor: isCellSelected ? 'rgba(25, 118, 210, 0.08)' : undefined,
