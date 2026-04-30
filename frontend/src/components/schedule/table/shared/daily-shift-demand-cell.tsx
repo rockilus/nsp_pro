@@ -63,9 +63,9 @@ export default function DailyShiftDemandCell({
         }
       >
         <div className="dsd-cell-stats">
-          <span className="dsd-stats">{`${countActual}/${countTarget}`}</span>
-          {/* <span className="dsd-stats dsd-stats-slash">/</span>
-          <span className="dsd-stats dsd-stats-target">{countTarget}</span> */}
+          <span className="dsd-stats dsd-stats-actual">{countActual}</span>
+          <span className="dsd-stats dsd-stats-slash">/</span>
+          <span className="dsd-stats dsd-stats-target">{countTarget}</span>
         </div>
         {isCustomSolveModeActive && isDateInCampaign && (
           <button
