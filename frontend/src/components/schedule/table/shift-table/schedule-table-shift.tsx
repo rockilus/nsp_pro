@@ -529,96 +529,99 @@ export default function ScheduleTableShift({
       className="flex h-[calc(100vh-104px)] w-full flex-col overflow-auto"
       data-testid="schedule-table-shift"
     >
-      {/* Sticky header */}
-      <CalendarTableHeader
-        lng={lng}
-        days={days}
-        rowHeaderLabel={t('shift')}
-        rowColumn={shiftColumn}
-        currentSort={currentSort ?? undefined}
-        currentFilter={currentFilter ?? undefined}
-        onSort={onSort}
-        onFilter={(f) => onFilter(f)}
-        leadingColumnContent={leadingColumnContent}
-        isBulkMode={!!selectionState?.isActive}
-        isColumnSelected={(d) => {
-          const date = d.format('YYYY-MM-DD');
-          return shiftsForHeader.every((s) =>
-            selectionState?.selectedCells.some((c) => c.rowId === s.id && c.date === date),
-          );
-        }}
-        isColumnIndeterminate={(d) => {
-          const date = d.format('YYYY-MM-DD');
-          const some = shiftsForHeader.some((s) =>
-            selectionState?.selectedCells.some((c) => c.rowId === s.id && c.date === date),
-          );
-          const all =
-            shiftsForHeader.length > 0 &&
-            shiftsForHeader.every((s) =>
+      {/* Sticky header + demand row */}
+      <div className="sticky top-0 z-[3]">
+        {/* Sticky header */}
+        <CalendarTableHeader
+          lng={lng}
+          days={days}
+          rowHeaderLabel={t('shift')}
+          rowColumn={shiftColumn}
+          currentSort={currentSort ?? undefined}
+          currentFilter={currentFilter ?? undefined}
+          onSort={onSort}
+          onFilter={(f) => onFilter(f)}
+          leadingColumnContent={leadingColumnContent}
+          isBulkMode={!!selectionState?.isActive}
+          isColumnSelected={(d) => {
+            const date = d.format('YYYY-MM-DD');
+            return shiftsForHeader.every((s) =>
               selectionState?.selectedCells.some((c) => c.rowId === s.id && c.date === date),
             );
-          return some && !all;
-        }}
-        onColumnSelect={(d) =>
-          handleColumnSelect(
-            d.format('YYYY-MM-DD'),
-            shiftsForHeader.map((s) => s.id),
-            selectionScope ?? 'view',
-          )
-        }
-        isCustomSolveMode={isCustomSolveModeActive}
-        isCustomSolveDay={(d) =>
-          scheduleCampaign !== null &&
-          !d.isBefore(scheduleCampaign.startDate, 'day') &&
-          !d.isAfter(scheduleCampaign.endDate, 'day')
-        }
-        isCustomColumnSelected={(d) => {
-          const date = d.format('YYYY-MM-DD');
-          return (
-            shiftsForHeader.length > 0 &&
-            shiftsForHeader.every((s) =>
-              customSolveSelectedCells.some((c) => c.rowId === s.id && c.date === date),
+          }}
+          isColumnIndeterminate={(d) => {
+            const date = d.format('YYYY-MM-DD');
+            const some = shiftsForHeader.some((s) =>
+              selectionState?.selectedCells.some((c) => c.rowId === s.id && c.date === date),
+            );
+            const all =
+              shiftsForHeader.length > 0 &&
+              shiftsForHeader.every((s) =>
+                selectionState?.selectedCells.some((c) => c.rowId === s.id && c.date === date),
+              );
+            return some && !all;
+          }}
+          onColumnSelect={(d) =>
+            handleColumnSelect(
+              d.format('YYYY-MM-DD'),
+              shiftsForHeader.map((s) => s.id),
+              selectionScope ?? 'view',
             )
-          );
-        }}
-        isCustomColumnIndeterminate={(d) => {
-          const date = d.format('YYYY-MM-DD');
-          const allSelected =
-            shiftsForHeader.length > 0 &&
-            shiftsForHeader.every((s) =>
+          }
+          isCustomSolveMode={isCustomSolveModeActive}
+          isCustomSolveDay={(d) =>
+            scheduleCampaign !== null &&
+            !d.isBefore(scheduleCampaign.startDate, 'day') &&
+            !d.isAfter(scheduleCampaign.endDate, 'day')
+          }
+          isCustomColumnSelected={(d) => {
+            const date = d.format('YYYY-MM-DD');
+            return (
+              shiftsForHeader.length > 0 &&
+              shiftsForHeader.every((s) =>
+                customSolveSelectedCells.some((c) => c.rowId === s.id && c.date === date),
+              )
+            );
+          }}
+          isCustomColumnIndeterminate={(d) => {
+            const date = d.format('YYYY-MM-DD');
+            const allSelected =
+              shiftsForHeader.length > 0 &&
+              shiftsForHeader.every((s) =>
+                customSolveSelectedCells.some((c) => c.rowId === s.id && c.date === date),
+              );
+            const someSelected = shiftsForHeader.some((s) =>
               customSolveSelectedCells.some((c) => c.rowId === s.id && c.date === date),
             );
-          const someSelected = shiftsForHeader.some((s) =>
-            customSolveSelectedCells.some((c) => c.rowId === s.id && c.date === date),
-          );
-          return someSelected && !allSelected;
-        }}
-        onCustomColumnSelect={(d) =>
-          handleCustomColumnSelect?.(
-            d.format('YYYY-MM-DD'),
-            shiftsForHeader.map((s) => s.id),
-          )
-        }
-      />
+            return someSelected && !allSelected;
+          }}
+          onCustomColumnSelect={(d) =>
+            handleCustomColumnSelect?.(
+              d.format('YYYY-MM-DD'),
+              shiftsForHeader.map((s) => s.id),
+            )
+          }
+        />
 
-      {/* Active filter/sort indicator */}
+        {/* Active filter/sort indicator */}
 
-      {/* Shift demand row */}
-      <RoleBased
-        role={teamWithMembership.membership.role}
-        allowedRoles={[TeamMembershipRole.OWNER]}
-      >
-        {teamWithMembership.team.useSolver && (
-          <DailyShiftDemandRow
-            lng={lng}
-            shifts={shifts}
-            assignments={assignments}
-            shiftDemands={shiftDemands}
-            periodDates={periodDates}
-            scheduleViewSettings={scheduleViewSettings}
-          />
-        )}
-      </RoleBased>
+        {/* Shift demand row */}
+        <RoleBased
+          role={teamWithMembership.membership.role}
+          allowedRoles={[TeamMembershipRole.OWNER]}
+        >
+          {teamWithMembership.team.useSolver && (
+            <DailyShiftDemandRow
+              lng={lng}
+              shifts={shifts}
+              assignments={assignments}
+              shiftDemands={shiftDemands}
+              periodDates={periodDates}
+              scheduleViewSettings={scheduleViewSettings}
+            />
+          )}
+        </RoleBased>
+      </div>
 
       {/* Shift rows */}
       {shiftsForHeader.map((shift, shiftIndex) => (
