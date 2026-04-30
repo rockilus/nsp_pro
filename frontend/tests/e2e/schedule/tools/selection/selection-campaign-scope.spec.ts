@@ -2023,7 +2023,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
 
       // Vertical select: click column checkbox for campaignStart date
       const columnCheckbox = page.locator(
-        `[data-testid="date-column-checkbox-${campaignDateStr}"]`,
+        `[data-testid="column-select-checkbox-${campaignDateStr}"]`,
       );
       await expect(columnCheckbox).toBeVisible();
       await columnCheckbox.click();
@@ -2109,7 +2109,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       await expect(rowCheckbox).toBeVisible();
       await rowCheckbox.click();
 
-      await page.locator(`[data-testid="date-column-checkbox-${campaignDateStr}"]`).click();
+      await page.locator(`[data-testid="column-select-checkbox-${campaignDateStr}"]`).click();
 
       await selectAction(page, 'update');
       await page.click('[data-testid="schedule-entity-select"]');
@@ -2189,7 +2189,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       await expect(rowCheckbox).toBeVisible();
       await rowCheckbox.click();
 
-      await page.locator(`[data-testid="date-column-checkbox-${campaignDateStr}"]`).click();
+      await page.locator(`[data-testid="column-select-checkbox-${campaignDateStr}"]`).click();
 
       await selectAction(page, 'toggleFixed');
       await page.click('[data-testid="schedule-action-main-button"]');
@@ -2264,7 +2264,7 @@ test.describe('Campaign scope bulk operations — 12-month campaign', () => {
       await expect(rowCheckbox).toBeVisible();
       await rowCheckbox.click();
 
-      await page.locator(`[data-testid="date-column-checkbox-${campaignDateStr}"]`).click();
+      await page.locator(`[data-testid="column-select-checkbox-${campaignDateStr}"]`).click();
 
       await selectAction(page, 'delete');
       await page.click('[data-testid="schedule-action-main-button"]');

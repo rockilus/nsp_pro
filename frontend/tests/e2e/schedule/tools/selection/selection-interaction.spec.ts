@@ -137,7 +137,9 @@ for (const groupBy of ['shift', 'worker'] as const) {
       const scheduleTestBase = testBasesMap.get(testRunId)!;
 
       const referenceDate = dayjs.utc().format('YYYY-MM-DD');
-      const columnCheckbox = page.locator(`[data-testid="date-column-checkbox-${referenceDate}"]`);
+      const columnCheckbox = page.locator(
+        `[data-testid="column-select-checkbox-${referenceDate}"]`,
+      );
       await expect(columnCheckbox).toBeVisible();
 
       // Select entire column

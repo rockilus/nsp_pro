@@ -7,7 +7,6 @@ import ScheduleTableWorker from './worker-table/schedule-table-worker';
 // Types
 import {
   ScheduleT,
-  ExportOptionsT,
   periodDateT,
   AssignmentDataT,
   ScheduleCellDataT,
@@ -47,7 +46,6 @@ export default function ScheduleDisplay({
   handleAssignmentSelection,
   handleDemandSelection,
   handleRequestSelection,
-  handleExportSchedule,
   handleOpenCreateAssignment,
   handleCellSelect,
   handleAssignmentSelect,
@@ -78,7 +76,6 @@ export default function ScheduleDisplay({
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
   handleRequestSelection?: (request: RequestT) => void;
-  handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
   handleCellSelect: (rowId: string, date: string, scheduleId: string | null) => void;
   handleAssignmentSelect: (assignmentId: string) => void;
@@ -111,7 +108,6 @@ export default function ScheduleDisplay({
         selectionScope={selectionScope}
         handleAssignmentSelection={handleAssignmentSelection}
         handleDemandSelection={handleDemandSelection}
-        handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
         handleCellSelect={handleCellSelect}
         handleAssignmentSelect={handleAssignmentSelect}
@@ -144,7 +140,6 @@ export default function ScheduleDisplay({
         selectionScope={selectionScope}
         handleAssignmentSelection={handleAssignmentSelection}
         handleRequestSelection={handleRequestSelection}
-        handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
         handleCellSelect={handleCellSelect}
         handleAssignmentSelect={handleAssignmentSelect}

@@ -1,11 +1,9 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from '../../../../app/i18n/client';
-// MUI
-import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
 // Components
 import DemandsHeaderCell from './demands-header-cell';
 import { countShifts, countStaffings } from './assignment-count-methods';
+import CalendarRowHeaderCell from '../../../calendar/CalendarRowHeaderCell';
 // Styles
 import './daily-shift-demand-row.css';
 // Types
@@ -51,46 +49,30 @@ export default function DailyShiftDemandRow({
   }, [shifts, assignments, shiftDemands, periodDates, scheduleViewSettings]);
 
   return (
-    <TableRow
-      style={{
-        backgroundColor: 'white',
-        boxShadow: '1px 1px 0px 0px rgba(224, 224, 224, 1)',
-      }}
-      data-testid="shift-count-row"
-    >
-      <TableCell
-        sx={{
-          position: 'sticky',
-          left: 0,
-          backgroundColor: '#FFFFFF',
-          borderRight: '1px solid #e0e0e07d',
-          padding: 0,
-          width: '100px',
-        }}
-        data-testid="shift-count-row-label"
-      >
-        <div className="dsd-row-label-container">
-          <span className="dsd-row-label">
-            {scheduleViewSettings.groupBy === 'shift' ? t('shift_count') : t('worker_count')}
-          </span>
-        </div>
-      </TableCell>
-      {periodDates.map((pDate, dateIndex) => {
-        const dateStr = pDate.date.format('YYYY-MM-DD');
-        return (
-          <DemandsHeaderCell
-            key={dateIndex}
-            lng={lng}
-            shifts={shifts}
-            counts={
-              counts[dateStr] || {
-                total: { actual: 0, target: 0, staffingTotal: 0 },
+    <div className="flex border-b border-border/50 bg-card" data-testid="shift-count-row">
+      <CalendarRowHeaderCell data-testid="shift-count-row-label" className="py-1">
+        <span className="dsd-row-label text-xs font-medium text-muted-foreground">
+          {scheduleViewSettings.groupBy === 'shift' ? t('shift_count') : t('worker_count')}
+        </span>
+      </CalendarRowHeaderCell>
+      <div className="flex flex-1">
+        {periodDates.map((pDate, dateIndex) => {
+          const dateStr = pDate.date.format('YYYY-MM-DD');
+          return (
+            <DemandsHeaderCell
+              key={dateIndex}
+              lng={lng}
+              shifts={shifts}
+              counts={
+                counts[dateStr] || {
+                  total: { actual: 0, target: 0, staffingTotal: 0 },
+                }
               }
-            }
-            scheduleViewSettings={scheduleViewSettings}
-          />
-        );
-      })}
-    </TableRow>
+              scheduleViewSettings={scheduleViewSettings}
+            />
+          );
+        })}
+      </div>
+    </div>
   );
 }

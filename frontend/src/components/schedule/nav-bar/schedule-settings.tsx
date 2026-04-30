@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../../app/i18n/client';
 // MUI
 import {
@@ -17,16 +18,29 @@ import {
   Checkbox,
   FormControlLabel,
   Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
+import CloseIcon from '@mui/icons-material/Close';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Components
 import ScheduleSettingsView from './schedule-settings-view';
 // Styles
 import '../../../styles/text-styles.css';
 // Types
-import { ScheduleT, DuplicateRequestT, ScheduleViewSettingsT } from '../../../types/schedule';
+import {
+  ScheduleT,
+  DuplicateRequestT,
+  ScheduleViewSettingsT,
+  ExportOptionsT,
+  ExportPeriodOptions,
+  periodDateT,
+} from '../../../types/schedule';
 import { OccurrenceType } from '@/types/recurrence';
 import { TeamMembershipRole, TeamWithMembership } from '../../../types/team';
+
+dayjs.extend(utc);
 
 interface ScheduleSettingsProps {
   lng: string;
@@ -43,6 +57,8 @@ interface ScheduleSettingsProps {
   ) => void;
   updateScheduleViewSettings: (newSettings: ScheduleViewSettingsT) => void;
   handleChangeTimeFrame: (newTimeFrame: 'week' | 'month') => void;
+  handleExportSchedule?: (options: ExportOptionsT) => void;
+  periodDates?: periodDateT[];
 }
 
 const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
@@ -56,12 +72,28 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   handleSendDuplicateRequest,
   updateScheduleViewSettings,
   handleChangeTimeFrame,
+  handleExportSchedule,
+  periodDates = [],
 }) => {
   const { t } = useTranslation(lng, 'schedule-page');
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [isDuplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [isWarningDialogOpen, setWarningDialogOpen] = useState(false);
+  const [isExportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportOptionsState, setExportOptionsState] = useState<ExportOptionsT>(
+    campaign
+      ? {
+          periodOption: ExportPeriodOptions.CAMPAIGN,
+          startDate: campaign.startDate,
+          endDate: campaign.endDate,
+        }
+      : {
+          periodOption: ExportPeriodOptions.CURRENT_SELECTION,
+          startDate: periodDates.length > 0 ? periodDates[0].date : dayjs.utc(),
+          endDate: periodDates.length > 0 ? periodDates[periodDates.length - 1].date : dayjs.utc(),
+        },
+  );
   const [targetWeek, setTargetWeek] = useState<{
     label: string;
     startDate: dayjs.Dayjs;
@@ -84,6 +116,32 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   const handleDuplicateWeek = () => {
     setDuplicateDialogOpen(true);
     handleClosePopover();
+  };
+
+  const handleOpenExportDialog = () => {
+    setExportOptionsState(
+      campaign
+        ? {
+            periodOption: ExportPeriodOptions.CAMPAIGN,
+            startDate: campaign.startDate,
+            endDate: campaign.endDate,
+          }
+        : {
+            periodOption: ExportPeriodOptions.CURRENT_SELECTION,
+            startDate: periodDates.length > 0 ? periodDates[0].date : dayjs.utc(),
+            endDate:
+              periodDates.length > 0 ? periodDates[periodDates.length - 1].date : dayjs.utc(),
+          },
+    );
+    setExportDialogOpen(true);
+    handleClosePopover();
+  };
+
+  const handleCloseExportDialog = () => setExportDialogOpen(false);
+
+  const handleConfirmExport = () => {
+    handleExportSchedule?.(exportOptionsState);
+    setExportDialogOpen(false);
   };
 
   const handleConfirmDuplicate = async () => {
@@ -206,6 +264,15 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
               >
                 {t('duplicate_week')}
               </MenuItem>
+              {handleExportSchedule && (
+                <MenuItem
+                  data-testid="settings-export-excel-button"
+                  onClick={handleOpenExportDialog}
+                  sx={{ fontSize: '0.8rem' }}
+                >
+                  {t('export_to_excel')}
+                </MenuItem>
+              )}
             </div>
           )}
         </div>
@@ -336,6 +403,131 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
             {t('confirm')}
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Export Dialog */}
+      <Dialog
+        open={isExportDialogOpen}
+        onClose={handleCloseExportDialog}
+        data-testid="export-dialog"
+        PaperProps={{
+          style: { boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)', padding: 20, width: 500 },
+        }}
+      >
+        <DialogContent>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '8px',
+            }}
+          >
+            <span style={{ fontWeight: 600, fontSize: '1rem' }}>{t('export_to_excel')}</span>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseExportDialog}
+              data-testid="export-dialog-close-button"
+            >
+              <CloseIcon />
+            </IconButton>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <span style={{ fontSize: '0.875rem' }}>{t('period')}:</span>
+            <ToggleButtonGroup
+              color="primary"
+              value={exportOptionsState.periodOption}
+              exclusive
+              data-testid="export-period-toggle-group"
+              onChange={(_event: React.MouseEvent<HTMLElement>, newAlignment: number) => {
+                if (newAlignment !== null) {
+                  setExportOptionsState((prev) => ({ ...prev, periodOption: newAlignment }));
+                  if (
+                    newAlignment === ExportPeriodOptions.CURRENT_SELECTION &&
+                    periodDates.length > 0
+                  ) {
+                    setExportOptionsState((prev) => ({
+                      ...prev,
+                      startDate: periodDates[0].date,
+                      endDate: periodDates[periodDates.length - 1].date,
+                    }));
+                  } else if (newAlignment === ExportPeriodOptions.CAMPAIGN && campaign) {
+                    setExportOptionsState((prev) => ({
+                      ...prev,
+                      startDate: dayjs.utc(campaign.startDate),
+                      endDate: dayjs.utc(campaign.endDate),
+                    }));
+                  }
+                }
+              }}
+            >
+              {[
+                { value: ExportPeriodOptions.CURRENT_SELECTION, label: t('current_selection') },
+                { value: ExportPeriodOptions.CAMPAIGN, label: t('campaign') },
+                { value: ExportPeriodOptions.ALL, label: t('all') },
+                { value: ExportPeriodOptions.CUSTOM, label: t('custom') },
+              ].map((c) => (
+                <ToggleButton
+                  key={c.value}
+                  disabled={c.value === ExportPeriodOptions.CAMPAIGN && !campaign}
+                  value={c.value}
+                  data-testid={`export-period-option-${c.value}`}
+                  sx={{ textTransform: 'none', height: '25px', fontSize: '0.8rem' }}
+                >
+                  {c.label}
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            <DatePicker
+              disabled={exportOptionsState.periodOption !== ExportPeriodOptions.CUSTOM}
+              value={exportOptionsState.startDate}
+              onChange={(newValue) =>
+                setExportOptionsState((prev) => ({
+                  ...prev,
+                  startDate: newValue
+                    ? dayjs.utc(newValue).startOf('day')
+                    : dayjs.utc().startOf('day'),
+                }))
+              }
+              slotProps={{
+                textField: { inputProps: { 'data-testid': 'export-start-date-picker' } },
+              }}
+              sx={{
+                width: '160px',
+                '& .MuiOutlinedInput-input': { fontSize: '0.875rem', height: '35px', paddingY: 0 },
+              }}
+            />
+            <DatePicker
+              disabled={exportOptionsState.periodOption !== ExportPeriodOptions.CUSTOM}
+              value={exportOptionsState.endDate}
+              onChange={(newValue) =>
+                setExportOptionsState((prev) => ({
+                  ...prev,
+                  endDate: newValue
+                    ? dayjs.utc(newValue).startOf('day')
+                    : dayjs.utc().startOf('day'),
+                }))
+              }
+              slotProps={{ textField: { inputProps: { 'data-testid': 'export-end-date-picker' } } }}
+              sx={{
+                width: '160px',
+                '& .MuiOutlinedInput-input': { fontSize: '0.875rem', height: '35px', paddingY: 0 },
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              onClick={handleConfirmExport}
+              variant="contained"
+              data-testid="confirm-export-button"
+              sx={{ textTransform: 'none' }}
+            >
+              {t('export_to_excel')}
+            </Button>
+          </div>
+        </DialogContent>
       </Dialog>
     </div>
   );

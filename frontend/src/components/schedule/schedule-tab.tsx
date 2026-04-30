@@ -1655,6 +1655,8 @@ export default function ScheduleTab({
               onSolveOptionChange={handleSolveOptionChange}
               workerSolveCells={workerSolveCells}
               shiftSolveCells={shiftSolveCells}
+              handleExportSchedule={handleExportSchedule}
+              periodDates={periodDates}
             />
             {selectionState.isActive &&
               teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
@@ -1699,7 +1701,6 @@ export default function ScheduleTab({
               handleAssignmentSelection={handleAssignmentSelection}
               handleDemandSelection={handleDemandSelection}
               handleRequestSelection={handleRequestSelection}
-              handleExportSchedule={handleExportSchedule}
               handleOpenCreateAssignment={handleOpenCreateAssignment}
               handleCellSelect={handleCellSelect}
               handleAssignmentSelect={handleAssignmentSelect}

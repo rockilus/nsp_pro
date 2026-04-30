@@ -13,6 +13,7 @@ import {
 import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
 import { useTranslation } from '../../app/i18n/client';
 import CalendarTableHeader from '../calendar/CalendarTableHeader';
+import CalendarRowHeaderCell from '../calendar/CalendarRowHeaderCell';
 
 dayjs.extend(isoWeek);
 
@@ -302,12 +303,14 @@ function RequestCalendarRow({
   return (
     <div className="flex min-h-[40px] items-stretch border-b border-border/50">
       {/* Sticky worker name column */}
-      <div
-        className="sticky left-0 z-[2] flex w-[180px] max-w-[220px] min-w-[180px] shrink-0 items-center overflow-hidden border-r border-border/50 bg-card px-3 py-2 text-sm font-medium whitespace-nowrap text-foreground"
-        title={worker.name}
-      >
-        <span className="truncate">{worker.name}</span>
-      </div>
+      <CalendarRowHeaderCell>
+        <span
+          className="truncate py-2 text-sm font-medium whitespace-nowrap text-foreground"
+          title={worker.name}
+        >
+          {worker.name}
+        </span>
+      </CalendarRowHeaderCell>
       {/* Day cells */}
       <div className="flex flex-1">
         {days.map((d) => {

@@ -3,6 +3,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Sparkle } from 'lucide-react';
 import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
 import ColumnSortFilterMenu from '../table/ColumnSortFilterMenu';
 import { useTranslation } from '../../app/i18n/client';
@@ -55,6 +56,11 @@ export interface CalendarTableHeaderProps {
   isBulkMode?: boolean;
   isColumnSelected?: (date: Dayjs) => boolean;
   onColumnSelect?: (date: Dayjs) => void;
+  /** When true, each date column shows a custom-solve sparkle button */
+  isCustomSolveMode?: boolean;
+  isCustomColumnSelected?: (date: Dayjs) => boolean;
+  isCustomColumnIndeterminate?: (date: Dayjs) => boolean;
+  onCustomColumnSelect?: (date: Dayjs) => void;
 }
 
 export default function CalendarTableHeader({
@@ -71,13 +77,17 @@ export default function CalendarTableHeader({
   isBulkMode = false,
   isColumnSelected,
   onColumnSelect,
+  isCustomSolveMode = false,
+  isCustomColumnSelected,
+  isCustomColumnIndeterminate,
+  onCustomColumnSelect,
 }: CalendarTableHeaderProps) {
   const { t } = useTranslation(lng || 'en', 'common');
   const today = dayjs();
   const weekGroups = buildWeekGroups(days);
 
   return (
-    <div className="sticky top-0 z-[3] bg-card">
+    <div className="sticky top-0 z-[3] bg-card" data-testid="calendar-table-header">
       {/* Week group row */}
       <div className="flex border-b border-border/50">
         {/* Sticky corner */}
@@ -151,6 +161,33 @@ export default function CalendarTableHeader({
                     onCheckedChange={() => onColumnSelect(d)}
                     className="mb-0.5 h-3.5 w-3.5"
                   />
+                )}
+                {/* Custom-solve column sparkle */}
+                {isCustomSolveMode && onCustomColumnSelect && (
+                  <button
+                    data-testid={`date-column-sparkle-${dateKey}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCustomColumnSelect(d);
+                    }}
+                    className="mb-0.5 cursor-pointer border-none bg-transparent p-0"
+                    style={{
+                      color: isCustomColumnSelected?.(d)
+                        ? '#1976d2'
+                        : isCustomColumnIndeterminate?.(d)
+                          ? '#42a5f5'
+                          : '#9e9e9e',
+                    }}
+                  >
+                    <Sparkle
+                      size={12}
+                      fill={
+                        isCustomColumnSelected?.(d) || isCustomColumnIndeterminate?.(d)
+                          ? 'currentColor'
+                          : 'none'
+                      }
+                    />
+                  </button>
                 )}
                 {/* 3-char weekday abbreviation */}
                 <div className="mb-0.5 text-[11px] leading-none text-muted-foreground">

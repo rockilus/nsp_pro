@@ -3,7 +3,6 @@ import React from 'react';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
-import TableCell from '@mui/material/TableCell';
 // Components
 import AssignmentCell from '../shared/assignment-cell';
 import DailyShiftDemandCell from '../shared/daily-shift-demand-cell';
@@ -65,18 +64,14 @@ export default function ShiftCell({
     scheduleViewSettings.showAssignments && !!scheduleCellData?.assignmentsData?.length;
 
   return (
-    <TableCell
-      className="cell-hover-container"
-      sx={{
-        align: 'center',
-        borderRight: '1px solid #e0e0e07d',
-        padding: 0,
-        position: 'relative',
+    <div
+      className="cell-hover-container relative min-w-[60px] flex-1 border-r border-border/50"
+      data-testid={`shift-cell-${shift.id}-${periodDate.date.format('YYYY-MM-DD')}`}
+      style={{
         backgroundColor: isCellSelected ? 'rgba(25, 118, 210, 0.08)' : undefined,
         outline: isCellSelected ? '2px solid #1976d2' : undefined,
         outlineOffset: isCellSelected ? '-2px' : undefined,
       }}
-      data-testid={`shift-cell-${shift.id}-${periodDate.date.format('YYYY-MM-DD')}`}
     >
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         {scheduleViewSettings.showAssignments &&
@@ -172,6 +167,6 @@ export default function ShiftCell({
           </IconButton>
         </RoleBased>
       )}
-    </TableCell>
+    </div>
   );
 }
