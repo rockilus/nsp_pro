@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from '../../../../app/i18n/client';
 // shadcn/ui
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../ui/tooltip';
@@ -35,6 +35,7 @@ import {
 } from '../../../../types/scheduleSelection';
 // Constants
 import { ShiftColorMappings, calendarGridTemplate } from '../../../../constants/constants';
+import { ColumnDefinition, ColumnFilter, TableSort } from '@/types/filter';
 
 // ─── Inline ShiftRowHeader content ──────────────────────────────────────────
 
@@ -343,7 +344,38 @@ export default function ScheduleTableShift({
   handleCustomCellSelect?: (rowId: string, date: string, scheduleId: string | null) => void;
   handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
-  const shiftsForHeader = getRelevantShifts(shifts, assignments);
+  const { t } = useTranslation(lng, 'schedule-page');
+  const [currentSort, setCurrentSort] = useState<TableSort | null>(null);
+  const [currentFilter, setCurrentFilter] = useState<ColumnFilter | null>(null);
+
+  const shiftColumn: ColumnDefinition = {
+    id: 'name',
+    label: t('shift'),
+    type: 'text',
+    getValue: (s: ShiftT) => s.name,
+  };
+
+  const allShiftsForHeader = getRelevantShifts(shifts, assignments);
+  const shiftsForHeader = (() => {
+    let result = allShiftsForHeader;
+    if (
+      currentFilter &&
+      currentFilter.id === 'name' &&
+      typeof currentFilter.value === 'string' &&
+      currentFilter.value
+    ) {
+      const needle = currentFilter.value.toLowerCase();
+      result = result.filter((s) => s.name.toLowerCase().includes(needle));
+    }
+    if (currentSort && currentSort.columnId === 'name') {
+      result = [...result].sort((a, b) =>
+        currentSort.direction === 'asc'
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name),
+      );
+    }
+    return result;
+  })();
 
   const scheduleCellDict = buildScheduleCellDict(
     AttributeOwnerType.SHIFT,
@@ -367,7 +399,12 @@ export default function ScheduleTableShift({
       <CalendarTableHeader
         lng={lng}
         days={days}
-        rowHeaderLabel=""
+        rowHeaderLabel={t('shift')}
+        rowColumn={shiftColumn}
+        currentSort={currentSort ?? undefined}
+        currentFilter={currentFilter ?? undefined}
+        onSort={setCurrentSort}
+        onFilter={(f) => setCurrentFilter(f)}
         leadingColumnContent={null}
         isBulkMode={!!selectionState?.isActive}
         isColumnSelected={(d) => {

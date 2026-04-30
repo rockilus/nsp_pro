@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { calendarGridTemplate } from '../../../../constants/constants';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -32,6 +32,7 @@ import {
   SelectedScheduleCell,
   SelectionScope,
 } from '@/types/scheduleSelection';
+import { ColumnDefinition, ColumnFilter, TableSort } from '@/types/filter';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -380,7 +381,38 @@ export default function ScheduleTableWorker({
   handleCustomCellSelect?: (rowId: string, date: string, scheduleId: string | null) => void;
   handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
 }) {
-  const workersForHeader = getRelevantWorkers(workers, assignments, scheduleCampaign);
+  const { t } = useTranslation(lng, 'schedule-page');
+  const [currentSort, setCurrentSort] = useState<TableSort | null>(null);
+  const [currentFilter, setCurrentFilter] = useState<ColumnFilter | null>(null);
+
+  const workerColumn: ColumnDefinition = {
+    id: 'name',
+    label: t('worker'),
+    type: 'text',
+    getValue: (w: WorkerT) => w.name,
+  };
+
+  const allWorkersForHeader = getRelevantWorkers(workers, assignments, scheduleCampaign);
+  const workersForHeader = (() => {
+    let result = allWorkersForHeader;
+    if (
+      currentFilter &&
+      currentFilter.id === 'name' &&
+      typeof currentFilter.value === 'string' &&
+      currentFilter.value
+    ) {
+      const needle = currentFilter.value.toLowerCase();
+      result = result.filter((w) => w.name.toLowerCase().includes(needle));
+    }
+    if (currentSort && currentSort.columnId === 'name') {
+      result = [...result].sort((a, b) =>
+        currentSort.direction === 'asc'
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name),
+      );
+    }
+    return result;
+  })();
 
   const scheduleCellDict = buildScheduleCellDict(
     AttributeOwnerType.WORKER,
@@ -404,7 +436,12 @@ export default function ScheduleTableWorker({
       <CalendarTableHeader
         lng={lng}
         days={days}
-        rowHeaderLabel=""
+        rowHeaderLabel={t('worker')}
+        rowColumn={workerColumn}
+        currentSort={currentSort ?? undefined}
+        currentFilter={currentFilter ?? undefined}
+        onSort={setCurrentSort}
+        onFilter={(f) => setCurrentFilter(f)}
         leadingColumnContent={null}
         isBulkMode={!!selectionState?.isActive}
         isColumnSelected={(d) => {
