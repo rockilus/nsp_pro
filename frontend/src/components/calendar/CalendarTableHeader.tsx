@@ -169,44 +169,6 @@ export default function CalendarTableHeader({
               )}
               data-testid={`date-header-${dateKey}`}
             >
-              {/* Bulk mode column checkbox */}
-              {isBulkMode && onColumnSelect && (
-                <Checkbox
-                  data-testid={`column-select-checkbox-${dateKey}`}
-                  checked={colSelected ? true : colIndeterminate ? 'indeterminate' : false}
-                  onCheckedChange={() => onColumnSelect(d)}
-                  className="mb-0.5 h-3.5 w-3.5"
-                />
-              )}
-              {/* Custom-solve column sparkle */}
-              {isCustomSolveMode &&
-                onCustomColumnSelect &&
-                (!isCustomSolveDay || isCustomSolveDay(d)) && (
-                  <button
-                    data-testid={`date-column-sparkle-${dateKey}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onCustomColumnSelect(d);
-                    }}
-                    className="mb-0.5 cursor-pointer border-none bg-transparent p-0"
-                    style={{
-                      color: isCustomColumnSelected?.(d)
-                        ? '#1976d2'
-                        : isCustomColumnIndeterminate?.(d)
-                          ? '#42a5f5'
-                          : '#9e9e9e',
-                    }}
-                  >
-                    <Sparkle
-                      size={12}
-                      fill={
-                        isCustomColumnSelected?.(d) || isCustomColumnIndeterminate?.(d)
-                          ? 'currentColor'
-                          : 'none'
-                      }
-                    />
-                  </button>
-                )}
               {/* 3-char weekday abbreviation */}
               <div className="mb-0.5 text-[11px] leading-none text-muted-foreground">
                 {getWeekdayShort(d, lng)}
@@ -219,6 +181,49 @@ export default function CalendarTableHeader({
                 )}
               >
                 {d.date()}
+              </div>
+
+              {/* Controls: place at bottom below the date number */}
+              <div className="mb-0.5 flex items-center gap-1">
+                {/* Bulk mode column checkbox */}
+                {isBulkMode && onColumnSelect && (
+                  <Checkbox
+                    data-testid={`column-select-checkbox-${dateKey}`}
+                    checked={colSelected ? true : colIndeterminate ? 'indeterminate' : false}
+                    onCheckedChange={() => onColumnSelect(d)}
+                    className="h-3.5 w-3.5"
+                  />
+                )}
+
+                {/* Custom-solve column sparkle */}
+                {isCustomSolveMode &&
+                  onCustomColumnSelect &&
+                  (!isCustomSolveDay || isCustomSolveDay(d)) && (
+                    <button
+                      data-testid={`date-column-sparkle-${dateKey}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCustomColumnSelect(d);
+                      }}
+                      className="cursor-pointer border-none bg-transparent p-0"
+                      style={{
+                        color: isCustomColumnSelected?.(d)
+                          ? '#1976d2'
+                          : isCustomColumnIndeterminate?.(d)
+                            ? '#42a5f5'
+                            : '#9e9e9e',
+                      }}
+                    >
+                      <Sparkle
+                        size={12}
+                        fill={
+                          isCustomColumnSelected?.(d) || isCustomColumnIndeterminate?.(d)
+                            ? 'currentColor'
+                            : 'none'
+                        }
+                      />
+                    </button>
+                  )}
               </div>
             </div>
           );
