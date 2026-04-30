@@ -73,7 +73,14 @@ export default function ShiftCell({
         outlineOffset: isCellSelected ? '-2px' : undefined,
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          justifyContent: 'center',
+        }}
+      >
         {scheduleViewSettings.showAssignments &&
           scheduleCellData?.assignmentsData.map((aData) => {
             const isAssignmentSelected =
