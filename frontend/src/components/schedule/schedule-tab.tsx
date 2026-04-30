@@ -1679,7 +1679,10 @@ export default function ScheduleTab({
               handleExportSchedule={handleExportSchedule}
               periodDates={periodDates}
             />
-            {selectionState.isActive &&
+            {(selectionState.isActive ||
+              (scheduleViewSettings.groupBy === 'worker'
+                ? workerTableSort || workerTableFilter
+                : shiftTableSort || shiftTableFilter)) &&
               teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
               !isMobile && (
                 <ScheduleActionToolbar

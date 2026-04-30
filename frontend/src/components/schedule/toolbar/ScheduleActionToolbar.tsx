@@ -241,197 +241,210 @@ export function ScheduleActionToolbar({
           </>
         )}
 
-        {/* 1. Selection counts */}
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="flex-start"
-          gap={1}
-          sx={{ flexShrink: 0, flex: 0.3 }}
-        >
-          <Typography
-            variant="body2"
-            data-testid="schedule-selection-counts"
-            sx={{ color: 'text.secondary', minWidth: '160px', flexShrink: 0 }}
-          >
-            {cellCount > 0 &&
-              t('select_mode_selection_counts_cells', {
-                count: cellCount,
-                s: cellCount !== 1 ? 's' : '',
-              })}
-            {cellCount > 0 && assignmentCount > 0 && ', '}
-            {assignmentCount > 0 &&
-              (lng === 'es'
-                ? `${assignmentCount} ${assignmentCount !== 1 ? 'asignaciones' : 'asignación'}`
-                : t('select_mode_selection_counts_assignments', {
-                    count: assignmentCount,
-                    s: assignmentCount !== 1 ? 's' : '',
-                  }))}
-          </Typography>
-        </Box>
-
-        <Divider orientation="vertical" flexItem />
-
-        {/* 2. Target period (scope selector) — grows to fill available space */}
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          gap={0.5}
-          sx={{ flex: 0.4 }}
-        >
-          {scheduleCampaign && (
-            <>
-              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-                {t('select_mode_target_period')}
+        {/* 1–3 + Cancel: only shown when selection mode is active */}
+        {selectionState.isActive && (
+          <>
+            {/* 1. Selection counts */}
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="flex-start"
+              gap={1}
+              sx={{ flexShrink: 0, flex: 0.3 }}
+            >
+              <Typography
+                variant="body2"
+                data-testid="schedule-selection-counts"
+                sx={{ color: 'text.secondary', minWidth: '160px', flexShrink: 0 }}
+              >
+                {cellCount > 0 &&
+                  t('select_mode_selection_counts_cells', {
+                    count: cellCount,
+                    s: cellCount !== 1 ? 's' : '',
+                  })}
+                {cellCount > 0 && assignmentCount > 0 && ', '}
+                {assignmentCount > 0 &&
+                  (lng === 'es'
+                    ? `${assignmentCount} ${assignmentCount !== 1 ? 'asignaciones' : 'asignación'}`
+                    : t('select_mode_selection_counts_assignments', {
+                        count: assignmentCount,
+                        s: assignmentCount !== 1 ? 's' : '',
+                      }))}
               </Typography>
-              <ToggleButtonGroup
-                size="small"
-                color="primary"
-                exclusive
-                value={scope}
-                onChange={(_, val) => val && onScopeChange(val)}
-                data-testid="schedule-scope-toggle-group"
-              >
-                <Tooltip title={t('select_mode_target_period_view_tooltip')}>
-                  <ToggleButton
-                    value="view"
-                    data-testid="schedule-scope-view"
-                    sx={{ fontSize: '0.7rem', textTransform: 'none' }}
-                  >
-                    {t('select_mode_target_period_view')}
-                  </ToggleButton>
-                </Tooltip>
-                <Tooltip title={t('select_mode_target_period_campaign_tooltip')}>
-                  <ToggleButton
-                    value="campaign"
-                    data-testid="schedule-scope-campaign"
-                    sx={{ fontSize: '0.7rem', textTransform: 'none' }}
-                  >
-                    {t('select_mode_target_period_campaign')}
-                  </ToggleButton>
-                </Tooltip>
-              </ToggleButtonGroup>
-            </>
-          )}
-        </Box>
-
-        <Divider orientation="vertical" flexItem />
-
-        {/* 3. Action area */}
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="flex-end"
-          gap={1}
-          sx={{ flexShrink: 0, flex: 0.4 }}
-        >
-          {needsEntitySelect && (
-            <FormControl size="small" sx={{ minWidth: 160 }} error={selectHasError}>
-              <InputLabel sx={{ fontSize: '0.8rem' }}>
-                {groupBy === 'shift' ? t('worker') : t('shift')}
-              </InputLabel>
-              <Select
-                value={entityId}
-                label={groupBy === 'shift' ? t('worker') : t('shift')}
-                onChange={(e) => {
-                  setEntityId(e.target.value);
-                  setValidationError(null);
-                }}
-                sx={{ fontSize: '0.8rem' }}
-                data-testid="schedule-entity-select"
-              >
-                {options.map((opt) => (
-                  <MenuItem
-                    key={optionId(opt)}
-                    value={optionId(opt)}
-                    sx={{ fontSize: '0.8rem' }}
-                    data-testid={`schedule-entity-option-${optionId(opt)}`}
-                  >
-                    {optionLabel(opt)}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-
-          {deleteConfirm ? (
-            <Box display="flex" alignItems="center" gap={0.5}>
-              <Typography variant="caption" color="error">
-                {lng === 'es'
-                  ? `${assignmentCount} ${assignmentCount !== 1 ? 'asignaciones' : 'asignación'}`
-                  : t('select_mode_delete_confirmation', {
-                      count: assignmentCount,
-                      s: assignmentCount !== 1 ? 's' : '',
-                    })}
-              </Typography>
-              <Button
-                size="small"
-                variant="contained"
-                color="error"
-                disabled={isLoading}
-                onClick={handleMainAction}
-                data-testid="schedule-delete-confirm-button"
-                sx={{ fontSize: '0.75rem', textTransform: 'none' }}
-              >
-                {t('confirm')}
-              </Button>
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => setDeleteConfirm(false)}
-                data-testid="schedule-delete-cancel-button"
-                sx={{ fontSize: '0.75rem', textTransform: 'none' }}
-              >
-                {t('cancel')}
-              </Button>
             </Box>
-          ) : (
-            <Box display="flex" flexDirection="column" alignItems="flex-start">
-              <ButtonGroup
-                ref={anchorRef}
-                size="small"
-                variant="contained"
-                color={selectedAction === 'delete' ? 'error' : 'primary'}
-              >
-                <Button
-                  disabled={isLoading}
-                  onClick={handleMainAction}
-                  data-testid="schedule-action-main-button"
-                  sx={{
-                    fontSize: '0.75rem',
-                    textTransform: 'none',
-                  }}
-                >
-                  {currentActionLabel}
-                </Button>
-                <Button
-                  sx={{ px: 0.5 }}
-                  onClick={() => setDropdownOpen((prev) => !prev)}
-                  data-testid="schedule-action-dropdown-toggle"
-                >
-                  <ArrowDropDownIcon fontSize="small" />
-                </Button>
-              </ButtonGroup>
-              {validationError && (
-                <Typography
-                  variant="caption"
-                  color="error"
-                  data-testid="schedule-validation-error"
-                  sx={{ mt: 0.5, lineHeight: 1.2 }}
-                >
-                  {validationError}
-                </Typography>
+
+            <Divider orientation="vertical" flexItem />
+
+            {/* 2. Target period (scope selector) — grows to fill available space */}
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              gap={0.5}
+              sx={{ flex: 0.4 }}
+            >
+              {scheduleCampaign && (
+                <>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ whiteSpace: 'nowrap' }}
+                  >
+                    {t('select_mode_target_period')}
+                  </Typography>
+                  <ToggleButtonGroup
+                    size="small"
+                    color="primary"
+                    exclusive
+                    value={scope}
+                    onChange={(_, val) => val && onScopeChange(val)}
+                    data-testid="schedule-scope-toggle-group"
+                  >
+                    <Tooltip title={t('select_mode_target_period_view_tooltip')}>
+                      <ToggleButton
+                        value="view"
+                        data-testid="schedule-scope-view"
+                        sx={{ fontSize: '0.7rem', textTransform: 'none' }}
+                      >
+                        {t('select_mode_target_period_view')}
+                      </ToggleButton>
+                    </Tooltip>
+                    <Tooltip title={t('select_mode_target_period_campaign_tooltip')}>
+                      <ToggleButton
+                        value="campaign"
+                        data-testid="schedule-scope-campaign"
+                        sx={{ fontSize: '0.7rem', textTransform: 'none' }}
+                      >
+                        {t('select_mode_target_period_campaign')}
+                      </ToggleButton>
+                    </Tooltip>
+                  </ToggleButtonGroup>
+                </>
               )}
             </Box>
-          )}
-        </Box>
-        {/* Cancel */}
-        <Tooltip title={t('select_mode_exit_tooltip')}>
-          <IconButton size="small" onClick={onCancel} data-testid="schedule-close-selection-button">
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
+
+            <Divider orientation="vertical" flexItem />
+
+            {/* 3. Action area */}
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="flex-end"
+              gap={1}
+              sx={{ flexShrink: 0, flex: 0.4 }}
+            >
+              {needsEntitySelect && (
+                <FormControl size="small" sx={{ minWidth: 160 }} error={selectHasError}>
+                  <InputLabel sx={{ fontSize: '0.8rem' }}>
+                    {groupBy === 'shift' ? t('worker') : t('shift')}
+                  </InputLabel>
+                  <Select
+                    value={entityId}
+                    label={groupBy === 'shift' ? t('worker') : t('shift')}
+                    onChange={(e) => {
+                      setEntityId(e.target.value);
+                      setValidationError(null);
+                    }}
+                    sx={{ fontSize: '0.8rem' }}
+                    data-testid="schedule-entity-select"
+                  >
+                    {options.map((opt) => (
+                      <MenuItem
+                        key={optionId(opt)}
+                        value={optionId(opt)}
+                        sx={{ fontSize: '0.8rem' }}
+                        data-testid={`schedule-entity-option-${optionId(opt)}`}
+                      >
+                        {optionLabel(opt)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+
+              {deleteConfirm ? (
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  <Typography variant="caption" color="error">
+                    {lng === 'es'
+                      ? `${assignmentCount} ${assignmentCount !== 1 ? 'asignaciones' : 'asignación'}`
+                      : t('select_mode_delete_confirmation', {
+                          count: assignmentCount,
+                          s: assignmentCount !== 1 ? 's' : '',
+                        })}
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="error"
+                    disabled={isLoading}
+                    onClick={handleMainAction}
+                    data-testid="schedule-delete-confirm-button"
+                    sx={{ fontSize: '0.75rem', textTransform: 'none' }}
+                  >
+                    {t('confirm')}
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="text"
+                    onClick={() => setDeleteConfirm(false)}
+                    data-testid="schedule-delete-cancel-button"
+                    sx={{ fontSize: '0.75rem', textTransform: 'none' }}
+                  >
+                    {t('cancel')}
+                  </Button>
+                </Box>
+              ) : (
+                <Box display="flex" flexDirection="column" alignItems="flex-start">
+                  <ButtonGroup
+                    ref={anchorRef}
+                    size="small"
+                    variant="contained"
+                    color={selectedAction === 'delete' ? 'error' : 'primary'}
+                  >
+                    <Button
+                      disabled={isLoading}
+                      onClick={handleMainAction}
+                      data-testid="schedule-action-main-button"
+                      sx={{
+                        fontSize: '0.75rem',
+                        textTransform: 'none',
+                      }}
+                    >
+                      {currentActionLabel}
+                    </Button>
+                    <Button
+                      sx={{ px: 0.5 }}
+                      onClick={() => setDropdownOpen((prev) => !prev)}
+                      data-testid="schedule-action-dropdown-toggle"
+                    >
+                      <ArrowDropDownIcon fontSize="small" />
+                    </Button>
+                  </ButtonGroup>
+                  {validationError && (
+                    <Typography
+                      variant="caption"
+                      color="error"
+                      data-testid="schedule-validation-error"
+                      sx={{ mt: 0.5, lineHeight: 1.2 }}
+                    >
+                      {validationError}
+                    </Typography>
+                  )}
+                </Box>
+              )}
+            </Box>
+            {/* Cancel */}
+            <Tooltip title={t('select_mode_exit_tooltip')}>
+              <IconButton
+                size="small"
+                onClick={onCancel}
+                data-testid="schedule-close-selection-button"
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
       </Box>
 
       <Popper
