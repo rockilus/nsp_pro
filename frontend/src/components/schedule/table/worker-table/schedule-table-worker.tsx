@@ -216,7 +216,21 @@ function WorkerRow({
   handleCustomCellSelect?: (rowId: string, date: string, scheduleId: string | null) => void;
 }) {
   const workerCustomCells = customSolveSelectedCells.filter((c) => c.rowId === worker.id);
-  const isRowCustomSelected = isCustomSolveModeActive && workerCustomCells.length > 0;
+  const isRowCustomSelected =
+    isCustomSolveModeActive &&
+    workerCustomCells.length > 0 &&
+    (!scheduleCampaign ||
+      (() => {
+        let d = scheduleCampaign.startDate;
+        while (!d.isAfter(scheduleCampaign.endDate, 'day')) {
+          const date = d.format('YYYY-MM-DD');
+          if (!workerCustomCells.some((c) => c.date === date)) return false;
+          d = d.add(1, 'day');
+        }
+        return true;
+      })());
+  const isRowCustomIndeterminate =
+    isCustomSolveModeActive && !isRowCustomSelected && workerCustomCells.length > 0;
 
   const isRowSelected =
     !!selectionState?.isActive &&
@@ -268,7 +282,7 @@ function WorkerRow({
         checkboxTestId={`worker-row-checkbox-${worker.id}`}
         isCustomSolveMode={isCustomSolveModeActive}
         isCustomSelected={isRowCustomSelected}
-        isCustomIndeterminate={false}
+        isCustomIndeterminate={isRowCustomIndeterminate}
         onCustomSelect={() => handleCustomRowSelect?.(worker.id)}
         customSelectTestId={`worker-row-custom-select-${worker.id}`}
         className="py-1"

@@ -179,7 +179,21 @@ function ShiftRow({
   handleCustomCellSelect?: (rowId: string, date: string, scheduleId: string | null) => void;
 }) {
   const shiftCustomCells = customSolveSelectedCells.filter((c) => c.rowId === shift.id);
-  const isRowCustomSelected = isCustomSolveModeActive && shiftCustomCells.length > 0;
+  const isRowCustomSelected =
+    isCustomSolveModeActive &&
+    shiftCustomCells.length > 0 &&
+    (!scheduleCampaign ||
+      (() => {
+        let d = scheduleCampaign.startDate;
+        while (!d.isAfter(scheduleCampaign.endDate, 'day')) {
+          const date = d.format('YYYY-MM-DD');
+          if (!shiftCustomCells.some((c) => c.date === date)) return false;
+          d = d.add(1, 'day');
+        }
+        return true;
+      })());
+  const isRowCustomIndeterminate =
+    isCustomSolveModeActive && !isRowCustomSelected && shiftCustomCells.length > 0;
 
   const isRowSelected =
     !!selectionState?.isActive &&
@@ -231,7 +245,7 @@ function ShiftRow({
         checkboxTestId={`shift-row-checkbox-${shift.id}`}
         isCustomSolveMode={isCustomSolveModeActive}
         isCustomSelected={isRowCustomSelected}
-        isCustomIndeterminate={false}
+        isCustomIndeterminate={isRowCustomIndeterminate}
         onCustomSelect={() => handleCustomRowSelect?.(shift.id)}
         customSelectTestId={`shift-row-custom-select-${shift.id}`}
         className="py-1"
