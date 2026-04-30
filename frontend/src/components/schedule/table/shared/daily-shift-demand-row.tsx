@@ -65,6 +65,7 @@ export default function DailyShiftDemandRow({
       </CalendarRowHeaderCell>
       {periodDates.map((pDate, dateIndex) => {
         const dateStr = pDate.date.format('YYYY-MM-DD');
+        const isWeekend = pDate.date.day() === 0 || pDate.date.day() === 6;
         return (
           <DemandsHeaderCell
             key={dateIndex}
@@ -76,6 +77,7 @@ export default function DailyShiftDemandRow({
               }
             }
             scheduleViewSettings={scheduleViewSettings}
+            isWeekend={isWeekend}
           />
         );
       })}

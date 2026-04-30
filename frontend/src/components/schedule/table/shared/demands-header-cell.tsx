@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { cn } from '@/lib/utils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../../../app/i18n/client';
@@ -80,6 +81,7 @@ export default function DemandsHeaderCell({
   shifts,
   counts,
   scheduleViewSettings,
+  isWeekend = false,
 }: {
   lng: string;
   shifts: ShiftT[];
@@ -96,6 +98,7 @@ export default function DemandsHeaderCell({
     };
   };
   scheduleViewSettings: ScheduleViewSettingsT;
+  isWeekend?: boolean;
 }) {
   const { t } = useTranslation(lng, 'schedule-page');
 
@@ -119,7 +122,7 @@ export default function DemandsHeaderCell({
   }, [shifts]);
 
   return (
-    <div className="border-r border-border/50 p-0">
+    <div className={cn('border-r border-border/50 p-0', isWeekend && 'bg-muted')}>
       <div className="container-dsd-cell">
         <button type="button" onClick={handleClick} className="dsd-popover-button">
           <DSDPopoverButton counts={counts} />
