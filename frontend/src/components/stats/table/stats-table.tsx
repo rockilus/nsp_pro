@@ -254,7 +254,8 @@ export default function StatsTable({
                       <>
                         <span>{translateHeaderValue(header.value)}</span>
                         <span style={{ fontSize: '0.65rem', opacity: 0.6, fontWeight: 400 }}>
-                          W{header.value.match(/W(\d+)/)?.[1]}
+                          {lng === 'fr' || lng === 'es' ? 'S' : 'W'}
+                          {header.value.match(/W(\d+)/)?.[1]}
                         </span>
                       </>
                     ) : (
