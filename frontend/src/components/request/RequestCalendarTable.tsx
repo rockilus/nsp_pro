@@ -235,7 +235,7 @@ function RequestCalendarCell({
       key={date.date()}
       className={cn(
         // Base cell
-        'relative flex min-h-[40px] items-center justify-center border-r border-border/50 p-1 text-sm transition-all duration-200',
+        'relative flex min-h-[40px] items-center justify-center border-r border-border/50 p-1 text-xs transition-all duration-200',
         // Week boundary: thick left border on Mondays (except the very first cell)
         isWeekBoundary && 'border-l-2 border-l-border',
         // Weekend background
@@ -276,11 +276,11 @@ function RequestCalendarCell({
       {/* Add button for clickable empty cells — inset so it has room from the cell border */}
       {!request && (canAddRequest || canEditRequest) && (
         <div className="absolute inset-1 flex items-center justify-center rounded border border-dashed border-primary/50 bg-primary/[0.08] opacity-0 transition-opacity group-hover:opacity-100">
-          <span className="text-sm leading-none font-bold text-primary/70">+</span>
+          <span className="text-xs leading-none font-bold text-primary/70">+</span>
         </div>
       )}
       {request && requestEmojis && (
-        <div className="z-[1] flex items-center justify-center gap-0.5 text-base leading-none">
+        <div className="z-[1] flex items-center justify-center gap-0.5 text-base text-xs leading-none">
           {requestEmojis}
         </div>
       )}
