@@ -1,11 +1,10 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from '../../../../app/i18n/client';
-// MUI
-import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
+import { calendarGridTemplate } from '../../../../constants/constants';
 // Components
 import DemandsHeaderCell from './demands-header-cell';
 import { countShifts, countStaffings } from './assignment-count-methods';
+import CalendarRowHeaderCell from '../../../calendar/CalendarRowHeaderCell';
 // Styles
 import './daily-shift-demand-row.css';
 // Types
@@ -51,32 +50,22 @@ export default function DailyShiftDemandRow({
   }, [shifts, assignments, shiftDemands, periodDates, scheduleViewSettings]);
 
   return (
-    <TableRow
+    <div
+      className="border-b border-border/50 bg-card"
       style={{
-        backgroundColor: 'white',
-        boxShadow: '1px 1px 0px 0px rgba(224, 224, 224, 1)',
+        display: 'grid',
+        gridTemplateColumns: calendarGridTemplate(periodDates.length),
       }}
       data-testid="shift-count-row"
     >
-      <TableCell
-        sx={{
-          position: 'sticky',
-          left: 0,
-          backgroundColor: '#FFFFFF',
-          borderRight: '1px solid #e0e0e07d',
-          padding: 0,
-          width: '100px',
-        }}
-        data-testid="shift-count-row-label"
-      >
-        <div className="dsd-row-label-container">
-          <span className="dsd-row-label">
-            {scheduleViewSettings.groupBy === 'shift' ? t('shift_count') : t('worker_count')}
-          </span>
-        </div>
-      </TableCell>
+      <CalendarRowHeaderCell data-testid="shift-count-row-label" className="py-1">
+        <span className="dsd-row-label text-xs font-medium text-muted-foreground">
+          {scheduleViewSettings.groupBy === 'shift' ? t('shift_count') : t('worker_count')}
+        </span>
+      </CalendarRowHeaderCell>
       {periodDates.map((pDate, dateIndex) => {
         const dateStr = pDate.date.format('YYYY-MM-DD');
+        const isWeekend = pDate.date.day() === 0 || pDate.date.day() === 6;
         return (
           <DemandsHeaderCell
             key={dateIndex}
@@ -88,9 +77,10 @@ export default function DailyShiftDemandRow({
               }
             }
             scheduleViewSettings={scheduleViewSettings}
+            isWeekend={isWeekend}
           />
         );
       })}
-    </TableRow>
+    </div>
   );
 }

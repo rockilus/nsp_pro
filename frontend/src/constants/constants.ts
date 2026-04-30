@@ -19,6 +19,16 @@ import {
 } from '@mui/material/colors';
 import { ConstraintColorsT } from '../types/constraint';
 
+// Calendar table layout
+export const CALENDAR_ROW_HEADER_WIDTH = 180; // px — sticky left column (worker/shift name)
+export const CALENDAR_DAY_CELL_MIN_WIDTH = 40; // px — minimum width per day column
+
+/** Builds the CSS grid template for a calendar row with `n` day columns. */
+export function calendarGridTemplate(n: number, trailingColumn?: number): string {
+  const trailing = trailingColumn ? ` ${trailingColumn}px` : '';
+  return `${CALENDAR_ROW_HEADER_WIDTH}px repeat(${n}, minmax(${CALENDAR_DAY_CELL_MIN_WIDTH}px, 1fr))${trailing}`;
+}
+
 // General
 export const NumDayWeek = 7;
 export const WeekDays = [

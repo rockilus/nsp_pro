@@ -93,7 +93,7 @@ test.describe('ScheduleNavBar - Owner Tests', () => {
       for (let day = 1; day <= daysInDisplayedMonth; day++) {
         const date = displayedMonthStart.date(day);
         const dateString = date.format('YYYY-MM-DD');
-        const dateHeader = page.locator(`[data-testid="date-header-day-${dateString}"]`);
+        const dateHeader = page.locator(`[data-testid="date-header-${dateString}"]`);
         await expect(dateHeader).toBeVisible();
       }
 
@@ -155,7 +155,7 @@ test.describe('ScheduleNavBar - Owner Tests', () => {
       for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
         const date = displayedWeekStart.add(dayOffset, 'day');
         const dateString = date.format('YYYY-MM-DD');
-        const dateHeader = page.locator(`[data-testid="date-header-day-${dateString}"]`);
+        const dateHeader = page.locator(`[data-testid="date-header-${dateString}"]`);
         await expect(dateHeader).toBeVisible();
       }
 
@@ -208,7 +208,7 @@ test.describe('ScheduleNavBar - Owner Tests', () => {
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
-        `[data-testid="date-header-day-${newWeekStart.format('YYYY-MM-DD')}"]`,
+        `[data-testid="date-header-${newWeekStart.format('YYYY-MM-DD')}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
@@ -257,7 +257,7 @@ test.describe('ScheduleNavBar - Owner Tests', () => {
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
-        `[data-testid="date-header-day-${afterWeekStart.format('YYYY-MM-DD')}"]`,
+        `[data-testid="date-header-${afterWeekStart.format('YYYY-MM-DD')}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
@@ -307,7 +307,7 @@ test.describe('ScheduleNavBar - Owner Tests', () => {
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
-        `[data-testid="date-header-day-${currentWeekStart.format('YYYY-MM-DD')}"]`,
+        `[data-testid="date-header-${currentWeekStart.format('YYYY-MM-DD')}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
@@ -360,7 +360,7 @@ test.describe('ScheduleNavBar - Owner Tests', () => {
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
-        `[data-testid="date-header-day-${newMonthStart.format('YYYY-MM-DD')}"]`,
+        `[data-testid="date-header-${newMonthStart.format('YYYY-MM-DD')}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
@@ -409,7 +409,7 @@ test.describe('ScheduleNavBar - Owner Tests', () => {
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
-        `[data-testid="date-header-day-${afterMonthStart.format('YYYY-MM-DD')}"]`,
+        `[data-testid="date-header-${afterMonthStart.format('YYYY-MM-DD')}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 
@@ -453,7 +453,7 @@ test.describe('ScheduleNavBar - Owner Tests', () => {
 
       // Verify the first day is displayed
       const firstDayHeader = page.locator(
-        `[data-testid="date-header-day-${currentMonthStart.format('YYYY-MM-DD')}"]`,
+        `[data-testid="date-header-${currentMonthStart.format('YYYY-MM-DD')}"]`,
       );
       await expect(firstDayHeader).toBeVisible();
 

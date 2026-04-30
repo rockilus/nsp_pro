@@ -1,9 +1,9 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 // MUI
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
-import TableCell from '@mui/material/TableCell';
 // Components
 import AssignmentCell from '../shared/assignment-cell';
 import DailyShiftDemandCell from '../shared/daily-shift-demand-cell';
@@ -59,26 +59,33 @@ export default function ShiftCell({
 }) {
   const isSelectionActive = !!selectionState?.isActive;
   const dateStr = periodDate.date.format('YYYY-MM-DD');
+  const isWeekend = periodDate.date.day() === 0 || periodDate.date.day() === 6;
   const isCellSelected =
     selectionState?.selectedCells.some((c) => c.rowId === shift.id && c.date === dateStr) ?? false;
   const hasAssignments =
     scheduleViewSettings.showAssignments && !!scheduleCellData?.assignmentsData?.length;
 
   return (
-    <TableCell
-      className="cell-hover-container"
-      sx={{
-        align: 'center',
-        borderRight: '1px solid #e0e0e07d',
-        padding: 0,
-        position: 'relative',
+    <div
+      className={cn(
+        'cell-hover-container relative border-r border-border/50',
+        isWeekend && 'bg-muted',
+      )}
+      data-testid={`shift-cell-${shift.id}-${periodDate.date.format('YYYY-MM-DD')}`}
+      style={{
         backgroundColor: isCellSelected ? 'rgba(25, 118, 210, 0.08)' : undefined,
         outline: isCellSelected ? '2px solid #1976d2' : undefined,
         outlineOffset: isCellSelected ? '-2px' : undefined,
       }}
-      data-testid={`shift-cell-${shift.id}-${periodDate.date.format('YYYY-MM-DD')}`}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          justifyContent: 'center',
+        }}
+      >
         {scheduleViewSettings.showAssignments &&
           scheduleCellData?.assignmentsData.map((aData) => {
             const isAssignmentSelected =
@@ -172,6 +179,6 @@ export default function ShiftCell({
           </IconButton>
         </RoleBased>
       )}
-    </TableCell>
+    </div>
   );
 }

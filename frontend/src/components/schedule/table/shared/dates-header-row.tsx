@@ -6,7 +6,7 @@ import TableRow from '@mui/material/TableRow';
 import DateHeaderCell from './date-header-cell';
 import ExportCell from './export-cell';
 // Types
-import { ExportOptionsT, ScheduleT, ScheduleStatus, periodDateT } from '../../../../types/schedule';
+import { ScheduleT, ScheduleStatus, periodDateT } from '../../../../types/schedule';
 import { TeamWithMembership } from '@/types/team';
 import {
   ScheduleSelectionState,
@@ -20,7 +20,6 @@ export default function DatesHeaderRow({
   teamWithMembership,
   periodDates,
   scheduleCampaign,
-  handleExportSchedule,
   isSelectionActive,
   selectionState,
   rowIds,
@@ -37,7 +36,6 @@ export default function DatesHeaderRow({
   teamWithMembership: TeamWithMembership;
   periodDates: periodDateT[];
   scheduleCampaign: ScheduleT | null;
-  handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   isSelectionActive: boolean;
   selectionState: ScheduleSelectionState;
   rowIds: string[];
@@ -62,7 +60,6 @@ export default function DatesHeaderRow({
         lng={lng}
         periodDates={periodDates}
         scheduleCampaign={scheduleCampaign}
-        handleExportSchedule={handleExportSchedule}
         isSelectionActive={isSelectionActive}
         selectionState={selectionState}
         rowIds={rowIds}

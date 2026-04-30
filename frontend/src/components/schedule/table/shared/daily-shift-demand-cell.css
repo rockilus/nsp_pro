@@ -30,13 +30,3 @@
   overflow: hidden;
   text-overflow: ellipsis; /* Adds ... if the text overflows */
 }
-
-.dsd-stats-total {
-  font-size: 0.8125rem;
-  font-weight: bold;
-  color: green;
-}
-
-.dsd-stats-total.breach {
-  color: red;
-}

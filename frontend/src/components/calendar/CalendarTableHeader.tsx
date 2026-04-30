@@ -3,9 +3,11 @@ import dayjs, { Dayjs } from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Sparkle } from 'lucide-react';
 import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
 import ColumnSortFilterMenu from '../table/ColumnSortFilterMenu';
 import { useTranslation } from '../../app/i18n/client';
+import { calendarGridTemplate, CALENDAR_DAY_CELL_MIN_WIDTH } from '../../constants/constants';
 
 dayjs.extend(isoWeek);
 
@@ -54,7 +56,15 @@ export interface CalendarTableHeaderProps {
   /** When true, each date column shows a column-select checkbox */
   isBulkMode?: boolean;
   isColumnSelected?: (date: Dayjs) => boolean;
+  isColumnIndeterminate?: (date: Dayjs) => boolean;
   onColumnSelect?: (date: Dayjs) => void;
+  /** When true, each date column shows a custom-solve sparkle button */
+  isCustomSolveMode?: boolean;
+  /** Optional predicate — when provided, the sparkle is only rendered for days where this returns true */
+  isCustomSolveDay?: (date: Dayjs) => boolean;
+  isCustomColumnSelected?: (date: Dayjs) => boolean;
+  isCustomColumnIndeterminate?: (date: Dayjs) => boolean;
+  onCustomColumnSelect?: (date: Dayjs) => void;
 }
 
 export default function CalendarTableHeader({
@@ -70,45 +80,60 @@ export default function CalendarTableHeader({
   trailingColumnHeader,
   isBulkMode = false,
   isColumnSelected,
+  isColumnIndeterminate,
   onColumnSelect,
+  isCustomSolveMode = false,
+  isCustomSolveDay,
+  isCustomColumnSelected,
+  isCustomColumnIndeterminate,
+  onCustomColumnSelect,
 }: CalendarTableHeaderProps) {
   const { t } = useTranslation(lng || 'en', 'common');
   const today = dayjs();
   const weekGroups = buildWeekGroups(days);
 
+  const gridTemplate = calendarGridTemplate(
+    days.length,
+    trailingColumnHeader !== undefined ? CALENDAR_DAY_CELL_MIN_WIDTH : undefined,
+  );
+
   return (
-    <div className="sticky top-0 z-[3] bg-card">
+    <div className="sticky top-0 z-[3] bg-card" data-testid="calendar-table-header">
       {/* Week group row */}
-      <div className="flex border-b border-border/50">
+      <div
+        className="border-b border-border/50"
+        style={{ display: 'grid', gridTemplateColumns: gridTemplate }}
+      >
         {/* Sticky corner */}
-        <div className="sticky left-0 z-[4] w-[180px] max-w-[220px] min-w-[180px] shrink-0 border-r border-border/50 bg-card" />
-        {/* Week spans */}
-        <div className="flex flex-1">
-          {weekGroups.map(({ weekNum, count }, idx) => (
-            <div
-              key={`week-${weekNum}-${idx}`}
-              className={cn(
-                'flex items-center justify-center truncate overflow-hidden border-r border-border/50 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground',
-                idx > 0 && 'border-l-2 border-l-border',
-              )}
-              style={{ flex: count, minWidth: `${count * 60}px` }}
-            >
-              <span className="truncate">
-                {count >= 2 ? `${t('week')} ${weekNum}` : `W${weekNum}`}
-              </span>
-            </div>
-          ))}
-        </div>
+        <div className="sticky left-0 z-[4] border-r border-border/50 bg-card" />
+        {/* Week spans — each spans N grid columns */}
+        {weekGroups.map(({ weekNum, count }, idx) => (
+          <div
+            key={`week-${weekNum}-${idx}`}
+            className={cn(
+              'flex items-center justify-center truncate overflow-hidden border-r border-border/50 px-2 py-0.5 text-[11px] font-semibold text-muted-foreground',
+              idx > 0 && 'border-l-2 border-l-border',
+            )}
+            style={{ gridColumn: `span ${count}` }}
+          >
+            <span className="truncate">
+              {count >= 2 ? `${t('week')} ${weekNum}` : `W${weekNum}`}
+            </span>
+          </div>
+        ))}
         {/* Trailing corner (e.g. Total column) */}
         {trailingColumnHeader !== undefined && (
-          <div className="w-[60px] min-w-[60px] shrink-0 border-l border-border/50 bg-card" />
+          <div className="border-l border-border/50 bg-card" />
         )}
       </div>
 
       {/* Day header row */}
-      <div className="flex border-b-2 border-border">
+      <div
+        className="border-b-2 border-border"
+        style={{ display: 'grid', gridTemplateColumns: gridTemplate }}
+      >
         {/* Left sticky column header */}
-        <div className="sticky left-0 z-[4] flex w-[180px] max-w-[220px] min-w-[180px] shrink-0 items-center justify-between border-r border-border/50 bg-card px-2 py-1">
+        <div className="sticky left-0 z-[4] flex items-center justify-between border-r border-border/50 bg-card px-2 py-1">
           <div className="flex items-center gap-1.5">
             {leadingColumnContent}
             <span className="text-sm text-foreground">{rowHeaderLabel}</span>
@@ -124,55 +149,89 @@ export default function CalendarTableHeader({
           )}
         </div>
 
-        {/* Day cells */}
-        <div className="flex flex-1">
-          {days.map((d) => {
-            const isWeekend = d.day() === 0 || d.day() === 6;
-            const isToday = d.isSame(today, 'day');
-            const isWeekBoundary = d.isoWeekday() === 1;
-            const dateKey = d.format('YYYY-MM-DD');
-            const colSelected = isColumnSelected ? isColumnSelected(d) : false;
+        {/* Day cells — direct grid children, no wrapper div */}
+        {days.map((d) => {
+          const isWeekend = d.day() === 0 || d.day() === 6;
+          const isToday = d.isSame(today, 'day');
+          const isWeekBoundary = d.isoWeekday() === 1;
+          const dateKey = d.format('YYYY-MM-DD');
+          const colSelected = isColumnSelected ? isColumnSelected(d) : false;
+          const colIndeterminate =
+            !colSelected && (isColumnIndeterminate ? isColumnIndeterminate(d) : false);
 
-            return (
+          return (
+            <div
+              key={dateKey}
+              className={cn(
+                'flex h-14 flex-col items-center justify-center border-r border-border/50 px-1',
+                isWeekend ? 'bg-muted' : 'bg-card',
+                isWeekBoundary && 'border-l-2 border-l-border',
+              )}
+              data-testid={`date-header-${dateKey}`}
+            >
+              {/* 3-char weekday abbreviation */}
+              <div className="mb-0.5 text-[11px] leading-none text-muted-foreground">
+                {getWeekdayShort(d, lng)}
+              </div>
+              {/* Day number — circle highlight for today */}
               <div
-                key={dateKey}
                 className={cn(
-                  'flex h-14 min-w-[60px] flex-1 flex-col items-center justify-center border-r border-border/50 px-1',
-                  isWeekend ? 'bg-muted' : 'bg-card',
-                  isWeekBoundary && 'border-l-2 border-l-border',
+                  'flex h-7 w-7 items-center justify-center rounded-full text-sm leading-none font-semibold',
+                  isToday ? 'bg-primary text-primary-foreground' : 'text-foreground',
                 )}
-                data-testid={`date-header-${dateKey}`}
               >
+                {d.date()}
+              </div>
+
+              {/* Controls: place at bottom below the date number */}
+              <div className="mb-0.5 flex items-center gap-1">
                 {/* Bulk mode column checkbox */}
                 {isBulkMode && onColumnSelect && (
                   <Checkbox
                     data-testid={`column-select-checkbox-${dateKey}`}
-                    checked={colSelected}
+                    checked={colSelected ? true : colIndeterminate ? 'indeterminate' : false}
                     onCheckedChange={() => onColumnSelect(d)}
-                    className="mb-0.5 h-3.5 w-3.5"
+                    className="h-3.5 w-3.5"
                   />
                 )}
-                {/* 3-char weekday abbreviation */}
-                <div className="mb-0.5 text-[11px] leading-none text-muted-foreground">
-                  {getWeekdayShort(d, lng)}
-                </div>
-                {/* Day number — circle highlight for today */}
-                <div
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-full text-sm leading-none font-semibold',
-                    isToday ? 'bg-primary text-primary-foreground' : 'text-foreground',
+
+                {/* Custom-solve column sparkle */}
+                {isCustomSolveMode &&
+                  onCustomColumnSelect &&
+                  (!isCustomSolveDay || isCustomSolveDay(d)) && (
+                    <button
+                      data-testid={`date-column-sparkle-${dateKey}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCustomColumnSelect(d);
+                      }}
+                      className="cursor-pointer border-none bg-transparent p-0"
+                      style={{
+                        color: isCustomColumnSelected?.(d)
+                          ? '#1976d2'
+                          : isCustomColumnIndeterminate?.(d)
+                            ? '#42a5f5'
+                            : '#9e9e9e',
+                      }}
+                    >
+                      <Sparkle
+                        size={12}
+                        fill={
+                          isCustomColumnSelected?.(d) || isCustomColumnIndeterminate?.(d)
+                            ? 'currentColor'
+                            : 'none'
+                        }
+                      />
+                    </button>
                   )}
-                >
-                  {d.date()}
-                </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
 
         {/* Trailing column header (e.g. "Total") */}
         {trailingColumnHeader !== undefined && (
-          <div className="flex w-[60px] min-w-[60px] shrink-0 items-center justify-center border-l border-border/50 bg-card text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <div className="flex items-center justify-center border-l border-border/50 bg-card text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             {trailingColumnHeader}
           </div>
         )}

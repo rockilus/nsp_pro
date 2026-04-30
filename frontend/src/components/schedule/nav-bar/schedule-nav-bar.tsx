@@ -9,7 +9,13 @@ import CampaignInfo from './campaign-info';
 import ScheduleSettings from './schedule-settings';
 import { RoleBased } from '../../access/role-based';
 // Types
-import { ScheduleT, DuplicateRequestT, ScheduleViewSettingsT } from '../../../types/schedule';
+import {
+  ScheduleT,
+  DuplicateRequestT,
+  ScheduleViewSettingsT,
+  ExportOptionsT,
+  periodDateT,
+} from '../../../types/schedule';
 import { TeamMembershipRole, TeamWithMembership } from '../../../types/team';
 import { SolveTaskStatusResponseT } from '../../../types/solveTaskStatus';
 import { SolveScopeType } from '../../../types/solveTaskStatus';
@@ -43,6 +49,8 @@ export default function ScheduleNavBar({
   onSolveOptionChange,
   workerSolveCells = [],
   shiftSolveCells = [],
+  handleExportSchedule,
+  periodDates = [],
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -72,6 +80,8 @@ export default function ScheduleNavBar({
   onSolveOptionChange?: (scope: SolveScopeType) => void;
   workerSolveCells?: SelectedScheduleCell[];
   shiftSolveCells?: SelectedScheduleCell[];
+  handleExportSchedule?: (options: ExportOptionsT) => void;
+  periodDates?: periodDateT[];
 }) {
   const { t } = useTranslation(lng, 'schedule-page');
 
@@ -118,6 +128,8 @@ export default function ScheduleNavBar({
             handleSendDuplicateRequest={handleSendDuplicateRequest}
             updateScheduleViewSettings={updateScheduleViewSettings}
             handleChangeTimeFrame={handleChangeTimeFrame}
+            handleExportSchedule={handleExportSchedule}
+            periodDates={periodDates}
           />
 
           {scheduleCampaign ? (

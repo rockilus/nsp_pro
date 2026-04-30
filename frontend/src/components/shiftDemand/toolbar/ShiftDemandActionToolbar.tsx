@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Paper, Divider } from '@mui/material';
-import { FilterSortSection } from './FilterSortSection';
+import TableFilterBar from '../../table/TableFilterBar';
 import { BulkSelectionSection } from './BulkSelectionSection';
 import { MultitaskingSelectionSection } from './MultitaskingSelectionSection';
 import { ShiftDemandActionToolbarProps } from './types';
@@ -60,13 +60,14 @@ export function ShiftDemandActionToolbar({
       >
         {/* Left side - Filters and Sort */}
         {showFilters && hasFiltersOrSort && (
-          <FilterSortSection
+          <TableFilterBar
             lng={lng}
             filters={filters}
             sort={sort}
             onRemoveFilter={onRemoveFilter}
             onRemoveSort={onRemoveSort}
             onResetAll={onResetAll}
+            inline
           />
         )}
 

@@ -503,6 +503,7 @@ export default function WorkerTab({
           {/* Filter/Sort toolbar */}
           {showFilterToolbar && (
             <TableFilterBar
+              lng={lng}
               filters={tableState.filters}
               sort={tableState.sort}
               onRemoveFilter={removeFilter}

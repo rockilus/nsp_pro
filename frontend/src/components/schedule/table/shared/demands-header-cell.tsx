@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
+import { cn } from '@/lib/utils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../../../app/i18n/client';
 // MUI
 import Popover from '@mui/material/Popover';
-import TableCell from '@mui/material/TableCell';
 // Styles
 import './demands-header-cell.css';
 import '../../../../styles/text-styles.css';
@@ -32,7 +32,7 @@ const DSDPopoverButton: React.FC<{ counts: CountsT }> = ({ counts }) => {
     <span
       className={`dsd-stats-total ${counts.total.actual !== counts.total.target ? 'breach' : ''}`}
     >
-      {`${counts.total.actual} / ${counts.total.target}`}
+      {`${counts.total.actual}/${counts.total.target}`}
     </span>
   );
 };
@@ -81,6 +81,7 @@ export default function DemandsHeaderCell({
   shifts,
   counts,
   scheduleViewSettings,
+  isWeekend = false,
 }: {
   lng: string;
   shifts: ShiftT[];
@@ -97,6 +98,7 @@ export default function DemandsHeaderCell({
     };
   };
   scheduleViewSettings: ScheduleViewSettingsT;
+  isWeekend?: boolean;
 }) {
   const { t } = useTranslation(lng, 'schedule-page');
 
@@ -120,12 +122,7 @@ export default function DemandsHeaderCell({
   }, [shifts]);
 
   return (
-    <TableCell
-      sx={{
-        padding: 0,
-        borderRight: '1px solid #e0e0e07d',
-      }}
-    >
+    <div className={cn('border-r border-border/50 p-0', isWeekend && 'bg-muted')}>
       <div className="container-dsd-cell">
         <button type="button" onClick={handleClick} className="dsd-popover-button">
           <DSDPopoverButton counts={counts} />
@@ -157,6 +154,6 @@ export default function DemandsHeaderCell({
           />
         </Popover>
       </div>
-    </TableCell>
+    </div>
   );
 }

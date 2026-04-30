@@ -8,9 +8,10 @@ import { Loader2, Plus, Minus } from 'lucide-react';
 import { useTranslation } from '../../app/i18n/client';
 import { ShiftT, ShiftType } from '../../types/shift';
 import { MultitaskingSelectionState } from '../../types/multitasking';
-import { ShiftColorMappings } from '../../constants/constants';
+import { ShiftColorMappings, calendarGridTemplate } from '../../constants/constants';
 import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
 import CalendarTableHeader from '../calendar/CalendarTableHeader';
+import CalendarRowHeaderCell from '../calendar/CalendarRowHeaderCell';
 
 dayjs.extend(isoWeek);
 
@@ -130,7 +131,7 @@ function ShiftDemandCell({
   return (
     <div
       className={cn(
-        'relative flex min-h-[40px] min-w-[60px] flex-1 items-center justify-center border-r border-border/50 p-1 transition-all duration-200',
+        'relative flex min-h-[40px] items-center justify-center border-r border-border/50 p-1 transition-all duration-200',
         isWeekend && 'bg-muted',
         isWeekBoundary && 'border-l-2 border-l-border',
         isMultitaskingMode && !isSelectable && 'pointer-events-none opacity-40',
@@ -267,44 +268,36 @@ function ShiftDemandRowHeader({
   const isDutyShift = shift.shiftType === ShiftType.DUTY;
 
   return (
-    <div
-      className="sticky left-0 z-[2] flex w-[180px] max-w-[220px] min-w-[180px] shrink-0 items-center gap-1 overflow-hidden border-r border-border/50 bg-card"
+    <CalendarRowHeaderCell
       data-testid={`shift-demand-row-header-${shift.id}`}
+      isBulkMode={isBulkMode}
+      isSelected={isRowSelected}
+      onSelect={() => onSelectRow(shift.id)}
+      checkboxTestId={`row-select-checkbox-${shift.id}`}
     >
-      {/* Shift type colour bar */}
-      <div
-        className={cn('w-1 flex-shrink-0 self-stretch rounded-sm', !isDutyShift && 'invisible')}
-        style={isDutyShift ? { backgroundColor: sample } : undefined}
-      />
-
-      {isBulkMode && (
-        <Checkbox
-          data-testid={`row-select-checkbox-${shift.id}`}
-          checked={isRowSelected}
-          onCheckedChange={() => onSelectRow(shift.id)}
-          className="h-3.5 w-3.5 flex-shrink-0"
+      <div className="flex w-full min-w-0 items-center gap-1">
+        {/* Shift type colour bar */}
+        <div
+          className={cn('w-1 flex-shrink-0 self-stretch rounded-sm', !isDutyShift && 'invisible')}
+          style={isDutyShift ? { backgroundColor: sample } : undefined}
         />
-      )}
-
-      <span
-        className="min-w-0 flex-1 truncate py-2 text-sm font-[550] text-foreground"
-        data-testid={`shift-demand-name-${shift.id}`}
-      >
-        {shift.name || shift.acronym}
-      </span>
-
-      <div className="flex flex-shrink-0 flex-col items-start py-2 pr-2 text-[11px] leading-tight text-muted-foreground">
-        <span>{shift.startTime.format('HH:mm')}</span>
-        <span>
-          {shift.endTime.format('HH:mm')}
-          {isNextDay && <sup>+1</sup>}
+        <span
+          className="w-full min-w-0 py-2 text-sm font-[550] break-words text-foreground"
+          data-testid={`shift-demand-name-${shift.id}`}
+        >
+          {shift.name || shift.acronym}
         </span>
+        <div className="flex flex-shrink-0 flex-col items-start py-2 pr-2 text-[11px] leading-tight text-muted-foreground">
+          <span>{shift.startTime.format('HH:mm')}</span>
+          <span>
+            {shift.endTime.format('HH:mm')}
+            {isNextDay && <sup>+1</sup>}
+          </span>
+        </div>
       </div>
-    </div>
+    </CalendarRowHeaderCell>
   );
 }
-
-// ─── Row ─────────────────────────────────────────────────────────────────────
 
 interface ShiftDemandRowProps {
   shift: ShiftT;
@@ -340,51 +333,52 @@ function ShiftDemandRow({
   savingCells,
 }: ShiftDemandRowProps) {
   return (
-    <div className="flex min-h-[40px] items-stretch border-b border-border/50">
+    <div
+      className="min-h-[40px] border-b border-border/50"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: calendarGridTemplate(dates.length),
+      }}
+    >
       <ShiftDemandRowHeader
         shift={shift}
         isBulkMode={bulkChangeState.isActive}
         isRowSelected={isRowSelected(shift.id)}
         onSelectRow={selectAllRowCells}
       />
-      <div className="flex flex-1">
-        {dates.map((date) => {
-          const value = getDemandValue(shift.id, date);
-          const isWeekend = date.day() === 0 || date.day() === 6;
-          const isSelected = isCellSelected(shift.id, date);
-          const cellKey = `${shift.id}-${date.format('YYYY-MM-DD')}`;
-          const isSaving = savingCells.has(cellKey);
+      {/* Day cells — direct grid children */}
+      {dates.map((date) => {
+        const value = getDemandValue(shift.id, date);
+        const isWeekend = date.day() === 0 || date.day() === 6;
+        const isSelected = isCellSelected(shift.id, date);
+        const cellKey = `${shift.id}-${date.format('YYYY-MM-DD')}`;
+        const isSaving = savingCells.has(cellKey);
 
-          return (
-            <ShiftDemandCell
-              key={date.toISOString()}
-              shiftId={shift.id}
-              date={date}
-              value={value}
-              isWeekend={isWeekend}
-              isSelected={isSelected}
-              isBulkMode={bulkChangeState.isActive}
-              isSaving={isSaving}
-              shift={shift}
-              isMultitaskingMode={multitaskingState?.isActive || false}
-              isSelectable={
-                isShiftDemandSelectable ? isShiftDemandSelectable(shift.id, date) : true
-              }
-              isMultitaskingSelected={
-                isShiftDemandSelected ? isShiftDemandSelected(shift.id, date) : false
-              }
-              onCellChange={handleCellChange}
-              onToggleSelection={toggleCellSelection}
-              onToggleMultitaskingSelection={onToggleShiftDemandSelection}
-            />
-          );
-        })}
-      </div>
+        return (
+          <ShiftDemandCell
+            key={date.toISOString()}
+            shiftId={shift.id}
+            date={date}
+            value={value}
+            isWeekend={isWeekend}
+            isSelected={isSelected}
+            isBulkMode={bulkChangeState.isActive}
+            isSaving={isSaving}
+            shift={shift}
+            isMultitaskingMode={multitaskingState?.isActive || false}
+            isSelectable={isShiftDemandSelectable ? isShiftDemandSelectable(shift.id, date) : true}
+            isMultitaskingSelected={
+              isShiftDemandSelected ? isShiftDemandSelected(shift.id, date) : false
+            }
+            onCellChange={handleCellChange}
+            onToggleSelection={toggleCellSelection}
+            onToggleMultitaskingSelection={onToggleShiftDemandSelection}
+          />
+        );
+      })}
     </div>
   );
 }
-
-// ─── Body ─────────────────────────────────────────────────────────────────────
 
 interface ShiftDemandBodyProps {
   shifts: ShiftT[];

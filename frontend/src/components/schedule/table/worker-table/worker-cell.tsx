@@ -1,10 +1,10 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 import { Sparkle } from 'lucide-react';
 // MUI
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
-import TableCell from '@mui/material/TableCell';
 // Components
 import AssignmentCell from '../shared/assignment-cell';
 import RequestCell from '../shared/request-cell';
@@ -58,6 +58,7 @@ export default function WorkerCell({
 }) {
   const isSelectionActive = !!selectionState?.isActive;
   const dateStr = periodDate.date.format('YYYY-MM-DD');
+  const isWeekend = periodDate.date.day() === 0 || periodDate.date.day() === 6;
   const isCellSelected =
     selectionState?.selectedCells.some((c) => c.rowId === worker.id && c.date === dateStr) ?? false;
   const hasAssignments =
@@ -94,20 +95,26 @@ export default function WorkerCell({
       };
 
   return (
-    <TableCell
-      className="cell-hover-container"
+    <div
+      className={cn(
+        'cell-hover-container relative border-r border-border/50',
+        isWeekend && 'bg-muted',
+      )}
       data-testid={`worker-cell-${worker.id}-${dateStr}`}
-      sx={{
-        align: 'center',
-        borderRight: '1px solid #e0e0e07d',
-        padding: 0,
-        position: 'relative',
+      style={{
         backgroundColor: isCellSelected ? 'rgba(25, 118, 210, 0.08)' : undefined,
         outline: isCellSelected ? '2px solid #1976d2' : undefined,
         outlineOffset: isCellSelected ? '-2px' : undefined,
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          justifyContent: 'center',
+        }}
+      >
         {scheduleViewSettings.showAssignments &&
           scheduleCellData?.assignmentsData.map((aData) => {
             const isAssignmentSelected =
@@ -212,6 +219,6 @@ export default function WorkerCell({
           <Sparkle size={14} fill={isCustomCellSelected ? 'currentColor' : 'none'} />
         </button>
       )}
-    </TableCell>
+    </div>
   );
 }

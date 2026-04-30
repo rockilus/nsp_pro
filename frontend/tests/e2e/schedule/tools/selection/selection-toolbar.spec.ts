@@ -133,7 +133,7 @@ test.describe('Schedule Selection - Action Toolbar', () => {
 
   test('validation: create with cells but no entity selected shows error', async ({ page }) => {
     // Select all cells
-    await page.click('[data-testid="export-cell-select-all-checkbox"]');
+    await page.click('[data-testid="shift-select-all-checkbox"]');
 
     // Submit without picking an entity
     await page.click('[data-testid="schedule-action-main-button"]');
@@ -145,7 +145,7 @@ test.describe('Schedule Selection - Action Toolbar', () => {
     await selectAction(page, 'update');
 
     // Select only cells (no assignments)
-    await page.click('[data-testid="export-cell-select-all-checkbox"]');
+    await page.click('[data-testid="shift-select-all-checkbox"]');
 
     await page.click('[data-testid="schedule-action-main-button"]');
 

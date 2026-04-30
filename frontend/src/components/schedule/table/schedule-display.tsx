@@ -7,7 +7,6 @@ import ScheduleTableWorker from './worker-table/schedule-table-worker';
 // Types
 import {
   ScheduleT,
-  ExportOptionsT,
   periodDateT,
   AssignmentDataT,
   ScheduleCellDataT,
@@ -26,6 +25,7 @@ import {
   SelectedScheduleCell,
   SelectionScope,
 } from '../../../types/scheduleSelection';
+import { ColumnFilter, TableSort } from '../../../types/filter';
 
 dayjs.extend(utc);
 
@@ -47,7 +47,6 @@ export default function ScheduleDisplay({
   handleAssignmentSelection,
   handleDemandSelection,
   handleRequestSelection,
-  handleExportSchedule,
   handleOpenCreateAssignment,
   handleCellSelect,
   handleAssignmentSelect,
@@ -60,6 +59,14 @@ export default function ScheduleDisplay({
   handleCustomColumnSelect,
   handleCustomCellSelect,
   handleCustomSelectAll,
+  workerTableSort,
+  onWorkerTableSort,
+  workerTableFilter,
+  onWorkerTableFilter,
+  shiftTableSort,
+  onShiftTableSort,
+  shiftTableFilter,
+  onShiftTableFilter,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -78,7 +85,6 @@ export default function ScheduleDisplay({
   handleAssignmentSelection: (selectedAssignment: AssignmentDataT) => void;
   handleDemandSelection: (scheduleCellData: ScheduleCellDataT) => void;
   handleRequestSelection?: (request: RequestT) => void;
-  handleExportSchedule: (exportOptions: ExportOptionsT) => void;
   handleOpenCreateAssignment: (createAssignment: CreateAssignmentT) => void;
   handleCellSelect: (rowId: string, date: string, scheduleId: string | null) => void;
   handleAssignmentSelect: (assignmentId: string) => void;
@@ -91,6 +97,14 @@ export default function ScheduleDisplay({
   handleCustomColumnSelect?: (date: string, rowIds: string[]) => void;
   handleCustomCellSelect?: (rowId: string, date: string, scheduleId: string | null) => void;
   handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
+  workerTableSort: TableSort | null;
+  onWorkerTableSort: (sort: TableSort | null) => void;
+  workerTableFilter: ColumnFilter | null;
+  onWorkerTableFilter: (filter: ColumnFilter | null) => void;
+  shiftTableSort: TableSort | null;
+  onShiftTableSort: (sort: TableSort | null) => void;
+  shiftTableFilter: ColumnFilter | null;
+  onShiftTableFilter: (filter: ColumnFilter | null) => void;
 }) {
   const scheduleDisplays: { [key: string]: React.ReactElement } = {
     shift: (
@@ -111,7 +125,6 @@ export default function ScheduleDisplay({
         selectionScope={selectionScope}
         handleAssignmentSelection={handleAssignmentSelection}
         handleDemandSelection={handleDemandSelection}
-        handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
         handleCellSelect={handleCellSelect}
         handleAssignmentSelect={handleAssignmentSelect}
@@ -124,6 +137,10 @@ export default function ScheduleDisplay({
         handleCustomColumnSelect={handleCustomColumnSelect}
         handleCustomCellSelect={handleCustomCellSelect}
         handleCustomSelectAll={handleCustomSelectAll}
+        currentSort={shiftTableSort}
+        onSort={onShiftTableSort}
+        currentFilter={shiftTableFilter}
+        onFilter={onShiftTableFilter}
       />
     ),
     worker: (
@@ -144,7 +161,6 @@ export default function ScheduleDisplay({
         selectionScope={selectionScope}
         handleAssignmentSelection={handleAssignmentSelection}
         handleRequestSelection={handleRequestSelection}
-        handleExportSchedule={handleExportSchedule}
         handleOpenCreateAssignment={handleOpenCreateAssignment}
         handleCellSelect={handleCellSelect}
         handleAssignmentSelect={handleAssignmentSelect}
@@ -157,6 +173,10 @@ export default function ScheduleDisplay({
         handleCustomColumnSelect={handleCustomColumnSelect}
         handleCustomCellSelect={handleCustomCellSelect}
         handleCustomSelectAll={handleCustomSelectAll}
+        currentSort={workerTableSort}
+        onSort={onWorkerTableSort}
+        currentFilter={workerTableFilter}
+        onFilter={onWorkerTableFilter}
       />
     ),
   };

@@ -137,7 +137,9 @@ for (const groupBy of ['shift', 'worker'] as const) {
       const scheduleTestBase = testBasesMap.get(testRunId)!;
 
       const referenceDate = dayjs.utc().format('YYYY-MM-DD');
-      const columnCheckbox = page.locator(`[data-testid="date-column-checkbox-${referenceDate}"]`);
+      const columnCheckbox = page.locator(
+        `[data-testid="column-select-checkbox-${referenceDate}"]`,
+      );
       await expect(columnCheckbox).toBeVisible();
 
       // Select entire column
@@ -185,7 +187,7 @@ for (const groupBy of ['shift', 'worker'] as const) {
     });
 
     test('top-left select-all checkbox selects/deselects everything', async ({ page }) => {
-      const selectAllCheckbox = page.locator('[data-testid="export-cell-select-all-checkbox"]');
+      const selectAllCheckbox = page.locator('[data-testid="worker-select-all-checkbox"]');
       await expect(selectAllCheckbox).toBeVisible();
 
       // Select all
@@ -259,7 +261,7 @@ for (const groupBy of ['shift', 'worker'] as const) {
         // Switch to campaign scope and select all
         await page.locator('[data-testid="schedule-scope-campaign"]').click();
 
-        const selectAllCheckbox = page.locator('[data-testid="export-cell-select-all-checkbox"]');
+        const selectAllCheckbox = page.locator('[data-testid="worker-select-all-checkbox"]');
         await selectAllCheckbox.click();
 
         const campaignCountsText = await getSelectionCountsText(page);
@@ -300,7 +302,7 @@ for (const groupBy of ['shift', 'worker'] as const) {
         // Switch to campaign scope and select all
         await page.locator('[data-testid="schedule-scope-campaign"]').click();
 
-        const selectAllCheckbox = page.locator('[data-testid="export-cell-select-all-checkbox"]');
+        const selectAllCheckbox = page.locator('[data-testid="worker-select-all-checkbox"]');
         await selectAllCheckbox.click();
 
         const campaignCountsText = await getSelectionCountsText(page);
