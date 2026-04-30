@@ -90,6 +90,8 @@ import { SolveTaskStatusResponseT } from '@/types/solveTaskStatus';
 import { useShiftDemands, useShiftDemandMutations } from '../../app/lib/hooks/useShiftDemands';
 import { useScheduleViewSettings } from '../../app/lib/hooks/useScheduleViewSettings';
 import { getDefaultScheduleViewSettings } from '../../app/lib/utils/scheduleViewSettingsUtils';
+import { useLocalStorageState } from '../../app/lib/hooks/useLocalStorageState';
+import { ColumnFilter, TableSort } from '../../types/filter';
 import {
   useGenerationSelection,
   clearGenerationSelection,
@@ -179,6 +181,25 @@ export default function ScheduleTab({
 
   const [scheduleViewSettings, updateScheduleViewSettings, resetScheduleViewSettings] =
     useScheduleViewSettings(teamWithMembership.team.id, defaultSettings);
+
+  // Sort/filter state for the schedule tables (lifted here so ScheduleActionToolbar can display chips)
+  const teamId = teamWithMembership.team.id;
+  const [workerTableSort, setWorkerTableSort] = useLocalStorageState<TableSort | null>(
+    `scheduleViewSettings_${teamId}_workerTableSort`,
+    null,
+  );
+  const [workerTableFilter, setWorkerTableFilter] = useLocalStorageState<ColumnFilter | null>(
+    `scheduleViewSettings_${teamId}_workerTableFilter`,
+    null,
+  );
+  const [shiftTableSort, setShiftTableSort] = useLocalStorageState<TableSort | null>(
+    `scheduleViewSettings_${teamId}_shiftTableSort`,
+    null,
+  );
+  const [shiftTableFilter, setShiftTableFilter] = useLocalStorageState<ColumnFilter | null>(
+    `scheduleViewSettings_${teamId}_shiftTableFilter`,
+    null,
+  );
 
   // resetScheduleViewSettings can be called to reset all settings to defaults
   // Example: resetScheduleViewSettings() - useful for settings reset UI
@@ -1675,6 +1696,35 @@ export default function ScheduleTab({
                   onBulkToggleFixed={handleBulkToggleFixed}
                   onBulkDelete={handleBulkDeleteAssignments}
                   onCancel={handleToggleSelectionMode}
+                  activeFilters={
+                    scheduleViewSettings.groupBy === 'worker'
+                      ? workerTableFilter
+                        ? [workerTableFilter]
+                        : []
+                      : shiftTableFilter
+                        ? [shiftTableFilter]
+                        : []
+                  }
+                  activeSort={
+                    scheduleViewSettings.groupBy === 'worker' ? workerTableSort : shiftTableSort
+                  }
+                  onRemoveFilter={() => {
+                    if (scheduleViewSettings.groupBy === 'worker') setWorkerTableFilter(null);
+                    else setShiftTableFilter(null);
+                  }}
+                  onRemoveSort={() => {
+                    if (scheduleViewSettings.groupBy === 'worker') setWorkerTableSort(null);
+                    else setShiftTableSort(null);
+                  }}
+                  onResetFilterSort={() => {
+                    if (scheduleViewSettings.groupBy === 'worker') {
+                      setWorkerTableSort(null);
+                      setWorkerTableFilter(null);
+                    } else {
+                      setShiftTableSort(null);
+                      setShiftTableFilter(null);
+                    }
+                  }}
                 />
               )}
           </>
@@ -1715,6 +1765,14 @@ export default function ScheduleTab({
               handleCustomColumnSelect={handleCustomColumnSelect}
               handleCustomCellSelect={handleCustomCellSelect}
               handleCustomSelectAll={handleCustomSelectAll}
+              workerTableSort={workerTableSort}
+              onWorkerTableSort={setWorkerTableSort}
+              workerTableFilter={workerTableFilter}
+              onWorkerTableFilter={setWorkerTableFilter}
+              shiftTableSort={shiftTableSort}
+              onShiftTableSort={setShiftTableSort}
+              shiftTableFilter={shiftTableFilter}
+              onShiftTableFilter={setShiftTableFilter}
             />
           )}
         </div>

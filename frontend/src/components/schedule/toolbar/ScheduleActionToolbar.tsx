@@ -29,6 +29,8 @@ import { WorkerT } from '../../../types/worker';
 import { ShiftT } from '../../../types/shift';
 import { ScheduleT } from '../../../types/schedule';
 import { useTranslation } from '../../../app/i18n/client';
+import TableFilterBar from '../../table/TableFilterBar';
+import { ColumnFilter, TableSort } from '../../../types/filter';
 
 type ActionKey = 'create' | 'update' | 'toggleFixed' | 'delete';
 
@@ -54,6 +56,11 @@ interface ScheduleActionToolbarProps {
   onCancel: () => void;
   scope: SelectionScope;
   onScopeChange: (scope: SelectionScope) => void;
+  activeFilters?: ColumnFilter[];
+  activeSort?: TableSort | null;
+  onRemoveFilter?: () => void;
+  onRemoveSort?: () => void;
+  onResetFilterSort?: () => void;
 }
 
 export function ScheduleActionToolbar({
@@ -70,6 +77,11 @@ export function ScheduleActionToolbar({
   onCancel,
   scope,
   onScopeChange,
+  activeFilters,
+  activeSort,
+  onRemoveFilter,
+  onRemoveSort,
+  onResetFilterSort,
 }: ScheduleActionToolbarProps) {
   const { t } = useTranslation(lng, 'schedule-page');
   const [selectedAction, setSelectedAction] = useState<ActionKey>('create');
@@ -211,6 +223,24 @@ export function ScheduleActionToolbar({
         flexWrap="wrap"
         minHeight="44px"
       >
+        {/* 0. Active filter/sort chips (left-most, shown when filters are active) */}
+        {((activeFilters && activeFilters.length > 0) || activeSort) && (
+          <>
+            <Box display="flex" alignItems="center" sx={{ flexShrink: 0 }}>
+              <TableFilterBar
+                inline
+                lng={lng}
+                filters={activeFilters ?? []}
+                sort={activeSort ?? null}
+                onRemoveFilter={onRemoveFilter ?? (() => {})}
+                onRemoveSort={onRemoveSort ?? (() => {})}
+                onResetAll={onResetFilterSort ?? (() => {})}
+              />
+            </Box>
+            <Divider orientation="vertical" flexItem />
+          </>
+        )}
+
         {/* 1. Selection counts */}
         <Box
           display="flex"

@@ -7,7 +7,6 @@ import { useTranslation } from '../../../../app/i18n/client';
 // shadcn/ui
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../ui/tooltip';
 // Components
-import TableFilterBar from '../../../table/TableFilterBar';
 import CalendarTableHeader from '../../../calendar/CalendarTableHeader';
 import CalendarRowHeaderCell from '../../../calendar/CalendarRowHeaderCell';
 import DailyShiftDemandRow from '../shared/daily-shift-demand-row';
@@ -34,7 +33,6 @@ import {
   SelectionScope,
 } from '@/types/scheduleSelection';
 import { ColumnDefinition, ColumnFilter, TableSort } from '@/types/filter';
-import { useLocalStorageState } from '@/app/lib/hooks/useLocalStorageState';
 
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
@@ -353,6 +351,10 @@ export default function ScheduleTableWorker({
   handleCustomColumnSelect,
   handleCustomCellSelect,
   handleCustomSelectAll,
+  currentSort,
+  onSort,
+  currentFilter,
+  onFilter,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -382,17 +384,13 @@ export default function ScheduleTableWorker({
   handleCustomColumnSelect?: (date: string, rowIds: string[]) => void;
   handleCustomCellSelect?: (rowId: string, date: string, scheduleId: string | null) => void;
   handleCustomSelectAll?: (cells: SelectedScheduleCell[]) => void;
+  currentSort: TableSort | null;
+  onSort: (sort: TableSort | null) => void;
+  currentFilter: ColumnFilter | null;
+  onFilter: (filter: ColumnFilter | null) => void;
 }) {
   const { t } = useTranslation(lng, 'schedule-page');
   const teamId = teamWithMembership.team.id;
-  const [currentSort, setCurrentSort] = useLocalStorageState<TableSort | null>(
-    `scheduleViewSettings_${teamId}_workerTableSort`,
-    null,
-  );
-  const [currentFilter, setCurrentFilter] = useLocalStorageState<ColumnFilter | null>(
-    `scheduleViewSettings_${teamId}_workerTableFilter`,
-    null,
-  );
 
   const workerColumn: ColumnDefinition = {
     id: 'name',
@@ -449,8 +447,8 @@ export default function ScheduleTableWorker({
         rowColumn={workerColumn}
         currentSort={currentSort ?? undefined}
         currentFilter={currentFilter ?? undefined}
-        onSort={setCurrentSort}
-        onFilter={(f) => setCurrentFilter(f)}
+        onSort={onSort}
+        onFilter={(f) => onFilter(f)}
         leadingColumnContent={null}
         isBulkMode={!!selectionState?.isActive}
         isColumnSelected={(d) => {
@@ -497,19 +495,6 @@ export default function ScheduleTableWorker({
       />
 
       {/* Active filter/sort indicator */}
-      {(currentSort || currentFilter) && (
-        <TableFilterBar
-          lng={lng}
-          filters={currentFilter ? [currentFilter] : []}
-          sort={currentSort ?? null}
-          onRemoveFilter={() => setCurrentFilter(null)}
-          onRemoveSort={() => setCurrentSort(null)}
-          onResetAll={() => {
-            setCurrentSort(null);
-            setCurrentFilter(null);
-          }}
-        />
-      )}
 
       {/* Shift demand row (below header) */}
       {teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
