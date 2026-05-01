@@ -41,12 +41,14 @@ class TestBuildEngineVariables:
         shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
 
         # Call the method under test
-        variables = build_engine_variables(
+        variables, _ = build_engine_variables(
             workers,
             worker_ids_to_worker_dates,
             shifts,
             shifts_not_deleted,
             shift_id_to_duration_dict,
+            as_hist=sample_data.as_hist,
+            campaign_start=schedule.start_date,
         )
 
         # Verify the output
@@ -136,12 +138,14 @@ class TestBuildEngineVariables:
         shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
 
         # Call the method under test
-        variables = build_engine_variables(
+        variables, _ = build_engine_variables(
             workers,
             worker_ids_to_worker_dates,
             shifts,
             shifts_not_deleted,
             shift_id_to_duration_dict,
+            as_hist=sample_data.as_hist,
+            campaign_start=schedule.start_date,
         )
 
         # Verify the output
@@ -168,12 +172,14 @@ class TestBuildEngineVariables:
         shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
 
         # Call the method under test
-        variables = build_engine_variables(
+        variables, _ = build_engine_variables(
             workers,
             worker_ids_to_worker_dates,
             shifts,
             shifts_not_deleted,
             shift_id_to_duration_dict,
+            as_hist=sample_data.as_hist,
+            campaign_start=schedule.start_date,
         )
 
         # Verify the output
@@ -203,12 +209,14 @@ class TestBuildEngineVariables:
         shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
 
         # Call the method under test
-        variables = build_engine_variables(
+        variables, _ = build_engine_variables(
             workers,
             worker_ids_to_worker_dates,
             shifts,
             shifts_not_deleted,
             shift_id_to_duration_dict,
+            as_hist=sample_data.as_hist,
+            campaign_start=schedule.start_date,
         )
 
         # Verify the output
@@ -250,12 +258,14 @@ class TestBuildEngineVariables:
         shifts_not_deleted = [shift for shift in shifts if not shift.deleted]
 
         # Call the method under test
-        variables = build_engine_variables(
+        variables, _ = build_engine_variables(
             workers,
             worker_ids_to_worker_dates,
             shifts,
             shifts_not_deleted,
             shift_id_to_duration_dict,
+            as_hist=sample_data.as_hist,
+            campaign_start=schedule.start_date,
         )
 
         # Verify the output
@@ -310,12 +320,14 @@ class TestBuildEngineVariables:
         shift_id_to_duration_dict = _build_shift_id_to_duration_dict(shifts)
 
         # Call the method under test
-        variables = build_engine_variables(
+        variables, _ = build_engine_variables(
             workers,
             worker_ids_to_worker_dates,
             shifts,
             shifts_test,
             shift_id_to_duration_dict,
+            as_hist=sample_data.as_hist,
+            campaign_start=schedule.start_date,
         )
 
         # Verify the output

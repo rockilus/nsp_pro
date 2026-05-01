@@ -1063,12 +1063,14 @@ class TestCoreToEngineFixedValuesIntegration:
         dim_entries: list[DimEntry] = []
         attributes: list[Attribute] = []
 
-        variables = build_engine_variables(
+        variables, _ = build_engine_variables(
             workers=workers,
             worker_ids_to_worker_dates=worker_ids_to_worker_dates,
             shifts=shifts,
             shifts_not_deleted=shifts,
             shift_id_to_duration_dict=_build_shift_id_to_duration_dict(shifts=shifts),
+            as_hist=[],
+            campaign_start=campaign_dates[0],
         )
 
         result = core_to_engine_fixed_values(

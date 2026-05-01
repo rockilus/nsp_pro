@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 
 from shared.schemas.core import (
+    Assignment,
     Shift,
     ShiftRestType,
     ShiftType,
@@ -23,6 +24,7 @@ def build_no_overlap_shift_intervals(
     worker_not_deleted_ids: list[str],
     multitasking_groups: list[MultitaskingGroup],
     shift_demands: list[ShiftDemandNew],
+    hist_bleed_vars: set[tuple[str, str, str]] | None = None,
 ) -> list[list[tuple[str, str, str]]]:
     """
     Returns a list where each element is one AddNoOverlap group (list of assignment tuples).
@@ -82,12 +84,18 @@ def build_no_overlap_shift_intervals(
 
     for w_id in worker_not_deleted_ids:
         dates = worker_ids_to_worker_dates[w_id].dates_campaign
+        # Pre-campaign intervals that bleed into this worker's campaign window.
+        # Partition by shift grouping so each bleed var ends up in the same
+        # AddNoOverlap group as an equivalent campaign var would.
+        worker_bleed = [v for v in (hist_bleed_vars or set()) if v[0] == w_id]
+        base_bleed = [v for v in worker_bleed if v[2] not in all_grouped_shift_ids]
+        grouped_bleed = [v for v in worker_bleed if v[2] in all_grouped_shift_ids]
 
         # ── Group A: Base shifts for this worker ─────────────────────────────
         if base_ids:
-            result.append(
-                [(w_id, d.isoformat(), s_id) for d in dates for s_id in base_ids]
-            )
+            group_a = [(w_id, d.isoformat(), s_id) for d in dates for s_id in base_ids]
+            group_a.extend(base_bleed)
+            result.append(group_a)
 
         # ── Group B: One AddNoOverlap per grouped shift ───────────────────────
         for s in grouped_shifts:
@@ -108,6 +116,11 @@ def build_no_overlap_shift_intervals(
                 for d in dates
                 for s_id in base_ids + cross_group_ids + [s.id]
             ]
+            # Base bleed vars always go in every group (same rule as base_ids).
+            group_list.extend(base_bleed)
+            # Grouped bleed vars go in this group unless they are co-grouped with
+            # the focal shift (co-grouped shifts are allowed to overlap each other).
+            group_list.extend(v for v in grouped_bleed if v[2] not in co_grouped_ids)
             if len(group_list) >= 2:
                 result.append(group_list)
 
@@ -121,7 +134,9 @@ def build_engine_variables(
     shifts: list[Shift],
     shifts_not_deleted: list[Shift],
     shift_id_to_duration_dict: dict[str, int],
-) -> VariablesEngine:
+    as_hist: list[Assignment],
+    campaign_start: date,
+) -> tuple[VariablesEngine, set[tuple[str, str, str]]]:
     assignment_vars: list[tuple[str, str, str]] = []
     shift_interval_vars: list[tuple[int, int, int, tuple[str, str, str]]] = []
     for w in workers:
@@ -134,7 +149,7 @@ def build_engine_variables(
                 assignment_vars.append((w.id, d.isoformat(), s.id))
                 shift_interval_vars.append(
                     build_shift_interval_var(
-                        worker=w,
+                        worker_id=w.id,
                         current_date=d,
                         shift=s,
                         shifts=shifts_not_deleted,
@@ -187,14 +202,91 @@ def build_engine_variables(
                 #         (w.id, d.isoformat(), s.id),
                 #     )
                 # )
-    return VariablesEngine(
-        assignments=assignment_vars,
-        shift_intervals=shift_interval_vars,
+    hist_bleed_ivars = build_hist_bleed_shift_intervals(
+        as_hist=as_hist,
+        shifts=shifts,
+        shifts_not_deleted=shifts_not_deleted,
+        campaign_start=campaign_start,
+        shift_id_to_duration_dict=shift_id_to_duration_dict,
+    )
+    shift_interval_vars.extend(hist_bleed_ivars)
+    hist_bleed_var_keys: set[tuple[str, str, str]] = {iv[3] for iv in hist_bleed_ivars}
+
+    return (
+        VariablesEngine(
+            assignments=assignment_vars,
+            shift_intervals=shift_interval_vars,
+        ),
+        hist_bleed_var_keys,
     )
 
 
+def build_hist_bleed_shift_intervals(
+    as_hist: list[Assignment],
+    shifts: list[Shift],
+    shifts_not_deleted: list[Shift],
+    campaign_start: date,
+    shift_id_to_duration_dict: dict[str, int],
+) -> list[tuple[int, int, int, tuple[str, str, str]]]:
+    """
+    Returns shift_interval_var entries for historical assignments whose computed
+    time interval bleeds into (or starts within) the campaign period.
+
+    These must be added to variables.shift_intervals so the engine creates
+    NewOptionalIntervalVar entries for them, enabling AddNoOverlap enforcement
+    against campaign assignments.
+
+    Handles two cases:
+      - Overnight shifts whose end falls on or after campaign_start.
+      - Recuperation shifts whose interval (starting at duty-end) overlaps the
+        campaign window, even though the assignment date is pre-campaign.
+    """
+    from datetime import datetime
+
+    valid_shift_ids: set[str] = {s.id for s in shifts_not_deleted}
+    shift_map: dict[str, Shift] = {s.id: s for s in shifts}
+
+    # Compute campaign start in minutes using the same naive-datetime convention
+    # as build_shift_interval_var, so comparisons are consistent.
+    campaign_start_minutes = int(
+        datetime(
+            campaign_start.year,
+            campaign_start.month,
+            campaign_start.day,
+        ).timestamp()
+        // Constants.NUM_SECONDS_MINUTE
+    )
+
+    result: list[tuple[int, int, int, tuple[str, str, str]]] = []
+    seen: set[tuple[str, str, str]] = set()
+
+    for a in as_hist:
+        if a.shift_id not in valid_shift_ids:
+            continue
+        key = (a.worker_id, a.date.isoformat(), a.shift_id)
+        if key in seen:
+            continue
+        shift = shift_map.get(a.shift_id)
+        if shift is None:
+            continue
+        iv = build_shift_interval_var(
+            worker_id=a.worker_id,
+            current_date=a.date,
+            shift=shift,
+            shifts=shifts,
+            shift_id_to_duration_dict=shift_id_to_duration_dict,
+        )
+        s_start, s_duration, s_end, _key = iv
+        # Include only if the interval end reaches into the campaign period.
+        if s_end >= campaign_start_minutes:
+            seen.add(key)
+            result.append(iv)
+
+    return result
+
+
 def build_shift_interval_var(
-    worker: Worker,
+    worker_id: str,
     current_date: date,
     shift: Shift,
     shifts: list[Shift],
@@ -247,5 +339,5 @@ def build_shift_interval_var(
         s_start_time,
         s_duration,
         s_end_time,
-        (worker.id, current_date.isoformat(), shift.id),
+        (worker_id, current_date.isoformat(), shift.id),
     )
