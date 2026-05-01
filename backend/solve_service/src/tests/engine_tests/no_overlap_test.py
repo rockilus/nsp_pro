@@ -1,25 +1,33 @@
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import pytest
 from shared.schemas.core import (
     Assignment,
     AssignmentSource,
     ShiftDemandNew,
+    Shift,
     ShiftDemandSource,
+    EngineInputsAugmented,
+    Penalties,
+    ModelConfig,
 )
+from engine.types import Outputs
 
 from tests.engine_tests.no_overlap_fixture import build_ei_no_overlap
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
+from typing import Callable
 
 
 @pytest.fixture
-def engine_inputs_no_overlap(penalties_fix, model_config_fix):
+def engine_inputs_no_overlap(
+    penalties_fix: Penalties, model_config_fix: ModelConfig
+) -> EngineInputsAugmented:
     return build_ei_no_overlap(penalties_fix, model_config_fix)
 
 
 def _fixed_assignment_for(
-    ei, worker_id: str, date_obj, shift_id: str
+    ei: EngineInputsAugmented, worker_id: str, date_obj, shift_id: str
 ) -> Assignment:
     return Assignment(
         id=f"a_{worker_id}_{date_obj}_{shift_id}",
@@ -33,7 +41,9 @@ def _fixed_assignment_for(
     )
 
 
-def _ensure_shift_demand(ei, shift_id: str, date_obj):
+def _ensure_shift_demand(
+    ei: EngineInputsAugmented, shift_id: str, date_obj: date
+) -> None:
     # Add a demand if not already present for that shift/date
     sid = f"dsd_{shift_id}_{date_obj}"
     existing = [
@@ -58,21 +68,34 @@ def _ensure_shift_demand(ei, shift_id: str, date_obj):
         )
 
 
-def _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs):
+def _run_and_assert_breach(
+    ei: EngineInputsAugmented,
+    run_engine_solve_from_engine_inputs: Callable[
+        [EngineInputsAugmented], Outputs
+    ],
+) -> None:
     out = run_engine_solve_from_engine_inputs(ei)
     assert out is not None
     assert len(out.breaches) > 0
 
 
-def _run_and_assert_no_breach(ei, run_engine_solve_from_engine_inputs):
+def _run_and_assert_no_breach(
+    ei: EngineInputsAugmented,
+    run_engine_solve_from_engine_inputs: Callable[
+        [EngineInputsAugmented], Outputs
+    ],
+) -> None:
     out = run_engine_solve_from_engine_inputs(ei)
     assert out is not None
     assert len(out.breaches) == 0
 
 
 def test_duty_no_overlap_with_types(
-    engine_inputs_no_overlap, run_engine_solve_from_engine_inputs
-):
+    engine_inputs_no_overlap: EngineInputsAugmented,
+    run_engine_solve_from_engine_inputs: Callable[
+        [EngineInputsAugmented], Outputs
+    ],
+) -> None:
     conflicts = [
         "s_duty",
         "s_morning",
@@ -94,8 +117,11 @@ def test_duty_no_overlap_with_types(
 
 
 def test_normal_no_overlap_with_types(
-    engine_inputs_no_overlap, run_engine_solve_from_engine_inputs
-):
+    engine_inputs_no_overlap: EngineInputsAugmented,
+    run_engine_solve_from_engine_inputs: Callable[
+        [EngineInputsAugmented], Outputs
+    ],
+) -> None:
     conflicts = [
         "s_duty",
         "s_morning",
@@ -115,8 +141,11 @@ def test_normal_no_overlap_with_types(
 
 
 def test_leave_no_overlap_with_types(
-    engine_inputs_no_overlap, run_engine_solve_from_engine_inputs
-):
+    engine_inputs_no_overlap: EngineInputsAugmented,
+    run_engine_solve_from_engine_inputs: Callable[
+        [EngineInputsAugmented], Outputs
+    ],
+) -> None:
     conflicts = [
         "s_duty",
         "s_morning",
@@ -136,8 +165,11 @@ def test_leave_no_overlap_with_types(
 
 
 def test_recup_no_overlap_with_types(
-    engine_inputs_no_overlap, run_engine_solve_from_engine_inputs
-):
+    engine_inputs_no_overlap: EngineInputsAugmented,
+    run_engine_solve_from_engine_inputs: Callable[
+        [EngineInputsAugmented], Outputs
+    ],
+) -> None:
     # Recuperation should not overlap with duty, normal, leave, recuperation
     conflicts = ["s_duty", "s_morning", "s_afternoon", "s_recup", "s_leave"]
     for shift_conflict in conflicts:
@@ -154,8 +186,11 @@ def test_recup_no_overlap_with_types(
 
 
 def test_off_no_overlap_with_types(
-    engine_inputs_no_overlap, run_engine_solve_from_engine_inputs
-):
+    engine_inputs_no_overlap: EngineInputsAugmented,
+    run_engine_solve_from_engine_inputs: Callable[
+        [EngineInputsAugmented], Outputs
+    ],
+) -> None:
     conflicts = ["s_duty", "s_morning", "s_afternoon", "s_leave", "s_off"]
     for shift_conflict in conflicts:
         ei = deepcopy(engine_inputs_no_overlap)
@@ -168,8 +203,11 @@ def test_off_no_overlap_with_types(
 
 
 def test_recup_and_off_allowed_overlap(
-    engine_inputs_no_overlap, run_engine_solve_from_engine_inputs
-):
+    engine_inputs_no_overlap: EngineInputsAugmented,
+    run_engine_solve_from_engine_inputs: Callable[
+        [EngineInputsAugmented], Outputs
+    ],
+) -> None:
     ei = deepcopy(engine_inputs_no_overlap)
     date0 = ei.schedule.start_date
     # fixed duty on date0 -> recuperation on date0+1
@@ -191,7 +229,7 @@ def test_recup_and_off_allowed_overlap(
 
 
 def test_no_overlap_duty_with_recup_prior_first_campaign_day(
-    engine_inputs_no_overlap,
+    engine_inputs_no_overlap: EngineInputsAugmented,
 ) -> None:
     ei = deepcopy(engine_inputs_no_overlap)
     pre_campaign_assignments = [
@@ -259,7 +297,9 @@ def test_no_overlap_duty_with_recup_prior_first_campaign_day(
     recup_duration = recup_std_end - recup_std_start
     recup_end = recup_start + recup_duration
 
-    def _interval_for_shift_on_date(shift, date_obj):
+    def _interval_for_shift_on_date(
+        shift: Shift, date_obj: date
+    ) -> tuple[datetime, datetime]:
         s = datetime.combine(date_obj, shift.start_time.time())
         e = datetime.combine(date_obj, shift.end_time.time()) + (
             shift.end_time - shift.start_time
@@ -268,7 +308,9 @@ def test_no_overlap_duty_with_recup_prior_first_campaign_day(
 
     # check that none of the produced assignments overlap with the pre-campaign
     # duty or the (duty-derived) recuperation interval
-    def _overlaps(a_start, a_end, b_start, b_end):
+    def _overlaps(
+        a_start: datetime, a_end: datetime, b_start: datetime, b_end: datetime
+    ) -> bool:
         return a_start < b_end and a_end > b_start
 
     for a in output.assignments:
