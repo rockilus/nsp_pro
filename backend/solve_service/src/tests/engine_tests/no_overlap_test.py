@@ -10,6 +10,7 @@ from shared.schemas.core import (
 )
 
 from tests.engine_tests.no_overlap_fixture import build_ei_no_overlap
+from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
 
 @pytest.fixture
@@ -17,7 +18,9 @@ def engine_inputs_no_overlap(penalties_fix, model_config_fix):
     return build_ei_no_overlap(penalties_fix, model_config_fix)
 
 
-def _fixed_assignment_for(ei, worker_id: str, date_obj, shift_id: str) -> Assignment:
+def _fixed_assignment_for(
+    ei, worker_id: str, date_obj, shift_id: str
+) -> Assignment:
     return Assignment(
         id=f"a_{worker_id}_{date_obj}_{shift_id}",
         team_id=ei.schedule.team_id,
@@ -34,7 +37,9 @@ def _ensure_shift_demand(ei, shift_id: str, date_obj):
     # Add a demand if not already present for that shift/date
     sid = f"dsd_{shift_id}_{date_obj}"
     existing = [
-        d for d in ei.shift_demands if d.shift_id == shift_id and d.date == date_obj
+        d
+        for d in ei.shift_demands
+        if d.shift_id == shift_id and d.date == date_obj
     ]
     if not existing:
         ei.shift_demands.append(
@@ -80,7 +85,9 @@ def test_duty_no_overlap_with_types(
         ei = deepcopy(engine_inputs_no_overlap)
         date0 = ei.schedule.start_date
         # fixed duty assignment
-        ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_duty"))
+        ei.as_campaign_fixed.append(
+            _fixed_assignment_for(ei, "w0", date0, "s_duty")
+        )
         # ensure demand for conflicting shift
         _ensure_shift_demand(ei, shift_conflict, date0)
         _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs)
@@ -100,7 +107,9 @@ def test_normal_no_overlap_with_types(
     for shift_conflict in conflicts:
         ei = deepcopy(engine_inputs_no_overlap)
         date0 = ei.schedule.start_date
-        ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_morning"))
+        ei.as_campaign_fixed.append(
+            _fixed_assignment_for(ei, "w0", date0, "s_morning")
+        )
         _ensure_shift_demand(ei, shift_conflict, date0)
         _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs)
 
@@ -119,7 +128,9 @@ def test_leave_no_overlap_with_types(
     for shift_conflict in conflicts:
         ei = deepcopy(engine_inputs_no_overlap)
         date0 = ei.schedule.start_date
-        ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_leave"))
+        ei.as_campaign_fixed.append(
+            _fixed_assignment_for(ei, "w0", date0, "s_leave")
+        )
         _ensure_shift_demand(ei, shift_conflict, date0)
         _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs)
 
@@ -134,7 +145,9 @@ def test_recup_no_overlap_with_types(
         date0 = ei.schedule.start_date
         # place recuperation demand on a date where duty's recuperation would occur
         # create a fixed duty the day before
-        ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_duty"))
+        ei.as_campaign_fixed.append(
+            _fixed_assignment_for(ei, "w0", date0, "s_duty")
+        )
         recup_date = date0 + timedelta(days=1)
         _ensure_shift_demand(ei, shift_conflict, recup_date)
         _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs)
@@ -147,7 +160,9 @@ def test_off_no_overlap_with_types(
     for shift_conflict in conflicts:
         ei = deepcopy(engine_inputs_no_overlap)
         date0 = ei.schedule.start_date
-        ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_off"))
+        ei.as_campaign_fixed.append(
+            _fixed_assignment_for(ei, "w0", date0, "s_off")
+        )
         _ensure_shift_demand(ei, shift_conflict, date0)
         _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs)
 
@@ -158,7 +173,9 @@ def test_recup_and_off_allowed_overlap(
     ei = deepcopy(engine_inputs_no_overlap)
     date0 = ei.schedule.start_date
     # fixed duty on date0 -> recuperation on date0+1
-    ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_duty"))
+    ei.as_campaign_fixed.append(
+        _fixed_assignment_for(ei, "w0", date0, "s_duty")
+    )
     recup_date = date0 + timedelta(days=1)
     # ensure both recup and off demands exist on the recup_date
     _ensure_shift_demand(ei, "s_recup", recup_date)
@@ -171,3 +188,45 @@ def test_recup_and_off_allowed_overlap(
     off_id = f"dsd_s_off_{recup_date}"
     assert not any(recup_id in b.var_name for b in out.breaches)
     assert not any(off_id in b.var_name for b in out.breaches)
+
+
+def test_no_overlap_duty_with_recup_prior_first_campaign_day(
+    engine_inputs_no_overlap,
+) -> None:
+    ei = deepcopy(engine_inputs_no_overlap)
+    pre_campaign_assignments = [
+        Assignment(
+            id="a_w0_pre_campaign",
+            team_id=ei.schedule.team_id,
+            schedule_id=ei.schedule.id,
+            worker_id="w0",
+            date=ei.schedule.start_date - timedelta(days=1),
+            shift_id="s_duty",
+            fixed=True,
+            source=AssignmentSource.MANUAL,
+        ),
+        Assignment(
+            id="a_w0_pre_campaign_recup",
+            team_id=ei.schedule.team_id,
+            schedule_id=ei.schedule.id,
+            worker_id="w0",
+            date=ei.schedule.start_date - timedelta(days=1),
+            shift_id="s_recup",
+            fixed=True,
+            source=AssignmentSource.MANUAL,
+        ),
+    ]
+    ei.as_hist.extend(pre_campaign_assignments)
+
+    output = engine_solve_engine_inputs(ei)
+    assert output is not None
+
+    # Expect no overlapping assignments with the duty and duty recuperation
+    shift_duty = next((s for s in ei.shifts if s.id == "s_duty"), None)
+    shift_recup = next((s for s in ei.shifts if s.id == "s_recup"), None)
+    assert shift_duty is not None
+    assert shift_recup is not None
+    shift_duty_start = datetime.combine(
+        ei.schedule.start_date - timedelta(days=1),
+        shift_duty.start_time.time(),
+    )
