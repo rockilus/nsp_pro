@@ -149,12 +149,14 @@ def core_to_engine_inputs(
         dates_campaign=dates_campaign,
     )
 
-    variables = build_engine_variables(
+    variables, hist_bleed_vars = build_engine_variables(
         workers=engine_inputs.workers,
         worker_ids_to_worker_dates=worker_ids_to_worker_dates,
         shifts=engine_inputs.shifts,
         shifts_not_deleted=shifts_not_deleted,
         shift_id_to_duration_dict=shift_id_to_duration_dict,
+        as_hist=engine_inputs.as_hist,
+        campaign_start=engine_inputs.schedule.start_date,
     )
 
     # Scope pre-processing (Phase 4)
@@ -344,6 +346,7 @@ def core_to_engine_inputs(
                 worker_not_deleted_ids=worker_not_deleted_ids,
                 multitasking_groups=engine_inputs.multitasking_groups,
                 shift_demands=engine_inputs.shift_demands,
+                hist_bleed_vars=hist_bleed_vars,
             ),
             # fixed_values={},
             fixed_values=fixed_values,

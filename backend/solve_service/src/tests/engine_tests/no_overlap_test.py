@@ -1,22 +1,22 @@
 from copy import deepcopy
-from datetime import datetime, timedelta, date
+from datetime import date, datetime, timedelta
+from typing import Callable
 
 import pytest
 from shared.schemas.core import (
     Assignment,
     AssignmentSource,
-    ShiftDemandNew,
-    Shift,
-    ShiftDemandSource,
     EngineInputsAugmented,
-    Penalties,
     ModelConfig,
+    Penalties,
+    Shift,
+    ShiftDemandNew,
+    ShiftDemandSource,
 )
-from engine.types import Outputs
 
-from tests.engine_tests.no_overlap_fixture import build_ei_no_overlap
+from engine.types import Outputs
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
-from typing import Callable
+from tests.engine_tests.no_overlap_fixture import build_ei_no_overlap
 
 
 @pytest.fixture
@@ -47,9 +47,7 @@ def _ensure_shift_demand(
     # Add a demand if not already present for that shift/date
     sid = f"dsd_{shift_id}_{date_obj}"
     existing = [
-        d
-        for d in ei.shift_demands
-        if d.shift_id == shift_id and d.date == date_obj
+        d for d in ei.shift_demands if d.shift_id == shift_id and d.date == date_obj
     ]
     if not existing:
         ei.shift_demands.append(
@@ -70,9 +68,7 @@ def _ensure_shift_demand(
 
 def _run_and_assert_breach(
     ei: EngineInputsAugmented,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     out = run_engine_solve_from_engine_inputs(ei)
     assert out is not None
@@ -81,9 +77,7 @@ def _run_and_assert_breach(
 
 def _run_and_assert_no_breach(
     ei: EngineInputsAugmented,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     out = run_engine_solve_from_engine_inputs(ei)
     assert out is not None
@@ -92,9 +86,7 @@ def _run_and_assert_no_breach(
 
 def test_duty_no_overlap_with_types(
     engine_inputs_no_overlap: EngineInputsAugmented,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     conflicts = [
         "s_duty",
@@ -108,9 +100,7 @@ def test_duty_no_overlap_with_types(
         ei = deepcopy(engine_inputs_no_overlap)
         date0 = ei.schedule.start_date
         # fixed duty assignment
-        ei.as_campaign_fixed.append(
-            _fixed_assignment_for(ei, "w0", date0, "s_duty")
-        )
+        ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_duty"))
         # ensure demand for conflicting shift
         _ensure_shift_demand(ei, shift_conflict, date0)
         _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs)
@@ -118,9 +108,7 @@ def test_duty_no_overlap_with_types(
 
 def test_normal_no_overlap_with_types(
     engine_inputs_no_overlap: EngineInputsAugmented,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     conflicts = [
         "s_duty",
@@ -133,18 +121,14 @@ def test_normal_no_overlap_with_types(
     for shift_conflict in conflicts:
         ei = deepcopy(engine_inputs_no_overlap)
         date0 = ei.schedule.start_date
-        ei.as_campaign_fixed.append(
-            _fixed_assignment_for(ei, "w0", date0, "s_morning")
-        )
+        ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_morning"))
         _ensure_shift_demand(ei, shift_conflict, date0)
         _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs)
 
 
 def test_leave_no_overlap_with_types(
     engine_inputs_no_overlap: EngineInputsAugmented,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     conflicts = [
         "s_duty",
@@ -157,18 +141,14 @@ def test_leave_no_overlap_with_types(
     for shift_conflict in conflicts:
         ei = deepcopy(engine_inputs_no_overlap)
         date0 = ei.schedule.start_date
-        ei.as_campaign_fixed.append(
-            _fixed_assignment_for(ei, "w0", date0, "s_leave")
-        )
+        ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_leave"))
         _ensure_shift_demand(ei, shift_conflict, date0)
         _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs)
 
 
 def test_recup_no_overlap_with_types(
     engine_inputs_no_overlap: EngineInputsAugmented,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     # Recuperation should not overlap with duty, normal, leave, recuperation
     conflicts = ["s_duty", "s_morning", "s_afternoon", "s_recup", "s_leave"]
@@ -177,9 +157,7 @@ def test_recup_no_overlap_with_types(
         date0 = ei.schedule.start_date
         # place recuperation demand on a date where duty's recuperation would occur
         # create a fixed duty the day before
-        ei.as_campaign_fixed.append(
-            _fixed_assignment_for(ei, "w0", date0, "s_duty")
-        )
+        ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_duty"))
         recup_date = date0 + timedelta(days=1)
         _ensure_shift_demand(ei, shift_conflict, recup_date)
         _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs)
@@ -187,33 +165,25 @@ def test_recup_no_overlap_with_types(
 
 def test_off_no_overlap_with_types(
     engine_inputs_no_overlap: EngineInputsAugmented,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     conflicts = ["s_duty", "s_morning", "s_afternoon", "s_leave", "s_off"]
     for shift_conflict in conflicts:
         ei = deepcopy(engine_inputs_no_overlap)
         date0 = ei.schedule.start_date
-        ei.as_campaign_fixed.append(
-            _fixed_assignment_for(ei, "w0", date0, "s_off")
-        )
+        ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_off"))
         _ensure_shift_demand(ei, shift_conflict, date0)
         _run_and_assert_breach(ei, run_engine_solve_from_engine_inputs)
 
 
 def test_recup_and_off_allowed_overlap(
     engine_inputs_no_overlap: EngineInputsAugmented,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     ei = deepcopy(engine_inputs_no_overlap)
     date0 = ei.schedule.start_date
     # fixed duty on date0 -> recuperation on date0+1
-    ei.as_campaign_fixed.append(
-        _fixed_assignment_for(ei, "w0", date0, "s_duty")
-    )
+    ei.as_campaign_fixed.append(_fixed_assignment_for(ei, "w0", date0, "s_duty"))
     recup_date = date0 + timedelta(days=1)
     # ensure both recup and off demands exist on the recup_date
     _ensure_shift_demand(ei, "s_recup", recup_date)
@@ -281,19 +251,15 @@ def test_no_overlap_duty_with_recup_prior_first_campaign_day(
     recup_std_start = datetime.combine(
         ei.schedule.start_date
         - timedelta(days=1)
-        + (shift_duty.end_time - shift_duty.start_time).days
-        * timedelta(days=1),
+        + (shift_duty.end_time - shift_duty.start_time).days * timedelta(days=1),
         shift_recup.start_time.time(),
     )
     recup_std_end = datetime.combine(
         ei.schedule.start_date
         - timedelta(days=1)
-        + (shift_duty.end_time - shift_duty.start_time).days
-        * timedelta(days=1),
+        + (shift_duty.end_time - shift_duty.start_time).days * timedelta(days=1),
         shift_recup.end_time.time(),
-    ) + (shift_recup.end_time - shift_recup.start_time).days * timedelta(
-        days=1
-    )
+    ) + (shift_recup.end_time - shift_recup.start_time).days * timedelta(days=1)
     recup_duration = recup_std_end - recup_std_start
     recup_end = recup_start + recup_duration
 
@@ -315,10 +281,7 @@ def test_no_overlap_duty_with_recup_prior_first_campaign_day(
 
     for a in output.assignments:
         # ignore the historical fixed assignments we injected
-        if (
-            a.worker_id == "w0"
-            and a.date == ei.schedule.start_date - timedelta(days=1)
-        ):
+        if a.worker_id == "w0" and a.date == ei.schedule.start_date - timedelta(days=1):
             continue
 
         # find the shift for the assignment
@@ -326,9 +289,9 @@ def test_no_overlap_duty_with_recup_prior_first_campaign_day(
         assert shift_a is not None
         a_start, a_end = _interval_for_shift_on_date(shift_a, a.date)
 
-        assert not _overlaps(
-            a_start, a_end, shift_duty_start, shift_duty_end
-        ), f"Assignment {a} overlaps pre-campaign duty interval"
-        assert not _overlaps(
-            a_start, a_end, recup_start, recup_end
-        ), f"Assignment {a} overlaps pre-campaign recuperation interval"
+        assert not _overlaps(a_start, a_end, shift_duty_start, shift_duty_end), (
+            f"Assignment {a} overlaps pre-campaign duty interval"
+        )
+        assert not _overlaps(a_start, a_end, recup_start, recup_end), (
+            f"Assignment {a} overlaps pre-campaign recuperation interval"
+        )
