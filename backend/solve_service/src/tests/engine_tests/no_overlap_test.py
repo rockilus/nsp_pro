@@ -230,3 +230,63 @@ def test_no_overlap_duty_with_recup_prior_first_campaign_day(
         ei.schedule.start_date - timedelta(days=1),
         shift_duty.start_time.time(),
     )
+    # compute duty end (handle shifts that end the next day)
+    shift_duty_end = datetime.combine(
+        ei.schedule.start_date - timedelta(days=1),
+        shift_duty.end_time.time(),
+    ) + (shift_duty.end_time - shift_duty.start_time).days * timedelta(days=1)
+
+    # recuperation should start when the duty ends
+    recup_start = shift_duty_end
+
+    # compute a canonical recup duration based on the recup shift definition
+    recup_std_start = datetime.combine(
+        ei.schedule.start_date
+        - timedelta(days=1)
+        + (shift_duty.end_time - shift_duty.start_time).days
+        * timedelta(days=1),
+        shift_recup.start_time.time(),
+    )
+    recup_std_end = datetime.combine(
+        ei.schedule.start_date
+        - timedelta(days=1)
+        + (shift_duty.end_time - shift_duty.start_time).days
+        * timedelta(days=1),
+        shift_recup.end_time.time(),
+    ) + (shift_recup.end_time - shift_recup.start_time).days * timedelta(
+        days=1
+    )
+    recup_duration = recup_std_end - recup_std_start
+    recup_end = recup_start + recup_duration
+
+    def _interval_for_shift_on_date(shift, date_obj):
+        s = datetime.combine(date_obj, shift.start_time.time())
+        e = datetime.combine(date_obj, shift.end_time.time()) + (
+            shift.end_time - shift.start_time
+        ).days * timedelta(days=1)
+        return s, e
+
+    # check that none of the produced assignments overlap with the pre-campaign
+    # duty or the (duty-derived) recuperation interval
+    def _overlaps(a_start, a_end, b_start, b_end):
+        return a_start < b_end and a_end > b_start
+
+    for a in output.assignments:
+        # ignore the historical fixed assignments we injected
+        if (
+            a.worker_id == "w0"
+            and a.date == ei.schedule.start_date - timedelta(days=1)
+        ):
+            continue
+
+        # find the shift for the assignment
+        shift_a = next((s for s in ei.shifts if s.id == a.shift_id), None)
+        assert shift_a is not None
+        a_start, a_end = _interval_for_shift_on_date(shift_a, a.date)
+
+        assert not _overlaps(
+            a_start, a_end, shift_duty_start, shift_duty_end
+        ), f"Assignment {a} overlaps pre-campaign duty interval"
+        assert not _overlaps(
+            a_start, a_end, recup_start, recup_end
+        ), f"Assignment {a} overlaps pre-campaign recuperation interval"
