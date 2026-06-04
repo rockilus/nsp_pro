@@ -43,7 +43,7 @@ test.describe('Worker Table Sorting & Filtering', () => {
     await filterMenuItem.click();
   }
 
-  /** Get the displayed text for the first two workers in the name column */
+  /** Get the displayed text for each worker in the name column */
   async function getWorkerNames(page: any): Promise<string[]> {
     const rows = page.locator('[data-testid="worker-table"] tbody tr');
     const count = await rows.count();
@@ -266,6 +266,10 @@ test.describe('Worker Table Sorting & Filtering', () => {
     // Apply the filter
     await page.locator('[data-testid="filter-apply-name"]').click();
 
+    // Wait for filter to take effect — chip appears, then table re-renders
+    await expect(page.locator('[data-testid^="filter-chip"]')).toBeVisible();
+    await page.waitForTimeout(200);
+
     // Only FilterMeIn should be visible
     const names = await getWorkerNames(page);
     expect(names).toEqual(['FilterMeIn']);
@@ -302,6 +306,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
     await page.locator('[data-testid="filter-option-weeklyHours-40"]').click();
     await page.locator('[data-testid="filter-apply-weeklyHours"]').click();
 
+    await expect(page.locator('[data-testid^="filter-chip"]')).toBeVisible();
+    await page.waitForTimeout(200);
+
     const names = await getWorkerNames(page);
     expect(names).toEqual(['FullTime']);
 
@@ -325,6 +332,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
 
     await page.locator('[data-testid="filter-option-acronym-BE"]').click();
     await page.locator('[data-testid="filter-apply-acronym"]').click();
+
+    await expect(page.locator('[data-testid^="filter-chip"]')).toBeVisible();
+    await page.waitForTimeout(200);
 
     const names = await getWorkerNames(page);
     expect(names).toEqual(['Beta']);
@@ -362,6 +372,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
     await openFilterFromMenu(page, 'weeklyHours');
     await page.locator('[data-testid="filter-option-weeklyHours-40"]').click();
     await page.locator('[data-testid="filter-apply-weeklyHours"]').click();
+
+    await expect(page.locator('[data-testid^="filter-chip"]')).toBeVisible();
+    await page.waitForTimeout(200);
 
     let names = await getWorkerNames(page);
     expect(names.length).toBe(2);
@@ -424,6 +437,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
     await page.locator('[data-testid="filter-start-date-employmentStartDate"]').fill(today);
     await page.locator('[data-testid="filter-end-date-employmentStartDate"]').fill(today);
     await page.locator('[data-testid="filter-apply-employmentStartDate"]').click();
+
+    await expect(page.locator('[data-testid^="filter-chip"]')).toBeVisible();
+    await page.waitForTimeout(200);
 
     const names = await getWorkerNames(page);
     expect(names.length).toBe(2);
