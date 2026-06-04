@@ -402,21 +402,19 @@ test.describe('Worker Edit Dialog', () => {
   }, testInfo) => {
     const tb = getTestBase(testInfo);
 
+    // Create worker first so dimension creation auto-generates its attribute
+    const worker = await tb.createTestWorker({ name: 'Nora' });
+
     // Create a BOOL dimension — auto-creates attributes on all existing workers
     const { newDimension } = await tb.createTestWorkerDimension('Senior', DimensionEntryType.BOOL);
-
-    // Now create the worker — the dimension was created first so its newAttributes
-    // only applied to workers that existed at creation time.
-    // Create worker, then reload so the worker table fetches fresh data.
-    const worker = await tb.createTestWorker({ name: 'Nora' });
 
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
-    // The worker was created after the dimension, so it should have an attribute
-    // with value false by default.
-    const attrsBefore = await tb.getWorkerAttributes(worker.id);
-    const boolAttr = attrsBefore.find((a) => a.dimensionId === newDimension.id);
+    // The dimension was created while the worker existed, so the worker's
+    // attributes array should contain an auto-generated BOOL with value false.
+    const workerBefore = await tb.getWorkerById(worker.id);
+    const boolAttr = workerBefore.attributes.find((a) => a.dimensionId === newDimension.id);
     expect(boolAttr).toBeDefined();
     expect(boolAttr!.value).toBe(false);
 
@@ -430,9 +428,9 @@ test.describe('Worker Edit Dialog', () => {
     await expect(checkbox).toBeChecked();
     await tb.saveEditDialog(page);
 
-    // Verify API
-    const attrsAfter = await tb.getWorkerAttributes(worker.id);
-    const boolAttrAfter = attrsAfter.find((a) => a.dimensionId === newDimension.id);
+    // Verify API — worker's attributes array reflects the toggled value
+    const workerAfter = await tb.getWorkerById(worker.id);
+    const boolAttrAfter = workerAfter.attributes.find((a) => a.dimensionId === newDimension.id);
     expect(boolAttrAfter).toBeDefined();
     expect(boolAttrAfter!.value).toBe(true);
 
@@ -444,6 +442,9 @@ test.describe('Worker Edit Dialog', () => {
   }, testInfo) => {
     const tb = getTestBase(testInfo);
 
+    // Create worker first so dimension creation auto-generates its attribute
+    const worker = await tb.createTestWorker({ name: 'Oscar' });
+
     // Create a DIM_ENTRIES dimension with two tag entries
     const { newDimension, newDimEntries } = await tb.createTestWorkerDimension(
       'Location',
@@ -451,8 +452,6 @@ test.describe('Worker Edit Dialog', () => {
       ['North Wing', 'South Wing'],
     );
     expect(newDimEntries).toHaveLength(2);
-
-    const worker = await tb.createTestWorker({ name: 'Oscar' });
 
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
@@ -479,8 +478,8 @@ test.describe('Worker Edit Dialog', () => {
     await tb.saveEditDialog(page);
 
     // Verify API — the attribute's dimEntryIds should include north badge
-    const attrs = await tb.getWorkerAttributes(worker.id);
-    const tagAttr = attrs.find((a) => a.dimensionId === newDimension.id);
+    const workerAfter1 = await tb.getWorkerById(worker.id);
+    const tagAttr = workerAfter1.attributes.find((a) => a.dimensionId === newDimension.id);
     expect(tagAttr).toBeDefined();
     expect(tagAttr!.dimEntryIds).toContain(newDimEntries[0].id);
     expect(tagAttr!.dimEntryIds).not.toContain(newDimEntries[1].id);
@@ -490,8 +489,8 @@ test.describe('Worker Edit Dialog', () => {
     await southBadge.click();
     await tb.saveEditDialog(page);
 
-    const attrs2 = await tb.getWorkerAttributes(worker.id);
-    const tagAttr2 = attrs2.find((a) => a.dimensionId === newDimension.id);
+    const workerAfter2 = await tb.getWorkerById(worker.id);
+    const tagAttr2 = workerAfter2.attributes.find((a) => a.dimensionId === newDimension.id);
     expect(tagAttr2!.dimEntryIds).toContain(newDimEntries[0].id);
     expect(tagAttr2!.dimEntryIds).toContain(newDimEntries[1].id);
 

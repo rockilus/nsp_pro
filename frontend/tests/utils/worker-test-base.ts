@@ -1063,12 +1063,13 @@ export class WorkerTestBase {
   }
 
   /**
-   * Fetches all attributes for a specific worker via the API.
+   * Gets attributes by owner using the API.
+   * Mirrors AttributeTestBase.getTestAttributesByOwner.
    */
-  async getWorkerAttributes(workerId: string): Promise<AttributeT[]> {
+  async getTestAttributesByOwner(ownerId: string): Promise<AttributeT[]> {
     if (!this.testTeam) {
       throw new Error('Test team not created.');
     }
-    return this.dbUtils.getAttributesByOwner(workerId, this.testTeam.teamId);
+    return this.dbUtils.getAttributesByOwner(ownerId, this.testTeam.teamId);
   }
 }
