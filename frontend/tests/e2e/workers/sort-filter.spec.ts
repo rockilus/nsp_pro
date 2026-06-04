@@ -222,6 +222,30 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Filter — name (select filter)
   // ════════════════════════════════════════════════════════════
 
+  test('should navigate to filter view and back to menu', async ({ page }) => {
+    await workerTestBase.createTestWorker({ name: 'Worker A', acronym: 'WA', weeklyHours: 39 });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+
+    // Open popover → see sort menu
+    await openColumnMenu(page, 'name');
+    await expect(page.locator('[data-testid="sort-asc-name"]')).toBeVisible();
+
+    // Click Filter → popover switches to filter view
+    await page.locator('[data-testid="filter-menu-name"]').click();
+
+    // Filter view should have the select filter and a Back button
+    await expect(page.locator('[data-testid="select-filter-name"]')).toBeVisible();
+    await expect(page.locator('button:has-text("Back")')).toBeVisible();
+
+    // Click Back → returns to sort menu
+    await page.locator('button:has-text("Back")').click();
+    await expect(page.locator('[data-testid="sort-asc-name"]')).toBeVisible();
+    await expect(page.locator('[data-testid="select-filter-name"]')).not.toBeVisible();
+
+    console.log('✅ Filter view ← Back → menu works');
+  });
+
   test('should filter workers by name', async ({ page }) => {
     await workerTestBase.createTestWorker({ name: 'FilterMeIn', acronym: 'FI', weeklyHours: 39 });
     await workerTestBase.createTestWorker({ name: 'FilterMeOut', acronym: 'FO', weeklyHours: 39 });
@@ -430,5 +454,30 @@ test.describe('Worker Table Sorting & Filtering', () => {
     expect(names[0]).toBe('Charlie');
 
     console.log('✅ Sort direction toggled');
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  Menu resets to sort view after close + reopen
+  // ════════════════════════════════════════════════════════════
+
+  test('should reset to sort menu when popover is closed and reopened', async ({ page }) => {
+    await workerTestBase.createTestWorker({ name: 'ResetTest', acronym: 'RT', weeklyHours: 39 });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+
+    // Open, navigate to filter view
+    await openColumnMenu(page, 'name');
+    await page.locator('[data-testid="filter-menu-name"]').click();
+    await expect(page.locator('[data-testid="select-filter-name"]')).toBeVisible();
+
+    // Close popover by clicking the trigger again
+    await page.locator('[data-testid="column-menu-name"]').click();
+    await expect(page.locator('[data-testid="select-filter-name"]')).not.toBeVisible();
+
+    // Reopen — should be back to sort menu, not filter view
+    await openColumnMenu(page, 'name');
+    await expect(page.locator('[data-testid="sort-asc-name"]')).toBeVisible();
+
+    console.log('✅ Popover resets to sort menu on reopen');
   });
 });
