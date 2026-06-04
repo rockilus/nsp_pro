@@ -225,7 +225,7 @@ test.describe('Worker Employment Start Date Updates', () => {
     }
   });
 
-  test('should validate date format and handle invalid input gracefully', async ({ page }) => {
+  test('should preserve original date when invalid input is entered', async ({ page }) => {
     // Get the employment start date cell
     const employmentStartCell = workerTestBase.getWorkerEmploymentStartCell(page);
     const employmentStartDisplay = workerTestBase.getWorkerEmploymentStartDisplay(page);
@@ -241,33 +241,18 @@ test.describe('Worker Employment Start Date Updates', () => {
     const employmentStartInput = workerTestBase.getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
-    // Try to enter an invalid date format using fill (not the helper, since helper validates)
-    const invalidDate = 'invalid-date-format';
-    await employmentStartInput.fill(invalidDate);
+    // Native <input type="date"> silently rejects non-date values.
+    // fill() with a non-date string clears the input to empty.
+    await employmentStartInput.fill('');
 
-    // Press Enter to try to save the invalid date
+    // Press Enter — save should fire with the last valid valueState (unchanged)
     await employmentStartInput.press('Enter');
 
-    // Wait for either the input to remain visible (error) or revert to display
+    // Input should close and original date should be preserved
+    await expect(employmentStartInput).not.toBeVisible();
+    await expect(employmentStartDisplay).toBeVisible();
+    await expect(employmentStartDisplay).toContainText(originalDate);
 
-    // The system should either:
-    // 1. Keep the input visible with an error state, or
-    // 2. Revert to the original date
-
-    // Check if input is still visible (validation error) or reverted
-    const isInputStillVisible = await employmentStartInput.isVisible();
-
-    if (isInputStillVisible) {
-      // If input is still visible, there should be an error indication
-      console.log('✅ Invalid date format kept input visible for correction');
-
-      // Cancel the edit to clean up
-      await employmentStartInput.press('Escape');
-    } else {
-      // If input is hidden, it should have reverted to original date
-      await expect(employmentStartDisplay).toBeVisible();
-      await expect(employmentStartDisplay).toContainText(originalDate);
-      console.log(`✅ Invalid date format reverted to original: "${originalDate}"`);
-    }
+    console.log(`✅ Original date "${originalDate}" preserved after invalid input`);
   });
 });
