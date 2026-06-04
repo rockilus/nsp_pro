@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import dayjs from 'dayjs';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
 const workerTestBase = new WorkerTestBase();
@@ -155,8 +156,8 @@ test.describe('Worker Employment End Date Updates', () => {
     await permanentCheckbox.click();
     await expect(employmentEndDatePickerInput).toBeEnabled();
 
-    // Set a specific date using the helper method
-    const newDate = '31/12/2025';
+    // Set a date 3 months from now using the helper method
+    const newDate = dayjs().add(3, 'month').format('DD/MM/YYYY');
     await workerTestBase.setEmploymentEndDate(page, newDate);
 
     // Click somewhere else to trigger blur event (save)
@@ -189,8 +190,8 @@ test.describe('Worker Employment End Date Updates', () => {
     await permanentCheckbox.click();
     await expect(employmentEndDatePickerInput).toBeEnabled();
 
-    // Set a specific date using the helper method
-    const newDate = '15/06/2025';
+    // Set a date 3 months from now using the helper method
+    const newDate = dayjs().add(3, 'month').format('DD/MM/YYYY');
     await workerTestBase.setEmploymentEndDate(page, newDate);
 
     // Press Enter to save
@@ -225,7 +226,7 @@ test.describe('Worker Employment End Date Updates', () => {
     await expect(employmentEndDatePickerInput).toBeEnabled();
 
     // Set a temporary date (but don't save it) using the helper method
-    const tempDate = '01/01/2026';
+    const tempDate = dayjs().add(6, 'month').format('DD/MM/YYYY');
     await workerTestBase.setEmploymentEndDate(page, tempDate);
 
     // Press Escape to cancel editing
@@ -260,8 +261,8 @@ test.describe('Worker Employment End Date Updates', () => {
     await permanentCheckbox.click();
     await expect(employmentEndDatePickerInput).toBeEnabled();
 
-    // Set a specific date using the helper method
-    const specificDate = '30/11/2025';
+    // Set a date 1 month from now using the helper method
+    const specificDate = dayjs().add(1, 'month').format('DD/MM/YYYY');
     await workerTestBase.setEmploymentEndDate(page, specificDate);
 
     // Save by pressing Enter
