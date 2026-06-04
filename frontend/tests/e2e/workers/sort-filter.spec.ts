@@ -1,17 +1,36 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
-const workerTestBase = new WorkerTestBase();
-
 test.describe('Worker Table Sorting & Filtering', () => {
-  test.beforeAll(async () => {
-    await workerTestBase.setupWorkerTests(test.info().workerIndex);
-  });
+  const testBasesMap = new Map<string, WorkerTestBase>();
 
-  test.beforeEach(async ({ page }) => {
-    await workerTestBase.navigateToWorkersPage(page);
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+
+    const workerTestBase = new WorkerTestBase();
+    testBasesMap.set(testRunId, workerTestBase);
+    (testInfo as any).testRunId = testRunId;
+
+    await getTestBase(testInfo).setupWorkerTests(workerIndex);
+    await getTestBase(testInfo).navigateToWorkersPage(page);
     await page.waitForSelector('[aria-label="worker table"]');
   });
+
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+    testBasesMap.delete(testRunId);
+  });
+
+  /** Get the isolated WorkerTestBase for the current test */
+  function getTestBase(testInfo: any): WorkerTestBase {
+    const testRunId = testInfo.testRunId as string;
+    const tb = testBasesMap.get(testRunId);
+    if (!tb) throw new Error('Test base not found');
+    return tb;
+  }
 
   // ── Helpers ──────────────────────────────────────────────
 
@@ -80,10 +99,10 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Sort — name (select / string column)
   // ════════════════════════════════════════════════════════════
 
-  test('should sort workers by name ascending', async ({ page }) => {
+  test('should sort workers by name ascending', async ({ page }, testInfo) => {
     // Create workers with names that sort alphabetically: Bob before Carol
-    await workerTestBase.createTestWorker({ name: 'Carol', acronym: 'CA', weeklyHours: 39 });
-    await workerTestBase.createTestWorker({ name: 'Bob', acronym: 'BO', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'Carol', acronym: 'CA', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'Bob', acronym: 'BO', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
@@ -98,9 +117,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
     console.log('✅ Sorted by name ascending');
   });
 
-  test('should sort workers by name descending', async ({ page }) => {
-    await workerTestBase.createTestWorker({ name: 'Alice', acronym: 'AL', weeklyHours: 39 });
-    await workerTestBase.createTestWorker({ name: 'Zara', acronym: 'ZA', weeklyHours: 39 });
+  test('should sort workers by name descending', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({ name: 'Alice', acronym: 'AL', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'Zara', acronym: 'ZA', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
@@ -115,9 +134,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
     console.log('✅ Sorted by name descending');
   });
 
-  test('should remove sort when clicking Remove Sort', async ({ page }) => {
-    await workerTestBase.createTestWorker({ name: 'Xander', acronym: 'XA', weeklyHours: 39 });
-    await workerTestBase.createTestWorker({ name: 'Yvonne', acronym: 'YV', weeklyHours: 39 });
+  test('should remove sort when clicking Remove Sort', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({ name: 'Xander', acronym: 'XA', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'Yvonne', acronym: 'YV', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
@@ -140,14 +159,14 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Sort — weeklyHours (numeric-as-string column)
   // ════════════════════════════════════════════════════════════
 
-  test('should sort workers by weekly hours ascending', async ({ page }) => {
-    await workerTestBase.createTestWorker({
+  test('should sort workers by weekly hours ascending', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({
       name: 'Low Hours',
       acronym: 'LH',
       weeklyHours: 30,
       weeklyHoursDesired: 30,
     });
-    await workerTestBase.createTestWorker({
+    await getTestBase(testInfo).createTestWorker({
       name: 'High Hours',
       acronym: 'HH',
       weeklyHours: 45,
@@ -167,14 +186,14 @@ test.describe('Worker Table Sorting & Filtering', () => {
     console.log('✅ Sorted by weekly hours ascending');
   });
 
-  test('should sort workers by weekly hours descending', async ({ page }) => {
-    await workerTestBase.createTestWorker({
+  test('should sort workers by weekly hours descending', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({
       name: 'Medium',
       acronym: 'MD',
       weeklyHours: 39,
       weeklyHoursDesired: 39,
     });
-    await workerTestBase.createTestWorker({
+    await getTestBase(testInfo).createTestWorker({
       name: 'Overtime',
       acronym: 'OT',
       weeklyHours: 50,
@@ -198,12 +217,12 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Sort — employment start date (date column)
   // ════════════════════════════════════════════════════════════
 
-  test('should sort workers by employment start date', async ({ page }) => {
+  test('should sort workers by employment start date', async ({ page }, testInfo) => {
     // Both workers get today's start date by default, so we sort by name
     // as a proxy to verify date column sorting works — the menu opens and
     // the sort chip appears
-    await workerTestBase.createTestWorker({ name: 'First', acronym: 'FI', weeklyHours: 39 });
-    await workerTestBase.createTestWorker({ name: 'Second', acronym: 'SE', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'First', acronym: 'FI', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'Second', acronym: 'SE', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
@@ -222,8 +241,8 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Filter — name (select filter)
   // ════════════════════════════════════════════════════════════
 
-  test('should navigate to filter view and back to menu', async ({ page }) => {
-    await workerTestBase.createTestWorker({ name: 'Worker A', acronym: 'WA', weeklyHours: 39 });
+  test('should navigate to filter view and back to menu', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({ name: 'Worker A', acronym: 'WA', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
@@ -246,9 +265,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
     console.log('✅ Filter view ← Back → menu works');
   });
 
-  test('should filter workers by name', async ({ page }) => {
-    await workerTestBase.createTestWorker({ name: 'FilterMeIn', acronym: 'FI', weeklyHours: 39 });
-    await workerTestBase.createTestWorker({ name: 'FilterMeOut', acronym: 'FO', weeklyHours: 39 });
+  test('should filter workers by name', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({ name: 'FilterMeIn', acronym: 'FI', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'FilterMeOut', acronym: 'FO', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
@@ -281,14 +300,14 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Filter — weeklyHours (select filter, numeric)
   // ════════════════════════════════════════════════════════════
 
-  test('should filter workers by weekly hours', async ({ page }) => {
-    await workerTestBase.createTestWorker({
+  test('should filter workers by weekly hours', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({
       name: 'PartTime',
       acronym: 'PT',
       weeklyHours: 20,
       weeklyHoursDesired: 20,
     });
-    await workerTestBase.createTestWorker({
+    await getTestBase(testInfo).createTestWorker({
       name: 'FullTime',
       acronym: 'FT',
       weeklyHours: 40,
@@ -319,9 +338,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Filter — acronym (select filter, empty values)
   // ════════════════════════════════════════════════════════════
 
-  test('should filter workers by acronym', async ({ page }) => {
-    await workerTestBase.createTestWorker({ name: 'Alpha', acronym: 'AL', weeklyHours: 39 });
-    await workerTestBase.createTestWorker({ name: 'Beta', acronym: 'BE', weeklyHours: 39 });
+  test('should filter workers by acronym', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({ name: 'Alpha', acronym: 'AL', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'Beta', acronym: 'BE', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
@@ -346,20 +365,20 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Combined sort + filter
   // ════════════════════════════════════════════════════════════
 
-  test('should allow combining sort and filter', async ({ page }) => {
-    await workerTestBase.createTestWorker({
+  test('should allow combining sort and filter', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({
       name: 'Dan',
       acronym: 'DN',
       weeklyHours: 40,
       weeklyHoursDesired: 40,
     });
-    await workerTestBase.createTestWorker({
+    await getTestBase(testInfo).createTestWorker({
       name: 'Ann',
       acronym: 'AN',
       weeklyHours: 40,
       weeklyHoursDesired: 40,
     });
-    await workerTestBase.createTestWorker({
+    await getTestBase(testInfo).createTestWorker({
       name: 'Zed',
       acronym: 'ZD',
       weeklyHours: 20,
@@ -393,9 +412,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Reset all
   // ════════════════════════════════════════════════════════════
 
-  test('should reset all filters and sorts via reset button', async ({ page }) => {
-    await workerTestBase.createTestWorker({ name: 'One', acronym: 'ON', weeklyHours: 39 });
-    await workerTestBase.createTestWorker({ name: 'Two', acronym: 'TW', weeklyHours: 39 });
+  test('should reset all filters and sorts via reset button', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({ name: 'One', acronym: 'ON', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'Two', acronym: 'TW', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
@@ -421,9 +440,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Filter — date column
   // ════════════════════════════════════════════════════════════
 
-  test('should filter workers by employment start date range', async ({ page }) => {
-    await workerTestBase.createTestWorker({ name: 'DateWorker1', acronym: 'D1', weeklyHours: 39 });
-    await workerTestBase.createTestWorker({ name: 'DateWorker2', acronym: 'D2', weeklyHours: 39 });
+  test('should filter workers by employment start date range', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({ name: 'DateWorker1', acronym: 'D1', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'DateWorker2', acronym: 'D2', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
@@ -451,9 +470,9 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Toggle sort direction
   // ════════════════════════════════════════════════════════════
 
-  test('should toggle sort direction without removing first', async ({ page }) => {
-    await workerTestBase.createTestWorker({ name: 'Charlie', acronym: 'CH', weeklyHours: 39 });
-    await workerTestBase.createTestWorker({ name: 'Anna', acronym: 'AN', weeklyHours: 39 });
+  test('should toggle sort direction without removing first', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({ name: 'Charlie', acronym: 'CH', weeklyHours: 39 });
+    await getTestBase(testInfo).createTestWorker({ name: 'Anna', acronym: 'AN', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
@@ -476,8 +495,8 @@ test.describe('Worker Table Sorting & Filtering', () => {
   //  Menu resets to sort view after close + reopen
   // ════════════════════════════════════════════════════════════
 
-  test('should reset to sort menu when popover is closed and reopened', async ({ page }) => {
-    await workerTestBase.createTestWorker({ name: 'ResetTest', acronym: 'RT', weeklyHours: 39 });
+  test('should reset to sort menu when popover is closed and reopened', async ({ page }, testInfo) => {
+    await getTestBase(testInfo).createTestWorker({ name: 'ResetTest', acronym: 'RT', weeklyHours: 39 });
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
