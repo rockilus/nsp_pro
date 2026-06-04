@@ -1,23 +1,31 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
-const workerTestBase = new WorkerTestBase();
-
 test.describe('Worker Annual Leave Field Cell', () => {
+  const testBasesMap = new Map<string, WorkerTestBase>();
+
   let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
   let initialAnnualLeave: number;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+
+    const workerTestBase = new WorkerTestBase();
+    testBasesMap.set(testRunId, workerTestBase);
+    (testInfo as any).testRunId = testRunId;
+
     // Setup the common worker test environment
-    await workerTestBase.setupWorkerTests(test.info().workerIndex);
+    await getTestBase(testInfo).setupWorkerTests(workerIndex);
 
     // Use a unique name per test to avoid conflicts
-    initialWorkerName = `Test Worker ${test.info().workerIndex}-${Date.now()}`;
+    initialWorkerName = `Test Worker ${workerIndex}-${Date.now()}`;
     initialAnnualLeave = 25;
 
     // Create a fresh test worker for each test
-    testWorker = await workerTestBase.createTestWorker({
+    testWorker = await getTestBase(testInfo).createTestWorker({
       name: initialWorkerName,
       weeklyHours: 40,
       weeklyHoursDesired: 40,
@@ -30,36 +38,49 @@ test.describe('Worker Annual Leave Field Cell', () => {
     );
 
     // Navigate to the workers page
-    await workerTestBase.navigateToWorkersPage(page);
+    await getTestBase(testInfo).navigateToWorkersPage(page);
 
     // Wait for the worker table to load and our test worker to appear
     await page.waitForSelector('[aria-label="worker table"]');
 
     // Verify our test worker is visible in the table
-    const workerRows = workerTestBase.getWorkerRows(page);
+    const workerRows = getTestBase(testInfo).getWorkerRows(page);
     await expect(workerRows).toHaveCount(1);
 
     // Verify the worker name is displayed
-    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
     await expect(nameCell).toContainText(initialWorkerName);
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
     // Clean up: delete the worker created for this test
     if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.id);
+        await getTestBase(testInfo).deleteTestWorker(testWorker.id);
         console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
         console.warn(`Failed to delete test worker: ${error}`);
       }
     }
+
+    testBasesMap.delete(testRunId);
   });
 
-  test('should display annual leave value in the cell', async ({ page }) => {
+  /** Get the isolated WorkerTestBase for the current test */
+  function getTestBase(testInfo: any): WorkerTestBase {
+    const testRunId = testInfo.testRunId as string;
+    const tb = testBasesMap.get(testRunId);
+    if (!tb) throw new Error('Test base not found');
+    return tb;
+  }
+
+  test('should display annual leave value in the cell', async ({ page }, testInfo) => {
     // Get the annual leave cell and display elements
-    const annualLeaveCell = workerTestBase.getWorkerAnnualLeaveCell(page);
-    const annualLeaveDisplay = workerTestBase.getWorkerAnnualLeaveDisplay(page);
+    const annualLeaveCell = getTestBase(testInfo).getWorkerAnnualLeaveCell(page);
+    const annualLeaveDisplay = getTestBase(testInfo).getWorkerAnnualLeaveDisplay(page);
 
     // Verify the cell is visible and displays the initial annual leave
     await expect(annualLeaveCell).toBeVisible();
@@ -68,11 +89,11 @@ test.describe('Worker Annual Leave Field Cell', () => {
     console.log(`✅ Annual leave cell displays initial value: ${initialAnnualLeave}`);
   });
 
-  test('should show text field when clicking on the cell', async ({ page }) => {
+  test('should show text field when clicking on the cell', async ({ page }, testInfo) => {
     // Get the annual leave cell and elements
-    const annualLeaveCell = workerTestBase.getWorkerAnnualLeaveCell(page);
-    const annualLeaveDisplay = workerTestBase.getWorkerAnnualLeaveDisplay(page);
-    const annualLeaveInput = workerTestBase.getWorkerAnnualLeaveInput(page);
+    const annualLeaveCell = getTestBase(testInfo).getWorkerAnnualLeaveCell(page);
+    const annualLeaveDisplay = getTestBase(testInfo).getWorkerAnnualLeaveDisplay(page);
+    const annualLeaveInput = getTestBase(testInfo).getWorkerAnnualLeaveInput(page);
 
     // Initially, the display should be visible and input should not exist
     await expect(annualLeaveDisplay).toBeVisible();
@@ -89,10 +110,10 @@ test.describe('Worker Annual Leave Field Cell', () => {
     console.log('✅ Text field appears when clicking on the cell');
   });
 
-  test('should only accept numeric input in the text field', async ({ page }) => {
+  test('should only accept numeric input in the text field', async ({ page }, testInfo) => {
     // Get the annual leave cell and input
-    const annualLeaveCell = workerTestBase.getWorkerAnnualLeaveCell(page);
-    const annualLeaveInput = workerTestBase.getWorkerAnnualLeaveInput(page);
+    const annualLeaveCell = getTestBase(testInfo).getWorkerAnnualLeaveCell(page);
+    const annualLeaveInput = getTestBase(testInfo).getWorkerAnnualLeaveInput(page);
 
     // Click on the cell to edit
     await annualLeaveCell.click();
@@ -122,14 +143,14 @@ test.describe('Worker Annual Leave Field Cell', () => {
     console.log('✅ Text field only accepts numeric input');
   });
 
-  test('should update value when clicking away (blur event)', async ({ page }) => {
+  test('should update value when clicking away (blur event)', async ({ page }, testInfo) => {
     // Get the annual leave elements
-    const annualLeaveCell = workerTestBase.getWorkerAnnualLeaveCell(page);
-    const annualLeaveInput = workerTestBase.getWorkerAnnualLeaveInput(page);
+    const annualLeaveCell = getTestBase(testInfo).getWorkerAnnualLeaveCell(page);
+    const annualLeaveInput = getTestBase(testInfo).getWorkerAnnualLeaveInput(page);
 
     // Click on the cell to edit
     await annualLeaveCell.click();
-    await workerTestBase.waitForAnnualLeaveEditMode(page);
+    await getTestBase(testInfo).waitForAnnualLeaveEditMode(page);
 
     // Change the value
     const newAnnualLeave = 30;
@@ -142,19 +163,19 @@ test.describe('Worker Annual Leave Field Cell', () => {
     await pageTitle.click();
 
     // Wait for the update to complete using smart waiting
-    await workerTestBase.waitForAnnualLeaveUpdateComplete(page, newAnnualLeave.toString());
+    await getTestBase(testInfo).waitForAnnualLeaveUpdateComplete(page, newAnnualLeave.toString());
 
     console.log(`✅ Annual leave updated to ${newAnnualLeave} via blur event`);
   });
 
-  test('should update value when pressing Enter', async ({ page }) => {
+  test('should update value when pressing Enter', async ({ page }, testInfo) => {
     // Get the annual leave elements
-    const annualLeaveCell = workerTestBase.getWorkerAnnualLeaveCell(page);
-    const annualLeaveInput = workerTestBase.getWorkerAnnualLeaveInput(page);
+    const annualLeaveCell = getTestBase(testInfo).getWorkerAnnualLeaveCell(page);
+    const annualLeaveInput = getTestBase(testInfo).getWorkerAnnualLeaveInput(page);
 
     // Click on the cell to edit
     await annualLeaveCell.click();
-    await workerTestBase.waitForAnnualLeaveEditMode(page);
+    await getTestBase(testInfo).waitForAnnualLeaveEditMode(page);
 
     // Change the value
     const newAnnualLeave = 28;
@@ -166,23 +187,23 @@ test.describe('Worker Annual Leave Field Cell', () => {
     await annualLeaveInput.press('Enter');
 
     // Wait for the update to complete using smart waiting
-    await workerTestBase.waitForAnnualLeaveUpdateComplete(page, newAnnualLeave.toString());
+    await getTestBase(testInfo).waitForAnnualLeaveUpdateComplete(page, newAnnualLeave.toString());
 
     console.log(`✅ Annual leave updated to ${newAnnualLeave} via Enter key`);
   });
 
-  test('should cancel edit and revert value when pressing Escape', async ({ page }) => {
+  test('should cancel edit and revert value when pressing Escape', async ({ page }, testInfo) => {
     // Get the annual leave elements
-    const annualLeaveCell = workerTestBase.getWorkerAnnualLeaveCell(page);
-    const annualLeaveDisplay = workerTestBase.getWorkerAnnualLeaveDisplay(page);
-    const annualLeaveInput = workerTestBase.getWorkerAnnualLeaveInput(page);
+    const annualLeaveCell = getTestBase(testInfo).getWorkerAnnualLeaveCell(page);
+    const annualLeaveDisplay = getTestBase(testInfo).getWorkerAnnualLeaveDisplay(page);
+    const annualLeaveInput = getTestBase(testInfo).getWorkerAnnualLeaveInput(page);
 
     // Verify initial value
     await expect(annualLeaveDisplay).toContainText(initialAnnualLeave.toString());
 
     // Click on the cell to edit
     await annualLeaveCell.click();
-    await workerTestBase.waitForAnnualLeaveEditMode(page);
+    await getTestBase(testInfo).waitForAnnualLeaveEditMode(page);
     await expect(annualLeaveInput).toHaveValue(initialAnnualLeave.toString());
 
     // Change the value to something different
@@ -195,7 +216,7 @@ test.describe('Worker Annual Leave Field Cell', () => {
     await annualLeaveInput.press('Escape');
 
     // Wait for display mode to return with original value
-    await workerTestBase.waitForAnnualLeaveDisplayMode(page);
+    await getTestBase(testInfo).waitForAnnualLeaveDisplayMode(page);
 
     // The display should show the original value (not the temporary one)
     await expect(annualLeaveDisplay).toContainText(initialAnnualLeave.toString());
@@ -204,14 +225,14 @@ test.describe('Worker Annual Leave Field Cell', () => {
     console.log(`✅ Annual leave edit canceled, reverted to original: ${initialAnnualLeave}`);
   });
 
-  test('should handle empty input by reverting to original value', async ({ page }) => {
+  test('should handle empty input by reverting to original value', async ({ page }, testInfo) => {
     // Get the annual leave elements
-    const annualLeaveCell = workerTestBase.getWorkerAnnualLeaveCell(page);
-    const annualLeaveInput = workerTestBase.getWorkerAnnualLeaveInput(page);
+    const annualLeaveCell = getTestBase(testInfo).getWorkerAnnualLeaveCell(page);
+    const annualLeaveInput = getTestBase(testInfo).getWorkerAnnualLeaveInput(page);
 
     // Click on the cell to edit
     await annualLeaveCell.click();
-    await workerTestBase.waitForAnnualLeaveEditMode(page);
+    await getTestBase(testInfo).waitForAnnualLeaveEditMode(page);
 
     // Clear the input (make it empty)
     await annualLeaveInput.clear();
@@ -221,45 +242,45 @@ test.describe('Worker Annual Leave Field Cell', () => {
     await annualLeaveInput.press('Enter');
 
     // Wait for display mode to return with original value
-    await workerTestBase.waitForAnnualLeaveDisplayMode(page);
+    await getTestBase(testInfo).waitForAnnualLeaveDisplayMode(page);
 
     // The display should show the original value (component should revert empty to original)
-    const annualLeaveDisplay = workerTestBase.getWorkerAnnualLeaveDisplay(page);
+    const annualLeaveDisplay = getTestBase(testInfo).getWorkerAnnualLeaveDisplay(page);
     await expect(annualLeaveDisplay).toContainText(initialAnnualLeave.toString());
 
     console.log(`✅ Empty input reverted to original value: ${initialAnnualLeave}`);
   });
 
-  test('should not update value when no change is made', async ({ page }) => {
+  test('should not update value when no change is made', async ({ page }, testInfo) => {
     // Get the annual leave elements
-    const annualLeaveCell = workerTestBase.getWorkerAnnualLeaveCell(page);
-    const annualLeaveInput = workerTestBase.getWorkerAnnualLeaveInput(page);
+    const annualLeaveCell = getTestBase(testInfo).getWorkerAnnualLeaveCell(page);
+    const annualLeaveInput = getTestBase(testInfo).getWorkerAnnualLeaveInput(page);
 
     // Click on the cell to edit
     await annualLeaveCell.click();
-    await workerTestBase.waitForAnnualLeaveEditMode(page);
+    await getTestBase(testInfo).waitForAnnualLeaveEditMode(page);
 
     // Don't change the value, just press Enter
     await annualLeaveInput.press('Enter');
 
     // Wait for display mode to return
-    await workerTestBase.waitForAnnualLeaveDisplayMode(page);
+    await getTestBase(testInfo).waitForAnnualLeaveDisplayMode(page);
 
     // The display should show the same original value
-    const annualLeaveDisplay = workerTestBase.getWorkerAnnualLeaveDisplay(page);
+    const annualLeaveDisplay = getTestBase(testInfo).getWorkerAnnualLeaveDisplay(page);
     await expect(annualLeaveDisplay).toContainText(initialAnnualLeave.toString());
 
     console.log(`✅ No change made, value remains: ${initialAnnualLeave}`);
   });
 
-  test('should handle large numbers correctly', async ({ page }) => {
+  test('should handle large numbers correctly', async ({ page }, testInfo) => {
     // Get the annual leave elements
-    const annualLeaveCell = workerTestBase.getWorkerAnnualLeaveCell(page);
-    const annualLeaveInput = workerTestBase.getWorkerAnnualLeaveInput(page);
+    const annualLeaveCell = getTestBase(testInfo).getWorkerAnnualLeaveCell(page);
+    const annualLeaveInput = getTestBase(testInfo).getWorkerAnnualLeaveInput(page);
 
     // Click on the cell to edit
     await annualLeaveCell.click();
-    await workerTestBase.waitForAnnualLeaveEditMode(page);
+    await getTestBase(testInfo).waitForAnnualLeaveEditMode(page);
 
     // Enter a large number
     const largeAnnualLeave = 999;
@@ -271,7 +292,7 @@ test.describe('Worker Annual Leave Field Cell', () => {
     await annualLeaveInput.press('Enter');
 
     // Wait for the update to complete using smart waiting
-    await workerTestBase.waitForAnnualLeaveUpdateComplete(page, largeAnnualLeave.toString());
+    await getTestBase(testInfo).waitForAnnualLeaveUpdateComplete(page, largeAnnualLeave.toString());
 
     console.log(`✅ Large number ${largeAnnualLeave} handled correctly`);
   });

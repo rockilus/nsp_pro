@@ -1,19 +1,38 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
-const workerTestBase = new WorkerTestBase();
-
 test.describe('Dark Mode Theme Toggle', () => {
-  test.beforeAll(async () => {
-    await workerTestBase.setupWorkerTests(test.info().workerIndex);
-  });
+  const testBasesMap = new Map<string, WorkerTestBase>();
 
-  test.beforeEach(async ({ page }) => {
-    await workerTestBase.navigateToWorkersPage(page);
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+
+    const workerTestBase = new WorkerTestBase();
+    testBasesMap.set(testRunId, workerTestBase);
+    (testInfo as any).testRunId = testRunId;
+
+    await getTestBase(testInfo).setupWorkerTests(workerIndex);
+    await getTestBase(testInfo).navigateToWorkersPage(page);
     await page.waitForSelector('[aria-label="worker table"]');
   });
 
-  test('should add .dark class on <html> when toggled', async ({ page }) => {
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+    testBasesMap.delete(testRunId);
+  });
+
+  /** Get the isolated WorkerTestBase for the current test */
+  function getTestBase(testInfo: any): WorkerTestBase {
+    const testRunId = testInfo.testRunId as string;
+    const tb = testBasesMap.get(testRunId);
+    if (!tb) throw new Error('Test base not found');
+    return tb;
+  }
+
+  test('should add .dark class on <html> when toggled', async ({ page }, testInfo) => {
     const html = page.locator('html');
 
     // Initially no dark class
@@ -34,7 +53,7 @@ test.describe('Dark Mode Theme Toggle', () => {
     console.log('✅ .dark class added/removed on <html>');
   });
 
-  test('should change body background color when toggled', async ({ page }) => {
+  test('should change body background color when toggled', async ({ page }, testInfo) => {
     // Helper: read the actual computed background-color of <body>
     const getBodyBg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 
@@ -93,7 +112,7 @@ test.describe('Dark Mode Theme Toggle', () => {
     console.log('✅ Both body and page-layout background fully toggle');
   });
 
-  test('should persist theme preference in localStorage', async ({ page }) => {
+  test('should persist theme preference in localStorage', async ({ page }, testInfo) => {
     const themeToggle = page.locator('[data-testid="theme-toggle"]');
 
     // Set to dark
@@ -111,7 +130,9 @@ test.describe('Dark Mode Theme Toggle', () => {
     console.log('✅ Theme preference persisted in localStorage');
   });
 
-  test('should show moon icon in light mode and sun icon in dark mode', async ({ page }) => {
+  test('should show moon icon in light mode and sun icon in dark mode', async ({
+    page,
+  }, testInfo) => {
     const themeToggle = page.locator('[data-testid="theme-toggle"]');
 
     // Initially light mode: aria-label should mention switching TO dark
