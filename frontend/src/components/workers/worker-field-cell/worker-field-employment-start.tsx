@@ -1,9 +1,7 @@
 import React, { Dispatch, SetStateAction, useState, useRef, useEffect, useCallback } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-// MUI
-import TableCell from '@mui/material/TableCell';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Input } from '@/components/ui/input';
 // Types
 import { WorkerT } from '../../../types/worker';
 
@@ -20,18 +18,15 @@ export default function WorkerFieldEmploymentStart({
   setEditing: Dispatch<SetStateAction<{}>>;
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }) {
-  const cellRef = useRef<HTMLTableCellElement>(null);
+  const cellRef = useRef<HTMLDivElement>(null);
   const [valueState, setValueState] = useState<dayjs.Dayjs>(worker.employmentStartDate);
-  const [datePickerOpen, setDatePickerOpen] = useState<boolean>(false);
 
-  const handleUpdateState = (newValue: dayjs.Dayjs | null) => {
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
     if (!newValue) return;
     const newDate = dayjs.utc(newValue);
     setValueState(newDate);
-    if (datePickerOpen) {
-      handleEditConfirm(newDate);
-      setDatePickerOpen(false);
-    }
+    handleEditConfirm(newDate);
   };
 
   const handleEditConfirm = useCallback(
@@ -51,14 +46,10 @@ export default function WorkerFieldEmploymentStart({
     (event: MouseEvent) => {
       if (!editing) return;
       if (cellRef.current && !cellRef.current.contains(event.target as Node)) {
-        if (datePickerOpen) {
-          return;
-        } else {
-          handleEditConfirm(valueState);
-        }
+        handleEditConfirm(valueState);
       }
     },
-    [cellRef, valueState, datePickerOpen, editing, handleEditConfirm],
+    [cellRef, valueState, editing, handleEditConfirm],
   );
 
   const handleKeyDown = useCallback(
@@ -68,7 +59,6 @@ export default function WorkerFieldEmploymentStart({
         handleEditConfirm(valueState);
       } else if (event.key === 'Escape') {
         setValueState(worker.employmentStartDate);
-        setDatePickerOpen(false);
         setEditing({});
       }
     },
@@ -78,7 +68,6 @@ export default function WorkerFieldEmploymentStart({
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
@@ -86,44 +75,27 @@ export default function WorkerFieldEmploymentStart({
   }, [handleClickOutside, handleKeyDown, editing]);
 
   return (
-    <TableCell
-      component="th"
-      scope="row"
-      sx={{ paddingY: 0, textAlign: 'center' }}
-      data-testid="worker-employment-start-cell"
-    >
+    <td className="py-0 text-center" data-testid="worker-employment-start-cell">
       {editing ? (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <DatePicker
-            className="custom-date-picker"
-            value={valueState}
-            ref={cellRef}
-            onChange={(newValue) => handleUpdateState(newValue)}
-            onOpen={() => setDatePickerOpen(true)}
-            slotProps={{
-              textField: {
-                inputProps: {
-                  'data-testid': `worker-employment-start-input-${worker.id}`,
-                  id: `worker-employment-start-input-${worker.id}`,
-                },
-              },
-            }}
+        <div ref={cellRef} className="flex justify-center">
+          <Input
+            type="date"
+            value={valueState.format('YYYY-MM-DD')}
+            onChange={handleDateChange}
+            className="w-auto"
+            data-testid={`worker-employment-start-input-${worker.id}`}
+            id={`worker-employment-start-input-${worker.id}`}
           />
         </div>
       ) : (
         <div
           onClick={() => setEditing({ [worker.id]: 'employmentStartDate' })}
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: 45,
-          }}
+          className="flex min-h-[45px] cursor-pointer items-center justify-center"
           data-testid={`worker-employment-start-display-${worker.id}`}
         >
           <span>{worker.employmentStartDate.format('DD/MM/YYYY')}</span>
         </div>
       )}
-    </TableCell>
+    </td>
   );
 }

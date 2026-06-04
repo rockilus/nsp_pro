@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../../../app/i18n/client';
-// MUI
-import TableCell from '@mui/material/TableCell';
-import Tooltip from '@mui/material/Tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 // Components
 import PopoverAnchorElBelow from '../../../inputs/popover-anchor-el-below';
 import UpdateSpecialtiesForm from './update-specialties-form';
@@ -17,7 +15,6 @@ interface WorkerSpecialtyHeaderCellProps {
   lng: string;
   teamId: string;
   specialties: SpecialtyT[];
-  // New props for sorting/filtering
   column?: ColumnDefinition;
   currentSort?: TableSort;
   onSort?: (sort: TableSort | null) => void;
@@ -45,8 +42,11 @@ export default function WorkerSpecialtyHeaderCell({
 
   const cellContent = () => (
     <div className="table-header-default flex items-center justify-between">
-      <Tooltip title={t('specialties_tooltip')} placement="top">
-        <span data-testid="worker-specialty-header-cell">{t('specialties')}</span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span data-testid="worker-specialty-header-cell">{t('specialties')}</span>
+        </TooltipTrigger>
+        <TooltipContent>{t('specialties_tooltip')}</TooltipContent>
       </Tooltip>
       <div className="flex items-center gap-1">
         {onSort && onFilter && column && (
@@ -65,21 +65,7 @@ export default function WorkerSpecialtyHeaderCell({
   );
 
   return (
-    <TableCell
-      //   key={}
-      component="th"
-      scope="row"
-      className="worker-table-header"
-      sx={{
-        paddingY: 0,
-        padding: '6px 8px',
-        height: '36px',
-        fontSize: '0.8rem',
-        fontWeight: 500,
-        backgroundColor: '#fafafa',
-        borderBottom: '1px solid #e0e0e0',
-      }}
-    >
+    <td className="worker-table-header h-9 border-b border-border bg-muted px-2 py-0 text-xs font-medium">
       <PopoverAnchorElBelow
         buttonContent={cellContent()}
         content={
@@ -96,6 +82,6 @@ export default function WorkerSpecialtyHeaderCell({
         open={popoverAnchorOpen}
         setOpen={setPopoverAnchorOpen}
       />
-    </TableCell>
+    </td>
   );
 }

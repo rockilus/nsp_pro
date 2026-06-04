@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-// MUI
-import Chip from '@mui/material/Chip';
+import { Badge } from '@/components/ui/badge';
 // Components
 import DimEntryTypeCellEdit from './dim-entry-type-cell-edit';
 import PopoverAnchorElOver from '../../inputs/popover-anchor-el-over';
@@ -74,11 +73,9 @@ export default function AttributeCellDimEntries({
   return (
     <PopoverAnchorElOver
       buttonContent={attribute.dimEntryIds.map((deId, index) => (
-        <Chip
-          key={deId}
-          label={dimEntries.find((de) => de.id === deId)?.name || ''}
-          sx={{ cursor: 'pointer' }}
-        />
+        <Badge key={deId} variant="outline" className="cursor-pointer">
+          {dimEntries.find((de) => de.id === deId)?.name || ''}
+        </Badge>
       ))}
       content={
         <DimEntryTypeCellEdit

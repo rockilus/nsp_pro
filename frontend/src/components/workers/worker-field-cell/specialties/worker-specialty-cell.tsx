@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-// MUI
-import Chip from '@mui/material/Chip';
-import TableCell from '@mui/material/TableCell';
+import { Badge } from '@/components/ui/badge';
 // Components
 import WorkerSpecialtyCellEdit from './worker-specialty-cell-edit';
 import PopoverAnchorElOver from '../../../inputs/popover-anchor-el-over';
@@ -36,7 +34,6 @@ export default function WorkerSpecialtyCell({
       ...worker,
       specialtyIds: updatedValue.map((v) => v.id),
     });
-    // Reset updating state after a brief moment to allow the update to complete
     setTimeout(() => setIsUpdating(false), 100);
   };
 
@@ -48,29 +45,25 @@ export default function WorkerSpecialtyCell({
       ...worker,
       specialtyIds: updatedValue.map((v) => v.id),
     });
-    // Reset updating state after a brief moment to allow the update to complete
     setTimeout(() => setIsUpdating(false), 100);
   };
 
   return (
-    <TableCell
-      component="th"
-      scope="row"
+    <td
+      className="cursor-pointer py-0"
       data-testid="worker-specialty-cell"
       data-updating={isUpdating}
-      sx={{
-        paddingY: 0,
-        cursor: 'pointer',
-      }}
     >
       <PopoverAnchorElOver
         buttonContent={worker.specialtyIds.map((sId, index) => (
-          <Chip
+          <Badge
             key={sId}
+            variant="outline"
+            className="cursor-pointer"
             data-testid={`specialty-chip-${sId}`}
-            label={specialties.find((s) => s.id === sId)?.name || ''}
-            sx={{ cursor: 'pointer' }}
-          />
+          >
+            {specialties.find((s) => s.id === sId)?.name || ''}
+          </Badge>
         ))}
         content={
           <WorkerSpecialtyCellEdit
@@ -84,6 +77,6 @@ export default function WorkerSpecialtyCell({
         open={open}
         setOpen={setOpen}
       />
-    </TableCell>
+    </td>
   );
 }

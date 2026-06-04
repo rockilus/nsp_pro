@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 // Component
 import NewDimensionDimEntriesInput from './new-dimension-dim-entries-input';
 import LinkDimensionList from './link-dimension-list';
@@ -52,8 +52,6 @@ export default function NewDimensionForm({
     value: DimensionEntryType;
     label: string;
   }[] = [
-    // { value: DimensionEntryType.STR, label: t("type_str") },
-    // { value: DimensionEntryType.INT, label: t("type_int") },
     { value: DimensionEntryType.BOOL, label: t('type_bool') },
     { value: DimensionEntryType.DIM_ENTRIES, label: t('type_list') },
   ];
@@ -62,9 +60,9 @@ export default function NewDimensionForm({
     setName(event.target.value);
   };
 
-  const handleTypeChange = (event: SelectChangeEvent<DimensionEntryType>) => {
+  const handleTypeChange = (value: string) => {
     setDimEntriesNewDim([]);
-    setEntryType(event.target.value as DimensionEntryType);
+    setEntryType(Number(value) as DimensionEntryType);
   };
 
   const handleAddDimEntry = (newDimEntry: DimEntryT) => {
@@ -126,51 +124,47 @@ export default function NewDimensionForm({
   };
 
   return (
-    <Box sx={{ width: '100%' }} data-testid="new-dimension-form">
-      <TextField
-        label={t('name')}
-        variant="outlined"
-        value={name}
-        onChange={handleNameChange}
-        error={nameError}
-        helperText={nameError ? 'Please enter a name' : ''}
-        sx={{ width: '100%' }}
-        data-testid="new-dimension-name-field"
-      />
-      <Box mt={2}>
-        <FormControl
-          variant="outlined"
-          style={{ minWidth: 120, width: '100%' }}
-          data-testid="new-dimension-type-select"
-        >
-          <InputLabel id="demo-simple-select-label">Type</InputLabel>
+    <div className="w-full" data-testid="new-dimension-form">
+      <div className="flex flex-col gap-1">
+        <Input
+          placeholder={t('name')}
+          value={name}
+          onChange={handleNameChange}
+          className={nameError ? 'border-destructive' : ''}
+          data-testid="new-dimension-name-field"
+        />
+        {nameError && <p className="text-xs text-destructive">Please enter a name</p>}
+      </div>
+      <div className="mt-2">
+        <div className="flex flex-col gap-1" data-testid="new-dimension-type-select">
           <Select
-            value={entryType ? entryType : ''}
-            onChange={handleTypeChange}
-            variant="outlined"
-            error={entryTypeError}
-            style={{ minWidth: 120, width: '100%' }}
-            label={t('property_type')}
+            value={entryType !== null ? String(entryType) : undefined}
+            onValueChange={handleTypeChange}
           >
-            {dimensionEntryTypeOptions.map((option, index) => (
-              <MenuItem
-                key={index}
-                value={option.value}
-                data-testid={`new-dimension-type-option-${option.value}`}
-              >
-                {option.label}
-              </MenuItem>
-            ))}
+            <SelectTrigger className={entryTypeError ? 'border-destructive' : ''}>
+              <SelectValue placeholder={t('property_type')} />
+            </SelectTrigger>
+            <SelectContent>
+              {dimensionEntryTypeOptions.map((option, index) => (
+                <SelectItem
+                  key={index}
+                  value={String(option.value)}
+                  data-testid={`new-dimension-type-option-${option.value}`}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
           {entryTypeError && (
-            <FormHelperText error data-testid="new-dimension-type-error">
+            <p className="text-xs text-destructive" data-testid="new-dimension-type-error">
               {t('property_type_helper_text')}
-            </FormHelperText>
+            </p>
           )}
-        </FormControl>
-      </Box>
+        </div>
+      </div>
       {entryType === DimensionEntryType.DIM_ENTRIES && (
-        <Box mt={2} data-testid="new-dimension-tags-section">
+        <div className="mt-2" data-testid="new-dimension-tags-section">
           <NewDimensionDimEntriesInput
             lng={lng}
             dimEntries={dimEntriesNewDim}
@@ -178,14 +172,10 @@ export default function NewDimensionForm({
             addDimEntry={handleAddDimEntry}
             removeDimEntry={handleRemoveDimEntry}
           />
-        </Box>
+        </div>
       )}
-      <div style={{ display: 'flex', justifyContent: 'right', marginTop: 10 }}>
-        <Button
-          variant="contained"
-          onClick={handleAddElement}
-          data-testid="new-dimension-add-button"
-        >
+      <div className="mt-2.5 flex justify-end">
+        <Button onClick={handleAddElement} data-testid="new-dimension-add-button">
           {t('add')}
         </Button>
       </div>
@@ -198,6 +188,6 @@ export default function NewDimensionForm({
         setOpenParent={setOpenParent}
         handleUpdateDimension={handleUpdateDimension}
       />
-    </Box>
+    </div>
   );
 }

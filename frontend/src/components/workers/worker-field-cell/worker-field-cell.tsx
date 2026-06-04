@@ -1,6 +1,4 @@
 import React, { Dispatch, SetStateAction } from 'react';
-// MUI
-import TableCell from '@mui/material/TableCell';
 // Components
 import WorkerFieldCellName from './worker-field-cell-name';
 import WorkerFieldCellAcronym from './worker-field-cell-acronym';
@@ -96,6 +94,6 @@ export default function WorkerFieldCell({
       handleUpdateWorker={handleUpdateWorker}
     />
   ) : (
-    <TableCell></TableCell>
+    <td></td>
   );
 }

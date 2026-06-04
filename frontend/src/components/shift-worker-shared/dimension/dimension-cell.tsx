@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-// MUI
-import AbcIcon from '@mui/icons-material/Abc';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import ListIcon from '@mui/icons-material/List';
-import NumbersIcon from '@mui/icons-material/Numbers';
-import TableCell from '@mui/material/TableCell';
-import Tooltip from '@mui/material/Tooltip';
+import { CaseSensitive, CheckSquare, List, Hash } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 // Components
 import PopoverAnchorElBelow from '../../inputs/popover-anchor-el-below';
 import UpdateDimensionForm from './update-dimension-form';
@@ -56,10 +51,10 @@ export default function DimensionCell({
   const [popoverAnchorOpen, setPopoverAnchorOpen] = useState(false);
 
   const iconsPrefix: Record<string, React.ReactNode> = {
-    str: <AbcIcon color="disabled" fontSize="small" />,
-    int: <NumbersIcon color="disabled" fontSize="small" />,
-    bool: <CheckBoxIcon color="disabled" fontSize="small" />,
-    list: <ListIcon color="disabled" fontSize="small" />,
+    str: <CaseSensitive className="size-4 text-muted-foreground" />,
+    int: <Hash className="size-4 text-muted-foreground" />,
+    bool: <CheckSquare className="size-4 text-muted-foreground" />,
+    list: <List className="size-4 text-muted-foreground" />,
   };
 
   const cellContent = () => (
@@ -68,8 +63,11 @@ export default function DimensionCell({
       data-testid={`dimension-cell-content-${dimension.id}`}
     >
       <div className="flex items-center gap-1">
-        <Tooltip title={dimension.name} placement="top">
-          <span data-testid={`dimension-name-${dimension.id}`}>{dimension.name}</span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span data-testid={`dimension-name-${dimension.id}`}>{dimension.name}</span>
+          </TooltipTrigger>
+          <TooltipContent>{dimension.name}</TooltipContent>
         </Tooltip>
         {iconsPrefix[dimension.entryType]}
       </div>
@@ -88,21 +86,9 @@ export default function DimensionCell({
   );
 
   return (
-    <TableCell
-      key={dimension.id}
-      component="th"
-      scope="row"
-      className={`worker-table-header ${className}`.trim()}
+    <td
+      className={`worker-table-header h-9 border-b border-border bg-muted px-2 py-0 text-xs font-medium ${className}`.trim()}
       data-testid={`worker-dimension-${dimension.id}-header-cell`}
-      sx={{
-        paddingY: 0,
-        padding: '6px 8px',
-        height: '36px',
-        fontSize: '0.8rem',
-        fontWeight: 500,
-        backgroundColor: '#fafafa',
-        borderBottom: '1px solid #e0e0e0',
-      }}
     >
       <PopoverAnchorElBelow
         buttonContent={cellContent()}
@@ -125,6 +111,6 @@ export default function DimensionCell({
         setOpen={setPopoverAnchorOpen}
         testId={`dimension-popup-${dimension.id}`}
       />
-    </TableCell>
+    </td>
   );
 }

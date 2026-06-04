@@ -2,11 +2,8 @@ import React, { Dispatch, SetStateAction, useState, useRef, useEffect, useCallba
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import TableCell from '@mui/material/TableCell';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 // Types
 import { WorkerT } from '../../../types/worker';
 
@@ -27,9 +24,8 @@ export default function WorkerFieldEmploymentEnd({
 }) {
   const { t } = useTranslation(lng, 'worker-page');
 
-  const cellRef = useRef<HTMLTableCellElement>(null);
+  const cellRef = useRef<HTMLDivElement>(null);
   const [valueState, setValueState] = useState<dayjs.Dayjs | null>(worker.employmentEndDate);
-  const [datePickerOpen, setDatePickerOpen] = useState<boolean>(false);
 
   const handlePermanentChange = () => {
     if (valueState) {
@@ -39,28 +35,19 @@ export default function WorkerFieldEmploymentEnd({
     }
   };
 
-  const handleUpdateState = (newValue: dayjs.Dayjs | null) => {
+  const handleDateChange = (newValue: string) => {
     if (!newValue) return;
     const newDate = dayjs.utc(newValue);
     setValueState(newDate);
-    if (datePickerOpen) {
-      handleEditConfirm(newDate);
-      setDatePickerOpen(false);
-    }
+    handleEditConfirm(newDate);
   };
 
   const handleEditConfirm = useCallback(
     (newDate: dayjs.Dayjs | null) => {
       if (!newDate) {
-        handleUpdateWorker({
-          ...worker,
-          employmentEndDate: null,
-        });
+        handleUpdateWorker({ ...worker, employmentEndDate: null });
       } else if (!newDate.isSame(worker.employmentEndDate)) {
-        handleUpdateWorker({
-          ...worker,
-          employmentEndDate: newDate,
-        });
+        handleUpdateWorker({ ...worker, employmentEndDate: newDate });
       }
       setEditing({});
     },
@@ -71,14 +58,10 @@ export default function WorkerFieldEmploymentEnd({
     (event: MouseEvent) => {
       if (!editing) return;
       if (cellRef.current && !cellRef.current.contains(event.target as Node)) {
-        if (datePickerOpen) {
-          return;
-        } else {
-          handleEditConfirm(valueState);
-        }
+        handleEditConfirm(valueState);
       }
     },
-    [cellRef, valueState, datePickerOpen, editing, handleEditConfirm],
+    [cellRef, valueState, editing, handleEditConfirm],
   );
 
   const handleKeyDown = useCallback(
@@ -88,7 +71,6 @@ export default function WorkerFieldEmploymentEnd({
         handleEditConfirm(valueState);
       } else if (event.key === 'Escape') {
         setValueState(worker.employmentEndDate);
-        setDatePickerOpen(false);
         setEditing({});
       }
     },
@@ -98,7 +80,6 @@ export default function WorkerFieldEmploymentEnd({
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
@@ -106,60 +87,38 @@ export default function WorkerFieldEmploymentEnd({
   }, [handleClickOutside, handleKeyDown, editing]);
 
   return (
-    <TableCell
-      component="th"
-      scope="row"
-      data-testid="worker-employment-end-cell"
-      sx={{ paddingY: 0, textAlign: 'center' }}
-    >
+    <td className="py-0 text-center" data-testid="worker-employment-end-cell">
       {editing ? (
         <div
           ref={cellRef}
+          className="flex flex-col items-center"
           data-testid={`worker-employment-end-editor-${worker.id}`}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
         >
-          <DatePicker
-            className="custom-date-picker"
-            data-testid={`worker-employment-end-datepicker-${worker.id}`}
-            disabled={valueState ? false : true}
-            value={valueState}
-            onChange={(newValue) => handleUpdateState(newValue)}
-            onOpen={() => setDatePickerOpen(true)}
-            onClose={() => setDatePickerOpen(false)}
-            slotProps={{
-              textField: {
-                inputProps: {
-                  'data-testid': `worker-employment-end-datepicker-input-${worker.id}`,
-                },
-              },
-            }}
+          <Input
+            type="date"
+            disabled={!valueState}
+            value={valueState ? valueState.format('YYYY-MM-DD') : ''}
+            onChange={(e) => handleDateChange(e.target.value)}
+            className="w-auto"
+            data-testid={`worker-employment-end-datepicker-input-${worker.id}`}
           />
-          <FormControlLabel
+          <label
+            className="mt-1 flex cursor-pointer items-center gap-2 text-sm"
             data-testid={`worker-employment-end-permanent-checkbox-${worker.id}`}
-            control={
-              <Checkbox
-                checked={valueState ? false : true}
-                onChange={handlePermanentChange}
-                data-testid={`worker-employment-end-permanent-checkbox-input-${worker.id}`}
-              />
-            }
-            label={t('permanent')}
-          />
+          >
+            <Checkbox
+              checked={!valueState}
+              onCheckedChange={handlePermanentChange}
+              data-testid={`worker-employment-end-permanent-checkbox-input-${worker.id}`}
+            />
+            {t('permanent')}
+          </label>
         </div>
       ) : (
         <div
           onClick={() => setEditing({ [worker.id]: 'employmentEndDate' })}
+          className="flex min-h-[45px] cursor-pointer items-center justify-center"
           data-testid={`worker-employment-end-display-${worker.id}`}
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: 45,
-          }}
         >
           <span>
             {worker.employmentEndDate
@@ -168,6 +127,6 @@ export default function WorkerFieldEmploymentEnd({
           </span>
         </div>
       )}
-    </TableCell>
+    </td>
   );
 }

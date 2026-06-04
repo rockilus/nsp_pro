@@ -1,15 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Box from '@mui/material/Box';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-// Styles
-import './update-dimension-dim-entries-input.css';
+import { Check, X, Trash2, Pencil } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 // Types
 import { DimEntryT } from '@/types/dim-entry';
 
@@ -80,79 +73,97 @@ export default function UpdateDimensionDimEntriesInput({
   };
 
   return (
-    <Box sx={{ width: '100%' }} data-testid={`dim-entries-input-${dimensionId}`}>
-      <TextField
-        label={t('property_new_option')}
-        variant="outlined"
-        value={newDimEntry.name}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyPress}
-        error={error || listError}
-        helperText={error || listError ? t('property_new_option_helper_text') : ''}
-        data-testid={`new-dim-entry-field-${dimensionId}`}
-        sx={{ width: '100%' }}
-      />
-      <Box mt={2} data-testid={`dim-entries-list-${dimensionId}`}>
+    <div className="w-full" data-testid={`dim-entries-input-${dimensionId}`}>
+      <div className="flex flex-col gap-1">
+        <Input
+          placeholder={t('property_new_option')}
+          value={newDimEntry.name}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyPress}
+          className={error || listError ? 'border-destructive' : ''}
+          data-testid={`new-dim-entry-field-${dimensionId}`}
+        />
+        {(error || listError) && (
+          <p className="text-xs text-destructive">{t('property_new_option_helper_text')}</p>
+        )}
+      </div>
+      <div className="mt-2" data-testid={`dim-entries-list-${dimensionId}`}>
         {dimEntries.map((de, index) => (
-          <Box
+          <div
             key={index}
-            display="flex"
-            alignItems="center"
-            sx={{ paddingLeft: 0.5 }}
+            className="flex items-center pl-1"
             data-testid={`dim-entry-item-${de.id}`}
           >
             {DimEntryEditing?.id === de.id ? (
-              <div className="edit-dim-entry" data-testid={`dim-entry-editing-${de.id}`}>
-                <TextField
-                  value={DimEntryEditing.name}
-                  onChange={(e) => setDimEntryEditing({ ...de, name: e.target.value })}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleEditDimEntry();
-                    } else if (e.key === 'Escape') {
-                      setDimEntryEditing(null);
-                    }
-                  }}
-                  error={errorEditing}
-                  helperText={errorEditing ? t('property_new_option_helper_text') : ''}
-                  data-testid={`dim-entry-edit-field-${de.id}`}
-                  sx={{ width: '100%' }}
-                />
-                <IconButton
+              <div
+                className="flex w-full items-center gap-1"
+                data-testid={`dim-entry-editing-${de.id}`}
+              >
+                <div className="flex flex-1 flex-col gap-0.5">
+                  <Input
+                    value={DimEntryEditing.name}
+                    onChange={(e) => setDimEntryEditing({ ...de, name: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleEditDimEntry();
+                      } else if (e.key === 'Escape') {
+                        setDimEntryEditing(null);
+                      }
+                    }}
+                    className={errorEditing ? 'border-destructive' : ''}
+                    data-testid={`dim-entry-edit-field-${de.id}`}
+                  />
+                  {errorEditing && (
+                    <p className="text-xs text-destructive">
+                      {t('property_new_option_helper_text')}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={handleEditDimEntry}
                   data-testid={`dim-entry-confirm-edit-${de.id}`}
+                  className="h-7 w-7"
                 >
-                  <CheckIcon />
-                </IconButton>
-                <IconButton
+                  <Check className="size-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setDimEntryEditing(null)}
                   data-testid={`dim-entry-cancel-edit-${de.id}`}
+                  className="h-7 w-7"
                 >
-                  <CloseIcon />
-                </IconButton>
+                  <X className="size-4" />
+                </Button>
               </div>
             ) : (
-              <div className="edit-dim-entry" data-testid={`dim-entry-display-${de.id}`}>
-                <Box flexGrow={1} data-testid={`dim-entry-name-${de.id}`}>
-                  {de.name}
-                </Box>
-                <IconButton
+              <>
+                <span className="flex-1">{de.name}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setDimEntryEditing(de)}
-                  data-testid={`dim-entry-edit-button-${de.id}`}
+                  data-testid={`dim-entry-edit-btn-${de.id}`}
+                  className="h-7 w-7"
                 >
-                  <EditIcon />
-                </IconButton>
-                <IconButton
+                  <Pencil className="size-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => deleteDimEntry(de.id)}
-                  data-testid={`dim-entry-delete-button-${de.id}`}
+                  data-testid={`dim-entry-delete-btn-${de.id}`}
+                  className="h-7 w-7"
                 >
-                  <DeleteIcon />
-                </IconButton>
-              </div>
+                  <Trash2 className="size-4" />
+                </Button>
+              </>
             )}
-          </Box>
+          </div>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

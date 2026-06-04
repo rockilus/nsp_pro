@@ -1,19 +1,13 @@
 import React, { useState } from 'react';
+import { EllipsisVertical, ArrowUp, ArrowDown, Filter } from 'lucide-react';
 import {
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  Popover,
-} from '@mui/material';
-import {
-  MoreVert as MoreVertIcon,
-  ArrowUpward as ArrowUpwardIcon,
-  ArrowDownward as ArrowDownwardIcon,
-  FilterList as FilterListIcon,
-} from '@mui/icons-material';
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent } from '@/components/ui/popover';
 import { ColumnDefinition, ColumnFilter, TableSort, SortDirection } from '../../types/filter';
 import TextFilter from './filters/TextFilter';
 import SelectFilter from './filters/SelectFilter';
@@ -34,18 +28,10 @@ export default function ColumnSortFilterMenu({
   onSort,
   onFilter,
 }: ColumnSortFilterMenuProps) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleSort = (direction: SortDirection) => {
+  const handleSort = (direction: SortDirection | null) => {
     if (direction) {
       onSort({
         columnId: column.id,
@@ -55,16 +41,21 @@ export default function ColumnSortFilterMenu({
     } else {
       onSort(null);
     }
-    handleMenuClose();
+    setDropdownOpen(false);
   };
 
-  const handleFilterOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setFilterAnchorEl(event.currentTarget);
-    handleMenuClose();
+  const handleFilterOpen = () => {
+    setFilterOpen(true);
+    setDropdownOpen(false);
   };
 
   const handleFilterClose = () => {
-    setFilterAnchorEl(null);
+    setFilterOpen(false);
+  };
+
+  const handleFilterApply = (filter: ColumnFilter) => {
+    onFilter(filter);
+    setFilterOpen(false);
   };
 
   const renderFilterComponent = () => {
@@ -72,7 +63,7 @@ export default function ColumnSortFilterMenu({
       case 'text':
         return (
           <TextFilter
-            onApply={onFilter}
+            onApply={handleFilterApply}
             onClose={handleFilterClose}
             columnId={column.id}
             label={column.label}
@@ -83,7 +74,7 @@ export default function ColumnSortFilterMenu({
       case 'select':
         return (
           <SelectFilter
-            onApply={onFilter}
+            onApply={handleFilterApply}
             onClose={handleFilterClose}
             columnId={column.id}
             label={column.label}
@@ -95,7 +86,7 @@ export default function ColumnSortFilterMenu({
       case 'boolean':
         return (
           <SelectFilter
-            onApply={onFilter}
+            onApply={handleFilterApply}
             onClose={handleFilterClose}
             columnId={column.id}
             label={column.label}
@@ -107,7 +98,7 @@ export default function ColumnSortFilterMenu({
       case 'date':
         return (
           <DateFilter
-            onApply={onFilter}
+            onApply={handleFilterApply}
             onClose={handleFilterClose}
             columnId={column.id}
             label={column.label}
@@ -125,65 +116,51 @@ export default function ColumnSortFilterMenu({
 
   return (
     <>
-      <IconButton
-        component="span"
-        size="small"
-        onClick={handleMenuOpen}
-        sx={{
-          opacity: 0.7,
-          '&:hover': { opacity: 1 },
-        }}
-        data-testid={`column-menu-${column.id}`}
-      >
-        <MoreVertIcon fontSize="small" />
-      </IconButton>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="inline-flex cursor-pointer items-center rounded border-none bg-transparent p-1 opacity-70 hover:opacity-100"
+            data-testid={`column-menu-${column.id}`}
+          >
+            <EllipsisVertical className="size-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="min-w-[180px]">
+          <DropdownMenuItem onClick={() => handleSort('asc')} data-testid={`sort-asc-${column.id}`}>
+            <ArrowUp className="size-4" />
+            <span>Sort Ascending</span>
+          </DropdownMenuItem>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{ sx: { minWidth: 180 } }}
-      >
-        <MenuItem onClick={() => handleSort('asc')} data-testid={`sort-asc-${column.id}`}>
-          <ListItemIcon>
-            <ArrowUpwardIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Sort Ascending</ListItemText>
-        </MenuItem>
+          <DropdownMenuItem
+            onClick={() => handleSort('desc')}
+            data-testid={`sort-desc-${column.id}`}
+          >
+            <ArrowDown className="size-4" />
+            <span>Sort Descending</span>
+          </DropdownMenuItem>
 
-        <MenuItem onClick={() => handleSort('desc')} data-testid={`sort-desc-${column.id}`}>
-          <ListItemIcon>
-            <ArrowDownwardIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Sort Descending</ListItemText>
-        </MenuItem>
+          {sortDirection && (
+            <DropdownMenuItem
+              onClick={() => handleSort(null)}
+              data-testid={`remove-sort-${column.id}`}
+            >
+              <span>Remove Sort</span>
+            </DropdownMenuItem>
+          )}
 
-        {sortDirection && (
-          <MenuItem onClick={() => handleSort(null)} data-testid={`remove-sort-${column.id}`}>
-            <ListItemText>Remove Sort</ListItemText>
-          </MenuItem>
-        )}
+          <DropdownMenuSeparator />
 
-        <Divider />
+          <DropdownMenuItem onClick={handleFilterOpen} data-testid={`filter-menu-${column.id}`}>
+            <Filter className="size-4" />
+            <span>Filter</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-        <MenuItem onClick={handleFilterOpen} data-testid={`filter-menu-${column.id}`}>
-          <ListItemIcon>
-            <FilterListIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Filter</ListItemText>
-        </MenuItem>
-      </Menu>
-
-      <Popover
-        open={Boolean(filterAnchorEl)}
-        anchorEl={filterAnchorEl}
-        onClose={handleFilterClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-      >
-        {renderFilterComponent()}
+      <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+        <PopoverContent align="start" side="bottom" className="p-0">
+          {renderFilterComponent()}
+        </PopoverContent>
       </Popover>
     </>
   );

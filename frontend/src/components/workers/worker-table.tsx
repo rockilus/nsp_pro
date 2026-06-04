@@ -1,17 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from '../../app/i18n/client';
-// MUI
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Tooltip from '@mui/material/Tooltip';
-import TextField from '@mui/material/TextField';
+import { Trash2 } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 // Components
 import DimensionCell from '../shift-worker-shared/dimension/dimension-cell';
 import AttributeCell from '../shift-worker-shared/attribute/attribute-cell';
@@ -21,7 +21,6 @@ import ColumnSortFilterMenu from '../table/ColumnSortFilterMenu';
 // Styles
 import '../../styles/text-styles.css';
 import '../../styles/table-styles.css';
-import './WorkerTable.css';
 // Types
 import { WorkerT } from '../../types/worker';
 import { DimensionT, DimensionType, DimensionEntryType } from '../../types/dimension';
@@ -39,7 +38,6 @@ export default function WorkerTable({
   specialties,
   defaultWorkerFields,
   tableHeight = '70vh',
-  // New props for sorting/filtering
   workerColumns,
   currentSort,
   onSort,
@@ -62,7 +60,6 @@ export default function WorkerTable({
 
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
 
-  // Memoize filtered dimensions for performance
   const dimensionsDisplayed = useMemo(
     () => dimensions.filter((dim) => dim.dimTypes.includes(DimensionType.WORKER)),
     [dimensions],
@@ -70,10 +67,7 @@ export default function WorkerTable({
 
   return (
     <div>
-      <TableContainer
-        className="worker-table-container"
-        sx={{ height: tableHeight, overflow: 'auto' }}
-      >
+      <div className="worker-table-container" style={{ height: tableHeight, overflow: 'auto' }}>
         <Table className="worker-table" aria-label="worker table" data-testid="worker-table">
           <WorkerTableHeader
             lng={lng}
@@ -82,7 +76,6 @@ export default function WorkerTable({
             defaultWorkerFields={defaultWorkerFields}
             dimensionsDisplayed={dimensionsDisplayed}
             dimEntries={dimEntries}
-            // New props for sorting/filtering
             workerColumns={workerColumns}
             currentSort={currentSort}
             onSort={onSort}
@@ -118,7 +111,7 @@ export default function WorkerTable({
               <TableRow>
                 <TableCell
                   colSpan={defaultWorkerFields.length + dimensionsDisplayed.length + 1}
-                  sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}
+                  className="py-4 text-center text-muted-foreground"
                   data-testid="worker-table-empty-state"
                 >
                   {t('no_workers_found')}
@@ -127,12 +120,12 @@ export default function WorkerTable({
             )}
           </TableBody>
         </Table>
-      </TableContainer>
+      </div>
     </div>
   );
 }
 
-// Types for sub-components
+// Types
 interface WorkerTableProps {
   lng: string;
   selectedTeamId: string;
@@ -142,7 +135,6 @@ interface WorkerTableProps {
   specialties: SpecialtyT[];
   defaultWorkerFields: Record<string, string>[];
   tableHeight?: string;
-  // New props for sorting/filtering
   workerColumns: ColumnDefinition[];
   currentSort?: TableSort | null;
   onSort?: (sort: TableSort | null) => void;
@@ -169,7 +161,6 @@ interface WorkerTableHeaderProps {
   defaultWorkerFields: Record<string, string>[];
   dimensionsDisplayed: DimensionT[];
   dimEntries: DimEntryT[];
-  // New props for sorting/filtering
   workerColumns: ColumnDefinition[];
   currentSort?: TableSort | null;
   onSort?: (sort: TableSort | null) => void;
@@ -206,7 +197,7 @@ interface WorkerNameCellProps {
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
 }
 
-// Worker Name Cell Component (First Column)
+// Worker Name Cell Component
 function WorkerNameCell({
   worker,
   bodyEditing,
@@ -235,16 +226,13 @@ function WorkerNameCell({
     <TableCell
       className="worker-table-first-column"
       onClick={() => !editing && setBodyEditing({ [worker.id]: 'name' })}
-      sx={{ cursor: editing ? 'default' : 'pointer' }}
       data-testid="worker-name-cell"
       data-worker-id={worker.id}
     >
       <div className="worker-name-cell">
         {editing ? (
-          <TextField
-            fullWidth
+          <Input
             type="text"
-            name="Name"
             value={valueState}
             onChange={(e) => setValueState(e.target.value)}
             onBlur={handleEditConfirm}
@@ -256,12 +244,9 @@ function WorkerNameCell({
               }
             }}
             autoFocus
-            size="small"
-            variant="standard"
-            inputProps={{
-              'data-testid': `worker-name-input-${worker.id}`,
-              'data-state': 'editing',
-            }}
+            className="h-8"
+            data-testid={`worker-name-input-${worker.id}`}
+            data-state="editing"
           />
         ) : (
           <div
@@ -270,8 +255,11 @@ function WorkerNameCell({
             data-state="display"
             data-worker-name={worker.name || 'Unnamed Worker'}
           >
-            <Tooltip title={worker.name || 'Unnamed Worker'} placement="top">
-              <span>{worker.name || 'Unnamed Worker'}</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>{worker.name || 'Unnamed Worker'}</span>
+              </TooltipTrigger>
+              <TooltipContent>{worker.name || 'Unnamed Worker'}</TooltipContent>
             </Tooltip>
           </div>
         )}
@@ -288,7 +276,6 @@ function WorkerTableHeader({
   defaultWorkerFields,
   dimensionsDisplayed,
   dimEntries,
-  // New props
   workerColumns,
   currentSort,
   onSort,
@@ -305,23 +292,16 @@ function WorkerTableHeader({
   const { t } = useTranslation(lng, 'worker-page');
 
   return (
-    <TableHead className="worker-table-header">
+    <TableHeader className="worker-table-header">
       <TableRow>
         {/* First column header - Worker name */}
-        <TableCell
-          className="worker-table-first-header-cell"
-          data-testid="worker-name-header-cell"
-          sx={{
-            textAlign: 'left !important',
-            paddingLeft: '16px !important',
-            '& .table-header-default': {
-              justifyContent: 'flex-start !important',
-            },
-          }}
-        >
+        <TableCell className="worker-table-first-header-cell" data-testid="worker-name-header-cell">
           <div className="flex items-center justify-between">
-            <Tooltip title={t('name_tooltip')} placement="top">
-              <span className="table-header-default">{t('name')}</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="table-header-default">{t('name')}</span>
+              </TooltipTrigger>
+              <TooltipContent>{t('name_tooltip')}</TooltipContent>
             </Tooltip>
             {onSort && onFilter && (
               <ColumnSortFilterMenu
@@ -343,7 +323,6 @@ function WorkerTableHeader({
               lng={lng}
               teamId={selectedTeamId}
               specialties={specialties}
-              // Add sorting/filtering props
               column={workerColumns.find((col) => col.id === 'specialties')}
               currentSort={currentSort?.columnId === 'specialties' ? currentSort : undefined}
               onSort={onSort}
@@ -359,8 +338,11 @@ function WorkerTableHeader({
               data-testid={`worker-${field.name}-header-cell`}
             >
               <div className="flex items-center justify-between">
-                <Tooltip title={field.tooltip} placement="top">
-                  <span className="table-header-default">{field.label}</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="table-header-default">{field.label}</span>
+                  </TooltipTrigger>
+                  <TooltipContent>{field.tooltip}</TooltipContent>
                 </Tooltip>
                 {onSort && onFilter && (
                   <ColumnSortFilterMenu
@@ -385,7 +367,6 @@ function WorkerTableHeader({
             dimensionTypeTable={DimensionType.WORKER}
             dimension={dim}
             dimEntries={dimEntries.filter((de) => de.dimensionId === dim.id)}
-            // Add sorting/filtering props
             column={workerColumns.find((col) => col.id === `dimension_${dim.id}`)}
             currentSort={currentSort?.columnId === `dimension_${dim.id}` ? currentSort : undefined}
             onSort={onSort}
@@ -405,9 +386,9 @@ function WorkerTableHeader({
         <TableCell
           className="worker-table-actions-header"
           data-testid="worker-actions-header-cell"
-        ></TableCell>
+        />
       </TableRow>
-    </TableHead>
+    </TableHeader>
   );
 }
 
@@ -483,18 +464,19 @@ function WorkerTableRow({
 
       {/* Actions column */}
       <TableCell className="worker-table-actions" data-testid="worker-actions-cell">
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Tooltip title={t('delete_member_tooltip')}>
+        <Tooltip>
+          <TooltipTrigger asChild>
             <Button
+              variant="ghost"
+              size="icon"
               onClick={() => handleDeleteWorker(worker.id)}
-              size="small"
-              sx={{ minWidth: 'auto', p: 0.5 }}
               data-testid={`worker-delete-button-${worker.id}`}
             >
-              <DeleteIcon fontSize="small" />
+              <Trash2 className="size-4" />
             </Button>
-          </Tooltip>
-        </Box>
+          </TooltipTrigger>
+          <TooltipContent>{t('delete_member_tooltip')}</TooltipContent>
+        </Tooltip>
       </TableCell>
     </TableRow>
   );

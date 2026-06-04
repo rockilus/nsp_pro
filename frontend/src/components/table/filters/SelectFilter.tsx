@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
-import {
-  FormControl,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  Button,
-  Box,
-  Typography,
-} from '@mui/material';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import { ColumnFilter } from '../../../types/filter';
 
 interface SelectFilterProps {
@@ -51,44 +44,36 @@ export default function SelectFilter({
   };
 
   return (
-    <Box
-      sx={{ p: 2, minWidth: 250, maxHeight: 300, overflow: 'auto' }}
+    <div
+      className="flex max-h-[300px] min-w-[250px] flex-col overflow-auto p-4"
       data-testid={`select-filter-${columnId}`}
     >
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>
-        Filter {label}
-      </Typography>
-      <FormControl component="fieldset">
-        <FormGroup>
-          {options.map((option) => (
-            <FormControlLabel
-              key={option.value}
-              control={
-                <Checkbox
-                  checked={selectedValues.includes(option.value)}
-                  onChange={() => handleToggle(option.value)}
-                  size="small"
-                  data-testid={`filter-option-${columnId}-${option.value}`}
-                />
-              }
-              label={option.label}
+      <p className="mb-2 text-sm font-medium">Filter {label}</p>
+      <div className="flex flex-col gap-1.5">
+        {options.map((option) => (
+          <label key={option.value} className="flex cursor-pointer items-center gap-2 text-sm">
+            <Checkbox
+              checked={selectedValues.includes(option.value)}
+              onCheckedChange={() => handleToggle(option.value)}
+              data-testid={`filter-option-${columnId}-${option.value}`}
             />
-          ))}
-        </FormGroup>
-      </FormControl>
-      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-        <Button
-          onClick={handleApply}
-          variant="contained"
-          size="small"
-          data-testid={`filter-apply-${columnId}`}
-        >
+            {option.label}
+          </label>
+        ))}
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Button onClick={handleApply} size="sm" data-testid={`filter-apply-${columnId}`}>
           Apply
         </Button>
-        <Button onClick={onClose} size="small" data-testid={`filter-cancel-${columnId}`}>
+        <Button
+          onClick={onClose}
+          variant="outline"
+          size="sm"
+          data-testid={`filter-cancel-${columnId}`}
+        >
           Cancel
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

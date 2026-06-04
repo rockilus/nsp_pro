@@ -1,11 +1,6 @@
 import React, { useState, ChangeEvent, useRef } from 'react';
-// MUI
-import Chip from '@mui/material/Chip';
-import ClearIcon from '@mui/icons-material/Clear';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
+import { X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 // Types
 import { SpecialtyT } from '@/types/specialty';
 import { ConstraintDefaultColors } from '../../../../constants/constants';
@@ -69,7 +64,6 @@ export default function WorkerSpecialtyCellEdit({
       if (lastSelected) {
         handleRemoveFromSelected(lastSelected);
       }
-      // Update the external state for "selected" here
     } else if (event.key === 'Enter') {
       if (selectedOption) {
         handleAddSelectedSpecialty(selectedOption);
@@ -111,69 +105,39 @@ export default function WorkerSpecialtyCellEdit({
       );
       setSearchQuery('');
     }
-    // Update the external state for "selected" here
   };
 
   return (
     <div
       data-testid="worker-specialty-edit-popup"
-      style={{
-        width: '240px',
-        borderRadius: '6px',
-        boxShadow:
-          'rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px',
-      }}
+      className="w-[240px] rounded-md shadow-[rgba(15,15,15,0.05)_0px_0px_0px_1px,rgba(15,15,15,0.1)_0px_3px_6px,rgba(15,15,15,0.2)_0px_9px_24px]"
     >
-      <div
-        style={{
-          borderTopRightRadius: 'inherit',
-          borderTopLeftRadius: 'inherit',
-          // background: "#f0efed",
-          background: ConstraintDefaultColors.shade0,
-        }}
-      >
-        {/* <div className="field-name" style={{ fontSize: "10px" }}>
-              {selector.name.charAt(0).toUpperCase() + selector.name.slice(1)}
-            </div> */}
+      <div style={{ background: ConstraintDefaultColors.shade0 }} className="rounded-t-md">
         <div
-          className="input-container"
+          className="flex cursor-text flex-wrap items-start gap-1 overflow-auto p-1.5"
           data-testid="specialty-input-container"
           onClick={() => inputRef.current && inputRef.current.focus()}
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'flex-start',
-            overflow: 'auto',
-            cursor: 'text',
-            // Hide scrollbar
-            scrollbarWidth: 'none', // For Firefox
-            msOverflowStyle: 'none', // For Internet Explorer and Edge
-            // "&::-webkit-scrollbar": {
-            //   display: "none", // For Chrome, Safari and Opera
-            // },
-          }}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {selectedSpecialties.map((de) => (
-            <Chip
+            <Badge
               key={de.id}
+              variant="secondary"
+              className="gap-1 pr-1"
               data-testid={`selected-specialty-chip-${de.id}`}
-              label={de.name}
-              onDelete={() => handleRemoveFromSelected(de)}
-              deleteIcon={
-                <ClearIcon
-                  data-testid={`remove-specialty-${de.id}`}
-                  style={{
-                    fontSize: '15px',
-                    color: ConstraintDefaultColors.shade2,
-                  }}
-                />
-              }
-              sx={{
-                height: '21px',
-                color: ConstraintDefaultColors.shade3,
-                background: ConstraintDefaultColors.shade1,
-              }}
-            />
+            >
+              {de.name}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveFromSelected(de);
+                }}
+                className="inline-flex items-center rounded-full p-0 hover:bg-muted-foreground/20"
+                data-testid={`remove-specialty-${de.id}`}
+              >
+                <X className="size-3" style={{ color: ConstraintDefaultColors.shade2 }} />
+              </button>
+            </Badge>
           ))}
           <input
             type="text"
@@ -182,51 +146,33 @@ export default function WorkerSpecialtyCellEdit({
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
             ref={inputRef}
-            // placeholder="Search shifts"
-            style={{
-              color: ConstraintDefaultColors.shade3,
-              height: '21px',
-              border: 'none',
-              outline: 'none',
-              background: 'transparent',
-              minWidth: '60px',
-              flexGrow: 1,
-            }}
+            className="min-w-[60px] flex-1 border-none bg-transparent text-sm outline-none"
+            style={{ color: ConstraintDefaultColors.shade3 }}
           />
         </div>
       </div>
-      <div style={{ padding: '8px 0 8px 0' }}>
-        <div
-          style={{
-            fontSize: '13px',
-            fontWeight: 'bold',
-            // color: "rgba(55, 53, 47, 0.65)",
-            color: ConstraintDefaultColors.shade2,
-            padding: '0 16px 6px 16px',
-          }}
+      <div className="py-2">
+        <p
+          className="px-4 pb-1.5 text-[13px] font-bold"
+          style={{ color: ConstraintDefaultColors.shade2 }}
         >
-          {'Select one or more '}
-        </div>
-        <List dense={true} sx={{ padding: '0 0 0 0' }} data-testid="specialty-options-list">
+          Select one or more
+        </p>
+        <div data-testid="specialty-options-list">
           {filteredOptions.map((option) => (
-            <ListItemButton
+            <button
               key={option.id}
               data-testid={`specialty-option-${option.id}`}
-              onClick={() => {
-                handleAddSelectedSpecialty(option);
-              }}
-              selected={selectedOption === option}
-              sx={{ padding: '0 0 0 0' }}
+              onClick={() => handleAddSelectedSpecialty(option)}
+              className={`w-full cursor-pointer px-4 py-0 text-left text-sm hover:bg-accent ${
+                selectedOption === option ? 'bg-accent' : ''
+              }`}
+              style={{ color: ConstraintDefaultColors.shade3 }}
             >
-              <ListItem sx={{ padding: '0 16px 0 16px' }}>
-                <ListItemText
-                  primary={option.name}
-                  style={{ color: ConstraintDefaultColors.shade3 }}
-                />
-              </ListItem>
-            </ListItemButton>
+              {option.name}
+            </button>
           ))}
-        </List>
+        </div>
       </div>
     </div>
   );

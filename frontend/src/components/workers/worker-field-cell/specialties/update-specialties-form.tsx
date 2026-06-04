@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../../../app/i18n/client';
-// MUI
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import { Button } from '@/components/ui/button';
 // Component
 import UpdateSpecialtiesInput from './update-specialties-input';
 // Types
@@ -39,9 +37,9 @@ export default function UpdateSpecialtiesForm({
   };
 
   return (
-    <Box sx={{ width: '100%' }} data-testid="update-specialties-form">
+    <div className="w-full" data-testid="update-specialties-form">
       <span data-testid="update-specialties-title">{t('update_specialties')}</span>
-      <Box mt={2}>
+      <div className="mt-2">
         <UpdateSpecialtiesInput
           lng={lng}
           specialties={specialties}
@@ -51,17 +49,12 @@ export default function UpdateSpecialtiesForm({
           updateSpecialty={handleUpdateSpecialty}
           deleteSpecialty={handleDeleteSpecialty}
         />
-      </Box>
-      <div style={{ display: 'flex', justifyContent: 'right', marginTop: 2 }}>
-        <Button
-          variant="contained"
-          onClick={handleClose}
-          sx={{ marginRight: 1 }}
-          data-testid="save-specialties-button"
-        >
+      </div>
+      <div className="mt-2 flex justify-end">
+        <Button onClick={handleClose} className="mr-1" data-testid="save-specialties-button">
           {t('save')}
         </Button>
       </div>
-    </Box>
+    </div>
   );
 }

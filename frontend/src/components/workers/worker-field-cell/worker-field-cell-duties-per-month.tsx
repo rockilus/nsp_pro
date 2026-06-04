@@ -1,8 +1,5 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-// MUI
-import Box from '@mui/material/Box';
-import TableCell from '@mui/material/TableCell';
-import TextField from '@mui/material/TextField';
+import { Input } from '@/components/ui/input';
 // Types
 import { WorkerT } from '../../../types/worker';
 
@@ -43,19 +40,15 @@ export default function WorkerFieldCellDutiesPerMonth({
   };
 
   return (
-    <TableCell
-      component="th"
-      scope="row"
+    <td
+      className="py-0 text-center"
       onClick={() => !editing && !isSaving && setEditing({ [worker.id]: 'dutiesPerMonth' })}
-      sx={{ paddingY: 0, textAlign: 'center' }}
       data-testid="worker-duties-per-month-cell"
       data-saving={isSaving}
     >
       {editing ? (
-        <TextField
-          fullWidth
+        <Input
           type="number"
-          name="Duties per month"
           value={valueState}
           onChange={(e) => setValueState(e.target.value === '' ? '' : Number(e.target.value))}
           onBlur={handleEditConfirm}
@@ -68,27 +61,20 @@ export default function WorkerFieldCellDutiesPerMonth({
           }}
           autoFocus
           disabled={isSaving}
-          inputProps={{
-            style: { textAlign: 'center' },
-            'data-testid': `worker-duties-per-month-input-${worker.id}`,
-            'data-saving': isSaving,
-          }}
+          className="text-center"
+          data-testid={`worker-duties-per-month-input-${worker.id}`}
+          data-saving={isSaving}
         />
       ) : (
-        <Box
-          sx={{
-            minHeight: 45,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+        <div
+          className="flex min-h-[45px] items-center justify-center"
           data-testid={`worker-duties-per-month-display-${worker.id}`}
           data-saving={isSaving}
           data-value={worker.dutiesPerMonth}
         >
           {isSaving ? 'Saving...' : worker.dutiesPerMonth}
-        </Box>
+        </div>
       )}
-    </TableCell>
+    </td>
   );
 }
