@@ -110,6 +110,7 @@ export default function ColumnSortFilterMenu({
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <button
+          type="button"
           className="inline-flex cursor-pointer items-center rounded border-none bg-transparent p-1 opacity-70 hover:opacity-100"
           data-testid={`column-menu-${column.id}`}
         >
@@ -134,6 +135,7 @@ export default function ColumnSortFilterMenu({
           // ── Sort / Filter menu ──────────────────────
           <div className="flex flex-col py-1">
             <button
+              type="button"
               onClick={() => handleSort('asc')}
               className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
               data-testid={`sort-asc-${column.id}`}
@@ -142,6 +144,7 @@ export default function ColumnSortFilterMenu({
               Sort Ascending
             </button>
             <button
+              type="button"
               onClick={() => handleSort('desc')}
               className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
               data-testid={`sort-desc-${column.id}`}
@@ -152,6 +155,7 @@ export default function ColumnSortFilterMenu({
 
             {sortDirection && (
               <button
+                type="button"
                 onClick={() => handleSort(null)}
                 className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
                 data-testid={`remove-sort-${column.id}`}
@@ -163,6 +167,7 @@ export default function ColumnSortFilterMenu({
             <div className="my-1 border-t border-border" />
 
             <button
+              type="button"
               onClick={handleOpenFilter}
               className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
               data-testid={`filter-menu-${column.id}`}
