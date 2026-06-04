@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from '../../app/i18n/client';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 // Components
+import WorkerEditDialog from './worker-edit-dialog/WorkerEditDialog';
 import DimensionCell from '../shift-worker-shared/dimension/dimension-cell';
 import AttributeCell from '../shift-worker-shared/attribute/attribute-cell';
 import WorkerFieldCell from './worker-field-cell/worker-field-cell';
@@ -59,6 +60,7 @@ export default function WorkerTable({
   const { t } = useTranslation(lng, 'worker-page');
 
   const [bodyEditing, setBodyEditing] = useState<{ [key: string]: string }>({});
+  const [editingWorker, setEditingWorker] = useState<WorkerT | null>(null);
 
   const dimensionsDisplayed = useMemo(
     () => dimensions.filter((dim) => dim.dimTypes.includes(DimensionType.WORKER)),
@@ -105,6 +107,7 @@ export default function WorkerTable({
                 handleUpdateWorker={handleUpdateWorker}
                 handleDeleteWorker={handleDeleteWorker}
                 handleUpdateAttribute={handleUpdateAttribute}
+                onEditWorker={setEditingWorker}
               />
             ))}
             {workers.length === 0 && (
@@ -121,6 +124,20 @@ export default function WorkerTable({
           </TableBody>
         </Table>
       </div>
+
+      {editingWorker && (
+        <WorkerEditDialog
+          lng={lng}
+          open={!!editingWorker}
+          onClose={() => setEditingWorker(null)}
+          worker={editingWorker}
+          dimensions={dimensions}
+          dimEntries={dimEntries}
+          specialties={specialties}
+          handleUpdateWorker={handleUpdateWorker}
+          handleUpdateAttribute={(attribute, teamId) => handleUpdateAttribute(attribute, teamId)}
+        />
+      )}
     </div>
   );
 }
@@ -188,6 +205,7 @@ interface WorkerTableRowProps {
   handleUpdateWorker: (updatedWorker: WorkerT) => void;
   handleDeleteWorker: (workerId: string) => void;
   handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
+  onEditWorker: (worker: WorkerT) => void;
 }
 
 interface WorkerNameCellProps {
@@ -406,6 +424,7 @@ function WorkerTableRow({
   handleUpdateWorker,
   handleDeleteWorker,
   handleUpdateAttribute,
+  onEditWorker,
 }: WorkerTableRowProps) {
   const { t } = useTranslation(lng, 'worker-page');
 
@@ -464,19 +483,34 @@ function WorkerTableRow({
 
       {/* Actions column */}
       <TableCell className="worker-table-actions" data-testid="worker-actions-cell">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleDeleteWorker(worker.id)}
-              data-testid={`worker-delete-button-${worker.id}`}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{t('delete_member_tooltip')}</TooltipContent>
-        </Tooltip>
+        <div className="flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onEditWorker(worker)}
+                data-testid={`worker-edit-button-${worker.id}`}
+              >
+                <Pencil className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('edit_member_tooltip')}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDeleteWorker(worker.id)}
+                data-testid={`worker-delete-button-${worker.id}`}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('delete_member_tooltip')}</TooltipContent>
+          </Tooltip>
+        </div>
       </TableCell>
     </TableRow>
   );
