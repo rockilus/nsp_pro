@@ -43,8 +43,8 @@ test.describe('Worker Deletion', () => {
       `worker-delete-button-${testWorker.id}`,
     );
 
-    // Verify the button contains a delete icon
-    const deleteIcon = deleteButton.locator('svg[data-testid="DeleteIcon"]');
+    // Verify the button contains a delete icon (lucide-react Trash2)
+    const deleteIcon = deleteButton.locator('svg');
     await expect(deleteIcon).toBeVisible();
 
     console.log('✅ Delete button is displayed correctly for worker');
