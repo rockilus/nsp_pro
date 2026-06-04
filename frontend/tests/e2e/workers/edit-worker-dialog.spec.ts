@@ -368,25 +368,25 @@ test.describe('Worker Edit Dialog', () => {
     await page.reload();
     await page.waitForSelector('[aria-label="worker table"]');
 
-    // Open dialog and add both specialties via the specialty edit component
+    // Open dialog and add both specialties by clicking their badge toggles
     await tb.openEditDialog(page, worker.id);
 
-    // The specialties section uses WorkerSpecialtyCellEdit.
-    // Type in the search input to find and select a specialty.
-    const specialtyInput = page.locator(
-      '[data-testid="specialty-input-container"] input, [data-testid="worker-specialty-edit-popup"] input',
-    );
-    if (await specialtyInput.isVisible()) {
-      // Add specialty A
-      await specialtyInput.fill(specialtyA.name);
-      await page.keyboard.press('Enter');
-      await page.waitForTimeout(200);
+    const badgeA = page.locator(`[data-testid="edit-worker-specialty-${specialtyA.id}"]`);
+    const badgeB = page.locator(`[data-testid="edit-worker-specialty-${specialtyB.id}"]`);
 
-      // Add specialty B
-      await specialtyInput.fill(specialtyB.name);
-      await page.keyboard.press('Enter');
-      await page.waitForTimeout(200);
-    }
+    // Badges start as outline (unselected)
+    await expect(badgeA).toBeVisible();
+    await expect(badgeB).toBeVisible();
+    await expect(badgeA).not.toHaveClass(/default/);
+    await expect(badgeB).not.toHaveClass(/default/);
+
+    // Click both to select them
+    await badgeA.click();
+    await badgeB.click();
+
+    // Badges should now show as selected (default variant)
+    await expect(badgeA).toHaveClass(/default/);
+    await expect(badgeB).toHaveClass(/default/);
 
     await tb.saveEditDialog(page);
 

@@ -17,8 +17,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-// Components
-import WorkerSpecialtyCellEdit from '../worker-field-cell/specialties/worker-specialty-cell-edit';
 // Types
 import { WorkerT } from '../../../types/worker';
 import { DimensionT, DimensionEntryType, DimensionType } from '../../../types/dimension';
@@ -262,22 +260,27 @@ export default function WorkerEditDialog({
           {specialties.length > 0 && (
             <>
               <SectionLabel label={t('section_skills')} />
-              <div className="rounded-md border p-3">
-                <WorkerSpecialtyCellEdit
-                  selectedSpecialties={form.selectedSpecialties}
-                  specialties={specialties}
-                  handleAddSpecialty={(specialty) =>
-                    patch({ selectedSpecialties: [...form.selectedSpecialties, specialty] })
-                  }
-                  handleRemoveSpecialty={(specialty) =>
-                    patch({
-                      selectedSpecialties: form.selectedSpecialties.filter(
-                        (s) => s.id !== specialty.id,
-                      ),
-                    })
-                  }
-                  handleClose={() => {}}
-                />
+              <div className="flex flex-wrap gap-1.5">
+                {specialties.map((specialty) => {
+                  const selected = form.selectedSpecialties.some((s) => s.id === specialty.id);
+                  return (
+                    <Badge
+                      key={specialty.id}
+                      variant={selected ? 'default' : 'outline'}
+                      className="cursor-pointer select-none"
+                      onClick={() =>
+                        patch({
+                          selectedSpecialties: selected
+                            ? form.selectedSpecialties.filter((s) => s.id !== specialty.id)
+                            : [...form.selectedSpecialties, specialty],
+                        })
+                      }
+                      data-testid={`edit-worker-specialty-${specialty.id}`}
+                    >
+                      {specialty.name}
+                    </Badge>
+                  );
+                })}
               </div>
             </>
           )}
