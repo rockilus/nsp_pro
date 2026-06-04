@@ -1,5 +1,5 @@
 .table-container {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   margin: 10px 0;
 }
@@ -10,7 +10,7 @@
   align-items: center;
   font-size: 1rem;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--color-muted-foreground);
 }
 
 .table-header-custom-container {
@@ -26,7 +26,7 @@
   line-height: 1.43;
   letter-spacing: 0.01071em;
   text-align: left;
-  color: #3c4043;
+  color: var(--color-foreground);
   font-weight: 700;
 }
 
@@ -45,15 +45,15 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 .table-first-column {
   position: sticky;
   left: 0;
-  background-color: white;
+  background-color: var(--color-background);
   z-index: 1;
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--color-border);
 }
 
 .table-actions-column {
@@ -62,19 +62,19 @@
 }
 
 .custom-column.first-custom-column {
-  border-left: 2px solid #e0e0e0;
+  border-left: 2px solid var(--color-border);
 }
 
 .table-cell-editing {
-  background-color: #f0f8ff !important;
+  background-color: var(--color-accent) !important;
 }
 
 .table-cell-first-column {
   position: sticky;
   left: 0;
-  background-color: white;
+  background-color: var(--color-background);
   z-index: 1;
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--color-border);
   min-width: 150px;
 }
 
@@ -83,9 +83,9 @@
   text-align: center;
   position: sticky;
   right: 0;
-  background-color: white;
+  background-color: var(--color-background);
   z-index: 1;
-  border-left: 1px solid #e0e0e0;
+  border-left: 1px solid var(--color-border);
 }
 
 .table-sort-filter-menu {
@@ -95,7 +95,7 @@
 }
 
 .table-row-hover:hover {
-  background-color: #f9f9f9;
+  background-color: var(--color-muted);
 }
 
 /* =================================================================== */
@@ -106,10 +106,10 @@
 .shared-table-container {
   position: relative;
   overflow: auto;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 #f1f1f1;
+  scrollbar-color: var(--color-muted-foreground) var(--color-muted);
   overflow-x: auto !important;
   overflow-y: auto !important;
 }
@@ -125,8 +125,8 @@
   position: sticky;
   left: 0;
   z-index: 2;
-  background-color: #ffffff;
-  border-right: 1px solid #e0e0e0;
+  background-color: var(--color-background);
+  border-right: 1px solid var(--color-border);
   min-width: 60px;
   max-width: 60px;
 }
@@ -136,8 +136,8 @@
   position: sticky;
   left: 60px;
   z-index: 2;
-  background-color: #ffffff;
-  border-right: 1px solid #e0e0e0;
+  background-color: var(--color-background);
+  border-right: 1px solid var(--color-border);
   min-width: 150px;
   max-width: 150px;
 }
@@ -148,9 +148,9 @@
   left: 0;
   top: 0;
   z-index: 4;
-  background-color: #fafafa;
-  border-right: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--color-muted);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   min-width: 60px;
   max-width: 60px;
 }
@@ -160,9 +160,9 @@
   left: 60px;
   top: 0;
   z-index: 4;
-  background-color: #fafafa;
-  border-right: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--color-muted);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   min-width: 150px;
   max-width: 150px;
 }
@@ -172,7 +172,7 @@
 .shared-table-row:hover th:nth-child(1),
 .shared-table-row:hover td:nth-child(2),
 .shared-table-row:hover th:nth-child(2) {
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 /* Webkit scrollbar styling for shared tables */
@@ -182,17 +182,17 @@
 }
 
 .shared-table-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--color-muted);
   border-radius: 6px;
 }
 
 .shared-table-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--color-muted-foreground);
   border-radius: 6px;
 }
 
 .shared-table-container::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--color-muted-foreground);
 }
 
 /* Sticky header styling */
@@ -200,15 +200,15 @@
   position: sticky;
   top: 0;
   z-index: 3;
-  background-color: #fafafa;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--color-muted);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .shared-table-header .MuiTableCell-root {
-  background-color: #fafafa;
+  background-color: var(--color-muted);
   font-weight: 500;
   font-size: 0.8rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
   padding: 6px 8px;
   height: 36px;
 }
@@ -230,13 +230,13 @@
 .shared-table-header .table-header-default span {
   font-size: 0.8rem;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.87);
+  color: var(--color-foreground);
   margin-right: 4px;
 }
 
 .shared-table-header .table-header-default .MuiSvgIcon-root {
   font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.54);
+  color: var(--color-muted-foreground);
 }
 
 /* Sticky first column */
@@ -244,8 +244,8 @@
   position: sticky;
   left: 0;
   z-index: 2;
-  background-color: #ffffff;
-  border-right: 1px solid #e0e0e0;
+  background-color: var(--color-background);
+  border-right: 1px solid var(--color-border);
   min-width: 150px;
   max-width: 150px;
   padding: 4px 8px;
@@ -256,8 +256,8 @@
   position: sticky;
   left: 150px; /* Position after first column */
   z-index: 2;
-  background-color: #ffffff;
-  border-right: 1px solid #e0e0e0;
+  background-color: var(--color-background);
+  border-right: 1px solid var(--color-border);
   min-width: 150px;
   max-width: 150px;
   padding: 4px 8px;
@@ -269,9 +269,9 @@
   left: 0;
   top: 0;
   z-index: 4;
-  background-color: #fafafa;
-  border-right: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--color-muted);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   min-width: 150px;
   max-width: 150px;
   padding: 6px 8px;
@@ -286,9 +286,9 @@
   left: 150px;
   top: 0;
   z-index: 4;
-  background-color: #fafafa;
-  border-right: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--color-muted);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   min-width: 150px;
   max-width: 150px;
   padding: 6px 8px;
@@ -299,33 +299,33 @@
 
 /* Row styling */
 .shared-table-row {
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
   height: 40px;
 }
 
 .shared-table-row:hover {
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 .shared-table-row:hover .MuiTableCell-root {
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 .shared-table-row:hover .shared-table-first-column {
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 .shared-table-row:hover .shared-table-second-column {
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 .shared-table-row:hover .shared-table-actions {
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 /* Focus states for accessibility */
 .shared-table .MuiTableCell-root:focus-within {
-  outline: 2px solid #1976d2;
+  outline: 2px solid var(--color-ring);
   outline-offset: -2px;
 }
 
@@ -346,8 +346,8 @@
   position: sticky;
   right: 0;
   z-index: 2;
-  background-color: #ffffff;
-  border-left: 1px solid #e0e0e0;
+  background-color: var(--color-background);
+  border-left: 1px solid var(--color-border);
   min-width: 80px;
   max-width: 80px;
   padding: 4px 8px;
@@ -359,9 +359,9 @@
   right: 0;
   top: 0;
   z-index: 4;
-  background-color: #fafafa;
-  border-left: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--color-muted);
+  border-left: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   min-width: 80px;
   max-width: 80px;
   padding: 6px 8px;
@@ -380,7 +380,7 @@
 
 .shared-name-text {
   font-weight: 500;
-  color: #1976d2;
+  color: var(--color-primary);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -395,27 +395,27 @@
 
 .shared-name-cell .MuiInputBase-root {
   font-weight: 500;
-  color: #1976d2;
+  color: var(--color-primary);
   font-size: 0.85rem;
 }
 
 .shared-name-cell .MuiInputBase-root:before {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .shared-name-cell .MuiInputBase-root:after {
-  border-bottom: 1px solid #1976d2;
+  border-bottom: 1px solid var(--color-primary);
 }
 
 .shared-name-cell .MuiInputBase-root.Mui-focused {
-  background-color: rgba(25, 118, 210, 0.05);
+  background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
   border-radius: 4px;
   padding: 2px 4px;
 }
 
 /* Hover effect for clickable names */
 .shared-table-first-column:hover .shared-name-text {
-  background-color: rgba(25, 118, 210, 0.08);
+  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
   border-radius: 4px;
   padding: 2px 4px;
   margin: -2px -4px;
@@ -431,12 +431,12 @@
 .shared-table-empty {
   text-align: center;
   padding: 32px;
-  color: #666;
+  color: var(--color-muted-foreground);
 }
 
 .shared-table-empty .empty-icon {
   font-size: 48px;
-  color: #ccc;
+  color: var(--color-muted-foreground);
   margin-bottom: 16px;
 }
 
@@ -448,7 +448,7 @@
 
 .shared-table-empty .empty-subtext {
   font-size: 14px;
-  color: #999;
+  color: var(--color-muted-foreground);
 }
 
 /* Override default TableCell styling within shared tables */
@@ -461,16 +461,16 @@
 
 /* Keep only the first column border */
 .shared-table .shared-table-first-column {
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--color-border);
 }
 
 /* Keep only the actions column border */
 .shared-table .shared-table-actions {
-  border-left: 1px solid #e0e0e0;
+  border-left: 1px solid var(--color-border);
 }
 
 .shared-table .shared-table-actions-header {
-  border-left: 1px solid #e0e0e0;
+  border-left: 1px solid var(--color-border);
 }
 
 /* Special styling for editable cells */
@@ -490,9 +490,9 @@
 }
 
 .shared-table .MuiTextField-root .MuiInputBase-root.Mui-focused {
-  background-color: #fff3e0;
+  background-color: var(--color-destructive)/10;
   border-radius: 4px;
-  border: 1px solid #ff9800;
+  border: 1px solid var(--color-destructive);
 }
 
 /* Loading spinner for async operations */
@@ -511,7 +511,7 @@
 }
 
 .shared-table .MuiButton-root:hover {
-  background-color: rgba(25, 118, 210, 0.08);
+  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
 /* Better spacing for action buttons */
@@ -526,20 +526,20 @@
 
 /* Border between default and custom columns */
 .shared-table .first-custom-column {
-  border-left: 2px solid #e0e0e0 !important;
+  border-left: 2px solid var(--color-border) !important;
 }
 
 .shared-table-header .first-custom-column {
-  border-left: 2px solid #e0e0e0 !important;
+  border-left: 2px solid var(--color-border) !important;
 }
 
 /* Custom column headers styling */
 .shared-table-header .custom-column {
-  background-color: #e3f2fd !important;
+  background-color: var(--color-primary)/10 !important;
 }
 
 .shared-table-header .custom-column .MuiTableCell-root {
-  background-color: #e3f2fd !important;
+  background-color: var(--color-primary)/10 !important;
 }
 
 /* Field center alignment for specific dimension types (BOOL and INT) */
@@ -604,10 +604,10 @@
 .worker-table-container {
   position: relative;
   overflow: auto;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 #f1f1f1;
+  scrollbar-color: var(--color-muted-foreground) var(--color-muted);
   overflow-x: auto !important;
   overflow-y: auto !important;
 }
@@ -623,32 +623,32 @@
 }
 
 .worker-table-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--color-muted);
   border-radius: 6px;
 }
 
 .worker-table-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--color-muted-foreground);
   border-radius: 6px;
 }
 
 .worker-table-container::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--color-muted-foreground);
 }
 
 .worker-table-header {
   position: sticky;
   top: 0;
   z-index: 3;
-  background-color: #fafafa;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--color-muted);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .worker-table-header .MuiTableCell-root {
-  background-color: #fafafa;
+  background-color: var(--color-muted);
   font-weight: 500;
   font-size: 0.8rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
   padding: 6px 8px;
   height: 36px;
 }
@@ -668,21 +668,21 @@
 .worker-table-header .table-header-default span {
   font-size: 0.8rem;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.87);
+  color: var(--color-foreground);
   margin-right: 4px;
 }
 
 .worker-table-header .table-header-default .MuiSvgIcon-root {
   font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.54);
+  color: var(--color-muted-foreground);
 }
 
 .worker-table-first-column {
   position: sticky;
   left: 0;
   z-index: 2;
-  background-color: #ffffff;
-  border-right: 1px solid #e0e0e0;
+  background-color: var(--color-background);
+  border-right: 1px solid var(--color-border);
   min-width: 150px;
   max-width: 150px;
   padding: 4px 8px;
@@ -693,9 +693,9 @@
   left: 0;
   top: 0;
   z-index: 4;
-  background-color: #fafafa;
-  border-right: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--color-muted);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   min-width: 150px;
   max-width: 150px;
   padding: 6px 8px;
@@ -705,28 +705,28 @@
 }
 
 .worker-table-row {
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border);
   height: 40px;
 }
 
 .worker-table-row:hover {
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 .worker-table-row:hover .MuiTableCell-root {
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 .worker-table-row:hover .worker-table-first-column {
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 .worker-table-row:hover .worker-table-actions {
-  background-color: #f5f5f5;
+  background-color: var(--color-muted);
 }
 
 .worker-table .MuiTableCell-root:focus-within {
-  outline: 2px solid #1976d2;
+  outline: 2px solid var(--color-ring);
   outline-offset: -2px;
 }
 
@@ -745,8 +745,8 @@
   position: sticky;
   right: 0;
   z-index: 2;
-  background-color: #ffffff;
-  border-left: 1px solid #e0e0e0;
+  background-color: var(--color-background);
+  border-left: 1px solid var(--color-border);
   min-width: 80px;
   max-width: 80px;
   padding: 4px 8px;
@@ -758,9 +758,9 @@
   right: 0;
   top: 0;
   z-index: 4;
-  background-color: #fafafa;
-  border-left: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: var(--color-muted);
+  border-left: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   min-width: 80px;
   max-width: 80px;
   padding: 6px 8px;
@@ -778,7 +778,7 @@
 
 .worker-name-text {
   font-weight: 500;
-  color: #1976d2;
+  color: var(--color-primary);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -792,26 +792,26 @@
 
 .worker-name-cell .MuiInputBase-root {
   font-weight: 500;
-  color: #1976d2;
+  color: var(--color-primary);
   font-size: 0.85rem;
 }
 
 .worker-name-cell .MuiInputBase-root:before {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .worker-name-cell .MuiInputBase-root:after {
-  border-bottom: 1px solid #1976d2;
+  border-bottom: 1px solid var(--color-primary);
 }
 
 .worker-name-cell .MuiInputBase-root.Mui-focused {
-  background-color: rgba(25, 118, 210, 0.05);
+  background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
   border-radius: 4px;
   padding: 2px 4px;
 }
 
 .worker-table-first-column:hover .worker-name-text {
-  background-color: rgba(25, 118, 210, 0.08);
+  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
   border-radius: 4px;
   padding: 2px 4px;
   margin: -2px -4px;
@@ -825,12 +825,12 @@
 .worker-table-empty {
   text-align: center;
   padding: 32px;
-  color: #666;
+  color: var(--color-muted-foreground);
 }
 
 .worker-table-empty .empty-icon {
   font-size: 48px;
-  color: #ccc;
+  color: var(--color-muted-foreground);
   margin-bottom: 16px;
 }
 
@@ -842,7 +842,7 @@
 
 .worker-table-empty .empty-subtext {
   font-size: 14px;
-  color: #999;
+  color: var(--color-muted-foreground);
 }
 
 .worker-table .MuiTableCell-root {
@@ -853,15 +853,15 @@
 }
 
 .worker-table .worker-table-first-column {
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--color-border);
 }
 
 .worker-table .worker-table-actions {
-  border-left: 1px solid #e0e0e0;
+  border-left: 1px solid var(--color-border);
 }
 
 .worker-table .worker-table-actions-header {
-  border-left: 1px solid #e0e0e0;
+  border-left: 1px solid var(--color-border);
 }
 
 .worker-table .MuiTextField-root {
@@ -880,9 +880,9 @@
 }
 
 .worker-table .MuiTextField-root .MuiInputBase-root.Mui-focused {
-  background-color: #fff3e0;
+  background-color: var(--color-destructive)/10;
   border-radius: 4px;
-  border: 1px solid #ff9800;
+  border: 1px solid var(--color-destructive);
 }
 
 .worker-table-loading {
@@ -899,7 +899,7 @@
 }
 
 .worker-table .MuiButton-root:hover {
-  background-color: rgba(25, 118, 210, 0.08);
+  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
 .worker-table-actions .MuiButton-root {
@@ -925,19 +925,19 @@
 }
 
 .worker-table .first-custom-column {
-  border-left: 2px solid #e0e0e0 !important;
+  border-left: 2px solid var(--color-border) !important;
 }
 
 .worker-table-header .first-custom-column {
-  border-left: 2px solid #e0e0e0 !important;
+  border-left: 2px solid var(--color-border) !important;
 }
 
 .worker-table-header .custom-column {
-  background-color: #e3f2fd !important;
+  background-color: var(--color-primary)/10 !important;
 }
 
 .worker-table-header .custom-column .MuiTableCell-root {
-  background-color: #e3f2fd !important;
+  background-color: var(--color-primary)/10 !important;
 }
 
 /* Title container shared styling */
@@ -952,7 +952,7 @@
 .table-title-container .title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1976d2;
+  color: var(--color-primary);
 }
 
 /* =================================================================== */
@@ -967,7 +967,7 @@
 
 .shift-name-text {
   font-weight: 500;
-  color: #1976d2;
+  color: var(--color-primary);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -981,27 +981,27 @@
 
 .shift-name-cell .MuiInputBase-root {
   font-weight: 500;
-  color: #1976d2;
+  color: var(--color-primary);
   font-size: 0.85rem;
 }
 
 .shift-name-cell .MuiInputBase-root:before {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .shift-name-cell .MuiInputBase-root:after {
-  border-bottom: 1px solid #1976d2;
+  border-bottom: 1px solid var(--color-primary);
 }
 
 .shift-name-cell .MuiInputBase-root.Mui-focused {
-  background-color: rgba(25, 118, 210, 0.05);
+  background-color: color-mix(in srgb, var(--color-primary) 5%, transparent);
   border-radius: 4px;
   padding: 2px 4px;
 }
 
 /* Hover effect for shift name cells */
 .shared-table-row:hover .shift-name-text {
-  background-color: rgba(25, 118, 210, 0.08);
+  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
   border-radius: 4px;
   padding: 2px 4px;
   margin: -2px -4px;

@@ -5,6 +5,15 @@ export const TOOLTIP_ENTER_DELAY = 1000;
 
 const theme = createTheme({
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          // Use CSS variables so dark mode works — CssBaseline hardcodes #fff otherwise
+          backgroundColor: 'var(--background)',
+          color: 'var(--foreground)',
+        },
+      },
+    },
     MuiTooltip: {
       defaultProps: {
         enterDelay: TOOLTIP_ENTER_DELAY,
