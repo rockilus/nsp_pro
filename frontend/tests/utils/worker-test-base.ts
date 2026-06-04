@@ -824,6 +824,10 @@ export class WorkerTestBase {
       );
     }
 
+    // Convert DD/MM/YYYY to YYYY-MM-DD for native date input
+    const [d, m, y] = date.split('/');
+    const nativeDate = `${y}-${m}-${d}`;
+
     // Set the value directly on the input element and trigger React's internal handlers
     await input.evaluate((el: HTMLInputElement, v: string) => {
       // Get the native setter to bypass React's value property
@@ -841,10 +845,7 @@ export class WorkerTestBase {
       // Dispatch input event to trigger React's onChange handler
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
-
-      // Blur the input to ensure validation runs
-      el.blur();
-    }, date);
+    }, nativeDate);
 
     // Give the app time to process the change and run validation
     await page.waitForTimeout(100);
@@ -873,6 +874,10 @@ export class WorkerTestBase {
       );
     }
 
+    // Convert DD/MM/YYYY to YYYY-MM-DD for native date input
+    const [d, m, y] = date.split('/');
+    const nativeDate = `${y}-${m}-${d}`;
+
     // Set the value directly on the input element and trigger React's internal handlers
     await input.evaluate((el: HTMLInputElement, v: string) => {
       // Get the native setter to bypass React's value property
@@ -890,10 +895,7 @@ export class WorkerTestBase {
       // Dispatch input event to trigger React's onChange handler
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
-
-      // Blur the input to ensure validation runs
-      el.blur();
-    }, date);
+    }, nativeDate);
 
     // Give the app time to process the change and run validation
     await page.waitForTimeout(100);
