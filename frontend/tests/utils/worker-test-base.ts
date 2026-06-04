@@ -6,6 +6,7 @@
  */
 
 import { Page, expect } from '@playwright/test';
+import dayjs from 'dayjs';
 import { DatabaseTestUtils } from './database-utils';
 import { testConfig } from './test-config';
 import { SpecialtyT } from '../../src/types/specialty';
@@ -149,6 +150,7 @@ export class WorkerTestBase {
   async createTestWorker(workerData: {
     name: string;
     acronym?: string;
+    employmentEndDate?: dayjs.Dayjs | null;
     weeklyHours?: number;
     weeklyHoursDesired?: number;
     dutiesPerMonth?: number;
@@ -162,6 +164,7 @@ export class WorkerTestBase {
       teamId: this.testTeam.teamId,
       name: workerData.name,
       acronym: workerData.acronym,
+      employmentEndDate: workerData.employmentEndDate?.toDate() ?? undefined,
       weeklyHours: workerData.weeklyHours,
       weeklyHoursDesired: workerData.weeklyHoursDesired,
       dutiesPerMonth: workerData.dutiesPerMonth,
@@ -899,5 +902,127 @@ export class WorkerTestBase {
 
     // Give the app time to process the change and run validation
     await page.waitForTimeout(100);
+  }
+
+  // ─── Edit Dialog helpers ──────────────────────────────────────────────────
+
+  /**
+   * Gets the edit (pencil) button for a worker row by worker id.
+   */
+  getWorkerEditButton(page: Page, workerId: string) {
+    return page.locator(`[data-testid="worker-edit-button-${workerId}"]`);
+  }
+
+  /**
+   * Opens the edit dialog for a worker and waits for it to appear.
+   * Returns the worker's id so callers can verify post-save state.
+   */
+  async openEditDialog(page: Page, workerId: string): Promise<void> {
+    const editBtn = this.getWorkerEditButton(page, workerId);
+    await expect(editBtn).toBeVisible();
+    await editBtn.click();
+    // Wait for the dialog content to render
+    await page.waitForSelector('[data-testid="edit-worker-save-button"]');
+  }
+
+  /**
+   * Clicks the Save button in the edit dialog and waits for it to close.
+   */
+  async saveEditDialog(page: Page): Promise<void> {
+    const saveBtn = page.locator('[data-testid="edit-worker-save-button"]');
+    await expect(saveBtn).toBeVisible();
+    await saveBtn.click();
+    // Dialog should close — wait for save button to be removed from DOM
+    await expect(saveBtn).not.toBeVisible({ timeout: 5000 });
+    // Give the app a moment to re-render the table
+    await page.waitForTimeout(300);
+  }
+
+  /**
+   * Clicks the Cancel button in the edit dialog and waits for it to close.
+   */
+  async cancelEditDialog(page: Page): Promise<void> {
+    const cancelBtn = page.locator('[data-testid="edit-worker-cancel-button"]');
+    await expect(cancelBtn).toBeVisible();
+    await cancelBtn.click();
+    await expect(cancelBtn).not.toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(300);
+  }
+
+  // ── Dialog field setters ─────────────────────────────────────────────────
+
+  /** Fill the name field in the edit dialog. */
+  async setDialogName(page: Page, value: string): Promise<void> {
+    const input = page.locator('[data-testid="edit-worker-name-input"]');
+    await input.fill(value);
+  }
+
+  /** Fill the acronym field in the edit dialog. */
+  async setDialogAcronym(page: Page, value: string): Promise<void> {
+    const input = page.locator('[data-testid="edit-worker-acronym-input"]');
+    await input.fill(value);
+  }
+
+  /** Fill the employment start date in the edit dialog (YYYY-MM-DD). */
+  async setDialogEmploymentStartDate(page: Page, value: string): Promise<void> {
+    const input = page.locator('[data-testid="edit-worker-start-input"]');
+    await input.fill(value);
+  }
+
+  /** Fill the employment end date in the edit dialog (YYYY-MM-DD). */
+  async setDialogEmploymentEndDate(page: Page, value: string): Promise<void> {
+    const input = page.locator('[data-testid="edit-worker-end-input"]');
+    await input.fill(value);
+  }
+
+  /** Toggle the "Permanent" checkbox in the edit dialog. */
+  async setDialogPermanentCheckbox(page: Page, checked: boolean): Promise<void> {
+    const checkbox = page.locator('[data-testid="edit-worker-permanent-checkbox"]');
+    // Only click if the state doesn't already match
+    const isChecked = await checkbox.isChecked();
+    if (isChecked !== checked) {
+      await checkbox.click();
+    }
+  }
+
+  /** Fill the weekly hours field in the edit dialog. */
+  async setDialogWeeklyHours(page: Page, value: number): Promise<void> {
+    const input = page.locator('[data-testid="edit-worker-weekly-hours-input"]');
+    await input.fill(String(value));
+  }
+
+  /** Fill the desired weekly hours field in the edit dialog. */
+  async setDialogWeeklyHoursDesired(page: Page, value: number): Promise<void> {
+    const input = page.locator('[data-testid="edit-worker-weekly-hours-desired-input"]');
+    await input.fill(String(value));
+  }
+
+  /** Fill the duties per month field in the edit dialog. */
+  async setDialogDutiesPerMonth(page: Page, value: number): Promise<void> {
+    const input = page.locator('[data-testid="edit-worker-duties-input"]');
+    await input.fill(String(value));
+  }
+
+  /** Fill the annual leave field in the edit dialog. */
+  async setDialogAnnualLeave(page: Page, value: number): Promise<void> {
+    const input = page.locator('[data-testid="edit-worker-annual-leave-input"]');
+    await input.fill(String(value));
+  }
+
+  // ── API verification ─────────────────────────────────────────────────────
+
+  /**
+   * Fetches a worker by id via the API to assert server-side state.
+   */
+  async getWorkerById(workerId: string): Promise<WorkerT> {
+    if (!this.testTeam) {
+      throw new Error('Test team not created.');
+    }
+    const workers = await this.dbUtils.getWorkers(this.testTeam.teamId);
+    const worker = workers.find((w) => w.id === workerId);
+    if (!worker) {
+      throw new Error(`Worker ${workerId} not found in team ${this.testTeam.teamId}`);
+    }
+    return worker;
   }
 }
