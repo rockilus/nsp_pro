@@ -37,9 +37,7 @@ export default function WorkerFieldEmploymentEnd({
 
   const handleDateChange = (newValue: string) => {
     if (!newValue) return;
-    const newDate = dayjs.utc(newValue);
-    setValueState(newDate);
-    handleEditConfirm(newDate);
+    setValueState(dayjs.utc(newValue));
   };
 
   const handleEditConfirm = useCallback(

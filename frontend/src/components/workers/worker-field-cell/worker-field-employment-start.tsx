@@ -24,9 +24,7 @@ export default function WorkerFieldEmploymentStart({
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     if (!newValue) return;
-    const newDate = dayjs.utc(newValue);
-    setValueState(newDate);
-    handleEditConfirm(newDate);
+    setValueState(dayjs.utc(newValue));
   };
 
   const handleEditConfirm = useCallback(
