@@ -377,16 +377,16 @@ test.describe('Worker Edit Dialog', () => {
     // Badges start as outline (unselected)
     await expect(badgeA).toBeVisible();
     await expect(badgeB).toBeVisible();
-    await expect(badgeA).not.toHaveClass(/default/);
-    await expect(badgeB).not.toHaveClass(/default/);
+    await expect(badgeA).toHaveAttribute('data-variant', 'outline');
+    await expect(badgeB).toHaveAttribute('data-variant', 'outline');
 
     // Click both to select them
     await badgeA.click();
     await badgeB.click();
 
     // Badges should now show as selected (default variant)
-    await expect(badgeA).toHaveClass(/default/);
-    await expect(badgeB).toHaveClass(/default/);
+    await expect(badgeA).toHaveAttribute('data-variant', 'default');
+    await expect(badgeB).toHaveAttribute('data-variant', 'default');
 
     await tb.saveEditDialog(page);
 
@@ -471,8 +471,8 @@ test.describe('Worker Edit Dialog', () => {
     await expect(southBadge).toBeVisible();
 
     // Initially both should be "outline" (unselected)
-    await expect(northBadge).not.toHaveClass(/default/);
-    await expect(southBadge).not.toHaveClass(/default/);
+    await expect(northBadge).toHaveAttribute('data-variant', 'outline');
+    await expect(southBadge).toHaveAttribute('data-variant', 'outline');
 
     // Select North Wing
     await northBadge.click();
