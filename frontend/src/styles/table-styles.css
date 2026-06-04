@@ -490,7 +490,7 @@
 }
 
 .shared-table .MuiTextField-root .MuiInputBase-root.Mui-focused {
-  background-color: var(--color-destructive)/10;
+  background-color: var(--color-destructive) / 10;
   border-radius: 4px;
   border: 1px solid var(--color-destructive);
 }
@@ -535,11 +535,11 @@
 
 /* Custom column headers styling */
 .shared-table-header .custom-column {
-  background-color: var(--color-primary)/10 !important;
+  background-color: var(--color-primary) / 10 !important;
 }
 
 .shared-table-header .custom-column .MuiTableCell-root {
-  background-color: var(--color-primary)/10 !important;
+  background-color: var(--color-primary) / 10 !important;
 }
 
 /* Field center alignment for specific dimension types (BOOL and INT) */
@@ -778,7 +778,7 @@
 
 .worker-name-text {
   font-weight: 500;
-  color: var(--color-primary);
+  color: var(--color-foreground);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -880,7 +880,7 @@
 }
 
 .worker-table .MuiTextField-root .MuiInputBase-root.Mui-focused {
-  background-color: var(--color-destructive)/10;
+  background-color: var(--color-destructive) / 10;
   border-radius: 4px;
   border: 1px solid var(--color-destructive);
 }
@@ -933,11 +933,11 @@
 }
 
 .worker-table-header .custom-column {
-  background-color: var(--color-primary)/10 !important;
+  background-color: var(--color-primary) / 10 !important;
 }
 
 .worker-table-header .custom-column .MuiTableCell-root {
-  background-color: var(--color-primary)/10 !important;
+  background-color: var(--color-primary) / 10 !important;
 }
 
 /* Title container shared styling */
@@ -952,7 +952,7 @@
 .table-title-container .title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-primary);
+  color: var(--color-foreground);
 }
 
 /* =================================================================== */
