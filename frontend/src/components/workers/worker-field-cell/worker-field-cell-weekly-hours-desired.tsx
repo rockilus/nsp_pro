@@ -80,6 +80,7 @@ export default function WorkerFieldCellWeeklyHoursDesired({
             }
           }}
           autoFocus
+          aria-invalid={!!error}
           className={`text-center ${error ? 'border-destructive' : ''}`}
           data-testid={`worker-weekly-hours-desired-input-${worker.id}`}
           data-state="editing"
