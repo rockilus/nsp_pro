@@ -436,20 +436,20 @@ test.describe('Worker Specialty Cell', () => {
 
     // Verify first option is highlighted (selected state)
     const firstOption = page.locator(`[data-testid="specialty-option-${testSpecialties[0].id}"]`);
-    await expect(firstOption).toHaveClass(/Mui-selected/);
+    await expect(firstOption).toHaveClass(/bg-accent/);
 
     // Press down arrow again to move to second option
     await searchInput.press('ArrowDown');
 
     // Verify second option is highlighted
     const secondOption = page.locator(`[data-testid="specialty-option-${testSpecialties[1].id}"]`);
-    await expect(secondOption).toHaveClass(/Mui-selected/);
+    await expect(secondOption).toHaveClass(/bg-accent/);
 
     // Press up arrow to go back to first option
     await searchInput.press('ArrowUp');
 
     // Verify first option is highlighted again
-    await expect(firstOption).toHaveClass(/Mui-selected/);
+    await expect(firstOption).toHaveClass(/bg-accent/);
 
     console.log('✅ Arrow key navigation works correctly');
   });
