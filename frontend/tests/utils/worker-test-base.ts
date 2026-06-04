@@ -11,6 +11,10 @@ import { DatabaseTestUtils } from './database-utils';
 import { testConfig } from './test-config';
 import { SpecialtyT } from '../../src/types/specialty';
 import { WorkerT } from '../../src/types/worker';
+import { DimensionT, DimensionEntryType, DimensionType } from '../../src/types/dimension';
+import { DimEntryT } from '../../src/types/dim-entry';
+import { AttributeT } from '../../src/types/attribute';
+import { AddDimensionResponse } from '../../src/app/lib/api/dimensionApi';
 
 export class WorkerTestBase {
   protected dbUtils: DatabaseTestUtils;
@@ -1024,5 +1028,47 @@ export class WorkerTestBase {
       throw new Error(`Worker ${workerId} not found in team ${this.testTeam.teamId}`);
     }
     return worker;
+  }
+
+  // ── Dimension / Attribute helpers ────────────────────────────────────────
+
+  /**
+   * Creates a dimension (with optional dim entries) for the test team.
+   * Returns the full AddDimensionResponse containing the new dimension,
+   * its dim entries, and auto-created attributes.
+   */
+  async createTestWorkerDimension(
+    name: string,
+    entryType: DimensionEntryType,
+    dimEntryNames?: string[],
+  ): Promise<AddDimensionResponse> {
+    if (!this.testTeam) {
+      throw new Error('Test team not created.');
+    }
+
+    const dimEntries: DimEntryT[] = (dimEntryNames ?? []).map((n) => ({
+      id: '',
+      dimensionId: '',
+      name: n,
+      deleted: false,
+    }));
+
+    return this.dbUtils.createDimension({
+      teamId: this.testTeam.teamId,
+      name,
+      entryType,
+      dimensionType: [DimensionType.WORKER],
+      dimEntries,
+    });
+  }
+
+  /**
+   * Fetches all attributes for a specific worker via the API.
+   */
+  async getWorkerAttributes(workerId: string): Promise<AttributeT[]> {
+    if (!this.testTeam) {
+      throw new Error('Test team not created.');
+    }
+    return this.dbUtils.getAttributesByOwner(workerId, this.testTeam.teamId);
   }
 }

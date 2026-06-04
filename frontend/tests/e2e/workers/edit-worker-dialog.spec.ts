@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 import dayjs from 'dayjs';
+import { DimensionEntryType } from '../../../src/types/dimension';
 
 test.describe('Worker Edit Dialog', () => {
   const testBasesMap = new Map<string, WorkerTestBase>();
@@ -394,5 +395,106 @@ test.describe('Worker Edit Dialog', () => {
     expect(updated.specialtyIds).toContain(specialtyB.id);
 
     console.log('✅ Specialties updated via dialog');
+  });
+
+  test('should toggle a Yes/No (BOOL) attribute via dialog and verify in API', async ({
+    page,
+  }, testInfo) => {
+    const tb = getTestBase(testInfo);
+
+    // Create a BOOL dimension — auto-creates attributes on all existing workers
+    const { newDimension } = await tb.createTestWorkerDimension('Senior', DimensionEntryType.BOOL);
+
+    // Now create the worker — the dimension was created first so its newAttributes
+    // only applied to workers that existed at creation time.
+    // Create worker, then reload so the worker table fetches fresh data.
+    const worker = await tb.createTestWorker({ name: 'Nora' });
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+
+    // The worker was created after the dimension, so it should have an attribute
+    // with value false by default.
+    const attrsBefore = await tb.getWorkerAttributes(worker.id);
+    const boolAttr = attrsBefore.find((a) => a.dimensionId === newDimension.id);
+    expect(boolAttr).toBeDefined();
+    expect(boolAttr!.value).toBe(false);
+
+    // Open the dialog and toggle the checkbox
+    await tb.openEditDialog(page, worker.id);
+    const checkbox = page.locator(`[data-testid="edit-worker-attr-bool-${newDimension.id}"]`);
+    await expect(checkbox).toBeVisible();
+    // It should be unchecked initially (value = false)
+    await expect(checkbox).not.toBeChecked();
+    await checkbox.click();
+    await expect(checkbox).toBeChecked();
+    await tb.saveEditDialog(page);
+
+    // Verify API
+    const attrsAfter = await tb.getWorkerAttributes(worker.id);
+    const boolAttrAfter = attrsAfter.find((a) => a.dimensionId === newDimension.id);
+    expect(boolAttrAfter).toBeDefined();
+    expect(boolAttrAfter!.value).toBe(true);
+
+    console.log('✅ BOOL attribute toggled via dialog — API verified');
+  });
+
+  test('should select Tags (DIM_ENTRIES) attribute via dialog and verify in API', async ({
+    page,
+  }, testInfo) => {
+    const tb = getTestBase(testInfo);
+
+    // Create a DIM_ENTRIES dimension with two tag entries
+    const { newDimension, newDimEntries } = await tb.createTestWorkerDimension(
+      'Location',
+      DimensionEntryType.DIM_ENTRIES,
+      ['North Wing', 'South Wing'],
+    );
+    expect(newDimEntries).toHaveLength(2);
+
+    const worker = await tb.createTestWorker({ name: 'Oscar' });
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+
+    // Open the dialog and select "North Wing" tag
+    await tb.openEditDialog(page, worker.id);
+
+    // The DIM_ENTRIES attribute renders as clickable badges
+    const northBadge = page.locator(
+      `[data-testid="edit-worker-attr-dim-entry-${newDimEntries[0].id}"]`,
+    );
+    const southBadge = page.locator(
+      `[data-testid="edit-worker-attr-dim-entry-${newDimEntries[1].id}"]`,
+    );
+    await expect(northBadge).toBeVisible();
+    await expect(southBadge).toBeVisible();
+
+    // Initially both should be "outline" (unselected)
+    await expect(northBadge).not.toHaveClass(/default/);
+    await expect(southBadge).not.toHaveClass(/default/);
+
+    // Select North Wing
+    await northBadge.click();
+    await tb.saveEditDialog(page);
+
+    // Verify API — the attribute's dimEntryIds should include north badge
+    const attrs = await tb.getWorkerAttributes(worker.id);
+    const tagAttr = attrs.find((a) => a.dimensionId === newDimension.id);
+    expect(tagAttr).toBeDefined();
+    expect(tagAttr!.dimEntryIds).toContain(newDimEntries[0].id);
+    expect(tagAttr!.dimEntryIds).not.toContain(newDimEntries[1].id);
+
+    // Re-open dialog, select South Wing too, then both should be selected
+    await tb.openEditDialog(page, worker.id);
+    await southBadge.click();
+    await tb.saveEditDialog(page);
+
+    const attrs2 = await tb.getWorkerAttributes(worker.id);
+    const tagAttr2 = attrs2.find((a) => a.dimensionId === newDimension.id);
+    expect(tagAttr2!.dimEntryIds).toContain(newDimEntries[0].id);
+    expect(tagAttr2!.dimEntryIds).toContain(newDimEntries[1].id);
+
+    console.log('✅ DIM_ENTRIES (tags) attribute selected via dialog — API verified');
   });
 });
