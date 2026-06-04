@@ -782,7 +782,12 @@
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+}
+
+/* Uniform row font size for worker table */
+.worker-table tbody td {
+  font-size: 0.8rem;
 }
 
 .worker-name-cell .MuiTextField-root {
