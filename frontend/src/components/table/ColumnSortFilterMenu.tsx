@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
-import { EllipsisVertical, ArrowUp, ArrowDown, Filter } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { Popover, PopoverContent } from '@/components/ui/popover';
+import { EllipsisVertical, ArrowUp, ArrowDown, Filter, ArrowLeft } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { ColumnDefinition, ColumnFilter, TableSort, SortDirection } from '../../types/filter';
 import TextFilter from './filters/TextFilter';
 import SelectFilter from './filters/SelectFilter';
@@ -28,35 +21,41 @@ export default function ColumnSortFilterMenu({
   onSort,
   onFilter,
 }: ColumnSortFilterMenuProps) {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [filterOpen, setFilterOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  // When true, the popover shows the filter form instead of the sort menu
+  const [showFilter, setShowFilter] = useState(false);
 
   const handleSort = (direction: SortDirection | null) => {
     if (direction) {
-      onSort({
-        columnId: column.id,
-        direction,
-        label: column.label,
-      });
+      onSort({ columnId: column.id, direction, label: column.label });
     } else {
       onSort(null);
     }
-    setDropdownOpen(false);
+    setOpen(false);
   };
 
-  const handleFilterOpen = () => {
-    setFilterOpen(true);
-    setDropdownOpen(false);
+  const handleOpenFilter = () => {
+    setShowFilter(true);
   };
 
   const handleFilterClose = () => {
-    setFilterOpen(false);
+    setOpen(false);
+    setShowFilter(false);
   };
 
   const handleFilterApply = (filter: ColumnFilter) => {
     onFilter(filter);
-    setFilterOpen(false);
+    setOpen(false);
+    setShowFilter(false);
   };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) setShowFilter(false);
+  };
+
+  const isCurrentlySorted = currentSort?.columnId === column.id;
+  const sortDirection = isCurrentlySorted ? currentSort.direction : null;
 
   const renderFilterComponent = () => {
     switch (column.type) {
@@ -70,7 +69,6 @@ export default function ColumnSortFilterMenu({
             currentValue={currentFilter?.value}
           />
         );
-
       case 'select':
         return (
           <SelectFilter
@@ -82,7 +80,6 @@ export default function ColumnSortFilterMenu({
             currentValue={currentFilter?.value}
           />
         );
-
       case 'boolean':
         return (
           <SelectFilter
@@ -94,7 +91,6 @@ export default function ColumnSortFilterMenu({
             currentValue={currentFilter?.value}
           />
         );
-
       case 'date':
         return (
           <DateFilter
@@ -105,63 +101,78 @@ export default function ColumnSortFilterMenu({
             currentValue={currentFilter?.value}
           />
         );
-
       default:
         return null;
     }
   };
 
-  const isCurrentlySorted = currentSort?.columnId === column.id;
-  const sortDirection = isCurrentlySorted ? currentSort.direction : null;
-
   return (
-    <>
-      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-        <DropdownMenuTrigger asChild>
-          <button
-            className="inline-flex cursor-pointer items-center rounded border-none bg-transparent p-1 opacity-70 hover:opacity-100"
-            data-testid={`column-menu-${column.id}`}
-          >
-            <EllipsisVertical className="size-4" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="min-w-[180px]">
-          <DropdownMenuItem onClick={() => handleSort('asc')} data-testid={`sort-asc-${column.id}`}>
-            <ArrowUp className="size-4" />
-            <span>Sort Ascending</span>
-          </DropdownMenuItem>
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>
+        <button
+          className="inline-flex cursor-pointer items-center rounded border-none bg-transparent p-1 opacity-70 hover:opacity-100"
+          data-testid={`column-menu-${column.id}`}
+        >
+          <EllipsisVertical className="size-4" />
+        </button>
+      </PopoverTrigger>
 
-          <DropdownMenuItem
-            onClick={() => handleSort('desc')}
-            data-testid={`sort-desc-${column.id}`}
-          >
-            <ArrowDown className="size-4" />
-            <span>Sort Descending</span>
-          </DropdownMenuItem>
-
-          {sortDirection && (
-            <DropdownMenuItem
-              onClick={() => handleSort(null)}
-              data-testid={`remove-sort-${column.id}`}
+      <PopoverContent align="start" side="bottom" className="w-48 p-0">
+        {showFilter ? (
+          // ── Filter view ──────────────────────────────
+          <div>
+            <button
+              onClick={() => setShowFilter(false)}
+              className="flex w-full items-center gap-1.5 px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             >
-              <span>Remove Sort</span>
-            </DropdownMenuItem>
-          )}
+              <ArrowLeft className="size-4" />
+              Back
+            </button>
+            {renderFilterComponent()}
+          </div>
+        ) : (
+          // ── Sort / Filter menu ──────────────────────
+          <div className="flex flex-col py-1">
+            <button
+              onClick={() => handleSort('asc')}
+              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+              data-testid={`sort-asc-${column.id}`}
+            >
+              <ArrowUp className="size-4" />
+              Sort Ascending
+            </button>
+            <button
+              onClick={() => handleSort('desc')}
+              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+              data-testid={`sort-desc-${column.id}`}
+            >
+              <ArrowDown className="size-4" />
+              Sort Descending
+            </button>
 
-          <DropdownMenuSeparator />
+            {sortDirection && (
+              <button
+                onClick={() => handleSort(null)}
+                className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+                data-testid={`remove-sort-${column.id}`}
+              >
+                Remove Sort
+              </button>
+            )}
 
-          <DropdownMenuItem onClick={handleFilterOpen} data-testid={`filter-menu-${column.id}`}>
-            <Filter className="size-4" />
-            <span>Filter</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <div className="my-1 border-t border-border" />
 
-      <Popover open={filterOpen} onOpenChange={setFilterOpen}>
-        <PopoverContent align="start" side="bottom" className="p-0">
-          {renderFilterComponent()}
-        </PopoverContent>
-      </Popover>
-    </>
+            <button
+              onClick={handleOpenFilter}
+              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+              data-testid={`filter-menu-${column.id}`}
+            >
+              <Filter className="size-4" />
+              Filter
+            </button>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
