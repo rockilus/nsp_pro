@@ -37,9 +37,9 @@ test.describe('Worker Edit Dialog', () => {
     const tb = getTestBase(testInfo);
     const worker = await tb.createTestWorker({ name: 'Alice', weeklyHours: 39 });
 
-    // Wait for table to show the worker
-    await expect(page.locator(`[data-testid^="worker-name-display-"]`)).toContainText('Alice');
-    await page.waitForSelector('[data-testid="worker-table"]');
+    // Reload to see the API-created worker in the table
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     // Click the edit button
     await tb.openEditDialog(page, worker.id);
@@ -60,7 +60,9 @@ test.describe('Worker Edit Dialog', () => {
   }, testInfo) => {
     const tb = getTestBase(testInfo);
     const worker = await tb.createTestWorker({ name: 'Bob' });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     await tb.openEditDialog(page, worker.id);
     await tb.setDialogName(page, 'Robert');
@@ -82,7 +84,9 @@ test.describe('Worker Edit Dialog', () => {
   }, testInfo) => {
     const tb = getTestBase(testInfo);
     const worker = await tb.createTestWorker({ name: 'Carol', acronym: 'CAR' });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     await tb.openEditDialog(page, worker.id);
     await tb.setDialogAcronym(page, 'CL');
@@ -102,7 +106,9 @@ test.describe('Worker Edit Dialog', () => {
   }, testInfo) => {
     const tb = getTestBase(testInfo);
     const worker = await tb.createTestWorker({ name: 'Dave' });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     const newStart = '2025-01-15';
     await tb.openEditDialog(page, worker.id);
@@ -120,7 +126,9 @@ test.describe('Worker Edit Dialog', () => {
   }, testInfo) => {
     const tb = getTestBase(testInfo);
     const worker = await tb.createTestWorker({ name: 'Eve' });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     const newEnd = '2026-12-31';
     await tb.openEditDialog(page, worker.id);
@@ -150,9 +158,9 @@ test.describe('Worker Edit Dialog', () => {
       name: 'Frank',
       employmentEndDate: dayjs('2027-06-01'),
     });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('[aria-label="worker table"]');
 
     await tb.openEditDialog(page, worker.id);
     await tb.setDialogPermanentCheckbox(page, true);
@@ -172,7 +180,9 @@ test.describe('Worker Edit Dialog', () => {
   }, testInfo) => {
     const tb = getTestBase(testInfo);
     const worker = await tb.createTestWorker({ name: 'Grace', weeklyHours: 39 });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     await tb.openEditDialog(page, worker.id);
     await tb.setDialogWeeklyHours(page, 36);
@@ -196,7 +206,9 @@ test.describe('Worker Edit Dialog', () => {
       weeklyHours: 39,
       weeklyHoursDesired: 39,
     });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     await tb.openEditDialog(page, worker.id);
     await tb.setDialogWeeklyHoursDesired(page, 30);
@@ -218,7 +230,9 @@ test.describe('Worker Edit Dialog', () => {
   }, testInfo) => {
     const tb = getTestBase(testInfo);
     const worker = await tb.createTestWorker({ name: 'Ivy', dutiesPerMonth: 4 });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     await tb.openEditDialog(page, worker.id);
     await tb.setDialogDutiesPerMonth(page, 6);
@@ -238,7 +252,9 @@ test.describe('Worker Edit Dialog', () => {
   }, testInfo) => {
     const tb = getTestBase(testInfo);
     const worker = await tb.createTestWorker({ name: 'Jack', annualLeave: 25 });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     await tb.openEditDialog(page, worker.id);
     await tb.setDialogAnnualLeave(page, 30);
@@ -265,7 +281,9 @@ test.describe('Worker Edit Dialog', () => {
       dutiesPerMonth: 4,
       annualLeave: 25,
     });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     await tb.openEditDialog(page, worker.id);
 
@@ -312,7 +330,9 @@ test.describe('Worker Edit Dialog', () => {
   test('should cancel dialog without changing the worker', async ({ page }, testInfo) => {
     const tb = getTestBase(testInfo);
     const worker = await tb.createTestWorker({ name: 'Liam', weeklyHours: 40 });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     await tb.openEditDialog(page, worker.id);
     await tb.setDialogName(page, 'ChangedName');
@@ -343,7 +363,9 @@ test.describe('Worker Edit Dialog', () => {
     const specialtyB = await tb.createTestSpecialty({ name: 'Pediatrics' });
 
     const worker = await tb.createTestWorker({ name: 'Mia', weeklyHours: 39 });
-    await page.waitForSelector('[data-testid="worker-table"]');
+
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
 
     // Open dialog and add both specialties via the specialty edit component
     await tb.openEditDialog(page, worker.id);
