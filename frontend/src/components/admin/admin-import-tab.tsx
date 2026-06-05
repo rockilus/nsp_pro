@@ -23,12 +23,9 @@ import Chip from '@mui/material/Chip';
 // Icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import DownloadIcon from '@mui/icons-material/Download';
 import WarningIcon from '@mui/icons-material/Warning';
 // Components
 import NavigationHeader from '@/components/common/navigation-header';
-// Context
-import { useTeam } from '@/context/TeamContext';
 // Hooks
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
@@ -160,20 +157,11 @@ function buildAuthHeaders(user: { id_token?: string } | null | undefined): Recor
 export default function AdminImportTab({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'admin-import');
   const router = useRouter();
-  const { selectedTeam, teams, loading: teamsLoading } = useTeam();
   const { user } = useAuth();
 
   const [step, setStep] = useState<WizardStep>('upload');
   const [previewData, setPreviewData] = useState<ImportPreviewData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
-
-  // Sync selected team from context
-  React.useEffect(() => {
-    if (selectedTeam?.team.id) {
-      setSelectedTeamId(selectedTeam.team.id);
-    }
-  }, [selectedTeam]);
 
   // ── Upload handler ────────────────────────────────────────────────────
 
@@ -181,13 +169,6 @@ export default function AdminImportTab({ lng }: { lng: string }) {
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) return;
-
-      const teamId = selectedTeamId || selectedTeam?.team.id;
-      if (!teamId) {
-        setErrorMessage(t('no_team_selected'));
-        setStep('error');
-        return;
-      }
 
       if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
         setErrorMessage(t('invalid_file'));
@@ -210,7 +191,7 @@ export default function AdminImportTab({ lng }: { lng: string }) {
         };
         delete (fetchHeaders as Record<string, string>)['Content-Type'];
 
-        const resp = await fetch(`${env.apiUrl}/import/teams/${teamId}/preview`, {
+        const resp = await fetch(`${env.apiUrl}/import/preview`, {
           method: 'POST',
           headers: fetchHeaders,
           body: formData,
@@ -237,61 +218,13 @@ export default function AdminImportTab({ lng }: { lng: string }) {
         setStep('error');
       }
     },
-    [selectedTeamId, selectedTeam, user, t],
+    [user, t],
   );
-
-  // ── Template download ─────────────────────────────────────────────────
-
-  const handleDownloadTemplate = useCallback(async () => {
-    const teamId = selectedTeamId || selectedTeam?.team.id;
-    if (!teamId) return;
-
-    try {
-      const headers = buildAuthHeaders(user);
-      const resp = await fetch(`${env.apiUrl}/import/teams/${teamId}/template`, { headers });
-
-      if (!resp.ok) throw new Error(`Download failed: ${resp.status}`);
-
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `import_template_${teamId}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Template download failed:', err);
-    }
-  }, [selectedTeamId, selectedTeam, user]);
 
   // ── Render: Upload step ───────────────────────────────────────────────
 
   const renderUpload = () => (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 500 }}>
-      <Paper elevation={1} sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          {t('select_team')}
-        </Typography>
-        <select
-          value={selectedTeamId}
-          onChange={(e) => setSelectedTeamId(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '10px 12px',
-            fontSize: '1rem',
-            borderRadius: 4,
-            border: '1px solid #ccc',
-          }}
-        >
-          <option value="">{t('select_team_placeholder')}</option>
-          {teams.map((tm) => (
-            <option key={tm.team.id} value={tm.team.id}>
-              {tm.team.name}
-            </option>
-          ))}
-        </select>
-      </Paper>
-
       <Paper elevation={1} sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom>
           {t('upload_excel')}
@@ -301,23 +234,9 @@ export default function AdminImportTab({ lng }: { lng: string }) {
         </Typography>
 
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <Button
-            component="label"
-            variant="contained"
-            startIcon={<CloudUploadIcon />}
-            disabled={!selectedTeamId}
-          >
+          <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
             {t('upload_and_preview')}
             <input type="file" accept=".xlsx,.xls" hidden onChange={handleFileUpload} />
-          </Button>
-
-          <Button
-            variant="outlined"
-            startIcon={<DownloadIcon />}
-            onClick={handleDownloadTemplate}
-            disabled={!selectedTeamId}
-          >
-            {t('download_template')}
           </Button>
         </Box>
       </Paper>

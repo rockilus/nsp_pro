@@ -1,7 +1,7 @@
 """Import routes for uploading Excel schedules.
 
 Provides:
-- ``POST /import/teams/{team_id}/preview`` — parse Excel and return preview JSON
+- ``POST /import/preview`` — parse Excel and return preview JSON
 - ``GET  /import/teams/{team_id}/template`` — download blank template Excel
 """
 
@@ -31,22 +31,22 @@ router = APIRouter()
 
 
 @router.post(
-    "/import/teams/{team_id}/preview",
+    "/import/preview",
     status_code=201,
     response_model=ImportPreviewDTO,
 )
 async def preview_import(
-    team_id: str,
     file: UploadFile = File(...),
     user_context: UserContext = Depends(get_user_context),
     import_service: ImportService = Depends(get_import_service),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
-    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> ImportPreviewDTO:
     """Parse an Excel import file and return a preview of all extracted entities.
 
     No data is persisted — this is a read-only preview.  The caller must
     be a super admin (checked against the ``admin`` Cerbos resource).
+    No team context is needed for preview. Team selection happens at
+    the confirm/write phase.
     """
     response: ImportPreviewDTO
     try:
@@ -54,12 +54,9 @@ async def preview_import(
         if not await authz.check(
             user_context.user_id, "preview-import", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to import schedules")
-
-        # Verify the target team exists
-        team = db_collections.team_db.get_team_by_id(team_id)
-        if team is None:
-            raise ValueError(f"Team with id '{team_id}' does not exist")
+            raise NotAuthorizedError(
+                "You do not have permission to import schedules"
+            )
 
         # Validate file type
         if not file.filename or not (
@@ -71,10 +68,10 @@ async def preview_import(
         if not contents:
             raise ValueError("Uploaded file is empty")
 
-        response = import_service.preview_import(team_id, contents)
+        response = import_service.preview_import(contents)
 
     except Exception as e:
-        log_info(f"Failed to preview import for team {team_id}: {e}")
+        log_info(f"Failed to preview import: {e}")
         handle_routes_errors(e)
 
     return response
@@ -223,7 +220,9 @@ def _build_template_workbook() -> Workbook:
 
     today = date.today()
     for i in range(14):
-        cell = ws_schedule.cell(row=1, column=2 + i, value=(today + timedelta(days=i)))
+        cell = ws_schedule.cell(
+            row=1, column=2 + i, value=(today + timedelta(days=i))
+        )
         cell.font = _bold()
         cell.number_format = "YYYY-MM-DD"
 

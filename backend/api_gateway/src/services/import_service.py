@@ -61,10 +61,14 @@ class ImportService(BaseService):
 
     def preview_import(
         self,
-        team_id: str,
         file_contents: bytes,
     ) -> ImportPreviewDTO:
-        """Parse an Excel workbook and return a full preview."""
+        """Parse an Excel workbook and return a full preview.
+
+        No team context is needed — this is a pure parse+validate step.
+        Specialty skill names are left unresolved (empty specialtyIds)
+        since the target team is not yet known.
+        """
         all_warnings: List[str] = []
 
         # 1. Parse the raw Excel workbook
@@ -81,42 +85,37 @@ class ImportService(BaseService):
                 warnings=[],
             )
 
-        # 2. Fetch team specialties for skill name → ID mapping
-        specialties = (
-            self.collection.specialty_db.get_specialties_not_deleted_by_team_id(team_id)
-        )
-        specialty_name_to_id = {s.name.lower(): s.id for s in specialties}
-
-        # 3. Build shift previews (must come first — leave shift may be
+        # 2. Build shift previews (must come first — leave shift may be
         #    auto-generated and needed by requests/assignments)
         shifts_preview, shift_code_to_id = self._build_shift_previews(
-            shifts_raw, schedule_raw, team_id, all_warnings
+            shifts_raw, schedule_raw, all_warnings
         )
 
-        # 4. Build member previews
+        # 3. Build member previews (specialty IDs left empty — team unknown)
         members_preview = self._build_member_previews(
-            members_raw, team_id, specialty_name_to_id, all_warnings
+            members_raw, all_warnings
         )
 
         # worker name → generated worker ID mapping
-        worker_name_to_id = {m.name.lower(): m.generatedId for m in members_preview}
+        worker_name_to_id = {
+            m.name.lower(): m.generatedId for m in members_preview
+        }
 
-        # 5. Build request previews (from "leave" cells)
+        # 4. Build request previews (from "leave" cells)
         leave_shift = self._find_leave_shift_preview(shifts_preview)
         requests_preview: List[ImportRequestPreviewDTO] = []
         if leave_shift and schedule_raw:
             requests_preview = self._build_request_previews(
-                schedule_raw, worker_name_to_id, leave_shift, team_id, all_warnings
+                schedule_raw, worker_name_to_id, leave_shift, all_warnings
             )
 
-        # 6. Build assignment previews (all non-empty cells)
+        # 5. Build assignment previews (all non-empty cells)
         assignments_preview: List[ImportAssignmentPreviewDTO] = []
         if schedule_raw:
             assignments_preview = self._build_assignment_previews(
                 schedule_raw,
                 worker_name_to_id,
                 shift_code_to_id,
-                team_id,
                 all_warnings,
             )
 
@@ -134,8 +133,6 @@ class ImportService(BaseService):
     def _build_member_previews(
         self,
         members_raw: List[dict],
-        team_id: str,
-        specialty_name_to_id: Dict[str, str],
         warnings: List[str],
     ) -> List[ImportMemberPreviewDTO]:
         previews: List[ImportMemberPreviewDTO] = []
@@ -153,19 +150,12 @@ class ImportService(BaseService):
             # Start date is required
             start_date = m.get("start")
             if start_date is None:
-                member_warnings.append(f"Missing employment start date for {name}")
+                member_warnings.append(
+                    f"Missing employment start date for {name}"
+                )
 
-            # Resolve skills → specialty IDs
+            # Specialty IDs left empty — team context not available at preview stage
             specialty_ids: List[str] = []
-            for skill_name in m.get("skills", []):
-                skill_lower = skill_name.lower()
-                spec_id = specialty_name_to_id.get(skill_lower)
-                if spec_id:
-                    specialty_ids.append(spec_id)
-                else:
-                    member_warnings.append(
-                        f"Skill '{skill_name}' not found in team specialties — skipped"
-                    )
 
             contract = m.get("contract") or DEFAULT_WEEKLY_HOURS
             desired = m.get("desired") or contract
@@ -186,7 +176,8 @@ class ImportService(BaseService):
                     ),
                     weeklyHours=contract,
                     weeklyHoursDesired=desired,
-                    dutiesPerMonth=m.get("duty_per_month") or DEFAULT_DUTIES_PER_MONTH,
+                    dutiesPerMonth=m.get("duty_per_month")
+                    or DEFAULT_DUTIES_PER_MONTH,
                     annualLeave=m.get("annual_leave") or DEFAULT_ANNUAL_LEAVE,
                     specialtyIds=specialty_ids,
                     warnings=member_warnings,
@@ -203,7 +194,6 @@ class ImportService(BaseService):
         self,
         shifts_raw: List[dict],
         schedule_raw: List[dict],
-        team_id: str,
         warnings: List[str],
     ) -> tuple[List[ImportShiftPreviewDTO], Dict[str, str]]:
         """Build shift previews and return (previews, code→id mapping)."""
@@ -225,7 +215,11 @@ class ImportService(BaseService):
             seen_codes.add(code.upper())
 
             shift_type = ShiftType.DUTY if s["duty"] else ShiftType.NORMAL
-            rest_type = ShiftRestType.OFF if s["mandatory_rest"] else ShiftRestType.NONE
+            rest_type = (
+                ShiftRestType.OFF
+                if s["mandatory_rest"]
+                else ShiftRestType.NONE
+            )
 
             # Check if this is explicitly a leave shift (by name or code)
             if "leave" in s["name"].lower() or code.upper() == "LEAVE":
@@ -247,9 +241,11 @@ class ImportService(BaseService):
                     color=_pick_color(len(previews)),
                     shiftType=shift_type.value,
                     restType=rest_type.value,
-                    leaveType=ShiftLeaveType.VACATION.value
-                    if shift_type == ShiftType.LEAVE
-                    else ShiftLeaveType.NONE.value,
+                    leaveType=(
+                        ShiftLeaveType.VACATION.value
+                        if shift_type == ShiftType.LEAVE
+                        else ShiftLeaveType.NONE.value
+                    ),
                     recuperationTime=0,
                     recuperationDutyId=None,
                     duty=s["duty"],
@@ -308,7 +304,6 @@ class ImportService(BaseService):
         schedule_raw: List[dict],
         worker_name_to_id: Dict[str, str],
         leave_shift: ImportShiftPreviewDTO,
-        team_id: str,
         warnings: List[str],
     ) -> List[ImportRequestPreviewDTO]:
         """Detect consecutive 'leave' cells per worker, create one request per range."""
@@ -373,7 +368,6 @@ class ImportService(BaseService):
         schedule_raw: List[dict],
         worker_name_to_id: Dict[str, str],
         shift_code_to_id: Dict[str, str],
-        team_id: str,
         warnings: List[str],
     ) -> List[ImportAssignmentPreviewDTO]:
         """Build one assignment per non-empty cell per shift code."""
