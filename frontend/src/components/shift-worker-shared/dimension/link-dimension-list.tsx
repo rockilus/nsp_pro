@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 // Styles
 import '../../../styles/text-styles.css';
-import './link-dimension-list.css';
 // Types
 import { DimensionType } from '@/types/dimension';
 import { DimensionEntryType } from '@/types/dimension';
@@ -36,8 +34,6 @@ export default function LinkDimensionList({
     [DimensionType.SHIFT]: t('link_to_workers_or_rests'),
     [DimensionType.REST_SHIFT]: t('link_to_workers_or_shifts'),
   };
-
-  console.log('dimensions', dimensions);
 
   const dimensionsLink = dimensions.filter(
     (d) =>
@@ -69,27 +65,35 @@ export default function LinkDimensionList({
         <div
           key={dimension.id}
           onClick={() => handleSelectDimension(dimension)}
-          className={`link-dimension-list-item ${
-            selectedDimension?.id === dimension.id ? 'selected' : ''
+          className={`link-dimension-list-item mb-1 flex cursor-pointer items-center justify-between rounded-md border border-border p-2 transition-colors ${
+            selectedDimension?.id === dimension.id ? 'border-primary bg-accent' : 'hover:bg-muted'
           }`}
         >
           <div>
-            <span className="link-dimension-item-name">{dimension.name}</span>
-            <div className="link-dimension-list-dim-entries">
+            <span className="link-dimension-item-name font-medium">{dimension.name}</span>
+            <div className="link-dimension-list-dim-entries mt-1 flex flex-wrap gap-1">
               {selectedDimension?.id === dimension.id &&
                 dimEntries
                   .filter((de) => de.dimensionId === dimension.id)
                   .map((de) => (
-                    <div key={de.id}>
-                      <Chip label={de.name} />
-                    </div>
+                    <Badge key={de.id} variant="outline">
+                      {de.name}
+                    </Badge>
                   ))}
             </div>
           </div>
           {selectedDimension?.id === dimension.id && (
-            <IconButton onClick={handleLinkDimension}>
-              <AddIcon />
-            </IconButton>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLinkDimension();
+              }}
+              className="h-8 w-8"
+            >
+              <Plus className="size-4" />
+            </Button>
           )}
         </div>
       ))}

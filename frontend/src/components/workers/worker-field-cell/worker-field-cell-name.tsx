@@ -1,8 +1,5 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-// MUI
-import Box from '@mui/material/Box';
-import TableCell from '@mui/material/TableCell';
-import TextField from '@mui/material/TextField';
+import { Input } from '@/components/ui/input';
 // Types
 import { WorkerT } from '../../../types/worker';
 
@@ -35,18 +32,14 @@ export default function WorkerFieldCellName({
   };
 
   return (
-    <TableCell
-      component="th"
-      scope="row"
+    <td
+      className="py-0"
       data-testid="worker-name-cell"
       onClick={() => setEditing({ [worker.id]: 'name' })}
-      sx={{ paddingY: 0 }}
     >
       {editing ? (
-        <TextField
-          fullWidth
+        <Input
           type="text"
-          name="Name"
           value={valueState}
           onChange={(e) => setValueState(e.target.value)}
           onBlur={handleEditConfirm}
@@ -58,21 +51,19 @@ export default function WorkerFieldCellName({
             }
           }}
           autoFocus
-          inputProps={{
-            'data-testid': `worker-name-input-${worker.id}`,
-            'data-state': 'editing',
-          }}
+          data-testid={`worker-name-input-${worker.id}`}
+          data-state="editing"
         />
       ) : (
-        <Box
-          sx={{ minHeight: 45, display: 'flex', alignItems: 'center' }}
+        <div
+          className="flex min-h-[45px] items-center"
           data-testid={`worker-name-display-${worker.id}`}
           data-state="display"
           data-worker-name={worker.name || 'Unnamed Worker'}
         >
           {worker.name || 'Unnamed Worker'}
-        </Box>
+        </div>
       )}
-    </TableCell>
+    </td>
   );
 }

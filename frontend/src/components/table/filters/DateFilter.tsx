@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography } from '@mui/material';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { ColumnFilter } from '../../../types/filter';
 
 interface DateFilterProps {
@@ -33,43 +34,41 @@ export default function DateFilter({
   };
 
   return (
-    <Box sx={{ p: 2, minWidth: 300 }} data-testid={`date-filter-${columnId}`}>
-      <Typography variant="subtitle2" sx={{ mb: 1 }}>
-        Filter {label}
-      </Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <TextField
-          type="date"
-          size="small"
-          label="Start Date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          data-testid={`filter-start-date-${columnId}`}
-        />
-        <TextField
-          type="date"
-          size="small"
-          label="End Date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          data-testid={`filter-end-date-${columnId}`}
-        />
-      </Box>
-      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-        <Button
-          onClick={handleApply}
-          variant="contained"
-          size="small"
-          data-testid={`filter-apply-${columnId}`}
-        >
+    <div className="flex min-w-[300px] flex-col p-4" data-testid={`date-filter-${columnId}`}>
+      <p className="mb-2 text-sm font-medium">Filter {label}</p>
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-muted-foreground">Start Date</label>
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            data-testid={`filter-start-date-${columnId}`}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-muted-foreground">End Date</label>
+          <Input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            data-testid={`filter-end-date-${columnId}`}
+          />
+        </div>
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Button onClick={handleApply} size="sm" data-testid={`filter-apply-${columnId}`}>
           Apply
         </Button>
-        <Button onClick={onClose} size="small" data-testid={`filter-cancel-${columnId}`}>
+        <Button
+          onClick={onClose}
+          variant="outline"
+          size="sm"
+          data-testid={`filter-cancel-${columnId}`}
+        >
           Cancel
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

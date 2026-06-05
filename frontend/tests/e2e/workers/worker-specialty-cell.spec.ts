@@ -1,19 +1,27 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
-const workerTestBase = new WorkerTestBase();
-
 test.describe('Worker Specialty Cell', () => {
+  const testBasesMap = new Map<string, WorkerTestBase>();
+
   let testWorker: { id: string; name: string; teamId: string };
   let testSpecialties: { id: string; name: string; teamId: string }[];
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+
+    const workerTestBase = new WorkerTestBase();
+    testBasesMap.set(testRunId, workerTestBase);
+    (testInfo as any).testRunId = testRunId;
+
     // Setup the common worker test environment
-    await workerTestBase.setupWorkerTests(test.info().workerIndex);
+    await getTestBase(testInfo).setupWorkerTests(workerIndex);
 
     // Create a test worker
-    const workerName = `Test Worker ${test.info().workerIndex}-${Date.now()}`;
-    testWorker = await workerTestBase.createTestWorker({
+    const workerName = `Test Worker ${workerIndex}-${Date.now()}`;
+    testWorker = await getTestBase(testInfo).createTestWorker({
       name: workerName,
       weeklyHours: 40,
       weeklyHoursDesired: 40,
@@ -23,14 +31,14 @@ test.describe('Worker Specialty Cell', () => {
 
     // Create some test specialties
     testSpecialties = [];
-    const specialty1 = await workerTestBase.createTestSpecialty({
-      name: `Cardiology ${test.info().workerIndex}-${Date.now()}`,
+    const specialty1 = await getTestBase(testInfo).createTestSpecialty({
+      name: `Cardiology ${workerIndex}-${Date.now()}`,
     });
-    const specialty2 = await workerTestBase.createTestSpecialty({
-      name: `Neurology ${test.info().workerIndex}-${Date.now()}`,
+    const specialty2 = await getTestBase(testInfo).createTestSpecialty({
+      name: `Neurology ${workerIndex}-${Date.now()}`,
     });
-    const specialty3 = await workerTestBase.createTestSpecialty({
-      name: `Orthopedics ${test.info().workerIndex}-${Date.now()}`,
+    const specialty3 = await getTestBase(testInfo).createTestSpecialty({
+      name: `Orthopedics ${workerIndex}-${Date.now()}`,
     });
     testSpecialties.push(specialty1, specialty2, specialty3);
 
@@ -38,17 +46,20 @@ test.describe('Worker Specialty Cell', () => {
     console.log(`Created test specialties: ${testSpecialties.map((s) => s.name).join(', ')}`);
 
     // Navigate to the workers page
-    await workerTestBase.navigateToWorkersPage(page);
+    await getTestBase(testInfo).navigateToWorkersPage(page);
 
     // Wait for the worker table to load
     await page.waitForSelector('[aria-label="worker table"]');
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
     // Clean up: delete the worker and specialties created for this test
     if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.id);
+        await getTestBase(testInfo).deleteTestWorker(testWorker.id);
         console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
         console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
@@ -58,15 +69,25 @@ test.describe('Worker Specialty Cell', () => {
     // Clean up specialties
     for (const specialty of testSpecialties) {
       try {
-        await workerTestBase.deleteTestSpecialty(specialty.id);
+        await getTestBase(testInfo).deleteTestSpecialty(specialty.id);
         console.log(`Deleted test specialty: ${specialty.id}`);
       } catch (error) {
         console.warn(`Failed to delete test specialty ${specialty.id}:`, error);
       }
     }
+
+    testBasesMap.delete(testRunId);
   });
 
-  test('should show popup when clicking on the specialty cell', async ({ page }) => {
+  /** Get the isolated WorkerTestBase for the current test */
+  function getTestBase(testInfo: any): WorkerTestBase {
+    const testRunId = testInfo.testRunId as string;
+    const tb = testBasesMap.get(testRunId);
+    if (!tb) throw new Error('Test base not found');
+    return tb;
+  }
+
+  test('should show popup when clicking on the specialty cell', async ({ page }, testInfo) => {
     // Find the specialty cell
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await expect(specialtyCell).toBeVisible();
@@ -81,7 +102,7 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ Popup appears when clicking on specialty cell');
   });
 
-  test('should list all specialties in the popup', async ({ page }) => {
+  test('should list all specialties in the popup', async ({ page }, testInfo) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -103,7 +124,9 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ All specialties are listed in the popup');
   });
 
-  test('should add specialty as chip when clicking on it in the list', async ({ page }) => {
+  test('should add specialty as chip when clicking on it in the list', async ({
+    page,
+  }, testInfo) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -125,15 +148,17 @@ test.describe('Worker Specialty Cell', () => {
     console.log(`✅ Specialty "${specialty.name}" added as chip`);
   });
 
-  test('should remove selected specialty when clicking delete cross', async ({ page }) => {
+  test('should remove selected specialty when clicking delete cross', async ({
+    page,
+  }, testInfo) => {
     // First, add a specialty to the worker
-    await workerTestBase.updateTestWorker(testWorker.id, {
+    await getTestBase(testInfo).updateTestWorker(testWorker.id, {
       name: testWorker.name,
     });
 
     // Update worker with a specialty
     const specialty = testSpecialties[0];
-    const updatedWorker = await workerTestBase.updateTestWorker(testWorker.id, {
+    const updatedWorker = await getTestBase(testInfo).updateTestWorker(testWorker.id, {
       specialtyIds: [specialty.id],
     });
 
@@ -163,7 +188,7 @@ test.describe('Worker Specialty Cell', () => {
     console.log(`✅ Specialty "${specialty.name}" removed via delete cross`);
   });
 
-  test('should filter specialties when typing in search input', async ({ page }) => {
+  test('should filter specialties when typing in search input', async ({ page }, testInfo) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -191,7 +216,7 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ Search input filters specialties correctly');
   });
 
-  test('should not show selected specialty in available options', async ({ page }) => {
+  test('should not show selected specialty in available options', async ({ page }, testInfo) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -217,7 +242,7 @@ test.describe('Worker Specialty Cell', () => {
 
   test('should remove last selected specialty when pressing backspace in empty input', async ({
     page,
-  }) => {
+  }, testInfo) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -255,7 +280,7 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ Last selected specialty removed with backspace');
   });
 
-  test('should close popup when clicking away', async ({ page }) => {
+  test('should close popup when clicking away', async ({ page }, testInfo) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -271,7 +296,7 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ Popup closes when clicking away');
   });
 
-  test('should close popup when pressing escape', async ({ page }) => {
+  test('should close popup when pressing escape', async ({ page }, testInfo) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -291,11 +316,11 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ Popup closes when pressing escape');
   });
 
-  test('should show selected specialties in the specialty cell', async ({ page }) => {
+  test('should show selected specialties in the specialty cell', async ({ page }, testInfo) => {
     // Update worker with specialties
     const specialty1 = testSpecialties[0];
     const specialty2 = testSpecialties[1];
-    await workerTestBase.updateTestWorker(testWorker.id, {
+    await getTestBase(testInfo).updateTestWorker(testWorker.id, {
       specialtyIds: [specialty1.id, specialty2.id],
     });
 
@@ -315,7 +340,9 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ Selected specialties appear in specialty cell');
   });
 
-  test('should reflect changes in specialty cell after closing popup', async ({ page }) => {
+  test('should reflect changes in specialty cell after closing popup', async ({
+    page,
+  }, testInfo) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -343,10 +370,12 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ Added specialty appears in cell after closing popup');
   });
 
-  test('should reflect removal of specialty in cell after closing popup', async ({ page }) => {
+  test('should reflect removal of specialty in cell after closing popup', async ({
+    page,
+  }, testInfo) => {
     // First, add a specialty to the worker
     const specialty = testSpecialties[0];
-    await workerTestBase.updateTestWorker(testWorker.id, {
+    await getTestBase(testInfo).updateTestWorker(testWorker.id, {
       specialtyIds: [specialty.id],
     });
 
@@ -382,7 +411,7 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ Removed specialty no longer appears in cell after closing popup');
   });
 
-  test('should allow selecting specialty with Enter key', async ({ page }) => {
+  test('should allow selecting specialty with Enter key', async ({ page }, testInfo) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -406,7 +435,9 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ Specialty selected with Enter key');
   });
 
-  test('should show empty specialty cell when no specialties are assigned', async ({ page }) => {
+  test('should show empty specialty cell when no specialties are assigned', async ({
+    page,
+  }, testInfo) => {
     // Verify the specialty cell is visible but empty (no chips)
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await expect(specialtyCell).toBeVisible();
@@ -418,7 +449,7 @@ test.describe('Worker Specialty Cell', () => {
     console.log('✅ Empty specialty cell displayed correctly');
   });
 
-  test('should navigate through options with arrow keys', async ({ page }) => {
+  test('should navigate through options with arrow keys', async ({ page }, testInfo) => {
     // Click on the specialty cell to open popup
     const specialtyCell = page.locator('[data-testid="worker-specialty-cell"]');
     await specialtyCell.click();
@@ -436,20 +467,20 @@ test.describe('Worker Specialty Cell', () => {
 
     // Verify first option is highlighted (selected state)
     const firstOption = page.locator(`[data-testid="specialty-option-${testSpecialties[0].id}"]`);
-    await expect(firstOption).toHaveClass(/Mui-selected/);
+    await expect(firstOption).toHaveClass(/bg-accent/);
 
     // Press down arrow again to move to second option
     await searchInput.press('ArrowDown');
 
     // Verify second option is highlighted
     const secondOption = page.locator(`[data-testid="specialty-option-${testSpecialties[1].id}"]`);
-    await expect(secondOption).toHaveClass(/Mui-selected/);
+    await expect(secondOption).toHaveClass(/bg-accent/);
 
     // Press up arrow to go back to first option
     await searchInput.press('ArrowUp');
 
     // Verify first option is highlighted again
-    await expect(firstOption).toHaveClass(/Mui-selected/);
+    await expect(firstOption).toHaveClass(/bg-accent/);
 
     console.log('✅ Arrow key navigation works correctly');
   });

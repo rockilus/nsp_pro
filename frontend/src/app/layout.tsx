@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '../components/auth/auth-provider';
 import ThemeRegistry from '../components/providers/ThemeRegistry';
+import ThemeProvider from '../components/providers/ThemeProvider';
 // Components
 import ImpersonationBanner from '../components/app-bar/impersonation-banner';
 import { Toaster } from '../components/ui/sonner';
@@ -22,16 +23,18 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <ThemeRegistry>
         <body className={inter.className}>
-          <AuthProvider>
-            <TooltipProvider>
-              <ImpersonationBanner />
-              {children}
-              <Toaster />
-            </TooltipProvider>
-          </AuthProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <AuthProvider>
+              <TooltipProvider>
+                <ImpersonationBanner />
+                {children}
+                <Toaster />
+              </TooltipProvider>
+            </AuthProvider>
+          </ThemeProvider>
         </body>
       </ThemeRegistry>
     </html>

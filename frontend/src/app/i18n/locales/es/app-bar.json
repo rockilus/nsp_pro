@@ -12,6 +12,10 @@
   "stats": "Estadísticas",
   "swaps": "Intercambios",
   "teams": "Equipos",
+  "theme": "Tema",
+  "theme_auto": "Automático",
+  "theme_dark": "Oscuro",
+  "theme_light": "Claro",
   "workers": "Equipo",
   "notifications": "Notificaciones"
 }

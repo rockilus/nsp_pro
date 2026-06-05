@@ -1,19 +1,27 @@
 import { test, expect, Page } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
-const workerTestBase = new WorkerTestBase();
-
 test.describe('Worker Specialty Header Cell', () => {
+  const testBasesMap = new Map<string, WorkerTestBase>();
+
   let testWorker: { id: string; name: string; teamId: string };
   let testSpecialties: { id: string; name: string; teamId: string }[];
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+
+    const workerTestBase = new WorkerTestBase();
+    testBasesMap.set(testRunId, workerTestBase);
+    (testInfo as any).testRunId = testRunId;
+
     // Setup the common worker test environment
-    await workerTestBase.setupWorkerTests(test.info().workerIndex);
+    await getTestBase(testInfo).setupWorkerTests(workerIndex);
 
     // Create a test worker
-    const workerName = `Test Worker ${test.info().workerIndex}-${Date.now()}`;
-    testWorker = await workerTestBase.createTestWorker({
+    const workerName = `Test Worker ${workerIndex}-${Date.now()}`;
+    testWorker = await getTestBase(testInfo).createTestWorker({
       name: workerName,
       weeklyHours: 40,
       weeklyHoursDesired: 40,
@@ -23,11 +31,11 @@ test.describe('Worker Specialty Header Cell', () => {
 
     // Create some test specialties
     testSpecialties = [];
-    const specialty1 = await workerTestBase.createTestSpecialty({
-      name: `Cardiology ${test.info().workerIndex}-${Date.now()}`,
+    const specialty1 = await getTestBase(testInfo).createTestSpecialty({
+      name: `Cardiology ${workerIndex}-${Date.now()}`,
     });
-    const specialty2 = await workerTestBase.createTestSpecialty({
-      name: `Neurology ${test.info().workerIndex}-${Date.now()}`,
+    const specialty2 = await getTestBase(testInfo).createTestSpecialty({
+      name: `Neurology ${workerIndex}-${Date.now()}`,
     });
     testSpecialties.push(specialty1, specialty2);
 
@@ -35,17 +43,20 @@ test.describe('Worker Specialty Header Cell', () => {
     console.log(`Created test specialties: ${testSpecialties.map((s) => s.name).join(', ')}`);
 
     // Navigate to the workers page
-    await workerTestBase.navigateToWorkersPage(page);
+    await getTestBase(testInfo).navigateToWorkersPage(page);
 
     // Wait for the worker table to load
     await page.waitForSelector('[aria-label="worker table"]');
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
     // Clean up: delete the worker and specialties created for this test
     if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.id);
+        await getTestBase(testInfo).deleteTestWorker(testWorker.id);
         console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
         console.warn(`Failed to delete test worker: ${error}`);
@@ -56,18 +67,28 @@ test.describe('Worker Specialty Header Cell', () => {
     if (testSpecialties && Array.isArray(testSpecialties)) {
       for (const specialty of testSpecialties) {
         try {
-          await workerTestBase.deleteTestSpecialty(specialty.id);
+          await getTestBase(testInfo).deleteTestSpecialty(specialty.id);
           console.log(`Deleted test specialty: ${specialty.id}`);
         } catch (error) {
           console.warn(`Failed to delete test specialty: ${error}`);
         }
       }
     }
+
+    testBasesMap.delete(testRunId);
   });
+
+  /** Get the isolated WorkerTestBase for the current test */
+  function getTestBase(testInfo: any): WorkerTestBase {
+    const testRunId = testInfo.testRunId as string;
+    const tb = testBasesMap.get(testRunId);
+    if (!tb) throw new Error('Test base not found');
+    return tb;
+  }
 
   test("should show popup with 'Update specialties' title when clicking on specialties header", async ({
     page,
-  }) => {
+  }, testInfo) => {
     // Find the specialties header cell
     const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await expect(specialtyHeaderCell).toBeVisible();
@@ -86,7 +107,9 @@ test.describe('Worker Specialty Header Cell', () => {
     console.log("✅ Popup with 'Update specialties' title appears when clicking header");
   });
 
-  test('should add new specialty when entering name and pressing enter', async ({ page }) => {
+  test('should add new specialty when entering name and pressing enter', async ({
+    page,
+  }, testInfo) => {
     // Click on the specialties header to open popup
     const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await specialtyHeaderCell.click();
@@ -100,7 +123,7 @@ test.describe('Worker Specialty Header Cell', () => {
     await expect(newSpecialtyInput).toBeVisible();
 
     // Type a new specialty name
-    const newSpecialtyName = `Orthopedics ${test.info().workerIndex}-${Date.now()}`;
+    const newSpecialtyName = `Orthopedics ${testInfo.workerIndex}-${Date.now()}`;
     await newSpecialtyInput.fill(newSpecialtyName);
 
     // Press Enter to add the specialty
@@ -118,7 +141,7 @@ test.describe('Worker Specialty Header Cell', () => {
 
   test('should show edit input when clicking edit button next to existing specialty', async ({
     page,
-  }) => {
+  }, testInfo) => {
     // Use one of our pre-created test specialties
     const testSpecialty = testSpecialties[0];
 
@@ -155,7 +178,9 @@ test.describe('Worker Specialty Header Cell', () => {
     console.log(`✅ Edit mode activated for specialty "${testSpecialty.name}"`);
   });
 
-  test('should update specialty name when editing and clicking checkmark', async ({ page }) => {
+  test('should update specialty name when editing and clicking checkmark', async ({
+    page,
+  }, testInfo) => {
     // Use one of our pre-created test specialties
     const testSpecialty = testSpecialties[0];
 
@@ -195,7 +220,9 @@ test.describe('Worker Specialty Header Cell', () => {
     console.log(`✅ Specialty name updated from "${testSpecialty.name}" to "${newName}"`);
   });
 
-  test('should cancel editing and keep original name when clicking cross', async ({ page }) => {
+  test('should cancel editing and keep original name when clicking cross', async ({
+    page,
+  }, testInfo) => {
     // Use one of our pre-created test specialties
     const testSpecialty = testSpecialties[0];
     const originalName = testSpecialty.name;
@@ -234,7 +261,9 @@ test.describe('Worker Specialty Header Cell', () => {
     console.log(`✅ Edit cancelled successfully, name remains "${originalName}"`);
   });
 
-  test('should remove specialty from list when clicking delete button', async ({ page }) => {
+  test('should remove specialty from list when clicking delete button', async ({
+    page,
+  }, testInfo) => {
     // Use one of our pre-created test specialties
     const testSpecialty = testSpecialties[0];
 
@@ -269,7 +298,7 @@ test.describe('Worker Specialty Header Cell', () => {
     }
   });
 
-  test('should handle keyboard interactions in edit mode', async ({ page }) => {
+  test('should handle keyboard interactions in edit mode', async ({ page }, testInfo) => {
     // Use one of our pre-created test specialties
     const testSpecialty = testSpecialties[0];
 
@@ -333,7 +362,7 @@ test.describe('Worker Specialty Header Cell', () => {
     // }
   });
 
-  test('should close popup when clicking save button', async ({ page }) => {
+  test('should close popup when clicking save button', async ({ page }, testInfo) => {
     // Click on the specialties header to open popup
     const specialtyHeaderCell = page.locator('[data-testid="worker-specialty-header-cell"]');
     await specialtyHeaderCell.click();

@@ -1,7 +1,7 @@
+'use client';
+
 import * as React from 'react';
-// MUI
-import Popover from '@mui/material/Popover';
-import Button from '@mui/material/Button';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 export default function PopoverAnchorElOver({
   buttonContent,
@@ -14,71 +14,24 @@ export default function PopoverAnchorElOver({
   open: boolean;
   setOpen: (open: boolean) => void;
 }) {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setAnchorEl(null);
-  };
-
-  const id = open ? 'simple-popover' : undefined;
-
   return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-      }}
-    >
-      <Button
-        aria-describedby={id}
-        data-testid="popover-trigger-button"
-        variant="contained"
-        onClick={handleClick}
-        sx={{
-          backgroundColor: 'transparent',
-          border: 'none',
-          boxShadow: 'none',
-          '&:hover': {
-            backgroundColor: 'transparent',
-            boxShadow: 'none',
-          },
-          textTransform: 'none',
-          justifyContent: 'flex-start',
-          padding: 0,
-          width: '100%',
-          height: '100%',
-          minHeight: 20,
-        }}
-      >
-        {buttonContent}
-      </Button>
-      <Popover
-        id={id}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          data-testid="popover-trigger-button"
+          className="flex h-full min-h-[20px] w-full cursor-pointer items-center justify-start border-none bg-transparent p-0 text-left shadow-none hover:bg-transparent"
+        >
+          {buttonContent}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        side="top"
         data-testid="popover-content"
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-        slotProps={{
-          paper: {
-            style: {
-              boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
-              padding: 0,
-            },
-          },
-        }}
+        className="p-0 shadow-[0px_3px_5px_rgba(0,0,0,0.2)]"
       >
         {content}
-      </Popover>
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }

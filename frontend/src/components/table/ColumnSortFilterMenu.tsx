@@ -1,19 +1,6 @@
 import React, { useState } from 'react';
-import {
-  IconButton,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  Popover,
-} from '@mui/material';
-import {
-  MoreVert as MoreVertIcon,
-  ArrowUpward as ArrowUpwardIcon,
-  ArrowDownward as ArrowDownwardIcon,
-  FilterList as FilterListIcon,
-} from '@mui/icons-material';
+import { EllipsisVertical, ArrowUp, ArrowDown, Filter, ArrowLeft } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { ColumnDefinition, ColumnFilter, TableSort, SortDirection } from '../../types/filter';
 import TextFilter from './filters/TextFilter';
 import SelectFilter from './filters/SelectFilter';
@@ -34,56 +21,58 @@ export default function ColumnSortFilterMenu({
   onSort,
   onFilter,
 }: ColumnSortFilterMenuProps) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
+  const [open, setOpen] = useState(false);
+  // When true, the popover shows the filter form instead of the sort menu
+  const [showFilter, setShowFilter] = useState(false);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleSort = (direction: SortDirection) => {
+  const handleSort = (direction: SortDirection | null) => {
     if (direction) {
-      onSort({
-        columnId: column.id,
-        direction,
-        label: column.label,
-      });
+      onSort({ columnId: column.id, direction, label: column.label });
     } else {
       onSort(null);
     }
-    handleMenuClose();
+    setOpen(false);
   };
 
-  const handleFilterOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setFilterAnchorEl(event.currentTarget);
-    handleMenuClose();
+  const handleOpenFilter = () => {
+    setShowFilter(true);
   };
 
   const handleFilterClose = () => {
-    setFilterAnchorEl(null);
+    setOpen(false);
+    setShowFilter(false);
   };
+
+  const handleFilterApply = (filter: ColumnFilter) => {
+    onFilter(filter);
+    setOpen(false);
+    setShowFilter(false);
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) setShowFilter(false);
+  };
+
+  const isCurrentlySorted = currentSort?.columnId === column.id;
+  const sortDirection = isCurrentlySorted ? currentSort.direction : null;
 
   const renderFilterComponent = () => {
     switch (column.type) {
       case 'text':
         return (
           <TextFilter
-            onApply={onFilter}
+            onApply={handleFilterApply}
             onClose={handleFilterClose}
             columnId={column.id}
             label={column.label}
             currentValue={currentFilter?.value}
           />
         );
-
       case 'select':
         return (
           <SelectFilter
-            onApply={onFilter}
+            onApply={handleFilterApply}
             onClose={handleFilterClose}
             columnId={column.id}
             label={column.label}
@@ -91,11 +80,10 @@ export default function ColumnSortFilterMenu({
             currentValue={currentFilter?.value}
           />
         );
-
       case 'boolean':
         return (
           <SelectFilter
-            onApply={onFilter}
+            onApply={handleFilterApply}
             onClose={handleFilterClose}
             columnId={column.id}
             label={column.label}
@@ -103,88 +91,93 @@ export default function ColumnSortFilterMenu({
             currentValue={currentFilter?.value}
           />
         );
-
       case 'date':
         return (
           <DateFilter
-            onApply={onFilter}
+            onApply={handleFilterApply}
             onClose={handleFilterClose}
             columnId={column.id}
             label={column.label}
             currentValue={currentFilter?.value}
           />
         );
-
       default:
         return null;
     }
   };
 
-  const isCurrentlySorted = currentSort?.columnId === column.id;
-  const sortDirection = isCurrentlySorted ? currentSort.direction : null;
-
   return (
-    <>
-      <IconButton
-        component="span"
-        size="small"
-        onClick={handleMenuOpen}
-        sx={{
-          opacity: 0.7,
-          '&:hover': { opacity: 1 },
-        }}
-        data-testid={`column-menu-${column.id}`}
-      >
-        <MoreVertIcon fontSize="small" />
-      </IconButton>
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex cursor-pointer items-center rounded border-none bg-transparent p-1 opacity-70 hover:opacity-100"
+          data-testid={`column-menu-${column.id}`}
+        >
+          <EllipsisVertical className="size-4" />
+        </button>
+      </PopoverTrigger>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{ sx: { minWidth: 180 } }}
-      >
-        <MenuItem onClick={() => handleSort('asc')} data-testid={`sort-asc-${column.id}`}>
-          <ListItemIcon>
-            <ArrowUpwardIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Sort Ascending</ListItemText>
-        </MenuItem>
+      <PopoverContent align="start" side="bottom" className="w-48 p-0">
+        {showFilter ? (
+          // ── Filter view ──────────────────────────────
+          <div>
+            <button
+              onClick={() => setShowFilter(false)}
+              className="flex w-full items-center gap-1.5 px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <ArrowLeft className="size-4" />
+              Back
+            </button>
+            {renderFilterComponent()}
+          </div>
+        ) : (
+          // ── Sort / Filter menu ──────────────────────
+          <div className="flex flex-col py-1">
+            <button
+              type="button"
+              onClick={() => handleSort('asc')}
+              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+              data-testid={`sort-asc-${column.id}`}
+            >
+              <ArrowUp className="size-4" />
+              Sort Ascending
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSort('desc')}
+              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+              data-testid={`sort-desc-${column.id}`}
+            >
+              <ArrowDown className="size-4" />
+              Sort Descending
+            </button>
 
-        <MenuItem onClick={() => handleSort('desc')} data-testid={`sort-desc-${column.id}`}>
-          <ListItemIcon>
-            <ArrowDownwardIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Sort Descending</ListItemText>
-        </MenuItem>
+            {sortDirection && (
+              <button
+                type="button"
+                onClick={() => handleSort(null)}
+                className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+                data-testid={`remove-sort-${column.id}`}
+              >
+                Remove Sort
+              </button>
+            )}
 
-        {sortDirection && (
-          <MenuItem onClick={() => handleSort(null)} data-testid={`remove-sort-${column.id}`}>
-            <ListItemText>Remove Sort</ListItemText>
-          </MenuItem>
+            <div className="my-1 border-t border-border" />
+
+            <button
+              type="button"
+              onClick={handleOpenFilter}
+              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+              data-testid={`filter-menu-${column.id}`}
+            >
+              <Filter className="size-4" />
+              Filter
+            </button>
+          </div>
         )}
-
-        <Divider />
-
-        <MenuItem onClick={handleFilterOpen} data-testid={`filter-menu-${column.id}`}>
-          <ListItemIcon>
-            <FilterListIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Filter</ListItemText>
-        </MenuItem>
-      </Menu>
-
-      <Popover
-        open={Boolean(filterAnchorEl)}
-        anchorEl={filterAnchorEl}
-        onClose={handleFilterClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-      >
-        {renderFilterComponent()}
-      </Popover>
-    </>
+      </PopoverContent>
+    </Popover>
   );
 }

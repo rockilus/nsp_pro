@@ -1,9 +1,8 @@
+'use client';
+
 import * as React from 'react';
-// MUI
-import AddIcon from '@mui/icons-material/Add';
-import Tooltip from '@mui/material/Tooltip';
-// Styles
-import './table-add-button.css';
+import { Plus } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const TableAddButton = ({
   text,
@@ -20,15 +19,22 @@ const TableAddButton = ({
 }) => {
   const button = (
     <button
-      className="add-button"
+      className="add-button inline-flex cursor-pointer items-center gap-1 rounded-md border-none bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
       onClick={() => handleClick && handleClick()}
       data-testid={dataTestId ?? `add-${text.toLowerCase()}-button`}
     >
-      {showIcon && <AddIcon sx={{ height: '17px' }} />}
+      {showIcon && <Plus className="size-[17px]" />}
       {text}
     </button>
   );
 
-  return tooltip ? <Tooltip title={tooltip}>{button}</Tooltip> : button;
+  return tooltip ? (
+    <Tooltip>
+      <TooltipTrigger asChild>{button}</TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
+  ) : (
+    button
+  );
 };
 export default TableAddButton;

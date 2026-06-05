@@ -1,21 +1,29 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
-const workerTestBase = new WorkerTestBase();
-
 test.describe('Worker Acronym Updates', () => {
+  const testBasesMap = new Map<string, WorkerTestBase>();
+
   let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+
+    const workerTestBase = new WorkerTestBase();
+    testBasesMap.set(testRunId, workerTestBase);
+    (testInfo as any).testRunId = testRunId;
+
     // Setup the common worker test environment
-    await workerTestBase.setupWorkerTests(test.info().workerIndex);
+    await getTestBase(testInfo).setupWorkerTests(workerIndex);
 
     // Use a unique name per test to avoid conflicts
-    initialWorkerName = `John Doe ${test.info().workerIndex}-${Date.now()}`;
+    initialWorkerName = `John Doe ${workerIndex}-${Date.now()}`;
 
     // Create a fresh test worker for each test
-    testWorker = await workerTestBase.createTestWorker({
+    testWorker = await getTestBase(testInfo).createTestWorker({
       name: initialWorkerName,
       // Don't specify acronym - let it be auto-generated to ensure acronymCustom = false
       weeklyHours: 40,
@@ -27,41 +35,54 @@ test.describe('Worker Acronym Updates', () => {
     console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
 
     // Navigate to the workers page
-    await workerTestBase.navigateToWorkersPage(page);
+    await getTestBase(testInfo).navigateToWorkersPage(page);
 
     // Wait for the worker table to load and our test worker to appear
     await page.waitForSelector('[aria-label="worker table"]');
 
     // Verify our test worker is visible in the table
-    const workerRows = workerTestBase.getWorkerRows(page);
+    const workerRows = getTestBase(testInfo).getWorkerRows(page);
     await expect(workerRows).toHaveCount(1);
 
     // Verify the worker name is displayed
-    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
     await expect(nameCell).toContainText(initialWorkerName);
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
     // Clean up: delete the worker created for this test
     if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.id);
+        await getTestBase(testInfo).deleteTestWorker(testWorker.id);
         console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
         console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
       }
     }
+
+    testBasesMap.delete(testRunId);
   });
+
+  /** Get the isolated WorkerTestBase for the current test */
+  function getTestBase(testInfo: any): WorkerTestBase {
+    const testRunId = testInfo.testRunId as string;
+    const tb = testBasesMap.get(testRunId);
+    if (!tb) throw new Error('Test base not found');
+    return tb;
+  }
 
   test('should update acronym automatically when worker name changes to different initials', async ({
     page,
-  }) => {
+  }, testInfo) => {
     // Get the name and acronym cells
-    const nameCell = workerTestBase.getWorkerNameCell(page);
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
+    const acronymCell = getTestBase(testInfo).getWorkerAcronymCell(page, testWorker.id);
 
     // Get the current acronym to use as baseline (could be "JOH" or "JD" depending on implementation)
-    const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
+    const acronymDisplay = getTestBase(testInfo).getWorkerAcronymDisplay(page);
     const currentAcronym = await acronymDisplay.textContent();
     const trimmedCurrentAcronym = currentAcronym?.trim() || '';
 
@@ -102,10 +123,10 @@ test.describe('Worker Acronym Updates', () => {
 
   test('should create unique acronym when worker has same acronym as existing worker', async ({
     page,
-  }) => {
+  }, testInfo) => {
     // Create a second worker with the same initials (different name but would generate same acronym)
-    const secondWorkerName = `Jane Davis ${test.info().workerIndex}-${Date.now()}`;
-    const secondWorker = await workerTestBase.createTestWorker({
+    const secondWorkerName = `Jane Davis ${testInfo.workerIndex}-${Date.now()}`;
+    const secondWorker = await getTestBase(testInfo).createTestWorker({
       name: secondWorkerName,
       weeklyHours: 40,
       weeklyHoursDesired: 40,
@@ -119,12 +140,12 @@ test.describe('Worker Acronym Updates', () => {
       await page.waitForSelector('[aria-label="worker table"]');
 
       // Should now have 2 workers
-      const workerRows = workerTestBase.getWorkerRows(page);
+      const workerRows = getTestBase(testInfo).getWorkerRows(page);
       await expect(workerRows).toHaveCount(2);
 
       // Check the acronyms in both rows
-      const firstRowAcronymDisplay = workerTestBase.getWorkerAcronymDisplay(page, 0);
-      const secondRowAcronymDisplay = workerTestBase.getWorkerAcronymDisplay(page, 1);
+      const firstRowAcronymDisplay = getTestBase(testInfo).getWorkerAcronymDisplay(page, 0);
+      const secondRowAcronymDisplay = getTestBase(testInfo).getWorkerAcronymDisplay(page, 1);
 
       // Get the actual acronym values
       const firstAcronym = await firstRowAcronymDisplay.textContent();
@@ -143,18 +164,18 @@ test.describe('Worker Acronym Updates', () => {
       console.log(`✅ Created unique acronyms: "${firstAcronym}" and "${secondAcronym}"`);
     } finally {
       // Clean up the second worker
-      await workerTestBase.deleteTestWorker(secondWorker.id);
+      await getTestBase(testInfo).deleteTestWorker(secondWorker.id);
     }
   });
 
-  test('should have empty acronym when worker name is empty', async ({ page }) => {
+  test('should have empty acronym when worker name is empty', async ({ page }, testInfo) => {
     // Skip this test for now - empty names might not be allowed by backend validation
     // This test needs to be revised based on actual backend behavior
     // test.skip();
 
     // Get the name and acronym cells
-    const nameCell = workerTestBase.getWorkerNameCell(page);
-    const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
+    const acronymDisplay = getTestBase(testInfo).getWorkerAcronymDisplay(page);
 
     // Click on the name to edit it
     await nameCell.click();
@@ -181,10 +202,10 @@ test.describe('Worker Acronym Updates', () => {
     console.log("✅ Empty name displays 'Unnamed Worker' and acronym is empty");
   });
 
-  test('should allow editing acronym by clicking on it', async ({ page }) => {
+  test('should allow editing acronym by clicking on it', async ({ page }, testInfo) => {
     // Get the acronym cell
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
-    const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
+    const acronymCell = getTestBase(testInfo).getWorkerAcronymCell(page, testWorker.id);
+    const acronymDisplay = getTestBase(testInfo).getWorkerAcronymDisplay(page);
 
     // Get the current acronym value (could be "JOH" or similar)
     const currentAcronym = await acronymDisplay.textContent();
@@ -197,7 +218,7 @@ test.describe('Worker Acronym Updates', () => {
     await acronymCell.click();
 
     // After clicking, the acronym cell should contain an input field with the current acronym
-    const acronymInput = workerTestBase.getWorkerAcronymInput(page);
+    const acronymInput = getTestBase(testInfo).getWorkerAcronymInput(page);
     await expect(acronymInput).toBeVisible();
     await expect(acronymInput).toHaveValue(trimmedCurrentAcronym);
 
@@ -220,16 +241,16 @@ test.describe('Worker Acronym Updates', () => {
     console.log(`✅ Acronym updated from "${trimmedCurrentAcronym}" to "${newAcronym}"`);
   });
 
-  test('should save acronym when clicking away (blur event)', async ({ page }) => {
+  test('should save acronym when clicking away (blur event)', async ({ page }, testInfo) => {
     // Get the acronym cell
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
-    const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
+    const acronymCell = getTestBase(testInfo).getWorkerAcronymCell(page, testWorker.id);
+    const acronymDisplay = getTestBase(testInfo).getWorkerAcronymDisplay(page);
 
     // Click on the acronym to edit it
     await acronymCell.click();
 
     // Wait for the input field to appear
-    const acronymInput = workerTestBase.getWorkerAcronymInput(page);
+    const acronymInput = getTestBase(testInfo).getWorkerAcronymInput(page);
     await expect(acronymInput).toBeVisible();
 
     // Type a new acronym
@@ -250,16 +271,16 @@ test.describe('Worker Acronym Updates', () => {
     console.log(`✅ Acronym updated via blur event to "${newAcronym}"`);
   });
 
-  test('should save acronym when Enter key is pressed', async ({ page }) => {
+  test('should save acronym when Enter key is pressed', async ({ page }, testInfo) => {
     // Get the acronym cell
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
-    const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
+    const acronymCell = getTestBase(testInfo).getWorkerAcronymCell(page, testWorker.id);
+    const acronymDisplay = getTestBase(testInfo).getWorkerAcronymDisplay(page);
 
     // Click on the acronym to edit it
     await acronymCell.click();
 
     // Wait for the input field to appear
-    const acronymInput = workerTestBase.getWorkerAcronymInput(page);
+    const acronymInput = getTestBase(testInfo).getWorkerAcronymInput(page);
     await expect(acronymInput).toBeVisible();
 
     // Type a new acronym
@@ -278,10 +299,10 @@ test.describe('Worker Acronym Updates', () => {
     console.log(`✅ Acronym updated via Enter key to "${newAcronym}"`);
   });
 
-  test('should cancel acronym editing if Escape key is pressed', async ({ page }) => {
+  test('should cancel acronym editing if Escape key is pressed', async ({ page }, testInfo) => {
     // Get the acronym cell
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
-    const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
+    const acronymCell = getTestBase(testInfo).getWorkerAcronymCell(page, testWorker.id);
+    const acronymDisplay = getTestBase(testInfo).getWorkerAcronymDisplay(page);
 
     // Get the current acronym value
     const currentAcronym = await acronymDisplay.textContent();
@@ -291,7 +312,7 @@ test.describe('Worker Acronym Updates', () => {
     await acronymCell.click();
 
     // Wait for the input field to appear
-    const acronymInput = workerTestBase.getWorkerAcronymInput(page);
+    const acronymInput = getTestBase(testInfo).getWorkerAcronymInput(page);
     await expect(acronymInput).toBeVisible();
     await expect(acronymInput).toHaveValue(originalAcronym);
 
@@ -313,15 +334,17 @@ test.describe('Worker Acronym Updates', () => {
     console.log(`✅ Acronym edit canceled, reverted to original: "${originalAcronym}"`);
   });
 
-  test('should not auto-update acronym after manual edit when name changes', async ({ page }) => {
+  test('should not auto-update acronym after manual edit when name changes', async ({
+    page,
+  }, testInfo) => {
     // Get the name and acronym cells
-    const nameCell = workerTestBase.getWorkerNameCell(page);
-    const acronymCell = workerTestBase.getWorkerAcronymCell(page, testWorker.id);
-    const acronymDisplay = workerTestBase.getWorkerAcronymDisplay(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
+    const acronymCell = getTestBase(testInfo).getWorkerAcronymCell(page, testWorker.id);
+    const acronymDisplay = getTestBase(testInfo).getWorkerAcronymDisplay(page);
 
     // First, manually edit the acronym to make it "custom"
     await acronymCell.click();
-    const acronymInput = workerTestBase.getWorkerAcronymInput(page);
+    const acronymInput = getTestBase(testInfo).getWorkerAcronymInput(page);
     await expect(acronymInput).toBeVisible();
 
     const customAcronym = 'CUSTOM';

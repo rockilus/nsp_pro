@@ -1,21 +1,29 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
-const workerTestBase = new WorkerTestBase();
-
 test.describe('Worker Employment Start Date Updates', () => {
+  const testBasesMap = new Map<string, WorkerTestBase>();
+
   let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+
+    const workerTestBase = new WorkerTestBase();
+    testBasesMap.set(testRunId, workerTestBase);
+    (testInfo as any).testRunId = testRunId;
+
     // Setup the common worker test environment
-    await workerTestBase.setupWorkerTests(test.info().workerIndex);
+    await getTestBase(testInfo).setupWorkerTests(workerIndex);
 
     // Use a unique name per test to avoid conflicts
-    initialWorkerName = `John Doe ${test.info().workerIndex}-${Date.now()}`;
+    initialWorkerName = `John Doe ${workerIndex}-${Date.now()}`;
 
     // Create a fresh test worker for each test
-    testWorker = await workerTestBase.createTestWorker({
+    testWorker = await getTestBase(testInfo).createTestWorker({
       name: initialWorkerName,
       weeklyHours: 40,
       weeklyHoursDesired: 40,
@@ -26,33 +34,48 @@ test.describe('Worker Employment Start Date Updates', () => {
     console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
 
     // Navigate to the workers page
-    await workerTestBase.navigateToWorkersPage(page);
+    await getTestBase(testInfo).navigateToWorkersPage(page);
 
     // Wait for the worker table to load and our test worker to appear
     await page.waitForSelector('[aria-label="worker table"]');
 
     // Verify our test worker is visible in the table
-    const workerRows = workerTestBase.getWorkerRows(page);
+    const workerRows = getTestBase(testInfo).getWorkerRows(page);
     await expect(workerRows).toHaveCount(1);
 
     // Verify the worker name is displayed
-    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
     await expect(nameCell).toContainText(initialWorkerName);
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
     // Clean up: delete the worker created for this test
     if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.id);
+        await getTestBase(testInfo).deleteTestWorker(testWorker.id);
         console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
         console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
       }
     }
+
+    testBasesMap.delete(testRunId);
   });
 
-  test("should display today's date as default when creating a new worker", async ({ page }) => {
+  /** Get the isolated WorkerTestBase for the current test */
+  function getTestBase(testInfo: any): WorkerTestBase {
+    const testRunId = testInfo.testRunId as string;
+    const tb = testBasesMap.get(testRunId);
+    if (!tb) throw new Error('Test base not found');
+    return tb;
+  }
+
+  test("should display today's date as default when creating a new worker", async ({
+    page,
+  }, testInfo) => {
     // Get today's date in DD/MM/YYYY format for comparison
     const today = new Date();
     const expectedDateString = today.toLocaleDateString('en-GB', {
@@ -62,8 +85,8 @@ test.describe('Worker Employment Start Date Updates', () => {
     });
 
     // Get the employment start date cell
-    const employmentStartCell = workerTestBase.getWorkerEmploymentStartCell(page);
-    const employmentStartDisplay = workerTestBase.getWorkerEmploymentStartDisplay(page);
+    const employmentStartCell = getTestBase(testInfo).getWorkerEmploymentStartCell(page);
+    const employmentStartDisplay = getTestBase(testInfo).getWorkerEmploymentStartDisplay(page);
 
     // Verify the employment start date shows today's date
     await expect(employmentStartDisplay).toContainText(expectedDateString);
@@ -71,10 +94,12 @@ test.describe('Worker Employment Start Date Updates', () => {
     console.log(`✅ New worker has today's date (${expectedDateString}) as employment start date`);
   });
 
-  test('should allow editing employment start date by clicking on it', async ({ page }) => {
+  test('should allow editing employment start date by clicking on it', async ({
+    page,
+  }, testInfo) => {
     // Get the employment start date cell
-    const employmentStartCell = workerTestBase.getWorkerEmploymentStartCell(page);
-    const employmentStartDisplay = workerTestBase.getWorkerEmploymentStartDisplay(page);
+    const employmentStartCell = getTestBase(testInfo).getWorkerEmploymentStartCell(page);
+    const employmentStartDisplay = getTestBase(testInfo).getWorkerEmploymentStartDisplay(page);
 
     // Get the current employment start date
     const currentDateText = await employmentStartDisplay.textContent();
@@ -88,7 +113,7 @@ test.describe('Worker Employment Start Date Updates', () => {
     await employmentStartCell.click();
 
     // After clicking, a DatePicker input should appear
-    const employmentStartInput = workerTestBase.getWorkerEmploymentStartInput(page);
+    const employmentStartInput = getTestBase(testInfo).getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
     // The display element should no longer be visible when editing
@@ -97,21 +122,23 @@ test.describe('Worker Employment Start Date Updates', () => {
     console.log(`✅ Employment start date cell becomes editable when clicked`);
   });
 
-  test('should save employment start date when clicking away (blur event)', async ({ page }) => {
+  test('should save employment start date when clicking away (blur event)', async ({
+    page,
+  }, testInfo) => {
     // Get the employment start date cell
-    const employmentStartCell = workerTestBase.getWorkerEmploymentStartCell(page);
-    const employmentStartDisplay = workerTestBase.getWorkerEmploymentStartDisplay(page);
+    const employmentStartCell = getTestBase(testInfo).getWorkerEmploymentStartCell(page);
+    const employmentStartDisplay = getTestBase(testInfo).getWorkerEmploymentStartDisplay(page);
 
     // Click on the employment start date to edit it
     await employmentStartCell.click();
 
     // Wait for the input field to appear
-    const employmentStartInput = workerTestBase.getWorkerEmploymentStartInput(page);
+    const employmentStartInput = getTestBase(testInfo).getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
     // Set a specific date using the helper method
     const newDate = '01/01/2024';
-    await workerTestBase.setEmploymentStartDate(page, newDate);
+    await getTestBase(testInfo).setEmploymentStartDate(page, newDate);
 
     // Click somewhere else to trigger blur event (save)
     const pageTitle = page.locator('data-testid=workers-page-heading');
@@ -125,21 +152,23 @@ test.describe('Worker Employment Start Date Updates', () => {
     console.log(`✅ Employment start date updated via blur event to "${newDate}"`);
   });
 
-  test('should save employment start date when Enter key is pressed', async ({ page }) => {
+  test('should save employment start date when Enter key is pressed', async ({
+    page,
+  }, testInfo) => {
     // Get the employment start date cell
-    const employmentStartCell = workerTestBase.getWorkerEmploymentStartCell(page);
-    const employmentStartDisplay = workerTestBase.getWorkerEmploymentStartDisplay(page);
+    const employmentStartCell = getTestBase(testInfo).getWorkerEmploymentStartCell(page);
+    const employmentStartDisplay = getTestBase(testInfo).getWorkerEmploymentStartDisplay(page);
 
     // Click on the employment start date to edit it
     await employmentStartCell.click();
 
     // Wait for the input field to appear
-    const employmentStartInput = workerTestBase.getWorkerEmploymentStartInput(page);
+    const employmentStartInput = getTestBase(testInfo).getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
     // Set a specific date using the helper method
     const newDate = '15/12/2023';
-    await workerTestBase.setEmploymentStartDate(page, newDate);
+    await getTestBase(testInfo).setEmploymentStartDate(page, newDate);
 
     // Press Enter to save
     await employmentStartInput.press('Enter');
@@ -152,10 +181,12 @@ test.describe('Worker Employment Start Date Updates', () => {
     console.log(`✅ Employment start date updated via Enter key to "${newDate}"`);
   });
 
-  test('should cancel employment start date editing if Escape key is pressed', async ({ page }) => {
+  test('should cancel employment start date editing if Escape key is pressed', async ({
+    page,
+  }, testInfo) => {
     // Get the employment start date cell
-    const employmentStartCell = workerTestBase.getWorkerEmploymentStartCell(page);
-    const employmentStartDisplay = workerTestBase.getWorkerEmploymentStartDisplay(page);
+    const employmentStartCell = getTestBase(testInfo).getWorkerEmploymentStartCell(page);
+    const employmentStartDisplay = getTestBase(testInfo).getWorkerEmploymentStartDisplay(page);
 
     // Get the original employment start date
     const originalDateText = await employmentStartDisplay.textContent();
@@ -165,12 +196,12 @@ test.describe('Worker Employment Start Date Updates', () => {
     await employmentStartCell.click();
 
     // Wait for the input field to appear
-    const employmentStartInput = workerTestBase.getWorkerEmploymentStartInput(page);
+    const employmentStartInput = getTestBase(testInfo).getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
     // Set a temporary date (but don't save it) using the helper method
     const tempDate = '31/12/2025';
-    await workerTestBase.setEmploymentStartDate(page, tempDate);
+    await getTestBase(testInfo).setEmploymentStartDate(page, tempDate);
 
     // Press Escape to cancel editing
     await employmentStartInput.press('Escape');
@@ -184,16 +215,16 @@ test.describe('Worker Employment Start Date Updates', () => {
     console.log(`✅ Employment start date edit canceled, reverted to original: "${originalDate}"`);
   });
 
-  test('should handle date picker calendar interaction', async ({ page }) => {
+  test('should handle date picker calendar interaction', async ({ page }, testInfo) => {
     // Get the employment start date cell
-    const employmentStartCell = workerTestBase.getWorkerEmploymentStartCell(page);
-    const employmentStartDisplay = workerTestBase.getWorkerEmploymentStartDisplay(page);
+    const employmentStartCell = getTestBase(testInfo).getWorkerEmploymentStartCell(page);
+    const employmentStartDisplay = getTestBase(testInfo).getWorkerEmploymentStartDisplay(page);
 
     // Click on the employment start date to edit it
     await employmentStartCell.click();
 
     // Wait for the input field to appear
-    const employmentStartInput = workerTestBase.getWorkerEmploymentStartInput(page);
+    const employmentStartInput = getTestBase(testInfo).getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
     // Click on the date picker button to open the calendar
@@ -225,10 +256,12 @@ test.describe('Worker Employment Start Date Updates', () => {
     }
   });
 
-  test('should validate date format and handle invalid input gracefully', async ({ page }) => {
+  test('should preserve original date when invalid input is entered', async ({
+    page,
+  }, testInfo) => {
     // Get the employment start date cell
-    const employmentStartCell = workerTestBase.getWorkerEmploymentStartCell(page);
-    const employmentStartDisplay = workerTestBase.getWorkerEmploymentStartDisplay(page);
+    const employmentStartCell = getTestBase(testInfo).getWorkerEmploymentStartCell(page);
+    const employmentStartDisplay = getTestBase(testInfo).getWorkerEmploymentStartDisplay(page);
 
     // Get the original date
     const originalDateText = await employmentStartDisplay.textContent();
@@ -238,36 +271,21 @@ test.describe('Worker Employment Start Date Updates', () => {
     await employmentStartCell.click();
 
     // Wait for the input field to appear
-    const employmentStartInput = workerTestBase.getWorkerEmploymentStartInput(page);
+    const employmentStartInput = getTestBase(testInfo).getWorkerEmploymentStartInput(page);
     await expect(employmentStartInput).toBeVisible();
 
-    // Try to enter an invalid date format using fill (not the helper, since helper validates)
-    const invalidDate = 'invalid-date-format';
-    await employmentStartInput.fill(invalidDate);
+    // Native <input type="date"> silently rejects non-date values.
+    // fill() with a non-date string clears the input to empty.
+    await employmentStartInput.fill('');
 
-    // Press Enter to try to save the invalid date
+    // Press Enter — save should fire with the last valid valueState (unchanged)
     await employmentStartInput.press('Enter');
 
-    // Wait for either the input to remain visible (error) or revert to display
+    // Input should close and original date should be preserved
+    await expect(employmentStartInput).not.toBeVisible();
+    await expect(employmentStartDisplay).toBeVisible();
+    await expect(employmentStartDisplay).toContainText(originalDate);
 
-    // The system should either:
-    // 1. Keep the input visible with an error state, or
-    // 2. Revert to the original date
-
-    // Check if input is still visible (validation error) or reverted
-    const isInputStillVisible = await employmentStartInput.isVisible();
-
-    if (isInputStillVisible) {
-      // If input is still visible, there should be an error indication
-      console.log('✅ Invalid date format kept input visible for correction');
-
-      // Cancel the edit to clean up
-      await employmentStartInput.press('Escape');
-    } else {
-      // If input is hidden, it should have reverted to original date
-      await expect(employmentStartDisplay).toBeVisible();
-      await expect(employmentStartDisplay).toContainText(originalDate);
-      console.log(`✅ Invalid date format reverted to original: "${originalDate}"`);
-    }
+    console.log(`✅ Original date "${originalDate}" preserved after invalid input`);
   });
 });

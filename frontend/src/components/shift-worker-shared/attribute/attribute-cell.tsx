@@ -1,9 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-// MUI
-import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-import TableCell from '@mui/material/TableCell';
-import TextField from '@mui/material/TextField';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 // Components
 import AttributeCellDimEntries from './attribute-cell-dim-entries';
 // Types
@@ -61,17 +58,13 @@ export default function AttributeCell({
 
   return (
     <>
-      <TableCell
-        key={dimension.id}
-        component="th"
-        scope="row"
-        className={cellClassName}
+      <td
+        className={`cursor-pointer py-0 ${cellClassName}`.trim()}
         data-testid={`attribute-cell-${attribute.ownerId}-${dimension.id}`}
-        onClick={() => setEditing({ [attribute.ownerId]: dimension.id })}
-        sx={{
-          paddingY: 0,
-          cursor: dimension.entryType === DimensionEntryType.DIM_ENTRIES ? 'default' : 'pointer',
-        }}
+        onClick={() =>
+          dimension.entryType !== DimensionEntryType.DIM_ENTRIES &&
+          setEditing({ [attribute.ownerId]: dimension.id })
+        }
       >
         {dimension.entryType === DimensionEntryType.DIM_ENTRIES ? (
           <AttributeCellDimEntries
@@ -83,11 +76,9 @@ export default function AttributeCell({
           />
         ) : editing && dimension.entryType !== DimensionEntryType.BOOL ? (
           dimension.entryType === DimensionEntryType.INT ? (
-            <TextField
-              fullWidth
+            <Input
               type="number"
-              name={dimension.name}
-              value={valueState}
+              value={valueState as string | number}
               data-testid={`attribute-number-field-${attribute.ownerId}-${dimension.id}`}
               onChange={(e) => setValueState(e.target.value)}
               onBlur={handleEditConfirm}
@@ -99,13 +90,12 @@ export default function AttributeCell({
                 }
               }}
               autoFocus
+              className="text-center"
             />
           ) : (
-            <TextField
-              fullWidth
+            <Input
               type="text"
-              name={dimension.name}
-              value={valueState}
+              value={valueState as string}
               data-testid={`attribute-text-field-${attribute.ownerId}-${dimension.id}`}
               onChange={(e) => setValueState(e.target.value)}
               onBlur={handleEditConfirm}
@@ -120,25 +110,19 @@ export default function AttributeCell({
             />
           )
         ) : dimension.entryType === DimensionEntryType.BOOL ? (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
+          <div className="flex items-center justify-center">
             <Checkbox
               checked={
                 typeof attribute.value === 'boolean' ? attribute.value : attribute.value === 1
               }
               data-testid={`attribute-checkbox-${attribute.ownerId}-${dimension.id}`}
-              onClick={handleToggle}
+              onCheckedChange={() => handleToggle()}
             />
-          </Box>
+          </div>
         ) : (
           attribute.value
         )}
-      </TableCell>
+      </td>
     </>
   );
 }

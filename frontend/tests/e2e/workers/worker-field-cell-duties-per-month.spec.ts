@@ -1,23 +1,31 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
-const workerTestBase = new WorkerTestBase();
-
 test.describe('Worker Duties Per Month Field Cell', () => {
+  const testBasesMap = new Map<string, WorkerTestBase>();
+
   let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
   let initialDutiesPerMonth: number;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+
+    const workerTestBase = new WorkerTestBase();
+    testBasesMap.set(testRunId, workerTestBase);
+    (testInfo as any).testRunId = testRunId;
+
     // Setup the common worker test environment
-    await workerTestBase.setupWorkerTests(test.info().workerIndex);
+    await getTestBase(testInfo).setupWorkerTests(workerIndex);
 
     // Use a unique name per test to avoid conflicts
-    initialWorkerName = `Test Worker ${test.info().workerIndex}-${Date.now()}`;
+    initialWorkerName = `Test Worker ${workerIndex}-${Date.now()}`;
     initialDutiesPerMonth = 4;
 
     // Create a fresh test worker for each test
-    testWorker = await workerTestBase.createTestWorker({
+    testWorker = await getTestBase(testInfo).createTestWorker({
       name: initialWorkerName,
       weeklyHours: 40,
       weeklyHoursDesired: 40,
@@ -30,36 +38,49 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     );
 
     // Navigate to the workers page
-    await workerTestBase.navigateToWorkersPage(page);
+    await getTestBase(testInfo).navigateToWorkersPage(page);
 
     // Wait for the worker table to load and our test worker to appear
     await page.waitForSelector('[aria-label="worker table"]');
 
     // Verify our test worker is visible in the table
-    const workerRows = workerTestBase.getWorkerRows(page);
+    const workerRows = getTestBase(testInfo).getWorkerRows(page);
     await expect(workerRows).toHaveCount(1);
 
     // Verify the worker name is displayed
-    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
     await expect(nameCell).toContainText(initialWorkerName);
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
     // Clean up: delete the worker created for this test
     if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.id);
+        await getTestBase(testInfo).deleteTestWorker(testWorker.id);
         console.log(`Cleaned up test worker: ${testWorker.id}`);
       } catch (error) {
         console.error(`Failed to clean up test worker: ${error}`);
       }
     }
+
+    testBasesMap.delete(testRunId);
   });
 
-  test('should display duties per month value in the cell', async ({ page }) => {
+  /** Get the isolated WorkerTestBase for the current test */
+  function getTestBase(testInfo: any): WorkerTestBase {
+    const testRunId = testInfo.testRunId as string;
+    const tb = testBasesMap.get(testRunId);
+    if (!tb) throw new Error('Test base not found');
+    return tb;
+  }
+
+  test('should display duties per month value in the cell', async ({ page }, testInfo) => {
     // Get the duties per month cell and display elements
-    const dutiesPerMonthCell = workerTestBase.getWorkerDutiesPerMonthCell(page);
-    const dutiesPerMonthDisplay = workerTestBase.getWorkerDutiesPerMonthDisplay(page);
+    const dutiesPerMonthCell = getTestBase(testInfo).getWorkerDutiesPerMonthCell(page);
+    const dutiesPerMonthDisplay = getTestBase(testInfo).getWorkerDutiesPerMonthDisplay(page);
 
     // Verify the cell is visible and displays the initial duties per month
     await expect(dutiesPerMonthCell).toBeVisible();
@@ -68,11 +89,11 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     console.log(`✅ Duties per month cell displays initial value: ${initialDutiesPerMonth}`);
   });
 
-  test('should show text field when clicking on the cell', async ({ page }) => {
+  test('should show text field when clicking on the cell', async ({ page }, testInfo) => {
     // Get the duties per month cell and elements
-    const dutiesPerMonthCell = workerTestBase.getWorkerDutiesPerMonthCell(page);
-    const dutiesPerMonthDisplay = workerTestBase.getWorkerDutiesPerMonthDisplay(page);
-    const dutiesPerMonthInput = workerTestBase.getWorkerDutiesPerMonthInput(page);
+    const dutiesPerMonthCell = getTestBase(testInfo).getWorkerDutiesPerMonthCell(page);
+    const dutiesPerMonthDisplay = getTestBase(testInfo).getWorkerDutiesPerMonthDisplay(page);
+    const dutiesPerMonthInput = getTestBase(testInfo).getWorkerDutiesPerMonthInput(page);
 
     // Initially, the display should be visible and input should not exist
     await expect(dutiesPerMonthDisplay).toBeVisible();
@@ -89,10 +110,10 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     console.log('✅ Text field appears when clicking on the cell');
   });
 
-  test('should only accept numeric input in the text field', async ({ page }) => {
+  test('should only accept numeric input in the text field', async ({ page }, testInfo) => {
     // Get the duties per month cell and input
-    const dutiesPerMonthCell = workerTestBase.getWorkerDutiesPerMonthCell(page);
-    const dutiesPerMonthInput = workerTestBase.getWorkerDutiesPerMonthInput(page);
+    const dutiesPerMonthCell = getTestBase(testInfo).getWorkerDutiesPerMonthCell(page);
+    const dutiesPerMonthInput = getTestBase(testInfo).getWorkerDutiesPerMonthInput(page);
 
     // Click on the cell to edit
     await dutiesPerMonthCell.click();
@@ -122,11 +143,11 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     console.log('✅ Text field only accepts numeric input');
   });
 
-  test('should update value when clicking away (blur event)', async ({ page }) => {
+  test('should update value when clicking away (blur event)', async ({ page }, testInfo) => {
     // Get the duties per month elements
-    const dutiesPerMonthCell = workerTestBase.getWorkerDutiesPerMonthCell(page);
-    const dutiesPerMonthDisplay = workerTestBase.getWorkerDutiesPerMonthDisplay(page);
-    const dutiesPerMonthInput = workerTestBase.getWorkerDutiesPerMonthInput(page);
+    const dutiesPerMonthCell = getTestBase(testInfo).getWorkerDutiesPerMonthCell(page);
+    const dutiesPerMonthDisplay = getTestBase(testInfo).getWorkerDutiesPerMonthDisplay(page);
+    const dutiesPerMonthInput = getTestBase(testInfo).getWorkerDutiesPerMonthInput(page);
 
     // Click on the cell to edit
     await dutiesPerMonthCell.click();
@@ -143,7 +164,7 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     await pageTitle.click();
 
     // Wait for the save operation to complete using smart waiting
-    await workerTestBase.waitForDutiesPerMonthSave(page, newDutiesPerMonth);
+    await getTestBase(testInfo).waitForDutiesPerMonthSave(page, newDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
@@ -155,11 +176,11 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     console.log(`✅ Duties per month updated to ${newDutiesPerMonth} via blur event`);
   });
 
-  test('should update value when pressing Enter', async ({ page }) => {
+  test('should update value when pressing Enter', async ({ page }, testInfo) => {
     // Get the duties per month elements
-    const dutiesPerMonthCell = workerTestBase.getWorkerDutiesPerMonthCell(page);
-    const dutiesPerMonthDisplay = workerTestBase.getWorkerDutiesPerMonthDisplay(page);
-    const dutiesPerMonthInput = workerTestBase.getWorkerDutiesPerMonthInput(page);
+    const dutiesPerMonthCell = getTestBase(testInfo).getWorkerDutiesPerMonthCell(page);
+    const dutiesPerMonthDisplay = getTestBase(testInfo).getWorkerDutiesPerMonthDisplay(page);
+    const dutiesPerMonthInput = getTestBase(testInfo).getWorkerDutiesPerMonthInput(page);
 
     // Click on the cell to edit
     await dutiesPerMonthCell.click();
@@ -175,7 +196,7 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     await dutiesPerMonthInput.press('Enter');
 
     // Wait for the save operation to complete using smart waiting
-    await workerTestBase.waitForDutiesPerMonthSave(page, newDutiesPerMonth);
+    await getTestBase(testInfo).waitForDutiesPerMonthSave(page, newDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
@@ -187,11 +208,11 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     console.log(`✅ Duties per month updated to ${newDutiesPerMonth} via Enter key`);
   });
 
-  test('should cancel edit and revert value when pressing Escape', async ({ page }) => {
+  test('should cancel edit and revert value when pressing Escape', async ({ page }, testInfo) => {
     // Get the duties per month elements
-    const dutiesPerMonthCell = workerTestBase.getWorkerDutiesPerMonthCell(page);
-    const dutiesPerMonthDisplay = workerTestBase.getWorkerDutiesPerMonthDisplay(page);
-    const dutiesPerMonthInput = workerTestBase.getWorkerDutiesPerMonthInput(page);
+    const dutiesPerMonthCell = getTestBase(testInfo).getWorkerDutiesPerMonthCell(page);
+    const dutiesPerMonthDisplay = getTestBase(testInfo).getWorkerDutiesPerMonthDisplay(page);
+    const dutiesPerMonthInput = getTestBase(testInfo).getWorkerDutiesPerMonthInput(page);
 
     // Verify initial value
     await expect(dutiesPerMonthDisplay).toContainText(initialDutiesPerMonth.toString());
@@ -211,7 +232,7 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     await dutiesPerMonthInput.press('Escape');
 
     // Wait for the cancel operation to complete using smart waiting
-    await workerTestBase.waitForDutiesPerMonthSave(page, initialDutiesPerMonth);
+    await getTestBase(testInfo).waitForDutiesPerMonthSave(page, initialDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
@@ -226,11 +247,11 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     );
   });
 
-  test('should handle empty input by reverting to original value', async ({ page }) => {
+  test('should handle empty input by reverting to original value', async ({ page }, testInfo) => {
     // Get the duties per month elements
-    const dutiesPerMonthCell = workerTestBase.getWorkerDutiesPerMonthCell(page);
-    const dutiesPerMonthDisplay = workerTestBase.getWorkerDutiesPerMonthDisplay(page);
-    const dutiesPerMonthInput = workerTestBase.getWorkerDutiesPerMonthInput(page);
+    const dutiesPerMonthCell = getTestBase(testInfo).getWorkerDutiesPerMonthCell(page);
+    const dutiesPerMonthDisplay = getTestBase(testInfo).getWorkerDutiesPerMonthDisplay(page);
+    const dutiesPerMonthInput = getTestBase(testInfo).getWorkerDutiesPerMonthInput(page);
 
     // Click on the cell to edit
     await dutiesPerMonthCell.click();
@@ -244,7 +265,7 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     await dutiesPerMonthInput.press('Enter');
 
     // Wait for the save operation to complete using smart waiting
-    await workerTestBase.waitForDutiesPerMonthSave(page, initialDutiesPerMonth);
+    await getTestBase(testInfo).waitForDutiesPerMonthSave(page, initialDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
@@ -256,11 +277,11 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     console.log(`✅ Empty input reverted to original value: ${initialDutiesPerMonth}`);
   });
 
-  test('should not update value when no change is made', async ({ page }) => {
+  test('should not update value when no change is made', async ({ page }, testInfo) => {
     // Get the duties per month elements
-    const dutiesPerMonthCell = workerTestBase.getWorkerDutiesPerMonthCell(page);
-    const dutiesPerMonthDisplay = workerTestBase.getWorkerDutiesPerMonthDisplay(page);
-    const dutiesPerMonthInput = workerTestBase.getWorkerDutiesPerMonthInput(page);
+    const dutiesPerMonthCell = getTestBase(testInfo).getWorkerDutiesPerMonthCell(page);
+    const dutiesPerMonthDisplay = getTestBase(testInfo).getWorkerDutiesPerMonthDisplay(page);
+    const dutiesPerMonthInput = getTestBase(testInfo).getWorkerDutiesPerMonthInput(page);
 
     // Click on the cell to edit
     await dutiesPerMonthCell.click();
@@ -271,7 +292,7 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     await dutiesPerMonthInput.press('Enter');
 
     // Wait for any potential save operation using smart waiting
-    await workerTestBase.waitForDutiesPerMonthSave(page, initialDutiesPerMonth);
+    await getTestBase(testInfo).waitForDutiesPerMonthSave(page, initialDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();
@@ -283,11 +304,11 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     console.log(`✅ No change made - value remains: ${initialDutiesPerMonth}`);
   });
 
-  test('should handle large numbers correctly', async ({ page }) => {
+  test('should handle large numbers correctly', async ({ page }, testInfo) => {
     // Get the duties per month elements
-    const dutiesPerMonthCell = workerTestBase.getWorkerDutiesPerMonthCell(page);
-    const dutiesPerMonthDisplay = workerTestBase.getWorkerDutiesPerMonthDisplay(page);
-    const dutiesPerMonthInput = workerTestBase.getWorkerDutiesPerMonthInput(page);
+    const dutiesPerMonthCell = getTestBase(testInfo).getWorkerDutiesPerMonthCell(page);
+    const dutiesPerMonthDisplay = getTestBase(testInfo).getWorkerDutiesPerMonthDisplay(page);
+    const dutiesPerMonthInput = getTestBase(testInfo).getWorkerDutiesPerMonthInput(page);
 
     // Click on the cell to edit
     await dutiesPerMonthCell.click();
@@ -303,7 +324,7 @@ test.describe('Worker Duties Per Month Field Cell', () => {
     await dutiesPerMonthInput.press('Enter');
 
     // Wait for the save operation to complete using smart waiting
-    await workerTestBase.waitForDutiesPerMonthSave(page, largeDutiesPerMonth);
+    await getTestBase(testInfo).waitForDutiesPerMonthSave(page, largeDutiesPerMonth);
 
     // The input should no longer be visible
     await expect(dutiesPerMonthInput).not.toBeVisible();

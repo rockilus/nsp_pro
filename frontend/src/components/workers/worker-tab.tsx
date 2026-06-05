@@ -466,7 +466,7 @@ export default function WorkerTab({
             >
               {t('team')}
             </span>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <TableAddButton
                 text={t('worker')}
                 handleClick={handleAddWorker}

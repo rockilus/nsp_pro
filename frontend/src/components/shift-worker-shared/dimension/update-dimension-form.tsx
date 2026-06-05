@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 // Component
 import UpdateDimensionDimEntriesInput from './update-dimension-dim-entries-input';
 import DialogDimensionDel from './dialog-dimension-del';
@@ -67,12 +65,10 @@ export default function UpdateDimensionForm({
         try {
           const newDimension: DimensionT = { ...dimension, name: name };
           await handleUpdateDimension(newDimension);
-          // Close the popup after successful update
           if (setOpenParent) {
             setOpenParent(false);
           }
         } catch (error) {
-          // Handle error - popup stays open
           console.error('Failed to update dimension:', error);
         }
       } else {
@@ -99,20 +95,20 @@ export default function UpdateDimensionForm({
   };
 
   return (
-    <Box sx={{ width: '100%' }} data-testid={`update-dimension-form-${dimension.id}`}>
-      <TextField
-        label={t('name')}
-        variant="outlined"
-        value={name}
-        onChange={handleNameChange}
-        error={nameError}
-        helperText={nameError ? t('name_helper_text') : ''}
-        onKeyDown={handleKeyPress}
-        data-testid={`dimension-name-field-${dimension.id}`}
-        sx={{ width: '100%' }}
-      />
+    <div className="w-full" data-testid={`update-dimension-form-${dimension.id}`}>
+      <div className="flex flex-col gap-1">
+        <Input
+          placeholder={t('name')}
+          value={name}
+          onChange={handleNameChange}
+          onKeyDown={handleKeyPress}
+          className={nameError ? 'border-destructive' : ''}
+          data-testid={`dimension-name-field-${dimension.id}`}
+        />
+        {nameError && <p className="text-xs text-destructive">{t('name_helper_text')}</p>}
+      </div>
       {dimension.entryType === DimensionEntryType.DIM_ENTRIES && (
-        <Box mt={2} data-testid={`dimension-entries-section-${dimension.id}`}>
+        <div className="mt-2" data-testid={`dimension-entries-section-${dimension.id}`}>
           <UpdateDimensionDimEntriesInput
             lng={lng}
             dimEntries={dimEntries}
@@ -122,23 +118,22 @@ export default function UpdateDimensionForm({
             updateDimEntry={handleUpdateDimEntry}
             deleteDimEntry={handleDeleteDimEntry}
           />
-        </Box>
+        </div>
       )}
-      <div style={{ display: 'flex', justifyContent: 'right', marginTop: 2 }}>
+      <div className="mt-2 flex justify-end">
         <Button
-          variant="contained"
           onClick={() => handleUpdateDimensionName()}
           data-testid={`dimension-save-button-${dimension.id}`}
-          sx={{ marginRight: 1 }}
+          className="mr-1"
         >
           {t('save')}
         </Button>
         {dimension.dimTypes.length > 1 && dimension.dimTypes.includes(dimensionTypeTable) ? (
           <Button
-            variant="outlined"
+            variant="outline"
             onClick={handleClickDelete}
             data-testid={`dimension-delete-button-${dimension.id}`}
-            fullWidth
+            className="w-full"
           >
             {t('delete')}
           </Button>
@@ -150,6 +145,6 @@ export default function UpdateDimensionForm({
           />
         )}
       </div>
-    </Box>
+    </div>
   );
 }

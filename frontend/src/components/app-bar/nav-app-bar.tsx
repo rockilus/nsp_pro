@@ -1,17 +1,12 @@
 'use client';
 
 import * as React from 'react';
-// MUI
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
 // Components
 import AccountMenu from './account-menu';
 import NavLinks from './nav-links';
 import NotificationBell from './notification-bell';
 // Context
 import { useTeam } from '@/context/TeamContext';
-// Styles
-import './nav-app-bar.css';
 
 const logoWidthOriginal = 753;
 const logoHeightOriginal = 98;
@@ -23,26 +18,30 @@ const NavAppBar = ({ lng }: { lng: string }) => {
   const { selectedTeam } = useTeam();
 
   return (
-    <AppBar
-      position="static"
-      sx={{
-        backgroundColor: 'white',
-        boxShadow: 'none',
-        borderBottom: '1px solid lightgray',
-      }}
-    >
-      <Toolbar sx={{ height: '64px', padding: '0 12px' }}>
-        <div className="app-bar-content-container">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/rockilus_logo_blue.jpg" alt="logo" width={logoWidth} height={logoHeight} />
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
+      <nav className="flex h-16 items-center justify-between px-3">
+        {/* Left: Logo */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/rockilus_logo_blue.jpg"
+          alt="logo"
+          width={logoWidth}
+          height={logoHeight}
+          className="shrink-0"
+        />
+
+        {/* Center: Navigation tabs */}
+        <div className="flex flex-1 justify-center">
           <NavLinks lng={lng} selectedTeam={selectedTeam} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <NotificationBell lng={lng} />
-            <AccountMenu lng={lng} />
-          </div>
         </div>
-      </Toolbar>
-    </AppBar>
+
+        {/* Right: Notification bell + Account menu */}
+        <div className="flex shrink-0 items-center gap-1">
+          <NotificationBell lng={lng} />
+          <AccountMenu lng={lng} />
+        </div>
+      </nav>
+    </header>
   );
 };
 export default NavAppBar;

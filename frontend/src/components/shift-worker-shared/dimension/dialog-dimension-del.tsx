@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 export default function DialogDimensionDel({
   lng,
@@ -22,57 +24,44 @@ export default function DialogDimensionDel({
 
   const [open, setOpen] = useState(false);
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
+  const handleClickDelete = () => {
+    handleDeleteDimension(dimensionId);
     setOpen(false);
   };
 
-  const handleClickDelete = () => {
-    handleDeleteDimension(dimensionId);
-    handleClose();
-  };
-
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-      <Button
-        variant="outlined"
-        onClick={handleClickOpen}
-        data-testid={`dimension-delete-button-${dimensionId}`}
-        fullWidth
-      >
-        {t('delete')}
-      </Button>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-        data-testid={`dimension-delete-dialog-${dimensionId}`}
-      >
-        <DialogTitle id="alert-dialog-title">{t('delete_title')}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">{t('delete_text')}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          data-testid={`dimension-delete-button-${dimensionId}`}
+          className="w-full"
+        >
+          {t('delete')}
+        </Button>
+      </DialogTrigger>
+      <DialogContent data-testid={`dimension-delete-dialog-${dimensionId}`}>
+        <DialogHeader>
+          <DialogTitle>{t('delete_title')}</DialogTitle>
+          <DialogDescription>{t('delete_text')}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
           <Button
+            variant="destructive"
             onClick={handleClickDelete}
-            color="error"
             data-testid={`dimension-delete-confirm-${dimensionId}`}
           >
             {t('delete_confirm')}
           </Button>
           <Button
-            onClick={handleClose}
-            autoFocus
+            variant="outline"
+            onClick={() => setOpen(false)}
             data-testid={`dimension-delete-cancel-${dimensionId}`}
           >
             {t('cancel')}
           </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

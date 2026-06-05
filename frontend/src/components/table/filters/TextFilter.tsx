@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box } from '@mui/material';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { ColumnFilter } from '../../../types/filter';
 
 interface TextFilterProps {
@@ -32,24 +33,22 @@ export default function TextFilter({
   };
 
   return (
-    <Box sx={{ p: 2, minWidth: 250 }}>
-      <TextField
-        fullWidth
-        size="small"
-        label={`Filter ${label}`}
+    <div className="flex min-w-[250px] flex-col gap-3 p-4">
+      <Input
+        placeholder={`Filter ${label}`}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        onKeyPress={(e) => e.key === 'Enter' && handleApply()}
+        onKeyDown={(e) => e.key === 'Enter' && handleApply()}
         autoFocus
       />
-      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-        <Button onClick={handleApply} variant="contained" size="small">
+      <div className="flex gap-2">
+        <Button onClick={handleApply} size="sm">
           Apply
         </Button>
-        <Button onClick={onClose} size="small">
+        <Button onClick={onClose} variant="outline" size="sm">
           Cancel
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

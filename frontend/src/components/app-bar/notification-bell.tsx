@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '@/app/i18n/client';
+import { Bell, Ellipsis } from 'lucide-react';
 import {
   useUnseenNotificationCount,
   useNotifications,
@@ -13,27 +14,22 @@ import {
   SEEN_GRACE_PERIOD_HOURS,
 } from '@/app/lib/hooks/useNotifications';
 import NotificationItem from '@/components/notifications/notification-item';
-// MUI
-import Badge from '@mui/material/Badge';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import ListItemText from '@mui/material/ListItemText';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import Popover from '@mui/material/Popover';
-import Typography from '@mui/material/Typography';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
 
 const POPOVER_LIMIT = 5;
 
 export default function NotificationBell({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'notifications');
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
-  const menuOpen = Boolean(menuAnchorEl);
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   const { data: unreadCount = 0 } = useUnseenNotificationCount();
   const { data, refetch } = useNotifications(POPOVER_LIMIT, 0);
@@ -60,24 +56,16 @@ export default function NotificationBell({ lng }: { lng: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-    refetch();
-    markAllSeen.mutate();
+  const handleOpenChange = (open: boolean) => {
+    setPopoverOpen(open);
+    if (open) {
+      refetch();
+      markAllSeen.mutate();
+    }
   };
-
-  const handleClose = () => setAnchorEl(null);
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-    setMenuAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => setMenuAnchorEl(null);
 
   const handleMarkAll = () => {
     markAllRead.mutate();
-    handleMenuClose();
   };
 
   const handleRead = (id: string) => {
@@ -85,127 +73,97 @@ export default function NotificationBell({ lng }: { lng: string }) {
   };
 
   return (
-    <>
-      <IconButton
-        color="inherit"
-        onClick={handleOpen}
-        aria-label={t('title')}
-        data-testid="notification-bell-button"
-      >
-        <Badge
-          badgeContent={displayCount}
-          color="error"
-          invisible={unreadCount === 0}
-          max={99}
-          slotProps={{
-            badge: { 'data-testid': 'notification-badge-count' } as any,
-          }}
+    <Popover open={popoverOpen} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t('title')}
+          data-testid="notification-bell-button"
+          className="relative"
         >
-          <NotificationsIcon sx={{ color: 'text.secondary' }} />
-        </Badge>
-      </IconButton>
-
-      <Popover
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        slotProps={{
-          paper: {
-            sx: { width: 360, maxHeight: 480 },
-            'data-testid': 'notification-bell-popover',
-          } as any,
-        }}
+          <Bell className="size-5 text-muted-foreground" />
+          {unreadCount > 0 && (
+            <Badge
+              variant="destructive"
+              data-testid="notification-badge-count"
+              className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center px-1 text-[10px] leading-none"
+            >
+              {displayCount}
+            </Badge>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        sideOffset={8}
+        className="max-h-120 w-90 p-0"
+        data-testid="notification-bell-popover"
       >
         {/* Header */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            px: 2,
-            py: 1.5,
-          }}
-        >
-          <Typography variant="subtitle1" fontWeight={600}>
-            {t('title')}
-          </Typography>
-          <IconButton
-            size="small"
-            onClick={handleMenuOpen}
-            aria-label="notification options"
-            data-testid="notification-bell-menu-button"
-          >
-            <MoreHorizIcon fontSize="small" />
-          </IconButton>
-          <Menu
-            anchorEl={menuAnchorEl}
-            open={menuOpen}
-            onClose={handleMenuClose}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          >
-            <MenuItem onClick={handleMarkAll} data-testid="notification-bell-mark-all-read">
-              <ListItemText>{t('mark_all_read')}</ListItemText>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              href={`/${lng}/plan/settings/notifications`}
-              onClick={() => {
-                handleMenuClose();
-                handleClose();
-              }}
-              data-testid="notification-bell-open-settings"
-            >
-              <ListItemText>{t('notification_settings')}</ListItemText>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              href={`/${lng}/plan/notifications`}
-              onClick={() => {
-                handleMenuClose();
-                handleClose();
-              }}
-              data-testid="notification-bell-open-notifications"
-            >
-              <ListItemText>{t('open_notifications')}</ListItemText>
-            </MenuItem>
-          </Menu>
-        </Box>
-        <Divider />
+        <div className="flex items-center justify-between px-4 py-3">
+          <span className="text-sm font-semibold">{t('title')}</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="notification options"
+                data-testid="notification-bell-menu-button"
+              >
+                <Ellipsis className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" sideOffset={4}>
+              <DropdownMenuItem
+                onClick={handleMarkAll}
+                data-testid="notification-bell-mark-all-read"
+              >
+                {t('mark_all_read')}
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild data-testid="notification-bell-open-settings">
+                <Link
+                  href={`/${lng}/plan/settings/notifications`}
+                  onClick={() => setPopoverOpen(false)}
+                >
+                  {t('notification_settings')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild data-testid="notification-bell-open-notifications">
+                <Link href={`/${lng}/plan/notifications`} onClick={() => setPopoverOpen(false)}>
+                  {t('open_notifications')}
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <Separator />
 
         {/* Notification list */}
         {notifications.length === 0 ? (
-          <Box sx={{ px: 2, py: 3, textAlign: 'center' }}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              data-testid="notification-bell-empty"
-            >
+          <div className="px-4 py-6 text-center">
+            <span className="text-sm text-muted-foreground" data-testid="notification-bell-empty">
               {t('no_notifications')}
-            </Typography>
-          </Box>
+            </span>
+          </div>
         ) : (
           notifications.map((n) => (
             <NotificationItem key={n.id} notification={n} lng={lng} onRead={handleRead} compact />
           ))
         )}
 
-        <Divider />
+        <Separator />
         {/* See all link */}
-        <Box sx={{ px: 2, py: 1, textAlign: 'center' }} data-testid="notification-bell-see-all">
+        <div className="px-4 py-2.5 text-center" data-testid="notification-bell-see-all">
           <Link
             href={`/${lng}/plan/notifications`}
-            onClick={handleClose}
-            style={{ textDecoration: 'none' }}
+            onClick={() => setPopoverOpen(false)}
+            className="text-sm font-medium text-primary hover:underline"
           >
-            <Typography variant="body2" color="primary">
-              {t('see_all')}
-            </Typography>
+            {t('see_all')}
           </Link>
-        </Box>
-      </Popover>
-    </>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

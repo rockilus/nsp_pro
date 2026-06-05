@@ -1,7 +1,7 @@
+'use client';
+
 import * as React from 'react';
-// MUI
-import Popover from '@mui/material/Popover';
-import Button from '@mui/material/Button';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 export default function PopoverAnchorElBelow({
   buttonContent,
@@ -16,64 +16,24 @@ export default function PopoverAnchorElBelow({
   setOpen: (open: boolean) => void;
   testId?: string;
 }) {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-    setAnchorEl(null);
-  };
-
-  const id = open ? 'simple-popover' : undefined;
-
   return (
-    <div>
-      <Button
-        aria-describedby={id}
-        variant="contained"
-        onClick={handleClick}
-        data-testid={testId ? `${testId}-button` : undefined}
-        sx={{
-          backgroundColor: 'transparent',
-          border: 'none',
-          boxShadow: 'none',
-          '&:hover': {
-            backgroundColor: 'transparent',
-            boxShadow: 'none',
-          },
-          textTransform: 'none',
-          justifyContent: 'flex-start',
-          padding: 0,
-        }}
-      >
-        {buttonContent}
-      </Button>
-      <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          data-testid={testId ? `${testId}-button` : undefined}
+          className="flex cursor-pointer items-center justify-start border-none bg-transparent p-0 text-left shadow-none hover:bg-transparent"
+        >
+          {buttonContent}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        side="bottom"
         data-testid={testId ? `${testId}-popover` : undefined}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        slotProps={{
-          paper: {
-            style: {
-              boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
-              padding: 20,
-              width: 350,
-            },
-          },
-        }}
+        className="w-[350px] p-5 shadow-[0px_3px_5px_rgba(0,0,0,0.2)]"
       >
         {content}
-      </Popover>
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }

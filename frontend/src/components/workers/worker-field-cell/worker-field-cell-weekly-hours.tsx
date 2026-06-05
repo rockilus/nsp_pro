@@ -1,8 +1,5 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-// MUI
-import Box from '@mui/material/Box';
-import TableCell from '@mui/material/TableCell';
-import TextField from '@mui/material/TextField';
+import { Input } from '@/components/ui/input';
 // Types
 import { WorkerT } from '../../../types/worker';
 
@@ -40,20 +37,16 @@ export default function WorkerFieldCellWeeklyHours({
   };
 
   return (
-    <TableCell
-      component="th"
-      scope="row"
+    <td
+      className="py-0 text-center"
       onClick={() => !editing && !isSaving && setEditing({ [worker.id]: 'weeklyHours' })}
-      sx={{ paddingY: 0, textAlign: 'center' }}
       data-testid="worker-weekly-hours-cell"
       data-state={editing ? 'editing' : isSaving ? 'saving' : 'display'}
       data-worker-id={worker.id}
     >
       {editing ? (
-        <TextField
-          fullWidth
+        <Input
           type="number"
-          name="Weekly Hours"
           value={valueState}
           onChange={(e) => setValueState(e.target.value === '' ? '' : Number(e.target.value))}
           onBlur={handleEditConfirm}
@@ -65,27 +58,20 @@ export default function WorkerFieldCellWeeklyHours({
             }
           }}
           autoFocus
-          inputProps={{
-            style: { textAlign: 'center' },
-            'data-testid': `worker-weekly-hours-input-${worker.id}`,
-            'data-state': 'editing',
-          }}
+          className="text-center"
+          data-testid={`worker-weekly-hours-input-${worker.id}`}
+          data-state="editing"
         />
       ) : (
-        <Box
-          sx={{
-            minHeight: 45,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+        <div
+          className="flex min-h-[45px] items-center justify-center"
           data-testid={`worker-weekly-hours-display-${worker.id}`}
           data-state={isSaving ? 'saving' : 'display'}
           data-value={worker.weeklyHours}
         >
           {isSaving ? 'Saving...' : worker.weeklyHours}
-        </Box>
+        </div>
       )}
-    </TableCell>
+    </td>
   );
 }

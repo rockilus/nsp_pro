@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Box from '@mui/material/Box';
-import CancelIcon from '@mui/icons-material/Cancel';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
+import { X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 // Types
 import { DimEntryT } from '@/types/dim-entry';
 
@@ -56,27 +55,34 @@ export default function NewDimensionDimEntriesInput({
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <TextField
-        label={t('property_new_option')}
-        variant="outlined"
-        value={newDimEntry.name}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyPress}
-        error={error || listError}
-        helperText={error || listError ? t('property_new_option_helper_text') : ''}
-        sx={{ width: '100%' }}
-      />
-      <Box mt={2}>
+    <div className="w-full">
+      <div className="flex flex-col gap-1">
+        <Input
+          placeholder={t('property_new_option')}
+          value={newDimEntry.name}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyPress}
+          className={error || listError ? 'border-destructive' : ''}
+        />
+        {(error || listError) && (
+          <p className="text-xs text-destructive">{t('property_new_option_helper_text')}</p>
+        )}
+      </div>
+      <div className="mt-2">
         {dimEntries.map((de, index) => (
-          <Box key={index} display="flex" alignItems="center" sx={{ paddingLeft: 0.5 }}>
-            <Box flexGrow={1}>{de.name}</Box>
-            <IconButton onClick={() => handleDeleteOption(index)}>
-              <CancelIcon />
-            </IconButton>
-          </Box>
+          <div key={index} className="flex items-center py-0.5 pl-1">
+            <span className="flex-1">{de.name}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleDeleteOption(index)}
+              className="h-7 w-7"
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
         ))}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }

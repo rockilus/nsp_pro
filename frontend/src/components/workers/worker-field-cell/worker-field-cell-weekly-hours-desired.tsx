@@ -1,8 +1,5 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-// MUI
-import Box from '@mui/material/Box';
-import TableCell from '@mui/material/TableCell';
-import TextField from '@mui/material/TextField';
+import { Input } from '@/components/ui/input';
 // Types
 import { WorkerT } from '../../../types/worker';
 
@@ -45,10 +42,7 @@ export default function WorkerFieldCellWeeklyHoursDesired({
     if (valueState !== worker.weeklyHoursDesired && valueState !== '') {
       setIsSaving(true);
       try {
-        await handleUpdateWorker({
-          ...worker,
-          weeklyHoursDesired: valueState,
-        });
+        await handleUpdateWorker({ ...worker, weeklyHoursDesired: valueState });
       } finally {
         setIsSaving(false);
       }
@@ -65,20 +59,16 @@ export default function WorkerFieldCellWeeklyHoursDesired({
   };
 
   return (
-    <TableCell
-      component="th"
-      scope="row"
+    <td
+      className="py-0 text-center"
       onClick={() => setEditing({ [worker.id]: 'weeklyHoursDesired' })}
-      sx={{ paddingY: 0, textAlign: 'center' }}
       data-testid="worker-weekly-hours-desired-cell"
       data-state={editing ? 'editing' : isSaving ? 'saving' : 'display'}
       data-current-value={worker.weeklyHoursDesired}
     >
       {editing ? (
-        <TextField
-          fullWidth
+        <Input
           type="number"
-          name="Weekly hours desired"
           value={valueState}
           onChange={handleEdit}
           onBlur={() => handleEditConfirm(true)}
@@ -90,28 +80,21 @@ export default function WorkerFieldCellWeeklyHoursDesired({
             }
           }}
           autoFocus
-          error={!!error}
-          inputProps={{
-            style: { textAlign: 'center' },
-            'data-testid': `worker-weekly-hours-desired-input-${worker.id}`,
-            'data-state': 'editing',
-          }}
+          aria-invalid={!!error}
+          className={`text-center ${error ? 'border-destructive' : ''}`}
+          data-testid={`worker-weekly-hours-desired-input-${worker.id}`}
+          data-state="editing"
         />
       ) : (
-        <Box
-          sx={{
-            minHeight: 45,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+        <div
+          className="flex min-h-[45px] items-center justify-center"
           data-testid={`worker-weekly-hours-desired-display-${worker.id}`}
           data-state="display"
           data-value={worker.weeklyHoursDesired}
         >
           {worker.weeklyHoursDesired}
-        </Box>
+        </div>
       )}
-    </TableCell>
+    </td>
   );
 }

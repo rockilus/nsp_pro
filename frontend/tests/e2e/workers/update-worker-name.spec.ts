@@ -1,21 +1,29 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
-const workerTestBase = new WorkerTestBase();
-
 test.describe('Worker Name Updates', () => {
+  const testBasesMap = new Map<string, WorkerTestBase>();
+
   let testWorker: { id: string; name: string; teamId: string };
   let initialWorkerName: string;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+
+    const workerTestBase = new WorkerTestBase();
+    testBasesMap.set(testRunId, workerTestBase);
+    (testInfo as any).testRunId = testRunId;
+
     // Setup the common worker test environment
-    await workerTestBase.setupWorkerTests(test.info().workerIndex);
+    await getTestBase(testInfo).setupWorkerTests(workerIndex);
 
     // Use a unique name per test to avoid conflicts
-    initialWorkerName = `John Doe ${test.info().workerIndex}-${Date.now()}`;
+    initialWorkerName = `John Doe ${workerIndex}-${Date.now()}`;
 
     // Create a fresh test worker for each test
-    testWorker = await workerTestBase.createTestWorker({
+    testWorker = await getTestBase(testInfo).createTestWorker({
       name: initialWorkerName,
       acronym: 'JD',
       weeklyHours: 40,
@@ -27,35 +35,48 @@ test.describe('Worker Name Updates', () => {
     console.log(`Created test worker: ${testWorker.name} (${testWorker.id})`);
 
     // Navigate to the workers page
-    await workerTestBase.navigateToWorkersPage(page);
+    await getTestBase(testInfo).navigateToWorkersPage(page);
 
     // Wait for the worker table to load and our test worker to appear
     await page.waitForSelector('[aria-label="worker table"]');
 
     // Verify our test worker is visible in the table
-    const workerRows = workerTestBase.getWorkerRows(page);
+    const workerRows = getTestBase(testInfo).getWorkerRows(page);
     await expect(workerRows).toHaveCount(1);
 
     // Verify the worker name is displayed
-    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
     await expect(nameCell).toContainText(initialWorkerName);
   });
 
-  test.afterEach(async () => {
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+
     // Clean up: delete the worker created for this test
     if (testWorker?.id) {
       try {
-        await workerTestBase.deleteTestWorker(testWorker.id);
+        await getTestBase(testInfo).deleteTestWorker(testWorker.id);
         console.log(`Deleted test worker: ${testWorker.id}`);
       } catch (error) {
         console.warn(`Failed to delete test worker ${testWorker.id}:`, error);
       }
     }
+
+    testBasesMap.delete(testRunId);
   });
 
-  test('should allow editing worker name by clicking on it', async ({ page }) => {
+  /** Get the isolated WorkerTestBase for the current test */
+  function getTestBase(testInfo: any): WorkerTestBase {
+    const testRunId = testInfo.testRunId as string;
+    const tb = testBasesMap.get(testRunId);
+    if (!tb) throw new Error('Test base not found');
+    return tb;
+  }
+
+  test('should allow editing worker name by clicking on it', async ({ page }, testInfo) => {
     // Get the name cell of our test worker
-    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
 
     // Initially, the name should be displayed as text (not in an input field)
     await expect(nameCell).toContainText(initialWorkerName);
@@ -88,9 +109,9 @@ test.describe('Worker Name Updates', () => {
     console.log(`✅ Worker name updated from "${initialWorkerName}" to "${newName}"`);
   });
 
-  test('should save worker name when clicking away (blur event)', async ({ page }) => {
+  test('should save worker name when clicking away (blur event)', async ({ page }, testInfo) => {
     // Get the name cell of our test worker
-    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
 
     // Click on the name to edit it
     await nameCell.click();
@@ -118,9 +139,9 @@ test.describe('Worker Name Updates', () => {
     console.log(`✅ Worker name updated via blur event to "${newName}"`);
   });
 
-  test('should cancel editing if Escape key is pressed', async ({ page }) => {
+  test('should cancel editing if Escape key is pressed', async ({ page }, testInfo) => {
     // Get the name cell of our test worker
-    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
     const originalName = initialWorkerName;
 
     // Click on the name to edit it
@@ -150,9 +171,9 @@ test.describe('Worker Name Updates', () => {
     console.log(`✅ Name edit canceled, reverted to original: "${originalName}"`);
   });
 
-  test('should handle empty name validation', async ({ page }) => {
+  test('should handle empty name validation', async ({ page }, testInfo) => {
     // Get the name cell of our test worker
-    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
 
     // Click on the name to edit it
     await nameCell.click();
@@ -178,9 +199,9 @@ test.describe('Worker Name Updates', () => {
     console.log("✅ Empty name displays 'Unnamed Worker' as expected");
   });
 
-  test('should handle special characters in worker name', async ({ page }) => {
+  test('should handle special characters in worker name', async ({ page }, testInfo) => {
     // Get the name cell of our test worker
-    const nameCell = workerTestBase.getWorkerNameCell(page);
+    const nameCell = getTestBase(testInfo).getWorkerNameCell(page);
 
     // Click on the name to edit it
     await nameCell.click();
