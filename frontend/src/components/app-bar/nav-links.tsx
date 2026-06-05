@@ -43,8 +43,9 @@ export default function NavLinks({
                 'h-16 rounded-none border-0 px-2.5 text-sm font-normal text-muted-foreground transition-colors',
                 'hover:bg-accent/50 hover:text-foreground',
                 'data-active:font-semibold data-active:text-foreground',
-                // 4px bottom border active indicator, matching prior MUI 4px indicator
-                'after:absolute after:inset-x-0 after:bottom-0 after:h-1 after:bg-primary after:opacity-0 after:transition-opacity',
+                // 4px primary-color bottom border active indicator (override shadcn defaults)
+                'after:bg-primary',
+                'group-data-horizontal/tabs:after:bottom-0 group-data-horizontal/tabs:after:h-1',
                 'data-active:after:opacity-100',
               )}
               asChild
