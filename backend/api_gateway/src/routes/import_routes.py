@@ -54,9 +54,7 @@ async def preview_import(
         if not await authz.check(
             user_context.user_id, "preview-import", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to import schedules"
-            )
+            raise NotAuthorizedError("You do not have permission to import schedules")
 
         # Validate file type
         if not file.filename or not (
@@ -220,9 +218,7 @@ def _build_template_workbook() -> Workbook:
 
     today = date.today()
     for i in range(14):
-        cell = ws_schedule.cell(
-            row=1, column=2 + i, value=(today + timedelta(days=i))
-        )
+        cell = ws_schedule.cell(row=1, column=2 + i, value=(today + timedelta(days=i)))
         cell.font = _bold()
         cell.number_format = "YYYY-MM-DD"
 
