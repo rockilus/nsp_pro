@@ -37,6 +37,7 @@ export function TeamProvider({
   const isPersonalInfoPage = pathname.includes('/plan/settings/personal-info');
   const isSecurityPage = pathname.includes('/plan/settings/security');
   const isNotificationsPage = pathname.includes('/plan/notifications');
+  const isAdminPage = pathname.includes('/admin');
 
   React.useEffect(() => {
     // Redirect when loading is done and no valid team is resolved.
@@ -49,7 +50,8 @@ export function TeamProvider({
       !isProfilePage &&
       !isPersonalInfoPage &&
       !isSecurityPage &&
-      !isNotificationsPage
+      !isNotificationsPage &&
+      !isAdminPage
     ) {
       const language = getLanguageFromPath();
 
@@ -68,6 +70,7 @@ export function TeamProvider({
     isPersonalInfoPage,
     isSecurityPage,
     isNotificationsPage,
+    isAdminPage,
     router,
     loading,
     pathname,
