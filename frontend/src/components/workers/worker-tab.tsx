@@ -25,8 +25,6 @@ import { useAddDimension, useUpdateDimension, useDeleteDimension } from '../../h
 import { useAddSpecialty, useUpdateSpecialty, useDeleteSpecialty } from '../../hooks/useSpecialty';
 import { useUpdateAttribute } from '../../hooks/useAttribute';
 import { useAddDimEntry, useUpdateDimEntry, useDeleteDimEntry } from '../../hooks/useDimEntry';
-// Theme
-import ThemeToggle from '../theme-toggle';
 // Utils
 import { createWorkerColumns } from './workerColumns';
 // Styles
@@ -469,7 +467,6 @@ export default function WorkerTab({
               {t('team')}
             </span>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <ThemeToggle />
               <TableAddButton
                 text={t('worker')}
                 handleClick={handleAddWorker}

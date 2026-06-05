@@ -1,73 +1,71 @@
 'use client';
 
 import * as React from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { useTranslation } from '@/app/i18n/client';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
-const STORAGE_KEY = 'rockilus-theme';
+type ThemeMode = 'light' | 'dark' | 'system';
 
-function getStoredTheme(): 'light' | 'dark' {
-  if (typeof window === 'undefined') return 'light';
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'dark' || stored === 'light') return stored;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+interface ThemeSelectorProps {
+  lng: string;
+  variant?: 'standalone' | 'compact';
 }
 
-function applyTheme(theme: 'light' | 'dark') {
-  const el = document.documentElement;
-  if (theme === 'dark') {
-    el.classList.add('dark');
-  } else {
-    el.classList.remove('dark');
-  }
-  localStorage.setItem(STORAGE_KEY, theme);
-}
+const MODES: { mode: ThemeMode; icon: typeof Sun; labelKey: string; testId: string }[] = [
+  { mode: 'light', icon: Sun, labelKey: 'theme_light', testId: 'theme-selector-light' },
+  { mode: 'dark', icon: Moon, labelKey: 'theme_dark', testId: 'theme-selector-dark' },
+  { mode: 'system', icon: Monitor, labelKey: 'theme_auto', testId: 'theme-selector-auto' },
+];
 
-export default function ThemeToggle() {
-  const [theme, setTheme] = React.useState<'light' | 'dark'>(() => getStoredTheme());
+export default function ThemeSelector({ lng, variant = 'standalone' }: ThemeSelectorProps) {
+  const { t } = useTranslation(lng, 'app-bar');
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    applyTheme(theme);
     setMounted(true);
-  }, [theme]);
+  }, []);
 
-  // Apply on mount in case stored theme differs from SSR default
-  React.useEffect(() => {
-    const current = getStoredTheme();
-    if (current !== theme) {
-      setTheme(current);
-    } else {
-      applyTheme(current);
-      setMounted(true);
-    }
-  }, [theme]);
+  const currentTheme = (theme as ThemeMode) || 'system';
 
   if (!mounted) {
+    // Render a disabled placeholder to avoid hydration mismatch
     return (
-      <Button variant="ghost" size="icon" disabled data-testid="theme-toggle">
-        <Sun className="size-[18px]" />
-        <span className="sr-only">Toggle theme</span>
-      </Button>
+      <div className="inline-flex rounded-md border border-input" data-testid="theme-selector">
+        <Button variant="ghost" size={variant === 'compact' ? 'icon' : 'default'} disabled>
+          <Sun className="size-[18px]" />
+        </Button>
+      </div>
     );
   }
 
-  const isDark = theme === 'dark';
-
-  const toggleTheme = () => {
-    setTheme(isDark ? 'light' : 'dark');
-  };
-
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggleTheme}
-      data-testid="theme-toggle"
-      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
-    >
-      {isDark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
-      <span className="sr-only">Toggle theme</span>
-    </Button>
+    <div className="inline-flex rounded-md border border-input" data-testid="theme-selector">
+      {MODES.map(({ mode, icon: Icon, labelKey, testId }) => {
+        const isActive = currentTheme === mode;
+        return (
+          <Button
+            key={mode}
+            variant="ghost"
+            size={variant === 'compact' ? 'icon' : 'default'}
+            onClick={() => setTheme(mode)}
+            data-testid={testId}
+            aria-label={t(labelKey)}
+            className={cn(
+              'rounded-none first:rounded-l-md last:rounded-r-md',
+              isActive
+                ? 'bg-accent text-accent-foreground'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <Icon className="size-[18px]" />
+            {variant === 'standalone' && <span className="ml-2">{t(labelKey)}</span>}
+          </Button>
+        );
+      })}
+    </div>
   );
 }

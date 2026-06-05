@@ -11,8 +11,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import ThemeSelector from '@/components/theme-toggle';
 import { useGetUser } from '@/hooks/useUser';
 
 export default function AccountMenu({ lng }: { lng: string }) {
@@ -84,6 +86,7 @@ export default function AccountMenu({ lng }: { lng: string }) {
         <DropdownMenuItem asChild>
           <Link href={`/${lng}/plan/settings/`}>{t('settings')}</Link>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
           {isLoggingOut ? (
             <>
@@ -94,6 +97,10 @@ export default function AccountMenu({ lng }: { lng: string }) {
             t('sign_out')
           )}
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1.5">
+          <ThemeSelector lng={lng} variant="compact" />
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );

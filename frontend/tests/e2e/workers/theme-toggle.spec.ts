@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 
-test.describe('Dark Mode Theme Toggle', () => {
+test.describe('Theme Selector (Account Menu)', () => {
   const testBasesMap = new Map<string, WorkerTestBase>();
 
   test.beforeEach(async ({ page }, testInfo) => {
@@ -32,32 +32,43 @@ test.describe('Dark Mode Theme Toggle', () => {
     return tb;
   }
 
-  test('should add .dark class on <html> when toggled', async ({ page }, testInfo) => {
+  /** Open the account menu and return the theme selector locator */
+  async function openThemeSelector(page: import('@playwright/test').Page) {
+    const menuTrigger = page.locator('[aria-label="account of current user"]');
+    await expect(menuTrigger).toBeVisible();
+    await menuTrigger.click();
+    const selector = page.locator('[data-testid="theme-selector"]');
+    await expect(selector).toBeVisible();
+    return selector;
+  }
+
+  test('should add .dark class on <html> when dark mode selected', async ({ page }, testInfo) => {
     const html = page.locator('html');
 
     // Initially no dark class
     await expect(html).not.toHaveClass(/dark/);
 
-    // Click the theme toggle
-    const themeToggle = page.locator('[data-testid="theme-toggle"]');
-    await expect(themeToggle).toBeVisible();
-    await themeToggle.click();
+    await openThemeSelector(page);
+
+    // Click dark mode button
+    const darkBtn = page.locator('[data-testid="theme-selector-dark"]');
+    await darkBtn.click();
 
     // <html> should now have the .dark class
     await expect(html).toHaveClass(/dark/);
 
-    // Toggle back
-    await themeToggle.click();
+    // Switch back to light
+    await openThemeSelector(page);
+    const lightBtn = page.locator('[data-testid="theme-selector-light"]');
+    await lightBtn.click();
     await expect(html).not.toHaveClass(/dark/);
 
-    console.log('✅ .dark class added/removed on <html>');
+    console.log('✅ .dark class added/removed on <html> via segmented control');
   });
 
-  test('should change body background color when toggled', async ({ page }, testInfo) => {
-    // Helper: read the actual computed background-color of <body>
+  test('should change body background color when switching modes', async ({ page }, testInfo) => {
     const getBodyBg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 
-    // Also check the visible .page-layout background
     const getPageBg = () =>
       page.evaluate(() => {
         const el = document.querySelector('.page-layout');
@@ -68,8 +79,9 @@ test.describe('Dark Mode Theme Toggle', () => {
     const lightPageBg = await getPageBg();
     console.log(`Light body bg: ${lightBg}, page-layout bg: ${lightPageBg}`);
 
-    // Toggle to dark
-    await page.locator('[data-testid="theme-toggle"]').click();
+    // Switch to dark via account menu
+    await openThemeSelector(page);
+    await page.locator('[data-testid="theme-selector-dark"]').click();
     await expect(page.locator('html')).toHaveClass(/dark/);
     await page.waitForTimeout(200);
 
@@ -77,7 +89,6 @@ test.describe('Dark Mode Theme Toggle', () => {
     const darkPageBg = await getPageBg();
     console.log(`Dark body bg:  ${darkBg}, page-layout bg: ${darkPageBg}`);
 
-    // Verify the colours actually differ
     expect(darkBg).not.toBe(lightBg);
     expect(darkPageBg).not.toBe(lightPageBg);
 
@@ -89,20 +100,19 @@ test.describe('Dark Mode Theme Toggle', () => {
     console.log(`Light body L: ${lightL}, page-layout L: ${lightPageL}`);
     console.log(`Dark body L:  ${darkL}, page-layout L: ${darkPageL}`);
 
-    // Light mode: L near 100 (white)
     expect(lightL, `Light body bg should be near-white, got "${lightBg}"`).toBeGreaterThan(90);
     expect(
       lightPageL,
       `Light page-layout should be near-white, got "${lightPageBg}"`,
     ).toBeGreaterThan(90);
-    // Dark mode: L near 3 (near-black)
     expect(darkL, `Dark body bg should be near-black, got "${darkBg}"`).toBeLessThan(10);
     expect(darkPageL, `Dark page-layout should be near-black, got "${darkPageBg}"`).toBeLessThan(
       10,
     );
 
-    // Toggle back
-    await page.locator('[data-testid="theme-toggle"]').click();
+    // Switch back to light
+    await openThemeSelector(page);
+    await page.locator('[data-testid="theme-selector-light"]').click();
     await expect(page.locator('html')).not.toHaveClass(/dark/);
     await page.waitForTimeout(200);
 
@@ -112,43 +122,69 @@ test.describe('Dark Mode Theme Toggle', () => {
     console.log('✅ Both body and page-layout background fully toggle');
   });
 
-  test('should persist theme preference in localStorage', async ({ page }, testInfo) => {
-    const themeToggle = page.locator('[data-testid="theme-toggle"]');
+  test('should persist theme preference via next-themes', async ({ page }, testInfo) => {
+    await openThemeSelector(page);
 
     // Set to dark
-    await themeToggle.click();
+    await page.locator('[data-testid="theme-selector-dark"]').click();
     await expect(page.locator('html')).toHaveClass(/dark/);
 
-    const storedTheme = await page.evaluate(() => localStorage.getItem('rockilus-theme'));
+    const storedTheme = await page.evaluate(() => localStorage.getItem('theme'));
     expect(storedTheme).toBe('dark');
 
-    // Set back to light
-    await themeToggle.click();
-    const storedLight = await page.evaluate(() => localStorage.getItem('rockilus-theme'));
-    expect(storedLight).toBe('light');
+    // Set to auto (system)
+    await openThemeSelector(page);
+    await page.locator('[data-testid="theme-selector-auto"]').click();
+    const storedSystem = await page.evaluate(() => localStorage.getItem('theme'));
+    expect(storedSystem).toBe('system');
 
-    console.log('✅ Theme preference persisted in localStorage');
+    console.log('✅ Theme preference persisted in localStorage (next-themes key)');
   });
 
-  test('should show moon icon in light mode and sun icon in dark mode', async ({
-    page,
-  }, testInfo) => {
-    const themeToggle = page.locator('[data-testid="theme-toggle"]');
+  test('should show active state on the selected mode button', async ({ page }, testInfo) => {
+    await openThemeSelector(page);
 
-    // Initially light mode: aria-label should mention switching TO dark
-    await expect(themeToggle.locator('svg').first()).toBeVisible();
-    const initialLabel = await themeToggle.getAttribute('aria-label');
-    expect(initialLabel).toContain('dark');
+    const lightBtn = page.locator('[data-testid="theme-selector-light"]');
+    const darkBtn = page.locator('[data-testid="theme-selector-dark"]');
+    const autoBtn = page.locator('[data-testid="theme-selector-auto"]');
 
-    // Toggle to dark
-    await themeToggle.click();
+    // Default is system — auto should have accent background
+    await expect(autoBtn).toHaveClass(/bg-accent/);
+
+    // Click dark
+    await darkBtn.click();
     await expect(page.locator('html')).toHaveClass(/dark/);
 
-    // Now aria-label should mention switching TO light
-    const darkLabel = await themeToggle.getAttribute('aria-label');
-    expect(darkLabel).toContain('light');
+    await openThemeSelector(page);
+    await expect(page.locator('[data-testid="theme-selector-dark"]')).toHaveClass(/bg-accent/);
 
-    console.log('✅ Icon and aria-label update correctly');
+    // Click light
+    await page.locator('[data-testid="theme-selector-light"]').click();
+    await expect(page.locator('html')).not.toHaveClass(/dark/);
+
+    await openThemeSelector(page);
+    await expect(page.locator('[data-testid="theme-selector-light"]')).toHaveClass(/bg-accent/);
+
+    console.log('✅ Active state updates correctly on segmented control');
+  });
+
+  test('should respect system preference in auto mode', async ({ page }, testInfo) => {
+    await openThemeSelector(page);
+
+    // Set to auto
+    await page.locator('[data-testid="theme-selector-auto"]').click();
+
+    // Emulate dark color scheme
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.waitForTimeout(300);
+    await expect(page.locator('html')).toHaveClass(/dark/);
+
+    // Emulate light color scheme
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.waitForTimeout(300);
+    await expect(page.locator('html')).not.toHaveClass(/dark/);
+
+    console.log('✅ Auto mode respects system/browser color scheme preference');
   });
 });
 
