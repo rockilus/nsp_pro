@@ -1,17 +1,12 @@
 'use client';
 
 import * as React from 'react';
-import { useState } from 'react';
-// MUI
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Drawer from '@mui/material/Drawer';
-import Box from '@mui/material/Box';
-import MenuIcon from '@mui/icons-material/Menu';
+import { Menu } from 'lucide-react';
 // Components
 import AccountMenu from './account-menu';
 import { NavLinksMobile } from './nav-links';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 // Context
 import { useTeam } from '@/context/TeamContext';
 
@@ -29,52 +24,36 @@ const MobileNavAppBar = ({
   mobileContent?: React.ReactNode;
 }) => {
   const { selectedTeam } = useTeam();
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <AppBar
-      position="static"
-      sx={{
-        backgroundColor: 'white',
-        boxShadow: 'none',
-        borderBottom: '1px solid lightgray',
-      }}
-    >
-      <Toolbar sx={{ height: '64px', padding: '0 12px' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-          <IconButton onClick={() => setDrawerOpen(true)}>
-            <MenuIcon />
-          </IconButton>
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background">
+      <nav className="flex h-16 items-center px-3">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Open navigation menu">
+              <Menu className="size-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-65 p-0" showCloseButton={false}>
+            <SheetHeader className="border-b border-border px-5 py-4">
+              <SheetTitle className="text-base">Navigation</SheetTitle>
+            </SheetHeader>
+            <NavLinksMobile lng={lng} selectedTeam={selectedTeam} />
+          </SheetContent>
+        </Sheet>
 
-          <Box
-            sx={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              ml: 1,
-              mr: 1,
-            }}
-          >
-            {mobileContent || (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src="/rockilus_logo_blue.jpg" alt="logo" width={logoWidth} height={logoHeight} />
-            )}
-          </Box>
+        {/* Center: mobileContent or logo */}
+        <div className="mr-2 ml-2 flex flex-1 items-center">
+          {mobileContent || (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src="/rockilus_logo_blue.jpg" alt="logo" width={logoWidth} height={logoHeight} />
+          )}
+        </div>
 
-          <AccountMenu lng={lng} />
-
-          <Drawer anchor="left" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-            <Box sx={{ width: 260, p: 2 }} role="presentation" onClick={() => setDrawerOpen(false)}>
-              <NavLinksMobile
-                lng={lng}
-                selectedTeam={selectedTeam}
-                onClick={() => setDrawerOpen(false)}
-              />
-            </Box>
-          </Drawer>
-        </Box>
-      </Toolbar>
-    </AppBar>
+        {/* Right: Account menu */}
+        <AccountMenu lng={lng} />
+      </nav>
+    </header>
   );
 };
 
