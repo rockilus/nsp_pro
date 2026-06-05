@@ -105,10 +105,10 @@ def _parse_members_sheet(ws: Worksheet, errors: List[str]) -> List[Dict[str, Any
                 "start": start,
                 "end": end,
                 "skills": [s.strip() for s in (skills or "").split(";") if s.strip()],
-                "contract": contract or 40,
-                "desired": desired or contract or 40,
-                "duty_per_month": duty_per_month or 4,
-                "annual_leave": annual_leave or 20,
+                "contract": contract,
+                "desired": desired,
+                "duty_per_month": duty_per_month,
+                "annual_leave": annual_leave,
             }
         )
 

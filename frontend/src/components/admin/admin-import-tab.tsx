@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 // Icons (lucide)
-import { ChevronLeft, ChevronRight, Upload, TriangleAlert, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trash2, Upload, TriangleAlert, Loader2 } from 'lucide-react';
 // Components
 import EditableCell from './editable-cell';
 import ImportLegend from './import-legend';
@@ -171,6 +171,9 @@ export default function AdminImportTab({ lng }: { lng: string }) {
   // Inline-edit overlay: generatedId → { fieldName: newValue }
   const [editedValues, setEditedValues] = useState<Record<string, Record<string, unknown>>>({});
 
+  // Deleted entity IDs — hide these rows from display
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
   // ── Edit commit handler ───────────────────────────────────────────────
 
   const handleCellCommit = useCallback(
@@ -179,6 +182,22 @@ export default function AdminImportTab({ lng }: { lng: string }) {
     },
     [],
   );
+
+  // ── Delete row handler ────────────────────────────────────────────────
+
+  const handleDeleteRow = useCallback((entityId: string) => {
+    setDeletedIds((prev) => {
+      const next = new Set(prev);
+      next.add(entityId);
+      return next;
+    });
+    // Also clean up any edits for the deleted entity
+    setEditedValues((prev) => {
+      const next = { ...prev };
+      delete next[entityId];
+      return next;
+    });
+  }, []);
 
   // ── Upload handler ────────────────────────────────────────────────────
 
@@ -275,6 +294,11 @@ export default function AdminImportTab({ lng }: { lng: string }) {
 
     const { members, shifts, requests, assignments, errors, warnings } = previewData;
 
+    // Filter out deleted rows
+    const visibleMembers = members.filter((m) => !deletedIds.has(m.generatedId));
+    const visibleShifts = shifts.filter((s) => !deletedIds.has(s.generatedId));
+    const visibleRequests = requests.filter((r) => !deletedIds.has(r.generatedId));
+
     const hasWarnings = warnings.length > 0 || errors.length > 0;
 
     return (
@@ -328,7 +352,7 @@ export default function AdminImportTab({ lng }: { lng: string }) {
         <Accordion type="multiple" defaultValue={['members', 'shifts']}>
           <AccordionItem value="members">
             <AccordionTrigger className="gap-2">
-              <Badge variant="default">{members.length}</Badge>
+              <Badge variant="default">{visibleMembers.length}</Badge>
               <span className="font-semibold">{t('members_tab')}</span>
             </AccordionTrigger>
             <AccordionContent>
@@ -346,10 +370,11 @@ export default function AdminImportTab({ lng }: { lng: string }) {
                       <TableHead>{t('duty_per_month')}</TableHead>
                       <TableHead>{t('annual_leave')}</TableHead>
                       <TableHead>{t('skills')}</TableHead>
+                      <TableHead className="w-10" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {members.map((m) => (
+                    {visibleMembers.map((m) => (
                       <TableRow key={m.generatedId}>
                         <TableCell>
                           <div className="flex items-center gap-1">
@@ -449,6 +474,17 @@ export default function AdminImportTab({ lng }: { lng: string }) {
                         <TableCell>
                           {m.specialtyIds.length > 0 ? `${m.specialtyIds.length} skill(s)` : '—'}
                         </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 text-muted-foreground hover:text-destructive"
+                            onClick={() => handleDeleteRow(m.generatedId)}
+                            title="Delete row"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -460,7 +496,7 @@ export default function AdminImportTab({ lng }: { lng: string }) {
           {/* Shifts accordion */}
           <AccordionItem value="shifts">
             <AccordionTrigger className="gap-2">
-              <Badge variant="default">{shifts.length}</Badge>
+              <Badge variant="default">{visibleShifts.length}</Badge>
               <span className="font-semibold">{t('shifts_tab')}</span>
             </AccordionTrigger>
             <AccordionContent>
@@ -477,10 +513,11 @@ export default function AdminImportTab({ lng }: { lng: string }) {
                       <TableHead>{t('end_time')}</TableHead>
                       <TableHead>{t('duty')}</TableHead>
                       <TableHead>{t('mandatory_rest')}</TableHead>
+                      <TableHead className="w-10" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {shifts.map((s) => (
+                    {visibleShifts.map((s) => (
                       <TableRow key={s.generatedId}>
                         <TableCell>
                           <div
@@ -563,6 +600,17 @@ export default function AdminImportTab({ lng }: { lng: string }) {
                             fieldType="boolean"
                           />
                         </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-7 text-muted-foreground hover:text-destructive"
+                            onClick={() => handleDeleteRow(s.generatedId)}
+                            title="Delete row"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -575,7 +623,7 @@ export default function AdminImportTab({ lng }: { lng: string }) {
           {requests.length > 0 && (
             <AccordionItem value="requests">
               <AccordionTrigger className="gap-2">
-                <Badge variant="default">{requests.length}</Badge>
+                <Badge variant="default">{visibleRequests.length}</Badge>
                 <span className="font-semibold">{t('requests_tab')}</span>
               </AccordionTrigger>
               <AccordionContent>
@@ -589,12 +637,13 @@ export default function AdminImportTab({ lng }: { lng: string }) {
                         <TableHead>{t('end_date')}</TableHead>
                         <TableHead>{t('shift')}</TableHead>
                         <TableHead>{t('status')}</TableHead>
+                        <TableHead className="w-10" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {requests.map((r) => (
+                      {visibleRequests.map((r) => (
                         <TableRow key={r.generatedId}>
-                          <TableCell>{r.workerName}</TableCell>
+                          <TableCell className="text-muted-foreground">{r.workerName}</TableCell>
                           <TableCell>
                             <EditableCell
                               entityId={r.generatedId}
@@ -640,6 +689,17 @@ export default function AdminImportTab({ lng }: { lng: string }) {
                               onCommit={handleCellCommit}
                               fieldType="text"
                             />
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 text-muted-foreground hover:text-destructive"
+                              onClick={() => handleDeleteRow(r.generatedId)}
+                              title="Delete row"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}

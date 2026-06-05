@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useCallback, useRef, useState } from 'react';
-import { Pencil } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -131,10 +130,16 @@ export default function EditableCell({
   }, []);
 
   const commit = useCallback(() => {
-    const raw = inputRef.current?.value ?? '';
+    let raw = inputRef.current?.value ?? '';
+    // Convert date/time inputs to numeric strings for normalizeValue
+    if (fieldType === 'date') {
+      raw = inputDateToUnix(raw);
+    } else if (fieldType === 'time') {
+      raw = inputTimeToMinutes(raw);
+    }
     onCommit(entityId, field, raw, value);
     setIsEditing(false);
-  }, [entityId, field, value, onCommit]);
+  }, [entityId, field, value, onCommit, fieldType]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -221,7 +226,6 @@ export default function EditableCell({
       aria-label={`${field}: ${formatDisplay(displayValue)}. ${source === 'edited' ? 'Edited.' : source === 'default' ? 'Default value.' : 'Imported.'} Press Enter to edit.`}
     >
       {formatDisplay(displayValue)}
-      <Pencil className="size-2.5 shrink-0 opacity-30" />
     </span>
   );
 }
