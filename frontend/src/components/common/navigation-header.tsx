@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import IconButton from '@mui/material/IconButton';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 // Styles
 import './navigation-styles.css';
 
@@ -16,9 +16,15 @@ export default function NavigationHeader({ title, onBack, showBackButton }: Navi
   return (
     <div className="navigation-header">
       {showBackButton && onBack && (
-        <IconButton onClick={onBack} aria-label="back" sx={{ padding: 0, marginRight: 1 }}>
-          <ArrowBackIcon />
-        </IconButton>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          aria-label="back"
+          className="mr-1 size-8"
+        >
+          <ArrowLeft className="size-5" />
+        </Button>
       )}
       <span className="navigation-header-title">{title}</span>
     </div>

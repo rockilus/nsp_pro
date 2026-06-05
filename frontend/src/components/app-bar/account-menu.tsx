@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import ThemeSelector from '@/components/theme-toggle';
 import { useGetUser } from '@/hooks/useUser';
+import { useUser } from '@/context/UserContext';
+import { env } from '@/config/env';
 
 export default function AccountMenu({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'app-bar');
@@ -25,6 +27,8 @@ export default function AccountMenu({ lng }: { lng: string }) {
   const [open, setOpen] = React.useState(false);
 
   const getUser = useGetUser();
+  const { user } = useUser();
+  const isSuperAdmin = env.isDevelopment || user?.systemRole === 'super_admin';
 
   React.useEffect(() => {
     let mounted = true;
@@ -86,6 +90,14 @@ export default function AccountMenu({ lng }: { lng: string }) {
         <DropdownMenuItem asChild>
           <Link href={`/${lng}/plan/settings/`}>{t('settings')}</Link>
         </DropdownMenuItem>
+        {isSuperAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href={`/${lng}/admin/users`}>Admin</Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} disabled={isLoggingOut}>
           {isLoggingOut ? (

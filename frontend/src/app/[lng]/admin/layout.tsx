@@ -1,11 +1,11 @@
 import { languages } from '../../i18n/settings';
-// MUI
-import CssBaseline from '@mui/material/CssBaseline';
 // Components
+import NavAppBar from '@/components/app-bar/nav-app-bar';
 import AdminLayout from '@/components/admin/admin-layout';
 import ProtectedRoute from '@/components/auth/protected-route';
 import SuperAdminGuard from '@/components/admin/super-admin-guard';
 // Context
+import { TeamProvider } from '@/context/TeamProvider';
 import { UserProvider } from '@/context/UserProvider';
 import React from 'react';
 
@@ -25,10 +25,18 @@ export default async function Layout({
   return (
     <ProtectedRoute requireAuth={true}>
       <UserProvider>
-        <CssBaseline />
-        <SuperAdminGuard lng={lng}>
-          <AdminLayout params={{ lng }}>{children}</AdminLayout>
-        </SuperAdminGuard>
+        <TeamProvider>
+          <div style={{ overflow: 'hidden', height: '100vh' }}>
+            <header className="desktop-only-nav">
+              <NavAppBar lng={lng} />
+            </header>
+            <main>
+              <SuperAdminGuard lng={lng}>
+                <AdminLayout params={{ lng }}>{children}</AdminLayout>
+              </SuperAdminGuard>
+            </main>
+          </div>
+        </TeamProvider>
       </UserProvider>
     </ProtectedRoute>
   );

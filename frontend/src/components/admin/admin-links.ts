@@ -5,7 +5,7 @@
 
 export interface AdminLink {
   name: string;
-  label: string;
+  labelKey: string;
   href: string;
 }
 
@@ -13,12 +13,12 @@ export function getAdminLinks(lng: string): AdminLink[] {
   return [
     {
       name: 'users',
-      label: 'Users',
+      labelKey: 'usersLink',
       href: `/${lng}/admin/users`,
     },
     {
       name: 'import',
-      label: 'Import',
+      labelKey: 'importLink',
       href: `/${lng}/admin/import`,
     },
   ];

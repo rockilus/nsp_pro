@@ -1,0 +1,10 @@
+{
+    "title": "Utilisateurs",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "Courriel",
+    "actions": "Actions",
+    "accessAccount": "Accéder au compte",
+    "noUsersFound": "Aucun utilisateur trouvé.",
+    "accessError": "Échec d'accès au compte"
+}

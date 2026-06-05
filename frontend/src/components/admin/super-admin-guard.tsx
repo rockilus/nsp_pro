@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, CircularProgress } from '@mui/material';
+import { Loader2 } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 import { env } from '@/config/env';
 
@@ -27,9 +27,9 @@ export default function SuperAdminGuard({ children, lng }: SuperAdminGuardProps)
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
-      </Box>
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 

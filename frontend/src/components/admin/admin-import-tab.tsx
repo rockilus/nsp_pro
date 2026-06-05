@@ -2,28 +2,26 @@
 
 import React, { useCallback, useState } from 'react';
 import { useTranslation } from '@/app/i18n/client';
-// MUI
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import Alert from '@mui/material/Alert';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import Badge from '@mui/material/Badge';
-import Chip from '@mui/material/Chip';
-// Icons
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import WarningIcon from '@mui/icons-material/Warning';
+// shadcn
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+// Icons (lucide)
+import { ChevronDown, Upload, TriangleAlert, Loader2 } from 'lucide-react';
 // Components
 import NavigationHeader from '@/components/common/navigation-header';
 // Hooks
@@ -224,32 +222,31 @@ export default function AdminImportTab({ lng }: { lng: string }) {
   // ── Render: Upload step ───────────────────────────────────────────────
 
   const renderUpload = () => (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 500 }}>
-      <Paper elevation={1} sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          {t('upload_excel')}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {t('upload_excel_hint')}
-        </Typography>
+    <div className="flex max-w-lg flex-col gap-3">
+      <div className="rounded-lg border border-border bg-card p-4">
+        <h2 className="mb-1 text-lg font-semibold">{t('upload_excel')}</h2>
+        <p className="mb-3 text-sm text-muted-foreground">{t('upload_excel_hint')}</p>
 
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
-            {t('upload_and_preview')}
-            <input type="file" accept=".xlsx,.xls" hidden onChange={handleFileUpload} />
+        <div className="flex items-center gap-2">
+          <Button asChild>
+            <label className="cursor-pointer">
+              <Upload className="mr-1.5 size-4" />
+              {t('upload_and_preview')}
+              <input type="file" accept=".xlsx,.xls" hidden onChange={handleFileUpload} />
+            </label>
           </Button>
-        </Box>
-      </Paper>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 
   // ── Render: Loading step ──────────────────────────────────────────────
 
   const renderLoading = () => (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 8 }}>
-      <CircularProgress size={48} />
-      <Typography variant="body1">{t('uploading')}</Typography>
-    </Box>
+    <div className="flex flex-col items-center gap-2 py-8">
+      <Loader2 className="size-12 animate-spin text-muted-foreground" />
+      <p className="text-sm">{t('uploading')}</p>
+    </div>
   );
 
   // ── Render: Preview step ──────────────────────────────────────────────
@@ -262,295 +259,279 @@ export default function AdminImportTab({ lng }: { lng: string }) {
     const hasWarnings = warnings.length > 0 || errors.length > 0;
 
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div className="flex flex-col gap-3">
         {/* Summary bar */}
-        <Paper elevation={1} sx={{ p: 2 }}>
-          <Typography variant="subtitle1" gutterBottom>
+        <div className="rounded-lg border border-border bg-card p-3">
+          <h3 className="mb-1 font-semibold">
             {t('preview_summary')
               .replace('{workers}', String(members.length))
               .replace('{shifts}', String(shifts.length))
               .replace('{requests}', String(requests.length))
               .replace('{assignments}', String(assignments.length))}
-          </Typography>
+          </h3>
           {errors.length > 0 && (
-            <Alert severity="error" sx={{ mt: 1 }}>
-              {t('errors_found').replace('{count}', String(errors.length))}
+            <Alert variant="destructive" className="mt-1">
+              <AlertTitle>{t('errors_found').replace('{count}', String(errors.length))}</AlertTitle>
             </Alert>
           )}
           {!errors.length && warnings.length > 0 && (
-            <Alert severity="warning" sx={{ mt: 1 }}>
-              {t('warnings_found').replace('{count}', String(warnings.length))}
+            <Alert
+              variant="default"
+              className="mt-1 border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
+            >
+              <AlertTitle>
+                {t('warnings_found').replace('{count}', String(warnings.length))}
+              </AlertTitle>
             </Alert>
           )}
           {!hasWarnings && (
-            <Alert severity="success" sx={{ mt: 1 }}>
-              {t('no_errors')}
+            <Alert
+              variant="default"
+              className="mt-1 border-green-300 bg-green-50 text-green-900 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
+            >
+              <AlertTitle>{t('no_errors')}</AlertTitle>
             </Alert>
           )}
-        </Paper>
+        </div>
 
         {/* Members accordion */}
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Badge badgeContent={members.length} color="primary" sx={{ mr: 1 }}>
-              <span />
-            </Badge>
-            <Typography variant="subtitle1">{t('members_tab')}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <TableContainer component={Paper} variant="outlined">
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('name')}</TableCell>
-                    <TableCell>{t('code')}</TableCell>
-                    <TableCell>{t('start_date')}</TableCell>
-                    <TableCell>{t('end_date')}</TableCell>
-                    <TableCell>{t('contract_hours')}</TableCell>
-                    <TableCell>{t('desired_hours')}</TableCell>
-                    <TableCell>{t('duty_per_month')}</TableCell>
-                    <TableCell>{t('annual_leave')}</TableCell>
-                    <TableCell>{t('skills')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {members.map((m) => (
-                    <TableRow key={m.generatedId}>
-                      <TableCell>
-                        {m.name}
-                        {m.warnings.length > 0 && (
-                          <WarningIcon
-                            color="warning"
-                            fontSize="small"
-                            sx={{ ml: 0.5, verticalAlign: 'middle' }}
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell>{m.acronym}</TableCell>
-                      <TableCell>{unixToDateStr(m.employmentStartDate)}</TableCell>
-                      <TableCell>
-                        {m.employmentEndDate ? unixToDateStr(m.employmentEndDate) : '—'}
-                      </TableCell>
-                      <TableCell>{m.weeklyHours}</TableCell>
-                      <TableCell>{m.weeklyHoursDesired}</TableCell>
-                      <TableCell>{m.dutiesPerMonth}</TableCell>
-                      <TableCell>{m.annualLeave}</TableCell>
-                      <TableCell>
-                        {m.specialtyIds.length > 0 ? `${m.specialtyIds.length} skill(s)` : '—'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </AccordionDetails>
-        </Accordion>
-
-        {/* Shifts accordion */}
-        <Accordion defaultExpanded>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Badge badgeContent={shifts.length} color="primary" sx={{ mr: 1 }}>
-              <span />
-            </Badge>
-            <Typography variant="subtitle1">{t('shifts_tab')}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <TableContainer component={Paper} variant="outlined">
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>{t('name')}</TableCell>
-                    <TableCell>{t('code')}</TableCell>
-                    <TableCell>{t('type')}</TableCell>
-                    <TableCell>{t('start_time')}</TableCell>
-                    <TableCell>{t('end_time')}</TableCell>
-                    <TableCell>{t('duty')}</TableCell>
-                    <TableCell>{t('mandatory_rest')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {shifts.map((s) => (
-                    <TableRow key={s.generatedId}>
-                      <TableCell>
-                        {s.name}
-                        {s.warnings.length > 0 && (
-                          <WarningIcon
-                            color="warning"
-                            fontSize="small"
-                            sx={{ ml: 0.5, verticalAlign: 'middle' }}
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={s.acronym}
-                          size="small"
-                          sx={{
-                            backgroundColor: s.color,
-                            color: '#fff',
-                            fontWeight: 'bold',
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>{shiftTypeLabel(s.shiftType, t)}</TableCell>
-                      <TableCell>{minutesToTimeStr(s.startTime)}</TableCell>
-                      <TableCell>{minutesToTimeStr(s.endTime)}</TableCell>
-                      <TableCell>{s.duty ? '✓' : '—'}</TableCell>
-                      <TableCell>{s.mandatoryRest ? '✓' : '—'}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </AccordionDetails>
-        </Accordion>
-
-        {/* Requests accordion */}
-        {requests.length > 0 && (
-          <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Badge badgeContent={requests.length} color="primary" sx={{ mr: 1 }}>
-                <span />
-              </Badge>
-              <Typography variant="subtitle1">{t('requests_tab')}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <TableContainer component={Paper} variant="outlined">
-                <Table size="small">
-                  <TableHead>
+        <Accordion type="multiple" defaultValue={['members', 'shifts']}>
+          <AccordionItem value="members">
+            <AccordionTrigger className="gap-2">
+              <Badge variant="default">{members.length}</Badge>
+              <span className="font-semibold">{t('members_tab')}</span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="overflow-hidden rounded-lg border border-border">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell>{t('worker')}</TableCell>
-                      <TableCell>{t('start_date')}</TableCell>
-                      <TableCell>{t('end_date')}</TableCell>
-                      <TableCell>{t('shift')}</TableCell>
-                      <TableCell>{t('status')}</TableCell>
+                      <TableHead>{t('name')}</TableHead>
+                      <TableHead>{t('code')}</TableHead>
+                      <TableHead>{t('start_date')}</TableHead>
+                      <TableHead>{t('end_date')}</TableHead>
+                      <TableHead>{t('contract_hours')}</TableHead>
+                      <TableHead>{t('desired_hours')}</TableHead>
+                      <TableHead>{t('duty_per_month')}</TableHead>
+                      <TableHead>{t('annual_leave')}</TableHead>
+                      <TableHead>{t('skills')}</TableHead>
                     </TableRow>
-                  </TableHead>
+                  </TableHeader>
                   <TableBody>
-                    {requests.map((r) => (
-                      <TableRow key={r.generatedId}>
-                        <TableCell>{r.workerName}</TableCell>
-                        <TableCell>{unixToDateStr(r.startDate)}</TableCell>
-                        <TableCell>{unixToDateStr(r.endDate)}</TableCell>
-                        <TableCell>{r.shiftCode}</TableCell>
+                    {members.map((m) => (
+                      <TableRow key={m.generatedId}>
                         <TableCell>
-                          <Chip label={r.status} size="small" color="success" />
+                          {m.name}
+                          {m.warnings.length > 0 && (
+                            <TriangleAlert className="ml-1 inline size-4 align-middle text-amber-500" />
+                          )}
+                        </TableCell>
+                        <TableCell>{m.acronym}</TableCell>
+                        <TableCell>{unixToDateStr(m.employmentStartDate)}</TableCell>
+                        <TableCell>
+                          {m.employmentEndDate ? unixToDateStr(m.employmentEndDate) : '—'}
+                        </TableCell>
+                        <TableCell>{m.weeklyHours}</TableCell>
+                        <TableCell>{m.weeklyHoursDesired}</TableCell>
+                        <TableCell>{m.dutiesPerMonth}</TableCell>
+                        <TableCell>{m.annualLeave}</TableCell>
+                        <TableCell>
+                          {m.specialtyIds.length > 0 ? `${m.specialtyIds.length} skill(s)` : '—'}
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </TableContainer>
-            </AccordionDetails>
-          </Accordion>
-        )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
 
-        {/* Schedule accordion (summary) */}
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Badge badgeContent={assignments.length} color="primary" sx={{ mr: 1 }}>
-              <span />
-            </Badge>
-            <Typography variant="subtitle1">{t('schedule_tab')}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography variant="subtitle2" gutterBottom>
-              {t('schedule_summary')}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 2 }}>
-              <Paper variant="outlined" sx={{ p: 1.5, minWidth: 120 }}>
-                <Typography variant="caption" color="text.secondary">
-                  {t('total_assignments')}
-                </Typography>
-                <Typography variant="h6">{assignments.length}</Typography>
-              </Paper>
-              <Paper variant="outlined" sx={{ p: 1.5, minWidth: 120 }}>
-                <Typography variant="caption" color="text.secondary">
-                  {t('unique_workers')}
-                </Typography>
-                <Typography variant="h6">
-                  {new Set(assignments.map((a) => a.workerName)).size}
-                </Typography>
-              </Paper>
-              <Paper variant="outlined" sx={{ p: 1.5, minWidth: 120 }}>
-                <Typography variant="caption" color="text.secondary">
-                  {t('unique_shifts')}
-                </Typography>
-                <Typography variant="h6">
-                  {new Set(assignments.map((a) => a.shiftCode)).size}
-                </Typography>
-              </Paper>
-            </Box>
-
-            {assignments.length > 0 && (
-              <>
-                <Typography variant="subtitle2" gutterBottom>
-                  {t('sample_rows')}
-                </Typography>
-                <TableContainer component={Paper} variant="outlined">
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>{t('worker')}</TableCell>
-                        <TableCell>{t('date')}</TableCell>
-                        <TableCell>{t('shift')}</TableCell>
+          {/* Shifts accordion */}
+          <AccordionItem value="shifts">
+            <AccordionTrigger className="gap-2">
+              <Badge variant="default">{shifts.length}</Badge>
+              <span className="font-semibold">{t('shifts_tab')}</span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="overflow-hidden rounded-lg border border-border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('name')}</TableHead>
+                      <TableHead>{t('code')}</TableHead>
+                      <TableHead>{t('type')}</TableHead>
+                      <TableHead>{t('start_time')}</TableHead>
+                      <TableHead>{t('end_time')}</TableHead>
+                      <TableHead>{t('duty')}</TableHead>
+                      <TableHead>{t('mandatory_rest')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {shifts.map((s) => (
+                      <TableRow key={s.generatedId}>
+                        <TableCell>
+                          {s.name}
+                          {s.warnings.length > 0 && (
+                            <TriangleAlert className="ml-1 inline size-4 align-middle text-amber-500" />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            style={{ backgroundColor: s.color, color: '#fff' }}
+                            className="font-bold"
+                          >
+                            {s.acronym}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{shiftTypeLabel(s.shiftType, t)}</TableCell>
+                        <TableCell>{minutesToTimeStr(s.startTime)}</TableCell>
+                        <TableCell>{minutesToTimeStr(s.endTime)}</TableCell>
+                        <TableCell>{s.duty ? '✓' : '—'}</TableCell>
+                        <TableCell>{s.mandatoryRest ? '✓' : '—'}</TableCell>
                       </TableRow>
-                    </TableHead>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Requests accordion */}
+          {requests.length > 0 && (
+            <AccordionItem value="requests">
+              <AccordionTrigger className="gap-2">
+                <Badge variant="default">{requests.length}</Badge>
+                <span className="font-semibold">{t('requests_tab')}</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="overflow-hidden rounded-lg border border-border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t('worker')}</TableHead>
+                        <TableHead>{t('start_date')}</TableHead>
+                        <TableHead>{t('end_date')}</TableHead>
+                        <TableHead>{t('shift')}</TableHead>
+                        <TableHead>{t('status')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
                     <TableBody>
-                      {assignments.slice(0, 5).map((a) => (
-                        <TableRow key={a.generatedId}>
-                          <TableCell>{a.workerName}</TableCell>
-                          <TableCell>{unixToDateStr(a.date)}</TableCell>
-                          <TableCell>{a.shiftCode}</TableCell>
+                      {requests.map((r) => (
+                        <TableRow key={r.generatedId}>
+                          <TableCell>{r.workerName}</TableCell>
+                          <TableCell>{unixToDateStr(r.startDate)}</TableCell>
+                          <TableCell>{unixToDateStr(r.endDate)}</TableCell>
+                          <TableCell>{r.shiftCode}</TableCell>
+                          <TableCell>
+                            <Badge variant="default" className="bg-green-500 hover:bg-green-500">
+                              {r.status}
+                            </Badge>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
-                </TableContainer>
-              </>
-            )}
-          </AccordionDetails>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
+
+          {/* Schedule accordion (summary) */}
+          <AccordionItem value="schedule">
+            <AccordionTrigger className="gap-2">
+              <Badge variant="default">{assignments.length}</Badge>
+              <span className="font-semibold">{t('schedule_tab')}</span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <h4 className="mb-2 text-sm font-semibold">{t('schedule_summary')}</h4>
+              <div className="mb-3 flex flex-wrap gap-3">
+                <div className="min-w-[120px] rounded-lg border border-border p-2">
+                  <p className="text-xs text-muted-foreground">{t('total_assignments')}</p>
+                  <p className="text-xl font-semibold">{assignments.length}</p>
+                </div>
+                <div className="min-w-[120px] rounded-lg border border-border p-2">
+                  <p className="text-xs text-muted-foreground">{t('unique_workers')}</p>
+                  <p className="text-xl font-semibold">
+                    {new Set(assignments.map((a) => a.workerName)).size}
+                  </p>
+                </div>
+                <div className="min-w-[120px] rounded-lg border border-border p-2">
+                  <p className="text-xs text-muted-foreground">{t('unique_shifts')}</p>
+                  <p className="text-xl font-semibold">
+                    {new Set(assignments.map((a) => a.shiftCode)).size}
+                  </p>
+                </div>
+              </div>
+
+              {assignments.length > 0 && (
+                <>
+                  <h4 className="mb-2 text-sm font-semibold">{t('sample_rows')}</h4>
+                  <div className="overflow-hidden rounded-lg border border-border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t('worker')}</TableHead>
+                          <TableHead>{t('date')}</TableHead>
+                          <TableHead>{t('shift')}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {assignments.slice(0, 5).map((a) => (
+                          <TableRow key={a.generatedId}>
+                            <TableCell>{a.workerName}</TableCell>
+                            <TableCell>{unixToDateStr(a.date)}</TableCell>
+                            <TableCell>{a.shiftCode}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
+              )}
+            </AccordionContent>
+          </AccordionItem>
         </Accordion>
 
         {/* Warnings section */}
         {warnings.length > 0 && (
-          <Paper elevation={1} sx={{ p: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>
+          <div className="rounded-lg border border-border bg-card p-3">
+            <h4 className="mb-1 text-sm font-semibold">
               {t('parse_warnings')} ({warnings.length})
-            </Typography>
-            <Box component="ul" sx={{ mt: 0.5, pl: 2 }}>
+            </h4>
+            <ul className="mt-1 list-disc pl-5">
               {warnings.map((w, i) => (
                 <li key={i}>
-                  <Typography variant="body2" color="text.secondary">
-                    {w}
-                  </Typography>
+                  <p className="text-sm text-muted-foreground">{w}</p>
                 </li>
               ))}
-            </Box>
-          </Paper>
+            </ul>
+          </div>
         )}
 
         {/* Back button */}
-        <Box>
-          <Button variant="outlined" onClick={() => setStep('upload')}>
+        <div>
+          <Button variant="outline" onClick={() => setStep('upload')}>
             {t('back_to_upload')}
           </Button>
-        </Box>
-      </Box>
+        </div>
+      </div>
     );
   };
 
   // ── Render: Error step ────────────────────────────────────────────────
 
   const renderError = () => (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 600 }}>
-      <Alert severity="error">{errorMessage}</Alert>
-      <Box>
-        <Button variant="outlined" onClick={() => setStep('upload')}>
+    <div className="flex max-w-xl flex-col gap-2">
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{errorMessage}</AlertDescription>
+      </Alert>
+      <div>
+        <Button variant="outline" onClick={() => setStep('upload')}>
           {t('back_to_upload')}
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 
   // ── Main render ───────────────────────────────────────────────────────
@@ -563,12 +544,12 @@ export default function AdminImportTab({ lng }: { lng: string }) {
         showBackButton
       />
 
-      <Box sx={{ py: 2 }}>
+      <div className="py-2">
         {step === 'upload' && renderUpload()}
         {step === 'loading' && renderLoading()}
         {step === 'preview' && renderPreview()}
         {step === 'error' && renderError()}
-      </Box>
+      </div>
     </div>
   );
 }
