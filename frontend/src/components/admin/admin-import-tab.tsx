@@ -605,11 +605,14 @@ function ScheduleGrid({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="sticky left-0 z-10 min-w-[120px] bg-card">
+              <TableHead className="sticky left-0 z-10 min-w-[120px] border-r border-border/30 bg-card">
                 {workerLabel}
               </TableHead>
               {days.map((d) => (
-                <TableHead key={d.toISOString()} className="min-w-[40px] text-center text-xs">
+                <TableHead
+                  key={d.toISOString()}
+                  className="min-w-[40px] border-l border-border/30 text-center text-xs"
+                >
                   {d.date()}
                 </TableHead>
               ))}
@@ -620,14 +623,17 @@ function ScheduleGrid({
               const row = grid[name] || {};
               return (
                 <TableRow key={name}>
-                  <TableCell className="sticky left-0 z-10 bg-card text-xs font-medium">
+                  <TableCell className="sticky left-0 z-10 border-r border-border/30 bg-card text-xs font-medium">
                     {name}
                   </TableCell>
                   {days.map((d) => {
                     const dateKey = d.format('YYYY-MM-DD');
                     const codes = row[dateKey];
                     return (
-                      <TableCell key={dateKey} className="p-0.5 text-center">
+                      <TableCell
+                        key={dateKey}
+                        className="border-l border-border/30 p-0.5 text-center"
+                      >
                         {codes && codes.length > 0 ? (
                           <div className="flex flex-wrap justify-center gap-0.5">
                             {codes.map((code, i) => (
