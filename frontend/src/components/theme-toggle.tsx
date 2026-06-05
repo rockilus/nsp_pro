@@ -41,7 +41,7 @@ export default function ThemeToggle() {
       applyTheme(current);
       setMounted(true);
     }
-  }, []);
+  }, [theme]);
 
   if (!mounted) {
     return (
