@@ -276,14 +276,25 @@ export default function AdminImportTab({ lng }: { lng: string }) {
             </Alert>
           )}
           {!errors.length && warnings.length > 0 && (
-            <Alert
-              variant="default"
-              className="mt-1 border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
-            >
-              <AlertTitle>
-                {t('warnings_found').replace('{count}', String(warnings.length))}
-              </AlertTitle>
-            </Alert>
+            <Accordion type="single" collapsible className="mt-1">
+              <AccordionItem
+                value="warnings"
+                className="rounded-lg border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
+              >
+                <AccordionTrigger className="px-3 py-2 text-sm font-semibold">
+                  {t('warnings_found').replace('{count}', String(warnings.length))}
+                </AccordionTrigger>
+                <AccordionContent className="px-3 pb-2">
+                  <ul className="list-disc pl-5">
+                    {warnings.map((w, i) => (
+                      <li key={i}>
+                        <p className="text-sm">{w}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           )}
           {!hasWarnings && (
             <Alert
@@ -448,22 +459,6 @@ export default function AdminImportTab({ lng }: { lng: string }) {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-
-        {/* Warnings section */}
-        {warnings.length > 0 && (
-          <div className="rounded-lg border border-border bg-card p-3">
-            <h4 className="mb-1 text-sm font-semibold">
-              {t('parse_warnings')} ({warnings.length})
-            </h4>
-            <ul className="mt-1 list-disc pl-5">
-              {warnings.map((w, i) => (
-                <li key={i}>
-                  <p className="text-sm text-muted-foreground">{w}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         {/* Back button */}
         <div>
