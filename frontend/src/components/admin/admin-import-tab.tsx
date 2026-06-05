@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 // Icons (lucide)
-import { ChevronDown, Upload, TriangleAlert, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Upload, TriangleAlert, Loader2 } from 'lucide-react';
 // Components
 // Hooks
 import { useAuth } from '@/contexts/auth-context';
@@ -433,58 +433,14 @@ export default function AdminImportTab({ lng }: { lng: string }) {
             </AccordionItem>
           )}
 
-          {/* Schedule accordion (summary) */}
+          {/* Schedule accordion (monthly grid) */}
           <AccordionItem value="schedule">
             <AccordionTrigger className="gap-2">
               <Badge variant="default">{assignments.length}</Badge>
               <span className="font-semibold">{t('schedule_tab')}</span>
             </AccordionTrigger>
             <AccordionContent>
-              <h4 className="mb-2 text-sm font-semibold">{t('schedule_summary')}</h4>
-              <div className="mb-3 flex flex-wrap gap-3">
-                <div className="min-w-[120px] rounded-lg border border-border p-2">
-                  <p className="text-xs text-muted-foreground">{t('total_assignments')}</p>
-                  <p className="text-xl font-semibold">{assignments.length}</p>
-                </div>
-                <div className="min-w-[120px] rounded-lg border border-border p-2">
-                  <p className="text-xs text-muted-foreground">{t('unique_workers')}</p>
-                  <p className="text-xl font-semibold">
-                    {new Set(assignments.map((a) => a.workerName)).size}
-                  </p>
-                </div>
-                <div className="min-w-[120px] rounded-lg border border-border p-2">
-                  <p className="text-xs text-muted-foreground">{t('unique_shifts')}</p>
-                  <p className="text-xl font-semibold">
-                    {new Set(assignments.map((a) => a.shiftCode)).size}
-                  </p>
-                </div>
-              </div>
-
-              {assignments.length > 0 && (
-                <>
-                  <h4 className="mb-2 text-sm font-semibold">{t('sample_rows')}</h4>
-                  <div className="overflow-hidden rounded-lg border border-border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{t('worker')}</TableHead>
-                          <TableHead>{t('date')}</TableHead>
-                          <TableHead>{t('shift')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {assignments.slice(0, 5).map((a) => (
-                          <TableRow key={a.generatedId}>
-                            <TableCell>{a.workerName}</TableCell>
-                            <TableCell>{unixToDateStr(a.date)}</TableCell>
-                            <TableCell>{a.shiftCode}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </>
-              )}
+              <ScheduleGrid assignments={assignments} shifts={shifts} workerLabel={t('worker')} />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
@@ -542,6 +498,169 @@ export default function AdminImportTab({ lng }: { lng: string }) {
         {step === 'loading' && renderLoading()}
         {step === 'preview' && renderPreview()}
         {step === 'error' && renderError()}
+      </div>
+    </div>
+  );
+}
+
+// ── Schedule grid sub-component ─────────────────────────────────────────────
+
+function ScheduleGrid({
+  assignments,
+  shifts,
+  workerLabel,
+}: {
+  assignments: ImportAssignmentPreview[];
+  shifts: ImportShiftPreview[];
+  workerLabel: string;
+}) {
+  const [scheduleMonth, setScheduleMonth] = useState('');
+
+  // Build the grid lookup and date bounds
+  const grid: Record<string, Record<string, string[]>> = {};
+  let minDate: Date | null = null;
+  let maxDate: Date | null = null;
+
+  for (const a of assignments) {
+    const d = new Date(a.date * 1000);
+    if (!minDate || d < minDate) minDate = d;
+    if (!maxDate || d > maxDate) maxDate = d;
+    const dateKey = unixToDateStr(a.date);
+    if (!grid[a.workerName]) grid[a.workerName] = {};
+    if (!grid[a.workerName][dateKey]) grid[a.workerName][dateKey] = [];
+    grid[a.workerName][dateKey].push(a.shiftCode);
+  }
+
+  const workers = Object.keys(grid).sort();
+
+  if (!minDate || !maxDate || workers.length === 0) {
+    return null;
+  }
+
+  // Auto-initialize month on first render
+  if (!scheduleMonth) {
+    setScheduleMonth(`${minDate.getFullYear()}-${String(minDate.getMonth() + 1).padStart(2, '0')}`);
+    return null; // will re-render with the set month
+  }
+
+  // Current displayed month
+  const [yearStr, monthStr] = scheduleMonth.split('-');
+  const year = parseInt(yearStr, 10);
+  const month = parseInt(monthStr, 10) - 1; // 0-indexed
+
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0);
+  const minMonthStart = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+  const maxMonthStart = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+
+  const canPrev = monthStart > minMonthStart;
+  const canNext = monthStart < maxMonthStart;
+
+  const goPrev = () => {
+    const prev = new Date(year, month - 1, 1);
+    setScheduleMonth(`${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`);
+  };
+  const goNext = () => {
+    const next = new Date(year, month + 1, 1);
+    setScheduleMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`);
+  };
+
+  // Build day columns for the month
+  const days: Date[] = [];
+  for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
+    days.push(new Date(d));
+  }
+
+  const monthLabel = monthStart.toLocaleDateString('en', {
+    year: 'numeric',
+    month: 'long',
+  });
+
+  // Shift color map
+  const shiftColorMap: Record<string, string> = {};
+  for (const s of shifts) {
+    shiftColorMap[s.acronym] = s.color;
+  }
+
+  return (
+    <div>
+      {/* Navigation bar */}
+      <div className="mb-2 flex items-center justify-between">
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-7"
+          disabled={!canPrev}
+          onClick={goPrev}
+        >
+          <ChevronLeft className="size-4" />
+        </Button>
+        <span className="text-sm font-semibold">{monthLabel}</span>
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-7"
+          disabled={!canNext}
+          onClick={goNext}
+        >
+          <ChevronRight className="size-4" />
+        </Button>
+      </div>
+
+      {/* Grid table */}
+      <div className="overflow-auto rounded-lg border border-border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="sticky left-0 z-10 min-w-[120px] bg-card">
+                {workerLabel}
+              </TableHead>
+              {days.map((d) => (
+                <TableHead key={d.toISOString()} className="min-w-[40px] text-center text-xs">
+                  {d.getDate()}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {workers.map((name) => {
+              const row = grid[name] || {};
+              return (
+                <TableRow key={name}>
+                  <TableCell className="sticky left-0 z-10 bg-card text-xs font-medium">
+                    {name}
+                  </TableCell>
+                  {days.map((d) => {
+                    const dateKey = d.toISOString().slice(0, 10);
+                    const codes = row[dateKey];
+                    return (
+                      <TableCell key={dateKey} className="p-0.5 text-center">
+                        {codes && codes.length > 0 ? (
+                          <div className="flex flex-wrap justify-center gap-0.5">
+                            {codes.map((code, i) => (
+                              <Badge
+                                key={i}
+                                style={{
+                                  backgroundColor: shiftColorMap[code] || '#6B7280',
+                                  color: '#fff',
+                                }}
+                                className="font-bold"
+                              >
+                                {code}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
