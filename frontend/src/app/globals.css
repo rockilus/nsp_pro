@@ -127,3 +127,11 @@
     @apply font-sans;
   }
 }
+
+/* ── Hide desktop-only elements on mobile ── */
+/* Mirror the breakpoints used by useIsMobile() */
+@media (max-width: 600px), ((max-width: 960px) and (orientation: landscape)) {
+  .desktop-only-nav {
+    display: none !important;
+  }
+}
