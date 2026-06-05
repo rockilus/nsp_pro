@@ -11,6 +11,8 @@ from shared.logger import log_info
 from shared.schemas.core import TEAM_ROLE_TO_AUTHZ_ROLE
 from shared.schemas.core.user import SystemRole
 
+from src.config import config
+
 
 class CerbosAuthzService:
     def __init__(
@@ -42,10 +44,8 @@ class CerbosAuthzService:
                 return False
             roles = {"owner"}
         elif resource_kind == "team":
-            membership = (
-                self._team_membership_db.get_team_membership_by_user_and_team_id(
-                    user_id, resource_id
-                )
+            membership = self._team_membership_db.get_team_membership_by_user_and_team_id(
+                user_id, resource_id
             )
             if membership is None:
                 return False
@@ -55,9 +55,17 @@ class CerbosAuthzService:
             roles = {authz_role}
         elif resource_kind == "admin":
             # Admin actions are reserved for super_admins only.
-            return False
+            # In dev mode, any authenticated user is treated as super_admin.
+            if config.environment == "development":
+                roles = {"super_admin"}
+            elif user.system_role != SystemRole.SUPER_ADMIN:
+                return False
+            else:
+                roles = {"super_admin"}
         else:
-            log_info(f"CerbosAuthzService: unknown resource kind '{resource_kind}'")
+            log_info(
+                f"CerbosAuthzService: unknown resource kind '{resource_kind}'"
+            )
             return False
 
         principal = Principal(id=user_id, roles=list(roles))
