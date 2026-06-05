@@ -2,6 +2,8 @@
 
 import React, { useCallback, useState } from 'react';
 import { useTranslation } from '@/app/i18n/client';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 // shadcn
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -28,6 +30,8 @@ import { useAuth } from '@/contexts/auth-context';
 // Config
 import { env } from '@/config/env';
 import { getImpersonationToken } from '@/app/lib/impersonation-storage';
+
+dayjs.extend(utc);
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -104,7 +108,7 @@ type WizardStep = 'upload' | 'loading' | 'preview' | 'error';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function unixToDateStr(ts: number): string {
-  return new Date(ts * 1000).toISOString().split('T')[0];
+  return dayjs.unix(ts).utc().format('YYYY-MM-DD');
 }
 
 function minutesToTimeStr(minutes: number): string {
@@ -516,16 +520,16 @@ function ScheduleGrid({
 }) {
   const [scheduleMonth, setScheduleMonth] = useState('');
 
-  // Build the grid lookup and date bounds
+  // Build the grid lookup and date bounds (all UTC)
   const grid: Record<string, Record<string, string[]>> = {};
-  let minDate: Date | null = null;
-  let maxDate: Date | null = null;
+  let minDate: dayjs.Dayjs | null = null;
+  let maxDate: dayjs.Dayjs | null = null;
 
   for (const a of assignments) {
-    const d = new Date(a.date * 1000);
-    if (!minDate || d < minDate) minDate = d;
-    if (!maxDate || d > maxDate) maxDate = d;
-    const dateKey = unixToDateStr(a.date);
+    const d = dayjs.unix(a.date).utc();
+    if (!minDate || d.isBefore(minDate)) minDate = d;
+    if (!maxDate || d.isAfter(maxDate)) maxDate = d;
+    const dateKey = d.format('YYYY-MM-DD');
     if (!grid[a.workerName]) grid[a.workerName] = {};
     if (!grid[a.workerName][dateKey]) grid[a.workerName][dateKey] = [];
     grid[a.workerName][dateKey].push(a.shiftCode);
@@ -539,42 +543,36 @@ function ScheduleGrid({
 
   // Auto-initialize month on first render
   if (!scheduleMonth) {
-    setScheduleMonth(`${minDate.getFullYear()}-${String(minDate.getMonth() + 1).padStart(2, '0')}`);
-    return null; // will re-render with the set month
+    setScheduleMonth(minDate.format('YYYY-MM'));
+    return null;
   }
 
-  // Current displayed month
-  const [yearStr, monthStr] = scheduleMonth.split('-');
-  const year = parseInt(yearStr, 10);
-  const month = parseInt(monthStr, 10) - 1; // 0-indexed
+  // Current displayed month (UTC)
+  const current = dayjs.utc(scheduleMonth + '-01');
+  const monthStart = current.startOf('month');
+  const monthEnd = current.endOf('month');
+  const minMonthStart = minDate.startOf('month');
+  const maxMonthStart = maxDate.startOf('month');
 
-  const monthStart = new Date(year, month, 1);
-  const monthEnd = new Date(year, month + 1, 0);
-  const minMonthStart = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
-  const maxMonthStart = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
-
-  const canPrev = monthStart > minMonthStart;
-  const canNext = monthStart < maxMonthStart;
+  const canPrev = monthStart.isAfter(minMonthStart);
+  const canNext = monthStart.isBefore(maxMonthStart);
 
   const goPrev = () => {
-    const prev = new Date(year, month - 1, 1);
-    setScheduleMonth(`${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`);
+    setScheduleMonth(monthStart.subtract(1, 'month').format('YYYY-MM'));
   };
   const goNext = () => {
-    const next = new Date(year, month + 1, 1);
-    setScheduleMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`);
+    setScheduleMonth(monthStart.add(1, 'month').format('YYYY-MM'));
   };
 
   // Build day columns for the month
-  const days: Date[] = [];
-  for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
-    days.push(new Date(d));
+  const days: dayjs.Dayjs[] = [];
+  let cursor = monthStart;
+  while (cursor.isBefore(monthEnd) || cursor.isSame(monthEnd, 'day')) {
+    days.push(cursor);
+    cursor = cursor.add(1, 'day');
   }
 
-  const monthLabel = monthStart.toLocaleDateString('en', {
-    year: 'numeric',
-    month: 'long',
-  });
+  const monthLabel = monthStart.format('MMMM YYYY');
 
   // Shift color map — normalize keys to uppercase for case-insensitive matching
   const shiftColorMap: Record<string, string> = {};
@@ -617,7 +615,7 @@ function ScheduleGrid({
               </TableHead>
               {days.map((d) => (
                 <TableHead key={d.toISOString()} className="min-w-[40px] text-center text-xs">
-                  {d.getDate()}
+                  {d.date()}
                 </TableHead>
               ))}
             </TableRow>
@@ -631,7 +629,7 @@ function ScheduleGrid({
                     {name}
                   </TableCell>
                   {days.map((d) => {
-                    const dateKey = d.toISOString().slice(0, 10);
+                    const dateKey = d.format('YYYY-MM-DD');
                     const codes = row[dateKey];
                     return (
                       <TableCell key={dateKey} className="p-0.5 text-center">
