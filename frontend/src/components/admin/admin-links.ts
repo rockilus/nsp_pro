@@ -16,5 +16,10 @@ export function getAdminLinks(lng: string): AdminLink[] {
       label: 'Users',
       href: `/${lng}/admin/users`,
     },
+    {
+      name: 'import',
+      label: 'Import',
+      href: `/${lng}/admin/import`,
+    },
   ];
 }

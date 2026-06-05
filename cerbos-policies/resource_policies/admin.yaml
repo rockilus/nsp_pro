@@ -9,6 +9,8 @@ resourcePolicy:
         - create-impersonation
         - delete-impersonation
         - read-users
+        - preview-import
+        - download-template
       effect: EFFECT_ALLOW
       roles:
         - super_admin

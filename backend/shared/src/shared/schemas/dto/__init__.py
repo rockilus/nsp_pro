@@ -27,6 +27,13 @@ from shared.schemas.dto.dimension import (
     NewDimensionDTO,
 )
 from shared.schemas.dto.export_options import ExportOptionsDTO
+from shared.schemas.dto.import_preview import (
+    ImportAssignmentPreviewDTO,
+    ImportMemberPreviewDTO,
+    ImportPreviewDTO,
+    ImportRequestPreviewDTO,
+    ImportShiftPreviewDTO,
+)
 from shared.schemas.dto.link_shift import LinkShiftDTO
 from shared.schemas.dto.multitasking import (
     CreateMultitaskingGroupRequest,
@@ -115,6 +122,11 @@ __all__ = [
     "DimensionsAndDimEntriesDTO",
     "NewDimensionDTO",
     "ExportOptionsDTO",
+    "ImportAssignmentPreviewDTO",
+    "ImportMemberPreviewDTO",
+    "ImportPreviewDTO",
+    "ImportRequestPreviewDTO",
+    "ImportShiftPreviewDTO",
     "LinkShiftDTO",
     "AddBidRequestDTO",
     "CreateSwapRequestDTO",

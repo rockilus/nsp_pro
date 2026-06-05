@@ -14,6 +14,7 @@ from src.dependencies.database import get_db_collections
 from src.dependencies.dim_entry_service import get_dim_entry_service
 from src.dependencies.dimension_service import get_dimension_service
 from src.dependencies.email_queue_service import get_email_queue_service
+from src.dependencies.import_service import get_import_service
 from src.dependencies.link_shift_service import get_link_shift_service
 from src.dependencies.multitasking_service import get_multitasking_service
 from src.dependencies.notification_preferences_service import (
@@ -58,6 +59,7 @@ __all__ = [
     "get_multitasking_service",
     "get_replacement_service",
     "get_request_service",
+    "get_import_service",
     "get_schedule_service",
     "get_shift_demand_new_service",
     "get_shift_demand_template_service",
