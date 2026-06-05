@@ -576,10 +576,10 @@ function ScheduleGrid({
     month: 'long',
   });
 
-  // Shift color map
+  // Shift color map — normalize keys to uppercase for case-insensitive matching
   const shiftColorMap: Record<string, string> = {};
   for (const s of shifts) {
-    shiftColorMap[s.acronym] = s.color;
+    shiftColorMap[s.acronym.toUpperCase()] = s.color;
   }
 
   return (
@@ -641,7 +641,7 @@ function ScheduleGrid({
                               <Badge
                                 key={i}
                                 style={{
-                                  backgroundColor: shiftColorMap[code] || '#6B7280',
+                                  backgroundColor: shiftColorMap[code.toUpperCase()] || '#6B7280',
                                   color: '#fff',
                                 }}
                                 className="font-bold"
