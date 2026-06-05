@@ -23,9 +23,7 @@ import { Badge } from '@/components/ui/badge';
 // Icons (lucide)
 import { ChevronDown, Upload, TriangleAlert, Loader2 } from 'lucide-react';
 // Components
-import NavigationHeader from '@/components/common/navigation-header';
 // Hooks
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 // Config
 import { env } from '@/config/env';
@@ -154,7 +152,6 @@ function buildAuthHeaders(user: { id_token?: string } | null | undefined): Recor
 
 export default function AdminImportTab({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'admin-import');
-  const router = useRouter();
   const { user } = useAuth();
 
   const [step, setStep] = useState<WizardStep>('upload');
@@ -538,11 +535,7 @@ export default function AdminImportTab({ lng }: { lng: string }) {
 
   return (
     <div>
-      <NavigationHeader
-        title={t('title')}
-        onBack={() => router.push(`/${lng}/admin`)}
-        showBackButton
-      />
+      <h1 className="mb-4 text-xl font-semibold">{t('title')}</h1>
 
       <div className="py-2">
         {step === 'upload' && renderUpload()}
