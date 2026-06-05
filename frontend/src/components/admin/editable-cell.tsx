@@ -34,14 +34,18 @@ interface EditableCellProps {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Convert a UNIX timestamp to an ISO date string for <input type="date">. */
-function unixToInputDate(ts: number): string {
+function unixToInputDate(ts: number | null): string {
+  if (ts === null || !Number.isFinite(ts)) return '';
   return new Date(ts * 1000).toISOString().slice(0, 10);
 }
 
 /** Convert an ISO date string from <input type="date"> back to a UNIX timestamp string. */
 function inputDateToUnix(dateStr: string): string {
+  if (!dateStr) return '';
   const d = new Date(dateStr + 'T00:00:00Z');
-  return String(Math.floor(d.getTime() / 1000));
+  const ts = d.getTime();
+  if (Number.isNaN(ts)) return '';
+  return String(Math.floor(ts / 1000));
 }
 
 /** Convert minutes-from-midnight to HH:MM for <input type="time">. */
@@ -110,10 +114,16 @@ export default function EditableCell({
     if (displayValue === null || displayValue === undefined) return '';
 
     switch (fieldType) {
-      case 'date':
-        return unixToInputDate(displayValue as number);
-      case 'time':
-        return minutesToInputTime(displayValue as number);
+      case 'date': {
+        const num = Number(displayValue);
+        if (!Number.isFinite(num)) return '';
+        return unixToInputDate(num);
+      }
+      case 'time': {
+        const num = Number(displayValue);
+        if (!Number.isFinite(num)) return '';
+        return minutesToInputTime(num);
+      }
       case 'boolean':
         return (displayValue as boolean) ? 'true' : 'false';
       default:
@@ -131,11 +141,14 @@ export default function EditableCell({
 
   const commit = useCallback(() => {
     let raw = inputRef.current?.value ?? '';
-    // Convert date/time inputs to numeric strings for normalizeValue
-    if (fieldType === 'date') {
-      raw = inputDateToUnix(raw);
-    } else if (fieldType === 'time') {
-      raw = inputTimeToMinutes(raw);
+    // Convert date/time inputs to numeric strings for normalizeValue.
+    // Skip conversion for empty values — normalizeValue handles null/empty correctly.
+    if (raw !== '') {
+      if (fieldType === 'date') {
+        raw = inputDateToUnix(raw);
+      } else if (fieldType === 'time') {
+        raw = inputTimeToMinutes(raw);
+      }
     }
     onCommit(entityId, field, raw, value);
     setIsEditing(false);
