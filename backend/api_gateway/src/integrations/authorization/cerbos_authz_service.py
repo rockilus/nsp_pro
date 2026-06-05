@@ -55,13 +55,13 @@ class CerbosAuthzService:
             roles = {authz_role}
         elif resource_kind == "admin":
             # Admin actions are reserved for super_admins only.
-            # In dev mode, any authenticated user is treated as super_admin.
+            # In dev mode, skip the Cerbos PDP check entirely — the PDP may
+            # not be running locally.
             if config.environment == "development":
-                roles = {"super_admin"}
-            elif user.system_role != SystemRole.SUPER_ADMIN:
+                return True
+            if user.system_role != SystemRole.SUPER_ADMIN:
                 return False
-            else:
-                roles = {"super_admin"}
+            roles = {"super_admin"}
         else:
             log_info(
                 f"CerbosAuthzService: unknown resource kind '{resource_kind}'"

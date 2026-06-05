@@ -189,7 +189,7 @@ export default function AdminImportTab({ lng }: { lng: string }) {
         };
         delete (fetchHeaders as Record<string, string>)['Content-Type'];
 
-        const resp = await fetch(`${env.apiUrl}/import/preview`, {
+        const resp = await fetch(`${env.apiUrl}/admin/import/preview`, {
           method: 'POST',
           headers: fetchHeaders,
           body: formData,

@@ -1,8 +1,8 @@
-"""Import routes for uploading Excel schedules.
+"""Admin import routes for uploading Excel schedules.
 
 Provides:
-- ``POST /import/preview`` — parse Excel and return preview JSON
-- ``GET  /import/teams/{team_id}/template`` — download blank template Excel
+- ``POST /admin/import/preview`` — parse Excel and return preview JSON
+- ``GET  /admin/import/teams/{team_id}/template`` — download blank template
 """
 
 from io import BytesIO
@@ -31,7 +31,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/import/preview",
+    "/admin/import/preview",
     status_code=201,
     response_model=ImportPreviewDTO,
 )
@@ -54,7 +54,9 @@ async def preview_import(
         if not await authz.check(
             user_context.user_id, "preview-import", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to import schedules")
+            raise NotAuthorizedError(
+                "You do not have permission to import schedules"
+            )
 
         # Validate file type
         if not file.filename or not (
@@ -78,7 +80,7 @@ async def preview_import(
 # ── Template download endpoint ───────────────────────────────────────────────
 
 
-@router.get("/import/teams/{team_id}/template")
+@router.get("/admin/import/teams/{team_id}/template")
 async def download_import_template(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
@@ -218,7 +220,9 @@ def _build_template_workbook() -> Workbook:
 
     today = date.today()
     for i in range(14):
-        cell = ws_schedule.cell(row=1, column=2 + i, value=(today + timedelta(days=i)))
+        cell = ws_schedule.cell(
+            row=1, column=2 + i, value=(today + timedelta(days=i))
+        )
         cell.font = _bold()
         cell.number_format = "YYYY-MM-DD"
 
