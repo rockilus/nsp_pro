@@ -49,5 +49,11 @@
   "warnings_found": "{count} avertissement(s) trouvé(s)",
   "no_errors": "Aucune erreur",
   "normal": "Normal",
-  "leave_type": "Congé"
+  "leave_type": "Congé",
+  "color": "Couleur",
+  "legend_imported": "Importé (du fichier)",
+  "legend_default": "Défaut (auto-rempli)",
+  "legend_edited": "Modifié",
+  "yes": "Oui",
+  "no": "Non"
 }

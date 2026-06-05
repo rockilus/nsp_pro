@@ -25,6 +25,9 @@ import { Badge } from '@/components/ui/badge';
 // Icons (lucide)
 import { ChevronLeft, ChevronRight, Upload, TriangleAlert, Loader2 } from 'lucide-react';
 // Components
+import EditableCell from './editable-cell';
+import ImportLegend from './import-legend';
+import { commitEdit } from '@/app/lib/import-preview-utils';
 // Hooks
 import { useAuth } from '@/contexts/auth-context';
 // Config
@@ -48,6 +51,7 @@ interface ImportMemberPreview {
   annualLeave: number;
   specialtyIds: string[];
   warnings: string[];
+  defaultedFields: string[];
 }
 
 interface ImportShiftPreview {
@@ -67,6 +71,7 @@ interface ImportShiftPreview {
   duty: boolean;
   mandatoryRest: boolean;
   warnings: string[];
+  defaultedFields: string[];
 }
 
 interface ImportRequestPreview {
@@ -80,6 +85,7 @@ interface ImportRequestPreview {
   status: string;
   fulfillment: string;
   warnings: string[];
+  defaultedFields: string[];
 }
 
 interface ImportAssignmentPreview {
@@ -161,6 +167,18 @@ export default function AdminImportTab({ lng }: { lng: string }) {
   const [step, setStep] = useState<WizardStep>('upload');
   const [previewData, setPreviewData] = useState<ImportPreviewData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Inline-edit overlay: generatedId → { fieldName: newValue }
+  const [editedValues, setEditedValues] = useState<Record<string, Record<string, unknown>>>({});
+
+  // ── Edit commit handler ───────────────────────────────────────────────
+
+  const handleCellCommit = useCallback(
+    (entityId: string, field: string, rawValue: string, originalValue: unknown) => {
+      commitEdit(entityId, field, rawValue, originalValue, setEditedValues);
+    },
+    [],
+  );
 
   // ── Upload handler ────────────────────────────────────────────────────
 
@@ -314,7 +332,8 @@ export default function AdminImportTab({ lng }: { lng: string }) {
               <span className="font-semibold">{t('members_tab')}</span>
             </AccordionTrigger>
             <AccordionContent>
-              <div className="overflow-hidden rounded-lg border border-border">
+              <ImportLegend lng={lng} />
+              <div className="mt-2 overflow-hidden rounded-lg border border-border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -333,20 +352,100 @@ export default function AdminImportTab({ lng }: { lng: string }) {
                     {members.map((m) => (
                       <TableRow key={m.generatedId}>
                         <TableCell>
-                          {m.name}
-                          {m.warnings.length > 0 && (
-                            <TriangleAlert className="ml-1 inline size-4 align-middle text-amber-500" />
-                          )}
+                          <div className="flex items-center gap-1">
+                            <EditableCell
+                              entityId={m.generatedId}
+                              field="name"
+                              value={m.name}
+                              defaultedFields={m.defaultedFields}
+                              editedValues={editedValues}
+                              onCommit={handleCellCommit}
+                              fieldType="text"
+                            />
+                            {m.warnings.length > 0 && (
+                              <TriangleAlert className="size-4 shrink-0 text-amber-500" />
+                            )}
+                          </div>
                         </TableCell>
-                        <TableCell>{m.acronym}</TableCell>
-                        <TableCell>{unixToDateStr(m.employmentStartDate)}</TableCell>
                         <TableCell>
-                          {m.employmentEndDate ? unixToDateStr(m.employmentEndDate) : '—'}
+                          <EditableCell
+                            entityId={m.generatedId}
+                            field="acronym"
+                            value={m.acronym}
+                            defaultedFields={m.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="text"
+                          />
                         </TableCell>
-                        <TableCell>{m.weeklyHours}</TableCell>
-                        <TableCell>{m.weeklyHoursDesired}</TableCell>
-                        <TableCell>{m.dutiesPerMonth}</TableCell>
-                        <TableCell>{m.annualLeave}</TableCell>
+                        <TableCell>
+                          <EditableCell
+                            entityId={m.generatedId}
+                            field="employmentStartDate"
+                            value={m.employmentStartDate}
+                            defaultedFields={m.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="date"
+                            displayFormatter={(v) => unixToDateStr(v as number)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <EditableCell
+                            entityId={m.generatedId}
+                            field="employmentEndDate"
+                            value={m.employmentEndDate}
+                            defaultedFields={m.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="date"
+                            displayFormatter={(v) => (v ? unixToDateStr(v as number) : '—')}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <EditableCell
+                            entityId={m.generatedId}
+                            field="weeklyHours"
+                            value={m.weeklyHours}
+                            defaultedFields={m.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="number"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <EditableCell
+                            entityId={m.generatedId}
+                            field="weeklyHoursDesired"
+                            value={m.weeklyHoursDesired}
+                            defaultedFields={m.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="number"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <EditableCell
+                            entityId={m.generatedId}
+                            field="dutiesPerMonth"
+                            value={m.dutiesPerMonth}
+                            defaultedFields={m.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="number"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <EditableCell
+                            entityId={m.generatedId}
+                            field="annualLeave"
+                            value={m.annualLeave}
+                            defaultedFields={m.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="number"
+                          />
+                        </TableCell>
                         <TableCell>
                           {m.specialtyIds.length > 0 ? `${m.specialtyIds.length} skill(s)` : '—'}
                         </TableCell>
@@ -365,10 +464,12 @@ export default function AdminImportTab({ lng }: { lng: string }) {
               <span className="font-semibold">{t('shifts_tab')}</span>
             </AccordionTrigger>
             <AccordionContent>
-              <div className="overflow-hidden rounded-lg border border-border">
+              <ImportLegend lng={lng} />
+              <div className="mt-2 overflow-hidden rounded-lg border border-border">
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">{t('color')}</TableHead>
                       <TableHead>{t('name')}</TableHead>
                       <TableHead>{t('code')}</TableHead>
                       <TableHead>{t('type')}</TableHead>
@@ -382,24 +483,86 @@ export default function AdminImportTab({ lng }: { lng: string }) {
                     {shifts.map((s) => (
                       <TableRow key={s.generatedId}>
                         <TableCell>
-                          {s.name}
-                          {s.warnings.length > 0 && (
-                            <TriangleAlert className="ml-1 inline size-4 align-middle text-amber-500" />
-                          )}
+                          <div
+                            className="size-4 rounded-full border border-border/50"
+                            style={{ backgroundColor: s.color }}
+                            title={s.color}
+                          />
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            style={{ backgroundColor: s.color, color: '#fff' }}
-                            className="font-bold"
-                          >
-                            {s.acronym}
-                          </Badge>
+                          <div className="flex items-center gap-1">
+                            <EditableCell
+                              entityId={s.generatedId}
+                              field="name"
+                              value={s.name}
+                              defaultedFields={s.defaultedFields}
+                              editedValues={editedValues}
+                              onCommit={handleCellCommit}
+                              fieldType="text"
+                            />
+                            {s.warnings.length > 0 && (
+                              <TriangleAlert className="size-4 shrink-0 text-amber-500" />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono">
+                          <EditableCell
+                            entityId={s.generatedId}
+                            field="acronym"
+                            value={s.acronym}
+                            defaultedFields={s.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="text"
+                          />
                         </TableCell>
                         <TableCell>{shiftTypeLabel(s.shiftType, t)}</TableCell>
-                        <TableCell>{minutesToTimeStr(s.startTime)}</TableCell>
-                        <TableCell>{minutesToTimeStr(s.endTime)}</TableCell>
-                        <TableCell>{s.duty ? '✓' : '—'}</TableCell>
-                        <TableCell>{s.mandatoryRest ? '✓' : '—'}</TableCell>
+                        <TableCell>
+                          <EditableCell
+                            entityId={s.generatedId}
+                            field="startTime"
+                            value={s.startTime}
+                            defaultedFields={s.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="time"
+                            displayFormatter={(v) => minutesToTimeStr(v as number)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <EditableCell
+                            entityId={s.generatedId}
+                            field="endTime"
+                            value={s.endTime}
+                            defaultedFields={s.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="time"
+                            displayFormatter={(v) => minutesToTimeStr(v as number)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <EditableCell
+                            entityId={s.generatedId}
+                            field="duty"
+                            value={s.duty}
+                            defaultedFields={s.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="boolean"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <EditableCell
+                            entityId={s.generatedId}
+                            field="mandatoryRest"
+                            value={s.mandatoryRest}
+                            defaultedFields={s.defaultedFields}
+                            editedValues={editedValues}
+                            onCommit={handleCellCommit}
+                            fieldType="boolean"
+                          />
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -416,7 +579,8 @@ export default function AdminImportTab({ lng }: { lng: string }) {
                 <span className="font-semibold">{t('requests_tab')}</span>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="overflow-hidden rounded-lg border border-border">
+                <ImportLegend lng={lng} />
+                <div className="mt-2 overflow-hidden rounded-lg border border-border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -431,13 +595,51 @@ export default function AdminImportTab({ lng }: { lng: string }) {
                       {requests.map((r) => (
                         <TableRow key={r.generatedId}>
                           <TableCell>{r.workerName}</TableCell>
-                          <TableCell>{unixToDateStr(r.startDate)}</TableCell>
-                          <TableCell>{unixToDateStr(r.endDate)}</TableCell>
-                          <TableCell>{r.shiftCode}</TableCell>
                           <TableCell>
-                            <Badge variant="default" className="bg-green-500 hover:bg-green-500">
-                              {r.status}
-                            </Badge>
+                            <EditableCell
+                              entityId={r.generatedId}
+                              field="startDate"
+                              value={r.startDate}
+                              defaultedFields={r.defaultedFields}
+                              editedValues={editedValues}
+                              onCommit={handleCellCommit}
+                              fieldType="date"
+                              displayFormatter={(v) => unixToDateStr(v as number)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <EditableCell
+                              entityId={r.generatedId}
+                              field="endDate"
+                              value={r.endDate}
+                              defaultedFields={r.defaultedFields}
+                              editedValues={editedValues}
+                              onCommit={handleCellCommit}
+                              fieldType="date"
+                              displayFormatter={(v) => unixToDateStr(v as number)}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <EditableCell
+                              entityId={r.generatedId}
+                              field="shiftCode"
+                              value={r.shiftCode}
+                              defaultedFields={r.defaultedFields}
+                              editedValues={editedValues}
+                              onCommit={handleCellCommit}
+                              fieldType="text"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <EditableCell
+                              entityId={r.generatedId}
+                              field="status"
+                              value={r.status}
+                              defaultedFields={r.defaultedFields}
+                              editedValues={editedValues}
+                              onCommit={handleCellCommit}
+                              fieldType="text"
+                            />
                           </TableCell>
                         </TableRow>
                       ))}

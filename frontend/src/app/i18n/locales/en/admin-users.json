@@ -1,10 +1,10 @@
 {
-    "title": "Users",
-    "firstName": "First name",
-    "lastName": "Last name",
-    "email": "Email",
-    "actions": "Actions",
-    "accessAccount": "Access account",
-    "noUsersFound": "No users found.",
-    "accessError": "Failed to access account"
+  "title": "Users",
+  "firstName": "First name",
+  "lastName": "Last name",
+  "email": "Email",
+  "actions": "Actions",
+  "accessAccount": "Access account",
+  "noUsersFound": "No users found.",
+  "accessError": "Failed to access account"
 }

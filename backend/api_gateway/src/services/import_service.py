@@ -147,6 +147,7 @@ class ImportService(BaseService):
             name = m["name"]
             name_lower = name.lower()
             member_warnings: List[str] = []
+            defaulted: List[str] = []
 
             if name_lower in seen_names:
                 member_warnings.append(f"Duplicate worker name: {name}")
@@ -154,30 +155,49 @@ class ImportService(BaseService):
 
             # Start date: use the schedule's first date as fallback
             start_date = m.get("start") or default_start_date
+            if not m.get("start"):
+                defaulted.append("employmentStartDate")
 
             # Specialty IDs left empty — team context not available at preview stage
             specialty_ids: List[str] = []
 
             contract = m.get("contract") or DEFAULT_WEEKLY_HOURS
+            if not m.get("contract"):
+                defaulted.append("weeklyHours")
             desired = m.get("desired") or contract
+            if not m.get("desired"):
+                defaulted.append("weeklyHoursDesired")
+
+            duties_val = m.get("duty_per_month")
+            if not duties_val:
+                defaulted.append("dutiesPerMonth")
+
+            leave_val = m.get("annual_leave")
+            if not leave_val:
+                defaulted.append("annualLeave")
+
+            # Acronym: auto-derived if not provided
+            has_code = bool(m["code"])
+            if not has_code:
+                defaulted.append("acronym")
 
             previews.append(
                 ImportMemberPreviewDTO(
                     generatedId=str(uuid4()),
                     name=name,
                     acronym=m["code"] or _derive_acronym(name),
-                    acronymCustom=bool(m["code"]),
+                    acronymCustom=has_code,
                     employmentStartDate=_date_to_unix(start_date),
                     employmentEndDate=(
                         _date_to_unix(m["end"]) if m.get("end") else None
                     ),
                     weeklyHours=contract,
                     weeklyHoursDesired=desired,
-                    dutiesPerMonth=m.get("duty_per_month")
-                    or DEFAULT_DUTIES_PER_MONTH,
-                    annualLeave=m.get("annual_leave") or DEFAULT_ANNUAL_LEAVE,
+                    dutiesPerMonth=duties_val or DEFAULT_DUTIES_PER_MONTH,
+                    annualLeave=leave_val or DEFAULT_ANNUAL_LEAVE,
                     specialtyIds=specialty_ids,
                     warnings=member_warnings,
+                    defaultedFields=defaulted,
                 )
             )
 
@@ -203,6 +223,7 @@ class ImportService(BaseService):
         for s in shifts_raw:
             code = s["code"].upper() if s["code"] else ""
             shift_warnings: List[str] = []
+            shift_defaulted: List[str] = []
 
             if not code:
                 shift_warnings.append(f"Missing code for shift '{s['name']}'")
@@ -222,6 +243,12 @@ class ImportService(BaseService):
             if "leave" in s["name"].lower() or code.upper() == "LEAVE":
                 has_explicit_leave_shift = True
                 shift_type = ShiftType.LEAVE
+
+            # Record defaulted fields
+            if not s["start_time"]:
+                shift_defaulted.append("startTime")
+            if not s["end_time"]:
+                shift_defaulted.append("endTime")
 
             generated_id = str(uuid4())
             code_to_id[code.upper()] = generated_id
@@ -248,6 +275,7 @@ class ImportService(BaseService):
                     duty=s["duty"],
                     mandatoryRest=s["mandatory_rest"],
                     warnings=shift_warnings,
+                    defaultedFields=shift_defaulted,
                 )
             )
 
@@ -266,6 +294,21 @@ class ImportService(BaseService):
 
             generated_id = str(uuid4())
             code_to_id[leave_code.upper()] = generated_id
+            auto_leave_defaulted = [
+                "name",
+                "acronym",
+                "startTime",
+                "endTime",
+                "staffing",
+                "color",
+                "shiftType",
+                "restType",
+                "leaveType",
+                "recuperationTime",
+                "recuperationDutyId",
+                "duty",
+                "mandatoryRest",
+            ]
             previews.append(
                 ImportShiftPreviewDTO(
                     generatedId=generated_id,
@@ -286,6 +329,7 @@ class ImportService(BaseService):
                     warnings=[
                         "Auto-generated leave shift (found 'leave' values in schedule)"
                     ],
+                    defaultedFields=auto_leave_defaulted,
                 )
             )
             warnings.append(
@@ -353,6 +397,11 @@ class ImportService(BaseService):
                         status="approved",
                         fulfillment="fulfilled",
                         warnings=[],
+                        defaultedFields=[
+                            "requestType",
+                            "status",
+                            "fulfillment",
+                        ],
                     )
                 )
 

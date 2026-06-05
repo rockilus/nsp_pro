@@ -49,5 +49,11 @@
   "warnings_found": "{count} advertencia(s) encontrada(s)",
   "no_errors": "Sin errores",
   "normal": "Normal",
-  "leave_type": "Licencia"
+  "leave_type": "Licencia",
+  "color": "Color",
+  "legend_imported": "Importado (del archivo)",
+  "legend_default": "Predeterminado (auto-rellenado)",
+  "legend_edited": "Editado",
+  "yes": "Sí",
+  "no": "No"
 }

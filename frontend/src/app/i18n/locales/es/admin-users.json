@@ -1,10 +1,10 @@
 {
-    "title": "Usuarios",
-    "firstName": "Nombre",
-    "lastName": "Apellido",
-    "email": "Correo",
-    "actions": "Acciones",
-    "accessAccount": "Acceder a cuenta",
-    "noUsersFound": "No se encontraron usuarios.",
-    "accessError": "Error al acceder a la cuenta"
+  "title": "Usuarios",
+  "firstName": "Nombre",
+  "lastName": "Apellido",
+  "email": "Correo",
+  "actions": "Acciones",
+  "accessAccount": "Acceder a cuenta",
+  "noUsersFound": "No se encontraron usuarios.",
+  "accessError": "Error al acceder a la cuenta"
 }

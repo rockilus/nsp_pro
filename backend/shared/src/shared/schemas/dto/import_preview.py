@@ -25,6 +25,7 @@ class ImportMemberPreviewDTO(BaseModel):
     annualLeave: int
     specialtyIds: List[str]
     warnings: List[str]
+    defaultedFields: List[str] = []
 
 
 class ImportShiftPreviewDTO(BaseModel):
@@ -48,6 +49,7 @@ class ImportShiftPreviewDTO(BaseModel):
     duty: bool
     mandatoryRest: bool
     warnings: List[str]
+    defaultedFields: List[str] = []
 
 
 class ImportRequestPreviewDTO(BaseModel):
@@ -63,6 +65,7 @@ class ImportRequestPreviewDTO(BaseModel):
     status: str  # "approved"
     fulfillment: str  # "fulfilled"
     warnings: List[str]
+    defaultedFields: List[str] = []
 
 
 class ImportAssignmentPreviewDTO(BaseModel):

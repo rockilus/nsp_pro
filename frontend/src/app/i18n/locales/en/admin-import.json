@@ -49,5 +49,11 @@
   "warnings_found": "{count} warning(s) found",
   "no_errors": "No errors",
   "normal": "Normal",
-  "leave_type": "Leave"
+  "leave_type": "Leave",
+  "color": "Color",
+  "legend_imported": "Imported (from file)",
+  "legend_default": "Default (auto-filled)",
+  "legend_edited": "Edited",
+  "yes": "Yes",
+  "no": "No"
 }
