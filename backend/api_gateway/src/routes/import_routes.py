@@ -11,14 +11,13 @@ Provides:
 """
 
 from io import BytesIO
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
-from shared.schemas.core.import_record import ImportRecord
 from shared.schemas.dto.import_preview import ImportPreviewDTO
 from shared.schemas.dto.import_record import (
     CreateImportRequest,
@@ -71,9 +70,7 @@ async def preview_import(
         if not await authz.check(
             user_context.user_id, "preview-import", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to import schedules"
-            )
+            raise NotAuthorizedError("You do not have permission to import schedules")
 
         # Validate file type
         if not file.filename or not (
@@ -166,9 +163,7 @@ async def create_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to manage imports"
-            )
+            raise NotAuthorizedError("You do not have permission to manage imports")
 
         record = persistence_service.create_import(
             preview_data=req.previewData,
@@ -200,9 +195,7 @@ async def list_imports(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to view imports"
-            )
+            raise NotAuthorizedError("You do not have permission to view imports")
 
         records = persistence_service.get_imports(
             user_id=user_context.effective_user_id
@@ -246,9 +239,7 @@ async def get_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to view imports"
-            )
+            raise NotAuthorizedError("You do not have permission to view imports")
 
         record = persistence_service.get_import(import_id)
         if record is None:
@@ -280,9 +271,7 @@ async def update_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to modify imports"
-            )
+            raise NotAuthorizedError("You do not have permission to modify imports")
 
         record = persistence_service.update_import(
             import_id=import_id,
@@ -316,9 +305,7 @@ async def delete_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete imports"
-            )
+            raise NotAuthorizedError("You do not have permission to delete imports")
 
         persistence_service.delete_import(import_id)
 
@@ -421,9 +408,7 @@ def _build_template_workbook() -> Workbook:
 
     today = date.today()
     for i in range(14):
-        cell = ws_schedule.cell(
-            row=1, column=2 + i, value=(today + timedelta(days=i))
-        )
+        cell = ws_schedule.cell(row=1, column=2 + i, value=(today + timedelta(days=i)))
         cell.font = _bold()
         cell.number_format = "YYYY-MM-DD"
 

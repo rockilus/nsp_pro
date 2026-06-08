@@ -93,17 +93,13 @@ class ImportService(BaseService):
 
         # 3. Build member previews (specialty IDs left empty — team unknown)
         #    Use the schedule's first date as default employment start date.
-        schedule_first_date = (
-            _schedule_first_date(schedule_raw) or date.today()
-        )
+        schedule_first_date = _schedule_first_date(schedule_raw) or date.today()
         members_preview = self._build_member_previews(
             members_raw, schedule_first_date, all_warnings
         )
 
         # worker name → generated worker ID mapping
-        worker_name_to_id = {
-            m.name.lower(): m.generatedId for m in members_preview
-        }
+        worker_name_to_id = {m.name.lower(): m.generatedId for m in members_preview}
 
         # 4. Build request previews (from "leave" cells)
         leave_shift = self._find_leave_shift_preview(shifts_preview)
@@ -233,11 +229,7 @@ class ImportService(BaseService):
             seen_codes.add(code.upper())
 
             shift_type = ShiftType.DUTY if s["duty"] else ShiftType.NORMAL
-            rest_type = (
-                ShiftRestType.OFF
-                if s["mandatory_rest"]
-                else ShiftRestType.NONE
-            )
+            rest_type = ShiftRestType.OFF if s["mandatory_rest"] else ShiftRestType.NONE
 
             # Check if this is explicitly a leave shift (by name or code)
             if "leave" in s["name"].lower() or code.upper() == "LEAVE":
