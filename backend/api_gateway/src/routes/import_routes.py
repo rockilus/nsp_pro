@@ -8,16 +8,31 @@ Provides:
 - ``GET  /admin/imports/{import_id}`` — get full import record
 - ``PUT  /admin/imports/{import_id}`` — update import record
 - ``DELETE /admin/imports/{import_id}`` — delete import record
+- ``GET  /admin/teams/{team_id}/merge-targets`` — get merge targets + auto-match
+- ``POST /admin/imports/{import_id}/merge`` — execute merge into team
 """
 
 from io import BytesIO
 from typing import List
 
-from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    File,
+    HTTPException,
+    Query,
+    UploadFile,
+)
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
+from shared.schemas.dto.import_merge import (
+    MergeRequest,
+    MergeResult,
+    MergeTargetsResponse,
+)
 from shared.schemas.dto.import_preview import ImportPreviewDTO
 from shared.schemas.dto.import_record import (
     CreateImportRequest,
@@ -28,6 +43,7 @@ from shared.schemas.dto.import_record import (
 
 from src.dependencies import get_db_collections, get_user_context
 from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
+from src.dependencies.import_merge_service import get_import_merge_service
 from src.dependencies.import_persistence_service import (
     get_import_persistence_service,
 )
@@ -37,6 +53,7 @@ from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
 from src.security.user_context import UserContext
+from src.services.import_merge_service import ImportMergeService
 from src.services.import_persistence_service import ImportPersistenceService
 from src.services.import_service import ImportService
 
@@ -70,7 +87,9 @@ async def preview_import(
         if not await authz.check(
             user_context.user_id, "preview-import", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to import schedules")
+            raise NotAuthorizedError(
+                "You do not have permission to import schedules"
+            )
 
         # Validate file type
         if not file.filename or not (
@@ -176,7 +195,9 @@ async def create_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to manage imports")
+            raise NotAuthorizedError(
+                "You do not have permission to manage imports"
+            )
 
         record = persistence_service.create_import(
             preview_data=req.previewData,
@@ -186,7 +207,9 @@ async def create_import(
             team_id=req.teamId,
         )
         return record.to_dto(
-            created_by_name=_resolve_user_name(record.created_by, db_collections)
+            created_by_name=_resolve_user_name(
+                record.created_by, db_collections
+            )
         )
 
     except Exception as e:
@@ -211,7 +234,9 @@ async def list_imports(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to view imports")
+            raise NotAuthorizedError(
+                "You do not have permission to view imports"
+            )
 
         records = persistence_service.get_imports(
             user_id=user_context.effective_user_id
@@ -257,13 +282,17 @@ async def get_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to view imports")
+            raise NotAuthorizedError(
+                "You do not have permission to view imports"
+            )
 
         record = persistence_service.get_import(import_id)
         if record is None:
             raise HTTPException(status_code=404, detail="Import not found")
         return record.to_dto(
-            created_by_name=_resolve_user_name(record.created_by, db_collections)
+            created_by_name=_resolve_user_name(
+                record.created_by, db_collections
+            )
         )
 
     except HTTPException:
@@ -292,7 +321,9 @@ async def update_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to modify imports")
+            raise NotAuthorizedError(
+                "You do not have permission to modify imports"
+            )
 
         record = persistence_service.update_import(
             import_id=import_id,
@@ -304,13 +335,92 @@ async def update_import(
             assignments=req.assignments,
         )
         return record.to_dto(
-            created_by_name=_resolve_user_name(record.created_by, db_collections)
+            created_by_name=_resolve_user_name(
+                record.created_by, db_collections
+            )
         )
 
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         log_info(f"Failed to update import: {e}")
+        handle_routes_errors(e)
+
+
+# ── Merge endpoints ──────────────────────────────────────────────────────────
+
+
+@router.get(
+    "/admin/teams/{team_id}/merge-targets",
+    response_model=MergeTargetsResponse,
+)
+async def get_merge_targets(
+    team_id: str,
+    import_id: str = Query(..., description="Import record ID"),
+    user_context: UserContext = Depends(get_user_context),
+    merge_service: ImportMergeService = Depends(get_import_merge_service),
+    persistence_service: ImportPersistenceService = Depends(
+        get_import_persistence_service
+    ),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+) -> MergeTargetsResponse:
+    """Get existing team workers/shifts plus auto-match suggestions.
+
+    Returns the list of existing entities available as merge targets,
+    along with pre-computed suggested mappings based on name/acronym
+    matching."""
+    try:
+        if not await authz.check(
+            user_context.user_id, "resolve-merge-targets", "admin", "admin"
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to resolve merge targets"
+            )
+
+        record = persistence_service.get_import(import_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="Import not found")
+
+        return merge_service.resolve_merge_targets(team_id, record)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        log_info(f"Failed to resolve merge targets: {e}")
+        handle_routes_errors(e)
+
+
+@router.post(
+    "/admin/imports/{import_id}/merge",
+    response_model=MergeResult,
+)
+async def execute_merge(
+    import_id: str,
+    req: MergeRequest = Body(...),
+    user_context: UserContext = Depends(get_user_context),
+    merge_service: ImportMergeService = Depends(get_import_merge_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+) -> MergeResult:
+    """Execute the merge of imported data into the target team.
+
+    Creates/updates workers, shifts, requests, and assignments
+    according to the provided mappings.  Cascading exclusions are
+    enforced: skipping a worker excludes its related requests and
+    assignments."""
+    try:
+        if not await authz.check(
+            user_context.user_id, "merge-imports", "admin", "admin"
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to merge imports"
+            )
+
+        return merge_service.execute_merge(import_id, req)
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        log_info(f"Failed to execute merge: {e}")
         handle_routes_errors(e)
 
 
@@ -328,7 +438,9 @@ async def delete_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to delete imports")
+            raise NotAuthorizedError(
+                "You do not have permission to delete imports"
+            )
 
         persistence_service.delete_import(import_id)
 
@@ -431,7 +543,9 @@ def _build_template_workbook() -> Workbook:
 
     today = date.today()
     for i in range(14):
-        cell = ws_schedule.cell(row=1, column=2 + i, value=(today + timedelta(days=i)))
+        cell = ws_schedule.cell(
+            row=1, column=2 + i, value=(today + timedelta(days=i))
+        )
         cell.font = _bold()
         cell.number_format = "YYYY-MM-DD"
 

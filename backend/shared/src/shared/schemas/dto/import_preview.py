@@ -37,9 +37,7 @@ class ImportShiftPreviewDTO(BaseModel):
     acronymCustom: bool
     startTime: float  # minutes from midnight
     endTime: float
-    staffing: (
-        list  # List[StaffingDTO] — keep as list to avoid circular imports
-    )
+    staffing: list  # List[StaffingDTO] — keep as list to avoid circular imports
     color: str
     shiftType: int
     restType: int

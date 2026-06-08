@@ -193,6 +193,7 @@ src/shared/schemas/dto/daily_shift_demand.py
 src/shared/schemas/dto/dim_entry.py
 src/shared/schemas/dto/dimension.py
 src/shared/schemas/dto/export_options.py
+src/shared/schemas/dto/import_merge.py
 src/shared/schemas/dto/import_preview.py
 src/shared/schemas/dto/import_record.py
 src/shared/schemas/dto/link_shift.py

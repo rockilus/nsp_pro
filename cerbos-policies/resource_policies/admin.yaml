@@ -11,6 +11,9 @@ resourcePolicy:
         - read-users
         - preview-import
         - download-template
+        - manage-imports
+        - merge-imports
+        - resolve-merge-targets
       effect: EFFECT_ALLOW
       roles:
         - super_admin

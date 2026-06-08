@@ -27,6 +27,18 @@ from shared.schemas.dto.dimension import (
     NewDimensionDTO,
 )
 from shared.schemas.dto.export_options import ExportOptionsDTO
+from shared.schemas.dto.import_merge import (
+    AssignmentMergeConfig,
+    MergeAction,
+    MergeRequest,
+    MergeResult,
+    MergeTargetShift,
+    MergeTargetsResponse,
+    MergeTargetWorker,
+    RequestMergeMapping,
+    ShiftMergeMapping,
+    WorkerMergeMapping,
+)
 from shared.schemas.dto.import_preview import (
     ImportAssignmentPreviewDTO,
     ImportMemberPreviewDTO,
@@ -127,6 +139,16 @@ __all__ = [
     "ImportPreviewDTO",
     "ImportRequestPreviewDTO",
     "ImportShiftPreviewDTO",
+    "AssignmentMergeConfig",
+    "MergeAction",
+    "MergeRequest",
+    "MergeResult",
+    "MergeTargetShift",
+    "MergeTargetWorker",
+    "MergeTargetsResponse",
+    "RequestMergeMapping",
+    "ShiftMergeMapping",
+    "WorkerMergeMapping",
     "LinkShiftDTO",
     "AddBidRequestDTO",
     "CreateSwapRequestDTO",

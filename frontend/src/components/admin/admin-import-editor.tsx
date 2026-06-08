@@ -22,6 +22,7 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  GitMerge,
   Info,
   Loader2,
   Trash2,
@@ -371,6 +372,16 @@ export default function AdminImportEditor({ lng, importId }: Props) {
           title={t('import_info')}
         >
           <Info className="size-4" />
+        </Button>
+
+        <Button
+          variant="default"
+          size="sm"
+          className="gap-1.5"
+          onClick={() => router.push(`/${lng}/admin/import/merge?id=${importId}`)}
+        >
+          <GitMerge className="size-4" />
+          <span className="hidden sm:inline">{t('merge_into_team')}</span>
         </Button>
 
         <div className="text-xs text-muted-foreground">
