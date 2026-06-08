@@ -8,6 +8,7 @@
 import { test, expect } from '@playwright/test';
 import { randomUUID } from 'crypto';
 import { ImportMergeTestBase } from '../../utils/import-merge-test-base';
+import { testConfig } from '../../utils/test-config';
 
 const BOB_ID = 'gen-bob';
 const CHARLIE_ID = 'gen-charlie';
@@ -27,7 +28,7 @@ test.describe('Import Merge — Cascade', () => {
     const importId = await testBase.createImportViaApi();
 
     await testBase.actAsAdmin(page);
-    await page.goto(`/en/admin/import/merge?id=${importId}`);
+    await page.goto(`${testConfig.frontendUrl}/en/admin/import/merge?id=${importId}`);
     await page.waitForLoadState('domcontentloaded');
   });
 

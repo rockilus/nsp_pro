@@ -9,6 +9,7 @@ import { test, expect } from '@playwright/test';
 import { randomUUID } from 'crypto';
 import { ImportMergeTestBase } from '../../utils/import-merge-test-base';
 import { buildImportExcel, writeExcelToTempFile } from '../../fixtures/import-fixture';
+import { testConfig } from '../../utils/test-config';
 
 test.describe('Import Preview & Create', () => {
   const testBasesMap = new Map<string, ImportMergeTestBase>();
@@ -36,7 +37,7 @@ test.describe('Import Preview & Create', () => {
     const testBase = testBasesMap.get(testRunId)!;
 
     // Navigate to import page
-    await page.goto('/en/admin/import');
+    await page.goto(`${testConfig.frontendUrl}/en/admin/import`);
     await page.waitForLoadState('domcontentloaded');
 
     // Open create dialog
@@ -69,7 +70,7 @@ test.describe('Import Preview & Create', () => {
     const testBase = testBasesMap.get(testRunId)!;
 
     // Navigate to import page
-    await page.goto('/en/admin/import');
+    await page.goto(`${testConfig.frontendUrl}/en/admin/import`);
     await page.waitForLoadState('domcontentloaded');
 
     // Open create dialog

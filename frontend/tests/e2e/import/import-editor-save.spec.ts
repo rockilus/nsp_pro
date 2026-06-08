@@ -8,6 +8,7 @@
 import { test, expect } from '@playwright/test';
 import { randomUUID } from 'crypto';
 import { ImportMergeTestBase } from '../../utils/import-merge-test-base';
+import { testConfig } from '../../utils/test-config';
 
 test.describe('Import Editor — Save', () => {
   const testBasesMap = new Map<string, ImportMergeTestBase>();
@@ -24,7 +25,7 @@ test.describe('Import Editor — Save', () => {
     const importId = await testBase.createImportViaApi();
 
     await testBase.actAsAdmin(page);
-    await page.goto(`/en/admin/import/editor?id=${importId}`);
+    await page.goto(`${testConfig.frontendUrl}/en/admin/import/editor?id=${importId}`);
     await page.waitForLoadState('domcontentloaded');
   });
 
