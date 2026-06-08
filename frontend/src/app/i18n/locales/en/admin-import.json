@@ -70,5 +70,8 @@
   "back_to_list": "Back to List",
   "saving": "Saving...",
   "all_saved": "All changes saved",
-  "save_failed": "Save failed"
+  "save_failed": "Save failed",
+  "imported_on": "Imported",
+  "imported_by": "By",
+  "last_updated": "Updated"
 }

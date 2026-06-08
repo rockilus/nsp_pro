@@ -70,5 +70,8 @@
   "back_to_list": "Volver a la Lista",
   "saving": "Guardando...",
   "all_saved": "Todos los cambios guardados",
-  "save_failed": "Error al guardar"
+  "save_failed": "Error al guardar",
+  "imported_on": "Importado",
+  "imported_by": "Por",
+  "last_updated": "Actualizado"
 }

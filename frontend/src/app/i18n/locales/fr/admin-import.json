@@ -70,5 +70,8 @@
   "back_to_list": "Retour à la Liste",
   "saving": "Sauvegarde...",
   "all_saved": "Toutes les modifications sont sauvegardées",
-  "save_failed": "Échec de la sauvegarde"
+  "save_failed": "Échec de la sauvegarde",
+  "imported_on": "Importé le",
+  "imported_by": "Par",
+  "last_updated": "Mis à jour"
 }

@@ -339,7 +339,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
       {/* Top bar */}
       <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
         <Button
@@ -352,12 +352,27 @@ export default function AdminImportEditor({ lng, importId }: Props) {
           <ArrowLeft className="size-4" />
         </Button>
 
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <Input
             value={importName}
             onChange={(e) => handleNameChange(e.target.value)}
             className="h-8 max-w-md border-transparent bg-transparent text-lg font-semibold hover:border-border focus:border-border"
           />
+          {/* Metadata subtitle */}
+          <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+            <span>
+              {t('imported_on')}: {dayjs.unix(data.createdAt).utc().format('YYYY-MM-DD HH:mm')}
+            </span>
+            <span>
+              {t('imported_by')}: {data.createdBy}
+            </span>
+            <span className="max-w-[300px] truncate">
+              {t('import_file')}: {data.filename}
+            </span>
+            <span>
+              {t('last_updated')}: {dayjs.unix(data.updatedAt).utc().format('YYYY-MM-DD HH:mm')}
+            </span>
+          </div>
         </div>
 
         <div className="text-xs text-muted-foreground">
@@ -734,7 +749,176 @@ export default function AdminImportEditor({ lng, importId }: Props) {
             </AccordionContent>
           </AccordionItem>
         )}
+
+        {/* Schedule (monthly grid) */}
+        {data.assignments.length > 0 && (
+          <AccordionItem value="schedule">
+            <AccordionTrigger className="gap-2">
+              <Badge variant="default">{data.assignments.length}</Badge>
+              <span className="font-semibold">{t('schedule_tab')}</span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ScheduleGrid
+                assignments={data.assignments}
+                shifts={data.shifts}
+                workerLabel={t('worker')}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        )}
       </Accordion>
+    </div>
+  );
+}
+
+// ── Schedule grid sub-component ─────────────────────────────────────────────
+
+function ScheduleGrid({
+  assignments,
+  shifts,
+  workerLabel,
+}: {
+  assignments: ImportAssignmentPreview[];
+  shifts: ImportShiftPreview[];
+  workerLabel: string;
+}) {
+  const [scheduleMonth, setScheduleMonth] = useState('');
+
+  const grid: Record<string, Record<string, string[]>> = {};
+  let minDate: dayjs.Dayjs | null = null;
+  let maxDate: dayjs.Dayjs | null = null;
+
+  for (const a of assignments) {
+    const d = dayjs.unix(a.date).utc();
+    if (!minDate || d.isBefore(minDate)) minDate = d;
+    if (!maxDate || d.isAfter(maxDate)) maxDate = d;
+    const dateKey = d.format('YYYY-MM-DD');
+    if (!grid[a.workerName]) grid[a.workerName] = {};
+    if (!grid[a.workerName][dateKey]) grid[a.workerName][dateKey] = [];
+    grid[a.workerName][dateKey].push(a.shiftCode);
+  }
+
+  const workers = Object.keys(grid).sort();
+
+  if (!minDate || !maxDate || workers.length === 0) {
+    return <p className="py-4 text-center text-sm text-muted-foreground">No schedule data</p>;
+  }
+
+  if (!scheduleMonth) {
+    setScheduleMonth(minDate.format('YYYY-MM'));
+    return null;
+  }
+
+  const current = dayjs.utc(scheduleMonth + '-01');
+  const monthStart = current.startOf('month');
+  const monthEnd = current.endOf('month');
+  const minMonthStart = minDate.startOf('month');
+  const maxMonthStart = maxDate.startOf('month');
+
+  const canPrev = monthStart.isAfter(minMonthStart);
+  const canNext = monthStart.isBefore(maxMonthStart);
+
+  const goPrev = () => setScheduleMonth(monthStart.subtract(1, 'month').format('YYYY-MM'));
+  const goNext = () => setScheduleMonth(monthStart.add(1, 'month').format('YYYY-MM'));
+
+  const days: dayjs.Dayjs[] = [];
+  let cursor = monthStart;
+  while (cursor.isBefore(monthEnd) || cursor.isSame(monthEnd, 'day')) {
+    days.push(cursor);
+    cursor = cursor.add(1, 'day');
+  }
+
+  const monthLabel = monthStart.format('MMMM YYYY');
+
+  const shiftColorMap: Record<string, string> = {};
+  for (const s of shifts) {
+    shiftColorMap[s.acronym.toUpperCase()] = s.color;
+  }
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between">
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-7"
+          disabled={!canPrev}
+          onClick={goPrev}
+        >
+          <ChevronLeft className="size-4" />
+        </Button>
+        <span className="text-sm font-semibold">{monthLabel}</span>
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-7"
+          disabled={!canNext}
+          onClick={goNext}
+        >
+          <ChevronRight className="size-4" />
+        </Button>
+      </div>
+
+      <div className="overflow-auto rounded-lg border border-border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="sticky left-0 z-10 min-w-[120px] border-r border-border/30 bg-card">
+                {workerLabel}
+              </TableHead>
+              {days.map((d) => (
+                <TableHead
+                  key={d.toISOString()}
+                  className="min-w-[40px] border-l border-border/30 text-center text-xs"
+                >
+                  {d.date()}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {workers.map((name) => {
+              const row = grid[name] || {};
+              return (
+                <TableRow key={name}>
+                  <TableCell className="sticky left-0 z-10 border-r border-border/30 bg-card text-xs font-medium">
+                    {name}
+                  </TableCell>
+                  {days.map((d) => {
+                    const dateKey = d.format('YYYY-MM-DD');
+                    const codes = row[dateKey];
+                    return (
+                      <TableCell
+                        key={dateKey}
+                        className="border-l border-border/30 p-0.5 text-center"
+                      >
+                        {codes && codes.length > 0 ? (
+                          <div className="flex flex-wrap justify-center gap-0.5">
+                            {codes.map((code, i) => (
+                              <Badge
+                                key={i}
+                                style={{
+                                  backgroundColor: shiftColorMap[code.toUpperCase()] || '#6B7280',
+                                  color: '#fff',
+                                }}
+                                className="font-bold"
+                              >
+                                {code}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground" />
+                        )}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
