@@ -26,10 +26,12 @@ class ImportRecord:
     requests: List[Dict[str, Any]] = field(default_factory=list)
     assignments: List[Dict[str, Any]] = field(default_factory=list)
 
-    def to_dto(self) -> ImportRecordDTO:
+    def to_dto(self, created_by_name: str | None = None) -> ImportRecordDTO:
         data = asdict(self)
         data["created_at"] = self.created_at.timestamp()
         data["updated_at"] = self.updated_at.timestamp()
+        if created_by_name is not None:
+            data["created_by_name"] = created_by_name
         as_dict = humps.camelize(data)
         validator = TypeAdapter(ImportRecordDTO)
         return validator.validate_python(as_dict)

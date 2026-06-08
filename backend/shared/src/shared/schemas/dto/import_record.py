@@ -29,6 +29,7 @@ class ImportRecordSummaryDTO(BaseModel):
     createdAt: float
     updatedAt: float
     createdBy: str
+    createdByName: str = ""
     filename: str
     teamId: Optional[str] = None
     memberCount: int = 0

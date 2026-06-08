@@ -73,5 +73,6 @@
   "save_failed": "Échec de la sauvegarde",
   "imported_on": "Importé le",
   "imported_by": "Par",
-  "last_updated": "Mis à jour"
+  "last_updated": "Mis à jour",
+  "import_info": "Infos de l'import"
 }

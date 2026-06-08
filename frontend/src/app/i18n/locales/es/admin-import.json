@@ -73,5 +73,6 @@
   "save_failed": "Error al guardar",
   "imported_on": "Importado",
   "imported_by": "Por",
-  "last_updated": "Actualizado"
+  "last_updated": "Actualizado",
+  "import_info": "Info de importación"
 }

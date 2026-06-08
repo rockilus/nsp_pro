@@ -70,7 +70,9 @@ async def preview_import(
         if not await authz.check(
             user_context.user_id, "preview-import", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to import schedules")
+            raise NotAuthorizedError(
+                "You do not have permission to import schedules"
+            )
 
         # Validate file type
         if not file.filename or not (
@@ -142,6 +144,18 @@ async def download_import_template(
         handle_routes_errors(e)
 
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+
+def _resolve_user_name(user_id: str, db: DatabaseCollections) -> str:
+    """Resolve a user ID to a display name (first + last, or email fallback)."""
+    user = db.user_db.get_user_by_id(user_id)
+    if user is None:
+        return user_id
+    name = f"{user.first_name} {user.last_name}".strip()
+    return name or user.email or user_id
+
+
 # ── Import CRUD endpoints ────────────────────────────────────────────────────
 
 
@@ -157,13 +171,16 @@ async def create_import(
         get_import_persistence_service
     ),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> ImportRecordDTO:
     """Create a new import record from preview data."""
     try:
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to manage imports")
+            raise NotAuthorizedError(
+                "You do not have permission to manage imports"
+            )
 
         record = persistence_service.create_import(
             preview_data=req.previewData,
@@ -172,7 +189,11 @@ async def create_import(
             user_id=user_context.effective_user_id,
             team_id=req.teamId,
         )
-        return record.to_dto()
+        return record.to_dto(
+            created_by_name=_resolve_user_name(
+                record.created_by, db_collections
+            )
+        )
 
     except Exception as e:
         log_info(f"Failed to create import: {e}")
@@ -189,13 +210,16 @@ async def list_imports(
         get_import_persistence_service
     ),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> List[ImportRecordSummaryDTO]:
     """List all imports for the current user."""
     try:
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to view imports")
+            raise NotAuthorizedError(
+                "You do not have permission to view imports"
+            )
 
         records = persistence_service.get_imports(
             user_id=user_context.effective_user_id
@@ -207,6 +231,7 @@ async def list_imports(
                 createdAt=r.created_at.timestamp(),
                 updatedAt=r.updated_at.timestamp(),
                 createdBy=r.created_by,
+                createdByName=_resolve_user_name(r.created_by, db_collections),
                 filename=r.filename,
                 teamId=r.team_id,
                 memberCount=len(r.members),
@@ -233,18 +258,25 @@ async def get_import(
         get_import_persistence_service
     ),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> ImportRecordDTO:
     """Get a full import record by ID."""
     try:
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to view imports")
+            raise NotAuthorizedError(
+                "You do not have permission to view imports"
+            )
 
         record = persistence_service.get_import(import_id)
         if record is None:
             raise HTTPException(status_code=404, detail="Import not found")
-        return record.to_dto()
+        return record.to_dto(
+            created_by_name=_resolve_user_name(
+                record.created_by, db_collections
+            )
+        )
 
     except HTTPException:
         raise
@@ -265,13 +297,16 @@ async def update_import(
         get_import_persistence_service
     ),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    db_collections: DatabaseCollections = Depends(get_db_collections),
 ) -> ImportRecordDTO:
     """Update an import record (partial update)."""
     try:
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to modify imports")
+            raise NotAuthorizedError(
+                "You do not have permission to modify imports"
+            )
 
         record = persistence_service.update_import(
             import_id=import_id,
@@ -282,7 +317,11 @@ async def update_import(
             requests=req.requests,
             assignments=req.assignments,
         )
-        return record.to_dto()
+        return record.to_dto(
+            created_by_name=_resolve_user_name(
+                record.created_by, db_collections
+            )
+        )
 
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -305,7 +344,9 @@ async def delete_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError("You do not have permission to delete imports")
+            raise NotAuthorizedError(
+                "You do not have permission to delete imports"
+            )
 
         persistence_service.delete_import(import_id)
 
@@ -408,7 +449,9 @@ def _build_template_workbook() -> Workbook:
 
     today = date.today()
     for i in range(14):
-        cell = ws_schedule.cell(row=1, column=2 + i, value=(today + timedelta(days=i)))
+        cell = ws_schedule.cell(
+            row=1, column=2 + i, value=(today + timedelta(days=i))
+        )
         cell.font = _bold()
         cell.number_format = "YYYY-MM-DD"
 

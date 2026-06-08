@@ -73,5 +73,6 @@
   "save_failed": "Save failed",
   "imported_on": "Imported",
   "imported_by": "By",
-  "last_updated": "Updated"
+  "last_updated": "Updated",
+  "import_info": "Import info"
 }

@@ -25,7 +25,15 @@ import {
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 // Icons
-import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Trash2, TriangleAlert } from 'lucide-react';
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  Loader2,
+  Trash2,
+  TriangleAlert,
+} from 'lucide-react';
 // Components
 import EditableCell from './editable-cell';
 import ImportLegend from './import-legend';
@@ -107,6 +115,7 @@ interface ImportRecordData {
   createdAt: number;
   updatedAt: number;
   createdBy: string;
+  createdByName: string;
   filename: string;
   members: ImportMemberPreview[];
   shifts: ImportShiftPreview[];
@@ -176,6 +185,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [importName, setImportName] = useState('');
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+  const [showInfo, setShowInfo] = useState(false);
 
   // Inline editing state (same as preview)
   const [editedValues, setEditedValues] = useState<Record<string, Record<string, unknown>>>({});
@@ -339,7 +349,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-1 flex-col gap-3 overflow-y-auto">
+    <div className="flex flex-col gap-3">
       {/* Top bar */}
       <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
         <Button
@@ -358,22 +368,17 @@ export default function AdminImportEditor({ lng, importId }: Props) {
             onChange={(e) => handleNameChange(e.target.value)}
             className="h-8 max-w-md border-transparent bg-transparent text-lg font-semibold hover:border-border focus:border-border"
           />
-          {/* Metadata subtitle */}
-          <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-            <span>
-              {t('imported_on')}: {dayjs.unix(data.createdAt).utc().format('YYYY-MM-DD HH:mm')}
-            </span>
-            <span>
-              {t('imported_by')}: {data.createdBy}
-            </span>
-            <span className="max-w-[300px] truncate">
-              {t('import_file')}: {data.filename}
-            </span>
-            <span>
-              {t('last_updated')}: {dayjs.unix(data.updatedAt).utc().format('YYYY-MM-DD HH:mm')}
-            </span>
-          </div>
         </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-8"
+          onClick={() => setShowInfo(!showInfo)}
+          title={t('import_info')}
+        >
+          <Info className="size-4" />
+        </Button>
 
         <div className="text-xs text-muted-foreground">
           {saveStatus === 'saving' && (
@@ -386,6 +391,36 @@ export default function AdminImportEditor({ lng, importId }: Props) {
           {saveStatus === 'error' && <span className="text-destructive">{t('save_failed')}</span>}
         </div>
       </div>
+
+      {/* Metadata info panel (collapsible) */}
+      {showInfo && (
+        <div className="rounded-lg border border-border bg-card p-3">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm sm:grid-cols-4">
+            <div>
+              <dt className="text-xs text-muted-foreground">{t('imported_on')}</dt>
+              <dd className="font-medium">
+                {dayjs.unix(data.createdAt).utc().format('YYYY-MM-DD HH:mm')}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">{t('last_updated')}</dt>
+              <dd className="font-medium">
+                {dayjs.unix(data.updatedAt).utc().format('YYYY-MM-DD HH:mm')}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">{t('imported_by')}</dt>
+              <dd className="max-w-[200px] truncate font-medium">
+                {data.createdByName || data.createdBy}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">{t('import_file')}</dt>
+              <dd className="max-w-[250px] truncate font-medium">{data.filename}</dd>
+            </div>
+          </dl>
+        </div>
+      )}
 
       {/* Tables */}
       <Accordion type="multiple" defaultValue={['members', 'shifts']}>
