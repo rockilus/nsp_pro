@@ -70,9 +70,7 @@ async def preview_import(
         if not await authz.check(
             user_context.user_id, "preview-import", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to import schedules"
-            )
+            raise NotAuthorizedError("You do not have permission to import schedules")
 
         # Validate file type
         if not file.filename or not (
@@ -178,9 +176,7 @@ async def create_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to manage imports"
-            )
+            raise NotAuthorizedError("You do not have permission to manage imports")
 
         record = persistence_service.create_import(
             preview_data=req.previewData,
@@ -190,9 +186,7 @@ async def create_import(
             team_id=req.teamId,
         )
         return record.to_dto(
-            created_by_name=_resolve_user_name(
-                record.created_by, db_collections
-            )
+            created_by_name=_resolve_user_name(record.created_by, db_collections)
         )
 
     except Exception as e:
@@ -217,9 +211,7 @@ async def list_imports(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to view imports"
-            )
+            raise NotAuthorizedError("You do not have permission to view imports")
 
         records = persistence_service.get_imports(
             user_id=user_context.effective_user_id
@@ -265,17 +257,13 @@ async def get_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to view imports"
-            )
+            raise NotAuthorizedError("You do not have permission to view imports")
 
         record = persistence_service.get_import(import_id)
         if record is None:
             raise HTTPException(status_code=404, detail="Import not found")
         return record.to_dto(
-            created_by_name=_resolve_user_name(
-                record.created_by, db_collections
-            )
+            created_by_name=_resolve_user_name(record.created_by, db_collections)
         )
 
     except HTTPException:
@@ -304,9 +292,7 @@ async def update_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to modify imports"
-            )
+            raise NotAuthorizedError("You do not have permission to modify imports")
 
         record = persistence_service.update_import(
             import_id=import_id,
@@ -318,9 +304,7 @@ async def update_import(
             assignments=req.assignments,
         )
         return record.to_dto(
-            created_by_name=_resolve_user_name(
-                record.created_by, db_collections
-            )
+            created_by_name=_resolve_user_name(record.created_by, db_collections)
         )
 
     except ValueError as e:
@@ -344,9 +328,7 @@ async def delete_import(
         if not await authz.check(
             user_context.user_id, "manage-imports", "admin", "admin"
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete imports"
-            )
+            raise NotAuthorizedError("You do not have permission to delete imports")
 
         persistence_service.delete_import(import_id)
 
@@ -449,9 +431,7 @@ def _build_template_workbook() -> Workbook:
 
     today = date.today()
     for i in range(14):
-        cell = ws_schedule.cell(
-            row=1, column=2 + i, value=(today + timedelta(days=i))
-        )
+        cell = ws_schedule.cell(row=1, column=2 + i, value=(today + timedelta(days=i)))
         cell.font = _bold()
         cell.number_format = "YYYY-MM-DD"
 
