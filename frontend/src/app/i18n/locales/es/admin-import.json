@@ -55,5 +55,20 @@
   "legend_default": "Predeterminado (auto-rellenado)",
   "legend_edited": "Editado",
   "yes": "Sí",
-  "no": "No"
+  "no": "No",
+  "loading_imports": "Cargando importaciones...",
+  "retry": "Reintentar",
+  "no_imports": "Sin importaciones. Cree una para comenzar.",
+  "create_import": "Crear Importación",
+  "create_import_desc": "Suba un archivo Excel para crear una nueva importación.",
+  "import_count": "{count} importación(es)",
+  "import_name": "Nombre de Importación",
+  "import_name_placeholder": "Mi Importación",
+  "import_date": "Fecha",
+  "import_file": "Archivo",
+  "create_and_open": "Crear y Abrir",
+  "back_to_list": "Volver a la Lista",
+  "saving": "Guardando...",
+  "all_saved": "Todos los cambios guardados",
+  "save_failed": "Error al guardar"
 }
