@@ -179,6 +179,20 @@ export default function AdminImportEditor({ lng, importId }: Props) {
   const [editedValues, setEditedValues] = useState<Record<string, Record<string, unknown>>>({});
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
 
+  // Refs always point to the latest state — avoids stale closures in debounced save
+  const editedValuesRef = useRef(editedValues);
+  const deletedIdsRef = useRef(deletedIds);
+  const importNameRef = useRef(importName);
+  useEffect(() => {
+    editedValuesRef.current = editedValues;
+  }, [editedValues]);
+  useEffect(() => {
+    deletedIdsRef.current = deletedIds;
+  }, [deletedIds]);
+  useEffect(() => {
+    importNameRef.current = importName;
+  }, [importName]);
+
   // Debounce ref for auto-save
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -212,9 +226,14 @@ export default function AdminImportEditor({ lng, importId }: Props) {
 
   // ── Auto-save ──────────────────────────────────────────────────────────
 
+  // Reads latest state from refs so it never captures stale closure values.
   const saveToServer = useCallback(
-    async (name: string, edits: Record<string, Record<string, unknown>>, deleted: Set<string>) => {
+    async (name?: string) => {
       if (!data) return;
+      const edits = editedValuesRef.current;
+      const deleted = deletedIdsRef.current;
+      const resolvedName = name ?? importNameRef.current;
+
       setSaveStatus('saving');
 
       try {
@@ -236,7 +255,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
           method: 'PUT',
           headers,
           body: JSON.stringify({
-            name,
+            name: resolvedName,
             members,
             shifts,
             requests,
@@ -252,13 +271,13 @@ export default function AdminImportEditor({ lng, importId }: Props) {
     [data, importId, user],
   );
 
-  // Debounced save trigger
+  // Debounced save trigger — stable reference (only depends on saveToServer)
   const triggerSave = useCallback(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
-      saveToServer(importName, editedValues, deletedIds);
+      saveToServer();
     }, 2000);
-  }, [importName, editedValues, deletedIds, saveToServer]);
+  }, [saveToServer]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -298,13 +317,12 @@ export default function AdminImportEditor({ lng, importId }: Props) {
   const handleNameChange = useCallback(
     (newName: string) => {
       setImportName(newName);
-      // Save name immediately (no debounce needed for name)
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
-        saveToServer(newName, editedValues, deletedIds);
+        saveToServer(newName);
       }, 500);
     },
-    [editedValues, deletedIds, saveToServer],
+    [saveToServer],
   );
 
   // ── Loading ────────────────────────────────────────────────────────────
