@@ -199,6 +199,7 @@ export default function AdminImportCreateDialog({ lng, open, onClose, onCreated 
                     type="file"
                     accept=".xlsx,.xls"
                     hidden
+                    data-testid="import-file-input"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
                       if (f) setFile(f);
@@ -210,7 +211,7 @@ export default function AdminImportCreateDialog({ lng, open, onClose, onCreated 
             </div>
 
             {file && (
-              <Button onClick={handleUpload} disabled={!file}>
+              <Button onClick={handleUpload} disabled={!file} data-testid="import-upload-btn">
                 {t('upload_and_preview')}
               </Button>
             )}
@@ -221,7 +222,7 @@ export default function AdminImportCreateDialog({ lng, open, onClose, onCreated 
         {step === 'preview' && (
           <div className="flex flex-col gap-3">
             {previewSummary && (
-              <Alert>
+              <Alert data-testid="import-preview-summary">
                 <AlertDescription>{previewSummary}</AlertDescription>
               </Alert>
             )}
@@ -236,7 +237,7 @@ export default function AdminImportCreateDialog({ lng, open, onClose, onCreated 
               />
             </div>
 
-            <Button onClick={handleCreate} disabled={!previewData}>
+            <Button onClick={handleCreate} disabled={!previewData} data-testid="import-create-btn">
               {t('create_and_open')}
             </Button>
 

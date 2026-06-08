@@ -17,6 +17,9 @@ import {
   type RequestMergeMapping,
   type AssignmentMergeConfig,
 } from '@/app/lib/import-merge-utils';
+import { useAuth } from '@/contexts/auth-context';
+import { env } from '@/config/env';
+import { getImpersonationToken } from '@/app/lib/impersonation-storage';
 
 // ── Import record types (subset needed for the wizard) ───────────────────────
 
@@ -74,27 +77,16 @@ interface ImportRecordData {
 function buildAuthHeaders(user: { id_token?: string } | null | undefined): Record<string, string> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
-  // Dynamic import to avoid top-level side effects
-  // Using inline checks for dev mode
-  if (typeof window !== 'undefined') {
-    // Check if we're in dev mode via the URL or host
-    const host = window.location.hostname;
-    if (host === 'localhost' || host === '127.0.0.1') {
-      headers['X-Dev-User-ID'] = 'dev-user';
-      headers['X-API-Key'] = 'dev-api-key';
-    } else if (user?.id_token) {
-      headers['Authorization'] = `Bearer ${user.id_token}`;
-    }
+  if (env.isDevelopment) {
+    headers['X-Dev-User-ID'] = env.devUserId;
+    headers['X-API-Key'] = env.devApiKey;
+  } else if (user?.id_token) {
+    headers['Authorization'] = `Bearer ${user.id_token}`;
+  }
 
-    // Impersonation token from storage
-    try {
-      const impToken = localStorage.getItem('impersonation_token');
-      if (impToken) {
-        headers['X-Impersonation-Token'] = impToken;
-      }
-    } catch {
-      // localStorage not available
-    }
+  const impToken = getImpersonationToken();
+  if (impToken) {
+    headers['X-Impersonation-Token'] = impToken;
   }
 
   return headers;
@@ -128,8 +120,8 @@ function MergeContent({ lng }: { lng: string }) {
   });
   const [mergeResult, setMergeResult] = useState<MergeResult | null>(null);
 
-  // Auth context — simplified; the real auth context should be used
-  const user = null; // Overridden at runtime from AuthContext
+  // Auth context — use the real auth context
+  const { user } = useAuth();
 
   // ── Step 1 → 2: targets resolved ──
   const handleTargetsResolved = useCallback(

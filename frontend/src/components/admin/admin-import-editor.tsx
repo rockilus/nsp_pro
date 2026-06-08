@@ -378,6 +378,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
           variant="default"
           size="sm"
           className="gap-1.5"
+          data-testid="import-merge-btn"
           onClick={() => router.push(`/${lng}/admin/import/merge?id=${importId}`)}
         >
           <GitMerge className="size-4" />

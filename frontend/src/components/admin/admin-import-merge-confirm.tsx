@@ -71,19 +71,28 @@ export default function AdminImportMergeConfirm({
         </div>
 
         <div className="mb-4 grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg border border-border p-3">
+          <div
+            className="rounded-lg border border-border p-3"
+            data-testid="merge-result-workers-created"
+          >
             <div className="text-xs text-muted-foreground">
               {t('workers_created') || 'Workers created'}
             </div>
             <div className="text-xl font-bold text-green-600">{mergeResult.workersCreated}</div>
           </div>
-          <div className="rounded-lg border border-border p-3">
+          <div
+            className="rounded-lg border border-border p-3"
+            data-testid="merge-result-workers-updated"
+          >
             <div className="text-xs text-muted-foreground">
               {t('workers_updated') || 'Workers updated'}
             </div>
             <div className="text-xl font-bold text-blue-600">{mergeResult.workersUpdated}</div>
           </div>
-          <div className="rounded-lg border border-border p-3">
+          <div
+            className="rounded-lg border border-border p-3"
+            data-testid="merge-result-shifts-created"
+          >
             <div className="text-xs text-muted-foreground">
               {t('shifts_created') || 'Shifts created'}
             </div>
@@ -176,12 +185,18 @@ export default function AdminImportMergeConfirm({
 
       {/* Actions */}
       <div className="flex items-center justify-between">
-        <Button variant="outline" size="sm" onClick={onBack} disabled={loading}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onBack}
+          disabled={loading}
+          data-testid="merge-step3-back"
+        >
           <ArrowLeft className="mr-1.5 size-4" />
           {t('back_to_list')}
         </Button>
 
-        <Button size="sm" onClick={onExecute} disabled={loading}>
+        <Button size="sm" onClick={onExecute} disabled={loading} data-testid="merge-execute-btn">
           {loading && <Loader2 className="mr-1.5 size-4 animate-spin" />}
           {loading ? t('saving') || 'Executing...' : t('merge_execute') || 'Execute Merge'}
         </Button>

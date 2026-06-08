@@ -268,7 +268,7 @@ export default function AdminImportMergeStep2({
                   const mapping = workerMap.get(m.generatedId);
                   const action = mapping?.action || 'add_new';
                   return (
-                    <TableRow key={m.generatedId}>
+                    <TableRow key={m.generatedId} data-testid={`merge-worker-row-${m.generatedId}`}>
                       <TableCell className="text-sm">{m.name}</TableCell>
                       <TableCell className="font-mono text-xs">{m.acronym}</TableCell>
                       <TableCell>
@@ -346,7 +346,7 @@ export default function AdminImportMergeStep2({
                   const mapping = shiftMap.get(s.generatedId);
                   const action = mapping?.action || 'add_new';
                   return (
-                    <TableRow key={s.generatedId}>
+                    <TableRow key={s.generatedId} data-testid={`merge-shift-row-${s.generatedId}`}>
                       <TableCell>
                         <div
                           className="size-4 rounded-full border border-border/50"
@@ -435,6 +435,7 @@ export default function AdminImportMergeStep2({
                       <TableRow
                         key={r.generatedId}
                         className={isCascadedSkip ? 'text-muted-foreground line-through' : ''}
+                        data-testid={`merge-request-row-${r.generatedId}`}
                       >
                         <TableCell className="text-sm">{r.workerName}</TableCell>
                         <TableCell className="text-xs">{unixToDateStr(r.startDate)}</TableCell>
@@ -492,6 +493,7 @@ export default function AdminImportMergeStep2({
                 checked={assignmentConfig.includeAll}
                 onChange={handleIncludeAll}
                 className="size-4"
+                data-testid="merge-assignments-include-all"
               />
               <span className="text-sm">{t('include_all') || 'Include all assignments'}</span>
             </Label>
@@ -504,6 +506,7 @@ export default function AdminImportMergeStep2({
                   onAssignmentConfigChange({ ...assignmentConfig, includeAll: false })
                 }
                 className="size-4"
+                data-testid="merge-assignments-filter-period"
               />
               <span className="text-sm">{t('filter_by_period') || 'Filter by period'}</span>
             </Label>
@@ -516,6 +519,7 @@ export default function AdminImportMergeStep2({
                 <Input
                   type="date"
                   className="h-8 w-40"
+                  data-testid="merge-period-start"
                   value={
                     assignmentConfig.startDate
                       ? dayjs.unix(assignmentConfig.startDate).utc().format('YYYY-MM-DD')
@@ -529,6 +533,7 @@ export default function AdminImportMergeStep2({
                 <Input
                   type="date"
                   className="h-8 w-40"
+                  data-testid="merge-period-end"
                   value={
                     assignmentConfig.endDate
                       ? dayjs.unix(assignmentConfig.endDate).utc().format('YYYY-MM-DD')
@@ -537,7 +542,7 @@ export default function AdminImportMergeStep2({
                   onChange={(e) => handleDateFilter('endDate', e.target.value)}
                 />
               </div>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground" data-testid="merge-assignment-count">
                 {effectiveAssignments} assignment(s) in range
               </span>
             </div>
@@ -547,12 +552,12 @@ export default function AdminImportMergeStep2({
 
       {/* Actions */}
       <div className="flex items-center justify-between">
-        <Button variant="outline" size="sm" onClick={onBack}>
+        <Button variant="outline" size="sm" onClick={onBack} data-testid="merge-step2-back">
           <ArrowLeft className="mr-1.5 size-4" />
           {t('back_to_list')}
         </Button>
 
-        <Button size="sm" onClick={onNext}>
+        <Button size="sm" onClick={onNext} data-testid="merge-step2-next">
           {t('merge_step3_title') || 'Next: Confirm'}
           <ArrowRight className="ml-1.5 size-4" />
         </Button>

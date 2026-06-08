@@ -204,7 +204,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
           </div>
         ) : (
           <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-            <SelectTrigger className="w-full max-w-sm">
+            <SelectTrigger className="w-full max-w-sm" data-testid="merge-team-select">
               <SelectValue placeholder={t('select_team_placeholder') || 'Choose a team...'} />
             </SelectTrigger>
             <SelectContent>
@@ -220,7 +220,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
 
       {/* Match summary */}
       {matchSummary && (
-        <Alert className="mb-4">
+        <Alert className="mb-4" data-testid="merge-match-summary">
           <CheckCircle2 className="size-4" />
           <AlertDescription>{matchSummary}</AlertDescription>
         </Alert>
@@ -234,12 +234,17 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
 
       {/* Actions */}
       <div className="flex items-center justify-between">
-        <Button variant="outline" size="sm" onClick={onBack}>
+        <Button variant="outline" size="sm" onClick={onBack} data-testid="merge-step1-back">
           <ArrowLeft className="mr-1.5 size-4" />
           {t('back_to_list')}
         </Button>
 
-        <Button size="sm" onClick={handleResolve} disabled={!selectedTeamId || resolving}>
+        <Button
+          size="sm"
+          onClick={handleResolve}
+          disabled={!selectedTeamId || resolving}
+          data-testid="merge-resolve-btn"
+        >
           {resolving && <Loader2 className="mr-1.5 size-4 animate-spin" />}
           {resolving ? 'Resolving...' : t('merge_step2_title') || 'Next: Review Matches'}
           {!resolving && <ArrowRight className="ml-1.5 size-4" />}
