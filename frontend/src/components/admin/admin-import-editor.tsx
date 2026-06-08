@@ -8,7 +8,6 @@ import utc from 'dayjs/plugin/utc';
 // shadcn
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   Table,
   TableBody,
@@ -17,12 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 // Icons
 import {
@@ -422,68 +415,307 @@ export default function AdminImportEditor({ lng, importId }: Props) {
         </div>
       )}
 
-      {/* Tables */}
-      <Accordion type="multiple" defaultValue={['members', 'shifts']}>
-        {/* Members */}
-        <AccordionItem value="members">
-          <AccordionTrigger className="gap-2">
-            <Badge variant="default">{visibleMembers.length}</Badge>
-            <span className="font-semibold">{t('members_tab')}</span>
-          </AccordionTrigger>
-          <AccordionContent>
-            <ImportLegend lng={lng} />
-            <div className="mt-2 overflow-hidden rounded-lg border border-border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('name')}</TableHead>
-                    <TableHead>{t('code')}</TableHead>
-                    <TableHead>{t('start_date')}</TableHead>
-                    <TableHead>{t('end_date')}</TableHead>
-                    <TableHead>{t('contract_hours')}</TableHead>
-                    <TableHead>{t('desired_hours')}</TableHead>
-                    <TableHead>{t('duty_per_month')}</TableHead>
-                    <TableHead>{t('annual_leave')}</TableHead>
-                    <TableHead>{t('skills')}</TableHead>
-                    <TableHead className="w-10" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {visibleMembers.map((m) => (
-                    <TableRow key={m.generatedId}>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <EditableCell
-                            entityId={m.generatedId}
-                            field="name"
-                            value={m.name}
-                            defaultedFields={m.defaultedFields}
-                            editedValues={editedValues}
-                            onCommit={handleCellCommit}
-                            fieldType="text"
-                          />
-                          {m.warnings.length > 0 && (
-                            <TriangleAlert className="size-4 shrink-0 text-amber-500" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
+      {/* Members */}
+      <section className="rounded-lg border border-border bg-card">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+          <Badge variant="default">{visibleMembers.length}</Badge>
+          <h2 className="text-sm font-semibold">{t('members_tab')}</h2>
+        </div>
+        <div className="p-3">
+          <ImportLegend lng={lng} />
+          <div className="mt-2 overflow-hidden rounded-lg border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('name')}</TableHead>
+                  <TableHead>{t('code')}</TableHead>
+                  <TableHead>{t('start_date')}</TableHead>
+                  <TableHead>{t('end_date')}</TableHead>
+                  <TableHead>{t('contract_hours')}</TableHead>
+                  <TableHead>{t('desired_hours')}</TableHead>
+                  <TableHead>{t('duty_per_month')}</TableHead>
+                  <TableHead>{t('annual_leave')}</TableHead>
+                  <TableHead>{t('skills')}</TableHead>
+                  <TableHead className="w-10" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibleMembers.map((m) => (
+                  <TableRow key={m.generatedId}>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
                         <EditableCell
                           entityId={m.generatedId}
-                          field="acronym"
-                          value={m.acronym}
+                          field="name"
+                          value={m.name}
                           defaultedFields={m.defaultedFields}
                           editedValues={editedValues}
                           onCommit={handleCellCommit}
                           fieldType="text"
                         />
-                      </TableCell>
+                        {m.warnings.length > 0 && (
+                          <TriangleAlert className="size-4 shrink-0 text-amber-500" />
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={m.generatedId}
+                        field="acronym"
+                        value={m.acronym}
+                        defaultedFields={m.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="text"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={m.generatedId}
+                        field="employmentStartDate"
+                        value={m.employmentStartDate}
+                        defaultedFields={m.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="date"
+                        displayFormatter={(v) => unixToDateStr(v as number)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={m.generatedId}
+                        field="employmentEndDate"
+                        value={m.employmentEndDate}
+                        defaultedFields={m.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="date"
+                        displayFormatter={(v) => (v ? unixToDateStr(v as number) : '—')}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={m.generatedId}
+                        field="weeklyHours"
+                        value={m.weeklyHours}
+                        defaultedFields={m.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="number"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={m.generatedId}
+                        field="weeklyHoursDesired"
+                        value={m.weeklyHoursDesired}
+                        defaultedFields={m.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="number"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={m.generatedId}
+                        field="dutiesPerMonth"
+                        value={m.dutiesPerMonth}
+                        defaultedFields={m.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="number"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={m.generatedId}
+                        field="annualLeave"
+                        value={m.annualLeave}
+                        defaultedFields={m.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="number"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {m.specialtyIds.length > 0 ? `${m.specialtyIds.length} skill(s)` : '—'}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDeleteRow(m.generatedId)}
+                        title="Delete row"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </section>
+
+      {/* Shifts */}
+      <section className="rounded-lg border border-border bg-card">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+          <Badge variant="default">{visibleShifts.length}</Badge>
+          <h2 className="text-sm font-semibold">{t('shifts_tab')}</h2>
+        </div>
+        <div className="p-3">
+          <ImportLegend lng={lng} />
+          <div className="mt-2 overflow-hidden rounded-lg border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-10">{t('color')}</TableHead>
+                  <TableHead>{t('name')}</TableHead>
+                  <TableHead>{t('code')}</TableHead>
+                  <TableHead>{t('type')}</TableHead>
+                  <TableHead>{t('start_time')}</TableHead>
+                  <TableHead>{t('end_time')}</TableHead>
+                  <TableHead>{t('duty')}</TableHead>
+                  <TableHead>{t('mandatory_rest')}</TableHead>
+                  <TableHead className="w-10" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {visibleShifts.map((s) => (
+                  <TableRow key={s.generatedId}>
+                    <TableCell>
+                      <div
+                        className="size-4 rounded-full border border-border/50"
+                        style={{ backgroundColor: s.color }}
+                        title={s.color}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <EditableCell
+                          entityId={s.generatedId}
+                          field="name"
+                          value={s.name}
+                          defaultedFields={s.defaultedFields}
+                          editedValues={editedValues}
+                          onCommit={handleCellCommit}
+                          fieldType="text"
+                        />
+                        {s.warnings.length > 0 && (
+                          <TriangleAlert className="size-4 shrink-0 text-amber-500" />
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono">
+                      <EditableCell
+                        entityId={s.generatedId}
+                        field="acronym"
+                        value={s.acronym}
+                        defaultedFields={s.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="text"
+                      />
+                    </TableCell>
+                    <TableCell>{shiftTypeLabel(s.shiftType, t)}</TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={s.generatedId}
+                        field="startTime"
+                        value={s.startTime}
+                        defaultedFields={s.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="time"
+                        displayFormatter={(v) => minutesToTimeStr(v as number)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={s.generatedId}
+                        field="endTime"
+                        value={s.endTime}
+                        defaultedFields={s.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="time"
+                        displayFormatter={(v) => minutesToTimeStr(v as number)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={s.generatedId}
+                        field="duty"
+                        value={s.duty}
+                        defaultedFields={s.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="boolean"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <EditableCell
+                        entityId={s.generatedId}
+                        field="mandatoryRest"
+                        value={s.mandatoryRest}
+                        defaultedFields={s.defaultedFields}
+                        editedValues={editedValues}
+                        onCommit={handleCellCommit}
+                        fieldType="boolean"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleDeleteRow(s.generatedId)}
+                        title="Delete row"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      </section>
+
+      {/* Requests */}
+      {visibleRequests.length > 0 && (
+        <section className="rounded-lg border border-border bg-card">
+          <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+            <Badge variant="default">{visibleRequests.length}</Badge>
+            <h2 className="text-sm font-semibold">{t('requests_tab')}</h2>
+          </div>
+          <div className="p-3">
+            <ImportLegend lng={lng} />
+            <div className="mt-2 overflow-hidden rounded-lg border border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('worker')}</TableHead>
+                    <TableHead>{t('start_date')}</TableHead>
+                    <TableHead>{t('end_date')}</TableHead>
+                    <TableHead>{t('shift')}</TableHead>
+                    <TableHead>{t('status')}</TableHead>
+                    <TableHead className="w-10" />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visibleRequests.map((r) => (
+                    <TableRow key={r.generatedId}>
+                      <TableCell className="text-muted-foreground">{r.workerName}</TableCell>
                       <TableCell>
                         <EditableCell
-                          entityId={m.generatedId}
-                          field="employmentStartDate"
-                          value={m.employmentStartDate}
-                          defaultedFields={m.defaultedFields}
+                          entityId={r.generatedId}
+                          field="startDate"
+                          value={r.startDate}
+                          defaultedFields={r.defaultedFields}
                           editedValues={editedValues}
                           onCommit={handleCellCommit}
                           fieldType="date"
@@ -492,187 +724,36 @@ export default function AdminImportEditor({ lng, importId }: Props) {
                       </TableCell>
                       <TableCell>
                         <EditableCell
-                          entityId={m.generatedId}
-                          field="employmentEndDate"
-                          value={m.employmentEndDate}
-                          defaultedFields={m.defaultedFields}
+                          entityId={r.generatedId}
+                          field="endDate"
+                          value={r.endDate}
+                          defaultedFields={r.defaultedFields}
                           editedValues={editedValues}
                           onCommit={handleCellCommit}
                           fieldType="date"
-                          displayFormatter={(v) => (v ? unixToDateStr(v as number) : '—')}
+                          displayFormatter={(v) => unixToDateStr(v as number)}
                         />
                       </TableCell>
                       <TableCell>
                         <EditableCell
-                          entityId={m.generatedId}
-                          field="weeklyHours"
-                          value={m.weeklyHours}
-                          defaultedFields={m.defaultedFields}
-                          editedValues={editedValues}
-                          onCommit={handleCellCommit}
-                          fieldType="number"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <EditableCell
-                          entityId={m.generatedId}
-                          field="weeklyHoursDesired"
-                          value={m.weeklyHoursDesired}
-                          defaultedFields={m.defaultedFields}
-                          editedValues={editedValues}
-                          onCommit={handleCellCommit}
-                          fieldType="number"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <EditableCell
-                          entityId={m.generatedId}
-                          field="dutiesPerMonth"
-                          value={m.dutiesPerMonth}
-                          defaultedFields={m.defaultedFields}
-                          editedValues={editedValues}
-                          onCommit={handleCellCommit}
-                          fieldType="number"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <EditableCell
-                          entityId={m.generatedId}
-                          field="annualLeave"
-                          value={m.annualLeave}
-                          defaultedFields={m.defaultedFields}
-                          editedValues={editedValues}
-                          onCommit={handleCellCommit}
-                          fieldType="number"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {m.specialtyIds.length > 0 ? `${m.specialtyIds.length} skill(s)` : '—'}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7 text-muted-foreground hover:text-destructive"
-                          onClick={() => handleDeleteRow(m.generatedId)}
-                          title="Delete row"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* Shifts */}
-        <AccordionItem value="shifts">
-          <AccordionTrigger className="gap-2">
-            <Badge variant="default">{visibleShifts.length}</Badge>
-            <span className="font-semibold">{t('shifts_tab')}</span>
-          </AccordionTrigger>
-          <AccordionContent>
-            <ImportLegend lng={lng} />
-            <div className="mt-2 overflow-hidden rounded-lg border border-border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10">{t('color')}</TableHead>
-                    <TableHead>{t('name')}</TableHead>
-                    <TableHead>{t('code')}</TableHead>
-                    <TableHead>{t('type')}</TableHead>
-                    <TableHead>{t('start_time')}</TableHead>
-                    <TableHead>{t('end_time')}</TableHead>
-                    <TableHead>{t('duty')}</TableHead>
-                    <TableHead>{t('mandatory_rest')}</TableHead>
-                    <TableHead className="w-10" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {visibleShifts.map((s) => (
-                    <TableRow key={s.generatedId}>
-                      <TableCell>
-                        <div
-                          className="size-4 rounded-full border border-border/50"
-                          style={{ backgroundColor: s.color }}
-                          title={s.color}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <EditableCell
-                            entityId={s.generatedId}
-                            field="name"
-                            value={s.name}
-                            defaultedFields={s.defaultedFields}
-                            editedValues={editedValues}
-                            onCommit={handleCellCommit}
-                            fieldType="text"
-                          />
-                          {s.warnings.length > 0 && (
-                            <TriangleAlert className="size-4 shrink-0 text-amber-500" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono">
-                        <EditableCell
-                          entityId={s.generatedId}
-                          field="acronym"
-                          value={s.acronym}
-                          defaultedFields={s.defaultedFields}
+                          entityId={r.generatedId}
+                          field="shiftCode"
+                          value={r.shiftCode}
+                          defaultedFields={r.defaultedFields}
                           editedValues={editedValues}
                           onCommit={handleCellCommit}
                           fieldType="text"
                         />
                       </TableCell>
-                      <TableCell>{shiftTypeLabel(s.shiftType, t)}</TableCell>
                       <TableCell>
                         <EditableCell
-                          entityId={s.generatedId}
-                          field="startTime"
-                          value={s.startTime}
-                          defaultedFields={s.defaultedFields}
+                          entityId={r.generatedId}
+                          field="status"
+                          value={r.status}
+                          defaultedFields={r.defaultedFields}
                           editedValues={editedValues}
                           onCommit={handleCellCommit}
-                          fieldType="time"
-                          displayFormatter={(v) => minutesToTimeStr(v as number)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <EditableCell
-                          entityId={s.generatedId}
-                          field="endTime"
-                          value={s.endTime}
-                          defaultedFields={s.defaultedFields}
-                          editedValues={editedValues}
-                          onCommit={handleCellCommit}
-                          fieldType="time"
-                          displayFormatter={(v) => minutesToTimeStr(v as number)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <EditableCell
-                          entityId={s.generatedId}
-                          field="duty"
-                          value={s.duty}
-                          defaultedFields={s.defaultedFields}
-                          editedValues={editedValues}
-                          onCommit={handleCellCommit}
-                          fieldType="boolean"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <EditableCell
-                          entityId={s.generatedId}
-                          field="mandatoryRest"
-                          value={s.mandatoryRest}
-                          defaultedFields={s.defaultedFields}
-                          editedValues={editedValues}
-                          onCommit={handleCellCommit}
-                          fieldType="boolean"
+                          fieldType="text"
                         />
                       </TableCell>
                       <TableCell>
@@ -680,7 +761,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
                           variant="ghost"
                           size="icon"
                           className="size-7 text-muted-foreground hover:text-destructive"
-                          onClick={() => handleDeleteRow(s.generatedId)}
+                          onClick={() => handleDeleteRow(r.generatedId)}
                           title="Delete row"
                         >
                           <Trash2 className="size-3.5" />
@@ -691,117 +772,26 @@ export default function AdminImportEditor({ lng, importId }: Props) {
                 </TableBody>
               </Table>
             </div>
-          </AccordionContent>
-        </AccordionItem>
+          </div>
+        </section>
+      )}
 
-        {/* Requests */}
-        {visibleRequests.length > 0 && (
-          <AccordionItem value="requests">
-            <AccordionTrigger className="gap-2">
-              <Badge variant="default">{visibleRequests.length}</Badge>
-              <span className="font-semibold">{t('requests_tab')}</span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <ImportLegend lng={lng} />
-              <div className="mt-2 overflow-hidden rounded-lg border border-border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t('worker')}</TableHead>
-                      <TableHead>{t('start_date')}</TableHead>
-                      <TableHead>{t('end_date')}</TableHead>
-                      <TableHead>{t('shift')}</TableHead>
-                      <TableHead>{t('status')}</TableHead>
-                      <TableHead className="w-10" />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {visibleRequests.map((r) => (
-                      <TableRow key={r.generatedId}>
-                        <TableCell className="text-muted-foreground">{r.workerName}</TableCell>
-                        <TableCell>
-                          <EditableCell
-                            entityId={r.generatedId}
-                            field="startDate"
-                            value={r.startDate}
-                            defaultedFields={r.defaultedFields}
-                            editedValues={editedValues}
-                            onCommit={handleCellCommit}
-                            fieldType="date"
-                            displayFormatter={(v) => unixToDateStr(v as number)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <EditableCell
-                            entityId={r.generatedId}
-                            field="endDate"
-                            value={r.endDate}
-                            defaultedFields={r.defaultedFields}
-                            editedValues={editedValues}
-                            onCommit={handleCellCommit}
-                            fieldType="date"
-                            displayFormatter={(v) => unixToDateStr(v as number)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <EditableCell
-                            entityId={r.generatedId}
-                            field="shiftCode"
-                            value={r.shiftCode}
-                            defaultedFields={r.defaultedFields}
-                            editedValues={editedValues}
-                            onCommit={handleCellCommit}
-                            fieldType="text"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <EditableCell
-                            entityId={r.generatedId}
-                            field="status"
-                            value={r.status}
-                            defaultedFields={r.defaultedFields}
-                            editedValues={editedValues}
-                            onCommit={handleCellCommit}
-                            fieldType="text"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="size-7 text-muted-foreground hover:text-destructive"
-                            onClick={() => handleDeleteRow(r.generatedId)}
-                            title="Delete row"
-                          >
-                            <Trash2 className="size-3.5" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        )}
-
-        {/* Schedule (monthly grid) */}
-        {data.assignments.length > 0 && (
-          <AccordionItem value="schedule">
-            <AccordionTrigger className="gap-2">
-              <Badge variant="default">{data.assignments.length}</Badge>
-              <span className="font-semibold">{t('schedule_tab')}</span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <ScheduleGrid
-                assignments={data.assignments}
-                shifts={data.shifts}
-                workerLabel={t('worker')}
-              />
-            </AccordionContent>
-          </AccordionItem>
-        )}
-      </Accordion>
+      {/* Schedule */}
+      {data.assignments.length > 0 && (
+        <section className="rounded-lg border border-border bg-card">
+          <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+            <Badge variant="default">{data.assignments.length}</Badge>
+            <h2 className="text-sm font-semibold">{t('schedule_tab')}</h2>
+          </div>
+          <div className="p-3">
+            <ScheduleGrid
+              assignments={data.assignments}
+              shifts={data.shifts}
+              workerLabel={t('worker')}
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }
