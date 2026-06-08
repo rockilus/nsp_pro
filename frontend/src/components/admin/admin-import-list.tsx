@@ -20,7 +20,6 @@ import { FileSpreadsheet, Loader2, Plus } from 'lucide-react';
 // Auth
 import { useAuth } from '@/contexts/auth-context';
 import { env } from '@/config/env';
-import { getImpersonationToken } from '@/app/lib/impersonation-storage';
 
 dayjs.extend(utc);
 
@@ -48,11 +47,6 @@ function buildAuthHeaders(user: { id_token?: string } | null | undefined): Recor
     headers['X-API-Key'] = env.devApiKey;
   } else if (user?.id_token) {
     headers['Authorization'] = `Bearer ${user.id_token}`;
-  }
-
-  const impToken = getImpersonationToken();
-  if (impToken) {
-    headers['X-Impersonation-Token'] = impToken;
   }
 
   return headers;
