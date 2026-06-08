@@ -26,11 +26,18 @@ export default async function Layout({
     <ProtectedRoute requireAuth={true}>
       <UserProvider>
         <TeamProvider>
-          <div style={{ overflow: 'hidden', height: '100vh' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              height: '100vh',
+            }}
+          >
             <header className="desktop-only-nav">
               <NavAppBar lng={lng} />
             </header>
-            <main>
+            <main style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
               <SuperAdminGuard lng={lng}>
                 <AdminLayout params={{ lng }}>{children}</AdminLayout>
               </SuperAdminGuard>

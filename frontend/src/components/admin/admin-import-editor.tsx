@@ -807,8 +807,6 @@ function ScheduleGrid({
   shifts: ImportShiftPreview[];
   workerLabel: string;
 }) {
-  const [scheduleMonth, setScheduleMonth] = useState('');
-
   const grid: Record<string, Record<string, string[]>> = {};
   let minDate: dayjs.Dayjs | null = null;
   let maxDate: dayjs.Dayjs | null = null;
@@ -825,13 +823,12 @@ function ScheduleGrid({
 
   const workers = Object.keys(grid).sort();
 
+  // Initialize month from data — derive from minDate before any early returns
+  const initialMonth = minDate ? minDate.format('YYYY-MM') : '';
+  const [scheduleMonth, setScheduleMonth] = useState(initialMonth);
+
   if (!minDate || !maxDate || workers.length === 0) {
     return <p className="py-4 text-center text-sm text-muted-foreground">No schedule data</p>;
-  }
-
-  if (!scheduleMonth) {
-    setScheduleMonth(minDate.format('YYYY-MM'));
-    return null;
   }
 
   const current = dayjs.utc(scheduleMonth + '-01');
