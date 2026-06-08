@@ -42,17 +42,19 @@ test.describe('Import Editor — Save', () => {
     // Wait for editor to load
     await page.waitForSelector('[data-testid="import-merge-btn"]', { timeout: 10000 });
 
-    // Find Alice's name cell and double-click to edit
-    // The EditableCell component makes cells editable on double-click
-    const aliceCell = page.locator('td:has-text("Alice")').first();
-    await aliceCell.dblclick();
+    // Find Alice's row and click the EditableCell display span to enter edit mode
+    const aliceRow = page.locator('[data-testid="import-editor-member-gen-alice"]');
+    await expect(aliceRow).toBeVisible();
 
-    // Type new name
-    const input = page.locator('input').first();
-    await input.fill('Alice Updated');
+    const nameCell = aliceRow.locator('[data-testid="editable-cell-gen-alice-name"]');
+    await nameCell.click();
 
-    // Press Enter to commit
-    await input.press('Enter');
+    // The EditableCell replaces the span with an input — fill it
+    const nameInput = aliceRow.locator('[data-testid="editable-cell-gen-alice-name"] input');
+    // After clicking, the span is replaced by an Input component — use the row's input
+    const editingInput = aliceRow.locator('input').first();
+    await editingInput.fill('Alice Updated');
+    await editingInput.press('Enter');
 
     // Wait for auto-save (the status text should show "All changes saved")
     await page.waitForFunction(
@@ -66,9 +68,11 @@ test.describe('Import Editor — Save', () => {
     await page.reload();
     await page.waitForLoadState('domcontentloaded');
 
-    // Verify Alice's name is still "Alice Updated"
-    const updatedCell = page.locator('td:has-text("Alice Updated")');
-    await expect(updatedCell.first()).toBeVisible({ timeout: 5000 });
+    // Verify Alice's name is still "Alice Updated" via the EditableCell
+    const updatedRow = page.locator('[data-testid="import-editor-member-gen-alice"]');
+    await expect(updatedRow).toBeVisible({ timeout: 5000 });
+    const updatedCell = updatedRow.locator('[data-testid="editable-cell-gen-alice-name"]');
+    await expect(updatedCell).toContainText('Alice Updated');
 
     console.log('✅ Editor auto-save: name change persisted');
   });

@@ -447,7 +447,10 @@ export default function AdminImportEditor({ lng, importId }: Props) {
               </TableHeader>
               <TableBody>
                 {visibleMembers.map((m) => (
-                  <TableRow key={m.generatedId}>
+                  <TableRow
+                    key={m.generatedId}
+                    data-testid={`import-editor-member-${m.generatedId}`}
+                  >
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <EditableCell

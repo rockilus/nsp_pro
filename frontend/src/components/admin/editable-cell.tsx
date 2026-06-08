@@ -229,6 +229,7 @@ export default function EditableCell({
         }
       }}
       className={`inline-flex cursor-pointer items-center gap-1 rounded px-1 py-0.5 text-xs transition-colors hover:ring-1 hover:ring-ring/30 focus:ring-1 focus:ring-ring/50 focus:outline-none ${colorClass} ${className}`}
+      data-testid={`editable-cell-${entityId}-${field}`}
       title={
         source === 'default'
           ? 'Default value — not found in file. Click to edit.'
