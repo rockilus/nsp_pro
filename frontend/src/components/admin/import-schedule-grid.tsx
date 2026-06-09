@@ -59,7 +59,9 @@ export default function ImportScheduleGrid({
     const dateKey = d.format('YYYY-MM-DD');
     if (!grid[a.workerName]) grid[a.workerName] = {};
     if (!grid[a.workerName][dateKey]) grid[a.workerName][dateKey] = [];
-    grid[a.workerName][dateKey].push(a.shiftCode);
+    // Existing assignments may not carry a shiftCode — fall back to an empty string
+    // to avoid crashing when rendering the badge later.
+    grid[a.workerName][dateKey].push(a.shiftCode ?? '');
   }
 
   const workers = Object.keys(grid).sort();

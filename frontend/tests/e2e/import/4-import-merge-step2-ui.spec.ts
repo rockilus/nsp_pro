@@ -13,6 +13,10 @@ import { test, expect } from '@playwright/test';
 import { randomUUID } from 'crypto';
 import { ImportMergeTestBase } from '../../utils/import-merge-test-base';
 import { testConfig } from '../../utils/test-config';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 // ── Generated IDs from test base preview data ────────────────────────────────
 const ALICE_ID = 'gen-alice';
@@ -368,15 +372,56 @@ test.describe('AdminImportMergeStep2 — Schedule Grid', () => {
     expect(count).toBeGreaterThan(0);
   });
 
-  test('"View Existing Schedule" dialog shows existing team assignments', async ({ page }) => {
+  test('"View Existing Schedule" dialog shows existing team assignments', async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const testBase = testBasesMap.get(testRunId)!;
+    const team = testBase.getTestTeam()!;
+    const db = testBase['dbUtils'];
+
+    const workers = testBase.getExistingWorkers();
+    const shifts = testBase.getExistingShifts();
+    const aliceWorker = workers[0]; // Alice Worker
+    const morningShift = shifts[0]; // Morning Shift
+
+    // Create + validate schedule, add demand, re-validate, then create assignment.
+    const schedule = await db.createSchedule(team.teamId);
+    await db.validateSchedule(schedule.id, team.teamId);
+
+    const now = new Date();
+    const targetDate = dayjs.utc(
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`,
+    );
+    await db.createShiftDemand({
+      teamId: team.teamId,
+      shiftId: morningShift.id,
+      date: targetDate,
+      count: 1,
+      source: 'manual',
+    });
+
+    await db.validateSchedule(schedule.id, team.teamId);
+
+    await db.createAssignmentAndRecurrence(
+      {
+        teamId: team.teamId,
+        workerId: aliceWorker.id,
+        shiftId: morningShift.id,
+        date: targetDate,
+        fixed: false,
+        scheduleId: schedule.id,
+      },
+      null,
+    );
+
+    // Open the dialog — it should show the assignment
     await page.locator('[data-testid="merge-view-existing-schedule"]').click();
 
     const dialog = page.locator('[data-testid="full-table-dialog-schedule"]');
     await expect(dialog).toBeVisible({ timeout: 5000 });
 
-    // The dialog should contain a schedule grid (either with data or "no existing" message)
-    // Wait for load
-    await page.waitForTimeout(1500);
+    await expect(dialog).toContainText('Alice Worker', { timeout: 5000 });
   });
 
   test('should switch to "Filter by period" and show date inputs', async ({ page }) => {

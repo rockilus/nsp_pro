@@ -355,13 +355,18 @@ export class ImportMergeTestBase {
     const year = now.getFullYear();
     const month = now.getMonth();
 
-    const day1 = Date.UTC(year, month, 1) / 1000;
-    const day2 = Date.UTC(year, month, 2) / 1000;
-    const day3 = Date.UTC(year, month, 3) / 1000;
-    const day5 = Date.UTC(year, month, 5) / 1000;
-    const day7 = Date.UTC(year, month, 7) / 1000;
+    // Spread assignments across 3 months so the schedule grid has navigable months
+    // prevMonth: assignments in the previous month
+    // currMonth: assignments in the current month
+    // nextMonth: assignments in the next month
+    const currDay1 = Date.UTC(year, month, 1) / 1000;
+    const currDay2 = Date.UTC(year, month, 2) / 1000;
+    const currDay5 = Date.UTC(year, month, 5) / 1000;
+    const currDay7 = Date.UTC(year, month, 7) / 1000;
+    const prevDay = Date.UTC(year, month - 1, 15) / 1000;
+    const nextDay = Date.UTC(year, month + 1, 10) / 1000;
 
-    const startDate = day1;
+    const startDate = currDay1;
 
     const aliceId = 'gen-alice';
     const bobId = 'gen-bob';
@@ -463,8 +468,8 @@ export class ImportMergeTestBase {
           workerName: 'Alice',
           workerId: aliceId,
           requestType: 'leave',
-          startDate: day7,
-          endDate: day7,
+          startDate: currDay7,
+          endDate: currDay7,
           shiftCode: 'leave',
           status: 'approved',
           fulfillment: 'fulfilled',
@@ -473,11 +478,24 @@ export class ImportMergeTestBase {
         },
       ],
       assignments: [
+        // Previous month: 1 assignment so prev-month navigation is available
+        {
+          generatedId: 'gen-asgn-prev',
+          workerName: 'Alice',
+          workerId: aliceId,
+          date: prevDay,
+          shiftCode: 'MS',
+          shiftId: morningId,
+          fixed: false,
+          source: 'manual',
+          warnings: [],
+        },
+        // Current month: core assignments
         {
           generatedId: 'gen-asgn-1',
           workerName: 'Alice',
           workerId: aliceId,
-          date: day1,
+          date: currDay1,
           shiftCode: 'MS',
           shiftId: morningId,
           fixed: false,
@@ -488,7 +506,7 @@ export class ImportMergeTestBase {
           generatedId: 'gen-asgn-2',
           workerName: 'Bob',
           workerId: bobId,
-          date: day1,
+          date: currDay1,
           shiftCode: 'MS',
           shiftId: morningId,
           fixed: false,
@@ -499,7 +517,7 @@ export class ImportMergeTestBase {
           generatedId: 'gen-asgn-3',
           workerName: 'Alice',
           workerId: aliceId,
-          date: day2,
+          date: currDay2,
           shiftCode: 'NS',
           shiftId: nightId,
           fixed: false,
@@ -510,7 +528,7 @@ export class ImportMergeTestBase {
           generatedId: 'gen-asgn-4',
           workerName: 'Charlie',
           workerId: charlieId,
-          date: day2,
+          date: currDay2,
           shiftCode: 'MS',
           shiftId: morningId,
           fixed: false,
@@ -521,7 +539,7 @@ export class ImportMergeTestBase {
           generatedId: 'gen-asgn-5',
           workerName: 'Bob',
           workerId: bobId,
-          date: day3,
+          date: currDay5,
           shiftCode: 'NS',
           shiftId: nightId,
           fixed: false,
@@ -532,9 +550,21 @@ export class ImportMergeTestBase {
           generatedId: 'gen-asgn-6',
           workerName: 'Charlie',
           workerId: charlieId,
-          date: day5,
+          date: currDay5,
           shiftCode: 'NS',
           shiftId: nightId,
+          fixed: false,
+          source: 'manual',
+          warnings: [],
+        },
+        // Next month: 1 assignment so next-month navigation is available
+        {
+          generatedId: 'gen-asgn-next',
+          workerName: 'Bob',
+          workerId: bobId,
+          date: nextDay,
+          shiftCode: 'MS',
+          shiftId: morningId,
           fixed: false,
           source: 'manual',
           warnings: [],
