@@ -105,15 +105,15 @@ test.describe('AdminImportMergeStep2 — Members', () => {
   }) => {
     // Alice matches existing "Alice Worker" by name → merge_into
     const aliceAction = page.locator(`[data-testid="merge-worker-action-${ALICE_ID}"]`);
-    await expect(aliceAction).toHaveValue('merge_into');
+    await expect(aliceAction).toHaveAttribute('data-action', 'merge_into');
 
     // Bob has no match → add_new
     const bobAction = page.locator(`[data-testid="merge-worker-action-${BOB_ID}"]`);
-    await expect(bobAction).toHaveValue('add_new');
+    await expect(bobAction).toHaveAttribute('data-action', 'add_new');
 
     // Charlie has no match → add_new
     const charlieAction = page.locator(`[data-testid="merge-worker-action-${CHARLIE_ID}"]`);
-    await expect(charlieAction).toHaveValue('add_new');
+    await expect(charlieAction).toHaveAttribute('data-action', 'add_new');
   });
 
   test('should color-code rows: green=add_new, orange=merge_into, red=skip', async ({ page }) => {
@@ -128,7 +128,8 @@ test.describe('AdminImportMergeStep2 — Members', () => {
     // Change Bob from add_new to skip
     const bobAction = page.locator(`[data-testid="merge-worker-action-${BOB_ID}"]`);
     await bobAction.click();
-    await page.locator('[data-testid="merge-worker-action-gen-bob"]').selectOption('skip');
+    await page.locator('[role="option"]', { hasText: 'Skip' }).click();
+    await page.waitForTimeout(200);
 
     const bobRow = page.locator(`[data-testid="merge-worker-row-${BOB_ID}"]`);
     await expect(bobRow).toHaveClass(getActionBgClass('skip'));
@@ -142,7 +143,8 @@ test.describe('AdminImportMergeStep2 — Members', () => {
     // Change Bob to merge_into — target dropdown should appear
     const bobAction = page.locator(`[data-testid="merge-worker-action-${BOB_ID}"]`);
     await bobAction.click();
-    await page.locator('[data-testid="merge-worker-action-gen-bob"]').selectOption('merge_into');
+    await page.locator('[role="option"]', { hasText: 'Merge into' }).click();
+    await page.waitForTimeout(200);
 
     const bobTarget = page.locator(`[data-testid="merge-target-worker-${BOB_ID}"]`);
     await expect(bobTarget).toBeVisible();
@@ -207,11 +209,11 @@ test.describe('AdminImportMergeStep2 — Shifts', () => {
   }) => {
     // Morning matches existing "Morning Shift" by acronym MS → merge_into
     const morningAction = page.locator(`[data-testid="merge-shift-action-${MORNING_ID}"]`);
-    await expect(morningAction).toHaveValue('merge_into');
+    await expect(morningAction).toHaveAttribute('data-action', 'merge_into');
 
     // Night has no match → add_new
     const nightAction = page.locator(`[data-testid="merge-shift-action-${NIGHT_ID}"]`);
-    await expect(nightAction).toHaveValue('add_new');
+    await expect(nightAction).toHaveAttribute('data-action', 'add_new');
   });
 
   test('should color-code rows correctly', async ({ page }) => {
@@ -268,7 +270,7 @@ test.describe('AdminImportMergeStep2 — Requests', () => {
 
   test('should default to add_new with green background', async ({ page }) => {
     const requestAction = page.locator(`[data-testid="merge-request-action-${REQUEST_ID}"]`);
-    await expect(requestAction).toHaveValue('add_new');
+    await expect(requestAction).toHaveAttribute('data-action', 'add_new');
 
     const requestRow = page.locator(`[data-testid="merge-request-row-${REQUEST_ID}"]`);
     await expect(requestRow).toHaveClass(getActionBgClass('add_new'));
@@ -277,7 +279,8 @@ test.describe('AdminImportMergeStep2 — Requests', () => {
   test('should change color when action is set to skip', async ({ page }) => {
     const requestAction = page.locator(`[data-testid="merge-request-action-${REQUEST_ID}"]`);
     await requestAction.click();
-    await page.locator(`[data-testid="merge-request-action-${REQUEST_ID}"]`).selectOption('skip');
+    await page.locator('[role="option"]', { hasText: 'Skip' }).click();
+    await page.waitForTimeout(200);
 
     const requestRow = page.locator(`[data-testid="merge-request-row-${REQUEST_ID}"]`);
     await expect(requestRow).toHaveClass(getActionBgClass('skip'));
@@ -287,7 +290,8 @@ test.describe('AdminImportMergeStep2 — Requests', () => {
     // Skip Alice — her request should cascade to skipped state
     const aliceAction = page.locator(`[data-testid="merge-worker-action-${ALICE_ID}"]`);
     await aliceAction.click();
-    await page.locator(`[data-testid="merge-worker-action-${ALICE_ID}"]`).selectOption('skip');
+    await page.locator('[role="option"]', { hasText: 'Skip' }).click();
+    await page.waitForTimeout(200);
 
     // The request row should now show cascade-skipped styling (red + line-through)
     const requestRow = page.locator(`[data-testid="merge-request-row-${REQUEST_ID}"]`);
@@ -394,9 +398,7 @@ test.describe('AdminImportMergeStep2 — Schedule Grid', () => {
     // Skip Alice
     const aliceAction = page.locator(`[data-testid="merge-worker-action-${ALICE_ID}"]`);
     await aliceAction.click();
-    await page.locator(`[data-testid="merge-worker-action-${ALICE_ID}"]`).selectOption('skip');
-
-    // Wait for the UI to update
+    await page.locator('[role="option"]', { hasText: 'Skip' }).click();
     await page.waitForTimeout(500);
 
     // Some cells should now have red background (skip style)
@@ -410,9 +412,7 @@ test.describe('AdminImportMergeStep2 — Schedule Grid', () => {
     // Skip Night shift
     const nightAction = page.locator(`[data-testid="merge-shift-action-${NIGHT_ID}"]`);
     await nightAction.click();
-    await page.locator(`[data-testid="merge-shift-action-${NIGHT_ID}"]`).selectOption('skip');
-
-    // Wait for the UI to update
+    await page.locator('[role="option"]', { hasText: 'Skip' }).click();
     await page.waitForTimeout(500);
 
     // Some cells should now have red background (skip style)

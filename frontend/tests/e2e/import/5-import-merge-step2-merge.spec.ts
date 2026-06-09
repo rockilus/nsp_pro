@@ -87,11 +87,14 @@ async function setWorkerAction(
   generatedId: string,
   action: 'add_new' | 'merge_into' | 'skip',
 ) {
+  const actionLabel: Record<string, string> = {
+    add_new: 'Add new',
+    merge_into: 'Merge into',
+    skip: 'Skip',
+  };
   const el = page.locator(`[data-testid="merge-worker-action-${generatedId}"]`);
   await el.click();
-  // Use the same locator with selectOption
-  await page.locator(`[data-testid="merge-worker-action-${generatedId}"]`).selectOption(action);
-  // small wait for state update
+  await page.locator('[role="option"]', { hasText: actionLabel[action] }).click();
   await page.waitForTimeout(200);
 }
 
@@ -103,9 +106,14 @@ async function setShiftAction(
   generatedId: string,
   action: 'add_new' | 'merge_into' | 'skip',
 ) {
+  const actionLabel: Record<string, string> = {
+    add_new: 'Add new',
+    merge_into: 'Merge into',
+    skip: 'Skip',
+  };
   const el = page.locator(`[data-testid="merge-shift-action-${generatedId}"]`);
   await el.click();
-  await page.locator(`[data-testid="merge-shift-action-${generatedId}"]`).selectOption(action);
+  await page.locator('[role="option"]', { hasText: actionLabel[action] }).click();
   await page.waitForTimeout(200);
 }
 

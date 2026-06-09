@@ -521,6 +521,7 @@ export default function AdminImportMergeStep2({
                           <SelectTrigger
                             className="h-8 w-32"
                             data-testid={`merge-worker-action-${m.generatedId}`}
+                            data-action={action}
                           >
                             <SelectValue />
                           </SelectTrigger>
@@ -630,6 +631,7 @@ export default function AdminImportMergeStep2({
                           <SelectTrigger
                             className="h-8 w-32"
                             data-testid={`merge-shift-action-${s.generatedId}`}
+                            data-action={action}
                           >
                             <SelectValue />
                           </SelectTrigger>
@@ -738,6 +740,7 @@ export default function AdminImportMergeStep2({
                               <SelectTrigger
                                 className="h-8 w-32"
                                 data-testid={`merge-request-action-${r.generatedId}`}
+                                data-action={action}
                               >
                                 <SelectValue />
                               </SelectTrigger>
