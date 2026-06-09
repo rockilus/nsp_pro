@@ -147,7 +147,8 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
   const pageSize = 30;
   // ── Data state ──
   const [data, setData] = useState<PaginatedTeamsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // ── Selection ──
   const [selectedTeamId, setSelectedTeamId] = useState('');
@@ -179,7 +180,10 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
     let cancelled = false;
 
     async function fetchTeams() {
-      setLoading(true);
+      if (initialLoad) {
+        setInitialLoad(true);
+      }
+      setFetching(true);
       setError(null);
       try {
         const queryParams: TeamsQueryParams = { page, page_size: pageSize };
@@ -199,11 +203,17 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
         const resp = await fetch(`${env.apiUrl}/admin/teams?${qs.toString()}`, { headers });
         if (!resp.ok) throw new Error('Failed to load teams');
         const json: PaginatedTeamsResponse = await resp.json();
-        if (!cancelled) setData(json);
+        if (!cancelled) {
+          setData(json);
+          setInitialLoad(false);
+        }
       } catch {
-        if (!cancelled) setError('Failed to load teams');
+        if (!cancelled) {
+          setError('Failed to load teams');
+          setInitialLoad(false);
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setFetching(false);
       }
     }
 
@@ -211,7 +221,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
     return () => {
       cancelled = true;
     };
-  }, [debouncedFilters, page, user]);
+  }, [debouncedFilters, page, user, initialLoad]);
 
   // ── Resolve targets (unchanged logic) ──
   const handleResolve = useCallback(async () => {
@@ -305,7 +315,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
 
       {/* Team table */}
       <div className="mb-4 overflow-x-auto">
-        {loading ? (
+        {initialLoad ? (
           <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" />
             {t('loading_teams')}
@@ -316,52 +326,63 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
           </div>
         ) : (
           <>
-            <Table data-testid="merge-teams-table">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-10" />
-                  {COLUMNS.map((col) => (
-                    <TableHead key={col.key}>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs font-medium">{t(col.labelKey)}</span>
-                        <Input
-                          placeholder={t('search_teams')}
-                          value={filters[col.key] || ''}
-                          onChange={(e) => handleFilterChange(col.key, e.target.value)}
-                          className="h-7 min-w-[120px] text-xs"
-                          data-testid={`filter-${col.key}`}
-                        />
-                      </div>
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.items.map((row) => (
-                  <TableRow
-                    key={row.team_id}
-                    className={`cursor-pointer transition-colors hover:bg-muted/50 ${
-                      selectedTeamId === row.team_id ? 'bg-primary/10 hover:bg-primary/15' : ''
-                    }`}
-                    onClick={() => setSelectedTeamId(row.team_id)}
-                    data-testid={`team-row-${row.team_id}`}
-                  >
-                    <TableCell className="w-10">
-                      <Radio
-                        className={`size-4 ${
-                          selectedTeamId === row.team_id ? 'text-primary' : 'text-muted-foreground'
+            <div className="relative">
+              {fetching && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center rounded bg-background/50">
+                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                </div>
+              )}
+              <div className={fetching ? 'pointer-events-none opacity-60' : ''}>
+                <Table data-testid="merge-teams-table">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10" />
+                      {COLUMNS.map((col) => (
+                        <TableHead key={col.key}>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-xs font-medium">{t(col.labelKey)}</span>
+                            <Input
+                              placeholder={t('search_teams')}
+                              value={filters[col.key] || ''}
+                              onChange={(e) => handleFilterChange(col.key, e.target.value)}
+                              className="h-7 min-w-[120px] text-xs"
+                              data-testid={`filter-${col.key}`}
+                            />
+                          </div>
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.items.map((row) => (
+                      <TableRow
+                        key={row.team_id}
+                        className={`cursor-pointer transition-colors hover:bg-muted/50 ${
+                          selectedTeamId === row.team_id ? 'bg-primary/10 hover:bg-primary/15' : ''
                         }`}
-                      />
-                    </TableCell>
-                    {COLUMNS.map((col) => (
-                      <TableCell key={col.key} className="text-sm whitespace-nowrap">
-                        {col.accessor(row)}
-                      </TableCell>
+                        onClick={() => setSelectedTeamId(row.team_id)}
+                        data-testid={`team-row-${row.team_id}`}
+                      >
+                        <TableCell className="w-10">
+                          <Radio
+                            className={`size-4 ${
+                              selectedTeamId === row.team_id
+                                ? 'text-primary'
+                                : 'text-muted-foreground'
+                            }`}
+                          />
+                        </TableCell>
+                        {COLUMNS.map((col) => (
+                          <TableCell key={col.key} className="text-sm whitespace-nowrap">
+                            {col.accessor(row)}
+                          </TableCell>
+                        ))}
+                      </TableRow>
                     ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
 
             {showPagination && (
               <div className="mt-3 flex items-center justify-between">
