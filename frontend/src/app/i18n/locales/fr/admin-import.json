@@ -100,5 +100,15 @@
   "shifts_skipped": "Quarts ignorés",
   "requests_created": "Demandes créées",
   "requests_skipped": "Demandes ignorées",
-  "assignments_created": "Affectations créées"
+  "assignments_created": "Affectations créées",
+  "team_name": "Nom de l'équipe",
+  "owner_name": "Nom du propriétaire",
+  "owner_email": "Email du propriétaire",
+  "team_id": "ID Équipe",
+  "owner_id": "ID Propriétaire",
+  "search_teams": "Rechercher des équipes...",
+  "no_teams_found": "Aucune équipe trouvée",
+  "page_x_of_y": "Page {current} sur {total}",
+  "loading_teams": "Chargement des équipes...",
+  "select_team_row": "Sélectionner cette équipe"
 }

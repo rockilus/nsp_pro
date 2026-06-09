@@ -94,7 +94,9 @@ from shared.schemas.dto.swap import (
     SwapRequestDTO,
 )
 from shared.schemas.dto.team import (
+    AdminTeamRowDTO,
     MembershipForTeamWithMembershipDTO,
+    PaginatedTeamsResponse,
     TeamDTO,
     TeamWithMembershipDTO,
 )
@@ -185,7 +187,9 @@ __all__ = [
     "StatsHeaderDTO",
     "StatsOptionsDTO",
     "StatsValueDTO",
+    "AdminTeamRowDTO",
     "MembershipForTeamWithMembershipDTO",
+    "PaginatedTeamsResponse",
     "TeamDTO",
     "TeamGenerationSettingsDTO",
     "TeamWithMembershipDTO",

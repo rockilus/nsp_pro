@@ -2,11 +2,12 @@ import inspect
 import time
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from shared.logger import log_info
 from shared.schemas.core import Team
 from shared.schemas.dto import (
+    PaginatedTeamsResponse,
     TeamDTO,
     TeamGenerationSettingsDTO,
     TeamWithMembershipDTO,
@@ -60,6 +61,52 @@ async def create_team(
         response = new_team.to_dto()
     except Exception as e:
         log_info("Failed to create team")
+        handle_routes_errors(e)
+    return response
+
+
+# ── Admin routes ──────────────────────────────────────────────────────────
+
+
+@router.get(
+    "/admin/teams",
+    response_model=PaginatedTeamsResponse,
+)
+async def get_all_teams_for_admin(
+    search_name: str | None = Query(None),
+    search_owner_name: str | None = Query(None),
+    search_owner_email: str | None = Query(None),
+    search_team_id: str | None = Query(None),
+    search_owner_id: str | None = Query(None),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(30, ge=1, le=100),
+    user_context: UserContext = Depends(get_user_context),
+    team_service: TeamService = Depends(get_team_service),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+) -> PaginatedTeamsResponse:
+    """Return all teams with owner info, paginated and filterable.
+
+    Intended for the admin import-merge team-selection step.
+    """
+    try:
+        if not await authz.check(
+            user_context.user_id,
+            action="admin",
+            resource_kind="admin",
+            resource_id="admin",
+        ):
+            raise NotAuthorizedError("Super admin required to list all teams")
+        response = team_service.get_all_teams_for_admin(
+            search_name=search_name,
+            search_owner_name=search_owner_name,
+            search_owner_email=search_owner_email,
+            search_team_id=search_team_id,
+            search_owner_id=search_owner_id,
+            page=page,
+            page_size=page_size,
+        )
+    except Exception as e:
+        log_info("Failed to get admin teams list")
         handle_routes_errors(e)
     return response
 

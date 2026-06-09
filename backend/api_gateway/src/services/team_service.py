@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import List
+from typing import Dict, List
 
 from shared.schemas.core import (
     MembershipForTeamWithMembership,
@@ -10,7 +10,11 @@ from shared.schemas.core import (
     TeamWithMembership,
     UserWithMembership,
 )
-from shared.schemas.dto import TeamGenerationSettingsDTO
+from shared.schemas.dto import (
+    AdminTeamRowDTO,
+    PaginatedTeamsResponse,
+    TeamGenerationSettingsDTO,
+)
 
 from src.services.base_service import BaseService
 from src.services.notification_builders import (
@@ -34,6 +38,134 @@ class TeamService(BaseService):
         self.shift_service = shift_service
         self.team_membership_service = team_membership_service
         self.notification_service = notification_service
+
+    def get_all_teams_for_admin(
+        self,
+        search_name: str | None = None,
+        search_owner_name: str | None = None,
+        search_owner_email: str | None = None,
+        search_team_id: str | None = None,
+        search_owner_id: str | None = None,
+        page: int = 1,
+        page_size: int = 30,
+    ) -> PaginatedTeamsResponse:
+        """Return a paginated, filterable list of all teams for the admin merge step.
+
+        Filtering is applied BEFORE pagination on the full dataset.  Owner info
+        (names, emails, IDs) is aggregated from team memberships with role=owner.
+        Owner-level filters (name, email, ID) work by first identifying matching
+        owner user IDs, then filtering teams by those IDs — this means a team
+        with multiple owners matches whenever *any* owner satisfies the filter.
+        """
+        skip = (page - 1) * page_size
+
+        # ── Build the team-level MongoDB query ──
+        team_query: Dict = {}
+        if search_name:
+            team_query["name"] = {"$regex": search_name, "$options": "i"}
+        if search_team_id:
+            team_query["_id"] = {"$regex": search_team_id, "$options": "i"}
+
+        # Owner filters require gathering candidate owner user IDs first.
+        owner_candidate_ids: set[str] | None = None
+        if search_owner_name or search_owner_email or search_owner_id:
+            user_query: Dict = {}
+            if search_owner_id:
+                user_query["_id"] = {
+                    "$regex": search_owner_id,
+                    "$options": "i",
+                }
+            if search_owner_name:
+                user_query["$or"] = [
+                    {
+                        "first_name": {
+                            "$regex": search_owner_name,
+                            "$options": "i",
+                        }
+                    },
+                    {
+                        "last_name": {
+                            "$regex": search_owner_name,
+                            "$options": "i",
+                        }
+                    },
+                ]
+            if search_owner_email:
+                user_query["email"] = {
+                    "$regex": search_owner_email,
+                    "$options": "i",
+                }
+
+            matching_users = self.collection.user_db.find_all(user_query)
+            owner_candidate_ids = {u.id for u in matching_users if u.id is not None}
+
+            # Find memberships for those users where role is owner
+            if owner_candidate_ids:
+                owner_memberships = self.collection.team_membership_db.find_all(
+                    {
+                        "user_id": {"$in": list(owner_candidate_ids)},
+                        "role": TeamMembershipRole.OWNER.value,
+                    }
+                )
+                owner_team_ids = {m.team_id for m in owner_memberships if m.team_id}
+                team_query["_id"] = {
+                    "$in": list(owner_team_ids),
+                    **(team_query.pop("_id") if "_id" in team_query else {}),
+                }
+            else:
+                # No matching users → empty result
+                return PaginatedTeamsResponse(
+                    items=[], total=0, page=page, page_size=page_size
+                )
+
+        # ── Fetch paginated teams ──
+        teams, total = self.collection.team_db.get_all_teams_paginated(
+            filters=team_query, skip=skip, limit=page_size
+        )
+
+        if not teams:
+            return PaginatedTeamsResponse(
+                items=[], total=total, page=page, page_size=page_size
+            )
+
+        # ── Gather all owners for these teams ──
+        team_ids = [t.id for t in teams]
+        all_memberships = self.collection.team_membership_db.find_all(
+            {
+                "team_id": {"$in": team_ids},
+                "role": TeamMembershipRole.OWNER.value,
+            }
+        )
+        all_owner_user_ids = list({m.user_id for m in all_memberships})
+        all_owner_users = (
+            self.collection.user_db.get_users_by_ids(all_owner_user_ids)
+            if all_owner_user_ids
+            else []
+        )
+        user_by_id = {u.id: u for u in all_owner_users}
+
+        # ── Build row DTOs ──
+        rows: List[AdminTeamRowDTO] = []
+        for team in teams:
+            team_memberships = [m for m in all_memberships if m.team_id == team.id]
+            owner_users = [
+                user_by_id[m.user_id]
+                for m in team_memberships
+                if m.user_id in user_by_id
+            ]
+            rows.append(
+                AdminTeamRowDTO(
+                    team_id=team.id,
+                    team_name=team.name,
+                    owner_ids=[u.id for u in owner_users],
+                    owner_names=[f"{u.first_name} {u.last_name}" for u in owner_users],
+                    owner_emails=[u.email for u in owner_users],
+                )
+            )
+
+        return PaginatedTeamsResponse(
+            items=rows, total=total, page=page, page_size=page_size
+        )
 
     async def create_team(self, team_name: str, owner_id: str) -> TeamWithMembership:
         new_team = Team(

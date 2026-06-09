@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, Dict, List, Optional, Tuple
 
 from shared.database.interface import DatabaseInterface
 from shared.database.repositories.base import BaseRepository
@@ -42,8 +42,25 @@ class TeamRepository(BaseRepository[TeamSchema]):
         assert team_updated is not None
         return team_updated.to_core()
 
+    def get_all_teams_paginated(
+        self,
+        filters: Optional[Dict[str, Any]] = None,
+        skip: int = 0,
+        limit: int = 30,
+    ) -> Tuple[List[Team], int]:
+        """Get a paginated list of teams with optional filters.
+
+        Returns a tuple of (teams, total_count).
+        """
+        query = filters or {}
+        total = self.count(query)
+        teams = self.find_all(query, limit=limit, skip=skip)
+        return [team.to_core() for team in teams], total
+
     def delete_team(self, team_id: str) -> None:
         """Delete a team by its ID."""
         result = self.delete(team_id)
         if result is False:
-            raise Exception(f"Team with id {team_id} not found or already deleted")
+            raise Exception(
+                f"Team with id {team_id} not found or already deleted"
+            )

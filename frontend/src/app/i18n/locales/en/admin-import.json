@@ -100,5 +100,15 @@
   "shifts_skipped": "Shifts skipped",
   "requests_created": "Requests created",
   "requests_skipped": "Requests skipped",
-  "assignments_created": "Assignments created"
+  "assignments_created": "Assignments created",
+  "team_name": "Team Name",
+  "owner_name": "Owner Name",
+  "owner_email": "Owner Email",
+  "team_id": "Team ID",
+  "owner_id": "Owner ID",
+  "search_teams": "Search teams...",
+  "no_teams_found": "No teams found",
+  "page_x_of_y": "Page {current} of {total}",
+  "loading_teams": "Loading teams...",
+  "select_team_row": "Select this team"
 }
