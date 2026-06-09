@@ -190,23 +190,26 @@ function mapShift(api: ApiShift): ExistingShift {
   };
 }
 
-/** Raw shape returned by GET /assignments/teams/{team_id} */
+/** Raw shape returned by GET /assignments/teams/{team_id} (matches AssignmentDTO) */
 interface ApiAssignment {
   id: string;
-  workerName: string;
   workerId: string;
   date: number;
-  shiftCode: string;
   shiftId: string;
 }
 
-function mapAssignment(api: ApiAssignment): ScheduleGridAssignment {
+/** Resolve display fields from raw assignment + lookup maps of existing team data */
+function resolveAssignment(
+  raw: ApiAssignment,
+  workerNameMap: Map<string, string>,
+  shiftCodeMap: Map<string, string>,
+): ScheduleGridAssignment {
   return {
-    workerName: api.workerName,
-    workerId: api.workerId,
-    date: api.date,
-    shiftCode: api.shiftCode,
-    shiftId: api.shiftId,
+    workerName: workerNameMap.get(raw.workerId) ?? raw.workerId,
+    workerId: raw.workerId,
+    date: raw.date,
+    shiftCode: shiftCodeMap.get(raw.shiftId) ?? raw.shiftId,
+    shiftId: raw.shiftId,
   };
 }
 
@@ -270,13 +273,44 @@ export default function ImportMergeFullTableDialog({
           const now = dayjs.utc();
           const start = scheduleStartDate ?? now.startOf('year').unix();
           const end = scheduleEndDate ?? now.endOf('year').unix();
-          const url = `${env.apiUrl}/assignments/teams/${teamId}?start_date=${start}&end_date=${end}`;
-          const resp = await fetch(url, { headers });
-          if (!resp.ok) throw new Error(`Failed to load assignments: ${resp.status}`);
-          // Response is an object like { assignmentsRead: [...], assignmentsCreated: [...], ... }
-          const data = await resp.json();
-          const list: ApiAssignment[] = data.assignmentsRead ?? [];
-          setExistingAssignments(list.map(mapAssignment));
+
+          // Fetch assignments, workers, and shifts in parallel so we can
+          // resolve workerName + shiftCode for the schedule grid.
+          const [assignResp, workersResp, shiftsResp] = await Promise.all([
+            fetch(`${env.apiUrl}/assignments/teams/${teamId}?start_date=${start}&end_date=${end}`, {
+              headers,
+            }),
+            fetch(`${env.apiUrl}/workers/teams/${teamId}`, { headers }),
+            fetch(`${env.apiUrl}/shifts/teams/${teamId}`, { headers }),
+          ]);
+
+          if (!assignResp.ok) throw new Error(`Failed to load assignments: ${assignResp.status}`);
+
+          const data = await assignResp.json();
+          const rawAssignments: ApiAssignment[] = data.assignmentsRead ?? [];
+
+          // Build worker name lookup (ID -> name or acronym)
+          const workerNameMap = new Map<string, string>();
+          if (workersResp.ok) {
+            const workerJson: ApiWorker[] = await workersResp.json();
+            for (const w of workerJson) {
+              workerNameMap.set(w.id, w.name || w.acronym || w.id);
+            }
+          }
+
+          // Build shift code lookup (ID -> acronym or name)
+          const shiftCodeMap = new Map<string, string>();
+          if (shiftsResp.ok) {
+            const shiftJson: ApiShift[] = await shiftsResp.json();
+            for (const s of shiftJson) {
+              shiftCodeMap.set(s.id, s.acronym || s.name || s.id);
+            }
+          }
+
+          const resolved = rawAssignments.map((raw) =>
+            resolveAssignment(raw, workerNameMap, shiftCodeMap),
+          );
+          setExistingAssignments(resolved);
         } finally {
           setExistingAssignmentsLoading(false);
         }
