@@ -320,10 +320,6 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
             <Loader2 className="size-4 animate-spin" />
             {t('loading_teams')}
           </div>
-        ) : !data || data.items.length === 0 ? (
-          <div className="py-8 text-center text-sm text-muted-foreground">
-            {t('no_teams_found')}
-          </div>
         ) : (
           <>
             <div className="relative">
@@ -354,31 +350,44 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data.items.map((row) => (
-                      <TableRow
-                        key={row.team_id}
-                        className={`cursor-pointer transition-colors hover:bg-muted/50 ${
-                          selectedTeamId === row.team_id ? 'bg-primary/10 hover:bg-primary/15' : ''
-                        }`}
-                        onClick={() => setSelectedTeamId(row.team_id)}
-                        data-testid={`team-row-${row.team_id}`}
-                      >
-                        <TableCell className="w-10">
-                          <Radio
-                            className={`size-4 ${
-                              selectedTeamId === row.team_id
-                                ? 'text-primary'
-                                : 'text-muted-foreground'
-                            }`}
-                          />
+                    {!data || data.items.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={COLUMNS.length + 1}
+                          className="py-8 text-center text-sm text-muted-foreground"
+                        >
+                          {t('no_teams_found')}
                         </TableCell>
-                        {COLUMNS.map((col) => (
-                          <TableCell key={col.key} className="text-sm whitespace-nowrap">
-                            {col.accessor(row)}
-                          </TableCell>
-                        ))}
                       </TableRow>
-                    ))}
+                    ) : (
+                      data.items.map((row) => (
+                        <TableRow
+                          key={row.team_id}
+                          className={`cursor-pointer transition-colors hover:bg-muted/50 ${
+                            selectedTeamId === row.team_id
+                              ? 'bg-primary/10 hover:bg-primary/15'
+                              : ''
+                          }`}
+                          onClick={() => setSelectedTeamId(row.team_id)}
+                          data-testid={`team-row-${row.team_id}`}
+                        >
+                          <TableCell className="w-10">
+                            <Radio
+                              className={`size-4 ${
+                                selectedTeamId === row.team_id
+                                  ? 'text-primary'
+                                  : 'text-muted-foreground'
+                              }`}
+                            />
+                          </TableCell>
+                          {COLUMNS.map((col) => (
+                            <TableCell key={col.key} className="text-sm whitespace-nowrap">
+                              {col.accessor(row)}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
