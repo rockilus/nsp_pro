@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ArrowRight, Search, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Search, TriangleAlert } from 'lucide-react';
 import {
   type MergeAction,
   type MergeTargetWorker,
@@ -139,6 +139,9 @@ const ACTION_BG: Record<MergeAction, string> = {
   skip: 'bg-red-100 dark:bg-red-900/30',
 };
 
+/** Background for assignments outside the date filter range */
+const OUT_OF_RANGE_BG = 'bg-gray-200 dark:bg-gray-800/50 opacity-60';
+
 const ACTION_OPTIONS: { value: MergeAction; labelKey: string }[] = [
   { value: 'add_new', labelKey: 'action_add_new' },
   { value: 'merge_into', labelKey: 'action_merge_into' },
@@ -157,6 +160,14 @@ function getWorkerAction(
 function getShiftAction(shiftId: string, shiftMappings: ShiftMergeMapping[]): MergeAction | null {
   const m = shiftMappings.find((s) => s.generatedId === shiftId);
   return m?.action ?? null;
+}
+
+/** Check if a date falls outside the active period filter */
+function isOutOfRange(date: number, config: AssignmentMergeConfig): boolean {
+  if (config.includeAll) return false;
+  if (config.startDate != null && date < config.startDate) return true;
+  if (config.endDate != null && date > config.endDate) return true;
+  return false;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -185,6 +196,7 @@ export default function AdminImportMergeStep2({
   // Dialog state
   const [membersDialogOpen, setMembersDialogOpen] = useState(false);
   const [shiftsDialogOpen, setShiftsDialogOpen] = useState(false);
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
 
   // Mapping lookups
   const workerMap = useMemo(
@@ -204,19 +216,37 @@ export default function AdminImportMergeStep2({
     [assignments, validWorkers, validShifts, assignmentConfig],
   );
 
-  // Filtered assignments for the schedule grid
-  const filteredAssignments = useMemo(() => {
-    if (assignmentConfig.includeAll) {
-      return assignments.filter((a) => validWorkers.has(a.workerId) && validShifts.has(a.shiftId));
+  // Grid assignments: show ALL assignments (no date filtering, no cascade filtering)
+  // Background colors will distinguish included / excluded / out-of-range
+  const gridAssignments = useMemo(() => assignments, [assignments]);
+
+  // Compute date range from imported assignments for the existing schedule dialog
+  // (constrained to ≤ 365 days to match backend limit)
+  const scheduleDateRange = useMemo(() => {
+    if (assignments.length === 0) return { start: null, end: null };
+    let min = Infinity;
+    let max = -Infinity;
+    for (const a of assignments) {
+      if (a.date < min) min = a.date;
+      if (a.date > max) max = a.date;
     }
-    return assignments.filter((a) => {
-      if (!validWorkers.has(a.workerId)) return false;
-      if (!validShifts.has(a.shiftId)) return false;
-      if (assignmentConfig.startDate != null && a.date < assignmentConfig.startDate) return false;
-      if (assignmentConfig.endDate != null && a.date > assignmentConfig.endDate) return false;
-      return true;
-    });
-  }, [assignments, validWorkers, validShifts, assignmentConfig]);
+    // Clamp to max 365 days
+    const minDay = dayjs.unix(min).utc();
+    const maxDay = dayjs.unix(max).utc();
+    // Expand by 7 days on each side for context, but cap at 365 total
+    const rangeStart = minDay.subtract(7, 'day');
+    const rangeEnd = maxDay.add(7, 'day');
+    const totalDays = rangeEnd.diff(rangeStart, 'day');
+    if (totalDays > 365) {
+      // Center the 365-day window around the data midpoint
+      const mid = dayjs.unix((min + max) / 2).utc();
+      return {
+        start: mid.subtract(182, 'day').startOf('day').unix(),
+        end: mid.add(182, 'day').startOf('day').unix(),
+      };
+    }
+    return { start: rangeStart.startOf('day').unix(), end: rangeEnd.startOf('day').unix() };
+  }, [assignments]);
 
   // ── Worker mapping handler ──
   const handleWorkerAction = useCallback(
@@ -294,17 +324,24 @@ export default function AdminImportMergeStep2({
   );
 
   // ── Schedule grid cell color callback ──
+  // Returns a class based on: skip > out-of-range > merge_into > add_new
   const scheduleCellClass = useCallback(
-    (workerId: string, shiftId: string, _date: number) => {
+    (workerId: string, shiftId: string, date: number) => {
       const wAction = getWorkerAction(workerId, workerMappings);
       const sAction = getShiftAction(shiftId, shiftMappings);
-      // If either is skip, the assignment is excluded; we show "most severe" action
+      // If either is skip, the assignment is cascaded out — show skip style
       if (wAction === 'skip' || sAction === 'skip') return ACTION_BG.skip;
+      // If outside the date filter range, show out-of-range style
+      if (isOutOfRange(date, assignmentConfig)) return OUT_OF_RANGE_BG;
+      // If merging, show merge style
       if (wAction === 'merge_into' || sAction === 'merge_into') return ACTION_BG.merge_into;
       return ACTION_BG.add_new;
     },
-    [workerMappings, shiftMappings],
+    [workerMappings, shiftMappings, assignmentConfig],
   );
+
+  // ── Derivations for legend ──
+  const showOutOfRangeLegend = !assignmentConfig.includeAll;
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -323,6 +360,12 @@ export default function AdminImportMergeStep2({
         <span className="inline-block size-2.5 rounded-sm bg-red-400" />
         {t('legend_skipped') || 'Skipped'}
       </span>
+      {showOutOfRangeLegend && (
+        <span className="flex items-center gap-1">
+          <span className="inline-block size-2.5 rounded-sm bg-gray-400" />
+          {t('legend_out_of_range') || 'Out of range'}
+        </span>
+      )}
     </div>
   );
 
@@ -589,9 +632,20 @@ export default function AdminImportMergeStep2({
 
       {/* Assignments config + schedule grid */}
       <section className="rounded-lg border border-border bg-card">
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-          <Badge variant="default">{effectiveAssignments}</Badge>
-          <h2 className="text-sm font-semibold">{t('schedule_tab')}</h2>
+        <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <Badge variant="default">{effectiveAssignments}</Badge>
+            <h2 className="text-sm font-semibold">{t('schedule_tab')}</h2>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setScheduleDialogOpen(true)}
+            data-testid="merge-view-existing-schedule"
+          >
+            <Calendar className="mr-1 size-3.5" />
+            {t('view_existing_schedule') || 'View Existing Schedule'}
+          </Button>
         </div>
         <div className="space-y-3 p-3">
           <div className="flex items-center gap-3">
@@ -657,11 +711,11 @@ export default function AdminImportMergeStep2({
             </div>
           )}
 
-          {/* Schedule grid */}
-          {filteredAssignments.length > 0 && (
+          {/* Schedule grid — always show all assignments */}
+          {gridAssignments.length > 0 && (
             <div className="pt-2">
               <ImportScheduleGrid
-                assignments={filteredAssignments}
+                assignments={gridAssignments}
                 shifts={shifts.map((s) => ({ acronym: s.acronym, color: s.color }))}
                 workerLabel={t('worker')}
                 cellClassName={scheduleCellClass}
@@ -722,6 +776,18 @@ export default function AdminImportMergeStep2({
           duty: s.duty,
           mandatoryRest: s.mandatoryRest,
         }))}
+      />
+
+      {/* Existing schedule dialog */}
+      <ImportMergeFullTableDialog
+        lng={lng}
+        open={scheduleDialogOpen}
+        onOpenChange={setScheduleDialogOpen}
+        type="schedule"
+        teamId={selectedTeamId}
+        importedShiftDefs={shifts.map((s) => ({ acronym: s.acronym, color: s.color }))}
+        scheduleStartDate={scheduleDateRange.start}
+        scheduleEndDate={scheduleDateRange.end}
       />
     </div>
   );

@@ -13,8 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { env } from '@/config/env';
+import ImportScheduleGrid from './import-schedule-grid';
+import type { ScheduleGridAssignment } from './import-schedule-grid';
 
 dayjs.extend(utc);
 
@@ -74,10 +77,15 @@ interface Props {
   lng: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  type: 'members' | 'shifts';
+  type: 'members' | 'shifts' | 'schedule';
   teamId: string | null;
   importedMembers?: MemberFull[];
   importedShifts?: ShiftFull[];
+  /** When type === 'schedule', the imported shift definitions for the grid */
+  importedShiftDefs?: { acronym: string; color: string }[];
+  /** Date range for fetching existing assignments (max 365 days). Defaults to current year. */
+  scheduleStartDate?: number | null;
+  scheduleEndDate?: number | null;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -182,6 +190,26 @@ function mapShift(api: ApiShift): ExistingShift {
   };
 }
 
+/** Raw shape returned by GET /assignments/teams/{team_id} */
+interface ApiAssignment {
+  id: string;
+  workerName: string;
+  workerId: string;
+  date: number;
+  shiftCode: string;
+  shiftId: string;
+}
+
+function mapAssignment(api: ApiAssignment): ScheduleGridAssignment {
+  return {
+    workerName: api.workerName,
+    workerId: api.workerId,
+    date: api.date,
+    shiftCode: api.shiftCode,
+    shiftId: api.shiftId,
+  };
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function ImportMergeFullTableDialog({
@@ -192,14 +220,23 @@ export default function ImportMergeFullTableDialog({
   teamId,
   importedMembers = [],
   importedShifts = [],
+  importedShiftDefs = [],
+  scheduleStartDate,
+  scheduleEndDate,
 }: Props) {
   const { t } = useTranslation(lng, 'admin-import');
   const { user } = useAuth();
 
-  // Internal fetch state for existing team data
+  // Internal fetch state for existing team data (members/shifts)
   const [existingWorkers, setExistingWorkers] = useState<ExistingWorker[] | undefined>(undefined);
   const [existingShifts, setExistingShifts] = useState<ExistingShift[] | undefined>(undefined);
   const [fetchError, setFetchError] = useState<string | null>(null);
+
+  // Internal fetch state for existing schedule (assignments)
+  const [existingAssignments, setExistingAssignments] = useState<
+    ScheduleGridAssignment[] | undefined
+  >(undefined);
+  const [existingAssignmentsLoading, setExistingAssignmentsLoading] = useState(false);
 
   const fetchExistingData = useCallback(async () => {
     if (!teamId) {
@@ -221,18 +258,35 @@ export default function ImportMergeFullTableDialog({
         if (!resp.ok) throw new Error(`Failed to load workers: ${resp.status}`);
         const json: ApiWorker[] = await resp.json();
         setExistingWorkers(json.map(mapWorker));
-      } else {
+      } else if (type === 'shifts') {
         const resp = await fetch(`${env.apiUrl}/shifts/teams/${teamId}`, { headers });
         if (!resp.ok) throw new Error(`Failed to load shifts: ${resp.status}`);
         const json: ApiShift[] = await resp.json();
         setExistingShifts(json.map(mapShift));
+      } else if (type === 'schedule') {
+        setExistingAssignmentsLoading(true);
+        try {
+          // Use passed-in date range or default to current year (start_date/end_date are required query params)
+          const now = dayjs.utc();
+          const start = scheduleStartDate ?? now.startOf('year').unix();
+          const end = scheduleEndDate ?? now.endOf('year').unix();
+          const url = `${env.apiUrl}/assignments/teams/${teamId}?start_date=${start}&end_date=${end}`;
+          const resp = await fetch(url, { headers });
+          if (!resp.ok) throw new Error(`Failed to load assignments: ${resp.status}`);
+          // Response is an object like { assignmentsRead: [...], assignmentsCreated: [...], ... }
+          const data = await resp.json();
+          const list: ApiAssignment[] = data.assignmentsRead ?? [];
+          setExistingAssignments(list.map(mapAssignment));
+        } finally {
+          setExistingAssignmentsLoading(false);
+        }
       }
     } catch (err) {
       setFetchError(err instanceof Error ? err.message : 'Failed to load');
       setExistingWorkers([]);
       setExistingShifts([]);
     }
-  }, [teamId, type, user]);
+  }, [teamId, type, user, scheduleStartDate, scheduleEndDate]);
 
   // Fetch when dialog opens
   useEffect(() => {
@@ -244,8 +298,52 @@ export default function ImportMergeFullTableDialog({
   const titleText =
     type === 'members'
       ? t('full_table_members_title') || 'All Members — Imported vs Existing'
-      : t('full_table_shifts_title') || 'All Shifts — Imported vs Existing';
+      : type === 'shifts'
+        ? t('full_table_shifts_title') || 'All Shifts — Imported vs Existing'
+        : t('existing_schedule_title') || 'Existing Team Schedule';
 
+  // ── Schedule type: show existing assignments grid ──
+  if (type === 'schedule') {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-h-[90vh] max-w-[95vw] overflow-auto sm:max-w-[85vw]">
+          <DialogHeader>
+            <DialogTitle>{titleText}</DialogTitle>
+          </DialogHeader>
+
+          {existingAssignmentsLoading && (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="size-6 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-sm text-muted-foreground">
+                {t('loading') || 'Loading...'}
+              </span>
+            </div>
+          )}
+
+          {fetchError && !existingAssignmentsLoading && (
+            <div className="py-4 text-center text-sm text-destructive">{fetchError}</div>
+          )}
+
+          {!existingAssignmentsLoading &&
+            !fetchError &&
+            existingAssignments &&
+            (existingAssignments.length === 0 ? (
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                {t('no_existing_assignments') || 'No existing assignments in this team.'}
+              </div>
+            ) : (
+              <ImportScheduleGrid
+                assignments={existingAssignments}
+                shifts={importedShiftDefs}
+                workerLabel={t('worker')}
+              />
+            ))}
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // ── Members / Shifts type ──
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-[95vw] overflow-auto sm:max-w-[85vw]">

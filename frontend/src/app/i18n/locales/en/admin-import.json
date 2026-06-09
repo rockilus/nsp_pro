@@ -121,5 +121,9 @@
   "no_data": "No data",
   "legend_added": "Added",
   "legend_merged": "Merged",
-  "legend_skipped": "Skipped"
+  "legend_skipped": "Skipped",
+  "legend_out_of_range": "Out of range",
+  "view_existing_schedule": "View Existing Schedule",
+  "existing_schedule_title": "Existing Team Schedule",
+  "no_existing_assignments": "No existing assignments in this team."
 }

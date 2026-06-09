@@ -121,5 +121,9 @@
   "no_data": "Sin datos",
   "legend_added": "Añadido",
   "legend_merged": "Fusionado",
-  "legend_skipped": "Omitido"
+  "legend_skipped": "Omitido",
+  "legend_out_of_range": "Fuera de rango",
+  "view_existing_schedule": "Ver horario existente",
+  "existing_schedule_title": "Horario existente del equipo",
+  "no_existing_assignments": "No hay asignaciones existentes en este equipo."
 }
