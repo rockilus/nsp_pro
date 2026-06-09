@@ -78,6 +78,11 @@ export default function EditableCell({
   // via parent, but this component is self-contained.
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Prevent double-commit: when Enter triggers setIsEditing(false), the
+  // Input unmounts and fires an onBlur event. This guard blocks that
+  // second commit, which would otherwise read an empty string from the
+  // unmounted input and overwrite the user's edit.
+  const committedRef = useRef(false);
 
   const { source, displayValue } = resolveCellSource(
     entityId,
@@ -134,12 +139,17 @@ export default function EditableCell({
   // ── Handlers ───────────────────────────────────────────────────────────
 
   const enterEdit = useCallback(() => {
+    committedRef.current = false;
     setIsEditing(true);
     // Auto-focus after render
     requestAnimationFrame(() => inputRef.current?.focus());
   }, []);
 
   const commit = useCallback(() => {
+    // Guard against double-commit: when Enter triggers setIsEditing(false)
+    // the Input unmounts and fires an onBlur → commit() again.
+    if (committedRef.current) return;
+    committedRef.current = true;
     let raw = inputRef.current?.value ?? '';
     // Convert date/time inputs to numeric strings for normalizeValue.
     // Skip conversion for empty values — normalizeValue handles null/empty correctly.

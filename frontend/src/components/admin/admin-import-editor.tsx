@@ -172,7 +172,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [importName, setImportName] = useState('');
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'saving' | 'error'>('idle');
   const [showInfo, setShowInfo] = useState(false);
 
   // Inline editing state (same as preview)
@@ -271,12 +271,12 @@ export default function AdminImportEditor({ lng, importId }: Props) {
     [data, importId, user],
   );
 
-  // Debounced save trigger — stable reference (only depends on saveToServer)
+  // Debounced save trigger — stable reference (only depends on saveToServer).
+  // No debounce for explicit user actions (cell edits, row deletes) —
+  // the save must complete before the user navigates away.
   const triggerSave = useCallback(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      saveToServer();
-    }, 2000);
+    saveToServer();
   }, [saveToServer]);
 
   // Cleanup timer on unmount
@@ -398,6 +398,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
         </Button>
 
         <div className="text-xs text-muted-foreground">
+          {saveStatus === 'idle' && <span> </span>}
           {saveStatus === 'saving' && (
             <span className="flex items-center gap-1">
               <Loader2 className="size-3 animate-spin" />
