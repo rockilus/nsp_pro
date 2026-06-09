@@ -559,6 +559,17 @@ export class ImportMergeTestBase {
         },
         // Next month: 1 assignment so next-month navigation is available
         {
+          generatedId: 'gen-asgn-night-prev',
+          workerName: 'Bob',
+          workerId: bobId,
+          date: prevDay,
+          shiftCode: 'NS',
+          shiftId: nightId,
+          fixed: false,
+          source: 'manual',
+          warnings: [],
+        },
+        {
           generatedId: 'gen-asgn-next',
           workerName: 'Bob',
           workerId: bobId,
