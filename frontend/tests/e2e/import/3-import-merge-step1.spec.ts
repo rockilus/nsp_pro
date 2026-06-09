@@ -165,23 +165,22 @@ test.describe('AdminImportMergeStep1 — Pagination', () => {
     await expect(pagination).toBeVisible({ timeout: 5000 });
 
     // Page info text should show page 1 of 2 (35 teams / 30 = 2 pages)
-    const pageInfo = page
-      .locator('[data-slot="pagination"]')
-      .locator('..') // pagination wrapper
-      .locator('text=/Page \\d of \\d/');
+    const pageInfo = page.locator('[data-testid="pagination-page-info"]');
     await expect(pageInfo).toBeVisible();
+    await expect(pageInfo).toContainText(/Page \d/);
 
-    // The PaginationNext component renders a button with a chevron-right icon
-    const allPageButtons = page.locator('[data-slot="pagination"] button');
-    const btnCount = await allPageButtons.count();
-    // The last enabled button in the pagination bar should be "Next"
-    if (btnCount > 0) {
-      const lastBtn = allPageButtons.nth(btnCount - 1);
-      await lastBtn.click();
-      // Wait for the table to reload
-      await page.waitForTimeout(800);
-      // Table should still be visible with remaining teams
-      await expect(page.locator('[data-testid="merge-teams-table"]')).toBeVisible();
-    }
+    // Page 1 should be selected by default
+    await expect(page.locator('[data-testid="pagination-page-1-selected"]')).toBeVisible();
+
+    // Click Next to go to page 2
+    await page.locator('[data-testid="pagination-next"]').click();
+    await page.waitForTimeout(800);
+    await expect(page.locator('[data-testid="pagination-page-2-selected"]')).toBeVisible();
+    await expect(page.locator('[data-testid="merge-teams-table"]')).toBeVisible();
+
+    // Click Previous to go back to page 1
+    await page.locator('[data-testid="pagination-previous"]').click();
+    await page.waitForTimeout(800);
+    await expect(page.locator('[data-testid="pagination-page-1-selected"]')).toBeVisible();
   });
 });

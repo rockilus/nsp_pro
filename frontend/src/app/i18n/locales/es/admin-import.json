@@ -108,7 +108,7 @@
   "owner_id": "ID Propietario",
   "search_teams": "Buscar equipos...",
   "no_teams_found": "No se encontraron equipos",
-  "page_x_of_y": "Página {current} de {total}",
+  "page_x_of_y": "Página {{current}} de {{total}}",
   "loading_teams": "Cargando equipos...",
   "select_team_row": "Seleccionar este equipo"
 }

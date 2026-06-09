@@ -395,7 +395,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
 
             {showPagination && (
               <div className="mt-3 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-muted-foreground" data-testid="pagination-page-info">
                   {t('page_x_of_y', { current: page, total: totalPages })}
                 </span>
                 <Pagination>
@@ -404,6 +404,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
                       <PaginationPrevious
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                         className={page <= 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        data-testid="pagination-previous"
                       />
                     </PaginationItem>
                     {pageNumbers.map((p, i) =>
@@ -417,6 +418,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
                             isActive={p === page}
                             onClick={() => setPage(p)}
                             className="cursor-pointer"
+                            data-testid={`pagination-page-${p}${p === page ? '-selected' : ''}`}
                           >
                             {p}
                           </PaginationLink>
@@ -429,6 +431,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
                         className={
                           page >= totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'
                         }
+                        data-testid="pagination-next"
                       />
                     </PaginationItem>
                   </PaginationContent>
