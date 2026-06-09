@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '@/app/i18n/client';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -24,6 +24,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, ArrowRight, Calendar, Search, TriangleAlert } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
+import { env } from '@/config/env';
 import {
   type MergeAction,
   type MergeTargetWorker,
@@ -323,8 +325,84 @@ export default function AdminImportMergeStep2({
     [assignmentConfig, onAssignmentConfigChange],
   );
 
+  // ── Fetch existing assignments from target team ──
+  // Build a lookup set of "targetWorkerId|date|targetShiftId" keys so the grid
+  // can determine whether an imported assignment already exists in the target team.
+  const { user } = useAuth();
+  const [existingAssignmentKeys, setExistingAssignmentKeys] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchExisting() {
+      if (!selectedTeamId) {
+        setExistingAssignmentKeys(new Set());
+        return;
+      }
+
+      const headers: Record<string, string> = {};
+      if (env.isDevelopment) {
+        headers['X-Dev-User-ID'] = env.devUserId;
+        headers['X-API-Key'] = env.devApiKey;
+      } else if (user?.id_token) {
+        headers['Authorization'] = `Bearer ${user.id_token}`;
+      }
+
+      const start = scheduleDateRange.start ?? dayjs.utc().startOf('year').unix();
+      const end = scheduleDateRange.end ?? dayjs.utc().endOf('year').unix();
+      const url = `${env.apiUrl}/assignments/teams/${selectedTeamId}?start_date=${start}&end_date=${end}`;
+
+      try {
+        const resp = await fetch(url, { headers });
+        if (!resp.ok) {
+          if (!cancelled) setExistingAssignmentKeys(new Set());
+          return;
+        }
+        const data = await resp.json();
+        const list: { workerId: string; date: number; shiftId: string }[] =
+          data.assignmentsRead ?? [];
+        const keys = new Set<string>();
+        for (const a of list) {
+          keys.add(`${a.workerId}|${a.date}|${a.shiftId}`);
+        }
+        if (!cancelled) setExistingAssignmentKeys(keys);
+      } catch {
+        if (!cancelled) setExistingAssignmentKeys(new Set());
+      }
+    }
+
+    fetchExisting();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTeamId, scheduleDateRange.start, scheduleDateRange.end]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Build a map from generated worker ID → target worker ID (for merge_into mappings)
+  const workerTargetMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const wm of workerMappings) {
+      if (wm.action === 'merge_into' && wm.targetWorkerId) {
+        m.set(wm.generatedId, wm.targetWorkerId);
+      }
+    }
+    return m;
+  }, [workerMappings]);
+
+  // Build a map from generated shift ID → target shift ID (for merge_into mappings)
+  const shiftTargetMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const sm of shiftMappings) {
+      if (sm.action === 'merge_into' && sm.targetShiftId) {
+        m.set(sm.generatedId, sm.targetShiftId);
+      }
+    }
+    return m;
+  }, [shiftMappings]);
+
   // ── Schedule grid cell color callback ──
-  // Returns a class based on: skip > out-of-range > merge_into > add_new
+  // A cell is green (add_new) unless the mapped (worker, date, shift) tuple actually
+  // exists in the target team's existing assignments — then it's orange (merge_into).
+  // Order: skip > out-of-range > merge_into (exists in existing) > add_new
   const scheduleCellClass = useCallback(
     (workerId: string, shiftId: string, date: number) => {
       const wAction = getWorkerAction(workerId, workerMappings);
@@ -333,11 +411,29 @@ export default function AdminImportMergeStep2({
       if (wAction === 'skip' || sAction === 'skip') return ACTION_BG.skip;
       // If outside the date filter range, show out-of-range style
       if (isOutOfRange(date, assignmentConfig)) return OUT_OF_RANGE_BG;
-      // If merging, show merge style
-      if (wAction === 'merge_into' || sAction === 'merge_into') return ACTION_BG.merge_into;
+      // Only merge if both worker AND shift are merge_into AND the mapped
+      // (targetWorkerId, date, targetShiftId) already exists in the target team
+      if (wAction === 'merge_into' && sAction === 'merge_into') {
+        const targetWid = workerTargetMap.get(workerId);
+        const targetSid = shiftTargetMap.get(shiftId);
+        if (
+          targetWid &&
+          targetSid &&
+          existingAssignmentKeys.has(`${targetWid}|${date}|${targetSid}`)
+        ) {
+          return ACTION_BG.merge_into;
+        }
+      }
       return ACTION_BG.add_new;
     },
-    [workerMappings, shiftMappings, assignmentConfig],
+    [
+      workerMappings,
+      shiftMappings,
+      assignmentConfig,
+      workerTargetMap,
+      shiftTargetMap,
+      existingAssignmentKeys,
+    ],
   );
 
   // ── Derivations for legend ──
