@@ -92,6 +92,11 @@ function minutesToTimeStr(minutes: number): string {
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 }
 
+/** Convert a Unix timestamp (epoch seconds) to a HH:MM time-of-day string in UTC */
+function unixTsToTimeStr(ts: number): string {
+  return dayjs.unix(ts).utc().format('HH:mm');
+}
+
 function shiftTypeLabel(t: number, tFn: (key: string) => string): string {
   switch (t) {
     case 0:
@@ -496,10 +501,10 @@ function ExistingShiftsTable({ lng, data }: { lng: string; data?: ExistingShift[
                 <TableCell className="font-mono text-xs">{s.acronym}</TableCell>
                 <TableCell className="text-xs">{shiftTypeLabel(s.shiftType ?? 0, t)}</TableCell>
                 <TableCell className="text-xs">
-                  {s.startTime != null ? minutesToTimeStr(s.startTime) : '—'}
+                  {s.startTime != null ? unixTsToTimeStr(s.startTime) : '—'}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {s.endTime != null ? minutesToTimeStr(s.endTime) : '—'}
+                  {s.endTime != null ? unixTsToTimeStr(s.endTime) : '—'}
                 </TableCell>
                 <TableCell className="text-xs">{s.duty ? t('yes') : t('no')}</TableCell>
                 <TableCell className="text-xs">{s.mandatoryRest ? t('yes') : t('no')}</TableCell>
