@@ -95,7 +95,7 @@ test.describe('Import Preview & Create', () => {
     await createImportBtn.click();
 
     // Verify navigation to editor
-    await page.waitForURL(/\/admin\/import\/editor\?id=/, { timeout: 10000 });
+    await page.waitForURL(/\/admin\/import\/editor\/?\?id=/, { timeout: 10000 });
     const url = new URL(page.url());
     const importId = url.searchParams.get('id');
     expect(importId).toBeTruthy();
