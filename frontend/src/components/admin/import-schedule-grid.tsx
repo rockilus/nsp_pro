@@ -119,16 +119,20 @@ export default function ImportScheduleGrid({
           className="size-7"
           disabled={!canPrev}
           onClick={goPrev}
+          data-testid="schedule-grid-prev-month"
         >
           <ChevronLeft className="size-4" />
         </Button>
-        <span className="text-sm font-semibold">{monthLabel}</span>
+        <span className="text-sm font-semibold" data-testid="schedule-grid-month-label">
+          {monthLabel}
+        </span>
         <Button
           variant="outline"
           size="icon"
           className="size-7"
           disabled={!canNext}
           onClick={goNext}
+          data-testid="schedule-grid-next-month"
         >
           <ChevronRight className="size-4" />
         </Button>

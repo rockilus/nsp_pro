@@ -306,7 +306,10 @@ export default function ImportMergeFullTableDialog({
   if (type === 'schedule') {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[90vh] max-w-[95vw] overflow-auto sm:max-w-[85vw]">
+        <DialogContent
+          className="max-h-[90vh] max-w-[95vw] overflow-auto sm:max-w-[85vw]"
+          data-testid="full-table-dialog-schedule"
+        >
           <DialogHeader>
             <DialogTitle>{titleText}</DialogTitle>
           </DialogHeader>
@@ -346,14 +349,17 @@ export default function ImportMergeFullTableDialog({
   // ── Members / Shifts type ──
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-[95vw] overflow-auto sm:max-w-[85vw]">
+      <DialogContent
+        className="max-h-[90vh] max-w-[95vw] overflow-auto sm:max-w-[85vw]"
+        data-testid={`full-table-dialog-${type}`}
+      >
         <DialogHeader>
           <DialogTitle>{titleText}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Imported table */}
-          <div>
+          <div data-testid={`full-table-imported-${type}`}>
             <h3 className="mb-2 text-sm font-semibold">
               {type === 'members'
                 ? t('imported_members') || 'Imported Members'
@@ -465,7 +471,7 @@ export default function ImportMergeFullTableDialog({
           </div>
 
           {/* Existing table */}
-          <div>
+          <div data-testid={`full-table-existing-${type}`}>
             <h3 className="mb-2 text-sm font-semibold">
               {type === 'members'
                 ? t('existing_members') || 'Existing Team Members'

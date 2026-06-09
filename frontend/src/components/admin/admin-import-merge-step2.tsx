@@ -444,20 +444,20 @@ export default function AdminImportMergeStep2({
   // Color legend inline
   const legendEl = (
     <div className="mb-3 flex items-center gap-3 text-xs text-muted-foreground">
-      <span className="flex items-center gap-1">
+      <span className="flex items-center gap-1" data-testid="merge-legend-added">
         <span className="inline-block size-2.5 rounded-sm bg-green-400" />
         {t('legend_added') || 'Added'}
       </span>
-      <span className="flex items-center gap-1">
+      <span className="flex items-center gap-1" data-testid="merge-legend-merged">
         <span className="inline-block size-2.5 rounded-sm bg-orange-400" />
         {t('legend_merged') || 'Merged'}
       </span>
-      <span className="flex items-center gap-1">
+      <span className="flex items-center gap-1" data-testid="merge-legend-skipped">
         <span className="inline-block size-2.5 rounded-sm bg-red-400" />
         {t('legend_skipped') || 'Skipped'}
       </span>
       {showOutOfRangeLegend && (
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1" data-testid="merge-legend-out-of-range">
           <span className="inline-block size-2.5 rounded-sm bg-gray-400" />
           {t('legend_out_of_range') || 'Out of range'}
         </span>
@@ -470,13 +470,21 @@ export default function AdminImportMergeStep2({
       {legendEl}
 
       {/* Workers */}
-      <section className="rounded-lg border border-border bg-card">
+      <section
+        className="rounded-lg border border-border bg-card"
+        data-testid="merge-members-section"
+      >
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
           <div className="flex items-center gap-2">
             <Badge variant="default">{members.length}</Badge>
             <h2 className="text-sm font-semibold">{t('members_tab')}</h2>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setMembersDialogOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setMembersDialogOpen(true)}
+            data-testid="merge-view-full-members"
+          >
             <Search className="mr-1 size-3.5" />
             {t('view_full_details') || 'View full details'}
           </Button>
@@ -510,7 +518,10 @@ export default function AdminImportMergeStep2({
                           value={action}
                           onValueChange={(v) => handleWorkerAction(m.generatedId, v as MergeAction)}
                         >
-                          <SelectTrigger className="h-8 w-32">
+                          <SelectTrigger
+                            className="h-8 w-32"
+                            data-testid={`merge-worker-action-${m.generatedId}`}
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -528,7 +539,10 @@ export default function AdminImportMergeStep2({
                             value={mapping?.targetWorkerId || ''}
                             onValueChange={(v) => handleWorkerTarget(m.generatedId, v)}
                           >
-                            <SelectTrigger className="h-8 w-44">
+                            <SelectTrigger
+                              className="h-8 w-44"
+                              data-testid={`merge-target-worker-${m.generatedId}`}
+                            >
                               <SelectValue placeholder={t('target_worker') || 'Select worker...'} />
                             </SelectTrigger>
                             <SelectContent>
@@ -556,13 +570,21 @@ export default function AdminImportMergeStep2({
       </section>
 
       {/* Shifts */}
-      <section className="rounded-lg border border-border bg-card">
+      <section
+        className="rounded-lg border border-border bg-card"
+        data-testid="merge-shifts-section"
+      >
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
           <div className="flex items-center gap-2">
             <Badge variant="default">{shifts.length}</Badge>
             <h2 className="text-sm font-semibold">{t('shifts_tab')}</h2>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setShiftsDialogOpen(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShiftsDialogOpen(true)}
+            data-testid="merge-view-full-shifts"
+          >
             <Search className="mr-1 size-3.5" />
             {t('view_full_details') || 'View full details'}
           </Button>
@@ -605,7 +627,10 @@ export default function AdminImportMergeStep2({
                           value={action}
                           onValueChange={(v) => handleShiftAction(s.generatedId, v as MergeAction)}
                         >
-                          <SelectTrigger className="h-8 w-32">
+                          <SelectTrigger
+                            className="h-8 w-32"
+                            data-testid={`merge-shift-action-${s.generatedId}`}
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -623,7 +648,10 @@ export default function AdminImportMergeStep2({
                             value={mapping?.targetShiftId || ''}
                             onValueChange={(v) => handleShiftTarget(s.generatedId, v)}
                           >
-                            <SelectTrigger className="h-8 w-44">
+                            <SelectTrigger
+                              className="h-8 w-44"
+                              data-testid={`merge-target-shift-${s.generatedId}`}
+                            >
                               <SelectValue placeholder={t('target_shift') || 'Select shift...'} />
                             </SelectTrigger>
                             <SelectContent>
@@ -652,7 +680,10 @@ export default function AdminImportMergeStep2({
 
       {/* Requests */}
       {requests.length > 0 && (
-        <section className="rounded-lg border border-border bg-card">
+        <section
+          className="rounded-lg border border-border bg-card"
+          data-testid="merge-requests-section"
+        >
           <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
             <Badge variant="default">{requests.length}</Badge>
             <h2 className="text-sm font-semibold">{t('requests_tab')}</h2>
@@ -704,7 +735,10 @@ export default function AdminImportMergeStep2({
                                 handleRequestAction(r.generatedId, v as MergeAction)
                               }
                             >
-                              <SelectTrigger className="h-8 w-32">
+                              <SelectTrigger
+                                className="h-8 w-32"
+                                data-testid={`merge-request-action-${r.generatedId}`}
+                              >
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -727,7 +761,10 @@ export default function AdminImportMergeStep2({
       )}
 
       {/* Assignments config + schedule grid */}
-      <section className="rounded-lg border border-border bg-card">
+      <section
+        className="rounded-lg border border-border bg-card"
+        data-testid="merge-schedule-section"
+      >
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
           <div className="flex items-center gap-2">
             <Badge variant="default">{effectiveAssignments}</Badge>

@@ -11,6 +11,13 @@ import { DatabaseTestUtils, TEST_USER } from './database-utils';
 import { testConfig } from './test-config';
 import { WorkerT } from '../../src/types/worker';
 import { ShiftT, ShiftType } from '../../src/types/shift';
+import { RequestT, RequestType, RequestStatus } from '../../src/types/request';
+import { AssignmentT } from '../../src/types/assignment';
+import type {
+  MergeTargetsResponse,
+  MergeRequest,
+  MergeResult,
+} from '../../src/app/lib/import-merge-utils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { buildImportExcel, writeExcelToTempFile } from '../fixtures/import-fixture';
@@ -276,6 +283,62 @@ export class ImportMergeTestBase {
 
   getImportRecordId(): string | null {
     return this.importRecordId;
+  }
+
+  // ── Merge API helpers ──────────────────────────────────────────────────
+
+  /**
+   * Fetch merge targets (existing team workers/shifts + auto-match suggestions)
+   * via GET /admin/teams/{team_id}/merge-targets?import_id=...
+   */
+  async getTargetsViaApi(): Promise<MergeTargetsResponse> {
+    if (!this.testTeam || !this.importRecordId)
+      throw new Error('Call setup() and createImportViaApi() first');
+    return this.dbUtils.makeAuthenticatedRequest<MergeTargetsResponse>(
+      'GET',
+      `/admin/teams/${this.testTeam.teamId}/merge-targets?import_id=${this.importRecordId}`,
+    );
+  }
+
+  /**
+   * Execute a merge via POST /admin/imports/{import_id}/merge
+   */
+  async executeMergeViaApi(mergeReq: MergeRequest): Promise<MergeResult> {
+    if (!this.importRecordId) throw new Error('Call createImportViaApi() first');
+    return this.dbUtils.makeAuthenticatedRequest<MergeResult>(
+      'POST',
+      `/admin/imports/${this.importRecordId}/merge`,
+      mergeReq,
+    );
+  }
+
+  /**
+   * Fetch assignments in the target team for a given date range.
+   */
+  async getAssignmentsInDb(
+    startDate: number,
+    endDate: number,
+  ): Promise<{
+    assignmentsRead: AssignmentT[];
+  }> {
+    if (!this.testTeam) throw new Error('Call setup() first');
+    return this.dbUtils.makeAuthenticatedRequest<{
+      assignmentsRead: AssignmentT[];
+    }>(
+      'GET',
+      `/assignments/teams/${this.testTeam.teamId}?start_date=${startDate}&end_date=${endDate}`,
+    );
+  }
+
+  /**
+   * Fetch requests in the target team.
+   */
+  async getRequestsInDb(): Promise<RequestT[]> {
+    if (!this.testTeam) throw new Error('Call setup() first');
+    return this.dbUtils.makeAuthenticatedRequest<RequestT[]>(
+      'GET',
+      `/requests/teams/${this.testTeam.teamId}`,
+    );
   }
 
   // ── Preview data builder ────────────────────────────────────────────────
