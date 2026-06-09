@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from '@/app/i18n/client';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -13,6 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useAuth } from '@/contexts/auth-context';
+import { env } from '@/config/env';
 
 dayjs.extend(utc);
 
@@ -76,9 +78,6 @@ interface Props {
   teamId: string | null;
   importedMembers?: MemberFull[];
   importedShifts?: ShiftFull[];
-  /** Pre-fetched existing data (avoids loading spinner when already available) */
-  existingWorkers?: ExistingWorker[];
-  existingShifts?: ExistingShift[];
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -108,6 +107,76 @@ function shiftTypeLabel(t: number, tFn: (key: string) => string): string {
   }
 }
 
+// ── API helpers ──────────────────────────────────────────────────────────────
+
+function buildAuthHeaders(user: { id_token?: string } | null | undefined): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+
+  if (env.isDevelopment) {
+    headers['X-Dev-User-ID'] = env.devUserId;
+    headers['X-API-Key'] = env.devApiKey;
+  } else if (user?.id_token) {
+    headers['Authorization'] = `Bearer ${user.id_token}`;
+  }
+
+  return headers;
+}
+
+/** Raw shape returned by GET /workers/teams/{team_id} */
+interface ApiWorker {
+  id: string;
+  name: string;
+  acronym: string;
+  employmentStartDate: number;
+  employmentEndDate: number | null;
+  weeklyHours: number;
+  weeklyHoursDesired: number;
+  dutiesPerMonth: number;
+  annualLeave: number;
+  specialtyIds: string[];
+}
+
+/** Raw shape returned by GET /shifts/teams/{team_id} */
+interface ApiShift {
+  id: string;
+  name: string;
+  acronym: string;
+  shiftType: number;
+  startTime: number;
+  endTime: number;
+  color: string;
+  restType: number;
+}
+
+function mapWorker(api: ApiWorker): ExistingWorker {
+  return {
+    id: api.id,
+    name: api.name,
+    acronym: api.acronym,
+    employmentStartDate: api.employmentStartDate,
+    employmentEndDate: api.employmentEndDate,
+    weeklyHours: api.weeklyHours,
+    weeklyHoursDesired: api.weeklyHoursDesired,
+    dutiesPerMonth: api.dutiesPerMonth,
+    annualLeave: api.annualLeave,
+    specialtyIds: api.specialtyIds ?? [],
+  };
+}
+
+function mapShift(api: ApiShift): ExistingShift {
+  return {
+    id: api.id,
+    name: api.name,
+    acronym: api.acronym,
+    shiftType: api.shiftType,
+    startTime: api.startTime,
+    endTime: api.endTime,
+    color: api.color,
+    duty: api.shiftType === 1,
+    mandatoryRest: api.restType === 2, // recuperation rest
+  };
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function ImportMergeFullTableDialog({
@@ -118,10 +187,54 @@ export default function ImportMergeFullTableDialog({
   teamId,
   importedMembers = [],
   importedShifts = [],
-  existingWorkers,
-  existingShifts,
 }: Props) {
   const { t } = useTranslation(lng, 'admin-import');
+  const { user } = useAuth();
+
+  // Internal fetch state for existing team data
+  const [existingWorkers, setExistingWorkers] = useState<ExistingWorker[] | undefined>(undefined);
+  const [existingShifts, setExistingShifts] = useState<ExistingShift[] | undefined>(undefined);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const fetchExistingData = useCallback(async () => {
+    if (!teamId) {
+      setExistingWorkers([]);
+      setExistingShifts([]);
+      return;
+    }
+
+    setExistingWorkers(undefined);
+    setExistingShifts(undefined);
+    setFetchError(null);
+
+    const headers = buildAuthHeaders(user);
+    delete headers['Content-Type']; // GET request
+
+    try {
+      if (type === 'members') {
+        const resp = await fetch(`${env.apiUrl}/workers/teams/${teamId}`, { headers });
+        if (!resp.ok) throw new Error(`Failed to load workers: ${resp.status}`);
+        const json: ApiWorker[] = await resp.json();
+        setExistingWorkers(json.map(mapWorker));
+      } else {
+        const resp = await fetch(`${env.apiUrl}/shifts/teams/${teamId}`, { headers });
+        if (!resp.ok) throw new Error(`Failed to load shifts: ${resp.status}`);
+        const json: ApiShift[] = await resp.json();
+        setExistingShifts(json.map(mapShift));
+      }
+    } catch (err) {
+      setFetchError(err instanceof Error ? err.message : 'Failed to load');
+      setExistingWorkers([]);
+      setExistingShifts([]);
+    }
+  }, [teamId, type, user]);
+
+  // Fetch when dialog opens
+  useEffect(() => {
+    if (open && teamId) {
+      fetchExistingData();
+    }
+  }, [open, teamId, fetchExistingData]);
 
   const titleText =
     type === 'members'
@@ -255,9 +368,13 @@ export default function ImportMergeFullTableDialog({
                 ? t('existing_members') || 'Existing Team Members'
                 : t('existing_shifts') || 'Existing Team Shifts'}
             </h3>
-            {type === 'members' ? (
+            {fetchError && (
+              <div className="py-4 text-center text-sm text-destructive">{fetchError}</div>
+            )}
+            {!fetchError && type === 'members' && (
               <ExistingMembersTable lng={lng} data={existingWorkers} />
-            ) : (
+            )}
+            {!fetchError && type === 'shifts' && (
               <ExistingShiftsTable lng={lng} data={existingShifts} />
             )}
           </div>

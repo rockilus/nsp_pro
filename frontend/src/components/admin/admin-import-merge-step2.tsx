@@ -48,6 +48,13 @@ interface ImportMember {
   generatedId: string;
   name: string;
   acronym: string;
+  employmentStartDate: number;
+  employmentEndDate: number | null;
+  weeklyHours: number;
+  weeklyHoursDesired: number;
+  dutiesPerMonth: number;
+  annualLeave: number;
+  specialtyIds: string[];
   warnings: string[];
 }
 
@@ -56,6 +63,8 @@ interface ImportShift {
   name: string;
   acronym: string;
   shiftType: number;
+  startTime: number;
+  endTime: number;
   color: string;
   duty: boolean;
   mandatoryRest: boolean;
@@ -686,13 +695,13 @@ export default function AdminImportMergeStep2({
           generatedId: m.generatedId,
           name: m.name,
           acronym: m.acronym,
-          employmentStartDate: 0,
-          employmentEndDate: null,
-          weeklyHours: 0,
-          weeklyHoursDesired: 0,
-          dutiesPerMonth: 0,
-          annualLeave: 0,
-          specialtyIds: [],
+          employmentStartDate: m.employmentStartDate,
+          employmentEndDate: m.employmentEndDate,
+          weeklyHours: m.weeklyHours,
+          weeklyHoursDesired: m.weeklyHoursDesired,
+          dutiesPerMonth: m.dutiesPerMonth,
+          annualLeave: m.annualLeave,
+          specialtyIds: m.specialtyIds,
         }))}
       />
 
@@ -707,8 +716,8 @@ export default function AdminImportMergeStep2({
           name: s.name,
           acronym: s.acronym,
           shiftType: s.shiftType,
-          startTime: 0,
-          endTime: 0,
+          startTime: s.startTime,
+          endTime: s.endTime,
           color: s.color,
           duty: s.duty,
           mandatoryRest: s.mandatoryRest,

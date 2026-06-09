@@ -71,7 +71,19 @@ function MergeContent({ lng }: { lng: string }) {
   const handleTargetsResolved = useCallback(
     (
       data: {
-        members: { generatedId: string; name: string; acronym: string; warnings: string[] }[];
+        members: {
+          generatedId: string;
+          name: string;
+          acronym: string;
+          employmentStartDate: number;
+          employmentEndDate: number | null;
+          weeklyHours: number;
+          weeklyHoursDesired: number;
+          dutiesPerMonth: number;
+          annualLeave: number;
+          specialtyIds: string[];
+          warnings: string[];
+        }[];
         shifts: {
           generatedId: string;
           name: string;
