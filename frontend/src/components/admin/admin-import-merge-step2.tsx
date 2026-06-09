@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from '@/app/i18n/client';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ArrowRight, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Search, TriangleAlert } from 'lucide-react';
 import {
   type MergeAction,
   type MergeTargetWorker,
@@ -37,6 +37,8 @@ import {
   buildValidShiftGids,
   countEffectiveAssignments,
 } from '@/app/lib/import-merge-utils';
+import ImportScheduleGrid from './import-schedule-grid';
+import ImportMergeFullTableDialog from './import-merge-full-table-dialog';
 
 dayjs.extend(utc);
 
@@ -91,6 +93,7 @@ interface Props {
   shiftMappings: ShiftMergeMapping[];
   requestMappings: RequestMergeMapping[];
   assignmentConfig: AssignmentMergeConfig;
+  selectedTeamId: string | null;
   onWorkerMappingsChange: (mappings: WorkerMergeMapping[]) => void;
   onShiftMappingsChange: (mappings: ShiftMergeMapping[]) => void;
   onRequestMappingsChange: (mappings: RequestMergeMapping[]) => void;
@@ -120,11 +123,32 @@ function shiftTypeLabel(t: number, tFn: (key: string) => string): string {
   }
 }
 
+/** Map merge action to a light background class name for table rows/cells */
+const ACTION_BG: Record<MergeAction, string> = {
+  add_new: 'bg-green-100 dark:bg-green-900/30',
+  merge_into: 'bg-orange-100 dark:bg-orange-900/30',
+  skip: 'bg-red-100 dark:bg-red-900/30',
+};
+
 const ACTION_OPTIONS: { value: MergeAction; labelKey: string }[] = [
   { value: 'add_new', labelKey: 'action_add_new' },
   { value: 'merge_into', labelKey: 'action_merge_into' },
   { value: 'skip', labelKey: 'action_skip' },
 ];
+
+// ── Assignment helpers for schedule grid cell coloring ──
+function getWorkerAction(
+  workerId: string,
+  workerMappings: WorkerMergeMapping[],
+): MergeAction | null {
+  const m = workerMappings.find((w) => w.generatedId === workerId);
+  return m?.action ?? null;
+}
+
+function getShiftAction(shiftId: string, shiftMappings: ShiftMergeMapping[]): MergeAction | null {
+  const m = shiftMappings.find((s) => s.generatedId === shiftId);
+  return m?.action ?? null;
+}
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -139,6 +163,7 @@ export default function AdminImportMergeStep2({
   shiftMappings,
   requestMappings,
   assignmentConfig,
+  selectedTeamId,
   onWorkerMappingsChange,
   onShiftMappingsChange,
   onRequestMappingsChange,
@@ -147,6 +172,10 @@ export default function AdminImportMergeStep2({
   onNext,
 }: Props) {
   const { t } = useTranslation(lng, 'admin-import');
+
+  // Dialog state
+  const [membersDialogOpen, setMembersDialogOpen] = useState(false);
+  const [shiftsDialogOpen, setShiftsDialogOpen] = useState(false);
 
   // Mapping lookups
   const workerMap = useMemo(
@@ -165,6 +194,20 @@ export default function AdminImportMergeStep2({
     () => countEffectiveAssignments(assignments, validWorkers, validShifts, assignmentConfig),
     [assignments, validWorkers, validShifts, assignmentConfig],
   );
+
+  // Filtered assignments for the schedule grid
+  const filteredAssignments = useMemo(() => {
+    if (assignmentConfig.includeAll) {
+      return assignments.filter((a) => validWorkers.has(a.workerId) && validShifts.has(a.shiftId));
+    }
+    return assignments.filter((a) => {
+      if (!validWorkers.has(a.workerId)) return false;
+      if (!validShifts.has(a.shiftId)) return false;
+      if (assignmentConfig.startDate != null && a.date < assignmentConfig.startDate) return false;
+      if (assignmentConfig.endDate != null && a.date > assignmentConfig.endDate) return false;
+      return true;
+    });
+  }, [assignments, validWorkers, validShifts, assignmentConfig]);
 
   // ── Worker mapping handler ──
   const handleWorkerAction = useCallback(
@@ -241,15 +284,54 @@ export default function AdminImportMergeStep2({
     [assignmentConfig, onAssignmentConfigChange],
   );
 
+  // ── Schedule grid cell color callback ──
+  const scheduleCellClass = useCallback(
+    (workerId: string, shiftId: string, _date: number) => {
+      const wAction = getWorkerAction(workerId, workerMappings);
+      const sAction = getShiftAction(shiftId, shiftMappings);
+      // If either is skip, the assignment is excluded; we show "most severe" action
+      if (wAction === 'skip' || sAction === 'skip') return ACTION_BG.skip;
+      if (wAction === 'merge_into' || sAction === 'merge_into') return ACTION_BG.merge_into;
+      return ACTION_BG.add_new;
+    },
+    [workerMappings, shiftMappings],
+  );
+
   // ── Render ─────────────────────────────────────────────────────────────
+
+  // Color legend inline
+  const legendEl = (
+    <div className="mb-3 flex items-center gap-3 text-xs text-muted-foreground">
+      <span className="flex items-center gap-1">
+        <span className="inline-block size-2.5 rounded-sm bg-green-400" />
+        {t('legend_added') || 'Added'}
+      </span>
+      <span className="flex items-center gap-1">
+        <span className="inline-block size-2.5 rounded-sm bg-orange-400" />
+        {t('legend_merged') || 'Merged'}
+      </span>
+      <span className="flex items-center gap-1">
+        <span className="inline-block size-2.5 rounded-sm bg-red-400" />
+        {t('legend_skipped') || 'Skipped'}
+      </span>
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-3">
+      {legendEl}
+
       {/* Workers */}
       <section className="rounded-lg border border-border bg-card">
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-          <Badge variant="default">{members.length}</Badge>
-          <h2 className="text-sm font-semibold">{t('members_tab')}</h2>
+        <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <Badge variant="default">{members.length}</Badge>
+            <h2 className="text-sm font-semibold">{t('members_tab')}</h2>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setMembersDialogOpen(true)}>
+            <Search className="mr-1 size-3.5" />
+            {t('view_full_details') || 'View full details'}
+          </Button>
         </div>
         <div className="p-3">
           <div className="overflow-hidden rounded-lg border border-border">
@@ -268,7 +350,11 @@ export default function AdminImportMergeStep2({
                   const mapping = workerMap.get(m.generatedId);
                   const action = mapping?.action || 'add_new';
                   return (
-                    <TableRow key={m.generatedId} data-testid={`merge-worker-row-${m.generatedId}`}>
+                    <TableRow
+                      key={m.generatedId}
+                      data-testid={`merge-worker-row-${m.generatedId}`}
+                      className={ACTION_BG[action]}
+                    >
                       <TableCell className="text-sm">{m.name}</TableCell>
                       <TableCell className="font-mono text-xs">{m.acronym}</TableCell>
                       <TableCell>
@@ -323,9 +409,15 @@ export default function AdminImportMergeStep2({
 
       {/* Shifts */}
       <section className="rounded-lg border border-border bg-card">
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-          <Badge variant="default">{shifts.length}</Badge>
-          <h2 className="text-sm font-semibold">{t('shifts_tab')}</h2>
+        <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <Badge variant="default">{shifts.length}</Badge>
+            <h2 className="text-sm font-semibold">{t('shifts_tab')}</h2>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setShiftsDialogOpen(true)}>
+            <Search className="mr-1 size-3.5" />
+            {t('view_full_details') || 'View full details'}
+          </Button>
         </div>
         <div className="p-3">
           <div className="overflow-hidden rounded-lg border border-border">
@@ -346,7 +438,11 @@ export default function AdminImportMergeStep2({
                   const mapping = shiftMap.get(s.generatedId);
                   const action = mapping?.action || 'add_new';
                   return (
-                    <TableRow key={s.generatedId} data-testid={`merge-shift-row-${s.generatedId}`}>
+                    <TableRow
+                      key={s.generatedId}
+                      data-testid={`merge-shift-row-${s.generatedId}`}
+                      className={ACTION_BG[action]}
+                    >
                       <TableCell>
                         <div
                           className="size-4 rounded-full border border-border/50"
@@ -434,7 +530,11 @@ export default function AdminImportMergeStep2({
                     return (
                       <TableRow
                         key={r.generatedId}
-                        className={isCascadedSkip ? 'text-muted-foreground line-through' : ''}
+                        className={
+                          isCascadedSkip
+                            ? `${ACTION_BG.skip} text-muted-foreground line-through`
+                            : ACTION_BG[action]
+                        }
                         data-testid={`merge-request-row-${r.generatedId}`}
                       >
                         <TableCell className="text-sm">{r.workerName}</TableCell>
@@ -478,7 +578,7 @@ export default function AdminImportMergeStep2({
         </section>
       )}
 
-      {/* Assignments config */}
+      {/* Assignments config + schedule grid */}
       <section className="rounded-lg border border-border bg-card">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
           <Badge variant="default">{effectiveAssignments}</Badge>
@@ -547,6 +647,18 @@ export default function AdminImportMergeStep2({
               </span>
             </div>
           )}
+
+          {/* Schedule grid */}
+          {filteredAssignments.length > 0 && (
+            <div className="pt-2">
+              <ImportScheduleGrid
+                assignments={filteredAssignments}
+                shifts={shifts.map((s) => ({ acronym: s.acronym, color: s.color }))}
+                workerLabel={t('worker')}
+                cellClassName={scheduleCellClass}
+              />
+            </div>
+          )}
         </div>
       </section>
 
@@ -562,6 +674,46 @@ export default function AdminImportMergeStep2({
           <ArrowRight className="ml-1.5 size-4" />
         </Button>
       </div>
+
+      {/* Full table dialogs */}
+      <ImportMergeFullTableDialog
+        lng={lng}
+        open={membersDialogOpen}
+        onOpenChange={setMembersDialogOpen}
+        type="members"
+        teamId={selectedTeamId}
+        importedMembers={members.map((m) => ({
+          generatedId: m.generatedId,
+          name: m.name,
+          acronym: m.acronym,
+          employmentStartDate: 0,
+          employmentEndDate: null,
+          weeklyHours: 0,
+          weeklyHoursDesired: 0,
+          dutiesPerMonth: 0,
+          annualLeave: 0,
+          specialtyIds: [],
+        }))}
+      />
+
+      <ImportMergeFullTableDialog
+        lng={lng}
+        open={shiftsDialogOpen}
+        onOpenChange={setShiftsDialogOpen}
+        type="shifts"
+        teamId={selectedTeamId}
+        importedShifts={shifts.map((s) => ({
+          generatedId: s.generatedId,
+          name: s.name,
+          acronym: s.acronym,
+          shiftType: s.shiftType,
+          startTime: 0,
+          endTime: 0,
+          color: s.color,
+          duty: s.duty,
+          mandatoryRest: s.mandatoryRest,
+        }))}
+      />
     </div>
   );
 }

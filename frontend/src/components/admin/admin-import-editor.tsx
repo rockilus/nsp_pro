@@ -31,6 +31,7 @@ import {
 // Components
 import EditableCell from './editable-cell';
 import ImportLegend from './import-legend';
+import ImportScheduleGrid from './import-schedule-grid';
 import { commitEdit } from '@/app/lib/import-preview-utils';
 // Auth
 import { useAuth } from '@/contexts/auth-context';
@@ -812,7 +813,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
             <h2 className="text-sm font-semibold">{t('schedule_tab')}</h2>
           </div>
           <div className="p-3">
-            <ScheduleGrid
+            <ImportScheduleGrid
               assignments={data.assignments}
               shifts={data.shifts}
               workerLabel={t('worker')}
@@ -820,155 +821,6 @@ export default function AdminImportEditor({ lng, importId }: Props) {
           </div>
         </section>
       )}
-    </div>
-  );
-}
-
-// ── Schedule grid sub-component ─────────────────────────────────────────────
-
-function ScheduleGrid({
-  assignments,
-  shifts,
-  workerLabel,
-}: {
-  assignments: ImportAssignmentPreview[];
-  shifts: ImportShiftPreview[];
-  workerLabel: string;
-}) {
-  const grid: Record<string, Record<string, string[]>> = {};
-  let minDate: dayjs.Dayjs | null = null;
-  let maxDate: dayjs.Dayjs | null = null;
-
-  for (const a of assignments) {
-    const d = dayjs.unix(a.date).utc();
-    if (!minDate || d.isBefore(minDate)) minDate = d;
-    if (!maxDate || d.isAfter(maxDate)) maxDate = d;
-    const dateKey = d.format('YYYY-MM-DD');
-    if (!grid[a.workerName]) grid[a.workerName] = {};
-    if (!grid[a.workerName][dateKey]) grid[a.workerName][dateKey] = [];
-    grid[a.workerName][dateKey].push(a.shiftCode);
-  }
-
-  const workers = Object.keys(grid).sort();
-
-  // Initialize month from data — derive from minDate before any early returns
-  const initialMonth = minDate ? minDate.format('YYYY-MM') : '';
-  const [scheduleMonth, setScheduleMonth] = useState(initialMonth);
-
-  if (!minDate || !maxDate || workers.length === 0) {
-    return <p className="py-4 text-center text-sm text-muted-foreground">No schedule data</p>;
-  }
-
-  const current = dayjs.utc(scheduleMonth + '-01');
-  const monthStart = current.startOf('month');
-  const monthEnd = current.endOf('month');
-  const minMonthStart = minDate.startOf('month');
-  const maxMonthStart = maxDate.startOf('month');
-
-  const canPrev = monthStart.isAfter(minMonthStart);
-  const canNext = monthStart.isBefore(maxMonthStart);
-
-  const goPrev = () => setScheduleMonth(monthStart.subtract(1, 'month').format('YYYY-MM'));
-  const goNext = () => setScheduleMonth(monthStart.add(1, 'month').format('YYYY-MM'));
-
-  const days: dayjs.Dayjs[] = [];
-  let cursor = monthStart;
-  while (cursor.isBefore(monthEnd) || cursor.isSame(monthEnd, 'day')) {
-    days.push(cursor);
-    cursor = cursor.add(1, 'day');
-  }
-
-  const monthLabel = monthStart.format('MMMM YYYY');
-
-  const shiftColorMap: Record<string, string> = {};
-  for (const s of shifts) {
-    shiftColorMap[s.acronym.toUpperCase()] = s.color;
-  }
-
-  return (
-    <div>
-      <div className="mb-2 flex items-center justify-between">
-        <Button
-          variant="outline"
-          size="icon"
-          className="size-7"
-          disabled={!canPrev}
-          onClick={goPrev}
-        >
-          <ChevronLeft className="size-4" />
-        </Button>
-        <span className="text-sm font-semibold">{monthLabel}</span>
-        <Button
-          variant="outline"
-          size="icon"
-          className="size-7"
-          disabled={!canNext}
-          onClick={goNext}
-        >
-          <ChevronRight className="size-4" />
-        </Button>
-      </div>
-
-      <div className="overflow-auto rounded-lg border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="sticky left-0 z-10 min-w-[120px] border-r border-border/30 bg-card">
-                {workerLabel}
-              </TableHead>
-              {days.map((d) => (
-                <TableHead
-                  key={d.toISOString()}
-                  className="min-w-[40px] border-l border-border/30 text-center text-xs"
-                >
-                  {d.date()}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {workers.map((name) => {
-              const row = grid[name] || {};
-              return (
-                <TableRow key={name}>
-                  <TableCell className="sticky left-0 z-10 border-r border-border/30 bg-card text-xs font-medium">
-                    {name}
-                  </TableCell>
-                  {days.map((d) => {
-                    const dateKey = d.format('YYYY-MM-DD');
-                    const codes = row[dateKey];
-                    return (
-                      <TableCell
-                        key={dateKey}
-                        className="border-l border-border/30 p-0.5 text-center"
-                      >
-                        {codes && codes.length > 0 ? (
-                          <div className="flex flex-wrap justify-center gap-0.5">
-                            {codes.map((code, i) => (
-                              <Badge
-                                key={i}
-                                style={{
-                                  backgroundColor: shiftColorMap[code.toUpperCase()] || '#6B7280',
-                                  color: '#fff',
-                                }}
-                                className="font-bold"
-                              >
-                                {code}
-                              </Badge>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground" />
-                        )}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
     </div>
   );
 }

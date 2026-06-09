@@ -110,5 +110,16 @@
   "no_teams_found": "No se encontraron equipos",
   "page_x_of_y": "Página {{current}} de {{total}}",
   "loading_teams": "Cargando equipos...",
-  "select_team_row": "Seleccionar este equipo"
+  "select_team_row": "Seleccionar este equipo",
+  "view_full_details": "Ver todos los detalles",
+  "imported_members": "Miembros importados",
+  "imported_shifts": "Turnos importados",
+  "existing_members": "Miembros existentes del equipo",
+  "existing_shifts": "Turnos existentes del equipo",
+  "full_table_members_title": "Todos los miembros — Importados vs Existentes",
+  "full_table_shifts_title": "Todos los turnos — Importados vs Existentes",
+  "no_data": "Sin datos",
+  "legend_added": "Añadido",
+  "legend_merged": "Fusionado",
+  "legend_skipped": "Omitido"
 }

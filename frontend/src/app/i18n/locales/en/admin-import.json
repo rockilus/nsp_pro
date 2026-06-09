@@ -110,5 +110,16 @@
   "no_teams_found": "No teams found",
   "page_x_of_y": "Page {{current}} of {{total}}",
   "loading_teams": "Loading teams...",
-  "select_team_row": "Select this team"
+  "select_team_row": "Select this team",
+  "view_full_details": "View full details",
+  "imported_members": "Imported Members",
+  "imported_shifts": "Imported Shifts",
+  "existing_members": "Existing Team Members",
+  "existing_shifts": "Existing Team Shifts",
+  "full_table_members_title": "All Members — Imported vs Existing",
+  "full_table_shifts_title": "All Shifts — Imported vs Existing",
+  "no_data": "No data",
+  "legend_added": "Added",
+  "legend_merged": "Merged",
+  "legend_skipped": "Skipped"
 }

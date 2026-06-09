@@ -110,5 +110,16 @@
   "no_teams_found": "Aucune équipe trouvée",
   "page_x_of_y": "Page {{current}} sur {{total}}",
   "loading_teams": "Chargement des équipes...",
-  "select_team_row": "Sélectionner cette équipe"
+  "select_team_row": "Sélectionner cette équipe",
+  "view_full_details": "Voir tous les détails",
+  "imported_members": "Membres importés",
+  "imported_shifts": "Quarts importés",
+  "existing_members": "Membres existants de l'équipe",
+  "existing_shifts": "Quarts existants de l'équipe",
+  "full_table_members_title": "Tous les membres — Importés vs Existants",
+  "full_table_shifts_title": "Tous les quarts — Importés vs Existants",
+  "no_data": "Aucune donnée",
+  "legend_added": "Ajouté",
+  "legend_merged": "Fusionné",
+  "legend_skipped": "Ignoré"
 }

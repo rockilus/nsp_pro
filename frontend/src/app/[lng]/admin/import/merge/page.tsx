@@ -1,8 +1,9 @@
 'use client';
 
-import React, { Suspense, useCallback, useState } from 'react';
+import React, { Suspense, useCallback, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslation } from '@/app/i18n/client';
+import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import AdminImportMergeStep1 from '@/components/admin/admin-import-merge-step1';
 import AdminImportMergeStep2 from '@/components/admin/admin-import-merge-step2';
@@ -12,64 +13,10 @@ import {
   type MergeRequest,
   type MergeResult,
   type MergeTargetsResponse,
-  type WorkerMergeMapping,
-  type ShiftMergeMapping,
-  type RequestMergeMapping,
-  type AssignmentMergeConfig,
 } from '@/app/lib/import-merge-utils';
+import { useImportMergeStore } from '@/stores/import-merge-store';
 import { useAuth } from '@/contexts/auth-context';
 import { env } from '@/config/env';
-
-// ── Import record types (subset needed for the wizard) ───────────────────────
-
-interface ImportMember {
-  generatedId: string;
-  name: string;
-  acronym: string;
-  warnings: string[];
-}
-
-interface ImportShift {
-  generatedId: string;
-  name: string;
-  acronym: string;
-  shiftType: number;
-  startTime: number;
-  endTime: number;
-  color: string;
-  duty: boolean;
-  mandatoryRest: boolean;
-  warnings: string[];
-}
-
-interface ImportRequest {
-  generatedId: string;
-  workerName: string;
-  workerId: string;
-  startDate: number;
-  endDate: number;
-  shiftCode: string;
-  status: string;
-  warnings: string[];
-}
-
-interface ImportAssignment {
-  generatedId: string;
-  workerName: string;
-  workerId: string;
-  date: number;
-  shiftCode: string;
-  shiftId: string;
-}
-
-interface ImportRecordData {
-  id: string;
-  name: string;
-  members: ImportMember[];
-  shifts: ImportShift[];
-  requests: ImportRequest[];
-  assignments: ImportAssignment[];
-}
 
 // ── Auth helpers ─────────────────────────────────────────────────────────────
 
@@ -95,69 +42,111 @@ function MergeContent({ lng }: { lng: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const importId = searchParams.get('id');
+  const stepParam = searchParams.get('step');
+  const step: Step = stepParam === '2' ? 2 : stepParam === '3' ? 3 : 1;
 
-  const [step, setStep] = useState<Step>(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Shared state across steps
-  const [importData, setImportData] = useState<ImportRecordData | null>(null);
-  const [selectedTeamId, setSelectedTeamId] = useState('');
-  const [targets, setTargets] = useState<MergeTargetsResponse | null>(null);
-  const [workerMappings, setWorkerMappings] = useState<WorkerMergeMapping[]>([]);
-  const [shiftMappings, setShiftMappings] = useState<ShiftMergeMapping[]>([]);
-  const [requestMappings, setRequestMappings] = useState<RequestMergeMapping[]>([]);
-  const [assignmentConfig, setAssignmentConfig] = useState<AssignmentMergeConfig>({
-    includeAll: true,
-    startDate: null,
-    endDate: null,
-  });
-  const [mergeResult, setMergeResult] = useState<MergeResult | null>(null);
-
-  // Auth context — use the real auth context
+  const store = useImportMergeStore();
   const { user } = useAuth();
+
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [mergeResult, setMergeResult] = React.useState<MergeResult | null>(null);
+
+  // ── Navigate to a step via URL ──
+  const goToStep = useCallback(
+    (s: Step) => {
+      router.push(`/${lng}/admin/import/merge?id=${importId}&step=${s}`, { scroll: false });
+    },
+    [lng, importId, router],
+  );
+
+  // ── Initialize store.importId on mount ──
+  useEffect(() => {
+    if (importId) {
+      store.setImportId(importId);
+    }
+  }, [importId]); // eslint-disable-line react-hooks/exhaustive-deps -- store is a stable Zustand reference
 
   // ── Step 1 → 2: targets resolved ──
   const handleTargetsResolved = useCallback(
-    (data: ImportRecordData, teamId: string, tgts: MergeTargetsResponse) => {
-      setImportData(data);
-      setSelectedTeamId(teamId);
-      setTargets(tgts);
-      // Initialize mappings from auto-match suggestions
-      setWorkerMappings(tgts.suggestedWorkerMappings);
-      setShiftMappings(tgts.suggestedShiftMappings);
-      // Default requests to add_new unless cascaded out later
-      setRequestMappings(
+    (
+      data: {
+        members: { generatedId: string; name: string; acronym: string; warnings: string[] }[];
+        shifts: {
+          generatedId: string;
+          name: string;
+          acronym: string;
+          shiftType: number;
+          startTime: number;
+          endTime: number;
+          color: string;
+          duty: boolean;
+          mandatoryRest: boolean;
+          warnings: string[];
+        }[];
+        requests: {
+          generatedId: string;
+          workerName: string;
+          workerId: string;
+          startDate: number;
+          endDate: number;
+          shiftCode: string;
+          status: string;
+          warnings: string[];
+        }[];
+        assignments: {
+          generatedId: string;
+          workerName: string;
+          workerId: string;
+          date: number;
+          shiftCode: string;
+          shiftId: string;
+        }[];
+      },
+      teamId: string,
+      tgts: MergeTargetsResponse,
+    ) => {
+      store.setImportData({
+        members: data.members,
+        shifts: data.shifts,
+        requests: data.requests,
+        assignments: data.assignments,
+      });
+      store.setSelectedTeamId(teamId);
+      store.setTargets(tgts);
+      store.setWorkerMappings(tgts.suggestedWorkerMappings);
+      store.setShiftMappings(tgts.suggestedShiftMappings);
+      store.setRequestMappings(
         (data.requests || []).map((r) => ({
           generatedId: r.generatedId,
           action: 'add_new' as MergeAction,
           targetRequestId: null,
         })),
       );
-      setStep(2);
+      goToStep(2);
     },
-    [],
+    [store, goToStep],
   );
 
   // ── Step 2 → 3: confirm ──
   const handleConfirm = useCallback(() => {
-    setStep(3);
-  }, []);
+    goToStep(3);
+  }, [goToStep]);
 
   // ── Step 3: execute merge ──
   const handleExecuteMerge = useCallback(async () => {
-    if (!importId || !importData) return;
+    if (!importId || !store.importData) return;
     setLoading(true);
     setError(null);
 
     try {
       const headers = buildAuthHeaders(user);
       const payload: MergeRequest = {
-        teamId: selectedTeamId,
-        workerMappings,
-        shiftMappings,
-        requestMappings,
-        assignmentConfig,
+        teamId: store.selectedTeamId || '',
+        workerMappings: store.workerMappings,
+        shiftMappings: store.shiftMappings,
+        requestMappings: store.requestMappings,
+        assignmentConfig: store.assignmentConfig,
       };
 
       const resp = await fetch(
@@ -181,27 +170,16 @@ function MergeContent({ lng }: { lng: string }) {
     } finally {
       setLoading(false);
     }
-  }, [
-    importId,
-    importData,
-    selectedTeamId,
-    workerMappings,
-    shiftMappings,
-    requestMappings,
-    assignmentConfig,
-    user,
-  ]);
+  }, [importId, store, user]);
 
   // ── Navigation ──
   const handleBack = useCallback(() => {
     if (step === 1) {
       router.push(`/${lng}/admin/import/editor?id=${importId}`);
-    } else if (step === 2) {
-      setStep(1);
     } else {
-      setStep(2);
+      goToStep((step - 1) as Step);
     }
-  }, [step, lng, importId, router]);
+  }, [step, lng, importId, router, goToStep]);
 
   // ── Missing import ID ──
   if (!importId) {
@@ -212,21 +190,52 @@ function MergeContent({ lng }: { lng: string }) {
     );
   }
 
+  // ── Step labels for stepper ──
+  const stepLabels: Record<Step, string> = {
+    1: t('merge_step1_title') || '1. Select Team',
+    2: t('merge_step2_title') || '2. Review Matches',
+    3: t('merge_step3_title') || '3. Confirm',
+  };
+
+  const importData = store.importData;
+  const targets = store.targets;
+
   return (
     <div className="flex flex-col gap-3">
-      {/* Step indicator */}
+      {/* Stepper — clickable steps */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span className={step >= 1 ? 'font-semibold text-foreground' : ''}>
-          {t('merge_step1_title') || '1. Select Team'}
-        </span>
-        <span>→</span>
-        <span className={step >= 2 ? 'font-semibold text-foreground' : ''}>
-          {t('merge_step2_title') || '2. Review Matches'}
-        </span>
-        <span>→</span>
-        <span className={step >= 3 ? 'font-semibold text-foreground' : ''}>
-          {t('merge_step3_title') || '3. Confirm'}
-        </span>
+        {([1, 2, 3] as Step[]).map((s, idx) => {
+          const isActive = s === step;
+          const isDone = s < step;
+          const isClickable = s <= Math.min(step + 1, 3) && importData !== null;
+          return (
+            <React.Fragment key={s}>
+              {idx > 0 && <div className="h-px flex-1 border-t border-border" />}
+              <div className="flex items-center gap-1.5">
+                <Badge
+                  variant={isActive || isDone ? 'default' : 'secondary'}
+                  className={`size-6 justify-center rounded-full p-0 text-xs ${
+                    isClickable ? 'cursor-pointer' : ''
+                  }`}
+                  onClick={() => {
+                    if (isClickable) {
+                      if (s === 1) goToStep(1);
+                      else if (s === 2 && importData) goToStep(2);
+                      else if (s === 3 && importData) goToStep(3);
+                    }
+                  }}
+                >
+                  {s}
+                </Badge>
+                <span
+                  className={`text-xs whitespace-nowrap ${isActive ? 'font-semibold text-foreground' : ''}`}
+                >
+                  {stepLabels[s]}
+                </span>
+              </div>
+            </React.Fragment>
+          );
+        })}
       </div>
 
       {/* Error banner */}
@@ -254,14 +263,15 @@ function MergeContent({ lng }: { lng: string }) {
           requests={importData.requests}
           assignments={importData.assignments}
           targets={targets}
-          workerMappings={workerMappings}
-          shiftMappings={shiftMappings}
-          requestMappings={requestMappings}
-          assignmentConfig={assignmentConfig}
-          onWorkerMappingsChange={setWorkerMappings}
-          onShiftMappingsChange={setShiftMappings}
-          onRequestMappingsChange={setRequestMappings}
-          onAssignmentConfigChange={setAssignmentConfig}
+          workerMappings={store.workerMappings}
+          shiftMappings={store.shiftMappings}
+          requestMappings={store.requestMappings}
+          assignmentConfig={store.assignmentConfig}
+          selectedTeamId={store.selectedTeamId}
+          onWorkerMappingsChange={store.setWorkerMappings}
+          onShiftMappingsChange={store.setShiftMappings}
+          onRequestMappingsChange={store.setRequestMappings}
+          onAssignmentConfigChange={store.setAssignmentConfig}
           onBack={handleBack}
           onNext={handleConfirm}
         />
@@ -270,11 +280,11 @@ function MergeContent({ lng }: { lng: string }) {
       {step === 3 && importData && (
         <AdminImportMergeConfirm
           lng={lng}
-          workerMappings={workerMappings}
-          shiftMappings={shiftMappings}
-          requestMappings={requestMappings}
+          workerMappings={store.workerMappings}
+          shiftMappings={store.shiftMappings}
+          requestMappings={store.requestMappings}
           assignments={importData.assignments}
-          assignmentConfig={assignmentConfig}
+          assignmentConfig={store.assignmentConfig}
           mergeResult={mergeResult}
           loading={loading}
           onExecute={handleExecuteMerge}
