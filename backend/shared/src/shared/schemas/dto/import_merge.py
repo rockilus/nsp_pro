@@ -45,6 +45,8 @@ class RequestMergeMapping(BaseModel):
     generatedId: str
     action: MergeAction
     targetRequestId: Optional[str] = None  # For idempotent re-imports
+    skipReason: Optional[str] = None
+    # Values: 'cascade_worker' when parent worker was skipped
 
 
 # ── Assignment configuration ─────────────────────────────────────────────────
@@ -85,6 +87,7 @@ class MergeResult(BaseModel):
     shiftsSkipped: int = 0
     requestsCreated: int = 0
     requestsSkipped: int = 0
+    requestsCascadeSkipped: int = 0
     assignmentsCreated: int = 0
 
 

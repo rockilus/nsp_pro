@@ -185,6 +185,7 @@ function result(overrides: Partial<MergeResult> = {}): MergeResult {
     shiftsSkipped: 0,
     requestsCreated: 0,
     requestsSkipped: 0,
+    requestsCascadeSkipped: 0,
     assignmentsCreated: 0,
     ...overrides,
   };
@@ -670,34 +671,49 @@ describe('Requests', () => {
         after: snap({ workers: [worker] }),
         mergeReq: {
           workerMappings: [wm('gen-alice', 'skip')],
-          requestMappings: [rm('gen-req', 'add_new')],
+          requestMappings: [
+            { generatedId: 'gen-req', action: 'skip', skipReason: 'cascade_worker' },
+          ],
         },
-        mergeResult: { workersSkipped: 1, requestsSkipped: 1, requestsCreated: 0 },
+        mergeResult: {
+          workersSkipped: 1,
+          requestsCascadeSkipped: 1,
+          requestsSkipped: 0,
+          requestsCreated: 0,
+        },
         previewMembers: [pm('gen-alice', 'Alice')],
         previewRequests: [prq('gen-req', 'gen-alice', START, END)],
       }),
     );
   });
 
-  it('request for skipped imported worker is added is NOT OK — currently undetected', async () => {
+  it('request for skipped imported worker is added is NOT OK', async () => {
     const worker = w('w1', 'Alice Worker', 'AL');
     const req = rq('r-bad', 'w1', START, END);
-    // GAP: The verification cannot detect this because workerIdMap returns
-    // null for a skipped worker, so it cannot match the request to a real
-    // worker.  This test documents the gap — verifyMergeOutcome passes.
-    await verifyMergeOutcome(
-      mkParams({
-        before: snap({ workers: [worker] }),
-        after: snap({ workers: [worker], requests: [req] }),
-        mergeReq: {
-          workerMappings: [wm('gen-alice', 'skip')],
-          requestMappings: [rm('gen-req', 'add_new')],
-        },
-        mergeResult: { workersSkipped: 1, requestsSkipped: 1, requestsCreated: 0 },
-        previewMembers: [pm('gen-alice', 'Alice')],
-        previewRequests: [prq('gen-req', 'gen-alice', START, END)],
-      }),
-    );
+    // With explicit cascade-skip in requestMappings, verification can detect
+    // that a cascade-skipped request was erroneously created
+    await expect(
+      verifyMergeOutcome(
+        mkParams({
+          before: snap({ workers: [worker] }),
+          after: snap({ workers: [worker], requests: [req] }),
+          mergeReq: {
+            workerMappings: [wm('gen-alice', 'skip')],
+            requestMappings: [
+              { generatedId: 'gen-req', action: 'skip', skipReason: 'cascade_worker' },
+            ],
+          },
+          mergeResult: {
+            workersSkipped: 1,
+            requestsCascadeSkipped: 1,
+            requestsSkipped: 0,
+            requestsCreated: 0,
+          },
+          previewMembers: [pm('gen-alice', 'Alice')],
+          previewRequests: [prq('gen-req', 'gen-alice', START, END)],
+        }),
+      ),
+    ).rejects.toThrow();
   });
 
   it('request for skipped imported shift is not added is OK', async () => {
@@ -740,9 +756,9 @@ describe('Requests', () => {
     );
   });
 
-  it('request for skipped worker omitted from requestMappings is not created is OK', async () => {
-    // The frontend omits requests for skipped workers from requestMappings
-    // entirely (cascading effect).  The backend must NOT create them.
+  it('request for skipped worker is cascade-skipped in requestMappings is OK', async () => {
+    // ALL imported requests are included in requestMappings — cascade-skipped
+    // ones have action='skip' with skipReason='cascade_worker'
     const alice = w('w-existing', 'Alice Worker', 'AL');
     const bob = w('w-new', 'Bob', 'BO');
     await verifyMergeOutcome(
@@ -751,11 +767,14 @@ describe('Requests', () => {
         after: snap({ workers: [alice, bob] }),
         mergeReq: {
           workerMappings: [wm('gen-alice', 'skip'), wm('gen-bob', 'add_new')],
-          requestMappings: [], // gen-req is NOT included — it was for gen-alice
+          requestMappings: [
+            { generatedId: 'gen-req', action: 'skip', skipReason: 'cascade_worker' },
+          ],
         },
         mergeResult: {
           workersSkipped: 1,
           workersCreated: 1,
+          requestsCascadeSkipped: 1,
           requestsSkipped: 0,
           requestsCreated: 0,
         },
@@ -765,9 +784,9 @@ describe('Requests', () => {
     );
   });
 
-  it('request for skipped worker omitted from requestMappings is created is NOT OK', async () => {
-    // The frontend omitted the request, but the backend spuriously created
-    // it — verifyMergeOutcome must catch this.
+  it('request for skipped worker included in requestMappings is created is NOT OK', async () => {
+    // The cascade-skipped request was erroneously created despite being
+    // marked with skipReason='cascade_worker'
     const alice = w('w-existing', 'Alice Worker', 'AL');
     const bob = w('w-new', 'Bob', 'BO');
     const badReq = rq('r-bad', 'w-existing', START, END);
@@ -778,11 +797,14 @@ describe('Requests', () => {
           after: snap({ workers: [alice, bob], requests: [badReq] }),
           mergeReq: {
             workerMappings: [wm('gen-alice', 'skip'), wm('gen-bob', 'add_new')],
-            requestMappings: [], // gen-req omitted — was for gen-alice
+            requestMappings: [
+              { generatedId: 'gen-req', action: 'skip', skipReason: 'cascade_worker' },
+            ],
           },
           mergeResult: {
             workersSkipped: 1,
             workersCreated: 1,
+            requestsCascadeSkipped: 1,
             requestsSkipped: 0,
             requestsCreated: 0,
           },

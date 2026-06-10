@@ -110,6 +110,17 @@ export default function AdminImportMergeConfirm({
             </div>
             <div className="text-xl font-bold text-green-600">{mergeResult.requestsCreated}</div>
           </div>
+          {mergeResult.requestsCascadeSkipped > 0 && (
+            <div
+              className="rounded-lg border border-border p-3"
+              data-testid="merge-result-requests-cascade-skipped"
+            >
+              <div className="text-xs text-muted-foreground">Requests cascade-skipped</div>
+              <div className="text-xl font-bold text-orange-500">
+                {mergeResult.requestsCascadeSkipped}
+              </div>
+            </div>
+          )}
           <div className="rounded-lg border border-border p-3">
             <div className="text-xs text-muted-foreground">
               {t('assignments_created') || 'Assignments created'}
@@ -176,10 +187,14 @@ export default function AdminImportMergeConfirm({
       </div>
 
       {/* Skipped summary */}
-      {(summary.workersToSkip > 0 || summary.shiftsToSkip > 0 || summary.requestsToSkip > 0) && (
+      {(summary.workersToSkip > 0 ||
+        summary.shiftsToSkip > 0 ||
+        summary.requestsToSkip > 0 ||
+        summary.requestsCascadeSkip > 0) && (
         <div className="mb-4 text-xs text-muted-foreground">
           Skipped: {summary.workersToSkip} worker(s), {summary.shiftsToSkip} shift(s),{' '}
           {summary.requestsToSkip} request(s)
+          {summary.requestsCascadeSkip > 0 && <>, {summary.requestsCascadeSkip} cascade-skipped</>}
         </div>
       )}
 

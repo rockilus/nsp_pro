@@ -392,15 +392,33 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
     }
   }
 
-  // Explicitly skipped requests should NOT exist
+  // Explicitly skipped requests should NOT exist.  For cascade-skipped
+  // requests the workerIdMap returns null (parent worker was skipped),
+  // so we fall back to date-range matching like section 5b.
   for (const gid of explicitlySkippedRequestGids) {
     const previewReq = previewRequests.find((r) => r.generatedId === gid);
     if (!previewReq) continue;
     const workerId = workerIdMap.get(previewReq.workerId);
-    const exists = after.requests.some(
-      (r) => r.workerId === workerId && (r.startDate as unknown as number) === previewReq.startDate,
-    );
-    expect(exists, `Skipped request ${gid} should NOT exist`).toBe(false);
+    if (workerId) {
+      // Worker was not skipped — check by real worker ID
+      const exists = after.requests.some(
+        (r) =>
+          r.workerId === workerId && (r.startDate as unknown as number) === previewReq.startDate,
+      );
+      expect(exists, `Skipped request ${gid} should NOT exist`).toBe(false);
+    } else {
+      // Worker was skipped — fall back to date-range matching
+      const exists = after.requests.some(
+        (r) =>
+          (r.startDate as unknown as number) === previewReq.startDate &&
+          (r.endDate as unknown as number) === previewReq.endDate &&
+          !before.requestIds.has(r.id),
+      );
+      expect(
+        exists,
+        `Cascade-skipped request ${gid} (worker ${previewReq.workerId} was skipped) should NOT exist in DB`,
+      ).toBe(false);
+    }
   }
 
   // ── 5b. Requests for skipped workers NOT in requestMappings ────────────
@@ -454,18 +472,27 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
     mergeReq.shiftMappings.filter((m) => m.action === 'skip').length,
   );
 
-  // Requests skipped count includes explicitly skipped AND cascade-skipped
-  // requests that were present in requestMappings.  Requests for skipped
-  // workers that were entirely omitted from requestMappings are NOT counted
-  // here — the backend never sees them.
-  const expectedRequestsSkipped =
-    mergeReq.requestMappings.filter((m) => m.action === 'skip').length +
-    cascadeSkippedInMappings.size;
-  expect(mergeResult.requestsSkipped).toBe(expectedRequestsSkipped);
+  // Requests skipped: user-chosen skip only (not cascade)
+  const expectedUserSkipped = mergeReq.requestMappings.filter(
+    (m) => m.action === 'skip' && m.skipReason !== 'cascade_worker',
+  ).length;
+  expect(mergeResult.requestsSkipped).toBe(expectedUserSkipped);
 
-  const expectedRequestsCreated =
-    mergeReq.requestMappings.filter((m) => m.action !== 'skip').length -
-    cascadeSkippedInMappings.size;
+  // Requests cascade-skipped: those with skipReason='cascade_worker'
+  const expectedCascadeSkipped = mergeReq.requestMappings.filter(
+    (m) => m.action === 'skip' && m.skipReason === 'cascade_worker',
+  ).length;
+  expect(mergeResult.requestsCascadeSkipped).toBe(expectedCascadeSkipped);
+
+  // Total requests the backend will actually skip = user-skipped + cascade-skipped
+  // (Backend result only counts cascade-skipped via requestsCascadeSkipped,
+  //  requestsSkipped is exclusively user-chosen skips.)
+  const expectedRequestsSkippedTotal = expectedUserSkipped;
+  expect(mergeResult.requestsSkipped).toBe(expectedRequestsSkippedTotal);
+
+  const expectedRequestsCreated = mergeReq.requestMappings.filter(
+    (m) => m.action !== 'skip',
+  ).length;
   expect(mergeResult.requestsCreated).toBe(expectedRequestsCreated);
 
   // ── 7. Assignments: verify created assignments reference correct IDs ───

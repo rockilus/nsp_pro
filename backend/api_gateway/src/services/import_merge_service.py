@@ -396,7 +396,7 @@ class ImportMergeService(BaseService):
 
             # Cascade: if the parent worker was skipped, skip the request
             if worker_gid not in valid_worker_gids:
-                result.requestsSkipped += 1
+                result.requestsCascadeSkipped += 1
                 continue
 
             action = request_action.get(gid, MergeAction.ADD_NEW)
@@ -408,7 +408,7 @@ class ImportMergeService(BaseService):
             if action == MergeAction.ADD_NEW:
                 real_worker_id = id_remap_workers.get(worker_gid)
                 if real_worker_id is None:
-                    result.requestsSkipped += 1
+                    result.requestsCascadeSkipped += 1
                     continue
 
                 request = self._dict_to_request(

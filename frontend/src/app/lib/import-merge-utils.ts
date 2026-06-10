@@ -25,6 +25,7 @@ export interface RequestMergeMapping {
   generatedId: string;
   action: MergeAction;
   targetRequestId?: string | null;
+  skipReason?: string | null; // 'cascade_worker' when parent worker was skipped
 }
 
 export interface AssignmentMergeConfig {
@@ -50,6 +51,7 @@ export interface MergeResult {
   shiftsSkipped: number;
   requestsCreated: number;
   requestsSkipped: number;
+  requestsCascadeSkipped: number;
   assignmentsCreated: number;
 }
 
@@ -135,6 +137,7 @@ export interface MergeSummary {
   shiftsToSkip: number;
   requestsToCreate: number;
   requestsToSkip: number;
+  requestsCascadeSkip: number;
   assignmentsToCreate: number;
 }
 
@@ -168,12 +171,17 @@ export function computeMergeSummary(
     else shiftsToSkip++;
   }
 
-  // Requests — cascade: requests whose worker was skipped are auto-skipped
+  // Requests — action field is already resolved to include cascade-skip
   let requestsToCreate = 0;
   let requestsToSkip = 0;
+  let requestsCascadeSkip = 0;
   for (const rm of requestMappings) {
     if (rm.action === 'skip') {
-      requestsToSkip++;
+      if (rm.skipReason === 'cascade_worker') {
+        requestsCascadeSkip++;
+      } else {
+        requestsToSkip++;
+      }
     } else {
       requestsToCreate++;
     }
@@ -195,6 +203,7 @@ export function computeMergeSummary(
     shiftsToSkip,
     requestsToCreate,
     requestsToSkip,
+    requestsCascadeSkip,
     assignmentsToCreate,
   };
 }

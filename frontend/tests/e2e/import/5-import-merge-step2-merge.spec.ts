@@ -215,7 +215,7 @@ test.describe('AdminImportMergeStep2 — Merge: Members', () => {
         { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
         { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
       ],
-      requestMappings: [],
+      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip', skipReason: 'cascade_worker' }],
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 

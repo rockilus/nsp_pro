@@ -300,12 +300,50 @@ export default function AdminImportMergeStep2({
   const handleRequestAction = useCallback(
     (generatedId: string, action: MergeAction) => {
       const next = requestMappings.map((m) =>
-        m.generatedId === generatedId ? { ...m, action } : m,
+        m.generatedId === generatedId ? { ...m, action, skipReason: null } : m,
       );
       onRequestMappingsChange(next);
     },
     [requestMappings, onRequestMappingsChange],
   );
+
+  // Propagate cascade-skip to requestMappings when workers are skipped/unskipped.
+  // ALL imported requests remain in requestMappings — cascade-skipped ones get
+  // action='skip' with skipReason='cascade_worker' so they are traceable.
+  useEffect(() => {
+    const validWorkerGids = buildValidWorkerGids(workerMappings);
+
+    // Find the set of request.generatedIds whose parent worker was skipped
+    const cascadeSkipRequestGids = new Set<string>();
+    for (const r of requests) {
+      if (!validWorkerGids.has(r.workerId)) {
+        cascadeSkipRequestGids.add(r.generatedId);
+      }
+    }
+
+    // Update requestMappings to reflect current cascade state
+    const updated = requestMappings.map((rm) => {
+      if (cascadeSkipRequestGids.has(rm.generatedId)) {
+        // This request's worker is skipped — force cascade-skip
+        return { ...rm, action: 'skip' as MergeAction, skipReason: 'cascade_worker' };
+      }
+      // This request's worker is valid — if it was previously cascade-skipped,
+      // restore it to add_new
+      if (rm.skipReason === 'cascade_worker') {
+        return { ...rm, action: 'add_new' as MergeAction, skipReason: null };
+      }
+      return rm;
+    });
+
+    // Only fire if something actually changed to avoid infinite loops
+    const changed = updated.some(
+      (u, i) =>
+        u.action !== requestMappings[i]?.action || u.skipReason !== requestMappings[i]?.skipReason,
+    );
+    if (changed) {
+      onRequestMappingsChange(updated);
+    }
+  }, [workerMappings, requests]); // eslint-disable-line react-hooks/exhaustive-deps -- intentionally keyed on workerMappings+requests, not requestMappings
 
   // ── Assignment config handler ──
   const handleIncludeAll = useCallback(() => {
