@@ -193,8 +193,8 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
     previewShifts,
   } = params;
 
-  console.log('mergeReq', mergeReq);
-  console.log('mergeResult', mergeResult);
+  // console.log('mergeReq', mergeReq);
+  // console.log('mergeResult', mergeResult);
 
   const afterWorkerIds = new Set(after.workers.map((w) => w.id));
   const afterShiftIds = new Set(after.shifts.map((s) => s.id));
