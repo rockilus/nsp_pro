@@ -24,7 +24,7 @@ import { randomUUID } from 'crypto';
 import { ImportMergeTestBase } from '../../utils/import-merge-test-base';
 import { testConfig } from '../../utils/test-config';
 import { verifyMergeOutcome } from '../../utils/merge-verification';
-import type { MergeRequest } from '@/app/lib/import-merge-utils';
+import type { MergeRequest, MergeResult } from '@/app/lib/import-merge-utils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 
@@ -141,6 +141,32 @@ async function expectResultCard(
   await expect(card.locator('.text-xl.font-bold')).toHaveText(String(expectedCount));
 }
 
+/**
+ * Click "Execute Merge" and capture the actual HTTP request + response
+ * from the browser via waitForResponse. Returns the real MergeRequest
+ * the UI sent and the real MergeResult the API returned.
+ */
+async function captureMergeViaUI(
+  page: import('@playwright/test').Page,
+  testBase: ImportMergeTestBase,
+): Promise<{ mergeReq: MergeRequest; mergeResult: MergeResult }> {
+  const importId = testBase.getImportRecordId()!;
+
+  // Start waiting for the merge POST response *before* clicking execute
+  const respPromise = page.waitForResponse(
+    (r) => r.url().includes(`/admin/imports/${importId}/merge`) && r.request().method() === 'POST',
+    { timeout: 30000 },
+  );
+
+  await page.locator('[data-testid="merge-execute-btn"]').click();
+
+  const resp = await respPromise;
+  const mergeReq: MergeRequest = resp.request().postDataJSON();
+  const mergeResult: MergeResult = await resp.json();
+
+  return { mergeReq, mergeResult };
+}
+
 // ── Members Merge ────────────────────────────────────────────────────────────
 
 test.describe('AdminImportMergeConfirm — Merge: Members', () => {
@@ -182,8 +208,8 @@ test.describe('AdminImportMergeConfirm — Merge: Members', () => {
     await expect(page.locator('[data-testid="merge-confirm-warning"]')).toBeVisible();
     await expect(page.locator('[data-testid="merge-confirm-skipped-summary"]')).toBeVisible();
 
-    // Execute merge via UI
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    // Execute merge via UI and capture the real request + response
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     // ── Post-merge result UI assertions ──
     await expect(page.locator('text=Merge Complete')).toBeVisible();
@@ -193,9 +219,6 @@ test.describe('AdminImportMergeConfirm — Merge: Members', () => {
     await expectResultCard(page, 'merge-result-shifts-updated', 1);
     await expect(page.locator('[data-testid="merge-done-btn"]')).toBeVisible();
 
-    // Build merge request matching what the UI sent
-    const mergeReq = await testBase.buildMergeRequest();
-
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
 
@@ -203,18 +226,7 @@ test.describe('AdminImportMergeConfirm — Merge: Members', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 1,
-        workersUpdated: 1,
-        workersSkipped: 1,
-        shiftsCreated: 1,
-        shiftsUpdated: 1,
-        shiftsSkipped: 0,
-        requestsCreated: 1,
-        requestsSkipped: 0,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 3,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -238,30 +250,11 @@ test.describe('AdminImportMergeConfirm — Merge: Members', () => {
     await expectSummaryCard(page, 'merge-confirm-summary-workers-create', 0);
     await expectSummaryCard(page, 'merge-confirm-summary-workers-update', 1);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expect(page.locator('text=Merge Complete')).toBeVisible();
     await expectResultCard(page, 'merge-result-workers-created', 0);
     await expectResultCard(page, 'merge-result-workers-updated', 1);
-
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -270,18 +263,7 @@ test.describe('AdminImportMergeConfirm — Merge: Members', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 0,
-        workersUpdated: 1,
-        workersSkipped: 2,
-        shiftsCreated: 0,
-        shiftsUpdated: 1,
-        shiftsSkipped: 1,
-        requestsCreated: 0,
-        requestsSkipped: 1,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 2,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -305,28 +287,10 @@ test.describe('AdminImportMergeConfirm — Merge: Members', () => {
     await expectSummaryCard(page, 'merge-confirm-summary-workers-create', 1);
     await expectSummaryCard(page, 'merge-confirm-summary-workers-update', 0);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-workers-created', 1);
     await expectResultCard(page, 'merge-result-workers-updated', 0);
-
-    const targets = await testBase.getTargetsViaApi();
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: BOB_ID, action: 'add_new', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip', skipReason: 'cascade_worker' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -335,18 +299,7 @@ test.describe('AdminImportMergeConfirm — Merge: Members', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 1,
-        workersUpdated: 0,
-        workersSkipped: 2,
-        shiftsCreated: 0,
-        shiftsUpdated: 1,
-        shiftsSkipped: 1,
-        requestsCreated: 0,
-        requestsSkipped: 1,
-        requestsCascadeSkipped: 1,
-        assignmentsCreated: 1,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -392,29 +345,10 @@ test.describe('AdminImportMergeConfirm — Merge: Shifts', () => {
     await expectSummaryCard(page, 'merge-confirm-summary-shifts-create', 1);
     await expectSummaryCard(page, 'merge-confirm-summary-shifts-update', 1);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-shifts-created', 1);
     await expectResultCard(page, 'merge-result-shifts-updated', 1);
-
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'add_new', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -423,18 +357,7 @@ test.describe('AdminImportMergeConfirm — Merge: Shifts', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 1,
-        workersUpdated: 1,
-        workersSkipped: 1,
-        shiftsCreated: 1,
-        shiftsUpdated: 1,
-        shiftsSkipped: 0,
-        requestsCreated: 1,
-        requestsSkipped: 0,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 3,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -461,29 +384,10 @@ test.describe('AdminImportMergeConfirm — Merge: Shifts', () => {
     await expectSummaryCard(page, 'merge-confirm-summary-shifts-create', 0);
     await expectSummaryCard(page, 'merge-confirm-summary-shifts-update', 1);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-shifts-created', 0);
     await expectResultCard(page, 'merge-result-shifts-updated', 1);
-
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -492,18 +396,7 @@ test.describe('AdminImportMergeConfirm — Merge: Shifts', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 0,
-        workersUpdated: 1,
-        workersSkipped: 2,
-        shiftsCreated: 0,
-        shiftsUpdated: 1,
-        shiftsSkipped: 1,
-        requestsCreated: 0,
-        requestsSkipped: 1,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 2,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -527,28 +420,9 @@ test.describe('AdminImportMergeConfirm — Merge: Shifts', () => {
     // Confirm: 0 shifts created
     await expectSummaryCard(page, 'merge-confirm-summary-shifts-create', 0);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-shifts-created', 0);
-
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -557,18 +431,7 @@ test.describe('AdminImportMergeConfirm — Merge: Shifts', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 0,
-        workersUpdated: 1,
-        workersSkipped: 2,
-        shiftsCreated: 0,
-        shiftsUpdated: 1,
-        shiftsSkipped: 1,
-        requestsCreated: 1,
-        requestsSkipped: 0,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 2,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -614,28 +477,9 @@ test.describe('AdminImportMergeConfirm — Merge: Requests', () => {
     // Confirm: 1 request to create
     await expectSummaryCard(page, 'merge-confirm-summary-requests-create', 1);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-requests-created', 1);
-
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -644,18 +488,7 @@ test.describe('AdminImportMergeConfirm — Merge: Requests', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 0,
-        workersUpdated: 1,
-        workersSkipped: 2,
-        shiftsCreated: 0,
-        shiftsUpdated: 1,
-        shiftsSkipped: 1,
-        requestsCreated: 1,
-        requestsSkipped: 0,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 2,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -672,18 +505,7 @@ test.describe('AdminImportMergeConfirm — Merge: Requests', () => {
     await setWorkerAction(page, BOB_ID, 'skip');
     await setWorkerAction(page, CHARLIE_ID, 'skip');
 
-    await navigateToStep3(page);
-
-    // The request defaults to add_new, so confirm shows 1
-    // Change it to skip on step 2 before navigating (but we already navigated)
-    // We can't change request action easily on step 3 — we need to do it on step 2.
-    // For this test, we navigate back to step 2, skip the request, then go to step 3.
-    // Actually, let's skip the request first then navigate.
-    // Re-navigate to step 2 by clicking back
-    await page.locator('[data-testid="merge-step3-back"]').click();
-    await page.waitForSelector('[data-testid="merge-step2-next"]', { timeout: 10000 });
-
-    // Now skip the request
+    // Skip the request on step 2 before navigating to step 3
     const requestAction = page.locator(`[data-testid="merge-request-action-${REQUEST_ID}"]`);
     await requestAction.click();
     await page.locator('[role="option"]', { hasText: 'Skip' }).click();
@@ -694,28 +516,9 @@ test.describe('AdminImportMergeConfirm — Merge: Requests', () => {
     // Confirm: 0 requests to create
     await expectSummaryCard(page, 'merge-confirm-summary-requests-create', 0);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-requests-created', 0);
-
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -724,18 +527,7 @@ test.describe('AdminImportMergeConfirm — Merge: Requests', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 0,
-        workersUpdated: 1,
-        workersSkipped: 2,
-        shiftsCreated: 0,
-        shiftsUpdated: 1,
-        shiftsSkipped: 1,
-        requestsCreated: 0,
-        requestsSkipped: 1,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 2,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -758,27 +550,9 @@ test.describe('AdminImportMergeConfirm — Merge: Requests', () => {
     // Confirm: 0 requests to create (cascade-skipped)
     await expectSummaryCard(page, 'merge-confirm-summary-requests-create', 0);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-requests-created', 0);
-
-    const targets = await testBase.getTargetsViaApi();
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: BOB_ID, action: 'add_new', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip', skipReason: 'cascade_worker' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -787,18 +561,7 @@ test.describe('AdminImportMergeConfirm — Merge: Requests', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 1,
-        workersUpdated: 0,
-        workersSkipped: 2,
-        shiftsCreated: 0,
-        shiftsUpdated: 1,
-        shiftsSkipped: 1,
-        requestsCreated: 0,
-        requestsSkipped: 1,
-        requestsCascadeSkipped: 1,
-        assignmentsCreated: 1,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -842,29 +605,11 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
 
     await navigateToStep3(page);
 
-    await expectSummaryCard(page, 'merge-confirm-summary-assignments-create', 1);
+    await expectSummaryCard(page, 'merge-confirm-summary-assignments-create', 4);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
-    await expectResultCard(page, 'merge-result-assignments-created', 1);
-
-    const targets = await testBase.getTargetsViaApi();
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: BOB_ID, action: 'add_new', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip', skipReason: 'cascade_worker' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
+    await expectResultCard(page, 'merge-result-assignments-created', 4);
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -873,18 +618,7 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 1,
-        workersUpdated: 0,
-        workersSkipped: 2,
-        shiftsCreated: 1,
-        shiftsUpdated: 1,
-        shiftsSkipped: 0,
-        requestsCreated: 0,
-        requestsSkipped: 1,
-        requestsCascadeSkipped: 1,
-        assignmentsCreated: 1,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -904,28 +638,9 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
 
     await navigateToStep3(page);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
-    await expectResultCard(page, 'merge-result-assignments-created', 2);
-
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'add_new', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
+    await expectResultCard(page, 'merge-result-assignments-created', 4);
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -934,18 +649,7 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 1,
-        workersUpdated: 1,
-        workersSkipped: 1,
-        shiftsCreated: 0,
-        shiftsUpdated: 1,
-        shiftsSkipped: 1,
-        requestsCreated: 1,
-        requestsSkipped: 0,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 2,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -972,26 +676,7 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
 
     await navigateToStep3(page);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
-
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'add_new', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
-      assignmentConfig: { includeAll: false, startDate: day1, endDate: day1 },
-    };
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -1000,18 +685,7 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 1,
-        workersUpdated: 1,
-        workersSkipped: 1,
-        shiftsCreated: 1,
-        shiftsUpdated: 1,
-        shiftsSkipped: 0,
-        requestsCreated: 1,
-        requestsSkipped: 0,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 2,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -1036,29 +710,10 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
     await expectSummaryCard(page, 'merge-confirm-summary-workers-create', 0);
     await expectSummaryCard(page, 'merge-confirm-summary-workers-update', 1);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-workers-created', 0);
     await expectResultCard(page, 'merge-result-workers-updated', 1);
-
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -1067,18 +722,7 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 0,
-        workersUpdated: 1,
-        workersSkipped: 2,
-        shiftsCreated: 1,
-        shiftsUpdated: 1,
-        shiftsSkipped: 0,
-        requestsCreated: 1,
-        requestsSkipped: 0,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 2,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -1103,28 +747,9 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
 
     await expectSummaryCard(page, 'merge-confirm-summary-shifts-update', 1);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-shifts-updated', 1);
-
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -1133,18 +758,7 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 0,
-        workersUpdated: 1,
-        workersSkipped: 2,
-        shiftsCreated: 0,
-        shiftsUpdated: 1,
-        shiftsSkipped: 1,
-        requestsCreated: 1,
-        requestsSkipped: 0,
-        requestsCascadeSkipped: 0,
-        assignmentsCreated: 2,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -1168,27 +782,9 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
 
     await expectSummaryCard(page, 'merge-confirm-summary-workers-create', 1);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-workers-created', 1);
-
-    const targets = await testBase.getTargetsViaApi();
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: BOB_ID, action: 'add_new', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip', skipReason: 'cascade_worker' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -1197,18 +793,7 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 1,
-        workersUpdated: 0,
-        workersSkipped: 2,
-        shiftsCreated: 1,
-        shiftsUpdated: 1,
-        shiftsSkipped: 0,
-        requestsCreated: 0,
-        requestsSkipped: 1,
-        requestsCascadeSkipped: 1,
-        assignmentsCreated: 1,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
@@ -1232,27 +817,9 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
 
     await expectSummaryCard(page, 'merge-confirm-summary-shifts-create', 1);
 
-    await page.locator('[data-testid="merge-execute-btn"]').click();
+    const { mergeReq, mergeResult } = await captureMergeViaUI(page, testBase);
 
     await expectResultCard(page, 'merge-result-shifts-created', 1);
-
-    const targets = await testBase.getTargetsViaApi();
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'skip', targetWorkerId: null },
-        { generatedId: BOB_ID, action: 'add_new', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
-        { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip', skipReason: 'cascade_worker' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
 
     const after = await testBase.captureTeamSnapshot();
     const previewData = testBase.getPreviewData();
@@ -1261,18 +828,7 @@ test.describe('AdminImportMergeConfirm — Merge: Schedule', () => {
       before,
       after,
       mergeReq,
-      mergeResult: {
-        workersCreated: 1,
-        workersUpdated: 0,
-        workersSkipped: 2,
-        shiftsCreated: 1,
-        shiftsUpdated: 1,
-        shiftsSkipped: 0,
-        requestsCreated: 0,
-        requestsSkipped: 1,
-        requestsCascadeSkipped: 1,
-        assignmentsCreated: 1,
-      },
+      mergeResult,
       previewAssignments: previewData.assignments,
       previewRequests: previewData.requests,
       previewMembers: previewData.members,
