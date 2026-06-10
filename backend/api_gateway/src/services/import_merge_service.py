@@ -43,7 +43,9 @@ def _minutes_to_datetime(minutes: float) -> datetime:
     total_minutes = int(minutes)
     h = total_minutes // 60
     m = total_minutes % 60
-    return datetime.combine(_REF_DATE, time(hour=h, minute=m), tzinfo=timezone.utc)
+    return datetime.combine(
+        _REF_DATE, time(hour=h, minute=m), tzinfo=timezone.utc
+    )
 
 
 def _levenshtein(s1: str, s2: str) -> int:
@@ -58,7 +60,9 @@ def _levenshtein(s1: str, s2: str) -> int:
         curr = [i + 1]
         for j, c2 in enumerate(s2):
             curr.append(
-                prev[j] if c1 == c2 else 1 + min(prev[j], prev[j + 1], curr[-1])
+                prev[j]
+                if c1 == c2
+                else 1 + min(prev[j], prev[j + 1], curr[-1])
             )
         prev = curr
     return prev[-1]
@@ -77,8 +81,12 @@ class ImportMergeService(BaseService):
         The frontend uses this to populate dropdowns and pre-fill the
         reconciliation table with smart defaults.
         """
-        existing_workers = self.collection.worker_db.get_workers_not_deleted(team_id)
-        existing_shifts = self.collection.shift_db.get_shifts_not_deleted(team_id)
+        existing_workers = self.collection.worker_db.get_workers_not_deleted(
+            team_id
+        )
+        existing_shifts = self.collection.shift_db.get_shifts_not_deleted(
+            team_id
+        )
 
         targets = MergeTargetsResponse(
             workers=[
@@ -158,7 +166,10 @@ class ImportMergeService(BaseService):
 
             # Priority 2: exact name match
             for ew in existing_workers:
-                if ew.name.strip().lower() == name and ew.id not in used_worker_ids:
+                if (
+                    ew.name.strip().lower() == name
+                    and ew.id not in used_worker_ids
+                ):
                     worker_mappings.append(
                         WorkerMergeMapping(
                             generatedId=gid,
@@ -233,7 +244,10 @@ class ImportMergeService(BaseService):
                 continue
 
             for es in existing_shifts:
-                if es.name.strip().lower() == name and es.id not in used_shift_ids:
+                if (
+                    es.name.strip().lower() == name
+                    and es.id not in used_shift_ids
+                ):
                     shift_mappings.append(
                         ShiftMergeMapping(
                             generatedId=gid,
@@ -260,7 +274,9 @@ class ImportMergeService(BaseService):
 
     # ── Merge execution ──────────────────────────────────────────────────
 
-    def execute_merge(self, import_id: str, merge_req: MergeRequest) -> MergeResult:
+    def execute_merge(
+        self, import_id: str, merge_req: MergeRequest
+    ) -> MergeResult:
         """Execute the merge transactionally.
 
         Steps:
@@ -302,10 +318,14 @@ class ImportMergeService(BaseService):
 
         # ── 3. Determine valid worker/shift IDs for cascade ──
         valid_worker_gids: set = {
-            gid for gid, action in worker_action.items() if action != MergeAction.SKIP
+            gid
+            for gid, action in worker_action.items()
+            if action != MergeAction.SKIP
         }
         valid_shift_gids: set = {
-            gid for gid, action in shift_action.items() if action != MergeAction.SKIP
+            gid
+            for gid, action in shift_action.items()
+            if action != MergeAction.SKIP
         }
 
         # ── 4. Process workers ──
@@ -357,10 +377,14 @@ class ImportMergeService(BaseService):
             elif action == MergeAction.MERGE_INTO:
                 real_id = shift_target[gid]
                 try:
-                    existing_shift = self.collection.shift_db.get_shift_by_id(real_id)
+                    existing_shift = self.collection.shift_db.get_shift_by_id(
+                        real_id
+                    )
                 except Exception:
                     raise ValueError(f"Target shift '{real_id}' not found")
-                merged_shift = self._merge_shift_fields(existing_shift, imp_shift)
+                merged_shift = self._merge_shift_fields(
+                    existing_shift, imp_shift
+                )
                 self.collection.shift_db.update_shift(merged_shift)
                 id_remap_shifts[gid] = real_id
                 result.shiftsUpdated += 1
@@ -387,7 +411,9 @@ class ImportMergeService(BaseService):
                     result.requestsSkipped += 1
                     continue
 
-                request = self._dict_to_request(req_data, team_id, real_worker_id)
+                request = self._dict_to_request(
+                    req_data, team_id, real_worker_id
+                )
                 self.collection.request_db.create_request(request)
                 result.requestsCreated += 1
 
@@ -397,7 +423,10 @@ class ImportMergeService(BaseService):
             shift_gid = a_data.get("shiftId", "")
 
             # Cascade: skip if worker or shift was skipped
-            if worker_gid not in valid_worker_gids or shift_gid not in valid_shift_gids:
+            if (
+                worker_gid not in valid_worker_gids
+                or shift_gid not in valid_shift_gids
+            ):
                 continue
 
             # Date filter
@@ -480,11 +509,15 @@ class ImportMergeService(BaseService):
         )
 
     @staticmethod
-    def _merge_worker_fields(existing: Worker, imported: Dict[str, Any]) -> Worker:
+    def _merge_worker_fields(
+        existing: Worker, imported: Dict[str, Any]
+    ) -> Worker:
         """Overwrite existing worker fields with imported values."""
         existing.name = imported.get("name", existing.name)
         existing.acronym = imported.get("acronym", existing.acronym)
-        existing.acronym_custom = imported.get("acronymCustom", existing.acronym_custom)
+        existing.acronym_custom = imported.get(
+            "acronymCustom", existing.acronym_custom
+        )
         existing.employment_start_date = datetime.fromtimestamp(
             imported.get("employmentStartDate", 0), tz=timezone.utc
         ).date()
@@ -495,15 +528,21 @@ class ImportMergeService(BaseService):
             if imported.get("employmentEndDate")
             else None
         )
-        existing.weekly_hours = imported.get("weeklyHours", existing.weekly_hours)
+        existing.weekly_hours = imported.get(
+            "weeklyHours", existing.weekly_hours
+        )
         existing.weekly_hours_desired = imported.get(
             "weeklyHoursDesired", existing.weekly_hours_desired
         )
         existing.duties_per_month = imported.get(
             "dutiesPerMonth", existing.duties_per_month
         )
-        existing.annual_leave = imported.get("annualLeave", existing.annual_leave)
-        existing.specialty_ids = imported.get("specialtyIds", existing.specialty_ids)
+        existing.annual_leave = imported.get(
+            "annualLeave", existing.annual_leave
+        )
+        existing.specialty_ids = imported.get(
+            "specialtyIds", existing.specialty_ids
+        )
         return existing
 
     @staticmethod
@@ -528,28 +567,40 @@ class ImportMergeService(BaseService):
         )
 
     @staticmethod
-    def _merge_shift_fields(existing: Shift, imported: Dict[str, Any]) -> Shift:
+    def _merge_shift_fields(
+        existing: Shift, imported: Dict[str, Any]
+    ) -> Shift:
         """Overwrite existing shift fields with imported values."""
         existing.name = imported.get("name", existing.name)
         existing.acronym = imported.get("acronym", existing.acronym)
-        existing.acronym_custom = imported.get("acronymCustom", existing.acronym_custom)
-        existing.start_time = _minutes_to_datetime(imported.get("startTime", 0))
+        existing.acronym_custom = imported.get(
+            "acronymCustom", existing.acronym_custom
+        )
+        existing.start_time = _minutes_to_datetime(
+            imported.get("startTime", 0)
+        )
         existing.end_time = _minutes_to_datetime(imported.get("endTime", 0))
         existing.staffing = imported.get("staffing", existing.staffing)
         existing.color = imported.get("color", existing.color)
         return existing
 
-    @staticmethod
     def _dict_to_request(
-        data: Dict[str, Any], team_id: str, real_worker_id: str
+        self, data: Dict[str, Any], team_id: str, real_worker_id: str
     ) -> Request:
-        """Convert an imported request dict to a Request domain object."""
+        """Convert an imported request dict to a Request domain object.
+
+        Resolves the imported request's shift_code to a real leave-type
+        shift in the target team.  If no leave shift exists yet, one is
+        auto-created so the merge can proceed.
+        """
         start_date = datetime.fromtimestamp(
             data.get("startDate", 0), tz=timezone.utc
         ).date()
         end_date = datetime.fromtimestamp(
             data.get("endDate", 0), tz=timezone.utc
         ).date()
+
+        shift_id = self._resolve_leave_shift_id(team_id)
 
         return Request(
             id="",
@@ -558,10 +609,45 @@ class ImportMergeService(BaseService):
             worker_id=real_worker_id,
             start_date=start_date,
             end_date=end_date,
-            shift_id=None,  # Imported requests reference shift by code, resolve is best-effort
+            shift_id=shift_id,
             shift_options=[],
             status=RequestStatus.APPROVED,
         )
+
+    def _resolve_leave_shift_id(self, team_id: str) -> str:
+        """Return an existing leave-type shift id for *team_id*, creating
+        one if none exists."""
+        existing_shifts = self.collection.shift_db.get_shifts_not_deleted(
+            team_id
+        )
+        for shift in existing_shifts:
+            if shift.leave_type != ShiftLeaveType.NONE:
+                return shift.id
+
+        # No leave shift yet — auto-create a sensible default
+        leave_shift = Shift(
+            id="",
+            team_id=team_id,
+            name="Leave",
+            acronym="LEAVE",
+            acronym_custom=False,
+            start_time=_minutes_to_datetime(0),  # 00:00
+            end_time=_minutes_to_datetime(24 * 60),  # 24:00
+            staffing=[],
+            color="#9CA3AF",
+            shift_type=ShiftType.LEAVE,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.VACATION,
+            recuperation_time=0,
+            recuperation_duty_id=None,
+            deleted=False,
+        )
+        created = self.collection.shift_db.create_shift(leave_shift)
+        log_info(
+            f"Auto-created leave shift '{created.id}' for team '{team_id}' "
+            f"during import merge"
+        )
+        return created.id
 
     @staticmethod
     def _dict_to_assignment(
@@ -571,7 +657,9 @@ class ImportMergeService(BaseService):
         real_shift_id: str,
     ) -> Assignment:
         """Convert an imported assignment dict to an Assignment domain object."""
-        a_date = datetime.fromtimestamp(data.get("date", 0), tz=timezone.utc).date()
+        a_date = datetime.fromtimestamp(
+            data.get("date", 0), tz=timezone.utc
+        ).date()
 
         return Assignment(
             id="",
