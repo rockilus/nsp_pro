@@ -91,9 +91,9 @@ test.describe('AdminImportMergeStep1 — Team Table', () => {
     const testBase = testBasesMap.get(testRunId)!;
     const team = testBase.getTestTeam()!;
 
-    // Type a filter that matches the test team
+    // Use the full team name to uniquely target the test team
     const nameFilter = page.locator('[data-testid="filter-search_name"]');
-    await nameFilter.fill(team.name.substring(0, 5));
+    await nameFilter.fill(team.name);
     // Wait for the debounced fetch to resolve — the team row should still be visible
     await expect(page.locator(`[data-testid="team-row-${team.teamId}"]`)).toBeVisible({
       timeout: 5000,
@@ -182,6 +182,11 @@ test.describe('AdminImportMergeStep1 — Pagination', () => {
   });
 
   test('should show pagination and allow navigating pages', async ({ page }) => {
+    // Clear the team search filter so all 35+ teams appear (restoring pagination)
+    const nameFilter = page.locator('[data-testid="filter-search_name"]');
+    await nameFilter.fill('');
+    await page.waitForTimeout(500); // let debounced search settle
+
     // Pagination controls should be visible (more than 30 teams)
     const pagination = page.locator('[data-slot="pagination"]');
     await expect(pagination).toBeVisible({ timeout: 5000 });
