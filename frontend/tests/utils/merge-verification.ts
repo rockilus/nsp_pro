@@ -194,6 +194,7 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
   } = params;
 
   console.log('mergeReq', mergeReq);
+  console.log('mergeResult', mergeResult);
 
   const afterWorkerIds = new Set(after.workers.map((w) => w.id));
   const afterShiftIds = new Set(after.shifts.map((s) => s.id));
@@ -346,6 +347,15 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
     mergeReq.requestMappings.filter((rm) => rm.action === 'skip').map((rm) => rm.generatedId),
   );
 
+  // Build set of generatedIds that are actually present in requestMappings,
+  // so we can distinguish "cascade-skipped in mappings" from "omitted entirely".
+  const requestMappingGids = new Set(mergeReq.requestMappings.map((rm) => rm.generatedId));
+
+  // Cascade-skipped requests that are in requestMappings (used for counts)
+  const cascadeSkippedInMappings = new Set(
+    [...cascadeSkippedRequestGids].filter((gid) => requestMappingGids.has(gid)),
+  );
+
   for (const rm of mergeReq.requestMappings) {
     if (rm.action === 'skip') continue; // handled below
     // add_new — should have been created UNLESS cascade-skipped
@@ -393,6 +403,37 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
     expect(exists, `Skipped request ${gid} should NOT exist`).toBe(false);
   }
 
+  // ── 5b. Requests for skipped workers NOT in requestMappings ────────────
+  // When the frontend omits a request entirely from requestMappings because
+  // its worker is skipped, the backend must NOT create it either.  This is
+  // a cascading effect of the frontend management — the merge payload simply
+  // doesn't include the request.
+  for (const pr of previewRequests) {
+    // Only check requests that belong to a skipped worker AND are NOT
+    // represented in any requestMapping (neither skip nor add_new).
+    if (!skippedWorkerGids.has(pr.workerId)) continue;
+    if (requestMappingGids.has(pr.generatedId)) continue;
+
+    // The worker was skipped so workerIdMap returns null — the request
+    // can only have been created under a real worker ID, not the
+    // generated preview ID.  Iterate after.requests and match on date
+    // range + worker identity.  Since we don't have a real workerId to
+    // map to, we match by checking whether ANY after request has the
+    // same (startDate, endDate) and belongs to a real worker that was
+    // NOT in the before snapshot (i.e. was newly created, which would
+    // only happen if the skipped worker was incorrectly imported).
+    const exists = after.requests.some(
+      (r) =>
+        (r.startDate as unknown as number) === pr.startDate &&
+        (r.endDate as unknown as number) === pr.endDate &&
+        !before.requestIds.has(r.id),
+    );
+    expect(
+      exists,
+      `Omitted request ${pr.generatedId} (worker ${pr.workerId} was skipped) should NOT exist in DB`,
+    ).toBe(false);
+  }
+
   // ── 6. Result count assertions ─────────────────────────────────────────
   expect(mergeResult.workersCreated).toBe(
     mergeReq.workerMappings.filter((m) => m.action === 'add_new').length,
@@ -413,15 +454,18 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
     mergeReq.shiftMappings.filter((m) => m.action === 'skip').length,
   );
 
-  // Requests skipped count includes both explicitly skipped AND cascade-skipped
+  // Requests skipped count includes explicitly skipped AND cascade-skipped
+  // requests that were present in requestMappings.  Requests for skipped
+  // workers that were entirely omitted from requestMappings are NOT counted
+  // here — the backend never sees them.
   const expectedRequestsSkipped =
     mergeReq.requestMappings.filter((m) => m.action === 'skip').length +
-    cascadeSkippedRequestGids.size;
+    cascadeSkippedInMappings.size;
   expect(mergeResult.requestsSkipped).toBe(expectedRequestsSkipped);
 
   const expectedRequestsCreated =
     mergeReq.requestMappings.filter((m) => m.action !== 'skip').length -
-    cascadeSkippedRequestGids.size;
+    cascadeSkippedInMappings.size;
   expect(mergeResult.requestsCreated).toBe(expectedRequestsCreated);
 
   // ── 7. Assignments: verify created assignments reference correct IDs ───

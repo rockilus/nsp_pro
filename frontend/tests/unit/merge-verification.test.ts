@@ -739,6 +739,59 @@ describe('Requests', () => {
       }),
     );
   });
+
+  it('request for skipped worker omitted from requestMappings is not created is OK', async () => {
+    // The frontend omits requests for skipped workers from requestMappings
+    // entirely (cascading effect).  The backend must NOT create them.
+    const alice = w('w-existing', 'Alice Worker', 'AL');
+    const bob = w('w-new', 'Bob', 'BO');
+    await verifyMergeOutcome(
+      mkParams({
+        before: snap({ workers: [alice] }),
+        after: snap({ workers: [alice, bob] }),
+        mergeReq: {
+          workerMappings: [wm('gen-alice', 'skip'), wm('gen-bob', 'add_new')],
+          requestMappings: [], // gen-req is NOT included — it was for gen-alice
+        },
+        mergeResult: {
+          workersSkipped: 1,
+          workersCreated: 1,
+          requestsSkipped: 0,
+          requestsCreated: 0,
+        },
+        previewMembers: [pm('gen-alice', 'Alice'), pm('gen-bob', 'Bob')],
+        previewRequests: [prq('gen-req', 'gen-alice', START, END)],
+      }),
+    );
+  });
+
+  it('request for skipped worker omitted from requestMappings is created is NOT OK', async () => {
+    // The frontend omitted the request, but the backend spuriously created
+    // it — verifyMergeOutcome must catch this.
+    const alice = w('w-existing', 'Alice Worker', 'AL');
+    const bob = w('w-new', 'Bob', 'BO');
+    const badReq = rq('r-bad', 'w-existing', START, END);
+    await expect(
+      verifyMergeOutcome(
+        mkParams({
+          before: snap({ workers: [alice] }),
+          after: snap({ workers: [alice, bob], requests: [badReq] }),
+          mergeReq: {
+            workerMappings: [wm('gen-alice', 'skip'), wm('gen-bob', 'add_new')],
+            requestMappings: [], // gen-req omitted — was for gen-alice
+          },
+          mergeResult: {
+            workersSkipped: 1,
+            workersCreated: 1,
+            requestsSkipped: 0,
+            requestsCreated: 0,
+          },
+          previewMembers: [pm('gen-alice', 'Alice'), pm('gen-bob', 'Bob')],
+          previewRequests: [prq('gen-req', 'gen-alice', START, END)],
+        }),
+      ),
+    ).rejects.toThrow();
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
