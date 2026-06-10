@@ -38,8 +38,16 @@ async function setupAndNavigateToStep2(
   await page.waitForLoadState('domcontentloaded');
   await page.waitForSelector('[data-testid="merge-teams-table"]', { timeout: 10000 });
 
-  // Select the test team and click "Review Matches" to go to step 2
+  // Search for the test team by name so it appears on the current page
   const team = testBase.getTestTeam()!;
+  const nameFilter = page.locator('[data-testid="filter-search_name"]');
+  await nameFilter.fill(team.name);
+  await page.waitForTimeout(500); // let debounced search settle
+  await expect(page.locator(`[data-testid="team-row-${team.teamId}"]`)).toBeVisible({
+    timeout: 5000,
+  });
+
+  // Select the test team and click "Review Matches" to go to step 2
   const teamRow = page.locator(`[data-testid="team-row-${team.teamId}"]`);
   await teamRow.click();
 

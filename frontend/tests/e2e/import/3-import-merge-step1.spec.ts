@@ -30,6 +30,20 @@ async function setupAndNavigate(
   return importId;
 }
 
+/** Search for the test team by name so it appears on the current page, then assert row is visible. */
+async function ensureTeamVisible(
+  page: import('@playwright/test').Page,
+  testBase: ImportMergeTestBase,
+) {
+  const team = testBase.getTestTeam()!;
+  const nameFilter = page.locator('[data-testid="filter-search_name"]');
+  await nameFilter.fill(team.name);
+  await page.waitForTimeout(500); // let debounced search settle
+  await expect(page.locator(`[data-testid="team-row-${team.teamId}"]`)).toBeVisible({
+    timeout: 5000,
+  });
+}
+
 // ── Tests ────────────────────────────────────────────────────────────────────
 
 test.describe('AdminImportMergeStep1 — Team Table', () => {
@@ -57,6 +71,9 @@ test.describe('AdminImportMergeStep1 — Team Table', () => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
     const team = testBase.getTestTeam()!;
+
+    // Search for the test team by name so it appears on the current page
+    await ensureTeamVisible(page, testBase);
 
     // The test team row should be visible
     const teamRow = page.locator(`[data-testid="team-row-${team.teamId}"]`);
@@ -111,7 +128,9 @@ test.describe('AdminImportMergeStep1 — Team Table', () => {
     const testBase = testBasesMap.get(testRunId)!;
     const team = testBase.getTestTeam()!;
 
-    // Click the team row to select it
+    // Search for the team so it's on the current page, then click it
+    await ensureTeamVisible(page, testBase);
+
     const teamRow = page.locator(`[data-testid="team-row-${team.teamId}"]`);
     await teamRow.click();
 
@@ -151,6 +170,9 @@ test.describe('AdminImportMergeStep1 — Pagination', () => {
     }
 
     await setupAndNavigate(page, testBase);
+
+    // Search for the test team so it's findable across pages
+    await ensureTeamVisible(page, testBase);
   });
 
   test.afterEach(async ({}, testInfo) => {
