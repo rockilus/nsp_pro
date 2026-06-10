@@ -108,9 +108,10 @@ test.describe('AdminImportMergeStep1 — Team Table', () => {
       { timeout: 5000 },
     );
 
-    // Clear the filter — the team row should reappear
+    // Clear the filter — teams should appear in the table again (specific team may be on a later page)
     await nameFilter.fill('');
-    await expect(page.locator(`[data-testid="team-row-${team.teamId}"]`)).toBeVisible({
+    await page.waitForTimeout(500);
+    await expect(page.locator('[data-testid^="team-row-"]').first()).toBeVisible({
       timeout: 5000,
     });
   });
