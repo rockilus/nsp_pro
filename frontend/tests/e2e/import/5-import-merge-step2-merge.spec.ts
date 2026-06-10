@@ -379,7 +379,7 @@ test.describe('AdminImportMergeStep2 — Merge: Shifts', () => {
         { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
         { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
       ],
-      requestMappings: [],
+      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
@@ -538,7 +538,7 @@ test.describe('AdminImportMergeStep2 — Merge: Requests', () => {
         { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
         { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
       ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
+      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip', skipReason: 'cascade_worker' }],
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
@@ -607,7 +607,7 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
         { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
         { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
       ],
-      requestMappings: [],
+      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip', skipReason: 'cascade_worker' }],
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
@@ -653,7 +653,7 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
         { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
         { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
       ],
-      requestMappings: [],
+      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
@@ -700,7 +700,7 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
         { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
         { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
       ],
-      requestMappings: [],
+      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
       assignmentConfig: { includeAll: false, startDate: day1, endDate: day1 },
     };
 
@@ -748,7 +748,7 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
         { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
         { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
       ],
-      requestMappings: [],
+      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
@@ -797,7 +797,7 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
         { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
         { generatedId: NIGHT_ID, action: 'skip', targetShiftId: null },
       ],
-      requestMappings: [],
+      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
@@ -844,7 +844,7 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
         { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
         { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
       ],
-      requestMappings: [],
+      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip', skipReason: 'cascade_worker' }],
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
@@ -891,7 +891,7 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
         { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTarget?.id ?? null },
         { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
       ],
-      requestMappings: [],
+      requestMappings: [{ generatedId: REQUEST_ID, action: 'skip', skipReason: 'cascade_worker' }],
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
