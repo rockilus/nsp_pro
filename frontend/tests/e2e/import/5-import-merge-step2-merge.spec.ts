@@ -1,9 +1,10 @@
 /**
  * E2E tests for AdminImportMergeStep2 — Merge execution.
  *
- * Each test sets the desired merge mappings via the step 2 UI, navigates
- * to step 3, executes the merge via the API (bypassing the confirm button
- * to isolate merge DB verification), then checks the database state.
+ * Each test captures a DB snapshot before the merge, applies merge
+ * mappings via the API, captures a DB snapshot after the merge, then
+ * delegates all assertion logic to the single shared
+ * `verifyMergeOutcome()` helper.
  *
  * Verifies:
  * - Members: add creates worker, merge updates existing, skip excludes
@@ -19,16 +20,7 @@ import { randomUUID } from 'crypto';
 import { ImportMergeTestBase } from '../../utils/import-merge-test-base';
 import { testConfig } from '../../utils/test-config';
 import { verifyMergeOutcome } from '../../utils/merge-verification';
-import type {
-  MergeRequest,
-  WorkerMergeMapping,
-  ShiftMergeMapping,
-  RequestMergeMapping,
-} from '@/app/lib/import-merge-utils';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-
-dayjs.extend(utc);
+import type { MergeRequest } from '@/app/lib/import-merge-utils';
 
 // ── Generated IDs from test base preview data ────────────────────────────────
 const ALICE_ID = 'gen-alice';
@@ -63,21 +55,6 @@ async function setupAndNavigateToStep2(
     timeout: 5000,
   });
   return importId;
-}
-
-/**
- * Build the complete month date range (1st to last day) from the
- * fixture's min and max dates.
- */
-function getFullMonthRange(): { start: number; end: number } {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const start = Date.UTC(year, month, 1) / 1000;
-  // Last day of the month
-  const lastDay = new Date(year, month + 1, 0);
-  const end = Date.UTC(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate()) / 1000;
-  return { start, end };
 }
 
 /**
@@ -145,24 +122,17 @@ test.describe('AdminImportMergeStep2 — Merge: Members', () => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
 
-    // 1. Capture BEFORE snapshot
     const before = await testBase.captureTeamSnapshot();
 
-    // 2. Set actions in UI
     await setWorkerAction(page, BOB_ID, 'add_new');
     await setWorkerAction(page, CHARLIE_ID, 'skip');
 
-    // 3. Build merge request via helper
     const mergeReq = await testBase.buildMergeRequest();
-
-    // 4. Execute merge
     const result = await testBase.executeMergeViaApi(mergeReq);
 
-    // 5. Capture AFTER snapshot
     const after = await testBase.captureTeamSnapshot();
-
-    // 6. Full verification via reusable helper
     const previewData = testBase.getPreviewData();
+
     await verifyMergeOutcome({
       before,
       after,
@@ -179,7 +149,9 @@ test.describe('AdminImportMergeStep2 — Merge: Members', () => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
 
-    // Alice defaults to merge_into, keep it
+    const before = await testBase.captureTeamSnapshot();
+
+    // Alice defaults to merge_into, keep it; skip Bob and Charlie
     await setWorkerAction(page, BOB_ID, 'skip');
     await setWorkerAction(page, CHARLIE_ID, 'skip');
 
@@ -203,19 +175,29 @@ test.describe('AdminImportMergeStep2 — Merge: Members', () => {
     };
 
     const result = await testBase.executeMergeViaApi(mergeReq);
-    expect(result.workersUpdated).toBe(1);
-    expect(result.workersCreated).toBe(0);
 
-    // Alice Worker should still exist but with updated fields (name changed to 'Alice')
-    const aliceInDb = await testBase.getWorkerByName('Alice');
-    expect(aliceInDb).toBeDefined();
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
+
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('skipped member (Charlie) should not appear in target team', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
 
-    // Skip all workers except one added
+    const before = await testBase.captureTeamSnapshot();
+
+    // Skip Alice and Charlie; add Bob
     await setWorkerAction(page, ALICE_ID, 'skip');
     await setWorkerAction(page, CHARLIE_ID, 'skip');
 
@@ -237,12 +219,21 @@ test.describe('AdminImportMergeStep2 — Merge: Members', () => {
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
-    await testBase.executeMergeViaApi(mergeReq);
+    const result = await testBase.executeMergeViaApi(mergeReq);
 
-    // Charlie should NOT be in DB
-    const workers = await testBase.getWorkersInDb();
-    const charlieInDb = workers.find((w) => w.name === 'Charlie');
-    expect(charlieInDb).toBeUndefined();
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
+
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 });
 
@@ -273,6 +264,8 @@ test.describe('AdminImportMergeStep2 — Merge: Shifts', () => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
 
+    const before = await testBase.captureTeamSnapshot();
+
     await setWorkerAction(page, CHARLIE_ID, 'skip');
 
     const targets = await testBase.getTargetsViaApi();
@@ -295,13 +288,20 @@ test.describe('AdminImportMergeStep2 — Merge: Shifts', () => {
     };
 
     const result = await testBase.executeMergeViaApi(mergeReq);
-    expect(result.shiftsCreated).toBe(1); // Night
-    expect(result.shiftsUpdated).toBe(1); // Morning
 
-    const shifts = await testBase.getShiftsInDb();
-    const nightInDb = shifts.find((s) => s.name === 'Night');
-    expect(nightInDb).toBeDefined();
-    expect(nightInDb!.acronym).toBe('NS');
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
+
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('merged shift (Morning) should update existing Morning Shift', async ({
@@ -309,6 +309,8 @@ test.describe('AdminImportMergeStep2 — Merge: Shifts', () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
+
+    const before = await testBase.captureTeamSnapshot();
 
     // Keep Morning as merge_into, skip Night
     await setShiftAction(page, NIGHT_ID, 'skip');
@@ -335,16 +337,27 @@ test.describe('AdminImportMergeStep2 — Merge: Shifts', () => {
     };
 
     const result = await testBase.executeMergeViaApi(mergeReq);
-    expect(result.shiftsUpdated).toBe(1);
 
-    // Morning Shift should still exist with updated name
-    const morningInDb = await testBase.getShiftByAcronym('MS');
-    expect(morningInDb).toBeDefined();
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
+
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('skipped shift should not appear in target team', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
+
+    const before = await testBase.captureTeamSnapshot();
 
     // Skip Night
     await setShiftAction(page, NIGHT_ID, 'skip');
@@ -370,11 +383,21 @@ test.describe('AdminImportMergeStep2 — Merge: Shifts', () => {
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
-    await testBase.executeMergeViaApi(mergeReq);
+    const result = await testBase.executeMergeViaApi(mergeReq);
 
-    const shifts = await testBase.getShiftsInDb();
-    const nightInDb = shifts.find((s) => s.name === 'Night');
-    expect(nightInDb).toBeUndefined();
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
+
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 });
 
@@ -405,6 +428,8 @@ test.describe('AdminImportMergeStep2 — Merge: Requests', () => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
 
+    const before = await testBase.captureTeamSnapshot();
+
     await setWorkerAction(page, BOB_ID, 'skip');
     await setWorkerAction(page, CHARLIE_ID, 'skip');
 
@@ -428,15 +453,27 @@ test.describe('AdminImportMergeStep2 — Merge: Requests', () => {
     };
 
     const result = await testBase.executeMergeViaApi(mergeReq);
-    expect(result.requestsCreated).toBe(1);
 
-    const requests = await testBase.getRequestsInDb();
-    expect(requests.length).toBeGreaterThanOrEqual(1);
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
+
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('skipped request should not be created', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
+
+    const before = await testBase.captureTeamSnapshot();
 
     await setWorkerAction(page, BOB_ID, 'skip');
     await setWorkerAction(page, CHARLIE_ID, 'skip');
@@ -461,13 +498,27 @@ test.describe('AdminImportMergeStep2 — Merge: Requests', () => {
     };
 
     const result = await testBase.executeMergeViaApi(mergeReq);
-    expect(result.requestsCreated).toBe(0);
-    expect(result.requestsSkipped).toBe(1);
+
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
+
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('request for skipped worker should be cascade-skipped', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
+
+    const before = await testBase.captureTeamSnapshot();
 
     // Skip Alice → her request should cascade
     await setWorkerAction(page, ALICE_ID, 'skip');
@@ -492,9 +543,20 @@ test.describe('AdminImportMergeStep2 — Merge: Requests', () => {
     };
 
     const result = await testBase.executeMergeViaApi(mergeReq);
-    // The request should be cascade-skipped because Alice was skipped
-    expect(result.requestsSkipped).toBe(1);
-    expect(result.requestsCreated).toBe(0);
+
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
+
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 });
 
@@ -525,6 +587,8 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
 
+    const before = await testBase.captureTeamSnapshot();
+
     // Skip Alice — all her assignments should cascade
     await setWorkerAction(page, ALICE_ID, 'skip');
     await setWorkerAction(page, CHARLIE_ID, 'skip');
@@ -549,27 +613,26 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
 
     const result = await testBase.executeMergeViaApi(mergeReq);
 
-    // Only Bob's assignments should be created (Day1:MS, Day3:NS)
-    // Alice (Day1:MS, Day2:NS) and Charlie (skipped) should be excluded
-    const { start, end } = getFullMonthRange();
-    const assignmentsResp = await testBase.getAssignmentsInDb(start, end);
-    const assignments = assignmentsResp.assignmentsRead ?? [];
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
 
-    // Bob has 2 assignments
-    expect(result.assignmentsCreated).toBe(2);
-
-    // No assignment should belong to Alice or Charlie
-    const aliceWorker = await testBase.getWorkerByName('Alice');
-    const charlieWorker = await testBase.getWorkerByName('Charlie');
-    for (const a of assignments) {
-      if (aliceWorker) expect(a.workerId).not.toBe(aliceWorker.id);
-      if (charlieWorker) expect(a.workerId).not.toBe(charlieWorker?.id);
-    }
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('assignments for skipped shift should all be excluded', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
+
+    const before = await testBase.captureTeamSnapshot();
 
     // Skip Night shift → all Night assignments should cascade
     await setShiftAction(page, NIGHT_ID, 'skip');
@@ -596,28 +659,26 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
 
     const result = await testBase.executeMergeViaApi(mergeReq);
 
-    // Only Morning assignments should be created
-    const { start, end } = getFullMonthRange();
-    const assignmentsResp = await testBase.getAssignmentsInDb(start, end);
-    const assignments = assignmentsResp.assignmentsRead ?? [];
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
 
-    // All assignments should be Morning (MS), not Night (NS)
-    for (const a of assignments) {
-      const shift = await testBase.getShiftByAcronym(
-        // Find shift by ID
-        testBase.getExistingShifts().find((s) => s.id === a.shiftId)?.acronym || '',
-      );
-      // Simply check none match night
-      const nightShift = await testBase.getShiftByAcronym('NS');
-      if (nightShift) expect(a.shiftId).not.toBe(nightShift.id);
-    }
-
-    expect(result.assignmentsCreated).toBeGreaterThan(0);
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('assignments outside date filter should be excluded', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
+
+    const before = await testBase.captureTeamSnapshot();
 
     await setWorkerAction(page, CHARLIE_ID, 'skip');
 
@@ -645,8 +706,19 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
 
     const result = await testBase.executeMergeViaApi(mergeReq);
 
-    // Only day 1 assignments should be created: Alice→MS, Bob→MS (2)
-    expect(result.assignmentsCreated).toBe(2);
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
+
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('assignment for merged worker should reference existing worker ID', async ({
@@ -654,6 +726,8 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
+
+    const before = await testBase.captureTeamSnapshot();
 
     // Skip everyone except Alice (merge_into)
     await setWorkerAction(page, BOB_ID, 'skip');
@@ -678,17 +752,21 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
-    await testBase.executeMergeViaApi(mergeReq);
+    const result = await testBase.executeMergeViaApi(mergeReq);
 
-    const { start, end } = getFullMonthRange();
-    const assignmentsResp = await testBase.getAssignmentsInDb(start, end);
-    const assignments = assignmentsResp.assignmentsRead ?? [];
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
 
-    // All assignments should reference aliceTargetId (the existing Alice Worker)
-    expect(assignments.length).toBeGreaterThan(0);
-    for (const a of assignments) {
-      expect(a.workerId).toBe(aliceTargetId);
-    }
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('assignment for merged shift should reference existing shift ID', async ({
@@ -696,6 +774,8 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
+
+    const before = await testBase.captureTeamSnapshot();
 
     // Skip Night shift and Bob + Charlie workers
     await setShiftAction(page, NIGHT_ID, 'skip');
@@ -721,17 +801,21 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
-    await testBase.executeMergeViaApi(mergeReq);
+    const result = await testBase.executeMergeViaApi(mergeReq);
 
-    const { start, end } = getFullMonthRange();
-    const assignmentsResp = await testBase.getAssignmentsInDb(start, end);
-    const assignments = assignmentsResp.assignmentsRead ?? [];
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
 
-    // All assignments should reference morningTarget.id (the existing Morning Shift)
-    expect(assignments.length).toBeGreaterThan(0);
-    for (const a of assignments) {
-      expect(a.shiftId).toBe(morningTarget?.id);
-    }
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('assignment for added worker should reference newly created worker ID', async ({
@@ -739,6 +823,8 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
+
+    const before = await testBase.captureTeamSnapshot();
 
     // Skip Alice and Charlie — Bob is the only added worker
     await setWorkerAction(page, ALICE_ID, 'skip');
@@ -762,18 +848,21 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
-    await testBase.executeMergeViaApi(mergeReq);
+    const result = await testBase.executeMergeViaApi(mergeReq);
 
-    const { start, end } = getFullMonthRange();
-    const assignmentsResp = await testBase.getAssignmentsInDb(start, end);
-    const assignments = assignmentsResp.assignmentsRead ?? [];
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
 
-    // Bob's assignments should reference the newly created Bob worker ID
-    const bobInDb = await testBase.getWorkerByName('Bob');
-    expect(bobInDb).toBeDefined();
-
-    const bobAssignments = assignments.filter((a) => a.workerId === bobInDb!.id);
-    expect(bobAssignments.length).toBeGreaterThan(0);
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('assignment for added shift should reference newly created shift ID', async ({
@@ -781,6 +870,8 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
   }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
+
+    const before = await testBase.captureTeamSnapshot();
 
     // Keep Morning as merge_into, Night as add_new; only Bob
     await setWorkerAction(page, ALICE_ID, 'skip');
@@ -804,18 +895,20 @@ test.describe('AdminImportMergeStep2 — Merge: Schedule', () => {
       assignmentConfig: { includeAll: true, startDate: null, endDate: null },
     };
 
-    await testBase.executeMergeViaApi(mergeReq);
+    const result = await testBase.executeMergeViaApi(mergeReq);
 
-    const { start, end } = getFullMonthRange();
-    const assignmentsResp = await testBase.getAssignmentsInDb(start, end);
-    const assignments = assignmentsResp.assignmentsRead ?? [];
+    const after = await testBase.captureTeamSnapshot();
+    const previewData = testBase.getPreviewData();
 
-    // Night shift should have been created
-    const nightInDb = await testBase.getShiftByAcronym('NS');
-    expect(nightInDb).toBeDefined();
-
-    // Some assignments should reference the newly created Night shift ID
-    const nightAssignments = assignments.filter((a) => a.shiftId === nightInDb!.id);
-    expect(nightAssignments.length).toBeGreaterThan(0);
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 });
