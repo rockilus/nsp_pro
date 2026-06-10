@@ -98,13 +98,19 @@ export default function AdminImportMergeConfirm({
             </div>
             <div className="text-xl font-bold text-green-600">{mergeResult.shiftsCreated}</div>
           </div>
-          <div className="rounded-lg border border-border p-3">
+          <div
+            className="rounded-lg border border-border p-3"
+            data-testid="merge-result-shifts-updated"
+          >
             <div className="text-xs text-muted-foreground">
               {t('shifts_updated') || 'Shifts updated'}
             </div>
             <div className="text-xl font-bold text-blue-600">{mergeResult.shiftsUpdated}</div>
           </div>
-          <div className="rounded-lg border border-border p-3">
+          <div
+            className="rounded-lg border border-border p-3"
+            data-testid="merge-result-requests-created"
+          >
             <div className="text-xs text-muted-foreground">
               {t('requests_created') || 'Requests created'}
             </div>
@@ -121,7 +127,10 @@ export default function AdminImportMergeConfirm({
               </div>
             </div>
           )}
-          <div className="rounded-lg border border-border p-3">
+          <div
+            className="rounded-lg border border-border p-3"
+            data-testid="merge-result-assignments-created"
+          >
             <div className="text-xs text-muted-foreground">
               {t('assignments_created') || 'Assignments created'}
             </div>
@@ -129,7 +138,9 @@ export default function AdminImportMergeConfirm({
           </div>
         </div>
 
-        <Button onClick={onDone}>{t('back_to_list')}</Button>
+        <Button onClick={onDone} data-testid="merge-done-btn">
+          {t('back_to_list')}
+        </Button>
       </div>
     );
   }
@@ -139,7 +150,7 @@ export default function AdminImportMergeConfirm({
     <div className="rounded-lg border border-border bg-card p-4">
       <h2 className="mb-3 text-lg font-semibold">{t('merge_confirm_title') || 'Confirm Merge'}</h2>
 
-      <Alert variant="destructive" className="mb-4">
+      <Alert variant="destructive" className="mb-4" data-testid="merge-confirm-warning">
         <AlertTriangle className="size-4" />
         <AlertDescription>
           This action cannot be undone. All data will be permanently written to the target team.
@@ -148,37 +159,55 @@ export default function AdminImportMergeConfirm({
 
       {/* Summary cards */}
       <div className="mb-4 grid grid-cols-2 gap-3 text-sm">
-        <div className="rounded-lg border border-border p-3">
+        <div
+          className="rounded-lg border border-border p-3"
+          data-testid="merge-confirm-summary-workers-create"
+        >
           <div className="text-xs text-muted-foreground">
             {t('workers_created') || 'Workers to create'}
           </div>
           <div className="text-lg font-bold">{summary.workersToCreate}</div>
         </div>
-        <div className="rounded-lg border border-border p-3">
+        <div
+          className="rounded-lg border border-border p-3"
+          data-testid="merge-confirm-summary-workers-update"
+        >
           <div className="text-xs text-muted-foreground">
             {t('workers_updated') || 'Workers to update'}
           </div>
           <div className="text-lg font-bold">{summary.workersToUpdate}</div>
         </div>
-        <div className="rounded-lg border border-border p-3">
+        <div
+          className="rounded-lg border border-border p-3"
+          data-testid="merge-confirm-summary-shifts-create"
+        >
           <div className="text-xs text-muted-foreground">
             {t('shifts_created') || 'Shifts to create'}
           </div>
           <div className="text-lg font-bold">{summary.shiftsToCreate}</div>
         </div>
-        <div className="rounded-lg border border-border p-3">
+        <div
+          className="rounded-lg border border-border p-3"
+          data-testid="merge-confirm-summary-shifts-update"
+        >
           <div className="text-xs text-muted-foreground">
             {t('shifts_updated') || 'Shifts to update'}
           </div>
           <div className="text-lg font-bold">{summary.shiftsToUpdate}</div>
         </div>
-        <div className="rounded-lg border border-border p-3">
+        <div
+          className="rounded-lg border border-border p-3"
+          data-testid="merge-confirm-summary-requests-create"
+        >
           <div className="text-xs text-muted-foreground">
             {t('requests_created') || 'Requests to create'}
           </div>
           <div className="text-lg font-bold">{summary.requestsToCreate}</div>
         </div>
-        <div className="rounded-lg border border-border p-3">
+        <div
+          className="rounded-lg border border-border p-3"
+          data-testid="merge-confirm-summary-assignments-create"
+        >
           <div className="text-xs text-muted-foreground">
             {t('assignments_created') || 'Assignments to create'}
           </div>
@@ -191,7 +220,10 @@ export default function AdminImportMergeConfirm({
         summary.shiftsToSkip > 0 ||
         summary.requestsToSkip > 0 ||
         summary.requestsCascadeSkip > 0) && (
-        <div className="mb-4 text-xs text-muted-foreground">
+        <div
+          className="mb-4 text-xs text-muted-foreground"
+          data-testid="merge-confirm-skipped-summary"
+        >
           Skipped: {summary.workersToSkip} worker(s), {summary.shiftsToSkip} shift(s),{' '}
           {summary.requestsToSkip} request(s)
           {summary.requestsCascadeSkip > 0 && <>, {summary.requestsCascadeSkip} cascade-skipped</>}

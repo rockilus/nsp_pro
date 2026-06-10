@@ -287,6 +287,8 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
   for (const wm of mergeReq.workerMappings) {
     if (wm.action !== 'merge_into') continue;
     const mappedId = workerIdMap.get(wm.generatedId);
+    console.log(`Worker mapping: ${wm.generatedId} -> ${mappedId}`);
+
     expect(mappedId, `Merged worker ${wm.generatedId} should resolve to a real ID`).toBeTruthy();
     if (mappedId) {
       expect(
