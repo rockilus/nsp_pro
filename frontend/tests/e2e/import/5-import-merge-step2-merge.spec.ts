@@ -18,6 +18,7 @@ import { test, expect } from '@playwright/test';
 import { randomUUID } from 'crypto';
 import { ImportMergeTestBase } from '../../utils/import-merge-test-base';
 import { testConfig } from '../../utils/test-config';
+import { verifyMergeOutcome } from '../../utils/merge-verification';
 import type {
   MergeRequest,
   WorkerMergeMapping,
@@ -144,40 +145,34 @@ test.describe('AdminImportMergeStep2 — Merge: Members', () => {
     const testRunId = (testInfo as any).testRunId as string;
     const testBase = testBasesMap.get(testRunId)!;
 
-    // Bob defaults to add_new → keep it; Alice → merge_into; Charlie → skip
+    // 1. Capture BEFORE snapshot
+    const before = await testBase.captureTeamSnapshot();
+
+    // 2. Set actions in UI
     await setWorkerAction(page, BOB_ID, 'add_new');
     await setWorkerAction(page, CHARLIE_ID, 'skip');
 
-    // Execute merge via API
-    const targets = await testBase.getTargetsViaApi();
-    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
-    const morningTarget = targets.shifts.find((s) => s.acronym === 'MS');
-    const morningTargetId = morningTarget?.id;
+    // 3. Build merge request via helper
+    const mergeReq = await testBase.buildMergeRequest();
 
-    const mergeReq: MergeRequest = {
-      teamId: testBase.getTestTeam()!.teamId,
-      workerMappings: [
-        { generatedId: ALICE_ID, action: 'merge_into', targetWorkerId: aliceTargetId ?? null },
-        { generatedId: BOB_ID, action: 'add_new', targetWorkerId: null },
-        { generatedId: CHARLIE_ID, action: 'skip', targetWorkerId: null },
-      ],
-      shiftMappings: [
-        { generatedId: MORNING_ID, action: 'merge_into', targetShiftId: morningTargetId ?? null },
-        { generatedId: NIGHT_ID, action: 'add_new', targetShiftId: null },
-      ],
-      requestMappings: [{ generatedId: REQUEST_ID, action: 'add_new' }],
-      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
-    };
-
+    // 4. Execute merge
     const result = await testBase.executeMergeViaApi(mergeReq);
-    expect(result.workersCreated).toBe(1); // Bob
-    expect(result.workersUpdated).toBe(1); // Alice
 
-    // Verify Bob exists in DB
-    const workers = await testBase.getWorkersInDb();
-    const bobInDb = workers.find((w) => w.name === 'Bob');
-    expect(bobInDb).toBeDefined();
-    expect(bobInDb!.acronym).toBe('BO');
+    // 5. Capture AFTER snapshot
+    const after = await testBase.captureTeamSnapshot();
+
+    // 6. Full verification via reusable helper
+    const previewData = testBase.getPreviewData();
+    await verifyMergeOutcome({
+      before,
+      after,
+      mergeReq,
+      mergeResult: result,
+      previewAssignments: previewData.assignments,
+      previewRequests: previewData.requests,
+      previewMembers: previewData.members,
+      previewShifts: previewData.shifts,
+    });
   });
 
   test('merged member (Alice) should update existing Alice Worker', async ({ page }, testInfo) => {

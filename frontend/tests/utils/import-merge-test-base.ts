@@ -21,6 +21,7 @@ import type {
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { buildImportExcel, writeExcelToTempFile } from '../fixtures/import-fixture';
+import type { TeamSnapshot } from './merge-verification';
 
 dayjs.extend(utc);
 
@@ -339,6 +340,95 @@ export class ImportMergeTestBase {
       'GET',
       `/requests/teams/${this.testTeam.teamId}`,
     );
+  }
+
+  // ── Snapshot helpers ────────────────────────────────────────────────────
+
+  /**
+   * Get the full month date range (Unix timestamps) covering the first to
+   * last day of the current month in UTC.
+   */
+  getFullMonthRange(): { start: number; end: number } {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const start = Date.UTC(year, month, 1) / 1000;
+    const lastDay = new Date(year, month + 1, 0);
+    const end = Date.UTC(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate()) / 1000;
+    return { start, end };
+  }
+
+  /**
+   * Capture a full snapshot of the target team's DB state (workers, shifts,
+   * requests, assignments).  Used for before/after merge verification.
+   */
+  async captureTeamSnapshot(): Promise<TeamSnapshot> {
+    const fullMonth = this.getFullMonthRange();
+    const [workers, shifts, requests, assignmentsResp] = await Promise.all([
+      this.getWorkersInDb(),
+      this.getShiftsInDb(),
+      this.getRequestsInDb(),
+      this.getAssignmentsInDb(fullMonth.start, fullMonth.end),
+    ]);
+
+    return {
+      workers,
+      shifts,
+      requests,
+      assignments: assignmentsResp.assignmentsRead ?? [],
+      workerIds: new Set(workers.map((w) => w.id)),
+      shiftIds: new Set(shifts.map((s) => s.id)),
+      requestIds: new Set(requests.map((r) => r.id)),
+    };
+  }
+
+  /**
+   * Expose the preview data used to create the import record.  The
+   * verification helper needs this to resolve expected assignment keys.
+   */
+  getPreviewData(): ImportPreviewData {
+    return this._buildPreviewData();
+  }
+
+  // ── Merge request builder ───────────────────────────────────────────────
+
+  /**
+   * Build the standard merge request mapping for the Bob test scenario:
+   * - Alice → merge_into (Alice Worker)
+   * - Bob → add_new
+   * - Charlie → skip
+   * - Morning → merge_into (Morning Shift)
+   * - Night → add_new
+   * - Alice's leave request → add_new
+   */
+  async buildMergeRequest(): Promise<MergeRequest> {
+    if (!this.testTeam) throw new Error('Call setup() first');
+    const targets = await this.getTargetsViaApi();
+    const aliceTargetId = targets.workers.find((w) => w.name === 'Alice Worker')?.id;
+    const morningTargetId = targets.shifts.find((s) => s.acronym === 'MS')?.id;
+
+    return {
+      teamId: this.testTeam.teamId,
+      workerMappings: [
+        {
+          generatedId: 'gen-alice',
+          action: 'merge_into',
+          targetWorkerId: aliceTargetId ?? null,
+        },
+        { generatedId: 'gen-bob', action: 'add_new', targetWorkerId: null },
+        { generatedId: 'gen-charlie', action: 'skip', targetWorkerId: null },
+      ],
+      shiftMappings: [
+        {
+          generatedId: 'gen-morning',
+          action: 'merge_into',
+          targetShiftId: morningTargetId ?? null,
+        },
+        { generatedId: 'gen-night', action: 'add_new', targetShiftId: null },
+      ],
+      requestMappings: [{ generatedId: 'gen-req-alice-leave', action: 'add_new' }],
+      assignmentConfig: { includeAll: true, startDate: null, endDate: null },
+    };
   }
 
   // ── Preview data builder ────────────────────────────────────────────────
