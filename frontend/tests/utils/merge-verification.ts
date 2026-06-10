@@ -343,7 +343,11 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
       const exists = after.requests.some((r) => {
         // Match by worker name (the new worker ID) and date range
         const workerId = workerIdMap.get(previewReq?.workerId ?? '');
-        return workerId && r.workerId === workerId && r.startDate.unix() === previewReq?.startDate;
+        return (
+          workerId &&
+          r.workerId === workerId &&
+          (r.startDate as unknown as number) === previewReq?.startDate
+        );
       });
       expect(exists, `Cascade-skipped request ${rm.generatedId} should NOT have been created`).toBe(
         false,
@@ -359,8 +363,8 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
       const reqExists = after.requests.some(
         (r) =>
           r.workerId === workerId &&
-          r.startDate.unix() === previewReq!.startDate &&
-          r.endDate.unix() === previewReq!.endDate,
+          (r.startDate as unknown as number) === previewReq!.startDate &&
+          (r.endDate as unknown as number) === previewReq!.endDate,
       );
       expect(reqExists, `Added request ${rm.generatedId} should exist in DB`).toBe(true);
     }
@@ -372,7 +376,7 @@ export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Prom
     if (!previewReq) continue;
     const workerId = workerIdMap.get(previewReq.workerId);
     const exists = after.requests.some(
-      (r) => r.workerId === workerId && r.startDate.unix() === previewReq.startDate,
+      (r) => r.workerId === workerId && (r.startDate as unknown as number) === previewReq.startDate,
     );
     expect(exists, `Skipped request ${gid} should NOT exist`).toBe(false);
   }
