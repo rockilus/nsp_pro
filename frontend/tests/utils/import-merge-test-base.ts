@@ -345,30 +345,43 @@ export class ImportMergeTestBase {
   // ── Snapshot helpers ────────────────────────────────────────────────────
 
   /**
-   * Get the full month date range (Unix timestamps) covering the first to
-   * last day of the current month in UTC.
+   * Compute a date range (Unix timestamps) that fully covers all preview
+   * assignment dates.  Ensures the snapshot includes assignments from
+   * previous, current, and next months.
    */
-  getFullMonthRange(): { start: number; end: number } {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const start = Date.UTC(year, month, 1) / 1000;
-    const lastDay = new Date(year, month + 1, 0);
-    const end = Date.UTC(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate()) / 1000;
-    return { start, end };
+  private _getPreviewAssignmentDateRange(): { start: number; end: number } {
+    const preview = this._buildPreviewData();
+    const dates = preview.assignments.map((a) => a.date);
+    if (dates.length === 0) {
+      // Fallback to current month if no preview assignments exist
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const start = Date.UTC(year, month, 1) / 1000;
+      const lastDay = new Date(year, month + 1, 0);
+      const end = Date.UTC(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate()) / 1000;
+      return { start, end };
+    }
+    const minDate = Math.min(...dates);
+    const maxDate = Math.max(...dates);
+    // Expand by 1 day on each side to ensure inclusive range coverage
+    return { start: minDate - 86400, end: maxDate + 86400 };
   }
 
   /**
    * Capture a full snapshot of the target team's DB state (workers, shifts,
    * requests, assignments).  Used for before/after merge verification.
+   *
+   * The assignment date range is computed from the preview data so that
+   * assignments spanning multiple months are always included.
    */
   async captureTeamSnapshot(): Promise<TeamSnapshot> {
-    const fullMonth = this.getFullMonthRange();
+    const { start, end } = this._getPreviewAssignmentDateRange();
     const [workers, shifts, requests, assignmentsResp] = await Promise.all([
       this.getWorkersInDb(),
       this.getShiftsInDb(),
       this.getRequestsInDb(),
-      this.getAssignmentsInDb(fullMonth.start, fullMonth.end),
+      this.getAssignmentsInDb(start, end),
     ]);
 
     return {
