@@ -208,7 +208,14 @@ from shared.schemas.core.user import (
     User,
     UserWithMembership,
 )
-from shared.schemas.core.worker import Worker, WorkerDates
+from shared.schemas.core.worker import (
+    SlotRestriction,
+    WeeklyPreferences,
+    WeeklySlotPreference,
+    WeekParity,
+    Worker,
+    WorkerDates,
+)
 
 # pylint: disable=R0801
 __all__ = [
@@ -383,4 +390,8 @@ __all__ = [
     "UserWithMembership",
     "Worker",
     "WorkerDates",
+    "WeeklyPreferences",
+    "WeeklySlotPreference",
+    "WeekParity",
+    "SlotRestriction",
 ]

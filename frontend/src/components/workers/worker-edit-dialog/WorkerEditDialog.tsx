@@ -18,11 +18,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 // Types
-import { WorkerT } from '../../../types/worker';
+import { WorkerT, WeeklyPreferences } from '../../../types/worker';
 import { DimensionT, DimensionEntryType, DimensionType } from '../../../types/dimension';
 import { DimEntryT } from '@/types/dim-entry';
 import { AttributeT, AttributeOwnerType } from '../../../types/attribute';
 import { SpecialtyT } from '@/types/specialty';
+import WeeklyPreferencesSection from './WeeklyPreferencesSection';
 
 dayjs.extend(utc);
 
@@ -62,6 +63,7 @@ export default function WorkerEditDialog({
     annualLeave: number;
     selectedSpecialties: SpecialtyT[];
     changedAttributes: Map<string, AttributeT>;
+    weeklyPreferences: WeeklyPreferences;
   };
 
   const buildFormState = (): FormState => ({
@@ -75,6 +77,7 @@ export default function WorkerEditDialog({
     annualLeave: worker.annualLeave,
     selectedSpecialties: specialties.filter((s) => worker.specialtyIds.includes(s.id)),
     changedAttributes: new Map(),
+    weeklyPreferences: worker.weeklyPreferences || { enabled: false, slots: [] },
   });
 
   const [form, setForm] = useState<FormState>(buildFormState);
@@ -129,6 +132,7 @@ export default function WorkerEditDialog({
       dutiesPerMonth: form.dutiesPerMonth,
       annualLeave: form.annualLeave,
       specialtyIds: form.selectedSpecialties.map((s) => s.id),
+      weeklyPreferences: form.weeklyPreferences,
     };
     handleUpdateWorker(updatedWorker);
 
@@ -310,6 +314,13 @@ export default function WorkerEditDialog({
               </div>
             </>
           )}
+
+          {/* Weekly preferences section */}
+          <WeeklyPreferencesSection
+            lng={lng}
+            preferences={form.weeklyPreferences}
+            onChange={(prefs) => patch({ weeklyPreferences: prefs })}
+          />
 
           {/* Bottom padding so last item isn't clipped by footer */}
           <div className="h-4" />

@@ -48,5 +48,20 @@
   "weekly_hours_desired": "Deseado (h/sem)",
   "weekly_hours_desired_tooltip": "Horas de trabajo semanales deseadas",
   "worker": "Miembro",
-  "workers": "Miembros"
+  "workers": "Miembros",
+  "section_weekly_preferences": "Preferencias semanales",
+  "weekly_preferences_enabled": "Activar preferencias semanales",
+  "weekly_preferences_disabled_desc": "Defina preferencias recurrentes de día/horario para este miembro. Active para configurar.",
+  "week_mode_label": "Vista:",
+  "week_mode_single": "Todas las semanas",
+  "week_mode_even_odd": "Pares / Impares",
+  "restriction_label": "Evitar:",
+  "restriction_no_work": "Sin trabajo",
+  "restriction_no_normal": "Sin normal",
+  "restriction_no_duty": "Sin guardia",
+  "slot_morning": "AM",
+  "slot_afternoon": "PM",
+  "slot_night": "NT",
+  "even_weeks": "Semanas pares",
+  "odd_weeks": "Semanas impares"
 }

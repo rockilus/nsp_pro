@@ -48,5 +48,20 @@
   "weekly_hours_desired": "Desired (h/week)",
   "weekly_hours_desired_tooltip": "Desired weekly working hours",
   "worker": "Member",
-  "workers": "Members"
+  "workers": "Members",
+  "section_weekly_preferences": "Weekly Preferences",
+  "weekly_preferences_enabled": "Enable weekly preferences",
+  "weekly_preferences_disabled_desc": "Set recurring day/time preferences for this member. Enable to configure.",
+  "week_mode_label": "View:",
+  "week_mode_single": "All weeks",
+  "week_mode_even_odd": "Even / Odd",
+  "restriction_label": "Avoid:",
+  "restriction_no_work": "No work",
+  "restriction_no_normal": "No normal",
+  "restriction_no_duty": "No duty",
+  "slot_morning": "AM",
+  "slot_afternoon": "PM",
+  "slot_night": "NT",
+  "even_weeks": "Even weeks",
+  "odd_weeks": "Odd weeks"
 }

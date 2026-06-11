@@ -5,6 +5,27 @@ import { AttributeT } from './attribute';
 
 dayjs.extend(utc);
 
+// ─── Weekly Preferences ──────────────────────────────────────────────────────
+
+export type WeekParity = 'all' | 'even' | 'odd';
+
+export type SlotRestriction = 'no_work' | 'no_normal' | 'no_duty' | 'no_specific';
+
+export type WeeklySlotPreference = {
+  dayOfWeek: number; // 0=Monday … 6=Sunday
+  slot: 'morning' | 'afternoon' | 'night';
+  restriction: SlotRestriction;
+  shiftIds: string[];
+  weekParity: WeekParity;
+};
+
+export type WeeklyPreferences = {
+  enabled: boolean;
+  slots: WeeklySlotPreference[];
+};
+
+// ─── Worker ───────────────────────────────────────────────────────────────────
+
 export type WorkerT = {
   id: string;
   teamId: string;
@@ -21,6 +42,7 @@ export type WorkerT = {
   deleted: boolean;
   userId: string | null;
   attributes: AttributeT[];
+  weeklyPreferences?: WeeklyPreferences;
 };
 
 /**

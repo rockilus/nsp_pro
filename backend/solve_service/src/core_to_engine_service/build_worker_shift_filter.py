@@ -9,6 +9,9 @@ from shared.schemas.core import (
     DimensionType,
     Shift,
     ShiftType,
+    SlotRestriction,
+    WeeklyPreferences,
+    WeekParity,
     Worker,
     WorkerDates,
 )
@@ -58,9 +61,13 @@ def build_worker_shift_filters_dim_entry(
 
     # Step 2: Build attribute mappings
     # Worker attributes: worker_id -> dimension_id -> dim_entry_ids
-    worker_attrs: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
+    worker_attrs: dict[str, dict[str, set[str]]] = defaultdict(
+        lambda: defaultdict(set)
+    )
     # Shift attributes: shift_id -> dimension_id -> dim_entry_ids
-    shift_attrs: dict[str, dict[str, set[str]]] = defaultdict(lambda: defaultdict(set))
+    shift_attrs: dict[str, dict[str, set[str]]] = defaultdict(
+        lambda: defaultdict(set)
+    )
 
     for attr in attributes:
         if attr.owner_type == AttributeOwnerType.WORKER:
@@ -71,7 +78,9 @@ def build_worker_shift_filters_dim_entry(
                 shift_attrs[attr.owner_id][attr.dimension_id].add(de_id)
 
     # Map to group workers by their invalid_shift_ids
-    all_worker_ids: set[str] = {worker.id for worker in workers if not worker.deleted}
+    all_worker_ids: set[str] = {
+        worker.id for worker in workers if not worker.deleted
+    }
 
     # Step 3: Build worker shift filters
     for dimension in shared_dimensions:
@@ -104,14 +113,19 @@ def build_worker_shift_filters_dim_entry(
                     attr_value_to_shift_ids[de_id].add(shift_id)
 
         for worker in workers:
-            if worker.id in worker_attrs and dimension_id in worker_attrs[worker.id]:
-                worker_attr_dim_entry_ids = worker_attrs.get(worker.id, {}).get(
-                    dimension_id, set()
-                )
+            if (
+                worker.id in worker_attrs
+                and dimension_id in worker_attrs[worker.id]
+            ):
+                worker_attr_dim_entry_ids = worker_attrs.get(
+                    worker.id, {}
+                ).get(dimension_id, set())
 
                 valid_shift_ids = set()
                 for de_id in worker_attr_dim_entry_ids:
-                    valid_shift_ids.update(attr_value_to_shift_ids.get(de_id, set()))
+                    valid_shift_ids.update(
+                        attr_value_to_shift_ids.get(de_id, set())
+                    )
 
                 # Shifts that do not have the same attribute value
                 invalid_shift_ids = relevant_shift_ids - valid_shift_ids
@@ -138,14 +152,19 @@ def build_worker_shift_filters_dim_entry(
                     attr_value_to_worker_ids[de_id].add(worker_id)
 
         for shift in [s for s in shifts if not s.deleted]:  # [TO REVIEW]
-            if shift.id in shift_attrs and dimension_id in shift_attrs[shift.id]:
+            if (
+                shift.id in shift_attrs
+                and dimension_id in shift_attrs[shift.id]
+            ):
                 shift_attr_dim_entry_ids = shift_attrs.get(shift.id, {}).get(
                     dimension_id, set()
                 )
 
                 valid_worker_ids = set()
                 for de_id in shift_attr_dim_entry_ids:
-                    valid_worker_ids.update(attr_value_to_worker_ids.get(de_id, set()))
+                    valid_worker_ids.update(
+                        attr_value_to_worker_ids.get(de_id, set())
+                    )
 
                 # Shifts that do not have the same attribute value
                 invalid_worker_ids = all_worker_ids - valid_worker_ids
@@ -210,9 +229,13 @@ def build_worker_shift_filters_worker_true(
         if not isinstance(attr.value, bool):
             continue
         if attr.owner_type == AttributeOwnerType.WORKER:
-            worker_bool_attrs[attr.owner_id][attr.dimension_id] = bool(attr.value)
+            worker_bool_attrs[attr.owner_id][attr.dimension_id] = bool(
+                attr.value
+            )
         elif attr.owner_type == AttributeOwnerType.SHIFT:
-            shift_bool_attrs[attr.owner_id][attr.dimension_id] = bool(attr.value)
+            shift_bool_attrs[attr.owner_id][attr.dimension_id] = bool(
+                attr.value
+            )
 
     for dimension in shared_dimensions:
         if (
@@ -255,7 +278,9 @@ def build_worker_shift_filters_worker_true(
         for worker_id in workers_with_true:
             if worker_id not in worker_ids_to_worker_dates:
                 continue
-            invalid_shift_ids = {s.id for s in relevant_shifts} - shifts_with_true
+            invalid_shift_ids = {
+                s.id for s in relevant_shifts
+            } - shifts_with_true
             dates = worker_ids_to_worker_dates[worker_id].dates_campaign
             for shift_id in invalid_shift_ids:
                 for d in dates:
@@ -306,9 +331,13 @@ def build_worker_shift_filters_bool(
         if not isinstance(attr.value, bool):
             continue
         if attr.owner_type == AttributeOwnerType.WORKER:
-            worker_bool_attrs[attr.owner_id][attr.dimension_id] = bool(attr.value)
+            worker_bool_attrs[attr.owner_id][attr.dimension_id] = bool(
+                attr.value
+            )
         elif attr.owner_type == AttributeOwnerType.SHIFT:
-            shift_bool_attrs[attr.owner_id][attr.dimension_id] = bool(attr.value)
+            shift_bool_attrs[attr.owner_id][attr.dimension_id] = bool(
+                attr.value
+            )
 
     all_worker_ids: set[str] = {w.id for w in workers if not w.deleted}
 
@@ -337,7 +366,9 @@ def build_worker_shift_filters_bool(
         attr_bool_value_to_shift_ids: dict[bool, set[str]] = defaultdict(set)
         for shift_id, bool_attrs in shift_bool_attrs.items():
             if dimension_id in bool_attrs:
-                attr_bool_value_to_shift_ids[bool_attrs[dimension_id]].add(shift_id)
+                attr_bool_value_to_shift_ids[bool_attrs[dimension_id]].add(
+                    shift_id
+                )
 
         # filter shifts that don't match worker boolean attr
         for worker in workers:
@@ -366,7 +397,9 @@ def build_worker_shift_filters_bool(
         attr_bool_value_to_worker_ids: dict[bool, set[str]] = defaultdict(set)
         for worker_id, bool_attrs in worker_bool_attrs.items():
             if dimension_id in bool_attrs:
-                attr_bool_value_to_worker_ids[bool_attrs[dimension_id]].add(worker_id)
+                attr_bool_value_to_worker_ids[bool_attrs[dimension_id]].add(
+                    worker_id
+                )
 
         # filter workers that don't match shift boolean attr
         for shift in [s for s in shifts if not s.deleted]:
@@ -447,9 +480,13 @@ def build_worker_shift_filters_bool_shift_true(
         if not isinstance(attr.value, bool):
             continue
         if attr.owner_type == AttributeOwnerType.WORKER:
-            worker_bool_attrs[attr.owner_id][attr.dimension_id] = bool(attr.value)
+            worker_bool_attrs[attr.owner_id][attr.dimension_id] = bool(
+                attr.value
+            )
         elif attr.owner_type == AttributeOwnerType.SHIFT:
-            shift_bool_attrs[attr.owner_id][attr.dimension_id] = bool(attr.value)
+            shift_bool_attrs[attr.owner_id][attr.dimension_id] = bool(
+                attr.value
+            )
 
     all_worker_ids: set[str] = {w.id for w in workers if not w.deleted}
 
@@ -499,7 +536,9 @@ def build_worker_shift_filters_bool_shift_true(
                 if worker_id not in worker_ids_to_worker_dates:
                     continue
                 dates = worker_ids_to_worker_dates[worker_id].dates_campaign
-                out.update([(worker_id, d.isoformat(), shift_id) for d in dates])
+                out.update(
+                    [(worker_id, d.isoformat(), shift_id) for d in dates]
+                )
 
     return list(out)
 
@@ -530,6 +569,94 @@ def build_worker_shift_filters_no_duties(
             if shift.shift_type == ShiftType.DUTY:
                 for d in dates:
                     out.add((worker.id, d.isoformat(), shift.id))
+
+    return list(out)
+
+
+def _get_shifts_in_slot(shifts: list[Shift], slot: str) -> list[Shift]:
+    """Return shifts whose start_time falls in the given time slot.
+
+    Slot definitions (based on start_time.hour in UTC):
+    - "morning":   6 ≤ hour < 12
+    - "afternoon": 12 ≤ hour < 18
+    - "night":     hour ≥ 18 or hour < 6
+    """
+    result: list[Shift] = []
+    for s in shifts:
+        if s.deleted:
+            continue
+        hour = s.start_time.hour
+        if slot == "morning" and 6 <= hour < 12:
+            result.append(s)
+        elif slot == "afternoon" and 12 <= hour < 18:
+            result.append(s)
+        elif slot == "night" and (hour >= 18 or hour < 6):
+            result.append(s)
+    return result
+
+
+def build_worker_shift_filters_weekly_preferences(
+    workers: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts: list[Shift],
+) -> list[tuple[str, str, str]]:
+    """Expand WeeklyPreferences into forbidden (worker, date, shift) tuples.
+
+    For each worker with an enabled WeeklyPreferences, each slot preference
+    is expanded across the worker's campaign dates.  Day-of-week and optional
+    week-parity (even/odd) filters are applied, then shifts bucketed into the
+    target time slot (morning/afternoon/night) are further filtered by the
+    restriction type (NO_WORK, NO_NORMAL, NO_DUTY, NO_SPECIFIC).
+
+    Returns a deduplicated list of (worker_id, date_iso, shift_id) tuples.
+    """
+    out: set[tuple[str, str, str]] = set()
+
+    for worker in workers:
+        prefs: WeeklyPreferences | None = worker.weekly_preferences
+        if prefs is None or not prefs.enabled:
+            continue
+
+        if worker.id not in worker_ids_to_worker_dates:
+            continue
+        dates = worker_ids_to_worker_dates[worker.id].dates_campaign
+
+        for slot_pref in prefs.slots:
+            # Determine which shifts match the time slot once per pref
+            slot_shifts = _get_shifts_in_slot(shifts, slot_pref.slot)
+            if not slot_shifts:
+                continue
+
+            for d in dates:
+                # Day-of-week filter (0=Monday … 6=Sunday)
+                if d.weekday() != slot_pref.day_of_week:
+                    continue
+
+                # Week-parity filter
+                if slot_pref.week_parity != WeekParity.ALL:
+                    iso_week = d.isocalendar()[1]
+                    is_even = iso_week % 2 == 0
+                    if (
+                        slot_pref.week_parity == WeekParity.EVEN
+                        and not is_even
+                    ):
+                        continue
+                    if slot_pref.week_parity == WeekParity.ODD and is_even:
+                        continue
+
+                # Apply restriction
+                for s in slot_shifts:
+                    if slot_pref.restriction == SlotRestriction.NO_WORK:
+                        out.add((worker.id, d.isoformat(), s.id))
+                    elif slot_pref.restriction == SlotRestriction.NO_NORMAL:
+                        if s.shift_type == ShiftType.NORMAL:
+                            out.add((worker.id, d.isoformat(), s.id))
+                    elif slot_pref.restriction == SlotRestriction.NO_DUTY:
+                        if s.shift_type == ShiftType.DUTY:
+                            out.add((worker.id, d.isoformat(), s.id))
+                    elif slot_pref.restriction == SlotRestriction.NO_SPECIFIC:
+                        if s.id in slot_pref.shift_ids:
+                            out.add((worker.id, d.isoformat(), s.id))
 
     return list(out)
 
@@ -616,6 +743,12 @@ def build_worker_shift_filters(
         workers, worker_ids_to_worker_dates, shifts
     )
     combined_set |= set(no_duty_out)
+
+    # Expand per-worker WeeklyPreferences into forbidden assignment tuples
+    weekly_pref_out = build_worker_shift_filters_weekly_preferences(
+        workers, worker_ids_to_worker_dates, shifts
+    )
+    combined_set |= set(weekly_pref_out)
 
     for assignment, value in fixed_values.items():
         if value == 1 and assignment in combined_set:
