@@ -66,10 +66,7 @@ class WeeklyPreferences:
     def from_dict(cls, data: Dict) -> "WeeklyPreferences":
         return cls(
             enabled=data.get("enabled", False),
-            slots=[
-                WeeklySlotPreference.from_dict(s)
-                for s in data.get("slots", [])
-            ],
+            slots=[WeeklySlotPreference.from_dict(s) for s in data.get("slots", [])],
         )
 
 
@@ -105,9 +102,7 @@ class Worker:
             else None
         )
         out["weekly_preferences"] = (
-            self.weekly_preferences.to_dict()
-            if self.weekly_preferences
-            else None
+            self.weekly_preferences.to_dict() if self.weekly_preferences else None
         )
         return out
 
@@ -123,9 +118,7 @@ class Worker:
                 data["employment_start_date"], timezone.utc
             ).date(),
             employment_end_date=(
-                datetime.fromtimestamp(
-                    data["employment_end_date"], timezone.utc
-                ).date()
+                datetime.fromtimestamp(data["employment_end_date"], timezone.utc).date()
                 if data["employment_end_date"]
                 else None
             ),
@@ -157,9 +150,7 @@ class Worker:
         )
         data["attributes"] = [attr.to_dict() for attr in attributes]
         data["weekly_preferences"] = (
-            self.weekly_preferences.to_dict()
-            if self.weekly_preferences
-            else None
+            self.weekly_preferences.to_dict() if self.weekly_preferences else None
         )
         as_dict = humps.camelize(data)
         validator = TypeAdapter(WorkerDTO)
