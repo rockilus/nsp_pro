@@ -162,7 +162,7 @@ export default function WeeklyGrid({
   const renderGrid = (parity: WeekParity, label: string) => (
     <div className="mb-2">
       {label && <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>}
-      <div className="grid max-w-[220px] grid-cols-[auto_repeat(7,1fr)] gap-0.5">
+      <div className="grid max-w-[184px] grid-cols-[auto_repeat(7,1fr)] gap-0.5">
         {/* Top-left empty cell */}
         <div />
         {/* Column headers */}
@@ -198,31 +198,35 @@ export default function WeeklyGrid({
   // Side-by-side even/odd layout sharing row headers (md+ screens)
   const renderPairedGrid = () => (
     <div className="mb-2 hidden md:block">
-      <div className="grid max-w-[460px] grid-cols-[auto_repeat(14,1fr)] gap-0.5">
+      <div className="grid max-w-[420px] grid-cols-[auto_repeat(7,20px)_16px_repeat(7,20px)] gap-0.5">
         {/* Header row 1: week labels */}
         <div />
         <div className="col-span-7 py-0.5 text-center text-[10px] font-medium text-muted-foreground">
           {t('even_weeks')}
         </div>
+        <div />
         <div className="col-span-7 py-0.5 text-center text-[10px] font-medium text-muted-foreground">
           {t('odd_weeks')}
         </div>
 
         {/* Header row 2: day letters */}
         <div />
-        {(['even', 'odd'] as WeekParity[]).map((parity) =>
-          DAYS.map((day) => (
-            <button
-              key={`paired-hdr-${parity}-${day}`}
-              type="button"
-              className="cursor-pointer rounded py-0.5 text-center text-[10px] font-semibold hover:bg-muted"
-              onClick={() => toggleColumn(day, parity)}
-              data-testid={`weekly-grid-col-${parity}-${day}`}
-            >
-              {t(DAY_I18N_KEYS[day])}
-            </button>
-          )),
-        )}
+        {(['even', 'odd'] as WeekParity[]).map((parity, pi) => (
+          <React.Fragment key={`paired-hdr-group-${parity}`}>
+            {pi === 1 && <div />}
+            {DAYS.map((day) => (
+              <button
+                key={`paired-hdr-${parity}-${day}`}
+                type="button"
+                className="cursor-pointer rounded py-0.5 text-center text-[10px] font-semibold hover:bg-muted"
+                onClick={() => toggleColumn(day, parity)}
+                data-testid={`weekly-grid-col-${parity}-${day}`}
+              >
+                {t(DAY_I18N_KEYS[day])}
+              </button>
+            ))}
+          </React.Fragment>
+        ))}
 
         {/* Data rows */}
         {SLOTS.map((slot) => (
@@ -238,9 +242,12 @@ export default function WeeklyGrid({
             >
               {t(SLOT_I18N_KEYS[slot])}
             </button>
-            {(['even', 'odd'] as WeekParity[]).map((parity) =>
-              DAYS.map((day) => renderCell(day, slot, parity)),
-            )}
+            {(['even', 'odd'] as WeekParity[]).map((parity, pi) => (
+              <React.Fragment key={`paired-cell-group-${parity}-${slot}`}>
+                {pi === 1 && <div />}
+                {DAYS.map((day) => renderCell(day, slot, parity))}
+              </React.Fragment>
+            ))}
           </React.Fragment>
         ))}
       </div>
