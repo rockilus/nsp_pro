@@ -142,9 +142,9 @@ export default function WeeklyGrid({
   };
 
   const renderGrid = (parity: WeekParity, label: string) => (
-    <div className="mb-3">
-      {label && <p className="mb-1.5 text-xs font-medium text-muted-foreground">{label}</p>}
-      <div className="grid grid-cols-[auto_repeat(7,1fr)] gap-1">
+    <div className="mb-2">
+      {label && <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>}
+      <div className="grid max-w-[220px] grid-cols-[auto_repeat(7,1fr)] gap-0.5">
         {/* Top-left empty cell */}
         <div />
         {/* Column headers */}
@@ -152,7 +152,7 @@ export default function WeeklyGrid({
           <button
             key={`hdr-${parity}-${day}`}
             type="button"
-            className="cursor-pointer rounded py-1 text-center text-xs font-semibold hover:bg-muted"
+            className="cursor-pointer rounded py-0.5 text-center text-[10px] font-semibold hover:bg-muted"
             onClick={() => toggleColumn(day, parity)}
             data-testid={`weekly-grid-col-${parity}-${day}`}
           >
@@ -164,7 +164,7 @@ export default function WeeklyGrid({
           <React.Fragment key={`row-${parity}-${slot}`}>
             <button
               type="button"
-              className="cursor-pointer rounded px-1.5 py-1 text-right text-xs font-medium hover:bg-muted"
+              className="cursor-pointer rounded px-0.5 py-0.5 text-right text-[10px] font-medium hover:bg-muted"
               onClick={() => toggleRow(slot, parity)}
               data-testid={`weekly-grid-row-${parity}-${slot}`}
             >
@@ -177,10 +177,10 @@ export default function WeeklyGrid({
                 <button
                   key={`cell-${parity}-${day}-${slot}`}
                   type="button"
-                  className={`flex aspect-square items-center justify-center rounded-full transition-colors ${
+                  className={`mx-auto h-4 w-4 rounded-full transition-colors ${
                     isFilled
                       ? `${RESTRICTION_COLORS[pref.restriction]} text-white`
-                      : 'border-2 border-dashed border-muted-foreground/30 hover:border-muted-foreground/50'
+                      : 'border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50'
                   }`}
                   onClick={() => toggleCell(day, slot, parity)}
                   data-testid={`weekly-grid-cell-${parity}-${day}-${slot}`}
