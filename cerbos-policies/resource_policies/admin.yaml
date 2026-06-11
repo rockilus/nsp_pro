@@ -6,6 +6,7 @@ resourcePolicy:
   rules:
     # Super admins only: full access to all admin actions
     - actions:
+        - admin
         - create-impersonation
         - delete-impersonation
         - read-users
