@@ -119,6 +119,36 @@ export default function WeeklyGrid({
     onChange({ ...preferences, slots: newSlots });
   };
 
+  const toggleRowBoth = (slot: SlotType) => {
+    const parities: WeekParity[] = ['even', 'odd'];
+    const allMatch = parities.every((parity) => {
+      const existingSlots = DAYS.map((day) => findSlotPref(day, slot, parity));
+      return existingSlots.every((sp) => sp?.restriction === activeRestriction);
+    });
+
+    let newSlots = preferences.slots.filter(
+      (sp) => !(sp.slot === slot && (sp.weekParity === 'even' || sp.weekParity === 'odd')),
+    );
+
+    if (!allMatch) {
+      const additions: WeeklySlotPreference[] = [];
+      for (const parity of parities) {
+        for (const day of DAYS) {
+          additions.push({
+            dayOfWeek: day,
+            slot,
+            restriction: activeRestriction,
+            shiftIds: [],
+            weekParity: parity,
+          });
+        }
+      }
+      newSlots = [...newSlots, ...additions];
+    }
+
+    onChange({ ...preferences, slots: newSlots });
+  };
+
   const toggleRow = (slot: SlotType, parity: WeekParity) => {
     const existingSlots = DAYS.map((day) => findSlotPref(day, slot, parity));
     const allMatch = existingSlots.every((sp) => sp?.restriction === activeRestriction);
@@ -234,10 +264,7 @@ export default function WeeklyGrid({
             <button
               type="button"
               className="cursor-pointer rounded px-0.5 py-0.5 text-right text-[10px] font-medium hover:bg-muted"
-              onClick={() => {
-                toggleRow(slot, 'even');
-                toggleRow(slot, 'odd');
-              }}
+              onClick={() => toggleRowBoth(slot)}
               data-testid={`weekly-grid-row-even_odd-${slot}`}
             >
               {t(SLOT_I18N_KEYS[slot])}
