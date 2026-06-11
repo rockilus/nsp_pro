@@ -7,6 +7,7 @@ for solve requests and processes them using the existing solve logic.
 
 import asyncio
 import time
+import traceback
 from datetime import UTC, datetime
 
 from loguru import logger
@@ -75,7 +76,9 @@ class SQSSolveConsumer:
                     try:
                         await self._process_message(message_data)
                     except Exception as e:
-                        logger.error(f"Failed to process message: {e}")
+                        logger.error(
+                            f"Failed to process message: {e}\n{traceback.format_exc()}"
+                        )
                         # Message will be returned to queue for retry
 
             except Exception as e:
@@ -128,7 +131,7 @@ class SQSSolveConsumer:
         except Exception as e:
             logger.error(
                 f"Failed to process solve request for schedule "
-                f"{message_content.schedule_id}: {e}"
+                f"{message_content.schedule_id}: {e}\n{traceback.format_exc()}"
             )
 
             # Update schedule with failure

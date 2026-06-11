@@ -184,12 +184,18 @@ def calculate_adjustment_coefficients(
         for i, period in enumerate(periods):
             worker_period = [d for d in period if d in workers_empl_dates[worker.id]]
 
-            # Calculate the number of time off days in the period
-            rls_worker = [r for r in requests_leave if r.worker_id == worker.id]
-            time_off_days = calculate_time_off_days(rls_worker, worker_period, shifts)
-
-            # Adjust the period length for time off days
-            adjusted_length = max(0, len(worker_period) - time_off_days)
+            # If the worker has no employment overlap with this period, the
+            # coefficient is 0 — skip the time-off calculation entirely.
+            if not worker_period:
+                adjusted_length = 0.0
+            else:
+                # Calculate the number of time off days in the period
+                rls_worker = [r for r in requests_leave if r.worker_id == worker.id]
+                time_off_days = calculate_time_off_days(
+                    rls_worker, worker_period, shifts
+                )
+                # Adjust the period length for time off days
+                adjusted_length = max(0, len(worker_period) - time_off_days)
             if worker.id not in w_id_to_coef:
                 w_id_to_coef[worker.id] = []
             if ref_period_lengths[i] == 0:
