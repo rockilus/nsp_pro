@@ -106,18 +106,32 @@ export default function AdminImportCreateDialog({ lng, open, onClose, onCreated 
       }
 
       const data = await resp.json();
+
+      // Surface parse errors returned as 200 (e.g. missing sheets, corrupt file)
+      if (data.errors && data.errors.length > 0) {
+        setError(t('parse_errors') + ': ' + data.errors.map((e: string) => `• ${e}`).join('\n'));
+        setStep('upload');
+        return;
+      }
+
       setPreviewData(data);
 
       const m = data.members?.length ?? 0;
       const s = data.shifts?.length ?? 0;
       const r = data.requests?.length ?? 0;
-      setPreviewSummary(
-        t('preview_summary')
-          .replace('{workers}', String(m))
-          .replace('{shifts}', String(s))
-          .replace('{requests}', String(r))
-          .replace('{assignments}', String(data.assignments?.length ?? 0)),
-      );
+
+      // Build preview summary with counts + optional warning count
+      let summary = t('preview_summary')
+        .replace('{workers}', String(m))
+        .replace('{shifts}', String(s))
+        .replace('{requests}', String(r))
+        .replace('{assignments}', String(data.assignments?.length ?? 0));
+
+      if (data.warnings && data.warnings.length > 0) {
+        summary += ' ' + t('warnings_found').replace('{count}', String(data.warnings.length));
+      }
+
+      setPreviewSummary(summary);
 
       // Auto-generate name
       if (!importName) {

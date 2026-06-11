@@ -57,6 +57,7 @@ resource "aws_api_gateway_rest_api" "main" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
+  binary_media_types = ["multipart/form-data"]
 }
 
 # Cognito Authorizer
