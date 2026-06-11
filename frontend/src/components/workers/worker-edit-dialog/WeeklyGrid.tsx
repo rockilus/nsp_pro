@@ -8,7 +8,6 @@ import {
   SlotRestriction,
   WeekParity,
 } from '../../../types/worker';
-import { Badge } from '@/components/ui/badge';
 
 interface WeeklyGridProps {
   lng: string;
@@ -157,7 +156,7 @@ export default function WeeklyGrid({
             onClick={() => toggleColumn(day, parity)}
             data-testid={`weekly-grid-col-${parity}-${day}`}
           >
-            {t(`week_days:${DAY_I18N_KEYS[day]}`)}
+            {t(DAY_I18N_KEYS[day])}
           </button>
         ))}
         {/* Rows */}

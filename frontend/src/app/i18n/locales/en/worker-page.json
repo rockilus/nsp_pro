@@ -50,8 +50,6 @@
   "worker": "Member",
   "workers": "Members",
   "section_weekly_preferences": "Weekly Preferences",
-  "weekly_preferences_enabled": "Enable weekly preferences",
-  "weekly_preferences_disabled_desc": "Set recurring day/time preferences for this member. Enable to configure.",
   "week_mode_label": "View:",
   "week_mode_single": "All weeks",
   "week_mode_even_odd": "Even / Odd",
@@ -63,5 +61,12 @@
   "slot_afternoon": "PM",
   "slot_night": "NT",
   "even_weeks": "Even weeks",
-  "odd_weeks": "Odd weeks"
+  "odd_weeks": "Odd weeks",
+  "monday_short": "M",
+  "tuesday_short": "T",
+  "wednesday_short": "W",
+  "thursday_short": "T",
+  "friday_short": "F",
+  "saturday_short": "S",
+  "sunday_short": "S"
 }

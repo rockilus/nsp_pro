@@ -50,8 +50,6 @@
   "worker": "Miembro",
   "workers": "Miembros",
   "section_weekly_preferences": "Preferencias semanales",
-  "weekly_preferences_enabled": "Activar preferencias semanales",
-  "weekly_preferences_disabled_desc": "Defina preferencias recurrentes de día/horario para este miembro. Active para configurar.",
   "week_mode_label": "Vista:",
   "week_mode_single": "Todas las semanas",
   "week_mode_even_odd": "Pares / Impares",
@@ -63,5 +61,12 @@
   "slot_afternoon": "PM",
   "slot_night": "NT",
   "even_weeks": "Semanas pares",
-  "odd_weeks": "Semanas impares"
+  "odd_weeks": "Semanas impares",
+  "monday_short": "L",
+  "tuesday_short": "M",
+  "wednesday_short": "X",
+  "thursday_short": "J",
+  "friday_short": "V",
+  "saturday_short": "S",
+  "sunday_short": "D"
 }
