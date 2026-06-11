@@ -141,6 +141,24 @@ export default function WeeklyGrid({
     onChange({ ...preferences, slots: newSlots });
   };
 
+  const renderCell = (day: number, slot: SlotType, parity: WeekParity) => {
+    const pref = findSlotPref(day, slot, parity);
+    const isFilled = !!pref;
+    return (
+      <button
+        key={`cell-${parity}-${day}-${slot}`}
+        type="button"
+        className={`mx-auto h-4 w-4 rounded-full transition-colors ${
+          isFilled
+            ? `${RESTRICTION_COLORS[pref.restriction]} text-white`
+            : 'border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50'
+        }`}
+        onClick={() => toggleCell(day, slot, parity)}
+        data-testid={`weekly-grid-cell-${parity}-${day}-${slot}`}
+      />
+    );
+  };
+
   const renderGrid = (parity: WeekParity, label: string) => (
     <div className="mb-2">
       {label && <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>}
@@ -170,34 +188,78 @@ export default function WeeklyGrid({
             >
               {t(SLOT_I18N_KEYS[slot])}
             </button>
-            {DAYS.map((day) => {
-              const pref = findSlotPref(day, slot, parity);
-              const isFilled = !!pref;
-              return (
-                <button
-                  key={`cell-${parity}-${day}-${slot}`}
-                  type="button"
-                  className={`mx-auto h-4 w-4 rounded-full transition-colors ${
-                    isFilled
-                      ? `${RESTRICTION_COLORS[pref.restriction]} text-white`
-                      : 'border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50'
-                  }`}
-                  onClick={() => toggleCell(day, slot, parity)}
-                  data-testid={`weekly-grid-cell-${parity}-${day}-${slot}`}
-                />
-              );
-            })}
+            {DAYS.map((day) => renderCell(day, slot, parity))}
           </React.Fragment>
         ))}
       </div>
     </div>
   );
 
+  // Side-by-side even/odd layout sharing row headers (md+ screens)
+  const renderPairedGrid = () => (
+    <div className="mb-2 hidden md:block">
+      <div className="grid max-w-[460px] grid-cols-[auto_repeat(14,1fr)] gap-0.5">
+        {/* Header row 1: week labels */}
+        <div />
+        <div className="col-span-7 py-0.5 text-center text-[10px] font-medium text-muted-foreground">
+          {t('even_weeks')}
+        </div>
+        <div className="col-span-7 py-0.5 text-center text-[10px] font-medium text-muted-foreground">
+          {t('odd_weeks')}
+        </div>
+
+        {/* Header row 2: day letters */}
+        <div />
+        {(['even', 'odd'] as WeekParity[]).map((parity) =>
+          DAYS.map((day) => (
+            <button
+              key={`paired-hdr-${parity}-${day}`}
+              type="button"
+              className="cursor-pointer rounded py-0.5 text-center text-[10px] font-semibold hover:bg-muted"
+              onClick={() => toggleColumn(day, parity)}
+              data-testid={`weekly-grid-col-${parity}-${day}`}
+            >
+              {t(DAY_I18N_KEYS[day])}
+            </button>
+          )),
+        )}
+
+        {/* Data rows */}
+        {SLOTS.map((slot) => (
+          <React.Fragment key={`paired-row-${slot}`}>
+            <button
+              type="button"
+              className="cursor-pointer rounded px-0.5 py-0.5 text-right text-[10px] font-medium hover:bg-muted"
+              onClick={() => {
+                toggleRow(slot, 'even');
+                toggleRow(slot, 'odd');
+              }}
+              data-testid={`weekly-grid-row-even_odd-${slot}`}
+            >
+              {t(SLOT_I18N_KEYS[slot])}
+            </button>
+            {(['even', 'odd'] as WeekParity[]).map((parity) =>
+              DAYS.map((day) => renderCell(day, slot, parity)),
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Stacked fallback for narrow screens
+  const renderStackedGrids = () => (
+    <div className="md:hidden">
+      {renderGrid('even', t('even_weeks'))}
+      {renderGrid('odd', t('odd_weeks'))}
+    </div>
+  );
+
   if (weekMode === 'even_odd') {
     return (
       <div>
-        {renderGrid('even', t('even_weeks'))}
-        {renderGrid('odd', t('odd_weeks'))}
+        {renderPairedGrid()}
+        {renderStackedGrids()}
       </div>
     );
   }
