@@ -11,6 +11,9 @@ from shared.database.repositories.constraint_build import (
 from shared.database.repositories.coverage import CoverageRepository
 from shared.database.repositories.dim_entry import DimEntryRepository
 from shared.database.repositories.dimension import DimensionRepository
+from shared.database.repositories.import_record import (
+    ImportRecordRepository,
+)
 from shared.database.repositories.link_shift import LinkShiftRepository
 from shared.database.repositories.model_output import ModelOutputRepository
 from shared.database.repositories.multitasking import (
@@ -92,6 +95,7 @@ class DatabaseCollections:
     notification_db: NotificationRepository
     notification_preferences_db: NotificationPreferencesRepository
     team_generation_settings_db: TeamGenerationSettingsRepository
+    import_record_db: ImportRecordRepository
 
     def __init__(self, database_interface: DatabaseInterface):
         """
@@ -144,6 +148,7 @@ class DatabaseCollections:
         self.team_generation_settings_db = TeamGenerationSettingsRepository(
             database_interface
         )
+        self.import_record_db = ImportRecordRepository(database_interface)
 
     async def health_check(self) -> bool:
         """Check the health of the database connection."""

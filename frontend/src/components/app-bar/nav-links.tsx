@@ -26,6 +26,9 @@ export default function NavLinks({
   const { t } = useTranslation(lng, 'app-bar');
   const pathname = usePathname();
 
+  // Admin pages use their own sidebar — hide plan navigation tabs
+  if (pathname?.startsWith(`/${lng}/admin`)) return null;
+
   const filtered = getFilteredLinks(ALL_NAV_LINKS, selectedTeam);
   const links = resolveLinks(filtered, lng);
   const activeRoute = getActiveRoute(filtered, pathname, lng);
@@ -70,6 +73,9 @@ export function NavLinksMobile({
 }) {
   const { t } = useTranslation(lng, 'app-bar');
   const pathname = usePathname();
+
+  // Admin pages use their own sidebar — hide plan navigation links
+  if (pathname?.startsWith(`/${lng}/admin`)) return null;
 
   const filtered = getFilteredLinks(MOBILE_NAV_LINKS, selectedTeam);
   const links = resolveLinks(filtered, lng);

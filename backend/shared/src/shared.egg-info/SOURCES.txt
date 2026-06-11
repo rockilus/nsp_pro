@@ -49,6 +49,7 @@ src/shared/database/repositories/constraint_build.py
 src/shared/database/repositories/coverage.py
 src/shared/database/repositories/dim_entry.py
 src/shared/database/repositories/dimension.py
+src/shared/database/repositories/import_record.py
 src/shared/database/repositories/link_shift.py
 src/shared/database/repositories/model_output.py
 src/shared/database/repositories/multitasking.py
@@ -83,6 +84,7 @@ src/shared/database/schemas/constraint_build.py
 src/shared/database/schemas/coverage.py
 src/shared/database/schemas/dim_entry.py
 src/shared/database/schemas/dimension.py
+src/shared/database/schemas/import_record.py
 src/shared/database/schemas/link_shift.py
 src/shared/database/schemas/model_output.py
 src/shared/database/schemas/multitasking.py
@@ -156,6 +158,7 @@ src/shared/schemas/core/dimension.py
 src/shared/schemas/core/email.py
 src/shared/schemas/core/engine.py
 src/shared/schemas/core/export_options.py
+src/shared/schemas/core/import_record.py
 src/shared/schemas/core/link_shift.py
 src/shared/schemas/core/model_output.py
 src/shared/schemas/core/multitasking.py
@@ -190,6 +193,9 @@ src/shared/schemas/dto/daily_shift_demand.py
 src/shared/schemas/dto/dim_entry.py
 src/shared/schemas/dto/dimension.py
 src/shared/schemas/dto/export_options.py
+src/shared/schemas/dto/import_merge.py
+src/shared/schemas/dto/import_preview.py
+src/shared/schemas/dto/import_record.py
 src/shared/schemas/dto/link_shift.py
 src/shared/schemas/dto/multitasking.py
 src/shared/schemas/dto/recurrence.py

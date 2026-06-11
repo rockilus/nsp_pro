@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import Typography from '@mui/material/Typography';
+import { useTranslation } from '@/app/i18n/client';
+import { Loader2 } from 'lucide-react';
 import AdminUsersTable from './admin-users-table';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
 import { useStartImpersonationWithTarget } from '@/hooks/useAdminImpersonation';
-// MUI
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
+// shadcn
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 // Types
 import { UserT } from '@/types/user';
 
@@ -17,6 +16,7 @@ interface AdminUsersTabProps {
 }
 
 export default function AdminUsersTab({ lng }: AdminUsersTabProps) {
+  const { t } = useTranslation(lng, 'admin-users');
   const { users, loading, error } = useAdminUsers();
   const startImpersonation = useStartImpersonationWithTarget();
   const [accessError, setAccessError] = useState<string | null>(null);
@@ -42,42 +42,31 @@ export default function AdminUsersTab({ lng }: AdminUsersTabProps) {
 
   if (loading) {
     return (
-      <Box
-        data-testid="admin-users-loading"
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        p={4}
-      >
-        <CircularProgress />
-      </Box>
+      <div data-testid="admin-users-loading" className="flex items-center justify-center p-8">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Alert data-testid="admin-users-error" severity="error" sx={{ m: 2 }}>
-        {error}
+      <Alert data-testid="admin-users-error" variant="destructive" className="m-2">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
       </Alert>
     );
   }
 
   return (
     <div data-testid="admin-users-tab">
-      <Typography variant="h5" fontWeight={600} mb={3}>
-        Users
-      </Typography>
+      <h1 className="mb-4 text-xl font-semibold">{t('title')}</h1>
       {accessError && (
-        <Alert
-          data-testid="admin-access-error"
-          severity="error"
-          sx={{ mb: 2 }}
-          onClose={() => setAccessError(null)}
-        >
-          {accessError}
+        <Alert data-testid="admin-access-error" variant="destructive" className="mb-3">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{accessError}</AlertDescription>
         </Alert>
       )}
-      <AdminUsersTable users={users} onAccessAccount={handleAccessAccount} />
+      <AdminUsersTable lng={lng} users={users} onAccessAccount={handleAccessAccount} />
     </div>
   );
 }

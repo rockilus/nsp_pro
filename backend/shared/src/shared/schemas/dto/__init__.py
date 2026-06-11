@@ -27,6 +27,25 @@ from shared.schemas.dto.dimension import (
     NewDimensionDTO,
 )
 from shared.schemas.dto.export_options import ExportOptionsDTO
+from shared.schemas.dto.import_merge import (
+    AssignmentMergeConfig,
+    MergeAction,
+    MergeRequest,
+    MergeResult,
+    MergeTargetShift,
+    MergeTargetsResponse,
+    MergeTargetWorker,
+    RequestMergeMapping,
+    ShiftMergeMapping,
+    WorkerMergeMapping,
+)
+from shared.schemas.dto.import_preview import (
+    ImportAssignmentPreviewDTO,
+    ImportMemberPreviewDTO,
+    ImportPreviewDTO,
+    ImportRequestPreviewDTO,
+    ImportShiftPreviewDTO,
+)
 from shared.schemas.dto.link_shift import LinkShiftDTO
 from shared.schemas.dto.multitasking import (
     CreateMultitaskingGroupRequest,
@@ -75,7 +94,9 @@ from shared.schemas.dto.swap import (
     SwapRequestDTO,
 )
 from shared.schemas.dto.team import (
+    AdminTeamRowDTO,
     MembershipForTeamWithMembershipDTO,
+    PaginatedTeamsResponse,
     TeamDTO,
     TeamWithMembershipDTO,
 )
@@ -115,6 +136,21 @@ __all__ = [
     "DimensionsAndDimEntriesDTO",
     "NewDimensionDTO",
     "ExportOptionsDTO",
+    "ImportAssignmentPreviewDTO",
+    "ImportMemberPreviewDTO",
+    "ImportPreviewDTO",
+    "ImportRequestPreviewDTO",
+    "ImportShiftPreviewDTO",
+    "AssignmentMergeConfig",
+    "MergeAction",
+    "MergeRequest",
+    "MergeResult",
+    "MergeTargetShift",
+    "MergeTargetWorker",
+    "MergeTargetsResponse",
+    "RequestMergeMapping",
+    "ShiftMergeMapping",
+    "WorkerMergeMapping",
     "LinkShiftDTO",
     "AddBidRequestDTO",
     "CreateSwapRequestDTO",
@@ -151,7 +187,9 @@ __all__ = [
     "StatsHeaderDTO",
     "StatsOptionsDTO",
     "StatsValueDTO",
+    "AdminTeamRowDTO",
     "MembershipForTeamWithMembershipDTO",
+    "PaginatedTeamsResponse",
     "TeamDTO",
     "TeamGenerationSettingsDTO",
     "TeamWithMembershipDTO",

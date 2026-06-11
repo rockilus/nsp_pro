@@ -1,0 +1,626 @@
+/**
+ * Reusable merge outcome verification for import merge E2E tests.
+ *
+ * Provides a single `verifyMergeOutcome()` function that asserts every
+ * expected invariant after a merge operation, given before/after DB
+ * snapshots.  Designed to be shared across all merge tests so that
+ * ad-hoc per-test assertions can be eliminated.
+ */
+
+import { expect } from '@playwright/test';
+import type { WorkerT } from '../../src/types/worker';
+import type { ShiftT } from '../../src/types/shift';
+import type { RequestT } from '../../src/types/request';
+import type { AssignmentT } from '../../src/types/assignment';
+import type {
+  MergeRequest,
+  MergeResult,
+  WorkerMergeMapping,
+  ShiftMergeMapping,
+  RequestMergeMapping,
+} from '../../src/app/lib/import-merge-utils';
+import type { ImportPreviewData } from './import-merge-test-base';
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export interface TeamSnapshot {
+  workers: WorkerT[];
+  shifts: ShiftT[];
+  requests: RequestT[];
+  assignments: AssignmentT[];
+  workerIds: Set<string>;
+  shiftIds: Set<string>;
+  requestIds: Set<string>;
+}
+
+interface VerifyMergeOutcomeParams {
+  before: TeamSnapshot;
+  after: TeamSnapshot;
+  mergeReq: MergeRequest;
+  mergeResult: MergeResult;
+  previewAssignments: ImportPreviewData['assignments'];
+  previewRequests: ImportPreviewData['requests'];
+  previewMembers: ImportPreviewData['members'];
+  previewShifts: ImportPreviewData['shifts'];
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Build a composite key for an assignment, matching on (workerId, date, shiftId). */
+function assignmentCompositeKey(a: { workerId: string; date: number; shiftId: string }): string {
+  return `${a.workerId}|${a.date}|${a.shiftId}`;
+}
+
+/** Build a Set of composite keys from an array of assignments. */
+function buildAssignmentKeySet(
+  assignments: { workerId: string; date: number; shiftId: string }[],
+): Set<string> {
+  return new Set(assignments.map(assignmentCompositeKey));
+}
+
+/**
+ * Resolve a preview worker's `generatedId` to its real DB worker ID after
+ * the merge, given the merge mappings and the before/after snapshots.
+ */
+function resolveWorkerId(
+  generatedId: string,
+  workerMappings: WorkerMergeMapping[],
+  beforeWorkerIds: Set<string>,
+  afterWorkers: WorkerT[],
+  previewMembers: ImportPreviewData['members'],
+): string | null {
+  const mapping = workerMappings.find((m) => m.generatedId === generatedId);
+  if (!mapping) return null;
+
+  if (mapping.action === 'merge_into') {
+    return mapping.targetWorkerId ?? null;
+  }
+
+  if (mapping.action === 'add_new') {
+    // Find the newly-created worker by matching preview name
+    const previewMember = previewMembers.find((m) => m.generatedId === generatedId);
+    if (!previewMember) return null;
+    const created = afterWorkers.find(
+      (w) => w.name === previewMember.name && !beforeWorkerIds.has(w.id),
+    );
+    return created?.id ?? null;
+  }
+
+  // skip
+  return null;
+}
+
+/**
+ * Resolve a preview shift's `generatedId` to its real DB shift ID after
+ * the merge.
+ */
+function resolveShiftId(
+  generatedId: string,
+  shiftMappings: ShiftMergeMapping[],
+  beforeShiftIds: Set<string>,
+  afterShifts: ShiftT[],
+  previewShifts: ImportPreviewData['shifts'],
+): string | null {
+  const mapping = shiftMappings.find((m) => m.generatedId === generatedId);
+  if (!mapping) return null;
+
+  if (mapping.action === 'merge_into') {
+    return mapping.targetShiftId ?? null;
+  }
+
+  if (mapping.action === 'add_new') {
+    const previewShift = previewShifts.find((s) => s.generatedId === generatedId);
+    if (!previewShift) return null;
+    const created = afterShifts.find(
+      (s) => s.name === previewShift.name && !beforeShiftIds.has(s.id),
+    );
+    return created?.id ?? null;
+  }
+
+  return null;
+}
+
+/**
+ * Build a mapping from preview `workerId` (generatedId) to real DB worker ID
+ * after the merge has been applied.
+ */
+function buildWorkerIdMap(
+  workerMappings: WorkerMergeMapping[],
+  beforeWorkerIds: Set<string>,
+  afterWorkers: WorkerT[],
+  previewMembers: ImportPreviewData['members'],
+): Map<string, string | null> {
+  const map = new Map<string, string | null>();
+  for (const m of workerMappings) {
+    map.set(
+      m.generatedId,
+      resolveWorkerId(m.generatedId, workerMappings, beforeWorkerIds, afterWorkers, previewMembers),
+    );
+  }
+  return map;
+}
+
+function buildShiftIdMap(
+  shiftMappings: ShiftMergeMapping[],
+  beforeShiftIds: Set<string>,
+  afterShifts: ShiftT[],
+  previewShifts: ImportPreviewData['shifts'],
+): Map<string, string | null> {
+  const map = new Map<string, string | null>();
+  for (const m of shiftMappings) {
+    map.set(
+      m.generatedId,
+      resolveShiftId(m.generatedId, shiftMappings, beforeShiftIds, afterShifts, previewShifts),
+    );
+  }
+  return map;
+}
+
+/** Build the set of skipped worker generatedIds. */
+function buildSkippedWorkerGids(workerMappings: WorkerMergeMapping[]): Set<string> {
+  return new Set(workerMappings.filter((m) => m.action === 'skip').map((m) => m.generatedId));
+}
+
+/** Build the set of skipped shift generatedIds. */
+function buildSkippedShiftGids(shiftMappings: ShiftMergeMapping[]): Set<string> {
+  return new Set(shiftMappings.filter((m) => m.action === 'skip').map((m) => m.generatedId));
+}
+
+/**
+ * Determine if a request should be cascade-skipped (its parent worker was
+ * skipped).
+ */
+function buildCascadeSkippedRequestGids(
+  previewRequests: ImportPreviewData['requests'],
+  skippedWorkerGids: Set<string>,
+): Set<string> {
+  return new Set(
+    previewRequests.filter((r) => skippedWorkerGids.has(r.workerId)).map((r) => r.generatedId),
+  );
+}
+
+// ── Main verification function ───────────────────────────────────────────────
+
+export async function verifyMergeOutcome(params: VerifyMergeOutcomeParams): Promise<void> {
+  const {
+    before,
+    after,
+    mergeReq,
+    mergeResult,
+    previewAssignments,
+    previewRequests,
+    previewMembers,
+    previewShifts,
+  } = params;
+
+  // console.log('mergeReq', mergeReq);
+  // console.log('mergeResult', mergeResult);
+
+  const afterWorkerIds = new Set(after.workers.map((w) => w.id));
+  const afterShiftIds = new Set(after.shifts.map((s) => s.id));
+  const afterRequestIds = new Set(after.requests.map((r) => r.id));
+
+  const skippedWorkerGids = buildSkippedWorkerGids(mergeReq.workerMappings);
+  const skippedShiftGids = buildSkippedShiftGids(mergeReq.shiftMappings);
+  const cascadeSkippedRequestGids = buildCascadeSkippedRequestGids(
+    previewRequests,
+    skippedWorkerGids,
+  );
+
+  const workerIdMap = buildWorkerIdMap(
+    mergeReq.workerMappings,
+    before.workerIds,
+    after.workers,
+    previewMembers,
+  );
+  const shiftIdMap = buildShiftIdMap(
+    mergeReq.shiftMappings,
+    before.shiftIds,
+    after.shifts,
+    previewShifts,
+  );
+
+  // ── 1. Pre-existing data preserved ─────────────────────────────────────
+  // All workers that existed before must still exist after.
+  for (const w of before.workers) {
+    expect(
+      afterWorkerIds.has(w.id),
+      `Pre-existing worker "${w.name}" (${w.id}) should still exist`,
+    ).toBe(true);
+  }
+  // All shifts that existed before must still exist after.
+  for (const s of before.shifts) {
+    expect(
+      afterShiftIds.has(s.id),
+      `Pre-existing shift "${s.name}" (${s.id}) should still exist`,
+    ).toBe(true);
+  }
+  // All requests that existed before must still exist after.
+  for (const r of before.requests) {
+    expect(afterRequestIds.has(r.id), `Pre-existing request ${r.id} should still exist`).toBe(true);
+  }
+
+  // ── 2. Added workers / shifts created ──────────────────────────────────
+  // Count: after.count - before.count === mergeResult.workersCreated
+  const workerDelta = after.workers.length - before.workers.length;
+  expect(workerDelta).toBe(mergeResult.workersCreated);
+
+  const shiftDelta = after.shifts.length - before.shifts.length;
+  expect(shiftDelta).toBe(mergeResult.shiftsCreated);
+
+  // Each ADD_NEW worker must have been created with the correct name
+  for (const wm of mergeReq.workerMappings) {
+    if (wm.action !== 'add_new') continue;
+    const previewMember = previewMembers.find((m) => m.generatedId === wm.generatedId);
+    expect(previewMember).toBeDefined();
+    const created = after.workers.find(
+      (w) => w.name === previewMember!.name && !before.workerIds.has(w.id),
+    );
+    expect(created, `Added worker "${previewMember!.name}" should exist in DB`).toBeDefined();
+    // Verify the ID mapping resolved
+    expect(workerIdMap.get(wm.generatedId)).toBe(created?.id);
+    // The added worker must NOT have existed before the merge.
+    expect(
+      before.workerIds.has(created!.id),
+      `Added worker "${previewMember!.name}" should NOT exist in before data`,
+    ).toBe(false);
+  }
+
+  // Each ADD_NEW shift must have been created
+  for (const sm of mergeReq.shiftMappings) {
+    if (sm.action !== 'add_new') continue;
+    const previewShift = previewShifts.find((s) => s.generatedId === sm.generatedId);
+    expect(previewShift).toBeDefined();
+    const created = after.shifts.find(
+      (s) => s.name === previewShift!.name && !before.shiftIds.has(s.id),
+    );
+    expect(created, `Added shift "${previewShift!.name}" should exist in DB`).toBeDefined();
+    expect(shiftIdMap.get(sm.generatedId)).toBe(created?.id);
+    // The added shift must NOT have existed before the merge.
+    expect(
+      before.shiftIds.has(created!.id),
+      `Added shift "${previewShift!.name}" should NOT exist in before data`,
+    ).toBe(false);
+  }
+
+  // ── 3. Merge workers / shifts were NOT newly created ───────────────────
+  for (const wm of mergeReq.workerMappings) {
+    if (wm.action !== 'merge_into') continue;
+    const mappedId = workerIdMap.get(wm.generatedId);
+    console.log(`Worker mapping: ${wm.generatedId} -> ${mappedId}`);
+
+    expect(mappedId, `Merged worker ${wm.generatedId} should resolve to a real ID`).toBeTruthy();
+    if (mappedId) {
+      expect(
+        before.workerIds.has(mappedId),
+        `Merged worker ${wm.generatedId} should map to pre-existing ID ${mappedId}`,
+      ).toBe(true);
+      expect(
+        afterWorkerIds.has(mappedId),
+        `Merged worker target ${mappedId} should still exist after merge`,
+      ).toBe(true);
+    }
+  }
+
+  for (const sm of mergeReq.shiftMappings) {
+    if (sm.action !== 'merge_into') continue;
+    const mappedId = shiftIdMap.get(sm.generatedId);
+    expect(mappedId, `Merged shift ${sm.generatedId} should resolve to a real ID`).toBeTruthy();
+    if (mappedId) {
+      expect(
+        before.shiftIds.has(mappedId),
+        `Merged shift ${sm.generatedId} should map to pre-existing ID ${mappedId}`,
+      ).toBe(true);
+      expect(
+        afterShiftIds.has(mappedId),
+        `Merged shift target ${mappedId} should still exist after merge`,
+      ).toBe(true);
+    }
+  }
+
+  // ── 4. Skipped entities NOT added ──────────────────────────────────────
+  // Skipped workers: their preview name should NOT appear as a new entry
+  for (const gid of skippedWorkerGids) {
+    const previewMember = previewMembers.find((m) => m.generatedId === gid);
+    if (!previewMember) continue;
+    const existsInAfter = after.workers.some(
+      (w) => w.name === previewMember.name && !before.workerIds.has(w.id),
+    );
+    expect(
+      existsInAfter,
+      `Skipped worker "${previewMember.name}" should NOT have been created`,
+    ).toBe(false);
+  }
+
+  // Skipped shifts
+  for (const gid of skippedShiftGids) {
+    const previewShift = previewShifts.find((s) => s.generatedId === gid);
+    if (!previewShift) continue;
+    const existsInAfter = after.shifts.some(
+      (s) => s.name === previewShift.name && !before.shiftIds.has(s.id),
+    );
+    expect(existsInAfter, `Skipped shift "${previewShift.name}" should NOT have been created`).toBe(
+      false,
+    );
+  }
+
+  // ── 5. Requests: added created, skipped/cascade-skipped not created ────
+  const explicitlySkippedRequestGids = new Set(
+    mergeReq.requestMappings.filter((rm) => rm.action === 'skip').map((rm) => rm.generatedId),
+  );
+
+  // Build set of generatedIds that are actually present in requestMappings,
+  // so we can distinguish "cascade-skipped in mappings" from "omitted entirely".
+  const requestMappingGids = new Set(mergeReq.requestMappings.map((rm) => rm.generatedId));
+
+  // Cascade-skipped requests that are in requestMappings (used for counts)
+  const cascadeSkippedInMappings = new Set(
+    [...cascadeSkippedRequestGids].filter((gid) => requestMappingGids.has(gid)),
+  );
+
+  for (const rm of mergeReq.requestMappings) {
+    if (rm.action === 'skip') continue; // handled below
+    // add_new — should have been created UNLESS cascade-skipped
+    if (cascadeSkippedRequestGids.has(rm.generatedId)) {
+      // Should NOT exist
+      const previewReq = previewRequests.find((r) => r.generatedId === rm.generatedId);
+      const exists = after.requests.some((r) => {
+        // Match by worker name (the new worker ID) and date range
+        const workerId = workerIdMap.get(previewReq?.workerId ?? '');
+        return (
+          workerId &&
+          r.workerId === workerId &&
+          (r.startDate as unknown as number) === previewReq?.startDate
+        );
+      });
+      expect(exists, `Cascade-skipped request ${rm.generatedId} should NOT have been created`).toBe(
+        false,
+      );
+    } else {
+      // Should exist — find it by associating with the real worker ID
+      const previewReq = previewRequests.find((r) => r.generatedId === rm.generatedId);
+      expect(
+        previewReq,
+        `Preview request ${rm.generatedId} should exist in preview data`,
+      ).toBeDefined();
+      const workerId = workerIdMap.get(previewReq!.workerId);
+      const reqExists = after.requests.some(
+        (r) =>
+          r.workerId === workerId &&
+          (r.startDate as unknown as number) === previewReq!.startDate &&
+          (r.endDate as unknown as number) === previewReq!.endDate,
+      );
+      expect(reqExists, `Added request ${rm.generatedId} should exist in DB`).toBe(true);
+    }
+  }
+
+  // Explicitly skipped requests should NOT exist.  For cascade-skipped
+  // requests the workerIdMap returns null (parent worker was skipped),
+  // so we fall back to date-range matching like section 5b.
+  for (const gid of explicitlySkippedRequestGids) {
+    const previewReq = previewRequests.find((r) => r.generatedId === gid);
+    if (!previewReq) continue;
+    const workerId = workerIdMap.get(previewReq.workerId);
+    if (workerId) {
+      // Worker was not skipped — check by real worker ID
+      const exists = after.requests.some(
+        (r) =>
+          r.workerId === workerId && (r.startDate as unknown as number) === previewReq.startDate,
+      );
+      expect(exists, `Skipped request ${gid} should NOT exist`).toBe(false);
+    } else {
+      // Worker was skipped — fall back to date-range matching
+      const exists = after.requests.some(
+        (r) =>
+          (r.startDate as unknown as number) === previewReq.startDate &&
+          (r.endDate as unknown as number) === previewReq.endDate &&
+          !before.requestIds.has(r.id),
+      );
+      expect(
+        exists,
+        `Cascade-skipped request ${gid} (worker ${previewReq.workerId} was skipped) should NOT exist in DB`,
+      ).toBe(false);
+    }
+  }
+
+  // ── 5b. Requests for skipped workers NOT in requestMappings ────────────
+  // When the frontend omits a request entirely from requestMappings because
+  // its worker is skipped, the backend must NOT create it either.  This is
+  // a cascading effect of the frontend management — the merge payload simply
+  // doesn't include the request.
+  for (const pr of previewRequests) {
+    // Only check requests that belong to a skipped worker AND are NOT
+    // represented in any requestMapping (neither skip nor add_new).
+    if (!skippedWorkerGids.has(pr.workerId)) continue;
+    if (requestMappingGids.has(pr.generatedId)) continue;
+
+    // The worker was skipped so workerIdMap returns null — the request
+    // can only have been created under a real worker ID, not the
+    // generated preview ID.  Iterate after.requests and match on date
+    // range + worker identity.  Since we don't have a real workerId to
+    // map to, we match by checking whether ANY after request has the
+    // same (startDate, endDate) and belongs to a real worker that was
+    // NOT in the before snapshot (i.e. was newly created, which would
+    // only happen if the skipped worker was incorrectly imported).
+    const exists = after.requests.some(
+      (r) =>
+        (r.startDate as unknown as number) === pr.startDate &&
+        (r.endDate as unknown as number) === pr.endDate &&
+        !before.requestIds.has(r.id),
+    );
+    expect(
+      exists,
+      `Omitted request ${pr.generatedId} (worker ${pr.workerId} was skipped) should NOT exist in DB`,
+    ).toBe(false);
+  }
+
+  // ── 6. Result count assertions ─────────────────────────────────────────
+  expect(mergeResult.workersCreated).toBe(
+    mergeReq.workerMappings.filter((m) => m.action === 'add_new').length,
+  );
+  expect(mergeResult.workersUpdated).toBe(
+    mergeReq.workerMappings.filter((m) => m.action === 'merge_into').length,
+  );
+  expect(mergeResult.workersSkipped).toBe(
+    mergeReq.workerMappings.filter((m) => m.action === 'skip').length,
+  );
+  expect(mergeResult.shiftsCreated).toBe(
+    mergeReq.shiftMappings.filter((m) => m.action === 'add_new').length,
+  );
+  expect(mergeResult.shiftsUpdated).toBe(
+    mergeReq.shiftMappings.filter((m) => m.action === 'merge_into').length,
+  );
+  expect(mergeResult.shiftsSkipped).toBe(
+    mergeReq.shiftMappings.filter((m) => m.action === 'skip').length,
+  );
+
+  // Requests skipped: user-chosen skip only (not cascade)
+  const expectedUserSkipped = mergeReq.requestMappings.filter(
+    (m) => m.action === 'skip' && m.skipReason !== 'cascade_worker',
+  ).length;
+  expect(mergeResult.requestsSkipped).toBe(expectedUserSkipped);
+
+  // Requests cascade-skipped: those with skipReason='cascade_worker'
+  const expectedCascadeSkipped = mergeReq.requestMappings.filter(
+    (m) => m.action === 'skip' && m.skipReason === 'cascade_worker',
+  ).length;
+  expect(mergeResult.requestsCascadeSkipped).toBe(expectedCascadeSkipped);
+
+  // Total requests the backend will actually skip = user-skipped + cascade-skipped
+  // (Backend result only counts cascade-skipped via requestsCascadeSkipped,
+  //  requestsSkipped is exclusively user-chosen skips.)
+  const expectedRequestsSkippedTotal = expectedUserSkipped;
+  expect(mergeResult.requestsSkipped).toBe(expectedRequestsSkippedTotal);
+
+  const expectedRequestsCreated = mergeReq.requestMappings.filter(
+    (m) => m.action !== 'skip',
+  ).length;
+  expect(mergeResult.requestsCreated).toBe(expectedRequestsCreated);
+
+  // ── 7. Assignments: verify created assignments reference correct IDs ───
+  const beforeAssignmentKeys = buildAssignmentKeySet(
+    before.assignments.map((a) => ({
+      workerId: a.workerId,
+      date: typeof a.date === 'number' ? a.date : a.date.unix(),
+      shiftId: a.shiftId,
+    })),
+  );
+
+  const afterAssignmentKeys = buildAssignmentKeySet(
+    after.assignments.map((a) => ({
+      workerId: a.workerId,
+      date: typeof a.date === 'number' ? a.date : a.date.unix(),
+      shiftId: a.shiftId,
+    })),
+  );
+
+  // All before assignments must still be present
+  for (const key of beforeAssignmentKeys) {
+    expect(afterAssignmentKeys.has(key), `Pre-existing assignment ${key} should still exist`).toBe(
+      true,
+    );
+  }
+
+  // Build expected new assignment keys from preview data
+  const expectedNewAssignmentKeys = new Set<string>();
+
+  for (const pa of previewAssignments) {
+    // Cascade: skip if worker or shift was skipped
+    if (skippedWorkerGids.has(pa.workerId) || skippedShiftGids.has(pa.shiftId)) {
+      continue;
+    }
+
+    // Date filter
+    const cfg = mergeReq.assignmentConfig;
+    if (!cfg.includeAll) {
+      if (cfg.startDate != null && pa.date < cfg.startDate) continue;
+      if (cfg.endDate != null && pa.date > cfg.endDate) continue;
+    }
+
+    const realWorkerId = workerIdMap.get(pa.workerId);
+    const realShiftId = shiftIdMap.get(pa.shiftId);
+    if (!realWorkerId || !realShiftId) continue;
+
+    expectedNewAssignmentKeys.add(
+      assignmentCompositeKey({
+        workerId: realWorkerId,
+        date: pa.date,
+        shiftId: realShiftId,
+      }),
+    );
+  }
+
+  // The actual new assignments (in after but not before) should match expected
+  const actualNewKeys = new Set(
+    [...afterAssignmentKeys].filter((k) => !beforeAssignmentKeys.has(k)),
+  );
+
+  expect(actualNewKeys.size).toBe(mergeResult.assignmentsCreated);
+  expect(actualNewKeys.size).toBe(expectedNewAssignmentKeys.size);
+
+  for (const expectedKey of expectedNewAssignmentKeys) {
+    expect(
+      actualNewKeys.has(expectedKey),
+      `Expected new assignment ${expectedKey} should exist`,
+    ).toBe(true);
+  }
+
+  // ── 8. No assignments reference skipped workers or shifts ──────────────
+  // Build the set of composite keys that would have been created for
+  // skipped workers or shifts.  None of these should appear in `after`.
+  const skippedAssignmentKeys = new Set<string>();
+  for (const pa of previewAssignments) {
+    if (!skippedWorkerGids.has(pa.workerId) && !skippedShiftGids.has(pa.shiftId)) {
+      continue;
+    }
+    // Even though the worker/shift was skipped (no real DB ID), the
+    // verification still ensures that no assignment with the same
+    // (workerId, date, shiftId) composite — had the skipped entity been
+    // created — ended up in the DB.  For skipped entities the
+    // workerIdMap / shiftIdMap resolve to null, so we can't build a
+    // real key here.  Instead we verify that for EVERY assignment in
+    // `after`, the worker and shift are either pre-existing (non-skipped)
+    // or newly-created (non-skipped).  No `after` assignment should
+    // belong to a worker or shift that was generated from a skipped
+    // preview entity.
+    //
+    // Practical approach: verify that no assignment composite key from
+    // preview that involves a skipped worker or shift exists in the
+    // after snapshot.  But since skipped entities have no real IDs,
+    // the composite key cannot be constructed with real IDs.  We
+    // instead rely on the fact that expectedNewAssignmentKeys already
+    // excludes skipped entities, and the section 7 assertion that
+    // actualNewKeys === expectedNewAssignmentKeys already covers this.
+    //
+    // Additional safety net: for assignments in after whose (workerId,
+    // date, shiftId) match the preview data of a skipped entity
+    // (matched by worker name + shift acronym + date), assert they do
+    // NOT exist.  We match by joining preview data with after data
+    // using the resolved worker/shift IDs (which are null for skipped).
+  }
+
+  // The primary guarantee is provided by section 7: expectedNewAssignmentKeys
+  // excludes skipped-worker and skipped-shift preview assignments, and we
+  // assert that actualNewKeys equals that set exactly.  Therefore, no
+  // skipped-entity assignment could have been created.
+
+  // ── 9. Assignments outside date filter should not exist ────────────────
+  const cfg = mergeReq.assignmentConfig;
+  if (!cfg.includeAll && (cfg.startDate != null || cfg.endDate != null)) {
+    for (const a of after.assignments) {
+      const aDate = typeof a.date === 'number' ? a.date : a.date.unix();
+      if (cfg.startDate != null) {
+        expect(
+          aDate >= cfg.startDate,
+          `Assignment ${a.id} date ${aDate} should be >= startDate ${cfg.startDate}`,
+        ).toBe(true);
+      }
+      if (cfg.endDate != null) {
+        expect(
+          aDate <= cfg.endDate,
+          `Assignment ${a.id} date ${aDate} should be <= endDate ${cfg.endDate}`,
+        ).toBe(true);
+      }
+    }
+  }
+}

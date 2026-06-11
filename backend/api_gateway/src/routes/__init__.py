@@ -11,6 +11,7 @@ from src.routes.dim_entry_routes import router as router_dim_entry
 from src.routes.dimension_routes import router as router_dimension
 from src.routes.export_routes import router as router_export
 from src.routes.health_routes import router as router_health
+from src.routes.import_routes import router as router_import
 from src.routes.link_shift_routes import router as router_link_shift
 from src.routes.multitasking_routes import router as router_multitasking
 from src.routes.notification_preferences_routes import (
@@ -46,6 +47,7 @@ __all__ = [
     "router_dim_entry",
     "router_dimension",
     "router_export",
+    "router_import",
     "router_health",
     "router_link_shift",
     "router_multitasking",

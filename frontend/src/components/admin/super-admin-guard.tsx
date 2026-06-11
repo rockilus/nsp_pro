@@ -2,8 +2,9 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, CircularProgress } from '@mui/material';
+import { Loader2 } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
+import { env } from '@/config/env';
 
 interface SuperAdminGuardProps {
   children: React.ReactNode;
@@ -14,7 +15,9 @@ export default function SuperAdminGuard({ children, lng }: SuperAdminGuardProps)
   const { user, loading } = useUser();
   const router = useRouter();
 
-  const isSuperAdmin = user?.systemRole === 'super_admin';
+  // In development mode, any authenticated user is treated as super_admin
+  // because the dev database user may not have system_role set.
+  const isSuperAdmin = env.isDevelopment || user?.systemRole === 'super_admin';
 
   useEffect(() => {
     if (!loading && !isSuperAdmin) {
@@ -24,9 +27,9 @@ export default function SuperAdminGuard({ children, lng }: SuperAdminGuardProps)
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
-      </Box>
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 

@@ -3,13 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
-// MUI
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-// Links config
+import { useTranslation } from '@/app/i18n/client';
 import { getAdminLinks } from './admin-links';
-// Styles
+import { cn } from '@/lib/utils';
 import './admin-layout.css';
 
 export default function AdminLayout({
@@ -20,25 +16,30 @@ export default function AdminLayout({
   params: { lng: string };
 }) {
   const pathname = usePathname();
+  const { t } = useTranslation(lng, 'admin');
   const links = getAdminLinks(lng);
 
   return (
     <div className="admin-layout">
       {/* Sidebar */}
-      <List dense component="nav" className="admin-sidebar" data-testid="admin-sidebar">
-        <p className="admin-sidebar-title">Admin</p>
+      <nav className="admin-sidebar" data-testid="admin-sidebar">
+        <p className="admin-sidebar-title">{t('sidebarTitle')}</p>
         {links.map((link) => (
-          <ListItemButton
+          <Link
             key={link.name}
             data-testid={`admin-sidebar-link-${link.name}`}
-            selected={pathname.includes(link.name)}
-            LinkComponent={Link}
             href={link.href}
+            className={cn(
+              'flex w-full items-center rounded-md px-4 py-2 text-sm font-medium transition-colors',
+              pathname.includes(link.name)
+                ? 'bg-accent text-accent-foreground'
+                : 'text-foreground hover:bg-muted hover:text-foreground',
+            )}
           >
-            <ListItemText primary={link.label} />
-          </ListItemButton>
+            {t(link.labelKey)}
+          </Link>
         ))}
-      </List>
+      </nav>
 
       {/* Main content */}
       <div className="admin-content">{children}</div>

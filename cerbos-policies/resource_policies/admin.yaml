@@ -6,9 +6,15 @@ resourcePolicy:
   rules:
     # Super admins only: full access to all admin actions
     - actions:
+        - admin
         - create-impersonation
         - delete-impersonation
         - read-users
+        - preview-import
+        - download-template
+        - manage-imports
+        - merge-imports
+        - resolve-merge-targets
       effect: EFFECT_ALLOW
       roles:
         - super_admin
