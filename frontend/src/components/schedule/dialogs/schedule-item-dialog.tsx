@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
 import { useIsMobile } from '@/hooks/useIsMobile';
-// MUI
-import { Dialog, DialogContent, DialogTitle, Button, Box, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+// shadcn
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 // Types
 import {
   ScheduleItemType,
@@ -57,16 +58,11 @@ export default function ScheduleItemDialog({
 
   const [activeType, setActiveType] = useState<ScheduleItemType>(selectedType);
 
-  // Reset activeType when dialog opens with new selectedType
   React.useEffect(() => {
     if (open) {
       setActiveType(selectedType);
     }
   }, [open, selectedType]);
-
-  const handleTypeChange = (newType: ScheduleItemType) => {
-    setActiveType(newType);
-  };
 
   const getDialogTitle = () => {
     switch (activeType) {
@@ -84,140 +80,180 @@ export default function ScheduleItemDialog({
   return (
     <Dialog
       open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      data-testid="schedule-item-dialog"
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <DialogTitle>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <span>{getDialogTitle()}</span>
-          <IconButton onClick={onClose} size="small" edge="end" data-testid="close-dialog-button">
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-      <DialogContent>
-        {mode === DialogMode.CREATE && !isMobile && (
-          <Box sx={{ display: 'flex', gap: 1, mb: 2 }} data-testid="schedule-item-type-buttons">
-            <Button
-              variant={activeType === ScheduleItemType.ASSIGNMENT ? 'contained' : 'outlined'}
-              size="small"
-              onClick={() => handleTypeChange(ScheduleItemType.ASSIGNMENT)}
-              data-testid="assignment-button"
-              sx={{ textTransform: 'none' }}
-            >
-              {t('assignment')}
-            </Button>
-            <Button
-              variant={activeType === ScheduleItemType.DEMAND ? 'contained' : 'outlined'}
-              size="small"
-              onClick={() => handleTypeChange(ScheduleItemType.DEMAND)}
-              data-testid="demand-button"
-              sx={{ textTransform: 'none' }}
-            >
-              {t('demand')}
-            </Button>
-            <Button
-              variant={activeType === ScheduleItemType.REQUEST ? 'contained' : 'outlined'}
-              size="small"
-              onClick={() => handleTypeChange(ScheduleItemType.REQUEST)}
-              data-testid="request-button"
-              sx={{ textTransform: 'none' }}
-            >
-              {t('request')}
-            </Button>
-          </Box>
+      <DialogContent
+        className={
+          isMobile
+            ? 'h-[100dvh] max-w-full rounded-none p-0 sm:max-w-lg sm:rounded-xl'
+            : 'sm:max-w-lg'
+        }
+        showCloseButton={!isMobile}
+        data-testid="schedule-item-dialog"
+      >
+        {!isMobile && (
+          <DialogHeader>
+            <DialogTitle>{getDialogTitle()}</DialogTitle>
+          </DialogHeader>
         )}
 
-        {activeType === ScheduleItemType.ASSIGNMENT && (
-          <AssignmentForm
-            lng={lng}
-            mode={mode}
-            teamId={teamId}
-            scheduleId={scheduleId}
-            workers={workers}
-            shifts={shifts}
-            schedules={schedules}
-            assignmentData={
-              mode === DialogMode.EDIT && dialogData && 'assignmentData' in dialogData
-                ? (dialogData as EditAssignmentData).assignmentData
-                : null
-            }
-            initialData={
-              mode === DialogMode.CREATE && dialogData && 'workerId' in dialogData
-                ? (dialogData as CreateAssignmentData)
-                : null
-            }
-            useSolver={useSolver}
-            onSave={(assignment, recurrence, updateScope, options?: { keepOpen?: boolean }) => {
-              if (mode === DialogMode.CREATE && handleCreateAssignment) {
-                handleCreateAssignment(assignment, recurrence);
-              } else if (mode === DialogMode.EDIT && handleUpdateAssignment) {
-                handleUpdateAssignment(assignment, recurrence, updateScope);
+        {/* Mobile header */}
+        {isMobile && (
+          <div className="sticky top-0 z-50 flex items-center justify-between border-b border-border bg-popover p-4">
+            <h2 className="text-lg font-semibold">{getDialogTitle()}</h2>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={onClose}
+              data-testid="close-dialog-button"
+            >
+              <span className="sr-only">Close</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-x"
+              >
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </Button>
+          </div>
+        )}
+
+        <div className={isMobile ? 'px-4 py-2' : ''}>
+          {/* Type selector (create mode + desktop) */}
+          {mode === DialogMode.CREATE && !isMobile && (
+            <div className="mb-4" data-testid="schedule-item-type-buttons">
+              <ToggleGroup
+                type="single"
+                value={activeType}
+                onValueChange={(value) => {
+                  if (value) setActiveType(value as ScheduleItemType);
+                }}
+              >
+                <ToggleGroupItem
+                  value={ScheduleItemType.ASSIGNMENT}
+                  data-testid="assignment-button"
+                  className="px-3"
+                >
+                  {t('assignment')}
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value={ScheduleItemType.DEMAND}
+                  data-testid="demand-button"
+                  className="px-3"
+                >
+                  {t('demand')}
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value={ScheduleItemType.REQUEST}
+                  data-testid="request-button"
+                  className="px-3"
+                >
+                  {t('request')}
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          )}
+
+          {activeType === ScheduleItemType.ASSIGNMENT && (
+            <AssignmentForm
+              lng={lng}
+              mode={mode}
+              teamId={teamId}
+              scheduleId={scheduleId}
+              workers={workers}
+              shifts={shifts}
+              schedules={schedules}
+              assignmentData={
+                mode === DialogMode.EDIT && dialogData && 'assignmentData' in dialogData
+                  ? (dialogData as EditAssignmentData).assignmentData
+                  : null
               }
-              if (!options?.keepOpen) {
+              initialData={
+                mode === DialogMode.CREATE && dialogData && 'workerId' in dialogData
+                  ? (dialogData as CreateAssignmentData)
+                  : null
+              }
+              useSolver={useSolver}
+              onSave={(assignment, recurrence, updateScope, options) => {
+                if (mode === DialogMode.CREATE && handleCreateAssignment) {
+                  handleCreateAssignment(assignment, recurrence);
+                } else if (mode === DialogMode.EDIT && handleUpdateAssignment) {
+                  handleUpdateAssignment(assignment, recurrence, updateScope);
+                }
+                if (!options?.keepOpen) {
+                  onClose();
+                }
+              }}
+              onDelete={(assignmentId, recurrenceId, updateScope) => {
+                if (handleDeleteAssignment) {
+                  handleDeleteAssignment(assignmentId, recurrenceId, updateScope);
+                }
                 onClose();
-              }
-            }}
-            onDelete={(assignmentId, recurrenceId, updateScope) => {
-              if (handleDeleteAssignment) {
-                handleDeleteAssignment(assignmentId, recurrenceId, updateScope);
-              }
-              onClose();
-            }}
-            onCancel={onClose}
-            isLeader={userTeamRole !== TeamMembershipRole.MEMBER}
-          />
-        )}
+              }}
+              onCancel={onClose}
+              isLeader={userTeamRole !== TeamMembershipRole.MEMBER}
+            />
+          )}
 
-        {activeType === ScheduleItemType.DEMAND && (
-          <DemandForm
-            lng={lng}
-            mode={mode}
-            shifts={shifts}
-            specialties={specialties}
-            cellData={
-              mode === DialogMode.EDIT && dialogData && 'cellData' in dialogData
-                ? (dialogData as EditDemandData).cellData
-                : null
-            }
-            initialData={
-              mode === DialogMode.CREATE && dialogData && 'shiftId' in dialogData
-                ? (dialogData as CreateDemandData)
-                : null
-            }
-            onCreateDemand={handleCreateShiftDemand}
-            onUpdateDemand={handleUpdateShiftDemand}
-            onDeleteDemand={handleDeleteShiftDemand}
-            onCancel={onClose}
-          />
-        )}
+          {activeType === ScheduleItemType.DEMAND && (
+            <DemandForm
+              lng={lng}
+              mode={mode}
+              shifts={shifts}
+              specialties={specialties}
+              cellData={
+                mode === DialogMode.EDIT && dialogData && 'cellData' in dialogData
+                  ? (dialogData as EditDemandData).cellData
+                  : null
+              }
+              initialData={
+                mode === DialogMode.CREATE && dialogData && 'shiftId' in dialogData
+                  ? (dialogData as CreateDemandData)
+                  : null
+              }
+              onCreateDemand={handleCreateShiftDemand}
+              onUpdateDemand={handleUpdateShiftDemand}
+              onDeleteDemand={handleDeleteShiftDemand}
+              onCancel={onClose}
+            />
+          )}
 
-        {activeType === ScheduleItemType.REQUEST && (
-          <RequestForm
-            lng={lng}
-            teamId={teamId}
-            isEdit={mode === DialogMode.EDIT}
-            request={
-              mode === DialogMode.EDIT && dialogData && 'request' in dialogData
-                ? (dialogData as EditRequestData).request
-                : null
-            }
-            workers={workers}
-            shifts={shifts}
-            shiftOptions={shiftOptions}
-            userWorkerId={userWorkerId}
-            userTeamRole={userTeamRole}
-            handleAddRequest={handleAddRequest}
-            handleUpdateRequest={handleUpdateRequest}
-            handleDeleteRequest={handleDeleteRequest}
-            handleRescindRequest={handleRescindRequest}
-            handleAcceptRequest={handleAcceptRequest}
-            handleDenyRequest={handleDenyRequest}
-            onClose={onClose}
-          />
-        )}
+          {activeType === ScheduleItemType.REQUEST && (
+            <RequestForm
+              lng={lng}
+              teamId={teamId}
+              isEdit={mode === DialogMode.EDIT}
+              request={
+                mode === DialogMode.EDIT && dialogData && 'request' in dialogData
+                  ? (dialogData as EditRequestData).request
+                  : null
+              }
+              workers={workers}
+              shifts={shifts}
+              shiftOptions={shiftOptions}
+              userWorkerId={userWorkerId}
+              userTeamRole={userTeamRole}
+              handleAddRequest={handleAddRequest}
+              handleUpdateRequest={handleUpdateRequest}
+              handleDeleteRequest={handleDeleteRequest}
+              handleRescindRequest={handleRescindRequest}
+              handleAcceptRequest={handleAcceptRequest}
+              handleDenyRequest={handleDenyRequest}
+              onClose={onClose}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

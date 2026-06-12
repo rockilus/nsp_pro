@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import {
   Dialog,
-  DialogActions,
   DialogContent,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
-  FormControl,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  Button,
-} from '@mui/material';
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Button } from '@/components/ui/button';
 import { RecurrenceUpdateScope } from '../../../../types/recurrence';
 
 interface RecurrenceDeleteDialogProps {
@@ -32,44 +31,56 @@ const RecurrenceDeleteDialog: React.FC<RecurrenceDeleteDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Delete Recurrence</DialogTitle>
-      <DialogContent>
-        <FormControl component="fieldset">
-          <RadioGroup
-            value={selectedScope}
-            onChange={(e) => setSelectedScope(Number(e.target.value) as RecurrenceUpdateScope)}
-          >
-            <FormControlLabel
-              value={RecurrenceUpdateScope.SINGLE}
-              control={<Radio data-testid="delete-this-only-radio" />}
-              label="This occurrence"
-            />
-            <FormControlLabel
-              value={RecurrenceUpdateScope.FUTURE}
-              control={<Radio data-testid="delete-this-and-future-radio" />}
-              label="This and following occurrences"
-            />
-            <FormControlLabel
-              value={RecurrenceUpdateScope.ALL}
-              control={<Radio data-testid="delete-all-radio" />}
-              label="All occurrences"
-            />
-          </RadioGroup>
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="secondary" data-testid="recurrence-delete-cancel-button">
-          Cancel
-        </Button>
-        <Button
-          onClick={handleConfirm}
-          color="primary"
-          data-testid="recurrence-delete-confirm-button"
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Delete Recurrence</DialogTitle>
+        </DialogHeader>
+
+        <RadioGroup
+          value={String(selectedScope)}
+          onValueChange={(value) => setSelectedScope(Number(value) as RecurrenceUpdateScope)}
         >
-          OK
-        </Button>
-      </DialogActions>
+          <div className="flex items-center gap-2">
+            <RadioGroupItem
+              value={String(RecurrenceUpdateScope.SINGLE)}
+              id="scope-single"
+              data-testid="delete-this-only-radio"
+            />
+            <Label htmlFor="scope-single">This occurrence</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <RadioGroupItem
+              value={String(RecurrenceUpdateScope.FUTURE)}
+              id="scope-future"
+              data-testid="delete-this-and-future-radio"
+            />
+            <Label htmlFor="scope-future">This and following occurrences</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <RadioGroupItem
+              value={String(RecurrenceUpdateScope.ALL)}
+              id="scope-all"
+              data-testid="delete-all-radio"
+            />
+            <Label htmlFor="scope-all">All occurrences</Label>
+          </div>
+        </RadioGroup>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} data-testid="recurrence-delete-cancel-button">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirm} data-testid="recurrence-delete-confirm-button">
+            OK
+          </Button>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 };

@@ -1,14 +1,10 @@
 import React from 'react';
 import { useTranslation } from '../../app/i18n/client';
 import { useIsMobile } from '../../hooks/useIsMobile';
-// MUI
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import CloseIcon from '@mui/icons-material/Close';
+// shadcn
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Pencil } from 'lucide-react';
 // Components
 import { RequestForm } from '@/components/common/RequestForm';
 // Types
@@ -62,7 +58,6 @@ const RequestPanel = ({
 
   const [internalOpen, setInternalOpen] = React.useState<boolean>(false);
 
-  // Use external open state if provided, otherwise use internal state
   const open = externalOpen !== undefined ? externalOpen : internalOpen;
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -73,16 +68,13 @@ const RequestPanel = ({
     if (externalOpen === undefined) {
       setInternalOpen(false);
     }
-    // Call external onClose if provided
     if (onClose) {
       onClose();
     }
   };
 
-  // Initialize with request data if provided (for calendar usage)
   React.useEffect(() => {
     if (request && hideButton && externalOpen === undefined) {
-      // Auto-open for calendar usage (both create and edit scenarios)
       setInternalOpen(true);
     }
   }, [request, hideButton, externalOpen]);
@@ -94,8 +86,9 @@ const RequestPanel = ({
       {!hideButton && (
         <>
           {isEdit && request ? (
-            <IconButton
-              edge="end"
+            <Button
+              variant="ghost"
+              size="icon-sm"
               aria-label="edit"
               data-testid={`edit-request-button-${request.id}`}
               disabled={
@@ -104,17 +97,13 @@ const RequestPanel = ({
               }
               onClick={handleClick}
             >
-              <EditIcon />
-            </IconButton>
+              <Pencil className="size-4" />
+            </Button>
           ) : (
             <Button
-              aria-describedby={id}
-              variant="contained"
+              variant="default"
               disabled={userTeamRole === TeamMembershipRole.MEMBER && !userWorkerId}
               onClick={handleClick}
-              sx={{
-                textTransform: 'none',
-              }}
               data-testid="new-request-button"
             >
               {t('new_request')}
@@ -122,63 +111,47 @@ const RequestPanel = ({
           )}
         </>
       )}
+
       <Dialog
-        id={id}
         open={open}
-        onClose={handleClose}
-        // maxWidth="sm"
-        fullWidth
-        fullScreen={isMobile}
-        data-testid="request-panel-dialog"
+        onOpenChange={(isOpen) => {
+          if (!isOpen) handleClose();
+        }}
       >
-        {!isMobile && (
-          <DialogTitle>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <span>{isEdit ? t('edit_request') : t('new_request')}</span>
-              <IconButton
-                aria-label="close"
-                onClick={handleClose}
-                sx={{
-                  color: (theme) => theme.palette.grey[500],
-                }}
-                // primary test id expected by E2E tests
-                data-testid="close-request-dialog-button"
-                // preserve legacy id for any internal selectors (kept as legacy data attribute)
-                data-legacy-testid="close-request-panel-button"
-              >
-                <CloseIcon />
-              </IconButton>
-            </div>
-          </DialogTitle>
-        )}
-        <DialogContent sx={isMobile ? { p: 0 } : undefined}>
-          <RequestForm
-            lng={lng}
-            teamId={teamId}
-            isEdit={isEdit}
-            request={request}
-            workers={workers}
-            shifts={shifts}
-            shiftOptions={shiftOptions}
-            userWorkerId={userWorkerId}
-            userTeamRole={userTeamRole}
-            handleAddRequest={handleAddRequest}
-            handleUpdateRequest={handleUpdateRequest}
-            handleDeleteRequest={handleDeleteRequest}
-            handleRescindRequest={handleRescindRequest}
-            handleAcceptRequest={handleAcceptRequest}
-            handleDenyRequest={handleDenyRequest}
-            onClose={handleClose}
-            isMobile={isMobile}
-            title={isEdit ? t('edit_request') : t('new_request')}
-            fullWidth={isMobile}
-          />
+        <DialogContent
+          className={isMobile ? 'h-[100dvh] rounded-none p-0 sm:rounded-xl' : 'sm:max-w-lg'}
+          showCloseButton={!isMobile}
+          data-testid="request-panel-dialog"
+        >
+          {!isMobile && (
+            <DialogHeader>
+              <DialogTitle>{isEdit ? t('edit_request') : t('new_request')}</DialogTitle>
+            </DialogHeader>
+          )}
+
+          <div className={isMobile ? '' : ''}>
+            <RequestForm
+              lng={lng}
+              teamId={teamId}
+              isEdit={isEdit}
+              request={request}
+              workers={workers}
+              shifts={shifts}
+              shiftOptions={shiftOptions}
+              userWorkerId={userWorkerId}
+              userTeamRole={userTeamRole}
+              handleAddRequest={handleAddRequest}
+              handleUpdateRequest={handleUpdateRequest}
+              handleDeleteRequest={handleDeleteRequest}
+              handleRescindRequest={handleRescindRequest}
+              handleAcceptRequest={handleAcceptRequest}
+              handleDenyRequest={handleDenyRequest}
+              onClose={handleClose}
+              isMobile={isMobile}
+              title={isEdit ? t('edit_request') : t('new_request')}
+              fullWidth={isMobile}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -2,10 +2,20 @@ import React, { useState, useEffect } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../../../app/i18n/client';
-// MUI
-import { Button, MenuItem, Select, Box, Chip } from '@mui/material';
+// shadcn
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { DatePicker } from '@/components/ui/date-picker';
+import { FormField, FormActions, FormSection } from '@/components/common/form-layout';
+import { User, Calendar, Briefcase } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Components
 import RecurrenceEdit from '../shared/recurrence-edit/recurrence-edit';
 import RecurrenceDeleteDialog from '../shared/recurrence-delete-dialog';
@@ -13,8 +23,6 @@ import { ReplacementDetailsDialog } from '../shared/replacement-details-dialog';
 import { ReplacementCandidatesList } from '../shared/replacement-candidates-list';
 // Hooks
 import { useGetReplacementCandidates } from '../../../../hooks/useAssignment';
-// Styles
-import './edit-assignment.css';
 // Types
 import { WorkerT } from '../../../../types/worker';
 import { ShiftT } from '../../../../types/shift';
@@ -103,9 +111,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const [dateError, setDateError] = useState(false);
 
   const [recurrenceState, setRecurrenceState] = useState<RecurrenceRuleT | null>(recurrence);
-
   const [showRecurrenceEdit, setShowRecurrenceEdit] = useState(false);
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteScope, setDeleteScope] = useState<RecurrenceUpdateScope | null>(null);
   const [dialogAction, setDialogAction] = useState<'delete' | 'update' | null>(null);
@@ -120,13 +126,11 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState<ReplacementCandidateT | null>(null);
 
-  // Local copy of `fixed` to allow optimistic UI updates when toggling
   const [localFixed, setLocalFixed] = useState<boolean | null>(
     assignment ? assignment.fixed : null,
   );
 
   const mobile = useIsMobile();
-
   const getReplacementCandidates = useGetReplacementCandidates();
 
   useEffect(() => {
@@ -146,12 +150,10 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     setDateError(false);
   }, [isEditing, assignment, initialData, recurrence]);
 
-  // Keep localFixed in sync when the assignment prop changes
   useEffect(() => {
     setLocalFixed(assignment ? assignment.fixed : null);
   }, [assignment]);
 
-  // Reset replacement state when assignment changes
   useEffect(() => {
     setIsReplacementViewOpen(false);
     setSelectedCandidateId(null);
@@ -183,35 +185,27 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         description =
           rule.repeatEvery === 1
             ? `${t('rec_weekly_on')} ${days}`
-            : `${t('rec_every')} ${rule.repeatEvery} ${t(
-                'rec_weeks_on',
-              ).toLocaleLowerCase()} ${days}`;
+            : `${t('rec_every')} ${rule.repeatEvery} ${t('rec_weeks_on').toLocaleLowerCase()} ${days}`;
         break;
       case FrequencyType.MONTH:
         if (rule.monthRepeatType === MonthRepeatType.DAY_IN_MONTH) {
           description =
             rule.repeatEvery === 1
               ? `${t('rec_monthly_on_day')} ${rule.startDate.date()}`
-              : `${t('rec_every')} ${rule.repeatEvery} ${t(
-                  'rec_months_on_day',
-                ).toLocaleLowerCase()} ${rule.startDate.date()}`;
+              : `${t('rec_every')} ${rule.repeatEvery} ${t('rec_months_on_day').toLocaleLowerCase()} ${rule.startDate.date()}`;
         } else if (rule.monthRepeatType === MonthRepeatType.WEEKDAY) {
           const weekNumber = Math.ceil(rule.startDate.date() / 7);
           description =
             rule.repeatEvery === 1
               ? `${t('rec_monthly_on')} ${ordinal(weekNumber)} ${weekdays[rule.startDate.day()]}`
-              : `${t('rec_every')} ${rule.repeatEvery} ${t(
-                  'rec_months_on',
-                ).toLocaleLowerCase()} ${ordinal(weekNumber)} ${weekdays[rule.startDate.day()]}`;
+              : `${t('rec_every')} ${rule.repeatEvery} ${t('rec_months_on').toLocaleLowerCase()} ${ordinal(weekNumber)} ${weekdays[rule.startDate.day()]}`;
         }
         break;
       case FrequencyType.YEAR:
         description =
           rule.repeatEvery === 1
             ? `${t('rec_annually_on')} ${rule.startDate.format('MMMM D')}`
-            : `${t('rec_every')} ${rule.repeatEvery} ${t(
-                'rec_years_on',
-              ).toLocaleLowerCase()} ${rule.startDate.format('MMMM D')}`;
+            : `${t('rec_every')} ${rule.repeatEvery} ${t('rec_years_on').toLocaleLowerCase()} ${rule.startDate.format('MMMM D')}`;
         break;
     }
 
@@ -249,7 +243,6 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
   const handleCheckReplacement = async () => {
     if (!assignment || !teamId) return;
-
     try {
       setLoadingReplacements(true);
       const candidates = await getReplacementCandidates(assignment.id, teamId);
@@ -282,12 +275,10 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     try {
       setIsSubmitting(true);
       onSave(updatedAssignment, recurrenceState, null);
-      // Reset replacement state after successful update
       setIsReplacementViewOpen(false);
       setReplacementCandidates(null);
       setSelectedCandidateId(null);
       setShowDetailsDialog(false);
-      // Close the assignment form dialog
       onCancel();
     } catch (error) {
       console.error('Failed to select replacement:', error);
@@ -299,7 +290,6 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
   const handleToggleFixed = async () => {
     if (!isEditing || !assignment || isSubmitting) return;
-    // Use the localFixed state as the source of truth for optimistic toggling
     const newFixed = !Boolean(localFixed);
     const updatedAssignment: AssignmentT = {
       ...assignment,
@@ -307,17 +297,12 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     };
 
     try {
-      // Optimistically update UI
       setLocalFixed(newFixed);
       setIsSubmitting(true);
-      // pass an options object to indicate the dialog should remain open
-      // callers may ignore the extra param; schedule-item-dialog handles it
-      // and will not close when { keepOpen: true } is provided.
       await Promise.resolve(onSave(updatedAssignment, recurrenceState, null, { keepOpen: true }));
     } catch (error) {
       console.error('Failed to toggle fixed:', error);
       alert('Failed to update assignment. Please try again.');
-      // Revert optimistic update on error using authoritative prop value
       setLocalFixed(assignment.fixed ?? null);
     } finally {
       setIsSubmitting(false);
@@ -334,9 +319,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     if (!shiftId) setShiftError(true);
     if (!date) setDateError(true);
 
-    if (!workerId || !shiftId || !date) {
-      return;
-    }
+    if (!workerId || !shiftId || !date) return;
 
     const newAssignment: AssignmentT = {
       id: assignment ? assignment.id : '',
@@ -384,82 +367,65 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   };
 
   return (
-    <Box data-testid="assignment-form">
+    <div data-testid="assignment-form">
+      {/* Fixed/unfixed chip (leader + editing + desktop) */}
       {isEditing && isLeader && !mobile && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1 }}>
-          <Chip
-            size="small"
-            label={localFixed ? 'Locked 🔒' : 'Unlocked 🔓'}
-            color="default"
-            clickable
+        <div className="mb-2 flex justify-start">
+          <Badge
+            variant="secondary"
             onClick={handleToggleFixed}
-            disabled={isSubmitting}
+            className="h-6 cursor-pointer select-none"
             data-testid="assignment-fixed-chip"
-            sx={{ height: 24 }}
-          />
-        </Box>
+          >
+            {localFixed ? 'Locked 🔒' : 'Unlocked 🔓'}
+          </Badge>
+        </div>
       )}
-      <div className="form">
-        <span className="form-title">{t('worker')}</span>
-        <Select
-          className="edit-assignment-select"
-          value={workerId || ''}
-          onChange={(e) => {
-            setWorkerError(false);
-            setWorkerId(e.target.value);
-          }}
-          fullWidth
-          error={workerError}
-          displayEmpty
-          data-testid="edit-assignment-worker-select"
-          renderValue={(selected) => {
-            if (selected === '') {
-              return (
-                <span className="edit-assignment-select-placeholder">{t('select_a_worker')}</span>
-              );
-            }
-            const selectedWorker = workers.find((w) => w.id === selected);
-            return (
-              <span className="edit-assignment-select-text">
-                {selectedWorker ? selectedWorker.name : ''}
-              </span>
-            );
-          }}
+
+      <FormSection>
+        <FormField icon={User} label={t('worker')} error={workerError ? '' : undefined}>
+          <Select
+            value={workerId || ''}
+            onValueChange={(value) => {
+              setWorkerError(false);
+              setWorkerId(value);
+            }}
+          >
+            <SelectTrigger data-testid="edit-assignment-worker-select" aria-invalid={workerError}>
+              <SelectValue placeholder={t('select_a_worker')} />
+            </SelectTrigger>
+            <SelectContent>
+              {workers
+                .filter((w) => !w.deleted)
+                .map((w) => (
+                  <SelectItem key={w.id} value={w.id} data-testid={`worker-option-${w.id}`}>
+                    {w.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+
+        <FormField
+          icon={Calendar}
+          label={t('date')}
+          error={dateError ? t('edit-assignment.date-error') : undefined}
         >
-          {workers
-            .filter((w) => !w.deleted)
-            .map((w) => (
-              <MenuItem
-                key={w.id}
-                value={w.id}
-                sx={{ fontSize: '0.9rem' }}
-                data-testid={`worker-option-${w.id}`}
-              >
-                {w.name}
-              </MenuItem>
-            ))}
-        </Select>
-        <span className="form-title">{t('date')}</span>
-        <DatePicker
-          className="edit-assignment-datepicker"
-          value={date}
-          timezone="UTC"
-          onChange={(newDate) => {
-            setDateError(false);
-            setDate(newDate ? newDate.startOf('day') : null);
-          }}
-          slotProps={{
-            textField: {
-              fullWidth: true,
-              error: dateError,
-              helperText: dateError ? t('edit-assignment.date-error') : '',
-              inputProps: { 'data-testid': 'edit-assignment-date-picker' },
-            },
-          }}
-        />
+          <DatePicker
+            value={date}
+            onChange={(newDate) => {
+              setDateError(false);
+              setDate(newDate ? newDate.startOf('day') : null);
+            }}
+            error={dateError}
+            data-testid="edit-assignment-date-picker"
+          />
+        </FormField>
+
+        {/* Recurrence */}
         {showRecurrenceEdit ? (
           <>
-            <hr className="separator" />
+            <div className="my-2 border-t border-border" />
             <RecurrenceEdit
               lng={lng}
               isEditing={true}
@@ -467,60 +433,43 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
               recurrenceRule={recurrenceState}
               startDate={date || dayjs()}
               teamId={teamId}
-              onClose={() => {
-                setShowRecurrenceEdit(false);
-              }}
+              onClose={() => setShowRecurrenceEdit(false)}
               onRecurrenceChange={handleRecurrenceChange}
             />
-            <hr className="separator" />
+            <div className="my-2 border-t border-border" />
           </>
         ) : (
           <button
-            className="recurrence-button"
+            type="button"
             onClick={() => setShowRecurrenceEdit(!showRecurrenceEdit)}
             data-testid="recurrence-button"
+            className="w-full py-1 text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             {recurrenceState ? describeRecurrenceRule(recurrenceState) : t('add_recurrence')}
           </button>
         )}
-        <span className="form-title">{t('shift')}</span>
-        <Select
-          className="edit-assignment-select"
-          value={shiftId || ''}
-          onChange={(e) => {
-            setShiftError(false);
-            setShiftId(e.target.value);
-          }}
-          fullWidth
-          error={shiftError}
-          displayEmpty
-          data-testid="edit-assignment-shift-select"
-          renderValue={(selected) => {
-            if (selected === '') {
-              return (
-                <span className="edit-assignment-select-placeholder">{t('select_a_shift')}</span>
-              );
-            }
-            const selectedShift = shifts.find((s) => s.id === selected);
-            return (
-              <span className="edit-assignment-select-text">
-                {selectedShift ? selectedShift.name : ''}
-              </span>
-            );
-          }}
-        >
-          {shifts.map((s) => (
-            <MenuItem
-              key={s.id}
-              value={s.id}
-              sx={{ fontSize: '0.9rem' }}
-              data-testid={`shift-option-${s.id}`}
-            >
-              {s.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </div>
+
+        <FormField icon={Briefcase} label={t('shift')} error={shiftError ? '' : undefined}>
+          <Select
+            value={shiftId || ''}
+            onValueChange={(value) => {
+              setShiftError(false);
+              setShiftId(value);
+            }}
+          >
+            <SelectTrigger data-testid="edit-assignment-shift-select" aria-invalid={shiftError}>
+              <SelectValue placeholder={t('select_a_shift')} />
+            </SelectTrigger>
+            <SelectContent>
+              {shifts.map((s) => (
+                <SelectItem key={s.id} value={s.id} data-testid={`shift-option-${s.id}`}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+      </FormSection>
 
       {/* Replacement candidates list */}
       {isEditing && (
@@ -539,42 +488,34 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         />
       )}
 
-      <div className="edit-assignment-actions">
-        {!isEditing ? (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSaveClick}
-            disabled={isSubmitting}
-            className="create-button"
-            data-testid="edit-assignment-create-button"
-          >
-            {isSubmitting ? t('creating') : t('create')}
-          </Button>
-        ) : (
+      <FormActions>
+        {isEditing ? (
           <>
             <Button
-              variant="outlined"
-              color="error"
+              variant="destructive"
               onClick={handleDeleteClick}
-              className="delete-button"
               data-testid="delete-assignment-button"
             >
               {t('delete')}
             </Button>
             <Button
-              variant="contained"
-              color="primary"
               onClick={handleSaveClick}
               disabled={isSubmitting}
-              className="save-button"
               data-testid="save-assignment-button"
             >
               {isSubmitting ? t('saving') : t('save')}
             </Button>
           </>
+        ) : (
+          <Button
+            onClick={handleSaveClick}
+            disabled={isSubmitting}
+            data-testid="edit-assignment-create-button"
+          >
+            {isSubmitting ? t('creating') : t('create')}
+          </Button>
         )}
-      </div>
+      </FormActions>
 
       <RecurrenceDeleteDialog
         open={isDialogOpen}
@@ -596,7 +537,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         workers={workers}
         shifts={shifts}
       />
-    </Box>
+    </div>
   );
 };
 

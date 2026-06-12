@@ -2,11 +2,19 @@ import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../../../../app/i18n/client';
-// MUI
-import { Select, MenuItem, TextField, Button } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-// Styles
-import './recurrence-edit.css';
+// shadcn
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { DatePicker } from '@/components/ui/date-picker';
 // Types
 import {
   OccurrenceType,
@@ -69,8 +77,6 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   const [numberOfOccurrencesError, setNumberOfOccurrencesError] = useState<boolean>(false);
 
   useEffect(() => {
-    // Defer updating state to avoid synchronous setState inside effect
-    // (this avoids the lint rule complaining about setState in effect).
     const id = window.setTimeout(() => {
       setFormState((prev) => ({
         ...prev,
@@ -154,62 +160,21 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
 
   const frequencyOptions = [
     { value: FrequencyType.DAY, label: t('day').toLowerCase(), testId: 'day' },
-    {
-      value: FrequencyType.WEEK,
-      label: t('week').toLowerCase(),
-      testId: 'week',
-    },
-    {
-      value: FrequencyType.MONTH,
-      label: t('month').toLowerCase(),
-      testId: 'month',
-    },
-    {
-      value: FrequencyType.YEAR,
-      label: t('year').toLowerCase(),
-      testId: 'year',
-    },
+    { value: FrequencyType.WEEK, label: t('week').toLowerCase(), testId: 'week' },
+    { value: FrequencyType.MONTH, label: t('month').toLowerCase(), testId: 'month' },
+    { value: FrequencyType.YEAR, label: t('year').toLowerCase(), testId: 'year' },
   ];
 
   const weekDayOptions = [
-    {
-      value: 0,
-      label: t('monday_short'),
-      fullDayName: t('monday'),
-    },
-    {
-      value: 1,
-      label: t('tuesday_short'),
-      fullDayName: t('tuesday'),
-    },
-    {
-      value: 2,
-      label: t('wednesday_short'),
-      fullDayName: t('wednesday'),
-    },
-    {
-      value: 3,
-      label: t('thursday_short'),
-      fullDayName: t('thursday'),
-    },
-    {
-      value: 4,
-      label: t('friday_short'),
-      fullDayName: t('friday'),
-    },
-    {
-      value: 5,
-      label: t('saturday_short'),
-      fullDayName: t('saturday'),
-    },
-    {
-      value: 6,
-      label: t('sunday_short'),
-      fullDayName: t('sunday'),
-    },
+    { value: 0, label: t('monday_short'), fullDayName: t('monday') },
+    { value: 1, label: t('tuesday_short'), fullDayName: t('tuesday') },
+    { value: 2, label: t('wednesday_short'), fullDayName: t('wednesday') },
+    { value: 3, label: t('thursday_short'), fullDayName: t('thursday') },
+    { value: 4, label: t('friday_short'), fullDayName: t('friday') },
+    { value: 5, label: t('saturday_short'), fullDayName: t('saturday') },
+    { value: 6, label: t('sunday_short'), fullDayName: t('sunday') },
   ];
 
-  // Define a dictionary for translating ordinal terms
   const ordinalTranslation: Record<number, string> = {
     1: t('first'),
     2: t('second'),
@@ -218,7 +183,6 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
     5: t('fifth'),
   };
 
-  // Update the monthRepeatOptions to use the ordinalTranslation dictionary
   const monthRepeatOptions = [
     {
       value: MonthRepeatType.DAY_IN_MONTH,
@@ -233,14 +197,16 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
   ];
 
   return (
-    <div className="recurrence-edit-container" data-testid="recurrence-edit-container">
-      <h2 className="recurrence-edit-title">{t('recurrence')}</h2>
+    <div className="flex flex-col gap-4 p-1" data-testid="recurrence-edit-container">
+      <h2 className="text-base font-semibold">{t('recurrence')}</h2>
 
-      <div className="recurrence-edit-section">
-        <div className="recurrence-edit-sub-section-row">
-          <label className="recurrence-edit-text">{t('repeat_every')}</label>
-          <TextField
+      {/* Repeat every + frequency */}
+      <div className="space-y-1.5">
+        <Label className="text-sm font-medium">{t('repeat_every')}</Label>
+        <div className="flex items-center gap-1.5">
+          <Input
             type="number"
+            min={1}
             value={formState.repeatEvery === 0 ? '' : formState.repeatEvery}
             onChange={(e) => {
               setFormState((prev) => ({
@@ -249,221 +215,147 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               }));
               setRepeatEveryError(false);
             }}
-            error={repeatEveryError}
-            inputProps={{
-              min: 1,
-              'data-testid': 'repeat-every-input',
-              style: {
-                height: '30px',
-                fontSize: '0.8rem',
-                color: '#3c4043',
-                padding: '0',
-                textAlign: 'right',
-                appearance: 'textfield',
-              },
-            }}
-            variant="outlined"
-            size="small"
-            sx={{ width: '50px', marginLeft: '5px' }}
+            aria-invalid={repeatEveryError}
+            data-testid="repeat-every-input"
+            className="h-8 w-14 [appearance:textfield] text-right text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
           <Select
-            value={formState.frequencyType}
-            onChange={(e) =>
+            value={String(formState.frequencyType)}
+            onValueChange={(value) =>
               setFormState((prev) => ({
                 ...prev,
-                frequencyType: Number(e.target.value) as FrequencyType,
+                frequencyType: Number(value) as FrequencyType,
               }))
             }
-            fullWidth
-            displayEmpty
-            data-testid="frequency-select"
-            sx={{
-              width: '100px',
-              height: '30px',
-              fontSize: '0.8rem',
-              fontWeight: 400,
-              color: '#3c4043',
-              marginLeft: '5px',
-              '& .MuiSelect-select': {
-                paddingY: '0',
-              },
-            }}
           >
-            {frequencyOptions.map((option) => (
-              <MenuItem
-                key={option.value}
-                value={option.value}
-                data-testid={`frequency-option-${option.testId}`}
-                sx={{
-                  fontSize: '0.8rem',
-                  fontWeight: 400,
-                  color: '#3c4043',
-                }}
-              >
-                {option.label}
-              </MenuItem>
-            ))}
+            <SelectTrigger className="h-8 w-24 text-xs" data-testid="frequency-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {frequencyOptions.map((option) => (
+                <SelectItem
+                  key={option.value}
+                  value={String(option.value)}
+                  data-testid={`frequency-option-${option.testId}`}
+                  className="text-xs"
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
         </div>
       </div>
 
+      {/* Week day selector */}
       {formState.frequencyType === FrequencyType.WEEK && (
-        <div className="recurrence-edit-section">
-          <div className="recurrence-edit-sub-section">
-            <label className="recurrence-edit-text">{t('repeat_on')}</label>
-            <div className="recurrence-edit-select-weekdays">
-              {weekDayOptions.map((day) => (
-                <button
-                  key={day.value}
-                  onClick={() => handleWeekDayToggle(day.value)}
-                  className={`weekday-button ${
-                    formState.weekDays.includes(day.value) ? 'selected' : ''
-                  }`}
-                  data-testid={`weekday-button-${day.value}`}
-                >
-                  {day.label}
-                </button>
-              ))}
-            </div>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">{t('repeat_on')}</Label>
+          <div className="flex flex-wrap gap-1">
+            {weekDayOptions.map((day) => (
+              <button
+                key={day.value}
+                type="button"
+                onClick={() => handleWeekDayToggle(day.value)}
+                data-testid={`weekday-button-${day.value}`}
+                className={`inline-flex items-center justify-center rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+                  formState.weekDays.includes(day.value)
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-input bg-transparent hover:bg-muted'
+                }`}
+              >
+                {day.label}
+              </button>
+            ))}
           </div>
         </div>
       )}
 
+      {/* Month repeat type */}
       {formState.frequencyType === FrequencyType.MONTH && (
-        <div className="recurrence-edit-section">
+        <div className="space-y-1.5">
           <Select
-            value={formState.monthRepeatType || MonthRepeatType.DAY_IN_MONTH}
-            onChange={(e) => {
+            value={String(formState.monthRepeatType || MonthRepeatType.DAY_IN_MONTH)}
+            onValueChange={(value) => {
               setFormState((prev) => ({
                 ...prev,
-                monthRepeatType: Number(e.target.value) as MonthRepeatType,
+                monthRepeatType: Number(value) as MonthRepeatType,
               }));
             }}
-            fullWidth
-            displayEmpty
-            data-testid="month-repeat-type-select"
-            sx={{
-              width: '100%',
-              height: '30px',
-              fontSize: '0.8rem',
-              fontWeight: 400,
-              color: '#3c4043',
-              '& .MuiSelect-select': {
-                paddingY: '0',
-              },
-            }}
           >
-            {monthRepeatOptions.map((option) => (
-              <MenuItem
-                key={option.value}
-                value={option.value}
-                sx={{
-                  fontSize: '0.8rem',
-                  fontWeight: 400,
-                  color: '#3c4043',
-                }}
-              >
-                {option.label}
-              </MenuItem>
-            ))}
+            <SelectTrigger className="h-8 w-full text-xs" data-testid="month-repeat-type-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {monthRepeatOptions.map((option) => (
+                <SelectItem key={option.value} value={String(option.value)} className="text-xs">
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
         </div>
       )}
 
-      <div className="recurrence-edit-section">
-        <label className="recurrence-edit-text">{t('ends')}</label>
-        <div className="recurrence-edit-end-options">
-          <label>
-            <input
-              type="radio"
-              value={RecurrenceEndType.NEVER}
-              checked={formState.recurrenceEndType === RecurrenceEndType.NEVER}
-              onChange={() =>
-                setFormState((prev) => ({
-                  ...prev,
-                  recurrenceEndType: RecurrenceEndType.NEVER,
-                }))
-              }
+      {/* Ends */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{t('ends')}</Label>
+        <RadioGroup
+          value={String(formState.recurrenceEndType)}
+          onValueChange={(value) =>
+            setFormState((prev) => ({
+              ...prev,
+              recurrenceEndType: Number(value) as RecurrenceEndType,
+            }))
+          }
+        >
+          <div className="flex items-center gap-2">
+            <RadioGroupItem
+              value={String(RecurrenceEndType.NEVER)}
+              id="end-never"
               data-testid="recurrence-never-radio"
             />
-            <span className="recurrence-edit-text recurrence-edit-radio-option-label">
+            <Label htmlFor="end-never" className="cursor-pointer text-sm font-normal">
               {t('never')}
-            </span>
-          </label>
-          <div className="recurrence-edit-end-option">
-            <label>
-              <input
-                type="radio"
-                value={RecurrenceEndType.END_DATE}
-                checked={formState.recurrenceEndType === RecurrenceEndType.END_DATE}
-                onChange={() =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    recurrenceEndType: RecurrenceEndType.END_DATE,
-                  }))
-                }
-                data-testid="recurrence-end-date-radio"
-              />
-              <span className="recurrence-edit-text recurrence-edit-radio-option-label">
-                {t('on')}
-              </span>
-            </label>
+            </Label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <RadioGroupItem
+              value={String(RecurrenceEndType.END_DATE)}
+              id="end-date"
+              data-testid="recurrence-end-date-radio"
+            />
+            <Label htmlFor="end-date" className="cursor-pointer text-sm font-normal">
+              {t('on')}
+            </Label>
             <DatePicker
-              disabled={formState.recurrenceEndType !== RecurrenceEndType.END_DATE}
               value={formState.endDate}
-              timezone="UTC"
               onChange={(newDate) => {
                 setFormState((prev) => ({
                   ...prev,
-                  endDate: newDate ? dayjs(newDate).utc() : startDate.add(3, 'month'),
+                  endDate: newDate || startDate.add(3, 'month'),
                 }));
               }}
               minDate={startDate}
-              slotProps={{
-                textField: {
-                  inputProps: {
-                    'data-testid': 'recurrence-end-date-picker',
-                  },
-                },
-              }}
-              sx={{
-                marginLeft: '5px',
-                width: '130px',
-                color: '#3c4043',
-                '& .MuiInputBase-root': {
-                  height: '30px',
-                },
-                '& .MuiInputBase-input': {
-                  fontSize: '0.8rem',
-                  fontWeight: 400,
-                },
-                '& .MuiSvgIcon-root': {
-                  fontSize: '1rem',
-                },
-              }}
-              // renderInput={(params) => <TextField {...params} />}
+              disabled={formState.recurrenceEndType !== RecurrenceEndType.END_DATE}
+              data-testid="recurrence-end-date-picker"
+              className="w-32"
             />
           </div>
-          <div className="recurrence-edit-end-option">
-            <label>
-              <input
-                type="radio"
-                value={RecurrenceEndType.NUMBER_OF_OCCURRENCES}
-                checked={formState.recurrenceEndType === RecurrenceEndType.NUMBER_OF_OCCURRENCES}
-                onChange={() =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    recurrenceEndType: RecurrenceEndType.NUMBER_OF_OCCURRENCES,
-                  }))
-                }
-                data-testid="recurrence-occurrences-radio"
-              />
-              <span className="recurrence-edit-text recurrence-edit-radio-option-label">
-                {t('after')}
-              </span>
-            </label>
-            <TextField
+
+          <div className="flex items-center gap-2">
+            <RadioGroupItem
+              value={String(RecurrenceEndType.NUMBER_OF_OCCURRENCES)}
+              id="end-occurrences"
+              data-testid="recurrence-occurrences-radio"
+            />
+            <Label htmlFor="end-occurrences" className="cursor-pointer text-sm font-normal">
+              {t('after')}
+            </Label>
+            <Input
               type="number"
+              min={1}
               disabled={formState.recurrenceEndType !== RecurrenceEndType.NUMBER_OF_OCCURRENCES}
               value={formState.numberOfOccurrences === 0 ? '' : formState.numberOfOccurrences}
               onChange={(e) => {
@@ -473,52 +365,28 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 }));
                 setNumberOfOccurrencesError(false);
               }}
-              error={numberOfOccurrencesError}
-              inputProps={{
-                min: 1,
-                'data-testid': 'recurrence-occurrences-input',
-                style: {
-                  height: '30px',
-                  fontSize: '0.8rem',
-                  color: '#3c4043',
-                  padding: '0',
-                  textAlign: 'right',
-                  appearance: 'textfield',
-                },
-              }}
-              variant="outlined"
-              size="small"
-              sx={{ width: '50px', marginLeft: '5px' }}
+              aria-invalid={numberOfOccurrencesError}
+              data-testid="recurrence-occurrences-input"
+              className="h-8 w-14 [appearance:textfield] text-right text-xs [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
-            <span className="recurrence-edit-text">{t('occurrences').toLocaleLowerCase()}</span>
+            <span className="text-sm">{t('occurrences').toLocaleLowerCase()}</span>
           </div>
-        </div>
+        </RadioGroup>
       </div>
 
-      <div className="recurrence-edit-section">
-        <div className="recurrence-edit-actions">
-          <Button
-            variant="outlined"
-            onClick={handleCancel}
-            data-testid="recurrence-cancel-button"
-            sx={{
-              marginRight: 1,
-              textTransform: 'none',
-              fontSize: '0.8rem',
-              fontWeight: 500,
-            }}
-          >
-            {t('cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            data-testid="recurrence-done-button"
-            sx={{ textTransform: 'none', fontSize: '0.8rem', fontWeight: 500 }}
-          >
-            {t('ok')}
-          </Button>
-        </div>
+      {/* Actions */}
+      <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleCancel}
+          data-testid="recurrence-cancel-button"
+        >
+          {t('cancel')}
+        </Button>
+        <Button size="sm" onClick={handleSubmit} data-testid="recurrence-done-button">
+          {t('ok')}
+        </Button>
       </div>
     </div>
   );
