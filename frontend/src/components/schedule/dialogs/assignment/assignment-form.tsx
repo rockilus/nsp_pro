@@ -381,7 +381,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   );
 
   return (
-    <div data-testid="assignment-form" className="flex flex-col gap-5">
+    <div data-testid="assignment-form" className="flex max-h-[65vh] flex-col gap-5 overflow-y-auto">
       {/* Fixed/unfixed chip (leader + editing + desktop) */}
       {isEditing && isLeader && !mobile && (
         <div className="flex justify-start">
