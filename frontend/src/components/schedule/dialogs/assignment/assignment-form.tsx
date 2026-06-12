@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Card, CardContent } from '@/components/ui/card';
 import { FormActions } from '@/components/common/form-layout';
 import { User, Briefcase, Plus } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -451,18 +452,24 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
         {/* Recurrence */}
         {showRecurrenceEdit ? (
-          <div className="mt-2">
-            <RecurrenceEdit
-              lng={lng}
-              isEditing={true}
-              occurrenceType={OccurrenceType.ASSIGNMENT}
-              recurrenceRule={recurrenceState}
-              startDate={date || dayjs()}
-              teamId={teamId}
-              onClose={() => setShowRecurrenceEdit(false)}
-              onRecurrenceChange={handleRecurrenceChange}
-            />
-          </div>
+          <Card
+            size="sm"
+            className="mt-2 border-l-2 border-l-primary shadow-none"
+            data-testid="recurrence-card"
+          >
+            <CardContent>
+              <RecurrenceEdit
+                lng={lng}
+                isEditing={true}
+                occurrenceType={OccurrenceType.ASSIGNMENT}
+                recurrenceRule={recurrenceState}
+                startDate={date || dayjs()}
+                teamId={teamId}
+                onClose={() => setShowRecurrenceEdit(false)}
+                onRecurrenceChange={handleRecurrenceChange}
+              />
+            </CardContent>
+          </Card>
         ) : (
           <div className="mt-1 flex justify-end">
             <Button
