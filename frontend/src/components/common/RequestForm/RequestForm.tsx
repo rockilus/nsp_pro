@@ -439,21 +439,20 @@ const RequestForm = ({
           )}
         </div>
 
-        {/* Date range checkbox */}
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="date-range"
-            checked={dateRange}
-            onCheckedChange={handleSelectDateRange}
-            data-testid="date-range-checkbox"
-          />
-          <Label htmlFor="date-range" className="cursor-pointer text-sm">
-            {t('date_range')}
-          </Label>
-        </div>
-
         {/* Start date */}
         <div>
+          {/* Date range checkbox */}
+          <div className="mb-1 flex items-center gap-1.5">
+            <Checkbox
+              id="date-range"
+              checked={dateRange}
+              onCheckedChange={handleSelectDateRange}
+              data-testid="date-range-checkbox"
+            />
+            <Label htmlFor="date-range" className="cursor-pointer text-xs">
+              {t('date_range')}
+            </Label>
+          </div>
           <DatePicker
             value={requestState.startDate}
             minDate={dayjs.utc().startOf('day')}
