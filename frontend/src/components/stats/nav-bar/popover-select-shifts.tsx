@@ -43,7 +43,6 @@ export default function PopoverSelectShifts({
           align="start"
           side="bottom"
           sideOffset={-35}
-          avoidCollisions={false}
           className="w-auto min-w-[200px] p-0"
           data-testid="shift-options-popover"
         >
