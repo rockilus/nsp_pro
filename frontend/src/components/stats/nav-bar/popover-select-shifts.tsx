@@ -1,6 +1,6 @@
 import * as React from 'react';
-// MUI
-import Popover from '@mui/material/Popover';
+// shadcn
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 // Styles
 import './popover-select-shifts.css';
 
@@ -19,52 +19,36 @@ export default function PopoverSelectShifts({
   handleOpenPopover: () => void;
   handleClosePopover: () => void;
 }) {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-    handleOpenPopover();
+  const handleOpenChange = (isOpen: boolean) => {
+    if (disabled) return;
+    if (isOpen) {
+      handleOpenPopover();
+    } else {
+      handleClosePopover();
+    }
   };
-
-  const handleClose = () => {
-    handleClosePopover();
-    setAnchorEl(null);
-  };
-
-  const id = open ? 'simple-popover' : undefined;
 
   return (
     <div className={`popover-select-shifts ${disabled ? 'disabled' : ''}`}>
       <label className="popover-select-shifts-label">
         <span className="popover-select-shifts-text">Select Shifts</span>
       </label>
-      <div
-        className="popover-select-shifts-button"
-        onClick={handleClick}
-        data-testid="shift-options-button"
-      >
-        {buttonContent}
-      </div>
-      <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-        slotProps={{
-          paper: {
-            style: {
-              boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
-              padding: 0,
-            },
-          },
-        }}
-        data-testid="shift-options-popover"
-      >
-        {content}
+      <Popover open={open} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          <div className="popover-select-shifts-button" data-testid="shift-options-button">
+            {buttonContent}
+          </div>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          side="bottom"
+          sideOffset={-35}
+          avoidCollisions={false}
+          className="w-auto min-w-[200px] p-0"
+          data-testid="shift-options-popover"
+        >
+          {content}
+        </PopoverContent>
       </Popover>
     </div>
   );

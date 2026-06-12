@@ -88,6 +88,8 @@ import { SpecialtyT } from '@/types/specialty';
 import { TeamWithMembership } from '@/types/team';
 import { SolveTaskStatusResponseT } from '@/types/solveTaskStatus';
 import { useShiftDemands, useShiftDemandMutations } from '../../app/lib/hooks/useShiftDemands';
+import { useGetShiftOptions } from '../../hooks/useStats';
+import { ShiftWorkerOptionT } from '../../types/constraint';
 import { useScheduleViewSettings } from '../../app/lib/hooks/useScheduleViewSettings';
 import { getDefaultScheduleViewSettings } from '../../app/lib/utils/scheduleViewSettingsUtils';
 import { useLocalStorageState } from '../../app/lib/hooks/useLocalStorageState';
@@ -142,6 +144,9 @@ export default function ScheduleTab({
   const bulkToggleFixed = useBulkToggleFixed();
   const bulkDeleteAssignments = useBulkDeleteAssignments();
 
+  // Stats hooks
+  const getShiftOptions = useGetShiftOptions();
+
   // Request hooks
   const addRequest = useAddRequest();
   const updateRequest = useUpdateRequest();
@@ -175,6 +180,7 @@ export default function ScheduleTab({
   const [scheduleCampaign, setScheduleCampaign] = useState<ScheduleT | null>(null);
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
+  const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
 
   // Use persistent schedule view settings
   const defaultSettings = getDefaultScheduleViewSettings(teamWithMembership.team.useSolver);
@@ -1567,6 +1573,14 @@ export default function ScheduleTab({
         const fetchedRequests = await getRequests(teamWithMembership.team.id);
         setRequests(fetchedRequests);
 
+        // Fetch shift options (needed for the request form when creating from the schedule)
+        try {
+          const fetchedShiftOptions = await getShiftOptions(teamWithMembership.team.id);
+          setShiftOptions(fetchedShiftOptions);
+        } catch (error) {
+          console.error('Failed to fetch shift options:', error);
+        }
+
         // Fetch owner-only data (schedules, breaches, specialties) — not available to members
         if (teamWithMembership.membership.role !== TeamMembershipRole.MEMBER) {
           const [schedulesResult, breachesResult, specialtiesResult] = await Promise.allSettled([
@@ -1793,7 +1807,7 @@ export default function ScheduleTab({
           shifts={shifts.filter((s) => !s.deleted)}
           schedules={[...(scheduleCampaign ? [scheduleCampaign] : []), ...schedulesValidated]}
           specialties={specialties}
-          shiftOptions={[]}
+          shiftOptions={shiftOptions}
           userWorkerId={null}
           userTeamRole={teamWithMembership.membership.role}
           useSolver={teamWithMembership.team.useSolver}
