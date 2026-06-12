@@ -7,14 +7,17 @@ import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { DatePicker } from '@/components/ui/date-picker';
-import { FormField, FormActions, FormSection } from '@/components/common/form-layout';
-import { User, Calendar, Briefcase } from 'lucide-react';
+import { FormActions } from '@/components/common/form-layout';
+import { User, Briefcase } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 // Components
 import RecurrenceEdit from '../shared/recurrence-edit/recurrence-edit';
@@ -23,9 +26,11 @@ import { ReplacementDetailsDialog } from '../shared/replacement-details-dialog';
 import { ReplacementCandidatesList } from '../shared/replacement-candidates-list';
 // Hooks
 import { useGetReplacementCandidates } from '../../../../hooks/useAssignment';
+// Constants
+import { ShiftColorMappings } from '../../../../constants/constants';
 // Types
 import { WorkerT } from '../../../../types/worker';
-import { ShiftT } from '../../../../types/shift';
+import { ShiftT, ShiftType } from '../../../../types/shift';
 import { ScheduleT } from '../../../../types/schedule';
 import { AssignmentT, AssignmentSource } from '@/types/assignment';
 import { AssignmentDataT } from '../../../../types/schedule';
@@ -366,11 +371,19 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     setDialogAction(null);
   };
 
+  // Partition shifts into work (Normal + Duty) and non-work (Rest + Leave)
+  const workShifts = shifts.filter(
+    (s) => !s.deleted && (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY),
+  );
+  const nonWorkShifts = shifts.filter(
+    (s) => !s.deleted && (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE),
+  );
+
   return (
-    <div data-testid="assignment-form">
+    <div data-testid="assignment-form" className="flex flex-col gap-5">
       {/* Fixed/unfixed chip (leader + editing + desktop) */}
       {isEditing && isLeader && !mobile && (
-        <div className="mb-2 flex justify-start">
+        <div className="flex justify-start">
           <Badge
             variant="secondary"
             onClick={handleToggleFixed}
@@ -382,8 +395,10 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         </div>
       )}
 
-      <FormSection>
-        <FormField icon={User} label={t('worker')} error={workerError ? '' : undefined}>
+      {/* Worker select — icon inline left, no external label */}
+      <div>
+        <div className="relative">
+          <User className="pointer-events-none absolute top-1/2 left-2.5 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
           <Select
             value={workerId || ''}
             onValueChange={(value) => {
@@ -391,7 +406,11 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
               setWorkerId(value);
             }}
           >
-            <SelectTrigger data-testid="edit-assignment-worker-select" aria-invalid={workerError}>
+            <SelectTrigger
+              data-testid="edit-assignment-worker-select"
+              aria-invalid={workerError}
+              className="w-full max-w-full pl-9"
+            >
               <SelectValue placeholder={t('select_a_worker')} />
             </SelectTrigger>
             <SelectContent>
@@ -404,52 +423,60 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
                 ))}
             </SelectContent>
           </Select>
-        </FormField>
-
-        <FormField
-          icon={Calendar}
-          label={t('date')}
-          error={dateError ? t('edit-assignment.date-error') : undefined}
-        >
-          <DatePicker
-            value={date}
-            onChange={(newDate) => {
-              setDateError(false);
-              setDate(newDate ? newDate.startOf('day') : null);
-            }}
-            error={dateError}
-            data-testid="edit-assignment-date-picker"
-          />
-        </FormField>
-
-        {/* Recurrence */}
-        {showRecurrenceEdit ? (
-          <>
-            <div className="my-2 border-t border-border" />
-            <RecurrenceEdit
-              lng={lng}
-              isEditing={true}
-              occurrenceType={OccurrenceType.ASSIGNMENT}
-              recurrenceRule={recurrenceState}
-              startDate={date || dayjs()}
-              teamId={teamId}
-              onClose={() => setShowRecurrenceEdit(false)}
-              onRecurrenceChange={handleRecurrenceChange}
-            />
-            <div className="my-2 border-t border-border" />
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setShowRecurrenceEdit(!showRecurrenceEdit)}
-            data-testid="recurrence-button"
-            className="w-full py-1 text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            {recurrenceState ? describeRecurrenceRule(recurrenceState) : t('add_recurrence')}
-          </button>
+        </div>
+        {workerError && (
+          <p className="mt-1 text-xs text-destructive" role="alert">
+            {' '}
+          </p>
         )}
+      </div>
 
-        <FormField icon={Briefcase} label={t('shift')} error={shiftError ? '' : undefined}>
+      {/* Date picker — already has CalendarIcon built-in, full-width */}
+      <div>
+        <DatePicker
+          value={date}
+          onChange={(newDate) => {
+            setDateError(false);
+            setDate(newDate ? newDate.startOf('day') : null);
+          }}
+          error={dateError}
+          data-testid="edit-assignment-date-picker"
+          className="w-full max-w-full"
+        />
+        {dateError && (
+          <p className="mt-1 text-xs text-destructive" role="alert">
+            {t('edit-assignment.date-error')}
+          </p>
+        )}
+      </div>
+
+      {/* Recurrence */}
+      {showRecurrenceEdit ? (
+        <RecurrenceEdit
+          lng={lng}
+          isEditing={true}
+          occurrenceType={OccurrenceType.ASSIGNMENT}
+          recurrenceRule={recurrenceState}
+          startDate={date || dayjs()}
+          teamId={teamId}
+          onClose={() => setShowRecurrenceEdit(false)}
+          onRecurrenceChange={handleRecurrenceChange}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setShowRecurrenceEdit(!showRecurrenceEdit)}
+          data-testid="recurrence-button"
+          className="w-full py-1 text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          {recurrenceState ? describeRecurrenceRule(recurrenceState) : t('add_recurrence')}
+        </button>
+      )}
+
+      {/* Shift select — icon inline left, grouped: work (normal vs duty) / non-work */}
+      <div>
+        <div className="relative">
+          <Briefcase className="pointer-events-none absolute top-1/2 left-2.5 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
           <Select
             value={shiftId || ''}
             onValueChange={(value) => {
@@ -457,19 +484,66 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
               setShiftId(value);
             }}
           >
-            <SelectTrigger data-testid="edit-assignment-shift-select" aria-invalid={shiftError}>
+            <SelectTrigger
+              data-testid="edit-assignment-shift-select"
+              aria-invalid={shiftError}
+              className="w-full max-w-full pl-9"
+            >
               <SelectValue placeholder={t('select_a_shift')} />
             </SelectTrigger>
             <SelectContent>
-              {shifts.map((s) => (
-                <SelectItem key={s.id} value={s.id} data-testid={`shift-option-${s.id}`}>
-                  {s.name}
-                </SelectItem>
-              ))}
+              {/* Work shifts group */}
+              {workShifts.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel>{t('work_shifts')}</SelectLabel>
+                  {workShifts.map((s) => {
+                    const { sample } = ShiftColorMappings[s.color] || { sample: '#9e9e9e' };
+                    const isDuty = s.shiftType === ShiftType.DUTY;
+                    return (
+                      <SelectItem key={s.id} value={s.id} data-testid={`shift-option-${s.id}`}>
+                        <span className="flex items-center gap-2">
+                          {/* Duty accent: colored left bar, matching schedule-table-shift pattern */}
+                          {isDuty && (
+                            <span
+                              className="block w-1 self-stretch rounded-sm"
+                              style={{
+                                backgroundColor: sample,
+                                minHeight: '1rem',
+                                marginLeft: '-0.25rem',
+                              }}
+                            />
+                          )}
+                          {s.name}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectGroup>
+              )}
+
+              {/* Non-work shifts group */}
+              {nonWorkShifts.length > 0 && (
+                <>
+                  {workShifts.length > 0 && <SelectSeparator />}
+                  <SelectGroup>
+                    <SelectLabel>{t('non_work_shifts')}</SelectLabel>
+                    {nonWorkShifts.map((s) => (
+                      <SelectItem key={s.id} value={s.id} data-testid={`shift-option-${s.id}`}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </>
+              )}
             </SelectContent>
           </Select>
-        </FormField>
-      </FormSection>
+        </div>
+        {shiftError && (
+          <p className="mt-1 text-xs text-destructive" role="alert">
+            {' '}
+          </p>
+        )}
+      </div>
 
       {/* Replacement candidates list */}
       {isEditing && (
