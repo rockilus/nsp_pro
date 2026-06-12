@@ -258,7 +258,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
                 type="button"
                 onClick={() => handleWeekDayToggle(day.value)}
                 data-testid={`weekday-button-${day.value}`}
-                className={`inline-flex items-center justify-center rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+                className={`inline-flex size-7 items-center justify-center rounded-md border text-xs font-medium transition-colors ${
                   formState.weekDays.includes(day.value)
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-input bg-transparent hover:bg-muted'
@@ -340,7 +340,7 @@ const RecurrenceEdit: React.FC<RecurrenceEditProps> = ({
               minDate={startDate}
               disabled={formState.recurrenceEndType !== RecurrenceEndType.END_DATE}
               data-testid="recurrence-end-date-picker"
-              className="w-32"
+              className="w-46"
             />
           </div>
 
