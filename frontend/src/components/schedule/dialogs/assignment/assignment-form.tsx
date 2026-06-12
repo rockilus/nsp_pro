@@ -17,7 +17,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { DatePicker } from '@/components/ui/date-picker';
 import { FormActions } from '@/components/common/form-layout';
-import { User, Briefcase } from 'lucide-react';
+import { User, Briefcase, Plus } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useIsMobile';
 // Components
 import RecurrenceEdit from '../shared/recurrence-edit/recurrence-edit';
@@ -448,30 +448,37 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
             {t('edit-assignment.date-error')}
           </p>
         )}
-      </div>
 
-      {/* Recurrence */}
-      {showRecurrenceEdit ? (
-        <RecurrenceEdit
-          lng={lng}
-          isEditing={true}
-          occurrenceType={OccurrenceType.ASSIGNMENT}
-          recurrenceRule={recurrenceState}
-          startDate={date || dayjs()}
-          teamId={teamId}
-          onClose={() => setShowRecurrenceEdit(false)}
-          onRecurrenceChange={handleRecurrenceChange}
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowRecurrenceEdit(!showRecurrenceEdit)}
-          data-testid="recurrence-button"
-          className="w-full py-1 text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          {recurrenceState ? describeRecurrenceRule(recurrenceState) : t('add_recurrence')}
-        </button>
-      )}
+        {/* Recurrence */}
+        {showRecurrenceEdit ? (
+          <div className="mt-2">
+            <RecurrenceEdit
+              lng={lng}
+              isEditing={true}
+              occurrenceType={OccurrenceType.ASSIGNMENT}
+              recurrenceRule={recurrenceState}
+              startDate={date || dayjs()}
+              teamId={teamId}
+              onClose={() => setShowRecurrenceEdit(false)}
+              onRecurrenceChange={handleRecurrenceChange}
+            />
+          </div>
+        ) : (
+          <div className="mt-1 flex justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowRecurrenceEdit(true)}
+              data-testid="recurrence-button"
+              className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="size-3" />
+              {recurrenceState ? describeRecurrenceRule(recurrenceState) : t('add_recurrence')}
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Shift select — icon inline left, grouped: work (normal vs duty) / non-work */}
       <div>
