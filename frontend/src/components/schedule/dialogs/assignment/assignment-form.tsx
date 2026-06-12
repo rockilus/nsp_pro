@@ -454,7 +454,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         {showRecurrenceEdit ? (
           <Card
             size="sm"
-            className="mt-2 border-l-2 border-l-primary shadow-none"
+            className="mt-2 border border-border shadow-none ring-0"
             data-testid="recurrence-card"
           >
             <CardContent>
