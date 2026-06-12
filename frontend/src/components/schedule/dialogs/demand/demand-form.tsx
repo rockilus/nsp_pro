@@ -12,8 +12,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
-import { FormField, FormActions } from '@/components/common/form-layout';
-import { Briefcase, Calendar } from 'lucide-react';
+import { FormActions } from '@/components/common/form-layout';
+import { Briefcase } from 'lucide-react';
 // Types
 import { ShiftT } from '../../../../types/shift';
 import { SpecialtyT } from '@/types/specialty';
@@ -263,9 +263,11 @@ const DemandForm: React.FC<DemandFormProps> = ({
 
   // ── Create mode ────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4">
-        <FormField label={t('shift')} icon={Briefcase} error={shiftError}>
+    <div className="flex flex-col gap-5">
+      {/* Shift select — icon inline left, no external label */}
+      <div>
+        <div className="relative">
+          <Briefcase className="pointer-events-none absolute top-1/2 left-2.5 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
           <Select
             value={selectedShiftId || ''}
             onValueChange={(value) => {
@@ -273,7 +275,11 @@ const DemandForm: React.FC<DemandFormProps> = ({
               setShiftError('');
             }}
           >
-            <SelectTrigger data-testid="demand-shift-select" aria-invalid={!!shiftError}>
+            <SelectTrigger
+              data-testid="demand-shift-select"
+              aria-invalid={!!shiftError}
+              className="w-full max-w-full pl-9"
+            >
               <SelectValue placeholder={t('select_a_shift')} />
             </SelectTrigger>
             <SelectContent>
@@ -284,19 +290,31 @@ const DemandForm: React.FC<DemandFormProps> = ({
               ))}
             </SelectContent>
           </Select>
-        </FormField>
+        </div>
+        {shiftError && (
+          <p className="mt-1 text-xs text-destructive" role="alert">
+            {' '}
+          </p>
+        )}
+      </div>
 
-        <FormField label={t('date')} icon={Calendar} error={dateError}>
-          <DatePicker
-            value={selectedDate}
-            onChange={(newDate) => {
-              setSelectedDate(newDate ? dayjs(newDate).utc() : null);
-              setDateError('');
-            }}
-            error={!!dateError}
-            data-testid="demand-date-picker"
-          />
-        </FormField>
+      {/* Date picker — already has CalendarIcon built-in, full-width */}
+      <div>
+        <DatePicker
+          value={selectedDate}
+          onChange={(newDate) => {
+            setSelectedDate(newDate ? dayjs(newDate).utc() : null);
+            setDateError('');
+          }}
+          error={!!dateError}
+          data-testid="demand-date-picker"
+          className="w-full max-w-full"
+        />
+        {dateError && (
+          <p className="mt-1 text-xs text-destructive" role="alert">
+            {' '}
+          </p>
+        )}
       </div>
 
       <FormActions>
