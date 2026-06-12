@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -15,7 +18,8 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { FormActions } from '@/components/common/form-layout';
 import { Briefcase } from 'lucide-react';
 // Types
-import { ShiftT } from '../../../../types/shift';
+import { ShiftT, ShiftType } from '../../../../types/shift';
+import { ShiftColorMappings } from '../../../../constants/constants';
 import { SpecialtyT } from '@/types/specialty';
 import { ShiftDemandDTO, ShiftDemandUpdateDTO } from '@/types/shiftDemand';
 import { AssignmentT } from '@/types/assignment';
@@ -262,9 +266,14 @@ const DemandForm: React.FC<DemandFormProps> = ({
   }
 
   // ── Create mode ────────────────────────────────────────────────────────
+  // Partition shifts into work shifts only (Normal + Duty) — demand only targets work shifts
+  const workShifts = shifts.filter(
+    (s) => !s.deleted && (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY),
+  );
+
   return (
     <div className="flex flex-col gap-5">
-      {/* Shift select — icon inline left, no external label */}
+      {/* Shift select — icon inline left, grouped: work (normal vs duty) */}
       <div>
         <div className="relative">
           <Briefcase className="pointer-events-none absolute top-1/2 left-2.5 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -283,11 +292,36 @@ const DemandForm: React.FC<DemandFormProps> = ({
               <SelectValue placeholder={t('select_a_shift')} />
             </SelectTrigger>
             <SelectContent>
-              {shifts.map((s) => (
-                <SelectItem key={s.id} value={s.id} data-testid={`demand-shift-option-${s.id}`}>
-                  {s.name}
-                </SelectItem>
-              ))}
+              {workShifts.length > 0 && (
+                <SelectGroup>
+                  <SelectLabel>{t('work_shifts')}</SelectLabel>
+                  {workShifts.map((s) => {
+                    const { sample } = ShiftColorMappings[s.color] || { sample: '#9e9e9e' };
+                    const isDuty = s.shiftType === ShiftType.DUTY;
+                    return (
+                      <SelectItem
+                        key={s.id}
+                        value={s.id}
+                        data-testid={`demand-shift-option-${s.id}`}
+                      >
+                        <span className="flex items-center gap-2">
+                          {isDuty && (
+                            <span
+                              className="block w-1 self-stretch rounded-sm"
+                              style={{
+                                backgroundColor: sample,
+                                minHeight: '1rem',
+                                marginLeft: '-0.25rem',
+                              }}
+                            />
+                          )}
+                          {s.name}
+                        </span>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectGroup>
+              )}
             </SelectContent>
           </Select>
         </div>
