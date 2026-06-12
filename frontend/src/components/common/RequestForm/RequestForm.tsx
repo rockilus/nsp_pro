@@ -15,10 +15,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { DatePicker } from '@/components/ui/date-picker';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { FormField, FormActions } from '@/components/common/form-layout';
+import { FormActions } from '@/components/common/form-layout';
 import { Separator } from '@/components/ui/separator';
 // Icons
-import { Clock, Users, Briefcase, Check, X, Trash2, Undo2, X as XIcon } from 'lucide-react';
+import { Users, Briefcase, Check, X, Trash2, Undo2, X as XIcon } from 'lucide-react';
 // Components
 import ShiftOptionsDisplay from '@/components/stats/nav-bar/shift-options-display';
 // Utils
@@ -405,30 +405,42 @@ const RequestForm = ({
         </ToggleGroup>
 
         {/* Worker select */}
-        <FormField icon={Users} label={t('worker')} error={workerIdError ? '' : undefined}>
-          <Select
-            value={requestState.workerId}
-            disabled={userTeamRole === TeamMembershipRole.MEMBER}
-            onValueChange={(value) => {
-              setRequestState({ ...requestState, workerId: value });
-              setWorkerIdError(false);
-            }}
-          >
-            <SelectTrigger data-testid="worker-select" aria-invalid={workerIdError}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {workers.map((worker) => (
-                <SelectItem key={worker.id} value={worker.id}>
-                  {worker.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormField>
+        <div>
+          <div className="relative">
+            <Users className="pointer-events-none absolute top-1/2 left-2.5 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Select
+              value={requestState.workerId}
+              disabled={userTeamRole === TeamMembershipRole.MEMBER}
+              onValueChange={(value) => {
+                setRequestState({ ...requestState, workerId: value });
+                setWorkerIdError(false);
+              }}
+            >
+              <SelectTrigger
+                data-testid="worker-select"
+                aria-invalid={workerIdError}
+                className="w-full max-w-full pl-9"
+              >
+                <SelectValue placeholder={t('select_a_worker')} />
+              </SelectTrigger>
+              <SelectContent>
+                {workers.map((worker) => (
+                  <SelectItem key={worker.id} value={worker.id}>
+                    {worker.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {workerIdError && (
+            <p className="mt-1 text-xs text-destructive" role="alert">
+              {' '}
+            </p>
+          )}
+        </div>
 
         {/* Date range checkbox */}
-        <div className="ml-6 flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <Checkbox
             id="date-range"
             checked={dateRange}
@@ -441,7 +453,7 @@ const RequestForm = ({
         </div>
 
         {/* Start date */}
-        <FormField icon={Clock} label={t('start_date')} error={startDateError ? '' : undefined}>
+        <div>
           <DatePicker
             value={requestState.startDate}
             minDate={dayjs.utc().startOf('day')}
@@ -458,12 +470,18 @@ const RequestForm = ({
             }}
             error={startDateError}
             data-testid="start-date-picker"
+            className="w-full max-w-full"
           />
-        </FormField>
+          {startDateError && (
+            <p className="mt-1 text-xs text-destructive" role="alert">
+              {' '}
+            </p>
+          )}
+        </div>
 
         {/* End date (date range) */}
         {dateRange && (
-          <FormField label={t('end_date')} error={endDateError ? '' : undefined}>
+          <div>
             <DatePicker
               value={requestState.endDate}
               minDate={requestState.startDate}
@@ -476,13 +494,19 @@ const RequestForm = ({
               }}
               error={endDateError}
               data-testid="end-date-picker"
+              className="w-full max-w-full"
             />
-          </FormField>
+            {endDateError && (
+              <p className="mt-1 text-xs text-destructive" role="alert">
+                {' '}
+              </p>
+            )}
+          </div>
         )}
 
         {/* Negative/Positive toggle (work demand only) */}
         {requestType === RequestType.WORK_DEMAND && (
-          <div className="ml-6">
+          <div>
             <ToggleGroup
               type="single"
               value={requestState.negative ? 'true' : 'false'}
@@ -512,11 +536,7 @@ const RequestForm = ({
         )}
 
         {/* Shift / ShiftOptions */}
-        <FormField
-          icon={Briefcase}
-          label={t('shift')}
-          error={shiftIdError || shiftOptionsError ? '' : undefined}
-        >
+        <div>
           {requestType === RequestType.WORK_DEMAND ? (
             <div
               className={shiftOptionsError ? 'rounded-lg border-2 border-destructive p-0.5' : ''}
@@ -535,26 +555,38 @@ const RequestForm = ({
               />
             </div>
           ) : (
-            <Select
-              value={requestState.shiftId || ''}
-              onValueChange={(value) => {
-                setRequestState({ ...requestState, shiftId: value });
-                setShiftIdError(false);
-              }}
-            >
-              <SelectTrigger data-testid="shift-select" aria-invalid={shiftIdError}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {filterShiftsByRequestType(shifts, requestType).map((shift) => (
-                  <SelectItem key={shift.id} value={shift.id}>
-                    {shift.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="relative">
+              <Briefcase className="pointer-events-none absolute top-1/2 left-2.5 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Select
+                value={requestState.shiftId || ''}
+                onValueChange={(value) => {
+                  setRequestState({ ...requestState, shiftId: value });
+                  setShiftIdError(false);
+                }}
+              >
+                <SelectTrigger
+                  data-testid="shift-select"
+                  aria-invalid={shiftIdError}
+                  className="w-full max-w-full pl-9"
+                >
+                  <SelectValue placeholder={t('select_a_shift')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filterShiftsByRequestType(shifts, requestType).map((shift) => (
+                    <SelectItem key={shift.id} value={shift.id}>
+                      {shift.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           )}
-        </FormField>
+          {(shiftIdError || shiftOptionsError) && (
+            <p className="mt-1 text-xs text-destructive" role="alert">
+              {' '}
+            </p>
+          )}
+        </div>
 
         {/* Actions */}
         <FormActions>
