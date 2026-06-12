@@ -55,14 +55,7 @@ interface FormActionsProps {
 
 function FormActions({ children, className }: FormActionsProps) {
   return (
-    <div
-      className={cn(
-        'mt-6 flex items-center justify-end gap-2 border-t border-border pt-4',
-        className,
-      )}
-    >
-      {children}
-    </div>
+    <div className={cn('mt-6 flex items-center justify-end gap-2 pt-4', className)}>{children}</div>
   );
 }
 
