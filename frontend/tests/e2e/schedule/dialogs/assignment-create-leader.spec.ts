@@ -81,9 +81,6 @@ test.describe('Assignment Creation - Team Leader', () => {
     const assignments = AR.assignmentsRead;
 
     expect(assignments.length).toBeGreaterThan(0);
-    // Dates are now stored as UTC midnight dayjs throughout (DatePicker.onChange
-    // converts local → utc, and fromAssignmentT → .unix() → API → toAssignmentT
-    // → dayjs.unix(ts).utc() preserves the calendar day). Use .isSame with 'day'.
     const createdAssignment = assignments.find(
       (a) =>
         a.workerId === testWorkers[0].id &&
@@ -119,10 +116,13 @@ test.describe('Assignment Creation - Team Leader', () => {
     const createButton = page.locator('[data-testid="edit-assignment-create-button"]');
     await createButton.click();
 
+    // Dialog should still be visible (validation failed)
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).toBeVisible();
+
+    // Worker select should show error state — shadcn uses aria-invalid, not Mui-error
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
-    await expect(workerSelect).toHaveClass(/Mui-error/);
+    await expect(workerSelect).toHaveAttribute('aria-invalid', 'true');
 
     console.log('✅ Validation error shown for missing worker');
   });
@@ -155,10 +155,13 @@ test.describe('Assignment Creation - Team Leader', () => {
     const createButton = page.locator('[data-testid="edit-assignment-create-button"]');
     await createButton.click();
 
+    // Dialog should still be visible (validation failed)
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).toBeVisible();
+
+    // Shift select should show error state — shadcn uses aria-invalid, not Mui-error
     const shiftSelect = page.locator('[data-testid="edit-assignment-shift-select"]');
-    await expect(shiftSelect).toHaveClass(/Mui-error/);
+    await expect(shiftSelect).toHaveAttribute('aria-invalid', 'true');
 
     console.log('✅ Validation error shown for missing shift');
   });
@@ -171,12 +174,21 @@ test.describe('Assignment Creation - Team Leader', () => {
     await addButton.waitFor({ state: 'attached', timeout: 5000 });
     await addButton.click({ force: true });
 
-    const closeButton = page.locator('[data-testid="close-dialog-button"]');
-    await closeButton.click();
-
+    // Verify dialog opened
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
-    await expect(dialog).not.toBeVisible();
+    await expect(dialog).toBeVisible({ timeout: 5000 });
 
+    // Close dialog via the shadcn built-in close button (desktop) or mobile header.
+    // The data-testid="close-dialog-button" only exists on mobile viewports.
+    const closeButton = page.locator(
+      '[data-testid="close-dialog-button"], [data-slot="dialog-close"]',
+    );
+    await closeButton.first().click();
+
+    // Verify dialog is closed
+    await expect(dialog).not.toBeVisible({ timeout: 5000 });
+
+    // Verify no assignment was created
     const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -265,10 +277,6 @@ function englishOrdinal(n: number): string {
  *
  * This helper clicks the trigger, then clicks the calendar day button by its
  * full accessible name, avoiding any locale or format mismatches.
- *
- * Note: the DatePicker onChange handler in assignment-form.tsx converts the
- * local dayjs to UTC midnight via dayjs.utc(newDate.format('YYYY-MM-DD')), so
- * the stored value and the `date` parameter here (dayjs.utc()) stay in sync.
  */
 async function selectDate(page: import('@playwright/test').Page, date: dayjs.Dayjs) {
   const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
