@@ -1,9 +1,5 @@
 /**
  * E2E tests for Assignment Recurrence by Team Leader
- *
- * This test suite covers recurring assignment functionality including
- * various frequencies (daily, weekly, monthly, yearly) and end types
- * (never, end date, occurrences), as well as recurrence editing/deletion.
  */
 
 import { test, expect } from '@playwright/test';
@@ -27,21 +23,16 @@ test.describe('Assignment Recurrence - Team Leader', () => {
 
   test.beforeEach(async ({ page }, testInfo) => {
     const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
-
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     console.log(`[Test Run ${testRunId}] Starting recurrence test setup`);
-
     const scheduleTestBase = new ScheduleTestBase();
     testBasesMap.set(testRunId, scheduleTestBase);
-
     (testInfo as any).testRunId = testRunId;
-
     await scheduleTestBase.setupScheduleTests(workerIndex, {
       referenceDate: dayjs.utc().add(1, 'day'),
       createAssignments: false,
       linkMemberToWorker: false,
     });
-
     await scheduleTestBase.actAsOwner(page);
     await scheduleTestBase.navigateToSchedulePage(page);
   });
@@ -49,14 +40,12 @@ test.describe('Assignment Recurrence - Team Leader', () => {
   test.afterEach(async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     if (!testRunId) return;
-
     testBasesMap.delete(testRunId);
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
 
   test('should create daily recurring assignment with no end date', async ({ page }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
@@ -65,7 +54,6 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     await addButton.waitFor({ state: 'attached', timeout: 5000 });
     await addButton.click({ force: true });
 
-    // Fill assignment form
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();
     await page.locator(`[data-testid="worker-option-${testWorkers[0].id}"]`).click();
@@ -75,32 +63,21 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     await page.locator(`[data-testid="shift-option-${testShifts[0].id}"]`).click();
 
     const tomorrow = dayjs.utc().add(1, 'day');
+    await selectDate(page, tomorrow);
 
-    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-    await datePicker.waitFor({ state: 'visible' });
-    await datePicker.fill('', { force: true }); // Clear first
-    await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
-    await datePicker.press('Enter');
-    await page.waitForTimeout(300);
-
-    // Open recurrence dialog
     const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
     await recurrenceButton.click();
 
-    // Set daily frequency
     const frequencySelect = page.locator('[data-testid="frequency-select"]');
     await frequencySelect.click();
     await page.locator('[data-testid="frequency-option-day"]').click();
 
-    // Keep "Never" end type (should be default)
     const neverRadio = page.locator('[data-testid="recurrence-never-radio"]');
     await neverRadio.click();
 
     const doneButton = page.locator('[data-testid="recurrence-done-button"]');
     await doneButton.click();
 
-    // Create assignment
     const createButton = page.locator('[data-testid="edit-assignment-create-button"]');
     await createButton.click();
 
@@ -108,7 +85,6 @@ test.describe('Assignment Recurrence - Team Leader', () => {
       timeout: 5000,
     });
 
-    // Verify recurring assignment was created
     const ARResult = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -135,10 +111,8 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     const recurringAssignments = ARResult.assignmentsRead.filter(
       (a) => a.sourceId === createdRecurrence.id,
     );
-
     expect(recurringAssignments).toBeDefined();
 
-    // Verify recurring assignments were created for the next 30 days (since no end date)
     const expectedOccurrences = 30;
     for (
       let i = tomorrow;
@@ -158,8 +132,7 @@ test.describe('Assignment Recurrence - Team Leader', () => {
   });
 
   test('should create weekly recurring assignment with end date', async ({ page }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
@@ -177,38 +150,20 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     await page.locator(`[data-testid="shift-option-${testShifts[0].id}"]`).click();
 
     const tomorrow = dayjs.utc().add(1, 'day');
+    await selectDate(page, tomorrow);
 
-    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-    await datePicker.waitFor({ state: 'visible' });
-    await datePicker.fill('', { force: true });
-    await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
-    await datePicker.press('Enter');
-    await page.waitForTimeout(300);
-
-    // Open recurrence dialog
     const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
     await recurrenceButton.click();
 
-    // Set weekly frequency
     const frequencySelect = page.locator('[data-testid="frequency-select"]');
     await frequencySelect.click();
     await page.locator('[data-testid="frequency-option-week"]').click();
 
-    // Set end date
     const endDateRadio = page.locator('[data-testid="recurrence-end-date-radio"]');
     await endDateRadio.click();
-    await page.waitForTimeout(100);
 
     const endDate = tomorrow.add(10, 'week');
-
-    const endDatePicker = page.locator('[data-testid="recurrence-end-date-picker"]');
-    await endDatePicker.waitFor({ state: 'visible' });
-    await endDatePicker.fill('', { force: true }); // Clear first
-    await page.waitForTimeout(100);
-    await endDatePicker.fill(endDate.format('DD/MM/YYYY'), { force: true });
-    await endDatePicker.press('Enter');
-    await page.waitForTimeout(300);
+    await selectDate(page, endDate, 'recurrence-end-date-picker');
 
     const doneButton = page.locator('[data-testid="recurrence-done-button"]');
     await doneButton.click();
@@ -220,7 +175,6 @@ test.describe('Assignment Recurrence - Team Leader', () => {
       timeout: 5000,
     });
 
-    // Verify recurring assignment was created
     const ARResult = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -242,11 +196,9 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     expect(createdRecurrence.endDate).not.toBeNull();
     expect(createdRecurrence.endDate!.isSame(endDate, 'day')).toBeTruthy();
 
-    // Verify recurring assignments were created up to the end date
     const recurringAssignments = ARResult.assignmentsRead.filter(
       (a) => a.sourceId === createdRecurrence.id,
     );
-
     expect(recurringAssignments).toBeDefined();
 
     const endDatePlusOne = endDate.add(1, 'day');
@@ -266,11 +218,11 @@ test.describe('Assignment Recurrence - Team Leader', () => {
   test('should create weekly recurring assignment with specific weekdays', async ({
     page,
   }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
+
     const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
     await addButton.waitFor({ state: 'attached', timeout: 5000 });
     await addButton.click({ force: true });
@@ -284,16 +236,8 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     await page.locator(`[data-testid="shift-option-${testShifts[0].id}"]`).click();
 
     const tomorrow = dayjs.utc().add(1, 'day');
+    await selectDate(page, tomorrow);
 
-    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-    await datePicker.waitFor({ state: 'visible' });
-    await datePicker.fill('', { force: true });
-    await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
-    await datePicker.press('Enter');
-    await page.waitForTimeout(300);
-
-    // Open recurrence dialog and choose weekly
     const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
     await recurrenceButton.click();
 
@@ -301,18 +245,17 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     await frequencySelect.click();
     await page.locator('[data-testid="frequency-option-week"]').click();
 
-    // By default the assignment weekday should be selected; verify that
     const expectedDefaultWeekDay = (tomorrow.day() + 6) % 7;
     const defaultButton = page.locator(`[data-testid="weekday-button-${expectedDefaultWeekDay}"]`);
-    await expect(defaultButton).toHaveClass(/selected/);
+    await expect(defaultButton).toHaveClass(/bg-primary/);
 
-    // Ensure other weekday buttons are not selected
     for (let d = 0; d <= 6; d++) {
       if (d === expectedDefaultWeekDay) continue;
-      await expect(page.locator(`[data-testid="weekday-button-${d}"]`)).not.toHaveClass(/selected/);
+      await expect(page.locator(`[data-testid="weekday-button-${d}"]`)).not.toHaveClass(
+        /bg-primary/,
+      );
     }
 
-    // Choose two weekday buttons that are NOT the default selected weekday
     const candidatePairs = [
       [0, 2],
       [1, 3],
@@ -327,9 +270,7 @@ test.describe('Assignment Recurrence - Team Leader', () => {
         break;
       }
     }
-
     if (chosenDays.length === 0) {
-      // fallback: pick any two days that are not the default
       for (let d = 0; d <= 6 && chosenDays.length < 2; d++) {
         if (d === expectedDefaultWeekDay) continue;
         chosenDays.push(d);
@@ -338,17 +279,12 @@ test.describe('Assignment Recurrence - Team Leader', () => {
 
     const firstButton = page.locator(`[data-testid="weekday-button-${chosenDays[0]}"]`);
     const secondButton = page.locator(`[data-testid="weekday-button-${chosenDays[1]}"]`);
-
-    // Ensure they are not the default (not selected) before clicking
-    await expect(firstButton).not.toHaveClass(/selected/);
-    await expect(secondButton).not.toHaveClass(/selected/);
-
+    await expect(firstButton).not.toHaveClass(/bg-primary/);
+    await expect(secondButton).not.toHaveClass(/bg-primary/);
     await firstButton.click();
     await secondButton.click();
-
-    // Verify selected state
-    await expect(firstButton).toHaveClass(/selected/);
-    await expect(secondButton).toHaveClass(/selected/);
+    await expect(firstButton).toHaveClass(/bg-primary/);
+    await expect(secondButton).toHaveClass(/bg-primary/);
 
     const doneButton = page.locator('[data-testid="recurrence-done-button"]');
     await doneButton.click();
@@ -381,11 +317,9 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     expect(createdRecurrence.startDate.isSame(tomorrow, 'day')).toBeTruthy();
     expect(createdRecurrence.endDate).toBeNull();
 
-    // Verify recurring assignments were created for matching weekdays in the next 30 days
     const recurringAssignments = AR2.assignmentsRead.filter(
       (a) => a.sourceId === createdRecurrence.id,
     );
-
     expect(recurringAssignments).toBeDefined();
 
     const checkDays = 30;
@@ -408,8 +342,7 @@ test.describe('Assignment Recurrence - Team Leader', () => {
   test('should create monthly recurring assignment with occurrences', async ({
     page,
   }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
@@ -427,14 +360,7 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     await page.locator(`[data-testid="shift-option-${testShifts[0].id}"]`).click();
 
     const tomorrow = dayjs.utc().add(1, 'day');
-
-    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-    await datePicker.waitFor({ state: 'visible' });
-    await datePicker.fill('', { force: true });
-    await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
-    await datePicker.press('Enter');
-    await page.waitForTimeout(300);
+    await selectDate(page, tomorrow);
 
     const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
     await recurrenceButton.click();
@@ -503,8 +429,7 @@ test.describe('Assignment Recurrence - Team Leader', () => {
   test('should create monthly recurring assignment with weekday repeat type', async ({
     page,
   }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
@@ -521,9 +446,7 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     await shiftSelect.click();
     await page.locator(`[data-testid="shift-option-${testShifts[0].id}"]`).click();
 
-    // Choose a date that's in the second week to ensure we're testing "second [weekday]"
     const tomorrow = dayjs.utc().add(1, 'day');
-    // Calculate a date that's in the second week of a month (between 8th and 14th)
     let startDate = tomorrow;
     const dayOfMonth = tomorrow.date();
     if (dayOfMonth < 8) {
@@ -532,13 +455,7 @@ test.describe('Assignment Recurrence - Team Leader', () => {
       startDate = tomorrow.add(1, 'month').date(8);
     }
 
-    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-    await datePicker.waitFor({ state: 'visible' });
-    await datePicker.fill('', { force: true });
-    await page.waitForTimeout(100);
-    await datePicker.fill(startDate.format('DD/MM/YYYY'), { force: true });
-    await datePicker.press('Enter');
-    await page.waitForTimeout(300);
+    await selectDate(page, startDate);
 
     const recurrenceButton = page.locator('[data-testid="recurrence-button"]');
     await recurrenceButton.click();
@@ -547,10 +464,9 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     await frequencySelect.click();
     await page.locator('[data-testid="frequency-option-month"]').click();
 
-    // Select WEEKDAY repeat type (e.g., "second Tuesday of each month")
     const monthRepeatTypeSelect = page.locator('[data-testid="month-repeat-type-select"]');
     await monthRepeatTypeSelect.click();
-    await page.locator(`[data-value="${MonthRepeatType.WEEKDAY}"]`).first().click();
+    await page.getByRole('option', { name: /Monthly on the/ }).click();
 
     const occurrencesRadio = page.locator('[data-testid="recurrence-occurrences-radio"]');
     await occurrencesRadio.click();
@@ -595,29 +511,19 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     expect(recurringAssignments).toBeDefined();
     expect(recurringAssignments.length).toBe(numberOfOccurrences);
 
-    // Calculate the weekday and week position of the start date
-    const startWeekday = startDate.day(); // 0 = Sunday, 1 = Monday, etc.
-    const startWeekOfMonth = Math.ceil(startDate.date() / 7); // Which week of the month (1-5)
-
-    // Verify each occurrence is on the same weekday and same week position
+    const startWeekday = startDate.day();
+    const startWeekOfMonth = Math.ceil(startDate.date() / 7);
     for (let i = 0; i < numberOfOccurrences; i++) {
       const expectedMonth = startDate.add(i, 'month');
-
-      // Find the correct date for "Nth [weekday] of the month"
-      // Start from the first day of the month and find the Nth occurrence of the weekday
       let expectedDate = expectedMonth.startOf('month');
       let weekdayCount = 0;
-
       while (weekdayCount < startWeekOfMonth) {
         if (expectedDate.day() === startWeekday) {
           weekdayCount++;
-          if (weekdayCount === startWeekOfMonth) {
-            break;
-          }
+          if (weekdayCount === startWeekOfMonth) break;
         }
         expectedDate = expectedDate.add(1, 'day');
       }
-
       const occurrence = recurringAssignments.find(
         (a) =>
           a.workerId === testWorkers[0].id &&
@@ -625,8 +531,6 @@ test.describe('Assignment Recurrence - Team Leader', () => {
           a.date.isSame(expectedDate, 'day'),
       );
       expect(occurrence).toBeDefined();
-
-      // Verify the weekday matches
       expect(occurrence!.date.day()).toBe(startWeekday);
 
       // Verify the week position matches
@@ -640,29 +544,19 @@ test.describe('Assignment Recurrence - Team Leader', () => {
   test('should delete single instance of recurring assignment (this only)', async ({
     page,
   }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    // Create recurring assignment
     const tomorrow = dayjs.utc().add(1, 'day');
     await scheduleTestBase.createAssignmentAndRecurrence(
-      {
-        workerId: testWorkers[0].id,
-        shiftId: testShifts[0].id,
-        date: tomorrow,
-      },
+      { workerId: testWorkers[0].id, shiftId: testShifts[0].id, date: tomorrow },
       {
         id: '',
         teamId: testTeam.teamId,
         occurrenceType: OccurrenceType.ASSIGNMENT,
-        occurrenceInfo: {
-          workerId: testWorkers[0].id,
-          shiftId: testShifts[0].id,
-          count: null,
-        },
+        occurrenceInfo: { workerId: testWorkers[0].id, shiftId: testShifts[0].id, count: null },
         repeatEvery: 1,
         frequencyType: FrequencyType.DAY,
         weekDays: [(tomorrow.day() + 6) % 7],
@@ -674,69 +568,47 @@ test.describe('Assignment Recurrence - Team Leader', () => {
       },
     );
 
-    // Fetch assignments and recurrences to verify they exist
     const beforeDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
       dayjs.utc().add(2, 'month').endOf('day'),
     );
-
-    // Verify recurrence exists
     const createdRecurrence = beforeDelete.recurrencesRead[0];
     expect(createdRecurrence).toBeDefined();
-
-    // Get all assignment occurrences for this recurrence
     const occurrencesBefore = beforeDelete.assignmentsRead.filter(
       (a) => a.sourceId === createdRecurrence!.id,
     );
     expect(occurrencesBefore.length).toBe(5);
 
-    // Select the second occurrence to delete (more interesting than the first)
     const occurrenceToDelete = occurrencesBefore[1];
     const deleteDate = occurrenceToDelete.date;
-
-    // Set the schedule view to include the date of the occurrence to delete
     await scheduleTestBase.setScheduleViewSettings(
       page,
-      {
-        targetDate: deleteDate,
-        timeFrame: 'week',
-      },
-      true, // reload page
+      { targetDate: deleteDate, timeFrame: 'week' },
+      true,
     );
 
-    // Click on assignment occurrence
     const assignmentCell = page.locator(`[data-testid="assignment-cell-${occurrenceToDelete.id}"]`);
     await expect(assignmentCell).toBeVisible({ timeout: 5000 });
     await assignmentCell.click();
 
-    // Click delete
     const deleteButton = page.locator('[data-testid="delete-assignment-button"]');
     await deleteButton.click();
-
-    // Select "This assignment only"
-    const thisOnlyRadio = page.locator('[data-testid="delete-this-only-radio"]');
-    await thisOnlyRadio.click();
-
-    const confirmButton = page.locator('[data-testid="recurrence-delete-confirm-button"]');
-    await confirmButton.click();
+    await page.locator('[data-testid="delete-this-only-radio"]').click();
+    await page.locator('[data-testid="recurrence-delete-confirm-button"]').click();
 
     await expect(page.locator('[data-testid="schedule-item-dialog"]')).not.toBeVisible({
       timeout: 5000,
     });
 
-    // Fetch assignments again and verify all occurrences exist except the deleted one
     const afterDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
       dayjs.utc().add(2, 'month').endOf('day'),
     );
-
     const occurrencesAfter = afterDelete.assignmentsRead.filter(
       (a) => a.sourceId === createdRecurrence!.id,
     );
-
-    // Should have 4 occurrences remaining (5 - 1)
     expect(occurrencesAfter.length).toBe(4);
 
     // Verify the deleted occurrence is not in the list
@@ -756,29 +628,19 @@ test.describe('Assignment Recurrence - Team Leader', () => {
   });
 
   test('should delete all instances of recurring assignment', async ({ page }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    // Create recurring assignment
     const tomorrow = dayjs.utc().add(1, 'day');
     await scheduleTestBase.createAssignmentAndRecurrence(
-      {
-        workerId: testWorkers[0].id,
-        shiftId: testShifts[0].id,
-        date: tomorrow,
-      },
+      { workerId: testWorkers[0].id, shiftId: testShifts[0].id, date: tomorrow },
       {
         id: '',
         teamId: testTeam.teamId,
         occurrenceType: OccurrenceType.ASSIGNMENT,
-        occurrenceInfo: {
-          workerId: testWorkers[0].id,
-          shiftId: testShifts[0].id,
-          count: null,
-        },
+        occurrenceInfo: { workerId: testWorkers[0].id, shiftId: testShifts[0].id, count: null },
         repeatEvery: 1,
         frequencyType: FrequencyType.DAY,
         weekDays: [(tomorrow.day() + 6) % 7],
@@ -790,14 +652,11 @@ test.describe('Assignment Recurrence - Team Leader', () => {
       },
     );
 
-    // Fetch assignments and recurrences to verify they exist
     const beforeDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
       dayjs.utc().add(2, 'month').endOf('day'),
     );
-
-    // Verify recurrence exists
     const createdRecurrence = beforeDelete.recurrencesRead[0];
     expect(createdRecurrence).toBeDefined();
 
@@ -811,37 +670,23 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     const occurrenceToDelete = occurrencesBefore[0];
     const deleteDate = occurrenceToDelete.date;
 
-    // Set the schedule view to include the date of the occurrence to delete
     await scheduleTestBase.setScheduleViewSettings(
       page,
-      {
-        targetDate: deleteDate,
-        timeFrame: 'week',
-      },
-      true, // reload page
+      { targetDate: deleteDate, timeFrame: 'week' },
+      true,
     );
-
-    // Click on assignment occurrence
     const assignmentCell = page.locator(`[data-testid="assignment-cell-${occurrenceToDelete.id}"]`);
     await expect(assignmentCell).toBeVisible({ timeout: 5000 });
     await assignmentCell.click();
 
-    // Click delete
-    const deleteButton = page.locator('[data-testid="delete-assignment-button"]');
-    await deleteButton.click();
-
-    // Select "All assignments"
-    const allRadio = page.locator('[data-testid="delete-all-radio"]');
-    await allRadio.click();
-
-    const confirmButton = page.locator('[data-testid="recurrence-delete-confirm-button"]');
-    await confirmButton.click();
+    await page.locator('[data-testid="delete-assignment-button"]').click();
+    await page.locator('[data-testid="delete-all-radio"]').click();
+    await page.locator('[data-testid="recurrence-delete-confirm-button"]').click();
 
     await expect(page.locator('[data-testid="schedule-item-dialog"]')).not.toBeVisible({
       timeout: 5000,
     });
 
-    // Fetch assignments again and verify all occurrences and recurrence are deleted
     const afterDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -866,29 +711,19 @@ test.describe('Assignment Recurrence - Team Leader', () => {
   test('should delete this and following instances of recurring assignment', async ({
     page,
   }, testInfo) => {
-    const testRunId = (testInfo as any).testRunId as string;
-    const scheduleTestBase = testBasesMap.get(testRunId)!;
+    const scheduleTestBase = testBasesMap.get((testInfo as any).testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
     const testTeam = scheduleTestBase.getTestTeam()!;
 
-    // Create recurring assignment
     const tomorrow = dayjs.utc().add(1, 'day');
     await scheduleTestBase.createAssignmentAndRecurrence(
-      {
-        workerId: testWorkers[0].id,
-        shiftId: testShifts[0].id,
-        date: tomorrow,
-      },
+      { workerId: testWorkers[0].id, shiftId: testShifts[0].id, date: tomorrow },
       {
         id: '',
         teamId: testTeam.teamId,
         occurrenceType: OccurrenceType.ASSIGNMENT,
-        occurrenceInfo: {
-          workerId: testWorkers[0].id,
-          shiftId: testShifts[0].id,
-          count: null,
-        },
+        occurrenceInfo: { workerId: testWorkers[0].id, shiftId: testShifts[0].id, count: null },
         repeatEvery: 1,
         frequencyType: FrequencyType.DAY,
         weekDays: [(tomorrow.day() + 6) % 7],
@@ -900,58 +735,38 @@ test.describe('Assignment Recurrence - Team Leader', () => {
       },
     );
 
-    // Fetch assignments and recurrences to verify they exist
     const beforeDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
       dayjs.utc().add(2, 'month').endOf('day'),
     );
-
-    // Verify recurrence exists
     const createdRecurrence = beforeDelete.recurrencesRead[0];
     expect(createdRecurrence).toBeDefined();
-
-    // Get all assignment occurrences for this recurrence
     const occurrencesBefore = beforeDelete.assignmentsRead
       .filter((a) => a.sourceId === createdRecurrence!.id)
       .sort((a, b) => a.date.valueOf() - b.date.valueOf());
     expect(occurrencesBefore.length).toBe(5);
 
-    // Select the third occurrence to delete (so we have 2 before and 2 after)
     const occurrenceToDelete = occurrencesBefore[2];
     const deleteDate = occurrenceToDelete.date;
-
-    // Set the schedule view to include the date of the occurrence to delete
     await scheduleTestBase.setScheduleViewSettings(
       page,
-      {
-        targetDate: deleteDate,
-        timeFrame: 'week',
-      },
-      true, // reload page
+      { targetDate: deleteDate, timeFrame: 'week' },
+      true,
     );
 
-    // Click on assignment occurrence
     const assignmentCell = page.locator(`[data-testid="assignment-cell-${occurrenceToDelete.id}"]`);
     await expect(assignmentCell).toBeVisible({ timeout: 5000 });
     await assignmentCell.click();
 
-    // Click delete
-    const deleteButton = page.locator('[data-testid="delete-assignment-button"]');
-    await deleteButton.click();
-
-    // Select "This and following assignments"
-    const thisAndFutureRadio = page.locator('[data-testid="delete-this-and-future-radio"]');
-    await thisAndFutureRadio.click();
-
-    const confirmButton = page.locator('[data-testid="recurrence-delete-confirm-button"]');
-    await confirmButton.click();
+    await page.locator('[data-testid="delete-assignment-button"]').click();
+    await page.locator('[data-testid="delete-this-and-future-radio"]').click();
+    await page.locator('[data-testid="recurrence-delete-confirm-button"]').click();
 
     await expect(page.locator('[data-testid="schedule-item-dialog"]')).not.toBeVisible({
       timeout: 5000,
     });
 
-    // Fetch assignments again and verify the right ones are deleted
     const afterDelete = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -968,26 +783,69 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     const occurrencesAfter = afterDelete.assignmentsRead.filter(
       (a) => a.sourceId === createdRecurrence!.id,
     );
-
-    // Should have 2 occurrences remaining (the ones before the deletion date)
     expect(occurrencesAfter.length).toBe(2);
-
-    // Verify occurrences before deletion date still exist
     for (const occurrence of occurrencesBefore) {
       if (occurrence.date.isBefore(deleteDate, 'day')) {
-        const foundOccurrence = occurrencesAfter.find((a) => a.date.isSame(occurrence.date, 'day'));
-        expect(foundOccurrence).toBeDefined();
+        expect(occurrencesAfter.find((a) => a.date.isSame(occurrence.date, 'day'))).toBeDefined();
       }
     }
-
-    // Verify occurrences on and after deletion date are deleted
     for (const occurrence of occurrencesBefore) {
       if (occurrence.date.isSameOrAfter(deleteDate, 'day')) {
-        const foundOccurrence = occurrencesAfter.find((a) => a.date.isSame(occurrence.date, 'day'));
-        expect(foundOccurrence).toBeUndefined();
+        expect(occurrencesAfter.find((a) => a.date.isSame(occurrence.date, 'day'))).toBeUndefined();
       }
     }
-
     console.log('✅ This and following instances of recurring assignment deleted');
   });
 });
+
+function englishOrdinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+async function selectDate(
+  page: import('@playwright/test').Page,
+  date: dayjs.Dayjs,
+  testid = 'edit-assignment-date-picker',
+) {
+  const datePicker = page.locator(`[data-testid="${testid}"]`);
+  await datePicker.waitFor({ state: 'visible' });
+  await expect(datePicker).toBeEnabled({ timeout: 5000 });
+  await datePicker.click();
+
+  // Wait for the calendar popover to open by looking for the status element
+  const calendar = page.locator('[data-slot="calendar"]').last();
+  await calendar.waitFor({ state: 'attached', timeout: 5000 });
+
+  // Navigate to the target month
+  const nextBtn = calendar.locator('button[name="Go to the Next Month"]');
+  const status = calendar.locator('[role="status"]');
+
+  const targetMonthName = date.format('MMMM');
+  const targetYear = date.format('YYYY');
+
+  for (let i = 0; i < 24; i++) {
+    const currentStatus = await status.textContent();
+    if (currentStatus?.includes(targetMonthName) && currentStatus?.includes(targetYear)) break;
+    await nextBtn.waitFor({ state: 'visible', timeout: 5000 });
+    await nextBtn.click();
+    await page.waitForTimeout(200);
+  }
+
+  const dayName = [
+    date.format('dddd'),
+    ', ',
+    targetMonthName,
+    ' ',
+    englishOrdinal(date.date()),
+    ', ',
+    targetYear,
+  ].join('');
+
+  const dayButton = page.getByRole('button', { name: dayName });
+  await dayButton.waitFor({ state: 'visible' });
+  await dayButton.click();
+
+  await expect(datePicker).toContainText(date.format('D MMMM YYYY'));
+}
