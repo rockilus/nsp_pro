@@ -438,7 +438,10 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
           value={date}
           onChange={(newDate) => {
             setDateError(false);
-            setDate(newDate ? newDate.startOf('day') : null);
+            // newDate from DatePicker is a local dayjs. Convert to UTC midnight
+            // on the same calendar date so the .unix() round-trip (local → ts
+            // → dayjs.unix(ts).utc()) preserves the intended day everywhere.
+            setDate(newDate ? dayjs.utc(newDate.format('YYYY-MM-DD')) : null);
           }}
           error={dateError}
           data-testid="edit-assignment-date-picker"

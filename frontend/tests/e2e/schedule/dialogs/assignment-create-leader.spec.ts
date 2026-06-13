@@ -18,23 +18,18 @@ test.describe('Assignment Creation - Team Leader', () => {
 
   test.beforeEach(async ({ page }, testInfo) => {
     const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
-
     const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
     console.log(`[Test Run ${testRunId}] Starting assignment creation test setup`);
 
     const scheduleTestBase = new ScheduleTestBase();
     testBasesMap.set(testRunId, scheduleTestBase);
-
     (testInfo as any).testRunId = testRunId;
 
-    // Setup schedule test environment with workers and shifts, no assignments
     await scheduleTestBase.setupScheduleTests(workerIndex, {
       referenceDate: dayjs.utc().add(1, 'day'),
       createAssignments: false,
       linkMemberToWorker: false,
     });
-
-    // Authenticate as owner and navigate to schedule page
     await scheduleTestBase.actAsOwner(page);
     await scheduleTestBase.navigateToSchedulePage(page);
   });
@@ -42,7 +37,6 @@ test.describe('Assignment Creation - Team Leader', () => {
   test.afterEach(async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     if (!testRunId) return;
-
     testBasesMap.delete(testRunId);
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
@@ -50,52 +44,35 @@ test.describe('Assignment Creation - Team Leader', () => {
   test('should create assignment with worker, shift, and date', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
 
-    // Open dialog via cell add button (visible on hover in the schedule table)
     const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
     await addButton.waitFor({ state: 'attached', timeout: 5000 });
-
     await addButton.click({ force: true });
 
-    // Verify Assignment type is selected by default or select it
     const assignmentButton = page.locator('[data-testid="assignment-button"]');
     if (await assignmentButton.isVisible()) {
       await assignmentButton.click();
     }
 
-    // Select worker
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();
     await page.locator(`[data-testid="worker-option-${testWorkers[0].id}"]`).click();
 
-    // Select shift
     const shiftSelect = page.locator('[data-testid="edit-assignment-shift-select"]');
     await shiftSelect.click();
     await page.locator(`[data-testid="shift-option-${testShifts[0].id}"]`).click();
 
-    // Select date (tomorrow)
     const tomorrow = dayjs.utc().add(1, 'day');
+    await selectDate(page, tomorrow);
 
-    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-    await datePicker.waitFor({ state: 'visible' });
-    await datePicker.fill('', { force: true }); // Clear first
-    await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
-    await datePicker.press('Enter');
-    await page.waitForTimeout(300);
-
-    // Click create button
     const createButton = page.locator('[data-testid="edit-assignment-create-button"]');
     await createButton.click();
 
-    // Wait for dialog to close
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
-    // Verify assignment was created in database
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -104,6 +81,9 @@ test.describe('Assignment Creation - Team Leader', () => {
     const assignments = AR.assignmentsRead;
 
     expect(assignments.length).toBeGreaterThan(0);
+    // Dates are now stored as UTC midnight dayjs throughout (DatePicker.onChange
+    // converts local → utc, and fromAssignmentT → .unix() → API → toAssignmentT
+    // → dayjs.unix(ts).utc() preserves the calendar day). Use .isSame with 'day'.
     const createdAssignment = assignments.find(
       (a) =>
         a.workerId === testWorkers[0].id &&
@@ -129,29 +109,18 @@ test.describe('Assignment Creation - Team Leader', () => {
       await assignmentButton.click();
     }
 
-    // Select only shift and date, not worker
     const shiftSelect = page.locator('[data-testid="edit-assignment-shift-select"]');
     await shiftSelect.click();
     await page.locator(`[data-testid="shift-option-${testShifts[0].id}"]`).click();
 
     const tomorrow = dayjs.utc().add(1, 'day');
-    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-    await datePicker.waitFor({ state: 'visible' });
-    await datePicker.fill('', { force: true }); // Clear first
-    await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
-    await datePicker.press('Enter');
-    await page.waitForTimeout(300);
+    await selectDate(page, tomorrow);
 
-    // Try to create without worker
     const createButton = page.locator('[data-testid="edit-assignment-create-button"]');
     await createButton.click();
 
-    // Dialog should still be visible (validation failed)
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).toBeVisible();
-
-    // Worker select should show error state (MUI applies Mui-error class)
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await expect(workerSelect).toHaveClass(/Mui-error/);
 
@@ -176,29 +145,18 @@ test.describe('Assignment Creation - Team Leader', () => {
       await assignmentButton.click();
     }
 
-    // Select only worker and date, not shift
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();
     await page.locator(`[data-testid="worker-option-${testWorkers[0].id}"]`).click();
 
     const tomorrow = dayjs.utc().add(1, 'day');
-    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-    await datePicker.waitFor({ state: 'visible' });
-    await datePicker.fill('', { force: true }); // Clear first
-    await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
-    await datePicker.press('Enter');
-    await page.waitForTimeout(300);
+    await selectDate(page, tomorrow);
 
-    // Try to create without shift
     const createButton = page.locator('[data-testid="edit-assignment-create-button"]');
     await createButton.click();
 
-    // Dialog should still be visible (validation failed)
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).toBeVisible();
-
-    // Shift select should show error state (MUI applies Mui-error class)
     const shiftSelect = page.locator('[data-testid="edit-assignment-shift-select"]');
     await expect(shiftSelect).toHaveClass(/Mui-error/);
 
@@ -208,28 +166,23 @@ test.describe('Assignment Creation - Team Leader', () => {
   test('should cancel assignment creation', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
 
     const addButton = page.locator('[data-testid^="add-assignment-button-"]').first();
     await addButton.waitFor({ state: 'attached', timeout: 5000 });
     await addButton.click({ force: true });
 
-    // Close dialog without creating
     const closeButton = page.locator('[data-testid="close-dialog-button"]');
     await closeButton.click();
 
-    // Verify dialog is closed
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).not.toBeVisible();
 
-    // Verify no assignment was created
     const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
       dayjs.utc().add(2, 'month').endOf('day'),
     );
-    const assignments = AR2.assignmentsRead;
-    expect(assignments.length).toBe(0);
+    expect(AR2.assignmentsRead.length).toBe(0);
 
     console.log('✅ Assignment creation cancelled successfully');
   });
@@ -237,7 +190,6 @@ test.describe('Assignment Creation - Team Leader', () => {
   test('should create fixed assignment', async ({ page }, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     const scheduleTestBase = testBasesMap.get(testRunId)!;
-    const testTeam = scheduleTestBase.getTestTeam()!;
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
 
@@ -250,7 +202,6 @@ test.describe('Assignment Creation - Team Leader', () => {
       await assignmentButton.click();
     }
 
-    // Fill in assignment details
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();
     await page.locator(`[data-testid="worker-option-${testWorkers[0].id}"]`).click();
@@ -260,21 +211,13 @@ test.describe('Assignment Creation - Team Leader', () => {
     await page.locator(`[data-testid="shift-option-${testShifts[0].id}"]`).click();
 
     const tomorrow = dayjs.utc().add(1, 'day');
-    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-    await datePicker.waitFor({ state: 'visible' });
-    await datePicker.fill('', { force: true }); // Clear first
-    await page.waitForTimeout(100);
-    await datePicker.fill(tomorrow.format('DD/MM/YYYY'), { force: true });
-    await datePicker.press('Enter');
-    await page.waitForTimeout(300);
+    await selectDate(page, tomorrow);
 
-    // Check fixed checkbox if it exists
     const fixedCheckbox = page.locator('input[type="checkbox"][name="fixed"]');
     if (await fixedCheckbox.isVisible().catch(() => false)) {
       await fixedCheckbox.check();
     }
 
-    // Create assignment
     const createButton = page.locator('[data-testid="edit-assignment-create-button"]');
     await createButton.click();
 
@@ -282,21 +225,18 @@ test.describe('Assignment Creation - Team Leader', () => {
       timeout: 5000,
     });
 
-    // Verify assignment was created as fixed
     const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
       dayjs.utc().add(2, 'month').endOf('day'),
     );
     const assignments = AR3.assignmentsRead;
-
     const createdAssignment = assignments.find(
       (a: any) =>
         a.workerId === testWorkers[0].id &&
         a.shiftId === testShifts[0].id &&
         a.date.isSame(tomorrow, 'day'),
     );
-
     if (createdAssignment) {
       expect(createdAssignment.fixed).toBe(true);
       console.log('✅ Fixed assignment created successfully');
@@ -305,3 +245,49 @@ test.describe('Assignment Creation - Team Leader', () => {
     }
   });
 });
+
+/**
+ * Build an English ordinal string (e.g. "14th", "1st") without the dayjs
+ * advancedFormat plugin.
+ */
+function englishOrdinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+/**
+ * Helper: select a date using the shadcn DatePicker (popover-based, not an <input>).
+ *
+ * The DatePicker renders a Button trigger that opens a portaled Calendar popover.
+ * react-day-picker gridcell buttons have accessible names like
+ * "Sunday, June 14th, 2026".
+ *
+ * This helper clicks the trigger, then clicks the calendar day button by its
+ * full accessible name, avoiding any locale or format mismatches.
+ *
+ * Note: the DatePicker onChange handler in assignment-form.tsx converts the
+ * local dayjs to UTC midnight via dayjs.utc(newDate.format('YYYY-MM-DD')), so
+ * the stored value and the `date` parameter here (dayjs.utc()) stay in sync.
+ */
+async function selectDate(page: import('@playwright/test').Page, date: dayjs.Dayjs) {
+  const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
+  await datePicker.waitFor({ state: 'visible' });
+  await datePicker.click();
+
+  const dayName = [
+    date.format('dddd'),
+    ', ',
+    date.format('MMMM'),
+    ' ',
+    englishOrdinal(date.date()),
+    ', ',
+    date.format('YYYY'),
+  ].join('');
+
+  const dayButton = page.getByRole('button', { name: dayName });
+  await dayButton.waitFor({ state: 'visible' });
+  await dayButton.click();
+
+  await expect(datePicker).toContainText(date.format('D MMMM YYYY'));
+}
