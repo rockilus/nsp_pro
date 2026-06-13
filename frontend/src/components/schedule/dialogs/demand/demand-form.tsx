@@ -326,8 +326,12 @@ const DemandForm: React.FC<DemandFormProps> = ({
           </Select>
         </div>
         {shiftError && (
-          <p className="mt-1 text-xs text-destructive" role="alert">
-            {' '}
+          <p
+            className="mt-1 text-xs text-destructive"
+            role="alert"
+            data-testid="demand-shift-error"
+          >
+            {shiftError}
           </p>
         )}
       </div>
@@ -346,7 +350,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
         />
         {dateError && (
           <p className="mt-1 text-xs text-destructive" role="alert">
-            {' '}
+            {dateError}
           </p>
         )}
       </div>
