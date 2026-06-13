@@ -743,19 +743,17 @@ export class RequestTestBase {
   }
 
   /**
-   * Gets the worker select dropdown input element
-   * Note: MUI Select component uses a hidden input for the value
+   * Gets the worker select combobox trigger (shadcn SelectTrigger rendered as button)
    */
   getWorkerSelect(page: Page) {
-    return page.locator('[data-testid="worker-select"] input');
+    return page.locator('[data-testid="worker-select"]');
   }
 
   /**
-   * Gets the shift select dropdown input element (for leave requests)
-   * Note: MUI Select component uses a hidden input for the value
+   * Gets the shift select combobox trigger (shadcn SelectTrigger rendered as button, for leave requests)
    */
   getShiftSelect(page: Page) {
-    return page.locator('[data-testid="shift-select"] input');
+    return page.locator('[data-testid="shift-select"]');
   }
 
   /**
@@ -766,14 +764,14 @@ export class RequestTestBase {
   }
 
   /**
-   * Gets the start date picker
+   * Gets the start date picker input element
    */
   getStartDatePicker(page: Page) {
     return page.locator('[data-testid="start-date-picker"]');
   }
 
   /**
-   * Gets the end date picker
+   * Gets the end date picker input element
    */
   getEndDatePicker(page: Page) {
     return page.locator('[data-testid="end-date-picker"]');
@@ -1041,20 +1039,20 @@ export class RequestTestBase {
 
   /**
    * Sets the request date (or start date if using date range)
+   * Uses the shadcn DatePicker (input-based) – fills the value and triggers
+   * keyboard events so React receives the changes.
    */
   async setStartDate(page: Page, date: dayjs.Dayjs): Promise<void> {
     const startDatePicker = this.getStartDatePicker(page);
     const value = date.format('DD/MM/YYYY');
 
-    // Wait for the input to be visible
     await startDatePicker.waitFor({ state: 'visible' });
 
-    // For MUI date pickers with complex internal structure, we need to use fill with force
-    await startDatePicker.fill('', { force: true }); // Clear first
+    // Triple-click to select all, then type the new value
+    await startDatePicker.click({ clickCount: 3 });
     await page.waitForTimeout(100);
-    await startDatePicker.fill(value, { force: true }); // Then fill
-
-    // Press Enter to confirm the value
+    await startDatePicker.fill(value);
+    // Trigger React's onChange via keyboard
     await startDatePicker.press('Enter');
 
     // Give the app time to process the change
@@ -1076,14 +1074,15 @@ export class RequestTestBase {
     await endDatePicker.waitFor({ state: 'visible' });
 
     const value = endDate.format('DD/MM/YYYY');
-    // Set value directly on the end date input to avoid opening the overlay
-    await endDatePicker.evaluate((el: HTMLInputElement, v: string) => {
-      el.value = v;
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-    }, value);
+    // Click, select all, fill, and press Enter to trigger React onChange
+    await endDatePicker.click({ clickCount: 3 });
+    await page.waitForTimeout(100);
+    await endDatePicker.fill(value);
+    await endDatePicker.press('Enter');
 
-    await page.waitForTimeout(30);
+    await page.waitForTimeout(300);
+
+    console.log(`Set end date to: ${value}`);
   }
 
   /**
@@ -1113,27 +1112,22 @@ export class RequestTestBase {
 
     // Look for the first available shift option using the test ID pattern
     // Pattern: swo-option-{categoryName}-{id}-{isBoolDim}
-    // We'll look for any shift option (categoryName "Shifts" and isBoolDim false)
     const shiftOption = page
       .locator('[data-testid^="swo-option-Shifts-"][data-testid$="-false"]')
       .first();
 
-    // Wait for the option to be visible and click it
     await shiftOption.waitFor({ state: 'visible', timeout: 5000 });
     await shiftOption.click();
 
     // Wait a bit for the selection to register
     await page.waitForTimeout(200);
 
-    // The popover does not close automatically after selection
-    // We can force-click the invisible backdrop to close it
-    await page.mouse.click(100, 100);
-    await expect(shiftOption).not.toBeVisible();
-
-    // Wait for the popover to close (with a reasonable timeout)
+    // Close the popover by pressing Escape (avoids clicking the dialog backdrop)
+    await shiftOptionsPopover.press('Escape');
     await shiftOptionsPopover.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {
-      // If it doesn't close, try clicking outside one more time
-      console.log("Popover didn't close automatically, attempting to close manually");
+      console.log("Popover didn't close with Escape, attempting click-outside");
+      // Fallback: click on the shift options block title to dismiss
+      shiftOptionsBlock.click();
     });
   }
 
