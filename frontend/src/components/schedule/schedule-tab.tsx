@@ -4,9 +4,6 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { useTranslation } from '../../app/i18n/client';
-// MUI
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import MobileScheduleTab from './mobile/mobile-schedule-tab';
 // Hooks
 import { useIsMobile } from '@/hooks/useIsMobile';

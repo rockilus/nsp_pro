@@ -224,5 +224,6 @@
   "sunday_short": "D",
   "dsd.tooltip.shift": "nombre de postes assignés / exigence de couverture pour la journée",
   "dsd.tooltip.worker": "nombre de membres assignés / exigence de personnel pour la journée",
-  "shift_count_tooltip": "nombre de postes / besoins de postes requis sur la campagne"
+  "shift_count_tooltip": "nombre de postes / besoins de postes requis sur la campagne",
+  "preference": "Préférence hebdomadaire"
 }

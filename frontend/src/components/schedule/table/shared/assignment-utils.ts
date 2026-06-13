@@ -1,14 +1,23 @@
 import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
 // Types
 import { BreachT } from '@/types/breach';
 import { AssignmentT } from '@/types/assignment';
-import { WorkerT } from '../../../../types/worker';
+import { WorkerT, WeeklyPreferences } from '../../../../types/worker';
 import { ShiftT, ShiftRestType } from '../../../../types/shift';
 import { RequestT } from '../../../../types/request';
 import { AttributeOwnerType } from '../../../../types/attribute';
 import { RecurrenceRuleT } from '@/types/recurrence';
 import { ShiftDemandDTO } from '@/types/shiftDemand';
-import { AssignmentsDictT, ShiftDemandsDictT, ScheduleCellsDictT } from '@/types/schedule';
+import {
+  AssignmentsDictT,
+  ShiftDemandsDictT,
+  ScheduleCellsDictT,
+  periodDateT,
+  WorkerPreferenceCellData,
+} from '@/types/schedule';
+
+dayjs.extend(isoWeek);
 
 export const generateOwnerIdDateKey = (ownerId: string, date: dayjs.Dayjs): string => {
   return `${ownerId}-${date.format('YYYY-MM-DD')}`;
@@ -164,6 +173,44 @@ export const buildRequestsByWorkerAndDate = (
 };
 
 // Updated function using ShiftDemandDTO throughout - no legacy conversion
+// Compute expanded worker preferences per (workerId, date ISO) key.
+// Converts WeeklySlotPreference (dayOfWeek, slot, weekParity) into concrete
+// WorkerPreferenceCellData entries for each visible period date.
+export const buildWorkerPreferencesByWorkerAndDate = (
+  workers: WorkerT[],
+  periodDates: periodDateT[],
+): { [key: string]: WorkerPreferenceCellData[] } => {
+  const prefDict: { [key: string]: WorkerPreferenceCellData[] } = {};
+
+  for (const worker of workers) {
+    const prefs = worker.weeklyPreferences;
+    if (!prefs || !prefs.enabled || !prefs.slots.length) continue;
+
+    for (const pd of periodDates) {
+      // ISO day-of-week: 0=Mon … 6=Sun (preferences use this convention)
+      // dayjs day() returns 0=Sun, so shift: (d + 6) % 7
+      const isoDow = (pd.date.day() + 6) % 7;
+      // ISO week parity: even weeks map to 'even', odd to 'odd'
+      const isoWeekNum = pd.date.isoWeek();
+      const parity = isoWeekNum % 2 === 0 ? 'even' : 'odd';
+
+      const matching = prefs.slots.filter(
+        (sp) => sp.dayOfWeek === isoDow && (sp.weekParity === 'all' || sp.weekParity === parity),
+      );
+
+      if (matching.length > 0) {
+        const key = generateOwnerIdDateKey(worker.id, pd.date);
+        prefDict[key] = matching.map((sp) => ({
+          slot: sp.slot,
+          restriction: sp.restriction,
+        }));
+      }
+    }
+  }
+
+  return prefDict;
+};
+
 export const buildScheduleCellDict = (
   ownerType: AttributeOwnerType,
   assignments: AssignmentT[],
@@ -173,6 +220,7 @@ export const buildScheduleCellDict = (
   workers: WorkerT[],
   shifts: ShiftT[],
   breaches: BreachT[],
+  periodDates: periodDateT[],
 ): ScheduleCellsDictT => {
   const assignmentDict = buildAssignmentsDataByOwnerAndDate(
     ownerType,
@@ -193,10 +241,16 @@ export const buildScheduleCellDict = (
     requestDict = buildRequestsByWorkerAndDate(requests);
   }
 
+  const preferenceDict =
+    ownerType === AttributeOwnerType.WORKER
+      ? buildWorkerPreferencesByWorkerAndDate(workers, periodDates)
+      : {};
+
   const allKeys = new Set([
     ...Object.keys(assignmentDict),
     ...Object.keys(shiftDemandDict),
     ...Object.keys(requestDict),
+    ...Object.keys(preferenceDict),
   ]);
 
   const scheduleCellDict: ScheduleCellsDictT = {};
@@ -206,6 +260,7 @@ export const buildScheduleCellDict = (
       assignmentsData: assignmentDict[key] || [],
       shiftDemandsData: shiftDemandDict[key] || null,
       requests: requestDict[key] || [],
+      workerPreferences: preferenceDict[key] || [],
     };
   });
 

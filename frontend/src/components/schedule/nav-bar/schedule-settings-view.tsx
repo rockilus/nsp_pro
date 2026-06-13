@@ -74,6 +74,13 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
     });
   };
 
+  const handleShowWorkerPreferencesToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    updateScheduleViewSettings({
+      ...scheduleViewSettings,
+      showWorkerPreferences: event.target.checked,
+    });
+  };
+
   return (
     <div className="settings-view-container">
       <h4
@@ -192,6 +199,17 @@ const ScheduleSettingsView: React.FC<ScheduleSettingsViewProps> = ({
               />
             }
             label={<span className="settings-view-line-label">{t('request')}</span>}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                data-testid="settings-checkbox-worker-preferences"
+                checked={scheduleViewSettings.showWorkerPreferences}
+                onChange={handleShowWorkerPreferencesToggle}
+                size="small"
+              />
+            }
+            label={<span className="settings-view-line-label">{t('preference')}</span>}
           />
         </FormGroup>
       )}

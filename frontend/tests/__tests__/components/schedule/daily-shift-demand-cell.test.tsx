@@ -30,6 +30,7 @@ describe('DailyShiftDemandCell', () => {
     showAssignments: true,
     showDailyShiftDemands: true,
     showRequests: false,
+    showWorkerPreferences: true,
     periodStartDate: dayjs.utc('2026-01-26'),
   };
   const mockLng = 'en';
@@ -80,6 +81,7 @@ describe('DailyShiftDemandCell', () => {
       },
     },
     requests: [],
+    workerPreferences: [],
   });
 
   afterEach(() => {

@@ -224,5 +224,6 @@
   "sunday_short": "D",
   "dsd.tooltip.shift": "número de turnos asignados / requisito de cobertura para el día",
   "dsd.tooltip.worker": "número de miembros asignados / requisito de personal para el día",
-  "shift_count_tooltip": "número de turnos / cobertura de turnos requerida durante la campaña"
+  "shift_count_tooltip": "número de turnos / cobertura de turnos requerida durante la campaña",
+  "preference": "Preferencia semanal"
 }

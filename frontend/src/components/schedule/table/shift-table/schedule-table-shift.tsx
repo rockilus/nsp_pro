@@ -417,6 +417,7 @@ export default function ScheduleTableShift({
     workers,
     shifts,
     breaches,
+    periodDates,
   );
 
   const days = periodDates.map((pd) => pd.date);

@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton';
 // Components
 import AssignmentCell from '../shared/assignment-cell';
 import RequestCell from '../shared/request-cell';
+import PreferenceCell from '../shared/preference-cell';
 import { RoleBased } from '@/components/access/role-based';
 // Styles
 import './worker-cell.css';
@@ -22,6 +23,7 @@ import { TeamMembershipRole, TeamWithMembership } from '@/types/team';
 import { ScheduleSelectionState } from '@/types/scheduleSelection';
 
 export default function WorkerCell({
+  lng,
   periodDate,
   worker,
   shifts,
@@ -39,6 +41,7 @@ export default function WorkerCell({
   onCustomCellSelect,
   isDateInCampaign = true,
 }: {
+  lng: string;
   periodDate: periodDateT;
   worker: WorkerT;
   shifts: ShiftT[];
@@ -132,6 +135,10 @@ export default function WorkerCell({
               />
             );
           })}
+        {scheduleViewSettings.showWorkerPreferences &&
+          scheduleCellData?.workerPreferences?.map((pref, i) => (
+            <PreferenceCell key={`pref-${i}`} lng={lng} preference={pref} />
+          ))}
         <RoleBased
           role={teamWithMembership.membership.role}
           allowedRoles={[TeamMembershipRole.OWNER]}

@@ -8,6 +8,7 @@ export interface SerializedScheduleViewSettings {
   showAssignments: boolean;
   showDailyShiftDemands: boolean;
   showRequests: boolean;
+  showWorkerPreferences: boolean;
   periodStartDate: string; // ISO string
   // Mobile-specific settings
   mobileSelectedView?: 'worker' | 'team';
@@ -116,6 +117,8 @@ export function validateScheduleViewSettings(
         ? settings.showDailyShiftDemands
         : teamUseSolver,
     showRequests: typeof settings.showRequests === 'boolean' ? settings.showRequests : true,
+    showWorkerPreferences:
+      typeof settings.showWorkerPreferences === 'boolean' ? settings.showWorkerPreferences : true,
     periodStartDate,
     mobileSelectedView,
     mobileSelectedWorkerId,
@@ -133,6 +136,7 @@ export function getDefaultScheduleViewSettings(teamUseSolver: boolean): Schedule
     showAssignments: true,
     showDailyShiftDemands: teamUseSolver,
     showRequests: true,
+    showWorkerPreferences: true,
     periodStartDate: now.startOf('isoWeek'),
     mobileSelectedView: 'worker',
     mobileSelectedWorkerId: null,
