@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { ScheduleTestBase } from '../../../utils/schedule-test-base';
+import { selectDate } from '../../../utils/date-picker-helpers';
 import {
   FrequencyType,
   RecurrenceEndType,
@@ -533,7 +534,6 @@ test.describe('Assignment Recurrence - Team Leader', () => {
       expect(occurrence).toBeDefined();
       expect(occurrence!.date.day()).toBe(startWeekday);
 
-      // Verify the week position matches
       const occurrenceWeekOfMonth = Math.ceil(occurrence!.date.date() / 7);
       expect(occurrenceWeekOfMonth).toBe(startWeekOfMonth);
     }
@@ -611,14 +611,12 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     );
     expect(occurrencesAfter.length).toBe(4);
 
-    // Verify the deleted occurrence is not in the list
     const deletedOccurrence = occurrencesAfter.find((a) => a.date.isSame(deleteDate, 'day'));
     expect(deletedOccurrence).toBeUndefined();
 
-    // Verify all other occurrences still exist
     for (const occurrence of occurrencesBefore) {
       if (occurrence.date.isSame(deleteDate, 'day')) {
-        continue; // This is the deleted one, skip
+        continue;
       }
       const foundOccurrence = occurrencesAfter.find((a) => a.date.isSame(occurrence.date, 'day'));
       expect(foundOccurrence).toBeDefined();
@@ -660,13 +658,11 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     const createdRecurrence = beforeDelete.recurrencesRead[0];
     expect(createdRecurrence).toBeDefined();
 
-    // Get all assignment occurrences for this recurrence
     const occurrencesBefore = beforeDelete.assignmentsRead.filter(
       (a) => a.sourceId === createdRecurrence!.id,
     );
     expect(occurrencesBefore.length).toBe(5);
 
-    // Select the first occurrence to delete
     const occurrenceToDelete = occurrencesBefore[0];
     const deleteDate = occurrenceToDelete.date;
 
@@ -693,13 +689,11 @@ test.describe('Assignment Recurrence - Team Leader', () => {
       dayjs.utc().add(2, 'month').endOf('day'),
     );
 
-    // Verify recurrence is deleted
     const remainingRecurrence = afterDelete.recurrencesRead.find(
       (r) => r.id === createdRecurrence!.id,
     );
     expect(remainingRecurrence).toBeUndefined();
 
-    // Verify all occurrences are deleted
     const occurrencesAfter = afterDelete.assignmentsRead.filter(
       (a) => a.sourceId === createdRecurrence!.id,
     );
@@ -773,13 +767,11 @@ test.describe('Assignment Recurrence - Team Leader', () => {
       dayjs.utc().add(2, 'month').endOf('day'),
     );
 
-    // Verify recurrence still exists
     const remainingRecurrence = afterDelete.recurrencesRead.find(
       (r) => r.id === createdRecurrence!.id,
     );
     expect(remainingRecurrence).toBeDefined();
 
-    // Get remaining occurrences
     const occurrencesAfter = afterDelete.assignmentsRead.filter(
       (a) => a.sourceId === createdRecurrence!.id,
     );
@@ -797,55 +789,3 @@ test.describe('Assignment Recurrence - Team Leader', () => {
     console.log('✅ This and following instances of recurring assignment deleted');
   });
 });
-
-function englishOrdinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-async function selectDate(
-  page: import('@playwright/test').Page,
-  date: dayjs.Dayjs,
-  testid = 'edit-assignment-date-picker',
-) {
-  const datePicker = page.locator(`[data-testid="${testid}"]`);
-  await datePicker.waitFor({ state: 'visible' });
-  await expect(datePicker).toBeEnabled({ timeout: 5000 });
-  await datePicker.click();
-
-  // Wait for the calendar popover to open by looking for the status element
-  const calendar = page.locator('[data-slot="calendar"]').last();
-  await calendar.waitFor({ state: 'attached', timeout: 5000 });
-
-  // Navigate to the target month
-  const nextBtn = calendar.locator('button[name="Go to the Next Month"]');
-  const status = calendar.locator('[role="status"]');
-
-  const targetMonthName = date.format('MMMM');
-  const targetYear = date.format('YYYY');
-
-  for (let i = 0; i < 24; i++) {
-    const currentStatus = await status.textContent();
-    if (currentStatus?.includes(targetMonthName) && currentStatus?.includes(targetYear)) break;
-    await nextBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await nextBtn.click();
-    await page.waitForTimeout(200);
-  }
-
-  const dayName = [
-    date.format('dddd'),
-    ', ',
-    targetMonthName,
-    ' ',
-    englishOrdinal(date.date()),
-    ', ',
-    targetYear,
-  ].join('');
-
-  const dayButton = page.getByRole('button', { name: dayName });
-  await dayButton.waitFor({ state: 'visible' });
-  await dayButton.click();
-
-  await expect(datePicker).toContainText(date.format('D MMMM YYYY'));
-}

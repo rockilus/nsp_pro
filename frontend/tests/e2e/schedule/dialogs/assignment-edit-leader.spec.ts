@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { ScheduleTestBase } from '../../../utils/schedule-test-base';
+import { selectDate } from '../../../utils/date-picker-helpers';
 
 dayjs.extend(utc);
 
@@ -208,8 +209,6 @@ test.describe('Assignment Editing - Team Leader', () => {
     await assignmentCell.click();
     await expect(page.locator('[data-testid="schedule-item-dialog"]')).toBeVisible();
 
-    // assignment.date is UTC from toAssignmentT. Build newDate preserving UTC mode
-    // to avoid timezone-shifting the calendar day.
     const newDate = dayjs.utc(assignment.date.format('YYYY-MM-DD')).add(2, 'day');
     await selectDate(page, newDate);
 
@@ -229,7 +228,6 @@ test.describe('Assignment Editing - Team Leader', () => {
     const updatedAssignment = updatedAssignments.find((a) => a.id === assignment.id);
     expect(updatedAssignment).toBeDefined();
 
-    // Both dates are UTC, use .isSame for safe day-level comparison
     expect(updatedAssignment!.date.isSame(newDate, 'day')).toBe(true);
     console.log('✅ Assignment date updated successfully');
   });
@@ -261,7 +259,6 @@ test.describe('Assignment Editing - Team Leader', () => {
     await workerSelect.click();
     await page.locator(`[data-testid="worker-option-${newWorker!.id}"]`).click();
 
-    // Close dialog without saving — shadcn built-in close (desktop) or mobile header
     const closeButton = page.locator(
       '[data-testid="close-dialog-button"], [data-slot="dialog-close"]',
     );
@@ -283,31 +280,3 @@ test.describe('Assignment Editing - Team Leader', () => {
     console.log('✅ Assignment changes cancelled successfully');
   });
 });
-
-function englishOrdinal(n: number): string {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-async function selectDate(page: import('@playwright/test').Page, date: dayjs.Dayjs) {
-  const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-  await datePicker.waitFor({ state: 'visible' });
-  await datePicker.click();
-
-  const dayName = [
-    date.format('dddd'),
-    ', ',
-    date.format('MMMM'),
-    ' ',
-    englishOrdinal(date.date()),
-    ', ',
-    date.format('YYYY'),
-  ].join('');
-
-  const dayButton = page.getByRole('button', { name: dayName });
-  await dayButton.waitFor({ state: 'visible' });
-  await dayButton.click();
-
-  await expect(datePicker).toContainText(date.format('D MMMM YYYY'));
-}
