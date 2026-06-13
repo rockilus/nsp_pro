@@ -419,13 +419,13 @@ const RequestForm = ({
               <SelectTrigger
                 data-testid="worker-select"
                 aria-invalid={workerIdError}
-                className="w-full max-w-full pl-9"
+                className="w-full max-w-full pl-9 [&_[data-slot=select-value]]:truncate"
               >
                 <SelectValue placeholder={t('select_a_worker')} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-w-[var(--radix-select-trigger-width)]">
                 {workers.map((worker) => (
-                  <SelectItem key={worker.id} value={worker.id}>
+                  <SelectItem key={worker.id} value={worker.id} className="truncate">
                     {worker.name}
                   </SelectItem>
                 ))}

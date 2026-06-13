@@ -119,7 +119,11 @@ const RequestPanel = ({
         }}
       >
         <DialogContent
-          className={isMobile ? 'h-[100dvh] rounded-none p-0 sm:rounded-xl' : 'sm:max-w-lg'}
+          className={
+            isMobile
+              ? 'h-[100dvh] rounded-none p-0 sm:rounded-xl'
+              : 'flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-lg'
+          }
           showCloseButton={!isMobile}
           data-testid="request-panel-dialog"
         >
@@ -129,7 +133,7 @@ const RequestPanel = ({
             </DialogHeader>
           )}
 
-          <div className={isMobile ? '' : ''}>
+          <div className={isMobile ? '' : '-mx-6 -mb-6 overflow-y-auto px-6 pb-6'}>
             <RequestForm
               lng={lng}
               teamId={teamId}
