@@ -67,7 +67,10 @@ export function ReplacementDetailsDialog({
         if (!o) onClose();
       }}
     >
-      <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-[1200px]">
+      <DialogContent
+        className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-[1200px]"
+        data-testid="replacement-details-dialog"
+      >
         <DialogHeader>
           <DialogTitle>
             {t('replace_dialog.title')}{' '}
