@@ -60,6 +60,7 @@ function DatePicker({
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
+          defaultMonth={value?.toDate()}
           selected={value?.toDate()}
           onSelect={(date) => {
             onChange(date ? dayjs(date) : null);
