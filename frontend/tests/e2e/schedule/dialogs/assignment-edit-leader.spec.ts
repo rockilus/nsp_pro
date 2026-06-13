@@ -83,11 +83,11 @@ test.describe('Assignment Editing - Team Leader', () => {
     expect(expectedShift).toBeDefined();
     await expect(shiftSelect).toContainText(expectedShift!.name);
 
-    // shadcn DatePicker is a Button, not an <input> — use toContainText
+    // DatePicker is now an InputGroupInput — use toHaveValue
     const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
     await expect(datePicker).toBeVisible();
-    const expectedDate = assignment.date.local().format('D MMMM YYYY');
-    await expect(datePicker).toContainText(expectedDate);
+    const expectedDate = assignment.date.local().format('DD/MM/YYYY');
+    await expect(datePicker).toHaveValue(expectedDate);
 
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
     const deleteButton = page.locator('[data-testid="delete-assignment-button"]');

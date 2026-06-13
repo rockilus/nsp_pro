@@ -26,7 +26,19 @@ export async function selectDate(
   await datePicker.waitFor({ state: 'visible' });
   // Some pickers (recurrence-end-date-picker) start disabled.
   await expect(datePicker).toBeEnabled({ timeout: 5000 });
-  await datePicker.click();
+
+  // Click the calendar button inside the same InputGroup (input itself no longer opens popover)
+  // The button is a sibling inside the same [data-slot="input-group"]
+  const calendarBtn = page.locator(
+    `[data-testid="${testid}"] ~ [data-slot="input-group-addon"] button[aria-label="Select date"], [data-testid="${testid}"] + [data-slot="input-group-addon"] button[aria-label="Select date"]`,
+  );
+  // Fallback: find the button within the parent input-group
+  const calendarBtns = page.locator(
+    `[data-slot="input-group"]:has([data-testid="${testid}"]) button[aria-label="Select date"]`,
+  );
+  const btn = (await calendarBtn.count()) > 0 ? calendarBtn : calendarBtns;
+  await btn.waitFor({ state: 'visible' });
+  await btn.click();
 
   // Wait for popover animation, then target the last calendar (most recently opened).
   await page.waitForTimeout(300);
@@ -61,5 +73,5 @@ export async function selectDate(
   await dayButton.waitFor({ state: 'visible' });
   await dayButton.click();
 
-  await expect(datePicker).toContainText(date.format('D MMMM YYYY'));
+  await expect(datePicker).toHaveValue(date.format('DD/MM/YYYY'));
 }
