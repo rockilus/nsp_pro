@@ -13,6 +13,7 @@ resourcePolicy:
         - read-dimensions
         - read-shifts
         - read-link-shifts
+        - read-shift-options # needed for request form shift selector
         - create-request
         - read-requests
         - update-request
