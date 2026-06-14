@@ -23,6 +23,7 @@ import { RecurrenceRuleT } from '../../src/types/recurrence';
 import { SWOIdTypes } from '../../src/types/constraint';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import isoWeek from 'dayjs/plugin/isoWeek';
 import { ShiftDemandDTO } from '@/types/shiftDemand';
 import { ConstraintT, ConstraintType, BlockT } from '../../src/types/constraint';
 import { DimensionEntryType, DimensionType, DimensionT } from '../../src/types/dimension';
@@ -33,6 +34,7 @@ import { SpecialtyT } from '../../src/types/specialty';
 import { ReplacementCandidateT } from '@/types/replacement';
 
 dayjs.extend(utc);
+dayjs.extend(isoWeek);
 
 export interface ScheduleSetupOptions {
   referenceDate: dayjs.Dayjs;
