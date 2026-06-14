@@ -171,12 +171,15 @@ export default function WeeklyGrid({
     onChange({ ...preferences, slots: newSlots });
   };
 
-  const renderCell = (day: number, slot: SlotType, parity: WeekParity) => {
+  // gridVariant disambiguates testids when multiple grids for the same parity
+  // are rendered simultaneously (paired + stacked fallback).
+  const renderCell = (day: number, slot: SlotType, parity: WeekParity, gridVariant?: string) => {
     const pref = findSlotPref(day, slot, parity);
     const isFilled = !!pref;
+    const suffix = gridVariant ? `-${gridVariant}` : '';
     return (
       <button
-        key={`cell-${parity}-${day}-${slot}`}
+        key={`cell-${gridVariant || 'main'}-${parity}-${day}-${slot}`}
         type="button"
         className={`mx-auto h-4 w-4 rounded-full transition-colors ${
           isFilled
@@ -184,46 +187,49 @@ export default function WeeklyGrid({
             : 'border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50'
         }`}
         onClick={() => toggleCell(day, slot, parity)}
-        data-testid={`weekly-grid-cell-${parity}-${day}-${slot}`}
+        data-testid={`weekly-grid-cell-${parity}-${day}-${slot}${suffix}`}
       />
     );
   };
 
-  const renderGrid = (parity: WeekParity, label: string) => (
-    <div className="mb-2">
-      {label && <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>}
-      <div className="grid max-w-[184px] grid-cols-[auto_repeat(7,1fr)] gap-0.5">
-        {/* Top-left empty cell */}
-        <div />
-        {/* Column headers */}
-        {DAYS.map((day) => (
-          <button
-            key={`hdr-${parity}-${day}`}
-            type="button"
-            className="cursor-pointer rounded py-0.5 text-center text-[10px] font-semibold hover:bg-muted"
-            onClick={() => toggleColumn(day, parity)}
-            data-testid={`weekly-grid-col-${parity}-${day}`}
-          >
-            {t(DAY_I18N_KEYS[day])}
-          </button>
-        ))}
-        {/* Rows */}
-        {SLOTS.map((slot) => (
-          <React.Fragment key={`row-${parity}-${slot}`}>
+  const renderGrid = (parity: WeekParity, label: string, gridVariant?: string) => {
+    const suffix = gridVariant ? `-${gridVariant}` : '';
+    return (
+      <div className="mb-2">
+        {label && <p className="mb-1 text-xs font-medium text-muted-foreground">{label}</p>}
+        <div className="grid max-w-[184px] grid-cols-[auto_repeat(7,1fr)] gap-0.5">
+          {/* Top-left empty cell */}
+          <div />
+          {/* Column headers */}
+          {DAYS.map((day) => (
             <button
+              key={`hdr-${gridVariant || 'main'}-${parity}-${day}`}
               type="button"
-              className="cursor-pointer rounded px-0.5 py-0.5 text-right text-[10px] font-medium hover:bg-muted"
-              onClick={() => toggleRow(slot, parity)}
-              data-testid={`weekly-grid-row-${parity}-${slot}`}
+              className="cursor-pointer rounded py-0.5 text-center text-[10px] font-semibold hover:bg-muted"
+              onClick={() => toggleColumn(day, parity)}
+              data-testid={`weekly-grid-col-${parity}-${day}${suffix}`}
             >
-              {t(SLOT_I18N_KEYS[slot])}
+              {t(DAY_I18N_KEYS[day])}
             </button>
-            {DAYS.map((day) => renderCell(day, slot, parity))}
-          </React.Fragment>
-        ))}
+          ))}
+          {/* Rows */}
+          {SLOTS.map((slot) => (
+            <React.Fragment key={`row-${gridVariant || 'main'}-${parity}-${slot}`}>
+              <button
+                type="button"
+                className="cursor-pointer rounded px-0.5 py-0.5 text-right text-[10px] font-medium hover:bg-muted"
+                onClick={() => toggleRow(slot, parity)}
+                data-testid={`weekly-grid-row-${parity}-${slot}${suffix}`}
+              >
+                {t(SLOT_I18N_KEYS[slot])}
+              </button>
+              {DAYS.map((day) => renderCell(day, slot, parity, gridVariant))}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Side-by-side even/odd layout sharing row headers (md+ screens)
   const renderPairedGrid = () => (
@@ -281,11 +287,12 @@ export default function WeeklyGrid({
     </div>
   );
 
-  // Stacked fallback for narrow screens
+  // Stacked fallback for narrow screens — uses gridVariant to avoid
+  // duplicating testids from the paired grid which is also in the DOM.
   const renderStackedGrids = () => (
     <div className="md:hidden">
-      {renderGrid('even', t('even_weeks'))}
-      {renderGrid('odd', t('odd_weeks'))}
+      {renderGrid('even', t('even_weeks'), 'stacked')}
+      {renderGrid('odd', t('odd_weeks'), 'stacked')}
     </div>
   );
 
