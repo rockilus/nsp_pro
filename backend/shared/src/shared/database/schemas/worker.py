@@ -2,7 +2,7 @@ from datetime import datetime, time, timezone
 from typing import Any, Dict, List, Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.core.worker import Worker
+from shared.schemas.core.worker import WeeklyPreferences, Worker
 
 
 class WorkerSchema(DocumentBaseSchema):
@@ -19,6 +19,7 @@ class WorkerSchema(DocumentBaseSchema):
     duties_per_month: int
     annual_leave: int
     specialties: List[str] = []
+    weekly_preferences: Optional[Dict[str, Any]] = None
     deleted: bool = False
     user_id: Optional[str] = None
 
@@ -52,6 +53,11 @@ class WorkerSchema(DocumentBaseSchema):
             duties_per_month=self.duties_per_month,
             annual_leave=self.annual_leave,
             specialty_ids=self.specialties,
+            weekly_preferences=(
+                WeeklyPreferences.from_dict(self.weekly_preferences)
+                if self.weekly_preferences
+                else None
+            ),
             deleted=self.deleted,
             user_id=self.user_id,
         )
@@ -79,6 +85,11 @@ class WorkerSchema(DocumentBaseSchema):
             duties_per_month=worker.duties_per_month,
             annual_leave=worker.annual_leave,
             specialties=worker.specialty_ids,
+            weekly_preferences=(
+                worker.weekly_preferences.to_dict()
+                if worker.weekly_preferences
+                else None
+            ),
             deleted=worker.deleted,
             user_id=worker.user_id,
         )
