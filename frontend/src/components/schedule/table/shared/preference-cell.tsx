@@ -20,6 +20,12 @@ const RESTRICTION_I18N_KEYS: Record<SlotRestriction, string> = {
   no_specific: 'restriction_no_specific',
 };
 
+const SLOT_EMOJI: Record<string, string> = {
+  morning: '🌅',
+  afternoon: '☀️',
+  night: '🌙',
+};
+
 const SLOT_I18N_KEYS: Record<string, string> = {
   morning: 'slot_morning',
   afternoon: 'slot_afternoon',
@@ -44,9 +50,11 @@ export default function PreferenceCell({
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className={`mx-0 my-px h-5 cursor-default rounded px-1 py-px ${colorClass}`}
-            style={{ minWidth: '2rem' }}
-          />
+            className={`mx-0 my-px flex h-5 cursor-default items-center justify-center rounded px-1 py-px text-xs ${colorClass}`}
+            style={{ minWidth: '1.25rem' }}
+          >
+            {SLOT_EMOJI[preference.slot]}
+          </div>
         </TooltipTrigger>
         <TooltipContent>
           <p className="text-xs">
