@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import { DatabaseTestUtils } from './database-utils';
 import { testConfig } from './test-config';
 import { SpecialtyT } from '../../src/types/specialty';
-import { WorkerT } from '../../src/types/worker';
+import { WorkerT, SlotRestriction, WeekParity } from '../../src/types/worker';
 import { DimensionT, DimensionEntryType, DimensionType } from '../../src/types/dimension';
 import { DimEntryT } from '../../src/types/dim-entry';
 import { AttributeT } from '../../src/types/attribute';
@@ -1011,6 +1011,54 @@ export class WorkerTestBase {
   async setDialogAnnualLeave(page: Page, value: number): Promise<void> {
     const input = page.locator('[data-testid="edit-worker-annual-leave-input"]');
     await input.fill(String(value));
+  }
+
+  // ── Weekly Preferences helpers ───────────────────────────────────────────
+
+  /** Switch the week mode in the edit dialog. */
+  async setDialogWeekMode(page: Page, mode: 'single' | 'even_odd'): Promise<void> {
+    const btn = page.locator(
+      `[data-testid="week-mode-${mode === 'single' ? 'single' : 'even-odd'}"]`,
+    );
+    await expect(btn).toBeVisible();
+    await btn.click();
+  }
+
+  /** Select a restriction type in the edit dialog. */
+  async setDialogRestriction(page: Page, restriction: SlotRestriction): Promise<void> {
+    const btn = page.locator(`[data-testid="restriction-${restriction}"]`);
+    await expect(btn).toBeVisible();
+    await btn.click();
+  }
+
+  /** Click a single cell in the weekly grid. */
+  async clickGridCell(
+    page: Page,
+    parity: WeekParity | 'even_odd' | 'all',
+    day: number,
+    slot: 'morning' | 'afternoon' | 'night',
+  ): Promise<void> {
+    const cell = page.locator(`[data-testid="weekly-grid-cell-${parity}-${day}-${slot}"]`);
+    await expect(cell).toBeVisible();
+    await cell.click();
+  }
+
+  /** Click a column header (full day) in the weekly grid. */
+  async clickGridColumn(page: Page, parity: WeekParity | 'all', day: number): Promise<void> {
+    const col = page.locator(`[data-testid="weekly-grid-col-${parity}-${day}"]`);
+    await expect(col).toBeVisible();
+    await col.click();
+  }
+
+  /** Click a row header (period for all days) in the weekly grid. */
+  async clickGridRow(
+    page: Page,
+    parity: WeekParity | 'even_odd' | 'all',
+    slot: 'morning' | 'afternoon' | 'night',
+  ): Promise<void> {
+    const row = page.locator(`[data-testid="weekly-grid-row-${parity}-${slot}"]`);
+    await expect(row).toBeVisible();
+    await row.click();
   }
 
   // ── API verification ─────────────────────────────────────────────────────
