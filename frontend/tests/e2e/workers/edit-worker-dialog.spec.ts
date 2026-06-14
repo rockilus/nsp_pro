@@ -813,7 +813,7 @@ test.describe('Worker Weekly Preferences', () => {
     await tb.setDialogWeekMode(page, 'even_odd');
 
     await tb.setDialogRestriction(page, 'no_work');
-    await tb.clickGridRow(page, 'even', 'night');
+    await tb.clickGridRow(page, 'even_odd', 'night');
 
     await tb.saveEditDialog(page);
     const updated = await tb.getWorkerById(worker.id);
