@@ -203,6 +203,7 @@ export const buildWorkerPreferencesByWorkerAndDate = (
         prefDict[key] = matching.map((sp) => ({
           slot: sp.slot,
           restriction: sp.restriction,
+          weekParity: sp.weekParity,
         }));
       }
     }

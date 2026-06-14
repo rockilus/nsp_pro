@@ -13,7 +13,8 @@ import { Page } from '@playwright/test';
 import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from './database-utils';
 import { testConfig } from './test-config';
 import { ShiftType } from '../../src/types/shift';
-import { WorkerT } from '../../src/types/worker';
+import { WorkerT, WeeklyPreferences } from '../../src/types/worker';
+import { WeeklySlotPreference } from '../../src/types/worker';
 import { ShiftT, ShiftRestType, ShiftLeaveType } from '../../src/types/shift';
 import { RequestT, RequestType, RequestStatus } from '../../src/types/request';
 import { ScheduleT } from '../../src/types/schedule';
@@ -718,6 +719,7 @@ export class ScheduleTestBase {
       showAssignments?: boolean;
       showDailyShiftDemands?: boolean;
       showRequests?: boolean;
+      showWorkerPreferences?: boolean;
       periodStartDate?: dayjs.Dayjs;
       mobileSelectedView?: 'worker' | 'team';
       mobileSelectedWorkerId?: string | null;
@@ -765,6 +767,8 @@ export class ScheduleTestBase {
     if (options?.showDailyShiftDemands !== undefined)
       updates.showDailyShiftDemands = options.showDailyShiftDemands;
     if (options?.showRequests !== undefined) updates.showRequests = options.showRequests;
+    if (options?.showWorkerPreferences !== undefined)
+      updates.showWorkerPreferences = options.showWorkerPreferences;
     if (options?.mobileSelectedView !== undefined)
       updates.mobileSelectedView = options.mobileSelectedView;
     if (options?.mobileSelectedWorkerId !== undefined)
@@ -900,6 +904,7 @@ export class ScheduleTestBase {
       dutiesPerMonth?: number;
       annualLeave?: number;
       specialtyIds?: string[];
+      weeklyPreferences?: WeeklyPreferences;
     },
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
@@ -910,6 +915,43 @@ export class ScheduleTestBase {
   }
 
   /**
+   * Set weekly preferences on a worker via the API.
+   * Accepts an array of WeeklySlotPreference slots and enables preferences.
+   */
+  async setWorkerWeeklyPreferences(workerId: string, slots: WeeklySlotPreference[]): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error('Test team not initialized');
+    }
+
+    await this.dbUtils.updateWorker(workerId, this.testTeam.teamId, {
+      weeklyPreferences: {
+        enabled: true,
+        slots,
+      },
+    });
+
+    console.log(`✅ Set ${slots.length} weekly preference slots on worker ${workerId}`);
+  }
+
+  /**
+   * Clear weekly preferences on a worker.
+   */
+  async clearWorkerWeeklyPreferences(workerId: string): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error('Test team not initialized');
+    }
+
+    await this.dbUtils.updateWorker(workerId, this.testTeam.teamId, {
+      weeklyPreferences: {
+        enabled: false,
+        slots: [],
+      },
+    });
+
+    console.log(`✅ Cleared weekly preferences on worker ${workerId}`);
+  }
+
+  /**
    * Get replacement candidates for an assignment using DatabaseTestUtils
    */
   async getReplacementCandidates(assignmentId: string): Promise<ReplacementCandidateT[]> {
@@ -917,5 +959,55 @@ export class ScheduleTestBase {
       throw new Error('Test team not initialized');
     }
     return await this.dbUtils.getReplacementCandidates(assignmentId, this.testTeam.teamId);
+  }
+
+  /**
+   * Build the complete set of expected preference data-testid strings for a
+   * worker given their WeeklySlotPreference slots and the visible period.
+   *
+   * Uses the same ISO weekday (0=Mon..6=Sun) and ISO week parity conventions
+   * as the production preference expansion logic.
+   */
+  static buildExpectedPreferenceTestIds(
+    workerId: string,
+    slots: WeeklySlotPreference[],
+    periodStart: dayjs.Dayjs,
+    periodEnd: dayjs.Dayjs,
+  ): string[] {
+    const testIds: string[] = [];
+    let current = periodStart.clone();
+    while (current.isBefore(periodEnd) || current.isSame(periodEnd, 'day')) {
+      const isoDow = (current.day() + 6) % 7;
+      const isoWeekNum = current.isoWeek();
+      const parity = isoWeekNum % 2 === 0 ? 'even' : 'odd';
+      const dateStr = current.format('YYYY-MM-DD');
+
+      for (const slot of slots) {
+        if (
+          slot.dayOfWeek === isoDow &&
+          (slot.weekParity === 'all' || slot.weekParity === parity)
+        ) {
+          testIds.push(
+            `preference-cell-${workerId}-${dateStr}-${slot.slot}-${slot.restriction}-${slot.weekParity}`,
+          );
+        }
+      }
+      current = current.add(1, 'day');
+    }
+    return testIds;
+  }
+
+  /**
+   * Build a single preference cell data-testid string for a specific date.
+   * Useful for constructing non-matching testids in negative assertions.
+   */
+  static buildPreferenceTestId(
+    workerId: string,
+    date: string,
+    slot: string,
+    restriction: string,
+    weekParity: string,
+  ): string {
+    return `preference-cell-${workerId}-${date}-${slot}-${restriction}-${weekParity}`;
   }
 }

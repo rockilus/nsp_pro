@@ -137,7 +137,13 @@ export default function WorkerCell({
           })}
         {scheduleViewSettings.showWorkerPreferences &&
           scheduleCellData?.workerPreferences?.map((pref, i) => (
-            <PreferenceCell key={`pref-${i}`} lng={lng} preference={pref} />
+            <PreferenceCell
+              key={`pref-${i}`}
+              lng={lng}
+              preference={pref}
+              workerId={worker.id}
+              date={dateStr}
+            />
           ))}
         <RoleBased
           role={teamWithMembership.membership.role}

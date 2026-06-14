@@ -35,15 +35,24 @@ const SLOT_I18N_KEYS: Record<string, string> = {
 export default function PreferenceCell({
   lng,
   preference,
+  workerId,
+  date,
 }: {
   lng: string;
   preference: WorkerPreferenceCellData;
+  workerId?: string;
+  date?: string;
 }) {
   const { t } = useTranslation(lng, 'worker-page');
 
   const colorClass = RESTRICTION_COLORS[preference.restriction] || 'bg-gray-400';
   const restrictionLabel = t(RESTRICTION_I18N_KEYS[preference.restriction]);
   const slotLabel = t(SLOT_I18N_KEYS[preference.slot] || preference.slot);
+
+  const testId =
+    workerId && date
+      ? `preference-cell-${workerId}-${date}-${preference.slot}-${preference.restriction}-${preference.weekParity}`
+      : `preference-cell-${preference.slot}-${preference.restriction}`;
 
   return (
     <TooltipProvider>
@@ -52,6 +61,7 @@ export default function PreferenceCell({
           <div
             className={`mx-0 my-px flex h-5 cursor-default items-center justify-center rounded px-1 py-px text-xs ${colorClass}`}
             style={{ minWidth: '1.25rem' }}
+            data-testid={testId}
           >
             {SLOT_EMOJI[preference.slot]}
           </div>

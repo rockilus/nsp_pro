@@ -140,6 +140,7 @@ export type ShiftDemandsDictT = {
 export type WorkerPreferenceCellData = {
   slot: 'morning' | 'afternoon' | 'night';
   restriction: 'no_work' | 'no_normal' | 'no_duty' | 'no_specific';
+  weekParity: 'all' | 'even' | 'odd';
 };
 
 export type ScheduleCellDataT = {
