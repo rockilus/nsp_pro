@@ -47,12 +47,12 @@ export default function PreferenceCell({
 
   const colorClass = RESTRICTION_COLORS[preference.restriction] || 'bg-gray-400';
   const restrictionLabel = t(RESTRICTION_I18N_KEYS[preference.restriction]);
-  const slotLabel = t(SLOT_I18N_KEYS[preference.slot] || preference.slot);
+  const slotLabels = preference.slots.map((s) => t(SLOT_I18N_KEYS[s] || s)).join(', ');
 
   const testId =
     workerId && date
-      ? `preference-cell-${workerId}-${date}-${preference.slot}-${preference.restriction}-${preference.weekParity}`
-      : `preference-cell-${preference.slot}-${preference.restriction}`;
+      ? `preference-cell-${workerId}-${date}-${preference.restriction}`
+      : `preference-cell-${preference.restriction}`;
 
   return (
     <TooltipProvider>
@@ -62,13 +62,17 @@ export default function PreferenceCell({
             className={`mx-0 my-px flex h-5 cursor-default items-center justify-center rounded px-1 py-px text-xs ${colorClass}`}
             style={{ minWidth: '1.25rem' }}
             data-testid={testId}
+            data-slots={preference.slots.join(',')}
           >
-            {SLOT_EMOJI[preference.slot]}
+            {preference.slots
+              .map((s) => SLOT_EMOJI[s])
+              .filter(Boolean)
+              .join('')}
           </div>
         </TooltipTrigger>
         <TooltipContent>
           <p className="text-xs">
-            {slotLabel}: {restrictionLabel}
+            {slotLabels}: {restrictionLabel}
           </p>
         </TooltipContent>
       </Tooltip>

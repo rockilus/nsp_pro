@@ -4,9 +4,10 @@
  * These tests verify:
  * - Preferences are rendered as expected for the 6-month period
  *   starting from the month following the current month
+ * - Same restriction across different time slots merges into one cell
  * - All weeks and even/odd parity modes work correctly
- * - Multiple restriction types display with correct colors
- * - All-weeks + even/odd on same day show multiple preference elements
+ * - no_normal + no_duty on same slot merges to no_work
+ * - Multiple restriction types display with correct colors and separate cells
  * - Show/hide preferences toggle works
  */
 
@@ -15,20 +16,18 @@ import { randomUUID } from 'crypto';
 import { ScheduleTestBase } from '../../utils/schedule-test-base';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import isoWeek from 'dayjs/plugin/isoWeek';
 import { computePeriodEndDate } from '@/app/lib/utils/scheduleViewSettingsUtils';
 import { WeeklySlotPreference } from '@/types/worker';
 
 dayjs.extend(utc);
+dayjs.extend(isoWeek);
 
 function periodRange() {
   const start = dayjs.utc().add(1, 'month').startOf('month');
   return { start, end: computePeriodEndDate(start, 'month') };
 }
 
-/**
- * Build a single-preference slots array for the common case of one
- * restriction on one day-of-week.
- */
 function makePref(
   dayOfWeek: number,
   slot: WeeklySlotPreference['slot'],
@@ -36,6 +35,25 @@ function makePref(
   weekParity: WeeklySlotPreference['weekParity'],
 ): WeeklySlotPreference[] {
   return [{ dayOfWeek, slot, restriction, shiftIds: [], weekParity }];
+}
+
+/**
+ * Find one even-week Monday and one odd-week Monday within a date period.
+ */
+function findParityMondays(start: dayjs.Dayjs, end: dayjs.Dayjs) {
+  let evenMonday: string | null = null;
+  let oddMonday: string | null = null;
+  let current = start.clone();
+  while (current.isBefore(end) || current.isSame(end, 'day')) {
+    if (current.day() === 1) {
+      const parity = current.isoWeek() % 2 === 0 ? 'even' : 'odd';
+      if (parity === 'even' && !evenMonday) evenMonday = current.format('YYYY-MM-DD');
+      if (parity === 'odd' && !oddMonday) oddMonday = current.format('YYYY-MM-DD');
+    }
+    if (evenMonday && oddMonday) break;
+    current = current.add(1, 'day');
+  }
+  return { evenMonday, oddMonday };
 }
 
 test.describe('Weekly Preferences - Single Restriction All Weeks', () => {
@@ -94,7 +112,6 @@ test.describe('Weekly Preferences - Single Restriction All Weeks', () => {
       await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
     }
 
-    // Tuesday (dayOfWeek=1) should not have this preference
     const tuesdayDate = start.day(1);
     if (tuesdayDate.isBefore(start)) {
       tuesdayDate.add(1, 'week');
@@ -102,9 +119,7 @@ test.describe('Weekly Preferences - Single Restriction All Weeks', () => {
     const absentId = ScheduleTestBase.buildPreferenceTestId(
       workerId,
       tuesdayDate.format('YYYY-MM-DD'),
-      'morning',
       'no_work',
-      'all',
     );
     await expect(page.locator(`[data-testid="${absentId}"]`)).toHaveCount(0);
   });
@@ -162,8 +177,13 @@ test.describe('Weekly Preferences - Single Restriction All Weeks', () => {
 
     const expected = ScheduleTestBase.buildExpectedPreferenceTestIds(workerId, slots, start, end);
     expect(expected.length).toBeGreaterThan(0);
+
+    // All three slots merge into one no_work cell per Monday
     for (const tid of expected) {
-      await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
+      const el = page.locator(`[data-testid="${tid}"]`);
+      await expect(el).toBeVisible();
+      await expect(el).toHaveAttribute('data-slots', 'afternoon,morning,night');
+      await expect(el).toHaveClass(/bg-red-500/);
     }
   });
 });
@@ -211,6 +231,7 @@ test.describe('Weekly Preferences - Single Restriction Even/Odd Parity', () => {
     const base = testBasesMap.get((testInfo as any).testRunId)!;
     const workerId = base.getTestWorkers()[0].id;
     const { start, end } = periodRange();
+    const { evenMonday, oddMonday } = findParityMondays(start, end);
 
     const slots = makePref(0, 'morning', 'no_work', 'even');
     await base.setWorkerWeeklyPreferences(workerId, slots);
@@ -221,12 +242,11 @@ test.describe('Weekly Preferences - Single Restriction Even/Odd Parity', () => {
     const expected = ScheduleTestBase.buildExpectedPreferenceTestIds(workerId, slots, start, end);
     expect(expected.length).toBeGreaterThan(0);
 
-    // Expected testids must be visible
     for (const tid of expected) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
     }
 
-    // Build testids for the odd-weeks variant that MUST be absent
+    // Odd-week Monday must not have preference
     const oddSlots = makePref(0, 'morning', 'no_work', 'odd');
     const forbidden = ScheduleTestBase.buildExpectedPreferenceTestIds(
       workerId,
@@ -236,6 +256,12 @@ test.describe('Weekly Preferences - Single Restriction Even/Odd Parity', () => {
     );
     for (const tid of forbidden) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(0);
+    }
+
+    // Verify data-slots on an even-week Monday
+    if (evenMonday) {
+      const tid = ScheduleTestBase.buildPreferenceTestId(workerId, evenMonday, 'no_work');
+      await expect(page.locator(`[data-testid="${tid}"]`)).toHaveAttribute('data-slots', 'morning');
     }
   });
 
@@ -411,11 +437,11 @@ test.describe('Weekly Preferences - Different Restriction Types', () => {
       const el = page.locator(`[data-testid="${tid}"]`);
       await expect(el).toBeVisible();
 
-      if (tid.includes('-no_work-')) {
+      if (tid.endsWith('-no_work')) {
         await expect(el).toHaveClass(/bg-red-500/);
-      } else if (tid.includes('-no_normal-')) {
+      } else if (tid.endsWith('-no_normal')) {
         await expect(el).toHaveClass(/bg-amber-500/);
-      } else if (tid.includes('-no_duty-')) {
+      } else if (tid.endsWith('-no_duty')) {
         await expect(el).toHaveClass(/bg-blue-500/);
       }
     }
@@ -475,42 +501,12 @@ test.describe('Weekly Preferences - All Weeks + Even/Odd on Same Day', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('[data-testid="schedule-table-worker"]', { timeout: 10000 });
 
-    const allExpected = ScheduleTestBase.buildExpectedPreferenceTestIds(
-      workerId,
-      slots,
-      start,
-      end,
-    );
-    expect(allExpected.length).toBeGreaterThan(0);
+    // Both merge into a single no_work cell per Monday
+    const expected = ScheduleTestBase.buildExpectedPreferenceTestIds(workerId, slots, start, end);
+    expect(expected.length).toBeGreaterThan(0);
 
-    // Each distinct testid (slot/restriction/parity per date) has count 1
-    for (const tid of allExpected) {
+    for (const tid of expected) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(1);
-    }
-
-    // Even-week variant present: build even-only expectation and check visible
-    const evenOnlySlots = makePref(0, 'morning', 'no_work', 'even');
-    const evenOnlyIds = ScheduleTestBase.buildExpectedPreferenceTestIds(
-      workerId,
-      evenOnlySlots,
-      start,
-      end,
-    );
-    for (const tid of evenOnlyIds) {
-      await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(1);
-    }
-
-    // Odd-week dates must NOT have the even variant
-    const oddParitySlots = makePref(0, 'morning', 'no_work', 'odd');
-    const oddParityDates = ScheduleTestBase.buildExpectedPreferenceTestIds(
-      workerId,
-      oddParitySlots,
-      start,
-      end,
-    );
-    for (const oddTid of oddParityDates) {
-      const evenVariantTid = oddTid.replace('-odd', '-even');
-      await expect(page.locator(`[data-testid="${evenVariantTid}"]`)).toHaveCount(0);
     }
   });
 
@@ -518,6 +514,7 @@ test.describe('Weekly Preferences - All Weeks + Even/Odd on Same Day', () => {
     const base = testBasesMap.get((testInfo as any).testRunId)!;
     const workerId = base.getTestWorkers()[0].id;
     const { start, end } = periodRange();
+    const { evenMonday, oddMonday } = findParityMondays(start, end);
 
     const slots: WeeklySlotPreference[] = [
       { dayOfWeek: 0, slot: 'morning', restriction: 'no_work', shiftIds: [], weekParity: 'all' },
@@ -534,16 +531,19 @@ test.describe('Weekly Preferences - All Weeks + Even/Odd on Same Day', () => {
       await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(1);
     }
 
-    // Afternoon no_work on even weeks must be absent
-    const afternoonEvenSlots = makePref(0, 'afternoon', 'no_work', 'even');
-    const afternoonEvenIds = ScheduleTestBase.buildExpectedPreferenceTestIds(
-      workerId,
-      afternoonEvenSlots,
-      start,
-      end,
-    );
-    for (const tid of afternoonEvenIds) {
-      await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(0);
+    // On even-week Monday: only morning, no afternoon
+    if (evenMonday) {
+      const tid = ScheduleTestBase.buildPreferenceTestId(workerId, evenMonday, 'no_work');
+      await expect(page.locator(`[data-testid="${tid}"]`)).toHaveAttribute('data-slots', 'morning');
+    }
+
+    // On odd-week Monday: both morning and afternoon merge into one cell
+    if (oddMonday) {
+      const tid = ScheduleTestBase.buildPreferenceTestId(workerId, oddMonday, 'no_work');
+      await expect(page.locator(`[data-testid="${tid}"]`)).toHaveAttribute(
+        'data-slots',
+        'afternoon,morning',
+      );
     }
   });
 
@@ -561,35 +561,33 @@ test.describe('Weekly Preferences - All Weeks + Even/Odd on Same Day', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('[data-testid="schedule-table-worker"]', { timeout: 10000 });
 
-    // All expected testids visible
+    // no_work subsumes no_normal on the same slot — only no_work cells visible
     const expected = ScheduleTestBase.buildExpectedPreferenceTestIds(workerId, slots, start, end);
     expect(expected.length).toBeGreaterThan(0);
+
     for (const tid of expected) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
+      // All merged cells should be no_work (no no_normal cells)
+      expect(tid.endsWith('-no_work')).toBe(true);
     }
 
-    // Even weeks: both no_work + no_normal visible
-    // Odd weeks: only no_work visible, no_normal absent
-    const noNormalEvenSlots = makePref(0, 'morning', 'no_normal', 'even');
-    const noNormalEvenIds = ScheduleTestBase.buildExpectedPreferenceTestIds(
-      workerId,
-      noNormalEvenSlots,
-      start,
-      end,
-    );
-    for (const tid of noNormalEvenIds) {
-      await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
+    // no_normal should not appear anywhere
+    const noNormalOnly = makePref(0, 'morning', 'no_normal', 'even');
+    const noNormalIds = []; // manually check: no_normal IDs shouldn't exist
+    let current = start.clone();
+    while (current.isBefore(end) || current.isSame(end, 'day')) {
+      if ((current.day() + 6) % 7 === 0 && current.isoWeek() % 2 === 0) {
+        noNormalIds.push(
+          ScheduleTestBase.buildPreferenceTestId(
+            workerId,
+            current.format('YYYY-MM-DD'),
+            'no_normal',
+          ),
+        );
+      }
+      current = current.add(1, 'day');
     }
-
-    // no_normal on odd weeks must be absent
-    const noNormalOddSlots = makePref(0, 'morning', 'no_normal', 'odd');
-    const noNormalOnOdd = ScheduleTestBase.buildExpectedPreferenceTestIds(
-      workerId,
-      noNormalOddSlots,
-      start,
-      end,
-    );
-    for (const tid of noNormalOnOdd) {
+    for (const tid of noNormalIds) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(0);
     }
   });
@@ -626,16 +624,20 @@ test.describe('Weekly Preferences - All Weeks + Even/Odd on Same Day', () => {
       await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(0);
     }
 
-    // no_normal on odd weeks must be visible
-    const noNormalOddSlots = makePref(0, 'morning', 'no_normal', 'odd');
-    const noNormalOddIds = ScheduleTestBase.buildExpectedPreferenceTestIds(
-      workerId,
-      noNormalOddSlots,
-      start,
-      end,
-    );
-    for (const tid of noNormalOddIds) {
+    // On odd weeks: no_duty + no_normal merges to no_work
+    const { oddMonday } = findParityMondays(start, end);
+    if (oddMonday) {
+      const tid = ScheduleTestBase.buildPreferenceTestId(workerId, oddMonday, 'no_work');
       await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
+      await expect(page.locator(`[data-testid="${tid}"]`)).toHaveAttribute('data-slots', 'morning');
+    }
+
+    // On even weeks: only no_duty (no merge)
+    const { evenMonday } = findParityMondays(start, end);
+    if (evenMonday) {
+      const tid = ScheduleTestBase.buildPreferenceTestId(workerId, evenMonday, 'no_duty');
+      await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
+      await expect(page.locator(`[data-testid="${tid}"]`)).toHaveAttribute('data-slots', 'morning');
     }
   });
 });
@@ -706,15 +708,12 @@ test.describe('Weekly Preferences - Show/Hide Toggle', () => {
     const expected = ScheduleTestBase.buildExpectedPreferenceTestIds(workerId, slots, start, end);
     expect(expected.length).toBeGreaterThan(0);
 
-    // Initially visible
     for (const tid of expected) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
     }
 
-    // Turn off
     await openSettingsAndToggle(page, false);
 
-    // Now hidden
     for (const tid of expected) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(0);
     }
@@ -728,13 +727,11 @@ test.describe('Weekly Preferences - Show/Hide Toggle', () => {
 
     const expected = ScheduleTestBase.buildExpectedPreferenceTestIds(workerId, slots, start, end);
 
-    // Turn off first
     await openSettingsAndToggle(page, false);
     for (const tid of expected) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(0);
     }
 
-    // Turn back on
     await openSettingsAndToggle(page, true);
     for (const tid of expected) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
@@ -749,18 +746,15 @@ test.describe('Weekly Preferences - Show/Hide Toggle', () => {
 
     const expected = ScheduleTestBase.buildExpectedPreferenceTestIds(workerId, slots, start, end);
 
-    // Turn off and verify hidden
     await openSettingsAndToggle(page, false);
     for (const tid of expected) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(0);
     }
 
-    // Reload
     await page.reload();
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('[data-testid="schedule-table-worker"]', { timeout: 10000 });
 
-    // Still hidden
     for (const tid of expected) {
       await expect(page.locator(`[data-testid="${tid}"]`)).toHaveCount(0);
     }

@@ -16,6 +16,7 @@ import { ShiftType } from '../../src/types/shift';
 import { WorkerT, WeeklyPreferences } from '../../src/types/worker';
 import { WeeklySlotPreference } from '../../src/types/worker';
 import { ShiftT, ShiftRestType, ShiftLeaveType } from '../../src/types/shift';
+import { mergePreferences } from '../../src/components/schedule/table/shared/assignment-utils';
 import { RequestT, RequestType, RequestStatus } from '../../src/types/request';
 import { ScheduleT } from '../../src/types/schedule';
 import { AssignmentT, AssignmentsRecurrencesResultT } from '../../src/types/assignment';
@@ -967,8 +968,8 @@ export class ScheduleTestBase {
    * Build the complete set of expected preference data-testid strings for a
    * worker given their WeeklySlotPreference slots and the visible period.
    *
-   * Uses the same ISO weekday (0=Mon..6=Sun) and ISO week parity conventions
-   * as the production preference expansion logic.
+   * Applies the same merge logic as the production expansion
+   * (no_normal + no_duty → no_work, then group by restriction).
    */
   static buildExpectedPreferenceTestIds(
     workerId: string,
@@ -984,14 +985,18 @@ export class ScheduleTestBase {
       const parity = isoWeekNum % 2 === 0 ? 'even' : 'odd';
       const dateStr = current.format('YYYY-MM-DD');
 
-      for (const slot of slots) {
-        if (
-          slot.dayOfWeek === isoDow &&
-          (slot.weekParity === 'all' || slot.weekParity === parity)
-        ) {
-          testIds.push(
-            `preference-cell-${workerId}-${dateStr}-${slot.slot}-${slot.restriction}-${slot.weekParity}`,
-          );
+      const matching = slots.filter(
+        (sp) => sp.dayOfWeek === isoDow && (sp.weekParity === 'all' || sp.weekParity === parity),
+      );
+
+      if (matching.length > 0) {
+        const expanded = matching.map((sp) => ({
+          slot: sp.slot,
+          restriction: sp.restriction,
+        }));
+        const merged = mergePreferences(expanded);
+        for (const cell of merged) {
+          testIds.push(`preference-cell-${workerId}-${dateStr}-${cell.restriction}`);
         }
       }
       current = current.add(1, 'day');
@@ -1001,15 +1006,8 @@ export class ScheduleTestBase {
 
   /**
    * Build a single preference cell data-testid string for a specific date.
-   * Useful for constructing non-matching testids in negative assertions.
    */
-  static buildPreferenceTestId(
-    workerId: string,
-    date: string,
-    slot: string,
-    restriction: string,
-    weekParity: string,
-  ): string {
-    return `preference-cell-${workerId}-${date}-${slot}-${restriction}-${weekParity}`;
+  static buildPreferenceTestId(workerId: string, date: string, restriction: string): string {
+    return `preference-cell-${workerId}-${date}-${restriction}`;
   }
 }
