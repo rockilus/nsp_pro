@@ -817,9 +817,12 @@ test.describe('Worker Weekly Preferences', () => {
 
     await tb.saveEditDialog(page);
     const updated = await tb.getWorkerById(worker.id);
-    const expected: WeeklySlotPreference[] = [0, 1, 2, 3, 4, 5, 6].map((d) =>
-      sp('even', d, 'night', 'no_work'),
-    );
+    const expected: WeeklySlotPreference[] = [];
+    for (const parity of ['even', 'odd'] as WeekParity[]) {
+      for (let d = 0; d < 7; d++) {
+        expected.push(sp(parity, d, 'night', 'no_work'));
+      }
+    }
     expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], expected);
   });
 
