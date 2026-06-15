@@ -9,7 +9,6 @@ from shared.schemas.core import (
     ShiftDemandNew,
     ShiftRestType,
     ShiftType,
-    SlotPeriods,
     TeamGenerationSettings,
 )
 from shared.schemas.core.solve_task_status import SolveScope, SolveScopeType
@@ -85,9 +84,9 @@ def core_to_engine_inputs(
     engine_inputs: EngineInputsAugmented,
     solve_scope: SolveScope | None = None,
     team_settings: TeamGenerationSettings | None = None,
-    slot_periods: SlotPeriods | None = None,
 ) -> tuple[InputsEngine, ProcessingCache]:
     _team_settings = team_settings or TeamGenerationSettings.default("")
+    slot_periods = engine_inputs.team.slot_periods if engine_inputs.team else None
     # Workers
     workers_not_deleted = [w for w in engine_inputs.workers if not w.deleted]
     worker_not_deleted_ids = [w.id for w in engine_inputs.workers if not w.deleted]

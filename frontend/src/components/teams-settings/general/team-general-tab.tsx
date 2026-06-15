@@ -23,7 +23,15 @@ import './team-general-tab.css';
 import '../../../styles/text-styles.css';
 import '../../../styles/tab-container-styles.css';
 // Types
-import { TeamT } from '@/types/team';
+import { SlotPeriodsT, TeamT } from '@/types/team';
+
+const DEFAULT_SLOT_PERIODS: SlotPeriodsT = {
+  morning: { startHour: 6, startMinute: 0, endHour: 12, endMinute: 0 },
+  afternoon: { startHour: 12, startMinute: 0, endHour: 18, endMinute: 0 },
+  night: { startHour: 18, startMinute: 0, endHour: 6, endMinute: 0 },
+};
+
+type SlotKey = 'morning' | 'afternoon' | 'night';
 
 export default function TeamGeneralTab({
   lng,
@@ -90,6 +98,24 @@ export default function TeamGeneralTab({
     };
     setTeamState(newTeamState);
     handleUpdateTeam(newTeamState);
+  };
+
+  const handleSlotPeriodChange = (
+    slot: SlotKey,
+    field: 'startHour' | 'startMinute' | 'endHour' | 'endMinute',
+    value: number,
+  ) => {
+    if (!teamState) return;
+    const current = teamState.slotPeriods || DEFAULT_SLOT_PERIODS;
+    const updated: TeamT = {
+      ...teamState,
+      slotPeriods: {
+        ...current,
+        [slot]: { ...current[slot], [field]: value },
+      },
+    };
+    setTeamState(updated);
+    handleUpdateTeam(updated);
   };
 
   const handleEditConfirm = () => {
@@ -188,7 +214,68 @@ export default function TeamGeneralTab({
                     <span className="team-settings-checkbox-description">
                       {t('use_solver_description')}
                     </span>
+              <hr className="separator" />
+              {(() => {
+                const sp = teamState.slotPeriods || DEFAULT_SLOT_PERIODS;
+                const slotRows: { key: SlotKey; label: string }[] = [
+                  { key: 'morning', label: t('slot_periods_morning') },
+                  { key: 'afternoon', label: t('slot_periods_afternoon') },
+                  { key: 'night', label: t('slot_periods_night') },
+                ];
+                return slotRows.map((row) => (
+                  <div key={row.key} className="team-settings-row">
+                    <div className="team-settings-row-label-container">
+                      <span className="team-settings-row-label">{row.label}</span>
+                    </div>
+                    <div className="team-settings-row-value-container">
+                      <TextField
+                        type="number"
+                        size="small"
+                        inputProps={{ min: 0, max: 23, style: { textAlign: 'center', width: 40 } }}
+                        value={sp[row.key].startHour}
+                        onChange={(e) =>
+                          handleSlotPeriodChange(row.key, 'startHour', parseInt(e.target.value || '0', 10))
+                        }
+                        sx={{ width: 60 }}
+                      />
+                      <span style={{ margin: '0 2px', alignSelf: 'center' }}>:</span>
+                      <TextField
+                        type="number"
+                        size="small"
+                        inputProps={{ min: 0, max: 59, style: { textAlign: 'center', width: 40 } }}
+                        value={sp[row.key].startMinute}
+                        onChange={(e) =>
+                          handleSlotPeriodChange(row.key, 'startMinute', parseInt(e.target.value || '0', 10))
+                        }
+                        sx={{ width: 60 }}
+                      />
+                      <span style={{ margin: '0 8px', alignSelf: 'center' }}>–</span>
+                      <TextField
+                        type="number"
+                        size="small"
+                        inputProps={{ min: 0, max: 23, style: { textAlign: 'center', width: 40 } }}
+                        value={sp[row.key].endHour}
+                        onChange={(e) =>
+                          handleSlotPeriodChange(row.key, 'endHour', parseInt(e.target.value || '0', 10))
+                        }
+                        sx={{ width: 60 }}
+                      />
+                      <span style={{ margin: '0 2px', alignSelf: 'center' }}>:</span>
+                      <TextField
+                        type="number"
+                        size="small"
+                        inputProps={{ min: 0, max: 59, style: { textAlign: 'center', width: 40 } }}
+                        value={sp[row.key].endMinute}
+                        onChange={(e) =>
+                          handleSlotPeriodChange(row.key, 'endMinute', parseInt(e.target.value || '0', 10))
+                        }
+                        sx={{ width: 60 }}
+                      />
+                    </div>
                   </div>
+                ));
+              })()}
+            </div>
                 </div>
               </div>
             </div>

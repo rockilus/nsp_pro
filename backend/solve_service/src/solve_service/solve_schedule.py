@@ -6,7 +6,6 @@ from shared.schemas.core import (
     EngineInputs,
     EngineInputsAugmented,
     EngineOutputs,
-    SlotPeriods,
     TeamGenerationSettings,
 )
 from shared.schemas.core.solve_task_status import SolveScope
@@ -23,7 +22,6 @@ def solve_schedule(
     engine_inputs: EngineInputs,
     solve_scope: SolveScope | None = None,
     team_settings: TeamGenerationSettings | None = None,
-    slot_periods: SlotPeriods | None = None,
 ) -> tuple[EngineOutputs, ProcessingCache]:
     # current_path = os.path.dirname(os.path.realpath(__file__))
     # inputs_file_path = os.path.join(current_path, "engine_inputs.json")
@@ -36,7 +34,7 @@ def solve_schedule(
         engine_inputs, penalties, model_config
     )
     inputs, processing_cache = core_to_engine_inputs(
-        ei_augmented, solve_scope, team_settings, slot_periods
+        ei_augmented, solve_scope, team_settings
     )
     end_time_core_to_engine = time.time()
     start_time_engine = time.time()

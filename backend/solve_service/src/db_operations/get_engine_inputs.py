@@ -1,7 +1,7 @@
 import time
 
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas.core import EngineInputs, Schedule
+from shared.schemas.core import EngineInputs, Schedule, Team
 
 from db_operations.assignment_services import (
     get_fixed_assignments,
@@ -19,6 +19,7 @@ from db_operations.request_services import get_requests_by_dates
 def get_engine_inputs(
     schedule: Schedule,
     collections: DatabaseCollections,
+    team: Team | None = None,
 ) -> EngineInputs:
     start_time_db = time.time()
     (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
@@ -69,6 +70,7 @@ def get_engine_inputs(
         requests_work=requests_work,
         requests_leave=requests_leave,
         model_output=model_output,
+        team=team,
     )
     total_time_db = end_time_db - start_time_db
     print(f"db time:              {total_time_db:.2f}s")
