@@ -1625,6 +1625,7 @@ export default function ScheduleTab({
     getRequests,
     getBreaches,
     getSpecialties,
+    getShiftOptions,
   ]);
 
   if (isMobile) {
