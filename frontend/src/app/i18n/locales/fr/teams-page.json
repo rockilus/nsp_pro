@@ -56,6 +56,7 @@
   "gap_mode_set": "Fixe — imposer un nombre de jours fixe",
   "gap_mode_auto": "Automatique — calculer l'intervalle automatiquement",
   "worker": "Agent",
+  "slot_periods": "Plages horaires",
   "slot_periods_morning": "Matin",
   "slot_periods_afternoon": "Après-midi",
   "slot_periods_night": "Nuit",

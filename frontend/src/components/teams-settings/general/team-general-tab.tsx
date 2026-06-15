@@ -1,28 +1,20 @@
-import React, { ReactElement, useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
 import { useRouter } from 'next/navigation';
-// MUI
-import Box from '@mui/material/Box';
-import EditIcon from '@mui/icons-material/Edit';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import Checkbox from '@mui/material/Checkbox';
-// Components
-import UserProfileRow from '@/components/settings/profile/user-profile-row';
+import { Pencil, Check, X } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import NavigationHeader from '@/components/common/navigation-header';
-// Context
 import { useTeam } from '@/context/TeamContext';
-// Skeletons
 import TablesSkeleton from '../../skeletons/tables-skeleton';
-// Hooks
 import { useIsMobile, useIsLandscape } from '../../../hooks/useIsMobile';
-// Actions
 import { useGetTeamById, useUpdateTeam } from '@/hooks/useTeam';
-// Styles
-import './team-general-tab.css';
 import '../../../styles/text-styles.css';
 import '../../../styles/tab-container-styles.css';
-// Types
 import { SlotPeriodsT, TeamT } from '@/types/team';
 
 const DEFAULT_SLOT_PERIODS: SlotPeriodsT = {
@@ -32,6 +24,25 @@ const DEFAULT_SLOT_PERIODS: SlotPeriodsT = {
 };
 
 type SlotKey = 'morning' | 'afternoon' | 'night';
+
+const SLOT_ROWS: { key: SlotKey; labelKey: string }[] = [
+  { key: 'morning', labelKey: 'slot_periods_morning' },
+  { key: 'afternoon', labelKey: 'slot_periods_afternoon' },
+  { key: 'night', labelKey: 'slot_periods_night' },
+];
+
+function formatTime(hour: number, minute: number): string {
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
+function formatSlotPeriod(slot: {
+  startHour: number;
+  startMinute: number;
+  endHour: number;
+  endMinute: number;
+}): string {
+  return `${formatTime(slot.startHour, slot.startMinute)} \u2013 ${formatTime(slot.endHour, slot.endMinute)}`;
+}
 
 export default function TeamGeneralTab({
   lng,
@@ -49,22 +60,13 @@ export default function TeamGeneralTab({
 
   const [isLoading, setIsLoading] = useState(true);
   const [team, setTeam] = useState<TeamT | null>(null);
-  const [fieldEditing, setFieldEditing] = useState<string | null>(null);
   const [teamState, setTeamState] = useState<TeamT | null>(team);
+  const [fieldEditing, setFieldEditing] = useState<string | null>(null);
+  const [slotPeriodsEditing, setSlotPeriodsEditing] = useState(false);
+  const [editingSlotPeriods, setEditingSlotPeriods] = useState<SlotPeriodsT | null>(null);
 
-  // Hook functions
   const getTeamByIdFn = useGetTeamById();
   const updateTeamFn = useUpdateTeam();
-
-  const editButton = (handleSetEditing: () => void): ReactElement => (
-    <IconButton onClick={handleSetEditing}>
-      <EditIcon />
-    </IconButton>
-  );
-
-  //////////////////////////
-  // Team Actions
-  //////////////////////////
 
   const handleGetTeam = useCallback(async () => {
     if (!selectedTeamId) return;
@@ -90,53 +92,55 @@ export default function TeamGeneralTab({
     }
   };
 
-  const handleChangeUseSolver = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!teamState) return;
-    const newTeamState = {
-      ...teamState,
-      useSolver: e.target.checked,
-    };
+  const handleChangeUseSolver = (checked: boolean | 'indeterminate') => {
+    if (!teamState || checked === 'indeterminate') return;
+    const newTeamState = { ...teamState, useSolver: checked };
     setTeamState(newTeamState);
     handleUpdateTeam(newTeamState);
   };
 
-  const handleSlotPeriodChange = (
-    slot: SlotKey,
-    field: 'startHour' | 'startMinute' | 'endHour' | 'endMinute',
-    value: number,
-  ) => {
-    if (!teamState) return;
-    const current = teamState.slotPeriods || DEFAULT_SLOT_PERIODS;
-    const updated: TeamT = {
-      ...teamState,
-      slotPeriods: {
-        ...current,
-        [slot]: { ...current[slot], [field]: value },
-      },
-    };
-    setTeamState(updated);
-    handleUpdateTeam(updated);
-  };
-
-  const handleEditConfirm = () => {
+  const handleNameEditConfirm = () => {
     if (teamState && team) {
-      const userKeys = Object.keys(team);
-
-      for (let key of userKeys) {
-        if (team[key as keyof typeof team] !== teamState[key as keyof typeof teamState]) {
-          handleUpdateTeam(teamState);
-          break;
-        }
+      if (team.name !== teamState.name) {
+        handleUpdateTeam(teamState);
       }
     }
     setFieldEditing(null);
   };
 
-  const handleEditCancel = () => {
-    console.log('handleEditCancel');
-
+  const handleNameEditCancel = () => {
     setTeamState(team);
     setFieldEditing(null);
+  };
+
+  const handleStartSlotEditing = () => {
+    setEditingSlotPeriods(teamState?.slotPeriods || DEFAULT_SLOT_PERIODS);
+    setSlotPeriodsEditing(true);
+  };
+
+  const handleSlotConfirm = () => {
+    if (!teamState || !editingSlotPeriods) return;
+    const updated = { ...teamState, slotPeriods: editingSlotPeriods };
+    setTeamState(updated);
+    handleUpdateTeam(updated);
+    setSlotPeriodsEditing(false);
+  };
+
+  const handleSlotCancel = () => {
+    setEditingSlotPeriods(null);
+    setSlotPeriodsEditing(false);
+  };
+
+  const handleSlotFieldChange = (
+    slot: SlotKey,
+    field: 'startHour' | 'startMinute' | 'endHour' | 'endMinute',
+    value: number,
+  ) => {
+    if (!editingSlotPeriods) return;
+    setEditingSlotPeriods({
+      ...editingSlotPeriods,
+      [slot]: { ...editingSlotPeriods[slot], [field]: value },
+    });
   };
 
   useEffect(() => {
@@ -149,138 +153,212 @@ export default function TeamGeneralTab({
     }
   }, [team]);
 
+  const sectionRowClass = 'flex items-center py-[2px]';
+  const labelContainerClass = 'w-[150px] flex items-center shrink-0';
+  const labelClass = 'text-[#3c4043] text-[0.9rem]';
+  const valueContainerClass = 'flex items-center gap-2 flex-1';
+
   return (
     <div>
       {isLoading ? (
         <TablesSkeleton numTables={1} numInternalRows={5} />
       ) : (
-        <div className="team-general-container" data-testid="team-general-page-heading">
+        <div className="flex w-full flex-col self-start" data-testid="team-general-page-heading">
           <NavigationHeader
             title={t('general')}
             onBack={() => router.push(`/${lng}/plan/teams?teamId=${selectedTeamId}`)}
             showBackButton={isMobile && !isLandscape}
           />
           {team && teamState ? (
-            <div className="team-general-content">
-              <UserProfileRow
-                label={t('name')}
-                value={<span>{team.name}</span>}
-                valueEditing={
-                  <TextField
-                    fullWidth
-                    type="text"
-                    name="name"
-                    value={teamState.name}
-                    onChange={(e) => {
-                      setTeamState({
-                        ...teamState,
-                        name: e.target.value,
-                      });
-                    }}
-                    onBlur={handleEditConfirm}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleEditConfirm();
-                      } else if (e.key === 'Escape') {
-                        handleEditCancel();
-                      }
-                    }}
-                    autoFocus
-                  />
-                }
-                editing={fieldEditing === 'name'}
-                editButton={editButton(() => setFieldEditing('name'))}
-                handleEditConfirm={handleEditConfirm}
-                handleEditCancel={handleEditCancel}
-              />
-              <hr className="separator" />
-              <div className="team-settings-row">
-                <div className="team-settings-row-label-container">
-                  <span className="team-settings-row-label">{t('use_solver')}</span>
+            <div className="flex w-full flex-col">
+              {/* ---- Name row ---- */}
+              <div className={sectionRowClass}>
+                <div className={labelContainerClass}>
+                  <span className={labelClass}>{t('name')}</span>
                 </div>
-                <div className="team-settings-row-value-container">
-                  <Checkbox
-                    id="use-solver-checkbox"
-                    size="small"
-                    checked={teamState.useSolver}
-                    onChange={handleChangeUseSolver}
-                    sx={{ marginTop: '-7px' }}
-                    autoFocus
-                  />
-                  <div className="team-settings-checkbox-label-container">
-                    <label className="team-settings-checkbox-label" htmlFor="use-solver-checkbox">
-                      {t('use_solver_label')}
-                    </label>
-                    <span className="team-settings-checkbox-description">
-                      {t('use_solver_description')}
-                    </span>
-              <hr className="separator" />
-              {(() => {
-                const sp = teamState.slotPeriods || DEFAULT_SLOT_PERIODS;
-                const slotRows: { key: SlotKey; label: string }[] = [
-                  { key: 'morning', label: t('slot_periods_morning') },
-                  { key: 'afternoon', label: t('slot_periods_afternoon') },
-                  { key: 'night', label: t('slot_periods_night') },
-                ];
-                return slotRows.map((row) => (
-                  <div key={row.key} className="team-settings-row">
-                    <div className="team-settings-row-label-container">
-                      <span className="team-settings-row-label">{row.label}</span>
-                    </div>
-                    <div className="team-settings-row-value-container">
-                      <TextField
-                        type="number"
-                        size="small"
-                        inputProps={{ min: 0, max: 23, style: { textAlign: 'center', width: 40 } }}
-                        value={sp[row.key].startHour}
-                        onChange={(e) =>
-                          handleSlotPeriodChange(row.key, 'startHour', parseInt(e.target.value || '0', 10))
-                        }
-                        sx={{ width: 60 }}
+                <div className={valueContainerClass}>
+                  {fieldEditing === 'name' ? (
+                    <>
+                      <Input
+                        type="text"
+                        name="name"
+                        value={teamState.name}
+                        onChange={(e) => setTeamState({ ...teamState, name: e.target.value })}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleNameEditConfirm();
+                          else if (e.key === 'Escape') handleNameEditCancel();
+                        }}
+                        autoFocus
+                        className="h-8"
                       />
-                      <span style={{ margin: '0 2px', alignSelf: 'center' }}>:</span>
-                      <TextField
-                        type="number"
-                        size="small"
-                        inputProps={{ min: 0, max: 59, style: { textAlign: 'center', width: 40 } }}
-                        value={sp[row.key].startMinute}
-                        onChange={(e) =>
-                          handleSlotPeriodChange(row.key, 'startMinute', parseInt(e.target.value || '0', 10))
-                        }
-                        sx={{ width: 60 }}
-                      />
-                      <span style={{ margin: '0 8px', alignSelf: 'center' }}>–</span>
-                      <TextField
-                        type="number"
-                        size="small"
-                        inputProps={{ min: 0, max: 23, style: { textAlign: 'center', width: 40 } }}
-                        value={sp[row.key].endHour}
-                        onChange={(e) =>
-                          handleSlotPeriodChange(row.key, 'endHour', parseInt(e.target.value || '0', 10))
-                        }
-                        sx={{ width: 60 }}
-                      />
-                      <span style={{ margin: '0 2px', alignSelf: 'center' }}>:</span>
-                      <TextField
-                        type="number"
-                        size="small"
-                        inputProps={{ min: 0, max: 59, style: { textAlign: 'center', width: 40 } }}
-                        value={sp[row.key].endMinute}
-                        onChange={(e) =>
-                          handleSlotPeriodChange(row.key, 'endMinute', parseInt(e.target.value || '0', 10))
-                        }
-                        sx={{ width: 60 }}
-                      />
-                    </div>
-                  </div>
-                ));
-              })()}
-            </div>
+                      <Button variant="ghost" size="icon-xs" onClick={handleNameEditConfirm}>
+                        <Check />
+                      </Button>
+                      <Button variant="ghost" size="icon-xs" onClick={handleNameEditCancel}>
+                        <X />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span>{team.name}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => setFieldEditing('name')}
+                      >
+                        <Pencil />
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
+
+              <Separator className="my-2.5" />
+
+              {/* ---- Use generator section ---- */}
+              <div className={sectionRowClass}>
+                <div className={labelContainerClass}>
+                  <span className={labelClass}>{t('use_solver')}</span>
+                </div>
+                <div className={valueContainerClass}>
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="use-solver-checkbox"
+                      checked={teamState.useSolver}
+                      onCheckedChange={handleChangeUseSolver}
+                      className="mt-1"
+                    />
+                    <div>
+                      <Label
+                        htmlFor="use-solver-checkbox"
+                        className="cursor-pointer text-sm font-medium"
+                      >
+                        {t('use_solver_label')}
+                      </Label>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {t('use_solver_description')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator className="my-2.5" />
+
+              {/* ---- Time slots section ---- */}
+              {(() => {
+                const sp = teamState.slotPeriods || DEFAULT_SLOT_PERIODS;
+                return (
+                  <>
+                    <div className={`${sectionRowClass} justify-between`}>
+                      <div className={labelContainerClass}>
+                        <span className={labelClass}>{t('slot_periods')}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {slotPeriodsEditing ? (
+                          <>
+                            <Button variant="ghost" size="icon-xs" onClick={handleSlotCancel}>
+                              <X />
+                            </Button>
+                            <Button variant="ghost" size="icon-xs" onClick={handleSlotConfirm}>
+                              <Check />
+                            </Button>
+                          </>
+                        ) : (
+                          <Button variant="ghost" size="icon-xs" onClick={handleStartSlotEditing}>
+                            <Pencil />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {SLOT_ROWS.map((row) => {
+                      const display =
+                        slotPeriodsEditing && editingSlotPeriods
+                          ? editingSlotPeriods[row.key]
+                          : sp[row.key];
+
+                      return (
+                        <div key={row.key} className={sectionRowClass}>
+                          <div className={labelContainerClass}>
+                            <span className={labelClass}>{t(row.labelKey)}</span>
+                          </div>
+                          <div className={`${valueContainerClass} min-h-[36px]`}>
+                            {slotPeriodsEditing && editingSlotPeriods ? (
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={23}
+                                  value={display.startHour}
+                                  onChange={(e) =>
+                                    handleSlotFieldChange(
+                                      row.key,
+                                      'startHour',
+                                      parseInt(e.target.value || '0', 10),
+                                    )
+                                  }
+                                  className="h-8 w-14 text-center [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <span className="text-sm">:</span>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={59}
+                                  value={display.startMinute}
+                                  onChange={(e) =>
+                                    handleSlotFieldChange(
+                                      row.key,
+                                      'startMinute',
+                                      parseInt(e.target.value || '0', 10),
+                                    )
+                                  }
+                                  className="h-8 w-14 text-center [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <span className="mx-1 text-sm">&ndash;</span>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={23}
+                                  value={display.endHour}
+                                  onChange={(e) =>
+                                    handleSlotFieldChange(
+                                      row.key,
+                                      'endHour',
+                                      parseInt(e.target.value || '0', 10),
+                                    )
+                                  }
+                                  className="h-8 w-14 text-center [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <span className="text-sm">:</span>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  max={59}
+                                  value={display.endMinute}
+                                  onChange={(e) =>
+                                    handleSlotFieldChange(
+                                      row.key,
+                                      'endMinute',
+                                      parseInt(e.target.value || '0', 10),
+                                    )
+                                  }
+                                  className="h-8 w-14 text-center [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                              </div>
+                            ) : (
+                              <span className="text-sm">{formatSlotPeriod(display)}</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                );
+              })()}
             </div>
           ) : (
-            <Box sx={{ padding: 2 }}>{t('no_team_message')}</Box>
+            <div className="p-2">{t('no_team_message')}</div>
           )}
         </div>
       )}
