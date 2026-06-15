@@ -1,11 +1,25 @@
 import dayjs from 'dayjs';
 
+export type SlotPeriodT = {
+  startHour: number;
+  startMinute: number;
+  endHour: number;
+  endMinute: number;
+};
+
+export type SlotPeriodsT = {
+  morning: SlotPeriodT;
+  afternoon: SlotPeriodT;
+  night: SlotPeriodT;
+};
+
 export type TeamT = {
   id: string;
   name: string;
   createdByUserId: string;
   createdAt: dayjs.Dayjs;
   useSolver: boolean;
+  slotPeriods?: SlotPeriodsT | null;
 };
 
 export enum TeamMembershipRole {

@@ -70,6 +70,11 @@ export default function TeamSettingsLayout({
       href: `/${lng}/plan/teams/members?teamId=${teamId}`,
     },
     {
+      name: 'slot-periods',
+      label: t('slot_periods') || 'Slot Periods',
+      href: `/${lng}/plan/teams/slot-periods?teamId=${teamId}`,
+    },
+    {
       name: 'generation-settings',
       label: t('schedule_generation') || 'Schedule generation',
       href: `/${lng}/plan/teams/generation-settings?teamId=${teamId}`,

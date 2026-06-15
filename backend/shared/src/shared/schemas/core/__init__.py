@@ -185,6 +185,8 @@ from shared.schemas.core.swap import (
 from shared.schemas.core.task import TaskServices
 from shared.schemas.core.team import (
     MembershipForTeamWithMembership,
+    SlotPeriod,
+    SlotPeriods,
     Team,
     TeamWithMembership,
 )
@@ -371,6 +373,8 @@ __all__ = [
     "SQSSolveMessage",
     "SQSSolveQueueMessage",
     "WorkerDateCell",
+    "SlotPeriod",
+    "SlotPeriods",
     "TeamGenerationSettings",
     "TeamWithMembership",
     "Team",

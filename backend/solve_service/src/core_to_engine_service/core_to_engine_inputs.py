@@ -9,6 +9,7 @@ from shared.schemas.core import (
     ShiftDemandNew,
     ShiftRestType,
     ShiftType,
+    SlotPeriods,
     TeamGenerationSettings,
 )
 from shared.schemas.core.solve_task_status import SolveScope, SolveScopeType
@@ -84,6 +85,7 @@ def core_to_engine_inputs(
     engine_inputs: EngineInputsAugmented,
     solve_scope: SolveScope | None = None,
     team_settings: TeamGenerationSettings | None = None,
+    slot_periods: SlotPeriods | None = None,
 ) -> tuple[InputsEngine, ProcessingCache]:
     _team_settings = team_settings or TeamGenerationSettings.default("")
     # Workers
@@ -449,6 +451,7 @@ def core_to_engine_inputs(
                     d.id: BoolSharedPolicy.SHIFT_TRUE_ONLY
                     for d in engine_inputs.dimensions
                 },
+                slot_periods=slot_periods,
             ),
         ),
         system_constraints=SystemConstraintInputs(

@@ -180,10 +180,14 @@ class SQSSolveConsumer:
         team_settings = self.collections.team_generation_settings_db.get_by_team_id(
             schedule.team_id
         ) or TeamGenerationSettings.default(schedule.team_id)
+        # Load team slot periods config
+        team = self.collections.team_db.get_team_by_id(schedule.team_id)
+        slot_periods = team.slot_periods if team else None
         engine_outputs, processing_cache = solve_schedule(
             engine_inputs=engine_inputs,
             solve_scope=message.solve_scope,
             team_settings=team_settings,
+            slot_periods=slot_periods,
         )
         schedule_solve_status, assignments, breaches, solver_output = (
             save_engine_outputs(
