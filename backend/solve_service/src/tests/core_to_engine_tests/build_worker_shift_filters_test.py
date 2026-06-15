@@ -12,9 +12,9 @@ from shared.schemas.core import (
     ShiftType,
     SlotRestriction,
     Staffing,
-    WeekParity,
     WeeklyPreferences,
     WeeklySlotPreference,
+    WeekParity,
     Worker,
     WorkerDates,
 )
@@ -646,9 +646,7 @@ def test_duties_zero_prevents_duty_shifts() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _make_worker_with_prefs(
-    worker_id: str, prefs: WeeklyPreferences
-) -> Worker:
+def _make_worker_with_prefs(worker_id: str, prefs: WeeklyPreferences) -> Worker:
     return Worker(
         id=worker_id,
         team_id="t0",
@@ -671,14 +669,11 @@ def _make_dates_multi(
     workers: list[Worker], campaign_dates: list[date]
 ) -> dict[str, WorkerDates]:
     return {
-        w.id: WorkerDates(dates_hist=[], dates_campaign=campaign_dates)
-        for w in workers
+        w.id: WorkerDates(dates_hist=[], dates_campaign=campaign_dates) for w in workers
     }
 
 
-def _make_shift_morning_normal(
-    shift_id: str, start_hour: int = 8
-) -> Shift:
+def _make_shift_morning_normal(shift_id: str, start_hour: int = 8) -> Shift:
     return Shift(
         id=shift_id,
         team_id="t0",
@@ -698,9 +693,7 @@ def _make_shift_morning_normal(
     )
 
 
-def _make_shift_morning_duty(
-    shift_id: str, start_hour: int = 8
-) -> Shift:
+def _make_shift_morning_duty(shift_id: str, start_hour: int = 8) -> Shift:
     return Shift(
         id=shift_id,
         team_id="t0",
@@ -766,13 +759,20 @@ def test_wp_no_work_shift_starts_before_morning_ends_after() -> None:
     worker = _make_worker_with_prefs("w0", prefs)
     shift = Shift(
         id="s5",
-        team_id="t0", name="s5", acronym="S5", acronym_custom=False,
+        team_id="t0",
+        name="s5",
+        acronym="S5",
+        acronym_custom=False,
         start_time=datetime(2025, 1, 6, 5, 0, tzinfo=UTC),
         end_time=datetime(2025, 1, 6, 13, 0, tzinfo=UTC),
         staffing=[Staffing(specialty_id=None, staffing=1)],
-        color="#000", shift_type=ShiftType.NORMAL,
-        rest_type=ShiftRestType.NONE, leave_type=ShiftLeaveType.NONE,
-        recuperation_time=0, recuperation_duty_id=None, deleted=False,
+        color="#000",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
     )
     d = date(2025, 1, 6)
     worker_dates = _make_worker_dates([worker], d)
@@ -801,13 +801,20 @@ def test_wp_no_work_shift_starts_before_morning_ends_during() -> None:
     worker = _make_worker_with_prefs("w0", prefs)
     shift = Shift(
         id="s5",
-        team_id="t0", name="s5", acronym="S5", acronym_custom=False,
+        team_id="t0",
+        name="s5",
+        acronym="S5",
+        acronym_custom=False,
         start_time=datetime(2025, 1, 6, 5, 0, tzinfo=UTC),
         end_time=datetime(2025, 1, 6, 10, 0, tzinfo=UTC),
         staffing=[Staffing(specialty_id=None, staffing=1)],
-        color="#000", shift_type=ShiftType.NORMAL,
-        rest_type=ShiftRestType.NONE, leave_type=ShiftLeaveType.NONE,
-        recuperation_time=0, recuperation_duty_id=None, deleted=False,
+        color="#000",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
     )
     d = date(2025, 1, 6)
     worker_dates = _make_worker_dates([worker], d)
@@ -862,13 +869,20 @@ def test_wp_no_work_shift_starts_during_morning_ends_after() -> None:
     worker = _make_worker_with_prefs("w0", prefs)
     shift = Shift(
         id="s8",
-        team_id="t0", name="s8", acronym="S8", acronym_custom=False,
+        team_id="t0",
+        name="s8",
+        acronym="S8",
+        acronym_custom=False,
         start_time=datetime(2025, 1, 6, 8, 0, tzinfo=UTC),
         end_time=datetime(2025, 1, 6, 13, 0, tzinfo=UTC),
         staffing=[Staffing(specialty_id=None, staffing=1)],
-        color="#000", shift_type=ShiftType.NORMAL,
-        rest_type=ShiftRestType.NONE, leave_type=ShiftLeaveType.NONE,
-        recuperation_time=0, recuperation_duty_id=None, deleted=False,
+        color="#000",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
     )
     d = date(2025, 1, 6)
     worker_dates = _make_worker_dates([worker], d)
@@ -1076,8 +1090,8 @@ def test_wp_no_normal_even_weeks_only() -> None:
     )
     worker = _make_worker_with_prefs("w0", prefs)
     normal = _make_shift_morning_normal("sn")
-    even_monday = date(2025, 1, 6)   # ISO week 2 (even), Monday
-    odd_monday = date(2025, 1, 13)   # ISO week 3 (odd), Monday
+    even_monday = date(2025, 1, 6)  # ISO week 2 (even), Monday
+    odd_monday = date(2025, 1, 13)  # ISO week 3 (odd), Monday
     worker_dates = _make_dates_multi([worker], [even_monday, odd_monday])
 
     out = build_worker_shift_filters_weekly_preferences(
@@ -1114,8 +1128,8 @@ def test_wp_multi_slot_all_normal_even_duty() -> None:
     worker = _make_worker_with_prefs("w0", prefs)
     normal = _make_shift_morning_normal("sn")
     duty = _make_shift_morning_duty("sd")
-    even_monday = date(2025, 1, 6)   # ISO week 2 (even)
-    odd_monday = date(2025, 1, 13)   # ISO week 3 (odd)
+    even_monday = date(2025, 1, 6)  # ISO week 2 (even)
+    odd_monday = date(2025, 1, 13)  # ISO week 3 (odd)
     worker_dates = _make_dates_multi([worker], [even_monday, odd_monday])
 
     out = build_worker_shift_filters_weekly_preferences(
@@ -1146,8 +1160,8 @@ def test_wp_no_duty_odd_weeks_only() -> None:
     )
     worker = _make_worker_with_prefs("w0", prefs)
     duty = _make_shift_morning_duty("sd")
-    even_monday = date(2025, 1, 6)   # ISO week 2 (even)
-    odd_monday = date(2025, 1, 13)   # ISO week 3 (odd)
+    even_monday = date(2025, 1, 6)  # ISO week 2 (even)
+    odd_monday = date(2025, 1, 13)  # ISO week 3 (odd)
     worker_dates = _make_dates_multi([worker], [even_monday, odd_monday])
 
     out = build_worker_shift_filters_weekly_preferences(

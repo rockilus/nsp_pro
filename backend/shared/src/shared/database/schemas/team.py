@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from shared.database.schemas.base import DocumentBaseSchema
-from shared.schemas.core.team import SlotPeriods, Team, _slot_periods_from_dict
+from shared.schemas.core.team import Team, _slot_periods_from_dict
 
 
 class TeamSchema(DocumentBaseSchema):
@@ -29,6 +29,7 @@ class TeamSchema(DocumentBaseSchema):
         sp_dict = None
         if team.slot_periods is not None:
             from dataclasses import asdict
+
             sp_dict = {
                 "morning": asdict(team.slot_periods.morning),
                 "afternoon": asdict(team.slot_periods.afternoon),
