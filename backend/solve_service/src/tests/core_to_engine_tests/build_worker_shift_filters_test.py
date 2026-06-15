@@ -10,7 +10,11 @@ from shared.schemas.core import (
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
+    SlotRestriction,
     Staffing,
+    WeekParity,
+    WeeklyPreferences,
+    WeeklySlotPreference,
     Worker,
     WorkerDates,
 )
@@ -18,6 +22,7 @@ from shared.schemas.core import (
 from core_to_engine_service.build_worker_shift_filter import (
     BoolSharedPolicy,
     build_worker_shift_filters,
+    build_worker_shift_filters_weekly_preferences,
 )
 
 
@@ -634,3 +639,521 @@ def test_duties_zero_prevents_duty_shifts() -> None:
 
     assert ("w0", campaign_date.isoformat(), "sh_duty") not in _to_set(out2)
     assert len(out2) == 0
+
+
+# ---------------------------------------------------------------------------
+# WeeklyPreferences helpers
+# ---------------------------------------------------------------------------
+
+
+def _make_worker_with_prefs(
+    worker_id: str, prefs: WeeklyPreferences
+) -> Worker:
+    return Worker(
+        id=worker_id,
+        team_id="t0",
+        name="Test",
+        acronym="T",
+        acronym_custom=False,
+        employment_start_date=date(2025, 1, 1),
+        employment_end_date=None,
+        weekly_hours=40,
+        weekly_hours_desired=40,
+        duties_per_month=5,
+        annual_leave=20,
+        specialty_ids=[],
+        deleted=False,
+        weekly_preferences=prefs,
+    )
+
+
+def _make_dates_multi(
+    workers: list[Worker], campaign_dates: list[date]
+) -> dict[str, WorkerDates]:
+    return {
+        w.id: WorkerDates(dates_hist=[], dates_campaign=campaign_dates)
+        for w in workers
+    }
+
+
+def _make_shift_morning_normal(
+    shift_id: str, start_hour: int = 8
+) -> Shift:
+    return Shift(
+        id=shift_id,
+        team_id="t0",
+        name=shift_id,
+        acronym=shift_id[:2].upper(),
+        acronym_custom=False,
+        start_time=datetime(2025, 1, 6, start_hour, 0, tzinfo=UTC),
+        end_time=datetime(2025, 1, 6, start_hour + 2, 0, tzinfo=UTC),
+        staffing=[Staffing(specialty_id=None, staffing=1)],
+        color="#000",
+        shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+
+def _make_shift_morning_duty(
+    shift_id: str, start_hour: int = 8
+) -> Shift:
+    return Shift(
+        id=shift_id,
+        team_id="t0",
+        name=shift_id,
+        acronym=shift_id[:2].upper(),
+        acronym_custom=False,
+        start_time=datetime(2025, 1, 6, start_hour, 0, tzinfo=UTC),
+        end_time=datetime(2025, 1, 7, start_hour, 0, tzinfo=UTC),
+        staffing=[Staffing(specialty_id=None, staffing=1)],
+        color="#111",
+        shift_type=ShiftType.DUTY,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=24,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+
+# ---------------------------------------------------------------------------
+# WeeklyPreferences — NO_WORK
+# ---------------------------------------------------------------------------
+
+
+def test_wp_no_work_empty_slot() -> None:
+    """Morning NO_WORK with no shifts starting in the morning slot → empty."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_WORK,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    shift = _make_shift_morning_normal("sn", start_hour=12)
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[shift],
+    )
+
+    assert _to_set(out) == set()
+
+
+def test_wp_no_work_shift_starts_before_morning_ends_after() -> None:
+    """Shift at 05:00 start (night slot) not caught by morning NO_WORK."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_WORK,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    shift = Shift(
+        id="s5",
+        team_id="t0", name="s5", acronym="S5", acronym_custom=False,
+        start_time=datetime(2025, 1, 6, 5, 0, tzinfo=UTC),
+        end_time=datetime(2025, 1, 6, 13, 0, tzinfo=UTC),
+        staffing=[Staffing(specialty_id=None, staffing=1)],
+        color="#000", shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE, leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0, recuperation_duty_id=None, deleted=False,
+    )
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[shift],
+    )
+
+    assert _to_set(out) == set()
+
+
+def test_wp_no_work_shift_starts_before_morning_ends_during() -> None:
+    """Shift at 05:00–10:00 (night slot by start) not caught by morning NO_WORK."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_WORK,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    shift = Shift(
+        id="s5",
+        team_id="t0", name="s5", acronym="S5", acronym_custom=False,
+        start_time=datetime(2025, 1, 6, 5, 0, tzinfo=UTC),
+        end_time=datetime(2025, 1, 6, 10, 0, tzinfo=UTC),
+        staffing=[Staffing(specialty_id=None, staffing=1)],
+        color="#000", shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE, leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0, recuperation_duty_id=None, deleted=False,
+    )
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[shift],
+    )
+
+    assert _to_set(out) == set()
+
+
+def test_wp_no_work_shift_starts_during_morning_ends_during() -> None:
+    """Shift at 08:00–10:00 fully in morning → forbidden by NO_WORK."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_WORK,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    shift = _make_shift_morning_normal("sn")
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[shift],
+    )
+
+    assert _to_set(out) == {("w0", d.isoformat(), "sn")}
+
+
+def test_wp_no_work_shift_starts_during_morning_ends_after() -> None:
+    """Shift at 08:00–13:00 starts in morning → forbidden by NO_WORK."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_WORK,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    shift = Shift(
+        id="s8",
+        team_id="t0", name="s8", acronym="S8", acronym_custom=False,
+        start_time=datetime(2025, 1, 6, 8, 0, tzinfo=UTC),
+        end_time=datetime(2025, 1, 6, 13, 0, tzinfo=UTC),
+        staffing=[Staffing(specialty_id=None, staffing=1)],
+        color="#000", shift_type=ShiftType.NORMAL,
+        rest_type=ShiftRestType.NONE, leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0, recuperation_duty_id=None, deleted=False,
+    )
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[shift],
+    )
+
+    assert _to_set(out) == {("w0", d.isoformat(), "s8")}
+
+
+# ---------------------------------------------------------------------------
+# WeeklyPreferences — NO_DUTY
+# ---------------------------------------------------------------------------
+
+
+def test_wp_no_duty_single_duty_shift() -> None:
+    """Morning NO_DUTY with one DUTY shift at 08:00 → DUTY forbidden."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_DUTY,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    duty = _make_shift_morning_duty("sd")
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[duty],
+    )
+
+    assert _to_set(out) == {("w0", d.isoformat(), "sd")}
+
+
+def test_wp_no_duty_two_duty_shifts() -> None:
+    """Morning NO_DUTY with two DUTY shifts → both forbidden."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_DUTY,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    d1 = _make_shift_morning_duty("sd1", start_hour=8)
+    d2 = _make_shift_morning_duty("sd2", start_hour=9)
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[d1, d2],
+    )
+
+    assert _to_set(out) == {
+        ("w0", d.isoformat(), "sd1"),
+        ("w0", d.isoformat(), "sd2"),
+    }
+
+
+def test_wp_no_duty_normal_shift_not_forbidden() -> None:
+    """Morning NO_DUTY with a NORMAL shift → NORMAL passes through."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_DUTY,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    normal = _make_shift_morning_normal("sn")
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[normal],
+    )
+
+    assert _to_set(out) == set()
+
+
+# ---------------------------------------------------------------------------
+# WeeklyPreferences — NO_NORMAL
+# ---------------------------------------------------------------------------
+
+
+def test_wp_no_normal_single_normal_shift() -> None:
+    """Morning NO_NORMAL with one NORMAL shift at 08:00 → NORMAL forbidden."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_NORMAL,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    normal = _make_shift_morning_normal("sn")
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[normal],
+    )
+
+    assert _to_set(out) == {("w0", d.isoformat(), "sn")}
+
+
+def test_wp_no_normal_two_normal_shifts() -> None:
+    """Morning NO_NORMAL with two NORMAL shifts → both forbidden."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_NORMAL,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    n1 = _make_shift_morning_normal("sn1", start_hour=8)
+    n2 = _make_shift_morning_normal("sn2", start_hour=9)
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[n1, n2],
+    )
+
+    assert _to_set(out) == {
+        ("w0", d.isoformat(), "sn1"),
+        ("w0", d.isoformat(), "sn2"),
+    }
+
+
+def test_wp_no_normal_duty_shift_not_forbidden() -> None:
+    """Morning NO_NORMAL with a DUTY shift → DUTY passes through."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_NORMAL,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    duty = _make_shift_morning_duty("sd")
+    d = date(2025, 1, 6)
+    worker_dates = _make_worker_dates([worker], d)
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[duty],
+    )
+
+    assert _to_set(out) == set()
+
+
+# ---------------------------------------------------------------------------
+# WeeklyPreferences — week parity
+# ---------------------------------------------------------------------------
+
+
+def test_wp_no_normal_even_weeks_only() -> None:
+    """Morning NO_NORMAL even weeks → forbidden only on even-ISO-week dates."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_NORMAL,
+                week_parity=WeekParity.EVEN,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    normal = _make_shift_morning_normal("sn")
+    even_monday = date(2025, 1, 6)   # ISO week 2 (even), Monday
+    odd_monday = date(2025, 1, 13)   # ISO week 3 (odd), Monday
+    worker_dates = _make_dates_multi([worker], [even_monday, odd_monday])
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[normal],
+    )
+
+    assert _to_set(out) == {("w0", even_monday.isoformat(), "sn")}
+
+
+def test_wp_multi_slot_all_normal_even_duty() -> None:
+    """Two slot prefs: NO_NORMAL all weeks + NO_DUTY even weeks.
+
+    NORMAL forbidden on both dates; DUTY forbidden only on the even date.
+    """
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_NORMAL,
+                week_parity=WeekParity.ALL,
+            ),
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_DUTY,
+                week_parity=WeekParity.EVEN,
+            ),
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    normal = _make_shift_morning_normal("sn")
+    duty = _make_shift_morning_duty("sd")
+    even_monday = date(2025, 1, 6)   # ISO week 2 (even)
+    odd_monday = date(2025, 1, 13)   # ISO week 3 (odd)
+    worker_dates = _make_dates_multi([worker], [even_monday, odd_monday])
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[normal, duty],
+    )
+
+    assert _to_set(out) == {
+        ("w0", even_monday.isoformat(), "sn"),
+        ("w0", odd_monday.isoformat(), "sn"),
+        ("w0", even_monday.isoformat(), "sd"),
+    }
+
+
+def test_wp_no_duty_odd_weeks_only() -> None:
+    """Morning NO_DUTY odd weeks → forbidden only on odd-ISO-week dates."""
+    prefs = WeeklyPreferences(
+        enabled=True,
+        slots=[
+            WeeklySlotPreference(
+                day_of_week=0,
+                slot="morning",
+                restriction=SlotRestriction.NO_DUTY,
+                week_parity=WeekParity.ODD,
+            )
+        ],
+    )
+    worker = _make_worker_with_prefs("w0", prefs)
+    duty = _make_shift_morning_duty("sd")
+    even_monday = date(2025, 1, 6)   # ISO week 2 (even)
+    odd_monday = date(2025, 1, 13)   # ISO week 3 (odd)
+    worker_dates = _make_dates_multi([worker], [even_monday, odd_monday])
+
+    out = build_worker_shift_filters_weekly_preferences(
+        workers=[worker],
+        worker_ids_to_worker_dates=worker_dates,
+        shifts=[duty],
+    )
+
+    assert _to_set(out) == {("w0", odd_monday.isoformat(), "sd")}
