@@ -279,11 +279,11 @@ export default function TeamGeneralTab({
                           : sp[row.key];
 
                       return (
-                        <div key={row.key} className={sectionRowClass}>
+                        <div key={row.key} className={`${sectionRowClass} py-0`}>
                           <div className={labelContainerClass}>
                             <span className={labelClass}>{t(row.labelKey)}</span>
                           </div>
-                          <div className={`${valueContainerClass} min-h-[36px]`}>
+                          <div className={valueContainerClass}>
                             {slotPeriodsEditing && editingSlotPeriods ? (
                               <div className="flex items-center gap-1">
                                 <Input
