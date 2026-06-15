@@ -172,12 +172,9 @@ class SQSSolveConsumer:
         )
         if not schedule:
             raise ValueError("Schedule not found")
-        # Load team config (generation settings + slot periods)
-        team = self.collections.team_db.get_team_by_id(schedule.team_id)
         engine_inputs = get_engine_inputs(
             schedule=schedule,
             collections=self.collections,
-            team=team,
         )
         # Load team generation settings
         team_settings = self.collections.team_generation_settings_db.get_by_team_id(

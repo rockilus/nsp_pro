@@ -1,7 +1,7 @@
 import time
 
 from shared.database.database_collections import DatabaseCollections
-from shared.schemas.core import EngineInputs, Schedule, Team
+from shared.schemas.core import EngineInputs, Schedule
 
 from db_operations.assignment_services import (
     get_fixed_assignments,
@@ -19,9 +19,9 @@ from db_operations.request_services import get_requests_by_dates
 def get_engine_inputs(
     schedule: Schedule,
     collections: DatabaseCollections,
-    team: Team | None = None,
 ) -> EngineInputs:
     start_time_db = time.time()
+    team = collections.team_db.get_team_by_id(schedule.team_id)
     (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
         fetch_workers_shifts_dim_attributes_spe(schedule.team_id, collections)
     )
