@@ -124,6 +124,35 @@ test.describe('Weekly Preferences - Single Restriction All Weeks', () => {
     await expect(page.locator(`[data-testid="${absentId}"]`)).toHaveCount(0);
   });
 
+  test('two workers with same monday morning no work (all weeks)', async ({
+    page,
+  }, testInfo) => {
+    const base = testBasesMap.get((testInfo as any).testRunId)!;
+    const workers = base.getTestWorkers();
+    const workerId1 = workers[0].id;
+    const workerId2 = workers[1].id;
+    const { start, end } = periodRange();
+
+    const slots = makePref(0, 'morning', 'no_work', 'all');
+    await base.setWorkerWeeklyPreferences(workerId1, slots);
+    await base.setWorkerWeeklyPreferences(workerId2, slots);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('[data-testid="schedule-table-worker"]', { timeout: 10000 });
+
+    const expected1 = ScheduleTestBase.buildExpectedPreferenceTestIds(workerId1, slots, start, end);
+    expect(expected1.length).toBeGreaterThan(0);
+    for (const tid of expected1) {
+      await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
+    }
+
+    const expected2 = ScheduleTestBase.buildExpectedPreferenceTestIds(workerId2, slots, start, end);
+    expect(expected2.length).toBeGreaterThan(0);
+    for (const tid of expected2) {
+      await expect(page.locator(`[data-testid="${tid}"]`)).toBeVisible();
+    }
+  });
+
   test('afternoon no work (all weeks)', async ({ page }, testInfo) => {
     const base = testBasesMap.get((testInfo as any).testRunId)!;
     const workerId = base.getTestWorkers()[0].id;
