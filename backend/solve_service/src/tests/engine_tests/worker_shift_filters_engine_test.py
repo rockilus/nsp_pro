@@ -1116,8 +1116,25 @@ class TestWeeklyPreferencesEngine:
         assert outputs.is_solution is True
 
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
-        assert len(breaches) > 0
-        assert any(
-            b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            for b in breaches
+
+        morning_shift_ids = {"s_morning_n", "s_morning_d"}
+        all_dates = {
+            ei.schedule.start_date + timedelta(days=i)
+            for i in range((ei.schedule.end_date - ei.schedule.start_date).days + 1)
+        }
+
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        # w0 is NO_WORK on Monday mornings, w1 is dim-filtered from s_morning_n
+        # on all dates. Combined with work time constraints, s_morning_n is
+        # breached on every date in the schedule. No other shift is breached.
+        assert breach_pairs == {
+            (d, "s_morning_n") for d in all_dates
+        }, (
+            f"Expected breaches for s_morning_n on all schedule dates only.\n"
+            f"Expected: {{(d, 's_morning_n') for d in all_dates}}\nGot: {breach_pairs}"
         )
