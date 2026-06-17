@@ -2,6 +2,8 @@ from datetime import UTC, date, datetime, timedelta
 
 import pytest
 from shared.schemas.core import (
+    Assignment,
+    AssignmentSource,
     Attribute,
     AttributeOwnerType,
     Dimension,
@@ -1358,6 +1360,66 @@ class TestWeeklyPreferencesEngine:
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
         # s_morning_n on Jan 6 covered by w0 via request.
+        # w1 covers s_morning_n and s_morning_d on Jan 13.
+        # With 2 workers, no other breaches expected.
+        assert breach_pairs == {
+            (other_monday, "s_morning_n"),
+        }, f"Unexpected breach pairs: {breach_pairs}"
+
+    # ------------------------------------------------------------------
+    # NO_WORK pref overridden by fixed assignment
+    # ------------------------------------------------------------------
+    def test_no_work_overridden_by_fixed_assignment(
+        self, ei_weekly_prefs: EngineInputsAugmented
+    ) -> None:
+        ei = ei_weekly_prefs
+        # w0: NO_WORK on Monday morning
+        ei.workers[0].weekly_preferences = self._wp_factory(
+            0, "morning", SlotRestriction.NO_WORK, WeekParity.ALL
+        )
+        ei.workers[1].weekly_preferences = None
+
+        # Fixed assignment: w0 is assigned to s_morning_n on Jan 6
+        ei.as_campaign_fixed = [
+            Assignment(
+                id="fix_override",
+                team_id="t0",
+                schedule_id=ei.schedule.id,
+                worker_id="w0",
+                date=date(2025, 1, 6),
+                shift_id="s_morning_n",
+                fixed=True,
+                source=AssignmentSource.MANUAL,
+            )
+        ]
+
+        outputs = engine_solve_engine_inputs(ei)
+        assert outputs.is_solution is True
+
+        monday = date(2025, 1, 6)
+        other_monday = date(2025, 1, 13)
+
+        # w0 must be assigned s_morning_n on Jan 6 (fixed overrides NO_WORK)
+        w0_assignments = [a for a in outputs.assignments if a.worker_id == "w0"]
+        assert any(
+            a.shift_id == "s_morning_n" and a.date == monday for a in w0_assignments
+        ), "w0 should be assigned s_morning_n on Jan 6 — fixed assignment overrides NO_WORK"
+
+        # w0 must NOT be assigned morning on Jan 13 (NO_WORK still applies)
+        for a in w0_assignments:
+            if a.date == other_monday:
+                assert a.shift_id not in {"s_morning_n", "s_morning_d"}, (
+                    "w0 with NO_WORK must not be assigned morning on Jan 13"
+                )
+
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        # s_morning_n on Jan 6 covered by w0 via fixed assignment.
         # w1 covers s_morning_n and s_morning_d on Jan 13.
         # With 2 workers, no other breaches expected.
         assert breach_pairs == {
