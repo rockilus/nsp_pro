@@ -124,9 +124,7 @@ test.describe('Weekly Preferences - Single Restriction All Weeks', () => {
     await expect(page.locator(`[data-testid="${absentId}"]`)).toHaveCount(0);
   });
 
-  test('two workers with same monday morning no work (all weeks)', async ({
-    page,
-  }, testInfo) => {
+  test('two workers with same monday morning no work (all weeks)', async ({ page }, testInfo) => {
     const base = testBasesMap.get((testInfo as any).testRunId)!;
     const workers = base.getTestWorkers();
     const workerId1 = workers[0].id;

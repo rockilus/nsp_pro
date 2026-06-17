@@ -766,14 +766,12 @@ class TestWeeklyPreferencesEngine:
         morning_shift_ids = {"s_morning_n", "s_morning_d"}
 
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
-        expected_pairs = {
-            (d, sid) for d in monday_dates for sid in morning_shift_ids
-        }
+        expected_pairs = {(d, sid) for d in monday_dates for sid in morning_shift_ids}
         assert breach_pairs == expected_pairs, (
             f"Expected breaches for morning shifts on Mondays only.\n"
             f"Expected: {expected_pairs}\nGot: {breach_pairs}"
@@ -807,14 +805,12 @@ class TestWeeklyPreferencesEngine:
 
         monday_dates_set = {date(2025, 1, 6), date(2025, 1, 13)}
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
-        assert breach_pairs == {
-            (d, "s_morning_n") for d in monday_dates_set
-        }, (
+        assert breach_pairs == {(d, "s_morning_n") for d in monday_dates_set}, (
             f"Expected breaches for s_morning_n on Mondays only.\n"
             f"Expected: {{(d, 's_morning_n') for d in monday_dates_set}}\n"
             f"Got: {breach_pairs}"
@@ -854,9 +850,9 @@ class TestWeeklyPreferencesEngine:
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
 
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
         all_dates = {
@@ -870,7 +866,11 @@ class TestWeeklyPreferencesEngine:
         # on the remaining non-Monday dates.
         assert breach_pairs == (
             {(d, "s_morning_d") for d in monday_dates}
-            | {(d, sid) for d in non_monday_dates for sid in ("s_morning_n", "s_afternoon_n")}
+            | {
+                (d, sid)
+                for d in non_monday_dates
+                for sid in ("s_morning_n", "s_afternoon_n")
+            }
         ), f"Unexpected breach pairs: {breach_pairs}"
 
     # ------------------------------------------------------------------
@@ -898,9 +898,9 @@ class TestWeeklyPreferencesEngine:
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
 
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
         all_dates = {
@@ -911,9 +911,7 @@ class TestWeeklyPreferencesEngine:
         # With 1 worker, overflow capacity breaches s_morning_n + s_afternoon_n
         # on every schedule date.
         assert breach_pairs == {
-            (d, sid)
-            for d in all_dates
-            for sid in ("s_morning_n", "s_afternoon_n")
+            (d, sid) for d in all_dates for sid in ("s_morning_n", "s_afternoon_n")
         }, f"Unexpected breach pairs: {breach_pairs}"
 
     # ------------------------------------------------------------------
@@ -1012,9 +1010,9 @@ class TestWeeklyPreferencesEngine:
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
 
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
         monday_dates = {date(2025, 1, 6), date(2025, 1, 13)}
@@ -1073,9 +1071,9 @@ class TestWeeklyPreferencesEngine:
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
 
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
         even_date = date(2025, 1, 6)
@@ -1167,9 +1165,9 @@ class TestWeeklyPreferencesEngine:
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
 
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
         # NO_WORK Monday morning → both morning shifts breached on Monday.
@@ -1214,9 +1212,9 @@ class TestWeeklyPreferencesEngine:
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
 
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
         all_dates = {
@@ -1226,9 +1224,7 @@ class TestWeeklyPreferencesEngine:
         # Prefs disabled → no filtering applied. 1 worker cannot cover all demand
         # across 8 days → s_morning_n + s_afternoon_n breached on every date.
         assert breach_pairs == {
-            (d, sid)
-            for d in all_dates
-            for sid in ("s_morning_n", "s_afternoon_n")
+            (d, sid) for d in all_dates for sid in ("s_morning_n", "s_afternoon_n")
         }, f"Unexpected breach pairs: {breach_pairs}"
 
     # ------------------------------------------------------------------
@@ -1278,17 +1274,15 @@ class TestWeeklyPreferencesEngine:
         }
 
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
         # w0 is NO_WORK on Monday mornings, w1 is dim-filtered from s_morning_n
         # on all dates. Combined with work time constraints, s_morning_n is
         # breached on every date in the schedule. No other shift is breached.
-        assert breach_pairs == {
-            (d, "s_morning_n") for d in all_dates
-        }, (
+        assert breach_pairs == {(d, "s_morning_n") for d in all_dates}, (
             f"Expected breaches for s_morning_n on all schedule dates only.\n"
             f"Expected: {{(d, 's_morning_n') for d in all_dates}}\nGot: {breach_pairs}"
         )
@@ -1354,9 +1348,9 @@ class TestWeeklyPreferencesEngine:
 
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
         # s_morning_n on Jan 6 covered by w0 via request.
@@ -1403,7 +1397,9 @@ class TestWeeklyPreferencesEngine:
         w0_assignments = [a for a in outputs.assignments if a.worker_id == "w0"]
         assert any(
             a.shift_id == "s_morning_n" and a.date == monday for a in w0_assignments
-        ), "w0 should be assigned s_morning_n on Jan 6 — fixed assignment overrides NO_WORK"
+        ), (
+            "w0 should be assigned s_morning_n on Jan 6 — fixed assignment overrides NO_WORK"
+        )
 
         # w0 must NOT be assigned morning on Jan 13 (NO_WORK still applies)
         for a in w0_assignments:
@@ -1414,9 +1410,9 @@ class TestWeeklyPreferencesEngine:
 
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
         for b in breaches:
-            assert (
-                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            ), f"Unexpected breach category: {b.objective_category}"
+            assert b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND, (
+                f"Unexpected breach category: {b.objective_category}"
+            )
 
         breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
         # s_morning_n on Jan 6 covered by w0 via fixed assignment.
