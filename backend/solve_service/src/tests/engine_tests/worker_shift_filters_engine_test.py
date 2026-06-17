@@ -754,10 +754,22 @@ class TestWeeklyPreferencesEngine:
         assert outputs.is_solution is True
 
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
-        assert len(breaches) > 0
-        assert any(
-            b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
-            for b in breaches
+
+        monday_dates = {date(2025, 1, 6), date(2025, 1, 13)}
+        morning_shift_ids = {"s_morning_n", "s_morning_d"}
+
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        expected_pairs = {
+            (d, sid) for d in monday_dates for sid in morning_shift_ids
+        }
+        assert breach_pairs == expected_pairs, (
+            f"Expected breaches for morning shifts on Mondays only.\n"
+            f"Expected: {expected_pairs}\nGot: {breach_pairs}"
         )
 
     # ------------------------------------------------------------------
