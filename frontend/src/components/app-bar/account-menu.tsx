@@ -14,7 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import ThemeSelector from '@/components/theme-toggle';
+// Theme selection deactivated during development — Re-enable: uncomment import and JSX below
+// import ThemeSelector from '@/components/theme-toggle';
 import { useGetUser } from '@/hooks/useUser';
 import { useUser } from '@/context/UserContext';
 import { env } from '@/config/env';

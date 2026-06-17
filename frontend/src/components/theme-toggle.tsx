@@ -22,7 +22,8 @@ const MODES: { mode: ThemeMode; icon: typeof Sun; labelKey: string; testId: stri
 
 export default function ThemeSelector({ lng, variant = 'standalone' }: ThemeSelectorProps) {
   const { t } = useTranslation(lng, 'app-bar');
-  const { theme, setTheme } = useTheme();
+  // Theme selection deactivated during development — setTheme removed. Re-enable: restore setTheme below
+  const { theme /* , setTheme */ } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -52,7 +53,8 @@ export default function ThemeSelector({ lng, variant = 'standalone' }: ThemeSele
             key={mode}
             variant="ghost"
             size={variant === 'compact' ? 'icon' : 'default'}
-            onClick={() => setTheme(mode)}
+            // Theme selection deactivated — Re-enable: uncomment onClick below
+            // onClick={() => setTheme(mode)}
             data-testid={testId}
             aria-label={t(labelKey)}
             className={cn(
