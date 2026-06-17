@@ -12,6 +12,9 @@ from shared.schemas.core import (
     ModelConfig,
     ObjectiveCategory,
     Penalties,
+    RequestAugmented,
+    RequestStatus,
+    RequestType,
     Schedule,
     ScheduleStatus,
     Shift,
@@ -20,8 +23,10 @@ from shared.schemas.core import (
     ShiftLeaveType,
     ShiftRestType,
     ShiftType,
+    ShiftWorkerOption,
     SlotRestriction,
     Staffing,
+    SWOIdTypes,
     WeeklyPreferences,
     WeeklySlotPreference,
     WeekParity,
@@ -796,6 +801,23 @@ class TestWeeklyPreferencesEngine:
                     f" got {a.shift_id} on {a.date}"
                 )
 
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+
+        monday_dates_set = {date(2025, 1, 6), date(2025, 1, 13)}
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        assert breach_pairs == {
+            (d, "s_morning_n") for d in monday_dates_set
+        }, (
+            f"Expected breaches for s_morning_n on Mondays only.\n"
+            f"Expected: {{(d, 's_morning_n') for d in monday_dates_set}}\n"
+            f"Got: {breach_pairs}"
+        )
+
     # ------------------------------------------------------------------
     # NO_DUTY — blocks DUTY, allows NORMAL
     # ------------------------------------------------------------------
@@ -827,6 +849,28 @@ class TestWeeklyPreferencesEngine:
             "w0 with NO_DUTY should still be assigned morning NORMAL on Monday"
         )
 
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        all_dates = {
+            ei.schedule.start_date + timedelta(days=i)
+            for i in range((ei.schedule.end_date - ei.schedule.start_date).days + 1)
+        }
+        monday_dates = {date(2025, 1, 6), date(2025, 1, 13)}
+        non_monday_dates = all_dates - monday_dates
+        # NO_DUTY on Monday mornings → s_morning_d breached on both Mondays.
+        # With 1 worker, overflow capacity breaches s_morning_n + s_afternoon_n
+        # on the remaining non-Monday dates.
+        assert breach_pairs == (
+            {(d, "s_morning_d") for d in monday_dates}
+            | {(d, sid) for d in non_monday_dates for sid in ("s_morning_n", "s_afternoon_n")}
+        ), f"Unexpected breach pairs: {breach_pairs}"
+
     # ------------------------------------------------------------------
     # NO_NORMAL — blocks NORMAL, allows DUTY
     # ------------------------------------------------------------------
@@ -848,6 +892,27 @@ class TestWeeklyPreferencesEngine:
                 assert a.shift_id != "s_morning_n", (
                     "w0 with NO_NORMAL must not be assigned morning NORMAL on Monday"
                 )
+
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        all_dates = {
+            ei.schedule.start_date + timedelta(days=i)
+            for i in range((ei.schedule.end_date - ei.schedule.start_date).days + 1)
+        }
+        # NO_NORMAL on Monday mornings → s_morning_n filtered on all Mondays.
+        # With 1 worker, overflow capacity breaches s_morning_n + s_afternoon_n
+        # on every schedule date.
+        assert breach_pairs == {
+            (d, sid)
+            for d in all_dates
+            for sid in ("s_morning_n", "s_afternoon_n")
+        }, f"Unexpected breach pairs: {breach_pairs}"
 
     # ------------------------------------------------------------------
     # Multiple slot prefs — NO_NORMAL morning + NO_DUTY afternoon
@@ -942,6 +1007,36 @@ class TestWeeklyPreferencesEngine:
                     "NO_DUTY afternoon pref not respected"
                 )
 
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        monday_dates = {date(2025, 1, 6), date(2025, 1, 13)}
+        all_dates = {
+            ei.schedule.start_date + timedelta(days=i)
+            for i in range((ei.schedule.end_date - ei.schedule.start_date).days + 1)
+        }
+        non_monday_dates = all_dates - monday_dates
+        # NO_NORMAL morning + NO_DUTY afternoon on Mondays.
+        # 1 worker → s_morning_n, s_afternoon_n, s_afternoon_d breached on Mondays.
+        # On non-Mondays: s_afternoon_n + s_morning_d overflow due to capacity.
+        assert breach_pairs == (
+            {
+                (d, sid)
+                for d in monday_dates
+                for sid in ("s_morning_n", "s_afternoon_n", "s_afternoon_d")
+            }
+            | {
+                (d, sid)
+                for d in non_monday_dates
+                for sid in ("s_afternoon_n", "s_morning_d")
+            }
+        ), f"Unexpected breach pairs: {breach_pairs}"
+
     # ------------------------------------------------------------------
     # Week parity EVEN — blocked only on even-ISO-week dates
     # ------------------------------------------------------------------
@@ -972,6 +1067,27 @@ class TestWeeklyPreferencesEngine:
             if a.worker_id == "w0" and a.date == odd_date
         }
         assert w0_odd_shifts, "w0 should be assigned on odd-week date"
+
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        even_date = date(2025, 1, 6)
+        all_dates = {
+            ei.schedule.start_date + timedelta(days=i)
+            for i in range((ei.schedule.end_date - ei.schedule.start_date).days + 1)
+        }
+        odd_dates = all_dates - {even_date}
+        # NO_WORK EVEN on Monday morning → both morning shifts breached on even Monday.
+        # With 1 worker, overflow breaches s_morning_n + s_afternoon_n on all other dates.
+        assert breach_pairs == (
+            {(even_date, "s_morning_n"), (even_date, "s_morning_d")}
+            | {(d, sid) for d in odd_dates for sid in ("s_morning_n", "s_afternoon_n")}
+        ), f"Unexpected breach pairs: {breach_pairs}"
 
     # ------------------------------------------------------------------
     # Week parity ALL — blocks all dates (both even and odd)
@@ -1046,6 +1162,23 @@ class TestWeeklyPreferencesEngine:
         }
         assert w0_tuesday_shifts, "w0 should be assigned on Tuesday"
 
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        # NO_WORK Monday morning → both morning shifts breached on Monday.
+        # 1 worker, 2 days → s_morning_n + s_afternoon_n overflow on Tuesday.
+        assert breach_pairs == {
+            (date(2025, 1, 6), "s_morning_n"),
+            (date(2025, 1, 6), "s_morning_d"),
+            (date(2025, 1, 7), "s_morning_n"),
+            (date(2025, 1, 7), "s_afternoon_n"),
+        }, f"Unexpected breach pairs: {breach_pairs}"
+
     # ------------------------------------------------------------------
     # Disabled prefs — no restriction applied
     # ------------------------------------------------------------------
@@ -1075,6 +1208,26 @@ class TestWeeklyPreferencesEngine:
             if a.worker_id == "w0" and a.shift_id in {"s_morning_n", "s_morning_d"}
         ]
         assert len(w0_morning) > 0, "Disabled prefs must not filter morning shifts"
+
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        all_dates = {
+            ei.schedule.start_date + timedelta(days=i)
+            for i in range((ei.schedule.end_date - ei.schedule.start_date).days + 1)
+        }
+        # Prefs disabled → no filtering applied. 1 worker cannot cover all demand
+        # across 8 days → s_morning_n + s_afternoon_n breached on every date.
+        assert breach_pairs == {
+            (d, sid)
+            for d in all_dates
+            for sid in ("s_morning_n", "s_afternoon_n")
+        }, f"Unexpected breach pairs: {breach_pairs}"
 
     # ------------------------------------------------------------------
     # NO_WORK stacked with dim filters — both respected
@@ -1117,7 +1270,6 @@ class TestWeeklyPreferencesEngine:
 
         breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
 
-        morning_shift_ids = {"s_morning_n", "s_morning_d"}
         all_dates = {
             ei.schedule.start_date + timedelta(days=i)
             for i in range((ei.schedule.end_date - ei.schedule.start_date).days + 1)
@@ -1138,3 +1290,76 @@ class TestWeeklyPreferencesEngine:
             f"Expected breaches for s_morning_n on all schedule dates only.\n"
             f"Expected: {{(d, 's_morning_n') for d in all_dates}}\nGot: {breach_pairs}"
         )
+
+    # ------------------------------------------------------------------
+    # NO_WORK pref overridden by positive WORK_DEMAND request
+    # ------------------------------------------------------------------
+    def test_no_work_overridden_by_work_request(
+        self, ei_weekly_prefs: EngineInputsAugmented
+    ) -> None:
+        ei = ei_weekly_prefs
+        # w0: NO_WORK on Monday morning
+        ei.workers[0].weekly_preferences = self._wp_factory(
+            0, "morning", SlotRestriction.NO_WORK, WeekParity.ALL
+        )
+        ei.workers[1].weekly_preferences = None
+
+        # w0 also has an APPROVED positive WORK_DEMAND request to work
+        # s_morning_n on the first Monday (Jan 6).
+        req = RequestAugmented(
+            id="req_override",
+            team_id="t0",
+            request_type=RequestType.WORK_DEMAND,
+            worker_id="w0",
+            start_date=date(2025, 1, 6),
+            end_date=date(2025, 1, 6),
+            shift_options=[
+                ShiftWorkerOption(
+                    name="Morning Normal",
+                    id="s_morning_n",
+                    id_type=SWOIdTypes.SHIFT,
+                    is_bool_dim=False,
+                    category_name="shifts",
+                )
+            ],
+            negative=False,
+            hard=True,
+            status=RequestStatus.APPROVED,
+            active=True,
+            shift_target_ids=["s_morning_n"],
+        )
+        ei.requests_work = [req]
+
+        outputs = engine_solve_engine_inputs(ei)
+        assert outputs.is_solution is True
+
+        monday = date(2025, 1, 6)
+        other_monday = date(2025, 1, 13)
+
+        # w0 must be assigned s_morning_n on Jan 6 (request overrides NO_WORK)
+        w0_assignments = [a for a in outputs.assignments if a.worker_id == "w0"]
+        assert any(
+            a.shift_id == "s_morning_n" and a.date == monday for a in w0_assignments
+        ), "w0 should be assigned s_morning_n on Jan 6 — request overrides NO_WORK pref"
+
+        # w0 must NOT be assigned s_morning_n or s_morning_d on Jan 13
+        # (NO_WORK still applies, no request for that date)
+        for a in w0_assignments:
+            if a.date == other_monday:
+                assert a.shift_id not in {"s_morning_n", "s_morning_d"}, (
+                    "w0 with NO_WORK must not be assigned morning on Jan 13"
+                )
+
+        breaches = _parse_breaches_engine(ei.schedule, outputs.breaches)
+        for b in breaches:
+            assert (
+                b.objective_category == ObjectiveCategory.DAILY_SHIFT_DEMAND
+            ), f"Unexpected breach category: {b.objective_category}"
+
+        breach_pairs = {(v.date, v.shift_id) for b in breaches for v in b.variables}
+        # s_morning_n on Jan 6 covered by w0 via request.
+        # w1 covers s_morning_n and s_morning_d on Jan 13.
+        # With 2 workers, no other breaches expected.
+        assert breach_pairs == {
+            (other_monday, "s_morning_n"),
+        }, f"Unexpected breach pairs: {breach_pairs}"
