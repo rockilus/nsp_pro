@@ -10,6 +10,7 @@ import { randomUUID } from 'crypto';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { ScheduleTestBase } from '../../../utils/schedule-test-base';
+import { selectDate } from '../../../utils/date-picker-helpers';
 
 dayjs.extend(utc);
 
@@ -27,14 +28,12 @@ test.describe('Assignment Editing - Team Leader', () => {
 
     (testInfo as any).testRunId = testRunId;
 
-    // Setup schedule test environment with workers and shifts
     await scheduleTestBase.setupScheduleTests(workerIndex, {
       referenceDate: dayjs.utc().add(1, 'day'),
-      createAssignments: true, // Create initial assignments for editing
+      createAssignments: true,
       linkMemberToWorker: false,
     });
 
-    // Authenticate as owner and navigate to schedule page
     await scheduleTestBase.actAsOwner(page);
     await scheduleTestBase.navigateToSchedulePage(page);
   });
@@ -42,7 +41,6 @@ test.describe('Assignment Editing - Team Leader', () => {
   test.afterEach(async ({}, testInfo) => {
     const testRunId = (testInfo as any).testRunId as string;
     if (!testRunId) return;
-
     testBasesMap.delete(testRunId);
     console.log(`[Test Run ${testRunId}] Cleanup completed`);
   });
@@ -53,7 +51,6 @@ test.describe('Assignment Editing - Team Leader', () => {
     const testWorkers = scheduleTestBase.getTestWorkers();
     const testShifts = scheduleTestBase.getTestShifts();
 
-    // Get the created assignment
     const AR = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -64,42 +61,34 @@ test.describe('Assignment Editing - Team Leader', () => {
 
     const assignment = assignments[0];
 
-    // Click on assignment cell to open edit dialog
-    // Note: Selector depends on schedule UI implementation
     const assignmentCell = page.locator(`[data-testid="assignment-cell-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
-
     await assignmentCell.click();
 
-    // Verify dialog opens in edit mode
     const dialog = page.locator('[data-testid="schedule-item-dialog"]');
     await expect(dialog).toBeVisible();
 
-    // Type toggle buttons should NOT be visible in edit mode
     const assignmentButton = page.locator('[data-testid="assignment-button"]');
     await expect(assignmentButton).not.toBeVisible();
 
-    // Verify worker field is populated with the assignment's worker
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await expect(workerSelect).toBeVisible();
     const expectedWorker = testWorkers.find((w) => w.id === assignment.workerId);
     expect(expectedWorker).toBeDefined();
     await expect(workerSelect).toContainText(expectedWorker!.name);
 
-    // Verify shift field is populated with the assignment's shift
     const shiftSelect = page.locator('[data-testid="edit-assignment-shift-select"]');
     await expect(shiftSelect).toBeVisible();
     const expectedShift = testShifts.find((s) => s.id === assignment.shiftId);
     expect(expectedShift).toBeDefined();
     await expect(shiftSelect).toContainText(expectedShift!.name);
 
-    // Verify date field is populated with the assignment's date
+    // DatePicker is now an InputGroupInput — use toHaveValue
     const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
     await expect(datePicker).toBeVisible();
-    const expectedDate = dayjs(assignment.date).format('DD/MM/YYYY');
+    const expectedDate = assignment.date.local().format('DD/MM/YYYY');
     await expect(datePicker).toHaveValue(expectedDate);
 
-    // Save and Delete buttons should be visible
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
     const deleteButton = page.locator('[data-testid="delete-assignment-button"]');
     await expect(saveButton).toBeVisible();
@@ -113,7 +102,6 @@ test.describe('Assignment Editing - Team Leader', () => {
     const scheduleTestBase = testBasesMap.get(testRunId)!;
     const testWorkers = scheduleTestBase.getTestWorkers();
 
-    // Get the created assignment
     const AR2 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -123,18 +111,13 @@ test.describe('Assignment Editing - Team Leader', () => {
     await expect(assignments.length).toBeGreaterThan(0);
 
     const assignment = assignments[0];
-    const assignmentDate = dayjs(assignment.date);
 
-    // Open assignment for editing
     const assignmentCell = page.locator(`[data-testid="assignment-cell-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
-
     await assignmentCell.click();
 
-    // Wait for dialog
     await expect(page.locator('[data-testid="schedule-item-dialog"]')).toBeVisible();
 
-    // Change worker to a different one
     const newWorker = testWorkers.find((w) => w.id !== assignment.workerId);
     expect(newWorker).toBeDefined();
 
@@ -142,16 +125,13 @@ test.describe('Assignment Editing - Team Leader', () => {
     await workerSelect.click();
     await page.locator(`[data-testid="worker-option-${newWorker!.id}"]`).click();
 
-    // Save changes
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
     await saveButton.click();
 
-    // Wait for dialog to close
     await expect(page.locator('[data-testid="schedule-item-dialog"]')).not.toBeVisible({
       timeout: 5000,
     });
 
-    // Verify assignment was updated in database
     const AR3 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -160,7 +140,6 @@ test.describe('Assignment Editing - Team Leader', () => {
     const updatedAssignments = AR3.assignmentsRead;
     const updatedAssignment = updatedAssignments.find((a) => a.id === assignment.id);
     expect(updatedAssignment).toBeDefined();
-
     expect(updatedAssignment!.workerId).toBe(newWorker!.id);
     console.log('✅ Assignment worker updated successfully');
   });
@@ -179,15 +158,12 @@ test.describe('Assignment Editing - Team Leader', () => {
     await expect(assignments.length).toBeGreaterThan(0);
 
     const assignment = assignments[0];
-    const assignmentDate = dayjs(assignment.date);
 
     const assignmentCell = page.locator(`[data-testid="assignment-cell-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
-
     await assignmentCell.click();
     await expect(page.locator('[data-testid="schedule-item-dialog"]')).toBeVisible();
 
-    // Change shift to a different one
     const newShift = testShifts.find((s) => s.id !== assignment.shiftId);
     expect(newShift).toBeDefined();
 
@@ -195,7 +171,6 @@ test.describe('Assignment Editing - Team Leader', () => {
     await shiftSelect.click();
     await page.locator(`[data-testid="shift-option-${newShift!.id}"]`).click();
 
-    // Save changes
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
     await saveButton.click();
 
@@ -203,7 +178,6 @@ test.describe('Assignment Editing - Team Leader', () => {
       timeout: 5000,
     });
 
-    // Verify assignment was updated
     const AR5 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -212,7 +186,6 @@ test.describe('Assignment Editing - Team Leader', () => {
     const updatedAssignments = AR5.assignmentsRead;
     const updatedAssignment = updatedAssignments.find((a) => a.id === assignment.id);
     expect(updatedAssignment).toBeDefined();
-
     expect(updatedAssignment!.shiftId).toBe(newShift!.id);
     console.log('✅ Assignment shift updated successfully');
   });
@@ -230,25 +203,15 @@ test.describe('Assignment Editing - Team Leader', () => {
     await expect(assignments.length).toBeGreaterThan(0);
 
     const assignment = assignments[0];
-    const assignmentDate = dayjs(assignment.date);
 
     const assignmentCell = page.locator(`[data-testid="assignment-cell-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
-
     await assignmentCell.click();
     await expect(page.locator('[data-testid="schedule-item-dialog"]')).toBeVisible();
 
-    // Change date to two days later
-    const newDate = dayjs(assignment.date).add(2, 'days');
-    const datePicker = page.locator('[data-testid="edit-assignment-date-picker"]');
-    await datePicker.waitFor({ state: 'visible' });
-    await datePicker.fill('', { force: true }); // Clear first
-    await page.waitForTimeout(100);
-    await datePicker.fill(newDate.format('DD/MM/YYYY'), { force: true });
-    await datePicker.press('Enter');
-    await page.waitForTimeout(300);
+    const newDate = dayjs.utc(assignment.date.format('YYYY-MM-DD')).add(2, 'day');
+    await selectDate(page, newDate);
 
-    // Save changes
     const saveButton = page.locator('[data-testid="save-assignment-button"]');
     await saveButton.click();
 
@@ -256,7 +219,6 @@ test.describe('Assignment Editing - Team Leader', () => {
       timeout: 5000,
     });
 
-    // Verify assignment was updated
     const AR5 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -266,8 +228,7 @@ test.describe('Assignment Editing - Team Leader', () => {
     const updatedAssignment = updatedAssignments.find((a) => a.id === assignment.id);
     expect(updatedAssignment).toBeDefined();
 
-    const updatedDate = dayjs(updatedAssignment!.date);
-    expect(updatedDate.format('YYYY-MM-DD')).toBe(newDate.format('YYYY-MM-DD'));
+    expect(updatedAssignment!.date.isSame(newDate, 'day')).toBe(true);
     console.log('✅ Assignment date updated successfully');
   });
 
@@ -286,28 +247,27 @@ test.describe('Assignment Editing - Team Leader', () => {
 
     const assignment = assignments[0];
     const originalWorkerId = assignment.workerId;
-    const assignmentDate = dayjs(assignment.date);
 
     const assignmentCell = page.locator(`[data-testid="assignment-cell-${assignment.id}"]`);
     await expect(assignmentCell).toBeVisible();
-
     await assignmentCell.click();
     await expect(page.locator('[data-testid="schedule-item-dialog"]')).toBeVisible();
 
-    // Make a change
     const newWorker = testWorkers.find((w) => w.id !== assignment.workerId);
     expect(newWorker).toBeDefined();
     const workerSelect = page.locator('[data-testid="edit-assignment-worker-select"]');
     await workerSelect.click();
-    await page.locator(`text="${newWorker!.name}"`).first().click();
+    await page.locator(`[data-testid="worker-option-${newWorker!.id}"]`).click();
 
-    // Close dialog without saving
-    const closeButton = page.locator('[data-testid="close-dialog-button"]');
-    await closeButton.click();
+    const closeButton = page.locator(
+      '[data-testid="close-dialog-button"], [data-slot="dialog-close"]',
+    );
+    await closeButton.first().click();
 
-    await expect(page.locator('[data-testid="schedule-item-dialog"]')).not.toBeVisible();
+    await expect(page.locator('[data-testid="schedule-item-dialog"]')).not.toBeVisible({
+      timeout: 5000,
+    });
 
-    // Verify assignment was NOT updated
     const AR7 = await scheduleTestBase.getAssignmentsAndRecurrences(
       false,
       dayjs.utc().startOf('day'),
@@ -316,7 +276,6 @@ test.describe('Assignment Editing - Team Leader', () => {
     const unchangedAssignments = AR7.assignmentsRead;
     const unchangedAssignment = unchangedAssignments.find((a) => a.id === assignment.id);
     expect(unchangedAssignment).toBeDefined();
-
     expect(unchangedAssignment!.workerId).toBe(originalWorkerId);
     console.log('✅ Assignment changes cancelled successfully');
   });

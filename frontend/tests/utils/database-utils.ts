@@ -28,7 +28,7 @@ import {
   TeamInvitationStatus,
 } from '../../src/types/team-invitation';
 import { NotificationT, NotificationPreferencesT } from '../../src/types/notification';
-import { WorkerT, toWorkerT } from '../../src/types/worker';
+import { WorkerT, WeeklyPreferences, toWorkerT } from '../../src/types/worker';
 import { SpecialtyT } from '../../src/types/specialty';
 import {
   ShiftT,
@@ -725,6 +725,7 @@ export class DatabaseTestUtils {
       dutiesPerMonth?: number;
       annualLeave?: number;
       specialtyIds?: string[];
+      weeklyPreferences?: WeeklyPreferences;
     },
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     try {
@@ -755,6 +756,10 @@ export class DatabaseTestUtils {
         dutiesPerMonth: updates.dutiesPerMonth ?? currentWorker.dutiesPerMonth,
         annualLeave: updates.annualLeave ?? currentWorker.annualLeave,
         specialtyIds: updates.specialtyIds ?? currentWorker.specialtyIds,
+        weeklyPreferences:
+          updates.weeklyPreferences !== undefined
+            ? updates.weeklyPreferences
+            : currentWorker.weeklyPreferences,
       };
 
       // Use the existing WorkerApi with our test client

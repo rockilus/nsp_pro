@@ -1,21 +1,6 @@
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Button,
-  IconButton,
-  Box,
-  Typography,
-  Tooltip,
-  Table,
-  TableContainer,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  CircularProgress,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Loader2, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ReplacementCandidateT } from '../../../../types/replacement';
 import {
   renderBoolean,
@@ -44,6 +29,21 @@ interface ReplacementDetailsDialogProps {
   shifts?: ShiftT[];
 }
 
+// Column width for rotated metric columns
+const COL_W = 40;
+
+// Rotated header cell with native title tooltip
+function RotatedHeader({ title, label }: { title: string; label: string }) {
+  return (
+    <th
+      className="min-w-[40px] p-0 pb-1 font-bold"
+      style={{ minWidth: COL_W, writingMode: 'sideways-lr' as React.CSSProperties['writingMode'] }}
+    >
+      <span title={title}>{label}</span>
+    </th>
+  );
+}
+
 export function ReplacementDetailsDialog({
   open,
   onClose,
@@ -55,51 +55,40 @@ export function ReplacementDetailsDialog({
   workers,
   shifts,
 }: ReplacementDetailsDialogProps) {
-  // Rotated column dimensions
-  const ROTATED_COLUMN_WIDTH = 40;
-
-  // Sort candidates by rank (current worker with rank=0 first)
   const sortedCandidates = [...candidates].sort((a, b) => a.rank - b.rank);
-
   const headerWorkerName =
     assignment && workers ? workers.find((w) => w.id === assignment.workerId)?.name || '' : '';
-
   const { t } = useTranslation(lng, 'schedule-page');
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
-      maxWidth="xl"
-      fullWidth
-      data-testid="replacement-details-dialog"
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
     >
-      <DialogTitle>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">
+      <DialogContent
+        className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-[1200px]"
+        data-testid="replacement-details-dialog"
+      >
+        <DialogHeader>
+          <DialogTitle>
             {t('replace_dialog.title')}{' '}
             {headerWorkerName ? (
-              <Box component="span" sx={{ fontWeight: 'bold' }}>
-                {headerWorkerName}
-              </Box>
+              <span className="font-bold">{headerWorkerName}</span>
             ) : (
               t('replace_dialog.assignment')
             )}
-          </Typography>
-          <IconButton onClick={onClose} size="small">
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      </DialogTitle>
+          </DialogTitle>
+        </DialogHeader>
 
-      <DialogContent sx={{ paddingBottom: '24px' }}>
+        {/* Assignment info */}
         {assignment &&
           shifts &&
           (() => {
             const shift = shifts.find((s) => s.id === assignment.shiftId);
             const dateStr = assignment.date
-              ? // format date in user's language
-                assignment.date.locale(lng).format('dddd, D MMMM')
+              ? assignment.date.locale(lng).format('dddd, D MMMM')
               : '';
             if (!shift) return null;
             const startStr = shift.startTime.format('HH:mm');
@@ -109,331 +98,154 @@ export function ReplacementDetailsDialog({
               shift.endTime.diff(shift.startTime, 'day') > 0;
 
             return (
-              <Box mb={1}>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  {shift.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {dateStr} {'\u00A0⋅\u00A0'} {startStr} – {endStr}
+              <div className="mb-3">
+                <p className="text-base font-bold">{shift.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {dateStr}
+                  {' \u00A0⋅\u00A0 '}
+                  {startStr} – {endStr}
                   {endsNextDay && <sup>+1</sup>}
-                </Typography>
-              </Box>
+                </p>
+              </div>
             );
           })()}
-        <TableContainer sx={{ maxHeight: 600, overflowX: 'auto' }}>
-          <Table stickyHeader size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: 60,
-                    position: 'sticky',
-                    left: 0,
-                    backgroundColor: 'background.paper',
-                    zIndex: 2,
-                    padding: 0,
-                    textAlign: 'center',
-                  }}
-                ></TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: 180,
-                    position: 'sticky',
-                    left: 60,
-                    backgroundColor: 'background.paper',
-                    zIndex: 2,
-                    padding: 0,
-                    verticalAlign: 'bottom',
-                  }}
+
+        {/* Table */}
+        <div className="max-h-[600px] overflow-auto rounded-md border border-border">
+          <table className="w-full border-collapse text-xs">
+            <thead>
+              <tr>
+                {/* Rank */}
+                <th
+                  className="sticky left-0 z-10 bg-popover p-0 text-center font-bold"
+                  style={{ minWidth: 60 }}
+                />
+                {/* Candidate name */}
+                <th
+                  className="sticky left-[60px] z-10 bg-popover p-0 align-bottom font-bold"
+                  style={{ minWidth: 180 }}
                 >
                   {t('replace_dialog.candidate')}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: 50,
-                    // position: "sticky",
-                    left: 240,
-                    backgroundColor: 'background.paper',
-                    zIndex: 2,
-                    padding: 0,
-                    textAlign: 'center',
-                  }}
-                >
-                  {/* Category emoji - no title */}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.h_week')} arrow>
-                    <Box component="span">{t('replace_dialog.h_week')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.duties_per_month')} arrow>
-                    <Box component="span">{t('replace_dialog.duties_per_month')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.shift_ltm')} arrow>
-                    <Box component="span">{t('replace_dialog.shift_ltm')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.day_ltm')} arrow>
-                    <Box component="span">{t('replace_dialog.day_ltm')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.soft')} arrow>
-                    <Box component="span">{t('replace_dialog.soft')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.hard')} arrow>
-                    <Box component="span">{t('replace_dialog.hard')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.request')} arrow>
-                    <Box component="span">{t('replace_dialog.request')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.overlap')} arrow>
-                    <Box component="span">{t('replace_dialog.overlap')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.filter')} arrow>
-                    <Box component="span">{t('replace_dialog.filter')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.leave')} arrow>
-                    <Box component="span">{t('replace_dialog.leave')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.specialty')} arrow>
-                    <Box component="span">{t('replace_dialog.specialty')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: ROTATED_COLUMN_WIDTH,
-                    padding: 0,
-                    paddingBottom: '4px',
-                    writingMode: 'sideways-lr',
-                  }}
-                >
-                  <Tooltip title={t('replace_dialog.tooltip.employed')} arrow>
-                    <Box component="span">{t('replace_dialog.employed')}</Box>
-                  </Tooltip>
-                </TableCell>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    minWidth: 120,
-                    padding: 0,
-                    textAlign: 'center',
-                    verticalAlign: 'bottom',
-                  }}
-                ></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+                </th>
+                {/* Category emoji */}
+                <th
+                  className="z-10 bg-popover p-0 text-center font-bold"
+                  style={{ minWidth: 50 }}
+                />
+                {/* Rotated metric columns */}
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.h_week')}
+                  label={t('replace_dialog.h_week')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.duties_per_month')}
+                  label={t('replace_dialog.duties_per_month')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.shift_ltm')}
+                  label={t('replace_dialog.shift_ltm')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.day_ltm')}
+                  label={t('replace_dialog.day_ltm')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.soft')}
+                  label={t('replace_dialog.soft')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.hard')}
+                  label={t('replace_dialog.hard')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.request')}
+                  label={t('replace_dialog.request')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.overlap')}
+                  label={t('replace_dialog.overlap')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.filter')}
+                  label={t('replace_dialog.filter')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.leave')}
+                  label={t('replace_dialog.leave')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.specialty')}
+                  label={t('replace_dialog.specialty')}
+                />
+                <RotatedHeader
+                  title={t('replace_dialog.tooltip.employed')}
+                  label={t('replace_dialog.employed')}
+                />
+                {/* Actions column */}
+                <th className="p-0 text-center align-bottom font-bold" style={{ minWidth: 120 }} />
+              </tr>
+            </thead>
+            <tbody>
               {sortedCandidates.map((candidate) => {
                 const isCurrentWorker = candidate.rank === 0;
                 const impl = candidate.replacementImplications;
 
                 return (
-                  <TableRow
+                  <tr
                     key={candidate.workerId}
-                    sx={{
-                      borderBottom: isCurrentWorker ? '3px solid' : undefined,
-                      borderBottomColor: isCurrentWorker ? 'primary.main' : undefined,
-                      backgroundColor: isCurrentWorker ? 'action.hover' : undefined,
-                    }}
                     data-testid={`candidate-row-${candidate.workerId}`}
+                    className={isCurrentWorker ? 'border-b-[3px] border-primary bg-muted/50' : ''}
                   >
-                    <TableCell
-                      sx={{
-                        position: 'sticky',
-                        left: 0,
-                        backgroundColor: isCurrentWorker ? 'action.hover' : 'background.paper',
-                        zIndex: 1,
-                        padding: 0,
-                        textAlign: 'center',
-                      }}
+                    {/* Rank */}
+                    <td
+                      className="sticky left-0 z-[1] bg-popover p-0 text-center"
+                      style={isCurrentWorker ? { backgroundColor: undefined } : {}}
                     >
                       {isCurrentWorker ? '' : candidate.rank}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        position: 'sticky',
-                        left: 60,
-                        backgroundColor: isCurrentWorker ? 'action.hover' : 'background.paper',
-                        zIndex: 1,
-                        padding: 0,
-                      }}
+                    </td>
+                    {/* Worker name */}
+                    <td
+                      className="sticky left-[60px] z-[1] bg-popover p-0"
+                      style={isCurrentWorker ? { backgroundColor: undefined } : {}}
                     >
-                      <Typography variant="body2" fontWeight="medium">
-                        {candidate.workerName}
-                      </Typography>
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        // position: "sticky",
-                        left: 240,
-                        backgroundColor: isCurrentWorker ? 'action.hover' : 'background.paper',
-                        zIndex: 1,
-                        textAlign: 'center',
-                        padding: 0,
-                      }}
-                    >
-                      <span style={{ fontSize: '1.1rem' }}>
+                      <span className="text-sm font-medium">{candidate.workerName}</span>
+                    </td>
+                    {/* Category emoji */}
+                    <td className="z-[1] bg-popover p-0 text-center">
+                      <span className="text-lg">
                         {getCategoryEmoji(candidate.replacementCategory)}
                       </span>
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
-                      {renderWeeklyTime(impl)}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
-                      {renderMonthlyDuties(impl)}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
-                      <Typography variant="body2">{impl.nbTimesDidShiftLtm.count}</Typography>
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
-                      <Typography variant="body2">{impl.nbTimesWorkedWeekdayLtm.count}</Typography>
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
+                    </td>
+                    {/* Metric cells */}
+                    <td className="p-0 text-center">{renderWeeklyTime(impl)}</td>
+                    <td className="p-0 text-center">{renderMonthlyDuties(impl)}</td>
+                    <td className="p-0 text-center">{impl.nbTimesDidShiftLtm.count}</td>
+                    <td className="p-0 text-center">{impl.nbTimesWorkedWeekdayLtm.count}</td>
+                    <td className="p-0 text-center">
                       {renderConstraintHit(impl.softConstraintHits, 'soft')}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
+                    </td>
+                    <td className="p-0 text-center">
                       {renderConstraintHit(impl.hardConstraintHits, 'hard')}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
-                      {renderRequestHit(impl)}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
-                      {renderOverlapHit(impl)}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
-                      {renderFilterHit(impl)}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
-                      {renderBoolean(impl.isntOnLeave)}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
-                      {renderBoolean(impl.hasSpecialty)}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
-                      {renderBoolean(impl.isEmployed)}
-                    </TableCell>
-                    <TableCell sx={{ padding: 0, textAlign: 'center' }}>
+                    </td>
+                    <td className="p-0 text-center">{renderRequestHit(impl)}</td>
+                    <td className="p-0 text-center">{renderOverlapHit(impl)}</td>
+                    <td className="p-0 text-center">{renderFilterHit(impl)}</td>
+                    <td className="p-0 text-center">{renderBoolean(impl.isntOnLeave)}</td>
+                    <td className="p-0 text-center">{renderBoolean(impl.hasSpecialty)}</td>
+                    <td className="p-0 text-center">{renderBoolean(impl.isEmployed)}</td>
+                    {/* Replace button */}
+                    <td className="p-0 text-center">
                       {!isCurrentWorker && (
                         <Button
-                          size="small"
-                          variant="contained"
-                          color="primary"
+                          size="xs"
+                          variant="default"
                           onClick={() => onReplace(candidate.workerId)}
                           disabled={isSubmitting}
                           data-testid={`replace-candidate-${candidate.workerId}`}
                         >
                           {isSubmitting ? (
                             <>
-                              <CircularProgress size={12} sx={{ mr: 0.5 }} />
+                              <Loader2 className="mr-0.5 size-3 animate-spin" />
                               {t('replace_dialog.replacing')}
                             </>
                           ) : (
@@ -441,13 +253,13 @@ export function ReplacementDetailsDialog({
                           )}
                         </Button>
                       )}
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 );
               })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+            </tbody>
+          </table>
+        </div>
       </DialogContent>
     </Dialog>
   );

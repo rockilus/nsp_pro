@@ -58,3 +58,14 @@ docker buildx prune -a
 Other clean up docker commands:
 docker system prune -a --volumes -f
 docker builder prune -a -f
+
+
+
+
+Security reports to work on:
+API Gateway Vulnerability Report
+Plan: Rockilus Security Audit & Remediation
+Plan: Rockilus Frontend Security Audit & Remediation
+Data Validation & Injection Security Report
+Compute Starvation & DoS Security Report
+IaC Cybersecurity Threat Model & Vulnerability Report — Rockilus Production Infrastructure

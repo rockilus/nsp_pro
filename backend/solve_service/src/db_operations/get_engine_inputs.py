@@ -21,6 +21,7 @@ def get_engine_inputs(
     collections: DatabaseCollections,
 ) -> EngineInputs:
     start_time_db = time.time()
+    team = collections.team_db.get_team_by_id(schedule.team_id)
     (workers, shifts, dimensions, dim_entries, attributes, specialties) = (
         fetch_workers_shifts_dim_attributes_spe(schedule.team_id, collections)
     )
@@ -69,6 +70,7 @@ def get_engine_inputs(
         requests_work=requests_work,
         requests_leave=requests_leave,
         model_output=model_output,
+        team=team,
     )
     total_time_db = end_time_db - start_time_db
     print(f"db time:              {total_time_db:.2f}s")

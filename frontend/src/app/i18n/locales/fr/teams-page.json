@@ -55,5 +55,12 @@
   "gap_mode_off": "Désactivé — aucune contrainte d'intervalle",
   "gap_mode_set": "Fixe — imposer un nombre de jours fixe",
   "gap_mode_auto": "Automatique — calculer l'intervalle automatiquement",
-  "worker": "Agent"
+  "worker": "Agent",
+  "slot_periods": "Plages horaires",
+  "slot_periods_morning": "Matin",
+  "slot_periods_afternoon": "Après-midi",
+  "slot_periods_night": "Nuit",
+  "slot_periods_start": "Début",
+  "slot_periods_end": "Fin",
+  "slot_periods_defaults_note": "Par défaut : Matin 6:00–12:00, Après-midi 12:00–18:00, Nuit 18:00–6:00"
 }

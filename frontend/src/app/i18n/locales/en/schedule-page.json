@@ -68,6 +68,7 @@
   "month": "Month",
   "never": "Never",
   "new_assignment": "New assignment",
+  "non_work_shifts": "Rest & Leave",
   "new_coverage": "New coverage",
   "new_request": "New request",
   "new_schedule_item": "New schedule item",
@@ -203,6 +204,7 @@
   "week": "Week",
   "work_time_contract": "Work time contract",
   "work_time_desired": "Work time desired",
+  "work_shifts": "Work shifts",
   "worker": "Member",
   "worker_count": "Member count",
   "year": "Year",
@@ -222,5 +224,6 @@
   "sunday_short": "S",
   "dsd.tooltip.shift": "number of shifts assigned / coverage shift requirement for the day",
   "dsd.tooltip.worker": "number of members assigned / coverage staffing requirement for the day",
-  "shift_count_tooltip": "shift count / shift required coverage over campaign"
+  "shift_count_tooltip": "shift count / shift required coverage over campaign",
+  "preference": "Weekly preference"
 }

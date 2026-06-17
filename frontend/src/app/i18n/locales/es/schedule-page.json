@@ -68,6 +68,7 @@
   "month": "Mes",
   "never": "Nunca",
   "new_assignment": "Nueva asignación",
+  "non_work_shifts": "Descanso y Permisos",
   "new_coverage": "Nueva cobertura",
   "new_request": "Nueva solicitud",
   "new_schedule_item": "Nuevo elemento de horario",
@@ -201,6 +202,7 @@
   "validate_title": "¿Publicar esta campaña?",
   "view": "Vista",
   "week": "Semana",
+  "work_shifts": "Turnos de trabajo",
   "worker": "Miembro",
   "work_time_contract": "Tiempo de trabajo contratado",
   "work_time_desired": "Tiempo de trabajo deseado",
@@ -222,5 +224,6 @@
   "sunday_short": "D",
   "dsd.tooltip.shift": "número de turnos asignados / requisito de cobertura para el día",
   "dsd.tooltip.worker": "número de miembros asignados / requisito de personal para el día",
-  "shift_count_tooltip": "número de turnos / cobertura de turnos requerida durante la campaña"
+  "shift_count_tooltip": "número de turnos / cobertura de turnos requerida durante la campaña",
+  "preference": "Preferencia semanal"
 }

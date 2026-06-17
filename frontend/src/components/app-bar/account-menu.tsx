@@ -109,10 +109,10 @@ export default function AccountMenu({ lng }: { lng: string }) {
             t('sign_out')
           )}
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
+        {/* <DropdownMenuSeparator />
         <div className="px-2 py-1.5">
           <ThemeSelector lng={lng} variant="compact" />
-        </div>
+        </div> */}
       </DropdownMenuContent>
     </DropdownMenu>
   );

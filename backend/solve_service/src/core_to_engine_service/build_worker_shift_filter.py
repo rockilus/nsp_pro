@@ -9,6 +9,10 @@ from shared.schemas.core import (
     DimensionType,
     Shift,
     ShiftType,
+    SlotPeriods,
+    SlotRestriction,
+    WeeklyPreferences,
+    WeekParity,
     Worker,
     WorkerDates,
 )
@@ -534,6 +538,121 @@ def build_worker_shift_filters_no_duties(
     return list(out)
 
 
+def _get_shifts_in_slot(
+    shifts: list[Shift],
+    slot: str,
+    slot_periods: SlotPeriods | None = None,
+) -> list[Shift]:
+    """Return shifts whose start_time falls in the given time slot.
+
+    When slot_periods is None, uses the default hardcoded ranges:
+    - "morning":   6 ≤ hour < 12
+    - "afternoon": 12 ≤ hour < 18
+    - "night":     hour ≥ 18 or hour < 6
+
+    When slot_periods is provided, uses minute-precision ranges from
+    the team configuration.  Night is handled as a wrap-around range
+    (e.g. 18:00 → 06:00 where start_minutes > end_minutes).
+    """
+    result: list[Shift] = []
+
+    if slot_periods is None:
+        for s in shifts:
+            if s.deleted:
+                continue
+            hour = s.start_time.hour
+            if slot == "morning" and 6 <= hour < 12:
+                result.append(s)
+            elif slot == "afternoon" and 12 <= hour < 18:
+                result.append(s)
+            elif slot == "night" and (hour >= 18 or hour < 6):
+                result.append(s)
+        return result
+
+    period = getattr(slot_periods, slot)
+    start_minutes = period.start_hour * 60 + period.start_minute
+    end_minutes = period.end_hour * 60 + period.end_minute
+
+    for s in shifts:
+        if s.deleted:
+            continue
+        minute_of_day = s.start_time.hour * 60 + s.start_time.minute
+
+        if start_minutes < end_minutes:
+            if start_minutes <= minute_of_day < end_minutes:
+                result.append(s)
+        else:
+            # Night wrap-around: e.g. 18:00 (1080) → 06:00 (360)
+            if minute_of_day >= start_minutes or minute_of_day < end_minutes:
+                result.append(s)
+
+    return result
+
+
+def build_worker_shift_filters_weekly_preferences(
+    workers: list[Worker],
+    worker_ids_to_worker_dates: dict[str, WorkerDates],
+    shifts: list[Shift],
+    slot_periods: SlotPeriods | None = None,
+) -> list[tuple[str, str, str]]:
+    """Expand WeeklyPreferences into forbidden (worker, date, shift) tuples.
+
+    For each worker with an enabled WeeklyPreferences, each slot preference
+    is expanded across the worker's campaign dates.  Day-of-week and optional
+    week-parity (even/odd) filters are applied, then shifts bucketed into the
+    target time slot (morning/afternoon/night) are further filtered by the
+    restriction type (NO_WORK, NO_NORMAL, NO_DUTY, NO_SPECIFIC).
+
+    Returns a deduplicated list of (worker_id, date_iso, shift_id) tuples.
+    """
+    out: set[tuple[str, str, str]] = set()
+
+    for worker in workers:
+        prefs: WeeklyPreferences | None = worker.weekly_preferences
+        if prefs is None or not prefs.enabled:
+            continue
+
+        if worker.id not in worker_ids_to_worker_dates:
+            continue
+        dates = worker_ids_to_worker_dates[worker.id].dates_campaign
+
+        for slot_pref in prefs.slots:
+            # Determine which shifts match the time slot once per pref
+            slot_shifts = _get_shifts_in_slot(shifts, slot_pref.slot, slot_periods)
+            if not slot_shifts:
+                continue
+
+            for d in dates:
+                # Day-of-week filter (0=Monday … 6=Sunday)
+                if d.weekday() != slot_pref.day_of_week:
+                    continue
+
+                # Week-parity filter
+                if slot_pref.week_parity != WeekParity.ALL:
+                    iso_week = d.isocalendar()[1]
+                    is_even = iso_week % 2 == 0
+                    if slot_pref.week_parity == WeekParity.EVEN and not is_even:
+                        continue
+                    if slot_pref.week_parity == WeekParity.ODD and is_even:
+                        continue
+
+                # Apply restriction
+                for s in slot_shifts:
+                    if slot_pref.restriction == SlotRestriction.NO_WORK:
+                        out.add((worker.id, d.isoformat(), s.id))
+                    elif slot_pref.restriction == SlotRestriction.NO_NORMAL:
+                        if s.shift_type == ShiftType.NORMAL:
+                            out.add((worker.id, d.isoformat(), s.id))
+                    elif slot_pref.restriction == SlotRestriction.NO_DUTY:
+                        if s.shift_type == ShiftType.DUTY:
+                            out.add((worker.id, d.isoformat(), s.id))
+                    elif slot_pref.restriction == SlotRestriction.NO_SPECIFIC:
+                        if s.id in slot_pref.shift_ids:
+                            out.add((worker.id, d.isoformat(), s.id))
+
+    return list(out)
+
+
 def build_worker_shift_filters(
     workers: list[Worker],
     worker_ids_to_worker_dates: dict[str, WorkerDates],
@@ -543,6 +662,7 @@ def build_worker_shift_filters(
     fixed_values: dict[tuple[str, str, str], int],
     penalty: int,
     shared_bool_policies: dict[str, BoolSharedPolicy] | None = None,
+    slot_periods: SlotPeriods | None = None,
 ) -> tuple[list[tuple[str, str, str]], int]:
     """Combine filters from dim-entry and bool shared dimensions.
 
@@ -616,6 +736,12 @@ def build_worker_shift_filters(
         workers, worker_ids_to_worker_dates, shifts
     )
     combined_set |= set(no_duty_out)
+
+    # Expand per-worker WeeklyPreferences into forbidden assignment tuples
+    weekly_pref_out = build_worker_shift_filters_weekly_preferences(
+        workers, worker_ids_to_worker_dates, shifts, slot_periods
+    )
+    combined_set |= set(weekly_pref_out)
 
     for assignment, value in fixed_values.items():
         if value == 1 and assignment in combined_set:

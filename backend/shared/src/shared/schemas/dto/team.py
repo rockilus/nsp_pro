@@ -1,4 +1,19 @@
+from typing import Optional
+
 from pydantic import BaseModel
+
+
+class SlotPeriodDTO(BaseModel):
+    startHour: int = 6
+    startMinute: int = 0
+    endHour: int = 12
+    endMinute: int = 0
+
+
+class SlotPeriodsDTO(BaseModel):
+    morning: SlotPeriodDTO
+    afternoon: SlotPeriodDTO
+    night: SlotPeriodDTO
 
 
 class TeamDTO(BaseModel):
@@ -7,6 +22,7 @@ class TeamDTO(BaseModel):
     createdByUserId: str
     createdAt: float
     useSolver: bool
+    slotPeriods: Optional[SlotPeriodsDTO] = None
 
 
 class MembershipForTeamWithMembershipDTO(BaseModel):

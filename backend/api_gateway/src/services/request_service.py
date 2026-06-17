@@ -123,13 +123,24 @@ class RequestService(BaseService):
             raise ValueError(
                 f"Request with id {request_id} is not active and cannot be approved"
             )
-        # If this is a single-shift request (leave with shift_id OR work_demand
-        # with exactly one shift option pointing to a SHIFT), create fixed
-        # assignments for the request period and mark fulfillment as fulfilled.
+        # If this is a single-shift request (leave with shift_id OR positive
+        # work_demand with exactly one shift option pointing to a SHIFT), create
+        # fixed assignments for the request period and mark fulfillment as
+        # fulfilled. Negative single-shift requests are handled by the solver
+        # via constraints — we mark them fulfilled but do NOT create assignments
+        # (creating assignments would hard-code the unwanted shift, the opposite
+        # of the worker's intent).
         single_shift_request = (
             request.request_type == RequestType.LEAVE and request.shift_id is not None
         ) or (
             request.request_type == RequestType.WORK_DEMAND
+            and not request.negative
+            and len(request.shift_options) == 1
+            and request.shift_options[0].id_type == SWOIdTypes.SHIFT
+        )
+        negative_single_shift = (
+            request.request_type == RequestType.WORK_DEMAND
+            and request.negative
             and len(request.shift_options) == 1
             and request.shift_options[0].id_type == SWOIdTypes.SHIFT
         )
@@ -146,6 +157,10 @@ class RequestService(BaseService):
             assignments_created = self._create_assignments_for_single_shift_request(
                 request, target_shift_id
             )
+            request.fulfillment = FulfillmentStatus.FULFILLED
+        elif negative_single_shift:
+            # Solver constraint (add_request.py) handles the "do not assign"
+            # logic. We only mark the request as fulfilled — no assignments.
             request.fulfillment = FulfillmentStatus.FULFILLED
         request.status = RequestStatus.APPROVED
         updated_request = self.collection.request_db.update_request(request)

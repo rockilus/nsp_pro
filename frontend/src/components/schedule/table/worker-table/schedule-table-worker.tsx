@@ -304,6 +304,7 @@ function WorkerRow({
         return (
           <WorkerCell
             key={dateIndex}
+            lng={lng}
             periodDate={pDate}
             worker={worker}
             shifts={shifts}
@@ -449,6 +450,7 @@ export default function ScheduleTableWorker({
     workers,
     shifts,
     breaches,
+    periodDates,
   );
 
   const days = periodDates.map((pd) => pd.date);

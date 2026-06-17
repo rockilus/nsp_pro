@@ -29,7 +29,8 @@ export default function ThemeSelector({ lng, variant = 'standalone' }: ThemeSele
     setMounted(true);
   }, []);
 
-  const currentTheme = (theme as ThemeMode) || 'system';
+  // const currentTheme = (theme as ThemeMode) || 'system';
+  const currentTheme = 'light'; // Default to 'light'
 
   if (!mounted) {
     // Render a disabled placeholder to avoid hydration mismatch

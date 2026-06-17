@@ -10,6 +10,8 @@ from shared.schemas.core import (
     DimensionType,
     Shift,
     ShiftType,
+    SlotRestriction,
+    WeekParity,
     Worker,
     WorkerDates,
 )
@@ -535,6 +537,91 @@ def build_worker_shift_filters_no_duties(
     return list(out)
 
 
+def _get_shifts_in_slot(shifts: List[Shift], slot: str) -> List[Shift]:
+    """Return shifts whose start_time falls in the given time slot.
+
+    Slot definitions (based on start_time.hour in UTC):
+    - "morning":   6 ≤ hour < 12
+    - "afternoon": 12 ≤ hour < 18
+    - "night":     hour ≥ 18 or hour < 6
+    """
+    result: List[Shift] = []
+    for s in shifts:
+        if s.deleted:
+            continue
+        hour = s.start_time.hour
+        if slot == "morning" and 6 <= hour < 12:
+            result.append(s)
+        elif slot == "afternoon" and 12 <= hour < 18:
+            result.append(s)
+        elif slot == "night" and (hour >= 18 or hour < 6):
+            result.append(s)
+    return result
+
+
+def build_worker_shift_filters_weekly_preferences(
+    workers: List[Worker],
+    worker_ids_to_worker_dates: Dict[str, WorkerDates],
+    shifts: List[Shift],
+) -> List[Tuple[str, str, str]]:
+    """Expand WeeklyPreferences into forbidden (worker, date, shift) tuples.
+
+    For each worker with an enabled WeeklyPreferences, each slot preference
+    is expanded across the worker's campaign dates.  Day-of-week and optional
+    week-parity (even/odd) filters are applied, then shifts bucketed into the
+    target time slot (morning/afternoon/night) are further filtered by the
+    restriction type (NO_WORK, NO_NORMAL, NO_DUTY, NO_SPECIFIC).
+
+    Returns a deduplicated list of (worker_id, date_iso, shift_id) tuples.
+    """
+    out: Set[Tuple[str, str, str]] = set()
+
+    for worker in workers:
+        prefs = worker.weekly_preferences
+        if prefs is None or not prefs.enabled:
+            continue
+
+        if worker.id not in worker_ids_to_worker_dates:
+            continue
+        dates = worker_ids_to_worker_dates[worker.id].dates_campaign
+
+        for slot_pref in prefs.slots:
+            # Determine which shifts match the time slot once per pref
+            slot_shifts = _get_shifts_in_slot(shifts, slot_pref.slot)
+            if not slot_shifts:
+                continue
+
+            for d in dates:
+                # Day-of-week filter (0=Monday … 6=Sunday)
+                if d.weekday() != slot_pref.day_of_week:
+                    continue
+
+                # Week-parity filter
+                if slot_pref.week_parity != WeekParity.ALL:
+                    iso_week = d.isocalendar()[1]
+                    is_even = iso_week % 2 == 0
+                    if slot_pref.week_parity == WeekParity.EVEN and not is_even:
+                        continue
+                    if slot_pref.week_parity == WeekParity.ODD and is_even:
+                        continue
+
+                # Apply restriction
+                for s in slot_shifts:
+                    if slot_pref.restriction == SlotRestriction.NO_WORK:
+                        out.add((worker.id, d.isoformat(), s.id))
+                    elif slot_pref.restriction == SlotRestriction.NO_NORMAL:
+                        if s.shift_type == ShiftType.NORMAL:
+                            out.add((worker.id, d.isoformat(), s.id))
+                    elif slot_pref.restriction == SlotRestriction.NO_DUTY:
+                        if s.shift_type == ShiftType.DUTY:
+                            out.add((worker.id, d.isoformat(), s.id))
+                    elif slot_pref.restriction == SlotRestriction.NO_SPECIFIC:
+                        if s.id in slot_pref.shift_ids:
+                            out.add((worker.id, d.isoformat(), s.id))
+
+    return list(out)
+
+
 def build_worker_shift_filters(
     workers: List[Worker],
     worker_ids_to_worker_dates: Dict[str, WorkerDates],
@@ -617,6 +704,12 @@ def build_worker_shift_filters(
         workers, worker_ids_to_worker_dates, shifts
     )
     combined_set |= set(no_duty_out)
+
+    # Expand per-worker WeeklyPreferences into forbidden assignment tuples
+    weekly_pref_out = build_worker_shift_filters_weekly_preferences(
+        workers, worker_ids_to_worker_dates, shifts
+    )
+    combined_set |= set(weekly_pref_out)
 
     for assignment, value in fixed_values.items():
         if value == 1 and assignment in combined_set:

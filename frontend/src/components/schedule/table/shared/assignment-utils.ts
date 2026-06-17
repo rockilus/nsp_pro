@@ -1,14 +1,23 @@
 import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
 // Types
 import { BreachT } from '@/types/breach';
 import { AssignmentT } from '@/types/assignment';
-import { WorkerT } from '../../../../types/worker';
+import { SlotRestriction, WorkerT, WeeklyPreferences } from '../../../../types/worker';
 import { ShiftT, ShiftRestType } from '../../../../types/shift';
 import { RequestT } from '../../../../types/request';
 import { AttributeOwnerType } from '../../../../types/attribute';
 import { RecurrenceRuleT } from '@/types/recurrence';
 import { ShiftDemandDTO } from '@/types/shiftDemand';
-import { AssignmentsDictT, ShiftDemandsDictT, ScheduleCellsDictT } from '@/types/schedule';
+import {
+  AssignmentsDictT,
+  ShiftDemandsDictT,
+  ScheduleCellsDictT,
+  periodDateT,
+  WorkerPreferenceCellData,
+} from '@/types/schedule';
+
+dayjs.extend(isoWeek);
 
 export const generateOwnerIdDateKey = (ownerId: string, date: dayjs.Dayjs): string => {
   return `${ownerId}-${date.format('YYYY-MM-DD')}`;
@@ -163,7 +172,95 @@ export const buildRequestsByWorkerAndDate = (
   return requestDict;
 };
 
+/**
+ * Merge expanded preference entries for a single (workerId, date) key.
+ *
+ * Rules:
+ * 1. Per slot: if both no_normal and no_duty are present → upgrade to no_work.
+ * 2. Per slot: if no_work is already present, discard weaker no_normal / no_duty.
+ * 3. Group remaining slots by restriction into one cell per restriction.
+ */
+export function mergePreferences(
+  entries: { slot: 'morning' | 'afternoon' | 'night'; restriction: SlotRestriction }[],
+): WorkerPreferenceCellData[] {
+  // Step 1: collect restrictions per slot
+  const slotRestrictions = new Map<string, Set<SlotRestriction>>();
+  for (const e of entries) {
+    if (!slotRestrictions.has(e.slot)) {
+      slotRestrictions.set(e.slot, new Set());
+    }
+    slotRestrictions.get(e.slot)!.add(e.restriction);
+  }
+
+  // Step 2: resolve each slot to a single effective restriction
+  const resolved: { slot: 'morning' | 'afternoon' | 'night'; restriction: SlotRestriction }[] = [];
+  for (const [slot, restrictions] of slotRestrictions) {
+    if (restrictions.has('no_work')) {
+      resolved.push({ slot: slot as 'morning' | 'afternoon' | 'night', restriction: 'no_work' });
+    } else if (restrictions.has('no_normal') && restrictions.has('no_duty')) {
+      resolved.push({ slot: slot as 'morning' | 'afternoon' | 'night', restriction: 'no_work' });
+    } else {
+      for (const r of restrictions) {
+        resolved.push({ slot: slot as 'morning' | 'afternoon' | 'night', restriction: r });
+      }
+    }
+  }
+
+  // Step 3: group by restriction, collecting slots
+  const byRestriction = new Map<SlotRestriction, Set<string>>();
+  for (const { slot, restriction } of resolved) {
+    if (!byRestriction.has(restriction)) {
+      byRestriction.set(restriction, new Set());
+    }
+    byRestriction.get(restriction)!.add(slot);
+  }
+
+  return Array.from(byRestriction.entries()).map(([restriction, slots]) => ({
+    slots: Array.from(slots).sort() as ('morning' | 'afternoon' | 'night')[],
+    restriction,
+  }));
+}
+
 // Updated function using ShiftDemandDTO throughout - no legacy conversion
+// Compute expanded worker preferences per (workerId, date ISO) key.
+// Converts WeeklySlotPreference (dayOfWeek, slot, weekParity) into concrete
+// WorkerPreferenceCellData entries for each visible period date.
+export const buildWorkerPreferencesByWorkerAndDate = (
+  workers: WorkerT[],
+  periodDates: periodDateT[],
+): { [key: string]: WorkerPreferenceCellData[] } => {
+  const prefDict: { [key: string]: WorkerPreferenceCellData[] } = {};
+
+  for (const worker of workers) {
+    const prefs = worker.weeklyPreferences;
+    if (!prefs || !prefs.enabled || !prefs.slots.length) continue;
+
+    for (const pd of periodDates) {
+      // ISO day-of-week: 0=Mon … 6=Sun (preferences use this convention)
+      // dayjs day() returns 0=Sun, so shift: (d + 6) % 7
+      const isoDow = (pd.date.day() + 6) % 7;
+      // ISO week parity: even weeks map to 'even', odd to 'odd'
+      const isoWeekNum = pd.date.isoWeek();
+      const parity = isoWeekNum % 2 === 0 ? 'even' : 'odd';
+
+      const matching = prefs.slots.filter(
+        (sp) => sp.dayOfWeek === isoDow && (sp.weekParity === 'all' || sp.weekParity === parity),
+      );
+
+      if (matching.length > 0) {
+        const key = generateOwnerIdDateKey(worker.id, pd.date);
+        const expanded = matching.map((sp) => ({
+          slot: sp.slot,
+          restriction: sp.restriction,
+        }));
+        prefDict[key] = mergePreferences(expanded);
+      }
+    }
+  }
+
+  return prefDict;
+};
+
 export const buildScheduleCellDict = (
   ownerType: AttributeOwnerType,
   assignments: AssignmentT[],
@@ -173,6 +270,7 @@ export const buildScheduleCellDict = (
   workers: WorkerT[],
   shifts: ShiftT[],
   breaches: BreachT[],
+  periodDates: periodDateT[],
 ): ScheduleCellsDictT => {
   const assignmentDict = buildAssignmentsDataByOwnerAndDate(
     ownerType,
@@ -193,10 +291,16 @@ export const buildScheduleCellDict = (
     requestDict = buildRequestsByWorkerAndDate(requests);
   }
 
+  const preferenceDict =
+    ownerType === AttributeOwnerType.WORKER
+      ? buildWorkerPreferencesByWorkerAndDate(workers, periodDates)
+      : {};
+
   const allKeys = new Set([
     ...Object.keys(assignmentDict),
     ...Object.keys(shiftDemandDict),
     ...Object.keys(requestDict),
+    ...Object.keys(preferenceDict),
   ]);
 
   const scheduleCellDict: ScheduleCellsDictT = {};
@@ -206,6 +310,7 @@ export const buildScheduleCellDict = (
       assignmentsData: assignmentDict[key] || [],
       shiftDemandsData: shiftDemandDict[key] || null,
       requests: requestDict[key] || [],
+      workerPreferences: preferenceDict[key] || [],
     };
   });
 

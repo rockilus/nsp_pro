@@ -22,6 +22,7 @@ from shared.schemas.core.solve_task_status import (
     ScheduleSolveStatus,
     SolverOutputMetadata,
 )
+from shared.schemas.core.team import Team
 from shared.schemas.core.worker import Worker
 
 ##############################
@@ -180,6 +181,7 @@ class EngineInputs:
     multitasking_groups: List[MultitaskingGroup] = field(
         default_factory=list, kw_only=True
     )
+    team: Team | None = field(default=None, kw_only=True)
 
     def to_dict(self) -> Dict:
         return {
@@ -284,6 +286,7 @@ class EngineInputsAugmented(EngineInputs):
             requests_leave=engine_inputs.requests_leave,
             model_output=engine_inputs.model_output,
             multitasking_groups=engine_inputs.multitasking_groups,
+            team=engine_inputs.team,
             penalties=penalties,
             model_config=model_config,
         )

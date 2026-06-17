@@ -75,8 +75,8 @@ def _parse_breaches_engine(
             print(f"Error parsing var_name: {be.var_name}")
             continue
         variables = [
-            (v[0], date.fromisoformat(v[1]), v[2])
-            for v in [v.split("_") for v in var_name.cstr_vars]
+            (parts[0], date.fromisoformat(parts[1]), "_".join(parts[2:]))
+            for parts in [v.split("_") for v in var_name.cstr_vars]
         ]
         if var_name.objective_category == ObjectiveCategory.LINK_SHIFT.value:
             ls_id = var_name.objective_id

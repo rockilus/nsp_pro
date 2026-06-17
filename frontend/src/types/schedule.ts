@@ -137,10 +137,16 @@ export type ShiftDemandsDictT = {
   [key: string]: ShiftDemandsDataT;
 };
 
+export type WorkerPreferenceCellData = {
+  slots: ('morning' | 'afternoon' | 'night')[];
+  restriction: 'no_work' | 'no_normal' | 'no_duty' | 'no_specific';
+};
+
 export type ScheduleCellDataT = {
   assignmentsData: AssignmentDataT[];
   shiftDemandsData: ShiftDemandsDataT | null;
   requests: RequestT[];
+  workerPreferences: WorkerPreferenceCellData[];
 };
 
 export type ScheduleCellsDictT = {
@@ -154,6 +160,7 @@ export type ScheduleViewSettingsT = {
   showAssignments: boolean;
   showDailyShiftDemands: boolean;
   showRequests: boolean;
+  showWorkerPreferences: boolean;
   periodStartDate: dayjs.Dayjs;
   // Mobile-specific settings
   mobileSelectedView?: 'worker' | 'team';

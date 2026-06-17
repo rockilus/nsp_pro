@@ -13,8 +13,10 @@ import { Page } from '@playwright/test';
 import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from './database-utils';
 import { testConfig } from './test-config';
 import { ShiftType } from '../../src/types/shift';
-import { WorkerT } from '../../src/types/worker';
+import { WorkerT, WeeklyPreferences } from '../../src/types/worker';
+import { WeeklySlotPreference } from '../../src/types/worker';
 import { ShiftT, ShiftRestType, ShiftLeaveType } from '../../src/types/shift';
+import { mergePreferences } from '../../src/components/schedule/table/shared/assignment-utils';
 import { RequestT, RequestType, RequestStatus } from '../../src/types/request';
 import { ScheduleT } from '../../src/types/schedule';
 import { AssignmentT, AssignmentsRecurrencesResultT } from '../../src/types/assignment';
@@ -22,6 +24,7 @@ import { RecurrenceRuleT } from '../../src/types/recurrence';
 import { SWOIdTypes } from '../../src/types/constraint';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import isoWeek from 'dayjs/plugin/isoWeek';
 import { ShiftDemandDTO } from '@/types/shiftDemand';
 import { ConstraintT, ConstraintType, BlockT } from '../../src/types/constraint';
 import { DimensionEntryType, DimensionType, DimensionT } from '../../src/types/dimension';
@@ -32,6 +35,7 @@ import { SpecialtyT } from '../../src/types/specialty';
 import { ReplacementCandidateT } from '@/types/replacement';
 
 dayjs.extend(utc);
+dayjs.extend(isoWeek);
 
 export interface ScheduleSetupOptions {
   referenceDate: dayjs.Dayjs;
@@ -718,6 +722,7 @@ export class ScheduleTestBase {
       showAssignments?: boolean;
       showDailyShiftDemands?: boolean;
       showRequests?: boolean;
+      showWorkerPreferences?: boolean;
       periodStartDate?: dayjs.Dayjs;
       mobileSelectedView?: 'worker' | 'team';
       mobileSelectedWorkerId?: string | null;
@@ -765,6 +770,8 @@ export class ScheduleTestBase {
     if (options?.showDailyShiftDemands !== undefined)
       updates.showDailyShiftDemands = options.showDailyShiftDemands;
     if (options?.showRequests !== undefined) updates.showRequests = options.showRequests;
+    if (options?.showWorkerPreferences !== undefined)
+      updates.showWorkerPreferences = options.showWorkerPreferences;
     if (options?.mobileSelectedView !== undefined)
       updates.mobileSelectedView = options.mobileSelectedView;
     if (options?.mobileSelectedWorkerId !== undefined)
@@ -900,6 +907,7 @@ export class ScheduleTestBase {
       dutiesPerMonth?: number;
       annualLeave?: number;
       specialtyIds?: string[];
+      weeklyPreferences?: WeeklyPreferences;
     },
   ): Promise<{ workerId: string; name: string; teamId: string }> {
     if (!this.testTeam) {
@@ -910,6 +918,43 @@ export class ScheduleTestBase {
   }
 
   /**
+   * Set weekly preferences on a worker via the API.
+   * Accepts an array of WeeklySlotPreference slots and enables preferences.
+   */
+  async setWorkerWeeklyPreferences(workerId: string, slots: WeeklySlotPreference[]): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error('Test team not initialized');
+    }
+
+    await this.dbUtils.updateWorker(workerId, this.testTeam.teamId, {
+      weeklyPreferences: {
+        enabled: true,
+        slots,
+      },
+    });
+
+    console.log(`✅ Set ${slots.length} weekly preference slots on worker ${workerId}`);
+  }
+
+  /**
+   * Clear weekly preferences on a worker.
+   */
+  async clearWorkerWeeklyPreferences(workerId: string): Promise<void> {
+    if (!this.testTeam) {
+      throw new Error('Test team not initialized');
+    }
+
+    await this.dbUtils.updateWorker(workerId, this.testTeam.teamId, {
+      weeklyPreferences: {
+        enabled: false,
+        slots: [],
+      },
+    });
+
+    console.log(`✅ Cleared weekly preferences on worker ${workerId}`);
+  }
+
+  /**
    * Get replacement candidates for an assignment using DatabaseTestUtils
    */
   async getReplacementCandidates(assignmentId: string): Promise<ReplacementCandidateT[]> {
@@ -917,5 +962,52 @@ export class ScheduleTestBase {
       throw new Error('Test team not initialized');
     }
     return await this.dbUtils.getReplacementCandidates(assignmentId, this.testTeam.teamId);
+  }
+
+  /**
+   * Build the complete set of expected preference data-testid strings for a
+   * worker given their WeeklySlotPreference slots and the visible period.
+   *
+   * Applies the same merge logic as the production expansion
+   * (no_normal + no_duty → no_work, then group by restriction).
+   */
+  static buildExpectedPreferenceTestIds(
+    workerId: string,
+    slots: WeeklySlotPreference[],
+    periodStart: dayjs.Dayjs,
+    periodEnd: dayjs.Dayjs,
+  ): string[] {
+    const testIds: string[] = [];
+    let current = periodStart.clone();
+    while (current.isBefore(periodEnd) || current.isSame(periodEnd, 'day')) {
+      const isoDow = (current.day() + 6) % 7;
+      const isoWeekNum = current.isoWeek();
+      const parity = isoWeekNum % 2 === 0 ? 'even' : 'odd';
+      const dateStr = current.format('YYYY-MM-DD');
+
+      const matching = slots.filter(
+        (sp) => sp.dayOfWeek === isoDow && (sp.weekParity === 'all' || sp.weekParity === parity),
+      );
+
+      if (matching.length > 0) {
+        const expanded = matching.map((sp) => ({
+          slot: sp.slot,
+          restriction: sp.restriction,
+        }));
+        const merged = mergePreferences(expanded);
+        for (const cell of merged) {
+          testIds.push(`preference-cell-${workerId}-${dateStr}-${cell.restriction}`);
+        }
+      }
+      current = current.add(1, 'day');
+    }
+    return testIds;
+  }
+
+  /**
+   * Build a single preference cell data-testid string for a specific date.
+   */
+  static buildPreferenceTestId(workerId: string, date: string, restriction: string): string {
+    return `preference-cell-${workerId}-${date}-${restriction}`;
   }
 }

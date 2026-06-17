@@ -1,7 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Box from '@mui/material/Box';
 // Components
 import PopoverSelectShifts from './popover-select-shifts';
 import { blockDislayValue } from './block-display';

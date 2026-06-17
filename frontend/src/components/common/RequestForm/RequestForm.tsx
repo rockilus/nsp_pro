@@ -1,31 +1,26 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { useTranslation } from '@/app/i18n/client';
-// MUI
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
-import MenuItem from '@mui/material/MenuItem';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import Select from '@mui/material/Select';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import Typography from '@mui/material/Typography';
-import WorkIcon from '@mui/icons-material/Work';
-import IconButton from '@mui/material/IconButton';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import DeleteIcon from '@mui/icons-material/Delete';
-import UndoIcon from '@mui/icons-material/Undo';
-import ClearIcon from '@mui/icons-material/Clear';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import Chip from '@mui/material/Chip';
+// shadcn
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { DatePicker } from '@/components/ui/date-picker';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { FormActions } from '@/components/common/form-layout';
+import { Separator } from '@/components/ui/separator';
+// Icons
+import { Users, Briefcase, Check, X, Trash2, Undo2, X as XIcon } from 'lucide-react';
 // Components
 import ShiftOptionsDisplay from '@/components/stats/nav-bar/shift-options-display';
-// Styles
-import '@/components/request/request-panel.css';
 // Utils
 import { getRequestStatusColor, getRequestStatusLabel } from '@/utils/shift-worker-option-display';
 // Types
@@ -78,7 +73,6 @@ const RequestForm = ({
 }) => {
   const { t } = useTranslation(lng, 'request-page');
 
-  // Helper to create a default request object
   const createDefaultRequest = (): RequestT => ({
     id: '',
     teamId: teamId,
@@ -99,7 +93,6 @@ const RequestForm = ({
     missingAttributes: [],
   });
 
-  // If editing, always expect a real request object. If creating, use default.
   const [requestState, setRequestState] = useState<RequestT>(
     isEdit && request ? request : createDefaultRequest(),
   );
@@ -110,14 +103,12 @@ const RequestForm = ({
     isEdit && request ? request.requestType : RequestType.WORK_DEMAND,
   );
 
-  // Validation error state
   const [workerIdError, setWorkerIdError] = useState(false);
   const [startDateError, setStartDateError] = useState(false);
   const [endDateError, setEndDateError] = useState(false);
   const [shiftIdError, setShiftIdError] = useState(false);
   const [shiftOptionsError, setShiftOptionsError] = useState(false);
 
-  // Helper functions for action button logic (use requestState instead of request for current status)
   const canEdit =
     userTeamRole !== TeamMembershipRole.MEMBER ||
     (userWorkerId && requestState.workerId === userWorkerId);
@@ -130,7 +121,6 @@ const RequestForm = ({
     (requestState.status === RequestStatus.APPROVED ||
       requestState.status === RequestStatus.DENIED);
 
-  // Helper to filter shifts by request type
   function filterShiftsByRequestType(shifts: ShiftT[], requestType: RequestType): ShiftT[] {
     return shifts.filter((s) => {
       if (requestType === RequestType.WORK_DEMAND) {
@@ -145,7 +135,6 @@ const RequestForm = ({
     });
   }
 
-  // Filters shiftOptions for ShiftOptionsDisplay (readability)
   function filterShiftOptions(
     shiftOptions: ShiftWorkerOptionT[],
     shifts: ShiftT[],
@@ -175,7 +164,6 @@ const RequestForm = ({
     setRequestState(newRequestState);
   };
 
-  // Initialize with request data if provided (for calendar usage)
   React.useEffect(() => {
     if (request) {
       setRequestState(request);
@@ -185,7 +173,6 @@ const RequestForm = ({
   }, [request, isEdit]);
 
   const handleSaveRequest = async () => {
-    // Reset all errors
     setWorkerIdError(false);
     setStartDateError(false);
     setEndDateError(false);
@@ -193,23 +180,23 @@ const RequestForm = ({
     setShiftOptionsError(false);
 
     let hasError = false;
-    // Worker ID validation
+
     if (!requestState.workerId || requestState.workerId.trim() === '') {
       setWorkerIdError(true);
       hasError = true;
     }
-    // Start date must be after today
+
     const today = dayjs.utc().startOf('day');
     if (!requestState.startDate || !requestState.startDate.isAfter(today.subtract(1, 'day'))) {
       setStartDateError(true);
       hasError = true;
     }
-    // End date must be same as or after start date
+
     if (!requestState.endDate || requestState.endDate.isBefore(requestState.startDate, 'day')) {
       setEndDateError(true);
       hasError = true;
     }
-    // Leave request: shiftId required, shiftOptions must be empty
+
     if (requestType === RequestType.LEAVE) {
       if (!requestState.shiftId || requestState.shiftId === '') {
         setShiftIdError(true);
@@ -220,7 +207,7 @@ const RequestForm = ({
         hasError = true;
       }
     }
-    // Work demand: shiftId must be null, shiftOptions required
+
     if (requestType === RequestType.WORK_DEMAND) {
       if (requestState.shiftId !== null) {
         setShiftIdError(true);
@@ -231,17 +218,14 @@ const RequestForm = ({
         hasError = true;
       }
     }
+
     if (hasError) return;
 
     if (!isEdit) {
       if (!handleAddRequest) return;
       await handleAddRequest(requestState);
-      // Close after successful creation
-      if (onClose) {
-        onClose();
-      }
+      if (onClose) onClose();
     } else if (request) {
-      // Helper function to compare shiftOptions arrays
       const areShiftOptionsEqual = (
         options1: ShiftWorkerOptionT[],
         options2: ShiftWorkerOptionT[],
@@ -253,7 +237,6 @@ const RequestForm = ({
         });
       };
 
-      // Only compare if editing and request is defined
       if (
         requestState.workerId === request.workerId &&
         requestState.startDate === request.startDate &&
@@ -263,11 +246,10 @@ const RequestForm = ({
         requestState.hard === request.hard &&
         areShiftOptionsEqual(requestState.shiftOptions, request.shiftOptions)
       ) {
-        if (onClose) {
-          onClose();
-        }
+        if (onClose) onClose();
         return;
       }
+
       const updatedRequest = {
         ...requestState,
         status: RequestStatus.PENDING,
@@ -276,9 +258,8 @@ const RequestForm = ({
         handleUpdateRequest(updatedRequest);
       }
     }
-    if (onClose) {
-      onClose();
-    }
+
+    if (onClose) onClose();
   };
 
   const handleSelectDateRange = () => {
@@ -296,366 +277,268 @@ const RequestForm = ({
     setDateRange(!dateRange);
   };
 
-  const selectWorker = () => {
-    return (
-      <div className="select-container">
-        <FormControl fullWidth error={workerIdError}>
-          <Select
-            value={requestState.workerId}
-            disabled={userTeamRole === TeamMembershipRole.MEMBER}
-            label={t('worker')}
-            onChange={(e) => {
-              setRequestState({
-                ...requestState,
-                workerId: e.target.value as string,
-              });
-              setWorkerIdError(false);
-            }}
-            data-testid="worker-select"
-          >
-            {workers.map((worker) => (
-              <MenuItem key={worker.id} value={worker.id}>
-                {worker.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-    );
-  };
-
-  const selectShift = () => {
-    return (
-      <div className="select-container">
-        <FormControl fullWidth error={shiftIdError}>
-          <Select
-            value={requestState.shiftId || ''}
-            label={t('shift')}
-            onChange={(e) => {
-              setRequestState({
-                ...requestState,
-                shiftId: e.target.value as string,
-              });
-              setShiftIdError(false);
-            }}
-            data-testid="shift-select"
-          >
-            {filterShiftsByRequestType(shifts, requestType).map((shift) => (
-              <MenuItem key={shift.id} value={shift.id}>
-                {shift.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
-    );
+  // Badge variant mapping for request status
+  const getStatusBadgeVariant = (
+    status: RequestStatus,
+  ): 'default' | 'secondary' | 'destructive' | 'outline' => {
+    const color = getRequestStatusColor(status);
+    if (color === 'success') return 'default';
+    if (color === 'warning') return 'secondary';
+    if (color === 'error') return 'destructive';
+    return 'outline';
   };
 
   return (
     <div>
-      {/* Mobile header with close button */}
+      {/* Mobile header */}
       {isMobile && (
-        <Box
-          sx={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 1100,
-            backgroundColor: 'background.paper',
-            borderBottom: 1,
-            borderColor: 'divider',
-            p: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            {title || 'Request'}
-          </Typography>
-          <IconButton
-            aria-label="close"
+        <div className="sticky top-0 z-50 flex items-center justify-between border-b border-border bg-popover p-4">
+          <h2 className="text-lg font-semibold">{title || 'Request'}</h2>
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={onClose}
-            edge="end"
             data-testid="close-request-dialog-button"
           >
-            <CloseIcon />
-          </IconButton>
-        </Box>
+            <X className="size-4" />
+          </Button>
+        </div>
       )}
-      {/* Status chip and action buttons */}
+
+      {/* Status chip + action buttons (edit mode) */}
       {isEdit && request && (
         <div className="mb-4 flex items-center gap-2">
-          <Chip
-            label={getRequestStatusLabel(requestState.status, t)}
-            size="small"
-            color={getRequestStatusColor(requestState.status)}
-            variant="filled"
-          />
-          {/* Action buttons for edit mode */}
+          <Badge variant={getStatusBadgeVariant(requestState.status)}>
+            {getRequestStatusLabel(requestState.status, t)}
+          </Badge>
+
           {canApprove && handleAcceptRequest && (
-            <IconButton
-              size="small"
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => {
                 handleAcceptRequest(request.id);
-                // Update local state to reflect the approval
-                setRequestState((prev) => ({
-                  ...prev,
-                  status: RequestStatus.APPROVED,
-                }));
+                setRequestState((prev) => ({ ...prev, status: RequestStatus.APPROVED }));
               }}
               title={t('approve_request')}
-              color="success"
               data-testid={`approve-request-button-${request.id}`}
             >
-              <CheckIcon />
-            </IconButton>
+              <Check className="size-4 text-green-600" />
+            </Button>
           )}
 
           {canApprove && handleDenyRequest && (
-            <IconButton
-              size="small"
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => {
                 handleDenyRequest(request.id);
-                // Update local state to reflect the denial
-                setRequestState((prev) => ({
-                  ...prev,
-                  status: RequestStatus.DENIED,
-                }));
+                setRequestState((prev) => ({ ...prev, status: RequestStatus.DENIED }));
               }}
               title={t('deny_request')}
-              color="error"
               data-testid={`reject-request-button-${request.id}`}
             >
-              <ClearIcon />
-            </IconButton>
+              <XIcon className="size-4 text-destructive" />
+            </Button>
           )}
 
           {canRescind && handleRescindRequest && (
-            <IconButton
-              size="small"
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={() => {
                 handleRescindRequest(request.id);
-                // Update local state to reflect the rescind (back to pending)
-                setRequestState((prev) => ({
-                  ...prev,
-                  status: RequestStatus.PENDING,
-                }));
+                setRequestState((prev) => ({ ...prev, status: RequestStatus.PENDING }));
               }}
               title={
                 requestState.status === RequestStatus.APPROVED
                   ? t('rescind_approval')
                   : t('rescind_denial')
               }
-              color="warning"
               data-testid={`rescind-request-button-${request.id}`}
             >
-              <UndoIcon />
-            </IconButton>
+              <Undo2 className="size-4 text-amber-600" />
+            </Button>
           )}
-
-          {/* Delete moved to mobile save area */}
         </div>
       )}
 
-      {/* Form content */}
-      <div className="request-panel-container" style={fullWidth ? { width: '100%' } : undefined}>
-        <ToggleButtonGroup
-          color="primary"
+      {/* Form body */}
+      <div
+        className="flex w-full flex-col gap-4 p-4"
+        style={fullWidth ? { width: '100%' } : undefined}
+      >
+        {/* Request type toggle */}
+        <ToggleGroup
+          type="single"
           value={requestType}
-          exclusive
-          onChange={(_event, value) => {
-            if (value !== null) {
-              setRequestType(value);
+          onValueChange={(value) => {
+            if (value) {
+              const v = value as RequestType;
+              setRequestType(v);
               setRequestState((prev) => {
-                if (value === RequestType.WORK_DEMAND) {
-                  // When switching to work demand, clear shiftId but preserve worker and dates
-                  return {
-                    ...prev,
-                    shiftId: null,
-                    requestType: value,
-                    // Preserve workerId and dates from initial request
-                    workerId: request?.workerId || prev.workerId,
-                    startDate: request?.startDate || prev.startDate,
-                    endDate: request?.endDate || prev.endDate,
-                  };
-                } else if (value === RequestType.LEAVE) {
-                  // When switching to leave, clear shiftOptions and set negative to false but preserve worker and dates
-                  return {
-                    ...prev,
-                    shiftOptions: [],
-                    negative: false,
-                    requestType: value,
-                    // Preserve workerId and dates from initial request
-                    workerId: request?.workerId || prev.workerId,
-                    startDate: request?.startDate || prev.startDate,
-                    endDate: request?.endDate || prev.endDate,
-                  };
+                if (v === RequestType.WORK_DEMAND) {
+                  return { ...prev, shiftId: null, requestType: v };
+                } else {
+                  return { ...prev, shiftOptions: [], negative: false, requestType: v };
                 }
-                return prev;
               });
             }
           }}
           aria-label="Request Type"
-          sx={{ marginBottom: 2, marginLeft: 2 }}
           data-testid="request-type-toggle"
         >
-          <ToggleButton
+          <ToggleGroupItem
             value={RequestType.WORK_DEMAND}
-            sx={{
-              marginTop: '5px',
-              marginBottom: '5px',
-              marginLeft: '56px',
-              textTransform: 'none',
-              height: '30px',
-              width: '105px',
-              fontSize: '0.8rem',
-            }}
             data-testid="work-request-type-button"
+            className="min-w-[105px] px-4"
           >
             {t('work')}
-          </ToggleButton>
-          <ToggleButton
+          </ToggleGroupItem>
+          <ToggleGroupItem
             value={RequestType.LEAVE}
-            sx={{
-              marginTop: '5px',
-              marginBottom: '5px',
-              textTransform: 'none',
-              height: '30px',
-              width: '105px',
-              fontSize: '0.8rem',
-            }}
             data-testid="leave-request-type-button"
+            className="min-w-[105px] px-4"
           >
             {t('leave')}
-          </ToggleButton>
-        </ToggleButtonGroup>
-        <div className="variable-input-container">
-          <PeopleAltIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-          {selectWorker()}
+          </ToggleGroupItem>
+        </ToggleGroup>
+
+        {/* Worker select */}
+        <div>
+          <div className="relative">
+            <Users className="pointer-events-none absolute top-1/2 left-2.5 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Select
+              value={requestState.workerId}
+              disabled={userTeamRole === TeamMembershipRole.MEMBER}
+              onValueChange={(value) => {
+                setRequestState({ ...requestState, workerId: value });
+                setWorkerIdError(false);
+              }}
+            >
+              <SelectTrigger
+                data-testid="worker-select"
+                aria-invalid={workerIdError}
+                className="w-full max-w-full pl-9 [&_[data-slot=select-value]]:truncate"
+              >
+                <SelectValue placeholder={t('select_a_worker')} />
+              </SelectTrigger>
+              <SelectContent className="max-w-[var(--radix-select-trigger-width)]">
+                {workers.map((worker) => (
+                  <SelectItem key={worker.id} value={worker.id} className="truncate">
+                    {worker.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {workerIdError && (
+            <p className="mt-1 text-xs text-destructive" role="alert">
+              {' '}
+            </p>
+          )}
         </div>
-        <div className="variable-input-param-container">
-          <Checkbox
-            checked={dateRange}
-            onChange={handleSelectDateRange}
-            size="small"
-            sx={{ marginLeft: '49px', height: '30px', width: '30px' }}
-            data-testid="date-range-checkbox"
+
+        {/* Start date */}
+        <div>
+          {/* Date range checkbox */}
+          <div className="mb-1 flex items-center gap-1.5">
+            <Checkbox
+              id="date-range"
+              checked={dateRange}
+              onCheckedChange={handleSelectDateRange}
+              data-testid="date-range-checkbox"
+            />
+            <Label htmlFor="date-range" className="cursor-pointer text-xs">
+              {t('date_range')}
+            </Label>
+          </div>
+          <DatePicker
+            value={requestState.startDate}
+            minDate={dayjs.utc().startOf('day')}
+            onChange={(newValue) => {
+              setRequestState({
+                ...requestState,
+                startDate: newValue?.startOf('day') || dayjs.utc().startOf('day'),
+                endDate: !dateRange
+                  ? newValue?.startOf('day') || dayjs.utc().startOf('day')
+                  : requestState.endDate,
+              });
+              setStartDateError(false);
+              if (!dateRange) setEndDateError(false);
+            }}
+            error={startDateError}
+            data-testid="start-date-picker"
+            className="w-full max-w-full"
           />
-          <Typography sx={{ fontSize: '0.8rem' }}>{t('date_range')}</Typography>
+          {startDateError && (
+            <p className="mt-1 text-xs text-destructive" role="alert">
+              {' '}
+            </p>
+          )}
         </div>
-        <div className="variable-input-container">
-          <AccessTimeIcon sx={{ marginLeft: 2, marginRight: 1 }} />
-          <div className="date-pickers-container">
+
+        {/* End date (date range) */}
+        {dateRange && (
+          <div>
             <DatePicker
-              minDate={dayjs.utc().startOf('day')}
-              sx={{ marginLeft: 1, marginRight: 2 }}
-              value={requestState.startDate}
+              value={requestState.endDate}
+              minDate={requestState.startDate}
               onChange={(newValue) => {
                 setRequestState({
                   ...requestState,
-                  startDate: newValue?.startOf('day') || dayjs.utc().startOf('day'),
-                  endDate: !dateRange
-                    ? newValue?.startOf('day') || dayjs.utc().startOf('day')
-                    : requestState.endDate,
+                  endDate: newValue?.startOf('day') || dayjs.utc().startOf('day'),
                 });
-                setStartDateError(false);
-                if (!dateRange) setEndDateError(false);
+                setEndDateError(false);
               }}
-              slotProps={{
-                textField: {
-                  error: startDateError,
-                  inputProps: { 'data-testid': 'start-date-picker' },
-                },
-                // openPickerButton: { "data-testid": "start-date-picker" } as any,
-              }}
+              error={endDateError}
+              data-testid="end-date-picker"
+              className="w-full max-w-full"
             />
-            {dateRange && (
-              <DatePicker
-                minDate={requestState.startDate}
-                sx={{
-                  marginLeft: 1,
-                  marginTop: '1px',
-                  marginRight: 2,
-                  width: '100%',
-                }}
-                value={requestState.endDate}
-                onChange={(newValue) => {
-                  setRequestState({
-                    ...requestState,
-                    endDate: newValue?.startOf('day') || dayjs.utc().startOf('day'),
-                  });
-                  setEndDateError(false);
-                }}
-                slotProps={{
-                  textField: {
-                    error: endDateError,
-                    inputProps: { 'data-testid': 'end-date-picker' },
-                  },
-                }}
-              />
+            {endDateError && (
+              <p className="mt-1 text-xs text-destructive" role="alert">
+                {' '}
+              </p>
             )}
           </div>
-        </div>
+        )}
+
+        {/* Negative/Positive toggle (work demand only) */}
         {requestType === RequestType.WORK_DEMAND && (
-          <div className="variable-input-param-container">
-            <ToggleButtonGroup
-              color="primary"
-              value={requestState.negative}
-              exclusive
-              onChange={(event, value) => {
-                // Only update if value is not null (prevent deselection)
-                if (value !== null) {
-                  setRequestState({ ...requestState, negative: value });
+          <div>
+            <ToggleGroup
+              type="single"
+              value={requestState.negative ? 'true' : 'false'}
+              onValueChange={(value) => {
+                if (value) {
+                  setRequestState({ ...requestState, negative: value === 'true' });
                 }
               }}
-              aria-label="Platform"
               data-testid="negative-positive-toggle"
             >
-              <ToggleButton
-                value={false}
-                sx={{
-                  marginTop: '5px',
-                  marginBottom: '5px',
-                  marginLeft: '56px',
-                  textTransform: 'none',
-                  height: '30px',
-                  width: '105px',
-                  fontSize: '0.8rem',
-                }}
+              <ToggleGroupItem
+                value="false"
                 data-testid="positive-request-button"
+                className="min-w-[105px] px-4"
               >
                 {t('do')}
-              </ToggleButton>
-              <ToggleButton
-                value={true}
-                sx={{
-                  marginTop: '5px',
-                  marginBottom: '5px',
-                  textTransform: 'none',
-                  height: '30px',
-                  width: '105px',
-                  fontSize: '0.8rem',
-                }}
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="true"
                 data-testid="negative-request-button"
+                className="min-w-[105px] px-4"
               >
                 {t('dont')}
-              </ToggleButton>
-            </ToggleButtonGroup>
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
         )}
-        <div className="variable-input-container">
-          <WorkIcon sx={{ marginLeft: 2, marginRight: 1 }} />
+
+        {/* Shift / ShiftOptions */}
+        <div>
           {requestType === RequestType.WORK_DEMAND ? (
             <div
-              style={
-                shiftOptionsError
-                  ? {
-                      border: '2px solid #f44336',
-                      borderRadius: 8,
-                      padding: 2,
-                    }
-                  : {}
-              }
+              className={shiftOptionsError ? 'rounded-lg border-2 border-destructive p-0.5' : ''}
             >
               <ShiftOptionsDisplay
                 lng={lng}
@@ -671,36 +554,59 @@ const RequestForm = ({
               />
             </div>
           ) : (
-            selectShift()
+            <div className="relative">
+              <Briefcase className="pointer-events-none absolute top-1/2 left-2.5 z-10 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Select
+                value={requestState.shiftId || ''}
+                onValueChange={(value) => {
+                  setRequestState({ ...requestState, shiftId: value });
+                  setShiftIdError(false);
+                }}
+              >
+                <SelectTrigger
+                  data-testid="shift-select"
+                  aria-invalid={shiftIdError}
+                  className="w-full max-w-full pl-9"
+                >
+                  <SelectValue placeholder={t('select_a_shift')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {filterShiftsByRequestType(shifts, requestType).map((shift) => (
+                    <SelectItem key={shift.id} value={shift.id}>
+                      {shift.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          {(shiftIdError || shiftOptionsError) && (
+            <p className="mt-1 text-xs text-destructive" role="alert">
+              {' '}
+            </p>
           )}
         </div>
-        <div className="save-button-container">
+
+        {/* Actions */}
+        <FormActions>
           {isEdit && request && handleDeleteRequest && (
             <Button
-              variant="outlined"
-              color="error"
+              variant="destructive"
               onClick={() => {
                 handleDeleteRequest(request.id);
                 if (onClose) onClose();
               }}
               disabled={!canEdit}
-              startIcon={<DeleteIcon />}
-              sx={{ marginRight: 2 }}
-              data-testid={`delete-request-button`}
+              data-testid="delete-request-button"
             >
+              <Trash2 className="mr-1 size-4" />
               {t('delete')}
             </Button>
           )}
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ marginRight: 2 }}
-            onClick={handleSaveRequest}
-            data-testid="save-request-button"
-          >
+          <Button onClick={handleSaveRequest} data-testid="save-request-button">
             {t('save')}
           </Button>
-        </div>
+        </FormActions>
       </div>
     </div>
   );

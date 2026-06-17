@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { WorkerTestBase } from '../../utils/worker-test-base';
 import dayjs from 'dayjs';
 import { DimensionEntryType } from '../../../src/types/dimension';
+import { WeeklySlotPreference, WeekParity } from '../../../src/types/worker';
 
 test.describe('Worker Edit Dialog', () => {
   const testBasesMap = new Map<string, WorkerTestBase>();
@@ -495,5 +496,444 @@ test.describe('Worker Edit Dialog', () => {
     expect(tagAttr2!.dimEntryIds).toContain(newDimEntries[1].id);
 
     console.log('✅ DIM_ENTRIES (tags) attribute selected via dialog — API verified');
+  });
+});
+
+// ─── Weekly Preferences Helpers ───────────────────────────────────────────
+
+/** Sort-key for stable array comparison. */
+function slotSortKey(s: WeeklySlotPreference): string {
+  return `${s.weekParity}-${s.dayOfWeek}-${s.slot}`;
+}
+
+/** Assert that actual slots match the expected set (order-independent). */
+function expectSlotsMatch(actual: WeeklySlotPreference[], expected: WeeklySlotPreference[]): void {
+  const sortedActual = [...actual].sort((a, b) => slotSortKey(a).localeCompare(slotSortKey(b)));
+  const sortedExpected = [...expected].sort((a, b) => slotSortKey(a).localeCompare(slotSortKey(b)));
+  expect(sortedActual).toEqual(sortedExpected);
+}
+
+/** Build an expected WeeklySlotPreference. */
+function sp(
+  parity: WeekParity,
+  day: number,
+  slot: 'morning' | 'afternoon' | 'night',
+  restriction: 'no_work' | 'no_normal' | 'no_duty' = 'no_work',
+): WeeklySlotPreference {
+  return { weekParity: parity, dayOfWeek: day, slot, restriction, shiftIds: [] };
+}
+
+test.describe('Worker Weekly Preferences', () => {
+  const testBasesMap = new Map<string, WorkerTestBase>();
+
+  test.beforeEach(async ({ page }, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+
+    const workerTestBase = new WorkerTestBase();
+    testBasesMap.set(testRunId, workerTestBase);
+    (testInfo as any).testRunId = testRunId;
+
+    await getTestBase(testInfo).setupWorkerTests(workerIndex);
+    await getTestBase(testInfo).navigateToWorkersPage(page);
+  });
+
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+    testBasesMap.delete(testRunId);
+  });
+
+  function getTestBase(testInfo: any): WorkerTestBase {
+    const testRunId = testInfo.testRunId as string;
+    const tb = testBasesMap.get(testRunId);
+    if (!tb) throw new Error('Test base not found');
+    return tb;
+  }
+
+  // ─── 3.1 Mode Layout ──────────────────────────────────────────────────
+
+  test('all weeks shows single grid', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-Mode1' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    // Default mode should be "single" (all weeks)
+    await expect(page.locator('[data-testid="weekly-grid-cell-all-0-morning"]')).toBeVisible();
+    await expect(page.locator('[data-testid="weekly-grid-cell-even-0-morning"]')).not.toBeVisible();
+    await expect(page.locator('[data-testid="weekly-grid-cell-odd-0-morning"]')).not.toBeVisible();
+  });
+
+  test('even/odd shows two grids', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-Mode2' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    await tb.setDialogWeekMode(page, 'even_odd');
+
+    // Even and odd cells should be visible; all should NOT
+    await expect(page.locator('[data-testid="weekly-grid-cell-even-0-morning"]')).toBeVisible();
+    await expect(page.locator('[data-testid="weekly-grid-cell-odd-0-morning"]')).toBeVisible();
+    await expect(page.locator('[data-testid="weekly-grid-cell-all-0-morning"]')).not.toBeVisible();
+  });
+
+  // ─── 3.2 Single Cell — All Weeks ──────────────────────────────────────
+
+  test('all weeks: select no_work morning updates backend', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-SC1' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    await tb.setDialogRestriction(page, 'no_work');
+    await tb.clickGridCell(page, 'all', 0, 'morning');
+    await tb.saveEditDialog(page);
+
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [sp('all', 0, 'morning', 'no_work')]);
+  });
+
+  test('all weeks: select no_normal afternoon updates backend', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-SC2' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    await tb.setDialogRestriction(page, 'no_normal');
+    await tb.clickGridCell(page, 'all', 0, 'afternoon');
+    await tb.saveEditDialog(page);
+
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [
+      sp('all', 0, 'afternoon', 'no_normal'),
+    ]);
+  });
+
+  test('all weeks: select no_duty night updates backend', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-SC3' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    await tb.setDialogRestriction(page, 'no_duty');
+    await tb.clickGridCell(page, 'all', 0, 'night');
+    await tb.saveEditDialog(page);
+
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [sp('all', 0, 'night', 'no_duty')]);
+  });
+
+  // ─── 3.2 Single Cell — Even/Odd ───────────────────────────────────────
+
+  test('even/odd: select no_work morning (even) updates backend', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-SC4' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+    await tb.setDialogWeekMode(page, 'even_odd');
+
+    await tb.setDialogRestriction(page, 'no_work');
+    await tb.clickGridCell(page, 'even', 0, 'morning');
+    await tb.saveEditDialog(page);
+
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [sp('even', 0, 'morning', 'no_work')]);
+  });
+
+  test('even/odd: select no_normal afternoon (even) updates backend', async ({
+    page,
+  }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-SC5' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+    await tb.setDialogWeekMode(page, 'even_odd');
+
+    await tb.setDialogRestriction(page, 'no_normal');
+    await tb.clickGridCell(page, 'even', 0, 'afternoon');
+    await tb.saveEditDialog(page);
+
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [
+      sp('even', 0, 'afternoon', 'no_normal'),
+    ]);
+  });
+
+  test('even/odd: select no_duty night (even) updates backend', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-SC6' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+    await tb.setDialogWeekMode(page, 'even_odd');
+
+    await tb.setDialogRestriction(page, 'no_duty');
+    await tb.clickGridCell(page, 'even', 0, 'night');
+    await tb.saveEditDialog(page);
+
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [sp('even', 0, 'night', 'no_duty')]);
+  });
+
+  // ─── 3.3 Full Day (column header) — All Weeks ─────────────────────────
+
+  test('all weeks: full day click fills all slots for that day', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-FD1' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    await tb.setDialogRestriction(page, 'no_work');
+    await tb.clickGridColumn(page, 'all', 2); // Wednesday
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [
+      sp('all', 2, 'morning', 'no_work'),
+      sp('all', 2, 'afternoon', 'no_work'),
+      sp('all', 2, 'night', 'no_work'),
+    ]);
+  });
+
+  test('all weeks: full day toggle removes slots', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-FD2' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    await tb.setDialogRestriction(page, 'no_normal');
+    // Click to fill
+    await tb.clickGridColumn(page, 'all', 4); // Friday
+    // Click again to remove (all should match active restriction, so toggle off)
+    await tb.clickGridColumn(page, 'all', 4);
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], []);
+  });
+
+  // ─── 3.3 Full Day (column header) — Even/Odd ──────────────────────────
+
+  test('even/odd: full day click fills all slots for that day/parity', async ({
+    page,
+  }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-FD3' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+    await tb.setDialogWeekMode(page, 'even_odd');
+
+    await tb.setDialogRestriction(page, 'no_duty');
+    await tb.clickGridColumn(page, 'even', 1); // Tuesday even
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [
+      sp('even', 1, 'morning', 'no_duty'),
+      sp('even', 1, 'afternoon', 'no_duty'),
+      sp('even', 1, 'night', 'no_duty'),
+    ]);
+  });
+
+  test('even/odd: full day toggle removes slots', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-FD4' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+    await tb.setDialogWeekMode(page, 'even_odd');
+
+    await tb.setDialogRestriction(page, 'no_work');
+    await tb.clickGridColumn(page, 'odd', 6); // Sunday odd
+    await tb.clickGridColumn(page, 'odd', 6);
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], []);
+  });
+
+  // ─── 3.4 Period for All Days (row header) — All Weeks ─────────────────
+
+  test('all weeks: row header fills all days for that slot', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-RH1' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    await tb.setDialogRestriction(page, 'no_normal');
+    await tb.clickGridRow(page, 'all', 'morning');
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    const expected: WeeklySlotPreference[] = [0, 1, 2, 3, 4, 5, 6].map((d) =>
+      sp('all', d, 'morning', 'no_normal'),
+    );
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], expected);
+  });
+
+  test('all weeks: row header toggle removes all slots for that period', async ({
+    page,
+  }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-RH2' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    await tb.setDialogRestriction(page, 'no_duty');
+    await tb.clickGridRow(page, 'all', 'afternoon');
+    await tb.clickGridRow(page, 'all', 'afternoon');
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], []);
+  });
+
+  // ─── 3.4 Period for All Days (row header) — Even/Odd ──────────────────
+
+  test('even/odd: row header fills all days for that slot/parity', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-RH3' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+    await tb.setDialogWeekMode(page, 'even_odd');
+
+    await tb.setDialogRestriction(page, 'no_work');
+    await tb.clickGridRow(page, 'even_odd', 'night');
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    const expected: WeeklySlotPreference[] = [];
+    for (const parity of ['even', 'odd'] as WeekParity[]) {
+      for (let d = 0; d < 7; d++) {
+        expected.push(sp(parity, d, 'night', 'no_work'));
+      }
+    }
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], expected);
+  });
+
+  test('even/odd: paired row header fills both parities', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-RH4' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+    await tb.setDialogWeekMode(page, 'even_odd');
+
+    // Set viewport wide enough for paired grid (md+)
+    await page.setViewportSize({ width: 1280, height: 900 });
+
+    await tb.setDialogRestriction(page, 'no_normal');
+    // Click the paired row header (applies to BOTH even AND odd)
+    await tb.clickGridRow(page, 'even_odd', 'morning');
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    const expected: WeeklySlotPreference[] = [];
+    for (const parity of ['even', 'odd'] as WeekParity[]) {
+      for (let d = 0; d < 7; d++) {
+        expected.push(sp(parity, d, 'morning', 'no_normal'));
+      }
+    }
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], expected);
+  });
+
+  // ─── 3.5 Random Combinations — All Weeks ───────────────────────────────
+
+  test('all weeks: mixed restrictions on different cells', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-Mix1' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    // no_work: Mon morning
+    await tb.setDialogRestriction(page, 'no_work');
+    await tb.clickGridCell(page, 'all', 0, 'morning');
+    // no_normal: Tue afternoon
+    await tb.setDialogRestriction(page, 'no_normal');
+    await tb.clickGridCell(page, 'all', 1, 'afternoon');
+    // no_duty: Wed night
+    await tb.setDialogRestriction(page, 'no_duty');
+    await tb.clickGridCell(page, 'all', 2, 'night');
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [
+      sp('all', 0, 'morning', 'no_work'),
+      sp('all', 1, 'afternoon', 'no_normal'),
+      sp('all', 2, 'night', 'no_duty'),
+    ]);
+  });
+
+  // ─── 3.5 Random Combinations — Even/Odd ────────────────────────────────
+
+  test('even/odd: mixed restrictions on different cells across parities', async ({
+    page,
+  }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-Mix2' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+    await tb.setDialogWeekMode(page, 'even_odd');
+
+    // no_work: Mon morning (even)
+    await tb.setDialogRestriction(page, 'no_work');
+    await tb.clickGridCell(page, 'even', 0, 'morning');
+    // no_normal: Tue afternoon (odd)
+    await tb.setDialogRestriction(page, 'no_normal');
+    await tb.clickGridCell(page, 'odd', 1, 'afternoon');
+    // no_duty: Fri night (even)
+    await tb.setDialogRestriction(page, 'no_duty');
+    await tb.clickGridCell(page, 'even', 4, 'night');
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [
+      sp('even', 0, 'morning', 'no_work'),
+      sp('odd', 1, 'afternoon', 'no_normal'),
+      sp('even', 4, 'night', 'no_duty'),
+    ]);
+  });
+
+  // ─── 3.6 Cross-Mode ────────────────────────────────────────────────────
+
+  test('mixed all weeks and even/odd values coexist', async ({ page }, testInfo) => {
+    const tb = getTestBase(testInfo);
+    const worker = await tb.createTestWorker({ name: 'WPref-Cross' });
+    await page.reload();
+    await page.waitForSelector('[aria-label="worker table"]');
+    await tb.openEditDialog(page, worker.id);
+
+    // Set a value in all weeks mode
+    await tb.setDialogRestriction(page, 'no_work');
+    await tb.clickGridCell(page, 'all', 0, 'morning');
+
+    // Switch to even/odd and set a different value
+    await tb.setDialogWeekMode(page, 'even_odd');
+    await tb.setDialogRestriction(page, 'no_duty');
+    await tb.clickGridCell(page, 'even', 1, 'afternoon');
+
+    await tb.saveEditDialog(page);
+    const updated = await tb.getWorkerById(worker.id);
+    expectSlotsMatch(updated.weeklyPreferences?.slots ?? [], [
+      sp('all', 0, 'morning', 'no_work'),
+      sp('even', 1, 'afternoon', 'no_duty'),
+    ]);
   });
 });

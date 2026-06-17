@@ -55,5 +55,12 @@
   "gap_mode_off": "Desactivado — sin restricción de intervalo",
   "gap_mode_set": "Fijo — aplicar un número fijo de días",
   "gap_mode_auto": "Automático — calcular el intervalo automáticamente",
-  "worker": "Miembro"
+  "worker": "Miembro",
+  "slot_periods": "Franjas horarias",
+  "slot_periods_morning": "Mañana",
+  "slot_periods_afternoon": "Tarde",
+  "slot_periods_night": "Noche",
+  "slot_periods_start": "Inicio",
+  "slot_periods_end": "Fin",
+  "slot_periods_defaults_note": "Predeterminado: Mañana 6:00–12:00, Tarde 12:00–18:00, Noche 18:00–6:00"
 }
