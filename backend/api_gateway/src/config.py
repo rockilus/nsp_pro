@@ -86,6 +86,11 @@ class AppConfig(BaseSettings):
         None, description="AWS Cognito User Pool ID"
     )
     cognito_client_id: str | None = Field(None, description="AWS Cognito App Client ID")
+    cognito_endpoint_url: str | None = Field(
+        None,
+        description="Dedicated endpoint for Cognito (e.g., cognito-local). "
+        "Overrides endpoint_url for cognito-idp calls only.",
+    )
 
     # Development authentication fields
     dev_user_id: str = Field(

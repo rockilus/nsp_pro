@@ -48,10 +48,10 @@ function OtpForm({ lng }: { lng: string }) {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md" data-testid="auth-otp-page">
       <CardHeader className="text-center">
         <CardTitle>{t('enter_otp')}</CardTitle>
-        <CardDescription>
+        <CardDescription data-testid="auth-otp-email">
           {t('otp_sent_to')} {email}
         </CardDescription>
       </CardHeader>
@@ -67,21 +67,23 @@ function OtpForm({ lng }: { lng: string }) {
               maxLength={6}
               required
               className="text-center text-lg tracking-[0.25em]"
+              data-testid="auth-otp-input"
             />
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-sm text-destructive" data-testid="auth-error-message">{error}</p>}
           {resent && (
-            <p className="text-sm text-green-600 dark:text-green-400">
+            <p className="text-sm text-green-600 dark:text-green-400" data-testid="auth-resent-message">
               {t('send_email_success_message')}
             </p>
           )}
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading} data-testid="auth-otp-submit">
             {loading ? '...' : t('verify_email')}
           </Button>
           <button
             type="button"
             onClick={handleResend}
             className="w-full text-center text-sm text-muted-foreground hover:underline"
+            data-testid="auth-resend-code-button"
           >
             {t('resend_code')}
           </button>

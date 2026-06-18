@@ -53,7 +53,7 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md" data-testid="auth-signup-page">
       <CardHeader className="text-center">
         <CardTitle>{t('sign_up')}</CardTitle>
       </CardHeader>
@@ -67,6 +67,7 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
+                data-testid="auth-firstname-input"
               />
             </div>
             <div className="space-y-2">
@@ -76,6 +77,7 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
+                data-testid="auth-lastname-input"
               />
             </div>
           </div>
@@ -88,6 +90,7 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
+              data-testid="auth-email-input"
             />
           </div>
           <div className="space-y-2">
@@ -100,6 +103,7 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
               required
               minLength={8}
               autoComplete="new-password"
+              data-testid="auth-password-input"
             />
             <p className="text-xs text-muted-foreground">{t('password_requirements')}</p>
           </div>
@@ -113,15 +117,18 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
               required
               minLength={8}
               autoComplete="new-password"
+              data-testid="auth-confirm-password-input"
             />
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+          {error && (
+            <p className="text-sm text-destructive" data-testid="auth-error-message">{error}</p>
+          )}
+          <Button type="submit" className="w-full" disabled={loading} data-testid="auth-signup-submit">
             {loading ? '...' : t('sign_up')}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          <Link href={`/${lng}/auth/signin`} className="hover:underline">
+          <Link href={`/${lng}/auth/signin`} className="hover:underline" data-testid="auth-signin-link">
             {t('to_sign_in')}
           </Link>
         </p>

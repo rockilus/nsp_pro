@@ -56,3 +56,15 @@ class AuthnConnectionError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
+
+class AuthnUserNotConfirmedError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+class SecurityViolation(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)

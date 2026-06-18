@@ -35,7 +35,7 @@ export default function ForgotPasswordPage({ params }: { params: Promise<{ lng: 
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md" data-testid="auth-forgot-password-page">
       <CardHeader className="text-center">
         <CardTitle>{t('forgot_password')}</CardTitle>
         <CardDescription>{t('reset_password_send_link_message')}</CardDescription>
@@ -51,15 +51,16 @@ export default function ForgotPasswordPage({ params }: { params: Promise<{ lng: 
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
+              data-testid="auth-email-input"
             />
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+          {error && <p className="text-sm text-destructive" data-testid="auth-error-message">{error}</p>}
+          <Button type="submit" className="w-full" disabled={loading} data-testid="auth-forgot-password-submit">
             {loading ? '...' : t('send_reset_link')}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          <Link href={`/${lng}/auth/signin`} className="hover:underline">
+          <Link href={`/${lng}/auth/signin`} className="hover:underline" data-testid="auth-back-to-signin-link">
             {t('back_to_sign_in')}
           </Link>
         </p>

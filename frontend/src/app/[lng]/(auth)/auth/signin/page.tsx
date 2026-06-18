@@ -36,7 +36,7 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md" data-testid="auth-signin-page">
       <CardHeader className="text-center">
         <CardTitle>{t('sign_in')}</CardTitle>
         <CardDescription>{t('email_address')}</CardDescription>
@@ -52,6 +52,7 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
+              data-testid="auth-email-input"
             />
           </div>
           <div className="space-y-2">
@@ -60,6 +61,7 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
               <Link
                 href={`/${lng}/auth/forgot-password`}
                 className="text-sm text-muted-foreground hover:underline"
+                data-testid="auth-forgot-password-link"
               >
                 {t('forgot_password')}
               </Link>
@@ -71,15 +73,18 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
+              data-testid="auth-password-input"
             />
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+          {error && (
+            <p className="text-sm text-destructive" data-testid="auth-error-message">{error}</p>
+          )}
+          <Button type="submit" className="w-full" disabled={loading} data-testid="auth-signin-submit">
             {loading ? '...' : t('sign_in')}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          <Link href={`/${lng}/auth/signup`} className="hover:underline">
+          <Link href={`/${lng}/auth/signup`} className="hover:underline" data-testid="auth-signup-link">
             {t('to_sign_up')}
           </Link>
         </p>

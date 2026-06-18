@@ -21,11 +21,13 @@ from shared.schemas.core import TeamMembership, TeamMembershipRole
 
 from src.config import config
 from src.dependencies import (
+    get_auth_service,
     get_db_collections,
     get_test_service,
     get_user_context,
 )
 from src.security.user_context import UserContext
+from src.services.auth_service import AuthService
 from src.services.team_membership_service import TeamMembershipService
 from src.services.test_service import SolverTestScenariosService
 
@@ -426,5 +428,46 @@ async def add_team_member(
         logger.error(f"Failed to add team member: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to list scenarios: {str(e)}",
+            detail=f"Failed to add team member: {str(e)}",
+        ) from e
+
+
+class ConfirmCognitoUserRequest(BaseModel):
+    email: str
+
+
+class ConfirmCognitoUserResponse(BaseModel):
+    success: bool
+    message: str
+    email: str
+
+
+@router.post("/confirm-cognito-user", response_model=ConfirmCognitoUserResponse)
+async def confirm_cognito_user(
+    request: ConfirmCognitoUserRequest,
+    _: None = Depends(get_test_environment_only),
+    auth_service: AuthService = Depends(get_auth_service),
+) -> ConfirmCognitoUserResponse:
+    """
+    Admin-confirm a Cognito user (test environment only).
+
+    Calls AuthService.admin_confirm_user_in_cognito() which is guarded
+    against production use via SecurityViolation. The endpoint itself is
+    additionally gated by get_test_environment_only().
+    """
+    try:
+        await auth_service.admin_confirm_user_in_cognito(request.email)
+        logger.info(f"Admin-confirmed Cognito user: {request.email}")
+        return ConfirmCognitoUserResponse(
+            success=True,
+            message=f"User {request.email} confirmed successfully",
+            email=request.email,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to confirm Cognito user: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to confirm user: {str(e)}",
         ) from e

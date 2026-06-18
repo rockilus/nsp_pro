@@ -15,10 +15,10 @@ from src.config import config
 from src.errors import (
     AuthnConnectionError,
     AuthnEmailAlreadyExistsError,
-    AuthnPasswordChangeError,
     AuthnPasswordPolicyViolationError,
     AuthnUpdateEmailError,
     AuthnUserNotFoundError,
+    AuthnUserNotConfirmedError,
     AuthnWrongCredentialsError,
 )
 
@@ -109,7 +109,7 @@ _COGNITO_ERROR_MAP: dict[str, type[Exception]] = {
     "TooManyRequestsException": AuthnConnectionError,
     "LimitExceededException": AuthnConnectionError,
     "AliasExistsException": AuthnEmailAlreadyExistsError,
-    "UserNotConfirmedException": AuthnPasswordChangeError,
+    "UserNotConfirmedException": AuthnUserNotConfirmedError,
     "InvalidParameterException": AuthnUpdateEmailError,
 }
 
@@ -129,7 +129,9 @@ def _get_raw_cognito_client():
         "service_name": "cognito-idp",
         "region_name": config.aws_region,
     }
-    if config.endpoint_url:
+    if config.cognito_endpoint_url:
+        client_kwargs["endpoint_url"] = config.cognito_endpoint_url
+    elif config.endpoint_url:
         client_kwargs["endpoint_url"] = config.endpoint_url
     log_info(f"Initializing Cognito client for region: {config.aws_region}")
     return boto3.client(**client_kwargs)  # type: ignore
@@ -199,13 +201,19 @@ class Boto3CognitoAuthClient(CognitoAuthClient):
 
     # -- sign-in flow -------------------------------------------------------
 
+    @staticmethod
+    def _auth_flow() -> str:
+        """cognito-local only supports USER_PASSWORD_AUTH."""
+        return "USER_PASSWORD_AUTH" if config.cognito_endpoint_url else "ADMIN_NO_SRP_AUTH"
+
     async def initiate_auth(self, email: str, password: str) -> AuthTokens:
         log_info(f"Initiating auth for: {email}")
+        flow = self._auth_flow()
         try:
             resp = self._client.admin_initiate_auth(
                 UserPoolId=self._pool_id,
                 ClientId=self._client_id,
-                AuthFlow="ADMIN_NO_SRP_AUTH",
+                AuthFlow=flow,
                 AuthParameters={
                     "USERNAME": email,
                     "PASSWORD": password,

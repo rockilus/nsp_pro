@@ -7,7 +7,9 @@ from .authn_errors.authn_errors import (
     AuthnPasswordPolicyViolationError,
     AuthnUpdateEmailError,
     AuthnUserNotFoundError,
+    AuthnUserNotConfirmedError,
     AuthnWrongCredentialsError,
+    SecurityViolation,
 )
 from .message_errors.message_error_handlers import handle_message_errors
 from .message_errors.message_errors import MessageTypeError
@@ -26,8 +28,10 @@ __all__ = [
     "AuthnPasswordChangeError",
     "AuthnPasswordPolicyViolationError",
     "AuthnUserNotFoundError",
+    "AuthnUserNotConfirmedError",
     "AuthnWrongCredentialsError",
     "AuthnUpdateEmailError",
+    "SecurityViolation",
     "handle_message_errors",
     "MessageTypeError",
     "handle_routes_errors",

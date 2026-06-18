@@ -72,6 +72,50 @@ async function globalSetup(config: FullConfig) {
       console.warn('⚠️ Continuing with setup despite second user creation failure');
     }
 
+    // Create known-good Cognito user for auth session E2E tests
+    console.log('🔐 Creating known-good Cognito user for auth session tests...');
+    const knownUserEmail = 'e2e-known-good@test.rockilus.com';
+    const knownUserPassword = 'KnownGood1!';
+    try {
+      // Sign up the user in Cognito
+      const signupResp = await fetch(`${testConfig.apiUrl}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: knownUserEmail,
+          first_name: 'Known',
+          last_name: 'Good',
+          password: knownUserPassword,
+          confirm_password: knownUserPassword,
+        }),
+      });
+      if (!signupResp.ok) {
+        const err = await signupResp.json().catch(() => ({}));
+        console.warn(`⚠️ Known-good user signup returned ${signupResp.status}:`, err);
+      }
+
+      // Admin-confirm the user (bypass OTP — needed for test setup)
+      const confirmResp = await fetch(`${testConfig.apiUrl}/test-utils/confirm-cognito-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': testConfig.devApiKey,
+        },
+        body: JSON.stringify({ email: knownUserEmail }),
+      });
+      if (!confirmResp.ok) {
+        const err = await confirmResp.json().catch(() => ({}));
+        console.warn(`⚠️ Known-good user confirm returned ${confirmResp.status}:`, err);
+      }
+
+      // Expose via env for test files to read
+      process.env.E2E_KNOWN_USER_EMAIL = knownUserEmail;
+      process.env.E2E_KNOWN_USER_PASSWORD = knownUserPassword;
+      console.log(`✅ Known-good Cognito user created: ${knownUserEmail}`);
+    } catch (error) {
+      console.warn('⚠️ Known-good Cognito user creation failed:', error);
+    }
+
     // Optional: Verify we can create and query a browser for testing
     const browser = await chromium.launch();
     const page = await browser.newPage();

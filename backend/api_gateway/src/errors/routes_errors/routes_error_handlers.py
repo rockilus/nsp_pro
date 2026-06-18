@@ -10,7 +10,9 @@ from src.errors.authn_errors.authn_errors import (
     AuthnPasswordPolicyViolationError,
     AuthnUpdateEmailError,
     AuthnUserNotFoundError,
+    AuthnUserNotConfirmedError,
     AuthnWrongCredentialsError,
+    SecurityViolation,
 )
 from src.errors.message_errors.message_errors import (
     MessageTypeError,
@@ -56,6 +58,12 @@ def handle_routes_errors(error: Exception) -> NoReturn:
         raise HTTPException(
             status_code=401, detail=error.message or "Invalid credentials"
         )
+    if isinstance(error, AuthnUserNotConfirmedError):
+        raise HTTPException(
+            status_code=403,
+            detail=error.message
+            or "Account not confirmed. Please check your email.",
+        )
     if isinstance(error, AuthnEmailAlreadyExistsError):
         raise HTTPException(
             status_code=409, detail=error.message or "Email already registered"
@@ -75,6 +83,8 @@ def handle_routes_errors(error: Exception) -> NoReturn:
             status_code=400,
             detail=error.message,
         )
+    if isinstance(error, SecurityViolation):
+        raise HTTPException(status_code=500, detail="Internal security violation")
     if isinstance(error, AuthnConnectionError):
         raise HTTPException(status_code=503, detail=USER_ERROR_MESSAGE_GENERIC)
     if isinstance(error, NoCampaignError):

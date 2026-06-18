@@ -45,7 +45,7 @@ function ResetForm({ lng }: { lng: string }) {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md" data-testid="auth-reset-password-page">
       <CardHeader className="text-center">
         <CardTitle>{t('reset_password')}</CardTitle>
         <CardDescription>{t('reset_password_message')}</CardDescription>
@@ -62,6 +62,7 @@ function ResetForm({ lng }: { lng: string }) {
               maxLength={6}
               required
               className="text-center text-lg tracking-[0.25em]"
+              data-testid="auth-otp-input"
             />
           </div>
           <div className="space-y-2">
@@ -74,6 +75,7 @@ function ResetForm({ lng }: { lng: string }) {
               required
               minLength={8}
               autoComplete="new-password"
+              data-testid="auth-new-password-input"
             />
             <p className="text-xs text-muted-foreground">{t('password_requirements')}</p>
           </div>
@@ -87,10 +89,11 @@ function ResetForm({ lng }: { lng: string }) {
               required
               minLength={8}
               autoComplete="new-password"
+              data-testid="auth-confirm-password-input"
             />
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
+          {error && <p className="text-sm text-destructive" data-testid="auth-error-message">{error}</p>}
+          <Button type="submit" className="w-full" disabled={loading} data-testid="auth-reset-password-submit">
             {loading ? '...' : t('reset_password')}
           </Button>
         </form>

@@ -11,11 +11,13 @@ from shared.schemas.dto.auth import (
     VerifyEmailRequestDTO,
 )
 
-from src.errors import PasswordsDoNotMatchError
+from src.errors import PasswordsDoNotMatchError, SecurityViolation
 from src.integrations.authentication.cognito_auth_client import (
     AuthTokens,
     CognitoAuthClient,
 )
+
+from src.config import config
 
 
 class AuthService:
@@ -80,3 +82,9 @@ class AuthService:
 
     async def resend_code(self, request: ResendCodeRequestDTO) -> None:
         await self._auth.resend_confirmation_code(email=request.email)
+
+    async def admin_confirm_user_in_cognito(self, email: str) -> None:
+        """Admin-confirm a user bypassing OTP — forbidden in production."""
+        if config.environment == "production":
+            raise SecurityViolation("Admin bypass forbidden in production")
+        await self._auth.admin_confirm_sign_up(email)
