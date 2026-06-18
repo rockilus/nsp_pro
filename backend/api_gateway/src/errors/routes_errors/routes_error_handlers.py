@@ -4,7 +4,12 @@ from fastapi import HTTPException
 from shared.schemas.errors import SchemaTypeError, SchemaValueError
 
 from src.errors.authn_errors.authn_errors import (
+    AuthnConnectionError,
+    AuthnEmailAlreadyExistsError,
+    AuthnPasswordChangeError,
     AuthnPasswordPolicyViolationError,
+    AuthnUpdateEmailError,
+    AuthnUserNotFoundError,
     AuthnWrongCredentialsError,
 )
 from src.errors.message_errors.message_errors import (
@@ -45,13 +50,33 @@ def handle_routes_errors(error: Exception) -> NoReturn:
         )
     if isinstance(error, AuthnWrongCredentialsError):
         raise HTTPException(
-            status_code=403, detail="incorrect password, please try again"
+            status_code=401, detail=error.message or "Incorrect credentials"
+        )
+    if isinstance(error, AuthnUserNotFoundError):
+        raise HTTPException(
+            status_code=401, detail=error.message or "Invalid credentials"
+        )
+    if isinstance(error, AuthnEmailAlreadyExistsError):
+        raise HTTPException(
+            status_code=409, detail=error.message or "Email already registered"
         )
     if isinstance(error, AuthnPasswordPolicyViolationError):
         raise HTTPException(
             status_code=400,
             detail=error.message,
         )
+    if isinstance(error, AuthnPasswordChangeError):
+        raise HTTPException(
+            status_code=400,
+            detail=error.message,
+        )
+    if isinstance(error, AuthnUpdateEmailError):
+        raise HTTPException(
+            status_code=400,
+            detail=error.message,
+        )
+    if isinstance(error, AuthnConnectionError):
+        raise HTTPException(status_code=503, detail=USER_ERROR_MESSAGE_GENERIC)
     if isinstance(error, NoCampaignError):
         raise HTTPException(status_code=404, detail="No campaign schedule found")
     if isinstance(

@@ -235,10 +235,12 @@ async def change_email(
 ) -> Dict:
     try:
         if not rockilus_access_token:
-            return {"message": "Authentication required"}, 401
+            raise HTTPException(status_code=401, detail="Authentication required")
         await auth_service.change_email(rockilus_access_token, request)
         log_info("Change email requested")
         return {"message": "Verification code sent to new email address."}
+    except HTTPException:
+        raise
     except Exception as e:
         log_info("Change email failed")
         handle_routes_errors(e)
@@ -258,10 +260,12 @@ async def verify_email(
 ) -> Dict:
     try:
         if not rockilus_access_token:
-            return {"message": "Authentication required"}, 401
+            raise HTTPException(status_code=401, detail="Authentication required")
         await auth_service.verify_email(rockilus_access_token, request)
         log_info("Email verification successful")
         return {"message": "Email verified successfully."}
+    except HTTPException:
+        raise
     except Exception as e:
         log_info("Email verification failed")
         handle_routes_errors(e)
