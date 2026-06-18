@@ -100,7 +100,7 @@ export function useUpdateUser() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateUser;
@@ -147,7 +147,7 @@ export function useUpdatePassword() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updatePassword;

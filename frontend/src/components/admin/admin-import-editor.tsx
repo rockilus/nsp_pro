@@ -221,7 +221,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [importId, user]);
+  }, [importId]);
 
   // ── Auto-save ──────────────────────────────────────────────────────────
 
@@ -267,7 +267,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
         setSaveStatus('error');
       }
     },
-    [data, importId, user],
+    [data, importId],
   );
 
   // Debounced save trigger — stable reference (only depends on saveToServer).

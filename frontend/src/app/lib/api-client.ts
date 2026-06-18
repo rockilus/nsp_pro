@@ -213,7 +213,7 @@ export function useApiClient() {
       delete: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
         apiClient.delete<T>(endpoint, authInfo, options, data),
     };
-  }, [user, isAuthenticated, loading]);
+  }, [user]);
 }
 
 export function useSimpleApiClient() {

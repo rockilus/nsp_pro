@@ -146,7 +146,7 @@ export function useUpdateDimension() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateDimension;
@@ -180,7 +180,7 @@ export function useDeleteDimension() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteDimension;

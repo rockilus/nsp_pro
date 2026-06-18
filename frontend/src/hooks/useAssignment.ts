@@ -155,7 +155,7 @@ export function useAddAssignmentAndRecurrence() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient, user],
   );
 
   return addAssignmentAndRecurrence;
@@ -208,7 +208,7 @@ export function useUpdateAssignmentAndRecurrence() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return updateAssignmentAndRecurrence;
@@ -261,7 +261,7 @@ export function useDeleteAssignment() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return deleteAssignment;
@@ -358,7 +358,7 @@ export function useBulkCreateAssignments() {
       });
       return result;
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return bulkCreateAssignments;
@@ -396,7 +396,7 @@ export function useBulkUpdateAssignments() {
       });
       return result;
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return bulkUpdateAssignments;
@@ -425,7 +425,7 @@ export function useBulkToggleFixed() {
       });
       return result;
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return bulkToggleFixed;
@@ -459,7 +459,7 @@ export function useBulkDeleteAssignments() {
       });
       return result;
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return bulkDeleteAssignments;

@@ -228,7 +228,7 @@ export function useUpdateShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateShift;
@@ -262,7 +262,7 @@ export function useDeleteShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteShift;

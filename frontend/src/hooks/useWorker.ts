@@ -181,7 +181,7 @@ export function useUpdateWorker() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateWorker;
@@ -215,7 +215,7 @@ export function useAttachUserToWorker() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return attachUserToWorker;
@@ -249,7 +249,7 @@ export function useDeleteWorker() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteWorker;
@@ -298,7 +298,7 @@ export function useGetWorkersTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return getWorkersTabData;

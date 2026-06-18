@@ -318,7 +318,7 @@ export default function ImportMergeFullTableDialog({
       setExistingWorkers([]);
       setExistingShifts([]);
     }
-  }, [teamId, type, user, scheduleStartDate, scheduleEndDate]);
+  }, [teamId, type, scheduleStartDate, scheduleEndDate]);
 
   // Fetch when dialog opens
   useEffect(() => {

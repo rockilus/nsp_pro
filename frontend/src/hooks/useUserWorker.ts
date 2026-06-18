@@ -19,7 +19,7 @@ import { useAuth } from '../contexts/auth-context';
 export function useUserWorker(teamId: string | null | undefined, enabled = true) {
   const apiClient = useApiClient();
   const { user, isAuthenticated } = useAuth();
-  const userId = user?.profile?.sub;
+  const userId = user?.id;
 
   return useQuery<WorkerT | null, Error>({
     queryKey: ['userWorker', teamId, userId],

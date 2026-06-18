@@ -43,7 +43,7 @@ export function useAdminUsers() {
     } finally {
       setLoading(false);
     }
-  }, [apiClient, authLoading, isAuthenticated, user]);
+  }, [apiClient, authLoading, isAuthenticated]);
 
   useEffect(() => {
     if (hasFetched.current) return;

@@ -231,7 +231,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
     return () => {
       cancelled = true;
     };
-  }, [debouncedFilters, page, user, initialLoad]);
+  }, [debouncedFilters, page, initialLoad]);
 
   // ── Resolve targets (unchanged logic) ──
   const handleResolve = useCallback(async () => {
@@ -275,7 +275,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
     } finally {
       setResolving(false);
     }
-  }, [selectedTeamId, importId, user, onNext]);
+  }, [selectedTeamId, importId, onNext]);
 
   // ── Pagination helpers ──
   const totalPages = data ? Math.max(1, Math.ceil(data.total / pageSize)) : 1;

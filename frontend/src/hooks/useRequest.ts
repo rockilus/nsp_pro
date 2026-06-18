@@ -150,7 +150,7 @@ export function useUpdateRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateRequest;
@@ -187,7 +187,7 @@ export function useAcceptRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return acceptRequest;
@@ -221,7 +221,7 @@ export function useDenyRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return denyRequest;
@@ -258,7 +258,7 @@ export function useRescindRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return rescindRequest;
@@ -292,7 +292,7 @@ export function useDeleteRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteRequest;
@@ -366,7 +366,7 @@ export function useGetRequestsTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, getShiftOptions],
+    [apiClient, isAuthenticated, loading, getShiftOptions, user],
   );
 
   return getRequestsTabData;

@@ -205,7 +205,7 @@ export function useUpdateSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateSchedule;
@@ -239,7 +239,7 @@ export function useDeleteSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteSchedule;
@@ -273,7 +273,7 @@ export function useValidateSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return validateSchedule;
@@ -309,7 +309,7 @@ export function useExportSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return exportSchedule;
@@ -347,7 +347,7 @@ export function useDuplicatePeriod() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return duplicatePeriod;
@@ -389,7 +389,7 @@ export function useGetScheduleEntities() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return getScheduleEntities;
@@ -432,7 +432,7 @@ export function useGetScheduleAssignmentsData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return getScheduleAssignmentsData;
@@ -479,7 +479,7 @@ export function useGetScheduleAssignmentsDataNoSolver() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return getScheduleAssignmentsDataNoSolver;
@@ -497,7 +497,7 @@ export function useGetRequestDeadline(teamId: string | null | undefined) {
     if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
     if (!teamId) throw new Error('Team ID is required');
     return ScheduleApi.getRequestDeadline(apiClient, teamId);
-  }, [apiClient, isAuthenticated, loading, user, teamId]);
+  }, [apiClient, isAuthenticated, loading, teamId]);
 
   return getRequestDeadline;
 }
@@ -515,7 +515,7 @@ export function useSetRequestDeadline() {
       if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.setRequestDeadline(apiClient, scheduleId, teamId, deadline);
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return setRequestDeadline;
@@ -534,7 +534,7 @@ export function useSendRequestDeadlineReminder() {
       if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.sendRequestDeadlineReminder(apiClient, scheduleId, teamId);
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return sendReminder;
@@ -553,7 +553,7 @@ export function useEditRequestDeadline() {
       if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.editRequestDeadline(apiClient, scheduleId, teamId, newDeadline);
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return editRequestDeadline;
@@ -572,7 +572,7 @@ export function useDeleteRequestDeadline() {
       if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.deleteRequestDeadline(apiClient, scheduleId, teamId);
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteRequestDeadline;

@@ -62,7 +62,7 @@ export function useStartImpersonation() {
       // Navigate using the stored language fallback
       window.location.href = `/en/plan/workers`;
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 }
 
@@ -90,7 +90,7 @@ export function useStartImpersonationWithTarget() {
       // Navigate to the target user's default page in their language
       window.location.href = `/${target.language}/plan/workers`;
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 }
 
@@ -124,5 +124,5 @@ export function useStopAdminImpersonation() {
     }
 
     window.location.href = '/en/admin/users';
-  }, [apiClient, isAuthenticated, loading, user]);
+  }, [apiClient, isAuthenticated, loading]);
 }

@@ -140,7 +140,7 @@ export default function AdminImportCreateDialog({ lng, open, onClose, onCreated 
       setError(err instanceof Error ? err.message : 'Upload failed');
       setStep('upload');
     }
-  }, [file, user, t, importName]);
+  }, [file, t, importName]);
 
   // ── Create import ──────────────────────────────────────────────────────
 
@@ -180,7 +180,7 @@ export default function AdminImportCreateDialog({ lng, open, onClose, onCreated 
       setError(err instanceof Error ? err.message : 'Failed to create import');
       setStep('preview');
     }
-  }, [previewData, user, importName, file, onCreated, handleOpenChange, router, lng]);
+  }, [previewData, importName, file, onCreated, handleOpenChange, router, lng]);
 
   // ── Render ─────────────────────────────────────────────────────────────
 

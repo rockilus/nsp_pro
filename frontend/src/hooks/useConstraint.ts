@@ -140,7 +140,7 @@ export function useUpdateConstraint() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateConstraint;
@@ -174,7 +174,7 @@ export function useDeleteConstraint() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteConstraint;
@@ -263,7 +263,7 @@ export function useGetConstraintsTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return getConstraintsTabData;

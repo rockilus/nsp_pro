@@ -411,7 +411,7 @@ export default function AdminImportMergeStep2({
     return () => {
       cancelled = true;
     };
-  }, [selectedTeamId, scheduleDateRange.start, scheduleDateRange.end]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedTeamId, scheduleDateRange.start, scheduleDateRange.end]);
 
   // Build a map from generated worker ID → target worker ID (for merge_into mappings)
   const workerTargetMap = useMemo(() => {

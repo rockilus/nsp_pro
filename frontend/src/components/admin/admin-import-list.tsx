@@ -86,7 +86,7 @@ export default function AdminImportList({ lng, onOpenCreate, refreshKey }: Props
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     fetchImports();

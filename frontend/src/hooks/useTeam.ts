@@ -220,7 +220,7 @@ export function useUpdateTeam() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateTeam;
@@ -254,7 +254,7 @@ export function useLeaveTeam() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return leaveTeam;
@@ -288,7 +288,7 @@ export function useRemoveUserFromTeam() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return removeUserFromTeam;

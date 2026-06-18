@@ -180,7 +180,7 @@ function MergeContent({ lng }: { lng: string }) {
     } finally {
       setLoading(false);
     }
-  }, [importId, store, user]);
+  }, [importId, store]);
 
   // ── Navigation ──
   const handleBack = useCallback(() => {

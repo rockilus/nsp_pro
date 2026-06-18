@@ -137,7 +137,7 @@ export function useUpdateLinkShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateLinkShift;
@@ -171,7 +171,7 @@ export function useDeleteLinkShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteLinkShift;

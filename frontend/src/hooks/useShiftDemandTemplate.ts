@@ -195,7 +195,7 @@ export function useCreateTemplateFromDateRange() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return createTemplateFromDateRange;
@@ -233,7 +233,7 @@ export function useUpdateTemplate() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateTemplate;
@@ -267,7 +267,7 @@ export function useDeleteTemplate() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteTemplate;
@@ -301,7 +301,7 @@ export function useApplyTemplate() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return applyTemplate;
@@ -335,7 +335,7 @@ export function useValidateTemplateApplication() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return validateTemplateApplication;
@@ -369,7 +369,7 @@ export function useBatchDeleteTemplates() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return batchDeleteTemplates;
@@ -409,7 +409,7 @@ export function useGetTemplateAnalytics() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return getTemplateAnalytics;
@@ -452,7 +452,7 @@ export function useApplyDemandsToTemplateWeek() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return applyDemandsToTemplateWeek;
@@ -495,7 +495,7 @@ export function useApplyTemplateToDateRange() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return applyTemplateToDateRange;
