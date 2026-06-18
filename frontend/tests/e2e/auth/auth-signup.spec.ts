@@ -103,7 +103,7 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
     await page.click('[data-testid="auth-otp-submit"]');
 
     // Should redirect to signin after confirmation
-    await page.waitForURL('**/auth/signin');
+    await page.waitForSelector('[data-testid="auth-signin-page"]', { timeout: 15000 });
     authTestBase.markConfirmed(testInfo.workerIndex);
   });
 

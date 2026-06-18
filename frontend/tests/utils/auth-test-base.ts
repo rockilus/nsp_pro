@@ -67,14 +67,14 @@ export class AuthTestBase {
     await page.fill('[data-testid="auth-password-input"]', user.password);
     await page.fill('[data-testid="auth-confirm-password-input"]', user.password);
     await page.click('[data-testid="auth-signup-submit"]');
-    await page.waitForURL('**/auth/otp*');
+    await page.waitForSelector('[data-testid="auth-otp-page"]', { timeout: 15000 });
   }
 
   /** Confirm sign-up with OTP code. */
   async confirmSignUpViaUI(page: Page, code: string): Promise<void> {
     await page.fill('[data-testid="auth-otp-input"]', code);
     await page.click('[data-testid="auth-otp-submit"]');
-    await page.waitForURL('**/auth/signin');
+    await page.waitForSelector('[data-testid="auth-signin-page"]', { timeout: 15000 });
   }
 
   /** Sign in via the auth UI. */
