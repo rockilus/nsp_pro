@@ -37,7 +37,7 @@ export function useCreateTeamInvitation() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -95,7 +95,7 @@ export function useGetTeamInvitations() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -136,7 +136,7 @@ export function useGetUserPendingInvitations() {
       throw new Error('Authentication still loading - please wait');
     }
 
-    if (!isAuthenticated || !user?.id_token) {
+    if (!isAuthenticated) {
       throw new Error('User not authenticated - please sign in');
     }
 
@@ -177,7 +177,7 @@ export function useAcceptTeamInvitation() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -231,7 +231,7 @@ export function useRejectTeamInvitation() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -284,7 +284,7 @@ export function useResendTeamInvitationEmail() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -338,7 +338,7 @@ export function useDeleteTeamInvitation() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 

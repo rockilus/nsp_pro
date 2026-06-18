@@ -1,11 +1,43 @@
-import { User } from 'oidc-client-ts';
 import { env } from '../../config/env';
 import { useAuth } from '../../contexts/auth-context';
 import { useMemo } from 'react';
 import { getImpersonationToken } from './impersonation-storage';
+import { AuthApi } from './api/authApi';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface ApiClientOptions extends RequestInit {
   requireAuth?: boolean;
+}
+
+export interface AuthUserInfo {
+  sub: string;
+  email?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Core client
+// ---------------------------------------------------------------------------
+
+/** Track whether a refresh is in-flight to avoid concurrent refresh storms. */
+let _refreshPromise: Promise<void> | null = null;
+
+async function _refreshIfNeeded(): Promise<boolean> {
+  if (_refreshPromise) {
+    await _refreshPromise;
+    return true;
+  }
+  _refreshPromise = AuthApi.refresh();
+  try {
+    await _refreshPromise;
+    return true;
+  } catch {
+    return false;
+  } finally {
+    _refreshPromise = null;
+  }
 }
 
 class APIClient {
@@ -15,39 +47,17 @@ class APIClient {
     this.baseURL = env.apiUrl;
   }
 
-  private getAuthHeaders(user?: User | null): HeadersInit {
+  private getAuthHeaders(user?: AuthUserInfo | null): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
 
     if (env.isDevelopment) {
-      // Development mode: use simple headers
       headers['X-Dev-User-ID'] = env.devUserId;
       headers['X-API-Key'] = env.devApiKey;
-
-      // Debug logging for development
-      if (typeof window !== 'undefined') {
-        console.log('Development API call with user:', env.devUserId);
-      }
-    } else {
-      // Production mode: use existing Cognito auth
-      if (typeof window !== 'undefined' && env.isDevelopment) {
-        console.log('API Client Auth Debug:', {
-          hasUser: !!user,
-          hasIdToken: !!user?.id_token,
-          tokenLength: user?.id_token?.length || 0,
-          // Only log first 20 chars for security
-          tokenPreview: user?.id_token ? `${user.id_token.substring(0, 20)}...` : 'none',
-        });
-      }
-
-      // Use ID token for AWS API Gateway with Cognito User Pool authorizer
-      if (user?.id_token) {
-        headers['Authorization'] = `Bearer ${user.id_token}`;
-      }
     }
+    // Production: auth via HttpOnly cookies — no Authorization header needed.
 
-    // Attach the impersonation JWT when an admin has an active session
     const impersonationToken = getImpersonationToken();
     if (impersonationToken) {
       headers['X-Impersonation-Token'] = impersonationToken;
@@ -59,27 +69,11 @@ class APIClient {
   async request<T>(
     endpoint: string,
     options: ApiClientOptions = {},
-    user?: User | null,
+    user?: AuthUserInfo | null,
+    retried = false,
   ): Promise<T> {
     const { requireAuth = true, ...restOptions } = options;
     const headers = this.getAuthHeaders(user);
-
-    // In development mode, be more lenient with auth requirements
-    if (requireAuth && !env.isDevelopment && !user?.id_token) {
-      throw new Error('User not authenticated');
-    }
-
-    // Debug logging for request details
-    if (typeof window !== 'undefined' && env.isDevelopment) {
-      console.log('API Request Debug:', {
-        endpoint,
-        method: restOptions.method || 'GET',
-        baseURL: this.baseURL,
-        isDevelopment: env.isDevelopment,
-        hasAuthHeader: 'Authorization' in headers || 'X-Dev-User-ID' in headers,
-        requireAuth,
-      });
-    }
 
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       ...restOptions,
@@ -87,9 +81,15 @@ class APIClient {
         ...headers,
         ...restOptions.headers,
       },
-      // In development, don't include credentials to avoid CORS issues
-      credentials: env.isDevelopment ? undefined : user?.id_token ? undefined : 'include',
+      credentials: env.isDevelopment ? 'omit' : 'include',
     });
+
+    if (response.status === 401 && !retried) {
+      const refreshed = await _refreshIfNeeded();
+      if (refreshed) {
+        return this.request<T>(endpoint, options, user, true);
+      }
+    }
 
     if (!response.ok) {
       const responseData = await response.json().catch(() => ({}));
@@ -101,79 +101,57 @@ class APIClient {
       throw new Error(`API request failed: ${errorMessage}`);
     }
 
-    // Return null for 204 No Content responses
     if (response.status === 204) {
-      return null as any;
+      return null as T;
     }
 
-    // Otherwise, parse as JSON
     return response.json();
   }
 
-  /**
-   * Low-level request that returns the raw Response for cases like file downloads
-   */
   async requestRaw(
     endpoint: string,
     options: ApiClientOptions = {},
-    user?: User | null,
+    user?: AuthUserInfo | null,
   ): Promise<Response> {
     const { requireAuth = true, ...restOptions } = options;
     const headers = this.getAuthHeaders(user);
 
-    if (requireAuth && !env.isDevelopment && !user?.id_token) {
-      throw new Error('User not authenticated');
-    }
-
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
+    return fetch(`${this.baseURL}${endpoint}`, {
       ...restOptions,
       headers: {
         ...headers,
         ...restOptions.headers,
       },
-      credentials: env.isDevelopment ? undefined : user?.id_token ? undefined : 'include',
+      credentials: env.isDevelopment ? 'omit' : 'include',
     });
-
-    return response;
   }
 
-  async get<T>(endpoint: string, user?: User | null, options?: ApiClientOptions): Promise<T> {
+  async get<T>(endpoint: string, user?: AuthUserInfo | null, options?: ApiClientOptions): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'GET' }, user);
   }
 
   async post<T>(
     endpoint: string,
     data?: any,
-    user?: User | null,
+    user?: AuthUserInfo | null,
     options?: ApiClientOptions,
   ): Promise<T> {
     return this.request<T>(
       endpoint,
-      {
-        ...options,
-        method: 'POST',
-        body: data ? JSON.stringify(data) : undefined,
-      },
+      { ...options, method: 'POST', body: data ? JSON.stringify(data) : undefined },
       user,
     );
   }
 
-  /**
-   * Post that returns a raw Response (useful for blob downloads)
-   */
   async postRaw(
     endpoint: string,
     data?: any,
-    user?: User | null,
+    user?: AuthUserInfo | null,
     options?: ApiClientOptions,
   ): Promise<Response> {
     return this.requestRaw(
       endpoint,
-      {
-        ...options,
-        method: 'POST',
-        body: data ? JSON.stringify(data) : undefined,
-      },
+      { ...options, method: 'POST', body: data ? JSON.stringify(data) : undefined },
       user,
     );
   }
@@ -181,33 +159,25 @@ class APIClient {
   async put<T>(
     endpoint: string,
     data?: any,
-    user?: User | null,
+    user?: AuthUserInfo | null,
     options?: ApiClientOptions,
   ): Promise<T> {
     return this.request<T>(
       endpoint,
-      {
-        ...options,
-        method: 'PUT',
-        body: data ? JSON.stringify(data) : undefined,
-      },
+      { ...options, method: 'PUT', body: data ? JSON.stringify(data) : undefined },
       user,
     );
   }
 
   async delete<T>(
     endpoint: string,
-    user?: User | null,
+    user?: AuthUserInfo | null,
     options?: ApiClientOptions,
     data?: any,
   ): Promise<T> {
     return this.request<T>(
       endpoint,
-      {
-        ...options,
-        method: 'DELETE',
-        body: data ? JSON.stringify(data) : undefined,
-      },
+      { ...options, method: 'DELETE', body: data ? JSON.stringify(data) : undefined },
       user,
     );
   }
@@ -215,42 +185,35 @@ class APIClient {
 
 export const apiClient = new APIClient();
 
-// React hook for using the API client with authentication
+// ---------------------------------------------------------------------------
+// React hooks
+// ---------------------------------------------------------------------------
+
 export function useApiClient() {
   const { user, isAuthenticated, loading } = useAuth();
 
-  // CRITICAL: Memoize the API client to prevent infinite loops
   return useMemo(() => {
-    // Reduce debug logging spam in production
-    if (env.isDevelopment && typeof window !== 'undefined') {
-      console.log('useApiClient Debug:', {
-        isAuthenticated,
-        loading,
-        hasUser: !!user,
-        hasIdToken: !!user?.id_token,
-        isDevelopment: env.isDevelopment,
-      });
-    }
+    const authInfo: AuthUserInfo | null = user
+      ? { sub: user.id, email: user.email }
+      : null;
 
     return {
       get: <T>(endpoint: string, options?: ApiClientOptions) =>
-        apiClient.get<T>(endpoint, user, options),
+        apiClient.get<T>(endpoint, authInfo, options),
       post: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
-        apiClient.post<T>(endpoint, data, user, options),
-      // Raw methods for blobs
+        apiClient.post<T>(endpoint, data, authInfo, options),
       getRaw: (endpoint: string, options?: ApiClientOptions) =>
-        apiClient.requestRaw(endpoint, options, user),
+        apiClient.requestRaw(endpoint, options, authInfo),
       postRaw: (endpoint: string, data?: any, options?: ApiClientOptions) =>
-        apiClient.postRaw(endpoint, data, user, options),
+        apiClient.postRaw(endpoint, data, authInfo, options),
       put: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
-        apiClient.put<T>(endpoint, data, user, options),
+        apiClient.put<T>(endpoint, data, authInfo, options),
       delete: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
-        apiClient.delete<T>(endpoint, user, options, data),
+        apiClient.delete<T>(endpoint, authInfo, options, data),
     };
-  }, [user, isAuthenticated, loading]); // Stable dependencies
+  }, [user, isAuthenticated, loading]);
 }
 
-// Simplified API client for development mode (no auth required)
 export function useSimpleApiClient() {
   return useMemo(
     () => ({
@@ -258,7 +221,6 @@ export function useSimpleApiClient() {
         apiClient.get<T>(endpoint, null, options),
       post: <T>(endpoint: string, data?: any, options?: ApiClientOptions) =>
         apiClient.post<T>(endpoint, data, null, options),
-      // Raw methods for blobs in simple client
       getRaw: (endpoint: string, options?: ApiClientOptions) =>
         apiClient.requestRaw(endpoint, options, null),
       postRaw: (endpoint: string, data?: any, options?: ApiClientOptions) =>

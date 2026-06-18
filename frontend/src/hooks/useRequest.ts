@@ -44,7 +44,7 @@ export function useAddRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -102,7 +102,7 @@ export function useGetRequests() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -136,7 +136,7 @@ export function useUpdateRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -173,7 +173,7 @@ export function useAcceptRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -207,7 +207,7 @@ export function useDenyRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -244,7 +244,7 @@ export function useRescindRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -278,7 +278,7 @@ export function useDeleteRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -338,7 +338,7 @@ export function useGetRequestsTabData() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 

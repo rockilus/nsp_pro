@@ -382,8 +382,6 @@ export default function AdminImportMergeStep2({
       if (env.isDevelopment) {
         headers['X-Dev-User-ID'] = env.devUserId;
         headers['X-API-Key'] = env.devApiKey;
-      } else if (user?.id_token) {
-        headers['Authorization'] = `Bearer ${user.id_token}`;
       }
 
       const start = scheduleDateRange.start ?? dayjs.utc().startOf('year').unix();

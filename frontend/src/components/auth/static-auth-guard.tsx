@@ -19,7 +19,7 @@ export function StaticAuthGuard({ children, fallback }: StaticAuthGuardProps) {
         isAuthenticated,
         loading,
         hasUser: !!user,
-        hasIdToken: !!user?.id_token,
+        hasIdToken: !!user,
         timestamp: new Date().toISOString(),
       });
       setIsRehydrated(true);
@@ -43,7 +43,7 @@ export function StaticAuthGuard({ children, fallback }: StaticAuthGuardProps) {
   }
 
   // Show fallback while redirect is in-flight
-  if (!isAuthenticated || !user?.id_token) {
+  if (!isAuthenticated) {
     return fallback || <div>Redirecting to sign in...</div>;
   }
 

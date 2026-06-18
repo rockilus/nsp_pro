@@ -35,7 +35,7 @@ export function useCreateLinkShift() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -89,7 +89,7 @@ export function useGetLinkShifts() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -123,7 +123,7 @@ export function useUpdateLinkShift() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -157,7 +157,7 @@ export function useDeleteLinkShift() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 

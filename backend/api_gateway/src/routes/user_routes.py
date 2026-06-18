@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Cookie, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
@@ -176,6 +176,7 @@ async def change_user_password(
     user_context: UserContext = Depends(get_user_context),
     user_service: UserService = Depends(get_user_service),
     authz_service: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    rockilus_access_token: str | None = Cookie(default=None),
 ) -> Dict:
     try:
         if not await authz_service.check(
@@ -183,15 +184,17 @@ async def change_user_password(
         ):
             raise NotAuthorizedError("You can only change your own password")
 
-        # Convert DTO to core model
         p_data = PasswordData.from_dto(password_data)
 
-        # Validate passwords match
         if p_data.new_password != p_data.new_password_confirm:
             raise PasswordsDoNotMatchError("Passwords do not match")
 
-        # Change password using Cognito
-        await user_service.change_user_password(password_data=p_data)
+        # Prefer token from HttpOnly cookie; fall back to request body
+        access_token = rockilus_access_token or p_data.access_token
+        if not access_token:
+            raise HTTPException(status_code=401, detail="Authentication required")
+
+        await user_service.change_user_password(password_data=p_data, access_token=access_token)
 
         response = {"message": "Password updated successfully"}
     except Exception as e:

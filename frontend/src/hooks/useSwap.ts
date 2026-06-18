@@ -39,7 +39,7 @@ export function useGetSwaps() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -82,7 +82,7 @@ export function useGetSwapById() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -134,7 +134,7 @@ export function useCreateSwap() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -181,7 +181,7 @@ export function useAddBid() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -225,7 +225,7 @@ export function useAcceptBid() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -268,7 +268,7 @@ export function useCancelBidAcceptance() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -311,7 +311,7 @@ export function useAcceptDirectSwap() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -355,7 +355,7 @@ export function useApproveSwap() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -405,7 +405,7 @@ export function useDeleteSwap() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -448,7 +448,7 @@ export function useDenySwap() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -492,7 +492,7 @@ export function useRevertSwap() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -542,7 +542,7 @@ export function useValidateSwap() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -586,7 +586,7 @@ export function useDeleteBid() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 

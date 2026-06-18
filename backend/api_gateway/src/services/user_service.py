@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import Callable, Coroutine
 
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
@@ -8,6 +7,7 @@ from shared.schemas.dto.user import UserUpdateDTO
 from shared.schemas.errors import UserNotFoundError
 
 from src.errors import AuthnUpdateEmailError
+from src.integrations.authentication.cognito_auth_client import CognitoAuthClient
 from src.services.base_service import BaseService
 from src.utils.user_utils import is_valid_email
 
@@ -16,12 +16,10 @@ class UserService(BaseService):
     def __init__(
         self,
         collection: DatabaseCollections,
-        authn_update_user_email: Callable[[str, str, str], Coroutine],
-        authn_change_password: Callable[[str, str, str], Coroutine],
+        auth_client: CognitoAuthClient,
     ):
         super().__init__(collection)
-        self.authn_update_user_email = authn_update_user_email
-        self.authn_change_password = authn_change_password
+        self._auth = auth_client
 
     async def create_user(
         self,
@@ -78,18 +76,21 @@ class UserService(BaseService):
 
     async def update_user_email(
         self,
-        user: User,
-        tenant_id: str,
+        access_token: str,
+        new_email: str,
     ) -> None:
-        if not is_valid_email(user.email):
+        if not is_valid_email(new_email):
             raise AuthnUpdateEmailError("Invalid email")
-        await self.authn_update_user_email(user.id, tenant_id, user.email)
+        await self._auth.update_user_email(access_token, new_email)
 
-    async def change_user_password(self, password_data: PasswordData) -> None:
-        await self.authn_change_password(
+    async def change_user_password(
+        self, password_data: PasswordData, access_token: str = ""
+    ) -> None:
+        token = access_token or password_data.access_token
+        await self._auth.change_password(
+            token,
             password_data.current_password,
             password_data.new_password,
-            password_data.access_token,
         )
 
     def update_user_impersonating_user_id(

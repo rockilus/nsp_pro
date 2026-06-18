@@ -38,8 +38,8 @@ export function AuthTestComponent() {
           {loading ? '🔄 Loading' : isAuthenticated ? '✅ Authenticated' : '❌ Not authenticated'}
         </div>
         <div>User: {user ? '✅ Present' : '❌ Missing'}</div>
-        <div>ID Token: {user?.id_token ? '✅ Present' : '❌ Missing'}</div>
-        <div>Token Length: {user?.id_token?.length || 0}</div>
+        <div>ID Token: {user?.id ? '✅ Present' : '❌ Missing'}</div>
+        <div>Token Length: {user?.id?.length || 0}</div>
         <button
           onClick={handleTestAuth}
           style={{

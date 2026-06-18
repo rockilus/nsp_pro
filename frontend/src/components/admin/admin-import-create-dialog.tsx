@@ -28,14 +28,12 @@ dayjs.extend(utc);
 
 // ── Auth headers ─────────────────────────────────────────────────────────────
 
-function buildAuthHeaders(user: { id_token?: string } | null | undefined): Record<string, string> {
+function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
 
   if (env.isDevelopment) {
     headers['X-Dev-User-ID'] = env.devUserId;
     headers['X-API-Key'] = env.devApiKey;
-  } else if (user?.id_token) {
-    headers['Authorization'] = `Bearer ${user.id_token}`;
   }
 
   return headers;
@@ -90,7 +88,7 @@ export default function AdminImportCreateDialog({ lng, open, onClose, onCreated 
       const formData = new FormData();
       formData.append('file', file);
 
-      const headers = buildAuthHeaders(user);
+      const headers = buildAuthHeaders();
       // Remove Content-Type so browser sets multipart boundary
       delete (headers as Record<string, string>)['Content-Type'];
 
@@ -153,7 +151,7 @@ export default function AdminImportCreateDialog({ lng, open, onClose, onCreated 
 
     try {
       const headers = {
-        ...buildAuthHeaders(user),
+        ...buildAuthHeaders(),
         'Content-Type': 'application/json',
       };
 

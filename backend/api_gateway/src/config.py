@@ -125,6 +125,11 @@ class AppConfig(BaseSettings):
     max_schedule_duration_months: int = Field(
         3, description="Maximum schedule duration in months"
     )
+    cookie_domain: str | None = Field(
+        None,
+        description="Domain for auth cookies (e.g. .rockilus.com). "
+        "None in dev so cookies work on localhost.",
+    )
 
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed

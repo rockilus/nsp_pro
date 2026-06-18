@@ -24,7 +24,7 @@ export function useAdminUsers() {
 
   const fetchUsers = useCallback(async () => {
     if (authLoading) return;
-    if (!isAuthenticated || !user?.id_token) {
+    if (!isAuthenticated) {
       setError('User not authenticated - please sign in');
       setLoading(false);
       return;

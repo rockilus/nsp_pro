@@ -20,14 +20,12 @@ import { env } from '@/config/env';
 
 // ── Auth helpers ─────────────────────────────────────────────────────────────
 
-function buildAuthHeaders(user: { id_token?: string } | null | undefined): Record<string, string> {
+function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
   if (env.isDevelopment) {
     headers['X-Dev-User-ID'] = env.devUserId;
     headers['X-API-Key'] = env.devApiKey;
-  } else if (user?.id_token) {
-    headers['Authorization'] = `Bearer ${user.id_token}`;
   }
 
   return headers;
@@ -152,7 +150,7 @@ function MergeContent({ lng }: { lng: string }) {
     setError(null);
 
     try {
-      const headers = buildAuthHeaders(user);
+      const headers = buildAuthHeaders();
       const payload: MergeRequest = {
         teamId: store.selectedTeamId || '',
         workerMappings: store.workerMappings,

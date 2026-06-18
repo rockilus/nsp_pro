@@ -25,6 +25,7 @@ from shared.database.interface import DatabaseInterface
 from src.app import create_app
 from src.dependencies.attribute_service import get_attribute_service
 from src.dependencies.auth_dependencies import get_user_context
+from src.dependencies.auth_service import get_auth_service
 from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.dependencies.dim_entry_service import get_dim_entry_service
 from src.dependencies.dimension_service import get_dimension_service
@@ -150,6 +151,7 @@ def make_app(
     dimension_service_override=None,
     dim_entry_service_override=None,
     attribute_service_override=None,
+    auth_service_override=None,
 ) -> FastAPI:
     """
     Create a FastAPI app for testing with:
@@ -214,6 +216,9 @@ def make_app(
         app.dependency_overrides[get_attribute_service] = lambda: (
             attribute_service_override
         )
+
+    if auth_service_override is not None:
+        app.dependency_overrides[get_auth_service] = lambda: auth_service_override
 
     return app
 

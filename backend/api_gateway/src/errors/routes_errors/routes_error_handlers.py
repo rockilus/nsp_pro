@@ -12,7 +12,10 @@ from src.errors.message_errors.message_errors import (
     MessageValidationError,
     MessageValueError,
 )
-from src.errors.routes_errors.routes_errors import NotAuthorizedError
+from src.errors.routes_errors.routes_errors import (
+    NotAuthorizedError,
+    PasswordsDoNotMatchError,
+)
 from src.errors.stats_errors.stats_errors import NoCampaignError
 from src.utils.constants import USER_ERROR_MESSAGE_GENERIC
 
@@ -28,6 +31,11 @@ def handle_routes_errors(error: Exception) -> NoReturn:
     if isinstance(error, NotAuthorizedError):
         raise HTTPException(
             status_code=403,
+            detail=error.message,
+        )
+    if isinstance(error, PasswordsDoNotMatchError):
+        raise HTTPException(
+            status_code=400,
             detail=error.message,
         )
     if isinstance(error, SchemaValueError):

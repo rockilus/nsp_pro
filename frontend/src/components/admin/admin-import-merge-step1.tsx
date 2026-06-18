@@ -101,14 +101,12 @@ interface Props {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function buildAuthHeaders(user: { id_token?: string } | null | undefined): Record<string, string> {
+function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
   if (env.isDevelopment) {
     headers['X-Dev-User-ID'] = env.devUserId;
     headers['X-API-Key'] = env.devApiKey;
-  } else if (user?.id_token) {
-    headers['Authorization'] = `Bearer ${user.id_token}`;
   }
 
   return headers;
@@ -210,7 +208,7 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
           if (v !== undefined && v !== '') qs.set(k, String(v));
         }
 
-        const headers = buildAuthHeaders(user);
+        const headers = buildAuthHeaders();
         delete headers['Content-Type'];
         const resp = await fetch(`${env.apiUrl}/admin/teams?${qs.toString()}`, { headers });
         if (!resp.ok) throw new Error('Failed to load teams');
@@ -242,13 +240,13 @@ export default function AdminImportMergeStep1({ lng, importId, onNext, onBack }:
     setError(null);
 
     try {
-      const headers = buildAuthHeaders(user);
+      const headers = buildAuthHeaders();
       delete headers['Content-Type'];
       const importResp = await fetch(`${env.apiUrl}/admin/imports/${importId}`, { headers });
       if (!importResp.ok) throw new Error('Failed to load import data');
       const importData: ImportRecordData = await importResp.json();
 
-      const tgtHeaders = buildAuthHeaders(user);
+      const tgtHeaders = buildAuthHeaders();
       const tgtResp = await fetch(
         `${env.apiUrl}/admin/teams/${selectedTeamId}/merge-targets?import_id=${importId}`,
         { headers: tgtHeaders },
