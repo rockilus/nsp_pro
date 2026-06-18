@@ -94,7 +94,7 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
 
   // ── OTP Confirmation ────────────────────────────────────────────────────
 
-  test('confirm signup with OTP auto-logs in and navigates to schedule', async ({
+  test('confirm signup with OTP auto-logs in and navigates to an authenticated page', async ({
     page,
   }, testInfo) => {
     const user = authTestBase.getUserForWorker(testInfo.workerIndex);
@@ -104,8 +104,10 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
     await page.fill('[data-testid="auth-otp-input"]', '123456');
     await page.click('[data-testid="auth-otp-submit"]');
 
-    // Auto-login should redirect to plan/schedule, not signin
-    await page.waitForURL('**/plan/schedule', { timeout: 15000 });
+    // Auto-login should land on an authenticated plan page, not signin.
+    // A brand-new user without teams gets redirected to the teams page.
+    // Use waitUntil:'commit' because router.push is an SPA navigation (no page load).
+    await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
     authTestBase.markConfirmed(testInfo.workerIndex);
   });
 
