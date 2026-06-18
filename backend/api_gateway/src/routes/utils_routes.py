@@ -26,6 +26,7 @@ from src.dependencies import (
     get_test_service,
     get_user_context,
 )
+from src.errors import AuthnWrongCredentialsError
 from src.security.user_context import UserContext
 from src.services.auth_service import AuthService
 from src.services.team_membership_service import TeamMembershipService
@@ -448,13 +449,6 @@ async def confirm_cognito_user(
     _: None = Depends(get_test_environment_only),
     auth_service: AuthService = Depends(get_auth_service),
 ) -> ConfirmCognitoUserResponse:
-    """
-    Admin-confirm a Cognito user (test environment only).
-
-    Calls AuthService.admin_confirm_user_in_cognito() which is guarded
-    against production use via SecurityViolation. The endpoint itself is
-    additionally gated by get_test_environment_only().
-    """
     try:
         await auth_service.admin_confirm_user_in_cognito(request.email)
         logger.info(f"Admin-confirmed Cognito user: {request.email}")
@@ -465,6 +459,14 @@ async def confirm_cognito_user(
         )
     except HTTPException:
         raise
+    except AuthnWrongCredentialsError:
+        # User is already confirmed — that's fine for test setup
+        logger.info(f"Cognito user {request.email} already confirmed")
+        return ConfirmCognitoUserResponse(
+            success=True,
+            message=f"User {request.email} already confirmed",
+            email=request.email,
+        )
     except Exception as e:
         logger.error(f"Failed to confirm Cognito user: {str(e)}")
         raise HTTPException(

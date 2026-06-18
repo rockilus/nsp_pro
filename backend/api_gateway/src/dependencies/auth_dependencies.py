@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 def _build_jwks_url() -> str:
     pool = config.cognito_user_pool_id
     region = config.aws_region
+    if config.cognito_endpoint_url:
+        return f"{config.cognito_endpoint_url}/{pool}/.well-known/jwks.json"
     return f"https://cognito-idp.{region}.amazonaws.com/{pool}/.well-known/jwks.json"
 
 
@@ -50,12 +52,14 @@ def _decode_access_token(token: str) -> dict:
     """Validate and decode a Cognito access-token JWT.  Returns claims."""
     client = _get_jwks_client()
     signing_key = client.get_signing_key_from_jwt(token)
+    decode_options: dict = {"verify_exp": True}
+    audience = None if config.cognito_endpoint_url else config.cognito_client_id
     return jwt.decode(
         token,
         signing_key.key,
         algorithms=["RS256"],
-        audience=config.cognito_client_id,
-        options={"verify_exp": True},
+        audience=audience,
+        options=decode_options,
     )
 
 
@@ -113,11 +117,27 @@ async def get_user_context(
         Optional[str], Cookie(alias="rockilus_access_token")
     ] = None,
 ) -> UserContext:
-    """Extract user context from cookie (prod) or headers (dev)."""
+    """Extract user context from cookie (primary) or dev headers (fallback)."""
 
-    if config.environment == "development":
-        # Development mode: use headers for authentication
-        logger.debug("Development mode: using header-based authentication")
+    if rockilus_access_token:
+        logger.debug("Cookie-based auth")
+        try:
+            claims = _decode_access_token(rockilus_access_token)
+            user_context = UserContext(
+                user_id=claims["sub"],
+                email=claims.get("email"),
+                groups=claims.get("cognito:groups", []),
+                request_id=request.headers.get("X-Request-ID"),
+                source_ip=request.headers.get("X-Source-IP"),
+            )
+        except (jwt.InvalidTokenError, jwt.ExpiredSignatureError) as e:
+            logger.warning("Invalid access token cookie: %s", e)
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired session",
+            ) from e
+    elif config.environment == "development":
+        logger.debug("Development mode: using header-based auth")
 
         if x_api_key != config.dev_api_key:
             logger.warning("Invalid or missing development API key")
@@ -137,40 +157,20 @@ async def get_user_context(
             groups=["user"],
         )
     else:
-        # Production mode: cookie-based auth (with API Gateway header fallback)
-        if rockilus_access_token:
-            logger.debug("Production mode: cookie-based auth")
-            try:
-                claims = _decode_access_token(rockilus_access_token)
-                user_context = UserContext(
-                    user_id=claims["sub"],
-                    email=claims.get("email"),
-                    groups=claims.get("cognito:groups", []),
-                    request_id=request.headers.get("X-Request-ID"),
-                    source_ip=request.headers.get("X-Source-IP"),
-                )
-            except (jwt.InvalidTokenError, jwt.ExpiredSignatureError) as e:
-                logger.warning("Invalid access token cookie: %s", e)
-                raise HTTPException(
-                    status_code=401,
-                    detail="Invalid or expired session",
-                ) from e
-        else:
-            # Fallback: API Gateway headers (for transitional compatibility)
-            logger.debug("Production mode: API Gateway header fallback")
-            x_user_sub = request.headers.get("X-User-Sub")
-            x_user_email = request.headers.get("X-User-Email")
-            x_user_groups = request.headers.get("X-User-Groups")
-            x_request_id = request.headers.get("X-Request-ID")
-            x_source_ip = request.headers.get("X-Source-IP")
+        logger.debug("Production mode: API Gateway header fallback")
+        x_user_sub = request.headers.get("X-User-Sub")
+        x_user_email = request.headers.get("X-User-Email")
+        x_user_groups = request.headers.get("X-User-Groups")
+        x_request_id = request.headers.get("X-Request-ID")
+        x_source_ip = request.headers.get("X-Source-IP")
 
-            user_context = extract_user_context(
-                x_user_sub=x_user_sub,
-                x_user_email=x_user_email,
-                x_user_groups=x_user_groups,
-                x_request_id=x_request_id,
-                x_source_ip=x_source_ip,
-            )
+        user_context = extract_user_context(
+            x_user_sub=x_user_sub,
+            x_user_email=x_user_email,
+            x_user_groups=x_user_groups,
+            x_request_id=x_request_id,
+            x_source_ip=x_source_ip,
+        )
 
     # If an impersonation token is present, verify it and populate the context.
     # This is environment-agnostic so dev sessions can also impersonate.

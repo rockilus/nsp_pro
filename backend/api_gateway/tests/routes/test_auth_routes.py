@@ -126,10 +126,17 @@ class TestSignUp:
         assert resp.status_code == 422
 
     def test_signup_email_already_exists(self, db_interface: DatabaseInterface):
-        """Cognito UsernameExistsException → AuthnEmailAlreadyExistsError → 409."""
+        """Existing user in Cognito → signin + onboard to DB, returns 200."""
         mock = _mock_auth_client()
         mock.sign_up.side_effect = AuthnEmailAlreadyExistsError(
             "An account with the given email already exists"
+        )
+        from src.integrations.authentication.cognito_auth_client import AuthTokens
+        mock.initiate_auth.return_value = AuthTokens(
+            access_token="eyJhbGci.eyJzdWIiOiJiZTAwZTFlNCJ9.sig",
+            id_token="fake-id",
+            refresh_token="fake-refresh",
+            expires_in=3600,
         )
         app = _make_app_with_auth(db_interface, mock)
         client = TestClient(app)
@@ -144,7 +151,8 @@ class TestSignUp:
                 "confirm_password": "StrongPass1!",
             },
         )
-        assert resp.status_code == 409
+        assert resp.status_code == 200
+        assert resp.json()["message"] == "User registered. Please check your email for the verification code."
 
 
 # ---------------------------------------------------------------------------

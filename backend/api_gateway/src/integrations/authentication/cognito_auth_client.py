@@ -17,8 +17,8 @@ from src.errors import (
     AuthnEmailAlreadyExistsError,
     AuthnPasswordPolicyViolationError,
     AuthnUpdateEmailError,
-    AuthnUserNotFoundError,
     AuthnUserNotConfirmedError,
+    AuthnUserNotFoundError,
     AuthnWrongCredentialsError,
 )
 
@@ -203,8 +203,11 @@ class Boto3CognitoAuthClient(CognitoAuthClient):
 
     @staticmethod
     def _auth_flow() -> str:
-        """cognito-local only supports USER_PASSWORD_AUTH."""
-        return "USER_PASSWORD_AUTH" if config.cognito_endpoint_url else "ADMIN_NO_SRP_AUTH"
+        return (
+            "ADMIN_USER_PASSWORD_AUTH"
+            if config.cognito_endpoint_url
+            else "ADMIN_NO_SRP_AUTH"
+        )
 
     async def initiate_auth(self, email: str, password: str) -> AuthTokens:
         log_info(f"Initiating auth for: {email}")
@@ -224,7 +227,7 @@ class Boto3CognitoAuthClient(CognitoAuthClient):
                 access_token=auth["AccessToken"],
                 id_token=auth["IdToken"],
                 refresh_token=auth.get("RefreshToken", ""),
-                expires_in=auth["ExpiresIn"],
+                expires_in=auth.get("ExpiresIn", 3600),
             )
         except ClientError as e:
             log_error(f"Initiate auth failed for {email}: {e}")
@@ -246,7 +249,7 @@ class Boto3CognitoAuthClient(CognitoAuthClient):
                 access_token=auth["AccessToken"],
                 id_token=auth["IdToken"],
                 refresh_token=auth.get("RefreshToken", refresh_token),
-                expires_in=auth["ExpiresIn"],
+                expires_in=auth.get("ExpiresIn", 3600),
             )
         except ClientError as e:
             log_error(f"Refresh auth failed: {e}")

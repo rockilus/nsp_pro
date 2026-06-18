@@ -6,8 +6,8 @@ from .authn_errors.authn_errors import (
     AuthnPasswordChangeError,
     AuthnPasswordPolicyViolationError,
     AuthnUpdateEmailError,
-    AuthnUserNotFoundError,
     AuthnUserNotConfirmedError,
+    AuthnUserNotFoundError,
     AuthnWrongCredentialsError,
     SecurityViolation,
 )

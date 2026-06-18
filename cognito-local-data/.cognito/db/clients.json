@@ -16,6 +16,23 @@
         "RefreshToken": "days"
       },
       "UserPoolId": "local_12pD59mG"
+    },
+    "4xeev0bw4fe9r3zje48ffwqoz": {
+      "ClientId": "4xeev0bw4fe9r3zje48ffwqoz",
+      "ClientName": "nsp-pro-test-client",
+      "CreationDate": "2026-06-18T12:38:15.339Z",
+      "ExplicitAuthFlows": [
+        "ALLOW_USER_PASSWORD_AUTH",
+        "ALLOW_REFRESH_TOKEN_AUTH",
+        "ALLOW_ADMIN_USER_PASSWORD_AUTH"
+      ],
+      "LastModifiedDate": "2026-06-18T12:38:15.339Z",
+      "TokenValidityUnits": {
+        "AccessToken": "hours",
+        "IdToken": "minutes",
+        "RefreshToken": "days"
+      },
+      "UserPoolId": "local_5tBlw8Bf"
     }
   }
 }

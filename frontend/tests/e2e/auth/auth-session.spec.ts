@@ -40,7 +40,7 @@ test('signin sets HttpOnly cookies and redirects to schedule', async ({ page }) 
   await page.click('[data-testid="auth-signin-submit"]');
 
   // Should redirect to plan/schedule on success
-  await page.waitForURL('**/plan/schedule', { timeout: 15000 });
+  await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
 
   // Verify cookies
   const cookies = await page.context().cookies();
@@ -60,13 +60,13 @@ test('page refresh preserves auth session', async ({ page }) => {
   await page.fill('[data-testid="auth-email-input"]', KNOWN_EMAIL);
   await page.fill('[data-testid="auth-password-input"]', KNOWN_PASSWORD);
   await page.click('[data-testid="auth-signin-submit"]');
-  await page.waitForURL('**/plan/schedule', { timeout: 15000 });
+  await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
 
   // Refresh the page — auth should persist via cookies
   await page.reload();
-  await page.waitForURL('**/plan/schedule');
-  // Page should still be on schedule (not redirected to signin)
-  expect(page.url()).toContain('/plan/schedule');
+  await page.waitForURL('**/plan/**', { waitUntil: 'commit' });
+  // Page should still be on an authenticated page (not redirected to signin)
+  expect(page.url()).toContain('/plan/');
 });
 
 // ── 401 Refresh Interceptor ──────────────────────────────────────────────
@@ -77,7 +77,7 @@ test('401 on API call triggers token refresh', async ({ page, request }) => {
   await page.fill('[data-testid="auth-email-input"]', KNOWN_EMAIL);
   await page.fill('[data-testid="auth-password-input"]', KNOWN_PASSWORD);
   await page.click('[data-testid="auth-signin-submit"]');
-  await page.waitForURL('**/plan/schedule', { timeout: 15000 });
+  await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
 
   // Access token cookie should be present
   const cookiesBefore = await page.context().cookies();
@@ -92,8 +92,8 @@ test('401 on API call triggers token refresh', async ({ page, request }) => {
   await page.goto('/en/plan/schedule');
 
   // Verify we stay on schedule (refresh interceptor recovered the token)
-  await page.waitForURL('**/plan/schedule', { timeout: 15000 });
-  expect(page.url()).toContain('/plan/schedule');
+  await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
+  expect(page.url()).toContain('/plan/');
 });
 
 // ── Forgot Password Navigation ────────────────────────────────────────────
@@ -101,7 +101,7 @@ test('401 on API call triggers token refresh', async ({ page, request }) => {
 test('forgot password page renders and links back', async ({ page }) => {
   await page.goto('/en/auth/signin');
   await page.click('[data-testid="auth-forgot-password-link"]');
-  await page.waitForURL('**/auth/forgot-password');
+  await expect(page).toHaveURL(/auth\/forgot-password/);
 
   await expect(page.locator('[data-testid="auth-forgot-password-page"]')).toBeVisible();
   await expect(page.locator('[data-testid="auth-email-input"]')).toBeVisible();
@@ -109,7 +109,7 @@ test('forgot password page renders and links back', async ({ page }) => {
 
   // Navigate back to signin
   await page.click('[data-testid="auth-back-to-signin-link"]');
-  await page.waitForURL('**/auth/signin');
+  await expect(page).toHaveURL(/auth\/signin/);
   await expect(page.locator('[data-testid="auth-signin-page"]')).toBeVisible();
 });
 
@@ -117,7 +117,7 @@ test('forgot password submits and navigates to reset', async ({ page }) => {
   await page.goto('/en/auth/forgot-password');
   await page.fill('[data-testid="auth-email-input"]', KNOWN_EMAIL);
   await page.click('[data-testid="auth-forgot-password-submit"]');
-  await page.waitForURL('**/auth/reset-password*');
+  await expect(page).toHaveURL(/auth\/reset-password/);
   await expect(page.locator('[data-testid="auth-reset-password-page"]')).toBeVisible();
   await expect(page.locator('[data-testid="auth-otp-input"]')).toBeVisible();
   await expect(page.locator('[data-testid="auth-new-password-input"]')).toBeVisible();

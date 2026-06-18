@@ -21,9 +21,15 @@ from shared.schemas.dto.auth import (
 
 from src.config import config
 from src.dependencies.auth_service import get_auth_service
-from src.errors import PasswordsDoNotMatchError, handle_routes_errors
+from src.dependencies.user_service import get_user_service
+from src.errors import (
+    AuthnEmailAlreadyExistsError,
+    PasswordsDoNotMatchError,
+    handle_routes_errors,
+)
 from src.integrations.authentication.cognito_auth_client import AuthTokens
 from src.services.auth_service import AuthService
+from src.services.user_service import UserService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -80,14 +86,29 @@ def _clear_auth_cookies(response: Response) -> None:
 async def sign_up(
     request: SignUpRequestDTO,
     auth_service: AuthService = Depends(get_auth_service),
+    user_service: UserService = Depends(get_user_service),
 ) -> Dict:
     try:
         if request.password != request.confirm_password:
             raise PasswordsDoNotMatchError("Passwords do not match")
-        await auth_service.sign_up(request)
-        log_info(f"Sign-up initiated for: {request.email}")
+        try:
+            user_sub = await auth_service.sign_up(request)
+        except AuthnEmailAlreadyExistsError:
+            tokens = await auth_service.sign_in(
+                SignInRequestDTO(email=request.email, password=request.password)
+            )
+            user_sub = auth_service.decode_token_sub(tokens.access_token)
+            log_info(f"User {request.email} already exists in Cognito, onboarding to DB")
+        await user_service.create_user(
+            user_id=user_sub,
+            email=request.email,
+            first_name=request.first_name,
+            last_name=request.last_name,
+        )
+        log_info(f"Sign-up and onboard completed for: {request.email}")
         return {
-            "message": "User registered. Please check your email for the verification code."
+            "message": "User registered. Please check your email for the verification code.",
+            "user_sub": user_sub,
         }
     except Exception as e:
         log_info("Failed to sign up")
@@ -128,7 +149,10 @@ async def sign_in(
         tokens = await auth_service.sign_in(request)
         _set_auth_cookies(response, tokens)
         log_info(f"Sign-in successful for: {request.email}")
-        return {"message": "Signed in successfully"}
+        return {
+            "message": "Signed in successfully",
+            "user_sub": auth_service.decode_token_sub(tokens.access_token),
+        }
     except Exception as e:
         log_info("Sign-in failed")
         handle_routes_errors(e)

@@ -77,6 +77,8 @@ async function globalSetup(config: FullConfig) {
     const knownUserEmail = 'e2e-known-good@test.rockilus.com';
     const knownUserPassword = 'KnownGood1!';
     try {
+      let userSub: string | null = null;
+
       // Sign up the user in Cognito
       const signupResp = await fetch(`${testConfig.apiUrl}/auth/signup`, {
         method: 'POST',
@@ -89,9 +91,31 @@ async function globalSetup(config: FullConfig) {
           confirm_password: knownUserPassword,
         }),
       });
-      if (!signupResp.ok) {
+      if (signupResp.ok) {
+        const signupBody = await signupResp.json();
+        userSub = signupBody.user_sub;
+        console.log(`✅ Known-good user signed up: sub=${userSub}`);
+      } else {
         const err = await signupResp.json().catch(() => ({}));
         console.warn(`⚠️ Known-good user signup returned ${signupResp.status}:`, err);
+        // User may already exist from a previous run — try signin to get the sub
+        try {
+          const signinResp = await fetch(`${testConfig.apiUrl}/auth/signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: knownUserEmail,
+              password: knownUserPassword,
+            }),
+          });
+          if (signinResp.ok) {
+            const signinBody = await signinResp.json();
+            userSub = signinBody.user_sub;
+            console.log(`✅ Known-good user sub from signin: ${userSub}`);
+          }
+        } catch (signinErr) {
+          console.warn('⚠️ Could not extract sub from existing user:', signinErr);
+        }
       }
 
       // Admin-confirm the user (bypass OTP — needed for test setup)
@@ -106,6 +130,32 @@ async function globalSetup(config: FullConfig) {
       if (!confirmResp.ok) {
         const err = await confirmResp.json().catch(() => ({}));
         console.warn(`⚠️ Known-good user confirm returned ${confirmResp.status}:`, err);
+      } else {
+        console.log('✅ Known-good user confirmed in Cognito');
+      }
+
+      // Onboard the user to MongoDB (Cerbos + DB record)
+      if (userSub) {
+        const onboardResp = await fetch(`${testConfig.apiUrl}/users/onboard`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': testConfig.devApiKey,
+          },
+          body: JSON.stringify({
+            user_id: userSub,
+            email: knownUserEmail,
+            username: knownUserEmail,
+            first_name: 'Known',
+            last_name: 'Good',
+          }),
+        });
+        if (onboardResp.ok) {
+          console.log('✅ Known-good user onboarded to MongoDB');
+        } else {
+          const err = await onboardResp.json().catch(() => ({}));
+          console.warn(`⚠️ Known-good user onboard returned ${onboardResp.status}:`, err);
+        }
       }
 
       // Expose via env for test files to read

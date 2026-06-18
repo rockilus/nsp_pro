@@ -1,5 +1,8 @@
 """AuthService — orchestrates Cognito auth operations with business logic."""
 
+import base64
+import json
+
 from shared.schemas.dto.auth import (
     ChangeEmailRequestDTO,
     ConfirmCodeRequestDTO,
@@ -11,23 +14,22 @@ from shared.schemas.dto.auth import (
     VerifyEmailRequestDTO,
 )
 
+from src.config import config
 from src.errors import PasswordsDoNotMatchError, SecurityViolation
 from src.integrations.authentication.cognito_auth_client import (
     AuthTokens,
     CognitoAuthClient,
 )
 
-from src.config import config
-
 
 class AuthService:
     def __init__(self, auth_client: CognitoAuthClient) -> None:
         self._auth = auth_client
 
-    async def sign_up(self, request: SignUpRequestDTO) -> None:
+    async def sign_up(self, request: SignUpRequestDTO) -> str:
         if request.password != request.confirm_password:
             raise PasswordsDoNotMatchError("Passwords do not match")
-        await self._auth.sign_up(
+        return await self._auth.sign_up(
             email=request.email,
             password=request.password,
             given_name=request.first_name,
@@ -88,3 +90,16 @@ class AuthService:
         if config.environment == "production":
             raise SecurityViolation("Admin bypass forbidden in production")
         await self._auth.admin_confirm_sign_up(email)
+
+    @staticmethod
+    def decode_token_sub(token: str) -> str:
+        """Extract the sub claim from a JWT without full verification."""
+        parts = token.split(".")
+        if len(parts) < 2:
+            return token[:32]
+        padded = parts[1] + "=="
+        try:
+            payload = base64.urlsafe_b64decode(padded)
+            return json.loads(payload)["sub"]
+        except Exception:
+            return token[:32]

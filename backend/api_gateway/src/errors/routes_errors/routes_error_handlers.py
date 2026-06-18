@@ -9,8 +9,8 @@ from src.errors.authn_errors.authn_errors import (
     AuthnPasswordChangeError,
     AuthnPasswordPolicyViolationError,
     AuthnUpdateEmailError,
-    AuthnUserNotFoundError,
     AuthnUserNotConfirmedError,
+    AuthnUserNotFoundError,
     AuthnWrongCredentialsError,
     SecurityViolation,
 )
@@ -61,8 +61,7 @@ def handle_routes_errors(error: Exception) -> NoReturn:
     if isinstance(error, AuthnUserNotConfirmedError):
         raise HTTPException(
             status_code=403,
-            detail=error.message
-            or "Account not confirmed. Please check your email.",
+            detail=error.message or "Account not confirmed. Please check your email.",
         )
     if isinstance(error, AuthnEmailAlreadyExistsError):
         raise HTTPException(
