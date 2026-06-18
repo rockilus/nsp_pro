@@ -130,6 +130,10 @@ class AppConfig(BaseSettings):
         description="Domain for auth cookies (e.g. .rockilus.com). "
         "None in dev so cookies work on localhost.",
     )
+    refresh_cookie_max_age: int = Field(
+        2_592_000,  # 30 days
+        description="Max-Age in seconds for the refresh-token cookie",
+    )
 
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed

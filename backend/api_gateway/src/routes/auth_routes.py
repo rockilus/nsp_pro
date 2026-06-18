@@ -27,8 +27,6 @@ from src.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-_REFRESH_COOKIE_MAX_AGE = 30 * 24 * 3600  # 30 days
-
 
 def _cookie_domain() -> str | None:
     return getattr(config, "cookie_domain", None)
@@ -55,7 +53,7 @@ def _set_auth_cookies(response: Response, tokens: AuthTokens) -> None:
         samesite="lax",
         path="/auth",
         domain=domain,
-        max_age=_REFRESH_COOKIE_MAX_AGE,
+        max_age=config.refresh_cookie_max_age,
     )
 
 
