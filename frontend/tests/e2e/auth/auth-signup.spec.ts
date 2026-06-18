@@ -1,20 +1,29 @@
 /**
- * auth-signup.spec.ts — serial E2E tests for sign-up and OTP confirmation.
+ * auth-signup.spec.ts — E2E tests for sign-up and OTP confirmation.
  *
- * These tests create fresh, isolated users per worker. They run in serial
- * mode because the signup → confirm chain is inherently ordered.
+ * Each test creates its own isolated AuthTestBase instance, ensuring every
+ * test gets a unique Cognito user and preventing cross-test data leakage.
  */
 
 import { test, expect } from '@playwright/test';
-import { authTestBase } from '../../utils/auth-test-base';
+import { randomUUID } from 'crypto';
+import { AuthTestBase } from '../../utils/auth-test-base';
 
-test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
+test.describe('Auth — Sign-Up & Confirm Flow', () => {
+  const testBasesMap = new Map<string, AuthTestBase>();
+
   test.beforeEach(async ({}, testInfo) => {
-    authTestBase.getUserForWorker(testInfo.workerIndex);
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+    const base = new AuthTestBase();
+    testBasesMap.set(testRunId, base);
+    (testInfo as any).testRunId = testRunId;
   });
 
   test.afterEach(async ({}, testInfo) => {
-    authTestBase.cleanup(testInfo.workerIndex);
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+    testBasesMap.delete(testRunId);
   });
 
   // ── Sign-Up Page ────────────────────────────────────────────────────────
@@ -83,8 +92,10 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
   // ── Sign-Up → OTP Flow ──────────────────────────────────────────────────
 
   test('signup navigates to OTP page', async ({ page }, testInfo) => {
-    const user = authTestBase.getUserForWorker(testInfo.workerIndex);
-    await authTestBase.signUpViaUI(page, user);
+    const testRunId = (testInfo as any).testRunId as string;
+    const base = testBasesMap.get(testRunId)!;
+    const user = base.getUserForWorker(0);
+    await base.signUpViaUI(page, user);
     await expect(page.locator('[data-testid="auth-otp-page"]')).toBeVisible();
     await expect(page.locator('[data-testid="auth-otp-email"]')).toContainText(user.email);
     await expect(page.locator('[data-testid="auth-otp-input"]')).toBeVisible();
@@ -97,8 +108,10 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
   test('confirm signup with OTP auto-logs in and navigates to an authenticated page', async ({
     page,
   }, testInfo) => {
-    const user = authTestBase.getUserForWorker(testInfo.workerIndex);
-    await authTestBase.signUpViaUI(page, user);
+    const testRunId = (testInfo as any).testRunId as string;
+    const base = testBasesMap.get(testRunId)!;
+    const user = base.getUserForWorker(0);
+    await base.signUpViaUI(page, user);
 
     // cognito-local uses CODE=123456 — confirm with real OTP
     await page.fill('[data-testid="auth-otp-input"]', '123456');
@@ -108,12 +121,14 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
     // A brand-new user without teams gets redirected to the teams page.
     // Use waitUntil:'commit' because router.push is an SPA navigation (no page load).
     await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
-    authTestBase.markConfirmed(testInfo.workerIndex);
+    base.markConfirmed(0);
   });
 
   test('confirm signup without stored password redirects to signin', async ({ page }, testInfo) => {
-    const user = authTestBase.getUserForWorker(testInfo.workerIndex);
-    await authTestBase.signUpViaUI(page, user);
+    const testRunId = (testInfo as any).testRunId as string;
+    const base = testBasesMap.get(testRunId)!;
+    const user = base.getUserForWorker(0);
+    await base.signUpViaUI(page, user);
 
     // Simulate different tab or expired TTL — no password in sessionStorage
     await page.evaluate(() => sessionStorage.clear());
@@ -123,7 +138,7 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
 
     // Falls through to signin when auto-login is not possible
     await page.waitForSelector('[data-testid="auth-signin-page"]', { timeout: 15000 });
-    authTestBase.markConfirmed(testInfo.workerIndex);
+    base.markConfirmed(0);
   });
 
   // ── Unconfirmed User Sign-In ────────────────────────────────────────────
@@ -131,10 +146,12 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
   test('unconfirmed user sees resend UI on signin and can complete OTP flow', async ({
     page,
   }, testInfo) => {
-    const user = authTestBase.getUserForWorker(testInfo.workerIndex);
+    const testRunId = (testInfo as any).testRunId as string;
+    const base = testBasesMap.get(testRunId)!;
+    const user = base.getUserForWorker(0);
 
     // Sign up but do NOT confirm
-    await authTestBase.signUpViaUI(page, user);
+    await base.signUpViaUI(page, user);
 
     // cognito-local does not support ResendConfirmationCode — mock a success response
     await page.route('**/auth/resend-code', (route) => {
@@ -165,6 +182,6 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
     await page.fill('[data-testid="auth-otp-input"]', '123456');
     await page.click('[data-testid="auth-otp-submit"]');
     await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
-    authTestBase.markConfirmed(testInfo.workerIndex);
+    base.markConfirmed(0);
   });
 });

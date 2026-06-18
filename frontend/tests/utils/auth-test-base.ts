@@ -1,8 +1,9 @@
 /**
- * AuthTestBase — isolated test users per Playwright worker.
+ * AuthTestBase — isolated test users per Playwright test.
  *
- * Mirrors the ScheduleTestBase / RoleTestBase pattern: each worker index
- * gets a unique user slot, preventing cross-test data leakage.
+ * Each test creates its own AuthTestBase instance, stored in a per-test Map
+ * keyed by testRunId. This ensures every test gets a unique Cognito user,
+ * preventing cross-test data leakage. Mirrors the ScheduleTestBase pattern.
  */
 
 import { Page, APIRequestContext } from '@playwright/test';
@@ -58,6 +59,50 @@ export class AuthTestBase {
     }
   }
 
+  /**
+   * Creates a confirmed Cognito user via the API (signup + admin-confirm).
+   * Uses plain fetch() so it's callable from beforeEach without the request fixture.
+   */
+  async setupConfirmedUser(): Promise<AuthTestUser> {
+    const user = this.getUserForWorker(0);
+
+    const signupResp = await fetch(`${testConfig.apiUrl}/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: user.email,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        password: user.password,
+        confirm_password: user.password,
+      }),
+    });
+    if (!signupResp.ok) {
+      const body = await signupResp.json().catch(() => ({}));
+      throw new Error(
+        `setupConfirmedUser signup failed: ${signupResp.status} ${JSON.stringify(body)}`,
+      );
+    }
+
+    const confirmResp = await fetch(`${testConfig.apiUrl}/test-utils/confirm-cognito-user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': testConfig.devApiKey,
+      },
+      body: JSON.stringify({ email: user.email }),
+    });
+    if (!confirmResp.ok) {
+      const body = await confirmResp.json().catch(() => ({}));
+      throw new Error(
+        `setupConfirmedUser confirm failed: ${confirmResp.status} ${JSON.stringify(body)}`,
+      );
+    }
+
+    this.markConfirmed(0);
+    return user;
+  }
+
   /** Sign up via the auth UI. */
   async signUpViaUI(page: Page, user: AuthTestUser): Promise<void> {
     await page.goto('/en/auth/signup');
@@ -91,5 +136,5 @@ export class AuthTestBase {
   }
 }
 
-/** Shared instance for use across test files. */
+/** Shared instance for backward-compatible use. Prefer per-test instances via Map pattern for isolation. */
 export const authTestBase = new AuthTestBase();
