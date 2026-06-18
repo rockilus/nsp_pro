@@ -54,13 +54,26 @@ export default function ForgotPasswordPage({ params }: { params: Promise<{ lng: 
               data-testid="auth-email-input"
             />
           </div>
-          {error && <p className="text-sm text-destructive" data-testid="auth-error-message">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading} data-testid="auth-forgot-password-submit">
+          {error && (
+            <p className="text-sm text-destructive" data-testid="auth-error-message">
+              {error}
+            </p>
+          )}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+            data-testid="auth-forgot-password-submit"
+          >
             {loading ? '...' : t('send_reset_link')}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          <Link href={`/${lng}/auth/signin`} className="hover:underline" data-testid="auth-back-to-signin-link">
+          <Link
+            href={`/${lng}/auth/signin`}
+            className="hover:underline"
+            data-testid="auth-back-to-signin-link"
+          >
             {t('back_to_sign_in')}
           </Link>
         </p>

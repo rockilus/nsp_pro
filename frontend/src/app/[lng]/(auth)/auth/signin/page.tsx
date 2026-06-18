@@ -77,14 +77,25 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
             />
           </div>
           {error && (
-            <p className="text-sm text-destructive" data-testid="auth-error-message">{error}</p>
+            <p className="text-sm text-destructive" data-testid="auth-error-message">
+              {error}
+            </p>
           )}
-          <Button type="submit" className="w-full" disabled={loading} data-testid="auth-signin-submit">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+            data-testid="auth-signin-submit"
+          >
             {loading ? '...' : t('sign_in')}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          <Link href={`/${lng}/auth/signup`} className="hover:underline" data-testid="auth-signup-link">
+          <Link
+            href={`/${lng}/auth/signup`}
+            className="hover:underline"
+            data-testid="auth-signup-link"
+          >
             {t('to_sign_up')}
           </Link>
         </p>

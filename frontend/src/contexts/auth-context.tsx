@@ -48,7 +48,7 @@ async function fetchCurrentUser(): Promise<AuthUser | null> {
   const resp = await fetch(`${env.apiUrl}/users/me`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
-    credentials: env.isDevelopment ? 'omit' : 'include',
+    credentials: 'include',
   });
   if (resp.status === 401) return null;
   if (!resp.ok) {
@@ -65,83 +65,6 @@ async function fetchCurrentUser(): Promise<AuthUser | null> {
     systemRole: data.systemRole || data['system_role'] || null,
   };
 }
-
-// ---------------------------------------------------------------------------
-// Dev provider
-// ---------------------------------------------------------------------------
-
-function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
-  const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const mockUser: AuthUser = {
-    id: env.devUserId,
-    email: 'dev@nsp-pro.com',
-    firstName: 'Development',
-    lastName: 'User',
-    language: 'en',
-    systemRole: null,
-  };
-
-  useEffect(() => {
-    setTimeout(() => {
-      setIsAuthenticated(true);
-      setLoading(false);
-    }, 100);
-  }, []);
-
-  const signIn = useCallback(async (_email: string, _password: string) => {
-    setLoading(true);
-    setTimeout(() => {
-      setIsAuthenticated(true);
-      setLoading(false);
-      setError(null);
-    }, 500);
-  }, []);
-
-  const signUp = useCallback(async (_data: SignUpData) => {
-    return Promise.resolve();
-  }, []);
-
-  const signOut = useCallback(async () => {
-    setIsAuthenticated(false);
-  }, []);
-
-  const confirmSignUp = useCallback(async (_email: string, _code: string) => {
-    return Promise.resolve();
-  }, []);
-
-  const forgotPassword = useCallback(async (_email: string) => {
-    return Promise.resolve();
-  }, []);
-
-  const confirmForgotPassword = useCallback(
-    async (_email: string, _code: string, _newPassword: string) => {
-      return Promise.resolve();
-    },
-    [],
-  );
-
-  const contextValue: AuthContextType = {
-    user: isAuthenticated ? mockUser : null,
-    isAuthenticated,
-    loading,
-    error,
-    signIn,
-    signUp,
-    signOut,
-    confirmSignUp,
-    forgotPassword,
-    confirmForgotPassword,
-  };
-
-  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
-}
-
-// ---------------------------------------------------------------------------
-// Prod provider
-// ---------------------------------------------------------------------------
 
 function CookieAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -267,8 +190,5 @@ export function AuthContextProvider({
 }: {
   children: React.ReactNode;
 }): React.ReactElement {
-  if (env.isDevelopment) {
-    return <DevelopmentAuthProvider>{children}</DevelopmentAuthProvider>;
-  }
   return <CookieAuthProvider>{children}</CookieAuthProvider>;
 }

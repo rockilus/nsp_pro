@@ -92,8 +92,17 @@ function ResetForm({ lng }: { lng: string }) {
               data-testid="auth-confirm-password-input"
             />
           </div>
-          {error && <p className="text-sm text-destructive" data-testid="auth-error-message">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading} data-testid="auth-reset-password-submit">
+          {error && (
+            <p className="text-sm text-destructive" data-testid="auth-error-message">
+              {error}
+            </p>
+          )}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+            data-testid="auth-reset-password-submit"
+          >
             {loading ? '...' : t('reset_password')}
           </Button>
         </form>

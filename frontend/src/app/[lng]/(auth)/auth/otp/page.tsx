@@ -70,9 +70,16 @@ function OtpForm({ lng }: { lng: string }) {
               data-testid="auth-otp-input"
             />
           </div>
-          {error && <p className="text-sm text-destructive" data-testid="auth-error-message">{error}</p>}
+          {error && (
+            <p className="text-sm text-destructive" data-testid="auth-error-message">
+              {error}
+            </p>
+          )}
           {resent && (
-            <p className="text-sm text-green-600 dark:text-green-400" data-testid="auth-resent-message">
+            <p
+              className="text-sm text-green-600 dark:text-green-400"
+              data-testid="auth-resent-message"
+            >
               {t('send_email_success_message')}
             </p>
           )}
