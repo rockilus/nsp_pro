@@ -128,11 +128,22 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
 
   // ── Unconfirmed User Sign-In ────────────────────────────────────────────
 
-  test('unconfirmed user sees error on signin', async ({ page }, testInfo) => {
+  test('unconfirmed user sees resend UI on signin and can complete OTP flow', async ({
+    page,
+  }, testInfo) => {
     const user = authTestBase.getUserForWorker(testInfo.workerIndex);
 
     // Sign up but do NOT confirm
     await authTestBase.signUpViaUI(page, user);
+
+    // cognito-local does not support ResendConfirmationCode — mock a success response
+    await page.route('**/auth/resend-code', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'ok' }),
+      });
+    });
 
     // Try to sign in — user is NOT confirmed
     await page.goto('/en/auth/signin');
@@ -140,7 +151,20 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
     await page.fill('[data-testid="auth-password-input"]', user.password);
     await page.click('[data-testid="auth-signin-submit"]');
 
-    // Should show "Account not confirmed" error (AuthnUserNotConfirmedError → 403)
-    await expect(page.locator('[data-testid="auth-error-message"]')).toBeVisible({ timeout: 5000 });
+    // Unconfirmed state: resend UI should appear
+    await expect(page.locator('[data-testid="auth-resend-code-button"]')).toBeVisible({
+      timeout: 5000,
+    });
+    await expect(page.locator('[data-testid="auth-unconfirmed-back-button"]')).toBeVisible();
+
+    // Click resend → should redirect to OTP page after delay
+    await page.click('[data-testid="auth-resend-code-button"]');
+    await page.waitForSelector('[data-testid="auth-otp-page"]', { timeout: 15000 });
+
+    // Confirm with OTP → falls through to signin (no stored password from this flow)
+    await page.fill('[data-testid="auth-otp-input"]', '123456');
+    await page.click('[data-testid="auth-otp-submit"]');
+    await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
+    authTestBase.markConfirmed(testInfo.workerIndex);
   });
 });

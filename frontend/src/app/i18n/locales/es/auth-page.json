@@ -1,6 +1,9 @@
 {
+  "account_not_confirmed": "Tu cuenta aún no está confirmada.",
+  "account_not_confirmed_resend": "Haz clic abajo para recibir un nuevo código de verificación.",
   "back_to_sign_in": "Volver a iniciar sesión",
   "change_password": "Cambiar contraseña",
+  "code_resent_redirecting": "Código de verificación enviado. Redirigiendo...",
   "confirm_password": "Confirmar contraseña",
   "didnt_receive_code": "¿No recibiste un código?",
   "email_address": "Correo electrónico",

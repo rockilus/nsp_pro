@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/app/i18n/client';
 import { useAuth } from '@/contexts/auth-context';
+import { AuthApi } from '@/app/lib/api/authApi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -20,19 +21,94 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [unconfirmed, setUnconfirmed] = useState(false);
+  const [resent, setResent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setUnconfirmed(false);
     setLoading(true);
     try {
       await signIn(email, password);
       router.push(`/${lng}/plan/schedule`);
     } catch (err: any) {
+      if (err.errorCode === 'USER_NOT_CONFIRMED') {
+        setUnconfirmed(true);
+      } else {
+        setError(err.message || t('error_message'));
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    setError('');
+    setLoading(true);
+    try {
+      await AuthApi.resendCode({ email });
+      setResent(true);
+      setTimeout(() => {
+        router.push(`/${lng}/auth/otp?mode=signin&email=${encodeURIComponent(email)}`);
+      }, 1500);
+    } catch (err: any) {
       setError(err.message || t('error_message'));
     } finally {
       setLoading(false);
     }
+  }
+
+  if (unconfirmed) {
+    return (
+      <Card className="w-full max-w-md" data-testid="auth-signin-page">
+        <CardHeader className="text-center">
+          <CardTitle>{t('account_not_confirmed')}</CardTitle>
+          <CardDescription>{t('account_not_confirmed_resend')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error && (
+            <p className="text-sm text-destructive" data-testid="auth-error-message">
+              {error}
+            </p>
+          )}
+          {resent && (
+            <p
+              className="text-sm text-green-600 dark:text-green-400"
+              data-testid="auth-resent-message"
+            >
+              {t('code_resent_redirecting')}
+            </p>
+          )}
+          <Button
+            onClick={handleResend}
+            disabled={loading}
+            className="w-full"
+            data-testid="auth-resend-code-button"
+          >
+            {loading ? '...' : t('resend_code')}
+          </Button>
+          <button
+            type="button"
+            onClick={() =>
+              router.push(`/${lng}/auth/otp?mode=signin&email=${encodeURIComponent(email)}`)
+            }
+            className="w-full text-center text-sm text-muted-foreground hover:underline"
+            data-testid="auth-unconfirmed-already-have-code"
+          >
+            {t('didnt_receive_code')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setUnconfirmed(false)}
+            className="w-full text-center text-sm text-muted-foreground hover:underline"
+            data-testid="auth-unconfirmed-back-button"
+          >
+            {t('back_to_sign_in')}
+          </button>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

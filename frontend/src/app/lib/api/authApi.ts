@@ -32,8 +32,17 @@ async function _postJson<T = Record<string, unknown>>(
   const resp = await _post(endpoint, body);
   if (!resp.ok) {
     const data = await resp.json().catch(() => ({}));
-    const message = (data as any).detail || `${resp.status} ${resp.statusText}`;
-    throw new Error(message);
+    const detail = (data as any).detail;
+    let message: string;
+    let errorCode: string | undefined;
+    if (typeof detail === 'object' && detail !== null) {
+      message = detail.message || `${resp.status} ${resp.statusText}`;
+      errorCode = detail.error_code;
+    } else {
+      message = detail || `${resp.status} ${resp.statusText}`;
+    }
+    const err = Object.assign(new Error(message), { errorCode, status: resp.status });
+    throw err;
   }
   return resp.json();
 }
