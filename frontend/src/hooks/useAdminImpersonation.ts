@@ -37,8 +37,7 @@ export function useStartImpersonation() {
   return useCallback(
     async (targetUserId: string): Promise<void> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       if (!targetUserId) throw new Error('Target user ID is required');
 
       if (env.isDevelopment) {
@@ -78,8 +77,7 @@ export function useStartImpersonationWithTarget() {
   return useCallback(
     async (target: ImpersonationTargetInput): Promise<void> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
 
       if (env.isDevelopment) {
         console.log('🔍 useStartImpersonationWithTarget: impersonating', target.userId);
@@ -105,8 +103,7 @@ export function useStopAdminImpersonation() {
 
   return useCallback(async (): Promise<void> => {
     if (loading) throw new Error('Authentication still loading - please wait');
-    if (!isAuthenticated)
-      throw new Error('User not authenticated - please sign in');
+    if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
 
     if (env.isDevelopment) {
       console.log('🔍 useStopAdminImpersonation: stopping impersonation');

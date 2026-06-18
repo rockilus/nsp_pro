@@ -82,15 +82,11 @@ class CognitoAuthClient(ABC):
         """Complete the forgot-password flow with the code."""
 
     @abstractmethod
-    async def update_user_email(
-        self, access_token: str, new_email: str
-    ) -> None:
+    async def update_user_email(self, access_token: str, new_email: str) -> None:
         """Change the user's email — Cognito sends a verification code."""
 
     @abstractmethod
-    async def verify_user_email_attribute(
-        self, access_token: str, code: str
-    ) -> None:
+    async def verify_user_email_attribute(self, access_token: str, code: str) -> None:
         """Verify the new email address with the code."""
 
     @abstractmethod
@@ -292,9 +288,7 @@ class Boto3CognitoAuthClient(CognitoAuthClient):
 
     # -- email management ---------------------------------------------------
 
-    async def update_user_email(
-        self, access_token: str, new_email: str
-    ) -> None:
+    async def update_user_email(self, access_token: str, new_email: str) -> None:
         log_info("Updating user email")
         try:
             self._client.update_user_attributes(
@@ -307,9 +301,7 @@ class Boto3CognitoAuthClient(CognitoAuthClient):
             log_error(f"Update user email failed: {e}")
             raise _map_cognito_error(e) from e
 
-    async def verify_user_email_attribute(
-        self, access_token: str, code: str
-    ) -> None:
+    async def verify_user_email_attribute(self, access_token: str, code: str) -> None:
         log_info("Verifying user email attribute")
         try:
             self._client.verify_user_attribute(

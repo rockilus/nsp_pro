@@ -35,10 +35,7 @@ logger = logging.getLogger(__name__)
 def _build_jwks_url() -> str:
     pool = config.cognito_user_pool_id
     region = config.aws_region
-    return (
-        f"https://cognito-idp.{region}.amazonaws.com/{pool}"
-        "/.well-known/jwks.json"
-    )
+    return f"https://cognito-idp.{region}.amazonaws.com/{pool}/.well-known/jwks.json"
 
 
 @lru_cache(maxsize=1)

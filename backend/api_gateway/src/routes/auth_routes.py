@@ -86,7 +86,9 @@ async def sign_up(
             raise PasswordsDoNotMatchError("Passwords do not match")
         await auth_service.sign_up(request)
         log_info(f"Sign-up initiated for: {request.email}")
-        return {"message": "User registered. Please check your email for the verification code."}
+        return {
+            "message": "User registered. Please check your email for the verification code."
+        }
     except Exception as e:
         log_info("Failed to sign up")
         handle_routes_errors(e)

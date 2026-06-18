@@ -116,9 +116,12 @@ function DevelopmentAuthProvider({ children }: { children: React.ReactNode }) {
     return Promise.resolve();
   }, []);
 
-  const confirmForgotPassword = useCallback(async (_email: string, _code: string, _newPassword: string) => {
-    return Promise.resolve();
-  }, []);
+  const confirmForgotPassword = useCallback(
+    async (_email: string, _code: string, _newPassword: string) => {
+      return Promise.resolve();
+    },
+    [],
+  );
 
   const contextValue: AuthContextType = {
     user: isAuthenticated ? mockUser : null,
@@ -164,7 +167,9 @@ function CookieAuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
     check();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
@@ -224,15 +229,18 @@ function CookieAuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const confirmForgotPassword = useCallback(async (email: string, code: string, newPassword: string) => {
-    setError(null);
-    try {
-      await AuthApi.confirmForgotPassword({ email, code, new_password: newPassword });
-    } catch (e: any) {
-      setError(e.message || 'Password reset failed');
-      throw e;
-    }
-  }, []);
+  const confirmForgotPassword = useCallback(
+    async (email: string, code: string, newPassword: string) => {
+      setError(null);
+      try {
+        await AuthApi.confirmForgotPassword({ email, code, new_password: newPassword });
+      } catch (e: any) {
+        setError(e.message || 'Password reset failed');
+        throw e;
+      }
+    },
+    [],
+  );
 
   const contextValue: AuthContextType = {
     user,

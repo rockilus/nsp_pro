@@ -343,8 +343,7 @@ export function useBulkCreateAssignments() {
       intent?: SelectionIntentPayload,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
 
       const result = await AssignmentApi.bulkCreateAssignments(
         apiClient,
@@ -382,8 +381,7 @@ export function useBulkUpdateAssignments() {
       intent?: SelectionIntentPayload,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
 
       const result = await AssignmentApi.bulkUpdateAssignments(
         apiClient,
@@ -419,8 +417,7 @@ export function useBulkToggleFixed() {
       intent?: SelectionIntentPayload,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
 
       const result = await AssignmentApi.bulkToggleFixed(apiClient, assignmentIds, teamId, intent);
       queryClient.invalidateQueries({
@@ -449,8 +446,7 @@ export function useBulkDeleteAssignments() {
       intent?: SelectionIntentPayload,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
 
       const result = await AssignmentApi.bulkDeleteAssignments(
         apiClient,

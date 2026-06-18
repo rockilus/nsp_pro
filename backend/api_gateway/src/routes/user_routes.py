@@ -194,7 +194,9 @@ async def change_user_password(
         if not access_token:
             raise HTTPException(status_code=401, detail="Authentication required")
 
-        await user_service.change_user_password(password_data=p_data, access_token=access_token)
+        await user_service.change_user_password(
+            password_data=p_data, access_token=access_token
+        )
 
         response = {"message": "Password updated successfully"}
     except Exception as e:

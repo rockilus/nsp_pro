@@ -25,7 +25,10 @@ async function _post(endpoint: string, body: Record<string, unknown> = {}): Prom
   return resp;
 }
 
-async function _postJson<T = Record<string, unknown>>(endpoint: string, body: Record<string, unknown>): Promise<T> {
+async function _postJson<T = Record<string, unknown>>(
+  endpoint: string,
+  body: Record<string, unknown>,
+): Promise<T> {
   const resp = await _post(endpoint, body);
   if (!resp.ok) {
     const data = await resp.json().catch(() => ({}));

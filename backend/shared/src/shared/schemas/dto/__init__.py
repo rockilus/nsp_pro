@@ -1,13 +1,3 @@
-from shared.schemas.dto.auth import (
-    ChangeEmailRequestDTO,
-    ConfirmCodeRequestDTO,
-    ConfirmForgotPasswordRequestDTO,
-    ForgotPasswordRequestDTO,
-    ResendCodeRequestDTO,
-    SignInRequestDTO,
-    SignUpRequestDTO,
-    VerifyEmailRequestDTO,
-)
 from shared.schemas.dto.assignment import (
     AssignmentDTO,
     AssignmentsRecurrencesResultDTO,
@@ -18,6 +8,16 @@ from shared.schemas.dto.assignment import (
     SelectionIntentDTO,
 )
 from shared.schemas.dto.attribute import AttributeDTO
+from shared.schemas.dto.auth import (
+    ChangeEmailRequestDTO,
+    ConfirmCodeRequestDTO,
+    ConfirmForgotPasswordRequestDTO,
+    ForgotPasswordRequestDTO,
+    ResendCodeRequestDTO,
+    SignInRequestDTO,
+    SignUpRequestDTO,
+    VerifyEmailRequestDTO,
+)
 from shared.schemas.dto.breach import BreachDTO
 from shared.schemas.dto.constraint import (
     BlockDTO,

@@ -69,11 +69,11 @@ function OtpForm({ lng }: { lng: string }) {
               className="text-center text-lg tracking-[0.25em]"
             />
           </div>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
           {resent && (
-            <p className="text-sm text-green-600 dark:text-green-400">{t('send_email_success_message')}</p>
+            <p className="text-sm text-green-600 dark:text-green-400">
+              {t('send_email_success_message')}
+            </p>
           )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? '...' : t('verify_email')}

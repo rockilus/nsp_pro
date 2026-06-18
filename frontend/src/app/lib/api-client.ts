@@ -126,7 +126,11 @@ class APIClient {
     });
   }
 
-  async get<T>(endpoint: string, user?: AuthUserInfo | null, options?: ApiClientOptions): Promise<T> {
+  async get<T>(
+    endpoint: string,
+    user?: AuthUserInfo | null,
+    options?: ApiClientOptions,
+  ): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'GET' }, user);
   }
 
@@ -193,9 +197,7 @@ export function useApiClient() {
   const { user, isAuthenticated, loading } = useAuth();
 
   return useMemo(() => {
-    const authInfo: AuthUserInfo | null = user
-      ? { sub: user.id, email: user.email }
-      : null;
+    const authInfo: AuthUserInfo | null = user ? { sub: user.id, email: user.email } : null;
 
     return {
       get: <T>(endpoint: string, options?: ApiClientOptions) =>

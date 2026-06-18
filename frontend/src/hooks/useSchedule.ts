@@ -494,8 +494,7 @@ export function useGetRequestDeadline(teamId: string | null | undefined) {
 
   const getRequestDeadline = useCallback(async (): Promise<RequestDeadlineT> => {
     if (loading) throw new Error('Authentication still loading - please wait');
-    if (!isAuthenticated)
-      throw new Error('User not authenticated - please sign in');
+    if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
     if (!teamId) throw new Error('Team ID is required');
     return ScheduleApi.getRequestDeadline(apiClient, teamId);
   }, [apiClient, isAuthenticated, loading, user, teamId]);
@@ -513,8 +512,7 @@ export function useSetRequestDeadline() {
   const setRequestDeadline = useCallback(
     async (scheduleId: string, teamId: string, deadline: Date): Promise<ScheduleT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.setRequestDeadline(apiClient, scheduleId, teamId, deadline);
     },
     [apiClient, isAuthenticated, loading, user],
@@ -533,8 +531,7 @@ export function useSendRequestDeadlineReminder() {
   const sendReminder = useCallback(
     async (scheduleId: string, teamId: string): Promise<ScheduleT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.sendRequestDeadlineReminder(apiClient, scheduleId, teamId);
     },
     [apiClient, isAuthenticated, loading, user],
@@ -553,8 +550,7 @@ export function useEditRequestDeadline() {
   const editRequestDeadline = useCallback(
     async (scheduleId: string, teamId: string, newDeadline: Date): Promise<ScheduleT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.editRequestDeadline(apiClient, scheduleId, teamId, newDeadline);
     },
     [apiClient, isAuthenticated, loading, user],
@@ -573,8 +569,7 @@ export function useDeleteRequestDeadline() {
   const deleteRequestDeadline = useCallback(
     async (scheduleId: string, teamId: string): Promise<ScheduleT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.deleteRequestDeadline(apiClient, scheduleId, teamId);
     },
     [apiClient, isAuthenticated, loading, user],

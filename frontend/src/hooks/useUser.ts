@@ -135,7 +135,7 @@ export function useUpdatePassword() {
           apiClient,
           {
             ...passwordData,
-            accessToken: '',  // backend reads from cookie
+            accessToken: '', // backend reads from cookie
           },
           userId,
         );

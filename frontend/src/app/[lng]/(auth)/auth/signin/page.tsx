@@ -73,9 +73,7 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
               autoComplete="current-password"
             />
           </div>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? '...' : t('sign_in')}
           </Button>

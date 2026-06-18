@@ -244,9 +244,7 @@ class TestSignIn:
     def test_signin_user_not_found(self, db_interface: DatabaseInterface):
         """Cognito UserNotFoundException → AuthnUserNotFoundError → 401."""
         mock = _mock_auth_client()
-        mock.initiate_auth.side_effect = AuthnUserNotFoundError(
-            "User does not exist"
-        )
+        mock.initiate_auth.side_effect = AuthnUserNotFoundError("User does not exist")
         app = _make_app_with_auth(db_interface, mock)
         client = TestClient(app)
 
@@ -259,9 +257,7 @@ class TestSignIn:
     def test_signin_cognito_connection_error(self, db_interface: DatabaseInterface):
         """Upstream failure → AuthnConnectionError → 503."""
         mock = _mock_auth_client()
-        mock.initiate_auth.side_effect = AuthnConnectionError(
-            "Cognito unreachable"
-        )
+        mock.initiate_auth.side_effect = AuthnConnectionError("Cognito unreachable")
         app = _make_app_with_auth(db_interface, mock)
         client = TestClient(app)
 
@@ -324,7 +320,9 @@ class TestSignOut:
         resp = client.post("/auth/signout")
         assert resp.status_code == 200
         for cookie in resp.headers.get_list("set-cookie"):
-            assert "rockilus_access_token" in cookie or "rockilus_refresh_token" in cookie
+            assert (
+                "rockilus_access_token" in cookie or "rockilus_refresh_token" in cookie
+            )
 
 
 # ---------------------------------------------------------------------------
