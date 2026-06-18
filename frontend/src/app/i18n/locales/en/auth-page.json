@@ -11,6 +11,7 @@
   "error_message": "An error occurred, please try again.",
   "first_name": "First name",
   "forgot_password": "Forgot password?",
+  "invalid_email": "Invalid email format",
   "invalid_link": "Invalid link",
   "invalid_ling_message": "Your password reset link has expired, please try again.",
   "last_name": "Last name",

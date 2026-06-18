@@ -12,6 +12,7 @@
   "error_message": "Ocurrió un error, por favor intenta nuevamente.",
   "first_name": "Nombre",
   "forgot_password": "¿Olvidaste tu contraseña?",
+  "invalid_email": "Formato de email inválido",
   "invalid_link": "Enlace inválido",
   "invalid_ling_message": "Tu enlace para restablecer la contraseña expiró, por favor intenta nuevamente.",
   "last_name": "Apellido",

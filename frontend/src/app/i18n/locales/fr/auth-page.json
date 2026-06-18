@@ -12,6 +12,7 @@
   "error_message": "Une erreur s'est produite, veuillez réessayer.",
   "first_name": "Prénom",
   "forgot_password": "Mot de passe oublié ?",
+  "invalid_email": "Format d'email invalide",
   "invalid_link": "Lien invalide",
   "invalid_ling_message": "Votre lien de réinitialisation du mot de passe a expiré, veuillez réessayer.",
   "last_name": "Nom",

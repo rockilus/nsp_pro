@@ -24,9 +24,15 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    if (!EMAIL_RE.test(email)) {
+      setError(t('invalid_email'));
+      return;
+    }
     if (password !== confirmPassword) {
       setError(t('passwords_do_not_match'));
       return;
@@ -58,7 +64,7 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
         <CardTitle>{t('sign_up')}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">{t('first_name')}</Label>
