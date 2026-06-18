@@ -98,7 +98,9 @@ async def sign_up(
                 SignInRequestDTO(email=request.email, password=request.password)
             )
             user_sub = auth_service.decode_token_sub(tokens.access_token)
-            log_info(f"User {request.email} already exists in Cognito, onboarding to DB")
+            log_info(
+                f"User {request.email} already exists in Cognito, onboarding to DB"
+            )
         await user_service.create_user(
             user_id=user_sub,
             email=request.email,

@@ -132,6 +132,7 @@ class TestSignUp:
             "An account with the given email already exists"
         )
         from src.integrations.authentication.cognito_auth_client import AuthTokens
+
         mock.initiate_auth.return_value = AuthTokens(
             access_token="eyJhbGci.eyJzdWIiOiJiZTAwZTFlNCJ9.sig",
             id_token="fake-id",
@@ -152,7 +153,10 @@ class TestSignUp:
             },
         )
         assert resp.status_code == 200
-        assert resp.json()["message"] == "User registered. Please check your email for the verification code."
+        assert (
+            resp.json()["message"]
+            == "User registered. Please check your email for the verification code."
+        )
 
 
 # ---------------------------------------------------------------------------

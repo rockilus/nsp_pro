@@ -443,6 +443,12 @@ class ConfirmCognitoUserResponse(BaseModel):
     email: str
 
 
+class ResetCognitoLocalResponse(BaseModel):
+    success: bool
+    message: str
+    users_deleted: int
+
+
 @router.post("/confirm-cognito-user", response_model=ConfirmCognitoUserResponse)
 async def confirm_cognito_user(
     request: ConfirmCognitoUserRequest,
@@ -472,4 +478,28 @@ async def confirm_cognito_user(
         raise HTTPException(
             status_code=500,
             detail=f"Failed to confirm user: {str(e)}",
+        ) from e
+
+
+@router.post("/reset-cognito-local", response_model=ResetCognitoLocalResponse)
+async def reset_cognito_local(
+    _: None = Depends(get_test_environment_only),
+    auth_service: AuthService = Depends(get_auth_service),
+) -> ResetCognitoLocalResponse:
+    """Delete all users from the local Cognito instance. Test environments only."""
+    try:
+        count = await auth_service.reset_cognito_users()
+        logger.info(f"Reset cognito-local: deleted {count} users")
+        return ResetCognitoLocalResponse(
+            success=True,
+            message=f"Deleted {count} Cognito users",
+            users_deleted=count,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to reset cognito-local: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to reset cognito-local: {str(e)}",
         ) from e

@@ -93,6 +93,14 @@ class CognitoAuthClient(ABC):
     async def global_sign_out(self, access_token: str) -> None:
         """Sign the user out of all devices."""
 
+    @abstractmethod
+    async def admin_delete_user(self, email: str) -> None:
+        """Admin-delete a user from the pool."""
+
+    @abstractmethod
+    async def list_users(self) -> list[str]:
+        """List all user emails in the pool."""
+
 
 # ---------------------------------------------------------------------------
 # Boto3 implementation
@@ -334,6 +342,44 @@ class Boto3CognitoAuthClient(CognitoAuthClient):
             )
         except ClientError as e:
             log_error(f"Global sign-out failed: {e}")
+            raise _map_cognito_error(e) from e
+
+    # -- admin user management -----------------------------------------------
+
+    async def admin_delete_user(self, email: str) -> None:
+        log_info(f"Admin-deleting user: {email}")
+        try:
+            self._client.admin_delete_user(
+                UserPoolId=self._pool_id,
+                Username=email,
+            )
+        except ClientError as e:
+            log_error(f"Admin delete user failed for {email}: {e}")
+            raise _map_cognito_error(e) from e
+
+    async def list_users(self) -> list[str]:
+        log_info("Listing all users in pool")
+        try:
+            emails: list[str] = []
+            pagination_token: str | None = None
+            while True:
+                kwargs: dict = {
+                    "UserPoolId": self._pool_id,
+                }
+                if pagination_token:
+                    kwargs["PaginationToken"] = pagination_token
+                resp = self._client.list_users(**kwargs)
+                for user in resp.get("Users", []):
+                    for attr in user.get("Attributes", []):
+                        if attr["Name"] == "email":
+                            emails.append(attr["Value"])
+                            break
+                pagination_token = resp.get("PaginationToken")
+                if not pagination_token:
+                    break
+            return emails
+        except ClientError as e:
+            log_error(f"List users failed: {e}")
             raise _map_cognito_error(e) from e
 
 

@@ -57,7 +57,7 @@ services:
       - PORT=9229
       - CODE=123456          # fixed confirmation code for deterministic tests
     volumes:
-      - ./cognito-local-data/.cognito:/app/.cognito
+      - cognito_local_data:/app/.cognito
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:9229',function(r){process.exit(0)}).on('error',function(){process.exit(1)})"]
       interval: 5s
@@ -95,3 +95,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+volumes:
+  cognito_local_data:

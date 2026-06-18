@@ -3,6 +3,7 @@
 import base64
 import json
 
+from loguru import logger
 from shared.schemas.dto.auth import (
     ChangeEmailRequestDTO,
     ConfirmCodeRequestDTO,
@@ -90,6 +91,17 @@ class AuthService:
         if config.environment == "production":
             raise SecurityViolation("Admin bypass forbidden in production")
         await self._auth.admin_confirm_sign_up(email)
+
+    async def reset_cognito_users(self) -> int:
+        """Delete all users from the Cognito pool. Returns count of users deleted.
+        Only allowed in test/development environments."""
+        if config.environment == "production":
+            raise SecurityViolation("Cognito user reset forbidden in production")
+        emails = await self._auth.list_users()
+        for email in emails:
+            await self._auth.admin_delete_user(email)
+        logger.info(f"Reset Cognito users: deleted {len(emails)} users")
+        return len(emails)
 
     @staticmethod
     def decode_token_sub(token: str) -> str:

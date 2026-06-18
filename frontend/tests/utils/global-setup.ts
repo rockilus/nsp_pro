@@ -42,6 +42,15 @@ async function globalSetup(config: FullConfig) {
     console.log(`✅ Initial database reset completed: ${resetResult.operation_id}`);
     console.log(`   Reset ${resetResult.collections_reset.length} collections`);
 
+    // Reset cognito-local users to ensure clean Cognito state
+    console.log('🔐 Resetting cognito-local users...');
+    try {
+      const cognitoReset = await dbUtils.resetCognitoLocal();
+      console.log(`✅ Cognito-local reset: ${cognitoReset.message}`);
+    } catch (error) {
+      console.warn('⚠️ Cognito-local reset failed, continuing:', error);
+    }
+
     // Create test user after database reset
     console.log('👤 Creating test user...');
     try {
