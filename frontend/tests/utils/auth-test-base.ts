@@ -74,7 +74,7 @@ export class AuthTestBase {
   async confirmSignUpViaUI(page: Page, code: string): Promise<void> {
     await page.fill('[data-testid="auth-otp-input"]', code);
     await page.click('[data-testid="auth-otp-submit"]');
-    await page.waitForSelector('[data-testid="auth-signin-page"]', { timeout: 15000 });
+    await page.waitForURL('**/plan/schedule', { timeout: 15000 });
   }
 
   /** Sign in via the auth UI. */

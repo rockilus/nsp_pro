@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { storeSignupPassword } from '@/app/lib/signup-password-storage';
 
 export default function SignUpPage({ params }: { params: Promise<{ lng: string }> }) {
   const { lng } = React.use(params);
@@ -50,6 +51,7 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
         password,
         confirm_password: confirmPassword,
       });
+      storeSignupPassword(password);
       router.push(`/${lng}/auth/otp?mode=signup&email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       setError(err.message || t('error_message'));

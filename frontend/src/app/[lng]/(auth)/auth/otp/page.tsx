@@ -9,12 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthApi } from '@/app/lib/api/authApi';
+import { retrieveSignupPassword } from '@/app/lib/signup-password-storage';
 
 function OtpForm({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'auth-page');
   const router = useRouter();
   const params = useSearchParams();
-  const { confirmSignUp } = useAuth();
+  const { confirmSignUp, signIn } = useAuth();
 
   const mode = params.get('mode') || 'signup';
   const email = params.get('email') || '';
@@ -39,7 +40,13 @@ function OtpForm({ lng }: { lng: string }) {
     setLoading(true);
     try {
       await confirmSignUp(email, code);
-      router.push(`/${lng}/auth/signin`);
+      const savedPassword = retrieveSignupPassword();
+      if (savedPassword) {
+        await signIn(email, savedPassword);
+        router.push(`/${lng}/plan/schedule`);
+      } else {
+        router.push(`/${lng}/auth/signin`);
+      }
     } catch (err: any) {
       setError(err.message || t('error_message'));
     } finally {

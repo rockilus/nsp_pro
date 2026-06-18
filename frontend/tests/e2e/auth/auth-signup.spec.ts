@@ -94,7 +94,9 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
 
   // ── OTP Confirmation ────────────────────────────────────────────────────
 
-  test('confirm signup with OTP code navigates to signin', async ({ page, request }, testInfo) => {
+  test('confirm signup with OTP auto-logs in and navigates to schedule', async ({
+    page,
+  }, testInfo) => {
     const user = authTestBase.getUserForWorker(testInfo.workerIndex);
     await authTestBase.signUpViaUI(page, user);
 
@@ -102,7 +104,22 @@ test.describe.serial('Auth — Sign-Up & Confirm Flow', () => {
     await page.fill('[data-testid="auth-otp-input"]', '123456');
     await page.click('[data-testid="auth-otp-submit"]');
 
-    // Should redirect to signin after confirmation
+    // Auto-login should redirect to plan/schedule, not signin
+    await page.waitForURL('**/plan/schedule', { timeout: 15000 });
+    authTestBase.markConfirmed(testInfo.workerIndex);
+  });
+
+  test('confirm signup without stored password redirects to signin', async ({ page }, testInfo) => {
+    const user = authTestBase.getUserForWorker(testInfo.workerIndex);
+    await authTestBase.signUpViaUI(page, user);
+
+    // Simulate different tab or expired TTL — no password in sessionStorage
+    await page.evaluate(() => sessionStorage.clear());
+
+    await page.fill('[data-testid="auth-otp-input"]', '123456');
+    await page.click('[data-testid="auth-otp-submit"]');
+
+    // Falls through to signin when auto-login is not possible
     await page.waitForSelector('[data-testid="auth-signin-page"]', { timeout: 15000 });
     authTestBase.markConfirmed(testInfo.workerIndex);
   });
