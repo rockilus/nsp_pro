@@ -35,7 +35,9 @@ async function _postJson<T = Record<string, unknown>>(
     const detail = (data as any).detail;
     let message: string;
     let errorCode: string | undefined;
-    if (typeof detail === 'object' && detail !== null) {
+    if (Array.isArray(detail)) {
+      message = detail.map((d: any) => d.msg).join('; ') || `${resp.status} ${resp.statusText}`;
+    } else if (typeof detail === 'object' && detail !== null) {
       message = detail.message || `${resp.status} ${resp.statusText}`;
       errorCode = detail.error_code;
     } else {

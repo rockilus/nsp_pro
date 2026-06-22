@@ -217,6 +217,7 @@ export default function EmailUpdateDialog({
             onSubmit={handleNewEmailSubmit}
             className="space-y-4"
             data-testid="email-update-step-new-email"
+            noValidate
           >
             <DialogHeader>
               <DialogTitle>{t('change_email')}</DialogTitle>
