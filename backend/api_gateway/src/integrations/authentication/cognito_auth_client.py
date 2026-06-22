@@ -15,6 +15,8 @@ from src.config import config
 from src.errors import (
     AuthnConnectionError,
     AuthnEmailAlreadyExistsError,
+    AuthnExpiredVerificationCodeError,
+    AuthnInvalidVerificationCodeError,
     AuthnPasswordPolicyViolationError,
     AuthnUpdateEmailError,
     AuthnUserNotConfirmedError,
@@ -88,6 +90,10 @@ class CognitoAuthClient(ABC):
     @abstractmethod
     async def verify_user_email_attribute(self, access_token: str, code: str) -> None:
         """Verify the new email address with the code."""
+
+    @abstractmethod
+    async def get_user(self, access_token: str) -> dict[str, str]:
+        """Return user attributes dict {attr_name: attr_value}."""
 
     @abstractmethod
     async def global_sign_out(self, access_token: str) -> None:
@@ -329,7 +335,25 @@ class Boto3CognitoAuthClient(CognitoAuthClient):
                 Code=code,
             )
         except ClientError as e:
+            error_code = e.response["Error"]["Code"]
+            if error_code == "CodeMismatchException":
+                raise AuthnInvalidVerificationCodeError(
+                    "Invalid verification code"
+                ) from e
+            if error_code == "ExpiredCodeException":
+                raise AuthnExpiredVerificationCodeError(
+                    "Verification code has expired"
+                ) from e
             log_error(f"Verify user email attribute failed: {e}")
+            raise _map_cognito_error(e) from e
+
+    async def get_user(self, access_token: str) -> dict[str, str]:
+        log_info("Fetching user attributes from Cognito")
+        try:
+            response = self._client.get_user(AccessToken=access_token)
+            return {attr["Name"]: attr["Value"] for attr in response["UserAttributes"]}
+        except ClientError as e:
+            log_error(f"Get user failed: {e}")
             raise _map_cognito_error(e) from e
 
     # -- session management -------------------------------------------------

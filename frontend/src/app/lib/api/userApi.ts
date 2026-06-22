@@ -68,30 +68,48 @@ export class UserApi extends BaseApi {
     );
   }
 
-  /**
-   * Get authenticated user's worker for a specific team (authenticated)
-   * Returns null if no worker is found for the user in this team
-   */
-  static async getUserWorker(
-    apiClient: AuthenticatedApiClient,
-    teamId: string,
-  ): Promise<WorkerT | null> {
-    // Security: Input validation
-    if (!teamId) {
-      throw new Error('Team ID is required');
+    /**
+     * Get authenticated user's worker for a specific team (authenticated)
+     * Returns null if no worker is found for the user in this team
+     */
+    static async getUserWorker(
+      apiClient: AuthenticatedApiClient,
+      teamId: string,
+    ): Promise<WorkerT | null> {
+      // Security: Input validation
+      if (!teamId) {
+        throw new Error('Team ID is required');
+      }
+
+      const responseData = await this.makeRequest<any>(
+        apiClient,
+        'get',
+        `/users/me/worker/teams/${teamId}`,
+      );
+
+      // Backend returns null if no worker is associated with the user
+      if (responseData === null) {
+        return null;
+      }
+
+      return toWorkerT(responseData);
     }
 
-    const responseData = await this.makeRequest<any>(
-      apiClient,
-      'get',
-      `/users/me/worker/teams/${teamId}`,
-    );
-
-    // Backend returns null if no worker is associated with the user
-    if (responseData === null) {
-      return null;
+    /**
+     * Verify email with Cognito verification code and sync DB (authenticated)
+     */
+    static async verifyEmailSync(
+      apiClient: AuthenticatedApiClient,
+      data: { code: string },
+    ): Promise<{ status: string; email: string }> {
+      if (!data.code) {
+        throw new Error('Verification code is required');
+      }
+      return this.makeRequest<{ status: string; email: string }>(
+        apiClient,
+        'post',
+        '/users/verify-email',
+        data,
+      );
     }
-
-    return toWorkerT(responseData);
   }
-}

@@ -6,6 +6,8 @@ from shared.schemas.errors import SchemaTypeError, SchemaValueError
 from src.errors.authn_errors.authn_errors import (
     AuthnConnectionError,
     AuthnEmailAlreadyExistsError,
+    AuthnExpiredVerificationCodeError,
+    AuthnInvalidVerificationCodeError,
     AuthnPasswordChangeError,
     AuthnPasswordPolicyViolationError,
     AuthnUpdateEmailError,
@@ -53,6 +55,22 @@ def handle_routes_errors(error: Exception) -> NoReturn:
     if isinstance(error, AuthnWrongCredentialsError):
         raise HTTPException(
             status_code=401, detail=error.message or "Incorrect credentials"
+        )
+    if isinstance(error, AuthnInvalidVerificationCodeError):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "invalid_verification_code",
+                "message": error.message,
+            },
+        )
+    if isinstance(error, AuthnExpiredVerificationCodeError):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error_code": "expired_verification_code",
+                "message": error.message,
+            },
         )
     if isinstance(error, AuthnUserNotFoundError):
         raise HTTPException(

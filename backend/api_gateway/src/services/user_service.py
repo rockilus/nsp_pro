@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import datetime, timezone
 
 from shared.database.database_collections import DatabaseCollections
@@ -92,6 +93,22 @@ class UserService(BaseService):
             password_data.current_password,
             password_data.new_password,
         )
+
+    async def verify_email_and_sync_db(
+        self, access_token: str, code: str, user_id: str
+    ) -> User:
+        await self._auth.verify_user_email_attribute(access_token, code)
+        attrs = await self._auth.get_user(access_token)
+        verified_email = attrs.get("email")
+        if not verified_email:
+            raise AuthnUpdateEmailError(
+                "Could not retrieve verified email from Cognito"
+            )
+        existing = self.collection.user_db.get_user_by_id(user_id)
+        if existing is None:
+            raise UserNotFoundError(f"User {user_id} not found")
+        updated = replace(existing, email=verified_email)
+        return self.collection.user_db.update_user(updated)
 
     def update_user_impersonating_user_id(
         self, user_id: str, impersonating_user_id: str | None

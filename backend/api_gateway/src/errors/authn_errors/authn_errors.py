@@ -64,6 +64,18 @@ class AuthnUserNotConfirmedError(Exception):
         super().__init__(self.message)
 
 
+class AuthnInvalidVerificationCodeError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+class AuthnExpiredVerificationCodeError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
 class SecurityViolation(Exception):
     def __init__(self, message):
         self.message = message
