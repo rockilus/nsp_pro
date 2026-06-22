@@ -177,7 +177,7 @@ test.describe('Email Update Flow', () => {
 
     // Pass sudo
     await page.fill('[data-testid="email-update-sudo-password"]', user.password);
-    await page.click('[data-testid="email-update-sudo-submit"');
+    await page.click('[data-testid="email-update-sudo-submit"]');
 
     await expect(page.locator('[data-testid="email-update-step-new-email"]')).toBeVisible();
 
