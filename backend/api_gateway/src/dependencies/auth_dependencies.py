@@ -13,6 +13,7 @@ from typing import Annotated, Optional
 import jwt
 from fastapi import Cookie, Depends, Header, HTTPException, Request
 from jwt import PyJWKClient
+from jwt.types import Options
 from shared.database.database_collections import DatabaseCollections
 
 from src.config import config
@@ -52,7 +53,7 @@ def _decode_access_token(token: str) -> dict:
     """Validate and decode a Cognito access-token JWT.  Returns claims."""
     client = _get_jwks_client()
     signing_key = client.get_signing_key_from_jwt(token)
-    decode_options: dict = {"verify_exp": True}
+    decode_options: Options = {"verify_exp": True}
     audience = None if config.cognito_endpoint_url else config.cognito_client_id
     return jwt.decode(
         token,
