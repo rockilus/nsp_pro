@@ -208,11 +208,18 @@ export default function UserProfileTab({ lng }: { lng: string }) {
               <UserProfileRow
                 label={t('email')}
                 value={
-                  <span>{user.email}</span>
+                  <span data-testid="profile-email-value">{user.email}</span>
                 }
                 valueEditing={<> </>}
                 editing={false}
-                editButton={editButton(() => setEmailDialogOpen(true))}
+                editButton={
+                  <IconButton
+                    onClick={() => setEmailDialogOpen(true)}
+                    data-testid="profile-email-edit-button"
+                  >
+                    <EditIcon />
+                  </IconButton>
+                }
                 handleEditConfirm={() => {}}
                 handleEditCancel={() => {}}
               />

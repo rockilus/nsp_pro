@@ -94,22 +94,4 @@ export class UserApi extends BaseApi {
 
       return toWorkerT(responseData);
     }
-
-    /**
-     * Verify email with Cognito verification code and sync DB (authenticated)
-     */
-    static async verifyEmailSync(
-      apiClient: AuthenticatedApiClient,
-      data: { code: string },
-    ): Promise<{ status: string; email: string }> {
-      if (!data.code) {
-        throw new Error('Verification code is required');
-      }
-      return this.makeRequest<{ status: string; email: string }>(
-        apiClient,
-        'post',
-        '/users/verify-email',
-        data,
-      );
-    }
   }

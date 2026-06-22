@@ -568,6 +568,16 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Get a user's email by their Cognito sub (user ID).
+   * Uses the dev-mode header impersonation to call GET /users/me.
+   */
+  async getUserEmail(userId: string): Promise<string> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    const user = await client.get<{ email: string }>('/users/me');
+    return user.email;
+  }
+
+  /**
    * Set authentication headers for a Playwright page for a specific user
    * This allows tests to make requests as different users
    *

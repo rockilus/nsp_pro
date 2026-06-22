@@ -15,6 +15,7 @@ export interface AuthTestUser {
   firstName: string;
   lastName: string;
   confirmed: boolean;
+  sub: string;
 }
 
 export class AuthTestBase {
@@ -30,6 +31,7 @@ export class AuthTestBase {
         firstName: 'E2E',
         lastName: `Auth-${id}`,
         confirmed: false,
+        sub: '',
       });
     }
     return this.users.get(workerIndex)!;
@@ -83,6 +85,9 @@ export class AuthTestBase {
         `setupConfirmedUser signup failed: ${signupResp.status} ${JSON.stringify(body)}`,
       );
     }
+
+    const signupData = await signupResp.json();
+    user.sub = signupData.user_sub;
 
     const confirmResp = await fetch(`${testConfig.apiUrl}/test-utils/confirm-cognito-user`, {
       method: 'POST',

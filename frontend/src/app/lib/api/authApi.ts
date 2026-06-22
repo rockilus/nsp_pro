@@ -83,6 +83,11 @@ export interface VerifyEmailData {
   code: string;
 }
 
+export interface VerifyEmailSyncResponse {
+  status: string;
+  email: string;
+}
+
 export interface ResendCodeData {
   email: string;
 }
@@ -122,6 +127,13 @@ export class AuthApi {
 
   static async verifyEmail(data: VerifyEmailData): Promise<void> {
     await _postJson('/auth/verify-email', data as unknown as Record<string, unknown>);
+  }
+
+  static async verifyEmailSync(data: VerifyEmailData): Promise<VerifyEmailSyncResponse> {
+    return _postJson<VerifyEmailSyncResponse>(
+      '/users/verify-email',
+      data as unknown as Record<string, unknown>,
+    );
   }
 
   static async resendCode(data: ResendCodeData): Promise<void> {

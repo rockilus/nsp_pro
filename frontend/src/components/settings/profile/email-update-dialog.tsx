@@ -2,10 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
-import { useApiClient } from '../../../app/lib/api-client';
 import { AuthApi } from '../../../app/lib/api/authApi';
-import { UserApi } from '../../../app/lib/api/userApi';
-import { ApiError } from '../../../app/lib/api/baseApi';
 import {
   Dialog,
   DialogContent,
@@ -42,7 +39,6 @@ export default function EmailUpdateDialog({
   onEmailUpdated,
 }: EmailUpdateDialogProps) {
   const { t } = useTranslation(lng, 'profile-page');
-  const apiClient = useApiClient();
 
   const [step, setStep] = useState<Step>('sudo');
   const [password, setPassword] = useState('');
@@ -70,12 +66,13 @@ export default function EmailUpdateDialog({
 
   const handleError = useCallback(
     (err: unknown, fallbackKey: string) => {
-      if (err instanceof ApiError && err.errorCode) {
+      const anyErr = err as any;
+      if (anyErr && anyErr.errorCode) {
         const map: Record<string, string> = {
           invalid_verification_code: t('invalid_verification_code'),
           expired_verification_code: t('expired_verification_code'),
         };
-        setError(map[err.errorCode] || err.message);
+        setError(map[anyErr.errorCode] || anyErr.message || t(fallbackKey));
       } else if (err instanceof Error) {
         const msg = err.message.toLowerCase();
         if (msg.includes('incorrect credentials') || msg.includes('401')) {
@@ -130,17 +127,16 @@ export default function EmailUpdateDialog({
     }
   };
 
-  // Step 3: Verify OTP
+  // Step 3: Verify OTP + sync DB
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (code.length !== 6) return;
     setError(null);
     setLoading(true);
     try {
-      await UserApi.verifyEmailSync(apiClient, { code });
+      await AuthApi.verifyEmailSync({ code });
       await AuthApi.refresh();
-      const updatedUser = await UserApi.getCurrentUser(apiClient);
-      onEmailUpdated(updatedUser.email);
+      onEmailUpdated(newEmail);
       setStep('success');
       setTimeout(() => handleOpenChange(false), 2000);
     } catch (err) {
@@ -150,7 +146,7 @@ export default function EmailUpdateDialog({
     }
   };
 
-  // Step 4: Resend code
+  // Resend verification code
   const handleResend = async () => {
     setError(null);
     setLoading(true);
@@ -168,7 +164,11 @@ export default function EmailUpdateDialog({
     switch (step) {
       case 'sudo':
         return (
-          <form onSubmit={handleSudoSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSudoSubmit}
+            className="space-y-4"
+            data-testid="email-update-step-sudo"
+          >
             <DialogHeader>
               <DialogTitle>{t('verify_identity')}</DialogTitle>
               <DialogDescription>
@@ -186,6 +186,7 @@ export default function EmailUpdateDialog({
                 placeholder={t('current_password_placeholder')}
                 disabled={loading}
                 autoFocus
+                data-testid="email-update-sudo-password"
               />
             </div>
             <DialogFooter showCloseButton={false}>
@@ -194,10 +195,15 @@ export default function EmailUpdateDialog({
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
                 disabled={loading}
+                data-testid="email-update-cancel"
               >
                 {t('cancel')}
               </Button>
-              <Button type="submit" disabled={loading || !password}>
+              <Button
+                type="submit"
+                disabled={loading || !password}
+                data-testid="email-update-sudo-submit"
+              >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t('verify')}
               </Button>
@@ -207,12 +213,13 @@ export default function EmailUpdateDialog({
 
       case 'new-email':
         return (
-          <form onSubmit={handleNewEmailSubmit} className="space-y-4">
+          <form
+            onSubmit={handleNewEmailSubmit}
+            className="space-y-4"
+            data-testid="email-update-step-new-email"
+          >
             <DialogHeader>
               <DialogTitle>{t('change_email')}</DialogTitle>
-              <DialogDescription>
-                {t('verification_code_sent')}
-              </DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
               <Label htmlFor="new-email-input">{t('new_email')}</Label>
@@ -225,6 +232,7 @@ export default function EmailUpdateDialog({
                 placeholder={t('new_email_placeholder')}
                 disabled={loading}
                 autoFocus
+                data-testid="email-update-new-email-input"
               />
             </div>
             <DialogFooter showCloseButton={false}>
@@ -233,10 +241,15 @@ export default function EmailUpdateDialog({
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
                 disabled={loading}
+                data-testid="email-update-cancel"
               >
                 {t('cancel')}
               </Button>
-              <Button type="submit" disabled={loading || !newEmail}>
+              <Button
+                type="submit"
+                disabled={loading || !newEmail}
+                data-testid="email-update-new-email-submit"
+              >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t('send_verification_code')}
               </Button>
@@ -246,14 +259,21 @@ export default function EmailUpdateDialog({
 
       case 'verify-otp':
         return (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <form
+            onSubmit={handleVerifyOtp}
+            className="space-y-4"
+            data-testid="email-update-step-verify-otp"
+          >
             <DialogHeader>
               <DialogTitle>{t('enter_verification_code')}</DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground">
                 {newEmail}
               </DialogDescription>
             </DialogHeader>
-            <div className="flex justify-center py-4">
+            <div
+              className="flex justify-center py-4"
+              data-testid="email-update-otp-container"
+            >
               <InputOTP
                 maxLength={6}
                 value={code}
@@ -277,6 +297,7 @@ export default function EmailUpdateDialog({
                 variant="ghost"
                 onClick={handleResend}
                 disabled={loading}
+                data-testid="email-update-otp-resend"
               >
                 {t('resend')}
               </Button>
@@ -286,10 +307,15 @@ export default function EmailUpdateDialog({
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
                 disabled={loading}
+                data-testid="email-update-cancel"
               >
                 {t('cancel')}
               </Button>
-              <Button type="submit" disabled={loading || code.length !== 6}>
+              <Button
+                type="submit"
+                disabled={loading || code.length !== 6}
+                data-testid="email-update-otp-submit"
+              >
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t('verify')}
               </Button>
@@ -299,9 +325,14 @@ export default function EmailUpdateDialog({
 
       case 'success':
         return (
-          <div className="space-y-4 py-4 text-center">
+          <div
+            className="space-y-4 py-4 text-center"
+            data-testid="email-update-step-success"
+          >
             <DialogHeader>
-              <DialogTitle>{t('email_updated')}</DialogTitle>
+              <DialogTitle data-testid="email-update-success">
+                {t('email_updated')}
+              </DialogTitle>
             </DialogHeader>
             <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
           </div>
@@ -318,9 +349,13 @@ export default function EmailUpdateDialog({
         showCloseButton={step !== 'success'}
         className="sm:max-w-md"
         onInteractOutside={step === 'success' ? undefined : (e) => e.preventDefault()}
+        data-testid="email-update-dialog"
       >
         {error && (
-          <div className="rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          <div
+            className="rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive"
+            data-testid="email-update-error"
+          >
             {error}
           </div>
         )}
