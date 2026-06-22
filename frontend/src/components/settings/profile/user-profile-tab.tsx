@@ -207,9 +207,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
               />
               <UserProfileRow
                 label={t('email')}
-                value={
-                  <span data-testid="profile-email-value">{user.email}</span>
-                }
+                value={<span data-testid="profile-email-value">{user.email}</span>}
                 valueEditing={<> </>}
                 editing={false}
                 editButton={

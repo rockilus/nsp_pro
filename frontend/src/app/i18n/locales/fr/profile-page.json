@@ -27,6 +27,7 @@
   "password": "Mot de passe",
   "password_empty_error": "Le mot de passe ne peut pas être vide",
   "password_match_error": "Les mots de passe ne correspondent pas",
+  "password_same_as_current": "Le nouveau mot de passe doit être différent du mot de passe actuel",
   "personal_info": "Informations personnelles",
   "resend": "Renvoyer",
   "security_and_sign_in": "Sécurité et connexion",

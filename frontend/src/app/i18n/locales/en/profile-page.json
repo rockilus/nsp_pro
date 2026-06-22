@@ -27,6 +27,7 @@
   "password": "Password",
   "password_empty_error": "Please enter a password",
   "password_match_error": "Passwords do not match",
+  "password_same_as_current": "New password must be different from current password",
   "personal_info": "Personal Info",
   "resend": "Resend",
   "security_and_sign_in": "Security and Sign In",

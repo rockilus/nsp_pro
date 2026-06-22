@@ -27,6 +27,7 @@
   "password": "Contraseña",
   "password_empty_error": "La contraseña no puede estar vacía",
   "password_match_error": "Las contraseñas no coinciden",
+  "password_same_as_current": "La nueva contraseña debe ser diferente de la contraseña actual",
   "personal_info": "Información personal",
   "resend": "Reenviar",
   "security_and_sign_in": "Seguridad e inicio de sesión",

@@ -131,14 +131,7 @@ export function useUpdatePassword() {
       }
 
       try {
-        await UserApi.updatePassword(
-          apiClient,
-          {
-            ...passwordData,
-            accessToken: '', // backend reads from cookie
-          },
-          userId,
-        );
+        await UserApi.updatePassword(apiClient, passwordData, userId);
       } catch (error) {
         console.error('Failed to update password:', {
           error: error instanceof Error ? error.message : 'Unknown error',

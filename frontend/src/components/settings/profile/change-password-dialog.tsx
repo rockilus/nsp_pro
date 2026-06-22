@@ -1,205 +1,221 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import EditIcon from '@mui/icons-material/Edit';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Eye, EyeOff, Pencil, Loader2 } from 'lucide-react';
+
+type PasswordData = {
+  currentPassword: string;
+  newPassword: string;
+  newPasswordConfirm: string;
+};
 
 export default function ChangePasswordDialog({
   lng,
   handleUpdatePassword,
 }: {
   lng: string;
-  handleUpdatePassword: (passwordData: {
-    currentPassword: string;
-    newPassword: string;
-    newPasswordConfirm: string;
-  }) => void;
+  handleUpdatePassword: (passwordData: PasswordData) => Promise<void>;
 }) {
   const { t } = useTranslation(lng, 'profile-page');
 
-  const [passwordData, setPasswordData] = useState<{
-    currentPassword: string;
-    newPassword: string;
-    newPasswordConfirm: string;
-  }>({
+  const [open, setOpen] = useState(false);
+  const [passwordData, setPasswordData] = useState<PasswordData>({
     currentPassword: '',
     newPassword: '',
     newPasswordConfirm: '',
   });
-  const [open, setOpen] = useState<boolean>(false);
-  const [currentPasswordError, setCurrentPasswordError] = useState<boolean>(false);
-  const [newPasswordError, setNewPasswordError] = useState<boolean>(false);
-  const [newPasswordConfirmError, setNewPasswordConfirmError] = useState<boolean>(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showNewPasswordConfirm, setShowNewPasswordConfirm] = useState(false);
-  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  const reset = useCallback(() => {
+    setPasswordData({ currentPassword: '', newPassword: '', newPasswordConfirm: '' });
+    setShowCurrent(false);
+    setShowNew(false);
+    setShowConfirm(false);
+    setError(null);
+    setLoading(false);
+  }, []);
 
-  const handleClose = () => {
-    setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      newPasswordConfirm: '',
-    });
-    setCurrentPasswordError(false);
-    setNewPasswordError(false);
-    setNewPasswordConfirmError(false);
-    setOpen(false);
-  };
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      if (!newOpen) reset();
+      setOpen(newOpen);
+    },
+    [reset],
+  );
 
-  const handleUpdatePasswordClick = async () => {
-    if (passwordData.currentPassword === '') {
-      setCurrentPasswordError(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!passwordData.currentPassword) {
+      setError(t('password_empty_error'));
       return;
     }
-    if (passwordData.newPassword === '') {
-      setNewPasswordError(true);
+    if (!passwordData.newPassword) {
+      setError(t('password_empty_error'));
+      return;
+    }
+    if (passwordData.currentPassword === passwordData.newPassword) {
+      setError(t('password_same_as_current'));
       return;
     }
     if (passwordData.newPassword !== passwordData.newPasswordConfirm) {
-      setNewPasswordConfirmError(true);
+      setError(t('password_match_error'));
       return;
     }
-    await handleUpdatePassword(passwordData);
-    handleClose();
+
+    setLoading(true);
+    try {
+      await handleUpdatePassword(passwordData);
+      handleOpenChange(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message.toLowerCase() : '';
+      if (msg.includes('incorrect') || msg.includes('not authorized') || msg.includes('401')) {
+        setError(t('incorrect_password'));
+      } else {
+        setError(err instanceof Error ? err.message : t('password_empty_error'));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const passwordInput = (
+    id: string,
+    label: string,
+    value: string,
+    show: boolean,
+    onToggle: () => void,
+    onChange: (val: string) => void,
+    autoComplete: string,
+    dataTestId: string,
+  ) => (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        <Input
+          id={id}
+          type={show ? 'text' : 'password'}
+          autoComplete={autoComplete}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={loading}
+          className="pr-10"
+          data-testid={dataTestId}
+        />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          className="absolute top-0 right-0 h-full px-3 hover:bg-transparent"
+          onClick={onToggle}
+          tabIndex={-1}
+          data-testid={`${dataTestId}-toggle`}
+        >
+          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
-    <React.Fragment>
-      <IconButton onClick={handleClickOpen}>
-        <EditIcon />
-      </IconButton>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen(true)}
+        data-testid="change-password-trigger"
       >
-        <DialogTitle id="alert-dialog-title">{t('change_password')}</DialogTitle>
-        <DialogContent>
-          <Box
-            component="form"
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              '& .MuiTextField-root': { m: 1, width: '25ch' },
-            }}
-            noValidate
-            autoComplete="off"
-          >
-            <TextField
-              id="outlined-password-input"
-              label={t('current_password')}
-              type={showCurrentPassword ? 'text' : 'password'}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
-                      {showCurrentPassword ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              autoComplete="current-password"
-              value={passwordData.currentPassword}
-              onChange={(e) => {
-                setPasswordData({
-                  ...passwordData,
-                  currentPassword: e.target.value,
-                });
-                if (e.target.value === '') {
-                  setCurrentPasswordError(true);
-                } else {
-                  setCurrentPasswordError(false);
-                }
-              }}
-              error={currentPasswordError}
-              helperText={currentPasswordError ? t('password_empty_error') : ''}
-            />
-            <TextField
-              id="outlined-password-input"
-              label={t('new_password')}
-              type={showNewPassword ? 'text' : 'password'}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowNewPassword(!showNewPassword)}>
-                      {showNewPassword ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              autoComplete="new-password"
-              value={passwordData.newPassword}
-              onChange={(e) => {
-                setPasswordData({
-                  ...passwordData,
-                  newPassword: e.target.value,
-                });
-                if (e.target.value === '') {
-                  setNewPasswordError(true);
-                } else {
-                  setNewPasswordError(false);
-                }
-              }}
-              error={newPasswordError}
-              helperText={newPasswordError ? t('password_empty_error') : ''}
-            />
-            <TextField
-              id="outlined-password-input"
-              label={t('new_password_confirm')}
-              type={showNewPasswordConfirm ? 'text' : 'password'}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowNewPasswordConfirm(!showNewPasswordConfirm)}>
-                      {showNewPasswordConfirm ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              autoComplete="new-password"
-              value={passwordData.newPasswordConfirm}
-              onChange={(e) => {
-                setPasswordData({
-                  ...passwordData,
-                  newPasswordConfirm: e.target.value,
-                });
-                if (e.target.value !== passwordData.newPassword) {
-                  setNewPasswordConfirmError(true);
-                } else {
-                  setNewPasswordConfirmError(false);
-                }
-              }}
-              error={newPasswordConfirmError}
-              helperText={newPasswordConfirmError ? t('password_match_error') : ''}
-            />
-          </Box>
+        <Pencil className="h-4 w-4" />
+      </Button>
+
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent
+          showCloseButton={!loading}
+          className="sm:max-w-md"
+          onInteractOutside={loading ? (e) => e.preventDefault() : undefined}
+          data-testid="change-password-dialog"
+        >
+          <form onSubmit={handleSubmit} className="space-y-4" data-testid="change-password-form">
+            <DialogHeader>
+              <DialogTitle>{t('change_password')}</DialogTitle>
+            </DialogHeader>
+
+            {error && (
+              <div
+                className="rounded-md bg-destructive/10 px-4 py-2 text-sm text-destructive"
+                data-testid="change-password-error"
+              >
+                {error}
+              </div>
+            )}
+
+            {passwordInput(
+              'current-password',
+              t('current_password'),
+              passwordData.currentPassword,
+              showCurrent,
+              () => setShowCurrent(!showCurrent),
+              (val) => setPasswordData({ ...passwordData, currentPassword: val }),
+              'current-password',
+              'change-password-current',
+            )}
+
+            {passwordInput(
+              'new-password',
+              t('new_password'),
+              passwordData.newPassword,
+              showNew,
+              () => setShowNew(!showNew),
+              (val) => setPasswordData({ ...passwordData, newPassword: val }),
+              'new-password',
+              'change-password-new',
+            )}
+
+            {passwordInput(
+              'new-password-confirm',
+              t('new_password_confirm'),
+              passwordData.newPasswordConfirm,
+              showConfirm,
+              () => setShowConfirm(!showConfirm),
+              (val) => setPasswordData({ ...passwordData, newPasswordConfirm: val }),
+              'new-password',
+              'change-password-confirm',
+            )}
+
+            <DialogFooter showCloseButton={false}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+                disabled={loading}
+                data-testid="change-password-cancel"
+              >
+                {t('cancel')}
+              </Button>
+              <Button type="submit" disabled={loading} data-testid="change-password-submit">
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {t('update_password')}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>{t('cancel')}</Button>
-          <Button onClick={handleUpdatePasswordClick} autoFocus>
-            {t('update_password')}
-          </Button>
-        </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }

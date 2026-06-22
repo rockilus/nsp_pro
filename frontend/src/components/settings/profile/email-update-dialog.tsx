@@ -14,11 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from '@/components/ui/input-otp';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Loader2 } from 'lucide-react';
 
 type Step = 'sudo' | 'new-email' | 'verify-otp' | 'success';
@@ -171,9 +167,7 @@ export default function EmailUpdateDialog({
           >
             <DialogHeader>
               <DialogTitle>{t('verify_identity')}</DialogTitle>
-              <DialogDescription>
-                {t('enter_password_to_continue')}
-              </DialogDescription>
+              <DialogDescription>{t('enter_password_to_continue')}</DialogDescription>
             </DialogHeader>
             <div className="space-y-2">
               <Label htmlFor="sudo-password">{t('current_password')}</Label>
@@ -271,17 +265,8 @@ export default function EmailUpdateDialog({
                 {newEmail}
               </DialogDescription>
             </DialogHeader>
-            <div
-              className="flex justify-center py-4"
-              data-testid="email-update-otp-container"
-            >
-              <InputOTP
-                maxLength={6}
-                value={code}
-                onChange={setCode}
-                disabled={loading}
-                autoFocus
-              >
+            <div className="flex justify-center py-4" data-testid="email-update-otp-container">
+              <InputOTP maxLength={6} value={code} onChange={setCode} disabled={loading} autoFocus>
                 <InputOTPGroup>
                   <InputOTPSlot index={0} />
                   <InputOTPSlot index={1} />
@@ -326,14 +311,9 @@ export default function EmailUpdateDialog({
 
       case 'success':
         return (
-          <div
-            className="space-y-4 py-4 text-center"
-            data-testid="email-update-step-success"
-          >
+          <div className="space-y-4 py-4 text-center" data-testid="email-update-step-success">
             <DialogHeader>
-              <DialogTitle data-testid="email-update-success">
-                {t('email_updated')}
-              </DialogTitle>
+              <DialogTitle data-testid="email-update-success">{t('email_updated')}</DialogTitle>
             </DialogHeader>
             <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
           </div>
