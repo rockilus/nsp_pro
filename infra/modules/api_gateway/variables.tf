@@ -13,26 +13,10 @@ variable "aws_region" {
   type        = string
 }
 
-variable "aws_account_id" {
-  description = "AWS Account ID (set to dummy value for local)"
-  type        = string
-}
-
 variable "cors_allowed_origins" {
   description = "List of allowed origins for CORS."
   type        = list(string)
 }
-
-variable "cognito_user_pool_id" {
-  description = "The ID of the Cognito User Pool."
-  type        = string
-}
-
-variable "cognito_user_pool_clients_ids" {
-  description = "A list of Cognito User Pool Client IDs."
-  type        = list(string)
-}
-
 
 variable "vpc_link_target_arns" {
   description = "List of target ARNs for the VPC Link."

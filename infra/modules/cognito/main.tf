@@ -74,11 +74,6 @@ resource "aws_cognito_user_pool" "main" {
   #     advanced_security_mode = "ENFORCED"
   #   }
 
-  # Lambda triggers
-  lambda_config {
-    post_confirmation = module.post_confirmation_lambda.function_arn
-  }
-
   # Account recovery settings
   #   account_recovery_setting {
   #     recovery_mechanism {
@@ -113,7 +108,7 @@ resource "aws_cognito_user_pool" "main" {
     default_email_option = "CONFIRM_WITH_CODE"
   }
 
-  depends_on = [module.post_confirmation_lambda]
+
 }
 
 # Cognito User Pool Client
@@ -121,14 +116,14 @@ resource "aws_cognito_user_pool_client" "main" {
   name         = "${var.project_name}-app-client-${var.environment}"
   user_pool_id = aws_cognito_user_pool.main.id
 
-  # Auth flows - Updated for SPA
+  # Auth flows — server-side only (cookie-based custom auth UI)
   explicit_auth_flows = [
-    "ALLOW_USER_AUTH",
-    "ALLOW_USER_SRP_AUTH",
-    # "ALLOW_REFRESH_TOKEN_AUTH", # Required for PKCE silent renew (signinSilent via refresh token grant)
+    "ALLOW_ADMIN_USER_PASSWORD_AUTH", # ADMIN_NO_SRP_AUTH used by backend sign-in
+    "ALLOW_REFRESH_TOKEN_AUTH",       # REFRESH_TOKEN_AUTH for cookie-based token refresh
+    "ALLOW_USER_SRP_AUTH",            # future-proof SRP fallback
   ]
 
-  # Token validity - Adjusted for SPA security best practices
+  # Token validity
   access_token_validity  = 60 # 1 hour
   id_token_validity      = 60 # 1 hour
   refresh_token_validity = 30 # 30 days for persistent sessions
@@ -162,87 +157,11 @@ resource "aws_cognito_user_pool_client" "main" {
   #   "family_name"
   # ]
 
-  # Security - no client secret for single-page apps
+  # Security - no client secret for server-side auth
   # generate_secret = false
 
-  # OAuth configuration for SPA
-  allowed_oauth_flows                  = ["code"]
-  allowed_oauth_flows_user_pool_client = true
-  # allowed_oauth_scopes                 = ["email", "openid", "profile"]
-  allowed_oauth_scopes = ["email", "openid", "phone", "aws.cognito.signin.user.admin"]
-  callback_urls = [
-    # Dedicated callback pages — one per supported locale so Cognito accepts
-    # the per-locale redirect_uri constructed at sign-in time.
-    "https://${var.frontend_domain_name}/en/callback/",
-    "https://${var.frontend_domain_name}/fr/callback/",
-    "https://${var.frontend_domain_name}/es/callback/",
-    # Required for SPA silent token renewal via iframe
-    "https://${var.frontend_domain_name}/silent-renew/",
-  ]
-  logout_urls = [
-    "https://${var.landing_page_domain_name}",
-    "https://${var.landing_page_domain_name}/en/",
-    "https://${var.landing_page_domain_name}/fr/",
-    "https://${var.landing_page_domain_name}/es/",
-  ]
-  supported_identity_providers = ["COGNITO"]
-
-  # SPA-specific security settings
+  # Server-side auth settings
   enable_token_revocation                       = true
   enable_propagate_additional_user_context_data = false
 
-}
-
-# Cognito User Pool Domain - Custom Domain
-resource "aws_cognito_user_pool_domain" "main" {
-  domain          = var.custom_domain_name
-  certificate_arn = var.certificate_arn
-  user_pool_id    = aws_cognito_user_pool.main.id
-
-  managed_login_version = 2
-
-  depends_on = [aws_cognito_user_pool.main]
-}
-
-# Route53 DNS Record for Custom Domain
-resource "aws_route53_record" "cognito_custom_domain" {
-  zone_id = var.hosted_zone_id
-  name    = var.custom_domain_name
-  type    = "A"
-
-  alias {
-    name                   = aws_cognito_user_pool_domain.main.cloudfront_distribution
-    zone_id                = "Z2FDTNDATAQYW2" # CloudFront hosted zone ID (AWS constant)
-    evaluate_target_health = false
-  }
-
-  depends_on = [aws_cognito_user_pool_domain.main]
-}
-
-
-# AWS Cloud Control managed login branding (simple/default configuration)
-# This uses the awscc provider resource to attach a minimal branding configuration
-# for the managed hosted UI (managed_login_version = 2). It defers to Cognito
-# provided values and links the branding to the user pool and client we already
-# create above.
-resource "awscc_cognito_managed_login_branding" "branding" {
-  user_pool_id                = aws_cognito_user_pool.main.id
-  client_id                   = aws_cognito_user_pool_client.main.id
-  use_cognito_provided_values = false
-
-  depends_on = [
-    aws_cognito_user_pool_domain.main,
-    aws_cognito_user_pool_client.main,
-  ]
-}
-
-# Post-confirmation Lambda module
-module "post_confirmation_lambda" {
-  source = "./lambda/post_confirmation"
-
-  project_name             = var.project_name
-  environment              = var.environment
-  aws_region               = var.aws_region
-  api_gateway_url          = var.api_gateway_url
-  ssm_parameter_dependency = var.api_gateway_ssm_parameter
 }
