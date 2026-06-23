@@ -36,7 +36,15 @@ export default function ForgotPasswordPage({ params }: { params: Promise<{ lng: 
 
   return (
     <Card className="w-full max-w-md" data-testid="auth-forgot-password-page">
-      <CardHeader className="text-center">
+      <CardHeader className="pb-2 text-center">
+        <div className="mb-4 flex justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/rockilus_logo_blue.jpg"
+            alt="Rockilus"
+            className="h-10 w-auto dark:hidden"
+          />
+        </div>
         <CardTitle>{t('forgot_password')}</CardTitle>
         <CardDescription>{t('reset_password_send_link_message')}</CardDescription>
       </CardHeader>

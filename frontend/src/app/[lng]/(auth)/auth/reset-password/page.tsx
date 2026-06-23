@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Eye, EyeOff } from 'lucide-react';
 
 function ResetForm({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'auth-page');
@@ -21,6 +22,8 @@ function ResetForm({ lng }: { lng: string }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,7 +49,15 @@ function ResetForm({ lng }: { lng: string }) {
 
   return (
     <Card className="w-full max-w-md" data-testid="auth-reset-password-page">
-      <CardHeader className="text-center">
+      <CardHeader className="pb-2 text-center">
+        <div className="mb-4 flex justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/rockilus_logo_blue.jpg"
+            alt="Rockilus"
+            className="h-10 w-auto dark:hidden"
+          />
+        </div>
         <CardTitle>{t('reset_password')}</CardTitle>
         <CardDescription>{t('reset_password_message')}</CardDescription>
       </CardHeader>
@@ -67,30 +78,56 @@ function ResetForm({ lng }: { lng: string }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="newPassword">{t('new_password')}</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              minLength={8}
-              autoComplete="new-password"
-              data-testid="auth-new-password-input"
-            />
+            <div className="relative">
+              <Input
+                id="newPassword"
+                type={showPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className="pr-10"
+                data-testid="auth-new-password-input"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="absolute top-0 right-0 h-full px-3 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
             <p className="text-xs text-muted-foreground">{t('password_requirements')}</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">{t('confirm_password')}</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              minLength={8}
-              autoComplete="new-password"
-              data-testid="auth-confirm-password-input"
-            />
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className="pr-10"
+                data-testid="auth-confirm-password-input"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="absolute top-0 right-0 h-full px-3 hover:bg-transparent"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
           {error && (
             <p className="text-sm text-destructive" data-testid="auth-error-message">

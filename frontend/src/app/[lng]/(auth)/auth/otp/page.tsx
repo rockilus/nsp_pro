@@ -56,7 +56,15 @@ function OtpForm({ lng }: { lng: string }) {
 
   return (
     <Card className="w-full max-w-md" data-testid="auth-otp-page">
-      <CardHeader className="text-center">
+      <CardHeader className="pb-2 text-center">
+        <div className="mb-4 flex justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/rockilus_logo_blue.jpg"
+            alt="Rockilus"
+            className="h-10 w-auto dark:hidden"
+          />
+        </div>
         <CardTitle>{t('enter_otp')}</CardTitle>
         <CardDescription data-testid="auth-otp-email">
           {t('otp_sent_to')} {email}

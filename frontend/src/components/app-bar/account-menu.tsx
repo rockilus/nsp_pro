@@ -60,7 +60,9 @@ export default function AccountMenu({ lng }: { lng: string }) {
       setIsLoggingOut(true);
       setOpen(false);
       await signOut();
-      window.location.href = `/${lng}/auth/signin`;
+      window.location.href = env.isDevelopment
+        ? `/${lng}/auth/signin`
+        : `https://www.rockilus.com/${lng}/`;
     } catch (error) {
       console.error('Logout failed:', error);
       setIsLoggingOut(false);
