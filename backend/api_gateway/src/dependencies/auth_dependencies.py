@@ -23,7 +23,7 @@ from src.security.service_auth import (
     ServiceAuthError,
     validate_service_api_key,
 )
-from src.security.user_context import UserContext, extract_user_context
+from src.security.user_context import UserContext
 
 logger = logging.getLogger(__name__)
 
@@ -156,19 +156,9 @@ async def get_user_context(
             groups=["user"],
         )
     else:
-        logger.debug("Production mode: API Gateway header fallback")
-        x_user_sub = request.headers.get("X-User-Sub")
-        x_user_email = request.headers.get("X-User-Email")
-        x_user_groups = request.headers.get("X-User-Groups")
-        x_request_id = request.headers.get("X-Request-ID")
-        x_source_ip = request.headers.get("X-Source-IP")
-
-        user_context = extract_user_context(
-            x_user_sub=x_user_sub,
-            x_user_email=x_user_email,
-            x_user_groups=x_user_groups,
-            x_request_id=x_request_id,
-            x_source_ip=x_source_ip,
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required — please sign in",
         )
 
     # If an impersonation token is present, verify it and populate the context.
