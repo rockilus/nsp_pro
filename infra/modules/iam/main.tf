@@ -82,6 +82,7 @@ resource "aws_iam_role_policy" "cognito_admin_auth_policy" {
         Effect = "Allow"
         Action = [
           "cognito-idp:AdminInitiateAuth",
+          "cognito-idp:GetTokensFromRefreshToken",
           "cognito-idp:AdminGetUser",
           "cognito-idp:AdminConfirmSignUp",
           "cognito-idp:AdminDeleteUser",

@@ -250,13 +250,9 @@ class Boto3CognitoAuthClient(CognitoAuthClient):
     async def refresh_auth(self, refresh_token: str) -> AuthTokens:
         log_info("Refreshing auth tokens")
         try:
-            resp = self._client.admin_initiate_auth(
-                UserPoolId=self._pool_id,
+            resp = self._client.get_tokens_from_refresh_token(
                 ClientId=self._client_id,
-                AuthFlow="REFRESH_TOKEN_AUTH",
-                AuthParameters={
-                    "REFRESH_TOKEN": refresh_token,
-                },
+                RefreshToken=refresh_token,
             )
             auth = resp["AuthenticationResult"]
             return AuthTokens(
