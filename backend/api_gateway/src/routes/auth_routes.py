@@ -58,7 +58,7 @@ def _set_auth_cookies(response: Response, tokens: AuthTokens) -> None:
         httponly=True,
         secure=not is_dev,
         samesite="lax",
-        path="/auth",
+        path="/",
         domain=domain,
         max_age=config.refresh_cookie_max_age,
     )
