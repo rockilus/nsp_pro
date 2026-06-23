@@ -115,7 +115,6 @@ resource "aws_cognito_user_pool_client" "main" {
   # ADMIN_NO_SRP_AUTH and REFRESH_TOKEN_AUTH are used via AdminInitiateAuth (server-side).
   # ALLOW_USER_SRP_AUTH kept for future-proof SRP fallback.
   explicit_auth_flows = [
-    "ALLOW_REFRESH_TOKEN_AUTH",
     "ALLOW_USER_SRP_AUTH",
   ]
 
