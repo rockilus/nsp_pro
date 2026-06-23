@@ -114,7 +114,7 @@ test.describe('Auth — Sign-Up & Confirm Flow', () => {
     await base.signUpViaUI(page, user);
 
     // cognito-local uses CODE=123456 — confirm with real OTP
-    await page.fill('[data-testid="auth-otp-input"]', '123456');
+    await page.fill('[data-testid="auth-otp-input"] input', '123456');
     await page.click('[data-testid="auth-otp-submit"]');
 
     // Auto-login should land on an authenticated plan page, not signin.
@@ -133,7 +133,7 @@ test.describe('Auth — Sign-Up & Confirm Flow', () => {
     // Simulate different tab or expired TTL — no password in sessionStorage
     await page.evaluate(() => sessionStorage.clear());
 
-    await page.fill('[data-testid="auth-otp-input"]', '123456');
+    await page.fill('[data-testid="auth-otp-input"] input', '123456');
     await page.click('[data-testid="auth-otp-submit"]');
 
     // Falls through to signin when auto-login is not possible
@@ -179,7 +179,7 @@ test.describe('Auth — Sign-Up & Confirm Flow', () => {
     await page.waitForSelector('[data-testid="auth-otp-page"]', { timeout: 15000 });
 
     // Confirm with OTP → falls through to signin (no stored password from this flow)
-    await page.fill('[data-testid="auth-otp-input"]', '123456');
+    await page.fill('[data-testid="auth-otp-input"] input', '123456');
     await page.click('[data-testid="auth-otp-submit"]');
     await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
     base.markConfirmed(0);

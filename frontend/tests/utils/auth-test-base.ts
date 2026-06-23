@@ -122,7 +122,7 @@ export class AuthTestBase {
 
   /** Confirm sign-up with OTP code. A new user without teams lands on the teams page. */
   async confirmSignUpViaUI(page: Page, code: string): Promise<void> {
-    await page.fill('[data-testid="auth-otp-input"]', code);
+    await page.fill('[data-testid="auth-otp-input"] input', code);
     await page.click('[data-testid="auth-otp-submit"]');
     await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
   }
