@@ -76,6 +76,7 @@ module "iam" {
   # Pass secret ARNs so the IAM policy can reference concrete resources
   permit_api_key_secret_arn = data.aws_secretsmanager_secret.permit_api_key.arn
   documentdb_secret_arn     = module.documentdb.credentials_secret_arn
+  cognito_user_pool_arn     = module.cognito.user_pool_arn
 
   tags = {
     Environment = var.environment
@@ -291,8 +292,8 @@ module "api_gateway" {
   cors_allowed_origins   = var.cors_allowed_origins
   api_gateway_stage_name = var.api_gateway_stage_name
 
-  vpc_link_target_arns = module.network_load_balancer.vpc_link_target_arns
-  vpc_link_endpoint_url         = module.network_load_balancer.vpc_link_endpoint_url
+  vpc_link_target_arns  = module.network_load_balancer.vpc_link_target_arns
+  vpc_link_endpoint_url = module.network_load_balancer.vpc_link_endpoint_url
 
   # Custom domain configuration using Route53 module outputs
   custom_domain_name = var.api_gateway_domain_name
@@ -317,9 +318,9 @@ module "api_gateway" {
 module "frontend" {
   source = "../../modules/s3-static-frontend"
 
-  project_name                = var.project_name
-  environment                 = var.environment
-  aws_region                  = var.aws_region
+  project_name       = var.project_name
+  environment        = var.environment
+  aws_region         = var.aws_region
   api_gateway_domain = var.api_gateway_domain
 
   # Use the specific frontend domain, not derived from hosted zone

@@ -70,6 +70,36 @@ resource "aws_iam_role_policy" "secrets_access_policy" {
   })
 }
 
+# Add policy for Cognito Admin API access (server-side auth operations)
+resource "aws_iam_role_policy" "cognito_admin_auth_policy" {
+  name = "${var.project_name}-${var.environment}-cognito-admin-auth-policy"
+  role = aws_iam_role.ecs_task_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cognito-idp:AdminInitiateAuth",
+          "cognito-idp:AdminGetUser",
+          "cognito-idp:AdminConfirmSignUp",
+          "cognito-idp:AdminDeleteUser",
+          "cognito-idp:ListUsers",
+          "cognito-idp:AdminUpdateUserAttributes",
+          "cognito-idp:AdminUserGlobalSignOut",
+          "cognito-idp:ForgotPassword",
+          "cognito-idp:ConfirmForgotPassword",
+          "cognito-idp:SignUp",
+          "cognito-idp:ConfirmSignUp",
+          "cognito-idp:ResendConfirmationCode"
+        ]
+        Resource = var.cognito_user_pool_arn != "" ? var.cognito_user_pool_arn : "*"
+      }
+    ]
+  })
+}
+
 # IAM Task Role (for application permissions)
 # resource "aws_iam_role" "ecs_task_role" {
 #   name        = "${var.project_name}-ecs-task-role"

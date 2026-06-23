@@ -51,3 +51,9 @@ variable "secret_arns" {
   type        = list(string)
   default     = []
 }
+
+variable "cognito_user_pool_arn" {
+  description = "ARN of the Cognito User Pool for Admin API operations (AdminInitiateAuth, etc.)"
+  type        = string
+  default     = ""
+}
