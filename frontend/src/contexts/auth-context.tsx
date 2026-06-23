@@ -50,7 +50,31 @@ async function fetchCurrentUser(): Promise<AuthUser | null> {
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
   });
-  if (resp.status === 401) return null;
+  if (resp.status === 401) {
+    // Access token expired — try refreshing before giving up
+    try {
+      await AuthApi.refresh();
+      const retryResp = await fetch(`${env.apiUrl}/users/me`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (retryResp.ok) {
+        const data = await retryResp.json();
+        return {
+          id: data.id,
+          email: data.email || data['email'],
+          firstName: data.firstName || data['first_name'],
+          lastName: data.lastName || data['last_name'],
+          language: data.language,
+          systemRole: data.systemRole || data['system_role'] || null,
+        };
+      }
+    } catch {
+      // Refresh failed — user must re-authenticate
+    }
+    return null;
+  }
   if (!resp.ok) {
     // Don't throw — treat any error as "not authenticated"
     return null;
