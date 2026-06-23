@@ -140,6 +140,39 @@ class AppConfig(BaseSettings):
         description="Max-Age in seconds for the refresh-token cookie",
     )
 
+    # Rate limits for auth endpoints — slowapi-compatible strings.
+    # Override via env vars (e.g. SIGNUP_RATE_LIMIT=100/hour) in development.
+    signup_rate_limit: str = Field(
+        "30/hour", description="Rate limit for POST /auth/signup"
+    )
+    signin_rate_limit: str = Field(
+        "10/minute", description="Rate limit for POST /auth/signin"
+    )
+    confirm_signup_rate_limit: str = Field(
+        "10/minute", description="Rate limit for POST /auth/confirm-signup"
+    )
+    forgot_password_rate_limit: str = Field(
+        "3/hour", description="Rate limit for POST /auth/forgot-password"
+    )
+    confirm_forgot_password_rate_limit: str = Field(
+        "5/minute", description="Rate limit for POST /auth/confirm-forgot-password"
+    )
+    change_email_rate_limit: str = Field(
+        "5/minute", description="Rate limit for POST /auth/change-email"
+    )
+    verify_email_rate_limit: str = Field(
+        "5/minute", description="Rate limit for POST /auth/verify-email"
+    )
+    resend_code_rate_limit: str = Field(
+        "3/15minutes", description="Rate limit for POST /auth/resend-code"
+    )
+    refresh_rate_limit: str = Field(
+        "30/minute", description="Rate limit for POST /auth/refresh"
+    )
+    signout_rate_limit: str = Field(
+        "20/minute", description="Rate limit for POST /auth/signout"
+    )
+
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed
         env_file=os.path.join(os.path.dirname(__file__), "..", ".env.development"),

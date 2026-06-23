@@ -66,12 +66,8 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
       <Card className="w-full max-w-md" data-testid="auth-signin-page">
         <CardHeader className="pb-2 text-center">
           <div className="mb-4 flex justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/rockilus_logo_blue.jpg"
-            alt="Rockilus"
-            className="h-10 w-auto dark:hidden"
-          />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/rockilus_logo_blue.jpg" alt="Rockilus" className="h-10 w-auto dark:hidden" />
           </div>
           <CardTitle>{t('account_not_confirmed')}</CardTitle>
           <CardDescription>{t('account_not_confirmed_resend')}</CardDescription>
@@ -129,7 +125,6 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
           <img src="/rockilus_logo_blue.jpg" alt="Rockilus" className="h-10 w-auto dark:hidden" />
         </div>
         <CardTitle>{t('sign_in')}</CardTitle>
-        <CardDescription>{t('email_address')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

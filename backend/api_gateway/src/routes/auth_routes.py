@@ -84,7 +84,7 @@ def _clear_auth_cookies(response: Response) -> None:
 
 
 @router.post("/signup")
-@limiter.limit("3/hour")
+@limiter.limit(lambda: config.signup_rate_limit)
 async def sign_up(
     request: Request,
     body: SignUpRequestDTO,
@@ -124,7 +124,7 @@ async def sign_up(
 
 
 @router.post("/confirm-signup")
-@limiter.limit("10/minute")
+@limiter.limit(lambda: config.confirm_signup_rate_limit)
 async def confirm_sign_up(
     request: Request,
     body: ConfirmCodeRequestDTO,
@@ -145,7 +145,7 @@ async def confirm_sign_up(
 
 
 @router.post("/signin")
-@limiter.limit("5/minute")
+@limiter.limit(lambda: config.signin_rate_limit)
 async def sign_in(
     request: Request,
     response: Response,
@@ -171,7 +171,7 @@ async def sign_in(
 
 
 @router.post("/refresh")
-@limiter.limit("30/minute")
+@limiter.limit(lambda: config.refresh_rate_limit)
 async def refresh_tokens(
     request: Request,
     response: Response,
@@ -199,7 +199,7 @@ async def refresh_tokens(
 
 
 @router.post("/signout")
-@limiter.limit("20/minute")
+@limiter.limit(lambda: config.signout_rate_limit)
 async def sign_out(
     request: Request,
     response: Response,
@@ -226,7 +226,7 @@ async def sign_out(
 
 
 @router.post("/forgot-password")
-@limiter.limit("3/hour")
+@limiter.limit(lambda: config.forgot_password_rate_limit)
 async def forgot_password(
     request: Request,
     body: ForgotPasswordRequestDTO,
@@ -247,7 +247,7 @@ async def forgot_password(
 
 
 @router.post("/confirm-forgot-password")
-@limiter.limit("5/minute")
+@limiter.limit(lambda: config.confirm_forgot_password_rate_limit)
 async def confirm_forgot_password(
     request: Request,
     body: ConfirmForgotPasswordRequestDTO,
@@ -268,7 +268,7 @@ async def confirm_forgot_password(
 
 
 @router.post("/change-email")
-@limiter.limit("5/minute")
+@limiter.limit(lambda: config.change_email_rate_limit)
 async def change_email(
     request: Request,
     response: Response,
@@ -295,7 +295,7 @@ async def change_email(
 
 
 @router.post("/verify-email")
-@limiter.limit("5/minute")
+@limiter.limit(lambda: config.verify_email_rate_limit)
 async def verify_email(
     request: Request,
     response: Response,
@@ -322,7 +322,7 @@ async def verify_email(
 
 
 @router.post("/resend-code")
-@limiter.limit("3/15minutes")
+@limiter.limit(lambda: config.resend_code_rate_limit)
 async def resend_confirmation_code(
     request: Request,
     body: ResendCodeRequestDTO,
