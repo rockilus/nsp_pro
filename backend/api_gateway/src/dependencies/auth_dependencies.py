@@ -53,13 +53,11 @@ def _decode_access_token(token: str) -> dict:
     """Validate and decode a Cognito access-token JWT.  Returns claims."""
     client = _get_jwks_client()
     signing_key = client.get_signing_key_from_jwt(token)
-    decode_options: Options = {"verify_exp": True}
-    audience = None if config.cognito_endpoint_url else config.cognito_client_id
+    decode_options: Options = {"verify_exp": True, "verify_aud": False}
     return jwt.decode(
         token,
         signing_key.key,
         algorithms=["RS256"],
-        audience=audience,
         options=decode_options,
     )
 
