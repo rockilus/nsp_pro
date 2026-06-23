@@ -1,8 +1,6 @@
 """AuthService — orchestrates Cognito auth operations with business logic."""
 
-import base64
-import json
-
+import jwt
 from loguru import logger
 from shared.schemas.dto.auth import (
     ChangeEmailRequestDTO,
@@ -105,13 +103,13 @@ class AuthService:
 
     @staticmethod
     def decode_token_sub(token: str) -> str:
-        """Extract the sub claim from a JWT without full verification."""
-        parts = token.split(".")
-        if len(parts) < 2:
-            return token[:32]
-        padded = parts[1] + "=="
+        """Extract the sub claim from a JWT without full verification.
+
+        Used only for obtaining the user identifier in sign-in / sign-up
+        response bodies — never for authorization decisions.
+        """
         try:
-            payload = base64.urlsafe_b64decode(padded)
-            return json.loads(payload)["sub"]
+            payload = jwt.decode(token, options={"verify_signature": False})
+            return payload.get("sub", token[:32])
         except Exception:
             return token[:32]

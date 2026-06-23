@@ -6,10 +6,7 @@ resource "aws_cognito_user_pool" "main" {
   username_attributes = ["email"]
 
   # Schema for required user attributes
-  # Note: 'email' is a built-in attribute in Cognito. Declaring it as a schema
-  # with `required = true` can trigger the AWS error "Required custom
-  # attributes are not supported currently." Remove explicit declaration so
-  # Terraform does not attempt to add it as a custom attribute.
+  # 'email' is declared explicitly so Terraform manages its required/mutable state.
 
   schema {
     attribute_data_type      = "String"
@@ -57,7 +54,7 @@ resource "aws_cognito_user_pool" "main" {
     require_numbers                  = true
     require_symbols                  = true
     require_uppercase                = true
-    password_history_size            = 0
+    password_history_size            = 5
     temporary_password_validity_days = 7
   }
 
@@ -75,14 +72,12 @@ resource "aws_cognito_user_pool" "main" {
   #   }
 
   # Account recovery settings
-  #   account_recovery_setting {
-  #     recovery_mechanism {
-  #       name     = "verified_email"
-  #       priority = 1
-  #       #   name     = "verified_phone_number"
-  #       #   priority = 2
-  #     }
-  #   }
+  account_recovery_setting {
+    recovery_mechanism {
+      name     = "verified_email"
+      priority = 1
+    }
+  }
 
   tags = {
     Environment = var.environment
@@ -117,10 +112,11 @@ resource "aws_cognito_user_pool_client" "main" {
   user_pool_id = aws_cognito_user_pool.main.id
 
   # Auth flows — server-side only (cookie-based custom auth UI)
+  # ADMIN_NO_SRP_AUTH and REFRESH_TOKEN_AUTH are used via AdminInitiateAuth (server-side).
+  # ALLOW_USER_SRP_AUTH kept for future-proof SRP fallback.
   explicit_auth_flows = [
-    "ALLOW_ADMIN_USER_PASSWORD_AUTH", # ADMIN_NO_SRP_AUTH used by backend sign-in
-    "ALLOW_REFRESH_TOKEN_AUTH",       # REFRESH_TOKEN_AUTH for cookie-based token refresh
-    "ALLOW_USER_SRP_AUTH",            # future-proof SRP fallback
+    "ALLOW_REFRESH_TOKEN_AUTH",
+    "ALLOW_USER_SRP_AUTH",
   ]
 
   # Token validity
@@ -144,18 +140,18 @@ resource "aws_cognito_user_pool_client" "main" {
   prevent_user_existence_errors = "ENABLED"
 
   # Required attributes for sign-up
-  # read_attributes = [
-  #   "email",
-  #   "email_verified",
-  #   "given_name",
-  #   "family_name"
-  # ]
+  read_attributes = [
+    "email",
+    "email_verified",
+    "given_name",
+    "family_name"
+  ]
 
-  # write_attributes = [
-  #   "email",
-  #   "given_name",
-  #   "family_name"
-  # ]
+  write_attributes = [
+    "email",
+    "given_name",
+    "family_name"
+  ]
 
   # Security - no client secret for server-side auth
   # generate_secret = false

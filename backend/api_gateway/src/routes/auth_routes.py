@@ -6,7 +6,7 @@ Tokens flow via HttpOnly cookies, never in response bodies.
 
 from typing import Dict
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
 from shared.logger import log_info
 from shared.schemas.dto.auth import (
     ChangeEmailRequestDTO,
@@ -28,6 +28,7 @@ from src.errors import (
     handle_routes_errors,
 )
 from src.integrations.authentication.cognito_auth_client import AuthTokens
+from src.rate_limiter import limiter
 from src.services.auth_service import AuthService
 from src.services.user_service import UserService
 
@@ -83,31 +84,31 @@ def _clear_auth_cookies(response: Response) -> None:
 
 
 @router.post("/signup")
+@limiter.limit("3/hour")
 async def sign_up(
-    request: SignUpRequestDTO,
+    request: Request,
+    body: SignUpRequestDTO,
     auth_service: AuthService = Depends(get_auth_service),
     user_service: UserService = Depends(get_user_service),
 ) -> Dict:
     try:
-        if request.password != request.confirm_password:
+        if body.password != body.confirm_password:
             raise PasswordsDoNotMatchError("Passwords do not match")
         try:
-            user_sub = await auth_service.sign_up(request)
+            user_sub = await auth_service.sign_up(body)
         except AuthnEmailAlreadyExistsError:
             tokens = await auth_service.sign_in(
-                SignInRequestDTO(email=request.email, password=request.password)
+                SignInRequestDTO(email=body.email, password=body.password)
             )
             user_sub = auth_service.decode_token_sub(tokens.access_token)
-            log_info(
-                f"User {request.email} already exists in Cognito, onboarding to DB"
-            )
+            log_info(f"User {body.email} already exists in Cognito, onboarding to DB")
         await user_service.create_user(
             user_id=user_sub,
-            email=request.email,
-            first_name=request.first_name,
-            last_name=request.last_name,
+            email=body.email,
+            first_name=body.first_name,
+            last_name=body.last_name,
         )
-        log_info(f"Sign-up and onboard completed for: {request.email}")
+        log_info(f"Sign-up and onboard completed for: {body.email}")
         return {
             "message": "User registered. Please check your email for the verification code.",
             "user_sub": user_sub,
@@ -123,13 +124,15 @@ async def sign_up(
 
 
 @router.post("/confirm-signup")
+@limiter.limit("10/minute")
 async def confirm_sign_up(
-    request: ConfirmCodeRequestDTO,
+    request: Request,
+    body: ConfirmCodeRequestDTO,
     auth_service: AuthService = Depends(get_auth_service),
 ) -> Dict:
     try:
-        await auth_service.confirm_sign_up(request)
-        log_info(f"Sign-up confirmed for: {request.email}")
+        await auth_service.confirm_sign_up(body)
+        log_info(f"Sign-up confirmed for: {body.email}")
         return {"message": "Email verified successfully. You can now sign in."}
     except Exception as e:
         log_info("Failed to confirm sign-up")
@@ -142,15 +145,17 @@ async def confirm_sign_up(
 
 
 @router.post("/signin")
+@limiter.limit("5/minute")
 async def sign_in(
+    request: Request,
     response: Response,
-    request: SignInRequestDTO,
+    body: SignInRequestDTO,
     auth_service: AuthService = Depends(get_auth_service),
 ) -> Dict:
     try:
-        tokens = await auth_service.sign_in(request)
+        tokens = await auth_service.sign_in(body)
         _set_auth_cookies(response, tokens)
-        log_info(f"Sign-in successful for: {request.email}")
+        log_info(f"Sign-in successful for: {body.email}")
         return {
             "message": "Signed in successfully",
             "user_sub": auth_service.decode_token_sub(tokens.access_token),
@@ -166,7 +171,9 @@ async def sign_in(
 
 
 @router.post("/refresh")
+@limiter.limit("30/minute")
 async def refresh_tokens(
+    request: Request,
     response: Response,
     rockilus_refresh_token: str | None = Cookie(default=None),
     auth_service: AuthService = Depends(get_auth_service),
@@ -192,7 +199,9 @@ async def refresh_tokens(
 
 
 @router.post("/signout")
+@limiter.limit("20/minute")
 async def sign_out(
+    request: Request,
     response: Response,
     rockilus_access_token: str | None = Cookie(default=None),
     auth_service: AuthService = Depends(get_auth_service),
@@ -217,15 +226,17 @@ async def sign_out(
 
 
 @router.post("/forgot-password")
+@limiter.limit("3/hour")
 async def forgot_password(
-    request: ForgotPasswordRequestDTO,
+    request: Request,
+    body: ForgotPasswordRequestDTO,
     auth_service: AuthService = Depends(get_auth_service),
 ) -> Dict:
     try:
-        await auth_service.forgot_password(request)
-        log_info(f"Forgot password requested for: {request.email}")
+        await auth_service.forgot_password(body)
+        log_info(f"Forgot password requested for: {body.email}")
     except Exception:
-        log_info(f"Forgot password failed for: {request.email}")
+        log_info(f"Forgot password failed for: {body.email}")
     # Always return success to prevent user enumeration
     return {"message": "If the email exists, a reset code has been sent."}
 
@@ -236,13 +247,15 @@ async def forgot_password(
 
 
 @router.post("/confirm-forgot-password")
+@limiter.limit("5/minute")
 async def confirm_forgot_password(
-    request: ConfirmForgotPasswordRequestDTO,
+    request: Request,
+    body: ConfirmForgotPasswordRequestDTO,
     auth_service: AuthService = Depends(get_auth_service),
 ) -> Dict:
     try:
-        await auth_service.confirm_forgot_password(request)
-        log_info(f"Password reset completed for: {request.email}")
+        await auth_service.confirm_forgot_password(body)
+        log_info(f"Password reset completed for: {body.email}")
         return {"message": "Password has been reset. You can now sign in."}
     except Exception as e:
         log_info("Confirm forgot password failed")
@@ -255,16 +268,18 @@ async def confirm_forgot_password(
 
 
 @router.post("/change-email")
+@limiter.limit("5/minute")
 async def change_email(
+    request: Request,
     response: Response,
-    request: ChangeEmailRequestDTO,
+    body: ChangeEmailRequestDTO,
     rockilus_access_token: str | None = Cookie(default=None),
     auth_service: AuthService = Depends(get_auth_service),
 ) -> Dict:
     try:
         if not rockilus_access_token:
             raise HTTPException(status_code=401, detail="Authentication required")
-        await auth_service.change_email(rockilus_access_token, request)
+        await auth_service.change_email(rockilus_access_token, body)
         log_info("Change email requested")
         return {"message": "Verification code sent to new email address."}
     except HTTPException:
@@ -280,16 +295,18 @@ async def change_email(
 
 
 @router.post("/verify-email")
+@limiter.limit("5/minute")
 async def verify_email(
+    request: Request,
     response: Response,
-    request: VerifyEmailRequestDTO,
+    body: VerifyEmailRequestDTO,
     rockilus_access_token: str | None = Cookie(default=None),
     auth_service: AuthService = Depends(get_auth_service),
 ) -> Dict:
     try:
         if not rockilus_access_token:
             raise HTTPException(status_code=401, detail="Authentication required")
-        await auth_service.verify_email(rockilus_access_token, request)
+        await auth_service.verify_email(rockilus_access_token, body)
         log_info("Email verification successful")
         return {"message": "Email verified successfully."}
     except HTTPException:
@@ -305,13 +322,15 @@ async def verify_email(
 
 
 @router.post("/resend-code")
+@limiter.limit("3/15minutes")
 async def resend_confirmation_code(
-    request: ResendCodeRequestDTO,
+    request: Request,
+    body: ResendCodeRequestDTO,
     auth_service: AuthService = Depends(get_auth_service),
 ) -> Dict:
     try:
-        await auth_service.resend_code(request)
-        log_info(f"Confirmation code resent to: {request.email}")
+        await auth_service.resend_code(body)
+        log_info(f"Confirmation code resent to: {body.email}")
         return {"message": "Verification code resent."}
     except Exception as e:
         log_info("Resend code failed")
