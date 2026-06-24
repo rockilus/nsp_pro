@@ -24,7 +24,7 @@ export function useAdminUsers() {
 
   const fetchUsers = useCallback(async () => {
     if (authLoading) return;
-    if (!isAuthenticated || !user?.id_token) {
+    if (!isAuthenticated) {
       setError('User not authenticated - please sign in');
       setLoading(false);
       return;
@@ -43,7 +43,7 @@ export function useAdminUsers() {
     } finally {
       setLoading(false);
     }
-  }, [apiClient, authLoading, isAuthenticated, user]);
+  }, [apiClient, authLoading, isAuthenticated]);
 
   useEffect(() => {
     if (hasFetched.current) return;

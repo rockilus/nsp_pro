@@ -54,7 +54,7 @@ export function useGetAssignments() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -121,7 +121,7 @@ export function useAddAssignmentAndRecurrence() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -155,7 +155,7 @@ export function useAddAssignmentAndRecurrence() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient, user],
   );
 
   return addAssignmentAndRecurrence;
@@ -181,7 +181,7 @@ export function useUpdateAssignmentAndRecurrence() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -208,7 +208,7 @@ export function useUpdateAssignmentAndRecurrence() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return updateAssignmentAndRecurrence;
@@ -234,7 +234,7 @@ export function useDeleteAssignment() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -261,7 +261,7 @@ export function useDeleteAssignment() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return deleteAssignment;
@@ -291,7 +291,7 @@ export function useGetReplacementCandidates() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -343,8 +343,7 @@ export function useBulkCreateAssignments() {
       intent?: SelectionIntentPayload,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated || !user?.id_token)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
 
       const result = await AssignmentApi.bulkCreateAssignments(
         apiClient,
@@ -359,7 +358,7 @@ export function useBulkCreateAssignments() {
       });
       return result;
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return bulkCreateAssignments;
@@ -382,8 +381,7 @@ export function useBulkUpdateAssignments() {
       intent?: SelectionIntentPayload,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated || !user?.id_token)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
 
       const result = await AssignmentApi.bulkUpdateAssignments(
         apiClient,
@@ -398,7 +396,7 @@ export function useBulkUpdateAssignments() {
       });
       return result;
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return bulkUpdateAssignments;
@@ -419,8 +417,7 @@ export function useBulkToggleFixed() {
       intent?: SelectionIntentPayload,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated || !user?.id_token)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
 
       const result = await AssignmentApi.bulkToggleFixed(apiClient, assignmentIds, teamId, intent);
       queryClient.invalidateQueries({
@@ -428,7 +425,7 @@ export function useBulkToggleFixed() {
       });
       return result;
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return bulkToggleFixed;
@@ -449,8 +446,7 @@ export function useBulkDeleteAssignments() {
       intent?: SelectionIntentPayload,
     ): Promise<AssignmentsRecurrencesResultT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated || !user?.id_token)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
 
       const result = await AssignmentApi.bulkDeleteAssignments(
         apiClient,
@@ -463,7 +459,7 @@ export function useBulkDeleteAssignments() {
       });
       return result;
     },
-    [apiClient, isAuthenticated, loading, user, queryClient],
+    [apiClient, isAuthenticated, loading, queryClient],
   );
 
   return bulkDeleteAssignments;

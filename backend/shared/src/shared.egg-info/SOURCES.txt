@@ -187,6 +187,7 @@ src/shared/schemas/core/worker.py
 src/shared/schemas/dto/__init__.py
 src/shared/schemas/dto/assignment.py
 src/shared/schemas/dto/attribute.py
+src/shared/schemas/dto/auth.py
 src/shared/schemas/dto/breach.py
 src/shared/schemas/dto/constraint.py
 src/shared/schemas/dto/daily_shift_demand.py

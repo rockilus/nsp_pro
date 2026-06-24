@@ -40,7 +40,7 @@ export function useAddShift() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -94,7 +94,7 @@ export function useGetShifts() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -137,7 +137,7 @@ export function useGetWorkShifts() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -180,7 +180,7 @@ export function useGetAllShifts() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -214,7 +214,7 @@ export function useUpdateShift() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -228,7 +228,7 @@ export function useUpdateShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateShift;
@@ -248,7 +248,7 @@ export function useDeleteShift() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -262,7 +262,7 @@ export function useDeleteShift() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteShift;
@@ -291,7 +291,7 @@ export function useGetShiftsTabData() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 

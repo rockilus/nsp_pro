@@ -32,13 +32,7 @@ export function AuthDebugComponent() {
       <div>Authenticated: {auth.isAuthenticated ? '✅' : '❌'}</div>
       <div>Loading: {auth.loading ? '🔄' : '✅'}</div>
       <div>User: {auth.user ? '✅' : '❌'}</div>
-      <div>ID Token: {auth.user?.id_token ? '✅' : '❌'}</div>
-      <div>Token Length: {auth.user?.id_token?.length || 0}</div>
-      {auth.user?.id_token && (
-        <div style={{ fontSize: '10px', marginTop: '5px', wordBreak: 'break-all' }}>
-          Token Preview: {auth.user.id_token.substring(0, 20)}...
-        </div>
-      )}
+      <div>User ID: {auth.user?.id || 'N/A'}</div>
     </div>
   );
 }

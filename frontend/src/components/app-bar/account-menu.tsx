@@ -14,14 +14,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import ThemeSelector from '@/components/theme-toggle';
+// Theme selection deactivated during development — Re-enable: uncomment import and JSX below
+// import ThemeSelector from '@/components/theme-toggle';
 import { useGetUser } from '@/hooks/useUser';
 import { useUser } from '@/context/UserContext';
 import { env } from '@/config/env';
 
 export default function AccountMenu({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'app-bar');
-  const { signOutRedirect } = useAuth();
+  const { signOut } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
   const [initials, setInitials] = React.useState<string | null>(null);
   const [open, setOpen] = React.useState(false);
@@ -58,8 +59,10 @@ export default function AccountMenu({ lng }: { lng: string }) {
     try {
       setIsLoggingOut(true);
       setOpen(false);
-      // Use the existing signOutRedirect method from your auth context
-      signOutRedirect(lng);
+      await signOut();
+      window.location.href = env.isDevelopment
+        ? `/${lng}/auth/signin`
+        : `https://www.rockilus.com/${lng}/`;
     } catch (error) {
       console.error('Logout failed:', error);
       setIsLoggingOut(false);

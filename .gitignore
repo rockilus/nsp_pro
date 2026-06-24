@@ -35,6 +35,7 @@ __pycache__/
 .next/
 node_modules/
 dist/
+cognito-local-data/
 backend/src/processing_engine/engine/saved/
 backend/processing_engine/src/solver_parameter_tuning/parameter_test_output
 backend/processing_engine/src/solver_parameter_tuning/analysis_output

@@ -44,7 +44,7 @@ export function useAddRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -102,7 +102,7 @@ export function useGetRequests() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -136,7 +136,7 @@ export function useUpdateRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -150,7 +150,7 @@ export function useUpdateRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateRequest;
@@ -173,7 +173,7 @@ export function useAcceptRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -187,7 +187,7 @@ export function useAcceptRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return acceptRequest;
@@ -207,7 +207,7 @@ export function useDenyRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -221,7 +221,7 @@ export function useDenyRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return denyRequest;
@@ -244,7 +244,7 @@ export function useRescindRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -258,7 +258,7 @@ export function useRescindRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return rescindRequest;
@@ -278,7 +278,7 @@ export function useDeleteRequest() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -292,7 +292,7 @@ export function useDeleteRequest() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteRequest;
@@ -338,7 +338,7 @@ export function useGetRequestsTabData() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -366,7 +366,7 @@ export function useGetRequestsTabData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, getShiftOptions],
+    [apiClient, isAuthenticated, loading, getShiftOptions, user],
   );
 
   return getRequestsTabData;

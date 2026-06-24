@@ -36,4 +36,3 @@ class PasswordDataDTO(BaseModel):
     currentPassword: str
     newPassword: str
     newPasswordConfirm: str
-    accessToken: str

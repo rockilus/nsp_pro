@@ -47,7 +47,7 @@ export function useCreateSchedule() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -101,7 +101,7 @@ export function useGetSchedules() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -145,7 +145,7 @@ export function useGetWorkTimeTable() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -179,7 +179,7 @@ export function useUpdateSchedule() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -205,7 +205,7 @@ export function useUpdateSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateSchedule;
@@ -225,7 +225,7 @@ export function useDeleteSchedule() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -239,7 +239,7 @@ export function useDeleteSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteSchedule;
@@ -259,7 +259,7 @@ export function useValidateSchedule() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -273,7 +273,7 @@ export function useValidateSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return validateSchedule;
@@ -295,7 +295,7 @@ export function useExportSchedule() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -309,7 +309,7 @@ export function useExportSchedule() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return exportSchedule;
@@ -333,7 +333,7 @@ export function useDuplicatePeriod() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -347,7 +347,7 @@ export function useDuplicatePeriod() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return duplicatePeriod;
@@ -375,7 +375,7 @@ export function useGetScheduleEntities() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -389,7 +389,7 @@ export function useGetScheduleEntities() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return getScheduleEntities;
@@ -418,7 +418,7 @@ export function useGetScheduleAssignmentsData() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -432,7 +432,7 @@ export function useGetScheduleAssignmentsData() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return getScheduleAssignmentsData;
@@ -461,7 +461,7 @@ export function useGetScheduleAssignmentsDataNoSolver() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -479,7 +479,7 @@ export function useGetScheduleAssignmentsDataNoSolver() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return getScheduleAssignmentsDataNoSolver;
@@ -494,11 +494,10 @@ export function useGetRequestDeadline(teamId: string | null | undefined) {
 
   const getRequestDeadline = useCallback(async (): Promise<RequestDeadlineT> => {
     if (loading) throw new Error('Authentication still loading - please wait');
-    if (!isAuthenticated || !user?.id_token)
-      throw new Error('User not authenticated - please sign in');
+    if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
     if (!teamId) throw new Error('Team ID is required');
     return ScheduleApi.getRequestDeadline(apiClient, teamId);
-  }, [apiClient, isAuthenticated, loading, user, teamId]);
+  }, [apiClient, isAuthenticated, loading, teamId]);
 
   return getRequestDeadline;
 }
@@ -513,11 +512,10 @@ export function useSetRequestDeadline() {
   const setRequestDeadline = useCallback(
     async (scheduleId: string, teamId: string, deadline: Date): Promise<ScheduleT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated || !user?.id_token)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.setRequestDeadline(apiClient, scheduleId, teamId, deadline);
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return setRequestDeadline;
@@ -533,11 +531,10 @@ export function useSendRequestDeadlineReminder() {
   const sendReminder = useCallback(
     async (scheduleId: string, teamId: string): Promise<ScheduleT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated || !user?.id_token)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.sendRequestDeadlineReminder(apiClient, scheduleId, teamId);
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return sendReminder;
@@ -553,11 +550,10 @@ export function useEditRequestDeadline() {
   const editRequestDeadline = useCallback(
     async (scheduleId: string, teamId: string, newDeadline: Date): Promise<ScheduleT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated || !user?.id_token)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.editRequestDeadline(apiClient, scheduleId, teamId, newDeadline);
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return editRequestDeadline;
@@ -573,11 +569,10 @@ export function useDeleteRequestDeadline() {
   const deleteRequestDeadline = useCallback(
     async (scheduleId: string, teamId: string): Promise<ScheduleT> => {
       if (loading) throw new Error('Authentication still loading - please wait');
-      if (!isAuthenticated || !user?.id_token)
-        throw new Error('User not authenticated - please sign in');
+      if (!isAuthenticated) throw new Error('User not authenticated - please sign in');
       return ScheduleApi.deleteRequestDeadline(apiClient, scheduleId, teamId);
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteRequestDeadline;

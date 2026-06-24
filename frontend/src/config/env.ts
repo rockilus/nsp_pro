@@ -9,12 +9,6 @@ export interface EnvironmentConfig {
   clientUrl: string;
   devUserId: string;
   devApiKey: string;
-  // Production Cognito config
-  cognitoAuthority: string;
-  cognitoClientId: string;
-  redirectUri: string;
-  logoutRedirectUri: string;
-  cognitoDomain: string;
 }
 
 /**
@@ -44,20 +38,6 @@ function createEnvironmentConfig(): EnvironmentConfig {
     // Development Configuration - must match backend
     devUserId: process.env.NEXT_PUBLIC_DEV_USER_ID || 'dev-user-123',
     devApiKey: process.env.NEXT_PUBLIC_DEV_API_KEY || 'dev-service-key-12345',
-
-    // Production Cognito Configuration
-    cognitoAuthority:
-      process.env.NEXT_PUBLIC_COGNITO_AUTHORITY ||
-      'https://cognito-idp.eu-west-3.amazonaws.com/eu-west-3_9tyN1YsF6',
-    cognitoClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '2rccpq0s894f6a66d1hmimship',
-    // Base client URL — the per-locale callback path (/en/, /fr/, /es/) is
-    // appended dynamically at sign-in time in auth-context.tsx so Cognito
-    // receives the correct redirect_uri for the user's locale.
-    redirectUri: process.env.NEXT_PUBLIC_REDIRECT_URI || clientUrl,
-    logoutRedirectUri: process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || 'https://www.rockilus.com',
-    cognitoDomain:
-      process.env.NEXT_PUBLIC_COGNITO_DOMAIN ||
-      (isDevelopment ? 'https://auth.staging.rockilus.com' : 'https://auth.rockilus.com'),
   };
 }
 

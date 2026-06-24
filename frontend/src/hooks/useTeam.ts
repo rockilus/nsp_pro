@@ -36,7 +36,7 @@ export function useCreateTeam() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -90,7 +90,7 @@ export function useGetTeamById() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -131,7 +131,7 @@ export function useGetUserTeamsWithMemberships() {
       throw new Error('Authentication still loading - please wait');
     }
 
-    if (!isAuthenticated || !user?.id_token) {
+    if (!isAuthenticated) {
       throw new Error('User not authenticated - please sign in');
     }
 
@@ -172,7 +172,7 @@ export function useGetTeamUsersWithMemberships() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -206,7 +206,7 @@ export function useUpdateTeam() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -220,7 +220,7 @@ export function useUpdateTeam() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateTeam;
@@ -240,7 +240,7 @@ export function useLeaveTeam() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -254,7 +254,7 @@ export function useLeaveTeam() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return leaveTeam;
@@ -274,7 +274,7 @@ export function useRemoveUserFromTeam() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -288,7 +288,7 @@ export function useRemoveUserFromTeam() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return removeUserFromTeam;

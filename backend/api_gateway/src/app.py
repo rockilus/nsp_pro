@@ -4,13 +4,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_middleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.config import config
+from src.rate_limiter import limiter
 from src.routes import (
     router_admin,
     router_assignment,
     router_attribute,
+    router_auth,
     router_breach,
     router_constraint,
     router_constraint_template,
@@ -69,11 +73,16 @@ def create_app(
     if config.environment == "development":
         app.add_middleware(BaseHTTPMiddleware, dispatch=log_middleware)
 
+    # Rate limiter (in-memory storage; use Redis for multi-instance ECS)
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
+
     # Include all routers
     routers = [
         router_admin,
         router_assignment,
         router_attribute,
+        router_auth,
         router_breach,
         router_constraint,
         router_constraint_template,

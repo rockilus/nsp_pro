@@ -16,9 +16,22 @@ export interface AuthenticatedApiClient {
 }
 
 export interface ApiErrorResponse {
-  detail?: string;
+  detail?: string | { error_code?: string; message?: string };
   message?: string;
   error?: string;
+  error_code?: string;
+}
+
+export class ApiError extends Error {
+  errorCode?: string;
+  status: number;
+
+  constructor(message: string, status: number, errorCode?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.errorCode = errorCode;
+  }
 }
 
 /**
@@ -28,8 +41,18 @@ export const handleApiError = async (response: Response): Promise<never> => {
   try {
     const errorData: ApiErrorResponse = await response.json();
 
-    // Create user-friendly error message based on status
-    let userMessage = errorData.detail || errorData.message || 'An unexpected error occurred';
+    let userMessage: string;
+    let errorCode: string | undefined;
+
+    const detail = errorData.detail;
+    if (typeof detail === 'object' && detail !== null) {
+      userMessage = detail.message || 'An unexpected error occurred';
+      errorCode = detail.error_code;
+    } else if (typeof detail === 'string') {
+      userMessage = detail;
+    } else {
+      userMessage = errorData.message || 'An unexpected error occurred';
+    }
 
     switch (response.status) {
       case 401:
@@ -49,10 +72,10 @@ export const handleApiError = async (response: Response): Promise<never> => {
         break;
     }
 
-    throw new Error(userMessage);
+    throw new ApiError(userMessage, response.status, errorCode);
   } catch (parseError) {
-    // Fallback if response is not JSON
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    if (parseError instanceof ApiError) throw parseError;
+    throw new ApiError(`HTTP ${response.status}: ${response.statusText}`, response.status);
   }
 };
 

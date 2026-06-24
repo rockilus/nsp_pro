@@ -2,6 +2,7 @@ import src.routes.utils_routes as test_utils_routes
 from src.routes.admin_routes import router as router_admin
 from src.routes.assignment_routes import router as router_assignment
 from src.routes.attribute_routes import router as router_attribute
+from src.routes.auth_routes import router as router_auth
 from src.routes.breach_routes import router as router_breach
 from src.routes.constraint_routes import router as router_constraint
 from src.routes.constraint_template_routes import (
@@ -41,6 +42,7 @@ __all__ = [
     "router_admin",
     "router_assignment",
     "router_attribute",
+    "router_auth",
     "router_breach",
     "router_constraint",
     "router_constraint_template",

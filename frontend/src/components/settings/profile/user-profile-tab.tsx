@@ -12,6 +12,7 @@ import TextField from '@mui/material/TextField';
 // Components
 import UserProfileRow from './user-profile-row';
 import NavigationHeader from '@/components/common/navigation-header';
+import EmailUpdateDialog from './email-update-dialog';
 // Skeletons
 import TablesSkeleton from '../../skeletons/tables-skeleton';
 // Hooks
@@ -39,6 +40,7 @@ export default function UserProfileTab({ lng }: { lng: string }) {
   const [user, setUser] = useState<UserT | null>(null);
   const [fieldEditing, setFieldEditing] = useState<string | null>(null);
   const [userState, setUserState] = useState<UserT | null>(user);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
 
   // Prevent multiple API calls
   const hasFetched = useRef(false);
@@ -85,6 +87,14 @@ export default function UserProfileTab({ lng }: { lng: string }) {
   const handleChange = (event: SelectChangeEvent) => {
     if (!userState) return;
     setUserState({ ...userState, language: event.target.value as string });
+  };
+
+  const handleEmailUpdated = (newEmail: string) => {
+    if (user) {
+      const updated = { ...user, email: newEmail };
+      setUser(updated);
+      setUserState(updated);
+    }
   };
 
   useEffect(() => {
@@ -197,39 +207,19 @@ export default function UserProfileTab({ lng }: { lng: string }) {
               />
               <UserProfileRow
                 label={t('email')}
-                value={
-                  <span>{user.email}</span>
-                  // <div>
-                  //   <span>{t("not_verified")}</span>
-                  // </div>
+                value={<span data-testid="profile-email-value">{user.email}</span>}
+                valueEditing={<> </>}
+                editing={false}
+                editButton={
+                  <IconButton
+                    onClick={() => setEmailDialogOpen(true)}
+                    data-testid="profile-email-edit-button"
+                  >
+                    <EditIcon />
+                  </IconButton>
                 }
-                valueEditing={
-                  <TextField
-                    fullWidth
-                    type="email"
-                    name="email"
-                    value={userState.email}
-                    onChange={(e) => {
-                      setUserState({
-                        ...userState,
-                        email: e.target.value,
-                      });
-                    }}
-                    onBlur={handleEditConfirm}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleEditConfirm();
-                      } else if (e.key === 'Escape') {
-                        handleEditCancel();
-                      }
-                    }}
-                    autoFocus
-                  />
-                }
-                editing={fieldEditing === 'email'}
-                editButton={editButton(() => setFieldEditing('email'))}
-                handleEditConfirm={handleEditConfirm}
-                handleEditCancel={handleEditCancel}
+                handleEditConfirm={() => {}}
+                handleEditCancel={() => {}}
               />
               <UserProfileRow
                 label={t('language')}
@@ -258,6 +248,15 @@ export default function UserProfileTab({ lng }: { lng: string }) {
             </div>
           ) : (
             <Box sx={{ padding: 2 }}>{t('no_user_found')}</Box>
+          )}
+          {user && (
+            <EmailUpdateDialog
+              open={emailDialogOpen}
+              onOpenChange={setEmailDialogOpen}
+              currentEmail={user.email}
+              lng={lng}
+              onEmailUpdated={handleEmailUpdated}
+            />
           )}
         </div>
       )}

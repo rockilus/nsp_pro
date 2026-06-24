@@ -97,7 +97,7 @@ export const useAssignmentsByPeriod = (
       }
 
       // Validate authentication state
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -123,7 +123,7 @@ export const useAssignmentsByPeriod = (
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes cache time
     refetchInterval: options?.refetchInterval,
-    enabled: options?.enabled !== false && !loading && isAuthenticated && !!user?.id_token,
+    enabled: options?.enabled !== false && !loading && isAuthenticated,
     refetchOnWindowFocus: false,
     // Keep previous data while fetching new data (smoother UX during navigation)
     placeholderData: (previousData) => previousData,
@@ -160,7 +160,7 @@ export const useAssignmentsQueryClient = () => {
       includeCampaign: boolean = false,
       workerId?: string,
     ) => {
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         return;
       }
 

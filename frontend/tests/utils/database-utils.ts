@@ -403,6 +403,29 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Reset all Cognito users in the cognito-local instance
+   * Clears all users from the pool so subsequent test signups are clean
+   */
+  async resetCognitoLocal(): Promise<{ success: boolean; message: string; users_deleted: number }> {
+    const response = await fetch(`${testConfig.apiUrl}/test-utils/reset-cognito-local`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': testConfig.devApiKey,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+      throw new Error(
+        `Cognito reset failed (${response.status}): ${errorData.detail || response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  /**
    * Creates a test user via the onboard endpoint
    * This mimics the functionality of init-dev-user.sh script
    */
@@ -542,6 +565,16 @@ export class DatabaseTestUtils {
       delete: <T>(endpoint: string, options?: RequestInit) =>
         makeAuthenticatedRequest<T>('DELETE', endpoint, undefined, options),
     };
+  }
+
+  /**
+   * Get a user's email by their Cognito sub (user ID).
+   * Uses the dev-mode header impersonation to call GET /users/me.
+   */
+  async getUserEmail(userId: string): Promise<string> {
+    const client = this.createAuthenticatedClientForUser(userId);
+    const user = await client.get<{ email: string }>('/users/me');
+    return user.email;
   }
 
   /**

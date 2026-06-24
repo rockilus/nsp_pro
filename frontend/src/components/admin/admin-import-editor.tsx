@@ -144,14 +144,12 @@ function shiftTypeLabel(t: number, tFn: (key: string) => string): string {
   }
 }
 
-function buildAuthHeaders(user: { id_token?: string } | null | undefined): Record<string, string> {
+function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
   if (env.isDevelopment) {
     headers['X-Dev-User-ID'] = env.devUserId;
     headers['X-API-Key'] = env.devApiKey;
-  } else if (user?.id_token) {
-    headers['Authorization'] = `Bearer ${user.id_token}`;
   }
 
   return headers;
@@ -204,7 +202,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
     async function load() {
       setLoading(true);
       try {
-        const headers = buildAuthHeaders(user);
+        const headers = buildAuthHeaders();
         delete headers['Content-Type']; // GET request
         const resp = await fetch(`${env.apiUrl}/admin/imports/${importId}`, { headers });
         if (!resp.ok) throw new Error('Import not found');
@@ -223,7 +221,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [importId, user]);
+  }, [importId]);
 
   // ── Auto-save ──────────────────────────────────────────────────────────
 
@@ -251,7 +249,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
           .filter((r) => !deleted.has(r.generatedId))
           .map((r) => ({ ...r, ...edits[r.generatedId] }));
 
-        const headers = buildAuthHeaders(user);
+        const headers = buildAuthHeaders();
         const resp = await fetch(`${env.apiUrl}/admin/imports/${importId}`, {
           method: 'PUT',
           headers,
@@ -269,7 +267,7 @@ export default function AdminImportEditor({ lng, importId }: Props) {
         setSaveStatus('error');
       }
     },
-    [data, importId, user],
+    [data, importId],
   );
 
   // Debounced save trigger — stable reference (only depends on saveToServer).

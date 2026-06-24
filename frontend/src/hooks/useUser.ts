@@ -22,11 +22,10 @@ export function useGetUser() {
   const getUser = useCallback(async (): Promise<UserT> => {
     // Remove excessive debugging in production to reduce console spam
     if (env.isDevelopment) {
-      console.log('🔍 useGetUser called:', {
+      console.log('useGetUser called:', {
         timestamp: new Date().toISOString(),
         isAuthenticated,
         hasUser: !!user,
-        hasIdToken: !!user?.id_token,
       });
     }
 
@@ -35,13 +34,7 @@ export function useGetUser() {
       throw new Error('Authentication still loading - please wait');
     }
 
-    if (!isAuthenticated || !user?.id_token) {
-      console.error('❌ Authentication validation failed:', {
-        isAuthenticated,
-        hasUser: !!user,
-        hasIdToken: !!user?.id_token,
-        reason: !isAuthenticated ? 'not_authenticated' : 'missing_id_token',
-      });
+    if (!isAuthenticated) {
       throw new Error('User not authenticated - please sign in');
     }
 
@@ -93,7 +86,7 @@ export function useUpdateUser() {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
@@ -107,7 +100,7 @@ export function useUpdateUser() {
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateUser;
@@ -118,7 +111,7 @@ export function useUpdateUser() {
  */
 export function useUpdatePassword() {
   const apiClient = useApiClient();
-  const { user, isAuthenticated, loading, accessToken } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
 
   const updatePassword = useCallback(
     async (
@@ -129,37 +122,25 @@ export function useUpdatePassword() {
       },
       userId: string,
     ): Promise<void> => {
-      // Security: Validate authentication state
       if (loading) {
         throw new Error('Authentication still loading - please wait');
       }
 
-      if (!isAuthenticated || !user?.id_token) {
+      if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
 
-      if (!accessToken) {
-        throw new Error('Access token not available - please sign in again');
-      }
-
       try {
-        await UserApi.updatePassword(
-          apiClient,
-          {
-            ...passwordData,
-            accessToken,
-          },
-          userId,
-        );
+        await UserApi.updatePassword(apiClient, passwordData, userId);
       } catch (error) {
-        console.error('❌ Failed to update password:', {
+        console.error('Failed to update password:', {
           error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString(),
         });
         throw error;
       }
     },
-    [apiClient, isAuthenticated, loading, user, accessToken],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updatePassword;

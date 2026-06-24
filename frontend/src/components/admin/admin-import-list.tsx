@@ -39,14 +39,12 @@ interface ImportSummary {
 
 // ── Auth headers ─────────────────────────────────────────────────────────────
 
-function buildAuthHeaders(user: { id_token?: string } | null | undefined): Record<string, string> {
+function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
 
   if (env.isDevelopment) {
     headers['X-Dev-User-ID'] = env.devUserId;
     headers['X-API-Key'] = env.devApiKey;
-  } else if (user?.id_token) {
-    headers['Authorization'] = `Bearer ${user.id_token}`;
   }
 
   return headers;
@@ -75,7 +73,7 @@ export default function AdminImportList({ lng, onOpenCreate, refreshKey }: Props
     setLoading(true);
     setError(null);
     try {
-      const headers = buildAuthHeaders(user);
+      const headers = buildAuthHeaders();
       const resp = await fetch(`${env.apiUrl}/admin/imports`, { headers });
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({}));
@@ -88,7 +86,7 @@ export default function AdminImportList({ lng, onOpenCreate, refreshKey }: Props
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     fetchImports();

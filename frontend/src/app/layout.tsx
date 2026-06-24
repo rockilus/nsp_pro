@@ -26,7 +26,8 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <ThemeRegistry>
         <body className={inter.className}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {/* Theme selection deactivated during development — defaulting to light. Re-enable: restore defaultTheme="system" enableSystem */}
+          <ThemeProvider attribute="class" defaultTheme="light">
             <AuthProvider>
               <TooltipProvider>
                 <ImpersonationBanner />

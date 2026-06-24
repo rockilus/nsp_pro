@@ -1,0 +1,187 @@
+/**
+ * auth-signup.spec.ts — E2E tests for sign-up and OTP confirmation.
+ *
+ * Each test creates its own isolated AuthTestBase instance, ensuring every
+ * test gets a unique Cognito user and preventing cross-test data leakage.
+ */
+
+import { test, expect } from '@playwright/test';
+import { randomUUID } from 'crypto';
+import { AuthTestBase } from '../../utils/auth-test-base';
+
+test.describe('Auth — Sign-Up & Confirm Flow', () => {
+  const testBasesMap = new Map<string, AuthTestBase>();
+
+  test.beforeEach(async ({}, testInfo) => {
+    const workerIndex = typeof testInfo.workerIndex === 'number' ? testInfo.workerIndex : 0;
+    const testRunId = `${workerIndex}-${testInfo.title}-${randomUUID()}`;
+    const base = new AuthTestBase();
+    testBasesMap.set(testRunId, base);
+    (testInfo as any).testRunId = testRunId;
+  });
+
+  test.afterEach(async ({}, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    if (!testRunId) return;
+    testBasesMap.delete(testRunId);
+  });
+
+  // ── Sign-Up Page ────────────────────────────────────────────────────────
+
+  test('signup page renders correctly', async ({ page }) => {
+    await page.goto('/en/auth/signup');
+    await expect(page.locator('[data-testid="auth-signup-page"]')).toBeVisible();
+    await expect(page.locator('[data-testid="auth-firstname-input"]')).toBeVisible();
+    await expect(page.locator('[data-testid="auth-lastname-input"]')).toBeVisible();
+    await expect(page.locator('[data-testid="auth-email-input"]')).toBeVisible();
+    await expect(page.locator('[data-testid="auth-password-input"]')).toBeVisible();
+    await expect(page.locator('[data-testid="auth-confirm-password-input"]')).toBeVisible();
+    await expect(page.locator('[data-testid="auth-signup-submit"]')).toBeVisible();
+    await expect(page.locator('[data-testid="auth-signin-link"]')).toBeVisible();
+  });
+
+  test('signup rejects invalid email format', async ({ page }) => {
+    await page.goto('/en/auth/signup');
+    await page.fill('[data-testid="auth-firstname-input"]', 'Test');
+    await page.fill('[data-testid="auth-lastname-input"]', 'User');
+    await page.fill('[data-testid="auth-email-input"]', 'not-an-email');
+    await page.fill('[data-testid="auth-password-input"]', 'StrongPass1!');
+    await page.fill('[data-testid="auth-confirm-password-input"]', 'StrongPass1!');
+
+    // Submit should be blocked by browser validation or backend 422
+    await page.click('[data-testid="auth-signup-submit"]');
+    // Backend validates EmailStr → 422
+    await expect(page.locator('[data-testid="auth-error-message"]')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('signup rejects password mismatch', async ({ page }) => {
+    await page.goto('/en/auth/signup');
+    await page.fill('[data-testid="auth-firstname-input"]', 'Test');
+    await page.fill('[data-testid="auth-lastname-input"]', 'User');
+    await page.fill('[data-testid="auth-email-input"]', 'test@example.com');
+    await page.fill('[data-testid="auth-password-input"]', 'StrongPass1!');
+    await page.fill('[data-testid="auth-confirm-password-input"]', 'Different1!');
+    await page.click('[data-testid="auth-signup-submit"]');
+    await expect(page.locator('[data-testid="auth-error-message"]')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('signup rejects weak password', async ({ page }) => {
+    await page.goto('/en/auth/signup');
+    await page.fill('[data-testid="auth-firstname-input"]', 'Test');
+    await page.fill('[data-testid="auth-lastname-input"]', 'User');
+    await page.fill('[data-testid="auth-email-input"]', 'weak@example.com');
+    await page.fill('[data-testid="auth-password-input"]', 'weak');
+    await page.fill('[data-testid="auth-confirm-password-input"]', 'weak');
+    await page.click('[data-testid="auth-signup-submit"]');
+    await expect(page.locator('[data-testid="auth-error-message"]')).toBeVisible({ timeout: 5000 });
+  });
+
+  test('signup email already exists', async ({ page }) => {
+    await page.goto('/en/auth/signup');
+    // Use the known-good user email from global setup
+    const knownEmail = process.env.E2E_KNOWN_USER_EMAIL || 'e2e-known-good@test.rockilus.com';
+    await page.fill('[data-testid="auth-firstname-input"]', 'Test');
+    await page.fill('[data-testid="auth-lastname-input"]', 'User');
+    await page.fill('[data-testid="auth-email-input"]', knownEmail);
+    await page.fill('[data-testid="auth-password-input"]', 'StrongPass1!');
+    await page.fill('[data-testid="auth-confirm-password-input"]', 'StrongPass1!');
+    await page.click('[data-testid="auth-signup-submit"]');
+    await expect(page.locator('[data-testid="auth-error-message"]')).toBeVisible({ timeout: 5000 });
+  });
+
+  // ── Sign-Up → OTP Flow ──────────────────────────────────────────────────
+
+  test('signup navigates to OTP page', async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const base = testBasesMap.get(testRunId)!;
+    const user = base.getUserForWorker(0);
+    await base.signUpViaUI(page, user);
+    await expect(page.locator('[data-testid="auth-otp-page"]')).toBeVisible();
+    await expect(page.locator('[data-testid="auth-otp-email"]')).toContainText(user.email);
+    await expect(page.locator('[data-testid="auth-otp-input"]')).toBeVisible();
+    await expect(page.locator('[data-testid="auth-otp-submit"]')).toBeVisible();
+    await expect(page.locator('[data-testid="auth-resend-code-button"]')).toBeVisible();
+  });
+
+  // ── OTP Confirmation ────────────────────────────────────────────────────
+
+  test('confirm signup with OTP auto-logs in and navigates to an authenticated page', async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const base = testBasesMap.get(testRunId)!;
+    const user = base.getUserForWorker(0);
+    await base.signUpViaUI(page, user);
+
+    // cognito-local uses CODE=123456 — confirm with real OTP
+    await page.fill('[data-testid="auth-otp-input"] input', '123456');
+    await page.click('[data-testid="auth-otp-submit"]');
+
+    // Auto-login should land on an authenticated plan page, not signin.
+    // A brand-new user without teams gets redirected to the teams page.
+    // Use waitUntil:'commit' because router.push is an SPA navigation (no page load).
+    await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
+    base.markConfirmed(0);
+  });
+
+  test('confirm signup without stored password redirects to signin', async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const base = testBasesMap.get(testRunId)!;
+    const user = base.getUserForWorker(0);
+    await base.signUpViaUI(page, user);
+
+    // Simulate different tab or expired TTL — no password in sessionStorage
+    await page.evaluate(() => sessionStorage.clear());
+
+    await page.fill('[data-testid="auth-otp-input"] input', '123456');
+    await page.click('[data-testid="auth-otp-submit"]');
+
+    // Falls through to signin when auto-login is not possible
+    await page.waitForSelector('[data-testid="auth-signin-page"]', { timeout: 15000 });
+    base.markConfirmed(0);
+  });
+
+  // ── Unconfirmed User Sign-In ────────────────────────────────────────────
+
+  test('unconfirmed user sees resend UI on signin and can complete OTP flow', async ({
+    page,
+  }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const base = testBasesMap.get(testRunId)!;
+    const user = base.getUserForWorker(0);
+
+    // Sign up but do NOT confirm
+    await base.signUpViaUI(page, user);
+
+    // cognito-local does not support ResendConfirmationCode — mock a success response
+    await page.route('**/auth/resend-code', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'ok' }),
+      });
+    });
+
+    // Try to sign in — user is NOT confirmed
+    await page.goto('/en/auth/signin');
+    await page.fill('[data-testid="auth-email-input"]', user.email);
+    await page.fill('[data-testid="auth-password-input"]', user.password);
+    await page.click('[data-testid="auth-signin-submit"]');
+
+    // Unconfirmed state: resend UI should appear
+    await expect(page.locator('[data-testid="auth-resend-code-button"]')).toBeVisible({
+      timeout: 5000,
+    });
+    await expect(page.locator('[data-testid="auth-unconfirmed-back-button"]')).toBeVisible();
+
+    // Click resend → should redirect to OTP page after delay
+    await page.click('[data-testid="auth-resend-code-button"]');
+    await page.waitForSelector('[data-testid="auth-otp-page"]', { timeout: 15000 });
+
+    // Confirm with OTP → falls through to signin (no stored password from this flow)
+    await page.fill('[data-testid="auth-otp-input"] input', '123456');
+    await page.click('[data-testid="auth-otp-submit"]');
+    await page.waitForURL('**/plan/**', { timeout: 15000, waitUntil: 'commit' });
+    base.markConfirmed(0);
+  });
+});

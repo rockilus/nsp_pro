@@ -22,8 +22,8 @@ export default function AuthStatus({ showDetails = false }: AuthStatusProps) {
         color={isAuthenticated ? 'success' : 'error'}
         size="small"
       />
-      {showDetails && isAuthenticated && user?.profile?.email && (
-        <Chip label={user.profile.email} color="primary" variant="outlined" size="small" />
+      {showDetails && isAuthenticated && user?.email && (
+        <Chip label={user.email} color="primary" variant="outlined" size="small" />
       )}
     </Box>
   );

@@ -122,14 +122,12 @@ function shiftTypeLabel(t: number, tFn: (key: string) => string): string {
 
 // ── API helpers ──────────────────────────────────────────────────────────────
 
-function buildAuthHeaders(user: { id_token?: string } | null | undefined): Record<string, string> {
+function buildAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
   if (env.isDevelopment) {
     headers['X-Dev-User-ID'] = env.devUserId;
     headers['X-API-Key'] = env.devApiKey;
-  } else if (user?.id_token) {
-    headers['Authorization'] = `Bearer ${user.id_token}`;
   }
 
   return headers;
@@ -252,7 +250,7 @@ export default function ImportMergeFullTableDialog({
     setExistingShifts(undefined);
     setFetchError(null);
 
-    const headers = buildAuthHeaders(user);
+    const headers = buildAuthHeaders();
     delete headers['Content-Type']; // GET request
 
     try {
@@ -320,7 +318,7 @@ export default function ImportMergeFullTableDialog({
       setExistingWorkers([]);
       setExistingShifts([]);
     }
-  }, [teamId, type, user, scheduleStartDate, scheduleEndDate]);
+  }, [teamId, type, scheduleStartDate, scheduleEndDate]);
 
   // Fetch when dialog opens
   useEffect(() => {

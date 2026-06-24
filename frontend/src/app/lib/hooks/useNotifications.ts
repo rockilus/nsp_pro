@@ -29,7 +29,7 @@ export function useUnreadNotificationCount() {
     refetchInterval: 30_000,
     staleTime: 30_000,
     refetchOnWindowFocus: false,
-    enabled: isAuthenticated && !!user?.id_token,
+    enabled: isAuthenticated,
   });
 }
 
@@ -44,7 +44,7 @@ export function useUnseenNotificationCount() {
     refetchInterval: 30_000,
     staleTime: 30_000,
     refetchOnWindowFocus: false,
-    enabled: isAuthenticated && !!user?.id_token,
+    enabled: isAuthenticated,
   });
 }
 
@@ -58,7 +58,7 @@ export function useNotifications(limit = 20, skip = 0) {
     queryFn: () => NotificationApi.getMyNotifications(apiClient, limit, skip),
     staleTime: 60_000,
     refetchOnWindowFocus: false,
-    enabled: isAuthenticated && !!user?.id_token,
+    enabled: isAuthenticated,
   });
 }
 
@@ -131,7 +131,7 @@ export function useNotificationPreferences() {
     queryFn: () => NotificationApi.getNotificationPreferences(apiClient),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    enabled: isAuthenticated && !!user?.id_token,
+    enabled: isAuthenticated,
   });
 }
 

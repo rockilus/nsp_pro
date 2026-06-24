@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Cookie, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
@@ -36,6 +36,10 @@ class NewUserInput(BaseModel):
     first_name: str
     last_name: str
     language: Optional[str] = None
+
+
+class VerifyEmailInput(BaseModel):
+    code: str
 
 
 @router.post("/users/onboard", dependencies=[Depends(verify_service_authentication)])
@@ -176,6 +180,7 @@ async def change_user_password(
     user_context: UserContext = Depends(get_user_context),
     user_service: UserService = Depends(get_user_service),
     authz_service: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    rockilus_access_token: str | None = Cookie(default=None),
 ) -> Dict:
     try:
         if not await authz_service.check(
@@ -183,18 +188,49 @@ async def change_user_password(
         ):
             raise NotAuthorizedError("You can only change your own password")
 
-        # Convert DTO to core model
         p_data = PasswordData.from_dto(password_data)
 
-        # Validate passwords match
         if p_data.new_password != p_data.new_password_confirm:
             raise PasswordsDoNotMatchError("Passwords do not match")
 
-        # Change password using Cognito
-        await user_service.change_user_password(password_data=p_data)
+        if not rockilus_access_token:
+            raise HTTPException(status_code=401, detail="Authentication required")
+
+        await user_service.change_user_password(
+            password_data=p_data, access_token=rockilus_access_token
+        )
 
         response = {"message": "Password updated successfully"}
     except Exception as e:
         log_info("Failed to update user password")
         handle_routes_errors(e)
     return response
+
+
+@router.post("/users/verify-email")
+async def verify_email_and_sync(
+    request: VerifyEmailInput,
+    user_context: UserContext = Depends(get_user_context),
+    user_service: UserService = Depends(get_user_service),
+    authz_service: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    rockilus_access_token: str | None = Cookie(default=None),
+) -> Dict:
+    try:
+        if not rockilus_access_token:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        if not await authz_service.check(
+            user_context.user_id, "update", "user", user_context.user_id
+        ):
+            raise NotAuthorizedError("You do not have permission to verify email")
+        updated_user = await user_service.verify_email_and_sync_db(
+            access_token=rockilus_access_token,
+            code=request.code,
+            user_id=user_context.effective_user_id,
+        )
+        log_info(
+            f"Email verification and DB sync succeeded for user {user_context.user_id}"
+        )
+        return {"status": "success", "email": updated_user.email}
+    except Exception as e:
+        log_info("Email verification failed")
+        handle_routes_errors(e)

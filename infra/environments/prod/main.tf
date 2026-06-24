@@ -65,19 +65,7 @@ module "cognito" {
   environment  = var.environment
   aws_region   = var.aws_region
 
-  api_gateway_url                           = "https://${var.api_gateway_domain_name}"
-  api_gateway_ssm_parameter                 = module.api_gateway.backend_api_key_parameter
-  frontend_domain_name                      = var.frontend_domain_name
-  landing_page_domain_name                  = var.landing_page_domain_name
-  cognito_domain_prefix                     = var.cognito_domain_prefix
   deletion_protection_cognito_user_pool_aws = var.deletion_protection_cognito_user_pool_aws
-
-  # Custom domain configuration
-  custom_domain_name = var.cognito_custom_domain_name
-  certificate_arn    = module.route53.cloudfront_certificate_arn # Use us-east-1 cert for Cognito
-  hosted_zone_id     = module.route53.hosted_zone_id
-
-  depends_on = [module.route53]
 }
 
 # AWS SES for email sending
@@ -109,6 +97,7 @@ module "iam" {
   # Pass secret ARNs so the IAM policy can reference concrete resources
   documentdb_secret_arn        = module.documentdb.credentials_secret_arn
   impersonation_jwt_secret_arn = data.aws_secretsmanager_secret.impersonation_jwt.arn
+  cognito_user_pool_arn        = module.cognito.user_pool_arn
 
   tags = {
     Environment = var.environment
@@ -341,19 +330,16 @@ module "api_gateway" {
   source = "../../modules/api_gateway"
 
   # General configuration
-  project_name   = var.project_name
-  environment    = var.environment
-  aws_region     = var.aws_region
-  aws_account_id = local.effective_aws_account_id
+  project_name = var.project_name
+  environment  = var.environment
+  aws_region   = var.aws_region
 
   # API Gateway configuration
   cors_allowed_origins   = var.cors_allowed_origins
   api_gateway_stage_name = var.api_gateway_stage_name
 
-  cognito_user_pool_id          = module.cognito.user_pool_id
-  cognito_user_pool_clients_ids = [module.cognito.user_pool_client_id]
-  vpc_link_target_arns          = module.network_load_balancer.vpc_link_target_arns
-  vpc_link_endpoint_url         = module.network_load_balancer.vpc_link_endpoint_url
+  vpc_link_target_arns  = module.network_load_balancer.vpc_link_target_arns
+  vpc_link_endpoint_url = module.network_load_balancer.vpc_link_endpoint_url
 
   # Custom domain configuration using Route53 module outputs
   custom_domain_name = var.api_gateway_domain_name
@@ -378,12 +364,10 @@ module "api_gateway" {
 module "frontend" {
   source = "../../modules/s3-static-frontend"
 
-  project_name                = var.project_name
-  environment                 = var.environment
-  aws_region                  = var.aws_region
-  api_gateway_domain          = var.api_gateway_domain
-  cognito_user_pool_id        = module.cognito.user_pool_id
-  cognito_user_pool_client_id = module.cognito.user_pool_client_id
+  project_name       = var.project_name
+  environment        = var.environment
+  aws_region         = var.aws_region
+  api_gateway_domain = var.api_gateway_domain
 
   # Use the specific frontend domain, not derived from hosted zone
   domain_name                = var.frontend_domain_name                  # app.rockilus.com

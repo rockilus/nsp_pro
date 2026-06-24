@@ -40,22 +40,6 @@ variable "api_gateway_domain" {
   type        = string
 }
 
-variable "cognito_user_pool_id" {
-  description = "Cognito User Pool ID"
-  type        = string
-}
-
-variable "cognito_user_pool_client_id" {
-  description = "Cognito User Pool Client ID"
-  type        = string
-}
-
-variable "cognito_identity_pool_id" {
-  description = "Cognito Identity Pool ID (optional)"
-  type        = string
-  default     = null
-}
-
 variable "tags" {
   description = "Additional tags to apply to resources"
   type        = map(string)

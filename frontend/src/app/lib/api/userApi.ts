@@ -42,18 +42,17 @@ export class UserApi extends BaseApi {
       currentPassword: string;
       newPassword: string;
       newPasswordConfirm: string;
-      accessToken: string;
+      accessToken?: string;
     },
     userId: string,
   ): Promise<void> {
-    // Security: Input validation
+    // Security: Input validation — accessToken is optional (backend uses HttpOnly cookie)
     if (
       !passwordData.currentPassword ||
       !passwordData.newPassword ||
-      !passwordData.newPasswordConfirm ||
-      !passwordData.accessToken
+      !passwordData.newPasswordConfirm
     ) {
-      throw new Error('All password fields and access token are required');
+      throw new Error('All password fields are required');
     }
 
     if (!userId) {

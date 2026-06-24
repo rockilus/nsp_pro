@@ -47,6 +47,40 @@ services:
       - ./scripts/init-localstack-sqs.sh:/init-localstack-sqs.sh:ro
     entrypoint: ["/bin/bash", "/init-localstack-sqs.sh"]
 
+  # cognito-local — offline Cognito emulator for E2E auth tests
+  cognito-local:
+    image: jagregory/cognito-local:latest
+    container_name: cognito-local
+    ports:
+      - "9229:9229"
+    environment:
+      - PORT=9229
+      - CODE=123456          # fixed confirmation code for deterministic tests
+    volumes:
+      - cognito_local_data:/app/.cognito
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:9229',function(r){process.exit(0)}).on('error',function(){process.exit(1)})"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 10s
+
+  # Cognito Local Initializer
+  cognito-local-init:
+    image: amazon/aws-cli:latest
+    container_name: cognito-local-init
+    depends_on:
+      cognito-local:
+        condition: service_healthy
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=eu-west-3
+      - COGNITO_ENDPOINT=http://cognito-local:9229
+    volumes:
+      - ./scripts/init-cognito-local.sh:/init-cognito-local.sh:ro
+    entrypoint: ["/bin/bash", "/init-cognito-local.sh"]
+
   # Cerbos AuthZ
   cerbos:
     build:
@@ -61,3 +95,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+volumes:
+  cognito_local_data:

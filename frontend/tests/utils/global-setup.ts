@@ -42,6 +42,15 @@ async function globalSetup(config: FullConfig) {
     console.log(`✅ Initial database reset completed: ${resetResult.operation_id}`);
     console.log(`   Reset ${resetResult.collections_reset.length} collections`);
 
+    // Reset cognito-local users to ensure clean Cognito state
+    console.log('🔐 Resetting cognito-local users...');
+    try {
+      const cognitoReset = await dbUtils.resetCognitoLocal();
+      console.log(`✅ Cognito-local reset: ${cognitoReset.message}`);
+    } catch (error) {
+      console.warn('⚠️ Cognito-local reset failed, continuing:', error);
+    }
+
     // Create test user after database reset
     console.log('👤 Creating test user...');
     try {
@@ -70,6 +79,54 @@ async function globalSetup(config: FullConfig) {
     } catch (error) {
       console.error('❌ Failed to create second test user:', error);
       console.warn('⚠️ Continuing with setup despite second user creation failure');
+    }
+
+    // Create known-good Cognito user for auth session E2E tests
+    console.log('🔐 Creating known-good Cognito user for auth session tests...');
+    const knownUserEmail = 'e2e-known-good@test.rockilus.com';
+    const knownUserPassword = 'KnownGood1!';
+    try {
+      // sign_up now handles Cognito creation + MongoDB onboarding
+      const signupResp = await fetch(`${testConfig.apiUrl}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: knownUserEmail,
+          first_name: 'Known',
+          last_name: 'Good',
+          password: knownUserPassword,
+          confirm_password: knownUserPassword,
+        }),
+      });
+      if (!signupResp.ok) {
+        const err = await signupResp.json().catch(() => ({}));
+        console.warn(`⚠️ Known-good user signup returned ${signupResp.status}:`, err);
+      } else {
+        console.log('✅ Known-good user signed up and onboarded');
+      }
+
+      // Admin-confirm the user (bypass OTP — needed for test setup, idempotent)
+      const confirmResp = await fetch(`${testConfig.apiUrl}/test-utils/confirm-cognito-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': testConfig.devApiKey,
+        },
+        body: JSON.stringify({ email: knownUserEmail }),
+      });
+      if (!confirmResp.ok) {
+        const err = await confirmResp.json().catch(() => ({}));
+        console.warn(`⚠️ Known-good user confirm returned ${confirmResp.status}:`, err);
+      } else {
+        console.log('✅ Known-good user confirmed');
+      }
+
+      // Expose via env for test files to read
+      process.env.E2E_KNOWN_USER_EMAIL = knownUserEmail;
+      process.env.E2E_KNOWN_USER_PASSWORD = knownUserPassword;
+      console.log(`✅ Known-good Cognito user created: ${knownUserEmail}`);
+    } catch (error) {
+      console.warn('⚠️ Known-good Cognito user creation failed:', error);
     }
 
     // Optional: Verify we can create and query a browser for testing
