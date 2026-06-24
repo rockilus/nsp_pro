@@ -22,11 +22,17 @@ all:
     just lint
     just typecheck
     just test
+    just security
 
 all-no-test:
     just format
     just lint
     just typecheck
+
+security:
+    just audit-deps
+    just bandit
+    just semgrep
 
 audit-deps:
     uv run pip-audit
