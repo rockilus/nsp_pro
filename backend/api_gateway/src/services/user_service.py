@@ -85,11 +85,10 @@ class UserService(BaseService):
         await self._auth.update_user_email(access_token, new_email)
 
     async def change_user_password(
-        self, password_data: PasswordData, access_token: str = ""
+        self, password_data: PasswordData, access_token: str
     ) -> None:
-        token = access_token or password_data.access_token
         await self._auth.change_password(
-            token,
+            access_token,
             password_data.current_password,
             password_data.new_password,
         )

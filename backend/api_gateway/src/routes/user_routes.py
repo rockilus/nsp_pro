@@ -193,13 +193,11 @@ async def change_user_password(
         if p_data.new_password != p_data.new_password_confirm:
             raise PasswordsDoNotMatchError("Passwords do not match")
 
-        # Prefer token from HttpOnly cookie; fall back to request body
-        access_token = rockilus_access_token or p_data.access_token
-        if not access_token:
+        if not rockilus_access_token:
             raise HTTPException(status_code=401, detail="Authentication required")
 
         await user_service.change_user_password(
-            password_data=p_data, access_token=access_token
+            password_data=p_data, access_token=rockilus_access_token
         )
 
         response = {"message": "Password updated successfully"}

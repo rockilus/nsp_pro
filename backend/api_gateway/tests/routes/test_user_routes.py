@@ -273,7 +273,6 @@ class TestChangeUserPassword:
         "currentPassword": "OldPass1!",
         "newPassword": "NewPass2!",
         "newPasswordConfirm": "NewPass2!",
-        "accessToken": "mock_token",
     }
 
     def _make_mock_user_service(self, db: DatabaseCollections) -> MagicMock:
@@ -296,7 +295,7 @@ class TestChangeUserPassword:
             db_interface,
             user_service_override=mock_user_service,
         )
-        client = TestClient(app)
+        client = TestClient(app, cookies={"rockilus_access_token": "mock_token"})
 
         try:
             response = client.put(
@@ -320,7 +319,7 @@ class TestChangeUserPassword:
             db_interface,
             user_service_override=mock_user_service,
         )
-        client = TestClient(app)
+        client = TestClient(app, cookies={"rockilus_access_token": "mock_token"})
 
         response = client.put(
             "/users/ghost_user/change-password",

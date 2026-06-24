@@ -66,7 +66,6 @@ class PasswordData:
     current_password: str
     new_password: str
     new_password_confirm: str
-    access_token: str
 
     def to_dto(self) -> PasswordDataDTO:
         data = asdict(self)
