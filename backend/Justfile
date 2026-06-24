@@ -14,8 +14,11 @@ all-no-test:
     cd solve_service && just all-no-test
 
 security:
-    cd shared && just security
-    cd api_gateway && just security
-    cd solve_service && just security
+    @echo "--- shared ---"
+    @cd shared && just security
+    @echo "--- api_gateway ---"
+    @cd api_gateway && just security
+    @echo "--- solve_service ---"
+    @cd solve_service && just security
 
 

@@ -29,12 +29,11 @@ all: format lint typecheck test security
 all-no-test: format lint typecheck
 
 security:
-    echo "Running security checks for frontend..."
-    just audit-deps
+    @just audit-deps
 
 audit-deps:
-    echo "Running npm audit for frontend..."
-    npm audit --audit-level=high
+    @echo "  npm audit:"
+    @npm audit --audit-level=high
 
 dev:
 	echo "Starting Next.js dev server on port 3000..."
