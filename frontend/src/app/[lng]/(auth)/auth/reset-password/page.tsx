@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Mail } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 function ResetForm({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'auth-page');
@@ -17,7 +18,7 @@ function ResetForm({ lng }: { lng: string }) {
   const params = useSearchParams();
   const { confirmForgotPassword } = useAuth();
 
-  const email = params.get('email') || '';
+  const email = decodeURIComponent(params.get('email') || '');
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -59,6 +60,11 @@ function ResetForm({ lng }: { lng: string }) {
         <CardDescription>{t('reset_password_message')}</CardDescription>
       </CardHeader>
       <CardContent>
+        <Alert className="mb-6">
+          <Mail className="size-4" />
+          <AlertTitle>{t('check_your_email')}</AlertTitle>
+          <AlertDescription>{t('reset_link_sent_to', { email })}</AlertDescription>
+        </Alert>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="code">{t('enter_otp')}</Label>
