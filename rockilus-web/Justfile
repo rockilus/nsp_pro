@@ -1,0 +1,26 @@
+set shell := ['bash', '-lc']
+
+format:
+	echo "Running Prettier..."
+	npx prettier --write .
+
+lint:
+	echo "Running ESLint..."
+	npx eslint .
+
+typecheck:
+	echo "Running TypeScript check..."
+	npx tsc --noEmit
+
+test:
+	echo "Running Vitest..."
+	npx vitest run
+
+audit-deps:
+	npm audit --audit-level=high
+
+all: format lint typecheck audit-deps
+
+dev:
+	echo "Starting Next.js dev server on port 3001..."
+	npx next dev --turbopack --port 3001

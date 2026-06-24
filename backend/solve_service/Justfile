@@ -34,6 +34,15 @@ all-no-test:
     just lint
     just typecheck
 
+audit-deps:
+    uv run pip-audit
+
+bandit:
+    uv run bandit -r src/ -ll
+
+semgrep:
+    uv run semgrep --config=auto --error src/
+
 dev:
     echo "Starting solve_service (SQS consumer)..."
     uv run python -m src.main --env-file .env.development.tests

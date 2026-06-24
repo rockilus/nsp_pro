@@ -28,6 +28,9 @@ playwright-ui:
 all: format lint typecheck test
 all-no-test: format lint typecheck
 
+audit-deps:
+    npm audit --audit-level=high
+
 dev:
 	echo "Starting Next.js dev server on port 3000..."
 	npx next dev --turbopack --port 3000

@@ -46,3 +46,6 @@ jobs:
 
       - name: Tests
         run: just test
+
+      - name: Security: npm audit
+        run: npm audit --audit-level=high

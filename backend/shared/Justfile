@@ -27,3 +27,12 @@ all-no-test:
     just format
     just lint
     just typecheck
+
+audit-deps:
+    uv run pip-audit
+
+bandit:
+    uv run bandit -r src/ -ll
+
+semgrep:
+    uv run semgrep --config=auto --error src/

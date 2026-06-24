@@ -13,6 +13,9 @@ all-no-test:
     cd api_gateway && just all-no-test
     cd solve_service && just all-no-test
 
-
+security-all:
+    cd shared && just audit-deps && just bandit && just semgrep
+    cd api_gateway && just audit-deps && just bandit && just semgrep
+    cd solve_service && just audit-deps && just bandit && just semgrep
 
 

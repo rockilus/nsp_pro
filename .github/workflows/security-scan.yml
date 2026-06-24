@@ -1,0 +1,129 @@
+name: Security Scans
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: '0 3 * * *'  # nightly at 3 AM UTC — OWASP ZAP baseline scan
+
+jobs:
+  gitleaks:
+    name: Gitleaks — secret detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        with:
+          config-path: .gitleaks.toml
+
+  trivy-fs:
+    name: Trivy — filesystem scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
+  trivy-dockerfile:
+    name: Trivy — Dockerfile config scan
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - backend/api_gateway/Dockerfile
+          - backend/solve_service/Dockerfile
+          - cerbos-policies/Dockerfile
+          - frontend/Dockerfile
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: ${{ matrix.path }}
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
+  hadolint:
+    name: Hadolint — Dockerfile lint
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: |
+            backend/api_gateway/Dockerfile
+            backend/solve_service/Dockerfile
+            cerbos-policies/Dockerfile
+            frontend/Dockerfile
+
+  shellcheck:
+    name: ShellCheck — shell script lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: |
+          find . -name '*.sh' -print0 | xargs -0 shellcheck -S error
+
+  zap-baseline:
+    name: OWASP ZAP — baseline scan
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: testuser
+          MONGO_INITDB_ROOT_PASSWORD: testpass
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Install uv + just
+        uses: astral-sh/setup-uv@v7
+      - run: sudo apt-get update && sudo apt-get install -y just
+
+      - name: Build and start Cerbos PDP
+        run: |
+          docker build -t cerbos-zap ${{ github.workspace }}/cerbos-policies/
+          docker run -d --name cerbos-zap -p 3594:3592 -p 3595:3593 cerbos-zap
+
+      - name: Install API gateway deps
+        run: uv sync --locked --all-extras --dev
+        working-directory: backend/api_gateway
+
+      - name: Start API gateway
+        run: |
+          uv run uvicorn src.main:app --host 0.0.0.0 --port 4000 &
+          sleep 10
+        working-directory: backend/api_gateway
+        env:
+          MONGO_URI: mongodb://testuser:testpass@localhost:27017/
+
+      - name: Run ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: 'http://localhost:4000'
+          rules_file_name: '.zap/rules.tsv'
+
+      - name: Upload ZAP report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: zap-baseline-report
+          path: report_html/index.html
+          retention-days: 30

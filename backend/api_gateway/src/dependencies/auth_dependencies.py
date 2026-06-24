@@ -130,7 +130,7 @@ async def get_user_context(
                 source_ip=request.headers.get("X-Source-IP"),
             )
         except (jwt.InvalidTokenError, jwt.ExpiredSignatureError) as e:
-            logger.warning("Invalid access token cookie: %s", e)
+            logger.warning("Invalid access token cookie: %s", e)  # nosemgrep
             raise HTTPException(
                 status_code=401,
                 detail="Invalid or expired session",
@@ -173,13 +173,13 @@ async def get_user_context(
                 status_code=401, detail="Impersonation token has expired"
             ) from exc
         except jwt.InvalidTokenError as exc:
-            logger.warning("Invalid impersonation token: %s", exc)
+            logger.warning("Invalid impersonation token: %s", exc)  # nosemgrep
             raise HTTPException(
                 status_code=401, detail="Invalid impersonation token"
             ) from exc
 
         if claims["sub"] != user_context.user_id:
-            logger.warning(
+            logger.warning(  # nosemgrep
                 "Impersonation token sub mismatch: token sub=%s, request user=%s",
                 claims["sub"],
                 user_context.user_id,

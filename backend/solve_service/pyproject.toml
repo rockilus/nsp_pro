@@ -9,10 +9,11 @@ dependencies = [
 	"pydantic>=2.10.6",
 	"shared",
 	"boto3>=1.37.10",
-	"pydantic-settings>=2.8.1",
+	"pydantic-settings>=2.14.2",
 	"ortools>=9.14.6206",
 	"pandas>=2.2.3",
 	"xlsxwriter>=3.2.2",
+	"tornado>=6.5.7",
 ]
 
 [dependency-groups]
@@ -24,6 +25,9 @@ dev = [
 	"boto3-stubs[s3,ssm]>=1.39.4",
 	"botocore-stubs>=1.38.46",
 	"ruff>=0.15.8",
+	"pip-audit>=2.8.0",
+	"bandit>=1.8.0",
+	"semgrep>=1.119.0",
 ]
 
 [tool.uv]
