@@ -45,7 +45,7 @@ test.describe('Import Preview & Create', () => {
     await createBtn.click();
 
     // Upload the Excel fixture
-    const buf = buildImportExcel(10);
+    const buf = await buildImportExcel(10);
     const filePath = writeExcelToTempFile(buf);
     const fileInput = page.locator('[data-testid="import-file-input"]');
     await fileInput.setInputFiles(filePath);
@@ -78,7 +78,7 @@ test.describe('Import Preview & Create', () => {
     await createBtn.click();
 
     // Upload the Excel fixture
-    const buf = buildImportExcel(10);
+    const buf = await buildImportExcel(10);
     const filePath = writeExcelToTempFile(buf);
     const fileInput = page.locator('[data-testid="import-file-input"]');
     await fileInput.setInputFiles(filePath);

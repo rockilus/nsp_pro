@@ -14,7 +14,7 @@
  * - Night shift (NS) → new shift
  */
 
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 const SHEET_MEMBERS = 'members';
 const SHEET_SHIFTS = 'shifts';
@@ -29,23 +29,21 @@ const SHEET_SCHEDULE = 'schedule';
  * current month. Assignments are deterministically placed so tests
  * can assert on date ranges.
  */
-export function buildImportExcel(numDays: number = 10): Buffer {
-  const wb = XLSX.utils.book_new();
+export async function buildImportExcel(numDays: number = 10): Promise<Buffer> {
+  const wb = new ExcelJS.Workbook();
 
   const membersData = buildMembersData();
   const shiftsData = buildShiftsData();
   const scheduleData = buildScheduleData(membersData, shiftsData, numDays);
 
-  const wsMembers = XLSX.utils.aoa_to_sheet(membersData);
-  const wsShifts = XLSX.utils.aoa_to_sheet(shiftsData);
-  const wsSchedule = XLSX.utils.aoa_to_sheet(scheduleData);
+  const wsMembers = wb.addWorksheet(SHEET_MEMBERS);
+  wsMembers.addRows(membersData);
+  const wsShifts = wb.addWorksheet(SHEET_SHIFTS);
+  wsShifts.addRows(shiftsData);
+  const wsSchedule = wb.addWorksheet(SHEET_SCHEDULE);
+  wsSchedule.addRows(scheduleData);
 
-  XLSX.utils.book_append_sheet(wb, wsMembers, SHEET_MEMBERS);
-  XLSX.utils.book_append_sheet(wb, wsShifts, SHEET_SHIFTS);
-  XLSX.utils.book_append_sheet(wb, wsSchedule, SHEET_SCHEDULE);
-
-  const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-  return buf;
+  return Buffer.from(await wb.xlsx.writeBuffer());
 }
 
 /**
