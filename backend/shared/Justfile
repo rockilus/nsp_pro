@@ -35,10 +35,13 @@ security:
     just semgrep
 
 audit-deps:
+    echo "Running pip-audit for shared..."
     uv run pip-audit
 
 bandit:
+    echo "Running bandit for shared..."
     uv run bandit -r src/ -ll
 
 semgrep:
+    echo "Running semgrep for shared..."
     uv run semgrep --config=auto --error src/

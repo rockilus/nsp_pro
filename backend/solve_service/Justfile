@@ -41,12 +41,15 @@ security:
     just semgrep
 
 audit-deps:
+    echo "Running pip-audit for solve_service..."
     uv run pip-audit
 
 bandit:
+    echo "Running bandit for solve_service..."
     uv run bandit -r src/ -ll
 
 semgrep:
+    echo "Running semgrep for solve_service..."
     uv run semgrep --config=auto --error src/
 
 dev:

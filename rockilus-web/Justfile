@@ -17,9 +17,11 @@ test:
 	npx vitest run
 
 audit-deps:
+	echo "Running npm audit for rockilus-web..."
 	npm audit --audit-level=high
 
 security:
+	echo "Running security checks for rockilus-web..."
 	just audit-deps
 
 all: format lint typecheck security
