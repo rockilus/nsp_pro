@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/app/i18n/client';
 import { useAuth } from '@/contexts/auth-context';
@@ -27,6 +27,8 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const formRef = useRef<HTMLFormElement>(null);
 
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -73,7 +75,18 @@ export default function SignUpPage({ params }: { params: Promise<{ lng: string }
         <CardTitle>{t('sign_up')}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit}
+          noValidate
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              formRef.current?.requestSubmit();
+            }
+          }}
+          className="space-y-4"
+        >
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">{t('first_name')}</Label>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/app/i18n/client';
 import { useAuth } from '@/contexts/auth-context';
@@ -25,6 +25,8 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
   const [unconfirmed, setUnconfirmed] = useState(false);
   const [resent, setResent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const formRef = useRef<HTMLFormElement>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -127,7 +129,17 @@ export default function SignInPage({ params }: { params: Promise<{ lng: string }
         <CardTitle>{t('sign_in')}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              formRef.current?.requestSubmit();
+            }
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="email">{t('email_address')}</Label>
             <Input
