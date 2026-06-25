@@ -49,6 +49,7 @@ security-trivy-config:
     @echo "=== Trivy: Scanning IaC configurations ==="
     @mkdir -p ../security-reports
     @docker run --rm \
+        -v trivy-cache:/root/.cache/trivy \
         -v "{{root_dir}}:/apps" \
         aquasec/trivy:latest config \
         --severity HIGH,CRITICAL \
@@ -64,6 +65,7 @@ security-trivy-fs:
     @echo "=== Trivy: Scanning filesystem dependencies (advisory) ==="
     @mkdir -p ../security-reports
     @docker run --rm \
+        -v trivy-cache:/root/.cache/trivy \
         -v "{{root_dir}}:/apps" \
         aquasec/trivy:latest fs \
         --severity HIGH,CRITICAL \
@@ -83,6 +85,7 @@ security-trivy-image:
     @echo "=== Trivy: Scanning api_gateway image ==="
     @mkdir -p ../security-reports
     @docker run --rm \
+        -v trivy-cache:/root/.cache/trivy \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v "{{root_dir}}/security-reports:/reports" \
         aquasec/trivy:latest image \
@@ -93,6 +96,7 @@ security-trivy-image:
         rockilus-api-gateway:trivy-scan || true
     @echo "=== Trivy: Scanning solve_service image ==="
     @docker run --rm \
+        -v trivy-cache:/root/.cache/trivy \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v "{{root_dir}}/security-reports:/reports" \
         aquasec/trivy:latest image \
@@ -103,6 +107,7 @@ security-trivy-image:
         rockilus-solve-service:trivy-scan || true
     @echo "=== Trivy: Scanning cerbos image ==="
     @docker run --rm \
+        -v trivy-cache:/root/.cache/trivy \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v "{{root_dir}}/security-reports:/reports" \
         aquasec/trivy:latest image \
