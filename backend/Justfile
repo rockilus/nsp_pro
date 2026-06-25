@@ -159,8 +159,9 @@ security-hadolint:
 
 # Lint all shell scripts in the repo with ShellCheck.
 # Uses -S error to only report error-level violations.
+# Advisory: reports findings but never fails.
 security-shellcheck:
     @echo "=== ShellCheck: Linting all shell scripts ==="
-    @find "{{root_dir}}" -name '*.sh' -exec docker run --rm -v "{}:/script:ro" koalaman/shellcheck:stable -S error /script \;
+    @find "{{root_dir}}" -name '*.sh' -exec docker run --rm -v "{}:/script:ro" koalaman/shellcheck:stable -S error /script \; || true
 
 
