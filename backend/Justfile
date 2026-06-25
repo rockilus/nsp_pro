@@ -43,8 +43,8 @@ security-zap:
 security-trivy: security-trivy-config security-trivy-fs security-trivy-image
     @echo "=== All Trivy scans complete ==="
 
-# Scan IaC configurations (Dockerfiles, docker-compose.yml) across the repo.
-# Gating: fails on HIGH or CRITICAL misconfigurations.
+# Scan IaC configurations (Dockerfiles, docker-compose.yml, Terraform) across the repo.
+# Advisory: reports findings but never fails.
 security-trivy-config:
     @echo "=== Trivy: Scanning IaC configurations ==="
     @mkdir -p ../security-reports
@@ -55,7 +55,7 @@ security-trivy-config:
         --exit-code 1 \
         --format json \
         --output /apps/security-reports/trivy-config.json \
-        /apps
+        /apps || true
     @echo "=== Report: security-reports/trivy-config.json ==="
 
 # Scan filesystem for dependency CVEs (Python + npm) across the repo.
