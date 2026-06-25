@@ -21,4 +21,29 @@ security:
     @echo "--- solve_service ---"
     @cd solve_service && just security
 
+# Run OWASP ZAP DAST against the API Gateway.
+# Requires Docker. Spins up an ephemeral stack, seeds a test user,
+# runs an active API scan, and tears down. Results in ../security-reports/
+security-zap:
+    @echo "=== Starting ZAP ephemeral stack (MongoDB, LocalStack, Cerbos, FastAPI) ==="
+    @docker-compose -f ../docker-compose.zap.yml up -d --wait
+    @echo "=== Seeding test user for authenticated ZAP requests ==="
+    @bash ../scripts/seed-zap-user.sh
+    @echo "=== Fetching OpenAPI spec ==="
+    @mkdir -p ../security-reports
+    @curl -s http://localhost:4000/openapi.json -o ../openapi-zap.json
+    @echo "=== Running ZAP API active scan (this takes 2-5 minutes) ==="
+    @docker run --rm \
+      -v "$$(cd .. && pwd):/zap/wrk:rw" \
+      -t ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
+      -t http://host.docker.internal:4000 \
+      -f openapi \
+      -d /zap/wrk/openapi-zap.json \
+      -r /zap/wrk/security-reports/zap-api-report.html \
+      -z "-configfile /zap/wrk/.zap/options.prop" || true
+    @echo "=== Tearing down ZAP stack ==="
+    @docker-compose -f ../docker-compose.zap.yml down -v
+    @rm -f ../openapi-zap.json
+    @echo "=== Report: security-reports/zap-api-report.html ==="
+
 

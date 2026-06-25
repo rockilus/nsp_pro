@@ -1,0 +1,20 @@
+# ZAP replacer rules — inject Rockilus dev-mode authentication headers
+# into every request so ZAP can fuzz authenticated endpoints without
+# needing Cognito JWT tokens.
+#
+# Format: replacer.full_list(N).key=value
+# See: https://www.zaproxy.org/docs/desktop/start/features/replacer/
+
+replacer.full_list(0).description=auth_dev_api_key
+replacer.full_list(0).enabled=true
+replacer.full_list(0).matchtype=REQ_HEADER
+replacer.full_list(0).matchstr=X-API-Key
+replacer.full_list(0).regex=false
+replacer.full_list(0).replacement=ffb1f25b3585109374ac5fefa1728247ce600a27569c8344d779a57e0186cc93
+
+replacer.full_list(1).description=auth_dev_user_id
+replacer.full_list(1).enabled=true
+replacer.full_list(1).matchtype=REQ_HEADER
+replacer.full_list(1).matchstr=X-Dev-User-ID
+replacer.full_list(1).regex=false
+replacer.full_list(1).replacement=64e9b7f1e13e4a1a9c8b4567
