@@ -39,4 +39,80 @@ security-zap:
     @docker-compose -f ../docker-compose.zap.yml down -v
     @echo "=== Report: security-reports/zap-api-report.html ==="
 
+# Run all Trivy scans (config + fs + image).
+security-trivy: security-trivy-config security-trivy-fs security-trivy-image
+    @echo "=== All Trivy scans complete ==="
+
+# Scan IaC configurations (Dockerfiles, docker-compose.yml) across the repo.
+# Gating: fails on HIGH or CRITICAL misconfigurations.
+security-trivy-config:
+    @echo "=== Trivy: Scanning IaC configurations ==="
+    @mkdir -p ../security-reports
+    @docker run --rm \
+        -v "{{root_dir}}:/apps" \
+        aquasec/trivy:latest config \
+        --severity HIGH,CRITICAL \
+        --exit-code 1 \
+        --format json \
+        --output /apps/security-reports/trivy-config.json \
+        /apps
+    @echo "=== Report: security-reports/trivy-config.json ==="
+
+# Scan filesystem for dependency CVEs (Python + npm) across the repo.
+# Advisory: reports findings but never fails (pip-audit + npm audit already gate).
+security-trivy-fs:
+    @echo "=== Trivy: Scanning filesystem dependencies (advisory) ==="
+    @mkdir -p ../security-reports
+    @docker run --rm \
+        -v "{{root_dir}}:/apps" \
+        aquasec/trivy:latest fs \
+        --severity HIGH,CRITICAL \
+        --format json \
+        --output /apps/security-reports/trivy-fs.json \
+        --skip-dirs node_modules,__pycache__,.next,out,.venv \
+        /apps || true
+    @echo "=== Report: security-reports/trivy-fs.json ==="
+
+# Build and scan container images for OS-level CVEs.
+# Scans api_gateway, solve_service, and cerbos. Cleans up tags after.
+security-trivy-image:
+    @echo "=== Building images for Trivy scan ==="
+    @docker build -t rockilus-api-gateway:trivy-scan -f api_gateway/Dockerfile .
+    @docker build -t rockilus-solve-service:trivy-scan -f solve_service/Dockerfile .
+    @docker build -t rockilus-cerbos:trivy-scan -f ../cerbos-policies/Dockerfile ../cerbos-policies
+    @echo "=== Trivy: Scanning api_gateway image ==="
+    @mkdir -p ../security-reports
+    @docker run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "{{root_dir}}/security-reports:/reports" \
+        aquasec/trivy:latest image \
+        --severity HIGH,CRITICAL \
+        --exit-code 1 \
+        --format json \
+        --output /reports/trivy-image-api-gateway.json \
+        rockilus-api-gateway:trivy-scan || true
+    @echo "=== Trivy: Scanning solve_service image ==="
+    @docker run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "{{root_dir}}/security-reports:/reports" \
+        aquasec/trivy:latest image \
+        --severity HIGH,CRITICAL \
+        --exit-code 1 \
+        --format json \
+        --output /reports/trivy-image-solve-service.json \
+        rockilus-solve-service:trivy-scan || true
+    @echo "=== Trivy: Scanning cerbos image ==="
+    @docker run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v "{{root_dir}}/security-reports:/reports" \
+        aquasec/trivy:latest image \
+        --severity HIGH,CRITICAL \
+        --exit-code 1 \
+        --format json \
+        --output /reports/trivy-image-cerbos.json \
+        rockilus-cerbos:trivy-scan || true
+    @echo "=== Cleaning up scan images ==="
+    @docker rmi rockilus-api-gateway:trivy-scan rockilus-solve-service:trivy-scan rockilus-cerbos:trivy-scan 2>/dev/null || true
+    @echo "=== Reports: security-reports/trivy-image-*.json ==="
+
 
