@@ -1,6 +1,8 @@
 # Justfile for rockilus backend
 # Usage: cd backend && just <recipe>
 
+root_dir := `cd .. && pwd`
+
 all:
     echo "Running all checks in shared, api_gateway, and solve_service..."
     cd shared just all
@@ -34,14 +36,7 @@ security-zap:
     @mkdir -p ../security-reports
     @curl -s http://localhost:4000/openapi.json -o ../openapi-zap.json
     @echo "=== Running ZAP API active scan (this takes 2-5 minutes) ==="
-    @docker run --rm \
-      -v "$$(cd .. && pwd):/zap/wrk:rw" \
-      -t ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
-      -t http://host.docker.internal:4000 \
-      -f openapi \
-      -d /zap/wrk/openapi-zap.json \
-      -r /zap/wrk/security-reports/zap-api-report.html \
-      -z "-configfile /zap/wrk/.zap/options.prop" || true
+    @docker run --rm -v "{{root_dir}}:/zap/wrk:rw" -t ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py -t http://host.docker.internal:4000 -f openapi -d /zap/wrk/openapi-zap.json -r /zap/wrk/security-reports/zap-api-report.html -z "-configfile /zap/wrk/.zap/options.prop" || true
     @echo "=== Tearing down ZAP stack ==="
     @docker-compose -f ../docker-compose.zap.yml down -v
     @rm -f ../openapi-zap.json
