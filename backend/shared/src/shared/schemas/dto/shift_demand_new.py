@@ -1,15 +1,29 @@
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ShiftDemandNewCreateDTO(BaseModel):
     """DTO for creating new shift demands - excludes server-managed fields."""
 
-    date: float
-    shiftId: str
-    teamId: str
-    count: int
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "date": 1700000000.0,
+                "shiftId": "shift-1",
+                "teamId": "64e9b7f1e13e4a1a9c8b4567",
+                "count": 2,
+                "notes": None,
+                "source": "manual",
+                "sourceId": None,
+            }
+        }
+    )
+
+    date: float = Field(examples=[1700000000.0])
+    shiftId: str = Field(examples=["shift-1"])
+    teamId: str = Field(examples=["64e9b7f1e13e4a1a9c8b4567"])
+    count: int = Field(examples=[2])
     notes: str | None = None
     source: str = "manual"
     sourceId: str | None = None

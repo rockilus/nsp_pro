@@ -1,9 +1,14 @@
+networks:
+  zap-network:
+    name: zap-network
+
 services:
   mongodb:
     image: mongo:5.0
     container_name: zap-mongodb
     ports:
       - "27017:27017"
+    networks: [zap-network]
     healthcheck:
       test: mongo --eval "db.adminCommand('ping')"
       interval: 10s
@@ -15,6 +20,7 @@ services:
     container_name: zap-localstack
     ports:
       - "4566:4566"
+    networks: [zap-network]
     environment:
       - SERVICES=sqs
       - DEBUG=1
@@ -27,6 +33,7 @@ services:
   localstack-init:
     image: amazon/aws-cli:latest
     container_name: zap-localstack-init
+    networks: [zap-network]
     depends_on:
       localstack:
         condition: service_healthy
@@ -72,9 +79,11 @@ services:
     ports:
       - "3592:3592"
       - "3593:3593"
+    networks: [zap-network]
     volumes:
       - ./cerbos-policies:/policies:ro
     command: server --config=/policies/.cerbos.yaml
+
   fastapi:
     build:
       context: ./backend
@@ -82,6 +91,7 @@ services:
     container_name: zap-fastapi
     ports:
       - "4000:4000"
+    networks: [zap-network]
     depends_on:
       mongodb:
         condition: service_healthy
@@ -92,7 +102,7 @@ services:
     environment:
       ENVIRONMENT: development
       API_DOMAIN: "0.0.0.0"
-      API_URL: "http://localhost:4000"
+      API_URL: "http://fastapi:4000"
       API_PORT: "4000"
       ORIGINS: '["http://localhost:3000"]'
       CLIENT_URL: "http://localhost:3000"

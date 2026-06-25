@@ -95,4 +95,3 @@ rockilus-web/*.tsbuildinfo
 
 # Security scanning artifacts
 security-reports/
-openapi-zap.json

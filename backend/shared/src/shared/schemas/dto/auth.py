@@ -1,12 +1,24 @@
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class SignUpRequestDTO(BaseModel):
-    email: EmailStr
-    first_name: str
-    last_name: str
-    password: str
-    confirm_password: str
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "email": "user@example.com",
+                "first_name": "Jane",
+                "last_name": "Smith",
+                "password": "securePass123",
+                "confirm_password": "securePass123",
+            }
+        }
+    )
+
+    email: EmailStr = Field(examples=["user@example.com"])
+    first_name: str = Field(examples=["Jane"])
+    last_name: str = Field(examples=["Smith"])
+    password: str = Field(examples=["securePass123"])
+    confirm_password: str = Field(examples=["securePass123"])
 
     @field_validator("password")
     @classmethod

@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 from shared.schemas.dto.recurrence import RecurrenceRuleDTO
 
@@ -76,9 +76,19 @@ class BulkAssignmentCreateDTO(BaseModel):
     accepted from the client.
     """
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "cells": [{"row_id": "worker-1", "date": 1700000000.0}],
+                "entity_id": "shift-1",
+                "group_by": "shift",
+            }
+        }
+    )
+
     cells: List[AssignmentCreateCellDTO]
-    entity_id: str  # worker_id (shift view) or shift_id (worker view)
-    group_by: Literal["shift", "worker"]
+    entity_id: str
+    group_by: Literal["shift", "worker"] = Field(examples=["shift"])
     intent: Optional[SelectionIntentDTO] = None
 
 
