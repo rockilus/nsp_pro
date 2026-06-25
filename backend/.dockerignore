@@ -53,9 +53,14 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .coverage
-.cache
 nosetests.xml
 coverage.xml
+
+# Python tooling caches
+**/.mypy_cache/
+**/.ruff_cache/
+**/.pytest_cache/
+.cache
 
 # Translations
 *.mo
