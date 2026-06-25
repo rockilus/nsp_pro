@@ -75,12 +75,6 @@ services:
     volumes:
       - ./cerbos-policies:/policies:ro
     command: server --config=/policies/.cerbos.yaml
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://cerbos:3593/api/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   fastapi:
     build:
       context: ./backend
@@ -94,7 +88,7 @@ services:
       localstack-init:
         condition: service_completed_successfully
       cerbos:
-        condition: service_healthy
+        condition: service_started
     environment:
       ENVIRONMENT: development
       API_DOMAIN: "0.0.0.0"
@@ -108,7 +102,7 @@ services:
       AWS_ACCESS_KEY_ID: "test"
       AWS_SECRET_ACCESS_KEY: "test"
       ENDPOINT_URL: "http://localstack:4566"
-      AWS_SQS_SOLVE_QUEUE_URL: "http://localstack:4566/000000000000/nsp-pro-dev-solve-queue"
+      SQS_SOLVE_QUEUE_URL: "http://localstack:4566/000000000000/nsp-pro-dev-solve-queue"
       BACKEND_API_KEY_SSM_PARAMETER_NAME: "no_name"
       DEV_USER_ID: "64e9b7f1e13e4a1a9c8b4567"
       DEV_USER_EMAIL: "testuser@example.com"

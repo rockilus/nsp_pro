@@ -25,6 +25,7 @@ security:
 # Requires Docker. Spins up an ephemeral stack, seeds a test user,
 # runs an active API scan, and tears down. Results in ../security-reports/
 security-zap:
+    @docker-compose -f ../docker-compose.zap.yml down -v 2>/dev/null || true
     @echo "=== Starting ZAP ephemeral stack (MongoDB, LocalStack, Cerbos, FastAPI) ==="
     @docker-compose -f ../docker-compose.zap.yml up -d --wait
     @echo "=== Seeding test user for authenticated ZAP requests ==="
