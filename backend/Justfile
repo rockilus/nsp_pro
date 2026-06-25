@@ -142,4 +142,24 @@ security-trivy-image:
     @docker rmi rockilus-api-gateway:trivy-scan rockilus-solve-service:trivy-scan rockilus-cerbos:trivy-scan 2>/dev/null || true
     @echo "=== Reports: security-reports/trivy-image-*.json ==="
 
+# Lint all production and utility Dockerfiles with Hadolint.
+# Mirrors CI coverage plus the init-user utility Dockerfile.
+security-hadolint:
+    @echo "=== Hadolint: Linting api_gateway/Dockerfile ==="
+    @docker run --rm -i hadolint/hadolint < api_gateway/Dockerfile
+    @echo "=== Hadolint: Linting solve_service/Dockerfile ==="
+    @docker run --rm -i hadolint/hadolint < solve_service/Dockerfile
+    @echo "=== Hadolint: Linting cerbos-policies/Dockerfile ==="
+    @docker run --rm -i hadolint/hadolint < ../cerbos-policies/Dockerfile
+    @echo "=== Hadolint: Linting frontend/Dockerfile ==="
+    @docker run --rm -i hadolint/hadolint < ../frontend/Dockerfile
+    @echo "=== Hadolint: Linting scripts/Dockerfile.init-user ==="
+    @docker run --rm -i hadolint/hadolint < ../scripts/Dockerfile.init-user
+
+# Lint all shell scripts in the repo with ShellCheck.
+# Uses -S error to only report error-level violations.
+security-shellcheck:
+    @echo "=== ShellCheck: Linting all shell scripts ==="
+    @find "{{root_dir}}" -name '*.sh' -exec docker run --rm -v "{}:/script:ro" koalaman/shellcheck:stable -S error /script \;
+
 
