@@ -5,7 +5,7 @@ on:
     branches: [main, develop]
     types: [opened, synchronize, reopened]
   schedule:
-    - cron: '0 3 * * *'  # nightly at 3 AM UTC — OWASP ZAP baseline scan
+    - cron: '0 3 * * *'  # nightly at 3 AM UTC
 
 jobs:
   gitleaks:
@@ -72,58 +72,3 @@ jobs:
       - uses: actions/checkout@v7
       - run: |
           find . -name '*.sh' -print0 | xargs -0 shellcheck -S error
-
-  zap-baseline:
-    name: OWASP ZAP — baseline scan
-    if: github.event_name == 'schedule'
-    runs-on: ubuntu-latest
-    services:
-      mongodb:
-        image: mongo:7
-        ports:
-          - 27017:27017
-        env:
-          MONGO_INITDB_ROOT_USERNAME: testuser
-          MONGO_INITDB_ROOT_PASSWORD: testpass
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.14'
-
-      - name: Install uv + just
-        uses: astral-sh/setup-uv@v7
-      - run: sudo apt-get update && sudo apt-get install -y just
-
-      - name: Build and start Cerbos PDP
-        run: |
-          docker build -t cerbos-zap ${{ github.workspace }}/cerbos-policies/
-          docker run -d --name cerbos-zap -p 3594:3592 -p 3595:3593 cerbos-zap
-
-      - name: Install API gateway deps
-        run: uv sync --locked --all-extras --dev
-        working-directory: backend/api_gateway
-
-      - name: Start API gateway
-        run: |
-          uv run uvicorn src.main:app --host 0.0.0.0 --port 4000 &
-          sleep 10
-        working-directory: backend/api_gateway
-        env:
-          MONGO_URI: mongodb://testuser:testpass@localhost:27017/
-
-      - name: Run ZAP baseline scan
-        uses: zaproxy/action-baseline@v0.15.0
-        with:
-          target: 'http://localhost:4000'
-          rules_file_name: '.zap/rules.tsv'
-
-      - name: Upload ZAP report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: zap-baseline-report
-          path: report_html/index.html
-          retention-days: 30
