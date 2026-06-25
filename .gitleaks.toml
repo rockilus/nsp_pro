@@ -7,10 +7,11 @@ title = "Rockilus Gitleaks Config"
 [allowlist]
 description = "Pre-existing patterns: dev keys, Cognito OIDC configs, test fixtures"
 paths = [
-  # Dev API key — not a production secret, used only in local docker-compose
-  ".env.docker-compose.fastapi",
-  ".env.docker-compose.permit",
-  "docker-compose.yml",
+    # Dev API key — not a production secret, used only in local docker-compose
+    ".env.docker-compose.fastapi",
+    ".env.docker-compose.permit",
+    "docker-compose.yml",
+    "docker-compose.zap.yml",
   # Cognito User Pool + Client IDs are inherently public (required by OIDC PKCE flow)
   "frontend/src/config/env.ts",
   # Terraform state — managed by remote backend

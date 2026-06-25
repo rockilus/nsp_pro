@@ -39,6 +39,28 @@ security-zap:
     @docker-compose -f ../docker-compose.zap.yml down -v
     @echo "=== Report: security-reports/zap-api-report.html ==="
 
+# Scan full commit history for exposed secrets using the repo's .gitleaks.toml rules.
+security-gitleaks:
+    @echo "=== Gitleaks: Scanning Git History for Exposed Secrets ==="
+    @mkdir -p ../security-reports
+    @docker run --rm \
+        -v "{{root_dir}}:/path" \
+        zricethezav/gitleaks:latest detect \
+        --source=/path \
+        --verbose \
+        --report-path /path/security-reports/gitleaks-report.json || true
+    @echo "=== Report: security-reports/gitleaks-report.json ==="
+
+# Scan staged changes only (fast pre-commit check).
+security-gitleaks-staged:
+    @echo "=== Gitleaks: Scanning Staged Changes ==="
+    @docker run --rm \
+        -v "{{root_dir}}:/path" \
+        zricethezav/gitleaks:latest protect \
+        --source=/path \
+        --staged \
+        --verbose || true
+
 # Run all Trivy scans (config + fs + image).
 security-trivy: security-trivy-config security-trivy-fs security-trivy-image
     @echo "=== All Trivy scans complete ==="
