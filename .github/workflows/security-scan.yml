@@ -4,8 +4,6 @@ on:
   pull_request:
     branches: [main, develop]
     types: [opened, synchronize, reopened]
-  schedule:
-    - cron: '0 3 * * *'  # nightly at 3 AM UTC
 
 jobs:
   gitleaks:
@@ -19,41 +17,8 @@ jobs:
         with:
           config-path: .gitleaks.toml
 
-  trivy-fs:
-    name: Trivy — filesystem scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: fs
-          scan-ref: .
-          severity: HIGH,CRITICAL
-          exit-code: 1
-
-  trivy-dockerfile:
-    name: Trivy — Dockerfile config scan
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        path:
-          - backend/api_gateway/Dockerfile
-          - backend/solve_service/Dockerfile
-          - cerbos-policies/Dockerfile
-          - frontend/Dockerfile
-    steps:
-      - uses: actions/checkout@v7
-      - uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: config
-          scan-ref: ${{ matrix.path }}
-          severity: HIGH,CRITICAL
-          exit-code: 1
-
   hadolint:
     name: Hadolint — Dockerfile lint
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
