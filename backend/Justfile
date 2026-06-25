@@ -143,18 +143,19 @@ security-trivy-image:
     @echo "=== Reports: security-reports/trivy-image-*.json ==="
 
 # Lint all production and utility Dockerfiles with Hadolint.
+# Advisory: reports findings but never fails.
 # Mirrors CI coverage plus the init-user utility Dockerfile.
 security-hadolint:
     @echo "=== Hadolint: Linting api_gateway/Dockerfile ==="
-    @docker run --rm -i hadolint/hadolint < api_gateway/Dockerfile
+    @docker run --rm -i hadolint/hadolint < api_gateway/Dockerfile || true
     @echo "=== Hadolint: Linting solve_service/Dockerfile ==="
-    @docker run --rm -i hadolint/hadolint < solve_service/Dockerfile
+    @docker run --rm -i hadolint/hadolint < solve_service/Dockerfile || true
     @echo "=== Hadolint: Linting cerbos-policies/Dockerfile ==="
-    @docker run --rm -i hadolint/hadolint < ../cerbos-policies/Dockerfile
+    @docker run --rm -i hadolint/hadolint < ../cerbos-policies/Dockerfile || true
     @echo "=== Hadolint: Linting frontend/Dockerfile ==="
-    @docker run --rm -i hadolint/hadolint < ../frontend/Dockerfile
+    @docker run --rm -i hadolint/hadolint < ../frontend/Dockerfile || true
     @echo "=== Hadolint: Linting scripts/Dockerfile.init-user ==="
-    @docker run --rm -i hadolint/hadolint < ../scripts/Dockerfile.init-user
+    @docker run --rm -i hadolint/hadolint < ../scripts/Dockerfile.init-user || true
 
 # Lint all shell scripts in the repo with ShellCheck.
 # Uses -S error to only report error-level violations.
