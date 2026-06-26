@@ -108,7 +108,6 @@ async def start_impersonation(
     return response  # type: ignore[return-value]
 
 
-#
 @router.delete("/admin/users/impersonate")
 async def stop_impersonation(
     user_context: UserContext = Depends(get_user_context),
