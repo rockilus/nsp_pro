@@ -17,7 +17,9 @@ jobs:
       - name: Gitleaks — secret detection
         uses: gitleaks/gitleaks-action@v3
         with:
-          config-path: .gitleaks.toml
+          config: .gitleaks.toml
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
       - name: Hadolint — Dockerfile lint
         uses: hadolint/hadolint-action@v3.1.0
