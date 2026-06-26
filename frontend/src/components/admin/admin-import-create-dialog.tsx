@@ -170,8 +170,6 @@ export default function AdminImportCreateDialog({ lng, open, onClose, onCreated 
         const err = await resp.json().catch(() => ({}));
         throw new Error(err.detail || `Server error: ${resp.status}`);
       }
-      // temp comment
-      console.log('test');
 
       const created = await resp.json();
       onCreated();

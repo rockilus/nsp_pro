@@ -40,6 +40,9 @@ import { SpecialtyT } from '@/types/specialty';
 
 dayjs.extend(utc);
 
+// temp comment
+console.log('test');
+
 // Hook for dynamic height calculation
 const useTableHeight = (isFilterToolbarActive: boolean) => {
   const [tableHeight, setTableHeight] = React.useState('70vh');
