@@ -1,4 +1,4 @@
-FROM ghcr.io/cerbos/cerbos:latest
+FROM ghcr.io/cerbos/cerbos:0.53.0
 
 COPY --chown=cerbos:cerbos . /policies
 

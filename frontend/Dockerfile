@@ -29,8 +29,7 @@ ENV NEXT_PUBLIC_COGNITO_CLIENT_ID=${NEXT_PUBLIC_COGNITO_CLIENT_ID}
 ENV NEXT_PUBLIC_REDIRECT_URI=${NEXT_PUBLIC_REDIRECT_URI}
 ENV NEXT_PUBLIC_LOGOUT_REDIRECT_URI=${NEXT_PUBLIC_LOGOUT_REDIRECT_URI}
 
-RUN npm install
-RUN npm run build
+RUN npm install && npm run build
 
 FROM nginx:alpine
 COPY --from=builder /app/out /usr/share/nginx/html
