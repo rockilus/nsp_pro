@@ -109,7 +109,9 @@ class AuthService:
         response bodies — never for authorization decisions.
         """
         try:
-            payload = jwt.decode(token, options={"verify_signature": False})  # nosemgrep
+            payload = jwt.decode(
+                token, options={"verify_signature": False}
+            )  # nosemgrep
             return payload.get("sub", token[:32])
         except Exception:
             return token[:32]

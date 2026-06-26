@@ -107,6 +107,7 @@ async def start_impersonation(
         handle_routes_errors(e)
     return response  # type: ignore[return-value]
 
+
 #
 @router.delete("/admin/users/impersonate")
 async def stop_impersonation(

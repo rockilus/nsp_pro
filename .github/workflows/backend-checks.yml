@@ -48,22 +48,58 @@ jobs:
       - name: Install just
         run: sudo apt-get update && sudo apt-get install -y just
 
-      - name: Install dependencies for shared
+      # ── Shared (dep of api_gateway and solve_service) ──────
+      - name: Install dependencies (shared)
         run: uv sync --locked --all-extras --dev
         working-directory: backend/shared
 
-      - name: Run checks shared
+      - name: "Security: pip-audit (shared)"
+        run: uv run pip-audit
+        working-directory: backend/shared
+
+      - name: "Security: bandit (shared)"
+        run: uv run bandit -r src/ -ll
+        working-directory: backend/shared
+
+      - name: "Security: semgrep (shared)"
+        run: uv run semgrep --config=auto --error --quiet src/
+        working-directory: backend/shared
+
+      - name: Static checks (shared)
         run: |
           just typecheck && \
           just lint && \
-          uv run ruff format --check . && \
-          just test
+          uv run ruff format --check .
+        working-directory: backend/shared
+
+      - name: Tests (shared)
+        run: just test
         working-directory: backend/shared
         env:
           MONGO_URI: mongodb://testuser:testpass@localhost:27017/
 
-      - name: Install dependencies for api_gateway
+      # ── API Gateway ─────────────────────────────────────────
+      - name: Install dependencies (api_gateway)
         run: uv sync --locked --all-extras --dev
+        working-directory: backend/api_gateway
+
+      - name: "Security: pip-audit (api_gateway)"
+        run: uv run pip-audit
+        working-directory: backend/api_gateway
+
+      - name: "Security: bandit (api_gateway)"
+        run: uv run bandit -r src/ -ll
+        working-directory: backend/api_gateway
+
+      - name: "Security: semgrep (api_gateway)"
+        run: uv run semgrep --config=auto --error --quiet src/
+        working-directory: backend/api_gateway
+
+      - name: Static checks (api_gateway)
+        run: |
+          just typecheck && \
+          just lint && \
+          uv run ruff format --check .
         working-directory: backend/api_gateway
 
       - name: Build and start Cerbos PDP for api_gateway tests
@@ -84,52 +120,36 @@ jobs:
           done
           echo "Cerbos PDP did not become healthy in time" && exit 1
 
-      - name: Run checks api_gateway
-        run: |
-          just typecheck && \
-          just lint && \
-          uv run ruff format --check . && \
-          just test
+      - name: Tests (api_gateway)
+        run: just test
         working-directory: backend/api_gateway
         env:
           MONGO_URI: mongodb://testuser:testpass@localhost:27017/
 
-      - name: Install dependencies for solve_service
+      # ── Solve Service (slowest — runs last) ────────────────
+      - name: Install dependencies (solve_service)
         run: uv sync --locked --all-extras --dev
         working-directory: backend/solve_service
-
-      - name: "Security: pip-audit (shared)"
-        run: uv run pip-audit
-        working-directory: backend/shared
-
-      - name: "Security: pip-audit (api_gateway)"
-        run: uv run pip-audit
-        working-directory: backend/api_gateway
 
       - name: "Security: pip-audit (solve_service)"
         run: uv run pip-audit
         working-directory: backend/solve_service
 
-      - name: "Security: bandit (shared)"
-        run: uv run bandit -r src/ -ll
-        working-directory: backend/shared
-
-      - name: "Security: bandit (api_gateway)"
-        run: uv run bandit -r src/ -ll
-        working-directory: backend/api_gateway
-
       - name: "Security: bandit (solve_service)"
         run: uv run bandit -r src/ -ll
         working-directory: backend/solve_service
 
-      - name: "Security: semgrep"
-        run: uv run semgrep --config=auto --error src/
-        working-directory: backend
+      - name: "Security: semgrep (solve_service)"
+        run: uv run semgrep --config=auto --error --quiet src/
+        working-directory: backend/solve_service
 
-      - name: Run checks solve_service
+      - name: Static checks (solve_service)
         run: |
           just typecheck && \
           just lint && \
-          uv run ruff format --check . && \
-          just test
+          uv run ruff format --check .
+        working-directory: backend/solve_service
+
+      - name: Tests (solve_service)
+        run: just test
         working-directory: backend/solve_service
