@@ -15,6 +15,9 @@ WORKDIR /app
 COPY solve_service .
 COPY shared /shared
 
+# Disable development dependencies
+ENV UV_NO_DEV=1
+
 WORKDIR /shared
 # Install shared dependencies using `uv` (reads backend/shared/uv.lock)
 RUN uv sync --locked
