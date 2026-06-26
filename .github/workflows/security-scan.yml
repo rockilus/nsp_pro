@@ -6,23 +6,21 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  gitleaks:
-    name: Gitleaks — secret detection
+  security:
+    name: Security scans
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v3
+
+      - name: Gitleaks — secret detection
+        uses: gitleaks/gitleaks-action@v3
         with:
           config-path: .gitleaks.toml
 
-  hadolint:
-    name: Hadolint — Dockerfile lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: hadolint/hadolint-action@v3.1.0
+      - name: Hadolint — Dockerfile lint
+        uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: |
             backend/api_gateway/Dockerfile
@@ -30,10 +28,6 @@ jobs:
             cerbos-policies/Dockerfile
             frontend/Dockerfile
 
-  shellcheck:
-    name: ShellCheck — shell script lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - run: |
+      - name: ShellCheck — shell script lint
+        run: |
           find . -name '*.sh' -print0 | xargs -0 shellcheck -S error
