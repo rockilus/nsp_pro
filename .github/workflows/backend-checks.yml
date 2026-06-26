@@ -98,6 +98,34 @@ jobs:
         run: uv sync --locked --all-extras --dev
         working-directory: backend/solve_service
 
+      - name: "Security: pip-audit (shared)"
+        run: uv run pip-audit
+        working-directory: backend/shared
+
+      - name: "Security: pip-audit (api_gateway)"
+        run: uv run pip-audit
+        working-directory: backend/api_gateway
+
+      - name: "Security: pip-audit (solve_service)"
+        run: uv run pip-audit
+        working-directory: backend/solve_service
+
+      - name: "Security: bandit (shared)"
+        run: uv run bandit -r src/ -ll
+        working-directory: backend/shared
+
+      - name: "Security: bandit (api_gateway)"
+        run: uv run bandit -r src/ -ll
+        working-directory: backend/api_gateway
+
+      - name: "Security: bandit (solve_service)"
+        run: uv run bandit -r src/ -ll
+        working-directory: backend/solve_service
+
+      - name: "Security: semgrep"
+        run: uv run semgrep --config=auto --error src/
+        working-directory: backend
+
       - name: Run checks solve_service
         run: |
           just typecheck && \
@@ -105,31 +133,3 @@ jobs:
           uv run ruff format --check . && \
           just test
         working-directory: backend/solve_service
-
-      - name: Security: pip-audit (shared)
-        run: uv run pip-audit
-        working-directory: backend/shared
-
-      - name: Security: pip-audit (api_gateway)
-        run: uv run pip-audit
-        working-directory: backend/api_gateway
-
-      - name: Security: pip-audit (solve_service)
-        run: uv run pip-audit
-        working-directory: backend/solve_service
-
-      - name: Security: bandit (shared)
-        run: uv run bandit -r src/ -ll
-        working-directory: backend/shared
-
-      - name: Security: bandit (api_gateway)
-        run: uv run bandit -r src/ -ll
-        working-directory: backend/api_gateway
-
-      - name: Security: bandit (solve_service)
-        run: uv run bandit -r src/ -ll
-        working-directory: backend/solve_service
-
-      - name: Security: semgrep
-        run: uv run semgrep --config=auto --error src/
-        working-directory: backend
