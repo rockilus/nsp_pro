@@ -28,11 +28,8 @@ jobs:
       - name: Hadolint — Dockerfile lint
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: |
-            backend/api_gateway/Dockerfile
-            backend/solve_service/Dockerfile
-            cerbos-policies/Dockerfile
-            frontend/Dockerfile
+          dockerfile: Dockerfile
+          recursive: true
 
       - name: ShellCheck — shell script lint
         run: |
