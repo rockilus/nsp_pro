@@ -35,11 +35,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: just lint
+      - name: "Security: npm audit"
+        run: npm audit --audit-level=high
 
       - name: Format check
         run: npx prettier --check .
+
+      - name: Lint
+        run: just lint
 
       - name: TypeScript check
         run: just typecheck

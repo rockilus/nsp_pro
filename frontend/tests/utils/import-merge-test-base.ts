@@ -204,7 +204,7 @@ export class ImportMergeTestBase {
   async createImportViaUpload(page: Page): Promise<string> {
     if (!this.testTeam) throw new Error('Call setup() first');
 
-    const buf = buildImportExcel(10);
+    const buf = await buildImportExcel(10);
     const filePath = writeExcelToTempFile(buf);
 
     await page.goto(`${testConfig.frontendUrl}/en/admin/import`);

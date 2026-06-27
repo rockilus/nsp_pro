@@ -27,12 +27,30 @@ all:
     just lint
     just typecheck
     just test
+    just security
 
 all-no-test:
     just update-shared
     just format
     just lint
     just typecheck
+
+security:
+    @just audit-deps
+    @just bandit
+    @just semgrep
+
+audit-deps:
+    @echo "  pip-audit:"
+    @uv run pip-audit > /tmp/pa.log 2>&1; RC=${?}; sed '/^Name.*Skip/,$d' /tmp/pa.log; rm -f /tmp/pa.log; exit ${RC}
+
+bandit:
+    @echo "  bandit:"
+    @uv run bandit -r src/ -ll
+
+semgrep:
+    @echo "  semgrep:"
+    @uv run semgrep --config=auto --error --quiet src/
 
 dev:
     echo "Starting development server for api_gateway on port 4000..."

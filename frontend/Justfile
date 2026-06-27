@@ -25,8 +25,15 @@ playwright-ui:
     echo "Running Playwright UI..."
     npx playwright test --ui
 
-all: format lint typecheck test
+all: format lint typecheck test security
 all-no-test: format lint typecheck
+
+security:
+    @just audit-deps
+
+audit-deps:
+    @echo "  npm audit:"
+    @npm audit --audit-level=high
 
 dev:
 	echo "Starting Next.js dev server on port 3000..."

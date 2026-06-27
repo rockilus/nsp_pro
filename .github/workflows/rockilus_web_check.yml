@@ -6,7 +6,7 @@ on:
     paths:
       - 'rockilus-web/**'
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
       - 'rockilus-web/**'
 
@@ -19,24 +19,35 @@ jobs:
         working-directory: ./rockilus-web
     steps:
       - name: Checkout files
-        uses: actions/checkout@v3
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v3
+        uses: actions/checkout@v7
+
+      - name: Use Node.js 23.x
+        uses: actions/setup-node@v6
+        with:
+          node-version: 23
+
       - name: Get npm cache directory
         id: npm-cache-dir
         shell: bash
         run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+
       - name: Cache node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: npm-cache
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: npm ci
-      - name: Run typescript
-        run: npx tsc
+
+      - name: Run TypeScript check
+        run: npx tsc --noEmit
+
       - name: Lint
         run: npm run lint
+
+      - name: Security: npm audit
+        run: npm audit --audit-level=high

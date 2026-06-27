@@ -1,0 +1,5 @@
+# Trivy ignore file — shared by local scans and CI (aquasecurity/trivy-action).
+# Add CVE IDs or paths to suppress false positives.
+#
+# Example: CVE-2024-XXXX
+# Example: **/test/**

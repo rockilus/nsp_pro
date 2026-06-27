@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SwapBidDTO(BaseModel):
@@ -15,8 +15,20 @@ class SwapBidDTO(BaseModel):
 class CreateSwapRequestDTO(BaseModel):
     """Input DTO for creating a new swap request (client-provided fields only)."""
 
-    swapType: str
-    offeredAssignmentIds: List[str] = Field(min_length=1)
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "swapType": "shift_swap",
+                "offeredAssignmentIds": ["assignment-1"],
+                "requestedAssignmentIds": None,
+                "targetWorkerId": None,
+                "comment": "Need to swap this shift",
+            }
+        }
+    )
+
+    swapType: str = Field(examples=["shift_swap"])
+    offeredAssignmentIds: List[str] = Field(min_length=1, examples=[["assignment-1"]])
     requestedAssignmentIds: List[str] | None = None
     targetWorkerId: str | None = None
     comment: str = ""

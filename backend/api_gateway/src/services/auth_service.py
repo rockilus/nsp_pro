@@ -109,7 +109,11 @@ class AuthService:
         response bodies — never for authorization decisions.
         """
         try:
-            payload = jwt.decode(token, options={"verify_signature": False})
+            # intentional: sub extraction for id only, never used for authz
+            payload = jwt.decode(
+                token,
+                options={"verify_signature": False},  # nosemgrep
+            )
             return payload.get("sub", token[:32])
         except Exception:
             return token[:32]

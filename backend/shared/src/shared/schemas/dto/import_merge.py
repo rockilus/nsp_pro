@@ -7,7 +7,7 @@ maps to the target team) and the result of executing the merge.
 from enum import StrEnum
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 # ── Actions ──────────────────────────────────────────────────────────────────
 
@@ -66,7 +66,42 @@ class AssignmentMergeConfig(BaseModel):
 class MergeRequest(BaseModel):
     """Payload for POST /admin/imports/{import_id}/merge"""
 
-    teamId: str
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "teamId": "64e9b7f1e13e4a1a9c8b4567",
+                "workerMappings": [
+                    {
+                        "generatedId": "gen-worker-1",
+                        "action": "add_new",
+                        "targetWorkerId": None,
+                    }
+                ],
+                "shiftMappings": [
+                    {
+                        "generatedId": "gen-shift-1",
+                        "action": "merge_into",
+                        "targetShiftId": "shift-1",
+                    }
+                ],
+                "requestMappings": [
+                    {
+                        "generatedId": "gen-req-1",
+                        "action": "skip",
+                        "targetRequestId": None,
+                        "skipReason": "cascade_worker",
+                    }
+                ],
+                "assignmentConfig": {
+                    "includeAll": True,
+                    "startDate": 1700000000.0,
+                    "endDate": None,
+                },
+            }
+        }
+    )
+
+    teamId: str = Field(examples=["64e9b7f1e13e4a1a9c8b4567"])
     workerMappings: List[WorkerMergeMapping]
     shiftMappings: List[ShiftMergeMapping]
     requestMappings: List[RequestMergeMapping]

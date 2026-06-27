@@ -92,3 +92,6 @@ rockilus-web/yarn-error.log*
 rockilus-web/.pnpm-debug.log*
 rockilus-web/.vercel
 rockilus-web/*.tsbuildinfo
+
+# Security scanning artifacts
+security-reports/

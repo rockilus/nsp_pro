@@ -1,0 +1,125 @@
+networks:
+  zap-network:
+    name: zap-network
+
+services:
+  mongodb:
+    image: mongo:5.0
+    container_name: zap-mongodb
+    ports:
+      - "27017:27017"
+    networks: [zap-network]
+    healthcheck:
+      test: mongo --eval "db.adminCommand('ping')"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  localstack:
+    image: localstack/localstack:3.4
+    container_name: zap-localstack
+    ports:
+      - "4566:4566"
+    networks: [zap-network]
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  localstack-init:
+    image: amazon/aws-cli:latest
+    container_name: zap-localstack-init
+    networks: [zap-network]
+    depends_on:
+      localstack:
+        condition: service_healthy
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=eu-west-3
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Creating SQS queues for ZAP scan..."
+
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-solve-dlq \
+          --attributes MessageRetentionPeriod=1209600 || true
+
+        SOLVE_DLQ_ARN=$$(aws --endpoint-url=http://localstack:4566 sqs get-queue-attributes \
+          --queue-url http://localstack:4566/000000000000/nsp-pro-dev-solve-dlq \
+          --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
+
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-solve-queue \
+          --attributes "VisibilityTimeout=900,MessageRetentionPeriod=1209600,ReceiveMessageWaitTimeSeconds=20,RedrivePolicy={\\\"deadLetterTargetArn\\\":\\\"$$SOLVE_DLQ_ARN\\\",\\\"maxReceiveCount\\\":3}" || true
+
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-email-dlq \
+          --attributes MessageRetentionPeriod=1209600 || true
+
+        EMAIL_DLQ_ARN=$$(aws --endpoint-url=http://localstack:4566 sqs get-queue-attributes \
+          --queue-url http://localstack:4566/000000000000/nsp-pro-dev-email-dlq \
+          --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
+
+        aws --endpoint-url=http://localstack:4566 sqs create-queue \
+          --queue-name nsp-pro-dev-email-queue \
+          --attributes "VisibilityTimeout=300,MessageRetentionPeriod=1209600,ReceiveMessageWaitTimeSeconds=20,RedrivePolicy={\\\"deadLetterTargetArn\\\":\\\"$$EMAIL_DLQ_ARN\\\",\\\"maxReceiveCount\\\":3}" || true
+
+        echo "SQS queues ready"
+        aws --endpoint-url=http://localstack:4566 sqs list-queues
+
+  cerbos:
+    image: ghcr.io/cerbos/cerbos:latest
+    container_name: zap-cerbos
+    ports:
+      - "3592:3592"
+      - "3593:3593"
+    networks: [zap-network]
+    volumes:
+      - ./cerbos-policies:/policies:ro
+    command: server --config=/policies/.cerbos.yaml
+
+  fastapi:
+    build:
+      context: ./backend
+      dockerfile: api_gateway/Dockerfile
+    container_name: zap-fastapi
+    ports:
+      - "4000:4000"
+    networks: [zap-network]
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      localstack-init:
+        condition: service_completed_successfully
+      cerbos:
+        condition: service_started
+    environment:
+      ENVIRONMENT: development
+      API_DOMAIN: "0.0.0.0"
+      API_URL: "http://fastapi:4000"
+      API_PORT: "4000"
+      ORIGINS: '["http://localhost:3000"]'
+      CLIENT_URL: "http://localhost:3000"
+      MONGODB_URI: "mongodb://mongodb:27017"
+      MONGODB_DATABASE_NAME: "rockilus_zap_test"
+      AWS_REGION: "eu-west-3"
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
+      ENDPOINT_URL: "http://localstack:4566"
+      SQS_SOLVE_QUEUE_URL: "http://localstack:4566/000000000000/nsp-pro-dev-solve-queue"
+      BACKEND_API_KEY_SSM_PARAMETER_NAME: "no_name"
+      DEV_USER_ID: "64e9b7f1e13e4a1a9c8b4567"
+      DEV_USER_EMAIL: "testuser@example.com"
+      DEV_API_KEY: "ffb1f25b3585109374ac5fefa1728247ce600a27569c8344d779a57e0186cc93"
+    healthcheck:
+      test: ["CMD", "curl", "http://fastapi:4000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s

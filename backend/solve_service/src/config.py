@@ -178,7 +178,7 @@ def download_documentdb_ca_bundle(
         ssl_context.check_hostname = True
         ssl_context.verify_mode = ssl.CERT_REQUIRED
 
-        with urllib.request.urlopen(ca_bundle_url, context=ssl_context) as response:
+        with urllib.request.urlopen(ca_bundle_url, context=ssl_context) as response:  # nosec B310  # nosemgrep
             ca_content = response.read()
 
         # Validate certificate content before writing

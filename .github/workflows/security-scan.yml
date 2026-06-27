@@ -1,0 +1,75 @@
+name: Security Scans
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  security:
+    name: Security scans
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks — secret detection
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+      - name: Hadolint — Dockerfile lint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          recursive: true
+
+      - name: ShellCheck — shell script lint
+        run: |
+          find . -name '*.sh' -print0 | xargs -0 shellcheck -S error
+
+      - name: Build api_gateway image
+        run: docker build -t rockilus-api-gateway:scan -f api_gateway/Dockerfile .
+        working-directory: backend
+
+      - name: Build solve_service image
+        run: docker build -t rockilus-solve-service:scan -f solve_service/Dockerfile .
+        working-directory: backend
+
+      - name: Build cerbos image
+        run: docker build -t rockilus-cerbos:scan .
+        working-directory: cerbos-policies
+
+      - name: Trivy — api_gateway
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: rockilus-api-gateway:scan
+          severity: CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+
+      - name: Trivy — solve_service
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: rockilus-solve-service:scan
+          severity: CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
+          trivyignores: .trivyignore
+
+      - name: Trivy — cerbos
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: rockilus-cerbos:scan
+          severity: CRITICAL
+          exit-code: 1
+          ignore-unfixed: true
+          trivyignores: .trivyignore
