@@ -23,6 +23,9 @@ security:
     @echo "--- solve_service ---"
     @cd solve_service && just security
 
+# Run all cross-cutting security scans (ZAP, Trivy, Gitleaks, Hadolint, ShellCheck).
+security-all: security-trivy security-gitleaks security-hadolint security-shellcheck security-zap
+
 # Run OWASP ZAP DAST against the API Gateway.
 # Requires Docker. Spins up an ephemeral stack, seeds a test user,
 # runs an active API scan, and tears down. Results in ../security-reports/
