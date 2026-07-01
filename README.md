@@ -19,7 +19,7 @@ Rockilus is a multi-tenant SaaS that lets healthcare managers define team member
 
 ## ⚡️ Highlights
 * **Algorithmic Shift Optimization:** Solves multi-variable healthcare scheduling matrices using a Google OR-Tools CP-SAT constraint programming model.
-* **Asynchronous Compute Offloading:** Isolates heavy processing from user APIs via AWS SQS to guarantee <50ms gateway ingestion speeds.
+* **Asynchronous Compute Offloading:** Isolates heavy processing from user APIs via AWS SQS to guarantee gateway ingestion speeds.
 * **Serverless Frontend Scale:** Deploys a Next.js static export (output: 'export') on AWS S3/CloudFront for infinite scale and zero server overhead.
 * **Decoupled Security Topology:** Segregates identity verification (AWS Cognito) from access control via an isolated Cerbos PDP gRPC sidecar container.
 * **Immutable Infrastructure-as-Code:** Infrastructure provisioned declaratively via Terraform.
