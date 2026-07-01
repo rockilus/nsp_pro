@@ -5,7 +5,7 @@
 <br>
 
 <p align="center">
-  <a href="https://rockilus.com">
+  <a href="https://rockilus.com" target="_blank" rel="noopener noreferrer">
     <img src="https://img.shields.io/badge/Website-rockilus.com-blue?style=flat-square" alt="Website">
   </a>
 </p>
