@@ -9,6 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.config import config
+from src.mcp.server import mcp as mcp_server
 from src.rate_limiter import limiter
 from src.routes import (
     router_admin,
@@ -57,7 +58,7 @@ def create_app(
         app = FastAPI()
 
     # Configure CORS
-    allowed_headers = ["Content-Type"]
+    allowed_headers = ["Content-Type", "Authorization"]
     if config.environment == "development":
         allowed_headers.extend(["x-dev-user-id", "x-api-key", "x-impersonation-token"])
 
@@ -113,6 +114,9 @@ def create_app(
 
     for router in routers:
         app.include_router(router)
+
+    mcp_app = mcp_server.http_app()
+    app.mount("/api/v1/mcp", mcp_app)
 
     # Set database collections if provided
     if db_collections:

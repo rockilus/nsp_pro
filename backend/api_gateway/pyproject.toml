@@ -21,6 +21,7 @@ dependencies = [
 	"pydantic>=2.12.5",
 	"email-validator>=2.3.0",
 	"cryptography>=48.0.1",
+	"fastmcp>=2.0.0",
 ]
 
 [dependency-groups]
