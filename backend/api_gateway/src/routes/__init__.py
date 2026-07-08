@@ -8,6 +8,7 @@ from src.routes.constraint_routes import router as router_constraint
 from src.routes.constraint_template_routes import (
     router as router_constraint_template,
 )
+from src.routes.copilot_routes import router as router_copilot
 from src.routes.dim_entry_routes import router as router_dim_entry
 from src.routes.dimension_routes import router as router_dimension
 from src.routes.export_routes import router as router_export
@@ -46,6 +47,7 @@ __all__ = [
     "router_breach",
     "router_constraint",
     "router_constraint_template",
+    "router_copilot",
     "router_dim_entry",
     "router_dimension",
     "router_export",

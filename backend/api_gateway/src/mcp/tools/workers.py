@@ -4,7 +4,6 @@ from fastmcp import Context
 from mcp.types import ToolAnnotations
 from shared.database.database_collections import DatabaseCollections
 
-from src.mcp.context import build_mcp_context
 from src.mcp.models import DimensionValue, WeeklySlotPreference, WorkerRosterItem
 from src.mcp.server import mcp
 
@@ -156,10 +155,13 @@ async def get_team_members(team_id: str, ctx: Context) -> list[WorkerRosterItem]
     """
     logger.info("MCP tool: get_team_members team=%s", team_id)
 
-    mcp_ctx = await build_mcp_context(ctx)
-    if not await mcp_ctx.cerbos.check(
-        mcp_ctx.user_context.user_id, "read-workers", "team", team_id
-    ):
-        return []
+    from src.mcp.context import build_mcp_context
+    from src.mcp.tools.registry import GET_TEAM_MEMBERS
 
-    return _build_team_members(mcp_ctx.db, team_id)
+    mcp_ctx = await build_mcp_context(ctx)
+    return await GET_TEAM_MEMBERS.executor(
+        db=mcp_ctx.db,
+        user_context=mcp_ctx.user_context,
+        cerbos=mcp_ctx.cerbos,
+        team_id=team_id,
+    )

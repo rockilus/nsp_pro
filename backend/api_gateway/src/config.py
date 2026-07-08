@@ -173,6 +173,26 @@ class AppConfig(BaseSettings):
         "20/minute", description="Rate limit for POST /auth/signout"
     )
 
+    # AI Copilot configuration
+    ai_enabled: bool = Field(
+        False,
+        description="Global kill-switch for the AI copilot feature",
+    )
+    ai_model: str = Field(
+        "gemini/gemini-2.5-flash",
+        description="LiteLLM model string; the provider is encoded in the prefix "
+        "(e.g. 'gemini/...', 'openrouter/...')",
+    )
+    gemini_api_key: str | None = Field(
+        None, description="API key for Gemini models (gemini/* model strings)"
+    )
+    openrouter_api_key: str | None = Field(
+        None, description="API key for OpenRouter models (openrouter/* model strings)"
+    )
+    ai_chat_rate_limit: str = Field(
+        "20/minute", description="Rate limit for POST /copilot/chat"
+    )
+
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed
         env_file=os.path.join(os.path.dirname(__file__), "..", ".env.development"),
@@ -323,7 +343,7 @@ def _validate_ca_bundle(ca_bundle_path: str) -> bool:
         with open(ca_bundle_path, "rb") as f:
             content = f.read()
         return _validate_ca_content(content)
-    except OSError, IOError:
+    except OSError:
         return False
 
 
@@ -356,7 +376,7 @@ def download_documentdb_ca_bundle(
         if not os.path.exists(dir_path):
             try:
                 os.makedirs(dir_path, exist_ok=True)
-            except OSError, PermissionError:
+            except OSError:
                 print(f"Cannot create directory {dir_path}, using temp")
                 ca_bundle_path = os.path.join(
                     tempfile.gettempdir(), "global-bundle.pem"
