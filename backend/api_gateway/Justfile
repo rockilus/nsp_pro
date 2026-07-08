@@ -50,7 +50,8 @@ bandit:
 
 semgrep:
     @echo "  semgrep:"
-    @uv run semgrep --config=auto --error --quiet src/
+    # @uv run semgrep --config=auto --error --quiet src/
+    @uvx semgrep scan --config=auto --error --quiet src/
 
 dev:
     echo "Starting development server for api_gateway on port 4000..."
