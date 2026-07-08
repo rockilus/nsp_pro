@@ -50,6 +50,8 @@ def _resolve_api_key(model: str) -> str | None:
         return config.gemini_api_key
     if model.startswith("openrouter/"):
         return config.openrouter_api_key
+    if model.startswith("mistral/"):
+        return config.mistral_api_key
     return None
 
 

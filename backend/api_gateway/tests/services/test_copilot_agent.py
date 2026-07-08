@@ -75,6 +75,11 @@ class TestResolveApiKey:
             cfg.openrouter_api_key = "or-key"
             assert _resolve_api_key("openrouter/anthropic/claude") == "or-key"
 
+    def test_mistral_prefix(self):
+        with patch(f"{MODULE}.config") as cfg:
+            cfg.mistral_api_key = "m-key"
+            assert _resolve_api_key("mistral/mistral-small-latest") == "m-key"
+
     def test_unknown_prefix_returns_none(self):
         assert _resolve_api_key("ollama/llama3") is None
 

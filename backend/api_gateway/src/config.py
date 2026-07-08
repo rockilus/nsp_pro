@@ -189,6 +189,9 @@ class AppConfig(BaseSettings):
     openrouter_api_key: str | None = Field(
         None, description="API key for OpenRouter models (openrouter/* model strings)"
     )
+    mistral_api_key: str | None = Field(
+        None, description="API key for Mistral models (mistral/* model strings)"
+    )
     ai_chat_rate_limit: str = Field(
         "20/minute", description="Rate limit for POST /copilot/chat"
     )
