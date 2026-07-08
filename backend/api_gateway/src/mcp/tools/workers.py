@@ -1,6 +1,7 @@
 import logging
 
 from fastmcp import Context
+from shared.database.database_collections import DatabaseCollections
 
 from src.mcp.context import build_mcp_context
 from src.mcp.models import DimensionValue, WeeklySlotPreference, WorkerRosterItem
@@ -9,58 +10,9 @@ from src.mcp.server import mcp
 logger = logging.getLogger(__name__)
 
 
-@mcp.tool()
-async def get_team_members(team_id: str, ctx: Context) -> list[WorkerRosterItem]:
-    """Return every active team member with their full scheduling profile,
-    specialties, and custom dimensions. This is the primary lookup for any
-    question about workers — who they are, what they do, when they joined,
-    what specialties they hold, and what custom attributes (dimensions)
-    they have.
-
-    Use this tool when the prompt asks about:
-    - Worker identity: names, acronyms, whether they have a user account
-    - Specialties: "who has the Pediatry specialty?", "list cardiologists"
-    - Employment dates: "who joined last month?", "who is leaving soon?"
-    - Contract details: contract hours, desired hours, duties per month,
-      annual leave allowance
-    - Custom dimensions: "who works in Paris?" (Location dimension),
-      "who is a Senior?" (Seniority dimension), any dimension defined
-      by the team
-    - Weekly availability: "who is available Monday mornings?",
-      "who has no restrictions on Tuesday night?"
-
-    The response includes every field needed to answer these questions.
-    Filtering by name, date range, specialty, or dimension value is done
-    by reading the response — no additional tool calls are needed.
-
-    Response fields per member:
-    - id, name, acronym: identity fields
-    - employment_start_date, employment_end_date: ISO date strings
-      (YYYY-MM-DD format), null end_date means currently active
-    - weekly_hours, weekly_hours_desired, duties_per_month, annual_leave:
-      contract and workload targets (all integers)
-    - has_user_account: boolean whether linked to a Rockilus login
-    - specialties: list of human-readable specialty names (strings)
-    - dimensions: list of DimensionValue objects, each containing:
-        dimension_id, dimension_name (e.g. "Location"),
-        entry_ids (raw IDs), entry_names (e.g. ["Paris"]),
-        raw_value (for free-text/boolean/numeric dimensions, null for
-        dropdown dimensions)
-    - weekly_preferences: list of availability restrictions, or null if
-      none are configured. Each slot has day_of_week (0=Monday…6=Sunday),
-      slot (morning/afternoon/night), and restriction (no_work/no_normal/
-      no_duty/no_specific)
-    """
-    logger.info("MCP tool: get_team_members team=%s", team_id)
-
-    mcp_ctx = await build_mcp_context(ctx)
-    if not await mcp_ctx.cerbos.check(
-        mcp_ctx.user_context.user_id, "read-workers", "team", team_id
-    ):
-        return []
-
-    db = mcp_ctx.db
-
+def _build_team_members(
+    db: DatabaseCollections, team_id: str
+) -> list[WorkerRosterItem]:
     workers = db.worker_db.get_workers_not_deleted(team_id)
     if not workers:
         return []
@@ -149,5 +101,57 @@ async def get_team_members(team_id: str, ctx: Context) -> list[WorkerRosterItem]
             )
         )
 
-    logger.info("MCP tool: get_team_members returned %d members", len(result))
     return result
+
+
+@mcp.tool()
+async def get_team_members(team_id: str, ctx: Context) -> list[WorkerRosterItem]:
+    """Return every active team member with their full scheduling profile,
+    specialties, and custom dimensions. This is the primary lookup for any
+    question about workers — who they are, what they do, when they joined,
+    what specialties they hold, and what custom attributes (dimensions)
+    they have.
+
+    Use this tool when the prompt asks about:
+    - Worker identity: names, acronyms, whether they have a user account
+    - Specialties: "who has the Pediatry specialty?", "list cardiologists"
+    - Employment dates: "who joined last month?", "who is leaving soon?"
+    - Contract details: contract hours, desired hours, duties per month,
+      annual leave allowance
+    - Custom dimensions: "who works in Paris?" (Location dimension),
+      "who is a Senior?" (Seniority dimension), any dimension defined
+      by the team
+    - Weekly availability: "who is available Monday mornings?",
+      "who has no restrictions on Tuesday night?"
+
+    The response includes every field needed to answer these questions.
+    Filtering by name, date range, specialty, or dimension value is done
+    by reading the response — no additional tool calls are needed.
+
+    Response fields per member:
+    - id, name, acronym: identity fields
+    - employment_start_date, employment_end_date: ISO date strings
+      (YYYY-MM-DD format), null end_date means currently active
+    - weekly_hours, weekly_hours_desired, duties_per_month, annual_leave:
+      contract and workload targets (all integers)
+    - has_user_account: boolean whether linked to a Rockilus login
+    - specialties: list of human-readable specialty names (strings)
+    - dimensions: list of DimensionValue objects, each containing:
+        dimension_id, dimension_name (e.g. "Location"),
+        entry_ids (raw IDs), entry_names (e.g. ["Paris"]),
+        raw_value (for free-text/boolean/numeric dimensions, null for
+        dropdown dimensions)
+    - weekly_preferences: list of availability restrictions, or null if
+      none are configured. Each slot has day_of_week (0=Monday...6=Sunday),
+      slot (morning/afternoon/night), and restriction (no_work/no_normal/
+      no_duty/no_specific)
+    """
+    logger.info("MCP tool: get_team_members team=%s", team_id)
+
+    mcp_ctx = await build_mcp_context(ctx)
+    if not await mcp_ctx.cerbos.check(
+        mcp_ctx.user_context.user_id, "read-workers", "team", team_id
+    ):
+        return []
+
+    return _build_team_members(mcp_ctx.db, team_id)
