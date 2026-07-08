@@ -1,6 +1,7 @@
 import logging
 
 from fastmcp import Context
+from mcp.types import ToolAnnotations
 from shared.database.database_collections import DatabaseCollections
 
 from src.mcp.context import build_mcp_context
@@ -104,7 +105,14 @@ def _build_team_members(
     return result
 
 
-@mcp.tool()
+@mcp.tool(
+    annotations=ToolAnnotations(
+        readOnlyHint=True,
+        destructiveHint=False,
+        idempotentHint=True,
+        openWorldHint=True,
+    ),
+)
 async def get_team_members(team_id: str, ctx: Context) -> list[WorkerRosterItem]:
     """Return every active team member with their full scheduling profile,
     specialties, and custom dimensions. This is the primary lookup for any

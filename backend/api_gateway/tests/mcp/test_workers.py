@@ -2,6 +2,7 @@ from datetime import date
 from enum import Enum
 from unittest.mock import MagicMock
 
+import pytest
 from shared.schemas.core.worker import (
     SlotRestriction,
     WeeklyPreferences,
@@ -299,3 +300,24 @@ class TestBuildTeamMembers:
         result = _build_team_members(db, TEAM_ID)
 
         assert result[0].dimensions == []
+
+
+# ---------------------------------------------------------------------------
+# Tool annotations — verify metadata exposed to MCP clients
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_get_team_members_annotations():
+    from src.mcp.server import mcp as server
+
+    tools = await server.list_tools()
+    tool = next((t for t in tools if t.name == "get_team_members"), None)
+    assert tool is not None, "get_team_members tool not registered"
+
+    annotations = tool.annotations
+    assert annotations is not None, "Tool has no annotations"
+    assert annotations.readOnlyHint is True, "Must be read-only"
+    assert annotations.destructiveHint is False, "Must not be destructive"
+    assert annotations.idempotentHint is True, "Must be idempotent"
+    assert annotations.openWorldHint is True, "Must be open-world"
