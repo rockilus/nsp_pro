@@ -1,5 +1,7 @@
+from typing import Literal
+
 from fastapi import APIRouter, Depends, Request, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 
@@ -17,8 +19,29 @@ from src.services.copilot_agent import CopilotAgentService
 router = APIRouter()
 
 
+_MAX_MESSAGE_CHARS = 8000
+_MAX_HISTORY_TURNS = 20
+
+
+class ChatMessage(BaseModel):
+    """A single prior turn supplied by the client.
+
+    ``role`` is intentionally restricted to ``user``/``assistant`` so callers
+    can never inject ``system``/``tool`` turns that would override the copilot's
+    guardrails (prompt-injection defense).
+    """
+
+    role: Literal["user", "assistant"]
+    content: str = Field(max_length=_MAX_MESSAGE_CHARS)
+
+
 class AgentChatInbound(BaseModel):
-    message: str
+    message: str = Field(max_length=_MAX_MESSAGE_CHARS)
+    history: list[ChatMessage] = Field(
+        default_factory=list, max_length=_MAX_HISTORY_TURNS
+    )
+    team_id: str | None = None
+    schedule_id: str | None = None
 
 
 class AgentChatOutbound(BaseModel):
@@ -46,6 +69,9 @@ async def handle_agent_chat(
             user_context=user_context,
             db=db_collections,
             cerbos=authz,
+            history=[turn.model_dump() for turn in payload.history],
+            team_id=payload.team_id,
+            schedule_id=payload.schedule_id,
         )
     except Exception as e:
         handle_routes_errors(e)

@@ -1,0 +1,19 @@
+{
+  "title": "Copiloto",
+  "description": "Asistente de IA para el análisis de la planificación del personal.",
+  "open": "Abrir el copiloto",
+  "clear": "Borrar la conversación",
+  "placeholder": "Pregunta sobre tu equipo...",
+  "send": "Enviar",
+  "retry": "Reintentar",
+  "error": "Algo salió mal. Inténtalo de nuevo.",
+  "loading": "Analizando los datos del equipo...",
+  "emptyTitle": "¿En qué puedo ayudarte?",
+  "emptyHint": "Haz una pregunta o elige una sugerencia para empezar.",
+  "chips": [
+    "Compara las horas semanales reales y deseadas del equipo",
+    "¿Quién carece de certificaciones o especialidades?",
+    "¿Quién tiene la mayor carga de guardias este mes?",
+    "Enumera los miembros del equipo según sus preferencias de disponibilidad"
+  ]
+}

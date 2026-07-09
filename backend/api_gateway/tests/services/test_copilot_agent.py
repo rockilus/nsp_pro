@@ -208,3 +208,83 @@ class TestRunAgentLoop:
         second_messages = mock_ac.call_args_list[1].kwargs["messages"]
         tool_msg = next(m for m in second_messages if m.get("role") == "tool")
         assert json.loads(tool_msg["content"]) == []
+
+    async def test_history_is_prepended_before_current_message(self):
+        message = _make_message(content="Sure, following up.")
+        history = [
+            {"role": "user", "content": "who is on team-9?"},
+            {"role": "assistant", "content": "Alice and Bob."},
+        ]
+        with (
+            patch(f"{MODULE}.config") as cfg,
+            patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
+        ):
+            cfg.ai_enabled = True
+            cfg.ai_model = "gemini/gemini-2.5-flash"
+            cfg.gemini_api_key = "g-key"
+            mock_ac.return_value = _make_completion(message)
+
+            await CopilotAgentService.run_agent_loop(
+                user_message="and their hours?",
+                user_context=_user(),
+                db=MagicMock(),
+                cerbos=AsyncMock(),
+                history=history,
+            )
+
+        sent = mock_ac.call_args.kwargs["messages"]
+        # system, history[0], history[1], current user message
+        assert sent[0]["role"] == "system"
+        assert sent[1] == {"role": "user", "content": "who is on team-9?"}
+        assert sent[2] == {"role": "assistant", "content": "Alice and Bob."}
+        assert sent[-1] == {"role": "user", "content": "and their hours?"}
+
+    async def test_context_message_injected_from_active_screen(self):
+        message = _make_message(content="ok")
+        with (
+            patch(f"{MODULE}.config") as cfg,
+            patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
+        ):
+            cfg.ai_enabled = True
+            cfg.ai_model = "gemini/gemini-2.5-flash"
+            cfg.gemini_api_key = "g-key"
+            mock_ac.return_value = _make_completion(message)
+
+            await CopilotAgentService.run_agent_loop(
+                user_message="analyze this",
+                user_context=_user(),
+                db=MagicMock(),
+                cerbos=AsyncMock(),
+                team_id="team-9",
+                schedule_id="sched-3",
+            )
+
+        sent = mock_ac.call_args.kwargs["messages"]
+        context = next(
+            m
+            for m in sent
+            if m["role"] == "system" and "team_id=team-9" in m["content"]
+        )
+        assert "schedule_id=sched-3" in context["content"]
+
+    async def test_no_context_message_when_no_ids(self):
+        message = _make_message(content="ok")
+        with (
+            patch(f"{MODULE}.config") as cfg,
+            patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
+        ):
+            cfg.ai_enabled = True
+            cfg.ai_model = "gemini/gemini-2.5-flash"
+            cfg.gemini_api_key = "g-key"
+            mock_ac.return_value = _make_completion(message)
+
+            await CopilotAgentService.run_agent_loop(
+                user_message="hello",
+                user_context=_user(),
+                db=MagicMock(),
+                cerbos=AsyncMock(),
+            )
+
+        sent = mock_ac.call_args.kwargs["messages"]
+        # Only the base system prompt + the user message.
+        assert [m["role"] for m in sent] == ["system", "user"]

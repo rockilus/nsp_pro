@@ -1,0 +1,19 @@
+{
+  "title": "Copilot",
+  "description": "AI assistant for workforce scheduling analytics.",
+  "open": "Open Copilot",
+  "clear": "Clear conversation",
+  "placeholder": "Ask about your team...",
+  "send": "Send",
+  "retry": "Retry",
+  "error": "Something went wrong. Please try again.",
+  "loading": "Analyzing roster metrics...",
+  "emptyTitle": "How can I help?",
+  "emptyHint": "Ask a question or pick a suggestion to get started.",
+  "chips": [
+    "Summarize weekly hours vs. desired hours for the team",
+    "Who is missing certifications or specialties?",
+    "Who carries the highest duty load this month?",
+    "List team members by weekly availability preferences"
+  ]
+}

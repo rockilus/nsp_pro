@@ -45,10 +45,15 @@ export function useAuth(): AuthContextType {
 // ---------------------------------------------------------------------------
 
 async function fetchCurrentUser(): Promise<AuthUser | null> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (env.isDevelopment) {
+    headers['X-Dev-User-ID'] = env.devUserId;
+    headers['X-API-Key'] = env.devApiKey;
+  }
   const resp = await fetch(`${env.apiUrl}/users/me`, {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
+    headers,
+    credentials: env.isDevelopment ? 'omit' : 'include',
   });
   if (resp.status === 401) {
     // Access token expired — try refreshing before giving up
@@ -56,8 +61,8 @@ async function fetchCurrentUser(): Promise<AuthUser | null> {
       await AuthApi.refresh();
       const retryResp = await fetch(`${env.apiUrl}/users/me`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers,
+        credentials: env.isDevelopment ? 'omit' : 'include',
       });
       if (retryResp.ok) {
         const data = await retryResp.json();

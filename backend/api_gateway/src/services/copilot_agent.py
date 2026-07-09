@@ -76,6 +76,33 @@ def _serialize_tool_output(output: Any) -> str:
     return json.dumps(payload, default=_default)
 
 
+def _build_context_message(
+    team_id: str | None, schedule_id: str | None
+) -> dict[str, Any] | None:
+    """Build a server-authored context turn from the active page state.
+
+    Injected as a ``system`` message so the model reliably targets the right
+    entities without the user typing technical identifiers. Returns ``None``
+    when no context is available so the prompt stays clean.
+    """
+    parts: list[str] = []
+    if team_id:
+        parts.append(f"team_id={team_id}")
+    if schedule_id:
+        parts.append(f"schedule_id={schedule_id}")
+    if not parts:
+        return None
+    return {
+        "role": "system",
+        "content": (
+            "Active context from the user's current screen: "
+            + ", ".join(parts)
+            + ". Use these identifiers when calling tools unless the user "
+            "explicitly refers to a different team or schedule."
+        ),
+    }
+
+
 class CopilotAgentService:
     """Orchestrates the LiteLLM tool-execution loop for the copilot."""
 
@@ -86,14 +113,25 @@ class CopilotAgentService:
         user_context: UserContext,
         db: DatabaseCollections,
         cerbos: CerbosAuthzService,
+        history: list[dict[str, Any]] | None = None,
+        team_id: str | None = None,
+        schedule_id: str | None = None,
     ) -> str:
         """Execute the multi-turn agent loop and return the final answer.
+
+        The backend remains stateless: conversation ``history`` and page
+        ``context`` are supplied by the client on every request and are never
+        persisted. Callers own storage.
 
         Args:
             user_message: The manager's natural-language request.
             user_context: Authenticated caller identity (drives authorization).
             db: Database collections for tool execution.
             cerbos: Authorization service enforced per tool call.
+            history: Prior ``{"role", "content"}`` turns for follow-up context.
+                Roles are restricted to ``user``/``assistant`` at the API layer.
+            team_id: Active team from the client's current screen, if any.
+            schedule_id: Active schedule from the client's current screen, if any.
 
         Raises:
             CopilotDisabledError: If the AI feature is disabled.
@@ -107,8 +145,16 @@ class CopilotAgentService:
 
         messages: list[dict[str, Any]] = [
             {"role": "system", "content": _SYSTEM_PROMPT},
-            {"role": "user", "content": user_message},
         ]
+        context_message = _build_context_message(team_id, schedule_id)
+        if context_message is not None:
+            messages.append(context_message)
+        if history:
+            messages.extend(
+                {"role": turn["role"], "content": turn["content"]} for turn in history
+            )
+        messages.append({"role": "user", "content": user_message})
+
         manifests = get_tool_manifests()
 
         try:

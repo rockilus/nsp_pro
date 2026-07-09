@@ -7,6 +7,8 @@ import ProtectedRoute from '../../../components/auth/protected-route';
 // Context
 import { TeamProvider } from '@/context/TeamProvider';
 import { UserProvider } from '@/context/UserProvider';
+import { CopilotProvider } from '@/context/CopilotContext';
+import { CopilotPanel } from '@/components/copilot/copilot-panel';
 
 export async function generateStaticParams() {
   return languages.map((lng) => ({ lng }));
@@ -26,13 +28,16 @@ export default async function Layout({
     <ProtectedRoute requireAuth={true}>
       <UserProvider>
         <TeamProvider>
-          <div style={{ overflow: 'hidden', height: '100vh' }}>
-            <CssBaseline />
-            <header className="desktop-only-nav">
-              <NavAppBar lng={lng} />
-            </header>
-            <main>{children}</main>
-          </div>
+          <CopilotProvider>
+            <div style={{ overflow: 'hidden', height: '100vh' }}>
+              <CssBaseline />
+              <header className="desktop-only-nav">
+                <NavAppBar lng={lng} />
+              </header>
+              <main>{children}</main>
+            </div>
+            <CopilotPanel lng={lng} />
+          </CopilotProvider>
         </TeamProvider>
       </UserProvider>
     </ProtectedRoute>
