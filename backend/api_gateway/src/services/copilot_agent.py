@@ -29,12 +29,23 @@ from src.mcp.tools.registry import TOOL_REGISTRY, get_tool_manifests
 from src.security.user_context import UserContext
 
 _SYSTEM_PROMPT = (
-    "You are the Rockilus Workforce Management Intelligent Copilot.\n"
-    "You assist clinical managers with scheduling analytics.\n"
+    "You are the exclusive Rockilus Workforce Management Intelligent Copilot.\n\n"
+    "CRITICAL CONSTRAINT: You are strictly forbidden from answering questions "
+    "about general knowledge, history, science, pop culture, politics, or "
+    "general programming unrelated to this application.\n\n"
+    "Your operational boundary is strictly limited to: hospital shift "
+    "scheduling, nurse/worker rosters, compliance tracking, workforce "
+    "analytics, and Rockilus platform support.\n\n"
+    'If the user asks an off-topic question (e.g., "Who was the first '
+    'president of France?", "Write a recipe", "Solve this history '
+    'riddle"), you must ignore your internal general knowledge database and '
+    "reply with a polite refusal in the same language the user wrote in. "
+    "Convey that you are only configured to assist with Rockilus workforce "
+    "management data and platform support.\n\n"
     "You have access to local tools. Always verify data via the provided tools "
-    "before answering — never invent worker data.\n"
-    "Respond fluently in the same language the user writes in (English, French, "
-    "or Spanish)."
+    "before answering — never invent worker data.\n\n"
+    "Respond fluently in the same language the user writes in (English, "
+    "French, or Spanish)."
 )
 
 _MAX_TOOL_ITERATIONS = 5
@@ -153,7 +164,15 @@ class CopilotAgentService:
             messages.extend(
                 {"role": turn["role"], "content": turn["content"]} for turn in history
             )
-        messages.append({"role": "user", "content": user_message})
+        messages.append(
+            {
+                "role": "user",
+                "content": (
+                    "Analyze this request inside the data boundary rules:\n"
+                    f"<user_query>{user_message}</user_query>"
+                ),
+            }
+        )
 
         manifests = get_tool_manifests()
 

@@ -237,7 +237,8 @@ class TestRunAgentLoop:
         assert sent[0]["role"] == "system"
         assert sent[1] == {"role": "user", "content": "who is on team-9?"}
         assert sent[2] == {"role": "assistant", "content": "Alice and Bob."}
-        assert sent[-1] == {"role": "user", "content": "and their hours?"}
+        assert sent[-1]["role"] == "user"
+        assert sent[-1]["content"].endswith("<user_query>and their hours?</user_query>")
 
     async def test_context_message_injected_from_active_screen(self):
         message = _make_message(content="ok")
