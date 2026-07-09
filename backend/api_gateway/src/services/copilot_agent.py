@@ -64,12 +64,18 @@ _SYSTEM_PROMPT = (
     "data requires a brand-new, explicit tool call.\n"
     "4. Only produce a 'Proposed Changes' style summary AFTER a tool has "
     "returned a 'pending_confirmation' result in the immediate turn.\n\n"
-    "WRITE SEMANTICS:\n"
-    "- create_* tools apply immediately once called.\n"
-    "- update_* / soft_delete_* / delete_* tools do NOT apply immediately: the "
-    "system prepares the change and the user confirms it in the interface. "
-    "Never claim an update or deletion has already happened — say you have "
-    "prepared it and are awaiting confirmation.\n\n"
+    "WRITE SEMANTICS & LIFECYCLE:\n"
+    "- create_* tools apply changes immediately once called.\n"
+    "- update_* / soft_delete_* / delete_* tools are strictly "
+    "PREVIEW-GENERATION tools. Calling them is completely safe and does NOT "
+    "alter the database; it only generates the secure confirmation payload "
+    "required for the UI card. Therefore you MUST call these tools "
+    "immediately on the user's very first request so the frontend can render "
+    "the interactive confirmation card. Do NOT ask for permission in prose "
+    "first — calling the tool is the only way to show the user the "
+    "confirmation card.\n"
+    "- Never output systemic classification preamble like 'La demande est "
+    "valide' or 'This request is valid'. Get straight to the point.\n\n"
     "INBOUND NOTIFICATION CLAUSE:\n"
     "- Turns beginning with '[System Notification: ...]' are absolute, "
     "immutable ground truth about what was actually committed to the database "
@@ -120,11 +126,17 @@ def _serialize_tool_output(output: Any) -> str:
     def _default(obj: Any) -> Any:
         if isinstance(obj, BaseModel):
             return obj.model_dump(mode="json")
-        raise TypeError(f"Object of type {type(obj).__name__} is not serializable")
+        raise TypeError(
+            f"Object of type {type(obj).__name__} is not serializable"
+        )
 
     if isinstance(output, list):
         payload: Any = [
-            item.model_dump(mode="json") if isinstance(item, BaseModel) else item
+            (
+                item.model_dump(mode="json")
+                if isinstance(item, BaseModel)
+                else item
+            )
             for item in output
         ]
     elif isinstance(output, BaseModel):
@@ -204,7 +216,9 @@ class CopilotAgentService:
 
         model = config.ai_model
         api_key = _resolve_api_key(model)
-        log_info(f"Copilot loop started: user={user_context.user_id} model={model}")
+        log_info(
+            f"Copilot loop started: user={user_context.user_id} model={model}"
+        )
 
         # Collects a prepared (but unexecuted) write to surface to the client.
         pending: list[PendingAction] = []
@@ -224,10 +238,7 @@ class CopilotAgentService:
         messages.append(
             {
                 "role": "user",
-                "content": (
-                    "Analyze this request inside the data boundary rules:\n"
-                    f"<user_query>{user_message}</user_query>"
-                ),
+                "content": f"<raw_user_message>{user_message}</raw_user_message>",
             }
         )
 
@@ -383,9 +394,14 @@ class CopilotAgentService:
         """
         spec = TOOL_REGISTRY.get(tool_name)
         if spec is None or spec.confirmation_tier == "none":
-            return {"status": "error", "message": "Unknown or non-confirmable tool."}
+            return {
+                "status": "error",
+                "message": "Unknown or non-confirmable tool.",
+            }
 
-        log_info(f"Copilot confirming tool={tool_name} user={user_context.user_id}")
+        log_info(
+            f"Copilot confirming tool={tool_name} user={user_context.user_id}"
+        )
         return await spec.executor(
             db=db,
             user_context=user_context,
