@@ -22,9 +22,18 @@ export function CopilotWindow({ lng }: { lng: string }) {
     useCopilot();
 
   const bottomRef = React.useRef<HTMLDivElement>(null);
+  const wasOpen = React.useRef(false);
   React.useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+    if (!open) {
+      wasOpen.current = false;
+      return;
+    }
+    // Jump instantly to the latest message when (re)opening; animate smoothly
+    // for subsequent updates while the window stays open.
+    const justOpened = !wasOpen.current;
+    wasOpen.current = true;
+    bottomRef.current?.scrollIntoView({ behavior: justOpened ? 'auto' : 'smooth' });
+  }, [messages, isLoading, open]);
 
   const rawChips = t('chips', { returnObjects: true });
   const chips = Array.isArray(rawChips) ? (rawChips as string[]) : [];

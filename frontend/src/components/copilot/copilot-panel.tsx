@@ -23,9 +23,16 @@ function MobileCopilotSheet({ lng }: { lng: string }) {
   const { open, setOpen, messages, isLoading, send, retry, clear } = useCopilot();
 
   const bottomRef = React.useRef<HTMLDivElement>(null);
+  const wasOpen = React.useRef(false);
   React.useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+    if (!open) {
+      wasOpen.current = false;
+      return;
+    }
+    const justOpened = !wasOpen.current;
+    wasOpen.current = true;
+    bottomRef.current?.scrollIntoView({ behavior: justOpened ? 'auto' : 'smooth' });
+  }, [messages, isLoading, open]);
 
   const rawChips = t('chips', { returnObjects: true });
   const chips = Array.isArray(rawChips) ? (rawChips as string[]) : [];
