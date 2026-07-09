@@ -22,8 +22,43 @@ export interface CopilotChatRequest {
   scheduleId?: string | null;
 }
 
+/** A single field-level change proposed by a Tier-2 update. */
+export interface PendingActionChange {
+  field: string;
+  label: string;
+  old: unknown;
+  new: unknown;
+}
+
+export interface PendingActionPreview {
+  entity: string;
+  entity_id: string;
+  entity_name?: string;
+  changes?: PendingActionChange[];
+}
+
+/**
+ * A prepared write awaiting the user's explicit confirmation.
+ *
+ * `actionToken` is a short-lived signed token binding the approving user, the
+ * tool, and a hash of `toolArgs`. It must be sent back verbatim to confirm.
+ */
+export interface PendingAction {
+  actionToken: string;
+  tier: 'update' | 'delete';
+  toolName: string;
+  toolArgs: Record<string, unknown>;
+  preview: PendingActionPreview;
+}
+
 export interface CopilotChatResponse {
   response: string;
+  pendingAction: PendingAction | null;
+}
+
+export interface CopilotConfirmResponse {
+  status: string;
+  message: string;
 }
 
 export class CopilotApi extends BaseApi {
@@ -42,11 +77,51 @@ export class CopilotApi extends BaseApi {
       throw new Error('Message is required');
     }
 
-    return this.makeRequest<CopilotChatResponse>(apiClient, 'post', '/copilot/chat', {
+    const raw = await this.makeRequest<{
+      response: string;
+      pending_action: {
+        action_token: string;
+        tier: 'update' | 'delete';
+        tool_name: string;
+        tool_args: Record<string, unknown>;
+        preview: PendingActionPreview;
+      } | null;
+    }>(apiClient, 'post', '/copilot/chat', {
       message: request.message,
       history: request.history ?? [],
       team_id: request.teamId ?? null,
       schedule_id: request.scheduleId ?? null,
+    });
+
+    const pa = raw.pending_action;
+    return {
+      response: raw.response,
+      pendingAction: pa
+        ? {
+            actionToken: pa.action_token,
+            tier: pa.tier,
+            toolName: pa.tool_name,
+            toolArgs: pa.tool_args,
+            preview: pa.preview,
+          }
+        : null,
+    };
+  }
+
+  /**
+   * Confirm and execute a previously previewed write action.
+   *
+   * The signed `actionToken` is the authority to run these exact arguments;
+   * the backend rejects the request if the arguments were altered in flight.
+   */
+  static async confirmAction(
+    apiClient: AuthenticatedApiClient,
+    pendingAction: PendingAction,
+  ): Promise<CopilotConfirmResponse> {
+    return this.makeRequest<CopilotConfirmResponse>(apiClient, 'post', '/copilot/actions/confirm', {
+      action_token: pendingAction.actionToken,
+      tool_name: pendingAction.toolName,
+      tool_args: pendingAction.toolArgs,
     });
   }
 }

@@ -117,6 +117,19 @@ class AppConfig(BaseSettings):
         description="Lifetime of impersonation JWTs in seconds (default 1 h)",
     )
 
+    # Copilot action confirmation token configuration
+    copilot_action_jwt_secret: str = Field(
+        "dev-copilot-action-secret-change-in-production",
+        description="Dedicated HMAC secret used to sign copilot write-action "
+        + "confirmation tokens (set via COPILOT_ACTION_JWT_SECRET env var). "
+        + "Kept separate from the impersonation secret for independent rotation.",
+    )
+    copilot_action_token_ttl_seconds: int = Field(
+        300,
+        description="Lifetime of copilot action confirmation tokens in seconds "
+        + "(default 5 min); a confirmation dialog is acted on quickly)",
+    )
+
     # SQS Configuration - Queue URLs (managed by Terraform)
     sqs_solve_queue_url: str = Field(
         ...,

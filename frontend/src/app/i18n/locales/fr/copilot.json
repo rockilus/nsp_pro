@@ -18,5 +18,15 @@
     "Qui n'a pas les certifications ou spécialités requises ?",
     "Qui a la charge de gardes la plus élevée ce mois-ci ?",
     "Listez les membres de l'équipe selon leurs préférences de disponibilité"
-  ]
+  ],
+  "action": {
+    "proposedChanges": "Modifications proposées",
+    "confirmDeleteTitle": "Confirmer la suppression",
+    "confirmDeleteBody": "Cela supprimera {name}. Cette action peut être annulée par un administrateur.",
+    "apply": "Appliquer les modifications",
+    "cancel": "Annuler",
+    "confirmDelete": "Supprimer",
+    "applied": "Modifications appliquées",
+    "cancelled": "Action annulée"
+  }
 }

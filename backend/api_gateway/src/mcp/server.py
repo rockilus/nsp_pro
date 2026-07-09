@@ -9,4 +9,5 @@ mcp = FastMCP(
     ),
 )
 
+from src.mcp.tools.dimensions import get_dimensions  # noqa: E402, F401
 from src.mcp.tools.workers import get_team_members  # noqa: E402, F401

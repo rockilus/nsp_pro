@@ -17,10 +17,14 @@ import { CopilotWindow } from './copilot-window';
 import { ChatMessage } from './chat-message';
 import { ChatComposer } from './chat-composer';
 import { SuggestionChips } from './suggestion-chips';
+import { buildActionLabels } from './action-labels';
 
 function MobileCopilotSheet({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'copilot');
-  const { open, setOpen, messages, isLoading, send, retry, clear } = useCopilot();
+  const { open, setOpen, messages, isLoading, send, retry, clear, confirmAction, cancelAction } =
+    useCopilot();
+
+  const actionLabels = buildActionLabels(t);
 
   const bottomRef = React.useRef<HTMLDivElement>(null);
   const wasOpen = React.useRef(false);
@@ -76,6 +80,10 @@ function MobileCopilotSheet({ lng }: { lng: string }) {
                 errorLabel={t('error')}
                 retryLabel={t('retry')}
                 onRetry={() => void retry()}
+                actionDisabled={isLoading}
+                onConfirmAction={() => void confirmAction(message.id)}
+                onCancelAction={() => cancelAction(message.id)}
+                actionLabels={actionLabels}
               />
             ))
           )}

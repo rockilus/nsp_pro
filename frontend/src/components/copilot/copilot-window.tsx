@@ -15,11 +15,25 @@ import { useCopilot } from '@/context/CopilotContext';
 import { ChatMessage } from './chat-message';
 import { ChatComposer } from './chat-composer';
 import { SuggestionChips } from './suggestion-chips';
+import { buildActionLabels } from './action-labels';
 
 export function CopilotWindow({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'copilot');
-  const { open, setOpen, minimized, toggleMinimized, messages, isLoading, send, retry, clear } =
-    useCopilot();
+  const {
+    open,
+    setOpen,
+    minimized,
+    toggleMinimized,
+    messages,
+    isLoading,
+    send,
+    retry,
+    clear,
+    confirmAction,
+    cancelAction,
+  } = useCopilot();
+
+  const actionLabels = buildActionLabels(t);
 
   const bottomRef = React.useRef<HTMLDivElement>(null);
   const wasOpen = React.useRef(false);
@@ -113,6 +127,10 @@ export function CopilotWindow({ lng }: { lng: string }) {
               errorLabel={t('error')}
               retryLabel={t('retry')}
               onRetry={() => void retry()}
+              actionDisabled={isLoading}
+              onConfirmAction={() => void confirmAction(message.id)}
+              onCancelAction={() => cancelAction(message.id)}
+              actionLabels={actionLabels}
             />
           ))
         )}

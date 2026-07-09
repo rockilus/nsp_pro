@@ -126,7 +126,7 @@ class TestRunAgentLoop:
                 cerbos=AsyncMock(),
             )
 
-        assert result == "Bonjour, comment puis-je aider ?"
+        assert result.text == "Bonjour, comment puis-je aider ?"
         # api_key passed per-call, never via env
         _, kwargs = mock_ac.call_args
         assert kwargs["api_key"] == "g-key"
@@ -161,7 +161,7 @@ class TestRunAgentLoop:
                 cerbos=cerbos,
             )
 
-        assert result == "Voici l'équipe : Alice."
+        assert result.text == "Voici l'équipe : Alice."
         cerbos.check.assert_awaited_once_with(
             "admin-1", "read-workers", "team", "team-9"
         )

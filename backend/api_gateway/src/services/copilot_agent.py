@@ -13,6 +13,7 @@ Design notes:
 """
 
 import json
+from dataclasses import dataclass
 from typing import Any
 
 from litellm import acompletion
@@ -25,7 +26,12 @@ from src.errors.copilot_errors.copilot_errors import CopilotDisabledError
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
-from src.mcp.tools.registry import TOOL_REGISTRY, get_tool_manifests
+from src.mcp.tools.registry import (
+    TOOL_REGISTRY,
+    ToolChannel,
+    get_tool_manifests,
+)
+from src.security.copilot_action_token import create_action_token
 from src.security.user_context import UserContext
 
 _SYSTEM_PROMPT = (
@@ -45,10 +51,41 @@ _SYSTEM_PROMPT = (
     "You have access to local tools. Always verify data via the provided tools "
     "before answering — never invent worker data.\n\n"
     "Respond fluently in the same language the user writes in (English, "
-    "French, or Spanish)."
+    "French, or Spanish).\n\n"
+    "WRITE OPERATIONS:\n"
+    "- Creating records (workers, dimensions, dropdown options) is applied "
+    "immediately once you call the tool.\n"
+    "- Updating or deleting records is NOT applied immediately. When you call "
+    "an update or delete tool, the system prepares the change and asks the "
+    "user to confirm it in the interface. Never claim an update or deletion "
+    "has already happened — say you have prepared it and are awaiting "
+    "confirmation.\n"
+    "- Turns beginning with '[System Notification: ...]' are authoritative "
+    "ground truth about what was actually committed to the database (whether "
+    "the user applied or cancelled a prepared change). Trust them over your "
+    "own assumptions when answering follow-ups."
 )
 
 _MAX_TOOL_ITERATIONS = 5
+
+
+@dataclass
+class PendingAction:
+    """A prepared write awaiting the user's explicit confirmation."""
+
+    action_token: str
+    tier: str
+    tool_name: str
+    tool_args: dict[str, Any]
+    preview: dict[str, Any]
+
+
+@dataclass
+class AgentResult:
+    """Result of an agent loop run."""
+
+    text: str
+    pending_action: PendingAction | None = None
 
 
 def _resolve_api_key(model: str) -> str | None:
@@ -127,7 +164,7 @@ class CopilotAgentService:
         history: list[dict[str, Any]] | None = None,
         team_id: str | None = None,
         schedule_id: str | None = None,
-    ) -> str:
+    ) -> AgentResult:
         """Execute the multi-turn agent loop and return the final answer.
 
         The backend remains stateless: conversation ``history`` and page
@@ -144,6 +181,10 @@ class CopilotAgentService:
             team_id: Active team from the client's current screen, if any.
             schedule_id: Active schedule from the client's current screen, if any.
 
+        Returns:
+            An ``AgentResult`` with the assistant text and, when a Tier-2/Tier-1
+            write was prepared, a signed ``PendingAction`` for confirmation.
+
         Raises:
             CopilotDisabledError: If the AI feature is disabled.
         """
@@ -153,6 +194,9 @@ class CopilotAgentService:
         model = config.ai_model
         api_key = _resolve_api_key(model)
         log_info(f"Copilot loop started: user={user_context.user_id} model={model}")
+
+        # Collects a prepared (but unexecuted) write to surface to the client.
+        pending: list[PendingAction] = []
 
         messages: list[dict[str, Any]] = [
             {"role": "system", "content": _SYSTEM_PROMPT},
@@ -176,7 +220,7 @@ class CopilotAgentService:
             }
         )
 
-        manifests = get_tool_manifests()
+        manifests = get_tool_manifests(ToolChannel.COPILOT)
 
         try:
             for _ in range(_MAX_TOOL_ITERATIONS):
@@ -192,7 +236,10 @@ class CopilotAgentService:
                 tool_calls = response_message.tool_calls
 
                 if not tool_calls:
-                    return response_message.content or ""
+                    return AgentResult(
+                        text=response_message.content or "",
+                        pending_action=pending[0] if pending else None,
+                    )
 
                 normalized_msg = response_message.model_dump(exclude_none=True)
                 if "content" not in normalized_msg:
@@ -206,6 +253,7 @@ class CopilotAgentService:
                         user_context=user_context,
                         db=db,
                         cerbos=cerbos,
+                        pending=pending,
                     )
 
             # Tool budget exhausted: request a final synthesis without tools.
@@ -215,7 +263,10 @@ class CopilotAgentService:
                 temperature=0.0,
                 api_key=api_key,
             )
-            return final.choices[0].message.content or ""
+            return AgentResult(
+                text=final.choices[0].message.content or "",
+                pending_action=pending[0] if pending else None,
+            )
 
         except CopilotDisabledError:
             raise
@@ -231,25 +282,37 @@ class CopilotAgentService:
         user_context: UserContext,
         db: DatabaseCollections,
         cerbos: CerbosAuthzService,
+        pending: list["PendingAction"],
     ) -> None:
-        """Run a single tool call locally and append its result to messages."""
+        """Run a single tool call locally and append its result to messages.
+
+        Tier-2/Tier-1 write tools run in ``preview`` mode: they validate and
+        authorize but do NOT mutate. When a tool returns ``pending_confirmation``
+        we mint a signed action token binding the caller, tool name, and a hash
+        of the arguments, and record it for the client to confirm.
+        """
         function_name = tool_call.function.name
         spec = TOOL_REGISTRY.get(function_name)
+
+        try:
+            args = json.loads(tool_call.function.arguments or "{}")
+        except json.JSONDecodeError:
+            args = {}
 
         if spec is None:
             output: Any = {"error": f"Unknown tool: {function_name}"}
         else:
-            try:
-                args = json.loads(tool_call.function.arguments or "{}")
-            except json.JSONDecodeError:
-                args = {}
             log_info(f"Copilot executing tool={function_name} args={args}")
+            requires_confirmation = spec.confirmation_tier != "none"
             try:
+                call_kwargs = dict(args)
+                if requires_confirmation:
+                    call_kwargs["mode"] = "preview"
                 output = await spec.executor(
                     db=db,
                     user_context=user_context,
                     cerbos=cerbos,
-                    **args,
+                    **call_kwargs,
                 )
             except TypeError as e:
                 log_error(
@@ -261,6 +324,28 @@ class CopilotAgentService:
                     "hint": "Verify the schema fields before re-attempting.",
                 }
 
+            if (
+                isinstance(output, dict)
+                and output.get("status") == "pending_confirmation"
+                and not pending
+            ):
+                token = create_action_token(
+                    user_id=user_context.user_id,
+                    tool_name=function_name,
+                    tool_args=args,
+                    secret=config.copilot_action_jwt_secret,
+                    ttl_seconds=config.copilot_action_token_ttl_seconds,
+                )
+                pending.append(
+                    PendingAction(
+                        action_token=token,
+                        tier=output.get("tier", spec.confirmation_tier),
+                        tool_name=function_name,
+                        tool_args=args,
+                        preview=output.get("preview", {}),
+                    )
+                )
+
         messages.append(
             {
                 "role": "tool",
@@ -268,4 +353,32 @@ class CopilotAgentService:
                 "name": function_name,
                 "content": _serialize_tool_output(output),
             }
+        )
+
+    @classmethod
+    async def confirm_action(
+        cls,
+        tool_name: str,
+        tool_args: dict[str, Any],
+        user_context: UserContext,
+        db: DatabaseCollections,
+        cerbos: CerbosAuthzService,
+    ) -> dict[str, Any]:
+        """Execute a previously previewed write in ``execute`` mode.
+
+        Called only by the confirm route AFTER the signed action token and its
+        argument hash have been verified. Cerbos is re-checked inside the
+        executor as the final trust boundary.
+        """
+        spec = TOOL_REGISTRY.get(tool_name)
+        if spec is None or spec.confirmation_tier == "none":
+            return {"status": "error", "message": "Unknown or non-confirmable tool."}
+
+        log_info(f"Copilot confirming tool={tool_name} user={user_context.user_id}")
+        return await spec.executor(
+            db=db,
+            user_context=user_context,
+            cerbos=cerbos,
+            mode="execute",
+            **tool_args,
         )

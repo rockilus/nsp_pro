@@ -10,10 +10,13 @@ import React, {
   useState,
 } from 'react';
 import { useTeam } from '@/context/TeamContext';
-import { useCopilotChat } from '@/hooks/useCopilot';
-import type { CopilotChatTurn } from '@/app/lib/api/copilotApi';
+import { useCopilotChat, useCopilotConfirm } from '@/hooks/useCopilot';
+import type { CopilotChatTurn, PendingAction } from '@/app/lib/api/copilotApi';
 
 export type CopilotRole = 'user' | 'assistant';
+
+/** Resolution state of a prepared write attached to an assistant bubble. */
+export type PendingActionStatus = 'applied' | 'cancelled';
 
 export interface CopilotMessage {
   id: string;
@@ -21,6 +24,16 @@ export interface CopilotMessage {
   content: string;
   /** Marks an assistant bubble that represents a failed request. */
   isError?: boolean;
+  /** A prepared write awaiting confirmation (Tier-2 update / Tier-1 delete). */
+  pendingAction?: PendingAction;
+  /** Set once the user has applied or cancelled the attached pending action. */
+  pendingStatus?: PendingActionStatus;
+  /**
+   * Hidden turns are excluded from rendering but replayed to the model as
+   * history (used for synthetic confirmation/cancellation notifications so the
+   * LLM tracks committed DB state without a server-side session).
+   */
+  hidden?: boolean;
 }
 
 interface CopilotContextValue {
@@ -36,6 +49,10 @@ interface CopilotContextValue {
   send: (text: string) => Promise<void>;
   retry: () => Promise<void>;
   clear: () => void;
+  /** Confirm and execute the prepared write on the given message. */
+  confirmAction: (messageId: string) => Promise<void>;
+  /** Cancel the prepared write on the given message without executing it. */
+  cancelAction: (messageId: string) => void;
   /** Set by pages that expose an active schedule (e.g. the schedule tab). */
   setScheduleId: (scheduleId: string | null) => void;
 }
@@ -83,9 +100,24 @@ function toHistoryTurns(messages: CopilotMessage[]): CopilotChatTurn[] {
     .map(({ role, content }) => ({ role, content }));
 }
 
+/**
+ * Strip transient pending-action state before persisting. A prepared write is
+ * only valid for the lifetime of its short-lived signed token, so replaying a
+ * stale one after reload would be useless (and confusing) — we drop the token
+ * and mark any unresolved action as cancelled.
+ */
+function toPersistable(messages: CopilotMessage[]): CopilotMessage[] {
+  return messages.slice(-MAX_STORED_MESSAGES).map((m) => {
+    if (!m.pendingAction) return m;
+    const { pendingAction: _drop, ...rest } = m;
+    return { ...rest, pendingStatus: m.pendingStatus ?? 'cancelled' };
+  });
+}
+
 export function CopilotProvider({ children }: { children: React.ReactNode }) {
   const { selectedTeamId } = useTeam();
   const sendChat = useCopilotChat();
+  const confirmChat = useCopilotConfirm();
 
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(false);
@@ -163,10 +195,7 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!selectedTeamId || hydratedTeam !== selectedTeamId) return;
     try {
-      localStorage.setItem(
-        storageKey(selectedTeamId),
-        JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)),
-      );
+      localStorage.setItem(storageKey(selectedTeamId), JSON.stringify(toPersistable(messages)));
     } catch {
       // Storage full / unavailable — non-fatal, keep chatting in memory.
     }
@@ -176,13 +205,21 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
     async (message: string, priorMessages: CopilotMessage[]) => {
       setIsLoading(true);
       try {
-        const { response } = await sendChat({
+        const { response, pendingAction } = await sendChat({
           message,
           history: toHistoryTurns(priorMessages),
           teamId: selectedTeamId,
           scheduleId,
         });
-        setMessages((prev) => [...prev, { id: createId(), role: 'assistant', content: response }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: createId(),
+            role: 'assistant',
+            content: response,
+            ...(pendingAction ? { pendingAction } : {}),
+          },
+        ]);
       } catch {
         setMessages((prev) => [
           ...prev,
@@ -229,6 +266,56 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
     }
   }, [selectedTeamId]);
 
+  // Append a hidden synthetic notification turn so the model tracks whether a
+  // prepared write was actually committed (the mutation happens on a separate
+  // REST route the LLM cannot otherwise observe).
+  const appendNotification = useCallback((content: string) => {
+    setMessages((prev) => [...prev, { id: createId(), role: 'user', content, hidden: true }]);
+  }, []);
+
+  const confirmAction = useCallback(
+    async (messageId: string) => {
+      const target = messagesRef.current.find((m) => m.id === messageId);
+      if (!target?.pendingAction || target.pendingStatus) return;
+      const action = target.pendingAction;
+      setIsLoading(true);
+      try {
+        const { message } = await confirmChat(action);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId ? { ...m, pendingStatus: 'applied' } : m)),
+        );
+        appendNotification(
+          `[System Notification: The manager confirmed and applied the proposed ` +
+            `${action.toolName} operation successfully. ${message}]`,
+        );
+      } catch {
+        setMessages((prev) => [
+          ...prev,
+          { id: createId(), role: 'assistant', content: '', isError: true },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [confirmChat, appendNotification],
+  );
+
+  const cancelAction = useCallback(
+    (messageId: string) => {
+      const target = messagesRef.current.find((m) => m.id === messageId);
+      if (!target?.pendingAction || target.pendingStatus) return;
+      const action = target.pendingAction;
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, pendingStatus: 'cancelled' } : m)),
+      );
+      appendNotification(
+        `[System Notification: The manager cancelled the proposed ` +
+          `${action.toolName} operation. No changes were made.]`,
+      );
+    },
+    [appendNotification],
+  );
+
   const openCopilot = useCallback(() => {
     setOpen(true);
     setMinimized(false);
@@ -249,9 +336,23 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
       send,
       retry,
       clear,
+      confirmAction,
+      cancelAction,
       setScheduleId,
     }),
-    [open, openCopilot, minimized, toggleMinimized, messages, isLoading, send, retry, clear],
+    [
+      open,
+      openCopilot,
+      minimized,
+      toggleMinimized,
+      messages,
+      isLoading,
+      send,
+      retry,
+      clear,
+      confirmAction,
+      cancelAction,
+    ],
   );
 
   return <CopilotContext.Provider value={value}>{children}</CopilotContext.Provider>;

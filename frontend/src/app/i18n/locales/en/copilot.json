@@ -18,5 +18,15 @@
     "Who is missing certifications or specialties?",
     "Who carries the highest duty load this month?",
     "List team members by weekly availability preferences"
-  ]
+  ],
+  "action": {
+    "proposedChanges": "Proposed changes",
+    "confirmDeleteTitle": "Confirm deletion",
+    "confirmDeleteBody": "This will remove {name}. This action can be reverted by an administrator.",
+    "apply": "Apply changes",
+    "cancel": "Cancel",
+    "confirmDelete": "Delete",
+    "applied": "Changes applied",
+    "cancelled": "Action cancelled"
+  }
 }

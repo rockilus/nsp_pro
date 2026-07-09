@@ -1,19 +1,38 @@
 'use client';
 
 import { AlertCircleIcon } from 'lucide-react';
+import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { CopilotMessage } from '@/context/CopilotContext';
 import Markdown from './markdown';
+import { PendingActionCard } from './pending-action-card';
 
 interface ChatMessageProps {
   message: CopilotMessage;
   errorLabel: string;
   retryLabel: string;
   onRetry: () => void;
+  actionDisabled?: boolean;
+  onConfirmAction: () => void;
+  onCancelAction: () => void;
+  actionLabels: ComponentProps<typeof PendingActionCard>['labels'];
 }
 
-export function ChatMessage({ message, errorLabel, retryLabel, onRetry }: ChatMessageProps) {
+export function ChatMessage({
+  message,
+  errorLabel,
+  retryLabel,
+  onRetry,
+  actionDisabled,
+  onConfirmAction,
+  onCancelAction,
+  actionLabels,
+}: ChatMessageProps) {
+  // Hidden turns (synthetic confirmation notifications) are replayed to the
+  // model but never rendered in the UI.
+  if (message.hidden) return null;
+
   if (message.isError) {
     return (
       <div
@@ -32,9 +51,10 @@ export function ChatMessage({ message, errorLabel, retryLabel, onRetry }: ChatMe
   }
 
   const isUser = message.role === 'user';
+  const hasAction = Boolean(message.pendingAction) || message.pendingStatus !== undefined;
 
   return (
-    <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
+    <div className={cn('flex flex-col', isUser ? 'items-end' : 'items-start')}>
       <div
         className={cn(
           'max-w-[85%] rounded-lg px-3 py-2 text-sm',
@@ -49,6 +69,17 @@ export function ChatMessage({ message, errorLabel, retryLabel, onRetry }: ChatMe
           <Markdown content={message.content} />
         )}
       </div>
+      {!isUser && hasAction && (
+        <div className="w-full max-w-[85%]">
+          <PendingActionCard
+            message={message}
+            disabled={actionDisabled}
+            onConfirm={onConfirmAction}
+            onCancel={onCancelAction}
+            labels={actionLabels}
+          />
+        </div>
+      )}
     </div>
   );
 }
