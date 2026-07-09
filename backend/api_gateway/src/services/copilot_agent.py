@@ -14,6 +14,7 @@ Design notes:
 
 import json
 from dataclasses import dataclass
+from datetime import date, datetime, timezone
 from typing import Any
 
 from litellm import acompletion
@@ -80,7 +81,13 @@ _SYSTEM_PROMPT = (
     "- Turns beginning with '[System Notification: ...]' are absolute, "
     "immutable ground truth about what was actually committed to the database "
     "(whether the user applied or cancelled a prepared change). Trust them "
-    "over your own assumptions when answering follow-ups."
+    "over your own assumptions when answering follow-ups.\n\n"
+    "DATE RESOLUTION:\n"
+    "- Resolve all relative dates ('today', 'tomorrow', 'yesterday', "
+    "'last year', 'next Monday', 'this week') against the 'current_date' "
+    "(UTC) provided in the active context, using its 'weekday' as reference. "
+    "Compute the exact calendar date yourself and NEVER guess or invent "
+    "dates. Always express dates in ISO YYYY-MM-DD format."
 )
 
 _MAX_TOOL_ITERATIONS = 5
@@ -142,28 +149,32 @@ def _serialize_tool_output(output: Any) -> str:
 
 
 def _build_context_message(
-    team_id: str | None, schedule_id: str | None
-) -> dict[str, Any] | None:
+    today: date, team_id: str | None, schedule_id: str | None
+) -> dict[str, Any]:
     """Build a server-authored context turn from the active page state.
 
     Injected as a ``system`` message so the model reliably targets the right
-    entities without the user typing technical identifiers. Returns ``None``
-    when no context is available so the prompt stays clean.
+    entities and resolves relative dates without the user typing technical
+    identifiers. The temporal anchor (``current_date``) is always present so
+    the model never has to guess "today".
     """
-    parts: list[str] = []
+    parts: list[str] = [
+        f"current_date={today.isoformat()}",
+        f"weekday={today.strftime('%A')}",
+        "timezone=UTC",
+    ]
     if team_id:
         parts.append(f"team_id={team_id}")
     if schedule_id:
         parts.append(f"schedule_id={schedule_id}")
-    if not parts:
-        return None
     return {
         "role": "system",
         "content": (
             "Active context from the user's current screen: "
             + ", ".join(parts)
-            + ". Use these identifiers when calling tools unless the user "
-            "explicitly refers to a different team or schedule."
+            + ". Use current_date (UTC) to resolve any relative dates. Use "
+            "these identifiers when calling tools unless the user explicitly "
+            "refers to a different team or schedule."
         ),
     }
 
@@ -224,7 +235,9 @@ class CopilotAgentService:
                 {"role": turn["role"], "content": turn["content"]}
                 for turn in capped_history
             )
-        context_message = _build_context_message(team_id, schedule_id)
+        context_message = _build_context_message(
+            datetime.now(timezone.utc).date(), team_id, schedule_id
+        )
         if context_message is not None:
             messages.append(context_message)
         messages.append(

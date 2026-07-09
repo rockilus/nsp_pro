@@ -268,7 +268,7 @@ class TestRunAgentLoop:
             )
 
         sent = mock_ac.call_args.kwargs["messages"]
-        # system, history[0], history[1], context (none here), current user message
+        # system, history[0], history[1], context (date anchor), current message
         assert sent[0]["role"] == "system"
         assert sent[1] == {"role": "user", "content": "who is on team-9?"}
         assert sent[2] == {"role": "assistant", "content": "Alice and Bob."}
@@ -305,7 +305,7 @@ class TestRunAgentLoop:
         )
         assert "schedule_id=sched-3" in context["content"]
 
-    async def test_no_context_message_when_no_ids(self):
+    async def test_temporal_anchor_always_injected(self):
         message = _make_message(content="ok")
         with (
             patch(f"{MODULE}.config") as cfg,
@@ -324,5 +324,31 @@ class TestRunAgentLoop:
             )
 
         sent = mock_ac.call_args.kwargs["messages"]
-        # Only the base system prompt + the user message.
-        assert [m["role"] for m in sent] == ["system", "user"]
+        # Even with no team/schedule ids, the UTC date anchor is present.
+        context = next(
+            m for m in sent if m["role"] == "system" and "current_date=" in m["content"]
+        )
+        assert "timezone=UTC" in context["content"]
+        assert "weekday=" in context["content"]
+
+
+class TestBuildContextMessage:
+    def test_renders_fixed_date_deterministically(self):
+        from datetime import date
+
+        from src.services.copilot_agent import _build_context_message
+
+        msg = _build_context_message(date(2026, 7, 9), None, None)
+        assert "current_date=2026-07-09" in msg["content"]
+        assert "weekday=Thursday" in msg["content"]
+        assert "timezone=UTC" in msg["content"]
+
+    def test_includes_team_and_schedule_with_date(self):
+        from datetime import date
+
+        from src.services.copilot_agent import _build_context_message
+
+        msg = _build_context_message(date(2026, 7, 9), "team-9", "sched-3")
+        assert "current_date=2026-07-09" in msg["content"]
+        assert "team_id=team-9" in msg["content"]
+        assert "schedule_id=sched-3" in msg["content"]
