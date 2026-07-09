@@ -12,11 +12,13 @@ import {
 } from '@/components/ui/sheet';
 import { useTranslation } from '@/app/i18n/client';
 import { useCopilot } from '@/context/CopilotContext';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { CopilotWindow } from './copilot-window';
 import { ChatMessage } from './chat-message';
 import { ChatComposer } from './chat-composer';
 import { SuggestionChips } from './suggestion-chips';
 
-export function CopilotPanel({ lng }: { lng: string }) {
+function MobileCopilotSheet({ lng }: { lng: string }) {
   const { t } = useTranslation(lng, 'copilot');
   const { open, setOpen, messages, isLoading, send, retry, clear } = useCopilot();
 
@@ -90,4 +92,11 @@ export function CopilotPanel({ lng }: { lng: string }) {
       </SheetContent>
     </Sheet>
   );
+}
+
+export function CopilotPanel({ lng }: { lng: string }) {
+  const isMobile = useIsMobile();
+
+  if (!isMobile) return <CopilotWindow lng={lng} />;
+  return <MobileCopilotSheet lng={lng} />;
 }

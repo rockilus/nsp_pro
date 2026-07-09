@@ -27,6 +27,10 @@ interface CopilotContextValue {
   open: boolean;
   setOpen: (open: boolean) => void;
   openCopilot: () => void;
+  /** Desktop docked-window minimized state (collapsed to header bar). */
+  minimized: boolean;
+  setMinimized: (minimized: boolean) => void;
+  toggleMinimized: () => void;
   messages: CopilotMessage[];
   isLoading: boolean;
   send: (text: string) => Promise<void>;
@@ -58,6 +62,12 @@ const MAX_STORED_MESSAGES = 40;
 const MAX_HISTORY_TURNS = 10;
 
 const storageKey = (teamId: string) => `copilot:history:${teamId}`;
+const UI_STATE_KEY = 'copilot:ui';
+
+interface CopilotUiState {
+  open: boolean;
+  minimized: boolean;
+}
 
 function createId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -78,9 +88,14 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
   const sendChat = useCopilotChat();
 
   const [open, setOpen] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState<CopilotMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [scheduleId, setScheduleId] = useState<string | null>(null);
+
+  // Gate persisting the docked-window UI state until it has hydrated from
+  // storage, to avoid clobbering the cache during static-export hydration.
+  const [uiHydrated, setUiHydrated] = useState(false);
 
   // Tracks which team's history has been loaded from storage. Persisting is
   // gated on this to avoid clobbering the cache with the initial empty array
@@ -96,6 +111,32 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     loadingRef.current = isLoading;
   }, [isLoading]);
+
+  // Restore the docked-window open/minimized state on mount so it survives
+  // reloads (navigation persistence is provided by the mounted provider).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(UI_STATE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<CopilotUiState>;
+        if (typeof parsed.open === 'boolean') setOpen(parsed.open);
+        if (typeof parsed.minimized === 'boolean') setMinimized(parsed.minimized);
+      }
+    } catch {
+      // ignore malformed / unavailable storage
+    }
+    setUiHydrated(true);
+  }, []);
+
+  // Persist the docked-window state (only after hydration).
+  useEffect(() => {
+    if (!uiHydrated) return;
+    try {
+      localStorage.setItem(UI_STATE_KEY, JSON.stringify({ open, minimized }));
+    } catch {
+      // Storage full / unavailable — non-fatal.
+    }
+  }, [open, minimized, uiHydrated]);
 
   // Load persisted history whenever the active team changes.
   useEffect(() => {
@@ -188,13 +229,21 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
     }
   }, [selectedTeamId]);
 
-  const openCopilot = useCallback(() => setOpen(true), []);
+  const openCopilot = useCallback(() => {
+    setOpen(true);
+    setMinimized(false);
+  }, []);
+
+  const toggleMinimized = useCallback(() => setMinimized((prev) => !prev), []);
 
   const value = useMemo<CopilotContextValue>(
     () => ({
       open,
       setOpen,
       openCopilot,
+      minimized,
+      setMinimized,
+      toggleMinimized,
       messages,
       isLoading,
       send,
@@ -202,7 +251,7 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
       clear,
       setScheduleId,
     }),
-    [open, openCopilot, messages, isLoading, send, retry, clear],
+    [open, openCopilot, minimized, toggleMinimized, messages, isLoading, send, retry, clear],
   );
 
   return <CopilotContext.Provider value={value}>{children}</CopilotContext.Provider>;
