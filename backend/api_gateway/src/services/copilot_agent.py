@@ -157,13 +157,15 @@ class CopilotAgentService:
         messages: list[dict[str, Any]] = [
             {"role": "system", "content": _SYSTEM_PROMPT},
         ]
+        if history:
+            capped_history = history[-config.ai_max_history_messages :]
+            messages.extend(
+                {"role": turn["role"], "content": turn["content"]}
+                for turn in capped_history
+            )
         context_message = _build_context_message(team_id, schedule_id)
         if context_message is not None:
             messages.append(context_message)
-        if history:
-            messages.extend(
-                {"role": turn["role"], "content": turn["content"]} for turn in history
-            )
         messages.append(
             {
                 "role": "user",
@@ -192,7 +194,10 @@ class CopilotAgentService:
                 if not tool_calls:
                     return response_message.content or ""
 
-                messages.append(response_message.model_dump())
+                normalized_msg = response_message.model_dump(exclude_none=True)
+                if "content" not in normalized_msg:
+                    normalized_msg["content"] = ""
+                messages.append(normalized_msg)
 
                 for tool_call in tool_calls:
                     await cls._execute_tool_call(
@@ -239,12 +244,22 @@ class CopilotAgentService:
             except json.JSONDecodeError:
                 args = {}
             log_info(f"Copilot executing tool={function_name} args={args}")
-            output = await spec.executor(
-                db=db,
-                user_context=user_context,
-                cerbos=cerbos,
-                **args,
-            )
+            try:
+                output = await spec.executor(
+                    db=db,
+                    user_context=user_context,
+                    cerbos=cerbos,
+                    **args,
+                )
+            except TypeError as e:
+                log_error(
+                    f"Copilot tool signature mismatch for {function_name}: {str(e)}"
+                )
+                output = {
+                    "error": "Invalid tool arguments provided.",
+                    "details": str(e),
+                    "hint": "Verify the schema fields before re-attempting.",
+                }
 
         messages.append(
             {

@@ -222,6 +222,7 @@ class TestRunAgentLoop:
             cfg.ai_enabled = True
             cfg.ai_model = "gemini/gemini-2.5-flash"
             cfg.gemini_api_key = "g-key"
+            cfg.ai_max_history_messages = 20
             mock_ac.return_value = _make_completion(message)
 
             await CopilotAgentService.run_agent_loop(
@@ -233,7 +234,7 @@ class TestRunAgentLoop:
             )
 
         sent = mock_ac.call_args.kwargs["messages"]
-        # system, history[0], history[1], current user message
+        # system, history[0], history[1], context (none here), current user message
         assert sent[0]["role"] == "system"
         assert sent[1] == {"role": "user", "content": "who is on team-9?"}
         assert sent[2] == {"role": "assistant", "content": "Alice and Bob."}

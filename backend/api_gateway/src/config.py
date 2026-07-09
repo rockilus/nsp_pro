@@ -192,6 +192,11 @@ class AppConfig(BaseSettings):
     mistral_api_key: str | None = Field(
         None, description="API key for Mistral models (mistral/* model strings)"
     )
+    ai_max_history_messages: int = Field(
+        20,
+        description="Maximum chat history messages to include in the copilot "
+        "prompt. Excess messages are dropped from the head (oldest first).",
+    )
     ai_chat_rate_limit: str = Field(
         "20/minute", description="Rate limit for POST /copilot/chat"
     )
