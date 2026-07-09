@@ -117,9 +117,20 @@ async def execute_update_worker(
         "weekly_hours_desired": "Desired weekly hours",
         "duties_per_month": "Duties per month",
         "annual_leave": "Annual leave (days)",
+        "employment_start_date": "Employment start date",
         "employment_end_date": "Employment end date",
     }
     patch = args.model_dump(exclude_none=True, exclude={"worker_id"})
+
+    # Validate the effective employment window (patched value falls back to the
+    # stored one) so a partial update cannot produce start > end.
+    effective_start = patch.get("employment_start_date", existing.employment_start_date)
+    effective_end = patch.get("employment_end_date", existing.employment_end_date)
+    if effective_end is not None and effective_start > effective_end:
+        return {
+            "status": "error",
+            "message": "Employment start date cannot be after employment end date.",
+        }
 
     if mode == "preview":
         changes = []

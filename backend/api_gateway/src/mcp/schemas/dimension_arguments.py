@@ -7,11 +7,13 @@ selectable options). Rich ``Field`` descriptions guide the LLM's extraction.
 
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CreateDimensionArgs(BaseModel):
     """Arguments to create a new custom worker dimension."""
+
+    model_config = ConfigDict(extra="forbid")
 
     team_id: str = Field(
         ...,
@@ -37,6 +39,8 @@ class CreateDimensionArgs(BaseModel):
 class UpdateDimensionArgs(BaseModel):
     """Partial patch of an existing dimension. Only rename is supported."""
 
+    model_config = ConfigDict(extra="forbid")
+
     dimension_id: str = Field(
         ..., description="The identifier of the dimension to update."
     )
@@ -48,6 +52,8 @@ class UpdateDimensionArgs(BaseModel):
 class DeleteDimensionArgs(BaseModel):
     """Arguments to soft-delete a dimension and its entries/attributes."""
 
+    model_config = ConfigDict(extra="forbid")
+
     dimension_id: str = Field(
         ..., description="The identifier of the dimension to soft-delete."
     )
@@ -55,6 +61,8 @@ class DeleteDimensionArgs(BaseModel):
 
 class CreateDimEntryArgs(BaseModel):
     """Arguments to add a new option to a dropdown dimension."""
+
+    model_config = ConfigDict(extra="forbid")
 
     dimension_id: str = Field(
         ...,
@@ -68,6 +76,8 @@ class CreateDimEntryArgs(BaseModel):
 class UpdateDimEntryArgs(BaseModel):
     """Partial patch of an existing dropdown entry. Only rename is supported."""
 
+    model_config = ConfigDict(extra="forbid")
+
     dim_entry_id: str = Field(
         ..., description="The identifier of the dropdown entry to update."
     )
@@ -76,6 +86,8 @@ class UpdateDimEntryArgs(BaseModel):
 
 class DeleteDimEntryArgs(BaseModel):
     """Arguments to soft-delete a dropdown entry (option)."""
+
+    model_config = ConfigDict(extra="forbid")
 
     dim_entry_id: str = Field(
         ..., description="The identifier of the dropdown entry to soft-delete."

@@ -9,11 +9,13 @@ values for fields the user never mentioned.
 from datetime import date
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class CreateWorkerArgs(BaseModel):
     """Arguments to add a brand-new team member to a team roster."""
+
+    model_config = ConfigDict(extra="forbid")
 
     team_id: str = Field(
         ...,
@@ -55,6 +57,8 @@ class UpdateWorkerArgs(BaseModel):
     every other field must be left null so existing values are preserved.
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     worker_id: str = Field(
         ..., description="The immutable identifier of the target worker record."
     )
@@ -76,6 +80,10 @@ class UpdateWorkerArgs(BaseModel):
         description="Complete replacement list of specialty IDs. Only set when "
         "the user wants to change the worker's specialties.",
     )
+    employment_start_date: Optional[date] = Field(
+        None,
+        description="ISO date (YYYY-MM-DD) when the worker's employment starts.",
+    )
     employment_end_date: Optional[date] = Field(
         None,
         description="ISO date (YYYY-MM-DD) marking employment end when "
@@ -85,6 +93,8 @@ class UpdateWorkerArgs(BaseModel):
 
 class DeleteWorkerArgs(BaseModel):
     """Arguments to soft-delete (flag as deleted) a worker record."""
+
+    model_config = ConfigDict(extra="forbid")
 
     worker_id: str = Field(
         ...,
@@ -99,6 +109,8 @@ class SetWorkerDimensionValueArgs(BaseModel):
     chosen entry IDs (resolve names to IDs via the ``get_dimensions`` tool). For
     text/number/boolean dimensions, populate ``value`` instead.
     """
+
+    model_config = ConfigDict(extra="forbid")
 
     worker_id: str = Field(
         ..., description="The identifier of the worker whose value is being set."

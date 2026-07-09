@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from litellm import acompletion
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_error, log_info
 
@@ -126,17 +126,11 @@ def _serialize_tool_output(output: Any) -> str:
     def _default(obj: Any) -> Any:
         if isinstance(obj, BaseModel):
             return obj.model_dump(mode="json")
-        raise TypeError(
-            f"Object of type {type(obj).__name__} is not serializable"
-        )
+        raise TypeError(f"Object of type {type(obj).__name__} is not serializable")
 
     if isinstance(output, list):
         payload: Any = [
-            (
-                item.model_dump(mode="json")
-                if isinstance(item, BaseModel)
-                else item
-            )
+            (item.model_dump(mode="json") if isinstance(item, BaseModel) else item)
             for item in output
         ]
     elif isinstance(output, BaseModel):
@@ -216,9 +210,7 @@ class CopilotAgentService:
 
         model = config.ai_model
         api_key = _resolve_api_key(model)
-        log_info(
-            f"Copilot loop started: user={user_context.user_id} model={model}"
-        )
+        log_info(f"Copilot loop started: user={user_context.user_id} model={model}")
 
         # Collects a prepared (but unexecuted) write to surface to the client.
         pending: list[PendingAction] = []
@@ -336,7 +328,7 @@ class CopilotAgentService:
                     cerbos=cerbos,
                     **call_kwargs,
                 )
-            except TypeError as e:
+            except (TypeError, ValidationError) as e:
                 log_error(
                     f"Copilot tool signature mismatch for {function_name}: {str(e)}"
                 )
@@ -399,9 +391,7 @@ class CopilotAgentService:
                 "message": "Unknown or non-confirmable tool.",
             }
 
-        log_info(
-            f"Copilot confirming tool={tool_name} user={user_context.user_id}"
-        )
+        log_info(f"Copilot confirming tool={tool_name} user={user_context.user_id}")
         return await spec.executor(
             db=db,
             user_context=user_context,

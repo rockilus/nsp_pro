@@ -209,6 +209,40 @@ class TestRunAgentLoop:
         tool_msg = next(m for m in second_messages if m.get("role") == "tool")
         assert json.loads(tool_msg["content"]) == []
 
+    async def test_invalid_tool_args_surface_as_structured_error(self):
+        tool_call = _make_tool_call(
+            "call-1", "update_worker_fields", json.dumps({"bogus": "x"})
+        )
+        first = _make_completion(_make_message(tool_calls=[tool_call]))
+        second = _make_completion(_make_message(content="I could not apply that."))
+
+        cerbos = AsyncMock()
+        cerbos.check.return_value = True
+
+        with (
+            patch(f"{MODULE}.config") as cfg,
+            patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
+        ):
+            cfg.ai_enabled = True
+            cfg.ai_model = "gemini/gemini-2.5-flash"
+            cfg.gemini_api_key = "g-key"
+            cfg.copilot_action_jwt_secret = "s" * 32
+            cfg.copilot_action_token_ttl_seconds = 300
+            mock_ac.side_effect = [first, second]
+
+            result = await CopilotAgentService.run_agent_loop(
+                user_message="update worker with a bad field",
+                user_context=_user(),
+                db=MagicMock(),
+                cerbos=cerbos,
+            )
+
+        assert result.pending_action is None
+        second_messages = mock_ac.call_args_list[1].kwargs["messages"]
+        tool_msg = next(m for m in second_messages if m.get("role") == "tool")
+        payload = json.loads(tool_msg["content"])
+        assert payload["error"] == "Invalid tool arguments provided."
+
     async def test_history_is_prepended_before_current_message(self):
         message = _make_message(content="Sure, following up.")
         history = [
@@ -239,7 +273,9 @@ class TestRunAgentLoop:
         assert sent[1] == {"role": "user", "content": "who is on team-9?"}
         assert sent[2] == {"role": "assistant", "content": "Alice and Bob."}
         assert sent[-1]["role"] == "user"
-        assert sent[-1]["content"].endswith("<user_query>and their hours?</user_query>")
+        assert sent[-1]["content"].endswith(
+            "<raw_user_message>and their hours?</raw_user_message>"
+        )
 
     async def test_context_message_injected_from_active_screen(self):
         message = _make_message(content="ok")

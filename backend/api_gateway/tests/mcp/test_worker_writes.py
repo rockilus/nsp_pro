@@ -161,6 +161,100 @@ class TestUpdateWorker:
         )
         assert out["status"] == "error"
 
+    async def test_employment_start_date_preview_diff(self):
+        db = MagicMock()
+        db.worker_db.get_worker_by_id.return_value = _worker()
+        with patch.object(worker_writes.WorkerService, "update_worker") as mock_upd:
+            out = await worker_writes.execute_update_worker(
+                db=db,
+                user_context=_user(),
+                cerbos=_allow(),
+                mode="preview",
+                worker_id="w1",
+                employment_start_date="2024-05-05",
+            )
+        assert out["status"] == "pending_confirmation"
+        changes = out["preview"]["changes"]
+        assert len(changes) == 1
+        assert changes[0]["field"] == "employment_start_date"
+        assert changes[0]["old"] == "2025-01-01"
+        assert changes[0]["new"] == "2024-05-05"
+        mock_upd.assert_not_called()
+
+    async def test_employment_start_date_execute_sets_value(self):
+        db = MagicMock()
+        db.worker_db.get_worker_by_id.return_value = _worker()
+        captured = {}
+
+        def _capture(w):
+            captured["worker"] = w
+            return w
+
+        with patch.object(
+            worker_writes.WorkerService, "update_worker", side_effect=_capture
+        ):
+            out = await worker_writes.execute_update_worker(
+                db=db,
+                user_context=_user(),
+                cerbos=_allow(),
+                mode="execute",
+                worker_id="w1",
+                employment_start_date="2024-05-05",
+            )
+        assert out["status"] == "success"
+        assert captured["worker"].employment_start_date == date(2024, 5, 5)
+
+    async def test_start_after_end_rejected_in_preview(self):
+        db = MagicMock()
+        existing = _worker()
+        existing.employment_end_date = date(2025, 6, 1)
+        db.worker_db.get_worker_by_id.return_value = existing
+        with patch.object(worker_writes.WorkerService, "update_worker") as mock_upd:
+            out = await worker_writes.execute_update_worker(
+                db=db,
+                user_context=_user(),
+                cerbos=_allow(),
+                mode="preview",
+                worker_id="w1",
+                employment_start_date="2025-12-31",
+            )
+        assert out["status"] == "error"
+        assert "after employment end date" in out["message"]
+        mock_upd.assert_not_called()
+
+    async def test_start_after_end_rejected_in_execute(self):
+        db = MagicMock()
+        existing = _worker()
+        existing.employment_end_date = date(2025, 6, 1)
+        db.worker_db.get_worker_by_id.return_value = existing
+        with patch.object(worker_writes.WorkerService, "update_worker") as mock_upd:
+            out = await worker_writes.execute_update_worker(
+                db=db,
+                user_context=_user(),
+                cerbos=_allow(),
+                mode="execute",
+                worker_id="w1",
+                employment_start_date="2025-12-31",
+            )
+        assert out["status"] == "error"
+        mock_upd.assert_not_called()
+
+    async def test_unknown_arg_raises_validation_error(self):
+        import pytest
+        from pydantic import ValidationError
+
+        db = MagicMock()
+        db.worker_db.get_worker_by_id.return_value = _worker()
+        with pytest.raises(ValidationError):
+            await worker_writes.execute_update_worker(
+                db=db,
+                user_context=_user(),
+                cerbos=_allow(),
+                mode="preview",
+                worker_id="w1",
+                bogus_field="oops",
+            )
+
 
 class TestDeleteWorker:
     async def test_preview_does_not_delete(self):
