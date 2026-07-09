@@ -43,6 +43,7 @@ from src.mcp.schemas.dimension_arguments import (
     UpdateDimensionArgs,
     UpdateDimEntryArgs,
 )
+from src.mcp.schemas.temporal_arguments import CalculateRelativeDateArgs
 from src.mcp.schemas.worker_arguments import (
     CreateWorkerArgs,
     DeleteWorkerArgs,
@@ -58,6 +59,7 @@ from src.mcp.tools.dimension_writes import (
     execute_update_dim_entry,
     execute_update_dimension,
 )
+from src.mcp.tools.temporal_queries import calculate_relative_date
 from src.mcp.tools.worker_writes import (
     execute_create_worker,
     execute_delete_worker,
@@ -173,6 +175,25 @@ GET_DIMENSIONS = ToolSpec(
         },
     ),
     executor=execute_get_dimensions,
+)
+
+CALCULATE_RELATIVE_DATE = ToolSpec(
+    name="calculate_relative_date",
+    manifest=_fn_manifest(
+        "calculate_relative_date",
+        (
+            "Compute exact UTC calendar dates from relative expressions. "
+            "Call this for EVERY relative date the user mentions "
+            "('tomorrow', 'next Monday', 'first Wednesday of next month', "
+            "'in 3 days') before passing the result to any other tool. "
+            "Never perform date math in your head — always delegate to "
+            "this tool."
+        ),
+        CalculateRelativeDateArgs.model_json_schema(),
+    ),
+    executor=calculate_relative_date,
+    channels=ToolChannel.COPILOT,
+    confirmation_tier="none",
 )
 
 
@@ -319,6 +340,7 @@ TOOL_REGISTRY: dict[str, ToolSpec] = {
     for spec in (
         GET_TEAM_MEMBERS,
         GET_DIMENSIONS,
+        CALCULATE_RELATIVE_DATE,
         CREATE_WORKER,
         UPDATE_WORKER,
         SOFT_DELETE_WORKER,

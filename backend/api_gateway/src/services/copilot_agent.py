@@ -13,6 +13,7 @@ Design notes:
 """
 
 import json
+import re
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Any
@@ -82,13 +83,44 @@ _SYSTEM_PROMPT = (
     "immutable ground truth about what was actually committed to the database "
     "(whether the user applied or cancelled a prepared change). Trust them "
     "over your own assumptions when answering follow-ups.\n\n"
-    "DATE RESOLUTION:\n"
-    "- Resolve all relative dates ('today', 'tomorrow', 'yesterday', "
-    "'last year', 'next Monday', 'this week') against the 'current_date' "
-    "(UTC) provided in the active context, using its 'weekday' as reference. "
-    "Compute the exact calendar date yourself and NEVER guess or invent "
-    "dates. Always express dates in ISO YYYY-MM-DD format."
+    "DATE RESOLUTION PROTOCOL:\n"
+    "- You are strictly forbidden from performing manual date calculations, "
+    "additions, subtractions, or calendar arithmetic in your head.\n"
+    "- For ANY relative date expression (e.g. 'next Monday', 'tomorrow', "
+    "'first Wednesday of next month', 'le premier mercredi du mois suivant', "
+    "'dans 3 jours'), you MUST immediately call calculate_relative_date.\n"
+    "- Use the returned ISO date string directly in downstream tool calls. "
+    "Never guess or hardcode a date value.\n\n"
+    "THINKING PROTOCOL:\n"
+    "Before calling any tool, use a <thinking> block to extract parameters "
+    "cleanly. Map French/Spanish weekday names to English (lundi=Monday, "
+    "mercredi=Wednesday, etc.) inside the block. Provide only the parameter "
+    "mapping — let calculate_relative_date handle all calendar math.\n\n"
+    "Example 1 (Simple weekday offset):\n"
+    "<thinking>\n"
+    "User says: 'lundi prochain'\n"
+    "→ calculation_type=week_offset, target_weekday=Monday, week_offset=1\n"
+    "</thinking>\n"
+    "[Call calculate_relative_date]\n\n"
+    "Example 2 (Nested month ordinal):\n"
+    "<thinking>\n"
+    "User says: 'le premier mercredi du mois après le prochain'\n"
+    "→ calculation_type=month_ordinal, target_weekday=Wednesday,\n"
+    "  month_offset=2, ordinal_position=1\n"
+    "</thinking>\n"
+    "[Call calculate_relative_date]"
 )
+
+
+def _strip_thinking(text: str) -> str:
+    """Remove ``<thinking>...</thinking>`` blocks from model output.
+
+    Handles both closed and unclosed tags. The model is instructed to place
+    all chain-of-thought reasoning inside these blocks so that it never leaks
+    into the user-facing UI.
+    """
+    return re.sub(r"<thinking>.*?(?:</thinking>|$)", "", text, flags=re.DOTALL).strip()
+
 
 _MAX_TOOL_ITERATIONS = 5
 
@@ -264,7 +296,7 @@ class CopilotAgentService:
 
                 if not tool_calls:
                     return AgentResult(
-                        text=response_message.content or "",
+                        text=_strip_thinking(response_message.content or ""),
                         pending_action=pending[0] if pending else None,
                     )
 
@@ -291,7 +323,7 @@ class CopilotAgentService:
                 api_key=api_key,
             )
             return AgentResult(
-                text=final.choices[0].message.content or "",
+                text=_strip_thinking(final.choices[0].message.content or ""),
                 pending_action=pending[0] if pending else None,
             )
 
