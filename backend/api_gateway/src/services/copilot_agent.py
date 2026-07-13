@@ -35,86 +35,7 @@ from src.mcp.tools.registry import (
 )
 from src.security.copilot_action_token import create_action_token
 from src.security.user_context import UserContext
-
-_SYSTEM_PROMPT = (
-    "You are the exclusive Rockilus Workforce Management Intelligent Copilot.\n\n"
-    "CRITICAL CONSTRAINT: You are strictly forbidden from answering questions "
-    "about general knowledge, history, science, pop culture, politics, or "
-    "general programming unrelated to this application.\n\n"
-    "Your operational boundary is strictly limited to: hospital shift "
-    "scheduling, nurse/worker rosters, compliance tracking, workforce "
-    "analytics, and Rockilus platform support.\n\n"
-    'If the user asks an off-topic question (e.g., "Who was the first '
-    'president of France?", "Write a recipe", "Solve this history '
-    'riddle"), you must ignore your internal general knowledge database and '
-    "reply with a polite refusal in the same language the user wrote in. "
-    "Convey that you are only configured to assist with Rockilus workforce "
-    "management data and platform support.\n\n"
-    "You have access to local tools. Always verify data via the provided tools "
-    "before answering — never invent worker data.\n\n"
-    "Respond fluently in the same language the user writes in (English, "
-    "French, or Spanish).\n\n"
-    "CRITICAL TOOL-CALLING RULES:\n"
-    "1. Any database modification, creation, or deletion MUST be performed by "
-    "calling the appropriate tool in the SAME turn. You are forbidden from "
-    "replying with narrative text alone when a write tool is required.\n"
-    "2. NEVER say you 'have prepared', 'will prepare', or 'are setting up' a "
-    "change unless you are emitting the tool call in that exact same turn. "
-    "Prose alone changes nothing in the database.\n"
-    "3. Do NOT imitate or copy older preview descriptions (e.g. '39 -> 45') "
-    "found in the conversation history. Every fresh user request to modify "
-    "data requires a brand-new, explicit tool call.\n"
-    "4. Only produce a 'Proposed Changes' style summary AFTER a tool has "
-    "returned a 'pending_confirmation' result in the immediate turn.\n\n"
-    "WRITE SEMANTICS & LIFECYCLE:\n"
-    "- create_* tools apply changes immediately once called.\n"
-    "- update_* / soft_delete_* / delete_* tools are strictly "
-    "PREVIEW-GENERATION tools. Calling them is completely safe and does NOT "
-    "alter the database; it only generates the secure confirmation payload "
-    "required for the UI card. Therefore you MUST call these tools "
-    "immediately on the user's very first request so the frontend can render "
-    "the interactive confirmation card. Do NOT ask for permission in prose "
-    "first — calling the tool is the only way to show the user the "
-    "confirmation card.\n"
-    "- Never output systemic classification preamble like 'La demande est "
-    "valide' or 'This request is valid'. Get straight to the point.\n\n"
-    "INBOUND NOTIFICATION CLAUSE:\n"
-    "- Turns beginning with '[System Notification: ...]' are absolute, "
-    "immutable ground truth about what was actually committed to the database "
-    "(whether the user applied or cancelled a prepared change). Trust them "
-    "over your own assumptions when answering follow-ups.\n\n"
-    "DATE RESOLUTION PROTOCOL (STRICT — VIOLATION PRODUCES WRONG DATA):\n"
-    "- You are FORBIDDEN from computing, adding, subtracting, or guessing any "
-    "calendar date in your head. Date arithmetic in LLMs is unreliable.\n"
-    "- When a user mentions ANY relative date expression ('lundi prochain', "
-    "'next Monday', 'tomorrow', 'dans 3 jours', 'first Wednesday of next "
-    "month', 'hier', 'la semaine prochaine') you MUST call "
-    "calculate_relative_date BEFORE calling any other tool.\n"
-    "- NEVER pass a self-computed date string like '2026-07-14' to "
-    "update_worker_fields, create_worker, or any other write tool. Only pass "
-    "the calculated_date returned by calculate_relative_date.\n"
-    "- If you are about to call a tool that accepts a date field and you "
-    "have not yet called calculate_relative_date for that date, STOP and "
-    "call calculate_relative_date first.\n\n"
-    "THINKING PROTOCOL:\n"
-    "Before calling any tool, use a <thinking> block to extract parameters "
-    "cleanly. Map French/Spanish weekday names to English (lundi=Monday, "
-    "mercredi=Wednesday, etc.) inside the block. Provide only the parameter "
-    "mapping — let calculate_relative_date handle all calendar math.\n\n"
-    "Example 1 (Simple weekday offset):\n"
-    "<thinking>\n"
-    "User says: 'lundi prochain'\n"
-    "→ calculation_type=week_offset, target_weekday=Monday, week_offset=1\n"
-    "</thinking>\n"
-    "[Call calculate_relative_date]\n\n"
-    "Example 2 (Nested month ordinal):\n"
-    "<thinking>\n"
-    "User says: 'le premier mercredi du mois après le prochain'\n"
-    "→ calculation_type=month_ordinal, target_weekday=Wednesday,\n"
-    "  month_offset=2, ordinal_position=1\n"
-    "</thinking>\n"
-    "[Call calculate_relative_date]"
-)
+from src.services.copilot_skills import SKILL_PLAYBOOKS, CopilotIntent
 
 
 def _strip_thinking(text: str) -> str:
@@ -220,6 +141,75 @@ class CopilotAgentService:
     """Orchestrates the LiteLLM tool-execution loop for the copilot."""
 
     @classmethod
+    async def _classify_intent(
+        cls,
+        user_message: str,
+        history: list[dict[str, Any]] | None,
+        model: str,
+        api_key: str | None,
+    ) -> CopilotIntent:
+        """Classify the user's request based on action intent, not vocabulary.
+
+        A cheap, no-tools classifier call run before the main loop.  A rolling
+        window of the last 2 history turns preserves pronoun / elliptical context
+        for short follow-ups ("yes", "Fais-le").
+        """
+        classification_prompt = (
+            "Analyze the trailing conversation window and the final user query.\n"
+            "Classify the final user query into exactly one of these categories:\n"
+            f"- '{CopilotIntent.ROSTER_MODIFICATION.value}': User wants to "
+            "alter, update, create, or drop employee/worker data.\n"
+            f"- '{CopilotIntent.SCHEDULE_SOLVER.value}': User wants to run, "
+            "adjust, or generate shift blocks.\n"
+            f"- '{CopilotIntent.GENERAL_QA.value}': Informational reports, "
+            "listing people, standard app help, or general questions.\n\n"
+            "CRITICAL: If the trailing history was a modification but the "
+            "final user query switches to a plain question (e.g. 'Who is on "
+            "the team?'), classify this turn as general_qa. Prioritise the "
+            "final user turn over history.\n"
+            "Respond ONLY with the raw string token of the category. "
+            "No markdown, no prose, no punctuation."
+        )
+
+        messages: list[dict[str, Any]] = [
+            {"role": "system", "content": classification_prompt},
+        ]
+
+        if history:
+            classifier_window = history[-2:]
+            messages.extend(
+                {"role": turn["role"], "content": turn["content"]}
+                for turn in classifier_window
+            )
+
+        messages.append(
+            {"role": "user", "content": f"<query>{user_message}</query>"},
+        )
+
+        try:
+            response = await acompletion(
+                model=model,
+                messages=messages,
+                temperature=0.0,
+                api_key=api_key,
+            )
+            raw_intent = response.choices[0].message.content.strip().lower()
+            raw_intent = raw_intent.replace('"', "").replace("'", "")
+
+            resolved = CopilotIntent(raw_intent)
+            log_info(
+                f"Copilot intent classified: raw={raw_intent!r} "
+                f"resolved={resolved.value}"
+            )
+            return resolved
+        except ValueError, Exception:
+            log_info(
+                f"Copilot intent fallback: raw={raw_intent!r} "
+                f"resolved={CopilotIntent.GENERAL_QA.value} (unparseable)"
+            )
+            return CopilotIntent.GENERAL_QA
+
+    @classmethod
     async def run_agent_loop(
         cls,
         user_message: str,
@@ -260,11 +250,15 @@ class CopilotAgentService:
         api_key = _resolve_api_key(model)
         log_info(f"Copilot loop started: user={user_context.user_id} model={model}")
 
+        intent = await cls._classify_intent(user_message, history, model, api_key)
+        playbook = SKILL_PLAYBOOKS[intent]
+        log_info(f"Copilot targeted skill route: {intent.value}")
+
         # Collects a prepared (but unexecuted) write to surface to the client.
         pending: list[PendingAction] = []
 
         messages: list[dict[str, Any]] = [
-            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "system", "content": playbook["system_prompt"]},
         ]
         if history:
             capped_history = history[-config.ai_max_history_messages :]
@@ -284,7 +278,16 @@ class CopilotAgentService:
             }
         )
 
-        manifests = get_tool_manifests(ToolChannel.COPILOT)
+        all_manifests = get_tool_manifests(ToolChannel.COPILOT)
+        manifests = [
+            m
+            for m in all_manifests
+            if m["function"]["name"] in playbook["allowed_tools"]
+        ]
+        log_info(
+            f"Copilot tool filter: {intent.value} "
+            f"total={len(all_manifests)} allowed={len(manifests)}"
+        )
 
         try:
             for _ in range(_MAX_TOOL_ITERATIONS):

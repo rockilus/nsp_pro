@@ -14,6 +14,7 @@ from src.services.copilot_agent import (
     _resolve_api_key,
     _serialize_tool_output,
 )
+from src.services.copilot_skills import CopilotIntent
 
 MODULE = "src.services.copilot_agent"
 
@@ -113,6 +114,11 @@ class TestRunAgentLoop:
         with (
             patch(f"{MODULE}.config") as cfg,
             patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
+            patch.object(
+                CopilotAgentService,
+                "_classify_intent",
+                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+            ),
         ):
             cfg.ai_enabled = True
             cfg.ai_model = "gemini/gemini-2.5-flash"
@@ -148,6 +154,11 @@ class TestRunAgentLoop:
                 "src.mcp.tools.registry._build_team_members",
                 return_value=[_roster_item("Alice")],
             ) as mock_build,
+            patch.object(
+                CopilotAgentService,
+                "_classify_intent",
+                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+            ),
         ):
             cfg.ai_enabled = True
             cfg.ai_model = "gemini/gemini-2.5-flash"
@@ -190,6 +201,11 @@ class TestRunAgentLoop:
                 "src.mcp.tools.registry._build_team_members",
                 return_value=[_roster_item("Secret")],
             ) as mock_build,
+            patch.object(
+                CopilotAgentService,
+                "_classify_intent",
+                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+            ),
         ):
             cfg.ai_enabled = True
             cfg.ai_model = "gemini/gemini-2.5-flash"
@@ -222,6 +238,11 @@ class TestRunAgentLoop:
         with (
             patch(f"{MODULE}.config") as cfg,
             patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
+            patch.object(
+                CopilotAgentService,
+                "_classify_intent",
+                new=AsyncMock(return_value=CopilotIntent.ROSTER_MODIFICATION),
+            ),
         ):
             cfg.ai_enabled = True
             cfg.ai_model = "gemini/gemini-2.5-flash"
@@ -252,6 +273,11 @@ class TestRunAgentLoop:
         with (
             patch(f"{MODULE}.config") as cfg,
             patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
+            patch.object(
+                CopilotAgentService,
+                "_classify_intent",
+                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+            ),
         ):
             cfg.ai_enabled = True
             cfg.ai_model = "gemini/gemini-2.5-flash"
@@ -282,6 +308,11 @@ class TestRunAgentLoop:
         with (
             patch(f"{MODULE}.config") as cfg,
             patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
+            patch.object(
+                CopilotAgentService,
+                "_classify_intent",
+                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+            ),
         ):
             cfg.ai_enabled = True
             cfg.ai_model = "gemini/gemini-2.5-flash"
@@ -310,6 +341,11 @@ class TestRunAgentLoop:
         with (
             patch(f"{MODULE}.config") as cfg,
             patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
+            patch.object(
+                CopilotAgentService,
+                "_classify_intent",
+                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+            ),
         ):
             cfg.ai_enabled = True
             cfg.ai_model = "gemini/gemini-2.5-flash"
@@ -330,6 +366,115 @@ class TestRunAgentLoop:
         )
         assert "timezone=UTC" in context["content"]
         assert "weekday=" in context["content"]
+
+
+class TestClassifyIntent:
+    async def test_general_qa_triggers_on_read_query(self):
+        with patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac:
+            fake = _make_completion(_make_message(content="general_qa"))
+            mock_ac.return_value = fake
+
+            result = await CopilotAgentService._classify_intent(
+                user_message="who is on the team?",
+                history=None,
+                model="mistral/mistral-small-latest",
+                api_key="k",
+            )
+
+        assert result == CopilotIntent.GENERAL_QA
+
+    async def test_roster_mod_triggers_on_write_intent(self):
+        with patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac:
+            fake = _make_completion(_make_message(content="roster_modification"))
+            mock_ac.return_value = fake
+
+            result = await CopilotAgentService._classify_intent(
+                user_message="end Hugo's contract next Monday",
+                history=None,
+                model="mistral/mistral-small-latest",
+                api_key="k",
+            )
+
+        assert result == CopilotIntent.ROSTER_MODIFICATION
+
+    async def test_falls_back_on_unparseable_output(self):
+        with patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac:
+            fake = _make_completion(_make_message(content="banana scramble"))
+            mock_ac.return_value = fake
+
+            result = await CopilotAgentService._classify_intent(
+                user_message="xyzzy",
+                history=None,
+                model="mistral/mistral-small-latest",
+                api_key="k",
+            )
+
+        assert result == CopilotIntent.GENERAL_QA
+
+    async def test_uses_history_for_elliptical_follow_up(self):
+        """Short pronoun follow-ups rely on the last 2 history turns."""
+        history = [
+            {"role": "user", "content": "End Hugo's contract"},
+            {
+                "role": "assistant",
+                "content": "Contract end date?",
+            },
+            {"role": "user", "content": "next Monday"},
+        ]
+        with patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac:
+            fake = _make_completion(_make_message(content="roster_modification"))
+            mock_ac.return_value = fake
+
+            result = await CopilotAgentService._classify_intent(
+                user_message="actually wednesday instead",
+                history=history,
+                model="mistral/mistral-small-latest",
+                api_key="k",
+            )
+
+            # The classifier should receive the last 2 history turns.
+            sent_msgs = mock_ac.call_args.kwargs["messages"]
+            history_roles = [
+                m["role"]
+                for m in sent_msgs
+                if m["role"] != "system" and not m["content"].startswith("<query>")
+            ]
+            assert len(history_roles) == 2
+
+        assert result == CopilotIntent.ROSTER_MODIFICATION
+
+
+class TestPlaybookRouting:
+    async def test_general_qa_excludes_write_tools(self):
+        message = _make_message(content="Sure.")
+        with (
+            patch(f"{MODULE}.config") as cfg,
+            patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
+            patch.object(
+                CopilotAgentService,
+                "_classify_intent",
+                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+            ),
+        ):
+            cfg.ai_enabled = True
+            cfg.ai_model = "gemini/gemini-2.5-flash"
+            cfg.gemini_api_key = "g-key"
+            mock_ac.return_value = _make_completion(message)
+
+            await CopilotAgentService.run_agent_loop(
+                user_message="who is on the team?",
+                user_context=_user(),
+                db=MagicMock(),
+                cerbos=AsyncMock(),
+            )
+
+        tools = mock_ac.call_args.kwargs["tools"]
+        tool_names = [t["function"]["name"] for t in tools]
+        assert "calculate_relative_date" in tool_names
+        assert "get_team_members" in tool_names
+        assert "get_dimensions" in tool_names
+        assert "update_worker_fields" not in tool_names
+        assert "create_worker" not in tool_names
 
 
 class TestBuildContextMessage:
