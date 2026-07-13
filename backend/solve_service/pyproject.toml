@@ -6,7 +6,6 @@ readme = "README.md"
 authors = [ { name = "Felipe Kharaba" } ]
 requires-python = ">=3.14"
 dependencies = [
-	"click>=8.3.3",
 	"pydantic>=2.10.6",
 	"shared",
 	"boto3>=1.37.10",
@@ -28,7 +27,6 @@ dev = [
 	"ruff>=0.15.8",
 	"pip-audit>=2.8.0",
 	"bandit>=1.8.0",
-	"semgrep>=1.119.0",
 ]
 
 [tool.uv]

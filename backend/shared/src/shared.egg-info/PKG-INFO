@@ -4,7 +4,7 @@ Version: 0.1.403
 Author: Felipe Kharaba
 Requires-Python: >=3.14
 Description-Content-Type: text/markdown
-Requires-Dist: click>=8.3.3
+Requires-Dist: click>=8.4.2
 Requires-Dist: loguru>=0.7.2
 Requires-Dist: mongo-types>=0.15.1
 Requires-Dist: fastapi>=0.115.6
