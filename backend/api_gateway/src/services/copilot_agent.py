@@ -654,6 +654,7 @@ class CopilotAgentService:
         cls,
         tool_name: str,
         tool_args: dict[str, Any],
+        confirmed_step: int | None,
         user_message: str,
         history: list[dict[str, Any]] | None,
         user_context: UserContext,
@@ -668,6 +669,9 @@ class CopilotAgentService:
         deterministically, executes the confirmed step in ``execute`` mode,
         then continues with remaining steps until the next confirmation
         wall or plan completion.
+
+        ``confirmed_step`` disambiguates which step to confirm when the plan
+        contains multiple steps with the same tool name.
 
         Retries planner+execution up to ``copilot_plan_execution_max_retries``
         times when a step fails due to argument validation errors.
@@ -721,7 +725,13 @@ class CopilotAgentService:
                     has_error = True
                     break
 
-                if step.tool == tool_name and not executed_confirmation:
+                # Use step number when available (disambiguates same-tool
+                # steps), fall back to tool_name for backward compatibility.
+                _is_confirmed = (
+                    (confirmed_step is not None and step.step == confirmed_step)
+                    or (confirmed_step is None and step.tool == tool_name)
+                )
+                if _is_confirmed and not executed_confirmation:
                     try:
                         output = await spec.executor(
                             db=db,

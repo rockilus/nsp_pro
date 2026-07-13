@@ -99,6 +99,11 @@ class ConfirmActionInbound(BaseModel):
     action_token: str = Field(max_length=_MAX_MESSAGE_CHARS)
     tool_name: str = Field(max_length=200)
     tool_args: dict[str, Any] = Field(default_factory=dict)
+    step: int | None = Field(
+        None,
+        description="Plan step number being confirmed. Used by Pure Replay to "
+        "identify the correct step when multiple steps share the same tool name.",
+    )
     user_message: str | None = Field(
         None,
         max_length=_MAX_MESSAGE_CHARS,
@@ -274,6 +279,7 @@ async def confirm_copilot_action(
             plan_result = await CopilotAgentService.confirm_plan_step(
                 tool_name=payload.tool_name,
                 tool_args=payload.tool_args,
+                confirmed_step=payload.step,
                 user_message=payload.user_message,
                 history=history,
                 user_context=user_context,

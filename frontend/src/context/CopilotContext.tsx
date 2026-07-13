@@ -327,10 +327,15 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
                 const updatedActions = (m.pendingActions ?? []).map((pa) =>
                   pa.actionToken === action.actionToken ? { ...pa, applied: true } : pa,
                 );
+                // Merge: keep historically-resolved actions + add fresh server actions
+                const mergedActions = [
+                  ...updatedActions.filter((pa) => pa.applied || pa.cancelled),
+                  ...(result.pendingActions ?? []),
+                ];
                 return {
                   ...m,
                   completedSteps: result.completedSteps ?? m.completedSteps,
-                  pendingActions: updatedActions,
+                  pendingActions: mergedActions,
                   pendingAction: result.pendingAction ?? undefined,
                   plan: result.plan ?? m.plan,
                 };
