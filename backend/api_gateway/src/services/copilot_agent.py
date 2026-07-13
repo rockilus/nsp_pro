@@ -728,9 +728,8 @@ class CopilotAgentService:
                 # Use step number when available (disambiguates same-tool
                 # steps), fall back to tool_name for backward compatibility.
                 _is_confirmed = (
-                    (confirmed_step is not None and step.step == confirmed_step)
-                    or (confirmed_step is None and step.tool == tool_name)
-                )
+                    confirmed_step is not None and step.step == confirmed_step
+                ) or (confirmed_step is None and step.tool == tool_name)
                 if _is_confirmed and not executed_confirmation:
                     try:
                         output = await spec.executor(
