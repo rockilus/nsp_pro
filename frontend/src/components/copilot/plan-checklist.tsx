@@ -71,9 +71,7 @@ export function PlanChecklist({
                   <p className="text-sm text-foreground">
                     <span className="font-medium">{step.description}</span>
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    {statusLabel(status, planLabels)}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{statusLabel(status, planLabels)}</p>
                 </div>
               </div>
 
@@ -81,10 +79,15 @@ export function PlanChecklist({
                 <div className="ml-6">
                   <PendingActionCard
                     message={
-                      {
-                        pendingAction: pendingForStep,
-                        pendingStatus: undefined,
-                      } as CopilotMessage
+                      pendingForStep.applied || pendingForStep.cancelled
+                        ? ({
+                            pendingAction: undefined,
+                            pendingStatus: pendingForStep.applied ? 'applied' : 'cancelled',
+                          } as CopilotMessage)
+                        : ({
+                            pendingAction: pendingForStep,
+                            pendingStatus: undefined,
+                          } as CopilotMessage)
                     }
                     disabled={disabled}
                     onConfirm={() => onConfirmAction(pendingForStep)}

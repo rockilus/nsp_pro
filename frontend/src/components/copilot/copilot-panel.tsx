@@ -26,9 +26,11 @@ function MobileCopilotSheet({ lng }: { lng: string }) {
 
   const actionLabels = buildActionLabels(t);
   const rawPlan = t('plan', { returnObjects: true });
-  const planLabels = (rawPlan && typeof rawPlan === 'object'
-    ? (rawPlan as { stepCompleted: string; stepPending: string; stepWaiting: string })
-    : { stepCompleted: 'Completed', stepPending: 'Needs confirmation', stepWaiting: 'Waiting' }) as {
+  const planLabels = (
+    rawPlan && typeof rawPlan === 'object'
+      ? (rawPlan as { stepCompleted: string; stepPending: string; stepWaiting: string })
+      : { stepCompleted: 'Completed', stepPending: 'Needs confirmation', stepWaiting: 'Waiting' }
+  ) as {
     stepCompleted: string;
     stepPending: string;
     stepWaiting: string;

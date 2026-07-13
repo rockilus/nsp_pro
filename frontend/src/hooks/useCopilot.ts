@@ -43,7 +43,10 @@ export function useCopilotConfirm() {
   const { isAuthenticated, loading } = useAuth();
 
   return useCallback(
-    async (pendingAction: PendingAction, planContext?: PlanConfirmContext): Promise<CopilotConfirmResponse> => {
+    async (
+      pendingAction: PendingAction,
+      planContext?: PlanConfirmContext,
+    ): Promise<CopilotConfirmResponse> => {
       if (loading) {
         throw new Error('Authentication still loading - please wait');
       }

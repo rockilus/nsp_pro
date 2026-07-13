@@ -11,7 +11,12 @@ import React, {
 } from 'react';
 import { useTeam } from '@/context/TeamContext';
 import { useCopilotChat, useCopilotConfirm } from '@/hooks/useCopilot';
-import type { CompletedStep, CopilotChatTurn, CopilotPlan, PendingAction } from '@/app/lib/api/copilotApi';
+import type {
+  CompletedStep,
+  CopilotChatTurn,
+  CopilotPlan,
+  PendingAction,
+} from '@/app/lib/api/copilotApi';
 
 export type CopilotRole = 'user' | 'assistant';
 
@@ -293,17 +298,25 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
       );
       if (!targetMsg) return;
 
+      const planAction = targetMsg.pendingActions?.find(
+        (pa) => pa.actionToken === action.actionToken,
+      );
+      if (planAction && (planAction.applied || planAction.cancelled)) return;
+      if (targetMsg.pendingAction?.actionToken === action.actionToken && targetMsg.pendingStatus)
+        return;
+
       setIsLoading(true);
       try {
         const isPlanStep = targetMsg.executionMode === 'plan_and_execute';
-        const planContext = isPlanStep && lastUserMessageRef.current
-          ? {
-              userMessage: lastUserMessageRef.current,
-              history: toHistoryTurns(messagesRef.current.filter((m) => m.id !== targetMsg.id)),
-              teamId: selectedTeamId,
-              scheduleId,
-            }
-          : undefined;
+        const planContext =
+          isPlanStep && lastUserMessageRef.current
+            ? {
+                userMessage: lastUserMessageRef.current,
+                history: toHistoryTurns(messagesRef.current.filter((m) => m.id !== targetMsg.id)),
+                teamId: selectedTeamId,
+                scheduleId,
+              }
+            : undefined;
 
         const result = await confirmChat(action, planContext);
 
@@ -312,9 +325,7 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
             prev.map((m) => {
               if (m.id === targetMsg.id) {
                 const updatedActions = (m.pendingActions ?? []).map((pa) =>
-                  pa.actionToken === action.actionToken
-                    ? { ...pa, applied: true }
-                    : pa,
+                  pa.actionToken === action.actionToken ? { ...pa, applied: true } : pa,
                 );
                 return {
                   ...m,
@@ -333,9 +344,7 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
           );
         } else {
           setMessages((prev) =>
-            prev.map((m) =>
-              m.id === targetMsg.id ? { ...m, pendingStatus: 'applied' } : m,
-            ),
+            prev.map((m) => (m.id === targetMsg.id ? { ...m, pendingStatus: 'applied' } : m)),
           );
           appendNotification(
             `[System Notification: The manager confirmed and applied the proposed ` +
@@ -368,9 +377,7 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
           prev.map((m) => {
             if (m.id === targetMsg.id) {
               const updatedActions = (m.pendingActions ?? []).map((pa) =>
-                pa.actionToken === action.actionToken
-                  ? { ...pa, cancelled: true }
-                  : pa,
+                pa.actionToken === action.actionToken ? { ...pa, cancelled: true } : pa,
               );
               return { ...m, pendingActions: updatedActions };
             }
@@ -379,9 +386,7 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
         );
       } else {
         setMessages((prev) =>
-          prev.map((m) =>
-            m.id === targetMsg.id ? { ...m, pendingStatus: 'cancelled' } : m,
-          ),
+          prev.map((m) => (m.id === targetMsg.id ? { ...m, pendingStatus: 'cancelled' } : m)),
         );
       }
 
