@@ -36,7 +36,7 @@ test.describe('Member Role Management', () => {
   });
 
   test.describe('Role Change via UI', () => {
-    test('owner can promote member to owner via dropdown and role is persisted', async ({
+    test('owner can promote member to owner via edit dialog and role is persisted', async ({
       page,
     }, testInfo) => {
       const testRunId = (testInfo as any).testRunId as string;
@@ -52,16 +52,19 @@ test.describe('Member Role Management', () => {
       const memberRow = page.locator(`[data-testid="member-row-${memberUser.userId}"]`);
       await expect(memberRow).toBeVisible();
 
-      const roleSelect = memberRow.locator(`[data-testid="member-role-select-${memberUser.userId}"]`);
-      await roleSelect.click();
+      const roleBadge = memberRow.locator(`[data-testid="member-role-badge-${memberUser.userId}"]`);
+      await expect(roleBadge).toBeVisible();
 
-      await page.locator('[data-testid="member-role-option-owner"]').click();
-      await page.waitForTimeout(500);
+      await memberRow.locator(`[data-testid="member-edit-button-${memberUser.userId}"]`).click();
 
-      const updatedRoleSelect = memberRow.locator(
-        `[data-testid="member-role-select-${memberUser.userId}"]`,
-      );
-      await expect(updatedRoleSelect).toHaveValue(TeamMembershipRole.OWNER);
+      const dialog = page.locator('[data-testid="edit-member-dialog"]');
+      await expect(dialog).toBeVisible();
+
+      await dialog.locator('[data-testid="edit-member-role-select"]').click();
+      await page.locator('[data-testid="edit-member-role-option-owner"]').click();
+
+      await dialog.locator('[data-testid="edit-member-save-button"]').click();
+      await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
       const ownerClient = base.dbUtils.createAuthenticatedClientForUser(
         base.getOwnerUser().userId,
@@ -71,10 +74,10 @@ test.describe('Member Role Management', () => {
       expect(updatedUser).toBeDefined();
       expect(updatedUser!.membership.role).toBe(TeamMembershipRole.OWNER);
 
-      console.log('✅ Member promoted to owner via UI, verified via API');
+      console.log('✅ Member promoted to owner via edit dialog, verified via API');
     });
 
-    test('owner can demote owner back to member via dropdown and role is persisted', async ({
+    test('owner can demote owner back to member via edit dialog and role is persisted', async ({
       page,
     }, testInfo) => {
       const testRunId = (testInfo as any).testRunId as string;
@@ -92,19 +95,16 @@ test.describe('Member Role Management', () => {
       const memberRow = page.locator(`[data-testid="member-row-${memberUser.userId}"]`);
       await expect(memberRow).toBeVisible();
 
-      const roleSelect = memberRow.locator(
-        `[data-testid="member-role-select-${memberUser.userId}"]`,
-      );
-      await expect(roleSelect).toHaveValue(TeamMembershipRole.OWNER);
+      await memberRow.locator(`[data-testid="member-edit-button-${memberUser.userId}"]`).click();
 
-      await roleSelect.click();
-      await page.locator('[data-testid="member-role-option-member"]').click();
-      await page.waitForTimeout(500);
+      const dialog = page.locator('[data-testid="edit-member-dialog"]');
+      await expect(dialog).toBeVisible();
 
-      const updatedRoleSelect = memberRow.locator(
-        `[data-testid="member-role-select-${memberUser.userId}"]`,
-      );
-      await expect(updatedRoleSelect).toHaveValue(TeamMembershipRole.MEMBER);
+      await dialog.locator('[data-testid="edit-member-role-select"]').click();
+      await page.locator('[data-testid="edit-member-role-option-member"]').click();
+
+      await dialog.locator('[data-testid="edit-member-save-button"]').click();
+      await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
       const ownerClient = base.dbUtils.createAuthenticatedClientForUser(
         base.getOwnerUser().userId,
@@ -114,7 +114,7 @@ test.describe('Member Role Management', () => {
       expect(updatedUser).toBeDefined();
       expect(updatedUser!.membership.role).toBe(TeamMembershipRole.MEMBER);
 
-      console.log('✅ Owner demoted to member via UI, verified via API');
+      console.log('✅ Owner demoted to member via edit dialog, verified via API');
     });
   });
 
@@ -157,7 +157,7 @@ test.describe('Member Role Management', () => {
   });
 
   test.describe('UI Edge Cases', () => {
-    test("last remaining owner's role select is disabled", async ({ page }, testInfo) => {
+    test("last remaining owner's role select is disabled in edit dialog", async ({ page }, testInfo) => {
       const testRunId = (testInfo as any).testRunId as string;
       const base = testBasesMap.get(testRunId)!;
       const ownerUser = base.getOwnerUser();
@@ -170,12 +170,25 @@ test.describe('Member Role Management', () => {
       const ownerRow = page.locator(`[data-testid="member-row-${ownerUser.userId}"]`);
       await expect(ownerRow).toBeVisible();
 
-      const roleSelect = ownerRow.locator(
-        `[data-testid="member-role-select-${ownerUser.userId}"]`,
+      const editButton = ownerRow.locator(
+        `[data-testid="member-edit-button-${ownerUser.userId}"]`,
       );
-      await expect(roleSelect).toBeDisabled();
+      await expect(editButton).toBeVisible();
+      await editButton.click();
 
-      console.log('✅ Last owner role select is disabled');
+      const dialog = page.locator('[data-testid="edit-member-dialog"]');
+      await expect(dialog).toBeVisible();
+
+      const roleSelectTrigger = dialog.locator('[data-testid="edit-member-role-select"]');
+      await expect(roleSelectTrigger).toBeDisabled();
+
+      const workerSelectTrigger = dialog.locator('[data-testid="edit-member-worker-select"]');
+      await expect(workerSelectTrigger).not.toBeDisabled();
+
+      await dialog.locator('[data-testid="edit-member-cancel-button"]').click();
+      await expect(dialog).not.toBeVisible({ timeout: 5000 });
+
+      console.log('✅ Last owner role select disabled, worker select enabled');
     });
 
     test('member cannot access team members page', async ({ page }, testInfo) => {

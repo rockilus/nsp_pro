@@ -1,14 +1,11 @@
-import React from 'react';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { Pencil } from 'lucide-react';
+// shadcn
+import { Button } from '@/components/ui/button';
 // Components
 import RemoveFromTeamDialog from './remove-from-team-dialog';
-import EditWorkerPopover from './edit-worker';
+import EditMemberDialog from './edit-member-dialog';
 // Styles
 import './members-list.css';
 // Types
@@ -16,9 +13,9 @@ import { UserWithMembership } from '@/types/user';
 import { TeamMembershipRole } from '@/types/team';
 import { WorkerT } from '@/types/worker';
 
-const ROLE_LABELS: Record<string, string> = {
-  [TeamMembershipRole.OWNER]: 'role_owner',
-  [TeamMembershipRole.MEMBER]: 'role_member',
+const ROLE_BADGE_STYLES: Record<string, string> = {
+  [TeamMembershipRole.OWNER]: 'border-amber-400 text-amber-700 dark:border-amber-500 dark:text-amber-400',
+  [TeamMembershipRole.MEMBER]: 'border-slate-300 text-slate-600 dark:border-slate-600 dark:text-slate-300',
 };
 
 export default function MembersList({
@@ -49,6 +46,8 @@ export default function MembersList({
     userWithMembership: UserWithMembership;
     isFirstItem?: boolean;
   }) => {
+    const [editOpen, setEditOpen] = useState(false);
+
     const displayName =
       userWithMembership.user.firstName || userWithMembership.user.lastName
         ? `${userWithMembership.user.firstName} ${userWithMembership.user.lastName}`
@@ -56,13 +55,7 @@ export default function MembersList({
 
     const currentRole = userWithMembership.membership.role.valueOf() as string;
     const isLastOwner = currentRole === TeamMembershipRole.OWNER && ownerCount <= 1;
-
-    const handleRoleChange = (event: SelectChangeEvent) => {
-      const newRole = event.target.value;
-      if (newRole !== currentRole) {
-        handleUpdateMemberRole(userWithMembership.user.id, newRole);
-      }
-    };
+    const badgeStyle = ROLE_BADGE_STYLES[currentRole] || ROLE_BADGE_STYLES[TeamMembershipRole.MEMBER];
 
     return (
       <div
@@ -72,44 +65,25 @@ export default function MembersList({
       >
         <div className="team-list-item-description">
           <strong className="teams-list-item-name">
-            <a
-            // href={`/${lng}/plan/teams/${teamWithMembership.team.id}`}
-            >
-              {displayName}
-            </a>
+            <a>{displayName}</a>
           </strong>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <Select
-              value={currentRole}
-              onChange={handleRoleChange}
-              disabled={isLastOwner}
-              sx={{ fontSize: '0.75rem' }}
-              data-testid={`member-role-select-${userWithMembership.user.id}`}
-            >
-              <MenuItem
-                value={TeamMembershipRole.MEMBER}
-                data-testid={`member-role-option-member`}
-              >
-                {t('role_member')}
-              </MenuItem>
-              <MenuItem
-                value={TeamMembershipRole.OWNER}
-                data-testid={`member-role-option-owner`}
-              >
-                {t('role_owner')}
-              </MenuItem>
-            </Select>
-          </FormControl>
+          <span
+            className={`ml-2 inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${badgeStyle}`}
+            data-testid={`member-role-badge-${userWithMembership.user.id}`}
+          >
+            {currentRole === TeamMembershipRole.OWNER ? t('role_owner') : t('role_member')}
+          </span>
         </div>
         <span className="teams-list-item-email">{userWithMembership.user.email}</span>
         <div className="members-list-item-actions">
-          <EditWorkerPopover
-            lng={lng}
-            teamId={teamId}
-            userId={userWithMembership.user.id}
-            workers={workers}
-            handleAttachUserToWorker={handleAttachUserToWorker}
-          />
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={() => setEditOpen(true)}
+            data-testid={`member-edit-button-${userWithMembership.user.id}`}
+          >
+            <Pencil className="size-3.5" />
+          </Button>
           <RemoveFromTeamDialog
             lng={lng}
             teamId={teamId}
@@ -117,6 +91,18 @@ export default function MembersList({
             handleRemoveFromTeam={handleRemoveFromTeam}
           />
         </div>
+
+        <EditMemberDialog
+          lng={lng}
+          teamId={teamId}
+          userWithMembership={userWithMembership}
+          workers={workers}
+          isLastOwner={isLastOwner}
+          handleUpdateMemberRole={handleUpdateMemberRole}
+          handleAttachUserToWorker={handleAttachUserToWorker}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+        />
       </div>
     );
   };
