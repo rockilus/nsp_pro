@@ -18,6 +18,7 @@ class PlanStepStatus(str, Enum):
     COMPLETED = "completed"
     PENDING_CONFIRMATION = "pending_confirmation"
     WAITING = "waiting"
+    ERROR = "error"
 
 
 class PlanStep(BaseModel):
@@ -93,6 +94,7 @@ class CompletedStep(BaseModel):
 
     step: int
     status: PlanStepStatus
+    error_message: str | None = None
 
 
 class PlanExecutionResult(BaseModel):

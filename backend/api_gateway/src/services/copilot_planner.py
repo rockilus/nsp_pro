@@ -48,6 +48,11 @@ def _build_planner_system_prompt() -> str:
         "8. Use resolve_worker_reference to resolve worker names to IDs —",
         "   never use get_team_members for single-worker lookup.",
         "9. Use calculate_relative_date for ALL relative date expressions.",
+        "10. CRITICAL: Most required fields now have sensible defaults "
+        "(e.g. 35 for hours, today for employment_start_date). If a required "
+        "field has no explicit user input, include it with its default value "
+        "rather than omitting it. Omitting a required field causes the entire "
+        "plan to fail.",
         "",
         "OUTPUT SCHEMA (JSON only, no markdown, no code fences):",
         "{",
@@ -102,8 +107,14 @@ async def _call_planner(
     model: str,
     api_key: str | None,
     context_message: dict[str, Any],
+    error_context: str | None = None,
 ) -> ExecutionPlan:
-    """Call the Planner LLM and return a validated ExecutionPlan."""
+    """Call the Planner LLM and return a validated ExecutionPlan.
+
+    When ``error_context`` is provided (from a prior execution failure), it
+    is injected as a system message before the user message so the planner
+    can correct the arguments that caused the failure.
+    """
     system_prompt = _build_planner_system_prompt()
 
     messages: list[dict[str, Any]] = [
@@ -114,6 +125,18 @@ async def _call_planner(
             {"role": turn["role"], "content": turn["content"]} for turn in history[-4:]
         )
     messages.append(context_message)
+    if error_context:
+        messages.append(
+            {
+                "role": "system",
+                "content": (
+                    f"Your previous plan failed during execution:\n\n"
+                    f"{error_context}\n\n"
+                    "Please correct the arguments and regenerate a valid plan. "
+                    "Pay special attention to required fields and argument types."
+                ),
+            }
+        )
     messages.append(
         {
             "role": "user",

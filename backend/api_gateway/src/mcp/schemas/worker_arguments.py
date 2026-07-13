@@ -26,15 +26,15 @@ class CreateWorkerArgs(BaseModel):
         ..., description="The full legal name of the nurse or practitioner."
     )
     weekly_hours: int = Field(
-        ...,
+        default=35,
         description="Contracted baseline weekly working hours (typically 35 or 40).",
     )
     weekly_hours_desired: int = Field(
-        ...,
+        default=35,
         description="The individual's preferred target weekly workload in hours.",
     )
     duties_per_month: int = Field(
-        ...,
+        default=4,
         description="Target number of weekend/night duty assignments per month.",
     )
     annual_leave: int = Field(
@@ -45,7 +45,7 @@ class CreateWorkerArgs(BaseModel):
         description="IDs of specialties this worker holds. Empty if unknown.",
     )
     employment_start_date: date = Field(
-        ...,
+        default_factory=date.today,
         description="ISO date (YYYY-MM-DD) when the worker's employment starts. "
         "If the user expresses this as a relative date ('next Monday', "
         "'le mois prochain'), you MUST call calculate_relative_date first "

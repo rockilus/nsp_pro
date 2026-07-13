@@ -213,6 +213,11 @@ class AppConfig(BaseSettings):
     ai_chat_rate_limit: str = Field(
         "20/minute", description="Rate limit for POST /copilot/chat"
     )
+    copilot_plan_execution_max_retries: int = Field(
+        2,
+        description="Maximum number of planner retries when plan steps fail due to "
+        "LLM argument errors (missing required fields, type mismatches).",
+    )
 
     model_config = SettingsConfigDict(
         env_prefix="",  # No prefix; can adjust if needed

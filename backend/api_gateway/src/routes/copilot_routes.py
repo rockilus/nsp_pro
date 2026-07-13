@@ -83,6 +83,7 @@ class PlanDTO(BaseModel):
 class CompletedStepDTO(BaseModel):
     step: int
     status: str
+    error_message: str | None = None
 
 
 class AgentChatOutbound(BaseModel):
@@ -160,7 +161,11 @@ def _build_agent_chat_outbound(result) -> AgentChatOutbound:
         execution_mode=result.execution_mode,
         plan=plan_dto,
         completed_steps=[
-            CompletedStepDTO(step=s["step"], status=s["status"])
+            CompletedStepDTO(
+                step=s["step"],
+                status=s["status"],
+                error_message=s.get("error_message"),
+            )
             for s in result.completed_steps
         ],
         pending_actions=[
@@ -314,7 +319,11 @@ async def confirm_copilot_action(
                 execution_mode="plan_and_execute",
                 plan=plan_dto,
                 completed_steps=[
-                    CompletedStepDTO(step=s["step"], status=s["status"])
+                    CompletedStepDTO(
+                        step=s["step"],
+                        status=s["status"],
+                        error_message=s.get("error_message"),
+                    )
                     for s in plan_result.completed_steps
                 ],
                 pending_actions=[

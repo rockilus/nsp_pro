@@ -98,7 +98,11 @@ class CopilotPlanExecutor:
             if spec is None:
                 log_error(f"Executor: unknown tool {step.tool} at step {step.step}")
                 completed_steps.append(
-                    CompletedStep(step=step.step, status=PlanStepStatus.WAITING)
+                    CompletedStep(
+                        step=step.step,
+                        status=PlanStepStatus.ERROR,
+                        error_message=f"Unknown tool: {step.tool}",
+                    )
                 )
                 break
 
@@ -114,10 +118,40 @@ class CopilotPlanExecutor:
                     )
                 except (TypeError, ValidationError) as e:
                     log_error(f"Executor step {step.step} ({step.tool}) failed: {e}")
-                    output = {
-                        "status": "error",
-                        "message": f"Tool execution failed: {e}",
-                    }
+                    completed_steps.append(
+                        CompletedStep(
+                            step=step.step,
+                            status=PlanStepStatus.ERROR,
+                            error_message=str(e),
+                        )
+                    )
+                    break
+                except Exception as e:
+                    log_error(
+                        f"Executor step {step.step} ({step.tool}) unexpected: {e}"
+                    )
+                    completed_steps.append(
+                        CompletedStep(
+                            step=step.step,
+                            status=PlanStepStatus.ERROR,
+                            error_message=str(e),
+                        )
+                    )
+                    break
+
+                if isinstance(output, dict) and output.get("status") == "error":
+                    log_error(
+                        f"Executor step {step.step} ({step.tool}) returned error: "
+                        f"{output.get('message')}"
+                    )
+                    completed_steps.append(
+                        CompletedStep(
+                            step=step.step,
+                            status=PlanStepStatus.ERROR,
+                            error_message=output.get("message", "Unknown error"),
+                        )
+                    )
+                    break
 
                 if (
                     step.assign_output_to
@@ -143,10 +177,40 @@ class CopilotPlanExecutor:
                     log_error(
                         f"Executor step {step.step} ({step.tool}) preview failed: {e}"
                     )
-                    output = {
-                        "status": "error",
-                        "message": f"Preview generation failed: {e}",
-                    }
+                    completed_steps.append(
+                        CompletedStep(
+                            step=step.step,
+                            status=PlanStepStatus.ERROR,
+                            error_message=str(e),
+                        )
+                    )
+                    break
+                except Exception as e:
+                    log_error(
+                        f"Executor step {step.step} ({step.tool}) preview unexpected: {e}"
+                    )
+                    completed_steps.append(
+                        CompletedStep(
+                            step=step.step,
+                            status=PlanStepStatus.ERROR,
+                            error_message=str(e),
+                        )
+                    )
+                    break
+
+                if isinstance(output, dict) and output.get("status") == "error":
+                    log_error(
+                        f"Executor step {step.step} ({step.tool}) preview returned "
+                        f"error: {output.get('message')}"
+                    )
+                    completed_steps.append(
+                        CompletedStep(
+                            step=step.step,
+                            status=PlanStepStatus.ERROR,
+                            error_message=output.get("message", "Unknown error"),
+                        )
+                    )
+                    break
 
                 if (
                     isinstance(output, dict)
@@ -174,13 +238,6 @@ class CopilotPlanExecutor:
                     CompletedStep(
                         step=step.step, status=PlanStepStatus.PENDING_CONFIRMATION
                     )
-                )
-                break
-
-            if isinstance(output, dict) and output.get("status") == "error":
-                log_error(
-                    f"Executor step {step.step} ({step.tool}) returned error: "
-                    f"{output.get('message')}"
                 )
                 break
 

@@ -32,7 +32,11 @@ from src.errors.copilot_errors.copilot_errors import CopilotDisabledError
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
-from src.mcp.schemas.copilot_plan_schemas import ExecutionPlan
+from src.mcp.schemas.copilot_plan_schemas import (
+    CompletedStep,
+    ExecutionPlan,
+    PlanStepStatus,
+)
 from src.mcp.schemas.intent_schemas import (
     ComplexityTier,
     IntentClassificationResult,
@@ -154,6 +158,24 @@ def _build_context_message(
             "refers to a different team or schedule."
         ),
     }
+
+
+def _build_execution_error_context(failed_steps: list[CompletedStep]) -> str:
+    """Build an error context string for the planner from failed execution steps.
+
+    Describes which step failed, which tool was being called, and the exact
+    error message so the planner can correct argument issues on retry.
+    """
+    parts: list[str] = []
+    for s in failed_steps:
+        parts.append(f"  Step {s.step} failed: {s.error_message or 'unknown error'}")
+    parts.append(
+        "\nRegenerate the plan. Ensure ALL required input fields listed in "
+        "the tool descriptions are present in each step's args dict. "
+        "Infer sensible defaults for fields the user didn't specify rather "
+        "than omitting them entirely."
+    )
+    return "\n".join(parts)
 
 
 class CopilotAgentService:
@@ -417,37 +439,86 @@ class CopilotAgentService:
         team_id: str | None,
         schedule_id: str | None,
     ) -> AgentResult:
-        """Plan-and-Execute path: Planner → Executor for complex multi-step ops."""
+        """Plan-and-Execute path: Planner → Executor for complex multi-step ops.
+
+        Retries planner+executor up to ``copilot_plan_execution_max_retries``
+        times when a step fails due to argument validation errors, feeding the
+        exact error back to the planner so it can correct the plan.
+        """
         context_message = _build_context_message(
             datetime.now(timezone.utc).date(), team_id, schedule_id
         )
 
-        plan = await _call_planner(
-            user_message=user_message,
-            history=history,
-            model=model,
-            api_key=api_key,
-            context_message=context_message,
-        )
+        max_retries = config.copilot_plan_execution_max_retries
+        last_result: Any = None
+        error_context: str | None = None
 
-        result = await CopilotPlanExecutor.execute(
-            plan=plan,
-            user_context=user_context,
-            db=db,
-            cerbos=cerbos,
-        )
+        for attempt in range(max_retries + 1):
+            plan = await _call_planner(
+                user_message=user_message,
+                history=history,
+                model=model,
+                api_key=api_key,
+                context_message=context_message,
+                error_context=error_context,
+            )
+
+            result = await CopilotPlanExecutor.execute(
+                plan=plan,
+                user_context=user_context,
+                db=db,
+                cerbos=cerbos,
+            )
+
+            errors = [
+                s for s in result.completed_steps if s.status == PlanStepStatus.ERROR
+            ]
+            if not errors:
+                last_result = result
+                break
+
+            last_result = result
+            if attempt >= max_retries:
+                log_error(
+                    f"Plan execution exhausted {max_retries + 1} attempts; "
+                    f"returning last result with {len(errors)} errors"
+                )
+                break
+
+            error_context = _build_execution_error_context(errors)
+            log_info(
+                f"Plan execution attempt {attempt + 1} failed; "
+                f"retrying with error context"
+            )
+
+        # At this point last_result is guaranteed to be set (loop runs at least once)
+        assert last_result is not None
 
         completed_steps = [
-            {"step": s.step, "status": s.status.value} for s in result.completed_steps
+            {"step": s.step, "status": s.status.value, "error_message": s.error_message}
+            for s in last_result.completed_steps
         ]
 
-        response_text = (
-            f"I've prepared {len(plan.plan)} steps for your request: {plan.summary}"
+        has_errors = any(
+            s.status == PlanStepStatus.ERROR for s in last_result.completed_steps
         )
+        if has_errors:
+            error_lines = [
+                f"Step {s.step}: {s.error_message or 'unknown error'}"
+                for s in last_result.completed_steps
+                if s.status == PlanStepStatus.ERROR
+            ]
+            response_text = "I encountered errors executing your plan:\n" + "\n".join(
+                error_lines
+            )
+        else:
+            response_text = (
+                f"I've prepared {len(plan.plan)} steps for your request: {plan.summary}"
+            )
 
         pending_action = None
-        if result.pending_actions:
-            first = result.pending_actions[0]
+        if last_result.pending_actions:
+            first = last_result.pending_actions[0]
             pending_action = PendingAction(
                 action_token=first["action_token"],
                 tier=first["tier"],
@@ -463,7 +534,7 @@ class CopilotAgentService:
             execution_mode="plan_and_execute",
             plan=plan,
             completed_steps=completed_steps,
-            pending_actions=result.pending_actions,
+            pending_actions=last_result.pending_actions,
         )
 
     @classmethod
@@ -598,6 +669,9 @@ class CopilotAgentService:
         then continues with remaining steps until the next confirmation
         wall or plan completion.
 
+        Retries planner+execution up to ``copilot_plan_execution_max_retries``
+        times when a step fails due to argument validation errors.
+
         The client never sends ``execution_memory`` or ``plan`` — the server
         reconstructs both. This closes the client-side trust boundary.
         """
@@ -608,88 +682,234 @@ class CopilotAgentService:
             datetime.now(timezone.utc).date(), team_id, schedule_id
         )
 
-        plan = await _call_planner(
-            user_message=user_message,
-            history=history,
-            model=model,
-            api_key=api_key,
-            context_message=context_message,
-        )
-
-        executed_confirmation = False
-        memory = ExecutionMemory()
+        max_retries = config.copilot_plan_execution_max_retries
+        error_context: str | None = None
+        plan: ExecutionPlan | None = None
         completed_steps: list[dict[str, Any]] = []
         pending_actions: list[dict[str, Any]] = []
 
-        for step in plan.plan:
-            resolved_args = memory.resolve_args(step.args)
-            spec = TOOL_REGISTRY.get(step.tool)
+        for attempt in range(max_retries + 1):
+            plan = await _call_planner(
+                user_message=user_message,
+                history=history,
+                model=model,
+                api_key=api_key,
+                context_message=context_message,
+                error_context=error_context,
+            )
 
-            if spec is None:
-                completed_steps.append({"step": step.step, "status": "waiting"})
-                break
+            executed_confirmation = False
+            memory = ExecutionMemory()
+            completed_steps = []
+            pending_actions = []
+            has_error = False
+            error_steps: list[dict[str, Any]] = []
 
-            if step.tool == tool_name and not executed_confirmation:
-                output = await spec.executor(
-                    db=db,
-                    user_context=user_context,
-                    cerbos=cerbos,
-                    mode="execute",
-                    **resolved_args,
-                )
-                executed_confirmation = True
-                completed_steps.append({"step": step.step, "status": "completed"})
-                continue
+            for step in plan.plan:
+                resolved_args = memory.resolve_args(step.args)
+                spec = TOOL_REGISTRY.get(step.tool)
 
-            requires_confirmation = spec.confirmation_tier != "none"
-
-            if requires_confirmation:
-                output = await spec.executor(
-                    db=db,
-                    user_context=user_context,
-                    cerbos=cerbos,
-                    mode="preview",
-                    **resolved_args,
-                )
-                if (
-                    isinstance(output, dict)
-                    and output.get("status") == "pending_confirmation"
-                ):
-                    token = create_action_token(
-                        user_id=user_context.user_id,
-                        tool_name=step.tool,
-                        tool_args=resolved_args,
-                        secret=config.copilot_action_jwt_secret,
-                        ttl_seconds=config.copilot_action_token_ttl_seconds,
-                    )
-                    pending_actions.append(
+                if spec is None:
+                    completed_steps.append(
                         {
-                            "action_token": token,
-                            "tier": output.get("tier", spec.confirmation_tier),
-                            "tool_name": step.tool,
-                            "tool_args": resolved_args,
-                            "preview": output.get("preview", {}),
                             "step": step.step,
+                            "status": "error",
+                            "error_message": f"Unknown tool: {step.tool}",
                         }
                     )
-                completed_steps.append(
-                    {"step": step.step, "status": "pending_confirmation"}
+                    error_steps.append(completed_steps[-1])
+                    has_error = True
+                    break
+
+                if step.tool == tool_name and not executed_confirmation:
+                    try:
+                        output = await spec.executor(
+                            db=db,
+                            user_context=user_context,
+                            cerbos=cerbos,
+                            mode="execute",
+                            **resolved_args,
+                        )
+                    except (TypeError, ValidationError) as e:
+                        completed_steps.append(
+                            {
+                                "step": step.step,
+                                "status": "error",
+                                "error_message": str(e),
+                            }
+                        )
+                        error_steps.append(completed_steps[-1])
+                        has_error = True
+                        break
+                    except Exception as e:
+                        completed_steps.append(
+                            {
+                                "step": step.step,
+                                "status": "error",
+                                "error_message": str(e),
+                            }
+                        )
+                        error_steps.append(completed_steps[-1])
+                        has_error = True
+                        break
+
+                    executed_confirmation = True
+                    if (
+                        isinstance(output, dict)
+                        and step.assign_output_to
+                        and step.extract_key
+                        and step.extract_key in output
+                    ):
+                        memory.assign(step.assign_output_to, output[step.extract_key])
+                    completed_steps.append({"step": step.step, "status": "completed"})
+                    continue
+
+                requires_confirmation = spec.confirmation_tier != "none"
+
+                if requires_confirmation:
+                    try:
+                        output = await spec.executor(
+                            db=db,
+                            user_context=user_context,
+                            cerbos=cerbos,
+                            mode="preview",
+                            **resolved_args,
+                        )
+                    except (TypeError, ValidationError) as e:
+                        completed_steps.append(
+                            {
+                                "step": step.step,
+                                "status": "error",
+                                "error_message": str(e),
+                            }
+                        )
+                        error_steps.append(completed_steps[-1])
+                        has_error = True
+                        break
+                    except Exception as e:
+                        completed_steps.append(
+                            {
+                                "step": step.step,
+                                "status": "error",
+                                "error_message": str(e),
+                            }
+                        )
+                        error_steps.append(completed_steps[-1])
+                        has_error = True
+                        break
+
+                    if isinstance(output, dict) and output.get("status") == "error":
+                        completed_steps.append(
+                            {
+                                "step": step.step,
+                                "status": "error",
+                                "error_message": output.get("message", "Unknown error"),
+                            }
+                        )
+                        error_steps.append(completed_steps[-1])
+                        has_error = True
+                        break
+
+                    if (
+                        isinstance(output, dict)
+                        and output.get("status") == "pending_confirmation"
+                    ):
+                        token = create_action_token(
+                            user_id=user_context.user_id,
+                            tool_name=step.tool,
+                            tool_args=resolved_args,
+                            secret=config.copilot_action_jwt_secret,
+                            ttl_seconds=config.copilot_action_token_ttl_seconds,
+                        )
+                        pending_actions.append(
+                            {
+                                "action_token": token,
+                                "tier": output.get("tier", spec.confirmation_tier),
+                                "tool_name": step.tool,
+                                "tool_args": resolved_args,
+                                "preview": output.get("preview", {}),
+                                "step": step.step,
+                            }
+                        )
+                    completed_steps.append(
+                        {"step": step.step, "status": "pending_confirmation"}
+                    )
+                    break
+                else:
+                    try:
+                        output = await spec.executor(
+                            db=db,
+                            user_context=user_context,
+                            cerbos=cerbos,
+                            **resolved_args,
+                        )
+                    except (TypeError, ValidationError) as e:
+                        completed_steps.append(
+                            {
+                                "step": step.step,
+                                "status": "error",
+                                "error_message": str(e),
+                            }
+                        )
+                        error_steps.append(completed_steps[-1])
+                        has_error = True
+                        break
+                    except Exception as e:
+                        completed_steps.append(
+                            {
+                                "step": step.step,
+                                "status": "error",
+                                "error_message": str(e),
+                            }
+                        )
+                        error_steps.append(completed_steps[-1])
+                        has_error = True
+                        break
+
+                    if isinstance(output, dict) and output.get("status") == "error":
+                        completed_steps.append(
+                            {
+                                "step": step.step,
+                                "status": "error",
+                                "error_message": output.get("message", "Unknown error"),
+                            }
+                        )
+                        error_steps.append(completed_steps[-1])
+                        has_error = True
+                        break
+
+                    if (
+                        step.assign_output_to
+                        and step.extract_key
+                        and isinstance(output, dict)
+                    ):
+                        memory.assign(
+                            step.assign_output_to, output.get(step.extract_key)
+                        )
+                    completed_steps.append({"step": step.step, "status": "completed"})
+
+            if not has_error:
+                break
+
+            if attempt >= max_retries:
+                log_error(
+                    f"Pure Replay execution exhausted {max_retries + 1} attempts; "
+                    f"returning last result with errors"
                 )
                 break
-            else:
-                output = await spec.executor(
-                    db=db,
-                    user_context=user_context,
-                    cerbos=cerbos,
-                    **resolved_args,
-                )
-                if (
-                    step.assign_output_to
-                    and step.extract_key
-                    and isinstance(output, dict)
-                ):
-                    memory.assign(step.assign_output_to, output.get(step.extract_key))
-                completed_steps.append({"step": step.step, "status": "completed"})
+
+            error_context = "\n".join(
+                f"  Step {s['step']} failed: {s.get('error_message', 'unknown')}"
+                for s in error_steps
+            ) + (
+                "\n\nRegenerate the plan. Fix the argument errors in the failing steps."
+            )
+            log_info(
+                f"Pure Replay execution attempt {attempt + 1} failed; "
+                f"retrying with error context"
+            )
+
+        assert plan is not None  # retry loop always runs >= 1 iteration
 
         for s in plan.plan[len(completed_steps) :]:
             completed_steps.append({"step": s.step, "status": "waiting"})
