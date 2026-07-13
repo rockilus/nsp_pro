@@ -46,7 +46,10 @@ class CreateWorkerArgs(BaseModel):
     )
     employment_start_date: date = Field(
         ...,
-        description="ISO date (YYYY-MM-DD) when the worker's employment starts.",
+        description="ISO date (YYYY-MM-DD) when the worker's employment starts. "
+        "If the user expresses this as a relative date ('next Monday', "
+        "'le mois prochain'), you MUST call calculate_relative_date first "
+        "and pass the returned calculated_date here. Never compute dates yourself.",
     )
 
 
@@ -82,12 +85,18 @@ class UpdateWorkerArgs(BaseModel):
     )
     employment_start_date: Optional[date] = Field(
         None,
-        description="ISO date (YYYY-MM-DD) when the worker's employment starts.",
+        description="ISO date (YYYY-MM-DD) when the worker's employment starts. "
+        "If the user expresses this as a relative date ('next Monday', "
+        "'le mois prochain'), you MUST call calculate_relative_date first "
+        "and pass the returned calculated_date here. Never compute dates yourself.",
     )
     employment_end_date: Optional[date] = Field(
         None,
         description="ISO date (YYYY-MM-DD) marking employment end when "
-        "offboarding a worker.",
+        "offboarding a worker. If the user expresses this as a relative date "
+        "('lundi prochain', 'next Friday'), you MUST call calculate_relative_date "
+        "first and pass the returned calculated_date here. Never compute dates "
+        "yourself.",
     )
 
 
