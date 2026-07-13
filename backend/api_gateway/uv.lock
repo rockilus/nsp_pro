@@ -2430,7 +2430,6 @@ source = { editable = "../shared" }
 dependencies = [
     { name = "boto3" },
     { name = "botocore" },
-    { name = "click" },
     { name = "dotenv" },
     { name = "email-validator" },
     { name = "fastapi" },
@@ -2447,7 +2446,6 @@ dependencies = [
 requires-dist = [
     { name = "boto3", specifier = ">=1.35.0" },
     { name = "botocore", specifier = ">=1.35.0" },
-    { name = "click", specifier = ">=8.3.3" },
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "email-validator", specifier = ">=2.3.0" },
     { name = "fastapi", specifier = ">=0.115.6" },
@@ -2469,7 +2467,6 @@ dev = [
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-asyncio", specifier = ">=1.1.0" },
     { name = "ruff", specifier = ">=0.15.8" },
-    { name = "semgrep", specifier = ">=1.119.0" },
 ]
 
 [[package]]
