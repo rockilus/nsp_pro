@@ -66,8 +66,8 @@ _GENERAL_QA_PROMPT = (
     "[Call calculate_relative_date, then synthesise answer]"
 )
 
-_ROSTER_MODIFICATION_PROMPT = (
-    "You are the exclusive Rockilus Roster Modification Agent.\n"
+_WORKER_MANAGEMENT_PROMPT = (
+    "You are the exclusive Rockilus Worker Management Agent.\n"
     "Your space is strictly limited to creating, updating, and deleting "
     "worker profiles, dimensions, and dimension entries.\n\n"
     "If the user asks an off-topic question, reply with a polite refusal "
@@ -115,8 +115,8 @@ SKILL_PLAYBOOKS: dict[CopilotIntent, dict[str, Any]] = {
         "system_prompt": _GENERAL_QA_PROMPT,
         "allowed_tools": _SHARED_UTILITIES,
     },
-    CopilotIntent.ROSTER_MODIFICATION: {
-        "system_prompt": _ROSTER_MODIFICATION_PROMPT,
+    CopilotIntent.WORKER_MANAGEMENT: {
+        "system_prompt": _WORKER_MANAGEMENT_PROMPT,
         "allowed_tools": _SHARED_UTILITIES | _WRITE_TOOLS,
     },
 }

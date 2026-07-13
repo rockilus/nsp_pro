@@ -178,7 +178,7 @@ class CopilotAgentService:
             "INTENT categories:\n"
             f"- {CopilotIntent.GENERAL_QA.value}: informational reports, "
             "listing, help, general questions.\n"
-            f"- {CopilotIntent.ROSTER_MODIFICATION.value}: alter, update, "
+            f"- {CopilotIntent.WORKER_MANAGEMENT.value}: alter, update, "
             "create, or drop employee/worker data.\n"
             f"- {CopilotIntent.SCHEDULE_SOLVER.value}: run, adjust, or "
             "generate shift blocks.\n\n"

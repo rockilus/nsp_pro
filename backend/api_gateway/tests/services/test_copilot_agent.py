@@ -249,7 +249,7 @@ class TestRunAgentLoop:
                 CopilotAgentService,
                 "_classify_intent",
                 new=AsyncMock(
-                    return_value=(CopilotIntent.ROSTER_MODIFICATION, ComplexityTier.LOW)
+                    return_value=(CopilotIntent.WORKER_MANAGEMENT, ComplexityTier.LOW)
                 ),
             ),
         ):
@@ -402,7 +402,7 @@ class TestClassifyIntent:
 
     async def test_roster_mod_triggers_on_write_intent(self):
         with patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac:
-            json_output = '{"intent":"roster_modification","complexity":"high"}'
+            json_output = '{"intent":"worker_management","complexity":"high"}'
             fake = _make_completion(_make_message(content=json_output))
             mock_ac.return_value = fake
 
@@ -413,7 +413,7 @@ class TestClassifyIntent:
                 api_key="k",
             )
 
-        assert result == CopilotIntent.ROSTER_MODIFICATION
+        assert result == CopilotIntent.WORKER_MANAGEMENT
         assert complexity == ComplexityTier.HIGH
 
     async def test_falls_back_on_unparseable_output(self):
@@ -442,7 +442,7 @@ class TestClassifyIntent:
             {"role": "user", "content": "next Monday"},
         ]
         with patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac:
-            json_output = '{"intent":"roster_modification","complexity":"high"}'
+            json_output = '{"intent":"worker_management","complexity":"high"}'
             fake = _make_completion(_make_message(content=json_output))
             mock_ac.return_value = fake
 
@@ -462,7 +462,7 @@ class TestClassifyIntent:
             ]
             assert len(history_roles) == 2
 
-        assert result == CopilotIntent.ROSTER_MODIFICATION
+        assert result == CopilotIntent.WORKER_MANAGEMENT
         assert complexity == ComplexityTier.HIGH
 
 

@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 
 class CopilotIntent(str, Enum):
     GENERAL_QA = "general_qa"
-    ROSTER_MODIFICATION = "roster_modification"
+    WORKER_MANAGEMENT = "worker_management"
     SCHEDULE_SOLVER = "schedule_solver"
 
 
