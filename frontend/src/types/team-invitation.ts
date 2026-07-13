@@ -8,6 +8,7 @@ export enum TeamInvitationStatus {
 }
 export enum TeamInvitationType {
   MEMBER = 'member',
+  OWNER = 'owner',
 }
 export type TeamInvitationT = {
   id: string;

@@ -21,6 +21,7 @@ class TeamInvitationStatus(Enum):
 
 class TeamInvitationType(Enum):
     MEMBER = "member"
+    OWNER = "owner"
 
 
 # pylint: disable=too-many-instance-attributes

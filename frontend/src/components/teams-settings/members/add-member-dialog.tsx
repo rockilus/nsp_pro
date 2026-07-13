@@ -85,6 +85,7 @@ export default function AddMemberDialog({
   const [selectedWorkerId, setSelectedWorkerId] = React.useState<string | null>(null);
   const [firstName, setFirstName] = React.useState('');
   const [lastName, setLastName] = React.useState('');
+  const [selectedRole, setSelectedRole] = React.useState<string>(TeamInvitationType.MEMBER);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -100,6 +101,7 @@ export default function AddMemberDialog({
     setHelperText('');
     setShowAttachWorker(false);
     setSelectedWorkerId(null);
+    setSelectedRole(TeamInvitationType.MEMBER);
     setOpen(false);
   };
 
@@ -113,6 +115,10 @@ export default function AddMemberDialog({
 
   const handleLastNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(event.target.value);
+  };
+
+  const handleRoleChange = (event: SelectChangeEvent) => {
+    setSelectedRole(event.target.value);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -147,7 +153,7 @@ export default function AddMemberDialog({
       firstName,
       lastName,
       email,
-      type: TeamInvitationType.MEMBER,
+      type: selectedRole as TeamInvitationType,
       workerId: selectedWorkerId,
       token: '',
       status: TeamInvitationStatus.PENDING,
@@ -178,6 +184,7 @@ export default function AddMemberDialog({
       <Dialog
         open={open}
         onClose={handleClose}
+        data-testid="add-member-dialog"
         PaperProps={{
           component: 'form',
           onSubmit: handleSubmit,
@@ -229,7 +236,29 @@ export default function AddMemberDialog({
             variant="standard"
             error={error}
             helperText={helperText}
+            data-testid="add-member-email-input"
           />
+          <FormControl fullWidth margin="dense">
+            <InputLabel id="add-member-role-label">{t('role')}</InputLabel>
+            <Select
+              labelId="add-member-role-label"
+              id="add-member-role-select"
+              value={selectedRole}
+              label={t('role')}
+              onChange={handleRoleChange}
+              data-testid="add-member-role-select"
+            >
+              <MenuItem
+                value={TeamInvitationType.MEMBER}
+                data-testid="add-member-role-option-member"
+              >
+                {t('role_member')}
+              </MenuItem>
+              <MenuItem value={TeamInvitationType.OWNER} data-testid="add-member-role-option-owner">
+                {t('role_owner')}
+              </MenuItem>
+            </Select>
+          </FormControl>
           {showAttachWorker ? (
             <AttachWorkerSelect
               workers={workers}

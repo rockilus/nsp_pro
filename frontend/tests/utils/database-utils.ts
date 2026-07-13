@@ -504,6 +504,20 @@ export class DatabaseTestUtils {
   }
 
   /**
+   * Change a team member's role (promote/demote)
+   * Uses the role update API endpoint with the team owner's credentials
+   */
+  async changeMemberRole(
+    teamId: string,
+    userId: string,
+    newRole: 'member' | 'owner',
+  ): Promise<{ message: string }> {
+    return this.makeAuthenticatedRequest('PUT', `/teams/${teamId}/users/${userId}/role`, {
+      role: newRole,
+    });
+  }
+
+  /**
    * Create an authenticated API client for a specific user
    * This allows tests to make requests as different users by switching the X-Dev-User-ID header
    */

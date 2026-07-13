@@ -9,7 +9,11 @@ import NavigationHeader from '@/components/common/navigation-header';
 // Hooks
 import { useIsMobile, useIsLandscape } from '../../../hooks/useIsMobile';
 // Actions
-import { useGetTeamUsersWithMemberships, useRemoveUserFromTeam } from '@/hooks/useTeam';
+import {
+  useGetTeamUsersWithMemberships,
+  useRemoveUserFromTeam,
+  useUpdateTeamMembershipRole,
+} from '@/hooks/useTeam';
 import { useGetWorkers, useAttachUserToWorker } from '@/hooks/useWorker';
 import {
   useCreateTeamInvitation,
@@ -40,6 +44,7 @@ export default function MembersTab({ lng, teamId }: { lng: string; teamId: strin
   // Hook functions
   const getTeamUsersWithMembershipsFn = useGetTeamUsersWithMemberships();
   const removeUserFromTeamFn = useRemoveUserFromTeam();
+  const updateTeamMembershipRoleFn = useUpdateTeamMembershipRole();
   const getWorkersFn = useGetWorkers();
   const attachUserToWorkerFn = useAttachUserToWorker();
   const createTeamInvitationFn = useCreateTeamInvitation();
@@ -75,6 +80,21 @@ export default function MembersTab({ lng, teamId }: { lng: string; teamId: strin
     } catch (error) {
       console.error('Failed to remove user from team:', error);
       // Handle error as needed (show notification, etc.)
+    }
+  };
+
+  const handleUpdateMemberRole = async (userId: string, newRole: string) => {
+    try {
+      await updateTeamMembershipRoleFn(teamId, userId, newRole);
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          u.user.id === userId
+            ? { ...u, membership: { ...u.membership, role: newRole as any } }
+            : u,
+        ),
+      );
+    } catch (error) {
+      console.error('Failed to update member role:', error);
     }
   };
 
@@ -158,6 +178,7 @@ export default function MembersTab({ lng, teamId }: { lng: string; teamId: strin
               workers={workers}
               handleRemoveFromTeam={handleRemoveFromTeam}
               handleAttachUserToWorker={handleAttachUserToWorker}
+              handleUpdateMemberRole={handleUpdateMemberRole}
             />
           ) : (
             <div>{t('no_member_message')}</div>

@@ -53,3 +53,40 @@ class TeamMembershipService(BaseService):
         if membership is None:
             return None
         return TEAM_ROLE_TO_AUTHZ_ROLE.get(membership.role.value)
+
+    def update_membership_role(
+        self, team_id: str, user_id: str, new_role: TeamMembershipRole
+    ) -> TeamMembership:
+        if new_role not in (TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER):
+            raise ValueError(f"Invalid role: {new_role.value}")
+
+        membership = (
+            self.collection.team_membership_db.get_team_membership_by_user_and_team_id(
+                user_id=user_id, team_id=team_id
+            )
+        )
+        if membership is None:
+            raise ValueError("Membership not found")
+
+        if membership.role == new_role:
+            return membership
+
+        if (
+            membership.role == TeamMembershipRole.OWNER
+            and new_role == TeamMembershipRole.MEMBER
+        ):
+            all_team_memberships = (
+                self.collection.team_membership_db.get_team_memberships_by_team_id(
+                    team_id=team_id
+                )
+            )
+            owner_count = sum(
+                1
+                for m in all_team_memberships
+                if m.role == TeamMembershipRole.OWNER and m.user_id != user_id
+            )
+            if owner_count == 0:
+                raise ValueError("Cannot demote the last owner of a team")
+
+        membership.role = new_role
+        return self.collection.team_membership_db.update_team_membership(membership)

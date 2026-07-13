@@ -293,3 +293,36 @@ export function useRemoveUserFromTeam() {
 
   return removeUserFromTeam;
 }
+
+/**
+ * Hook for updating a team membership role
+ */
+export function useUpdateTeamMembershipRole() {
+  const apiClient = useApiClient();
+  const { user, isAuthenticated, loading } = useAuth();
+
+  const updateTeamMembershipRole = useCallback(
+    async (teamId: string, userId: string, role: string): Promise<{ role: string }> => {
+      if (loading) {
+        throw new Error('Authentication still loading - please wait');
+      }
+
+      if (!isAuthenticated) {
+        throw new Error('User not authenticated - please sign in');
+      }
+
+      try {
+        return await TeamApi.updateTeamMembershipRole(apiClient, teamId, userId, role);
+      } catch (error) {
+        console.error('Failed to update team membership role:', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString(),
+        });
+        throw error;
+      }
+    },
+    [apiClient, isAuthenticated, loading],
+  );
+
+  return updateTeamMembershipRole;
+}

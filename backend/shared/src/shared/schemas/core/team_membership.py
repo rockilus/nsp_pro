@@ -2,18 +2,14 @@ from dataclasses import dataclass
 from enum import Enum
 
 INVITE_TYPE_ROLE_MAP = {
-    # "admin": {
-    #     "role": "admin",
-    #     "link_worker": False,
-    # },
+    "owner": {
+        "role": "owner",
+        "link_worker": False,
+    },
     "member": {
         "role": "member",
         "link_worker": True,
     },
-    # "viewer": {
-    #     "role": "viewer",
-    #     "link_worker": False,
-    # }
 }
 
 TEAM_ROLE_TO_AUTHZ_ROLE = {
