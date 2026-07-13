@@ -110,4 +110,31 @@ export class TeamApi extends BaseApi {
 
     await this.makeRequest<void>(apiClient, 'delete', `/teams/${teamId}/users/${userId}`);
   }
+
+  /**
+   * Update team membership role (authenticated)
+   */
+  static async updateTeamMembershipRole(
+    apiClient: AuthenticatedApiClient,
+    teamId: string,
+    userId: string,
+    role: string,
+  ): Promise<{ role: string }> {
+    if (!teamId) {
+      throw new Error('Team ID is required');
+    }
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    if (!role) {
+      throw new Error('Role is required');
+    }
+
+    return await this.makeRequest<{ role: string }>(
+      apiClient,
+      'put',
+      `/teams/${teamId}/users/${userId}/role`,
+      { role },
+    );
+  }
 }

@@ -9,7 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import './invitations-list.css';
 // Types
 import { WorkerT } from '@/types/worker';
-import { TeamInvitationT } from '@/types/team-invitation';
+import { TeamInvitationT, TeamInvitationType } from '@/types/team-invitation';
 
 dayjs.extend(duration);
 
@@ -82,6 +82,10 @@ export default function InvitationsList({
         </div>
         <div className="invites-list-item-info-container">
           <span className="invites-list-item-info">{invitation.email}</span>
+          <span className="invites-list-item-info-divider">|</span>
+          <span className="invites-list-item-info">
+            {invitation.type === TeamInvitationType.OWNER ? t('role_owner') : t('role_member')}
+          </span>
           <span className="invites-list-item-info-divider">|</span>
           {worker && (
             <>

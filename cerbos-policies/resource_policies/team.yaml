@@ -49,6 +49,7 @@ resourcePolicy:
         - deny-request
         - rescind-request
         - remove-user        # member management
+        - update-membership-role
         - create-worker      # worker management
         - update-worker
         - delete-worker
@@ -132,6 +133,7 @@ resourcePolicy:
         - approve-swap
         - update-team
         - remove-user
+        - update-membership-role
         - create-worker
         - update-worker
         - delete-worker

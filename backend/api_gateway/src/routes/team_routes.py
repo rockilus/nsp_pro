@@ -5,7 +5,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from shared.logger import log_info
-from shared.schemas.core import Team
+from shared.schemas.core import Team, TeamMembershipRole
 from shared.schemas.dto import (
     PaginatedTeamsResponse,
     TeamDTO,
@@ -14,7 +14,11 @@ from shared.schemas.dto import (
     UserWithMembershipDTO,
 )
 
-from src.dependencies import get_team_service, get_user_context
+from src.dependencies import (
+    get_team_membership_service,
+    get_team_service,
+    get_user_context,
+)
 from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.errors import (
     NotAuthorizedError,  # MessageTypeError,
@@ -25,6 +29,7 @@ from src.integrations.authorization.cerbos_authz_service import (
 )
 from src.security.audit import log_impersonated_action
 from src.security.user_context import UserContext
+from src.services.team_membership_service import TeamMembershipService
 from src.services.team_service import TeamService
 
 router = APIRouter()
@@ -285,6 +290,49 @@ async def remove_user_from_team(
         return {"message": "User successfully removed from the team"}
     except Exception as e:
         log_info("Failed to remove user from team")
+        handle_routes_errors(e)
+
+
+class TeamMembershipRoleUpdateRequest(BaseModel):
+    role: str
+
+
+@router.put("/teams/{team_id}/users/{user_id}/role")
+async def update_team_membership_role(
+    team_id: str,
+    user_id: str,
+    body: TeamMembershipRoleUpdateRequest,
+    user_context: UserContext = Depends(get_user_context),
+    authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
+    team_membership_service: TeamMembershipService = Depends(
+        get_team_membership_service
+    ),
+):
+    try:
+        if not await authz.check(
+            user_context.user_id, "update-membership-role", "team", team_id
+        ):
+            raise NotAuthorizedError(
+                "You do not have permission to update team member roles"
+            )
+        try:
+            new_role = TeamMembershipRole(body.role)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid role: {body.role}. Must be 'owner' or 'member'.",
+            )
+
+        updated_membership = team_membership_service.update_membership_role(
+            team_id=team_id,
+            user_id=user_id,
+            new_role=new_role,
+        )
+        return {"role": updated_membership.role.value}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        log_info("Failed to update team membership role")
         handle_routes_errors(e)
 
 
