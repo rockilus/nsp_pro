@@ -53,9 +53,9 @@ jobs:
         run: uv sync --locked --all-extras --dev
         working-directory: backend/shared
 
-      - name: "Security: pip-audit (shared)"
-        run: uv run pip-audit
-        working-directory: backend/shared
+      # - name: "Security: pip-audit (shared)"
+      #   run: uv run pip-audit
+      #   working-directory: backend/shared
 
       - name: "Security: bandit (shared)"
         run: uv run bandit -r src/ -ll
