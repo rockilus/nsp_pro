@@ -68,6 +68,7 @@ export default function MembersList({
       <div
         key={userWithMembership.user.id}
         className={`teams-list-item ${isFirstItem ? 'first-item' : ''}`}
+        data-testid={`member-row-${userWithMembership.user.id}`}
       >
         <div className="team-list-item-description">
           <strong className="teams-list-item-name">
@@ -83,9 +84,20 @@ export default function MembersList({
               onChange={handleRoleChange}
               disabled={isLastOwner}
               sx={{ fontSize: '0.75rem' }}
+              data-testid={`member-role-select-${userWithMembership.user.id}`}
             >
-              <MenuItem value={TeamMembershipRole.MEMBER}>{t('role_member')}</MenuItem>
-              <MenuItem value={TeamMembershipRole.OWNER}>{t('role_owner')}</MenuItem>
+              <MenuItem
+                value={TeamMembershipRole.MEMBER}
+                data-testid={`member-role-option-member`}
+              >
+                {t('role_member')}
+              </MenuItem>
+              <MenuItem
+                value={TeamMembershipRole.OWNER}
+                data-testid={`member-role-option-owner`}
+              >
+                {t('role_owner')}
+              </MenuItem>
             </Select>
           </FormControl>
         </div>
@@ -110,7 +122,7 @@ export default function MembersList({
   };
 
   return (
-    <div className="teams-list-container">
+    <div className="teams-list-container" data-testid="members-list-container">
       {users.map((teamWithMembership, index) => (
         <MembersListItem
           key={teamWithMembership.user.id}

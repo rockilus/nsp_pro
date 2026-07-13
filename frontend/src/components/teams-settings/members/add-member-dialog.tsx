@@ -184,6 +184,7 @@ export default function AddMemberDialog({
       <Dialog
         open={open}
         onClose={handleClose}
+        data-testid="add-member-dialog"
         PaperProps={{
           component: 'form',
           onSubmit: handleSubmit,
@@ -235,6 +236,7 @@ export default function AddMemberDialog({
             variant="standard"
             error={error}
             helperText={helperText}
+            data-testid="add-member-email-input"
           />
           <FormControl fullWidth margin="dense">
             <InputLabel id="add-member-role-label">{t('role')}</InputLabel>
@@ -244,9 +246,10 @@ export default function AddMemberDialog({
               value={selectedRole}
               label={t('role')}
               onChange={handleRoleChange}
+              data-testid="add-member-role-select"
             >
-              <MenuItem value={TeamInvitationType.MEMBER}>{t('role_member')}</MenuItem>
-              <MenuItem value={TeamInvitationType.OWNER}>{t('role_owner')}</MenuItem>
+              <MenuItem value={TeamInvitationType.MEMBER} data-testid="add-member-role-option-member">{t('role_member')}</MenuItem>
+              <MenuItem value={TeamInvitationType.OWNER} data-testid="add-member-role-option-owner">{t('role_owner')}</MenuItem>
             </Select>
           </FormControl>
           {showAttachWorker ? (

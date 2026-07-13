@@ -83,7 +83,7 @@ export default function InvitationsList({
         <div className="invites-list-item-info-container">
           <span className="invites-list-item-info">{invitation.email}</span>
           <span className="invites-list-item-info-divider">|</span>
-          <span className="invites-list-item-info">
+          <span className="invites-list-item-info" data-testid={`invitation-role-${invitation.id}`}>
             {invitation.type === TeamInvitationType.OWNER ? t('role_owner') : t('role_member')}
           </span>
           <span className="invites-list-item-info-divider">|</span>
