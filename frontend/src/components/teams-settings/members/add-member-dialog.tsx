@@ -248,8 +248,15 @@ export default function AddMemberDialog({
               onChange={handleRoleChange}
               data-testid="add-member-role-select"
             >
-              <MenuItem value={TeamInvitationType.MEMBER} data-testid="add-member-role-option-member">{t('role_member')}</MenuItem>
-              <MenuItem value={TeamInvitationType.OWNER} data-testid="add-member-role-option-owner">{t('role_owner')}</MenuItem>
+              <MenuItem
+                value={TeamInvitationType.MEMBER}
+                data-testid="add-member-role-option-member"
+              >
+                {t('role_member')}
+              </MenuItem>
+              <MenuItem value={TeamInvitationType.OWNER} data-testid="add-member-role-option-owner">
+                {t('role_owner')}
+              </MenuItem>
             </Select>
           </FormControl>
           {showAttachWorker ? (

@@ -79,11 +79,7 @@ export default function EditMemberDialog({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>{t('role')}</Label>
-            <Select
-              value={selectedRole}
-              onValueChange={setSelectedRole}
-              disabled={isLastOwner}
-            >
+            <Select value={selectedRole} onValueChange={setSelectedRole} disabled={isLastOwner}>
               <SelectTrigger data-testid="edit-member-role-select">
                 <SelectValue />
               </SelectTrigger>
@@ -106,10 +102,7 @@ export default function EditMemberDialog({
 
           <div className="space-y-2">
             <Label>{t('worker')}</Label>
-            <Select
-              value={selectedWorkerId || ''}
-              onValueChange={setSelectedWorkerId}
-            >
+            <Select value={selectedWorkerId || ''} onValueChange={setSelectedWorkerId}>
               <SelectTrigger data-testid="edit-member-worker-select">
                 <SelectValue placeholder={t('no_worker')} />
               </SelectTrigger>
@@ -118,7 +111,9 @@ export default function EditMemberDialog({
                   <SelectItem
                     key={worker.id}
                     value={worker.id}
-                    disabled={worker.userId !== null && worker.userId !== userWithMembership.user.id}
+                    disabled={
+                      worker.userId !== null && worker.userId !== userWithMembership.user.id
+                    }
                     data-testid={`edit-member-worker-option-${worker.id}`}
                   >
                     {worker.name}

@@ -14,8 +14,10 @@ import { TeamMembershipRole } from '@/types/team';
 import { WorkerT } from '@/types/worker';
 
 const ROLE_BADGE_STYLES: Record<string, string> = {
-  [TeamMembershipRole.OWNER]: 'border-amber-400 text-amber-700 dark:border-amber-500 dark:text-amber-400',
-  [TeamMembershipRole.MEMBER]: 'border-slate-300 text-slate-600 dark:border-slate-600 dark:text-slate-300',
+  [TeamMembershipRole.OWNER]:
+    'border-amber-400 text-amber-700 dark:border-amber-500 dark:text-amber-400',
+  [TeamMembershipRole.MEMBER]:
+    'border-slate-300 text-slate-600 dark:border-slate-600 dark:text-slate-300',
 };
 
 export default function MembersList({
@@ -55,7 +57,8 @@ export default function MembersList({
 
     const currentRole = userWithMembership.membership.role.valueOf() as string;
     const isLastOwner = currentRole === TeamMembershipRole.OWNER && ownerCount <= 1;
-    const badgeStyle = ROLE_BADGE_STYLES[currentRole] || ROLE_BADGE_STYLES[TeamMembershipRole.MEMBER];
+    const badgeStyle =
+      ROLE_BADGE_STYLES[currentRole] || ROLE_BADGE_STYLES[TeamMembershipRole.MEMBER];
 
     return (
       <div

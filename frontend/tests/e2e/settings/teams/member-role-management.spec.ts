@@ -66,9 +66,7 @@ test.describe('Member Role Management', () => {
       await dialog.locator('[data-testid="edit-member-save-button"]').click();
       await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
-      const ownerClient = base.dbUtils.createAuthenticatedClientForUser(
-        base.getOwnerUser().userId,
-      );
+      const ownerClient = base.dbUtils.createAuthenticatedClientForUser(base.getOwnerUser().userId);
       const users = await TeamApi.getTeamUsersWithMemberships(ownerClient, testTeam.teamId);
       const updatedUser = users.find((u) => u.user.id === memberUser.userId);
       expect(updatedUser).toBeDefined();
@@ -106,9 +104,7 @@ test.describe('Member Role Management', () => {
       await dialog.locator('[data-testid="edit-member-save-button"]').click();
       await expect(dialog).not.toBeVisible({ timeout: 5000 });
 
-      const ownerClient = base.dbUtils.createAuthenticatedClientForUser(
-        base.getOwnerUser().userId,
-      );
+      const ownerClient = base.dbUtils.createAuthenticatedClientForUser(base.getOwnerUser().userId);
       const users = await TeamApi.getTeamUsersWithMemberships(ownerClient, testTeam.teamId);
       const updatedUser = users.find((u) => u.user.id === memberUser.userId);
       expect(updatedUser).toBeDefined();
@@ -157,7 +153,9 @@ test.describe('Member Role Management', () => {
   });
 
   test.describe('UI Edge Cases', () => {
-    test("last remaining owner's role select is disabled in edit dialog", async ({ page }, testInfo) => {
+    test("last remaining owner's role select is disabled in edit dialog", async ({
+      page,
+    }, testInfo) => {
       const testRunId = (testInfo as any).testRunId as string;
       const base = testBasesMap.get(testRunId)!;
       const ownerUser = base.getOwnerUser();
@@ -170,9 +168,7 @@ test.describe('Member Role Management', () => {
       const ownerRow = page.locator(`[data-testid="member-row-${ownerUser.userId}"]`);
       await expect(ownerRow).toBeVisible();
 
-      const editButton = ownerRow.locator(
-        `[data-testid="member-edit-button-${ownerUser.userId}"]`,
-      );
+      const editButton = ownerRow.locator(`[data-testid="member-edit-button-${ownerUser.userId}"]`);
       await expect(editButton).toBeVisible();
       await editButton.click();
 
@@ -262,10 +258,7 @@ test.describe('Member Role Management', () => {
       });
 
       const ownerClient = base.dbUtils.createAuthenticatedClientForUser(ownerUser.userId);
-      const invitations = await TeamInvitationApi.getTeamInvitations(
-        ownerClient,
-        testTeam.teamId,
-      );
+      const invitations = await TeamInvitationApi.getTeamInvitations(ownerClient, testTeam.teamId);
       const createdInvitation = invitations.find((inv) => inv.email === testEmail);
       expect(createdInvitation).toBeDefined();
       expect(createdInvitation!.type).toBe(TeamInvitationType.OWNER);
