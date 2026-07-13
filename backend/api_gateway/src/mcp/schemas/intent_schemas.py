@@ -27,9 +27,10 @@ class IntentClassificationResult(BaseModel):
     complexity: ComplexityTier = Field(
         ...,
         description=(
-            "low for basic Q&A, single-tool lookups, and simple single-tool "
-            "mutations. high for multi-step data mutations that require prior "
-            "read-side resolution (date calculation, worker lookup, dimension "
-            "lookup) before a write can be executed."
+            "low for single-entity operations (at most one simple lookup before "
+            "one write on the same entity), single-tool lookups, and trivial "
+            "lookup→mutate pairs. high for operations requiring entity creation "
+            "as a prerequisite, batch mutations across multiple workers, "
+            "cross-domain operations, or complex date resolution chains."
         ),
     )
