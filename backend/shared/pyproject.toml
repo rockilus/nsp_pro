@@ -6,6 +6,7 @@ readme = "README.md"
 authors = [ { name = "Felipe Kharaba" } ]
 requires-python = ">=3.14"
 dependencies = [
+    "click>=8.4.2",
     "loguru>=0.7.2",
     "mongo-types>=0.15.1",
     "fastapi>=0.115.6",
@@ -34,6 +35,7 @@ include = ["shared*"]
 [dependency-groups]
 dev = [
     "bandit>=1.8.0",
+    "protobuf>=7.35.1",
     "mypy>=1.13.0",
     "pip-audit>=2.8.0",
     "pylint>=3.3.2",
