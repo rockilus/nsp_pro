@@ -53,9 +53,9 @@ jobs:
         run: uv sync --locked --all-extras --dev
         working-directory: backend/shared
 
-      # - name: "Security: pip-audit (shared)"
-      #   run: uv run pip-audit
-      #   working-directory: backend/shared
+      - name: "Security: pip-audit (shared)"
+        run: uv run pip-audit
+        working-directory: backend/shared
 
       - name: "Security: bandit (shared)"
         run: uv run bandit -r src/ -ll
@@ -83,9 +83,9 @@ jobs:
         run: uv sync --locked --all-extras --dev
         working-directory: backend/api_gateway
 
-      # - name: "Security: pip-audit (api_gateway)"
-      #   run: uv run pip-audit
-      #   working-directory: backend/api_gateway
+      - name: "Security: pip-audit (api_gateway)"
+        run: uv run pip-audit
+        working-directory: backend/api_gateway
 
       - name: "Security: bandit (api_gateway)"
         run: uv run bandit -r src/ -ll
@@ -131,9 +131,9 @@ jobs:
         run: uv sync --locked --all-extras --dev
         working-directory: backend/solve_service
 
-      # - name: "Security: pip-audit (solve_service)"
-      #   run: uv run pip-audit
-      #   working-directory: backend/solve_service
+      - name: "Security: pip-audit (solve_service)"
+        run: uv run pip-audit
+        working-directory: backend/solve_service
 
       - name: "Security: bandit (solve_service)"
         run: uv run bandit -r src/ -ll
