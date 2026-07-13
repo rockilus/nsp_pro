@@ -161,8 +161,10 @@ export class CopilotApi extends BaseApi {
       action_token: pendingAction.actionToken,
       tool_name: pendingAction.toolName,
       tool_args: pendingAction.toolArgs,
-      step: pendingAction.step ?? null,
     };
+    if (pendingAction.step !== undefined) {
+      body.step = pendingAction.step;
+    }
 
     if (planContext?.userMessage) {
       body.user_message = planContext.userMessage;
