@@ -8,6 +8,7 @@ import pytest
 
 from src.errors.copilot_errors.copilot_errors import CopilotDisabledError
 from src.mcp.models import WorkerRosterItem
+from src.mcp.schemas.intent_schemas import ComplexityTier
 from src.security.user_context import UserContext
 from src.services.copilot_agent import (
     CopilotAgentService,
@@ -117,7 +118,9 @@ class TestRunAgentLoop:
             patch.object(
                 CopilotAgentService,
                 "_classify_intent",
-                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+                new=AsyncMock(
+                    return_value=(CopilotIntent.GENERAL_QA, ComplexityTier.LOW)
+                ),
             ),
         ):
             cfg.ai_enabled = True
@@ -157,7 +160,9 @@ class TestRunAgentLoop:
             patch.object(
                 CopilotAgentService,
                 "_classify_intent",
-                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+                new=AsyncMock(
+                    return_value=(CopilotIntent.GENERAL_QA, ComplexityTier.LOW)
+                ),
             ),
         ):
             cfg.ai_enabled = True
@@ -204,7 +209,9 @@ class TestRunAgentLoop:
             patch.object(
                 CopilotAgentService,
                 "_classify_intent",
-                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+                new=AsyncMock(
+                    return_value=(CopilotIntent.GENERAL_QA, ComplexityTier.LOW)
+                ),
             ),
         ):
             cfg.ai_enabled = True
@@ -241,7 +248,9 @@ class TestRunAgentLoop:
             patch.object(
                 CopilotAgentService,
                 "_classify_intent",
-                new=AsyncMock(return_value=CopilotIntent.ROSTER_MODIFICATION),
+                new=AsyncMock(
+                    return_value=(CopilotIntent.ROSTER_MODIFICATION, ComplexityTier.LOW)
+                ),
             ),
         ):
             cfg.ai_enabled = True
@@ -276,7 +285,9 @@ class TestRunAgentLoop:
             patch.object(
                 CopilotAgentService,
                 "_classify_intent",
-                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+                new=AsyncMock(
+                    return_value=(CopilotIntent.GENERAL_QA, ComplexityTier.LOW)
+                ),
             ),
         ):
             cfg.ai_enabled = True
@@ -311,7 +322,9 @@ class TestRunAgentLoop:
             patch.object(
                 CopilotAgentService,
                 "_classify_intent",
-                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+                new=AsyncMock(
+                    return_value=(CopilotIntent.GENERAL_QA, ComplexityTier.LOW)
+                ),
             ),
         ):
             cfg.ai_enabled = True
@@ -344,7 +357,9 @@ class TestRunAgentLoop:
             patch.object(
                 CopilotAgentService,
                 "_classify_intent",
-                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+                new=AsyncMock(
+                    return_value=(CopilotIntent.GENERAL_QA, ComplexityTier.LOW)
+                ),
             ),
         ):
             cfg.ai_enabled = True
@@ -371,10 +386,11 @@ class TestRunAgentLoop:
 class TestClassifyIntent:
     async def test_general_qa_triggers_on_read_query(self):
         with patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac:
-            fake = _make_completion(_make_message(content="general_qa"))
+            json_output = '{"intent":"general_qa","complexity":"low"}'
+            fake = _make_completion(_make_message(content=json_output))
             mock_ac.return_value = fake
 
-            result = await CopilotAgentService._classify_intent(
+            result, complexity = await CopilotAgentService._classify_intent(
                 user_message="who is on the team?",
                 history=None,
                 model="mistral/mistral-small-latest",
@@ -382,13 +398,15 @@ class TestClassifyIntent:
             )
 
         assert result == CopilotIntent.GENERAL_QA
+        assert complexity == ComplexityTier.LOW
 
     async def test_roster_mod_triggers_on_write_intent(self):
         with patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac:
-            fake = _make_completion(_make_message(content="roster_modification"))
+            json_output = '{"intent":"roster_modification","complexity":"high"}'
+            fake = _make_completion(_make_message(content=json_output))
             mock_ac.return_value = fake
 
-            result = await CopilotAgentService._classify_intent(
+            result, complexity = await CopilotAgentService._classify_intent(
                 user_message="end Hugo's contract next Monday",
                 history=None,
                 model="mistral/mistral-small-latest",
@@ -396,13 +414,14 @@ class TestClassifyIntent:
             )
 
         assert result == CopilotIntent.ROSTER_MODIFICATION
+        assert complexity == ComplexityTier.HIGH
 
     async def test_falls_back_on_unparseable_output(self):
         with patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac:
             fake = _make_completion(_make_message(content="banana scramble"))
             mock_ac.return_value = fake
 
-            result = await CopilotAgentService._classify_intent(
+            result, complexity = await CopilotAgentService._classify_intent(
                 user_message="xyzzy",
                 history=None,
                 model="mistral/mistral-small-latest",
@@ -410,6 +429,7 @@ class TestClassifyIntent:
             )
 
         assert result == CopilotIntent.GENERAL_QA
+        assert complexity == ComplexityTier.LOW
 
     async def test_uses_history_for_elliptical_follow_up(self):
         """Short pronoun follow-ups rely on the last 2 history turns."""
@@ -422,10 +442,11 @@ class TestClassifyIntent:
             {"role": "user", "content": "next Monday"},
         ]
         with patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac:
-            fake = _make_completion(_make_message(content="roster_modification"))
+            json_output = '{"intent":"roster_modification","complexity":"high"}'
+            fake = _make_completion(_make_message(content=json_output))
             mock_ac.return_value = fake
 
-            result = await CopilotAgentService._classify_intent(
+            result, complexity = await CopilotAgentService._classify_intent(
                 user_message="actually wednesday instead",
                 history=history,
                 model="mistral/mistral-small-latest",
@@ -442,6 +463,7 @@ class TestClassifyIntent:
             assert len(history_roles) == 2
 
         assert result == CopilotIntent.ROSTER_MODIFICATION
+        assert complexity == ComplexityTier.HIGH
 
 
 class TestPlaybookRouting:
@@ -453,7 +475,9 @@ class TestPlaybookRouting:
             patch.object(
                 CopilotAgentService,
                 "_classify_intent",
-                new=AsyncMock(return_value=CopilotIntent.GENERAL_QA),
+                new=AsyncMock(
+                    return_value=(CopilotIntent.GENERAL_QA, ComplexityTier.LOW)
+                ),
             ),
         ):
             cfg.ai_enabled = True

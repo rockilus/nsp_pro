@@ -34,6 +34,14 @@ export function CopilotWindow({ lng }: { lng: string }) {
   } = useCopilot();
 
   const actionLabels = buildActionLabels(t);
+  const rawPlan = t('plan', { returnObjects: true });
+  const planLabels = (rawPlan && typeof rawPlan === 'object'
+    ? (rawPlan as { stepCompleted: string; stepPending: string; stepWaiting: string })
+    : { stepCompleted: 'Completed', stepPending: 'Needs confirmation', stepWaiting: 'Waiting' }) as {
+    stepCompleted: string;
+    stepPending: string;
+    stepWaiting: string;
+  };
 
   const bottomRef = React.useRef<HTMLDivElement>(null);
   const wasOpen = React.useRef(false);
@@ -128,9 +136,10 @@ export function CopilotWindow({ lng }: { lng: string }) {
               retryLabel={t('retry')}
               onRetry={() => void retry()}
               actionDisabled={isLoading}
-              onConfirmAction={() => void confirmAction(message.id)}
-              onCancelAction={() => cancelAction(message.id)}
+              onConfirmAction={(action) => void confirmAction(action)}
+              onCancelAction={(action) => cancelAction(action)}
               actionLabels={actionLabels}
+              planLabels={planLabels}
             />
           ))
         )}

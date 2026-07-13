@@ -11,7 +11,7 @@ import React, {
 } from 'react';
 import { useTeam } from '@/context/TeamContext';
 import { useCopilotChat, useCopilotConfirm } from '@/hooks/useCopilot';
-import type { CopilotChatTurn, PendingAction } from '@/app/lib/api/copilotApi';
+import type { CompletedStep, CopilotChatTurn, CopilotPlan, PendingAction } from '@/app/lib/api/copilotApi';
 
 export type CopilotRole = 'user' | 'assistant';
 
@@ -22,18 +22,14 @@ export interface CopilotMessage {
   id: string;
   role: CopilotRole;
   content: string;
-  /** Marks an assistant bubble that represents a failed request. */
   isError?: boolean;
-  /** A prepared write awaiting confirmation (Tier-2 update / Tier-1 delete). */
   pendingAction?: PendingAction;
-  /** Set once the user has applied or cancelled the attached pending action. */
   pendingStatus?: PendingActionStatus;
-  /**
-   * Hidden turns are excluded from rendering but replayed to the model as
-   * history (used for synthetic confirmation/cancellation notifications so the
-   * LLM tracks committed DB state without a server-side session).
-   */
   hidden?: boolean;
+  executionMode?: 'react' | 'plan_and_execute';
+  plan?: CopilotPlan | null;
+  completedSteps?: CompletedStep[];
+  pendingActions?: PendingAction[];
 }
 
 interface CopilotContextValue {
@@ -49,10 +45,10 @@ interface CopilotContextValue {
   send: (text: string) => Promise<void>;
   retry: () => Promise<void>;
   clear: () => void;
-  /** Confirm and execute the prepared write on the given message. */
-  confirmAction: (messageId: string) => Promise<void>;
-  /** Cancel the prepared write on the given message without executing it. */
-  cancelAction: (messageId: string) => void;
+  /** Confirm and execute the prepared write on the given action. */
+  confirmAction: (action: PendingAction) => Promise<void>;
+  /** Cancel the prepared write without executing it. */
+  cancelAction: (action: PendingAction) => void;
   /** Set by pages that expose an active schedule (e.g. the schedule tab). */
   setScheduleId: (scheduleId: string | null) => void;
 }
@@ -108,8 +104,15 @@ function toHistoryTurns(messages: CopilotMessage[]): CopilotChatTurn[] {
  */
 function toPersistable(messages: CopilotMessage[]): CopilotMessage[] {
   return messages.slice(-MAX_STORED_MESSAGES).map((m) => {
-    if (!m.pendingAction) return m;
-    const { pendingAction: _drop, ...rest } = m;
+    if (!m.pendingAction && !m.plan) return m;
+    const {
+      pendingAction: _dropAction,
+      pendingActions: _dropActions,
+      plan: _dropPlan,
+      completedSteps: _dropSteps,
+      executionMode: _dropMode,
+      ...rest
+    } = m;
     return { ...rest, pendingStatus: m.pendingStatus ?? 'cancelled' };
   });
 }
@@ -135,6 +138,7 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
   const [hydratedTeam, setHydratedTeam] = useState<string | null>(null);
 
   const messagesRef = useRef<CopilotMessage[]>(messages);
+  const lastUserMessageRef = useRef<string>('');
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
@@ -205,7 +209,7 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
     async (message: string, priorMessages: CopilotMessage[]) => {
       setIsLoading(true);
       try {
-        const { response, pendingAction } = await sendChat({
+        const response = await sendChat({
           message,
           history: toHistoryTurns(priorMessages),
           teamId: selectedTeamId,
@@ -216,8 +220,12 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
           {
             id: createId(),
             role: 'assistant',
-            content: response,
-            ...(pendingAction ? { pendingAction } : {}),
+            content: response.response,
+            executionMode: response.executionMode,
+            plan: response.plan,
+            completedSteps: response.completedSteps,
+            pendingActions: response.pendingActions,
+            ...(response.pendingAction ? { pendingAction: response.pendingAction } : {}),
           },
         ]);
       } catch {
@@ -237,6 +245,7 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
       const trimmed = text.trim();
       if (!trimmed || loadingRef.current) return;
       const prior = messagesRef.current;
+      lastUserMessageRef.current = trimmed;
       setMessages((prev) => [...prev, { id: createId(), role: 'user', content: trimmed }]);
       await runRequest(trimmed, prior);
     },
@@ -274,20 +283,65 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const confirmAction = useCallback(
-    async (messageId: string) => {
-      const target = messagesRef.current.find((m) => m.id === messageId);
-      if (!target?.pendingAction || target.pendingStatus) return;
-      const action = target.pendingAction;
+    async (action: PendingAction) => {
+      // Find the message that owns this action (for plan steps, it's on the
+      // assistant message that contains the plan).
+      const targetMsg = messagesRef.current.find(
+        (m) =>
+          m.pendingAction?.actionToken === action.actionToken ||
+          m.pendingActions?.some((pa) => pa.actionToken === action.actionToken),
+      );
+      if (!targetMsg) return;
+
       setIsLoading(true);
       try {
-        const { message } = await confirmChat(action);
-        setMessages((prev) =>
-          prev.map((m) => (m.id === messageId ? { ...m, pendingStatus: 'applied' } : m)),
-        );
-        appendNotification(
-          `[System Notification: The manager confirmed and applied the proposed ` +
-            `${action.toolName} operation successfully. ${message}]`,
-        );
+        const isPlanStep = targetMsg.executionMode === 'plan_and_execute';
+        const planContext = isPlanStep && lastUserMessageRef.current
+          ? {
+              userMessage: lastUserMessageRef.current,
+              history: toHistoryTurns(messagesRef.current.filter((m) => m.id !== targetMsg.id)),
+              teamId: selectedTeamId,
+              scheduleId,
+            }
+          : undefined;
+
+        const result = await confirmChat(action, planContext);
+
+        if (isPlanStep && result.executionMode === 'plan_and_execute') {
+          setMessages((prev) =>
+            prev.map((m) => {
+              if (m.id === targetMsg.id) {
+                const updatedActions = (m.pendingActions ?? []).map((pa) =>
+                  pa.actionToken === action.actionToken
+                    ? { ...pa, applied: true }
+                    : pa,
+                );
+                return {
+                  ...m,
+                  completedSteps: result.completedSteps ?? m.completedSteps,
+                  pendingActions: updatedActions,
+                  pendingAction: result.pendingAction ?? undefined,
+                  plan: result.plan ?? m.plan,
+                };
+              }
+              return m;
+            }),
+          );
+          appendNotification(
+            `[System Notification: The manager confirmed and applied the proposed ` +
+              `${action.toolName} operation successfully. ${result.message}]`,
+          );
+        } else {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === targetMsg.id ? { ...m, pendingStatus: 'applied' } : m,
+            ),
+          );
+          appendNotification(
+            `[System Notification: The manager confirmed and applied the proposed ` +
+              `${action.toolName} operation successfully. ${result.message}]`,
+          );
+        }
       } catch {
         setMessages((prev) => [
           ...prev,
@@ -297,17 +351,40 @@ export function CopilotProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
       }
     },
-    [confirmChat, appendNotification],
+    [confirmChat, appendNotification, selectedTeamId, scheduleId],
   );
 
   const cancelAction = useCallback(
-    (messageId: string) => {
-      const target = messagesRef.current.find((m) => m.id === messageId);
-      if (!target?.pendingAction || target.pendingStatus) return;
-      const action = target.pendingAction;
-      setMessages((prev) =>
-        prev.map((m) => (m.id === messageId ? { ...m, pendingStatus: 'cancelled' } : m)),
+    (action: PendingAction) => {
+      const targetMsg = messagesRef.current.find(
+        (m) =>
+          m.pendingAction?.actionToken === action.actionToken ||
+          m.pendingActions?.some((pa) => pa.actionToken === action.actionToken),
       );
+      if (!targetMsg) return;
+
+      if (targetMsg.executionMode === 'plan_and_execute') {
+        setMessages((prev) =>
+          prev.map((m) => {
+            if (m.id === targetMsg.id) {
+              const updatedActions = (m.pendingActions ?? []).map((pa) =>
+                pa.actionToken === action.actionToken
+                  ? { ...pa, cancelled: true }
+                  : pa,
+              );
+              return { ...m, pendingActions: updatedActions };
+            }
+            return m;
+          }),
+        );
+      } else {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === targetMsg.id ? { ...m, pendingStatus: 'cancelled' } : m,
+          ),
+        );
+      }
+
       appendNotification(
         `[System Notification: The manager cancelled the proposed ` +
           `${action.toolName} operation. No changes were made.]`,

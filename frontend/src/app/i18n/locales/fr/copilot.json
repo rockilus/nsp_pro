@@ -1,7 +1,7 @@
 {
-  "title": "Copilote",
-  "description": "Assistant IA pour l'analyse de la planification du personnel.",
-  "open": "Ouvrir le copilote",
+  "title": "Copilot",
+  "description": "Assistant IA pour l'analyse des plannings.",
+  "open": "Ouvrir le Copilot",
   "minimize": "Réduire",
   "expand": "Agrandir",
   "close": "Fermer",
@@ -10,14 +10,14 @@
   "send": "Envoyer",
   "retry": "Réessayer",
   "error": "Une erreur est survenue. Veuillez réessayer.",
-  "loading": "Analyse des données de l'équipe...",
+  "loading": "Analyse des indicateurs en cours...",
   "emptyTitle": "Comment puis-je vous aider ?",
   "emptyHint": "Posez une question ou choisissez une suggestion pour commencer.",
   "chips": [
-    "Comparez les heures hebdomadaires réelles et souhaitées de l'équipe",
-    "Qui n'a pas les certifications ou spécialités requises ?",
-    "Qui a la charge de gardes la plus élevée ce mois-ci ?",
-    "Listez les membres de l'équipe selon leurs préférences de disponibilité"
+    "Résumer les heures hebdomadaires vs. souhaitées pour l'équipe",
+    "Qui manque de certifications ou de spécialités ?",
+    "Qui a la charge de garde la plus élevée ce mois-ci ?",
+    "Lister les membres par préférences de disponibilité"
   ],
   "action": {
     "proposedChanges": "Modifications proposées",
@@ -28,5 +28,10 @@
     "confirmDelete": "Supprimer",
     "applied": "Modifications appliquées",
     "cancelled": "Action annulée"
+  },
+  "plan": {
+    "stepCompleted": "Terminé",
+    "stepPending": "Confirmation requise",
+    "stepWaiting": "En attente"
   }
 }

@@ -6,6 +6,7 @@ import {
   CopilotChatResponse,
   CopilotConfirmResponse,
   PendingAction,
+  PlanConfirmContext,
 } from '../app/lib/api/copilotApi';
 import { useApiClient } from '../app/lib/api-client';
 // Auth Context
@@ -42,14 +43,14 @@ export function useCopilotConfirm() {
   const { isAuthenticated, loading } = useAuth();
 
   return useCallback(
-    async (pendingAction: PendingAction): Promise<CopilotConfirmResponse> => {
+    async (pendingAction: PendingAction, planContext?: PlanConfirmContext): Promise<CopilotConfirmResponse> => {
       if (loading) {
         throw new Error('Authentication still loading - please wait');
       }
       if (!isAuthenticated) {
         throw new Error('User not authenticated - please sign in');
       }
-      return CopilotApi.confirmAction(apiClient, pendingAction);
+      return CopilotApi.confirmAction(apiClient, pendingAction, planContext);
     },
     [apiClient, isAuthenticated, loading],
   );

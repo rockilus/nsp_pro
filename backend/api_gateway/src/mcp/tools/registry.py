@@ -50,6 +50,7 @@ from src.mcp.schemas.worker_arguments import (
     SetWorkerDimensionValueArgs,
     UpdateWorkerArgs,
 )
+from src.mcp.schemas.worker_reference_args import ResolveWorkerReferenceArgs
 from src.mcp.tools.dimension_writes import (
     execute_create_dim_entry,
     execute_create_dimension,
@@ -60,6 +61,7 @@ from src.mcp.tools.dimension_writes import (
     execute_update_dimension,
 )
 from src.mcp.tools.temporal_queries import calculate_relative_date
+from src.mcp.tools.worker_reference import execute_resolve_worker_reference
 from src.mcp.tools.worker_writes import (
     execute_create_worker,
     execute_delete_worker,
@@ -83,6 +85,16 @@ class ToolChannel(Flag):
     MCP = auto()
 
 
+@dataclass
+class ToolOutputField:
+    """Describes a field in a tool's output for Planner variable binding."""
+
+    key: str
+    type_: str
+    description: str
+    extractable: bool = True
+
+
 @dataclass(frozen=True)
 class ToolSpec:
     """A tool usable by the copilot agent and/or the MCP server."""
@@ -92,6 +104,7 @@ class ToolSpec:
     executor: ToolExecutor
     channels: ToolChannel = ToolChannel.COPILOT | ToolChannel.MCP
     confirmation_tier: ConfirmationTier = "none"
+    output_schema: list[ToolOutputField] | None = None
 
 
 def _fn_manifest(name: str, description: str, parameters: dict[str, Any]) -> dict:
@@ -150,6 +163,15 @@ GET_TEAM_MEMBERS = ToolSpec(
         },
     ),
     executor=_execute_get_team_members,
+    output_schema=[
+        ToolOutputField(
+            "workers",
+            "list[WorkerRosterItem]",
+            "List of team members; use resolve_worker_reference to pick a "
+            "single worker_id from a name fragment.",
+            False,
+        ),
+    ],
 )
 
 
@@ -175,6 +197,16 @@ GET_DIMENSIONS = ToolSpec(
         },
     ),
     executor=execute_get_dimensions,
+    output_schema=[
+        ToolOutputField(
+            "dimensions",
+            "list[Dimension]",
+            "List of dimensions with dimension_id, name, dim_entries for "
+            "dropdown dimensions. Use dimension_id and dim_entry_ids for "
+            "subsequent write calls.",
+            False,
+        ),
+    ],
 )
 
 CALCULATE_RELATIVE_DATE = ToolSpec(
@@ -194,6 +226,15 @@ CALCULATE_RELATIVE_DATE = ToolSpec(
     executor=calculate_relative_date,
     channels=ToolChannel.COPILOT,
     confirmation_tier="none",
+    output_schema=[
+        ToolOutputField(
+            "calculated_date",
+            "str",
+            "The resolved ISO date string (YYYY-MM-DD) suitable for passing "
+            "directly into write-tool date fields.",
+            True,
+        ),
+    ],
 )
 
 
@@ -212,6 +253,14 @@ CREATE_WORKER = ToolSpec(
     executor=execute_create_worker,
     channels=ToolChannel.COPILOT,
     confirmation_tier="none",
+    output_schema=[
+        ToolOutputField(
+            "worker_id",
+            "str",
+            "The unique identifier of the newly created worker.",
+            True,
+        ),
+    ],
 )
 
 UPDATE_WORKER = ToolSpec(
@@ -268,6 +317,14 @@ CREATE_DIMENSION = ToolSpec(
     executor=execute_create_dimension,
     channels=ToolChannel.COPILOT,
     confirmation_tier="none",
+    output_schema=[
+        ToolOutputField(
+            "dimension_id",
+            "str",
+            "The unique identifier of the newly created dimension.",
+            True,
+        ),
+    ],
 )
 
 UPDATE_DIMENSION = ToolSpec(
@@ -306,6 +363,14 @@ CREATE_DIM_ENTRY = ToolSpec(
     executor=execute_create_dim_entry,
     channels=ToolChannel.COPILOT,
     confirmation_tier="none",
+    output_schema=[
+        ToolOutputField(
+            "dim_entry_id",
+            "str",
+            "The unique identifier of the newly created dropdown option.",
+            True,
+        ),
+    ],
 )
 
 UPDATE_DIM_ENTRY = ToolSpec(
@@ -334,6 +399,43 @@ DELETE_DIM_ENTRY = ToolSpec(
     confirmation_tier="delete",
 )
 
+RESOLVE_WORKER_REFERENCE = ToolSpec(
+    name="resolve_worker_reference",
+    manifest=_fn_manifest(
+        "resolve_worker_reference",
+        "Find a unique worker_id from a worker name or name fragment. "
+        "Use this to resolve a user-mentioned worker name to an ID before "
+        "calling update_worker_fields, soft_delete_worker, or "
+        "set_worker_dimension_value. Returns a flat dict with worker_id, "
+        "name, and acronym on exact match; returns an error with candidate "
+        "names on ambiguous partial matches.",
+        ResolveWorkerReferenceArgs.model_json_schema(),
+    ),
+    executor=execute_resolve_worker_reference,
+    channels=ToolChannel.COPILOT,
+    confirmation_tier="none",
+    output_schema=[
+        ToolOutputField(
+            "worker_id",
+            "str",
+            "The unique identifier of the resolved worker.",
+            True,
+        ),
+        ToolOutputField(
+            "name",
+            "str",
+            "The worker's full name for display/verification.",
+            False,
+        ),
+        ToolOutputField(
+            "acronym",
+            "str",
+            "The worker's short acronym for display/verification.",
+            False,
+        ),
+    ],
+)
+
 
 TOOL_REGISTRY: dict[str, ToolSpec] = {
     spec.name: spec
@@ -351,6 +453,7 @@ TOOL_REGISTRY: dict[str, ToolSpec] = {
         CREATE_DIM_ENTRY,
         UPDATE_DIM_ENTRY,
         DELETE_DIM_ENTRY,
+        RESOLVE_WORKER_REFERENCE,
     )
 }
 

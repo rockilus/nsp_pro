@@ -28,5 +28,10 @@
     "confirmDelete": "Delete",
     "applied": "Changes applied",
     "cancelled": "Action cancelled"
+  },
+  "plan": {
+    "stepCompleted": "Completed",
+    "stepPending": "Needs confirmation",
+    "stepWaiting": "Waiting"
   }
 }

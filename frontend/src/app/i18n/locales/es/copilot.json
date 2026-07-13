@@ -1,32 +1,37 @@
 {
-  "title": "Copiloto",
-  "description": "Asistente de IA para el análisis de la planificación del personal.",
-  "open": "Abrir el copiloto",
+  "title": "Copilot",
+  "description": "Asistente IA para análisis de planificación.",
+  "open": "Abrir Copilot",
   "minimize": "Minimizar",
   "expand": "Expandir",
   "close": "Cerrar",
-  "clear": "Borrar la conversación",
+  "clear": "Borrar conversación",
   "placeholder": "Pregunta sobre tu equipo...",
   "send": "Enviar",
   "retry": "Reintentar",
-  "error": "Algo salió mal. Inténtalo de nuevo.",
-  "loading": "Analizando los datos del equipo...",
-  "emptyTitle": "¿En qué puedo ayudarte?",
-  "emptyHint": "Haz una pregunta o elige una sugerencia para empezar.",
+  "error": "Algo salió mal. Por favor, inténtalo de nuevo.",
+  "loading": "Analizando métricas del equipo...",
+  "emptyTitle": "¿Cómo puedo ayudar?",
+  "emptyHint": "Haz una pregunta o elige una sugerencia para comenzar.",
   "chips": [
-    "Compara las horas semanales reales y deseadas del equipo",
-    "¿Quién carece de certificaciones o especialidades?",
-    "¿Quién tiene la mayor carga de guardias este mes?",
-    "Enumera los miembros del equipo según sus preferencias de disponibilidad"
+    "Resumir horas semanales vs. deseadas del equipo",
+    "¿Quién falta de certificaciones o especialidades?",
+    "¿Quién tiene la mayor carga de guardia este mes?",
+    "Listar miembros por preferencias de disponibilidad"
   ],
   "action": {
     "proposedChanges": "Cambios propuestos",
     "confirmDeleteTitle": "Confirmar eliminación",
-    "confirmDeleteBody": "Esto eliminará a {name}. Esta acción puede revertirse por un administrador.",
+    "confirmDeleteBody": "Esto eliminará a {name}. Esta acción puede ser revertida por un administrador.",
     "apply": "Aplicar cambios",
     "cancel": "Cancelar",
     "confirmDelete": "Eliminar",
     "applied": "Cambios aplicados",
     "cancelled": "Acción cancelada"
+  },
+  "plan": {
+    "stepCompleted": "Completado",
+    "stepPending": "Requiere confirmación",
+    "stepWaiting": "Pendiente"
   }
 }

@@ -1,8 +1,12 @@
 """AI Copilot agent orchestration.
 
-Runs a multi-turn LiteLLM completion loop that routes user intent to local
-tools, executes them inside the secure Python runtime (with Cerbos enforced per
-call via the shared tool registry), and synthesizes a final localized answer.
+Supports two execution strategies selected by the complexity classifier:
+
+* **ReAct (low complexity):** A multi-turn LiteLLM completion loop for
+  single-tool lookups and simple direct mutations.
+* **Plan-and-Execute (high complexity):** A Planner sub-agent generates a
+  static JSON DAG; a deterministic Python Executor walks it with late
+  variable binding, stopping at the first confirmation wall.
 
 Design notes:
   - Uses ``litellm.acompletion`` (async, non-blocking event loop).
@@ -14,7 +18,7 @@ Design notes:
 
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from typing import Any
 
@@ -28,6 +32,11 @@ from src.errors.copilot_errors.copilot_errors import CopilotDisabledError
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
+from src.mcp.schemas.copilot_plan_schemas import ExecutionPlan
+from src.mcp.schemas.intent_schemas import (
+    ComplexityTier,
+    IntentClassificationResult,
+)
 from src.mcp.tools.registry import (
     TOOL_REGISTRY,
     ToolChannel,
@@ -35,6 +44,11 @@ from src.mcp.tools.registry import (
 )
 from src.security.copilot_action_token import create_action_token
 from src.security.user_context import UserContext
+from src.services.copilot_executor import (
+    CopilotPlanExecutor,
+    ExecutionMemory,
+)
+from src.services.copilot_planner import _call_planner
 from src.services.copilot_skills import SKILL_PLAYBOOKS, CopilotIntent
 
 
@@ -60,6 +74,7 @@ class PendingAction:
     tool_name: str
     tool_args: dict[str, Any]
     preview: dict[str, Any]
+    step: int | None = None
 
 
 @dataclass
@@ -68,6 +83,10 @@ class AgentResult:
 
     text: str
     pending_action: PendingAction | None = None
+    execution_mode: str = "react"
+    plan: ExecutionPlan | None = None
+    completed_steps: list[dict[str, Any]] = field(default_factory=list)
+    pending_actions: list[dict[str, Any]] = field(default_factory=list)
 
 
 def _resolve_api_key(model: str) -> str | None:
@@ -147,28 +166,32 @@ class CopilotAgentService:
         history: list[dict[str, Any]] | None,
         model: str,
         api_key: str | None,
-    ) -> CopilotIntent:
-        """Classify the user's request based on action intent, not vocabulary.
+    ) -> tuple[CopilotIntent, ComplexityTier]:
+        """Classify intent AND complexity in a single structured call.
 
-        A cheap, no-tools classifier call run before the main loop.  A rolling
-        window of the last 2 history turns preserves pronoun / elliptical context
-        for short follow-ups ("yes", "Fais-le").
+        Uses LiteLLM's ``response_format`` with ``IntentClassificationResult``
+        for deterministic, strict output — no string-splitting on pipe tokens.
         """
         classification_prompt = (
             "Analyze the trailing conversation window and the final user query.\n"
-            "Classify the final user query into exactly one of these categories:\n"
-            f"- '{CopilotIntent.ROSTER_MODIFICATION.value}': User wants to "
-            "alter, update, create, or drop employee/worker data.\n"
-            f"- '{CopilotIntent.SCHEDULE_SOLVER.value}': User wants to run, "
-            "adjust, or generate shift blocks.\n"
-            f"- '{CopilotIntent.GENERAL_QA.value}': Informational reports, "
-            "listing people, standard app help, or general questions.\n\n"
-            "CRITICAL: If the trailing history was a modification but the "
-            "final user query switches to a plain question (e.g. 'Who is on "
-            "the team?'), classify this turn as general_qa. Prioritise the "
-            "final user turn over history.\n"
-            "Respond ONLY with the raw string token of the category. "
-            "No markdown, no prose, no punctuation."
+            "Classify both the intent and the complexity of the final query.\n\n"
+            "INTENT categories:\n"
+            f"- {CopilotIntent.GENERAL_QA.value}: informational reports, "
+            "listing, help, general questions.\n"
+            f"- {CopilotIntent.ROSTER_MODIFICATION.value}: alter, update, "
+            "create, or drop employee/worker data.\n"
+            f"- {CopilotIntent.SCHEDULE_SOLVER.value}: run, adjust, or "
+            "generate shift blocks.\n\n"
+            "COMPLEXITY categories:\n"
+            f"- {ComplexityTier.LOW.value}: single-tool lookups, simple "
+            "single-tool mutations like 'create a worker named X', direct "
+            "questions that need at most one tool call.\n"
+            f"- {ComplexityTier.HIGH.value}: multi-step operations requiring "
+            "prior read-side resolution (date calculation, worker lookup, "
+            "dimension lookup) before a write can execute.\n\n"
+            "If the trailing history was a modification but the final user "
+            "query switches to a plain question, classify this turn as "
+            "general_qa with low complexity."
         )
 
         messages: list[dict[str, Any]] = [
@@ -192,22 +215,19 @@ class CopilotAgentService:
                 messages=messages,
                 temperature=0.0,
                 api_key=api_key,
+                response_format=IntentClassificationResult,
             )
-            raw_intent = response.choices[0].message.content.strip().lower()
-            raw_intent = raw_intent.replace('"', "").replace("'", "")
-
-            resolved = CopilotIntent(raw_intent)
+            result = IntentClassificationResult.model_validate_json(
+                response.choices[0].message.content
+            )
             log_info(
-                f"Copilot intent classified: raw={raw_intent!r} "
-                f"resolved={resolved.value}"
+                f"Copilot classified: intent={result.intent.value} "
+                f"complexity={result.complexity.value}"
             )
-            return resolved
-        except ValueError, Exception:
-            log_info(
-                f"Copilot intent fallback: raw={raw_intent!r} "
-                f"resolved={CopilotIntent.GENERAL_QA.value} (unparseable)"
-            )
-            return CopilotIntent.GENERAL_QA
+            return result.intent, result.complexity
+        except (ValidationError, ValueError, Exception) as e:
+            log_info(f"Copilot classification fallback (general_qa/low): {e}")
+            return CopilotIntent.GENERAL_QA, ComplexityTier.LOW
 
     @classmethod
     async def run_agent_loop(
@@ -220,28 +240,11 @@ class CopilotAgentService:
         team_id: str | None = None,
         schedule_id: str | None = None,
     ) -> AgentResult:
-        """Execute the multi-turn agent loop and return the final answer.
+        """Execute the copilot loop, routing by complexity.
 
         The backend remains stateless: conversation ``history`` and page
         ``context`` are supplied by the client on every request and are never
         persisted. Callers own storage.
-
-        Args:
-            user_message: The manager's natural-language request.
-            user_context: Authenticated caller identity (drives authorization).
-            db: Database collections for tool execution.
-            cerbos: Authorization service enforced per tool call.
-            history: Prior ``{"role", "content"}`` turns for follow-up context.
-                Roles are restricted to ``user``/``assistant`` at the API layer.
-            team_id: Active team from the client's current screen, if any.
-            schedule_id: Active schedule from the client's current screen, if any.
-
-        Returns:
-            An ``AgentResult`` with the assistant text and, when a Tier-2/Tier-1
-            write was prepared, a signed ``PendingAction`` for confirmation.
-
-        Raises:
-            CopilotDisabledError: If the AI feature is disabled.
         """
         if not config.ai_enabled:
             raise CopilotDisabledError("The AI copilot feature is disabled")
@@ -250,11 +253,53 @@ class CopilotAgentService:
         api_key = _resolve_api_key(model)
         log_info(f"Copilot loop started: user={user_context.user_id} model={model}")
 
-        intent = await cls._classify_intent(user_message, history, model, api_key)
-        playbook = SKILL_PLAYBOOKS[intent]
-        log_info(f"Copilot targeted skill route: {intent.value}")
+        intent, complexity = await cls._classify_intent(
+            user_message, history, model, api_key
+        )
+        log_info(f"Copilot route: intent={intent.value} complexity={complexity.value}")
 
-        # Collects a prepared (but unexecuted) write to surface to the client.
+        if complexity == ComplexityTier.HIGH:
+            return await cls._run_plan_and_execute(
+                user_message=user_message,
+                history=history,
+                model=model,
+                api_key=api_key,
+                user_context=user_context,
+                db=db,
+                cerbos=cerbos,
+                team_id=team_id,
+                schedule_id=schedule_id,
+            )
+
+        return await cls._run_react_loop(
+            user_message=user_message,
+            intent=intent,
+            history=history,
+            model=model,
+            api_key=api_key,
+            user_context=user_context,
+            db=db,
+            cerbos=cerbos,
+            team_id=team_id,
+            schedule_id=schedule_id,
+        )
+
+    @classmethod
+    async def _run_react_loop(
+        cls,
+        user_message: str,
+        intent: CopilotIntent,
+        history: list[dict[str, Any]] | None,
+        model: str,
+        api_key: str | None,
+        user_context: UserContext,
+        db: DatabaseCollections,
+        cerbos: CerbosAuthzService,
+        team_id: str | None,
+        schedule_id: str | None,
+    ) -> AgentResult:
+        """Standard ReAct multi-turn tool-execution loop for low complexity."""
+        playbook = SKILL_PLAYBOOKS[intent]
         pending: list[PendingAction] = []
 
         messages: list[dict[str, Any]] = [
@@ -285,7 +330,7 @@ class CopilotAgentService:
             if m["function"]["name"] in playbook["allowed_tools"]
         ]
         log_info(
-            f"Copilot tool filter: {intent.value} "
+            f"ReAct tool filter: {intent.value} "
             f"total={len(all_manifests)} allowed={len(manifests)}"
         )
 
@@ -306,6 +351,7 @@ class CopilotAgentService:
                     return AgentResult(
                         text=_strip_thinking(response_message.content or ""),
                         pending_action=pending[0] if pending else None,
+                        execution_mode="react",
                     )
 
                 normalized_msg = response_message.model_dump(exclude_none=True)
@@ -323,7 +369,6 @@ class CopilotAgentService:
                         pending=pending,
                     )
 
-            # Tool budget exhausted: request a final synthesis without tools.
             final = await acompletion(
                 model=model,
                 messages=messages,
@@ -333,13 +378,76 @@ class CopilotAgentService:
             return AgentResult(
                 text=_strip_thinking(final.choices[0].message.content or ""),
                 pending_action=pending[0] if pending else None,
+                execution_mode="react",
             )
 
         except CopilotDisabledError:
             raise
         except Exception as e:
-            log_error(f"Copilot agent loop failed: {str(e)}")
+            log_error(f"ReAct loop failed: {str(e)}")
             raise
+
+    @classmethod
+    async def _run_plan_and_execute(
+        cls,
+        user_message: str,
+        history: list[dict[str, Any]] | None,
+        model: str,
+        api_key: str | None,
+        user_context: UserContext,
+        db: DatabaseCollections,
+        cerbos: CerbosAuthzService,
+        team_id: str | None,
+        schedule_id: str | None,
+    ) -> AgentResult:
+        """Plan-and-Execute path: Planner → Executor for complex multi-step ops."""
+        context_message = _build_context_message(
+            datetime.now(timezone.utc).date(), team_id, schedule_id
+        )
+
+        plan = await _call_planner(
+            user_message=user_message,
+            history=history,
+            model=model,
+            api_key=api_key,
+            context_message=context_message,
+        )
+
+        result = await CopilotPlanExecutor.execute(
+            plan=plan,
+            user_context=user_context,
+            db=db,
+            cerbos=cerbos,
+        )
+
+        completed_steps = [
+            {"step": s.step, "status": s.status.value} for s in result.completed_steps
+        ]
+
+        response_text = (
+            f"I've prepared {len(plan.plan)} steps for your request: {plan.summary}"
+        )
+
+        pending_action = None
+        if result.pending_actions:
+            first = result.pending_actions[0]
+            pending_action = PendingAction(
+                action_token=first["action_token"],
+                tier=first["tier"],
+                tool_name=first["tool_name"],
+                tool_args=first["tool_args"],
+                preview=first["preview"],
+                step=first.get("step"),
+            )
+
+        return AgentResult(
+            text=response_text,
+            pending_action=pending_action,
+            execution_mode="plan_and_execute",
+            plan=plan,
+            completed_steps=completed_steps,
+            pending_actions=result.pending_actions,
+        )
 
     @classmethod
     async def _execute_tool_call(
@@ -451,4 +559,145 @@ class CopilotAgentService:
             cerbos=cerbos,
             mode="execute",
             **tool_args,
+        )
+
+    @classmethod
+    async def confirm_plan_step(
+        cls,
+        tool_name: str,
+        tool_args: dict[str, Any],
+        user_message: str,
+        history: list[dict[str, Any]] | None,
+        user_context: UserContext,
+        db: DatabaseCollections,
+        cerbos: CerbosAuthzService,
+        team_id: str | None,
+        schedule_id: str | None,
+    ) -> AgentResult:
+        """Confirm a plan step and continue execution via Pure Replay.
+
+        The backend re-plans and re-executes all read-side steps
+        deterministically, executes the confirmed step in ``execute`` mode,
+        then continues with remaining steps until the next confirmation
+        wall or plan completion.
+
+        The client never sends ``execution_memory`` or ``plan`` — the server
+        reconstructs both. This closes the client-side trust boundary.
+        """
+        model = config.ai_model
+        api_key = _resolve_api_key(model)
+
+        context_message = _build_context_message(
+            datetime.now(timezone.utc).date(), team_id, schedule_id
+        )
+
+        plan = await _call_planner(
+            user_message=user_message,
+            history=history,
+            model=model,
+            api_key=api_key,
+            context_message=context_message,
+        )
+
+        executed_confirmation = False
+        memory = ExecutionMemory()
+        completed_steps: list[dict[str, Any]] = []
+        pending_actions: list[dict[str, Any]] = []
+
+        for step in plan.plan:
+            resolved_args = memory.resolve_args(step.args)
+            spec = TOOL_REGISTRY.get(step.tool)
+
+            if spec is None:
+                completed_steps.append({"step": step.step, "status": "waiting"})
+                break
+
+            if step.tool == tool_name and not executed_confirmation:
+                output = await spec.executor(
+                    db=db,
+                    user_context=user_context,
+                    cerbos=cerbos,
+                    mode="execute",
+                    **resolved_args,
+                )
+                executed_confirmation = True
+                completed_steps.append({"step": step.step, "status": "completed"})
+                continue
+
+            requires_confirmation = spec.confirmation_tier != "none"
+
+            if requires_confirmation:
+                output = await spec.executor(
+                    db=db,
+                    user_context=user_context,
+                    cerbos=cerbos,
+                    mode="preview",
+                    **resolved_args,
+                )
+                if (
+                    isinstance(output, dict)
+                    and output.get("status") == "pending_confirmation"
+                ):
+                    token = create_action_token(
+                        user_id=user_context.user_id,
+                        tool_name=step.tool,
+                        tool_args=resolved_args,
+                        secret=config.copilot_action_jwt_secret,
+                        ttl_seconds=config.copilot_action_token_ttl_seconds,
+                    )
+                    pending_actions.append(
+                        {
+                            "action_token": token,
+                            "tier": output.get("tier", spec.confirmation_tier),
+                            "tool_name": step.tool,
+                            "tool_args": resolved_args,
+                            "preview": output.get("preview", {}),
+                            "step": step.step,
+                        }
+                    )
+                completed_steps.append(
+                    {"step": step.step, "status": "pending_confirmation"}
+                )
+                break
+            else:
+                output = await spec.executor(
+                    db=db,
+                    user_context=user_context,
+                    cerbos=cerbos,
+                    **resolved_args,
+                )
+                if (
+                    step.assign_output_to
+                    and step.extract_key
+                    and isinstance(output, dict)
+                ):
+                    memory.assign(step.assign_output_to, output.get(step.extract_key))
+                completed_steps.append({"step": step.step, "status": "completed"})
+
+        for s in plan.plan[len(completed_steps) :]:
+            completed_steps.append({"step": s.step, "status": "waiting"})
+
+        pending_action = None
+        if pending_actions:
+            first = pending_actions[0]
+            pending_action = PendingAction(
+                action_token=first["action_token"],
+                tier=first["tier"],
+                tool_name=first["tool_name"],
+                tool_args=first["tool_args"],
+                preview=first["preview"],
+                step=first.get("step"),
+            )
+
+        response_text = "Action confirmed. " + (
+            f"Continuing plan: {plan.summary}" if pending_actions else "Plan complete."
+        )
+
+        return AgentResult(
+            text=response_text,
+            pending_action=pending_action,
+            execution_mode="plan_and_execute",
+            plan=plan,
+            completed_steps=completed_steps,
+            pending_actions=pending_actions,
         )

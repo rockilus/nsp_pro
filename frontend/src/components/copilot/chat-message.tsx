@@ -4,9 +4,11 @@ import { AlertCircleIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import type { PendingAction } from '@/app/lib/api/copilotApi';
 import type { CopilotMessage } from '@/context/CopilotContext';
 import Markdown from './markdown';
 import { PendingActionCard } from './pending-action-card';
+import { PlanChecklist } from './plan-checklist';
 
 interface ChatMessageProps {
   message: CopilotMessage;
@@ -14,9 +16,14 @@ interface ChatMessageProps {
   retryLabel: string;
   onRetry: () => void;
   actionDisabled?: boolean;
-  onConfirmAction: () => void;
-  onCancelAction: () => void;
+  onConfirmAction: (action: PendingAction) => void;
+  onCancelAction: (action: PendingAction) => void;
   actionLabels: ComponentProps<typeof PendingActionCard>['labels'];
+  planLabels: {
+    stepCompleted: string;
+    stepPending: string;
+    stepWaiting: string;
+  };
 }
 
 export function ChatMessage({
@@ -28,9 +35,8 @@ export function ChatMessage({
   onConfirmAction,
   onCancelAction,
   actionLabels,
+  planLabels,
 }: ChatMessageProps) {
-  // Hidden turns (synthetic confirmation notifications) are replayed to the
-  // model but never rendered in the UI.
   if (message.hidden) return null;
 
   if (message.isError) {
@@ -52,6 +58,7 @@ export function ChatMessage({
 
   const isUser = message.role === 'user';
   const hasAction = Boolean(message.pendingAction) || message.pendingStatus !== undefined;
+  const hasPlan = Boolean(message.plan) && message.executionMode === 'plan_and_execute';
 
   return (
     <div className={cn('flex flex-col', isUser ? 'items-end' : 'items-start')}>
@@ -69,13 +76,27 @@ export function ChatMessage({
           <Markdown content={message.content} />
         )}
       </div>
-      {!isUser && hasAction && (
+      {!isUser && hasPlan && message.plan && (
+        <div className="w-full max-w-[95%]">
+          <PlanChecklist
+            plan={message.plan}
+            completedSteps={message.completedSteps ?? []}
+            pendingActions={message.pendingActions ?? []}
+            onConfirmAction={onConfirmAction}
+            onCancelAction={onCancelAction}
+            disabled={actionDisabled}
+            actionLabels={actionLabels}
+            planLabels={planLabels}
+          />
+        </div>
+      )}
+      {!isUser && hasAction && !hasPlan && (
         <div className="w-full max-w-[85%]">
           <PendingActionCard
             message={message}
             disabled={actionDisabled}
-            onConfirm={onConfirmAction}
-            onCancel={onCancelAction}
+            onConfirm={() => onConfirmAction(message.pendingAction!)}
+            onCancel={() => onCancelAction(message.pendingAction!)}
             labels={actionLabels}
           />
         </div>

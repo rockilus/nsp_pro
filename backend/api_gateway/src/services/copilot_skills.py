@@ -6,15 +6,9 @@ This prevents smaller models from short-circuiting to write tools when a
 multi-step read-side resolution step (``calculate_relative_date``) is required.
 """
 
-from enum import Enum
 from typing import Any
 
-
-class CopilotIntent(str, Enum):
-    GENERAL_QA = "general_qa"
-    ROSTER_MODIFICATION = "roster_modification"
-    SCHEDULE_SOLVER = "schedule_solver"  # future: solver orchestration
-
+from src.mcp.schemas.intent_schemas import CopilotIntent
 
 # Read-only tools available to every playbook.  ``calculate_relative_date`` is a
 # pure utility — no DB access, no authz — so it is safe to expose everywhere.
@@ -22,6 +16,7 @@ _SHARED_UTILITIES: set[str] = {
     "calculate_relative_date",
     "get_team_members",
     "get_dimensions",
+    "resolve_worker_reference",
 }
 
 # All write-mutation tools the copilot supports today.
