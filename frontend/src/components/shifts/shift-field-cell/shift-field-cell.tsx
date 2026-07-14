@@ -73,6 +73,7 @@ export default function ShiftFieldCell({
     />
   ) : shiftField === 'staffing' ? (
     <ShiftStaffingCell
+      lng={lng}
       shift={shift}
       specialties={specialties}
       handleUpdateShift={handleUpdateShift}

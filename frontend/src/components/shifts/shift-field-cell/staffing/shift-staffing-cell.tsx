@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../../../../app/i18n/client';
 // Components
 import ShiftStaffingCellEdit from './shift-staffing-cell-edit';
 import PopoverAnchorElOver from '../../../inputs/popover-anchor-el-over';
@@ -50,16 +51,17 @@ const AdjustStaffingButtons = ({
 type StaffingChipProps = {
   staffing: StaffingT;
   specialties: SpecialtyT[];
+  t: (key: string) => string;
   onIncrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
   onDecrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
 };
 
-const StaffingChip = ({ staffing, specialties, onIncrease, onDecrease }: StaffingChipProps) => {
+const StaffingChip = ({ staffing, specialties, onIncrease, onDecrease, t }: StaffingChipProps) => {
   const specialty = specialties.find((s) => s.id === staffing.specialtyId);
   return (
     <div className="chip">
       <span className="chip-label">{`${
-        staffing.specialtyId === null ? 'Any' : specialty ? specialty.name : 'Name not found'
+        staffing.specialtyId === null ? t('any') : specialty ? specialty.name : 'Name not found'
       }: ${staffing.staffing}`}</span>
       <span className="chip-delete">
         <AdjustStaffingButtons
@@ -75,6 +77,7 @@ const StaffingChip = ({ staffing, specialties, onIncrease, onDecrease }: Staffin
 type ButtonContentProps = {
   staffingList: StaffingT[];
   specialties: SpecialtyT[];
+  t: (key: string) => string;
   onIncrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
   onDecrease: (event: React.SyntheticEvent, staffing: StaffingT) => void;
 };
@@ -82,6 +85,7 @@ type ButtonContentProps = {
 const ButtonContent = ({
   staffingList,
   specialties,
+  t,
   onIncrease,
   onDecrease,
 }: ButtonContentProps) => {
@@ -92,6 +96,7 @@ const ButtonContent = ({
           key={staffing.specialtyId || index}
           staffing={staffing}
           specialties={specialties}
+          t={t}
           onIncrease={onIncrease}
           onDecrease={onDecrease}
         />
@@ -101,21 +106,24 @@ const ButtonContent = ({
 };
 
 export default function ShiftStaffingCell({
+  lng,
   shift,
   specialties,
   handleUpdateShift,
 }: {
+  lng: string;
   shift: ShiftT;
   specialties: SpecialtyT[];
   handleUpdateShift: (shift: ShiftT) => void;
 }) {
+  const { t } = useTranslation(lng, 'shift-page');
   const [open, setOpen] = useState(false);
   const [valueState, setValueState] = useState<StaffingT[]>(shift.staffing);
 
   const specialtyAny: SpecialtyT = {
     id: 'any_specialty_id',
     teamId: '',
-    name: 'Any',
+    name: t('any'),
     deleted: false,
   };
 
@@ -203,6 +211,7 @@ export default function ShiftStaffingCell({
           <ButtonContent
             staffingList={shift.staffing}
             specialties={specialties}
+            t={t}
             onIncrease={handleIncreaseStaffing}
             onDecrease={handleDecreaseStaffing}
           />
