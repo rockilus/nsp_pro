@@ -9,7 +9,6 @@ import { useIsMobile } from '../../hooks/useIsMobile';
 import MobileShiftTab from './mobile/mobile-shift-tab';
 // shadcn/ui
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 // Components
 import ShiftTable from './shift-table';
 import TableFilterBar from '../table/TableFilterBar';
@@ -475,18 +474,12 @@ export default function ShiftTab({
                   }}
                   className="ml-2"
                 >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <ToggleGroupItem value="work">{t('shifts')}</ToggleGroupItem>
-                    </TooltipTrigger>
-                    <TooltipContent>{t('shifts_tooltip') || t('shifts')}</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <ToggleGroupItem value="rest">{t('rest')}</ToggleGroupItem>
-                    </TooltipTrigger>
-                    <TooltipContent>{t('rest_tooltip') || t('rest')}</TooltipContent>
-                  </Tooltip>
+                  <ToggleGroupItem value="work" title={t('shifts_tooltip') || t('shifts')}>
+                    {t('shifts')}
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="rest" title={t('rest_tooltip') || t('rest')}>
+                    {t('rest')}
+                  </ToggleGroupItem>
                 </ToggleGroup>
               </div>
               <div className="shift-actions-container">
