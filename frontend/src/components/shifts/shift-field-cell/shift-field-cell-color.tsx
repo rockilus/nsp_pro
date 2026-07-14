@@ -25,7 +25,7 @@ export default function ShiftFieldCellColor({
   };
 
   return (
-    <td className="w-[30px] py-0" data-testid={`shift-color-cell-${shift.id}`}>
+    <td className="w-[30px] py-0 pl-2" data-testid={`shift-color-cell-${shift.id}`}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
