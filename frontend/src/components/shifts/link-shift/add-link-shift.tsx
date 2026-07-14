@@ -2,11 +2,15 @@ import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import { ArrowLeftRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 // Components
 import { validateLinkShift } from './validate-link-shift';
 // Styles
@@ -49,8 +53,8 @@ export default function AddLinkShift({
     shifts_already_linked: t('message_shifts_already_linked'),
   };
 
-  const handleShift1Change = (event: SelectChangeEvent) => {
-    const shiftSelected = shifts.find((shift) => shift.id === event.target.value);
+  const handleShift1Change = (value: string) => {
+    const shiftSelected = shifts.find((shift) => shift.id === value);
     if (!shiftSelected) {
       return;
     }
@@ -59,8 +63,8 @@ export default function AddLinkShift({
     setValidationMessage(null);
   };
 
-  const handleShift2Change = (event: SelectChangeEvent) => {
-    const shiftSelected = shifts.find((shift) => shift.id === event.target.value);
+  const handleShift2Change = (value: string) => {
+    const shiftSelected = shifts.find((shift) => shift.id === value);
     if (!shiftSelected) {
       return;
     }
@@ -136,20 +140,17 @@ export default function AddLinkShift({
     : [];
 
   const renderShift1Select = () => (
-    <React.Fragment>
-      <div className="ls-select-shift">
-        <Select
-          value={shiftSelected1 ? shiftSelected1.id : ''}
-          onChange={handleShift1Change}
-          displayEmpty
-          fullWidth
-          sx={{ width: '230px' }}
-        >
-          <MenuItem value="" disabled>
-            {t('select_a_shift')}
-          </MenuItem>
+    <div className="ls-select-shift">
+      <Select
+        value={shiftSelected1 ? shiftSelected1.id : undefined}
+        onValueChange={handleShift1Change}
+      >
+        <SelectTrigger className="w-[230px]">
+          <SelectValue placeholder={t('select_a_shift')} />
+        </SelectTrigger>
+        <SelectContent>
           {shiftsForShift1.map((shift) => (
-            <MenuItem key={shift.id} value={shift.id}>
+            <SelectItem key={shift.id} value={shift.id}>
               <div className="ls-shift-select-item">
                 <span className="ls-shift-name">{shift.name}</span>
                 <span className="ls-shift-times">
@@ -158,29 +159,26 @@ export default function AddLinkShift({
                     : ''}
                 </span>
               </div>
-            </MenuItem>
+            </SelectItem>
           ))}
-        </Select>
-      </div>
-    </React.Fragment>
+        </SelectContent>
+      </Select>
+    </div>
   );
 
   const renderShift2Select = () => (
-    <React.Fragment>
-      <div className="ls-select-shift">
-        <Select
-          value={shiftSelected2 ? shiftSelected2.id : ''}
-          onChange={handleShift2Change}
-          displayEmpty
-          fullWidth
-          sx={{ width: '230px' }}
-          disabled={!shiftSelected1}
-        >
-          <MenuItem value="" disabled>
-            {t('select_a_shift')}
-          </MenuItem>
+    <div className="ls-select-shift">
+      <Select
+        value={shiftSelected2 ? shiftSelected2.id : undefined}
+        onValueChange={handleShift2Change}
+        disabled={!shiftSelected1}
+      >
+        <SelectTrigger className="w-[230px]">
+          <SelectValue placeholder={t('select_a_shift')} />
+        </SelectTrigger>
+        <SelectContent>
           {shiftsForShift2.map((shift) => (
-            <MenuItem key={shift.id} value={shift.id}>
+            <SelectItem key={shift.id} value={shift.id}>
               <div className="ls-shift-select-item">
                 <span className="ls-shift-name">{shift.name}</span>
                 <span className="ls-shift-times">
@@ -189,22 +187,20 @@ export default function AddLinkShift({
                     : ''}
                 </span>
               </div>
-            </MenuItem>
+            </SelectItem>
           ))}
-        </Select>
-      </div>
-    </React.Fragment>
+        </SelectContent>
+      </Select>
+    </div>
   );
 
   return (
     <React.Fragment>
       <div className="add-link-shift-container">
         {renderShift1Select()}
-        <SyncAltIcon sx={{ marginX: 1, fontSize: 16, color: 'grey' }} />
+        <ArrowLeftRight className="mx-1 size-4 text-gray-500" />
         {renderShift2Select()}
-        <Button variant="contained" onClick={handleCreateLinkShift}>
-          {t('link')}
-        </Button>
+        <Button onClick={handleCreateLinkShift}>{t('link')}</Button>
       </div>
       {validationMessage ? (
         <div className="validation-message-container">

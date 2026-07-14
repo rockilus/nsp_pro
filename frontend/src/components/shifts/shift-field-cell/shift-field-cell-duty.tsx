@@ -1,7 +1,5 @@
 import React from 'react';
-// MUI
-import Checkbox from '@mui/material/Checkbox';
-import TableCell from '@mui/material/TableCell';
+import { Checkbox } from '@/components/ui/checkbox';
 // Types
 import { ShiftT, ShiftLeaveType, ShiftRestType, ShiftType } from '../../../types/shift';
 
@@ -20,20 +18,17 @@ export default function ShiftFieldCellDuty({
     }
   };
 
+  const isEditable =
+    shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF;
+
   return (
-    <TableCell
-      component="th"
-      scope="row"
-      sx={{
-        paddingY: 0,
-        textAlign: 'center',
-        cursor:
-          shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF
-            ? 'pointer'
-            : 'default',
-      }}
-    >
-      <Checkbox checked={shift.shiftType === ShiftType.DUTY} onChange={handleEditConfirm} />
-    </TableCell>
+    <td className={`py-0 text-center ${isEditable ? 'cursor-pointer' : 'cursor-default'}`}>
+      <Checkbox
+        checked={shift.shiftType === ShiftType.DUTY}
+        onClick={handleEditConfirm}
+        disabled={!isEditable}
+        data-testid={`shift-duty-checkbox-${shift.id}`}
+      />
+    </td>
   );
 }

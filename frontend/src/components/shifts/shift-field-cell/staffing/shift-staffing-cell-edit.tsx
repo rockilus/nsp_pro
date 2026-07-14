@@ -1,11 +1,5 @@
 import React, { useState, ChangeEvent, useRef } from 'react';
-// MUI
-import Chip from '@mui/material/Chip';
-import ClearIcon from '@mui/icons-material/Clear';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
+import { X } from 'lucide-react';
 // Types
 import { SpecialtyT } from '@/types/specialty';
 import { ConstraintDefaultColors } from '../../../../constants/constants';
@@ -69,7 +63,6 @@ export default function ShiftStaffingCellEdit({
       if (lastSelected) {
         handleRemoveFromSelected(lastSelected);
       }
-      // Update the external state for "selected" here
     } else if (event.key === 'Enter') {
       if (selectedOption) {
         handleAddSelectedSpecialty(selectedOption);
@@ -111,7 +104,6 @@ export default function ShiftStaffingCellEdit({
       );
       setSearchQuery('');
     }
-    // Update the external state for "selected" here
   };
 
   return (
@@ -127,13 +119,9 @@ export default function ShiftStaffingCellEdit({
         style={{
           borderTopRightRadius: 'inherit',
           borderTopLeftRadius: 'inherit',
-          // background: "#f0efed",
           background: ConstraintDefaultColors.shade0,
         }}
       >
-        {/* <div className="field-name" style={{ fontSize: "10px" }}>
-              {selector.name.charAt(0).toUpperCase() + selector.name.slice(1)}
-            </div> */}
         <div
           className="input-container"
           onClick={() => inputRef.current && inputRef.current.focus()}
@@ -143,33 +131,35 @@ export default function ShiftStaffingCellEdit({
             alignItems: 'flex-start',
             overflow: 'auto',
             cursor: 'text',
-            // Hide scrollbar
-            scrollbarWidth: 'none', // For Firefox
-            msOverflowStyle: 'none', // For Internet Explorer and Edge
-            // "&::-webkit-scrollbar": {
-            //   display: "none", // For Chrome, Safari and Opera
-            // },
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
           }}
         >
           {selectedSpecialties.map((de) => (
-            <Chip
+            <div
               key={de.id}
-              label={de.name}
-              onDelete={() => handleRemoveFromSelected(de)}
-              deleteIcon={
-                <ClearIcon
-                  style={{
-                    fontSize: '15px',
-                    color: ConstraintDefaultColors.shade2,
-                  }}
-                />
-              }
-              sx={{
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
                 height: '21px',
+                margin: '2px',
+                padding: '0 4px',
+                borderRadius: '4px',
                 color: ConstraintDefaultColors.shade3,
                 background: ConstraintDefaultColors.shade1,
+                fontSize: '13px',
+                gap: '4px',
               }}
-            />
+            >
+              {de.name}
+              <X
+                className="size-[15px] cursor-pointer"
+                style={{ color: ConstraintDefaultColors.shade2 }}
+                onClick={() => handleRemoveFromSelected(de)}
+                role="button"
+                aria-label="remove"
+              />
+            </div>
           ))}
           <input
             type="text"
@@ -177,7 +167,6 @@ export default function ShiftStaffingCellEdit({
             onChange={handleSearchChange}
             onKeyDown={handleKeyDown}
             ref={inputRef}
-            // placeholder="Search shifts"
             style={{
               color: ConstraintDefaultColors.shade3,
               height: '21px',
@@ -195,32 +184,37 @@ export default function ShiftStaffingCellEdit({
           style={{
             fontSize: '13px',
             fontWeight: 'bold',
-            // color: "rgba(55, 53, 47, 0.65)",
             color: ConstraintDefaultColors.shade2,
             padding: '0 16px 6px 16px',
           }}
         >
           {'Select one or more '}
         </div>
-        <List dense={true} sx={{ padding: '0 0 0 0' }}>
+        <div>
           {filteredOptions.map((option) => (
-            <ListItemButton
+            <button
               key={option.id}
+              type="button"
               onClick={() => {
                 handleAddSelectedSpecialty(option);
               }}
-              selected={selectedOption === option}
-              sx={{ padding: '0 0 0 0' }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '4px 16px',
+                textAlign: 'left',
+                border: 'none',
+                background:
+                  selectedOption === option ? ConstraintDefaultColors.shade0 : 'transparent',
+                color: ConstraintDefaultColors.shade3,
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
             >
-              <ListItem sx={{ padding: '0 16px 0 16px' }}>
-                <ListItemText
-                  primary={option.name}
-                  style={{ color: ConstraintDefaultColors.shade3 }}
-                />
-              </ListItem>
-            </ListItemButton>
+              {option.name}
+            </button>
           ))}
-        </List>
+        </div>
       </div>
     </div>
   );

@@ -1,12 +1,13 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-// MUI
-import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import TableCell from '@mui/material/TableCell';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 // Types
 import { ShiftT, ShiftLeaveType, ShiftRestType } from '../../../types/shift';
 
@@ -33,6 +34,10 @@ export default function ShiftFieldCellStartTime({
 
   const [valueState, setValueState] = useState(shift.startTime);
 
+  const handleValueChange = (value: string) => {
+    setValueState(dayjs.utc(Number(value)));
+  };
+
   const handleEditConfirm = () => {
     if (valueState !== shift.startTime) {
       handleUpdateShift({ ...shift, startTime: valueState });
@@ -40,58 +45,45 @@ export default function ShiftFieldCellStartTime({
     setEditing({});
   };
 
-  const selectStartTime = () => {
-    return (
-      <Box sx={{ marginLeft: 1, marginRight: 0.5, width: 100 }}>
-        <FormControl fullWidth>
-          <Select
-            value={valueState.valueOf()}
-            label="Start time"
-            onChange={(e) => setValueState(dayjs.utc(e.target.value))}
-            onBlur={handleEditConfirm}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleEditConfirm();
-              } else if (e.key === 'Escape') {
-                handleEditCancel();
-              }
-            }}
-          >
-            {timeSlots.map((time) => (
-              <MenuItem key={time.valueOf()} value={time.valueOf()}>
-                {time.format('HH:mm')}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-    );
-  };
-
   const handleEditCancel = () => {
     setEditing({});
     setValueState(shift.startTime);
   };
 
+  const isEditable =
+    shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF;
+
   return (
-    <TableCell
-      component="th"
-      scope="row"
-      onClick={() =>
-        shift.leaveType === ShiftLeaveType.NONE &&
-        shift.restType !== ShiftRestType.OFF &&
-        setEditing({ [shift.id]: 'start_time' })
-      }
-      sx={{
-        paddingY: 0,
-        textAlign: 'center',
-        cursor:
-          shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF
-            ? 'pointer'
-            : 'default',
-      }}
+    <td
+      className={`py-0 text-center ${isEditable ? 'cursor-pointer' : 'cursor-default'}`}
+      onClick={() => isEditable && setEditing({ [shift.id]: 'start_time' })}
+      data-testid={`shift-start-time-cell-${shift.id}`}
     >
-      {editing ? selectStartTime() : shift.startTime.format('HH:mm')}
-    </TableCell>
+      {editing ? (
+        <Select
+          value={String(valueState.valueOf())}
+          onValueChange={handleValueChange}
+          onOpenChange={(open) => {
+            if (!open) handleEditConfirm();
+          }}
+        >
+          <SelectTrigger
+            className="mx-1 h-8 w-[100px]"
+            data-testid={`shift-start-time-select-${shift.id}`}
+          >
+            <SelectValue>{valueState.format('HH:mm')}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {timeSlots.map((time) => (
+              <SelectItem key={time.valueOf()} value={String(time.valueOf())}>
+                {time.format('HH:mm')}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        shift.startTime.format('HH:mm')
+      )}
+    </td>
   );
 }

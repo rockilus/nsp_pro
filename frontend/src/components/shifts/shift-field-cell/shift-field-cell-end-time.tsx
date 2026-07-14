@@ -1,12 +1,13 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-// MUI
-import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import TableCell from '@mui/material/TableCell';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 // Types
 import { ShiftT, ShiftLeaveType, ShiftRestType } from '../../../types/shift';
 
@@ -38,6 +39,10 @@ export default function ShiftFieldCellEndTime({
 
   const timeSlots = buildTimeSlots();
 
+  const handleValueChange = (value: string) => {
+    setValueState(dayjs.utc(Number(value)));
+  };
+
   const handleEditConfirm = () => {
     if (valueState !== shift.endTime) {
       handleUpdateShift({ ...shift, endTime: valueState });
@@ -45,68 +50,52 @@ export default function ShiftFieldCellEndTime({
     setEditing({});
   };
 
-  const selectEndTime = () => {
-    return (
-      <Box sx={{ marginLeft: 1, marginRight: 0.5, width: 100 }}>
-        <FormControl fullWidth>
-          <Select
-            value={valueState.valueOf()}
-            label="End time"
-            onChange={(e) => setValueState(dayjs.utc(e.target.value))}
-            onBlur={handleEditConfirm}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleEditConfirm();
-              } else if (e.key === 'Escape') {
-                handleEditCancel();
-              }
-            }}
-          >
-            {timeSlots.map((time) => (
-              <MenuItem key={time.valueOf()} value={time.valueOf()}>
-                {time.format('HH:mm')}
-                {' ('}
-                {time.diff(shift.startTime, 'minute') / 60}
-                {'h)'}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-    );
-  };
-
   const handleEditCancel = () => {
     setEditing({});
     setValueState(shift.endTime);
   };
 
+  const isEditable =
+    shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF;
+
   return (
-    <TableCell
-      component="th"
-      scope="row"
-      onClick={() =>
-        shift.leaveType === ShiftLeaveType.NONE &&
-        shift.restType !== ShiftRestType.OFF &&
-        setEditing({ [shift.id]: 'end_time' })
-      }
-      sx={{
-        paddingY: 0,
-        textAlign: 'center',
-        cursor:
-          shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF
-            ? 'pointer'
-            : 'default',
-      }}
+    <td
+      className={`py-0 text-center ${isEditable ? 'cursor-pointer' : 'cursor-default'}`}
+      onClick={() => isEditable && setEditing({ [shift.id]: 'end_time' })}
+      data-testid={`shift-end-time-cell-${shift.id}`}
     >
       {editing ? (
-        selectEndTime()
+        <Select
+          value={String(valueState.valueOf())}
+          onValueChange={handleValueChange}
+          onOpenChange={(open) => {
+            if (!open) handleEditConfirm();
+          }}
+        >
+          <SelectTrigger
+            className="mx-1 h-8 w-[100px]"
+            data-testid={`shift-end-time-select-${shift.id}`}
+          >
+            <SelectValue>
+              {valueState.format('HH:mm')}
+              {!valueState.isSame(shift.startTime, 'day') ? ' (+1)' : ''}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {timeSlots.map((time) => (
+              <SelectItem key={time.valueOf()} value={String(time.valueOf())}>
+                {time.format('HH:mm')} ({time.diff(shift.startTime, 'minute') / 60}
+                h)
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       ) : (
         <>
           {shift.endTime.format('HH:mm')}
           {!shift.endTime.isSame(shift.startTime, 'day') && <sup>+1</sup>}
         </>
       )}
-    </TableCell>
+    </td>
   );
 }

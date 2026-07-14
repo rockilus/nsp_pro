@@ -1,8 +1,6 @@
 import React from 'react';
-// MUI
-import DeleteIcon from '@mui/icons-material/Delete';
-import IconButton from '@mui/material/IconButton';
-import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import { Trash2, ArrowLeftRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 // Styles
 import './link-shift-list.css';
 // Types
@@ -33,7 +31,7 @@ const LinkShiftList: React.FC<LinkShiftListProps> = ({
           {getShiftNames(linkShift.shiftIds).map((shift, index) => (
             <React.Fragment key={index}>
               <div className="ls-item-info">
-                <span className="ls-item-name">{shift?.name || 'Uknown shift'}</span>
+                <span className="ls-item-name">{shift?.name || 'Unknown shift'}</span>
                 <span className="ls-item-times">
                   {shift
                     ? `${shift.startTime.format('HH:mm')} - ${shift.endTime.format('HH:mm')}`
@@ -41,17 +39,19 @@ const LinkShiftList: React.FC<LinkShiftListProps> = ({
                 </span>
               </div>
               {index < linkShift.shiftIds.length - 1 && (
-                <SyncAltIcon sx={{ marginX: 1, fontSize: 16, color: 'grey' }} />
+                <ArrowLeftRight className="mx-1 size-4 text-gray-500" />
               )}
             </React.Fragment>
           ))}
-          <IconButton
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => handleDeleteLinkShift(linkShift.id)}
             aria-label="delete"
-            sx={{ marginLeft: '10px' }}
+            className="ml-2.5"
           >
-            <DeleteIcon />
-          </IconButton>
+            <Trash2 className="size-4" />
+          </Button>
         </div>
       ))}
     </div>

@@ -1,8 +1,5 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-// MUI
-import Box from '@mui/material/Box';
-import TableCell from '@mui/material/TableCell';
-import TextField from '@mui/material/TextField';
+import { Input } from '@/components/ui/input';
 // Types
 import { ShiftT, ShiftLeaveType, ShiftRestType } from '../../../types/shift';
 
@@ -17,7 +14,6 @@ export default function ShiftFieldCellAcronym({
   shift: ShiftT;
   editing: boolean;
   setEditing: Dispatch<SetStateAction<{}>>;
-  // allow async updates (parent may return a Promise)
   handleUpdateShift: (updatedShift: ShiftT) => void | Promise<unknown>;
 }) {
   const [valueState, setValueState] = useState(shift.acronym);
@@ -48,38 +44,23 @@ export default function ShiftFieldCellAcronym({
     setValueState(shift.acronym);
   };
 
-  // We intentionally avoid setting local state from an effect to satisfy
-  // react-hooks rules. Instead we initialize the edit value when entering
-  // edit mode below.
+  const isEditable =
+    shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF && !isUpdating;
 
   return (
-    <TableCell
-      component="th"
-      scope="row"
+    <td
+      className={`py-0 text-center ${isEditable ? 'cursor-pointer' : 'cursor-default'}`}
       onClick={() => {
-        if (
-          shift.leaveType === ShiftLeaveType.NONE &&
-          shift.restType !== ShiftRestType.OFF &&
-          !isUpdating
-        ) {
-          // initialize local edit value from prop when entering edit mode
+        if (isEditable) {
           setValueState(shift.acronym);
           setEditing({ [shift.id]: 'acronym' });
         }
       }}
-      sx={{
-        paddingY: 0,
-        cursor:
-          shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF
-            ? 'pointer'
-            : 'default',
-      }}
+      data-testid={`shift-acronym-cell-${shift.id}`}
     >
       {editing ? (
-        <TextField
-          fullWidth
+        <Input
           type="text"
-          name="Acronym"
           value={valueState}
           onChange={(e) => setValueState(e.target.value)}
           onBlur={handleEditConfirm}
@@ -92,19 +73,17 @@ export default function ShiftFieldCellAcronym({
           }}
           autoFocus
           disabled={isUpdating}
+          className="text-center"
+          data-testid={`shift-acronym-input-${shift.id}`}
         />
       ) : (
-        <Box
-          sx={{
-            minHeight: 45,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
+        <div
+          className="flex min-h-[45px] items-center justify-center"
+          data-testid={`shift-acronym-display-${shift.id}`}
         >
           {shift.acronym}
-        </Box>
+        </div>
       )}
-    </TableCell>
+    </td>
   );
 }

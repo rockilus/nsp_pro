@@ -2,9 +2,7 @@ import React, { Dispatch, SetStateAction, useState } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../../app/i18n/client';
-// MUI
-import TableCell from '@mui/material/TableCell';
-import TextField from '@mui/material/TextField';
+import { Input } from '@/components/ui/input';
 // Styles
 import './shift-field-cell-recuperation.css';
 // Types
@@ -43,26 +41,18 @@ export default function ShiftFieldCellRecuperation({
     setValueState(shift.recuperationTime);
   };
 
+  const isDuty = shift.shiftType === ShiftType.DUTY;
+
   return (
-    <TableCell
-      component="th"
-      scope="row"
-      onClick={() =>
-        shift.shiftType === ShiftType.DUTY && setEditing({ [shift.id]: 'recuperation' })
-      }
-      sx={{
-        paddingY: 0,
-        textAlign: 'center',
-        cursor: shift.shiftType === ShiftType.DUTY ? 'pointer' : 'default',
-      }}
+    <td
+      className={`py-0 text-center ${isDuty ? 'cursor-pointer' : 'cursor-default'}`}
+      onClick={() => isDuty && setEditing({ [shift.id]: 'recuperation' })}
     >
       <div className="cell-content-container">
-        {shift.shiftType === ShiftType.DUTY ? (
+        {isDuty ? (
           editing ? (
-            <TextField
-              fullWidth
+            <Input
               type="number"
-              name="Staffing"
               value={valueState}
               onChange={(e) => setValueState(e.target.value === '' ? '' : Number(e.target.value))}
               onBlur={handleEditConfirm}
@@ -74,6 +64,8 @@ export default function ShiftFieldCellRecuperation({
                 }
               }}
               autoFocus
+              className="h-8 text-center"
+              data-testid={`shift-recuperation-input-${shift.id}`}
             />
           ) : (
             shift.recuperationTime
@@ -82,6 +74,6 @@ export default function ShiftFieldCellRecuperation({
           <span className="not-applicable-label">{t('not_applicable')}</span>
         )}
       </div>
-    </TableCell>
+    </td>
   );
 }

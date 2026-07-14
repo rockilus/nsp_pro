@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-// MUI
-import TableCell from '@mui/material/TableCell';
 // Components
 import ShiftStaffingCellEdit from './shift-staffing-cell-edit';
 import PopoverAnchorElOver from '../../../inputs/popover-anchor-el-over';
@@ -172,7 +170,6 @@ export default function ShiftStaffingCell({
       }
       return v;
     });
-    console.log();
 
     setValueState(updatedValue);
     handleUpdateShift({
@@ -199,18 +196,8 @@ export default function ShiftStaffingCell({
     });
   };
 
-  // Note: presentational subcomponents are defined above to avoid creating
-  // components during render which would reset state and break eslint rules.
-
   return (
-    <TableCell
-      component="th"
-      scope="row"
-      sx={{
-        paddingY: 0,
-        cursor: 'pointer',
-      }}
-    >
+    <td className="cursor-pointer py-0" data-testid={`shift-staffing-cell-${shift.id}`}>
       <PopoverAnchorElOver
         buttonContent={
           <ButtonContent
@@ -232,6 +219,6 @@ export default function ShiftStaffingCell({
         open={open}
         setOpen={setOpen}
       />
-    </TableCell>
+    </td>
   );
 }
