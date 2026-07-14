@@ -50,7 +50,7 @@ bandit:
 
 semgrep:
     @echo "  semgrep:"
-    @uv run semgrep --config=auto --error --quiet src/
+    @uvx semgrep scan --config=auto --error --quiet src/
 
 dev:
     echo "Starting solve_service (SQS consumer)..."

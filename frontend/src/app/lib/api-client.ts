@@ -25,6 +25,7 @@ export interface AuthUserInfo {
 let _refreshPromise: Promise<void> | null = null;
 
 async function _refreshIfNeeded(): Promise<boolean> {
+  if (env.isDevelopment) return false; // Dev mode uses header-based auth, not cookies
   if (_refreshPromise) {
     await _refreshPromise;
     return true;

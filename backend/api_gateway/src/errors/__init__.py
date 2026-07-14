@@ -13,6 +13,7 @@ from .authn_errors.authn_errors import (
     AuthnWrongCredentialsError,
     SecurityViolation,
 )
+from .copilot_errors.copilot_errors import CopilotDisabledError
 from .message_errors.message_error_handlers import handle_message_errors
 from .message_errors.message_errors import MessageTypeError
 from .routes_errors.routes_error_handlers import handle_routes_errors
@@ -42,4 +43,5 @@ __all__ = [
     "NotAuthorizedError",
     "PasswordsDoNotMatchError",
     "NoCampaignError",
+    "CopilotDisabledError",
 ]

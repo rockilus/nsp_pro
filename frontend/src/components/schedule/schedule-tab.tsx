@@ -59,6 +59,8 @@ import {
 import { useExportSchedule } from '../../hooks/useExport';
 import { useUserWorker } from '../../hooks/useUserWorker';
 import NoWorkerAssigned from '../common/NoWorkerAssigned';
+// Copilot context
+import { useCopilotOptional } from '@/context/CopilotContext';
 // Styles
 import '../../styles/tab-container-styles.css';
 import './schedule-tab.css';
@@ -178,6 +180,15 @@ export default function ScheduleTab({
   const [breaches, setBreaches] = useState<BreachT[]>([]);
   const [specialties, setSpecialties] = useState<SpecialtyT[]>([]);
   const [shiftOptions, setShiftOptions] = useState<ShiftWorkerOptionT[]>([]);
+
+  // Expose the active campaign schedule to the copilot so it can target the
+  // right schedule without the user typing identifiers. `setScheduleId` is a
+  // stable state setter, so this effect never loops.
+  const setCopilotScheduleId = useCopilotOptional()?.setScheduleId;
+  useEffect(() => {
+    setCopilotScheduleId?.(scheduleCampaign?.id ?? null);
+    return () => setCopilotScheduleId?.(null);
+  }, [scheduleCampaign?.id, setCopilotScheduleId]);
 
   // Use persistent schedule view settings
   const defaultSettings = getDefaultScheduleViewSettings(teamWithMembership.team.useSolver);

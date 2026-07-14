@@ -15,6 +15,12 @@ class DimEntryService(BaseService):
         de_created = self.collection.dim_entry_db.create_dim_entry(dim_entry)
         return de_created
 
+    def update_dim_entry(self, dim_entry: DimEntry) -> DimEntry:
+        existing = self.collection.dim_entry_db.get_dim_entry_by_id(dim_entry.id)
+        if existing is None:
+            raise ValueError("Dim entry not found")
+        return self.collection.dim_entry_db.update_dim_entry(dim_entry)
+
     def delete_dim_entry(self, dim_entry_id: str) -> List[Attribute]:
         sps_with_dim_entry = (
             self.collection.attribute_db.get_attributes_by_dim_entry_id(dim_entry_id)

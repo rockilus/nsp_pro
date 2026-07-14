@@ -153,3 +153,60 @@ This roadmap outlines high-leverage architectural milestones designed to scale t
 * **Hierarchical Organizational Topology:** Refactor the internal data schema structures to move past flat, single-tier team boundaries (e.g., individual isolated departments) and implement a nested, multi-tiered organizational hierarchy. This structural update will enable senior administrators to coordinate complex scheduling constraints across multiple distinct services, departments, and interdependent medical procedures simultaneously.
 * **LLM-Driven Semantic Constraint Ingestion (Replacing Template Rigidness):** Explore augmenting or replacing the rigid UI-templated constraint builder with a localized Large Language Model pipeline utilizing structured outputs (Function Calling mapped to Pydantic schemas). Instead of forcing non-technical managers through complex multi-step form wizards or maintaining regular-expression parsers for custom domain logic, an LLM would act as an execution compiler. It maps free-form conversational requests (e.g., *"Make sure Logan doesn't work back-to-back night shifts this weekend due to a family emergency"*) directly into the deterministic JSON schema payloads expected by the core CP-SAT matrix compiler. This preserves the absolute mathematical safety of the underlying engine while maximizing input adaptability.
 
+
+
+AI section to incorportate:
+# Rockilus Intelligent Co-Pilot Architecture
+
+A secure, multi-lingual, and highly deterministic AI execution engine built to orchestrate complex workforce management tasks.
+
+```text
+                               [User Input Prompt]
+                                        │
+                                        ▼
+                         [Adaptive Intent Orchestrator]
+                                        │
+                    ┌───────────────────┴───────────────────┐
+                    ▼                                       ▼
+           [Complexity: High]                       [Complexity: Low]
+            Plan-and-Execute                          ReAct Bypass
+                    │                                       │
+                    ▼                                       ▼
+          [Sequential Planner]                      [Targeted Skill]
+           (Outputs JSON DAG)                       (Direct Tool Run)
+                    │                                       │
+                    ▼                                       ▼
+         [Deterministic Engine]                    [Instant Synthesis]
+         (Late Binding Iterator)                            │
+                    │                                       │
+                    └───────────────────┬───────────────────┘
+                                        ▼
+                              [Unified UI Outbound]
+```
+
+
+## Architectural Core
+### 1. Decoupled Model Context Protocol (MCP)
+To isolate raw capability implementation from the orchestrator logic, the backend exposes capabilities via **FastMCP**. Tools are grouped by bounded contexts (Roster, Shifts, Primitives) using an extensible, category-tagged decorator registry. This guarantees strict encapsulation, simplifies local unit testing, and prevents tool definition pollution inside LLM contexts.
+### 2. Adaptive Hybrid Planning-Reactive (ReAct) Router
+To maximize UI responsiveness and minimize LLM operational token costs, incoming prompts pass through an **Intent & Complexity Classifier**.
+- **Low-Complexity Bypass (ReAct):** Trivial atomic operations (e.g., "Change Logan's name to Peter") bypass the planner entirely. A single-turn ReAct loop performs sequential identity resolution and applies direct mutations immediately.
+- **High-Complexity Pipeline (Plan-and-Execute):** Requests spanning multiple domains, batch operations, or relative date-math (e.g., "End Logan's contract next Monday") are routed to the Planning Engine.
+### 3. Structured JSON DAG Planner
+For complex pipelines, a dedicated Planner model (with no raw execution capabilities) compiles a static, sequential **Directed Acyclic Graph (DAG)** of the tasks.
+- **Late Variable Binding:** Steps can declare dependencies on prior step outputs using structured variables (e.g., assigning a calculated ISO date step to `$TARGET_DATE` and consuming it in a downstream worker creation step).
+- **Self-Healing Reflection Loop:** If the local executor hits a validation or Pydantic error, the failure payload (attempted arguments + validation constraints) is caught and fed back to the Planner for a deterministic regeneration pass (up to $N$ retries).
+### 4. Stateless "Pure Replay" Security Lifecycle
+To prevent client-side data tampering on high-privilege write operations without introducing heavy server-side session databases (like Redis), the agent operates on a Pure Replay Strategy:
+1. **The Preview Pass (`mode="preview"`):** The executor runs steps in a sandbox memory map. When a mutation tool is hit, the executor intercepts it, calculates the prospective changes, and mints a short-lived, cryptographically signed JSON Web Token (JWT) binding the active user ID and the SHA-256 hash of the execution arguments.
+2. **The Stateless Halt:** The system drops all server-side memory context and sends a progress checklist and preview card to the React frontend.
+3. **The Replay Pass (`mode="execute"`):** When the manager clicks Apply, the frontend passes only the original user prompt, history, and the JWT. The server completely regenerates the plan, fast-forwards through read-only steps to rebuild the variable state, verifies that the generated arguments match the cryptographic hash inside the JWT, and commits the mutation.
+
+## Key Technical Achievements to Highlight in an Interview
+
+| Feature |	Engineering Challenge |	How Rockilus Solved It |
+| :--- | :--- | :--- |
+| **State Management** |	Syncing multi-step plans without a database. |	**Pure Replay Strategy** reconstructs transient state securely via deterministic on-the-fly execution. |
+| **OWASP / Security** |	Protecting against client-side parameter tampering. |	All write arguments are hashed and signed inside a server-side JWT; re-checked at execution threshold. |
+| **Reliability**	| LLM hallucinations omitting required Pydantic arguments.	| **Self-Healing Reflection Loop** catches Pydantic validation errors and dynamically injects them back to the Planner for auto-correction. |
+| **Token Optimization**	| Preventing heavy cognitive overhead on trivial queries.	| **Adaptive Intent Classifier** routes atomic single-entity lookups straight to a fast, cheap ReAct bypass track. |

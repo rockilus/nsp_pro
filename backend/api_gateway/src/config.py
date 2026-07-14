@@ -117,6 +117,19 @@ class AppConfig(BaseSettings):
         description="Lifetime of impersonation JWTs in seconds (default 1 h)",
     )
 
+    # Copilot action confirmation token configuration
+    copilot_action_jwt_secret: str = Field(
+        "dev-copilot-action-secret-change-in-production",
+        description="Dedicated HMAC secret used to sign copilot write-action "
+        + "confirmation tokens (set via COPILOT_ACTION_JWT_SECRET env var). "
+        + "Kept separate from the impersonation secret for independent rotation.",
+    )
+    copilot_action_token_ttl_seconds: int = Field(
+        300,
+        description="Lifetime of copilot action confirmation tokens in seconds "
+        + "(default 5 min); a confirmation dialog is acted on quickly)",
+    )
+
     # SQS Configuration - Queue URLs (managed by Terraform)
     sqs_solve_queue_url: str = Field(
         ...,
@@ -171,6 +184,43 @@ class AppConfig(BaseSettings):
     )
     signout_rate_limit: str = Field(
         "20/minute", description="Rate limit for POST /auth/signout"
+    )
+
+    # AI Copilot configuration
+    ai_enabled: bool = Field(
+        False,
+        description="Global kill-switch for the AI copilot feature",
+    )
+    mcp_enabled: bool = Field(
+        False,
+        description="Global kill-switch for the MCP SSE endpoint",
+    )
+    ai_model: str = Field(
+        "gemini/gemini-2.5-flash",
+        description="LiteLLM model string; the provider is encoded in the prefix "
+        "(e.g. 'gemini/...', 'openrouter/...')",
+    )
+    gemini_api_key: str | None = Field(
+        None, description="API key for Gemini models (gemini/* model strings)"
+    )
+    openrouter_api_key: str | None = Field(
+        None, description="API key for OpenRouter models (openrouter/* model strings)"
+    )
+    mistral_api_key: str | None = Field(
+        None, description="API key for Mistral models (mistral/* model strings)"
+    )
+    ai_max_history_messages: int = Field(
+        20,
+        description="Maximum chat history messages to include in the copilot "
+        "prompt. Excess messages are dropped from the head (oldest first).",
+    )
+    ai_chat_rate_limit: str = Field(
+        "20/minute", description="Rate limit for POST /copilot/chat"
+    )
+    copilot_plan_execution_max_retries: int = Field(
+        2,
+        description="Maximum number of planner retries when plan steps fail due to "
+        "LLM argument errors (missing required fields, type mismatches).",
     )
 
     model_config = SettingsConfigDict(
@@ -323,7 +373,7 @@ def _validate_ca_bundle(ca_bundle_path: str) -> bool:
         with open(ca_bundle_path, "rb") as f:
             content = f.read()
         return _validate_ca_content(content)
-    except OSError, IOError:
+    except OSError:
         return False
 
 
@@ -356,7 +406,7 @@ def download_documentdb_ca_bundle(
         if not os.path.exists(dir_path):
             try:
                 os.makedirs(dir_path, exist_ok=True)
-            except OSError, PermissionError:
+            except OSError:
                 print(f"Cannot create directory {dir_path}, using temp")
                 ca_bundle_path = os.path.join(
                     tempfile.gettempdir(), "global-bundle.pem"

@@ -9,6 +9,7 @@ export interface EnvironmentConfig {
   clientUrl: string;
   devUserId: string;
   devApiKey: string;
+  copilotEnabled: boolean;
 }
 
 /**
@@ -34,6 +35,9 @@ function createEnvironmentConfig(): EnvironmentConfig {
 
     // Client URL - used for constructing links in emails, etc.
     clientUrl,
+
+    // Copilot — off by default, opt-in with NEXT_PUBLIC_ENABLE_COPILOT=true
+    copilotEnabled: process.env.NEXT_PUBLIC_ENABLE_COPILOT === 'true',
 
     // Development Configuration - must match backend
     devUserId: process.env.NEXT_PUBLIC_DEV_USER_ID || 'dev-user-123',

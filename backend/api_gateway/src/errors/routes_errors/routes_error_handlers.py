@@ -16,6 +16,7 @@ from src.errors.authn_errors.authn_errors import (
     AuthnWrongCredentialsError,
     SecurityViolation,
 )
+from src.errors.copilot_errors.copilot_errors import CopilotDisabledError
 from src.errors.message_errors.message_errors import (
     MessageTypeError,
     MessageValidationError,
@@ -110,6 +111,11 @@ def handle_routes_errors(error: Exception) -> NoReturn:
         raise HTTPException(status_code=503, detail=USER_ERROR_MESSAGE_GENERIC)
     if isinstance(error, NoCampaignError):
         raise HTTPException(status_code=404, detail="No campaign schedule found")
+    if isinstance(error, CopilotDisabledError):
+        raise HTTPException(
+            status_code=503,
+            detail=error.message or "The AI copilot feature is disabled",
+        )
     if isinstance(
         error,
         (

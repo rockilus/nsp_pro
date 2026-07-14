@@ -5,6 +5,8 @@ import * as React from 'react';
 import AccountMenu from './account-menu';
 import NavLinks from './nav-links';
 import NotificationBell from './notification-bell';
+import { CopilotLauncherButton } from '@/components/copilot/copilot-launcher-button';
+import { env } from '@/config/env';
 // Context
 import { useTeam } from '@/context/TeamContext';
 
@@ -35,8 +37,9 @@ const NavAppBar = ({ lng }: { lng: string }) => {
           <NavLinks lng={lng} selectedTeam={selectedTeam} />
         </div>
 
-        {/* Right: Notification bell + Account menu */}
+        {/* Right: Copilot + Notification bell + Account menu */}
         <div className="flex shrink-0 items-center gap-1">
+          {env.copilotEnabled && <CopilotLauncherButton lng={lng} />}
           <NotificationBell lng={lng} />
           <AccountMenu lng={lng} />
         </div>

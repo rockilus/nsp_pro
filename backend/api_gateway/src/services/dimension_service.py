@@ -75,6 +75,12 @@ class DimensionService(BaseService):
             new_attributes=attributes_saved,
         )
 
+    def update_dimension(self, dimension: Dimension) -> Dimension:
+        existing = self.collection.dimension_db.get_dimension_by_id(dimension.id)
+        if existing is None:
+            raise ValueError(f"Dimension with id {dimension.id} not found")
+        return self.collection.dimension_db.update_dimension(dimension)
+
     def delete_dimension(self, sd_id: str) -> None:
         dim_entries = self.collection.dim_entry_db.get_dim_entries_by_dim_id(sd_id)
         for de in dim_entries:

@@ -7,6 +7,8 @@ import AccountMenu from './account-menu';
 import { NavLinksMobile } from './nav-links';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { CopilotLauncherButton } from '@/components/copilot/copilot-launcher-button';
+import { env } from '@/config/env';
 // Context
 import { useTeam } from '@/context/TeamContext';
 
@@ -50,8 +52,11 @@ const MobileNavAppBar = ({
           )}
         </div>
 
-        {/* Right: Account menu */}
-        <AccountMenu lng={lng} />
+        {/* Right: Copilot + Account menu */}
+        <div className="flex shrink-0 items-center gap-1">
+          {env.copilotEnabled && <CopilotLauncherButton lng={lng} />}
+          <AccountMenu lng={lng} />
+        </div>
       </nav>
     </header>
   );

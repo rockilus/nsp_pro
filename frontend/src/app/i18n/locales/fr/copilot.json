@@ -1,0 +1,37 @@
+{
+  "title": "Copilot",
+  "description": "Assistant IA pour l'analyse des plannings.",
+  "open": "Ouvrir le Copilot",
+  "minimize": "Réduire",
+  "expand": "Agrandir",
+  "close": "Fermer",
+  "clear": "Effacer la conversation",
+  "placeholder": "Posez une question sur votre équipe...",
+  "send": "Envoyer",
+  "retry": "Réessayer",
+  "error": "Une erreur est survenue. Veuillez réessayer.",
+  "loading": "Analyse des indicateurs en cours...",
+  "emptyTitle": "Comment puis-je vous aider ?",
+  "emptyHint": "Posez une question ou choisissez une suggestion pour commencer.",
+  "chips": [
+    "Résumer les heures hebdomadaires vs. souhaitées pour l'équipe",
+    "Qui manque de certifications ou de spécialités ?",
+    "Qui a la charge de garde la plus élevée ce mois-ci ?",
+    "Lister les membres par préférences de disponibilité"
+  ],
+  "action": {
+    "proposedChanges": "Modifications proposées",
+    "confirmDeleteTitle": "Confirmer la suppression",
+    "confirmDeleteBody": "Cela supprimera {name}. Cette action peut être annulée par un administrateur.",
+    "apply": "Appliquer les modifications",
+    "cancel": "Annuler",
+    "confirmDelete": "Supprimer",
+    "applied": "Modifications appliquées",
+    "cancelled": "Action annulée"
+  },
+  "plan": {
+    "stepCompleted": "Terminé",
+    "stepPending": "Confirmation requise",
+    "stepWaiting": "En attente"
+  }
+}

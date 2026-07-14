@@ -53,16 +53,16 @@ jobs:
         run: uv sync --locked --all-extras --dev
         working-directory: backend/shared
 
-      # - name: "Security: pip-audit (shared)"
-      #   run: uv run pip-audit
-      #   working-directory: backend/shared
+      - name: "Security: pip-audit (shared)"
+        run: uv run pip-audit
+        working-directory: backend/shared
 
       - name: "Security: bandit (shared)"
         run: uv run bandit -r src/ -ll
         working-directory: backend/shared
 
       - name: "Security: semgrep (shared)"
-        run: uv run semgrep --config=auto --error --quiet src/
+        run: uvx semgrep scan --config=auto --error --quiet src/
         working-directory: backend/shared
 
       - name: Static checks (shared)
@@ -83,16 +83,16 @@ jobs:
         run: uv sync --locked --all-extras --dev
         working-directory: backend/api_gateway
 
-      # - name: "Security: pip-audit (api_gateway)"
-      #   run: uv run pip-audit
-      #   working-directory: backend/api_gateway
+      - name: "Security: pip-audit (api_gateway)"
+        run: uv run pip-audit
+        working-directory: backend/api_gateway
 
       - name: "Security: bandit (api_gateway)"
         run: uv run bandit -r src/ -ll
         working-directory: backend/api_gateway
 
       - name: "Security: semgrep (api_gateway)"
-        run: uv run semgrep --config=auto --error --quiet src/
+        run: uvx semgrep scan --config=auto --error --quiet src/
         working-directory: backend/api_gateway
 
       - name: Static checks (api_gateway)
@@ -131,16 +131,16 @@ jobs:
         run: uv sync --locked --all-extras --dev
         working-directory: backend/solve_service
 
-      # - name: "Security: pip-audit (solve_service)"
-      #   run: uv run pip-audit
-      #   working-directory: backend/solve_service
+      - name: "Security: pip-audit (solve_service)"
+        run: uv run pip-audit
+        working-directory: backend/solve_service
 
       - name: "Security: bandit (solve_service)"
         run: uv run bandit -r src/ -ll
         working-directory: backend/solve_service
 
       - name: "Security: semgrep (solve_service)"
-        run: uv run semgrep --config=auto --error --quiet src/
+        run: uvx semgrep scan --config=auto --error --quiet src/
         working-directory: backend/solve_service
 
       - name: Static checks (solve_service)

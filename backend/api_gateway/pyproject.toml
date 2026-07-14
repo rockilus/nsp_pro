@@ -6,6 +6,7 @@ readme = "README.md"
 authors = [ { name = "FelipeKha", email = "felipe.kharaba@icloud.com" } ]
 requires-python = ">=3.14"
 dependencies = [
+	"click>=8.4.2",
 	"pyhumps>=3.8.0",
 	"uvicorn>=0.23.2",
 	"python-multipart>=0.0.31",
@@ -21,6 +22,8 @@ dependencies = [
 	"pydantic>=2.12.5",
 	"email-validator>=2.3.0",
 	"cryptography>=48.0.1",
+	"fastmcp>=3.4.3",
+	"litellm>=1.55.0",
 ]
 
 [dependency-groups]
@@ -36,7 +39,7 @@ dev = [
 	"ruff>=0.15.8",
 	"pip-audit>=2.8.0",
 	"bandit>=1.8.0",
-	"semgrep>=1.119.0",
+	# "semgrep>=1.168.0",
 ]
 
 [tool.uv]

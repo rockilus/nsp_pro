@@ -250,10 +250,19 @@ class Boto3CognitoAuthClient(CognitoAuthClient):
     async def refresh_auth(self, refresh_token: str) -> AuthTokens:
         log_info("Refreshing auth tokens")
         try:
-            resp = self._client.get_tokens_from_refresh_token(
-                ClientId=self._client_id,
-                RefreshToken=refresh_token,
-            )
+            if config.cognito_endpoint_url:
+                # cognito-local does not support GetTokensFromRefreshToken;
+                # use InitiateAuth with REFRESH_TOKEN_AUTH instead.
+                resp = self._client.initiate_auth(
+                    ClientId=self._client_id,
+                    AuthFlow="REFRESH_TOKEN_AUTH",
+                    AuthParameters={"REFRESH_TOKEN": refresh_token},
+                )
+            else:
+                resp = self._client.get_tokens_from_refresh_token(
+                    ClientId=self._client_id,
+                    RefreshToken=refresh_token,
+                )
             auth = resp["AuthenticationResult"]
             return AuthTokens(
                 access_token=auth["AccessToken"],

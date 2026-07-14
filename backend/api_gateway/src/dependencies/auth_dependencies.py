@@ -115,10 +115,34 @@ async def get_user_context(
     rockilus_access_token: Annotated[
         Optional[str], Cookie(alias="rockilus_access_token")
     ] = None,
+    authorization: Annotated[Optional[str], Header(alias="Authorization")] = None,
 ) -> UserContext:
-    """Extract user context from cookie (primary) or dev headers (fallback)."""
+    """Extract user context from cookie (primary), Bearer token, or dev headers."""
 
-    if rockilus_access_token:
+    if (
+        authorization
+        and authorization.startswith("Bearer ")
+        and not rockilus_access_token
+    ):
+        logger.debug("Bearer-token-based auth")
+        try:
+            token = authorization.removeprefix("Bearer ")
+            claims = _decode_access_token(token)
+            user_context = UserContext(
+                user_id=claims["sub"],
+                email=claims.get("email"),
+                groups=claims.get("cognito:groups", []),
+                request_id=request.headers.get("X-Request-ID"),
+                source_ip=request.headers.get("X-Source-IP"),
+            )
+        except (jwt.InvalidTokenError, jwt.ExpiredSignatureError) as e:
+            logger.warning("Invalid Bearer token: %s", e)  # nosemgrep
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired Bearer token",
+            ) from e
+
+    elif rockilus_access_token:
         logger.debug("Cookie-based auth")
         try:
             claims = _decode_access_token(rockilus_access_token)
