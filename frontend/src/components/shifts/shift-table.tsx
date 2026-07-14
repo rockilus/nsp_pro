@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../app/i18n/client';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -64,6 +64,7 @@ export default function ShiftTable({
   handleUpdateDimEntry,
   handleDeleteDimEntry,
   handleUpdateAttribute,
+  onEditShift,
 }: ShiftTableProps) {
   const { t } = useTranslation(lng, 'shift-page');
 
@@ -216,6 +217,22 @@ export default function ShiftTable({
                 })}
                 <TableCell className="shared-table-actions py-0">
                   <div className="flex justify-center">
+                    {onEditShift && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            disabled={isLeaveOrOff(shift)}
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => onEditShift(shift)}
+                            data-testid={`shift-edit-button-${shift.id}`}
+                          >
+                            <Pencil className="size-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{t('edit_shift_tooltip')}</TooltipContent>
+                      </Tooltip>
+                    )}
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -276,4 +293,5 @@ interface ShiftTableProps {
   handleUpdateDimEntry: (dimEntry: DimEntryT) => void;
   handleDeleteDimEntry: (dimEntryId: string) => void;
   handleUpdateAttribute: (attribute: AttributeT, teamId: string) => void;
+  onEditShift?: (shift: ShiftT) => void;
 }
