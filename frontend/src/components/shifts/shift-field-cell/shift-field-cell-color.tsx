@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-// MUI
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Menu from '@mui/material/Menu';
-import TableCell from '@mui/material/TableCell';
-import Popover from '@mui/material/Popover';
-import Button from '@mui/material/Button';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 // Types
 import { ShiftT, ShiftLeaveType, ShiftRestType } from '../../../types/shift';
 // Constants
@@ -18,79 +12,53 @@ export default function ShiftFieldCellColor({
   shift: ShiftT;
   handleUpdateShift: (updatedShift: ShiftT) => void;
 }) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+  const [open, setOpen] = useState(false);
 
-  const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF) {
-      setAnchorEl(event.currentTarget);
-    }
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const isEditable =
+    shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF;
+
   const handleColorChange = (colorKey: string) => {
     if (colorKey !== shift.color) {
       handleUpdateShift({ ...shift, color: colorKey });
     }
-    handleClose();
+    setOpen(false);
   };
 
   return (
-    <TableCell component="th" scope="row" sx={{ width: 30, paddingY: 0 }}>
-      <Box style={{ width: '100%' }}>
-        <Box
-          onClick={handleClick}
-          sx={{
-            display: 'inline-flex',
-            minWidth: 0,
-            cursor:
-              shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF
-                ? 'pointer'
-                : 'default',
-          }}
-        >
-          <Chip
-            label=""
-            style={{
-              width: '30px',
-              height: '22px',
-              backgroundColor: ShiftColorMappings[shift.color]?.sample || '#ccc',
-            }}
-          />
-        </Box>
-        <Popover
-          id="color-popover"
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left',
-          }}
-        >
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', padding: 1 }}>
+    <td className="w-[30px] py-0 pl-2" data-testid={`shift-color-cell-${shift.id}`}>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className={`inline-flex min-w-0 ${isEditable ? 'cursor-pointer' : 'cursor-default'} border-none bg-transparent p-0`}
+            disabled={!isEditable}
+            data-testid={`shift-color-trigger-${shift.id}`}
+          >
+            <span
+              className="block h-[22px] w-[30px] rounded-sm"
+              style={{
+                backgroundColor: ShiftColorMappings[shift.color]?.sample || '#ccc',
+              }}
+            />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="start" side="bottom" className="w-auto p-2">
+          <div className="flex flex-wrap gap-1" data-testid="shift-color-picker">
             {Object.keys(ShiftColorMappings).map((colorKey) => (
-              <Button
+              <button
                 key={colorKey}
+                type="button"
                 onClick={() => handleColorChange(colorKey)}
-                sx={{
+                className="m-0.5 h-[30px] w-[30px] min-w-0 cursor-pointer rounded-full border-none p-0 hover:scale-110"
+                style={{
                   backgroundColor: ShiftColorMappings[colorKey].sample,
-                  width: 30,
-                  height: 30,
-                  minWidth: 0,
-                  margin: 0.5,
-                  borderRadius: '50%',
-                  // border: "1px solid #ccc",
-                  '&:hover': {
-                    backgroundColor: ShiftColorMappings[colorKey].text,
-                  },
                 }}
+                data-testid={`shift-color-option-${colorKey}`}
               />
             ))}
-          </Box>
-        </Popover>
-      </Box>
-    </TableCell>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </td>
   );
 }

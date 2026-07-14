@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from '../../app/i18n/client';
 import dayjs from 'dayjs';
@@ -5,8 +7,8 @@ import utc from 'dayjs/plugin/utc';
 // Mobile
 import { useIsMobile } from '../../hooks/useIsMobile';
 import MobileShiftTab from './mobile/mobile-shift-tab';
-// MUI
-import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+// shadcn/ui
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 // Components
 import ShiftTable from './shift-table';
 import TableFilterBar from '../table/TableFilterBar';
@@ -138,16 +140,6 @@ export default function ShiftTab({
   const workTableHeight = useTableHeight(showWorkFilterToolbar);
   const restTableHeight = useTableHeight(showRestFilterToolbar);
 
-  // Toggle handler
-  const handleShiftViewChange = (
-    event: React.MouseEvent<HTMLElement>,
-    newView: 'work' | 'rest',
-  ) => {
-    if (newView !== null) {
-      setShiftView(newView);
-    }
-  };
-
   const DefaultWorkShiftFields: Record<string, string>[] = [
     { name: 'color', label: t('color'), tooltip: t('color_tooltip') },
     { name: 'name', label: t('name'), tooltip: t('name_tooltip') },
@@ -218,7 +210,7 @@ export default function ShiftTab({
       setShifts([...shifts, addedShift]);
     } catch (error) {
       console.error('Failed to add shift:', error);
-      throw error; // Re-throw for component-level handling
+      throw error;
     }
   };
 
@@ -251,7 +243,7 @@ export default function ShiftTab({
       });
     } catch (error) {
       console.error('Failed to update shift:', error);
-      throw error; // Re-throw for component-level handling
+      throw error;
     }
   };
 
@@ -281,7 +273,7 @@ export default function ShiftTab({
       });
     } catch (error) {
       console.error('Failed to delete shift:', error);
-      throw error; // Re-throw for component-level handling
+      throw error;
     }
   };
 
@@ -449,7 +441,6 @@ export default function ShiftTab({
           setLinkShifts(fetchedLinkShifts);
         } catch (error) {
           console.error('Failed to fetch shifts tab data:', error);
-          // Handle error appropriately - maybe show a toast or error message
         } finally {
           setIsLoading(false);
         }
@@ -475,24 +466,21 @@ export default function ShiftTab({
             <div className="table-title-container">
               <span className="title">{t('shifts')}</span>
               <div className="title-with-toggle">
-                <ToggleButtonGroup
+                <ToggleGroup
+                  type="single"
                   value={shiftView}
-                  exclusive
-                  onChange={handleShiftViewChange}
-                  size="small"
-                  sx={{ ml: 2, height: '35px' }}
+                  onValueChange={(value) => {
+                    if (value) setShiftView(value as 'work' | 'rest');
+                  }}
+                  className="ml-2"
                 >
-                  <Tooltip title={t('shifts_tooltip') || t('shifts')}>
-                    <span>
-                      <ToggleButton value="work">{t('shifts')}</ToggleButton>
-                    </span>
-                  </Tooltip>
-                  <Tooltip title={t('rest_tooltip') || t('rest')}>
-                    <span>
-                      <ToggleButton value="rest">{t('rest')}</ToggleButton>
-                    </span>
-                  </Tooltip>
-                </ToggleButtonGroup>
+                  <ToggleGroupItem value="work" title={t('shifts_tooltip') || t('shifts')}>
+                    {t('shifts')}
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="rest" title={t('rest_tooltip') || t('rest')}>
+                    {t('rest')}
+                  </ToggleGroupItem>
+                </ToggleGroup>
               </div>
               <div className="shift-actions-container">
                 {shiftView === 'work' ? (

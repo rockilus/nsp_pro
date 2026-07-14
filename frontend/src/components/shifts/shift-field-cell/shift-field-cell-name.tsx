@@ -1,8 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-// MUI
-import TableCell from '@mui/material/TableCell';
-import TextField from '@mui/material/TextField';
-import Tooltip from '@mui/material/Tooltip';
+import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 // Components
 import { useLeaveNameDisplayed, useRestNameDisplayed } from '../shift-utils/shift-utils';
 // Types
@@ -42,66 +40,51 @@ export default function ShiftFieldCellName({
     setValueState(shift.name);
   };
 
+  const isEditable =
+    shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF;
+
+  const displayName =
+    shift.restType === ShiftRestType.OFF
+      ? getRestNameDisplayed(shift.restType)
+      : shift.leaveType !== ShiftLeaveType.NONE
+        ? getLeaveNameDisplayed(shift.leaveType)
+        : shift.name || 'Unnamed Shift';
+
   return (
-    <TableCell
-      component="th"
-      scope="row"
-      onClick={() =>
-        shift.leaveType === ShiftLeaveType.NONE &&
-        shift.restType !== ShiftRestType.OFF &&
-        setEditing({ [shift.id]: 'name' })
-      }
-      sx={{
-        paddingY: 0,
-        cursor:
-          shift.leaveType === ShiftLeaveType.NONE && shift.restType !== ShiftRestType.OFF
-            ? 'pointer'
-            : 'default',
-      }}
+    <td
+      className={`py-0 ${isEditable ? 'cursor-pointer' : 'cursor-default'}`}
+      onClick={() => isEditable && setEditing({ [shift.id]: 'name' })}
+      data-testid={`shift-name-cell-${shift.id}`}
     >
-      <div className="shift-name-cell">
-        {editing ? (
-          <TextField
-            fullWidth
-            type="text"
-            name="Name"
-            value={valueState}
-            onChange={(e) => setValueState(e.target.value)}
-            onBlur={handleEditConfirm}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleEditConfirm();
-              } else if (e.key === 'Escape') {
-                handleEditCancel();
-              }
-            }}
-            autoFocus
-            size="small"
-            variant="standard"
-          />
-        ) : (
-          <div className="shift-name-text">
-            <Tooltip
-              title={
-                shift.restType === ShiftRestType.OFF
-                  ? getRestNameDisplayed(shift.restType)
-                  : shift.leaveType !== ShiftLeaveType.NONE
-                    ? getLeaveNameDisplayed(shift.leaveType)
-                    : shift.name || 'Unnamed Shift'
-              }
-              placement="top"
-            >
-              <span>
-                {shift.restType === ShiftRestType.OFF
-                  ? getRestNameDisplayed(shift.restType)
-                  : shift.leaveType !== ShiftLeaveType.NONE
-                    ? getLeaveNameDisplayed(shift.leaveType)
-                    : shift.name || 'Unnamed Shift'}
+      {editing ? (
+        <Input
+          type="text"
+          value={valueState}
+          onChange={(e) => setValueState(e.target.value)}
+          onBlur={handleEditConfirm}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleEditConfirm();
+            } else if (e.key === 'Escape') {
+              handleEditCancel();
+            }
+          }}
+          autoFocus
+          className="h-8"
+          data-testid={`shift-name-input-${shift.id}`}
+        />
+      ) : (
+        <div className="flex min-h-[45px] items-center px-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="flex-1 overflow-hidden font-medium text-ellipsis">
+                {displayName}
               </span>
-            </Tooltip>
-          </div>
-        )}
-      </div>
-    </TableCell>
+            </TooltipTrigger>
+            <TooltipContent>{displayName}</TooltipContent>
+          </Tooltip>
+        </div>
+      )}
+    </td>
   );
 }

@@ -1,6 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
-// MUI
-import TableCell from '@mui/material/TableCell';
+import React from 'react';
 // Components
 import ShiftFieldCellColor from './shift-field-cell-color';
 import ShiftFieldCellName from './shift-field-cell-name';
@@ -28,7 +26,7 @@ export default function ShiftFieldCell({
   specialties: SpecialtyT[];
   shiftField: string;
   editing: { [key: string]: string };
-  setEditing: Dispatch<SetStateAction<{}>>;
+  setEditing: React.Dispatch<React.SetStateAction<{}>>;
   handleUpdateShift: (updatedShift: ShiftT) => void;
 }) {
   return shiftField === 'color' ? (
@@ -75,11 +73,12 @@ export default function ShiftFieldCell({
     />
   ) : shiftField === 'staffing' ? (
     <ShiftStaffingCell
+      lng={lng}
       shift={shift}
       specialties={specialties}
       handleUpdateShift={handleUpdateShift}
     />
   ) : (
-    <TableCell></TableCell>
+    <td></td>
   );
 }

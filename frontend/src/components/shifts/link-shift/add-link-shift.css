@@ -1,9 +1,10 @@
 .add-link-shift-container {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
-  width: 600px;
+  gap: 8px;
+  width: 100%;
 }
 
 .ls-select-shift {

@@ -2,6 +2,7 @@
   "acronym": "Code",
   "acronym_tooltip": "Short identifier for the shift",
   "add": "Add",
+  "any": "Any",
   "cancel": "Cancel",
   "create_shift_tooltip": "Create a new shift",
   "create_property_tooltip": "Add a new attribute to shifts (e.g. location), used for filtering by member or rules",
