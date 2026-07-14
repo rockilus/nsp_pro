@@ -24,6 +24,7 @@ export default function ShiftFieldCellDuty({
   return (
     <td className={`py-0 text-center ${isEditable ? 'cursor-pointer' : 'cursor-default'}`}>
       <Checkbox
+        className="mx-auto"
         checked={shift.shiftType === ShiftType.DUTY}
         onClick={handleEditConfirm}
         disabled={!isEditable}

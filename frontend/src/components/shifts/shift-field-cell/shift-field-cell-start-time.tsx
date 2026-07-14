@@ -68,7 +68,7 @@ export default function ShiftFieldCellStartTime({
           }}
         >
           <SelectTrigger
-            className="mx-1 h-8 w-[100px]"
+            className="mx-auto h-8 w-[100px]"
             data-testid={`shift-start-time-select-${shift.id}`}
           >
             <SelectValue>{valueState.format('HH:mm')}</SelectValue>

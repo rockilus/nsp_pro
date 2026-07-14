@@ -73,7 +73,7 @@ export default function ShiftFieldCellEndTime({
           }}
         >
           <SelectTrigger
-            className="mx-1 h-8 w-[100px]"
+            className="mx-auto h-8 w-[100px]"
             data-testid={`shift-end-time-select-${shift.id}`}
           >
             <SelectValue>
