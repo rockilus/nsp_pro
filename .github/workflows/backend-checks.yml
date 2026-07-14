@@ -62,7 +62,7 @@ jobs:
         working-directory: backend/shared
 
       - name: "Security: semgrep (shared)"
-        run: uv run semgrep --config=auto --error --quiet src/
+        run: uvx semgrep scan --config=auto --error --quiet src/
         working-directory: backend/shared
 
       - name: Static checks (shared)
@@ -92,7 +92,7 @@ jobs:
         working-directory: backend/api_gateway
 
       - name: "Security: semgrep (api_gateway)"
-        run: uv run semgrep --config=auto --error --quiet src/
+        run: uvx semgrep scan --config=auto --error --quiet src/
         working-directory: backend/api_gateway
 
       - name: Static checks (api_gateway)
@@ -140,7 +140,7 @@ jobs:
         working-directory: backend/solve_service
 
       - name: "Security: semgrep (solve_service)"
-        run: uv run semgrep --config=auto --error --quiet src/
+        run: uvx semgrep scan --config=auto --error --quiet src/
         working-directory: backend/solve_service
 
       - name: Static checks (solve_service)
