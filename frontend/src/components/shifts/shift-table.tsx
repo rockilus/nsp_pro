@@ -108,7 +108,7 @@ export default function ShiftTable({
                     )
                       ? 'text-center'
                       : 'text-left'
-                  }`}
+                  } ${['color', 'name'].includes(field.name) ? 'border-r border-border' : ''}`}
                 >
                   <div className="flex items-center justify-between">
                     <Tooltip>
