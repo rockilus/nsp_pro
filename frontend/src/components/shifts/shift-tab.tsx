@@ -16,6 +16,7 @@ import NewDimensionForm from '../shift-worker-shared/dimension/new-dimension-for
 import DimensionDialog from '../shift-worker-shared/dimension/DimensionDialog';
 import TableAddButton from '../buttons/table-add-button';
 import LinkShiftDialog from './link-shift/link-shift-dialog';
+import ShiftEditDialog from './shift-edit-dialog/ShiftEditDialog';
 // Skeletons
 import TablesSkeleton from '../skeletons/tables-skeleton';
 // Hooks
@@ -65,6 +66,7 @@ export default function ShiftTab({
   const [workPopoverRhsOpen, setWorkPopoverRhsOpen] = useState(false);
   const [restPopoverRhsOpen, setRestPopoverRhsOpen] = useState(false);
   const [shiftView, setShiftView] = useState<'work' | 'rest'>('work');
+  const [editingShift, setEditingShift] = useState<ShiftT | null>(null);
 
   // Dimension hooks
   const addDimensionFn = useAddDimension();
@@ -574,7 +576,22 @@ export default function ShiftTab({
               handleUpdateDimEntry={handleUpdateDimEntry}
               handleDeleteDimEntry={handleDeleteDimEntry}
               handleUpdateAttribute={handleUpdateAttribute}
+              onEditShift={(shift) => setEditingShift(shift)}
             />
+            {editingShift && selectedTeamId && (
+              <ShiftEditDialog
+                lng={lng}
+                open={!!editingShift}
+                onClose={() => setEditingShift(null)}
+                shift={editingShift}
+                dimensions={dimensions}
+                dimEntries={dimEntries}
+                specialties={specialties}
+                selectedTeamId={selectedTeamId}
+                handleUpdateShift={handleUpdateShift}
+                handleUpdateAttribute={handleUpdateAttribute}
+              />
+            )}
           </div>
         )
       )}
