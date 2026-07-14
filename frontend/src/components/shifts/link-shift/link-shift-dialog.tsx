@@ -54,11 +54,14 @@ export default function LinkShiftDialog({
         />
       </div>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-[850px] sm:max-w-[850px] overflow-hidden" showCloseButton={true}>
+        <DialogContent
+          className="max-w-[850px] overflow-hidden sm:max-w-[850px]"
+          showCloseButton={true}
+        >
           <DialogHeader>
             <DialogTitle className="title">{t('link_shifts')}</DialogTitle>
           </DialogHeader>
-          <div className="border-t overflow-hidden pt-4">
+          <div className="overflow-hidden border-t pt-4">
             <AddLinkShift
               lng={lng}
               teamId={teamId}

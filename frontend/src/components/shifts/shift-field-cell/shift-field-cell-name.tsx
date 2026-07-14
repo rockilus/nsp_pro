@@ -77,7 +77,7 @@ export default function ShiftFieldCellName({
         <div className="flex min-h-[45px] items-center px-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="flex-1 overflow-hidden text-ellipsis font-medium">
+              <span className="flex-1 overflow-hidden font-medium text-ellipsis">
                 {displayName}
               </span>
             </TooltipTrigger>
