@@ -117,8 +117,9 @@ def create_app(
     for router in routers:
         app.include_router(router)
 
-    mcp_app = mcp_server.http_app(transport="sse")
-    app.mount("/api/v1/mcp", mcp_app)
+    if config.mcp_enabled:
+        mcp_app = mcp_server.http_app(transport="sse")
+        app.mount("/api/v1/mcp", mcp_app)
 
     # Set database collections if provided
     if db_collections:

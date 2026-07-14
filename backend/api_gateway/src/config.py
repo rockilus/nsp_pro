@@ -191,6 +191,10 @@ class AppConfig(BaseSettings):
         False,
         description="Global kill-switch for the AI copilot feature",
     )
+    mcp_enabled: bool = Field(
+        False,
+        description="Global kill-switch for the MCP SSE endpoint",
+    )
     ai_model: str = Field(
         "gemini/gemini-2.5-flash",
         description="LiteLLM model string; the provider is encoded in the prefix "
