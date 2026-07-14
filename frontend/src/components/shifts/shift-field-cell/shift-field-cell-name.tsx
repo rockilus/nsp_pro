@@ -74,10 +74,12 @@ export default function ShiftFieldCellName({
           data-testid={`shift-name-input-${shift.id}`}
         />
       ) : (
-        <div className="flex min-h-[45px] items-center">
+        <div className="flex min-h-[45px] items-center px-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <span>{displayName}</span>
+              <span className="flex-1 overflow-hidden text-ellipsis font-medium">
+                {displayName}
+              </span>
             </TooltipTrigger>
             <TooltipContent>{displayName}</TooltipContent>
           </Tooltip>

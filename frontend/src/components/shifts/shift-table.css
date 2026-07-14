@@ -4,3 +4,7 @@
   align-items: center;
   gap: 8px;
 }
+
+.shared-table tbody td {
+  font-size: 0.8rem;
+}
