@@ -186,14 +186,15 @@ export default function ShiftTab({
       throw new Error('Team not selected');
     }
     try {
+      const startTime = roundTime(dayjs.utc());
       const addedShift = await addShiftFn({
         id: '',
         teamId: selectedTeamId,
         name: '',
         acronym: '',
         acronymCustom: false,
-        startTime: roundTime(dayjs.utc()),
-        endTime: roundTime(dayjs.utc()),
+        startTime,
+        endTime: startTime.add(1, 'hour'),
         staffing: [
           {
             specialtyId: null,
