@@ -1,6 +1,5 @@
 import React from 'react';
-// MUI
-import Checkbox from '@mui/material/Checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
 // Styles
 import './assignment-cell.css';
 // Types
@@ -60,21 +59,10 @@ export default function AssignmentCell({
     >
       {isSelectionActive && (
         <Checkbox
-          size="small"
           checked={!!isSelected}
-          onChange={(e) => {
-            e.stopPropagation();
-            onAssignmentSelect?.();
-          }}
+          onCheckedChange={() => onAssignmentSelect?.()}
           onClick={(e) => e.stopPropagation()}
-          sx={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            padding: '1px',
-            zIndex: 5,
-            '& .MuiSvgIcon-root': { fontSize: 14 },
-          }}
+          className="absolute top-0 right-0 z-[5] size-3.5 p-px"
           data-testid={`assignment-checkbox-${assignmentData.assignment.id}`}
         />
       )}
