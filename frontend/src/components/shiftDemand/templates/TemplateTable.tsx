@@ -254,6 +254,7 @@ function TemplateRowHeader({
 
   const isNextDay = !shift.endTime.isSame(shift.startTime, 'day');
   const isDutyShift = shift.shiftType === ShiftType.DUTY;
+  const isOnCallShift = shift.shiftType === ShiftType.ON_CALL;
 
   return (
     <TableCell
@@ -269,7 +270,7 @@ function TemplateRowHeader({
       <div className="template-row-header-container">
         {/* Shift type marker for duty shifts, placeholder for non-duty shifts */}
         <div
-          className={`template-type-marker ${isDutyShift ? 'duty' : 'placeholder'}`}
+          className={`template-type-marker ${isDutyShift ? 'duty' : isOnCallShift ? 'on-call' : 'placeholder'}`}
           style={{ '--bg-color': sample } as React.CSSProperties}
         />
 

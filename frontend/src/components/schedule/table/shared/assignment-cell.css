@@ -44,6 +44,10 @@
   background-color: var(--bg-color, #212121);
 }
 
+.a-cell-shift-type-marker.on-call {
+  background-image: repeating-linear-gradient(to right, var(--bg-color, #212121) 0px, var(--bg-color, #212121) 8px, transparent 8px, transparent 12px);
+}
+
 .assignment-fixed-lock {
   font-size: 14px;
   pointer-events: none; /* don't block clicks */

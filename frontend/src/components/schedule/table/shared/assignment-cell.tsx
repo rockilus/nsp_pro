@@ -106,7 +106,11 @@ export default function AssignmentCell({
       {scheduleViewSettings.groupBy === 'worker' && (
         <div
           className={`a-cell-shift-type-marker ${
-            assignmentData.shift.shiftType === ShiftType.DUTY ? 'duty' : 'other'
+            assignmentData.shift.shiftType === ShiftType.DUTY
+              ? 'duty'
+              : assignmentData.shift.shiftType === ShiftType.ON_CALL
+                ? 'on-call'
+                : 'other'
           }`}
           style={{ '--bg-color': sample } as React.CSSProperties}
         ></div>

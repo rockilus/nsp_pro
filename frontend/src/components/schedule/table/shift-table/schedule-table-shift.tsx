@@ -74,11 +74,19 @@ function ShiftRowHeaderContent({
       {/* Colored type marker - reserve space for alignment like shift-demand header */}
       <div
         className={
-          shift.shiftType === ShiftType.DUTY
+          shift.shiftType === ShiftType.DUTY || shift.shiftType === ShiftType.ON_CALL
             ? 'mr-1 w-1 flex-shrink-0 self-stretch rounded-sm'
             : 'invisible mr-1 w-1 flex-shrink-0 self-stretch rounded-sm'
         }
-        style={shift.shiftType === ShiftType.DUTY ? { backgroundColor: sample } : undefined}
+        style={
+          shift.shiftType === ShiftType.DUTY
+            ? { backgroundColor: sample }
+            : shift.shiftType === ShiftType.ON_CALL
+              ? {
+                  backgroundImage: `repeating-linear-gradient(to bottom, ${sample} 0px, ${sample} 8px, transparent 8px, transparent 12px)`,
+                }
+              : undefined
+        }
       />
       {/* Left: name + stats */}
       <div className="flex w-full min-w-0 flex-col">
