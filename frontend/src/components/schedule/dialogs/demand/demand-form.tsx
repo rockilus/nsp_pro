@@ -268,7 +268,11 @@ const DemandForm: React.FC<DemandFormProps> = ({
   // ── Create mode ────────────────────────────────────────────────────────
   // Partition shifts into work shifts only (Normal + Duty) — demand only targets work shifts
   const workShifts = shifts.filter(
-    (s) => !s.deleted && (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY),
+    (s) =>
+      !s.deleted &&
+      (s.shiftType === ShiftType.NORMAL ||
+        s.shiftType === ShiftType.DUTY ||
+        s.shiftType === ShiftType.ON_CALL),
   );
 
   return (

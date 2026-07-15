@@ -142,7 +142,8 @@ class MapShift:
                     out += [
                         s.id
                         for s in self.shifts
-                        if s.shift_type == ShiftType.NORMAL and not s.deleted
+                        if s.shift_type in [ShiftType.NORMAL, ShiftType.ON_CALL]
+                        and not s.deleted
                     ]
             # pylint: disable=R0801
             elif value.id_type == SWOIdTypes.DIMENSION:

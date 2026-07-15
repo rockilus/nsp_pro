@@ -15,6 +15,7 @@ class ShiftType(Enum):
     DUTY = 1
     REST = 2  # non-working time (e.g. weekend) or recuperation time
     LEAVE = 3  # time off (e.g. vacation, sick leave, parental leave, training)
+    ON_CALL = 4
 
 
 class ShiftRestType(Enum):
@@ -80,6 +81,8 @@ class Shift:
     recuperation_time: int  # in hours
     recuperation_duty_id: str | None
     deleted: bool
+    use_custom_work_time: bool = False
+    custom_work_time_minutes: int = 0  # overrides shift duration for work-time calcs
 
     def overlaps_with(self, other: "Shift") -> bool:
         """Check if this shift overlaps with another shift in terms of time."""
@@ -108,6 +111,8 @@ class Shift:
         out["shift_type"] = self.shift_type.value
         out["rest_type"] = self.rest_type.value
         out["leave_type"] = self.leave_type.value
+        out["use_custom_work_time"] = self.use_custom_work_time
+        out["custom_work_time_minutes"] = self.custom_work_time_minutes
         # pylint: disable=R0801
         return out
 
@@ -130,6 +135,8 @@ class Shift:
             recuperation_time=data["recuperation_time"],
             recuperation_duty_id=data["recuperation_duty_id"],
             deleted=data["deleted"],
+            use_custom_work_time=data.get("use_custom_work_time", False),
+            custom_work_time_minutes=data.get("custom_work_time_minutes", 0),
         )
 
     def to_dto(self, attributes: List[Attribute]) -> ShiftDTO:
@@ -140,6 +147,8 @@ class Shift:
         data["shift_type"] = self.shift_type.value
         data["rest_type"] = self.rest_type.value
         data["leave_type"] = self.leave_type.value
+        data["use_custom_work_time"] = self.use_custom_work_time
+        data["custom_work_time_minutes"] = self.custom_work_time_minutes
         data["attributes"] = [attr.to_dict() for attr in attributes]
         as_dict = humps.camelize(data)
         validator = TypeAdapter(ShiftDTO)
@@ -159,4 +168,6 @@ class Shift:
         data_dict["rest_type"] = ShiftRestType(data_dict["rest_type"])
         data_dict["leave_type"] = ShiftLeaveType(data_dict["leave_type"])
         data_dict.pop("attributes", None)
+        data_dict.setdefault("use_custom_work_time", False)
+        data_dict.setdefault("custom_work_time_minutes", 0)
         return cls(**data_dict)

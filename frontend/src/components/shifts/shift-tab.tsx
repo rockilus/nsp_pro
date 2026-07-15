@@ -146,7 +146,7 @@ export default function ShiftTab({
     { name: 'color', label: t('color'), tooltip: t('color_tooltip') },
     { name: 'name', label: t('name'), tooltip: t('name_tooltip') },
     { name: 'acronym', label: t('acronym'), tooltip: t('acronym_tooltip') },
-    { name: 'duty', label: t('duty'), tooltip: t('duty_tooltip') },
+    { name: 'type', label: t('type'), tooltip: t('type_tooltip') },
     {
       name: 'recuperation',
       label: t('recuperation'),
@@ -207,6 +207,8 @@ export default function ShiftTab({
         recuperationTime: 0,
         recuperationDutyId: null,
         deleted: false,
+        useCustomWorkTime: false,
+        customWorkTimeMinutes: 0,
         attributes: [],
       });
       setShifts([...shifts, addedShift]);

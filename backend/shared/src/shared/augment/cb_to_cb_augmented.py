@@ -248,7 +248,7 @@ def build_missing_attributes_and_active_owner(
             if any(
                 owner
                 for owner in owners
-                if owner.shift_type == ShiftType.NORMAL  # type: ignore
+                if owner.shift_type in [ShiftType.NORMAL, ShiftType.ON_CALL]  # type: ignore
                 and not owner.deleted
             ):
                 new_active = True

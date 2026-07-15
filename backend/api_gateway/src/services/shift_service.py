@@ -40,7 +40,7 @@ class ShiftService(BaseService):
         shift_created = self.collection.shift_db.create_shift(shift)
         dim_types = (
             [DimensionType.SHIFT]
-            if shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+            if shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL]
             else [DimensionType.REST_SHIFT]
         )
         d_bool = (

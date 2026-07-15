@@ -87,15 +87,19 @@ def build_work_shift_indexes(
             [
                 s
                 for s in shifts
-                if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+                if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL]
                 and s.id in selected_shifts_ids
             ]
         )
     }
     work_shift_to_duration = {
-        s.id: (s.end_time - s.start_time).total_seconds() / 3600
+        s.id: (
+            s.custom_work_time_minutes / 60
+            if s.use_custom_work_time
+            else (s.end_time - s.start_time).total_seconds() / 3600
+        )
         for s in shifts
-        if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+        if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL]
         and s.id in selected_shifts_ids
     }
     rest_shift_to_i = {

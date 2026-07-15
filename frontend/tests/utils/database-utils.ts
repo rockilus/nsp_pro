@@ -930,6 +930,8 @@ export class DatabaseTestUtils {
         recuperationTime: shiftData.recuperationTime ?? 0,
         recuperationDutyId: shiftData.recuperationDutyId ?? null,
         deleted: false,
+        useCustomWorkTime: false,
+        customWorkTimeMinutes: 0,
         attributes: [],
       };
 

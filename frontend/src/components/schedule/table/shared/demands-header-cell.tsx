@@ -117,7 +117,8 @@ export default function DemandsHeaderCell({
 
   const shiftsWorkNotDeleted = useMemo(() => {
     return shifts.filter(
-      (s) => [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted,
+      (s) =>
+        [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL].includes(s.shiftType) && !s.deleted,
     );
   }, [shifts]);
 

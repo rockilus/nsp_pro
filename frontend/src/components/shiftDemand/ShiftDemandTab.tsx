@@ -646,7 +646,9 @@ function ShiftDemandTabInternal({
         // Filter to only normal and duty shifts for demand planning
         const workShifts = fetchedShifts.filter(
           (shift: ShiftT) =>
-            shift.shiftType === ShiftType.NORMAL || shift.shiftType === ShiftType.DUTY,
+            shift.shiftType === ShiftType.NORMAL ||
+            shift.shiftType === ShiftType.DUTY ||
+            shift.shiftType === ShiftType.ON_CALL,
         );
         setShifts(workShifts);
       } catch (error) {

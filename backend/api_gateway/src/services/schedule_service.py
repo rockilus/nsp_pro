@@ -132,11 +132,15 @@ class ScheduleService(BaseService):
         shifts_work_not_deleted = [
             shift
             for shift in shifts
-            if shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+            if shift.shift_type in [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL]
             and not shift.deleted
         ]
         shifts_duration = {
-            shift.id: (shift.end_time - shift.start_time).total_seconds() / 3600
+            shift.id: (
+                shift.custom_work_time_minutes / 60
+                if shift.use_custom_work_time
+                else (shift.end_time - shift.start_time).total_seconds() / 3600
+            )
             for shift in shifts_work_not_deleted
         }
         # Duties
@@ -161,13 +165,13 @@ class ScheduleService(BaseService):
                 sum(
                     shift_count[shift.id] * shifts_duration[shift.id]
                     for shift in shifts_work_not_deleted
-                    if shift.shift_type == ShiftType.NORMAL
+                    if shift.shift_type in [ShiftType.NORMAL, ShiftType.ON_CALL]
                 )
             ),
             count=sum(
                 shift_count[shift.id]
                 for shift in shifts_work_not_deleted
-                if shift.shift_type == ShiftType.NORMAL
+                if shift.shift_type in [ShiftType.NORMAL, ShiftType.ON_CALL]
             ),
         )
 

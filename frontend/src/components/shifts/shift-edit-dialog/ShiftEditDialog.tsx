@@ -75,7 +75,20 @@ export default function ShiftEditDialog({
     recuperationTime: number;
     staffing: StaffingT[];
     restType: ShiftRestType;
+    useCustomWorkTime: boolean;
+    customWorkTimeMinutes: number;
+    extraDays: number;
     changedAttributes: Map<string, AttributeT>;
+  };
+
+  const deriveEndTimeFields = (startTime: dayjs.Dayjs, endTime: dayjs.Dayjs) => {
+    const totalMinutes = endTime.diff(startTime, 'minute');
+    const endMinOfDay = endTime.hour() * 60 + endTime.minute();
+    const startMinOfDay = startTime.hour() * 60 + startTime.minute();
+    let naturalMinutes = endMinOfDay - startMinOfDay;
+    if (naturalMinutes < 0) naturalMinutes += 24 * 60;
+    const extraDays = Math.round((totalMinutes - naturalMinutes) / (24 * 60));
+    return { extraDays: Math.max(0, extraDays) };
   };
 
   const buildFormState = (): FormState => ({
@@ -89,6 +102,9 @@ export default function ShiftEditDialog({
     recuperationTime: shift.recuperationTime,
     staffing: shift.staffing.map((s) => ({ ...s })),
     restType: shift.restType,
+    useCustomWorkTime: shift.useCustomWorkTime ?? false,
+    customWorkTimeMinutes: shift.customWorkTimeMinutes ?? 0,
+    extraDays: deriveEndTimeFields(shift.startTime, shift.endTime).extraDays,
     changedAttributes: new Map(),
   });
 
@@ -119,14 +135,14 @@ export default function ShiftEditDialog({
 
   const endTimeSlots = useMemo(() => {
     const slots: dayjs.Dayjs[] = [];
-    let slot = form.startTime;
-    const last = slot.add(24, 'hour');
+    let slot = dayjs.utc().startOf('day');
+    const last = slot.endOf('day');
     while (slot.isBefore(last) || slot.isSame(last)) {
       slots.push(slot);
       slot = slot.add(15, 'minute');
     }
     return slots;
-  }, [form.startTime]);
+  }, []);
 
   const shiftDimensions = useMemo(
     () =>
@@ -185,6 +201,13 @@ export default function ShiftEditDialog({
   };
 
   const handleSave = async () => {
+    const startMinOfDay = form.startTime.hour() * 60 + form.startTime.minute();
+    const endMinOfDay = form.endTime.hour() * 60 + form.endTime.minute();
+    let naturalMinutes = endMinOfDay - startMinOfDay;
+    if (naturalMinutes < 0) naturalMinutes += 24 * 60;
+    const totalMinutes = naturalMinutes + form.extraDays * 24 * 60;
+    const computedEndTime = form.startTime.add(totalMinutes, 'minute');
+
     const updatedShift: ShiftT = {
       ...shift,
       name: form.name,
@@ -192,11 +215,13 @@ export default function ShiftEditDialog({
       acronymCustom: form.acronymCustom,
       color: form.color,
       startTime: form.startTime,
-      endTime: form.endTime,
+      endTime: computedEndTime,
       shiftType: form.shiftType,
       recuperationTime: form.recuperationTime,
       staffing: form.staffing,
       restType: form.restType,
+      useCustomWorkTime: form.useCustomWorkTime,
+      customWorkTimeMinutes: form.customWorkTimeMinutes,
     };
     await handleUpdateShift(updatedShift);
 
@@ -330,49 +355,72 @@ export default function ShiftEditDialog({
               </Select>
             </FieldRow>
             <FieldRow label={t('end_time')} htmlFor="edit-shift-end-time">
-              <Select
-                value={String(form.endTime.valueOf())}
-                onValueChange={(value) => patch({ endTime: dayjs.utc(Number(value)) })}
-              >
-                <SelectTrigger id="edit-shift-end-time" data-testid="edit-shift-end-time-select">
-                  <SelectValue>
-                    {form.endTime.format('HH:mm')}
-                    {!form.endTime.isSame(form.startTime, 'day') ? ' (+1)' : ''}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {endTimeSlots.map((time) => (
-                    <SelectItem key={time.valueOf()} value={String(time.valueOf())}>
-                      {time.format('HH:mm')}
-                      {!time.isSame(form.startTime, 'day') && ' (+1)'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={String(form.endTime.valueOf())}
+                  onValueChange={(value) => patch({ endTime: dayjs.utc(Number(value)) })}
+                >
+                  <SelectTrigger id="edit-shift-end-time" data-testid="edit-shift-end-time-select">
+                    <SelectValue>{form.endTime.format('HH:mm')}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {endTimeSlots.map((time) => (
+                      <SelectItem key={time.valueOf()} value={String(time.valueOf())}>
+                        {time.format('HH:mm')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-sm whitespace-nowrap">+</span>
+                <Input
+                  type="number"
+                  min={0}
+                  max={30}
+                  className="w-16"
+                  value={form.extraDays}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    patch({ extraDays: isNaN(v) ? 0 : Math.max(0, Math.min(30, v)) });
+                  }}
+                  data-testid="edit-shift-extra-days-input"
+                />
+                <span className="text-sm whitespace-nowrap">{t('days')}</span>
+              </div>
             </FieldRow>
           </div>
+          {form.extraDays > 0 && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t('days_helper')
+                .replace('{startDay}', 'Monday')
+                .replace('{startTime}', form.startTime.format('HH:mm'))
+                .replace('{endDay}', 'Tuesday')
+                .replace('{endTime}', form.endTime.format('HH:mm'))}
+            </p>
+          )}
 
-          {/* Duty + Recuperation (work shifts only) */}
+          {/* Shift type (work shifts only) */}
           {!isRest && (
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex items-end pb-0.5">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="edit-shift-duty"
-                    checked={isDuty}
-                    onCheckedChange={(checked) => {
-                      const newType = checked ? ShiftType.DUTY : ShiftType.NORMAL;
-                      const updates: Partial<FormState> = { shiftType: newType };
-                      if (!checked) updates.recuperationTime = 0;
-                      patch(updates);
-                    }}
-                    data-testid="edit-shift-duty-checkbox"
-                  />
-                  <Label htmlFor="edit-shift-duty" className="cursor-pointer text-sm">
-                    {t('duty')}
-                  </Label>
-                </div>
-              </div>
+              <FieldRow label={t('type')} htmlFor="edit-shift-type">
+                <Select
+                  value={String(form.shiftType)}
+                  onValueChange={(value) => {
+                    const newType = Number(value) as ShiftType;
+                    const updates: Partial<FormState> = { shiftType: newType };
+                    if (newType !== ShiftType.DUTY) updates.recuperationTime = 0;
+                    patch(updates);
+                  }}
+                >
+                  <SelectTrigger id="edit-shift-type" data-testid="edit-shift-type-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={String(ShiftType.NORMAL)}>{t('normal')}</SelectItem>
+                    <SelectItem value={String(ShiftType.DUTY)}>{t('duty')}</SelectItem>
+                    <SelectItem value={String(ShiftType.ON_CALL)}>{t('on_call')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FieldRow>
               {isDuty && (
                 <FieldRow label={t('recuperation')} htmlFor="edit-shift-recuperation">
                   <Input
@@ -385,6 +433,58 @@ export default function ShiftEditDialog({
                     data-testid="edit-shift-recuperation-input"
                   />
                 </FieldRow>
+              )}
+            </div>
+          )}
+
+          {/* Custom work time (work shifts only) */}
+          {!isRest && (
+            <div className="mt-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Checkbox
+                  id="edit-shift-use-custom-work-time"
+                  checked={form.useCustomWorkTime}
+                  onCheckedChange={(checked) => patch({ useCustomWorkTime: !!checked })}
+                  data-testid="edit-shift-use-custom-work-time-checkbox"
+                />
+                <Label htmlFor="edit-shift-use-custom-work-time" className="cursor-pointer text-sm">
+                  {t('use_custom_work_time')}
+                </Label>
+              </div>
+              {form.useCustomWorkTime && (
+                <div className="ml-6 grid grid-cols-2 gap-4">
+                  <FieldRow label={t('hours')} htmlFor="edit-shift-custom-work-time-hours">
+                    <Input
+                      id="edit-shift-custom-work-time-hours"
+                      type="number"
+                      min={0}
+                      value={Math.floor(form.customWorkTimeMinutes / 60)}
+                      onChange={(e) => {
+                        const hours = parseInt(e.target.value, 10) || 0;
+                        const mins = form.customWorkTimeMinutes % 60;
+                        patch({ customWorkTimeMinutes: hours * 60 + mins });
+                      }}
+                      data-testid="edit-shift-custom-work-time-hours"
+                    />
+                  </FieldRow>
+                  <FieldRow label={t('minutes')} htmlFor="edit-shift-custom-work-time-minutes">
+                    <Input
+                      id="edit-shift-custom-work-time-minutes"
+                      type="number"
+                      min={0}
+                      max={59}
+                      value={form.customWorkTimeMinutes % 60}
+                      onChange={(e) => {
+                        const mins = parseInt(e.target.value, 10) || 0;
+                        const hours = Math.floor(form.customWorkTimeMinutes / 60);
+                        patch({
+                          customWorkTimeMinutes: hours * 60 + Math.min(59, Math.max(0, mins)),
+                        });
+                      }}
+                      data-testid="edit-shift-custom-work-time-minutes"
+                    />
+                  </FieldRow>
+                </div>
               )}
             </div>
           )}

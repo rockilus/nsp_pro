@@ -387,7 +387,7 @@ def build_shift_schedule_rows_in_worksheet(
     shifts_table = [
         s
         for s in shifts
-        if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+        if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL]
         and s.id in shift_ids_assigned
     ]
 

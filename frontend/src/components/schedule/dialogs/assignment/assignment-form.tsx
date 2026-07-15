@@ -374,7 +374,11 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 
   // Partition shifts into work (Normal + Duty) and non-work (Rest + Leave)
   const workShifts = shifts.filter(
-    (s) => !s.deleted && (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY),
+    (s) =>
+      !s.deleted &&
+      (s.shiftType === ShiftType.NORMAL ||
+        s.shiftType === ShiftType.DUTY ||
+        s.shiftType === ShiftType.ON_CALL),
   );
   const nonWorkShifts = shifts.filter(
     (s) => !s.deleted && (s.shiftType === ShiftType.REST || s.shiftType === ShiftType.LEAVE),
