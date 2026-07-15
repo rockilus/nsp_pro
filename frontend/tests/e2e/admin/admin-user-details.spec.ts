@@ -138,10 +138,9 @@ test.describe('Admin User Details & Export', () => {
       await page.locator(`[data-testid="view-details-btn-${nonAdminUser.user_id}"]`).click();
 
       // trailingSlash is enabled, so the final URL is .../details/?userId=...
-      await page.waitForURL(
-        new RegExp(`/admin/users/details/?\\?userId=${nonAdminUser.user_id}`),
-        { timeout: 10_000 },
-      );
+      await page.waitForURL(new RegExp(`/admin/users/details/?\\?userId=${nonAdminUser.user_id}`), {
+        timeout: 10_000,
+      });
 
       const detailsTab = page.locator('[data-testid="admin-user-details-tab"]');
       await expect(detailsTab).toBeVisible({ timeout: 10_000 });
