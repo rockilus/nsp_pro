@@ -111,11 +111,32 @@ export default function ShiftEditDialog({
   const [form, setForm] = useState<FormState>(buildFormState);
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
 
+  const [extraDaysRaw, setExtraDaysRaw] = useState<string>(
+    String(deriveEndTimeFields(shift.startTime, shift.endTime).extraDays),
+  );
+  const [recuperationTimeRaw, setRecuperationTimeRaw] = useState<string>(
+    String(shift.recuperationTime),
+  );
+  const [customWorkTimeHoursRaw, setCustomWorkTimeHoursRaw] = useState<string>(
+    String(Math.floor((shift.customWorkTimeMinutes ?? 0) / 60)),
+  );
+  const [customWorkTimeMinutesRaw, setCustomWorkTimeMinutesRaw] = useState<string>(
+    String((shift.customWorkTimeMinutes ?? 0) % 60),
+  );
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const patch = (partial: Partial<FormState>) => setForm((prev) => ({ ...prev, ...partial }));
 
   useEffect(() => {
     if (open) {
-      setForm(buildFormState());
+      const fresh = buildFormState();
+      setForm(fresh);
+      setExtraDaysRaw(String(fresh.extraDays));
+      setRecuperationTimeRaw(String(fresh.recuperationTime));
+      setCustomWorkTimeHoursRaw(String(Math.floor(fresh.customWorkTimeMinutes / 60)));
+      setCustomWorkTimeMinutesRaw(String(fresh.customWorkTimeMinutes % 60));
+      setErrors({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, shift.id]);
@@ -201,6 +222,28 @@ export default function ShiftEditDialog({
   };
 
   const handleSave = async () => {
+    const newErrors: Record<string, string> = {};
+
+    if (extraDaysRaw.trim() === '' || isNaN(parseInt(extraDaysRaw, 10))) {
+      newErrors.extraDays = t('validation_field_required');
+    }
+    if (isDuty && (recuperationTimeRaw.trim() === '' || isNaN(Number(recuperationTimeRaw)))) {
+      newErrors.recuperationTime = t('validation_field_required');
+    }
+    if (form.useCustomWorkTime) {
+      if (customWorkTimeHoursRaw.trim() === '' || isNaN(parseInt(customWorkTimeHoursRaw, 10))) {
+        newErrors.customWorkTimeHours = t('validation_field_required');
+      }
+      if (customWorkTimeMinutesRaw.trim() === '' || isNaN(parseInt(customWorkTimeMinutesRaw, 10))) {
+        newErrors.customWorkTimeMinutes = t('validation_field_required');
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     const startMinOfDay = form.startTime.hour() * 60 + form.startTime.minute();
     const endMinOfDay = form.endTime.hour() * 60 + form.endTime.minute();
     let naturalMinutes = endMinOfDay - startMinOfDay;
@@ -377,15 +420,26 @@ export default function ShiftEditDialog({
                   min={0}
                   max={30}
                   className="w-16"
-                  value={form.extraDays}
+                  value={extraDaysRaw}
                   onChange={(e) => {
-                    const v = parseInt(e.target.value, 10);
-                    patch({ extraDays: isNaN(v) ? 0 : Math.max(0, Math.min(30, v)) });
+                    const raw = e.target.value;
+                    setExtraDaysRaw(raw);
+                    const v = parseInt(raw, 10);
+                    if (!isNaN(v)) {
+                      patch({ extraDays: Math.max(0, Math.min(30, v)) });
+                      if (errors.extraDays) {
+                        setErrors((prev) => {
+                          const { extraDays: _, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    }
                   }}
                   data-testid="edit-shift-extra-days-input"
                 />
                 <span className="text-sm whitespace-nowrap">{t('days')}</span>
               </div>
+              {errors.extraDays && <p className="text-xs text-destructive">{errors.extraDays}</p>}
             </FieldRow>
           </div>
           {form.extraDays > 0 && (
@@ -428,10 +482,26 @@ export default function ShiftEditDialog({
                     type="number"
                     min={0}
                     step={0.5}
-                    value={form.recuperationTime}
-                    onChange={(e) => patch({ recuperationTime: Number(e.target.value) })}
+                    value={recuperationTimeRaw}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setRecuperationTimeRaw(raw);
+                      const v = Number(raw);
+                      if (!isNaN(v)) {
+                        patch({ recuperationTime: Math.max(0, v) });
+                        if (errors.recuperationTime) {
+                          setErrors((prev) => {
+                            const { recuperationTime: _, ...rest } = prev;
+                            return rest;
+                          });
+                        }
+                      }
+                    }}
                     data-testid="edit-shift-recuperation-input"
                   />
+                  {errors.recuperationTime && (
+                    <p className="text-xs text-destructive">{errors.recuperationTime}</p>
+                  )}
                 </FieldRow>
               )}
             </div>
@@ -458,14 +528,27 @@ export default function ShiftEditDialog({
                       id="edit-shift-custom-work-time-hours"
                       type="number"
                       min={0}
-                      value={Math.floor(form.customWorkTimeMinutes / 60)}
+                      value={customWorkTimeHoursRaw}
                       onChange={(e) => {
-                        const hours = parseInt(e.target.value, 10) || 0;
-                        const mins = form.customWorkTimeMinutes % 60;
-                        patch({ customWorkTimeMinutes: hours * 60 + mins });
+                        const raw = e.target.value;
+                        setCustomWorkTimeHoursRaw(raw);
+                        const hours = parseInt(raw, 10);
+                        if (!isNaN(hours)) {
+                          const mins = form.customWorkTimeMinutes % 60;
+                          patch({ customWorkTimeMinutes: Math.max(0, hours) * 60 + mins });
+                          if (errors.customWorkTimeHours) {
+                            setErrors((prev) => {
+                              const { customWorkTimeHours: _, ...rest } = prev;
+                              return rest;
+                            });
+                          }
+                        }
                       }}
                       data-testid="edit-shift-custom-work-time-hours"
                     />
+                    {errors.customWorkTimeHours && (
+                      <p className="text-xs text-destructive">{errors.customWorkTimeHours}</p>
+                    )}
                   </FieldRow>
                   <FieldRow label={t('minutes')} htmlFor="edit-shift-custom-work-time-minutes">
                     <Input
@@ -473,16 +556,29 @@ export default function ShiftEditDialog({
                       type="number"
                       min={0}
                       max={59}
-                      value={form.customWorkTimeMinutes % 60}
+                      value={customWorkTimeMinutesRaw}
                       onChange={(e) => {
-                        const mins = parseInt(e.target.value, 10) || 0;
-                        const hours = Math.floor(form.customWorkTimeMinutes / 60);
-                        patch({
-                          customWorkTimeMinutes: hours * 60 + Math.min(59, Math.max(0, mins)),
-                        });
+                        const raw = e.target.value;
+                        setCustomWorkTimeMinutesRaw(raw);
+                        const mins = parseInt(raw, 10);
+                        if (!isNaN(mins)) {
+                          const hours = Math.floor(form.customWorkTimeMinutes / 60);
+                          patch({
+                            customWorkTimeMinutes: hours * 60 + Math.min(59, Math.max(0, mins)),
+                          });
+                          if (errors.customWorkTimeMinutes) {
+                            setErrors((prev) => {
+                              const { customWorkTimeMinutes: _, ...rest } = prev;
+                              return rest;
+                            });
+                          }
+                        }
                       }}
                       data-testid="edit-shift-custom-work-time-minutes"
                     />
+                    {errors.customWorkTimeMinutes && (
+                      <p className="text-xs text-destructive">{errors.customWorkTimeMinutes}</p>
+                    )}
                   </FieldRow>
                 </div>
               )}

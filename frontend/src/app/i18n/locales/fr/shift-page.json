@@ -89,6 +89,7 @@
   "staffing_tooltip": "Nombre de membres nécessaires pour le poste, par compétence si applicable",
   "start_time": "Début",
   "start_time_tooltip": "Heure de début du poste",
+  "validation_field_required": "Ce champ est obligatoire",
   "training": "Formation",
   "training_morning": "Formation matin",
   "training_afternoon": "Formation après-midi",

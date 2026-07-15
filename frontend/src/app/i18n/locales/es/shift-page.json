@@ -89,6 +89,7 @@
   "staffing_tooltip": "Número de miembros necesarios para el turno, por habilidad si aplica",
   "start_time": "Inicio",
   "start_time_tooltip": "Hora de inicio del turno",
+  "validation_field_required": "Este campo es obligatorio",
   "training": "Formación",
   "training_morning": "Formación mañana",
   "training_afternoon": "Formación tarde",

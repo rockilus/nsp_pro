@@ -89,6 +89,7 @@
   "staffing_tooltip": "Number of members needed for the shift, by skill if applicable",
   "start_time": "Start",
   "start_time_tooltip": "Start time of the shift",
+  "validation_field_required": "This field is required",
   "training": "Training",
   "training_morning": "Training morning",
   "training_afternoon": "Training afternoon",
