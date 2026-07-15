@@ -6,5 +6,6 @@
   "actions": "Acciones",
   "accessAccount": "Acceder a cuenta",
   "noUsersFound": "No se encontraron usuarios.",
-  "accessError": "Error al acceder a la cuenta"
+  "accessError": "Error al acceder a la cuenta",
+  "viewDetails": "Ver detalles"
 }

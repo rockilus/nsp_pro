@@ -6,5 +6,6 @@
   "actions": "Actions",
   "accessAccount": "Access account",
   "noUsersFound": "No users found.",
-  "accessError": "Failed to access account"
+  "accessError": "Failed to access account",
+  "viewDetails": "View details"
 }

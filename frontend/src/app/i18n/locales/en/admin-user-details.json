@@ -1,0 +1,33 @@
+{
+  "backToUsers": "Back to users",
+  "teamsTitle": "Teams",
+  "noTeams": "This user is not a member of any team.",
+  "roles": {
+    "owner": "Owner",
+    "member": "Member"
+  },
+  "exportTitle": "Export data",
+  "exportDescription": "Select the data to export for each team. The download is a JSON file matching the backend test fixture format.",
+  "dataType": "Data",
+  "dataTypes": {
+    "specialties": "Specialties",
+    "workers": "Workers",
+    "shifts": "Shifts",
+    "link_shifts": "Linked shifts",
+    "dimensions": "Dimensions",
+    "dim_entries": "Dimension entries",
+    "attributes": "Attributes",
+    "shift_demand_templates": "Demand templates",
+    "shift_demands": "Shift demands",
+    "constraints": "Constraints",
+    "requests": "Requests",
+    "schedules": "Schedules"
+  },
+  "selectAllForTeam": "Select all data for {{team}}",
+  "selectAllForDataType": "Select {{dataType}} for all teams",
+  "selectCell": "Select {{dataType}} for {{team}}",
+  "exportButton": "Export JSON",
+  "exporting": "Exporting…",
+  "exportError": "Failed to export user data",
+  "loadError": "Failed to load user details"
+}
