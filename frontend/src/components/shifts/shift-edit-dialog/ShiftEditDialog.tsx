@@ -85,9 +85,8 @@ export default function ShiftEditDialog({
     const totalMinutes = endTime.diff(startTime, 'minute');
     const endMinOfDay = endTime.hour() * 60 + endTime.minute();
     const startMinOfDay = startTime.hour() * 60 + startTime.minute();
-    let naturalMinutes = endMinOfDay - startMinOfDay;
-    if (naturalMinutes < 0) naturalMinutes += 24 * 60;
-    const extraDays = Math.round((totalMinutes - naturalMinutes) / (24 * 60));
+    // extraDays is the calendar-day offset of the end time relative to the start day
+    const extraDays = Math.round((totalMinutes - (endMinOfDay - startMinOfDay)) / (24 * 60));
     return { extraDays: Math.max(0, extraDays) };
   };
 
@@ -246,9 +245,9 @@ export default function ShiftEditDialog({
 
     const startMinOfDay = form.startTime.hour() * 60 + form.startTime.minute();
     const endMinOfDay = form.endTime.hour() * 60 + form.endTime.minute();
-    let naturalMinutes = endMinOfDay - startMinOfDay;
-    if (naturalMinutes < 0) naturalMinutes += 24 * 60;
-    const totalMinutes = naturalMinutes + form.extraDays * 24 * 60;
+    let totalMinutes = endMinOfDay - startMinOfDay + form.extraDays * 24 * 60;
+    // Defensive: a shift can never end before it starts — wrap to the next day
+    if (totalMinutes <= 0) totalMinutes += 24 * 60;
     const computedEndTime = form.startTime.add(totalMinutes, 'minute');
 
     const updatedShift: ShiftT = {
@@ -401,7 +400,18 @@ export default function ShiftEditDialog({
               <div className="flex items-center gap-2">
                 <Select
                   value={String(form.endTime.valueOf())}
-                  onValueChange={(value) => patch({ endTime: dayjs.utc(Number(value)) })}
+                  onValueChange={(value) => {
+                    const newEndTime = dayjs.utc(Number(value));
+                    const updates: Partial<FormState> = { endTime: newEndTime };
+                    const startMinOfDay = form.startTime.hour() * 60 + form.startTime.minute();
+                    const endMinOfDay = newEndTime.hour() * 60 + newEndTime.minute();
+                    // An end time earlier than the start time means the shift ends the next day
+                    if (form.extraDays === 0 && endMinOfDay < startMinOfDay) {
+                      updates.extraDays = 1;
+                      setExtraDaysRaw('1');
+                    }
+                    patch(updates);
+                  }}
                 >
                   <SelectTrigger id="edit-shift-end-time" data-testid="edit-shift-end-time-select">
                     <SelectValue>{form.endTime.format('HH:mm')}</SelectValue>
