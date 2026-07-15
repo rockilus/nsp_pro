@@ -186,7 +186,13 @@
 }
 
 .template-type-marker.on-call {
-  background-image: repeating-linear-gradient(to bottom, var(--bg-color, #212121) 0px, var(--bg-color, #212121) 8px, transparent 8px, transparent 12px);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--bg-color, #212121) 0px,
+    var(--bg-color, #212121) 8px,
+    transparent 8px,
+    transparent 12px
+  );
 }
 
 .template-name-container {
