@@ -13,8 +13,8 @@ from shared.logger import log_error, log_info
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
-from src.mcp.schemas.worker_reference_args import ResolveWorkerReferenceArgs
-from src.mcp.tools.workers import _build_team_members
+from src.mcp_server.schemas.worker_reference_args import ResolveWorkerReferenceArgs
+from src.mcp_server.tools.workers import _build_team_members
 from src.security.user_context import UserContext
 
 

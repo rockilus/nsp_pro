@@ -14,7 +14,7 @@ from shared.logger import log_error
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
-from src.mcp.schemas.temporal_arguments import (
+from src.mcp_server.schemas.temporal_arguments import (
     CalculateRelativeDateArgs,
 )
 from src.security.user_context import UserContext

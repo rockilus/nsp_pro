@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException, Request
 from starlette.types import Message, Receive, Scope
 
-from src.mcp.context import MCPContext, build_mcp_context
+from src.mcp_server.context import MCPContext, build_mcp_context
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -69,9 +69,11 @@ class TestMCPContextAuth:
     @pytest.mark.asyncio
     async def test_proxy_auth_header_parsed_as_bearer(self, monkeypatch):
         claims = {"sub": "user-1", "email": "test@test.com", "cognito:groups": []}
-        monkeypatch.setattr("src.mcp.context._decode_access_token", lambda t: claims)
         monkeypatch.setattr(
-            "src.mcp.context.get_cerbos_client", lambda: mock.MagicMock()
+            "src.mcp_server.context._decode_access_token", lambda t: claims
+        )
+        monkeypatch.setattr(
+            "src.mcp_server.context.get_cerbos_client", lambda: mock.MagicMock()
         )
 
         db = mock.MagicMock()
@@ -81,11 +83,11 @@ class TestMCPContextAuth:
 
     @pytest.mark.asyncio
     async def test_dev_mode_auth(self, monkeypatch):
-        monkeypatch.setattr("src.mcp.context.config.environment", "development")
-        monkeypatch.setattr("src.mcp.context.config.dev_api_key", "test-key")
-        monkeypatch.setattr("src.mcp.context.config.dev_user_id", "dev-user")
+        monkeypatch.setattr("src.mcp_server.context.config.environment", "development")
+        monkeypatch.setattr("src.mcp_server.context.config.dev_api_key", "test-key")
+        monkeypatch.setattr("src.mcp_server.context.config.dev_user_id", "dev-user")
         monkeypatch.setattr(
-            "src.mcp.context.get_cerbos_client", lambda: mock.MagicMock()
+            "src.mcp_server.context.get_cerbos_client", lambda: mock.MagicMock()
         )
 
         db = mock.MagicMock()
@@ -96,11 +98,13 @@ class TestMCPContextAuth:
 
     @pytest.mark.asyncio
     async def test_dev_mode_with_default_user_id(self, monkeypatch):
-        monkeypatch.setattr("src.mcp.context.config.environment", "development")
-        monkeypatch.setattr("src.mcp.context.config.dev_api_key", "test-key")
-        monkeypatch.setattr("src.mcp.context.config.dev_user_id", "fallback-user")
+        monkeypatch.setattr("src.mcp_server.context.config.environment", "development")
+        monkeypatch.setattr("src.mcp_server.context.config.dev_api_key", "test-key")
         monkeypatch.setattr(
-            "src.mcp.context.get_cerbos_client", lambda: mock.MagicMock()
+            "src.mcp_server.context.config.dev_user_id", "fallback-user"
+        )
+        monkeypatch.setattr(
+            "src.mcp_server.context.get_cerbos_client", lambda: mock.MagicMock()
         )
 
         db = mock.MagicMock()
@@ -110,8 +114,8 @@ class TestMCPContextAuth:
 
     @pytest.mark.asyncio
     async def test_dev_mode_invalid_key_returns_401(self, monkeypatch):
-        monkeypatch.setattr("src.mcp.context.config.environment", "development")
-        monkeypatch.setattr("src.mcp.context.config.dev_api_key", "correct-key")
+        monkeypatch.setattr("src.mcp_server.context.config.environment", "development")
+        monkeypatch.setattr("src.mcp_server.context.config.dev_api_key", "correct-key")
 
         req = _build_request({"x-api-key": "wrong-key"})
         with pytest.raises(HTTPException) as exc:

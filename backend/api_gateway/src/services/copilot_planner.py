@@ -12,8 +12,8 @@ from litellm import acompletion
 from pydantic import ValidationError
 from shared.logger import log_error, log_info
 
-from src.mcp.schemas.copilot_plan_schemas import ExecutionPlan
-from src.mcp.tools.registry import (
+from src.mcp_server.schemas.copilot_plan_schemas import ExecutionPlan
+from src.mcp_server.tools.registry import (
     TOOL_REGISTRY,
     ToolChannel,
 )

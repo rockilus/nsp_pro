@@ -8,7 +8,7 @@ multi-step read-side resolution step (``calculate_relative_date``) is required.
 
 from typing import Any
 
-from src.mcp.schemas.intent_schemas import CopilotIntent
+from src.mcp_server.schemas.intent_schemas import CopilotIntent
 
 # Read-only tools available to every playbook.  ``calculate_relative_date`` is a
 # pure utility — no DB access, no authz — so it is safe to expose everywhere.

@@ -32,16 +32,16 @@ from src.errors.copilot_errors.copilot_errors import CopilotDisabledError
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
-from src.mcp.schemas.copilot_plan_schemas import (
+from src.mcp_server.schemas.copilot_plan_schemas import (
     CompletedStep,
     ExecutionPlan,
     PlanStepStatus,
 )
-from src.mcp.schemas.intent_schemas import (
+from src.mcp_server.schemas.intent_schemas import (
     ComplexityTier,
     IntentClassificationResult,
 )
-from src.mcp.tools.registry import (
+from src.mcp_server.tools.registry import (
     TOOL_REGISTRY,
     ToolChannel,
     get_tool_manifests,

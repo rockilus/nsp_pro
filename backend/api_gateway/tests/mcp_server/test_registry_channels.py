@@ -1,6 +1,6 @@
 """Tests for tool registry channel visibility."""
 
-from src.mcp.tools.registry import (
+from src.mcp_server.tools.registry import (
     TOOL_REGISTRY,
     ToolChannel,
     get_tool_manifests,

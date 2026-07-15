@@ -13,7 +13,7 @@ from shared.schemas.core.worker import (
     WeeklySlotPreference as CoreWeeklySlotPreference,
 )
 
-from src.mcp.tools.workers import _build_team_members
+from src.mcp_server.tools.workers import _build_team_members
 
 TEAM_ID = "team_test"
 
@@ -309,7 +309,7 @@ class TestBuildTeamMembers:
 
 @pytest.mark.asyncio
 async def test_get_team_members_annotations():
-    from src.mcp.server import mcp as server
+    from src.mcp_server.server import mcp as server
 
     tools = await server.list_tools()
     tool = next((t for t in tools if t.name == "get_team_members"), None)

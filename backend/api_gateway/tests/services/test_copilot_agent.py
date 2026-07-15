@@ -7,8 +7,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from src.errors.copilot_errors.copilot_errors import CopilotDisabledError
-from src.mcp.models import WorkerRosterItem
-from src.mcp.schemas.intent_schemas import ComplexityTier
+from src.mcp_server.models import WorkerRosterItem
+from src.mcp_server.schemas.intent_schemas import ComplexityTier
 from src.security.user_context import UserContext
 from src.services.copilot_agent import (
     CopilotAgentService,
@@ -154,7 +154,7 @@ class TestRunAgentLoop:
             patch(f"{MODULE}.config") as cfg,
             patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
             patch(
-                "src.mcp.tools.registry._build_team_members",
+                "src.mcp_server.tools.registry._build_team_members",
                 return_value=[_roster_item("Alice")],
             ) as mock_build,
             patch.object(
@@ -203,7 +203,7 @@ class TestRunAgentLoop:
             patch(f"{MODULE}.config") as cfg,
             patch(f"{MODULE}.acompletion", new=AsyncMock()) as mock_ac,
             patch(
-                "src.mcp.tools.registry._build_team_members",
+                "src.mcp_server.tools.registry._build_team_members",
                 return_value=[_roster_item("Secret")],
             ) as mock_build,
             patch.object(

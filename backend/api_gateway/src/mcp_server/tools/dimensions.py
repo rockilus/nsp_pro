@@ -5,7 +5,7 @@ import logging
 from fastmcp import Context
 from mcp.types import ToolAnnotations
 
-from src.mcp.server import mcp
+from src.mcp_server.server import mcp
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,8 @@ async def get_dimensions(team_id: str, ctx: Context) -> dict:
     """
     logger.info("MCP tool: get_dimensions team=%s", team_id)
 
-    from src.mcp.context import build_mcp_context
-    from src.mcp.tools.registry import GET_DIMENSIONS
+    from src.mcp_server.context import build_mcp_context
+    from src.mcp_server.tools.registry import GET_DIMENSIONS
 
     mcp_ctx = await build_mcp_context(ctx)
     return await GET_DIMENSIONS.executor(
