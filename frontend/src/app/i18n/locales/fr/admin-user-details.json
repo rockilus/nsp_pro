@@ -29,5 +29,6 @@
   "exportButton": "Exporter le JSON",
   "exporting": "Exportation…",
   "exportError": "Échec de l'exportation des données",
-  "loadError": "Échec du chargement des détails de l'utilisateur"
+  "loadError": "Échec du chargement des détails de l'utilisateur",
+  "noUserId": "Aucun identifiant d'utilisateur fourni."
 }

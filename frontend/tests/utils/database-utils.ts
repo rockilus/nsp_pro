@@ -132,6 +132,8 @@ export interface SolverScenarioResult {
   dim_entries: DimEntryT[];
   attributes: AttributeT[];
   shift_demands: ShiftDemandDTO[];
+  constraints: any[];
+  requests: any[];
   schedules: ScheduleT[];
 }
 
@@ -2044,6 +2046,8 @@ export class DatabaseTestUtils {
         dim_entries: any[];
         attributes: any[];
         shift_demands: any[];
+        constraints: any[];
+        requests: any[];
         schedules: any[];
       }>('/test-utils/scenarios/load', {
         scenario_name: scenarioName,
@@ -2061,6 +2065,8 @@ export class DatabaseTestUtils {
         dim_entries: result.dim_entries,
         attributes: result.attributes.map(toAttributeT),
         shift_demands: result.shift_demands,
+        constraints: result.constraints,
+        requests: result.requests,
         schedules: result.schedules.map(toScheduleT),
       };
     } catch (error) {

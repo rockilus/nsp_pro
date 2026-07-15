@@ -29,5 +29,6 @@
   "exportButton": "Export JSON",
   "exporting": "Exporting…",
   "exportError": "Failed to export user data",
-  "loadError": "Failed to load user details"
+  "loadError": "Failed to load user details",
+  "noUserId": "No user ID provided."
 }

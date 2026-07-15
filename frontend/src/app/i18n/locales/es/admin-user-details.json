@@ -29,5 +29,6 @@
   "exportButton": "Exportar JSON",
   "exporting": "Exportando…",
   "exportError": "Error al exportar los datos del usuario",
-  "loadError": "Error al cargar los detalles del usuario"
+  "loadError": "Error al cargar los detalles del usuario",
+  "noUserId": "No se proporcionó ningún ID de usuario."
 }
