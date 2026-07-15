@@ -48,7 +48,13 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         shifts = self.find_all(
             {
                 "team": team_id,
-                "shift_type": {"$in": [ShiftType.NORMAL.value, ShiftType.DUTY.value]},
+                "shift_type": {
+                    "$in": [
+                        ShiftType.NORMAL.value,
+                        ShiftType.DUTY.value,
+                        ShiftType.ON_CALL.value,
+                    ]
+                },
             }
         )
         return [shift.to_core() for shift in shifts]
@@ -58,7 +64,13 @@ class ShiftRepository(BaseRepository[ShiftSchema]):
         shifts = self.find_all(
             {
                 "team": team_id,
-                "shift_type": {"$in": [ShiftType.NORMAL.value, ShiftType.DUTY.value]},
+                "shift_type": {
+                    "$in": [
+                        ShiftType.NORMAL.value,
+                        ShiftType.DUTY.value,
+                        ShiftType.ON_CALL.value,
+                    ]
+                },
                 "deleted": False,
             }
         )

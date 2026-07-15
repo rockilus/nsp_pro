@@ -79,14 +79,26 @@ export const createShiftColumns = (
       3,
       0, // Insert after acronym
       {
-        id: 'duty',
-        label: t('duty'),
-        type: 'boolean' as const,
-        getValue: (shift: ShiftT) => (shift.shiftType === ShiftType.DUTY ? 'true' : 'false'),
-        getDisplayValue: (shift: ShiftT) => (shift.shiftType === ShiftType.DUTY ? 'Yes' : 'No'),
+        id: 'type',
+        label: t('type'),
+        type: 'select' as const,
+        getValue: (shift: ShiftT) => shift.shiftType.toString(),
+        getDisplayValue: (shift: ShiftT) => {
+          switch (shift.shiftType) {
+            case ShiftType.NORMAL:
+              return t('normal');
+            case ShiftType.DUTY:
+              return t('duty');
+            case ShiftType.ON_CALL:
+              return t('on_call');
+            default:
+              return t('not_applicable');
+          }
+        },
         getOptions: () => [
-          { value: 'true', label: 'Yes' },
-          { value: 'false', label: 'No' },
+          { value: ShiftType.NORMAL.toString(), label: t('normal') },
+          { value: ShiftType.DUTY.toString(), label: t('duty') },
+          { value: ShiftType.ON_CALL.toString(), label: t('on_call') },
         ],
       },
       {

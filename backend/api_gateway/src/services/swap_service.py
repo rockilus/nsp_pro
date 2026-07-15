@@ -708,9 +708,13 @@ class SwapService(BaseService):
             if not shift:
                 raise ValueError(f"Shift {assignment.shift_id} not found")
 
-            if shift.shift_type not in [ShiftType.NORMAL, ShiftType.DUTY]:
+            if shift.shift_type not in [
+                ShiftType.NORMAL,
+                ShiftType.DUTY,
+                ShiftType.ON_CALL,
+            ]:
                 raise ValueError(
-                    "Can only swap NORMAL or DUTY shifts (found: "
+                    "Can only swap NORMAL, DUTY or ON_CALL shifts (found: "
                     + f"{shift.shift_type.value})"
                 )
 

@@ -56,7 +56,12 @@ export const useRestNameDisplayed = ({ lng }: { lng: string }) => {
 };
 
 export const filterWorkShifts = (shifts: ShiftT[]): ShiftT[] => {
-  return shifts.filter((s) => s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY);
+  return shifts.filter(
+    (s) =>
+      s.shiftType === ShiftType.NORMAL ||
+      s.shiftType === ShiftType.DUTY ||
+      s.shiftType === ShiftType.ON_CALL,
+  );
 };
 
 export const orderRestShifts = (shifts: ShiftT[]): ShiftT[] => {

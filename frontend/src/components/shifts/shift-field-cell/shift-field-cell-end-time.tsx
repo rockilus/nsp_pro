@@ -26,6 +26,10 @@ export default function ShiftFieldCellEndTime({
 }) {
   const [valueState, setValueState] = useState(shift.endTime);
 
+  // Calendar-day offset of the end time relative to the start day (0 = same day)
+  const dayOffset = (start: dayjs.Dayjs, end: dayjs.Dayjs): number =>
+    end.startOf('day').diff(start.startOf('day'), 'day');
+
   const buildTimeSlots = (): dayjs.Dayjs[] => {
     const timeSlots: dayjs.Dayjs[] = [];
     let firstSlot = shift.startTime;
@@ -78,7 +82,9 @@ export default function ShiftFieldCellEndTime({
           >
             <SelectValue>
               {valueState.format('HH:mm')}
-              {!valueState.isSame(shift.startTime, 'day') ? ' (+1)' : ''}
+              {dayOffset(shift.startTime, valueState) > 0
+                ? ` (+${dayOffset(shift.startTime, valueState)})`
+                : ''}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -93,7 +99,9 @@ export default function ShiftFieldCellEndTime({
       ) : (
         <>
           {shift.endTime.format('HH:mm')}
-          {!shift.endTime.isSame(shift.startTime, 'day') && <sup>+1</sup>}
+          {dayOffset(shift.startTime, shift.endTime) > 0 && (
+            <sup>+{dayOffset(shift.startTime, shift.endTime)}</sup>
+          )}
         </>
       )}
     </td>

@@ -79,8 +79,16 @@ function WorkerRowHeaderContent({
     if (!scheduleCampaign) return 0;
     const total = assignmentsWorker.reduce((acc, a) => {
       const s = shiftMap[a.shiftId];
-      if (s && (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY)) {
-        return acc + s.endTime.diff(s.startTime, 'hour', true);
+      if (
+        s &&
+        (s.shiftType === ShiftType.NORMAL ||
+          s.shiftType === ShiftType.DUTY ||
+          s.shiftType === ShiftType.ON_CALL)
+      ) {
+        const hours = s.useCustomWorkTime
+          ? s.customWorkTimeMinutes / 60
+          : s.endTime.diff(s.startTime, 'hour', true);
+        return acc + hours;
       }
       return acc;
     }, 0);

@@ -49,4 +49,6 @@ class ShiftDTO(BaseModel):
     recuperationTime: int = Field(examples=[0])
     recuperationDutyId: str | None
     deleted: bool = Field(examples=[False])
+    useCustomWorkTime: bool = False
+    customWorkTimeMinutes: int = 0
     attributes: List[AttributeDTO]

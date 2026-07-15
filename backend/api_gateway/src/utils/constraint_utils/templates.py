@@ -59,7 +59,7 @@ def build_templates(
     shifts_constraint = [
         s
         for s in shifts
-        if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+        if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL]
         or s.rest_type == ShiftRestType.OFF
     ]
     shift_options = build_options(

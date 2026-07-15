@@ -268,7 +268,11 @@ const DemandForm: React.FC<DemandFormProps> = ({
   // ── Create mode ────────────────────────────────────────────────────────
   // Partition shifts into work shifts only (Normal + Duty) — demand only targets work shifts
   const workShifts = shifts.filter(
-    (s) => !s.deleted && (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY),
+    (s) =>
+      !s.deleted &&
+      (s.shiftType === ShiftType.NORMAL ||
+        s.shiftType === ShiftType.DUTY ||
+        s.shiftType === ShiftType.ON_CALL),
   );
 
   return (
@@ -298,6 +302,7 @@ const DemandForm: React.FC<DemandFormProps> = ({
                   {workShifts.map((s) => {
                     const { sample } = ShiftColorMappings[s.color] || { sample: '#9e9e9e' };
                     const isDuty = s.shiftType === ShiftType.DUTY;
+                    const isOnCall = s.shiftType === ShiftType.ON_CALL;
                     return (
                       <SelectItem
                         key={s.id}
@@ -310,6 +315,16 @@ const DemandForm: React.FC<DemandFormProps> = ({
                               className="block w-1 self-stretch rounded-sm"
                               style={{
                                 backgroundColor: sample,
+                                minHeight: '1rem',
+                                marginLeft: '-0.25rem',
+                              }}
+                            />
+                          )}
+                          {isOnCall && (
+                            <span
+                              className="block w-1 self-stretch rounded-sm"
+                              style={{
+                                backgroundImage: `repeating-linear-gradient(to bottom, ${sample} 0px, ${sample} 8px, transparent 8px, transparent 12px)`,
                                 minHeight: '1rem',
                                 marginLeft: '-0.25rem',
                               }}

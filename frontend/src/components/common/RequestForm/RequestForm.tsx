@@ -124,7 +124,12 @@ const RequestForm = ({
   function filterShiftsByRequestType(shifts: ShiftT[], requestType: RequestType): ShiftT[] {
     return shifts.filter((s) => {
       if (requestType === RequestType.WORK_DEMAND) {
-        return !s.deleted && (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY);
+        return (
+          !s.deleted &&
+          (s.shiftType === ShiftType.NORMAL ||
+            s.shiftType === ShiftType.DUTY ||
+            s.shiftType === ShiftType.ON_CALL)
+        );
       } else {
         return (
           !s.deleted &&
@@ -141,7 +146,11 @@ const RequestForm = ({
   ): ShiftWorkerOptionT[] {
     const normalDutyShiftIds = shifts
       .filter(
-        (s) => !s.deleted && (s.shiftType === ShiftType.NORMAL || s.shiftType === ShiftType.DUTY),
+        (s) =>
+          !s.deleted &&
+          (s.shiftType === ShiftType.NORMAL ||
+            s.shiftType === ShiftType.DUTY ||
+            s.shiftType === ShiftType.ON_CALL),
       )
       .map((s) => s.id);
 

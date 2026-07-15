@@ -10,6 +10,7 @@ export enum ShiftType {
   DUTY = 1,
   REST = 2,
   LEAVE = 3,
+  ON_CALL = 4,
 }
 
 export enum ShiftRestType {
@@ -61,6 +62,8 @@ export type ShiftT = {
   recuperationTime: number;
   recuperationDutyId: string | null;
   deleted: boolean;
+  useCustomWorkTime: boolean;
+  customWorkTimeMinutes: number;
   attributes: AttributeT[];
 };
 

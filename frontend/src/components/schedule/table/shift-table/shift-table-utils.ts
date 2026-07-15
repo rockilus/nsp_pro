@@ -36,7 +36,9 @@ export const getRelevantShifts = (shifts: ShiftT[], assignments: AssignmentT[]):
   const relevantShifts = shifts.filter(
     (shift) =>
       (shiftIdsInAssignments.has(shift.id) || !shift.deleted) &&
-      (shift.shiftType === ShiftType.NORMAL || shift.shiftType === ShiftType.DUTY),
+      (shift.shiftType === ShiftType.NORMAL ||
+        shift.shiftType === ShiftType.DUTY ||
+        shift.shiftType === ShiftType.ON_CALL),
   );
 
   return sortShifts(relevantShifts);

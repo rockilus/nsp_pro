@@ -77,6 +77,8 @@ describe('DailyShiftDemandCell', () => {
         recuperationTime: 0,
         recuperationDutyId: null,
         deleted: false,
+        useCustomWorkTime: false,
+        customWorkTimeMinutes: 0,
         attributes: [],
       },
     },

@@ -27,7 +27,8 @@ export const countShifts = (
   } = {};
 
   const shiftsWorkNotDeleted = shifts.filter(
-    (s) => [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted,
+    (s) =>
+      [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL].includes(s.shiftType) && !s.deleted,
   );
 
   periodDates.forEach((periodDate) => {
@@ -94,7 +95,8 @@ export const countShiftsTotalPeriod = (
   endDate: dayjs.Dayjs,
 ) => {
   const shiftsWorkNotDeleted = shifts.filter(
-    (s) => [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted,
+    (s) =>
+      [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL].includes(s.shiftType) && !s.deleted,
   );
   const countTarget = shiftsWorkNotDeleted.reduce((totalSum, shift) => {
     const shiftSum = shiftDemands
@@ -153,7 +155,8 @@ export const countStaffings = (
   } = {};
 
   const shiftsWorkNotDeleted = shifts.filter(
-    (s) => [ShiftType.NORMAL, ShiftType.DUTY].includes(s.shiftType) && !s.deleted,
+    (s) =>
+      [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL].includes(s.shiftType) && !s.deleted,
   );
   const shiftMap: { [key: string]: ShiftT } = shiftsWorkNotDeleted.reduce(
     (map, shift) => {

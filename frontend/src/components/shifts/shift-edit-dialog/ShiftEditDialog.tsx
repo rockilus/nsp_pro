@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import 'dayjs/locale/en-gb';
+import 'dayjs/locale/fr';
+import 'dayjs/locale/es';
 import { useTranslation } from '../../../app/i18n/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,7 +35,7 @@ import { DimEntryT } from '@/types/dim-entry';
 import { AttributeT, AttributeOwnerType } from '../../../types/attribute';
 import { SpecialtyT } from '@/types/specialty';
 // Constants
-import { ShiftColorMappings } from '../../../constants/constants';
+import { ShiftColorMappings, MAX_SHIFT_EXTRA_DAYS } from '../../../constants/constants';
 
 dayjs.extend(utc);
 
@@ -75,7 +78,19 @@ export default function ShiftEditDialog({
     recuperationTime: number;
     staffing: StaffingT[];
     restType: ShiftRestType;
+    useCustomWorkTime: boolean;
+    customWorkTimeMinutes: number;
+    extraDays: number;
     changedAttributes: Map<string, AttributeT>;
+  };
+
+  const deriveEndTimeFields = (startTime: dayjs.Dayjs, endTime: dayjs.Dayjs) => {
+    const totalMinutes = endTime.diff(startTime, 'minute');
+    const endMinOfDay = endTime.hour() * 60 + endTime.minute();
+    const startMinOfDay = startTime.hour() * 60 + startTime.minute();
+    // extraDays is the calendar-day offset of the end time relative to the start day
+    const extraDays = Math.round((totalMinutes - (endMinOfDay - startMinOfDay)) / (24 * 60));
+    return { extraDays: Math.max(0, extraDays) };
   };
 
   const buildFormState = (): FormState => ({
@@ -89,22 +104,61 @@ export default function ShiftEditDialog({
     recuperationTime: shift.recuperationTime,
     staffing: shift.staffing.map((s) => ({ ...s })),
     restType: shift.restType,
+    useCustomWorkTime: shift.useCustomWorkTime ?? false,
+    customWorkTimeMinutes: shift.customWorkTimeMinutes ?? 0,
+    extraDays: deriveEndTimeFields(shift.startTime, shift.endTime).extraDays,
     changedAttributes: new Map(),
   });
 
   const [form, setForm] = useState<FormState>(buildFormState);
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
 
+  const [extraDaysRaw, setExtraDaysRaw] = useState<string>(
+    String(deriveEndTimeFields(shift.startTime, shift.endTime).extraDays),
+  );
+  const [recuperationTimeRaw, setRecuperationTimeRaw] = useState<string>(
+    String(shift.recuperationTime),
+  );
+  const [customWorkTimeHoursRaw, setCustomWorkTimeHoursRaw] = useState<string>(
+    String(Math.floor((shift.customWorkTimeMinutes ?? 0) / 60)),
+  );
+  const [customWorkTimeMinutesRaw, setCustomWorkTimeMinutesRaw] = useState<string>(
+    String((shift.customWorkTimeMinutes ?? 0) % 60),
+  );
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const patch = (partial: Partial<FormState>) => setForm((prev) => ({ ...prev, ...partial }));
 
   useEffect(() => {
     if (open) {
-      setForm(buildFormState());
+      const fresh = buildFormState();
+      setForm(fresh);
+      setExtraDaysRaw(String(fresh.extraDays));
+      setRecuperationTimeRaw(String(fresh.recuperationTime));
+      setCustomWorkTimeHoursRaw(String(Math.floor(fresh.customWorkTimeMinutes / 60)));
+      setCustomWorkTimeMinutesRaw(String(fresh.customWorkTimeMinutes % 60));
+      setErrors({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, shift.id]);
 
   const isDuty = form.shiftType === ShiftType.DUTY;
+
+  const daysHelperText = useMemo(() => {
+    if (form.extraDays === 0) return null;
+    const dayjsLocale = lng === 'en' ? 'en-gb' : lng;
+    // Reference date is today; the end day is today + extraDays
+    const startDate = dayjs().locale(dayjsLocale);
+    const endDate = startDate.add(form.extraDays, 'day');
+    const dayFormat = form.extraDays < 7 ? 'dddd' : lng === 'en' ? 'dddd MMMM D' : 'dddd D MMMM';
+    return t('days_helper', {
+      startDay: startDate.format(dayFormat),
+      startTime: form.startTime.format('HH:mm'),
+      endDay: endDate.format(dayFormat),
+      endTime: form.endTime.format('HH:mm'),
+    });
+  }, [form.extraDays, form.startTime, form.endTime, lng, t]);
 
   const startTimeSlots = useMemo(() => {
     const slots: dayjs.Dayjs[] = [];
@@ -119,14 +173,14 @@ export default function ShiftEditDialog({
 
   const endTimeSlots = useMemo(() => {
     const slots: dayjs.Dayjs[] = [];
-    let slot = form.startTime;
-    const last = slot.add(24, 'hour');
+    let slot = dayjs.utc().startOf('day');
+    const last = slot.endOf('day');
     while (slot.isBefore(last) || slot.isSame(last)) {
       slots.push(slot);
       slot = slot.add(15, 'minute');
     }
     return slots;
-  }, [form.startTime]);
+  }, []);
 
   const shiftDimensions = useMemo(
     () =>
@@ -185,6 +239,41 @@ export default function ShiftEditDialog({
   };
 
   const handleSave = async () => {
+    const newErrors: Record<string, string> = {};
+
+    const parsedExtraDays = parseInt(extraDaysRaw, 10);
+    if (
+      extraDaysRaw.trim() === '' ||
+      isNaN(parsedExtraDays) ||
+      parsedExtraDays < 0 ||
+      parsedExtraDays > MAX_SHIFT_EXTRA_DAYS
+    ) {
+      newErrors.extraDays = 'error';
+    }
+    if (isDuty && (recuperationTimeRaw.trim() === '' || isNaN(Number(recuperationTimeRaw)))) {
+      newErrors.recuperationTime = 'error';
+    }
+    if (form.useCustomWorkTime) {
+      if (customWorkTimeHoursRaw.trim() === '' || isNaN(parseInt(customWorkTimeHoursRaw, 10))) {
+        newErrors.customWorkTimeHours = 'error';
+      }
+      if (customWorkTimeMinutesRaw.trim() === '' || isNaN(parseInt(customWorkTimeMinutesRaw, 10))) {
+        newErrors.customWorkTimeMinutes = 'error';
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    const startMinOfDay = form.startTime.hour() * 60 + form.startTime.minute();
+    const endMinOfDay = form.endTime.hour() * 60 + form.endTime.minute();
+    let totalMinutes = endMinOfDay - startMinOfDay + form.extraDays * 24 * 60;
+    // Defensive: a shift can never end before it starts — wrap to the next day
+    if (totalMinutes <= 0) totalMinutes += 24 * 60;
+    const computedEndTime = form.startTime.add(totalMinutes, 'minute');
+
     const updatedShift: ShiftT = {
       ...shift,
       name: form.name,
@@ -192,11 +281,13 @@ export default function ShiftEditDialog({
       acronymCustom: form.acronymCustom,
       color: form.color,
       startTime: form.startTime,
-      endTime: form.endTime,
+      endTime: computedEndTime,
       shiftType: form.shiftType,
       recuperationTime: form.recuperationTime,
       staffing: form.staffing,
       restType: form.restType,
+      useCustomWorkTime: form.useCustomWorkTime,
+      customWorkTimeMinutes: form.customWorkTimeMinutes,
     };
     await handleUpdateShift(updatedShift);
 
@@ -330,49 +421,97 @@ export default function ShiftEditDialog({
               </Select>
             </FieldRow>
             <FieldRow label={t('end_time')} htmlFor="edit-shift-end-time">
-              <Select
-                value={String(form.endTime.valueOf())}
-                onValueChange={(value) => patch({ endTime: dayjs.utc(Number(value)) })}
-              >
-                <SelectTrigger id="edit-shift-end-time" data-testid="edit-shift-end-time-select">
-                  <SelectValue>
-                    {form.endTime.format('HH:mm')}
-                    {!form.endTime.isSame(form.startTime, 'day') ? ' (+1)' : ''}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {endTimeSlots.map((time) => (
-                    <SelectItem key={time.valueOf()} value={String(time.valueOf())}>
-                      {time.format('HH:mm')}
-                      {!time.isSame(form.startTime, 'day') && ' (+1)'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={String(form.endTime.valueOf())}
+                  onValueChange={(value) => {
+                    const newEndTime = dayjs.utc(Number(value));
+                    const updates: Partial<FormState> = { endTime: newEndTime };
+                    const startMinOfDay = form.startTime.hour() * 60 + form.startTime.minute();
+                    const endMinOfDay = newEndTime.hour() * 60 + newEndTime.minute();
+                    // An end time earlier than the start time means the shift ends the next day
+                    if (form.extraDays === 0 && endMinOfDay < startMinOfDay) {
+                      updates.extraDays = 1;
+                      setExtraDaysRaw('1');
+                      setErrors((prev) => {
+                        const { extraDays: _, ...rest } = prev;
+                        return rest;
+                      });
+                    }
+                    patch(updates);
+                  }}
+                >
+                  <SelectTrigger id="edit-shift-end-time" data-testid="edit-shift-end-time-select">
+                    <SelectValue>{form.endTime.format('HH:mm')}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {endTimeSlots.map((time) => (
+                      <SelectItem key={time.valueOf()} value={String(time.valueOf())}>
+                        {time.format('HH:mm')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-sm whitespace-nowrap">+</span>
+                <Input
+                  type="number"
+                  min={0}
+                  max={MAX_SHIFT_EXTRA_DAYS}
+                  className="w-16"
+                  value={extraDaysRaw}
+                  aria-invalid={!!errors.extraDays}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    setExtraDaysRaw(raw);
+                    const v = parseInt(raw, 10);
+                    if (!isNaN(v) && v >= 0 && v <= MAX_SHIFT_EXTRA_DAYS) {
+                      patch({ extraDays: v });
+                      if (errors.extraDays) {
+                        setErrors((prev) => {
+                          const { extraDays: _, ...rest } = prev;
+                          return rest;
+                        });
+                      }
+                    } else {
+                      setErrors((prev) => ({ ...prev, extraDays: 'error' }));
+                    }
+                  }}
+                  data-testid="edit-shift-extra-days-input"
+                />
+                <span className="text-sm whitespace-nowrap">{t('days')}</span>
+              </div>
             </FieldRow>
           </div>
+          {errors.extraDays && (
+            <p className="mt-2 text-xs text-destructive" data-testid="edit-shift-extra-days-error">
+              {t('days_error', { max: MAX_SHIFT_EXTRA_DAYS })}
+            </p>
+          )}
+          {daysHelperText && <p className="mt-2 text-xs text-muted-foreground">{daysHelperText}</p>}
 
-          {/* Duty + Recuperation (work shifts only) */}
+          {/* Shift type (work shifts only) */}
           {!isRest && (
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="flex items-end pb-0.5">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="edit-shift-duty"
-                    checked={isDuty}
-                    onCheckedChange={(checked) => {
-                      const newType = checked ? ShiftType.DUTY : ShiftType.NORMAL;
-                      const updates: Partial<FormState> = { shiftType: newType };
-                      if (!checked) updates.recuperationTime = 0;
-                      patch(updates);
-                    }}
-                    data-testid="edit-shift-duty-checkbox"
-                  />
-                  <Label htmlFor="edit-shift-duty" className="cursor-pointer text-sm">
-                    {t('duty')}
-                  </Label>
-                </div>
-              </div>
+              <FieldRow label={t('type')} htmlFor="edit-shift-type">
+                <Select
+                  value={String(form.shiftType)}
+                  onValueChange={(value) => {
+                    const newType = Number(value) as ShiftType;
+                    const updates: Partial<FormState> = { shiftType: newType };
+                    if (newType !== ShiftType.DUTY) updates.recuperationTime = 0;
+                    patch(updates);
+                  }}
+                >
+                  <SelectTrigger id="edit-shift-type" data-testid="edit-shift-type-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={String(ShiftType.NORMAL)}>{t('normal')}</SelectItem>
+                    <SelectItem value={String(ShiftType.DUTY)}>{t('duty')}</SelectItem>
+                    <SelectItem value={String(ShiftType.ON_CALL)}>{t('on_call')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FieldRow>
               {isDuty && (
                 <FieldRow label={t('recuperation')} htmlFor="edit-shift-recuperation">
                   <Input
@@ -380,11 +519,99 @@ export default function ShiftEditDialog({
                     type="number"
                     min={0}
                     step={0.5}
-                    value={form.recuperationTime}
-                    onChange={(e) => patch({ recuperationTime: Number(e.target.value) })}
+                    value={recuperationTimeRaw}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      setRecuperationTimeRaw(raw);
+                      const v = Number(raw);
+                      if (!isNaN(v)) {
+                        patch({ recuperationTime: Math.max(0, v) });
+                        if (errors.recuperationTime) {
+                          setErrors((prev) => {
+                            const { recuperationTime: _, ...rest } = prev;
+                            return rest;
+                          });
+                        }
+                      }
+                    }}
                     data-testid="edit-shift-recuperation-input"
+                    aria-invalid={!!errors.recuperationTime}
                   />
                 </FieldRow>
+              )}
+            </div>
+          )}
+
+          {/* Custom work time (work shifts only) */}
+          {!isRest && (
+            <div className="mt-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Checkbox
+                  id="edit-shift-use-custom-work-time"
+                  checked={form.useCustomWorkTime}
+                  onCheckedChange={(checked) => patch({ useCustomWorkTime: !!checked })}
+                  data-testid="edit-shift-use-custom-work-time-checkbox"
+                />
+                <Label htmlFor="edit-shift-use-custom-work-time" className="cursor-pointer text-sm">
+                  {t('use_custom_work_time')}
+                </Label>
+              </div>
+              {form.useCustomWorkTime && (
+                <div className="ml-6 grid grid-cols-2 gap-4">
+                  <FieldRow label={t('hours')} htmlFor="edit-shift-custom-work-time-hours">
+                    <Input
+                      id="edit-shift-custom-work-time-hours"
+                      type="number"
+                      min={0}
+                      value={customWorkTimeHoursRaw}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        setCustomWorkTimeHoursRaw(raw);
+                        const hours = parseInt(raw, 10);
+                        if (!isNaN(hours)) {
+                          const mins = form.customWorkTimeMinutes % 60;
+                          patch({ customWorkTimeMinutes: Math.max(0, hours) * 60 + mins });
+                          if (errors.customWorkTimeHours) {
+                            setErrors((prev) => {
+                              const { customWorkTimeHours: _, ...rest } = prev;
+                              return rest;
+                            });
+                          }
+                        }
+                      }}
+                      data-testid="edit-shift-custom-work-time-hours"
+                      aria-invalid={!!errors.customWorkTimeHours}
+                    />
+                  </FieldRow>
+                  <FieldRow label={t('minutes')} htmlFor="edit-shift-custom-work-time-minutes">
+                    <Input
+                      id="edit-shift-custom-work-time-minutes"
+                      type="number"
+                      min={0}
+                      max={59}
+                      value={customWorkTimeMinutesRaw}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        setCustomWorkTimeMinutesRaw(raw);
+                        const mins = parseInt(raw, 10);
+                        if (!isNaN(mins)) {
+                          const hours = Math.floor(form.customWorkTimeMinutes / 60);
+                          patch({
+                            customWorkTimeMinutes: hours * 60 + Math.min(59, Math.max(0, mins)),
+                          });
+                          if (errors.customWorkTimeMinutes) {
+                            setErrors((prev) => {
+                              const { customWorkTimeMinutes: _, ...rest } = prev;
+                              return rest;
+                            });
+                          }
+                        }
+                      }}
+                      data-testid="edit-shift-custom-work-time-minutes"
+                      aria-invalid={!!errors.customWorkTimeMinutes}
+                    />
+                  </FieldRow>
+                </div>
               )}
             </div>
           )}

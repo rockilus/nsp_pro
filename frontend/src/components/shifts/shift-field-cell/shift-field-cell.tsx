@@ -3,7 +3,7 @@ import React from 'react';
 import ShiftFieldCellColor from './shift-field-cell-color';
 import ShiftFieldCellName from './shift-field-cell-name';
 import ShiftFieldCellAcronym from './shift-field-cell-acronym';
-import ShiftFieldCellDuty from './shift-field-cell-duty';
+import ShiftFieldCellType from './shift-field-cell-type';
 import ShiftFieldCellRecuperation from './shift-field-cell-recuperation';
 import ShiftFieldCellStartTime from './shift-field-cell-start-time';
 import ShiftFieldCellEndTime from './shift-field-cell-end-time';
@@ -47,8 +47,8 @@ export default function ShiftFieldCell({
       setEditing={setEditing}
       handleUpdateShift={handleUpdateShift}
     />
-  ) : shiftField === 'duty' ? (
-    <ShiftFieldCellDuty shift={shift} handleUpdateShift={handleUpdateShift} />
+  ) : shiftField === 'type' ? (
+    <ShiftFieldCellType shift={shift} handleUpdateShift={handleUpdateShift} />
   ) : shiftField === 'recuperation' ? (
     <ShiftFieldCellRecuperation
       lng={lng}
