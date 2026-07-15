@@ -143,6 +143,9 @@ class AppConfig(BaseSettings):
     max_schedule_duration_months: int = Field(
         3, description="Maximum schedule duration in months"
     )
+    max_shift_duration_days: int = Field(
+        30, description="Maximum shift duration in days (end_time - start_time)"
+    )
     cookie_domain: str | None = Field(
         None,
         description="Domain for auth cookies (e.g. .rockilus.com). "

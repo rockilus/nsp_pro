@@ -35,7 +35,7 @@ import { DimEntryT } from '@/types/dim-entry';
 import { AttributeT, AttributeOwnerType } from '../../../types/attribute';
 import { SpecialtyT } from '@/types/specialty';
 // Constants
-import { ShiftColorMappings } from '../../../constants/constants';
+import { ShiftColorMappings, MAX_SHIFT_EXTRA_DAYS } from '../../../constants/constants';
 
 dayjs.extend(utc);
 
@@ -241,7 +241,13 @@ export default function ShiftEditDialog({
   const handleSave = async () => {
     const newErrors: Record<string, string> = {};
 
-    if (extraDaysRaw.trim() === '' || isNaN(parseInt(extraDaysRaw, 10))) {
+    const parsedExtraDays = parseInt(extraDaysRaw, 10);
+    if (
+      extraDaysRaw.trim() === '' ||
+      isNaN(parsedExtraDays) ||
+      parsedExtraDays < 0 ||
+      parsedExtraDays > MAX_SHIFT_EXTRA_DAYS
+    ) {
       newErrors.extraDays = 'error';
     }
     if (isDuty && (recuperationTimeRaw.trim() === '' || isNaN(Number(recuperationTimeRaw)))) {
@@ -427,6 +433,10 @@ export default function ShiftEditDialog({
                     if (form.extraDays === 0 && endMinOfDay < startMinOfDay) {
                       updates.extraDays = 1;
                       setExtraDaysRaw('1');
+                      setErrors((prev) => {
+                        const { extraDays: _, ...rest } = prev;
+                        return rest;
+                      });
                     }
                     patch(updates);
                   }}
@@ -446,7 +456,7 @@ export default function ShiftEditDialog({
                 <Input
                   type="number"
                   min={0}
-                  max={30}
+                  max={MAX_SHIFT_EXTRA_DAYS}
                   className="w-16"
                   value={extraDaysRaw}
                   aria-invalid={!!errors.extraDays}
@@ -454,14 +464,16 @@ export default function ShiftEditDialog({
                     const raw = e.target.value;
                     setExtraDaysRaw(raw);
                     const v = parseInt(raw, 10);
-                    if (!isNaN(v)) {
-                      patch({ extraDays: Math.max(0, Math.min(30, v)) });
+                    if (!isNaN(v) && v >= 0 && v <= MAX_SHIFT_EXTRA_DAYS) {
+                      patch({ extraDays: v });
                       if (errors.extraDays) {
                         setErrors((prev) => {
                           const { extraDays: _, ...rest } = prev;
                           return rest;
                         });
                       }
+                    } else {
+                      setErrors((prev) => ({ ...prev, extraDays: 'error' }));
                     }
                   }}
                   data-testid="edit-shift-extra-days-input"
@@ -470,6 +482,11 @@ export default function ShiftEditDialog({
               </div>
             </FieldRow>
           </div>
+          {errors.extraDays && (
+            <p className="mt-2 text-xs text-destructive" data-testid="edit-shift-extra-days-error">
+              {t('days_error', { max: MAX_SHIFT_EXTRA_DAYS })}
+            </p>
+          )}
           {daysHelperText && <p className="mt-2 text-xs text-muted-foreground">{daysHelperText}</p>}
 
           {/* Shift type (work shifts only) */}

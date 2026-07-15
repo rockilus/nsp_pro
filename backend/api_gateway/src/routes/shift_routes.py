@@ -1,7 +1,7 @@
 import time as time_module
 from typing import Dict, List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
 from shared.schemas.core import Shift
@@ -37,6 +37,9 @@ async def create_shift(
         s_data = Shift.from_dto(shift)
         shift_created, a_bool = shift_service.create_shift(s_data)
         response = shift_created.to_dto(a_bool)
+    except ValueError as e:
+        log_info("Failed to create shift")
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         log_info("Failed to create shift")
         handle_routes_errors(e)
@@ -134,6 +137,9 @@ async def update_shift(
             "shift": updated_shift.to_dto(attributes),
             "linkShifts": ls_change.to_dto(),
         }
+    except ValueError as e:
+        log_info("Failed to update shift")
+        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         log_info("Failed to update shift")
         handle_routes_errors(e)

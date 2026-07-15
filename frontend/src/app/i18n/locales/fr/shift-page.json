@@ -85,6 +85,7 @@
   "minutes": "Minutes",
   "days": "Jours",
   "days_helper": "Si commence {{startDay}} à {{startTime}}, termine {{endDay}} à {{endTime}}",
+  "days_error": "Doit être entre 0 et {{max}} jours",
   "staffing": "Effectif",
   "staffing_tooltip": "Nombre de membres nécessaires pour le poste, par compétence si applicable",
   "start_time": "Début",

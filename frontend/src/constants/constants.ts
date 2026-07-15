@@ -195,6 +195,9 @@ export const ColorValidated: string = '#AFDCA8';
 // Maximum schedule/campaign duration in months (frontend mirror of shared)
 export const MAX_SCHEDULE_DURATION_MONTHS = 3;
 
+// Maximum extra days a shift can span past its start day (frontend mirror of api_gateway config)
+export const MAX_SHIFT_EXTRA_DAYS = 30;
+
 // User
 export const SignInGrantType: string = 'password';
 
