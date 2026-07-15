@@ -266,6 +266,7 @@ function ShiftDemandRowHeader({
 
   const isNextDay = !shift.endTime.isSame(shift.startTime, 'day');
   const isDutyShift = shift.shiftType === ShiftType.DUTY;
+  const isOnCallShift = shift.shiftType === ShiftType.ON_CALL;
 
   return (
     <CalendarRowHeaderCell
@@ -278,8 +279,19 @@ function ShiftDemandRowHeader({
       <div className="flex w-full min-w-0 items-center gap-1">
         {/* Shift type colour bar */}
         <div
-          className={cn('w-1 flex-shrink-0 self-stretch rounded-sm', !isDutyShift && 'invisible')}
-          style={isDutyShift ? { backgroundColor: sample } : undefined}
+          className={cn(
+            'w-1 flex-shrink-0 self-stretch rounded-sm',
+            !isDutyShift && !isOnCallShift && 'invisible',
+          )}
+          style={
+            isDutyShift
+              ? { backgroundColor: sample }
+              : isOnCallShift
+                ? {
+                    backgroundImage: `repeating-linear-gradient(to bottom, ${sample} 0px, ${sample} 8px, transparent 8px, transparent 12px)`,
+                  }
+                : undefined
+          }
         />
         <span
           className="w-full min-w-0 py-2 text-sm font-[550] break-words text-foreground"
