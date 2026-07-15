@@ -84,7 +84,7 @@
   "hours": "Hours",
   "minutes": "Minutes",
   "days": "Days",
-  "days_helper": "If starts {startDay} at {startTime}, ends {endDay} at {endTime}",
+  "days_helper": "If starts {{startDay}} at {{startTime}}, ends {{endDay}} at {{endTime}}",
   "staffing": "Staffing",
   "staffing_tooltip": "Number of members needed for the shift, by skill if applicable",
   "start_time": "Start",

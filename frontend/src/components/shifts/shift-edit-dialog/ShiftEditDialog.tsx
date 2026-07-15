@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import 'dayjs/locale/en-gb';
+import 'dayjs/locale/fr';
+import 'dayjs/locale/es';
 import { useTranslation } from '../../../app/i18n/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -141,6 +144,21 @@ export default function ShiftEditDialog({
   }, [open, shift.id]);
 
   const isDuty = form.shiftType === ShiftType.DUTY;
+
+  const daysHelperText = useMemo(() => {
+    if (form.extraDays === 0) return null;
+    const dayjsLocale = lng === 'en' ? 'en-gb' : lng;
+    // Reference date is today; the end day is today + extraDays
+    const startDate = dayjs().locale(dayjsLocale);
+    const endDate = startDate.add(form.extraDays, 'day');
+    const dayFormat = form.extraDays < 7 ? 'dddd' : lng === 'en' ? 'dddd MMMM D' : 'dddd D MMMM';
+    return t('days_helper', {
+      startDay: startDate.format(dayFormat),
+      startTime: form.startTime.format('HH:mm'),
+      endDay: endDate.format(dayFormat),
+      endTime: form.endTime.format('HH:mm'),
+    });
+  }, [form.extraDays, form.startTime, form.endTime, lng, t]);
 
   const startTimeSlots = useMemo(() => {
     const slots: dayjs.Dayjs[] = [];
@@ -452,15 +470,7 @@ export default function ShiftEditDialog({
               </div>
             </FieldRow>
           </div>
-          {form.extraDays > 0 && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              {t('days_helper')
-                .replace('{startDay}', 'Monday')
-                .replace('{startTime}', form.startTime.format('HH:mm'))
-                .replace('{endDay}', 'Tuesday')
-                .replace('{endTime}', form.endTime.format('HH:mm'))}
-            </p>
-          )}
+          {daysHelperText && <p className="mt-2 text-xs text-muted-foreground">{daysHelperText}</p>}
 
           {/* Shift type (work shifts only) */}
           {!isRest && (

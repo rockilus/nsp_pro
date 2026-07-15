@@ -84,7 +84,7 @@
   "hours": "Horas",
   "minutes": "Minutos",
   "days": "Días",
-  "days_helper": "Si comienza {startDay} a las {startTime}, termina {endDay} a las {endTime}",
+  "days_helper": "Si comienza {{startDay}} a las {{startTime}}, termina {{endDay}} a las {{endTime}}",
   "staffing": "Personal",
   "staffing_tooltip": "Número de miembros necesarios para el turno, por habilidad si aplica",
   "start_time": "Inicio",
