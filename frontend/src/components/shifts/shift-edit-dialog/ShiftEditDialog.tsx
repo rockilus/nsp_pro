@@ -225,17 +225,17 @@ export default function ShiftEditDialog({
     const newErrors: Record<string, string> = {};
 
     if (extraDaysRaw.trim() === '' || isNaN(parseInt(extraDaysRaw, 10))) {
-      newErrors.extraDays = t('validation_field_required');
+      newErrors.extraDays = 'error';
     }
     if (isDuty && (recuperationTimeRaw.trim() === '' || isNaN(Number(recuperationTimeRaw)))) {
-      newErrors.recuperationTime = t('validation_field_required');
+      newErrors.recuperationTime = 'error';
     }
     if (form.useCustomWorkTime) {
       if (customWorkTimeHoursRaw.trim() === '' || isNaN(parseInt(customWorkTimeHoursRaw, 10))) {
-        newErrors.customWorkTimeHours = t('validation_field_required');
+        newErrors.customWorkTimeHours = 'error';
       }
       if (customWorkTimeMinutesRaw.trim() === '' || isNaN(parseInt(customWorkTimeMinutesRaw, 10))) {
-        newErrors.customWorkTimeMinutes = t('validation_field_required');
+        newErrors.customWorkTimeMinutes = 'error';
       }
     }
 
@@ -421,6 +421,7 @@ export default function ShiftEditDialog({
                   max={30}
                   className="w-16"
                   value={extraDaysRaw}
+                  aria-invalid={!!errors.extraDays}
                   onChange={(e) => {
                     const raw = e.target.value;
                     setExtraDaysRaw(raw);
@@ -439,7 +440,6 @@ export default function ShiftEditDialog({
                 />
                 <span className="text-sm whitespace-nowrap">{t('days')}</span>
               </div>
-              {errors.extraDays && <p className="text-xs text-destructive">{errors.extraDays}</p>}
             </FieldRow>
           </div>
           {form.extraDays > 0 && (
@@ -498,10 +498,8 @@ export default function ShiftEditDialog({
                       }
                     }}
                     data-testid="edit-shift-recuperation-input"
+                    aria-invalid={!!errors.recuperationTime}
                   />
-                  {errors.recuperationTime && (
-                    <p className="text-xs text-destructive">{errors.recuperationTime}</p>
-                  )}
                 </FieldRow>
               )}
             </div>
@@ -545,10 +543,8 @@ export default function ShiftEditDialog({
                         }
                       }}
                       data-testid="edit-shift-custom-work-time-hours"
+                      aria-invalid={!!errors.customWorkTimeHours}
                     />
-                    {errors.customWorkTimeHours && (
-                      <p className="text-xs text-destructive">{errors.customWorkTimeHours}</p>
-                    )}
                   </FieldRow>
                   <FieldRow label={t('minutes')} htmlFor="edit-shift-custom-work-time-minutes">
                     <Input
@@ -575,10 +571,8 @@ export default function ShiftEditDialog({
                         }
                       }}
                       data-testid="edit-shift-custom-work-time-minutes"
+                      aria-invalid={!!errors.customWorkTimeMinutes}
                     />
-                    {errors.customWorkTimeMinutes && (
-                      <p className="text-xs text-destructive">{errors.customWorkTimeMinutes}</p>
-                    )}
                   </FieldRow>
                 </div>
               )}
