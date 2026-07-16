@@ -20,6 +20,10 @@ interface ConstraintPeriodDialogProps {
   campaignEnd: Dayjs;
 }
 
+function utcMidnight(d: Dayjs): Dayjs {
+  return dayjs.utc(d.format('YYYY-MM-DD'));
+}
+
 export default function ConstraintPeriodDialog({
   lng,
   open,
@@ -42,16 +46,19 @@ export default function ConstraintPeriodDialog({
         setEndDate(initialPeriod.endDate);
       } else {
         setEntireCampaign(true);
-        setStartDate(null);
-        setEndDate(null);
+        setStartDate(utcMidnight(campaignStart));
+        setEndDate(utcMidnight(campaignEnd));
       }
     }
-  }, [open, initialPeriod]);
+  }, [open, initialPeriod, campaignStart, campaignEnd]);
 
   const handleEntireCampaignChange = (checked: boolean) => {
     setEntireCampaign(checked);
-    if (checked) {
-      setStartDate(null);
+  };
+
+  const handleStartDateChange = (date: Dayjs | null) => {
+    setStartDate(date);
+    if (date && endDate && date.isAfter(endDate)) {
       setEndDate(null);
     }
   };
@@ -69,6 +76,9 @@ export default function ConstraintPeriodDialog({
     }
     onClose();
   };
+
+  const campaignStartUTC = utcMidnight(campaignStart);
+  const campaignEndUTC = utcMidnight(campaignEnd);
 
   return (
     <Dialog
@@ -94,32 +104,32 @@ export default function ConstraintPeriodDialog({
             </label>
           </div>
 
-          {!entireCampaign && (
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm text-muted-foreground">{t('effective_period_from')}</span>
-                <DatePicker
-                  value={startDate}
-                  onChange={setStartDate}
-                  minDate={dayjs.utc(campaignStart.format('YYYY-MM-DD'))}
-                  maxDate={dayjs.utc(campaignEnd.format('YYYY-MM-DD'))}
-                  placeholder="DD/MM/YYYY"
-                  data-testid="constraint-period-start-date"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-sm text-muted-foreground">{t('effective_period_to')}</span>
-                <DatePicker
-                  value={endDate}
-                  onChange={setEndDate}
-                  minDate={dayjs.utc(campaignStart.format('YYYY-MM-DD'))}
-                  maxDate={dayjs.utc(campaignEnd.format('YYYY-MM-DD'))}
-                  placeholder="DD/MM/YYYY"
-                  data-testid="constraint-period-end-date"
-                />
-              </div>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm text-muted-foreground">{t('effective_period_from')}</span>
+              <DatePicker
+                value={startDate}
+                onChange={handleStartDateChange}
+                minDate={campaignStartUTC}
+                maxDate={campaignEndUTC}
+                disabled={entireCampaign}
+                placeholder="DD/MM/YYYY"
+                data-testid="constraint-period-start-date"
+              />
             </div>
-          )}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm text-muted-foreground">{t('effective_period_to')}</span>
+              <DatePicker
+                value={endDate}
+                onChange={setEndDate}
+                minDate={startDate || campaignStartUTC}
+                maxDate={campaignEndUTC}
+                disabled={entireCampaign}
+                placeholder="DD/MM/YYYY"
+                data-testid="constraint-period-end-date"
+              />
+            </div>
+          </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button
@@ -134,7 +144,7 @@ export default function ConstraintPeriodDialog({
               disabled={!entireCampaign && (!startDate || !endDate)}
               data-testid="constraint-period-save-button"
             >
-              {t('set')}
+              {t('save')}
             </Button>
           </div>
         </div>
