@@ -87,6 +87,7 @@ export default function ConstraintPeriodDialog({
               checked={entireCampaign}
               onCheckedChange={(checked) => handleEntireCampaignChange(!!checked)}
               id="entire-campaign"
+              data-testid="constraint-period-entire-campaign-checkbox"
             />
             <label htmlFor="entire-campaign" className="cursor-pointer text-sm select-none">
               {t('entire_campaign')}
@@ -103,6 +104,7 @@ export default function ConstraintPeriodDialog({
                   minDate={dayjs.utc(campaignStart.format('YYYY-MM-DD'))}
                   maxDate={dayjs.utc(campaignEnd.format('YYYY-MM-DD'))}
                   placeholder="DD/MM/YYYY"
+                  data-testid="constraint-period-start-date"
                 />
               </div>
               <div className="flex flex-col gap-1.5">
@@ -113,16 +115,25 @@ export default function ConstraintPeriodDialog({
                   minDate={dayjs.utc(campaignStart.format('YYYY-MM-DD'))}
                   maxDate={dayjs.utc(campaignEnd.format('YYYY-MM-DD'))}
                   placeholder="DD/MM/YYYY"
+                  data-testid="constraint-period-end-date"
                 />
               </div>
             </div>
           )}
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button
+              variant="outline"
+              onClick={onClose}
+              data-testid="constraint-period-cancel-button"
+            >
               {t('cancel')}
             </Button>
-            <Button onClick={handleSave} disabled={!entireCampaign && (!startDate || !endDate)}>
+            <Button
+              onClick={handleSave}
+              disabled={!entireCampaign && (!startDate || !endDate)}
+              data-testid="constraint-period-save-button"
+            >
               {t('set')}
             </Button>
           </div>

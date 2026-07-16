@@ -125,7 +125,10 @@ export default function ConstraintSelector({
                         missingProperties={constraint.missingAttributes}
                       />
                       {selected && (
-                        <span className="constraint-period-display">
+                        <span
+                          className="constraint-period-display"
+                          data-testid={`constraint-period-display-${constraint.id}`}
+                        >
                           {period ? formatPeriodDisplay(period) : t('entire_campaign')}
                         </span>
                       )}
