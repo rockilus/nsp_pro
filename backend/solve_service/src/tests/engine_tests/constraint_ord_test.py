@@ -5,6 +5,8 @@ from datetime import UTC, date, datetime, timedelta
 import pytest
 from shared.augment import requests_to_requests_augmented
 from shared.schemas.core import (
+    Assignment,
+    AssignmentSource,
     Block,
     BlockNameOptions,
     BlockTypeOptions,
@@ -34,6 +36,9 @@ from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
 )
 from tests.engine_tests.constraint_ord_fixture import build_ei_scoped
+from tests.engine_tests.constraint_ord_effective_period_fixture import (
+    build_ei_ord_effective_period,
+)
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
 
@@ -1055,3 +1060,52 @@ class TestConstraintOrdWithFixture:
                 None,
             )
             assert a_off is not None
+
+
+def _fixed_assignment(
+    ei: EngineInputsAugmented,
+    worker_id: str,
+    date_obj: date,
+    shift_id: str,
+) -> Assignment:
+    return Assignment(
+        id=f"a_{worker_id}_{date_obj}_{shift_id}",
+        team_id=ei.schedule.team_id,
+        schedule_id=ei.schedule.id,
+        worker_id=worker_id,
+        date=date_obj,
+        shift_id=shift_id,
+        fixed=True,
+        source=AssignmentSource.MANUAL,
+    )
+
+
+def test_constraint_ord_effective_period(
+    penalties_fix: Penalties,
+    model_config_fix: ModelConfig,
+    run_engine_solve_from_engine_inputs: Callable[
+        [EngineInputsAugmented], Outputs
+    ],
+) -> None:
+    ei = build_ei_ord_effective_period(penalties_fix, model_config_fix)
+
+    ei.as_campaign_fixed.append(
+        _fixed_assignment(ei, "w0", date(2026, 1, 1), "s_morning")
+    )
+    ei.as_campaign_fixed.append(
+        _fixed_assignment(ei, "w0", date(2026, 1, 2), "s_morning")
+    )
+    ei.as_campaign_fixed.append(
+        _fixed_assignment(ei, "w0", date(2026, 1, 5), "s_morning")
+    )
+
+    out = run_engine_solve_from_engine_inputs(ei)
+    assert out is not None
+
+    breaches = _parse_breaches_engine(ei.schedule, out.breaches)
+    assert len(breaches) >= 1
+    assert any(b.objective_id == "c_ord_period" for b in breaches)
+
+    all_breach_dates = {v.date for b in breaches for v in b.variables}
+    assert date(2026, 1, 2) in all_breach_dates
+    assert date(2026, 1, 5) not in all_breach_dates
