@@ -4,8 +4,8 @@ from fastmcp import Context
 from mcp.types import ToolAnnotations
 from shared.database.database_collections import DatabaseCollections
 
-from src.mcp.models import DimensionValue, WeeklySlotPreference, WorkerRosterItem
-from src.mcp.server import mcp
+from src.mcp_server.models import DimensionValue, WeeklySlotPreference, WorkerRosterItem
+from src.mcp_server.server import mcp
 
 logger = logging.getLogger(__name__)
 
@@ -155,8 +155,8 @@ async def get_team_members(team_id: str, ctx: Context) -> list[WorkerRosterItem]
     """
     logger.info("MCP tool: get_team_members team=%s", team_id)
 
-    from src.mcp.context import build_mcp_context
-    from src.mcp.tools.registry import GET_TEAM_MEMBERS
+    from src.mcp_server.context import build_mcp_context
+    from src.mcp_server.tools.registry import GET_TEAM_MEMBERS
 
     mcp_ctx = await build_mcp_context(ctx)
     return await GET_TEAM_MEMBERS.executor(

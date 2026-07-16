@@ -34,8 +34,8 @@ from shared.database.database_collections import DatabaseCollections
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
-from src.mcp.models import WorkerRosterItem
-from src.mcp.schemas.dimension_arguments import (
+from src.mcp_server.models import WorkerRosterItem
+from src.mcp_server.schemas.dimension_arguments import (
     CreateDimensionArgs,
     CreateDimEntryArgs,
     DeleteDimensionArgs,
@@ -43,15 +43,15 @@ from src.mcp.schemas.dimension_arguments import (
     UpdateDimensionArgs,
     UpdateDimEntryArgs,
 )
-from src.mcp.schemas.temporal_arguments import CalculateRelativeDateArgs
-from src.mcp.schemas.worker_arguments import (
+from src.mcp_server.schemas.temporal_arguments import CalculateRelativeDateArgs
+from src.mcp_server.schemas.worker_arguments import (
     CreateWorkerArgs,
     DeleteWorkerArgs,
     SetWorkerDimensionValueArgs,
     UpdateWorkerArgs,
 )
-from src.mcp.schemas.worker_reference_args import ResolveWorkerReferenceArgs
-from src.mcp.tools.dimension_writes import (
+from src.mcp_server.schemas.worker_reference_args import ResolveWorkerReferenceArgs
+from src.mcp_server.tools.dimension_writes import (
     execute_create_dim_entry,
     execute_create_dimension,
     execute_delete_dim_entry,
@@ -60,15 +60,15 @@ from src.mcp.tools.dimension_writes import (
     execute_update_dim_entry,
     execute_update_dimension,
 )
-from src.mcp.tools.temporal_queries import calculate_relative_date
-from src.mcp.tools.worker_reference import execute_resolve_worker_reference
-from src.mcp.tools.worker_writes import (
+from src.mcp_server.tools.temporal_queries import calculate_relative_date
+from src.mcp_server.tools.worker_reference import execute_resolve_worker_reference
+from src.mcp_server.tools.worker_writes import (
     execute_create_worker,
     execute_delete_worker,
     execute_set_worker_dimension_value,
     execute_update_worker,
 )
-from src.mcp.tools.workers import _build_team_members
+from src.mcp_server.tools.workers import _build_team_members
 from src.security.user_context import UserContext
 
 logger = logging.getLogger(__name__)

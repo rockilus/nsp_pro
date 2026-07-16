@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from shared.schemas.core import Worker
 
-from src.mcp.tools import worker_writes
+from src.mcp_server.tools import worker_writes
 from src.security.user_context import UserContext
 
 TEAM_ID = "team-1"

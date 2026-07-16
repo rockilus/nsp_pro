@@ -1,0 +1,34 @@
+{
+  "backToUsers": "Volver a usuarios",
+  "teamsTitle": "Equipos",
+  "noTeams": "Este usuario no es miembro de ningún equipo.",
+  "roles": {
+    "owner": "Propietario",
+    "member": "Miembro"
+  },
+  "exportTitle": "Exportar datos",
+  "exportDescription": "Seleccione los datos a exportar para cada equipo. La descarga es un archivo JSON con el formato de los datos de prueba del backend.",
+  "dataType": "Datos",
+  "dataTypes": {
+    "specialties": "Especialidades",
+    "workers": "Trabajadores",
+    "shifts": "Turnos",
+    "link_shifts": "Turnos vinculados",
+    "dimensions": "Dimensiones",
+    "dim_entries": "Entradas de dimensión",
+    "attributes": "Atributos",
+    "shift_demand_templates": "Plantillas de demanda",
+    "shift_demands": "Demandas de turno",
+    "constraints": "Restricciones",
+    "requests": "Solicitudes",
+    "schedules": "Horarios"
+  },
+  "selectAllForTeam": "Seleccionar todos los datos de {{team}}",
+  "selectAllForDataType": "Seleccionar {{dataType}} para todos los equipos",
+  "selectCell": "Seleccionar {{dataType}} para {{team}}",
+  "exportButton": "Exportar JSON",
+  "exporting": "Exportando…",
+  "exportError": "Error al exportar los datos del usuario",
+  "loadError": "Error al cargar los detalles del usuario",
+  "noUserId": "No se proporcionó ningún ID de usuario."
+}

@@ -42,6 +42,22 @@ from shared.schemas.core import (
 
 from src.services.base_service import BaseService
 
+# Data types that can be exported for a team, in solver_data.json key order.
+EXPORTABLE_DATA_TYPES: tuple[str, ...] = (
+    "specialties",
+    "workers",
+    "shifts",
+    "link_shifts",
+    "dimensions",
+    "dim_entries",
+    "attributes",
+    "shift_demand_templates",
+    "shift_demands",
+    "constraints",
+    "requests",
+    "schedules",
+)
+
 
 class ScenarioLoadResponse(BaseModel):
     """Response model for scenario loading."""
@@ -166,6 +182,99 @@ class SolverTestScenariosService(BaseService):
             )
 
         return data[scenario_name]
+
+    def export_team_data(
+        self,
+        team_id: str,
+        data_types: List[str] | None = None,
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """Export a team's data as raw Mongo-shaped dicts.
+
+        Inverse of create_scenario: the returned dict matches the shape of a
+        scenario in solver_data.json, so it can be pasted into the fixture and
+        re-loaded via scenario_data_dict_to_core / save_scenario_to_db.
+        """
+        if data_types is not None:
+            unknown = set(data_types) - set(EXPORTABLE_DATA_TYPES)
+            if unknown:
+                raise ValueError(f"Unknown data types: {sorted(unknown)}")
+            selected = [dt for dt in EXPORTABLE_DATA_TYPES if dt in set(data_types)]
+        else:
+            selected = list(EXPORTABLE_DATA_TYPES)
+
+        # Some entity types are fetched via other collections even when they
+        # are not exported themselves: attributes are owned by workers/shifts,
+        # requests belong to workers, dim_entries belong to dimensions.
+        workers: List[Worker] = []
+        if {"workers", "attributes", "requests"} & set(selected):
+            workers = self.collection.worker_db.get_workers(team_id)
+        shifts: List[Shift] = []
+        if {"shifts", "attributes"} & set(selected):
+            shifts = self.collection.shift_db.get_shifts(team_id)
+        dimensions: List[Dimension] = []
+        if {"dimensions", "dim_entries"} & set(selected):
+            dimensions = self.collection.dimension_db.get_dimensions(team_id)
+
+        exporters: Dict[str, Any] = {
+            "specialties": lambda: [
+                SpecialtySchema.from_core(s)
+                for s in self.collection.specialty_db.get_specialties_by_team_id(
+                    team_id
+                )
+            ],
+            "workers": lambda: [WorkerSchema.from_core(w) for w in workers],
+            "shifts": lambda: [ShiftSchema.from_core(s) for s in shifts],
+            "link_shifts": lambda: [
+                LinkShiftSchema.from_core(ls)
+                for ls in self.collection.link_shift_db.get_link_shifts(team_id)
+            ],
+            "dimensions": lambda: [DimensionSchema.from_core(d) for d in dimensions],
+            "dim_entries": lambda: [
+                DimEntrySchema.from_core(de)
+                for de in self.collection.dim_entry_db.get_dim_entries_by_dim_ids(
+                    [d.id for d in dimensions]
+                )
+            ],
+            "attributes": lambda: [
+                AttributeSchema.from_core(a)
+                for a in self.collection.attribute_db.get_attributes_by_owner_ids(
+                    [s.id for s in shifts] + [w.id for w in workers]
+                )
+            ],
+            "shift_demand_templates": lambda: [
+                ShiftDemandTemplateSchema.from_core(sdt)
+                for sdt in self.collection.shift_demand_template_db.get_templates_by_team_id(  # noqa: E501
+                    team_id
+                )
+            ],
+            "shift_demands": lambda: [
+                ShiftDemandNewSchema.from_core(sd)
+                for sd in self.collection.shift_demand_new_db.get_shift_demands_by_team_id(  # noqa: E501
+                    team_id
+                )
+            ],
+            "constraints": lambda: [
+                ConstraintBuildSchema.from_core(c)
+                for c in self.collection.constraint_build_db.get_constraint_builds(
+                    team_id
+                )
+            ],
+            "requests": lambda: [
+                RequestSchema.from_core(r)
+                for r in self.collection.request_db.get_requests(
+                    [w.id for w in workers]
+                )
+            ],
+            "schedules": lambda: [
+                ScheduleSchema.from_core(s)
+                for s in self.collection.schedule_db.get_schedules(team_id)
+            ],
+        }
+
+        return {
+            data_type: [schema.to_mongo() for schema in exporters[data_type]()]
+            for data_type in selected
+        }
 
     @staticmethod
     def scenario_data_dict_to_core(

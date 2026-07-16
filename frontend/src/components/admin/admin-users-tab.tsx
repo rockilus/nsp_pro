@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/app/i18n/client';
 import { Loader2 } from 'lucide-react';
 import AdminUsersTable from './admin-users-table';
@@ -17,9 +18,14 @@ interface AdminUsersTabProps {
 
 export default function AdminUsersTab({ lng }: AdminUsersTabProps) {
   const { t } = useTranslation(lng, 'admin-users');
+  const router = useRouter();
   const { users, loading, error } = useAdminUsers();
   const startImpersonation = useStartImpersonationWithTarget();
   const [accessError, setAccessError] = useState<string | null>(null);
+
+  const handleViewDetails = (userId: string) => {
+    router.push(`/${lng}/admin/users/details?userId=${userId}`);
+  };
 
   const handleAccessAccount = async (userId: string) => {
     const target = users.find((u: UserT) => u.id === userId);
@@ -66,7 +72,12 @@ export default function AdminUsersTab({ lng }: AdminUsersTabProps) {
           <AlertDescription>{accessError}</AlertDescription>
         </Alert>
       )}
-      <AdminUsersTable lng={lng} users={users} onAccessAccount={handleAccessAccount} />
+      <AdminUsersTable
+        lng={lng}
+        users={users}
+        onAccessAccount={handleAccessAccount}
+        onViewDetails={handleViewDetails}
+      />
     </div>
   );
 }

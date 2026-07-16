@@ -15,8 +15,15 @@
  * TEST_USER_2 is the non-admin user, created fresh in each test's beforeEach.
  */
 
+import { randomUUID } from 'crypto';
 import { Page } from '@playwright/test';
-import { DatabaseTestUtils, TEST_USER, TEST_USER_2 } from './database-utils';
+import {
+  DatabaseTestUtils,
+  SolverScenarioResult,
+  TEST_USER,
+  TEST_USER_2,
+  TestUser,
+} from './database-utils';
 import { testConfig } from './test-config';
 import { UserT } from '../../src/types/user';
 
@@ -91,6 +98,60 @@ export class AdminTestBase {
    */
   async navigateToTeamsSettingsPage(page: Page): Promise<void> {
     await page.goto(`${testConfig.frontendUrl}/en/plan/settings/teams/`);
+  }
+
+  /**
+   * Navigate to the admin user details page for a given user.
+   */
+  async navigateToAdminUserDetailsPage(page: Page, userId: string): Promise<void> {
+    await page.goto(`${testConfig.frontendUrl}/en/admin/users/details?userId=${userId}`);
+  }
+
+  /**
+   * Create a team owned by an arbitrary user.
+   * Note: team creation seeds the team's default (leave/rest) shifts.
+   */
+  async createTeamForUser(
+    name: string,
+    ownerUserId: string,
+  ): Promise<{ teamId: string; name: string }> {
+    return this.dbUtils.createTeam({ name, ownerUserId });
+  }
+
+  /**
+   * Create a team owned by the non-admin user (TEST_USER_2).
+   */
+  async createTeamForNonAdmin(name: string): Promise<{ teamId: string; name: string }> {
+    return this.createTeamForUser(name, TEST_USER_2.user_id);
+  }
+
+  /**
+   * Load a solver scenario fixture into a team.
+   * Returns the created entities with their post-remap database IDs.
+   */
+  async loadScenario(
+    teamId: string,
+    scenarioName = 'basic_coverage',
+  ): Promise<SolverScenarioResult> {
+    return this.dbUtils.loadSolverScenario(scenarioName, teamId);
+  }
+
+  /**
+   * Create a fresh user with a unique ID, isolated from TEST_USER_2.
+   * Useful for asserting empty states (TEST_USER_2 accumulates teams
+   * across parallel tests).
+   */
+  async createIsolatedUser(): Promise<TestUser> {
+    const uniqueId = randomUUID().replace(/-/g, '').slice(0, 24);
+    const user: TestUser = {
+      user_id: uniqueId,
+      email: `isolated-${uniqueId}@example.com`,
+      username: `isolated-${uniqueId}`,
+      first_name: 'Isolated',
+      last_name: `User-${uniqueId.slice(0, 6)}`,
+    };
+    await this.dbUtils.createTestUser(user);
+    return user;
   }
 
   /**

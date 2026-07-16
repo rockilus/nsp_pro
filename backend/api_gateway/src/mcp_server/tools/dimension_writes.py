@@ -18,7 +18,7 @@ from shared.schemas.core import (
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
-from src.mcp.schemas.dimension_arguments import (
+from src.mcp_server.schemas.dimension_arguments import (
     CreateDimensionArgs,
     CreateDimEntryArgs,
     DeleteDimensionArgs,

@@ -22,9 +22,18 @@ interface AdminUsersTableProps {
    * Called when the "Access account" button is clicked.
    */
   onAccessAccount?: (userId: string) => void;
+  /**
+   * Called when the "View details" button is clicked.
+   */
+  onViewDetails?: (userId: string) => void;
 }
 
-export default function AdminUsersTable({ lng, users, onAccessAccount }: AdminUsersTableProps) {
+export default function AdminUsersTable({
+  lng,
+  users,
+  onAccessAccount,
+  onViewDetails,
+}: AdminUsersTableProps) {
   const { t } = useTranslation(lng, 'admin-users');
 
   if (users.length === 0) {
@@ -56,15 +65,26 @@ export default function AdminUsersTable({ lng, users, onAccessAccount }: AdminUs
               <TableCell>{user.lastName}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell className="text-right">
-                <Button
-                  data-testid={`access-account-btn-${user.id}`}
-                  variant="outline"
-                  size="sm"
-                  disabled={!onAccessAccount}
-                  onClick={() => onAccessAccount?.(user.id)}
-                >
-                  {t('accessAccount')}
-                </Button>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    data-testid={`view-details-btn-${user.id}`}
+                    variant="outline"
+                    size="sm"
+                    disabled={!onViewDetails}
+                    onClick={() => onViewDetails?.(user.id)}
+                  >
+                    {t('viewDetails')}
+                  </Button>
+                  <Button
+                    data-testid={`access-account-btn-${user.id}`}
+                    variant="outline"
+                    size="sm"
+                    disabled={!onAccessAccount}
+                    onClick={() => onAccessAccount?.(user.id)}
+                  >
+                    {t('accessAccount')}
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}

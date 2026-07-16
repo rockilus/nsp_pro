@@ -9,7 +9,7 @@ from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.config import config
-from src.mcp.server import mcp as mcp_server
+from src.mcp_server.server import mcp as mcp_server
 from src.rate_limiter import limiter
 from src.routes import (
     router_admin,

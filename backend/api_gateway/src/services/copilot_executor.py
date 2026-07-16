@@ -17,13 +17,13 @@ from src.config import config
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
-from src.mcp.schemas.copilot_plan_schemas import (
+from src.mcp_server.schemas.copilot_plan_schemas import (
     CompletedStep,
     ExecutionPlan,
     PlanExecutionResult,
     PlanStepStatus,
 )
-from src.mcp.tools.registry import TOOL_REGISTRY
+from src.mcp_server.tools.registry import TOOL_REGISTRY
 from src.security.copilot_action_token import create_action_token
 from src.security.user_context import UserContext
 

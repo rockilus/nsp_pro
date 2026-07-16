@@ -30,7 +30,7 @@ from shared.schemas.core import (
 from src.integrations.authorization.cerbos_authz_service import (
     CerbosAuthzService,
 )
-from src.mcp.schemas.worker_arguments import (
+from src.mcp_server.schemas.worker_arguments import (
     CreateWorkerArgs,
     DeleteWorkerArgs,
     SetWorkerDimensionValueArgs,

@@ -31,7 +31,7 @@ ENV PYTHONPATH=/app
 
 EXPOSE 4000
 
-CMD ["uv", "run", "python", "src/main.py"]
+CMD ["uv", "run", "python", "-m", "src.main"]
 
 
 
