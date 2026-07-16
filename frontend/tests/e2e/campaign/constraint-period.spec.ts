@@ -163,10 +163,7 @@ test.describe('Constraint effective period', () => {
     // Navigate to campaign page
     await dbUtils.authenticatePageAsUser(page, owner.user_id);
     await page.goto('http://localhost:3000/en/plan/campaign/');
-    await page.evaluate(
-      (teamId) => localStorage.setItem('selectedTeamId', teamId),
-      team.teamId,
-    );
+    await page.evaluate((teamId) => localStorage.setItem('selectedTeamId', teamId), team.teamId);
     await page.reload();
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('[data-testid="campaign-page-heading"]');
@@ -204,9 +201,7 @@ test.describe('Constraint effective period', () => {
     await page.click('[data-testid="constraint-period-save-button"]');
 
     // Verify UI: period display text
-    const display = page.locator(
-      `[data-testid="constraint-period-display-${constraint.id}"]`,
-    );
+    const display = page.locator(`[data-testid="constraint-period-display-${constraint.id}"]`);
     await display.waitFor({ state: 'visible' });
     await expect(display).toContainText('Jan 2, 2026');
     await expect(display).toContainText('Jan 5, 2026');
@@ -246,18 +241,13 @@ test.describe('Constraint effective period', () => {
     // Navigate to campaign page
     await dbUtils.authenticatePageAsUser(page, owner.user_id);
     await page.goto('http://localhost:3000/en/plan/campaign/');
-    await page.evaluate(
-      (teamId) => localStorage.setItem('selectedTeamId', teamId),
-      team.teamId,
-    );
+    await page.evaluate((teamId) => localStorage.setItem('selectedTeamId', teamId), team.teamId);
     await page.reload();
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('[data-testid="campaign-page-heading"]');
 
     // Verify initial display shows date range
-    const display = page.locator(
-      `[data-testid="constraint-period-display-${constraint.id}"]`,
-    );
+    const display = page.locator(`[data-testid="constraint-period-display-${constraint.id}"]`);
     await display.waitFor({ state: 'visible' });
     await expect(display).toContainText('Jan 2, 2026');
 
@@ -314,18 +304,13 @@ test.describe('Constraint effective period', () => {
     // Navigate to campaign page
     await dbUtils.authenticatePageAsUser(page, owner.user_id);
     await page.goto('http://localhost:3000/en/plan/campaign/');
-    await page.evaluate(
-      (teamId) => localStorage.setItem('selectedTeamId', teamId),
-      team.teamId,
-    );
+    await page.evaluate((teamId) => localStorage.setItem('selectedTeamId', teamId), team.teamId);
     await page.reload();
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('[data-testid="campaign-page-heading"]');
 
     // Verify initial period display
-    const display = page.locator(
-      `[data-testid="constraint-period-display-${constraint.id}"]`,
-    );
+    const display = page.locator(`[data-testid="constraint-period-display-${constraint.id}"]`);
     await display.waitFor({ state: 'visible' });
     await expect(display).toContainText('Jan 2, 2026');
     await expect(display).toContainText('Jan 5, 2026');
