@@ -45,6 +45,7 @@ def build_engine_constraints(
         shifts,
         dim_to_attr_value_to_shift,
         penalties,
+        constraint_effective_periods=schedule.constraint_effective_periods,
     )
     constraints.sum += _build_quick_staffing_constraints(
         schedule,

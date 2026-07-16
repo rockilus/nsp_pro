@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, time, timezone
 from enum import Enum
 from typing import Dict, List, Optional
@@ -56,6 +56,9 @@ class Schedule:
     constraint_build_ids: List[str]
     quick_staffings: List[QuickStaffing]
     created_by: str
+    constraint_effective_periods: Dict[str, Optional["Period"]] = field(
+        default_factory=dict
+    )
     created_at: datetime = datetime.now(timezone.utc)
     updated_at: datetime = datetime.now(timezone.utc)
     request_deadline: Optional[datetime] = None
@@ -86,6 +89,21 @@ class Schedule:
             if self.last_reminder_sent_at is not None
             else None
         )
+        out["constraint_effective_periods"] = {
+            cb_id: (
+                {
+                    "start_date": datetime.combine(
+                        period.start_date, time.min, tzinfo=timezone.utc
+                    ).timestamp(),
+                    "end_date": datetime.combine(
+                        period.end_date, time.min, tzinfo=timezone.utc
+                    ).timestamp(),
+                }
+                if period is not None
+                else None
+            )
+            for cb_id, period in self.constraint_effective_periods.items()
+        }
         return out
 
     @classmethod
@@ -115,6 +133,23 @@ class Schedule:
                 if data.get("last_reminder_sent_at") is not None
                 else None
             ),
+            constraint_effective_periods={
+                cb_id: (
+                    Period(
+                        start_date=datetime.fromtimestamp(
+                            period_data["start_date"], timezone.utc
+                        ).date(),
+                        end_date=datetime.fromtimestamp(
+                            period_data["end_date"], timezone.utc
+                        ).date(),
+                    )
+                    if period_data is not None
+                    else None
+                )
+                for cb_id, period_data in data.get(
+                    "constraint_effective_periods", {}
+                ).items()
+            },
         )
 
     def to_dto(self) -> ScheduleDTO:
@@ -142,6 +177,21 @@ class Schedule:
             if self.last_reminder_sent_at is not None
             else None
         )
+        data["constraint_effective_periods"] = {
+            cb_id: (
+                {
+                    "startDate": datetime.combine(
+                        period.start_date, time.min, tzinfo=timezone.utc
+                    ).timestamp(),
+                    "endDate": datetime.combine(
+                        period.end_date, time.min, tzinfo=timezone.utc
+                    ).timestamp(),
+                }
+                if period is not None
+                else None
+            )
+            for cb_id, period in self.constraint_effective_periods.items()
+        }
         as_dict = humps.camelize(data)
         validator = TypeAdapter(ScheduleDTO)
         return validator.validate_python(as_dict)
@@ -176,6 +226,23 @@ class Schedule:
             if data_snake.get("last_reminder_sent_at") is not None
             else None
         )
+        data_snake["constraint_effective_periods"] = {
+            cb_id: (
+                Period(
+                    start_date=datetime.fromtimestamp(
+                        period_data["startDate"], timezone.utc
+                    ).date(),
+                    end_date=datetime.fromtimestamp(
+                        period_data["endDate"], timezone.utc
+                    ).date(),
+                )
+                if period_data is not None
+                else None
+            )
+            for cb_id, period_data in data_snake.get(
+                "constraint_effective_periods", {}
+            ).items()
+        }
         return Schedule(**data_snake)
 
 

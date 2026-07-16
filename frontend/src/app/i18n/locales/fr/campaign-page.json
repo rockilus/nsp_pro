@@ -33,5 +33,11 @@
   "request_deadline": "Demande date limite",
   "set_deadline_for_requests": "Définir une date limite pour les demandes",
   "last_sent": "Dernier envoi",
-  "sent": "Envoyé"
+  "sent": "Envoyé",
+  "entire_campaign": "Campagne entière",
+  "effective_period": "Période effective",
+  "effective_period_from": "Du",
+  "effective_period_to": "Au",
+  "effective_period_dialog_title": "Définir la période effective",
+  "constraint_period": "Période"
 }

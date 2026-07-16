@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -12,6 +12,11 @@ class QuickStaffingDTO(BaseModel):
     target: int
 
 
+class PeriodDTO(BaseModel):
+    startDate: float
+    endDate: float
+
+
 class ScheduleDTO(BaseModel):
     id: str
     teamId: str
@@ -20,17 +25,13 @@ class ScheduleDTO(BaseModel):
     status: int
     missingCoverageDates: List[float]
     constraintBuildIds: List[str]
+    constraintEffectivePeriods: Dict[str, Optional[PeriodDTO]] = {}
     quickStaffings: List[QuickStaffingDTO]
     createdAt: float
     updatedAt: float
     createdBy: str
     requestDeadline: Optional[float] = None
     lastReminderSentAt: Optional[float] = None
-
-
-class PeriodDTO(BaseModel):
-    startDate: float
-    endDate: float
 
 
 class DuplicateOptionsDTO(BaseModel):

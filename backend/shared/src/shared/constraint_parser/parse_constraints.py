@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from shared.constraint_parser.mapping.map_constraint import MapConstaint
 from shared.schemas.core import (
@@ -7,6 +7,7 @@ from shared.schemas.core import (
     Constraints,
     ConstraintType,
     Penalties,
+    Period,
     Shift,
     Worker,
     WorkerDates,
@@ -28,6 +29,7 @@ def parse_constraints(
     shifts: List[Shift],
     shift_dim_dict: Dict,
     penalties: Penalties,
+    constraint_effective_periods: Optional[Dict[str, Optional[Period]]] = None,
 ) -> Constraints:
     map_constraint = MapConstaint(
         workers,
@@ -44,35 +46,83 @@ def parse_constraints(
     )
     # Build raw constraint lists
     sum_constraints = [
-        map_constraint.map_constraint_sum(cba, schedule_id)
+        map_constraint.map_constraint_sum(
+            cba,
+            schedule_id,
+            effective_dates=_compute_effective_dates(
+                cba,
+                constraint_effective_periods,
+                dates_campaign,
+            ),
+        )
         for cba in cbas
         if cba.constraint_type == ConstraintType.SUM
     ] + [
-        map_constraint.map_constraint_eve(cba, schedule_id)
+        map_constraint.map_constraint_eve(
+            cba,
+            schedule_id,
+            effective_dates=_compute_effective_dates(
+                cba,
+                constraint_effective_periods,
+                dates_campaign,
+            ),
+        )
         for cba in cbas
         if cba.constraint_type == ConstraintType.EVE
     ]
 
     seq_constraints = [
-        map_constraint.map_constraint_seq(cba, schedule_id)
+        map_constraint.map_constraint_seq(
+            cba,
+            schedule_id,
+            effective_dates=_compute_effective_dates(
+                cba,
+                constraint_effective_periods,
+                dates_campaign,
+            ),
+        )
         for cba in cbas
         if cba.constraint_type == ConstraintType.SEQ
     ]
 
     ord_constraints = [
-        map_constraint.map_constraint_ord(cba, schedule_id)
+        map_constraint.map_constraint_ord(
+            cba,
+            schedule_id,
+            effective_dates=_compute_effective_dates(
+                cba,
+                constraint_effective_periods,
+                dates_campaign,
+            ),
+        )
         for cba in cbas
         if cba.constraint_type == ConstraintType.ORD
     ]
 
     fil_constraints = [
-        map_constraint.map_constraint_fil(cba, schedule_id)
+        map_constraint.map_constraint_fil(
+            cba,
+            schedule_id,
+            effective_dates=_compute_effective_dates(
+                cba,
+                constraint_effective_periods,
+                dates_campaign,
+            ),
+        )
         for cba in cbas
         if cba.constraint_type == ConstraintType.FIL
     ]
 
     fai_constraints = [
-        map_constraint.map_constraint_fai(cba, schedule_id)
+        map_constraint.map_constraint_fai(
+            cba,
+            schedule_id,
+            effective_dates=_compute_effective_dates(
+                cba,
+                constraint_effective_periods,
+                dates_campaign,
+            ),
+        )
         for cba in cbas
         if cba.constraint_type == ConstraintType.FAI
     ]
@@ -104,3 +154,19 @@ def parse_constraints(
         fil=fil_constraints,
         fai=fai_constraints,
     )
+
+
+def _compute_effective_dates(
+    cba: ConstraintBuildAugmented,
+    constraint_effective_periods: Optional[Dict[str, Optional[Period]]],
+    dates_campaign: List[date],
+) -> Optional[List[date]]:
+    if not constraint_effective_periods:
+        return None
+    period = constraint_effective_periods.get(cba.id)
+    if period is None:
+        return None
+    effective_set = {
+        d for d in dates_campaign if period.start_date <= d <= period.end_date
+    }
+    return [d for d in dates_campaign if d in effective_set]
