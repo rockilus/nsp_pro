@@ -49,7 +49,11 @@ export default function ShiftFieldCellEndTime({
 
   const handleEditConfirm = () => {
     if (valueState !== shift.endTime) {
-      handleUpdateShift({ ...shift, endTime: valueState });
+      let adjustedEnd = valueState;
+      if (adjustedEnd.valueOf() <= shift.startTime.valueOf()) {
+        adjustedEnd = shift.startTime.add(1, 'hour');
+      }
+      handleUpdateShift({ ...shift, endTime: adjustedEnd });
     }
     setEditing({});
   };
