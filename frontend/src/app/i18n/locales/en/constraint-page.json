@@ -6,6 +6,7 @@
   "constraint": "Rule",
   "constraints": "Rules",
   "duties": "Duties",
+  "on_call_shifts": "On-call",
   "hard": "Strict",
   "new_constraint": "New rule",
   "no": "No",

@@ -60,6 +60,10 @@ export default function BlockDisplayShiftWorkerOption({
         return t('duties');
       case `${t('not')} duties`:
         return `${t('not')} ${t('duties').toLocaleLowerCase()}`;
+      case 'On-call':
+        return t('on_call_shifts');
+      case `${t('not')} on-call`:
+        return `${t('not')} ${t('on_call_shifts').toLocaleLowerCase()}`;
       default:
         return name;
     }

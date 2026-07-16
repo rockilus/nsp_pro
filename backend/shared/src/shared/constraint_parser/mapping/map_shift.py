@@ -145,6 +145,20 @@ class MapShift:
                         if s.shift_type in [ShiftType.NORMAL, ShiftType.ON_CALL]
                         and not s.deleted
                     ]
+            elif value.id_type == SWOIdTypes.ON_CALL:
+                if value.name is True:
+                    out += [
+                        s.id
+                        for s in self.shifts
+                        if s.shift_type == ShiftType.ON_CALL and not s.deleted
+                    ]
+                elif value.name is False:
+                    out += [
+                        s.id
+                        for s in self.shifts
+                        if s.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]
+                        and not s.deleted
+                    ]
             # pylint: disable=R0801
             elif value.id_type == SWOIdTypes.DIMENSION:
                 target_ids = self.get_target_ids_dimension(value, missing_properties)

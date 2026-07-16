@@ -65,6 +65,8 @@ export default function BlockEditShiftWorkerOption({
         return t('specialties');
       case 'Duties':
         return t('duties');
+      case 'On-call':
+        return t('on_call_shifts');
       default:
         return label;
     }

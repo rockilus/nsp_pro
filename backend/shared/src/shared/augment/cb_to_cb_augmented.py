@@ -253,6 +253,33 @@ def build_missing_attributes_and_active_owner(
             ):
                 new_active = True
     active = active or new_active
+
+    swos_on_call = [
+        swo
+        for swo in block.value
+        if swo.id_type == SWOIdTypes.ON_CALL  # type: ignore
+    ]
+    if not all(isinstance(swo.name, bool) for swo in swos_on_call):  # type: ignore
+        raise ValueError("On-call name is not a boolean in SWO")
+    new_active = False
+    for swo in swos_on_call:
+        if swo.name is True:  # type: ignore
+            if any(
+                owner
+                for owner in owners
+                if owner.shift_type == ShiftType.ON_CALL  # type: ignore
+                and not owner.deleted
+            ):
+                new_active = True
+        else:
+            if any(
+                owner
+                for owner in owners
+                if owner.shift_type in [ShiftType.NORMAL, ShiftType.DUTY]  # type: ignore
+                and not owner.deleted
+            ):
+                new_active = True
+    active = active or new_active
     return mps, active
 
 

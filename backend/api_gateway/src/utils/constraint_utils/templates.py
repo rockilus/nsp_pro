@@ -135,7 +135,14 @@ def build_options(
                 id_type=SWOIdTypes.DUTY,
                 is_bool_dim=True,
                 category_name="Duties",
-            )
+            ),
+            ShiftWorkerOption(
+                name="",
+                id="",
+                id_type=SWOIdTypes.ON_CALL,
+                is_bool_dim=True,
+                category_name="On-call",
+            ),
         ]
     for dimension in dimensions:
         dim_attributes = (

@@ -40,7 +40,9 @@ class ShiftService(BaseService):
         If end_time is at or before start_time, auto-correct to 1h after start_time."""
         if shift.end_time <= shift.start_time:
             shift.end_time = shift.start_time + timedelta(hours=1)
-        if (shift.end_time - shift.start_time) > timedelta(days=config.max_shift_duration_days):
+        if (shift.end_time - shift.start_time) > timedelta(
+            days=config.max_shift_duration_days
+        ):
             raise ValueError(
                 f"Shift duration must be at most {config.max_shift_duration_days} days"
             )
