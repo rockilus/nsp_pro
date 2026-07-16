@@ -391,9 +391,7 @@ def _fixed_assignment(
 def _ensure_shift_demand(
     ei: EngineInputsAugmented, shift_id: str, date_obj: date
 ) -> None:
-    if not any(
-        d.shift_id == shift_id and d.date == date_obj for d in ei.shift_demands
-    ):
+    if not any(d.shift_id == shift_id and d.date == date_obj for d in ei.shift_demands):
         ei.shift_demands.append(
             ShiftDemandNew(
                 id=f"dsd_{shift_id}_{date_obj}",
@@ -413,9 +411,7 @@ def _ensure_shift_demand(
 def test_constraint_fil_effective_period(
     penalties_fix: Penalties,
     model_config_fix: ModelConfig,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     ei = build_ei_fil_effective_period(penalties_fix, model_config_fix)
 

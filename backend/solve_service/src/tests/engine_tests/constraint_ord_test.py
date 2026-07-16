@@ -35,10 +35,10 @@ from engine import Outputs, ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
 )
-from tests.engine_tests.constraint_ord_fixture import build_ei_scoped
 from tests.engine_tests.constraint_ord_effective_period_fixture import (
     build_ei_ord_effective_period,
 )
+from tests.engine_tests.constraint_ord_fixture import build_ei_scoped
 from tests.engine_tests.engine_solve import engine_solve_engine_inputs
 
 
@@ -1083,9 +1083,7 @@ def _fixed_assignment(
 def test_constraint_ord_effective_period(
     penalties_fix: Penalties,
     model_config_fix: ModelConfig,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     ei = build_ei_ord_effective_period(penalties_fix, model_config_fix)
 

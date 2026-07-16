@@ -718,9 +718,7 @@ def _fixed_assignment(
 def test_constraint_sum_effective_period(
     penalties_fix: Penalties,
     model_config_fix: ModelConfig,
-    run_engine_solve_from_engine_inputs: Callable[
-        [EngineInputsAugmented], Outputs
-    ],
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
 ) -> None:
     ei = build_ei_sum_effective_period(penalties_fix, model_config_fix)
 
