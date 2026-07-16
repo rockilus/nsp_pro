@@ -82,6 +82,7 @@ export default function CampaignParametersPanel({
               }}
               min={norm(minDate)}
               className={dateInputClass}
+              data-testid="campaign-start-date"
             />
           </div>
         </div>
@@ -111,6 +112,7 @@ export default function CampaignParametersPanel({
               min={norm(scheduleCampaign.startDate)}
               max={norm(maxEndFromStart)}
               className={dateInputClass}
+              data-testid="campaign-end-date"
             />
           </div>
         </div>

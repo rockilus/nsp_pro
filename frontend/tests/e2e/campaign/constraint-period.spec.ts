@@ -291,4 +291,65 @@ test.describe('Constraint effective period', () => {
     const effectivePeriod = campaign.constraintEffectivePeriods?.[constraint.id];
     expect(effectivePeriod).toBeNull();
   });
+
+  test('clamps effective period when campaign end date is reduced', async ({ page }, testInfo) => {
+    const testRunId = (testInfo as any).testRunId as string;
+    const ctx = testContextMap.get(testRunId)!;
+    const { dbUtils, team, owner, constraint, schedule } = ctx;
+
+    // Set schedule with effective period Jan 2–5 on a Jan 1–7 campaign
+    await dbUtils.updateSchedule({
+      ...schedule,
+      startDate: dayjs.utc('2026-01-01'),
+      endDate: dayjs.utc('2026-01-07'),
+      constraintBuildIds: [constraint.id],
+      constraintEffectivePeriods: {
+        [constraint.id]: {
+          startDate: dayjs.utc('2026-01-02'),
+          endDate: dayjs.utc('2026-01-05'),
+        },
+      },
+    });
+
+    // Navigate to campaign page
+    await dbUtils.authenticatePageAsUser(page, owner.user_id);
+    await page.goto('http://localhost:3000/en/plan/campaign/');
+    await page.evaluate(
+      (teamId) => localStorage.setItem('selectedTeamId', teamId),
+      team.teamId,
+    );
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('[data-testid="campaign-page-heading"]');
+
+    // Verify initial period display
+    const display = page.locator(
+      `[data-testid="constraint-period-display-${constraint.id}"]`,
+    );
+    await display.waitFor({ state: 'visible' });
+    await expect(display).toContainText('Jan 2, 2026');
+    await expect(display).toContainText('Jan 5, 2026');
+
+    // Change campaign end date from Jan 7 to Jan 3
+    const endDateInput = page.locator('[data-testid="campaign-end-date"]');
+    await endDateInput.fill('2026-01-03');
+    await endDateInput.blur();
+    await endDateInput.dispatchEvent('change');
+
+    // Wait for the period display to update (clamped to Jan 2–3)
+    await expect(display).toContainText('Jan 3, 2026');
+    await expect(display).not.toContainText('Jan 5, 2026');
+
+    // Verify API: constraintEffectivePeriods is now clamped
+    const schedules = await dbUtils.getSchedules(team.teamId);
+    const campaign = schedules.find((s) => s.status === 0) as ScheduleT;
+    expect(campaign).toBeDefined();
+    const effectivePeriod = campaign.constraintEffectivePeriods?.[constraint.id];
+    expect(effectivePeriod).toBeDefined();
+    expect(effectivePeriod).not.toBeNull();
+    if (effectivePeriod) {
+      expect(effectivePeriod.startDate.format('YYYY-MM-DD')).toBe('2026-01-02');
+      expect(effectivePeriod.endDate.format('YYYY-MM-DD')).toBe('2026-01-03');
+    }
+  });
 });
