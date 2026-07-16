@@ -230,10 +230,10 @@ class Schedule:
             cb_id: (
                 Period(
                     start_date=datetime.fromtimestamp(
-                        period_data["startDate"], timezone.utc
+                        period_data["start_date"], timezone.utc
                     ).date(),
                     end_date=datetime.fromtimestamp(
-                        period_data["endDate"], timezone.utc
+                        period_data["end_date"], timezone.utc
                     ).date(),
                 )
                 if period_data is not None
