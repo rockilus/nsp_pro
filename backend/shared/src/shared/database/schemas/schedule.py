@@ -8,6 +8,7 @@ from shared.database.schemas.base import (
     DocumentBaseSchema,
 )
 from shared.schemas.core.schedule import (
+    Period,
     QuickStaffing,
     Schedule,
     ScheduleStatus,
@@ -46,6 +47,7 @@ class ScheduleSchema(DocumentBaseSchema):
     status: int
     missing_coverage_dates: List[float] = []
     constraint_builds: List[str] = []
+    constraint_effective_periods: Dict[str, Optional[Dict[str, float]]] = {}
     quick_staffings: List[QuickStaffingSchema] = []
     created_at: float
     updated_at: float
@@ -86,6 +88,21 @@ class ScheduleSchema(DocumentBaseSchema):
                 for dt in self.missing_coverage_dates
             ],
             constraint_build_ids=self.constraint_builds,
+            constraint_effective_periods={
+                cb_id: (
+                    Period(
+                        start_date=datetime.fromtimestamp(
+                            period_data["start_date"], timezone.utc
+                        ).date(),
+                        end_date=datetime.fromtimestamp(
+                            period_data["end_date"], timezone.utc
+                        ).date(),
+                    )
+                    if period_data is not None
+                    else None
+                )
+                for cb_id, period_data in self.constraint_effective_periods.items()
+            },
             quick_staffings=[qs.to_core() for qs in self.quick_staffings],
             created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
             updated_at=datetime.fromtimestamp(self.updated_at, tz=timezone.utc),
@@ -119,6 +136,21 @@ class ScheduleSchema(DocumentBaseSchema):
                 for dt in schedule.missing_coverage_dates
             ],
             constraint_builds=schedule.constraint_build_ids,
+            constraint_effective_periods={
+                cb_id: (
+                    {
+                        "start_date": datetime.combine(
+                            period.start_date, time.min, timezone.utc
+                        ).timestamp(),
+                        "end_date": datetime.combine(
+                            period.end_date, time.min, timezone.utc
+                        ).timestamp(),
+                    }
+                    if period is not None
+                    else None
+                )
+                for cb_id, period in schedule.constraint_effective_periods.items()
+            },
             quick_staffings=[
                 QuickStaffingSchema.from_core(qs) for qs in schedule.quick_staffings
             ],
