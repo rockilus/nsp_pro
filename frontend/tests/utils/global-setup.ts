@@ -129,6 +129,17 @@ async function globalSetup(config: FullConfig) {
       console.warn('⚠️ Known-good Cognito user creation failed:', error);
     }
 
+    // Discover available solver test scenarios for E2E tests
+    console.log('📋 Discovering solver test scenarios...');
+    try {
+      const scenarios = await dbUtils.listSolverScenarios();
+      process.env.SOLVER_TEST_SCENARIOS = JSON.stringify(scenarios);
+      console.log(`✅ Found ${scenarios.length} solver test scenarios: ${scenarios.join(', ')}`);
+    } catch (error) {
+      console.warn('⚠️ Failed to discover solver test scenarios:', error);
+      process.env.SOLVER_TEST_SCENARIOS = '[]';
+    }
+
     // Optional: Verify we can create and query a browser for testing
     const browser = await chromium.launch();
     const page = await browser.newPage();
