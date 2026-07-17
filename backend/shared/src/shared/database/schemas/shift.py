@@ -52,6 +52,8 @@ class ShiftSchema(DocumentBaseSchema):
     recuperation_time: int
     recuperation_duty: Optional[str] = None  # Store shift ID instead of reference
     deleted: bool = False
+    use_custom_work_time: bool = False
+    custom_work_time_minutes: int = 0
 
     @field_validator("shift_type")
     @classmethod
@@ -107,6 +109,8 @@ class ShiftSchema(DocumentBaseSchema):
             recuperation_time=self.recuperation_time,
             recuperation_duty_id=self.recuperation_duty,
             deleted=self.deleted,
+            use_custom_work_time=self.use_custom_work_time,
+            custom_work_time_minutes=self.custom_work_time_minutes,
         )
 
     @classmethod
@@ -129,4 +133,6 @@ class ShiftSchema(DocumentBaseSchema):
             recuperation_time=shift.recuperation_time,
             recuperation_duty=shift.recuperation_duty_id,
             deleted=shift.deleted,
+            use_custom_work_time=shift.use_custom_work_time,
+            custom_work_time_minutes=shift.custom_work_time_minutes,
         )
