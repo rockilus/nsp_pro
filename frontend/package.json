@@ -17,7 +17,8 @@
     "deploy:s3:staging": "aws s3 sync out/ s3://rockilus-frontend-staging --delete --profile rockilus-staging",
     "deploy": "npm run build:static && npm run deploy:s3",
     "serve": "npx serve out -l 3000",
-    "lint": "npx eslint src && npx eslint tests"
+    "lint": "npx eslint src && npx eslint tests",
+    "generate-scenarios": "npx tsx tests/utils/generate-scenarios.ts"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",

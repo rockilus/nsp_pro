@@ -2085,9 +2085,23 @@ export class DatabaseTestUtils {
    */
   async listSolverScenarios(): Promise<string[]> {
     try {
-      // The route returns a simple array of scenario names
-      const result = await this.testApiClient.get<string[]>('/test-utils/scenarios');
+      const response = await fetch(`${testConfig.apiUrl}/test-utils/scenarios`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Dev-User-ID': testConfig.devUserId,
+          'X-API-Key': testConfig.devApiKey,
+        },
+      });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        throw new Error(
+          `Failed to list solver scenarios (${response.status}): ${errorData.detail || response.statusText}`,
+        );
+      }
+
+      const result: string[] = await response.json();
       console.log(`✅ Found ${result.length} available scenarios`);
       return result;
     } catch (error) {
