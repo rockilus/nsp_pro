@@ -1,7 +1,7 @@
 import calendar as cal
 import math
 from datetime import date, timedelta
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from shared.constraint_parser.mapping.map_day import MapDay
 from shared.constraint_parser.mapping.map_shift import MapShift
@@ -127,42 +127,20 @@ class MapConstaint:
         return len(period)
 
     def map_constraint_sum(
-        self, cba: ConstraintBuildAugmented, schedule_id: str
+        self,
+        cba: ConstraintBuildAugmented,
+        schedule_id: str,
+        effective_dates: Optional[List[date]] = None,
     ) -> ConstraintSum:
         cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
         coord_workers = self.map_worker.get_coord_workers(cba)
         coord_days = self.map_day.get_coords_days_sum(cba)
         coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
         base_target = self.get_target_value(cba.blocks, cba.constraint_type)
+        effective_set = set(effective_dates) if effective_dates is not None else None
 
-        # Determine the period type for pro-rating calculation
         selector = self.map_day.get_selector(cba.blocks, cba.constraint_type)
 
-        # w_vars, d_vars, s_vars = self.get_vars_coordinates(constraint)
-        # if not all(isinstance(item, str) for item in s_vars):
-        #     raise TypeError(
-        #         "Expected a list of strings, "
-        #         + f"but got {format(type(s_vars))} instead."
-        #     )
-        # if constraint.target_unit == "hour":
-        #     for w in w_vars:
-        #         for period in d_vars:
-        #             constraint_vars = []
-        #             constraint_durs = []
-        #             for s in s_vars:
-        #                 constraint_vars.extend(
-        #                     [self.variables[w, d, s] for d in period]  # type: ignore
-        #                 )
-        #                 constraint_durs.extend(
-        #                     [self.durations[s] for _ in period]  # type: ignore
-        #                 )
-        #             self._add_constraint_sum_hour(
-        #                 constraint,
-        #                 constraint_vars,
-        #                 constraint_durs,
-        #                 hard_to_soft,
-        #             )
-        # else:
         constraints_vars: List[List[Tuple[str, str, str]]] = []
         target_values: List[int] = []
 
@@ -173,12 +151,13 @@ class MapConstaint:
             )
             for period in coord_days:
                 period = sorted(list(set(period).intersection(dates_worker_set)))
+                if effective_set is not None:
+                    period = [d for d in period if d in effective_set]
                 constraint_vars = []
                 for s in coord_shifts:
                     constraint_vars += [(w.id, d.isoformat(), s.id) for d in period]
                 if constraint_vars:
                     constraints_vars.append(constraint_vars)
-                    # Calculate pro-rated target for this period
                     full_period_length = self.get_full_period_length(
                         period, selector.name
                     )
@@ -211,13 +190,17 @@ class MapConstaint:
         )
 
     def map_constraint_seq(
-        self, cba: ConstraintBuildAugmented, schedule_id: str
+        self,
+        cba: ConstraintBuildAugmented,
+        schedule_id: str,
+        effective_dates: Optional[List[date]] = None,
     ) -> ConstraintSeq:
         cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
         cstr_target = self.get_target_value(cba.blocks, cba.constraint_type)
         coord_workers = self.map_worker.get_coord_workers(cba)
         coord_days = self.map_day.get_coords_days_seq(cba, cstr_target)
         coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
+        effective_set = set(effective_dates) if effective_dates is not None else None
 
         constraints_vars: List[List[Tuple[str, str, str]]] = []
         for w in coord_workers:
@@ -230,6 +213,8 @@ class MapConstaint:
                 dates_cstr = sorted(
                     list(set(coord_days).intersection(dates_worker_set))
                 )
+                if effective_set is not None:
+                    dates_cstr = [d for d in dates_cstr if d in effective_set]
                 for d in dates_cstr:
                     constraint_vars.append((w.id, d.isoformat(), s.id))
                 if constraint_vars:
@@ -256,7 +241,10 @@ class MapConstaint:
 
     # pylint: disable=too-many-locals
     def map_constraint_ord(
-        self, cba: ConstraintBuildAugmented, schedule_id: str
+        self,
+        cba: ConstraintBuildAugmented,
+        schedule_id: str,
+        effective_dates: Optional[List[date]] = None,
     ) -> ConstraintOrd:
         interval = self.map_day.get_interval(cba.blocks, cba.constraint_type)
 
@@ -264,6 +252,7 @@ class MapConstaint:
         coord_workers = self.map_worker.get_coord_workers(cba)
         coord_days = self.map_day.get_coords_days_ord(cba, interval)
         coord_shifts = self.map_shift.get_coords_shifts_ord(cba)
+        effective_set = set(effective_dates) if effective_dates is not None else None
 
         constraints_vars: List[Tuple[Tuple[str, str, str], Tuple[str, str, str]]] = []
         for w in coord_workers:
@@ -273,6 +262,10 @@ class MapConstaint:
             )
             for d1, d2 in coord_days:
                 if d1 not in worker_dates or d2 not in worker_dates:
+                    continue
+                if effective_set is not None and (
+                    d1 not in effective_set or d2 not in effective_set
+                ):
                     continue
                 for s_ref, s_rel in coord_shifts:
                     constraint_vars = (
@@ -304,18 +297,24 @@ class MapConstaint:
         )
 
     def map_constraint_fil(
-        self, cba: ConstraintBuildAugmented, schedule_id: str
+        self,
+        cba: ConstraintBuildAugmented,
+        schedule_id: str,
+        effective_dates: Optional[List[date]] = None,
     ) -> ConstraintFil:
         cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
         coord_workers = self.map_worker.get_coord_workers(cba)
         coord_days = self.map_day.get_coords_days(cba)
         coord_shifts = self.map_shift.get_coords_shifts_fil(cba, cstr_operator)
+        effective_set = set(effective_dates) if effective_dates is not None else None
 
         constraints_vars: List[Tuple[str, str, str]] = []
         for w in coord_workers:
             dates_worker_set = set(self.worker_ids_to_worker_dates[w.id].dates_campaign)
 
             dates_cstr = sorted(list(set(coord_days).intersection(dates_worker_set)))
+            if effective_set is not None:
+                dates_cstr = [d for d in dates_cstr if d in effective_set]
             for d in dates_cstr:
                 for s in coord_shifts:
                     constraints_vars.append((w.id, d.isoformat(), s.id))
@@ -340,18 +339,23 @@ class MapConstaint:
         )
 
     def map_constraint_fai(
-        self, cba: ConstraintBuildAugmented, schedule_id: str
+        self,
+        cba: ConstraintBuildAugmented,
+        schedule_id: str,
+        effective_dates: Optional[List[date]] = None,
     ) -> ConstraintFai:
         cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
         coord_workers = self.map_worker.get_coord_workers(cba)
         coord_days = self.map_day.get_coords_days(cba)
         coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
+        effective_set = set(effective_dates) if effective_dates is not None else None
 
         constraints_vars: List[List[Tuple[str, str, str]]] = [
             [
                 (w.id, d.isoformat(), s.id)
                 for d in coord_days
                 if d in self.worker_ids_to_worker_dates[w.id].dates_campaign
+                and (effective_set is None or d in effective_set)
                 for s in coord_shifts
             ]
             for w in coord_workers
@@ -378,29 +382,29 @@ class MapConstaint:
 
     # pylint: disable=too-many-locals
     def map_constraint_eve(
-        self, cba: ConstraintBuildAugmented, schedule_id: str
+        self,
+        cba: ConstraintBuildAugmented,
+        schedule_id: str,
+        effective_dates: Optional[List[date]] = None,
     ) -> ConstraintSum:
         cstr_operator = self.get_operator(cba.blocks, cba.constraint_type)
         coord_workers = self.map_worker.get_coord_workers(cba)
         coord_shifts = self.map_shift.get_coords_shifts(cba, cstr_operator)
 
-        # target_average = get_average_nb_shifts_per_worker(
-        #     coverage,
-        #     constraint.worker_var.num_eligible_workers,
-        #     d_vars,  # type: ignore
-        #     s_vars,  # type: ignore
-        # )
         target_average = 1
+        campaign_dates = (
+            effective_dates if effective_dates is not None else self.dates_campaign
+        )
         period_lengths = self.integer_division_list(
-            len(self.dates_campaign), int(target_average)
+            len(campaign_dates), int(target_average)
         )
         coord_days: List[List[date]] = []
         for index, period_length in enumerate(period_lengths):
             cum_days = sum(period_lengths[:index])
-            start_date = self.dates_campaign[0] + timedelta(days=cum_days)
+            start_date = campaign_dates[0] + timedelta(days=cum_days)
             end_date = start_date + timedelta(days=period_length - 1)
             coord_days.append(
-                [d for d in self.dates_campaign if start_date <= d <= end_date]
+                [d for d in campaign_dates if start_date <= d <= end_date]
             )
 
         constraints_vars: List[List[Tuple[str, str, str]]] = []

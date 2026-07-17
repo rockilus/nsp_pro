@@ -36,11 +36,15 @@ def translate_shift_block_value(value: str, language: str) -> str:
             "all shifts": "todos los turnos",
             "duties": "guardias",
             "not duties": "no guardias",
+            "on-call shifts": "guardias de retén",
+            "not on-call shifts": "no guardias de retén",
         },
         "fr": {
             "all shifts": "toutes les tâches",
             "duties": "gardes",
             "not duties": "non gardes",
+            "on-call shifts": "gardes d'astreinte",
+            "not on-call shifts": "non gardes d'astreinte",
         },
     }
 
@@ -176,6 +180,10 @@ def get_shift_worker_option_display_name(
         if option.name:
             return translate_shift_block_value("duties", lng)
         return translate_shift_block_value("not duties", lng)
+    elif option.id_type == SWOIdTypes.ON_CALL:
+        if option.name:
+            return translate_shift_block_value("on-call shifts", lng)
+        return translate_shift_block_value("not on-call shifts", lng)
     elif option.id_type == SWOIdTypes.DIMENSION:
         if not option.is_bool_dim:
             if not isinstance(option.name, str):

@@ -1,5 +1,5 @@
 import { routeAccess } from './route-access';
-import { TeamWithMembership } from '@/types/team';
+import { TeamWithMembership, TeamMembershipRole } from '@/types/team';
 
 export function canAccessPage(route: string, teamWithMembership: TeamWithMembership): boolean {
   const rules = routeAccess[route];
@@ -13,6 +13,10 @@ export function canAccessPage(route: string, teamWithMembership: TeamWithMembers
   if (features) {
     featuresOk = features.every((feature) => {
       if (feature === 'use_solver') return teamWithMembership.team.useSolver;
+      if (feature === 'show_stats') {
+        if (teamWithMembership.membership.role === TeamMembershipRole.OWNER) return true;
+        return teamWithMembership.team.showStats;
+      }
     });
   }
 

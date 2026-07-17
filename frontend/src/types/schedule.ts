@@ -43,6 +43,7 @@ export type ScheduleT = {
   status: ScheduleStatus;
   missingCoverageDates: dayjs.Dayjs[];
   constraintBuildIds: string[];
+  constraintEffectivePeriods: Record<string, PeriodT | null>;
   quickStaffings: QuickStaffingT[];
   createdAt: dayjs.Dayjs;
   updatedAt: dayjs.Dayjs;
@@ -174,6 +175,20 @@ export type DuplicateResultT = {
 };
 
 export const toScheduleT = (data: any): ScheduleT => {
+  const constraintEffectivePeriods: Record<string, PeriodT | null> = {};
+  if (data.constraintEffectivePeriods) {
+    for (const [cbId, periodData] of Object.entries(data.constraintEffectivePeriods)) {
+      if (periodData && typeof periodData === 'object') {
+        const pd = periodData as { startDate: number; endDate: number };
+        constraintEffectivePeriods[cbId] = {
+          startDate: dayjs.unix(pd.startDate).utc(),
+          endDate: dayjs.unix(pd.endDate).utc(),
+        };
+      } else {
+        constraintEffectivePeriods[cbId] = null;
+      }
+    }
+  }
   return {
     ...data,
     startDate: dayjs.unix(data.startDate).utc(),
@@ -181,6 +196,7 @@ export const toScheduleT = (data: any): ScheduleT => {
     missingCoverageDates: data.missingCoverageDates.map((timeStamp: number) =>
       dayjs.unix(timeStamp).utc(),
     ),
+    constraintEffectivePeriods,
     createdAt: dayjs.unix(data.createdAt).utc(),
     updatedAt: dayjs.unix(data.updatedAt).utc(),
     requestDeadline:
@@ -191,11 +207,26 @@ export const toScheduleT = (data: any): ScheduleT => {
 };
 
 export const fromScheduleT = (data: ScheduleT): any => {
+  const constraintEffectivePeriods: Record<string, { startDate: number; endDate: number } | null> =
+    {};
+  if (data.constraintEffectivePeriods) {
+    for (const [cbId, period] of Object.entries(data.constraintEffectivePeriods)) {
+      if (period) {
+        constraintEffectivePeriods[cbId] = {
+          startDate: period.startDate.unix(),
+          endDate: period.endDate.unix(),
+        };
+      } else {
+        constraintEffectivePeriods[cbId] = null;
+      }
+    }
+  }
   return {
     ...data,
     startDate: data.startDate.unix(),
     endDate: data.endDate.unix(),
     missingCoverageDates: data.missingCoverageDates.map((date: dayjs.Dayjs) => date.unix()),
+    constraintEffectivePeriods,
     createdAt: data.createdAt.unix(),
     updatedAt: data.updatedAt.unix(),
     requestDeadline: data.requestDeadline?.unix() ?? null,

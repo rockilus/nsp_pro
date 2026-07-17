@@ -9,7 +9,10 @@ export const routeAccess: Record<string, { roles?: TeamMembershipRole[]; feature
   },
   '/campaign': { roles: [TeamMembershipRole.OWNER] },
   '/shift-demands': { roles: [TeamMembershipRole.OWNER] },
-  '/stats': { roles: [TeamMembershipRole.OWNER] },
+  '/stats': {
+    roles: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],
+    features: ['show_stats'],
+  },
   '/teams': { roles: [TeamMembershipRole.OWNER] },
   '/requests': {
     roles: [TeamMembershipRole.OWNER, TeamMembershipRole.MEMBER],

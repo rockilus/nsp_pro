@@ -53,6 +53,7 @@ class Team:
     created_by_user_id: str
     created_at: datetime
     use_solver: bool
+    show_stats: bool = False
     slot_periods: Optional[SlotPeriods] = None
 
     def to_dto(self) -> TeamDTO:

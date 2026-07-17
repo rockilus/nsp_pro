@@ -72,6 +72,66 @@ class TestShiftRepository:
         assert saved_doc["name"] == "Morning Shift"
         assert saved_doc["team"] == "team1"
 
+    def test_custom_work_time_round_trip(self):
+        """Custom work time fields must survive a create + read round trip."""
+        shift = Shift(
+            id="shift-cwt",
+            team_id="team1",
+            name="Week Shift",
+            acronym="WS",
+            acronym_custom=False,
+            start_time=datetime(2023, 1, 1, 8, 0, tzinfo=timezone.utc),
+            end_time=datetime(2023, 1, 8, 8, 0, tzinfo=timezone.utc),
+            staffing=[Staffing(specialty_id="spec1", staffing=1)],
+            color="#FF0000",
+            shift_type=ShiftType.NORMAL,
+            rest_type=ShiftRestType.NONE,
+            leave_type=ShiftLeaveType.NONE,
+            recuperation_time=0,
+            recuperation_duty_id=None,
+            deleted=False,
+            use_custom_work_time=True,
+            custom_work_time_minutes=2100,
+        )
+
+        created = self.repo.create_shift(shift)
+        assert created.use_custom_work_time is True
+        assert created.custom_work_time_minutes == 2100
+
+        saved_doc = self.repo.collection.find_one({"_id": created.id})
+        assert saved_doc is not None
+        assert saved_doc["use_custom_work_time"] is True
+        assert saved_doc["custom_work_time_minutes"] == 2100
+
+        fetched = self.repo.get_shift_by_id(created.id)
+        assert fetched.use_custom_work_time is True
+        assert fetched.custom_work_time_minutes == 2100
+
+    def test_custom_work_time_defaults_for_legacy_documents(self):
+        """Documents stored before the fields existed must default to off."""
+        legacy_doc = {
+            "_id": "legacy-shift",
+            "team": "team1",
+            "name": "Legacy Shift",
+            "acronym": "LS",
+            "acronym_custom": False,
+            "start_time": 1672560000.0,
+            "end_time": 1672588800.0,
+            "staffing": [{"specialty": "spec1", "staffing": 1}],
+            "color": "#FF0000",
+            "shift_type": ShiftType.NORMAL.value,
+            "rest_type": ShiftRestType.NONE.value,
+            "leave_type": ShiftLeaveType.NONE.value,
+            "recuperation_time": 0,
+            "recuperation_duty": None,
+            "deleted": False,
+        }
+        self.repo.collection.insert_one(legacy_doc)
+
+        fetched = self.repo.get_shift_by_id("legacy-shift")
+        assert fetched.use_custom_work_time is False
+        assert fetched.custom_work_time_minutes == 0
+
     def test_get_shift_by_id(self):
         """Test getting a shift by ID."""
         shift = ShiftSchema(

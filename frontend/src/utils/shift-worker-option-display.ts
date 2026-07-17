@@ -48,6 +48,15 @@ export const getShiftWorkerOptionDisplayText = (
     }
   }
 
+  // Handle on-call type (behaves like boolean dimension)
+  if (swo.idType === SWOIdTypes.ON_CALL) {
+    if (swo.name === true) {
+      return swo.categoryName;
+    } else if (swo.name === false) {
+      return `${notTranslation} ${swo.categoryName.toLowerCase()}`;
+    }
+  }
+
   // Handle other dimension types and fallback
   return swo.name as string;
 };

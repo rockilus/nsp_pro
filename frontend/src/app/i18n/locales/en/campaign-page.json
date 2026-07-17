@@ -22,6 +22,7 @@
   "total": "Total",
   "set_deadline": "Set & notify",
   "set": "Set",
+  "save": "Save",
   "send_reminder": "Send reminder",
   "extend_deadline": "Extend deadline",
   "current_deadline": "Current deadline",
@@ -33,5 +34,11 @@
   "request_deadline": "Requests deadline",
   "set_deadline_for_requests": "Set deadline for requests",
   "last_sent": "Last sent",
-  "sent": "Sent"
+  "sent": "Sent",
+  "entire_campaign": "Entire campaign",
+  "effective_period": "Effective period",
+  "effective_period_from": "From",
+  "effective_period_to": "To",
+  "effective_period_dialog_title": "Set rule effective period",
+  "constraint_period": "Period"
 }

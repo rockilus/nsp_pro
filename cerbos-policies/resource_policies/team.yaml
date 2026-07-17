@@ -21,6 +21,7 @@ resourcePolicy:
         - read-assignments-validated
         - create-swap
         - read-swap
+        - read-stats
       effect: EFFECT_ALLOW
       roles:
         - leader
@@ -35,7 +36,6 @@ resourcePolicy:
         - delete-team-invitation
         - create-stats-header
         - read-shift-options
-        - read-stats
         - delete-stats-header
         - update-team        # team settings
         - read-assignments

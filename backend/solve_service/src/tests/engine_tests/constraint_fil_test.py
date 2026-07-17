@@ -1,8 +1,10 @@
 from collections.abc import Callable
 from copy import deepcopy
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from shared.schemas.core import (
+    Assignment,
+    AssignmentSource,
     ConstraintBuildAugmented,
     ConstraintFai,
     ConstraintFil,
@@ -12,6 +14,10 @@ from shared.schemas.core import (
     ConstraintSum,
     ConstraintType,
     EngineInputsAugmented,
+    ModelConfig,
+    Penalties,
+    ShiftDemandNew,
+    ShiftDemandSource,
     ShiftType,
 )
 
@@ -19,6 +25,9 @@ from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
+)
+from tests.engine_tests.constraint_fil_effective_period_fixture import (
+    build_ei_fil_effective_period,
 )
 
 
@@ -359,3 +368,71 @@ class TestConstraintFil:
             )
             obj_value += penalty * nb_a_period
         assert out.objective_value == obj_value
+
+
+def _fixed_assignment(
+    ei: EngineInputsAugmented,
+    worker_id: str,
+    date_obj: date,
+    shift_id: str,
+) -> Assignment:
+    return Assignment(
+        id=f"a_{worker_id}_{date_obj}_{shift_id}",
+        team_id=ei.schedule.team_id,
+        schedule_id=ei.schedule.id,
+        worker_id=worker_id,
+        date=date_obj,
+        shift_id=shift_id,
+        fixed=True,
+        source=AssignmentSource.MANUAL,
+    )
+
+
+def _ensure_shift_demand(
+    ei: EngineInputsAugmented, shift_id: str, date_obj: date
+) -> None:
+    if not any(d.shift_id == shift_id and d.date == date_obj for d in ei.shift_demands):
+        ei.shift_demands.append(
+            ShiftDemandNew(
+                id=f"dsd_{shift_id}_{date_obj}",
+                date=date_obj,
+                shift_id=shift_id,
+                team_id=ei.schedule.team_id,
+                count=1,
+                notes=None,
+                source=ShiftDemandSource.MANUAL,
+                source_id=None,
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+            )
+        )
+
+
+def test_constraint_fil_effective_period(
+    penalties_fix: Penalties,
+    model_config_fix: ModelConfig,
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
+) -> None:
+    ei = build_ei_fil_effective_period(penalties_fix, model_config_fix)
+
+    ei.as_campaign_fixed.append(
+        _fixed_assignment(ei, "w0", date(2026, 1, 2), "s_morning")
+    )
+    ei.as_campaign_fixed.append(
+        _fixed_assignment(ei, "w0", date(2026, 1, 5), "s_morning")
+    )
+
+    out = run_engine_solve_from_engine_inputs(ei)
+    assert out is not None
+
+    breaches = _parse_breaches_engine(ei.schedule, out.breaches)
+    assert len(breaches) == 1
+    assert breaches[0].objective_id == "c_fil_period"
+
+    breach_dates = {v.date for v in breaches[0].variables}
+    breach_shift_ids = {v.shift_id for v in breaches[0].variables}
+    # Inside-period fixed assignment (Jan 2) must be in the breach
+    assert date(2026, 1, 2) in breach_dates
+    # Outside-period fixed assignment (Jan 5) must NOT be in the breach
+    assert date(2026, 1, 5) not in breach_dates
+    assert "s_morning" in breach_shift_ids

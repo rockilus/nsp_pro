@@ -42,6 +42,7 @@ class SWOIdTypes(Enum):
     DIMENSION = 3
     SPECIALTY = 4
     DUTY = 5
+    ON_CALL = 6
 
 
 @dataclass

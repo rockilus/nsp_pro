@@ -8,6 +8,7 @@ from shared.schemas.core import (
     DuplicateResult,
     ExportOptions,
     ExportPeriodOptions,
+    Period,
     Schedule,
     ScheduleStatus,
     ShiftType,
@@ -88,6 +89,9 @@ class ScheduleService(BaseService):
         schedule_old = self.collection.schedule_db.get_schedule_by_id(schedule_new.id)
         # Validate duration before applying updates
         self.validate_schedule_duration(schedule_new.start_date, schedule_new.end_date)
+
+        # Clamp constraint effective periods to new campaign bounds
+        _clamp_effective_periods(schedule_new)
 
         self.assignment_service.update_assignments_for_schedule_dates_change(
             schedule_new=schedule_new, schedule_old=schedule_old
@@ -405,3 +409,19 @@ class ScheduleService(BaseService):
         schedule.updated_at = datetime.now(timezone.utc)
         schedule = self.collection.schedule_db.update_schedule(schedule)
         return schedule
+
+
+def _clamp_effective_periods(schedule: Schedule) -> None:
+    """Clamp each constraint effective period to be within the schedule bounds."""
+    for cb_id, period in schedule.constraint_effective_periods.items():
+        if period is None:
+            continue
+        clamped_start = max(period.start_date, schedule.start_date)
+        clamped_end = min(period.end_date, schedule.end_date)
+        if clamped_start > clamped_end:
+            schedule.constraint_effective_periods[cb_id] = None
+        elif clamped_start != period.start_date or clamped_end != period.end_date:
+            schedule.constraint_effective_periods[cb_id] = Period(
+                start_date=clamped_start,
+                end_date=clamped_end,
+            )

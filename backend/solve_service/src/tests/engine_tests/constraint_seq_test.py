@@ -4,6 +4,8 @@ from datetime import UTC, date, datetime
 
 from shared.augment import requests_to_requests_augmented
 from shared.schemas.core import (
+    Assignment,
+    AssignmentSource,
     ConstraintBuildAugmented,
     ConstraintFai,
     ConstraintFil,
@@ -13,6 +15,8 @@ from shared.schemas.core import (
     ConstraintSum,
     EngineInputsAugmented,
     FulfillmentStatus,
+    ModelConfig,
+    Penalties,
     Request,
     RequestStatus,
     RequestType,
@@ -24,6 +28,9 @@ from engine import Inputs as InputsEngine
 from engine import Outputs, ProcessingCache
 from engine_to_core_service.build_breaches.build_breaches_model import (
     _parse_breaches_engine,
+)
+from tests.engine_tests.constraint_seq_effective_period_fixture import (
+    build_ei_seq_effective_period,
 )
 
 
@@ -628,3 +635,50 @@ class TestConstraintSeq:
                 obj_value += penalty * max(
                     constraint_hard_copy.target_value - nb_a_period, 0
                 )
+
+
+def _fixed_assignment(
+    ei: EngineInputsAugmented,
+    worker_id: str,
+    date_obj: date,
+    shift_id: str,
+) -> Assignment:
+    return Assignment(
+        id=f"a_{worker_id}_{date_obj}_{shift_id}",
+        team_id=ei.schedule.team_id,
+        schedule_id=ei.schedule.id,
+        worker_id=worker_id,
+        date=date_obj,
+        shift_id=shift_id,
+        fixed=True,
+        source=AssignmentSource.MANUAL,
+    )
+
+
+def test_constraint_seq_effective_period(
+    penalties_fix: Penalties,
+    model_config_fix: ModelConfig,
+    run_engine_solve_from_engine_inputs: Callable[[EngineInputsAugmented], Outputs],
+) -> None:
+    ei = build_ei_seq_effective_period(penalties_fix, model_config_fix)
+
+    ei.as_campaign_fixed.append(
+        _fixed_assignment(ei, "w0", date(2026, 1, 1), "s_morning")
+    )
+    ei.as_campaign_fixed.append(
+        _fixed_assignment(ei, "w0", date(2026, 1, 2), "s_morning")
+    )
+    ei.as_campaign_fixed.append(
+        _fixed_assignment(ei, "w0", date(2026, 1, 5), "s_morning")
+    )
+
+    out = run_engine_solve_from_engine_inputs(ei)
+    assert out is not None
+
+    breaches = _parse_breaches_engine(ei.schedule, out.breaches)
+    assert len(breaches) >= 1
+    assert any(b.objective_id == "c_seq_period" for b in breaches)
+
+    all_breach_dates = {v.date for b in breaches for v in b.variables}
+    assert date(2026, 1, 2) in all_breach_dates
+    assert date(2026, 1, 5) not in all_breach_dates

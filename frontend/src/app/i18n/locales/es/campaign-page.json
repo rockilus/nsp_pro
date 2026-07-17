@@ -22,6 +22,7 @@
   "total": "Total",
   "set_deadline": "Guardar y notificar",
   "set": "Definir",
+  "save": "Guardar",
   "send_reminder": "Enviar recordatorio",
   "extend_deadline": "Extender fecha límite",
   "current_deadline": "Fecha límite actual",
@@ -33,5 +34,11 @@
   "request_deadline": "Fecha limite solicitudes",
   "set_deadline_for_requests": "Establecer fecha límite para solicitudes",
   "last_sent": "Último envío",
-  "sent": "Enviado"
+  "sent": "Enviado",
+  "entire_campaign": "Campaña completa",
+  "effective_period": "Período efectivo",
+  "effective_period_from": "Desde",
+  "effective_period_to": "Hasta",
+  "effective_period_dialog_title": "Definir período efectivo",
+  "constraint_period": "Período"
 }
