@@ -22,6 +22,7 @@ class TeamDTO(BaseModel):
     createdByUserId: str
     createdAt: float
     useSolver: bool
+    showStats: bool = False
     slotPeriods: Optional[SlotPeriodsDTO] = None
 
 

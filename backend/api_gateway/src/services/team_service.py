@@ -174,6 +174,7 @@ class TeamService(BaseService):
             created_by_user_id=owner_id,
             created_at=datetime.now(timezone.utc),
             use_solver=True,
+            show_stats=False,
         )
         new_team = self.collection.team_db.create_team(new_team)
         membership = TeamMembership(

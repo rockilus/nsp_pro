@@ -7,6 +7,7 @@
 
 import { test, expect } from '@playwright/test';
 import { RoleTestBase } from '../../utils/role-test-base';
+import { TeamApi } from '../../../src/app/lib/api/teamApi';
 
 const roleTestBase = new RoleTestBase();
 
@@ -111,6 +112,25 @@ test.describe('Role-Based Access Control', () => {
       await roleTestBase.verifyPageAccessible(page, '/plan/stats');
     });
 
+    test('owner can access stats page regardless of showStats setting', async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+
+      const testTeam = roleTestBase.getTestTeam();
+      const ownerClient = roleTestBase.dbUtils.createAuthenticatedClientForUser(
+        roleTestBase.getOwnerUser().userId,
+      );
+      const team = await TeamApi.getTeamById(ownerClient, testTeam.teamId);
+      await TeamApi.updateTeam(ownerClient, testTeam.teamId, {
+        ...team,
+        showStats: false,
+      });
+
+      await roleTestBase.navigateToStatsPage(page);
+
+      await expect(page.locator('[data-testid="stats-page-heading"]')).toBeVisible();
+      await roleTestBase.verifyPageAccessible(page, '/plan/stats');
+    });
+
     test('owner can access personal info settings page', async ({ page }) => {
       await roleTestBase.actAsOwner(page);
       await roleTestBase.navigateToPersonalInfoPage(page);
@@ -177,6 +197,26 @@ test.describe('Role-Based Access Control', () => {
 
       // TODO: Verify member can only see/manage their own requests
       // This depends on the actual UI implementation
+    });
+
+    test('member can access stats page when showStats is enabled', async ({ page }) => {
+      await roleTestBase.actAsOwner(page);
+
+      const testTeam = roleTestBase.getTestTeam();
+      const ownerClient = roleTestBase.dbUtils.createAuthenticatedClientForUser(
+        roleTestBase.getOwnerUser().userId,
+      );
+      const team = await TeamApi.getTeamById(ownerClient, testTeam.teamId);
+      await TeamApi.updateTeam(ownerClient, testTeam.teamId, {
+        ...team,
+        showStats: true,
+      });
+
+      await roleTestBase.actAsMember(page);
+      await roleTestBase.navigateToStatsPage(page);
+
+      await expect(page.locator('[data-testid="stats-page-heading"]')).toBeVisible();
+      await roleTestBase.verifyPageAccessible(page, '/plan/stats');
     });
 
     test('member can access personal info settings page', async ({ page }) => {

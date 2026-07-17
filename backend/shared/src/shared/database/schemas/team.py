@@ -12,6 +12,7 @@ class TeamSchema(DocumentBaseSchema):
     created_by_user_id: str
     created_at: float
     use_solver: bool
+    show_stats: bool = False
     slot_periods: Optional[dict] = None
 
     def to_core(self) -> Team:
@@ -21,6 +22,7 @@ class TeamSchema(DocumentBaseSchema):
             created_by_user_id=self.created_by_user_id,
             created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
             use_solver=self.use_solver,
+            show_stats=self.show_stats,
             slot_periods=_slot_periods_from_dict(self.slot_periods),
         )
 
@@ -41,5 +43,6 @@ class TeamSchema(DocumentBaseSchema):
             created_by_user_id=team.created_by_user_id,
             created_at=team.created_at.timestamp(),
             use_solver=team.use_solver,
+            show_stats=team.show_stats,
             slot_periods=sp_dict,
         )

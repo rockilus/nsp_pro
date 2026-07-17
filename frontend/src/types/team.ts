@@ -19,6 +19,7 @@ export type TeamT = {
   createdByUserId: string;
   createdAt: dayjs.Dayjs;
   useSolver: boolean;
+  showStats: boolean;
   slotPeriods?: SlotPeriodsT | null;
 };
 

@@ -99,6 +99,13 @@ export default function TeamGeneralTab({
     handleUpdateTeam(newTeamState);
   };
 
+  const handleChangeShowStats = (checked: boolean | 'indeterminate') => {
+    if (!teamState || checked === 'indeterminate') return;
+    const newTeamState = { ...teamState, showStats: checked };
+    setTeamState(newTeamState);
+    handleUpdateTeam(newTeamState);
+  };
+
   const handleNameEditConfirm = () => {
     if (teamState && team) {
       if (team.name !== teamState.name) {
@@ -237,6 +244,37 @@ export default function TeamGeneralTab({
                       </Label>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {t('use_solver_description')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator className="my-2.5" />
+
+              {/* ---- Show stats section ---- */}
+              <div className={sectionRowClass}>
+                <div className={labelContainerClass}>
+                  <span className={labelClass}>{t('show_stats')}</span>
+                </div>
+                <div className={valueContainerClass}>
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="show-stats-checkbox"
+                      data-testid="show-stats-checkbox"
+                      checked={teamState.showStats}
+                      onCheckedChange={handleChangeShowStats}
+                      className="mt-1"
+                    />
+                    <div>
+                      <Label
+                        htmlFor="show-stats-checkbox"
+                        className="cursor-pointer text-sm font-medium"
+                      >
+                        {t('show_stats_label')}
+                      </Label>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {t('show_stats_description')}
                       </p>
                     </div>
                   </div>
