@@ -35,7 +35,7 @@ export default function NavLinks({
 
   return (
     <div className="flex h-full items-center justify-center">
-      <Tabs value={activeRoute || undefined}>
+      <Tabs value={activeRoute || ''}>
         <TabsList variant="line" className="h-16 gap-0 rounded-none bg-transparent p-0">
           {links.map((link) => (
             <TabsTrigger

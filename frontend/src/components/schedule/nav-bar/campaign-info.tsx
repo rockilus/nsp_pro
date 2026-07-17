@@ -503,6 +503,7 @@ export default function CampaignInfo({
       <BreachesDialog
         lng={lng}
         breaches={breaches}
+        teamId={teamWithMembership.team.id}
         open={breachesDialogOpen}
         onClose={() => setBreachesDialogOpen(false)}
       />

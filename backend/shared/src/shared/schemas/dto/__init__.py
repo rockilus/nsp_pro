@@ -19,6 +19,7 @@ from shared.schemas.dto.auth import (
     VerifyEmailRequestDTO,
 )
 from shared.schemas.dto.breach import BreachDTO
+from shared.schemas.dto.campaign_quality import CampaignQualityDTO, WorkerQualityDTO
 from shared.schemas.dto.constraint import (
     BlockDTO,
     ConstraintBuildDTO,
@@ -142,6 +143,8 @@ __all__ = [
     "SelectionIntentDTO",
     "AttributeDTO",
     "BreachDTO",
+    "CampaignQualityDTO",
+    "WorkerQualityDTO",
     "BlockDTO",
     "ConstraintBuildDTO",
     "MissingAttributeDTO",

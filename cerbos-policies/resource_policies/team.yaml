@@ -88,6 +88,7 @@ resourcePolicy:
         - update-specialty
         - delete-specialty
         - read-breaches
+        - read-campaign-quality
         - update-breach
         - delete-breach
         - read-multitasking-groups
@@ -174,6 +175,7 @@ resourcePolicy:
         - update-specialty
         - delete-specialty
         - read-breaches
+        - read-campaign-quality
         - update-breach
         - delete-breach
         - read-multitasking-groups

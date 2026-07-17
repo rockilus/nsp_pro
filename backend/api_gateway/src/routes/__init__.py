@@ -4,6 +4,9 @@ from src.routes.assignment_routes import router as router_assignment
 from src.routes.attribute_routes import router as router_attribute
 from src.routes.auth_routes import router as router_auth
 from src.routes.breach_routes import router as router_breach
+from src.routes.campaign_quality_routes import (
+    router as router_campaign_quality,
+)
 from src.routes.constraint_routes import router as router_constraint
 from src.routes.constraint_template_routes import (
     router as router_constraint_template,
@@ -45,6 +48,7 @@ __all__ = [
     "router_attribute",
     "router_auth",
     "router_breach",
+    "router_campaign_quality",
     "router_constraint",
     "router_constraint_template",
     "router_copilot",

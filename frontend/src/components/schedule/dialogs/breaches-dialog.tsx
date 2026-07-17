@@ -8,6 +8,8 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 // Components
 import BreachItem from './breach-item';
+import CampaignQualityTab from './campaign-quality-tab';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../ui/tabs';
 // Styles
 import '../../../styles/text-styles.css';
 // Types
@@ -17,11 +19,13 @@ import { ObjectiveCategory } from '@/types/breach';
 export default function BreachesDialog({
   lng,
   breaches,
+  teamId,
   open,
   onClose,
 }: {
   lng: string;
   breaches: BreachT[];
+  teamId: string;
   open: boolean;
   onClose: () => void;
 }) {
@@ -57,13 +61,12 @@ export default function BreachesDialog({
         categoryMap.filter((c) => c.category !== 'all').map((c) => c.category as ObjectiveCategory),
       );
     } else {
-      // Single-select: choose only this category
       setSelectedCategories([category]);
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth data-testid="breaches-dialog">
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth data-testid="breaches-dialog">
       <DialogTitle
         sx={{
           display: 'flex',
@@ -84,101 +87,116 @@ export default function BreachesDialog({
         </IconButton>
       </DialogTitle>
       <DialogContent dividers>
-        <div style={{ marginBottom: '16px' }}>
-          {categoryMap.map((c) => (
-            <button
-              key={c.category}
-              style={{
-                border: '1px solid #e0e0e0',
-                borderRadius: '4px',
-                color: '#333',
-                cursor: 'pointer',
-                display: 'inline-block',
-                fontSize: '12px',
-                marginRight: '5px',
-                marginBottom: '5px',
-                padding: '4px 8px',
-                backgroundColor:
-                  c.category === 'all'
-                    ? selectedCategories.length === 6
-                      ? '#f5f5f5'
-                      : 'transparent'
-                    : selectedCategories.includes(c.category)
-                      ? '#f5f5f5'
-                      : 'transparent',
-                transition: 'background-color 0.3s',
-              }}
-              onClick={() => handleCategoryClick(c.category)}
-              onMouseEnter={(e) => {
-                if (
-                  (c.category === 'all' && selectedCategories.length !== 6) ||
-                  (c.category !== 'all' && !selectedCategories.includes(c.category))
-                ) {
-                  e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (
-                  (c.category === 'all' && selectedCategories.length !== 6) ||
-                  (c.category !== 'all' && !selectedCategories.includes(c.category))
-                ) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }}
-            >
-              {c.label}
-            </button>
-          ))}
-        </div>
+        <Tabs defaultValue="conflicts">
+          <TabsList variant="default" className="mb-4">
+            <TabsTrigger value="conflicts">{t('breaches')}</TabsTrigger>
+            <TabsTrigger value="quality">{t('quality_insights')}</TabsTrigger>
+          </TabsList>
 
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {categoryMap
-            .filter((c) => c.category !== 'all' && selectedCategories.includes(c.category))
-            .map((category) => {
-              const breachesCategory = breaches.filter(
-                (breach) => breach.objectiveCategory === category.category,
-              );
-              return (
-                <div
-                  key={category.category}
+          <TabsContent value="conflicts">
+            <div style={{ marginBottom: '16px' }}>
+              {categoryMap.map((c) => (
+                <button
+                  key={c.category}
                   style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    marginTop: '15px',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: '4px',
+                    color: '#333',
+                    cursor: 'pointer',
+                    display: 'inline-block',
+                    fontSize: '12px',
+                    marginRight: '5px',
+                    marginBottom: '5px',
+                    padding: '4px 8px',
+                    backgroundColor:
+                      c.category === 'all'
+                        ? selectedCategories.length === 6
+                          ? '#f5f5f5'
+                          : 'transparent'
+                        : selectedCategories.includes(c.category)
+                          ? '#f5f5f5'
+                          : 'transparent',
+                    transition: 'background-color 0.3s',
+                  }}
+                  onClick={() => handleCategoryClick(c.category)}
+                  onMouseEnter={(e) => {
+                    if (
+                      (c.category === 'all' && selectedCategories.length !== 6) ||
+                      (c.category !== 'all' && !selectedCategories.includes(c.category))
+                    ) {
+                      e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (
+                      (c.category === 'all' && selectedCategories.length !== 6) ||
+                      (c.category !== 'all' && !selectedCategories.includes(c.category))
+                    ) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }
                   }}
                 >
-                  <span className="subtitle">{category.label}</span>
-                  {breachesCategory.length === 0 ? (
+                  {c.label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {categoryMap
+                .filter((c) => c.category !== 'all' && selectedCategories.includes(c.category))
+                .map((category) => {
+                  const breachesCategory = breaches.filter(
+                    (breach) => breach.objectiveCategory === category.category,
+                  );
+                  return (
                     <div
+                      key={category.category}
                       style={{
                         display: 'flex',
-                        flexDirection: 'row',
-                        borderBottom: '0.5px solid lightgrey',
-                        padding: '5px 0',
-                        alignItems: 'center',
+                        flexDirection: 'column',
+                        marginTop: '15px',
                       }}
                     >
-                      <span
-                        style={{
-                          fontWeight: 400,
-                          fontSize: '0.875rem',
-                          fontStyle: 'italic',
-                          lineHeight: '1.4',
-                          letterSpacing: '0.001rem',
-                          margin: '0',
-                          padding: '0 5px 0 0',
-                        }}
-                      >
-                        {t('no_breach')}
-                      </span>
+                      <span className="subtitle">{category.label}</span>
+                      {breachesCategory.length === 0 ? (
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            borderBottom: '0.5px solid lightgrey',
+                            padding: '5px 0',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontWeight: 400,
+                              fontSize: '0.875rem',
+                              fontStyle: 'italic',
+                              lineHeight: '1.4',
+                              letterSpacing: '0.001rem',
+                              margin: '0',
+                              padding: '0 5px 0 0',
+                            }}
+                          >
+                            {t('no_breach')}
+                          </span>
+                        </div>
+                      ) : (
+                        breachesCategory.map((breach) => (
+                          <BreachItem key={breach.id} breach={breach} />
+                        ))
+                      )}
                     </div>
-                  ) : (
-                    breachesCategory.map((breach) => <BreachItem key={breach.id} breach={breach} />)
-                  )}
-                </div>
-              );
-            })}
-        </div>
+                  );
+                })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="quality">
+            <CampaignQualityTab lng={lng} teamId={teamId} />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
