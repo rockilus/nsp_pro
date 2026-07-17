@@ -10,11 +10,29 @@
  */
 
 import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
 import { SolverTestBase } from '../../utils/solver-test-base';
 import { ScheduleStatus } from '@/types/schedule';
 import { ShiftType } from '@/types/shift';
 
-const TEST_SCENARIOS: readonly string[] = JSON.parse(process.env.SOLVER_TEST_SCENARIOS || '[]');
+function loadScenarios(): readonly string[] {
+  try {
+    const scenariosPath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'utils',
+      '.generated',
+      'solver-scenarios.json',
+    );
+    return JSON.parse(fs.readFileSync(scenariosPath, 'utf-8'));
+  } catch {
+    return JSON.parse(process.env.SOLVER_TEST_SCENARIOS || '[]');
+  }
+}
+
+const TEST_SCENARIOS: readonly string[] = loadScenarios();
 
 if (TEST_SCENARIOS.length === 0) {
   console.warn('No solver test scenarios discovered by global-setup');
