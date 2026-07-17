@@ -7,7 +7,8 @@ set -e
 LOCALSTACK_ENDPOINT=${LOCALSTACK_ENDPOINT:-http://localhost:4566}
 
 echo "Waiting for LocalStack to be ready at $LOCALSTACK_ENDPOINT..."
-until curl -s ${LOCALSTACK_ENDPOINT}/_localstack/health | grep -q '"sqs": "available"'; do
+# SQS reports "available" before first use and "running" once the provider is loaded
+until curl -s ${LOCALSTACK_ENDPOINT}/_localstack/health | grep -Eq '"sqs": *"(available|running)"'; do
   echo "LocalStack not ready yet, retrying in 2 seconds..."
   sleep 2
 done
