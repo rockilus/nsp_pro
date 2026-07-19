@@ -36,10 +36,10 @@ Rockilus is a multi-tenant SaaS that lets healthcare managers define team member
 
 ## Table of Contents
 - [🎯 Project Overview](#project-overview)
-  - [The Problem](#project-overview_the-problem)
-  - [The Solution](#project-overview_the-solution)
-  - [Key Differentiators](#project-overview_key-differentiators)
-  - [Core Workflow](#project-overview_core-workflow) 
+  - [⚠️ The Problem](#project-overview_the-problem)
+  - [💡 The Solution](#project-overview_the-solution)
+  - [✨ Key Differentiators](#project-overview_key-differentiators)
+  - [🔄 Core Workflow](#project-overview_core-workflow) 
 - [🧑‍💻 Core Engineering Challenges & Deep Dives](#challenges)
   - [🧮 Algorithmic Constraint Optimization](#challenges_optimization)
   - [🤖 AI Co-Pilot Architecture](#challenges_copilot)
@@ -49,8 +49,8 @@ Rockilus is a multi-tenant SaaS that lets healthcare managers define team member
 - [📐 System Architecture & Data Flows](#architecture)
 - [🛠️ Tech Stack & Production Constraints](#tech-stack)
 - [🚦 Local Development & Automated Quality Gates](#quality-gates)
-  - [Deterministic Multi-Container Dev Spin-Up](#quality-gates_dev-env)
-  - [Targeted Quality Verification](#quality-gates_checks)
+  - [🐳 Deterministic Multi-Container Dev Spin-Up](#quality-gates_dev-env)
+  - [🧪 Targeted Quality Verification](#quality-gates_testing)
 - [🚀 Product Capabilities](#capabilities)
 - [🗺️ System Evolution & Engineering Roadmap](#roadmap)
 
@@ -60,7 +60,7 @@ Rockilus is a multi-tenant SaaS that lets healthcare managers define team member
 
 <div id="project-overview_the-problem"></div>
 
-### The Problem
+### ⚠️ The Problem
 Building and managing schedules is a chronic pain point in the healthcare sector:
 * **Rigid Constraints & Compliance:** Roster generation must guarantee baseline clinical coverage targets (duties, on-call rotations) while strictly enforcing statutory labor laws (e.g., mandatory post-duty recuperation windows).
 * **Search Space Complexity:** Building a schedule for a mid-sized team creates a mathematical search space with more potential states than particles in the observable universe.
@@ -68,12 +68,12 @@ Building and managing schedules is a chronic pain point in the healthcare sector
 
 <div id="project-overview_the-solution"></div>
 
-### The Solution
+### 💡 The Solution
 Rockilus is a multi-tenant workforce management application designed to automate roster generation and streamline live schedule adaptations. By converting administrative logic into a deterministic constraint-satisfaction framework, the platform delivers optimal, compliance-verified schedules through an intuitive, self-service interface.
 
 <div id="project-overview_key-differentiators"></div>
 
-### Key Differentiators
+### ✨ Key Differentiators
 * **Zero-Friction Onboarding:** Eliminates enterprise integration overhead. Organizational administrators can sign up, configure their team, and generate their first schedule independently within minutes.
 * **Validated Mathematical Core:** Powered by Google OR-Tools CP-SAT, an industrial-grade constraint programming engine globally validated for handling high-density combinatorial optimization problems.
 * **Transparent Architecture:** Built with an open-source model to bring mature, auditable infrastructure to the healthcare sector.
@@ -81,7 +81,7 @@ Rockilus is a multi-tenant workforce management application designed to automate
 
 <div id="project-overview_core-workflow"></div>
 
-### Core Workflow
+### 🔄 Core Workflow
 1. **Setup team:** Create team members (who), shifts (does what), coverage targets (when), and constraints (how).
 <div align="center">
   <img src="docs/new-rule.desktop.en.crop.png" alt="Rockilus" width="400" />
@@ -224,15 +224,15 @@ The project utilizes automated task runner configurations (`justfiles`) to elimi
 
 <div id="quality-gates_dev-env"></div>
 
-### Deterministic Multi-Container Dev Spin-Up
+### 🐳 Deterministic Multi-Container Dev Spin-Up
 To initiate a full-fidelity replica of the production system including message brokers and policy sidecars locally:
 ```bash
 docker-compose -f docker-compose.yml up --build
 ```
 
-<div id="quality-gates_checks"></div>
+<div id="quality-gates_testing"></div>
 
-### Targeted Quality Verification
+### 🧪 Targeted Quality Verification
 
 Individual services enforce mandatory testing, static analysis linting, and type checking pipelines before passing environmental quality gates:
 
