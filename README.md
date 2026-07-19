@@ -17,6 +17,29 @@ Rockilus is a multi-tenant SaaS that lets healthcare managers define team member
 
 <br>
 
+## 🎯 Project Overview
+
+### The Problem
+Building and managing schedules is a chronic pain point in the healthcare sector:
+* **Rigid Constraints & Compliance:** Roster generation must guarantee baseline clinical coverage targets (duties, on-call rotations) while strictly enforcing statutory labor laws (e.g., mandatory post-duty recuperation windows).
+* **Search Space Complexity:** Building a schedule for a mid-sized team creates a mathematical search space with more potential states than particles in the observable universe.
+* **Legacy Failure Modes:** Existing enterprise workforce management tools are cost-prohibitive and mandate lengthy, third-party implementation cycles. Many medical departments still resort to manual spreadsheet tracking. This administrative overhead is typically absorbed by healthcare personnel during clinical hours—directly reducing patient-facing care time and generating team friction over perceived shift allocation bias.
+
+
+### The Solution
+Rockilus is a multi-tenant workforce management application designed to automate roster generation and streamline live schedule adaptations. By converting administrative logic into a deterministic constraint-satisfaction framework, the platform delivers optimal, compliance-verified schedules through an intuitive, self-service interface.
+
+### Key Differentiators
+* **Zero-Friction Onboarding:** Eliminates enterprise integration overhead. Organizational administrators can sign up, map structural roles, and generate localized schedules independently within minutes.
+* **Validated Mathematical Core:** Built directly on top of Google OR-Tools CP-SAT—an industrial-grade constraint programming engine globally validated for handling high-density combinatorics problems.
+* **Physician-Co-Designed:** Developed from day one in close collaboration with a hospital physician to guarantee that the underlying data models, constraint logic, and shift-swapping mechanisms match true clinical workflows and operational realities.
+
+### Core Workflow
+1. **Define Core Primitives:** Map your team topology (who), shift definitions (does what), coverage targets (when), and explicit operational constraints (how).
+2. **Collect Asynchronous Preferences:** Gather staff-submitted preference matrices, specific date-off choices, and formal leave requests directly through the UI before compiling the schedule.
+3. **Execute One-Click Synthesis:** Orchestrate the backend solver engine with a single click, instantly producing conflict-free rosters alongside live telemetry covering hour distributions and constraint metrics.
+4. **Distribute & Coordinate:** Publish live rosters natively to both desktop and mobile layouts, allowing staff members to execute secure peer-to-peer shift exchanges and coverage requests on the fly.
+
 ## ⚡️ Highlights
 * **Algorithmic Shift Optimization:** Solves multi-variable healthcare scheduling matrices using a Google OR-Tools CP-SAT constraint programming model.
 * **AI Copilot:** MCP and an adaptive planning/reactive router; safeguard execution boundaries via self-healing loops and a stateless, cryptographically verified tool lifecycle.
@@ -27,8 +50,13 @@ Rockilus is a multi-tenant SaaS that lets healthcare managers define team member
 * **Automated Quality Pipelines:** Executes continuous integration across 6 distinct GitHub Actions pipelines for multi-service linting, unit testing, and E2E validation.
 * **Trilingual Native Localization:** Embeds comprehensive client-side i18n configurations supporting English, French, and Spanish with zero hardcoded UI strings.
 
+## Table of Contents
+1. [🧑‍💻 Core Engineering Challenges & Deep Dives](#challenges)
+2. [Installation Steps](#installation-steps)
+3. [Configuration & Setup](#configuration--setup)
 
-## 🧑‍💻 Core Engineering Challenges & Deep Dives
+
+## <a name="challenges"></a> 🧑‍💻 Core Engineering Challenges & Deep Dives
 
 ### 🧮 Algorithmic Constraint Optimization (Google OR-Tools CP-SAT)
 Medical scheduling is an NP-hard combinatorics problem governed by fluid labor laws, staff availability, and complex multi-variable operational constraints.
