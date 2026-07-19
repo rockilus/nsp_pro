@@ -4,6 +4,13 @@
 
 <br>
 
+<div align="center">
+  <img src="docs/rockilus_schedule_page_desktop_mobile.png" alt="Rockilus" />
+</div>
+
+<br>
+
+
 <p align="center">
   <a href="https://rockilus.com" target="_blank" rel="noopener noreferrer">
     <img src="https://img.shields.io/badge/Website-rockilus.com-blue?style=flat-square" alt="Website">
@@ -30,15 +37,31 @@ Building and managing schedules is a chronic pain point in the healthcare sector
 Rockilus is a multi-tenant workforce management application designed to automate roster generation and streamline live schedule adaptations. By converting administrative logic into a deterministic constraint-satisfaction framework, the platform delivers optimal, compliance-verified schedules through an intuitive, self-service interface.
 
 ### Key Differentiators
-* **Zero-Friction Onboarding:** Eliminates enterprise integration overhead. Organizational administrators can sign up, map structural roles, and generate localized schedules independently within minutes.
-* **Validated Mathematical Core:** Built directly on top of Google OR-Tools CP-SAT—an industrial-grade constraint programming engine globally validated for handling high-density combinatorics problems.
-* **Physician-Co-Designed:** Developed from day one in close collaboration with a hospital physician to guarantee that the underlying data models, constraint logic, and shift-swapping mechanisms match true clinical workflows and operational realities.
+* **Zero-Friction Onboarding:** Eliminates enterprise integration overhead. Organizational administrators can sign up, configure their team, and generate their first schedule independently within minutes.
+* **Validated Mathematical Core:** Powered by Google OR-Tools CP-SAT, an industrial-grade constraint programming engine globally validated for handling high-density combinatorial optimization problems.
+* **Transparent Architecture:** Built with an open-source model to bring mature, auditable infrastructure to the healthcare sector.
+* **Physician Co-Designed:** Developed from day one in close collaboration with a hospital physician.
 
 ### Core Workflow
 1. **Define Core Primitives:** Map your team topology (who), shift definitions (does what), coverage targets (when), and explicit operational constraints (how).
+<div align="center">
+  <img src="docs/new-rule.desktop.en.crop.png" alt="Rockilus" width="400" />
+</div>
+
 2. **Collect Asynchronous Preferences:** Gather staff-submitted preference matrices, specific date-off choices, and formal leave requests directly through the UI before compiling the schedule.
+<div align="center">
+  <img src="docs/request-calendar.desktop.en.crop.png" alt="Rockilus" width="400" />
+</div>
+
 3. **Execute One-Click Synthesis:** Orchestrate the backend solver engine with a single click, instantly producing conflict-free rosters alongside live telemetry covering hour distributions and constraint metrics.
+<div align="center">
+  <img src="docs/request-calendar.desktop.en.crop.png" alt="Rockilus" width="400" />
+</div>
+
 4. **Distribute & Coordinate:** Publish live rosters natively to both desktop and mobile layouts, allowing staff members to execute secure peer-to-peer shift exchanges and coverage requests on the fly.
+<div align="center">
+  <img src="docs/replacement.desktop.en.crop.png" alt="Rockilus" width="400" />
+</div>
 
 ## ⚡️ Highlights
 * **Algorithmic Shift Optimization:** Solves multi-variable healthcare scheduling matrices using a Google OR-Tools CP-SAT constraint programming model.
