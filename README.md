@@ -43,22 +43,22 @@ Rockilus is a multi-tenant workforce management application designed to automate
 * **Physician Co-Designed:** Developed from day one in close collaboration with a hospital physician.
 
 ### Core Workflow
-1. **Define Core Primitives:** Map your team topology (who), shift definitions (does what), coverage targets (when), and explicit operational constraints (how).
+1. **Setup team:** Create team members (who), shifts (does what), coverage targets (when), and constraints (how).
 <div align="center">
   <img src="docs/new-rule.desktop.en.crop.png" alt="Rockilus" width="400" />
 </div>
 
-2. **Collect Asynchronous Preferences:** Gather staff-submitted preference matrices, specific date-off choices, and formal leave requests directly through the UI before compiling the schedule.
+2. **Collect Preferences:** Gather staff-submitted work and leave preferences before generating the schedule.
 <div align="center">
   <img src="docs/request-calendar.desktop.en.crop.png" alt="Rockilus" width="400" />
 </div>
 
-3. **Execute One-Click Synthesis:** Orchestrate the backend solver engine with a single click, instantly producing conflict-free rosters alongside live telemetry covering hour distributions and constraint metrics.
+3. **Generate Schedule:** One click schedule generation, with live telemetry covering hour distributions and constraint metrics.
 <div align="center">
   <img src="docs/request-calendar.desktop.en.crop.png" alt="Rockilus" width="400" />
 </div>
 
-4. **Distribute & Coordinate:** Publish live rosters natively to both desktop and mobile layouts, allowing staff members to execute secure peer-to-peer shift exchanges and coverage requests on the fly.
+4. **Distribute & Coordinate:** Publish live rosters natively to both desktop and mobile layouts, allowing staff members to execute secure peer-to-peer shift exchanges and managing replacements.
 <div align="center">
   <img src="docs/replacement.desktop.en.crop.png" alt="Rockilus" width="400" />
 </div>
