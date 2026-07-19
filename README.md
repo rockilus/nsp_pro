@@ -36,43 +36,52 @@ Rockilus is a multi-tenant SaaS that lets healthcare managers define team member
 
 ## Table of Contents
 - [🎯 Project Overview](#project-overview)
-  - [The Problem](#project-overview/the-problem)
-  - [The Solution](#project-overview/the-solution)
-  - [Key Differentiators](#project-overview/key-differentiators)
-  - [Core Workflow](#project-overview/core-workflow) 
+  - [The Problem](#project-overview_the-problem)
+  - [The Solution](#project-overview_the-solution)
+  - [Key Differentiators](#project-overview_key-differentiators)
+  - [Core Workflow](#project-overview_core-workflow) 
 - [🧑‍💻 Core Engineering Challenges & Deep Dives](#challenges)
-  - [🧮 Algorithmic Constraint Optimization](#challenges/optimization)
-  - [🤖 AI Co-Pilot Architecture](#challenges/copilot)
-  - [🛡️ Hierarchical Multi-Tenant AuthN/AuthZ & Group Graphs](#challenges/auth)
-  - [🔒 Self-Contained Compliance Architecture](#challenges/compliance)
-  - [📦 Contract-First Data Interoperability & Reliability](#challenges/interoperability)
+  - [🧮 Algorithmic Constraint Optimization](#challenges_optimization)
+  - [🤖 AI Co-Pilot Architecture](#challenges_copilot)
+  - [🛡️ Hierarchical Multi-Tenant AuthN/AuthZ & Group Graphs](#challenges_auth)
+  - [🔒 Self-Contained Compliance Architecture](#challenges_compliance)
+  - [📦 Contract-First Data Interoperability & Reliability](#challenges_interoperability)
 - [📐 System Architecture & Data Flows](#architecture)
 - [🛠️ Tech Stack & Production Constraints](#tech-stack)
 - [🚦 Local Development & Automated Quality Gates](#quality-gates)
-  - [Deterministic Multi-Container Dev Spin-Up](#quality-gates/dev-env)
-  - [Targeted Quality Verification](#quality-gates/checks)
+  - [Deterministic Multi-Container Dev Spin-Up](#quality-gates_dev-env)
+  - [Targeted Quality Verification](#quality-gates_checks)
 - [🚀 Product Capabilities](#capabilities)
 - [🗺️ System Evolution & Engineering Roadmap](#roadmap)
 
-## <a name="project-overview"></a> 🎯 Project Overview
+<div id="project-overview"></div>
 
-### <a name="project-overview/the-problem"></a> The Problem
+## 🎯 Project Overview
+
+<div id="project-overview_the-problem"></div>
+
+### The Problem
 Building and managing schedules is a chronic pain point in the healthcare sector:
 * **Rigid Constraints & Compliance:** Roster generation must guarantee baseline clinical coverage targets (duties, on-call rotations) while strictly enforcing statutory labor laws (e.g., mandatory post-duty recuperation windows).
 * **Search Space Complexity:** Building a schedule for a mid-sized team creates a mathematical search space with more potential states than particles in the observable universe.
 * **Legacy Failure Modes:** Existing enterprise workforce management tools are cost-prohibitive and mandate lengthy, third-party implementation cycles. Many medical departments still resort to manual spreadsheet tracking. This administrative overhead is typically absorbed by healthcare personnel during clinical hours—directly reducing patient-facing care time and generating team friction over perceived shift allocation bias.
 
+<div id="project-overview_the-solution"></div>
 
-### <a name="project-overview/the-solution"></a> The Solution
+### The Solution
 Rockilus is a multi-tenant workforce management application designed to automate roster generation and streamline live schedule adaptations. By converting administrative logic into a deterministic constraint-satisfaction framework, the platform delivers optimal, compliance-verified schedules through an intuitive, self-service interface.
 
-### <a name="project-overview/key-differentiators"></a> Key Differentiators
+<div id="project-overview_key-differentiators"></div>
+
+### Key Differentiators
 * **Zero-Friction Onboarding:** Eliminates enterprise integration overhead. Organizational administrators can sign up, configure their team, and generate their first schedule independently within minutes.
 * **Validated Mathematical Core:** Powered by Google OR-Tools CP-SAT, an industrial-grade constraint programming engine globally validated for handling high-density combinatorial optimization problems.
 * **Transparent Architecture:** Built with an open-source model to bring mature, auditable infrastructure to the healthcare sector.
 * **Physician Co-Designed:** Developed from day one in close collaboration with a hospital physician.
 
-### <a name="project-overview/core-workflow"></a> Core Workflow
+<div id="project-overview_core-workflow"></div>
+
+### Core Workflow
 1. **Setup team:** Create team members (who), shifts (does what), coverage targets (when), and constraints (how).
 <div align="center">
   <img src="docs/new-rule.desktop.en.crop.png" alt="Rockilus" width="400" />
@@ -93,10 +102,13 @@ Rockilus is a multi-tenant workforce management application designed to automate
   <img src="docs/replacement.desktop.en.crop.png" alt="Rockilus" width="400" />
 </div>
 
+<div id="challenges"></div>
 
-## <a name="challenges"></a> 🧑‍💻 Core Engineering Challenges & Deep Dives
+## 🧑‍💻 Core Engineering Challenges & Deep Dives
 
-### <a name="challenges/optimization"></a> 🧮 Algorithmic Constraint Optimization (Google OR-Tools CP-SAT)
+<div id="challenges_optimization"></div>
+
+### 🧮 Algorithmic Constraint Optimization (Google OR-Tools CP-SAT)
 Medical scheduling is an NP-hard combinatorics problem governed by fluid labor laws, staff availability, and complex multi-variable operational constraints.
 * **Contract-Driven Data Transformation Pipeline:** Designed an isolation layer within `backend/solve_service/` that flattens raw MongoDB/DocumentDB multi-tenant schemas into a highly optimized, primitive input format required by the optimization engine. The scheduling horizon is parsed into discrete matrices.
 * **Mathematical Search Space Definition:** The solver's primary decision matrix is modeled using Boolean decision variables bounded by the standard tuple shape `(worker_id, date_iso, shift_id)` paired with interval variables to handle overlapping time allocations at the model layer.
@@ -108,7 +120,9 @@ Medical scheduling is an NP-hard combinatorics problem governed by fluid labor l
 * **Empirical Model Calibration:** Built an automated benchmarking harness to run thousands of scheduling permutations under synthetic stress loads, tracking solver telemetry metrics including time-to-first-feasible-solution, conflict-graph size, and optimality-gap degradation. Collected data was used to fine-tune internal Google OR-Tools CP-SAT parameters—specifically optimizing parallel execution thresholds (`num_search_workers`), search heuristics (pseudo-cost branching strategy), and deterministic time-caps—guaranteeing rapid convergence under tight containerized CPU and memory constraints.
 * **Granular Constraint Verification & Dependency Guardrails:** To guarantee long-term system stability, the CP-SAT model is not treated as a monolithic black box. Instead, a comprehensive `pytest` testing matrix completely isolates and unit-tests every individual variable declaration, hard invariant constraint, and soft penalty assignment independently. This granular verification layer ensures that future modifications to internal business logic—or upstream version updates to the Google OR-Tools package—can be executed safely, instantly catching broken mathematical expressions or behavioral drift before code hits production.
 
-### <a name="challenges/copilot"></a> 🤖 AI Co-Pilot Architecture (FastMCP & Directed Acyclic Graphs)
+<div id="challenges_copilot"></div>
+
+### 🤖 AI Co-Pilot Architecture (FastMCP & Directed Acyclic Graphs)
 A secure, multi-lingual AI execution engine built to orchestrate complex workforce management tasks.
 
 ```text
@@ -153,7 +167,9 @@ To prevent client-side data tampering on high-privilege write operations without
 2. **The Stateless Halt:** The system drops all server-side memory context and sends a progress checklist and preview card to the React frontend.
 3. **The Replay Pass (`mode="execute"`):** When the manager clicks Apply, the frontend passes only the original user prompt, history, and the JWT. The server completely regenerates the plan, fast-forwards through read-only steps to rebuild the variable state, verifies that the generated arguments match the cryptographic hash inside the JWT, and commits the mutation.
 
-### <a name="challenges/auth"></a> 🛡️ Hierarchical Multi-Tenant AuthN/AuthZ & Group Graphs
+<div id="challenges_auth"></div>
+
+### 🛡️ Hierarchical Multi-Tenant AuthN/AuthZ & Group Graphs
 Managing access control within fluid medical environments requires verifying a user’s functional role while dynamically isolating resources by team boundaries.
 * **The Architecture:** Authentication is handled by AWS Cognito, generating cryptographically verified JWT tokens. Authorization is completely decoupled and evaluated by an asynchronous Cerbos PDP sidecar instance running over local gRPC.
 * **Fine-Grained Permissions Matrix:** Resource policies in `cerbos-policies/` map permissions across three core domains: `user`, `team`, and `admin`. Managers are assigned authoritative access to write configurations and execute solver engines, while healthcare workers are strictly bound to self-owned records for viewing individual calendars, filing leave requests, or executing peer-to-peer shift swaps.
@@ -163,19 +179,23 @@ Managing access control within fluid medical environments requires verifying a u
     ```
     This enforces tenancy validation at the network boundary, securing background team invitations and membership routing without adding database degradation.  
 
-### <a name="challenges/compliance"></a> 🔒 Self-Contained Compliance Architecture (Zero-Third-Party Sovereignty)
+<div id="challenges_compliance"></div>
+
+### 🔒 Self-Contained Compliance Architecture (Zero-Third-Party Sovereignty)
 Healthcare applications process Protected Health Information (PHI) under strict regulatory frameworks (such as GDPR and HIPAA/HDS). Delegating identity metadata or security policies to external third-party SaaS vendors introduces significant compliance risks, data cross-contamination vectors, and vendor lock-in.
 * **The Strategy:** The entire stack is intentionally engineered to have zero external runtime SaaS dependencies outside of core AWS resource primitives.
 * **Implementation:** By configuring an internal, isolated network footprint inside private AWS VPC subnets—pairing AWS Cognito with containerized, open-source Cerbos PDP engines and an isolated AWS DocumentDB layer—all transaction workflows, access matrices, and user identifiers stay entirely within your managed cloud boundary. This design maximizes data sovereignty, simplifies regulatory auditing, and guarantees system self-reliance.
 
-### <a name="challenges/interoperability"></a> 📦 Contract-First Data Interoperability & Reliability
+<div id="challenges_interoperability"></div>
+
+### 📦 Contract-First Data Interoperability & Reliability
 In an asynchronous environment where one microservice accepts HTTP traffic and a secondary microservice executes compute-heavy background algorithms, runtime structural drift will crash the pipeline.
 * **The Strategy:** Implemented a contract-first architecture by centralizing all structural boundaries into a localized shared library located at `backend/shared/`.
 * **Implementation:** Canonical data schemas (e.g., `Shift`, `Worker`, `Schedule`) are declared as immutable Pydantic contracts . Both the FastAPI gateway and the OR-Tools SQS consumer install this package as a strict dependency. This architecture guarantees that serialization and deserialization actions across SQS message lines match perfectly, eliminating type mismatch errors and payload-drift bugs before code reaches production.  
 
+<div id="architecture"></div>
 
-
-## <a name="architecture"></a> 📐 System Architecture & Data Flows
+## 📐 System Architecture & Data Flows
 <p align="center">
   <img src="docs/aws_architecture.svg" alt="Rockilus System Architecture" width="100%" />
 </p>
@@ -183,8 +203,9 @@ In an asynchronous environment where one microservice accepts HTTP traffic and a
 * **Infrastructure-as-Code (IaC):** 100% of the network infrastructure, AWS DocumentDB databases, SQS queues, IAM boundary permissions, and ECS Task Definitions are provisioned deterministically via declarative Terraform scripts.
 * **Asynchronous Lifecycles:** $$\text{Client Request} \longrightarrow \text{API Gateway (FastAPI Fast ACK)} \longrightarrow \text{AWS SQS Ingestion} \longrightarrow \text{Solver Compute Service (OR-Tools)} \longrightarrow \text{DocumentDB Persistence}$$
 
+<div id="tech-stack"></div>
 
-## <a name="tech-stack"></a> 🛠️ Tech Stack & Production Constraints
+## 🛠️ Tech Stack & Production Constraints
 
 | Layer | Technology | Operational Constraint / Implementation Pattern |
 | :--- | :--- | :--- |
@@ -195,17 +216,23 @@ In an asynchronous environment where one microservice accepts HTTP traffic and a
 | **Data Layer** | AWS DocumentDB (MongoDB compatible) | Document storage tracking historical assignment evaluations, team telemetry, and availability maps. |
 | **Infrastructure** | Terraform, Docker Compose, just | Environment parity guarantees between local container stacks and private AWS VPC subnets. |
 
-## <a name="quality-gates"></a> 🚦 Local Development & Automated Quality Gates
+<div id="quality-gates"></div>
+
+## 🚦 Local Development & Automated Quality Gates
 
 The project utilizes automated task runner configurations (`justfiles`) to eliminate local dependency issues and validate type interfaces before code review gates.
 
-### <a name="quality-gates/dev-env"></a> Deterministic Multi-Container Dev Spin-Up
+<div id="quality-gates_dev-env"></div>
+
+### Deterministic Multi-Container Dev Spin-Up
 To initiate a full-fidelity replica of the production system including message brokers and policy sidecars locally:
 ```bash
 docker-compose -f docker-compose.yml up --build
 ```
 
-### <a name="quality-gates/checks"></a> Targeted Quality Verification
+<div id="quality-gates_checks"></div>
+
+### Targeted Quality Verification
 
 Individual services enforce mandatory testing, static analysis linting, and type checking pipelines before passing environmental quality gates:
 
@@ -241,8 +268,9 @@ cd backend && just security-all
 | Hadolint | Dockerfile best-practice linting |
 | ShellCheck | Scripts best-practice linting |
 
+<div id="capabilities"></div>
 
-## <a name="capabilities"></a> 🚀 Product Capabilities
+## 🚀 Product Capabilities
 
 While Rockilus features a complex architectural backend, it delivers a highly streamlined, enterprise-grade user experience designed to eliminate the administrative overhead of workforce management:
 
@@ -254,8 +282,9 @@ While Rockilus features a complex architectural backend, it delivers a highly st
 * **Mobile-Optimized Distribution & Peer Exchanges:** A fully responsive user application providing real-time schedule sharing, automated peer-to-peer shift swapping, and fluid coverage request coordination on the go.
 * **Native Cross-Border Localization:** Seamless runtime application translation supporting English, French, and Spanish, automatically adjusting language dictionaries and date-time schemas to fit regional operations.
 
+<div id="roadmap"></div>
 
-## <a name="roadmap"></a> 🗺️ System Evolution & Engineering Roadmap
+## 🗺️ System Evolution & Engineering Roadmap
 
 This roadmap outlines high-leverage architectural milestones designed to scale the platform from a lean, solo-developer MVP into an enterprise-grade corporate infrastructure ecosystem:
 
