@@ -19,6 +19,7 @@ Rockilus is a multi-tenant SaaS that lets healthcare managers define team member
 
 ## ⚡️ Highlights
 * **Algorithmic Shift Optimization:** Solves multi-variable healthcare scheduling matrices using a Google OR-Tools CP-SAT constraint programming model.
+* **AI Copilot:** MCP and an adaptive planning/reactive router; safeguard execution boundaries via self-healing loops and a stateless, cryptographically verified tool lifecycle.
 * **Asynchronous Compute Offloading:** Isolates heavy processing from user APIs via AWS SQS to guarantee gateway ingestion speeds.
 * **Serverless Frontend Scale:** Deploys a Next.js static export (output: 'export') on AWS S3/CloudFront for infinite scale and zero server overhead.
 * **Decoupled Security Topology:** Segregates identity verification (AWS Cognito) from access control via an isolated Cerbos PDP gRPC sidecar container.
@@ -40,6 +41,51 @@ Medical scheduling is an NP-hard combinatorics problem governed by fluid labor l
 * **Deterministic Objective Tuning:** Enforced a strict mathematical hierarchy within the model's objective function by mapping soft constraints to non-interfering penalty coefficients. This protects against optimization anomalies where a high volume of minor preference violations (e.g. soft constraint to not do a shift) could mathematically override a critical operational priority (e.g. affect all shifts). By encoding these weights into a predictable minimization matrix, the engine delivers consistent, repeatable scheduling behavior that matches human expectations across consecutive execution horizons.
 * **Empirical Model Calibration:** Built an automated benchmarking harness to run thousands of scheduling permutations under synthetic stress loads, tracking solver telemetry metrics including time-to-first-feasible-solution, conflict-graph size, and optimality-gap degradation. Collected data was used to fine-tune internal Google OR-Tools CP-SAT parameters—specifically optimizing parallel execution thresholds (`num_search_workers`), search heuristics (pseudo-cost branching strategy), and deterministic time-caps—guaranteeing rapid convergence under tight containerized CPU and memory constraints.
 * **Granular Constraint Verification & Dependency Guardrails:** To guarantee long-term system stability, the CP-SAT model is not treated as a monolithic black box. Instead, a comprehensive `pytest` testing matrix completely isolates and unit-tests every individual variable declaration, hard invariant constraint, and soft penalty assignment independently. This granular verification layer ensures that future modifications to internal business logic—or upstream version updates to the Google OR-Tools package—can be executed safely, instantly catching broken mathematical expressions or behavioral drift before code hits production.
+
+### 🤖 AI Co-Pilot Architecture (FastMCP & Directed Acyclic Graphs)
+A secure, multi-lingual AI execution engine built to orchestrate complex workforce management tasks.
+
+```text
+                               [User Input Prompt]
+                                        │
+                                        ▼
+                         [Adaptive Intent Orchestrator]
+                                        │
+                    ┌───────────────────┴───────────────────┐
+                    ▼                                       ▼
+           [Complexity: High]                       [Complexity: Low]
+            Plan-and-Execute                          ReAct Bypass
+                    │                                       │
+                    ▼                                       ▼
+          [Sequential Planner]                      [Targeted Skill]
+           (Outputs JSON DAG)                       (Direct Tool Run)
+                    │                                       │
+                    ▼                                       ▼
+         [Deterministic Engine]                    [Instant Synthesis]
+         (Late Binding Iterator)                            │
+                    │                                       │
+                    └───────────────────┬───────────────────┘
+                                        ▼
+                              [Unified UI Outbound]
+```
+
+
+## Architectural Core
+### 1. Decoupled Model Context Protocol (MCP)
+To isolate raw capability implementation from the orchestrator logic, the backend exposes capabilities via **FastMCP**. Tools are grouped by bounded contexts (Roster, Shifts, Primitives) using an extensible, category-tagged decorator registry. This guarantees strict encapsulation, simplifies local unit testing, and prevents tool definition pollution inside LLM contexts.
+### 2. Adaptive Hybrid Planning-Reactive (ReAct) Router
+To maximize UI responsiveness and minimize LLM operational token costs, incoming prompts pass through an **Intent & Complexity Classifier**.
+- **Low-Complexity Bypass (ReAct):** Trivial atomic operations (e.g., "Change Logan's name to Peter") bypass the planner entirely. A single-turn ReAct loop performs sequential identity resolution and applies direct mutations immediately.
+- **High-Complexity Pipeline (Plan-and-Execute):** Requests spanning multiple domains, batch operations, or relative date-math (e.g., "End Logan's contract next Monday") are routed to the Planning Engine.
+### 3. Structured JSON DAG Planner
+For complex pipelines, a dedicated Planner model (with no raw execution capabilities) compiles a static, sequential **Directed Acyclic Graph (DAG)** of the tasks.
+- **Late Variable Binding:** Steps can declare dependencies on prior step outputs using structured variables (e.g., assigning a calculated ISO date step to `$TARGET_DATE` and consuming it in a downstream worker creation step).
+- **Self-Healing Reflection Loop:** If the local executor hits a validation or Pydantic error, the failure payload (attempted arguments + validation constraints) is caught and fed back to the Planner for a regeneration pass (up to $N$ retries).
+### 4. Stateless "Pure Replay" Security Lifecycle
+To prevent client-side data tampering on high-privilege write operations without introducing heavy server-side session databases (like Redis), the agent operates on a Pure Replay Strategy:
+1. **The Preview Pass (`mode="preview"`):** The executor runs steps in a sandbox memory map. When a mutation tool is hit, the executor intercepts it, calculates the prospective changes, and mints a short-lived, cryptographically signed JSON Web Token (JWT) binding the active user ID and the SHA-256 hash of the execution arguments.
+2. **The Stateless Halt:** The system drops all server-side memory context and sends a progress checklist and preview card to the React frontend.
+3. **The Replay Pass (`mode="execute"`):** When the manager clicks Apply, the frontend passes only the original user prompt, history, and the JWT. The server completely regenerates the plan, fast-forwards through read-only steps to rebuild the variable state, verifies that the generated arguments match the cryptographic hash inside the JWT, and commits the mutation.
 
 ### 🛡️ Hierarchical Multi-Tenant AuthN/AuthZ & Group Graphs
 Managing access control within fluid medical environments requires verifying a user’s functional role while dynamically isolating resources by team boundaries.
@@ -151,62 +197,6 @@ This roadmap outlines high-leverage architectural milestones designed to scale t
 * **Continuous Security Hardening & Automated Vulnerability Remediation:** Establish continuous, automated security scanning guardrails within the GitHub Actions pipelines—specifically integrating automated dependency bump tools (e.g., Dependabot/Renovate) to instantly isolate and patch software supply-chain vulnerabilities. Additionally, execute a strict validation audit of AWS Identity and Access Management (IAM) role boundaries and Security Group configurations inside the Terraform modules to guarantee ironclad least-privilege enforcement across VPC runtimes.
 * **Enterprise Directory Ingestion & Unified HR Aggregators:** Expand the multi-tenant onboarding layer to support federated corporate identity directory synchronization (such as LDAP, Active Directory, or SAML/OIDC) to streamline enterprise workforce importing. Build on top of the existing Excel reporting modules by architecting a unified API middleware aggregator capable of programmatically routing finalized schedules straight into legacy healthcare Human Resources and payroll systems.
 * **Hierarchical Organizational Topology:** Refactor the internal data schema structures to move past flat, single-tier team boundaries (e.g., individual isolated departments) and implement a nested, multi-tiered organizational hierarchy. This structural update will enable senior administrators to coordinate complex scheduling constraints across multiple distinct services, departments, and interdependent medical procedures simultaneously.
-* **LLM-Driven Semantic Constraint Ingestion (Replacing Template Rigidness):** Explore augmenting or replacing the rigid UI-templated constraint builder with a localized Large Language Model pipeline utilizing structured outputs (Function Calling mapped to Pydantic schemas). Instead of forcing non-technical managers through complex multi-step form wizards or maintaining regular-expression parsers for custom domain logic, an LLM would act as an execution compiler. It maps free-form conversational requests (e.g., *"Make sure Logan doesn't work back-to-back night shifts this weekend due to a family emergency"*) directly into the deterministic JSON schema payloads expected by the core CP-SAT matrix compiler. This preserves the absolute mathematical safety of the underlying engine while maximizing input adaptability.
+* **LLM-Driven Semantic Constraint Ingestion (Expanding the Co-Pilot):** Augment the existing FastMCP tool registry to feed unstructured, free-form conversational requests (e.g., *"Make sure Logan doesn't work back-to-back night shifts this weekend"*) directly into the core CP-SAT matrix compiler. This will map complex user parameters directly into mathematical integer constraints, preserving the absolute mathematical safety of the underlying engine while maximizing input adaptability.
+* **LLM-Driven Semantic Constraint Ingestion (Replacing Template Rigidness):** Augment the existing FastMCP tool registry to replace the rigid UI-templated constraint builder with unstructured, free-form conversational prompts and parse them into structured outputs. It maps free-form conversational requests (e.g., *"Make sure Logan doesn't work back-to-back night shifts this weekend due to a family emergency"*) directly into the deterministic JSON schema payloads expected by the core CP-SAT matrix compiler. This preserves the absolute mathematical safety of the underlying engine while maximizing input adaptability.
 
-
-
-AI section to incorportate:
-# Rockilus Intelligent Co-Pilot Architecture
-
-A secure, multi-lingual, and highly deterministic AI execution engine built to orchestrate complex workforce management tasks.
-
-```text
-                               [User Input Prompt]
-                                        │
-                                        ▼
-                         [Adaptive Intent Orchestrator]
-                                        │
-                    ┌───────────────────┴───────────────────┐
-                    ▼                                       ▼
-           [Complexity: High]                       [Complexity: Low]
-            Plan-and-Execute                          ReAct Bypass
-                    │                                       │
-                    ▼                                       ▼
-          [Sequential Planner]                      [Targeted Skill]
-           (Outputs JSON DAG)                       (Direct Tool Run)
-                    │                                       │
-                    ▼                                       ▼
-         [Deterministic Engine]                    [Instant Synthesis]
-         (Late Binding Iterator)                            │
-                    │                                       │
-                    └───────────────────┬───────────────────┘
-                                        ▼
-                              [Unified UI Outbound]
-```
-
-
-## Architectural Core
-### 1. Decoupled Model Context Protocol (MCP)
-To isolate raw capability implementation from the orchestrator logic, the backend exposes capabilities via **FastMCP**. Tools are grouped by bounded contexts (Roster, Shifts, Primitives) using an extensible, category-tagged decorator registry. This guarantees strict encapsulation, simplifies local unit testing, and prevents tool definition pollution inside LLM contexts.
-### 2. Adaptive Hybrid Planning-Reactive (ReAct) Router
-To maximize UI responsiveness and minimize LLM operational token costs, incoming prompts pass through an **Intent & Complexity Classifier**.
-- **Low-Complexity Bypass (ReAct):** Trivial atomic operations (e.g., "Change Logan's name to Peter") bypass the planner entirely. A single-turn ReAct loop performs sequential identity resolution and applies direct mutations immediately.
-- **High-Complexity Pipeline (Plan-and-Execute):** Requests spanning multiple domains, batch operations, or relative date-math (e.g., "End Logan's contract next Monday") are routed to the Planning Engine.
-### 3. Structured JSON DAG Planner
-For complex pipelines, a dedicated Planner model (with no raw execution capabilities) compiles a static, sequential **Directed Acyclic Graph (DAG)** of the tasks.
-- **Late Variable Binding:** Steps can declare dependencies on prior step outputs using structured variables (e.g., assigning a calculated ISO date step to `$TARGET_DATE` and consuming it in a downstream worker creation step).
-- **Self-Healing Reflection Loop:** If the local executor hits a validation or Pydantic error, the failure payload (attempted arguments + validation constraints) is caught and fed back to the Planner for a deterministic regeneration pass (up to $N$ retries).
-### 4. Stateless "Pure Replay" Security Lifecycle
-To prevent client-side data tampering on high-privilege write operations without introducing heavy server-side session databases (like Redis), the agent operates on a Pure Replay Strategy:
-1. **The Preview Pass (`mode="preview"`):** The executor runs steps in a sandbox memory map. When a mutation tool is hit, the executor intercepts it, calculates the prospective changes, and mints a short-lived, cryptographically signed JSON Web Token (JWT) binding the active user ID and the SHA-256 hash of the execution arguments.
-2. **The Stateless Halt:** The system drops all server-side memory context and sends a progress checklist and preview card to the React frontend.
-3. **The Replay Pass (`mode="execute"`):** When the manager clicks Apply, the frontend passes only the original user prompt, history, and the JWT. The server completely regenerates the plan, fast-forwards through read-only steps to rebuild the variable state, verifies that the generated arguments match the cryptographic hash inside the JWT, and commits the mutation.
-
-## Key Technical Achievements to Highlight in an Interview
-
-| Feature |	Engineering Challenge |	How Rockilus Solved It |
-| :--- | :--- | :--- |
-| **State Management** |	Syncing multi-step plans without a database. |	**Pure Replay Strategy** reconstructs transient state securely via deterministic on-the-fly execution. |
-| **OWASP / Security** |	Protecting against client-side parameter tampering. |	All write arguments are hashed and signed inside a server-side JWT; re-checked at execution threshold. |
-| **Reliability**	| LLM hallucinations omitting required Pydantic arguments.	| **Self-Healing Reflection Loop** catches Pydantic validation errors and dynamically injects them back to the Planner for auto-correction. |
-| **Token Optimization**	| Preventing heavy cognitive overhead on trivial queries.	| **Adaptive Intent Classifier** routes atomic single-entity lookups straight to a fast, cheap ReAct bypass track. |
