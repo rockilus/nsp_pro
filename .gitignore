@@ -42,6 +42,7 @@ backend/processing_engine/src/solver_parameter_tuning/analysis_output
 backend/solve_service/src/engine/saved/
 backend/solve_service/src/solver_parameter_tuning/parameter_test_output
 backend/solve_service/src/solver_parameter_tuning/analysis_output
+backend/api_gateway/tests/test_data
 
 # Environments
 venv_nsp
