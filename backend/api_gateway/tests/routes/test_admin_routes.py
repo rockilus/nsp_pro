@@ -221,11 +221,11 @@ class TestExportUserData:
 
     def test_exports_selected_data_types(self, db_interface: DatabaseInterface):
         db = DatabaseCollections(db_interface)
-        target, team = self._seed_export_setup(db)
-        app = make_app(db_interface)
-        client = TestClient(app)
-
         try:
+            target, team = self._seed_export_setup(db)
+            app = make_app(db_interface)
+            client = TestClient(app)
+
             response = client.post(
                 f"/admin/users/{target.id}/export",
                 json={
@@ -252,11 +252,11 @@ class TestExportUserData:
     ):
         """Full export must parse back via scenario_data_dict_to_core."""
         db = DatabaseCollections(db_interface)
-        target, team = self._seed_export_setup(db)
-        app = make_app(db_interface)
-        client = TestClient(app)
-
         try:
+            target, team = self._seed_export_setup(db)
+            app = make_app(db_interface)
+            client = TestClient(app)
+
             response = client.post(
                 f"/admin/users/{target.id}/export",
                 json={
@@ -292,12 +292,12 @@ class TestExportUserData:
 
     def test_returns_400_for_foreign_team(self, db_interface: DatabaseInterface):
         db = DatabaseCollections(db_interface)
-        target, _ = self._seed_export_setup(db)
-        foreign_team = seed_team(db, name="Foreign Team")
-        app = make_app(db_interface)
-        client = TestClient(app)
-
         try:
+            target, _ = self._seed_export_setup(db)
+            foreign_team = seed_team(db, name="Foreign Team")
+            app = make_app(db_interface)
+            client = TestClient(app)
+
             response = client.post(
                 f"/admin/users/{target.id}/export",
                 json={
@@ -313,11 +313,11 @@ class TestExportUserData:
 
     def test_returns_400_for_unknown_data_type(self, db_interface: DatabaseInterface):
         db = DatabaseCollections(db_interface)
-        target, team = self._seed_export_setup(db)
-        app = make_app(db_interface)
-        client = TestClient(app)
-
         try:
+            target, team = self._seed_export_setup(db)
+            app = make_app(db_interface)
+            client = TestClient(app)
+
             response = client.post(
                 f"/admin/users/{target.id}/export",
                 json={"selections": [{"teamId": team.id, "dataTypes": ["not_a_type"]}]},
