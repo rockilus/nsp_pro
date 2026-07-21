@@ -16,26 +16,21 @@ docker compose -f docker-compose.tests.local.yml ps
 # 2. Extract Cognito pool/client IDs from init output
 echo ""
 echo "[2/5] Getting Cognito pool/client IDs..."
-COGNITO_LOG=$(docker logs cognito-local-init 2>/dev/null | tail -30)
-POOL_ID=$(echo "$COGNITO_LOG" | grep "COGNITO_USER_POOL_ID=" | tail -1 | cut -d'=' -f2)
-CLIENT_ID=$(echo "$COGNITO_LOG" | grep "COGNITO_CLIENT_ID=" | tail -1 | cut -d'=' -f2)
+source scripts/resolve-cognito-local.sh
 
-if [ -z "$POOL_ID" ] || [ -z "$CLIENT_ID" ]; then
-  echo "ERROR: Could not extract Cognito IDs from init logs."
+if [ -z "${COGNITO_USER_POOL_ID:-}" ] || [ -z "${COGNITO_CLIENT_ID:-}" ]; then
+  echo "ERROR: Could not resolve Cognito IDs from cognito-local-init container."
   echo "Last 50 lines of cognito-local-init:"
   docker logs cognito-local-init 2>/dev/null | tail -50
   exit 1
 fi
-echo "  Pool: $POOL_ID"
-echo "  Client: $CLIENT_ID"
+echo "  Pool: $COGNITO_USER_POOL_ID"
+echo "  Client: $COGNITO_CLIENT_ID"
 
 # 3. Start backend against cognito-local
 echo ""
 echo "[3/5] Starting backend..."
 cd backend/api_gateway
-export COGNITO_USER_POOL_ID="$POOL_ID"
-export COGNITO_CLIENT_ID="$CLIENT_ID"
-export COGNITO_ENDPOINT_URL="http://localhost:9229"
 export ENVIRONMENT="development"
 uv run uvicorn src.main:app --host 127.0.0.1 --port 4000 --env-file .env.development.tests &
 BACKEND_PID=$!

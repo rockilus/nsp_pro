@@ -164,6 +164,19 @@ class SystemConstraintInputs:
         list[tuple[str, str, str]],  # free OFF assignment vars
         int,
     ] = field(default_factory=lambda: ([], 0))
+    monthly_target_nb_on_call: list[GroupsAssignmentsTargetConstraint] = field(
+        default_factory=list
+    )
+    max_weekly_nb_on_call: tuple[
+        list[list[list[tuple[str, str, str]]]],  # week * worker * on-calls
+        int,
+    ] = field(default_factory=lambda: ([], 0))
+    on_call_consecutive_gap: tuple[
+        list[
+            tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]
+        ],  # (day_d_vars, day_d+k_vars) pairs
+        int,
+    ] = field(default_factory=lambda: ([], 0))
 
 
 @dataclass
@@ -217,6 +230,9 @@ class ObjectiveCategory(Enum):
     MAX_WEEK_DAY_NB_DUTIES = 13
     DUTY_CONSECUTIVE_GAP = 14
     OFF_SHIFT_PENALTY = 15
+    MONTHLY_TARGET_NB_ON_CALL = 16
+    ON_CALL_CONSECUTIVE_GAP = 17
+    MAX_WEEKLY_NB_ON_CALL = 18
 
 
 # pylint: disable=R0801
@@ -337,4 +353,5 @@ class ProcessingCache:
     w_to_nb_duties: dict[str, dict[str, list[int]]]
     shift_id_to_duration: dict[str, int]
     dim_to_attr_value_to_shift: dict[str, dict[str | int | float | bool, list[str]]]
+    w_to_nb_on_calls: dict[str, dict[str, list[int]]] = field(default_factory=dict)
     scope_ctx: "ScopeContext | None" = None

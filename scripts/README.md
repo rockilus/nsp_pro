@@ -67,7 +67,7 @@ http://localhost:4566/000000000000/nsp-pro-dev-email-queue
 
 **Usage:**
 
-The script runs automatically when using `docker-compose up` via the `localstack-init` service. To run manually:
+In `docker-compose.tests.local.yml` the script is mounted into the LocalStack container as a native init hook (`/etc/localstack/init/ready.d/init-sqs.sh`) and runs automatically once LocalStack is ready — the `localstack` healthcheck only reports healthy after the hook succeeds. In the other compose files it runs via a dedicated `localstack-init` service. To run manually:
 
 ```bash
 # Make sure LocalStack is running
@@ -77,7 +77,7 @@ docker-compose up -d localstack
 ./scripts/init-localstack-sqs.sh
 ```
 
-**Note:** When running docker-compose, the queues are automatically created by the `localstack-init` service before the application services start.
+**Note:** The script must stay executable (`chmod +x`) — LocalStack only runs executable ready.d hooks.
 
 ## Environment Variables
 

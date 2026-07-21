@@ -285,6 +285,9 @@ class Model:
         self.add_target_nb_duties_constraints(
             inputs.system_constraints.monthly_target_nb_duties
         )
+        self.add_target_nb_on_call_constraints(
+            inputs.system_constraints.monthly_target_nb_on_call
+        )
         self.add_special_days_constraints(
             inputs.system_constraints.special_days_target_nb_duties
         )
@@ -300,9 +303,16 @@ class Model:
                 constraint=inputs.system_constraints.max_week_day_nb_duties,
                 obj_category=ObjectiveCategory.MAX_WEEK_DAY_NB_DUTIES,
             )
+            self.add_max_weekly_nb_duties_constraints(
+                constraint=inputs.system_constraints.max_weekly_nb_on_call,
+                obj_category=ObjectiveCategory.MAX_WEEKLY_NB_ON_CALL,
+            )
             self.add_consecutive_duty_gap_constraints(
                 constraint=inputs.system_constraints.duty_consecutive_gap,
                 # obj_category=ObjectiveCategory.DUTY_CONSECUTIVE_GAP,
+            )
+            self.add_on_call_consecutive_gap_constraints(
+                constraint=inputs.system_constraints.on_call_consecutive_gap,
             )
             self.add_off_shift_penalty_constraints(
                 constraint=inputs.system_constraints.off_shift_penalty,
@@ -654,6 +664,46 @@ class Model:
             self.obj.int_vars.append(max_excess)
             self.obj.int_coeffs.append(constraint.penalty)
 
+    def add_target_nb_on_call_constraints(
+        self, constraints: list[GroupsAssignmentsTargetConstraint]
+    ) -> None:
+        for constraint in constraints:
+            excesses = []
+            cstr_vars = []
+            for assignments, target in zip(constraint.assignments, constraint.targets):
+                constraint_vars = [self.variables[a] for a in assignments]
+                cstr_vars.extend(constraint_vars)
+                excess = self.model.NewIntVar(
+                    -target,
+                    len(constraint_vars)
+                    * Constants.NUM_HOURS_DAY
+                    * Constants.NUM_MINUTES_HOUR,
+                    "",
+                )
+                tolerance = round(target * constraint.tolerance)
+                self.model.AddMaxEquality(
+                    excess,
+                    [
+                        sum(v for v in constraint_vars) - target - tolerance,
+                        0,
+                    ],
+                )
+                excesses.append(excess)
+            var_name = build_var_name_groups_assignments(
+                cstr_vars=cstr_vars,
+                category=ObjectiveCategory.MONTHLY_TARGET_NB_ON_CALL,
+            )
+            max_excess = self.model.NewIntVar(
+                0,
+                len(constraint_vars)
+                * Constants.NUM_HOURS_DAY
+                * Constants.NUM_MINUTES_HOUR,
+                var_name,
+            )
+            self.model.AddMaxEquality(max_excess, excesses)
+            self.obj.int_vars.append(max_excess)
+            self.obj.int_coeffs.append(constraint.penalty)
+
     # pylint: disable=too-many-branches
     def add_max_weekly_nb_duties_constraints(
         self,
@@ -831,6 +881,41 @@ class Model:
             excess = self.model.NewBoolVar("")
             self.model.Add(has_duty_d + has_duty_next >= 2).OnlyEnforceIf(excess)
             self.model.Add(has_duty_d + has_duty_next < 2).OnlyEnforceIf(excess.Not())
+            self.obj.bool_vars.append(excess)
+            self.obj.bool_coeffs.append(penalty)
+
+    def add_on_call_consecutive_gap_constraints(
+        self,
+        constraint: tuple[
+            list[tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]],
+            int,
+        ],
+    ) -> None:
+        if not constraint:
+            return
+        pairs, penalty = constraint
+        if not pairs or penalty == 0:
+            return
+
+        for vars_d, vars_next in pairs:
+            model_vars_d = [self.variables[a] for a in vars_d if a in self.variables]
+            model_vars_next = [
+                self.variables[a] for a in vars_next if a in self.variables
+            ]
+            if not model_vars_d or not model_vars_next:
+                continue
+
+            has_on_call_d = self.model.NewBoolVar("")
+            self.model.AddMaxEquality(has_on_call_d, model_vars_d)
+
+            has_on_call_next = self.model.NewBoolVar("")
+            self.model.AddMaxEquality(has_on_call_next, model_vars_next)
+
+            excess = self.model.NewBoolVar("")
+            self.model.Add(has_on_call_d + has_on_call_next >= 2).OnlyEnforceIf(excess)
+            self.model.Add(has_on_call_d + has_on_call_next < 2).OnlyEnforceIf(
+                excess.Not()
+            )
             self.obj.bool_vars.append(excess)
             self.obj.bool_coeffs.append(penalty)
 

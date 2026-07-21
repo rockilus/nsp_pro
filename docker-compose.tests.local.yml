@@ -17,6 +17,8 @@ services:
       retries: 5
 
   # LocalStack (to emulate SQS)
+  # SQS queues are created by the native ready.d init hook (scripts/init-localstack-sqs.sh);
+  # the healthcheck only passes once that hook has run successfully.
   localstack:
     image: localstack/localstack:3.4
     container_name: localstack
@@ -25,27 +27,14 @@ services:
     environment:
       - SERVICES=sqs
       - DEBUG=1
+    volumes:
+      - ./scripts/init-localstack-sqs.sh:/etc/localstack/init/ready.d/init-sqs.sh:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/init/ready | grep -q '\"state\": \"SUCCESSFUL\"'"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  # LocalStack SQS Queue Initializer
-  localstack-init:
-    image: amazon/aws-cli:latest
-    container_name: localstack-init
-    depends_on:
-      localstack:
-        condition: service_healthy
-    environment:
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - AWS_DEFAULT_REGION=eu-west-3
-      - LOCALSTACK_ENDPOINT=http://localstack:4566
-    volumes:
-      - ./scripts/init-localstack-sqs.sh:/init-localstack-sqs.sh:ro
-    entrypoint: ["/bin/bash", "/init-localstack-sqs.sh"]
+      start_period: 15s
 
   # cognito-local — offline Cognito emulator for E2E auth tests
   cognito-local:

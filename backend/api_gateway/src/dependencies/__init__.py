@@ -6,6 +6,9 @@ from src.dependencies.auth_dependencies import (
     verify_service_authentication,
 )
 from src.dependencies.auth_service import get_auth_service
+from src.dependencies.campaign_quality_service import (
+    get_campaign_quality_service,
+)
 from src.dependencies.cerbos_authz_dependencies import get_cerbos_authz_service
 from src.dependencies.constraint_build_service import (
     get_constraint_build_service,
@@ -46,6 +49,7 @@ __all__ = [
     "get_assignment_service",
     "get_attribute_service",
     "get_auth_service",
+    "get_campaign_quality_service",
     "get_effective_user_context",
     "get_user_context",
     "verify_service_authentication",

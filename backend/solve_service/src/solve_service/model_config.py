@@ -101,6 +101,10 @@ model_config = ModelConfig(
         special_days_target_nb_duties=not test_mode,
         duty_consecutive_gap=not test_mode,
         off_shift_penalty=not test_mode,
+        monthly_target_nb_on_call=not test_mode,
+        mthly_target_nb_on_call_tolerance=0.2 if not test_mode else 0.0,
+        on_call_consecutive_gap=not test_mode,
+        max_weekly_nb_on_call=not test_mode,
     ),
 )
 

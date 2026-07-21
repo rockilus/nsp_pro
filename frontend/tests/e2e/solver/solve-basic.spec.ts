@@ -3,22 +3,40 @@
  *
  * These tests verify that the solver can generate valid schedules
  * for various scenarios with different complexity levels.
+ *
+ * Scenarios are auto-discovered at global-setup time and passed via
+ * the SOLVER_TEST_SCENARIOS env var. To target a single scenario:
+ *   npx playwright test solve-basic.spec.ts --grep "basic_coverage"
  */
 
 import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
 import { SolverTestBase } from '../../utils/solver-test-base';
 import { ScheduleStatus } from '@/types/schedule';
 import { ShiftType } from '@/types/shift';
 
-// Hardcoded list of test scenarios
-// This list is used across multiple tests to ensure consistency
-const TEST_SCENARIOS = [
-  'basic_coverage',
-  'benoit_scenario_0',
-  'benoit_scenario_1',
-  'benoit_scenario_2',
-  'benoit_scenario_0_no_request_no_constraint',
-] as const;
+function loadScenarios(): readonly string[] {
+  try {
+    const scenariosPath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'utils',
+      '.generated',
+      'solver-scenarios.json',
+    );
+    return JSON.parse(fs.readFileSync(scenariosPath, 'utf-8'));
+  } catch {
+    return JSON.parse(process.env.SOLVER_TEST_SCENARIOS || '[]');
+  }
+}
+
+const TEST_SCENARIOS: readonly string[] = loadScenarios();
+
+if (TEST_SCENARIOS.length === 0) {
+  console.warn('No solver test scenarios discovered by global-setup');
+}
 
 test.describe('Solver - Basic Coverage', () => {
   test('should list available solver test scenarios', async ({}, testInfo) => {
@@ -30,11 +48,8 @@ test.describe('Solver - Basic Coverage', () => {
     expect(scenarios.length).toBeGreaterThan(0);
     console.log(`Found ${scenarios.length} available scenarios:`);
 
-    // Verify all test scenarios exist
-    // Ensure every expected test scenario appears in the returned list
-    for (const scenarioName of TEST_SCENARIOS) {
-      expect(scenarios).toContain(scenarioName);
-      console.log(`   ✓ ${scenarioName}`);
+    for (const name of scenarios) {
+      console.log(`   ✓ ${name}`);
     }
   });
 

@@ -58,9 +58,13 @@ from core_to_engine_service.calculate_worker_nb_duties import (
     build_consecutive_duty_gap_vars,
     build_max_week_day_nb_duties_vars,
     build_max_weekly_nb_duties_vars,
+    build_max_weekly_nb_on_call_vars,
     build_nb_duties_constraints,
+    build_nb_on_call_constraints,
+    build_on_call_consecutive_gap_vars,
     calculate_auto_gap,
     calculate_worker_nb_duties,
+    calculate_worker_nb_on_calls,
 )
 from core_to_engine_service.calculate_worker_special_days import (
     build_duty_special_days_constraints,
@@ -118,6 +122,9 @@ def core_to_engine_inputs(
     ]
     shift_duties = [s for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY]
     shift_duties_not_deleted = [s for s in shift_duties if not s.deleted]
+    shift_on_call_not_deleted = [
+        s for s in shifts_not_deleted if s.shift_type == ShiftType.ON_CALL
+    ]
     shift_id_to_duration_dict = _build_shift_id_to_duration_dict(engine_inputs.shifts)
     dim_to_attr_value_to_shift = build_dim_to_attr_value_to_owner(
         engine_inputs.shifts,
@@ -228,6 +235,15 @@ def core_to_engine_inputs(
         periods=periods_monthly,
     )
 
+    w_to_nb_on_calls = calculate_worker_nb_on_calls(
+        schedule=engine_inputs.schedule,
+        workers=workers_not_deleted,
+        shifts=shifts_not_deleted,
+        requests=engine_inputs.requests_leave,
+        shift_demands=engine_inputs.shift_demands,
+        periods=periods_monthly,
+    )
+
     # Max weekly nb duties variables (weeks x workers x assignments lists)
     max_weekly_nb_duties_vars = (
         build_max_weekly_nb_duties_vars(
@@ -248,6 +264,17 @@ def core_to_engine_inputs(
             ws_to_dates,
         )
         if engine_inputs.model_config.system_constraints.max_week_day_nb_duties
+        else []
+    )
+
+    max_weekly_nb_on_call_vars = (
+        build_max_weekly_nb_on_call_vars(
+            workers_not_deleted,
+            shift_on_call_not_deleted,
+            periods_weekly,
+            ws_to_dates,
+        )
+        if engine_inputs.model_config.system_constraints.max_weekly_nb_on_call
         else []
     )
 
@@ -275,6 +302,20 @@ def core_to_engine_inputs(
             _gap_days,
         )
         if engine_inputs.model_config.system_constraints.duty_consecutive_gap
+        and _gap_enabled
+        else []
+    )
+
+    on_call_consecutive_gap_vars = (
+        build_on_call_consecutive_gap_vars(
+            workers_not_deleted,
+            shift_on_call_not_deleted,
+            dates_campaign,
+            dates_hist,
+            ws_to_dates,
+            _gap_days,
+        )
+        if engine_inputs.model_config.system_constraints.on_call_consecutive_gap
         and _gap_enabled
         else []
     )
@@ -511,6 +552,11 @@ def core_to_engine_inputs(
                 max_week_day_nb_duties_vars,
                 engine_inputs.penalties.system_constraint.max_week_day_nb_duties,
             ),
+            # max_weekly_nb_on_call: tuple (weeks x workers x assignments, penalty)
+            max_weekly_nb_on_call=(
+                max_weekly_nb_on_call_vars,
+                engine_inputs.penalties.system_constraint.max_weekly_nb_on_call,
+            ),
             # special_days_target_nb_duties=[],
             special_days_target_nb_duties=(
                 build_duty_special_days_constraints(
@@ -541,6 +587,28 @@ def core_to_engine_inputs(
                 free_off_vars,
                 engine_inputs.penalties.system_constraint.off_shift_penalty,
             ),
+            # monthly_target_nb_on_call: list[GroupsAssignmentsTargetConstraint]
+            monthly_target_nb_on_call=(
+                build_nb_on_call_constraints(
+                    periods_monthly,
+                    w_to_nb_on_calls,
+                    ws_to_dates,
+                    shift_on_call_not_deleted,
+                    engine_inputs.penalties.system_constraint.monthly_target_nb_on_call,
+                    # fmt: off
+                    engine_inputs.model_config.system_constraints.mthly_target_nb_on_call_tolerance,
+                    # fmt: on
+                )
+                # fmt: off
+                if engine_inputs.model_config.system_constraints.monthly_target_nb_on_call
+                # fmt: on
+                else []
+            ),
+            # on_call_consecutive_gap: tuple (pairs of (day_d_vars, day_d+k_vars), penalty)
+            on_call_consecutive_gap=(
+                on_call_consecutive_gap_vars,
+                engine_inputs.penalties.system_constraint.on_call_consecutive_gap,
+            ),
         ),
         model_config=engine_inputs.model_config,
     )
@@ -563,6 +631,7 @@ def core_to_engine_inputs(
         w_to_nb_duties=w_to_nb_duties,
         shift_id_to_duration=shift_id_to_duration_dict,
         dim_to_attr_value_to_shift=dim_to_attr_value_to_shift,
+        w_to_nb_on_calls=w_to_nb_on_calls,
         scope_ctx=_scope_ctx,
     )
 

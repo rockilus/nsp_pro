@@ -13,6 +13,8 @@
  */
 
 import { chromium, FullConfig } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
 import { DatabaseTestUtils } from './database-utils';
 import { testConfig } from './test-config';
 
@@ -127,6 +129,24 @@ async function globalSetup(config: FullConfig) {
       console.log(`✅ Known-good Cognito user created: ${knownUserEmail}`);
     } catch (error) {
       console.warn('⚠️ Known-good Cognito user creation failed:', error);
+    }
+
+    // Discover available solver test scenarios for E2E tests
+    console.log('📋 Discovering solver test scenarios...');
+    try {
+      const scenarios = await dbUtils.listSolverScenarios();
+      process.env.SOLVER_TEST_SCENARIOS = JSON.stringify(scenarios);
+      console.log(`✅ Found ${scenarios.length} solver test scenarios: ${scenarios.join(', ')}`);
+
+      const generatedDir = path.join(__dirname, '.generated');
+      fs.mkdirSync(generatedDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(generatedDir, 'solver-scenarios.json'),
+        JSON.stringify(scenarios, null, 2),
+      );
+    } catch (error) {
+      console.warn('⚠️ Failed to discover solver test scenarios:', error);
+      process.env.SOLVER_TEST_SCENARIOS = '[]';
     }
 
     // Optional: Verify we can create and query a browser for testing
