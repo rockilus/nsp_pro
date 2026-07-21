@@ -37,6 +37,8 @@ penalties = Penalties(
         special_days_target_nb_duties=30,
         duty_consecutive_gap=200,
         off_shift_penalty=1,
+        monthly_target_nb_on_call=100,
+        on_call_consecutive_gap=200,
     ),
 )
 

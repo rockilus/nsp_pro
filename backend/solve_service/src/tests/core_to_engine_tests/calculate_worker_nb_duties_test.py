@@ -20,8 +20,12 @@ from core_to_engine_service.build_periods import build_periods_monthly
 from core_to_engine_service.calculate_worker_nb_duties import (
     build_consecutive_duty_gap_vars,
     build_nb_duties_constraints,
+    build_on_call_consecutive_gap_vars,
+    build_nb_on_call_constraints,
     calculate_auto_gap,
+    calculate_auto_on_call_gap,
     calculate_worker_nb_duties,
+    calculate_worker_nb_on_calls,
     get_nb_days_in_months,
 )
 from core_to_engine_service.calculate_worker_work_times import (
@@ -56,7 +60,9 @@ class TestCalculateWorkerNbDuties:
 
         assert isinstance(out, dict)
         assert all(isinstance(v, dict) for v in out.values())
-        assert all(isinstance(vv, list) for v in out.values() for vv in v.values())
+        assert all(
+            isinstance(vv, list) for v in out.values() for vv in v.values()
+        )
         assert all(
             isinstance(vvv, int)
             for v in out.values()
@@ -116,7 +122,9 @@ class TestCalculateWorkerNbDuties:
                 assert out[worker.id]["max"][i] == expected_max
 
         shift_duty_ids = [
-            s.id for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY
+            s.id
+            for s in engine_inputs.shifts
+            if s.shift_type == ShiftType.DUTY
         ]
 
         nb_duties_periods: dict[int, float] = {}
@@ -301,7 +309,9 @@ class TestBuildNbDutiesConstraints:
         )
 
         assert isinstance(out, list)
-        assert all(isinstance(c, GroupsAssignmentsTargetConstraint) for c in out)
+        assert all(
+            isinstance(c, GroupsAssignmentsTargetConstraint) for c in out
+        )
 
     # pylint: disable=too-many-locals
     def test_build_nb_duties_constraints_output(
@@ -371,7 +381,11 @@ class TestBuildNbDutiesConstraints:
                 # fmt: on
             )
             dates_gadtc = list(
-                set(date.fromisoformat(a[1]) for ag in gadtc.assignments for a in ag)
+                set(
+                    date.fromisoformat(a[1])
+                    for ag in gadtc.assignments
+                    for a in ag
+                )
             )
             for i, period in p_index_to_period.items():
                 if sorted(dates_gadtc) == sorted(period):
@@ -560,7 +574,9 @@ class TestBuildConsecutiveDutyGapVarsPerWorker:
         """Build a minimal ws_to_dates mapping where every (worker, shift) pair
         can be assigned on every campaign date."""
         return {
-            (w.id, s.id): WorkerDates(dates_hist=[], dates_campaign=dates_campaign)
+            (w.id, s.id): WorkerDates(
+                dates_hist=[], dates_campaign=dates_campaign
+            )
             for w in workers
             for s in shifts
         }
@@ -580,7 +596,9 @@ class TestBuildConsecutiveDutyGapVarsPerWorker:
 
         # Campaign: 3 days so we can reason about all pairs concretely
         dates_campaign = [date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 3)]
-        ws_to_dates = self._build_ws_to_dates(workers, [duty_shift], dates_campaign)
+        ws_to_dates = self._build_ws_to_dates(
+            workers, [duty_shift], dates_campaign
+        )
 
         # Per-worker gap dict
         gap_dict: dict[str, int] = {"wA": 1, "wB": 2}
@@ -617,7 +635,9 @@ class TestBuildConsecutiveDutyGapVarsPerWorker:
         worker = _make_worker("wScalar")
         duty_shift = _make_duty_shift("sd0")
         dates_campaign = [date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 3)]
-        ws_to_dates = self._build_ws_to_dates([worker], [duty_shift], dates_campaign)
+        ws_to_dates = self._build_ws_to_dates(
+            [worker], [duty_shift], dates_campaign
+        )
 
         pairs = build_consecutive_duty_gap_vars(
             [worker],
@@ -637,3 +657,240 @@ class TestBuildConsecutiveDutyGapVarsPerWorker:
         assert ("wScalar", "2025-01-01", "2025-01-02") in pair_keys
         # gap=1 → d+2 pairs must NOT be present
         assert ("wScalar", "2025-01-01", "2025-01-03") not in pair_keys
+
+
+# ---------------------------------------------------------------------------
+# Helpers for on-call tests
+# ---------------------------------------------------------------------------
+
+
+def _make_on_call_shift(shift_id: str) -> Shift:
+    from shared.schemas.core.shift import Staffing
+
+    return Shift(
+        id=shift_id,
+        team_id="t0",
+        name=shift_id,
+        acronym=shift_id[:2].upper(),
+        acronym_custom=False,
+        start_time=datetime(2025, 1, 1, 20, 0),
+        end_time=datetime(2025, 1, 2, 8, 0),
+        staffing=[Staffing(specialty_id=None, staffing=1)],
+        color="orange",
+        shift_type=ShiftType.ON_CALL,
+        rest_type=ShiftRestType.NONE,
+        leave_type=ShiftLeaveType.NONE,
+        recuperation_time=0,
+        recuperation_duty_id=None,
+        deleted=False,
+    )
+
+
+def _build_ws_to_dates_on_call(
+    workers: list[Worker],
+    on_call_shifts: list[Shift],
+    dates_campaign: list[date],
+) -> dict[tuple[str, str], WorkerDates]:
+    return {
+        (w.id, s.id): WorkerDates(dates_hist=[], dates_campaign=dates_campaign)
+        for w in workers
+        for s in on_call_shifts
+    }
+
+
+# ---------------------------------------------------------------------------
+# Tests for on-call functions
+# ---------------------------------------------------------------------------
+
+
+class TestCalculateWorkerNbOnCalls:
+    def test_basic_output_structure(
+        self, engine_inputs: EngineInputsAugmented
+    ) -> None:
+        schedule = engine_inputs.schedule
+        dates_campaign = [
+            schedule.start_date + timedelta(days=i)
+            for i in range((schedule.end_date - schedule.start_date).days + 1)
+        ]
+        periods_monthly = build_periods_monthly([], dates_campaign)
+
+        out = calculate_worker_nb_on_calls(
+            engine_inputs.schedule,
+            engine_inputs.workers,
+            engine_inputs.shifts,
+            engine_inputs.requests_leave,
+            engine_inputs.shift_demands,
+            periods_monthly,
+        )
+
+        assert isinstance(out, dict)
+        for v in out.values():
+            assert list(v.keys()) == ["desired", "max", "target"]
+            for lst in v.values():
+                assert all(isinstance(x, int) for x in lst)
+
+    def test_even_split_no_demand(self) -> None:
+        workers = [_make_worker("w1"), _make_worker("w2")]
+        shifts: list[Shift] = []
+        periods: list[list[date]] = [
+            [date(2025, 1, 1) + timedelta(days=i) for i in range(31)]
+        ]
+        from shared.schemas.core import Schedule, ScheduleStatus
+
+        schedule = Schedule(
+            id="s1",
+            team_id="t0",
+            start_date=date(2025, 1, 1),
+            end_date=date(2025, 1, 31),
+            status=ScheduleStatus.CAMPAIGN,
+            missing_coverage_dates=[],
+            constraint_build_ids=[],
+            quick_staffings=[],
+            created_by="test_user",
+            created_at=datetime(2025, 1, 1, 0, 0),
+            updated_at=datetime(2025, 1, 1, 0, 0),
+        )
+
+        out = calculate_worker_nb_on_calls(
+            schedule,
+            workers,
+            shifts,
+            [],
+            [],
+            periods,
+        )
+        assert len(out) == 2
+        for w_id in ["w1", "w2"]:
+            assert out[w_id]["target"] == [0]
+            assert out[w_id]["desired"] == [0]
+
+
+class TestCalculateAutoOnCallGap:
+    def test_basic(self) -> None:
+        workers = [_make_worker("wA"), _make_worker("wB")]
+        periods_monthly: list[list[date]] = [
+            [date(2025, 1, 1) + timedelta(days=i) for i in range(30)]
+        ]
+        w_to_nb: dict[str, dict[str, list[int]]] = {
+            "wA": {"desired": [6], "max": [80], "target": [6]},
+            "wB": {"desired": [2], "max": [20], "target": [2]},
+        }
+
+        result = calculate_auto_on_call_gap(workers, w_to_nb, periods_monthly)
+        # 6 desired → floor(30 / 7) = 4, 2 desired → floor(30 / 3) = 10
+        assert result["wA"] == 4
+        assert result["wB"] == 10
+
+    def test_zero_desired_falls_back_to_cap(self) -> None:
+        workers = [_make_worker("wZ")]
+        periods_monthly: list[list[date]] = [
+            [date(2025, 1, 1) + timedelta(days=i) for i in range(5)]
+        ]
+        w_to_nb: dict[str, dict[str, list[int]]] = {
+            "wZ": {"desired": [0], "max": [0], "target": [0]},
+        }
+        result = calculate_auto_on_call_gap(workers, w_to_nb, periods_monthly)
+        assert result["wZ"] == 14
+
+
+class TestBuildOnCallNbDutiesConstraints:
+    def test_basic(self) -> None:
+        worker = _make_worker("w1")
+        on_call_shift = _make_on_call_shift("oc1")
+        periods: list[list[date]] = [
+            [date(2025, 1, 1)],
+            [date(2025, 1, 2)],
+        ]
+        ws_to_dates = _build_ws_to_dates_on_call(
+            [worker], [on_call_shift], [date(2025, 1, 1), date(2025, 1, 2)]
+        )
+        w_to_nb: dict[str, dict[str, list[int]]] = {
+            "w1": {"desired": [1, 1], "max": [10, 10], "target": [1, 1]},
+        }
+
+        result = build_nb_on_call_constraints(
+            periods, w_to_nb, ws_to_dates, [on_call_shift], 100, 0.2
+        )
+        assert len(result) == 2
+        for c in result:
+            assert isinstance(c, GroupsAssignmentsTargetConstraint)
+            assert c.penalty == 100
+            assert c.tolerance == 0.2
+
+
+class TestBuildOnCallConsecutiveGapVars:
+    def test_basic(self) -> None:
+        worker = _make_worker("w1")
+        on_call_shift = _make_on_call_shift("oc1")
+        dates_campaign = [
+            date(2025, 1, 1),
+            date(2025, 1, 2),
+            date(2025, 1, 3),
+        ]
+        ws_to_dates = _build_ws_to_dates_on_call(
+            [worker], [on_call_shift], dates_campaign
+        )
+
+        pairs = build_on_call_consecutive_gap_vars(
+            [worker],
+            [on_call_shift],
+            dates_campaign,
+            dates_hist=[],
+            ws_to_dates=ws_to_dates,
+            min_gap_days=1,
+        )
+        assert len(pairs) == 2
+        # Should have (d1, d2) and (d2, d3) pairs
+        pair_keys = {
+            (vd[0], vd[1], vn[1])
+            for vd_list, vn_list in pairs
+            for vd in vd_list
+            for vn in vn_list
+        }
+        assert ("w1", "2025-01-01", "2025-01-02") in pair_keys
+        assert ("w1", "2025-01-02", "2025-01-03") in pair_keys
+
+    def test_per_worker_gap_dict(self) -> None:
+        wA = _make_worker("wA")
+        wB = _make_worker("wB")
+        on_call_shift = _make_on_call_shift("oc1")
+        dates_campaign = [
+            date(2025, 1, 1),
+            date(2025, 1, 2),
+            date(2025, 1, 3),
+        ]
+        ws_to_dates = _build_ws_to_dates_on_call(
+            [wA, wB], [on_call_shift], dates_campaign
+        )
+
+        pairs = build_on_call_consecutive_gap_vars(
+            [wA, wB],
+            [on_call_shift],
+            dates_campaign,
+            dates_hist=[],
+            ws_to_dates=ws_to_dates,
+            min_gap_days={"wA": 1, "wB": 2},
+        )
+        # Worker A: gap=1 → (d1,d2), (d2,d3) = 2 pairs
+        # Worker B: gap=2 → (d1,d2), (d2,d3), (d1,d3) = 3 pairs
+        pair_keys = {
+            (vd[0], vd[1], vn[1])
+            for vd_list, vn_list in pairs
+            for vd in vd_list
+            for vn in vn_list
+        }
+        assert ("wA", "2025-01-01", "2025-01-02") in pair_keys
+        assert ("wA", "2025-01-02", "2025-01-03") in pair_keys
+        assert (
+            "wA",
+            "2025-01-01",
+            "2025-01-03",
+        ) not in pair_keys  # gap=1 only
+
+        assert ("wB", "2025-01-01", "2025-01-02") in pair_keys
+        assert ("wB", "2025-01-02", "2025-01-03") in pair_keys
+        assert (
+            "wB",
+            "2025-01-01",
+            "2025-01-03",
+        ) in pair_keys  # gap=2 includes this

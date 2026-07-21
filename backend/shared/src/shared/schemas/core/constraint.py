@@ -504,9 +504,13 @@ class SystemConstraintPenalty:
     special_days_target_nb_duties: int
     duty_consecutive_gap: int = 0
     off_shift_penalty: int = 0
+    monthly_target_nb_on_call: int = 0
+    on_call_consecutive_gap: int = 0
 
     def apply_coefficient(self, coefficient: int) -> None:
         self.monthly_target_nb_duties *= coefficient
+        self.monthly_target_nb_on_call *= coefficient
+        self.on_call_consecutive_gap *= coefficient
 
 
 @dataclass

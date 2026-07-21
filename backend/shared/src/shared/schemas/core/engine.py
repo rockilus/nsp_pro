@@ -46,6 +46,9 @@ class SystemConstraints:
     special_days_target_nb_duties: bool
     duty_consecutive_gap: bool = False
     off_shift_penalty: bool = False
+    monthly_target_nb_on_call: bool = False
+    mthly_target_nb_on_call_tolerance: float = 0.2
+    on_call_consecutive_gap: bool = False
 
 
 @dataclass
