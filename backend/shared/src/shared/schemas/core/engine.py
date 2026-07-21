@@ -49,6 +49,7 @@ class SystemConstraints:
     monthly_target_nb_on_call: bool = False
     mthly_target_nb_on_call_tolerance: float = 0.2
     on_call_consecutive_gap: bool = False
+    max_weekly_nb_on_call: bool = False
 
 
 @dataclass

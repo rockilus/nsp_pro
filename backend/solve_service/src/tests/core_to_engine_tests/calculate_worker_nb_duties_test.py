@@ -20,8 +20,8 @@ from core_to_engine_service.build_periods import build_periods_monthly
 from core_to_engine_service.calculate_worker_nb_duties import (
     build_consecutive_duty_gap_vars,
     build_nb_duties_constraints,
-    build_on_call_consecutive_gap_vars,
     build_nb_on_call_constraints,
+    build_on_call_consecutive_gap_vars,
     calculate_auto_gap,
     calculate_auto_on_call_gap,
     calculate_worker_nb_duties,
@@ -60,9 +60,7 @@ class TestCalculateWorkerNbDuties:
 
         assert isinstance(out, dict)
         assert all(isinstance(v, dict) for v in out.values())
-        assert all(
-            isinstance(vv, list) for v in out.values() for vv in v.values()
-        )
+        assert all(isinstance(vv, list) for v in out.values() for vv in v.values())
         assert all(
             isinstance(vvv, int)
             for v in out.values()
@@ -122,9 +120,7 @@ class TestCalculateWorkerNbDuties:
                 assert out[worker.id]["max"][i] == expected_max
 
         shift_duty_ids = [
-            s.id
-            for s in engine_inputs.shifts
-            if s.shift_type == ShiftType.DUTY
+            s.id for s in engine_inputs.shifts if s.shift_type == ShiftType.DUTY
         ]
 
         nb_duties_periods: dict[int, float] = {}
@@ -309,9 +305,7 @@ class TestBuildNbDutiesConstraints:
         )
 
         assert isinstance(out, list)
-        assert all(
-            isinstance(c, GroupsAssignmentsTargetConstraint) for c in out
-        )
+        assert all(isinstance(c, GroupsAssignmentsTargetConstraint) for c in out)
 
     # pylint: disable=too-many-locals
     def test_build_nb_duties_constraints_output(
@@ -381,11 +375,7 @@ class TestBuildNbDutiesConstraints:
                 # fmt: on
             )
             dates_gadtc = list(
-                set(
-                    date.fromisoformat(a[1])
-                    for ag in gadtc.assignments
-                    for a in ag
-                )
+                set(date.fromisoformat(a[1]) for ag in gadtc.assignments for a in ag)
             )
             for i, period in p_index_to_period.items():
                 if sorted(dates_gadtc) == sorted(period):
@@ -574,9 +564,7 @@ class TestBuildConsecutiveDutyGapVarsPerWorker:
         """Build a minimal ws_to_dates mapping where every (worker, shift) pair
         can be assigned on every campaign date."""
         return {
-            (w.id, s.id): WorkerDates(
-                dates_hist=[], dates_campaign=dates_campaign
-            )
+            (w.id, s.id): WorkerDates(dates_hist=[], dates_campaign=dates_campaign)
             for w in workers
             for s in shifts
         }
@@ -596,9 +584,7 @@ class TestBuildConsecutiveDutyGapVarsPerWorker:
 
         # Campaign: 3 days so we can reason about all pairs concretely
         dates_campaign = [date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 3)]
-        ws_to_dates = self._build_ws_to_dates(
-            workers, [duty_shift], dates_campaign
-        )
+        ws_to_dates = self._build_ws_to_dates(workers, [duty_shift], dates_campaign)
 
         # Per-worker gap dict
         gap_dict: dict[str, int] = {"wA": 1, "wB": 2}
@@ -635,9 +621,7 @@ class TestBuildConsecutiveDutyGapVarsPerWorker:
         worker = _make_worker("wScalar")
         duty_shift = _make_duty_shift("sd0")
         dates_campaign = [date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 3)]
-        ws_to_dates = self._build_ws_to_dates(
-            [worker], [duty_shift], dates_campaign
-        )
+        ws_to_dates = self._build_ws_to_dates([worker], [duty_shift], dates_campaign)
 
         pairs = build_consecutive_duty_gap_vars(
             [worker],
@@ -704,9 +688,7 @@ def _build_ws_to_dates_on_call(
 
 
 class TestCalculateWorkerNbOnCalls:
-    def test_basic_output_structure(
-        self, engine_inputs: EngineInputsAugmented
-    ) -> None:
+    def test_basic_output_structure(self, engine_inputs: EngineInputsAugmented) -> None:
         schedule = engine_inputs.schedule
         dates_campaign = [
             schedule.start_date + timedelta(days=i)

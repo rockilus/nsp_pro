@@ -303,6 +303,10 @@ class Model:
                 constraint=inputs.system_constraints.max_week_day_nb_duties,
                 obj_category=ObjectiveCategory.MAX_WEEK_DAY_NB_DUTIES,
             )
+            self.add_max_weekly_nb_duties_constraints(
+                constraint=inputs.system_constraints.max_weekly_nb_on_call,
+                obj_category=ObjectiveCategory.MAX_WEEKLY_NB_ON_CALL,
+            )
             self.add_consecutive_duty_gap_constraints(
                 constraint=inputs.system_constraints.duty_consecutive_gap,
                 # obj_category=ObjectiveCategory.DUTY_CONSECUTIVE_GAP,

@@ -167,6 +167,10 @@ class SystemConstraintInputs:
     monthly_target_nb_on_call: list[GroupsAssignmentsTargetConstraint] = field(
         default_factory=list
     )
+    max_weekly_nb_on_call: tuple[
+        list[list[list[tuple[str, str, str]]]],  # week * worker * on-calls
+        int,
+    ] = field(default_factory=lambda: ([], 0))
     on_call_consecutive_gap: tuple[
         list[
             tuple[list[tuple[str, str, str]], list[tuple[str, str, str]]]
@@ -228,6 +232,7 @@ class ObjectiveCategory(Enum):
     OFF_SHIFT_PENALTY = 15
     MONTHLY_TARGET_NB_ON_CALL = 16
     ON_CALL_CONSECUTIVE_GAP = 17
+    MAX_WEEKLY_NB_ON_CALL = 18
 
 
 # pylint: disable=R0801
