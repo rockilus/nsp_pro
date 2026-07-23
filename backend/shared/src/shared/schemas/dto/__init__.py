@@ -67,6 +67,12 @@ from shared.schemas.dto.multitasking import (
 )
 from shared.schemas.dto.recurrence import OccurrenceInfoDTO, RecurrenceRuleDTO
 from shared.schemas.dto.request import RequestDTO
+from shared.schemas.dto.rotation import (
+    RotationBreakRequestDTO,
+    RotationCreateDTO,
+    RotationDTO,
+    RotationUpdateDTO,
+)
 from shared.schemas.dto.schedule import (
     DuplicateOptionsDTO,
     DuplicateRequestDTO,
@@ -184,6 +190,10 @@ __all__ = [
     "UpdateMultitaskingGroupRequest",
     "OccurrenceInfoDTO",
     "RecurrenceRuleDTO",
+    "RotationBreakRequestDTO",
+    "RotationCreateDTO",
+    "RotationDTO",
+    "RotationUpdateDTO",
     "RequestDTO",
     "DuplicateOptionsDTO",
     "DuplicateRequestDTO",

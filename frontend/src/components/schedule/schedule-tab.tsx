@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import ScheduleDisplay from './table/schedule-display';
 import ScheduleNavBar from './nav-bar/schedule-nav-bar';
 import ScheduleItemDialog from './dialogs/schedule-item-dialog';
+import RotationManagementDialog from './rotations/rotation-management-dialog';
 import {
   ScheduleItemType,
   DialogMode,
@@ -87,6 +88,7 @@ import { SpecialtyT } from '@/types/specialty';
 import { TeamWithMembership } from '@/types/team';
 import { SolveTaskStatusResponseT } from '@/types/solveTaskStatus';
 import { useShiftDemands, useShiftDemandMutations } from '../../app/lib/hooks/useShiftDemands';
+import { useRotations, useRotationMutations } from '../../app/lib/hooks/useRotations';
 import { useGetShiftOptions } from '../../hooks/useStats';
 import { ShiftWorkerOptionT } from '../../types/constraint';
 import { useScheduleViewSettings } from '../../app/lib/hooks/useScheduleViewSettings';
@@ -234,6 +236,7 @@ export default function ScheduleTab({
   const {
     assignments,
     recurrences,
+    rotations,
     isLoading: isLoadingAssignments,
     isFetching: isFetchingAssignments,
     error: assignmentsError,
@@ -348,6 +351,10 @@ export default function ScheduleTab({
   const isCustomSolveModeActive = selectedSolveScope === 'CUSTOM';
 
   const isMobile = useIsMobile();
+
+  const [rotationDialogOpen, setRotationDialogOpen] = useState(false);
+  const { data: rotationsList = [] } = useRotations(teamWithMembership.team.id);
+  const rotationMutations = useRotationMutations(teamWithMembership.team.id);
 
   const handleAssignmentSelection = (selectedAssignment: AssignmentDataT) => {
     setDialogOpen(true);
@@ -1701,6 +1708,7 @@ export default function ScheduleTab({
               shiftSolveCells={shiftSolveCells}
               handleExportSchedule={handleExportSchedule}
               periodDates={periodDates}
+              onOpenRotations={() => setRotationDialogOpen(true)}
             />
             {(selectionState.isActive ||
               (scheduleViewSettings.groupBy === 'worker'
@@ -1767,6 +1775,7 @@ export default function ScheduleTab({
               assignments={assignments}
               shiftDemands={shiftDemands}
               recurrences={recurrences}
+              rotations={rotations}
               breaches={breaches}
               workers={workers}
               shifts={shifts}
@@ -1834,6 +1843,26 @@ export default function ScheduleTab({
           handleDenyRequest={handleDenyRequest}
         />
       </div>
+      <RotationManagementDialog
+        lng={lng}
+        open={rotationDialogOpen}
+        onClose={() => setRotationDialogOpen(false)}
+        teamId={teamWithMembership.team.id}
+        shifts={shifts.filter((s) => !s.deleted)}
+        workers={workers.filter((w) => !w.deleted)}
+        rotations={rotationsList}
+        onCreate={(data) => {
+          rotationMutations.create.mutate(data);
+        }}
+        onUpdate={(rotationId, data) => {
+          rotationMutations.update.mutate({ rotationId, data });
+        }}
+        onDelete={(rotationId) => {
+          rotationMutations.delete.mutate(rotationId);
+        }}
+        isCreating={rotationMutations.create.isPending}
+        isUpdating={rotationMutations.update.isPending}
+      />
     </div>
   );
 }

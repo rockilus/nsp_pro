@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, time, timezone
 from enum import Enum
 from typing import Dict, List
@@ -7,6 +7,7 @@ import humps
 from pydantic import TypeAdapter
 
 from shared.schemas.core.recurrence import RecurrenceRule
+from shared.schemas.core.rotation import Rotation
 from shared.schemas.dto.assignment import (
     AssignmentDTO,
     AssignmentsRecurrencesResultDTO,
@@ -19,6 +20,7 @@ class AssignmentSource(Enum):
     DUPLICATE = "duplicate"
     RECURRENCE = "recurrence"
     REQUEST = "request"
+    ROTATION = "rotation"
 
 
 @dataclass
@@ -88,6 +90,7 @@ class AssignmentsRecurrencesResult:
     recurrences_read: List[RecurrenceRule]
     recurrence_updated: RecurrenceRule | None
     recurrences_deleted_ids: List[str]
+    rotations: List[Rotation] = field(default_factory=list)
 
     def to_dto(self) -> AssignmentsRecurrencesResultDTO:
         data = asdict(self)
@@ -95,6 +98,7 @@ class AssignmentsRecurrencesResult:
         data["assignments_read"] = [a.to_dict() for a in self.assignments_read]
         data["assignments_updated"] = [a.to_dict() for a in self.assignments_updated]
         data["recurrences_read"] = [r.to_dto() for r in self.recurrences_read]
+        data["rotations"] = [r.to_dto() for r in self.rotations]
         if self.recurrence_created:
             data["recurrence_created"] = self.recurrence_created.to_dto()
         if self.recurrence_updated:
@@ -119,6 +123,9 @@ class AssignmentsRecurrencesResult:
         ]
         data_dict["recurrences_read"] = [
             RecurrenceRule.from_dto(r) for r in data_dict["recurrences_read"]
+        ]
+        data_dict["rotations"] = [
+            Rotation.from_dto(r) for r in (data_dict.get("rotations") or [])
         ]
         data_dict["recurrence_created"] = None
         if data_dict.get("recurrence_created", None):

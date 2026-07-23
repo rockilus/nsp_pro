@@ -431,6 +431,7 @@ export default function MobileScheduleTab({
                     breaches: [],
                     requests: [],
                     recurrence: null,
+                    rotation: null,
                   },
                 }
               : {

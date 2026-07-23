@@ -51,6 +51,7 @@ export default function ScheduleNavBar({
   shiftSolveCells = [],
   handleExportSchedule,
   periodDates = [],
+  onOpenRotations,
 }: {
   lng: string;
   teamWithMembership: TeamWithMembership;
@@ -82,6 +83,7 @@ export default function ScheduleNavBar({
   shiftSolveCells?: SelectedScheduleCell[];
   handleExportSchedule?: (options: ExportOptionsT) => void;
   periodDates?: periodDateT[];
+  onOpenRotations?: () => void;
 }) {
   const { t } = useTranslation(lng, 'schedule-page');
 
@@ -130,6 +132,7 @@ export default function ScheduleNavBar({
             handleChangeTimeFrame={handleChangeTimeFrame}
             handleExportSchedule={handleExportSchedule}
             periodDates={periodDates}
+            onOpenRotations={onOpenRotations}
           />
 
           {scheduleCampaign ? (

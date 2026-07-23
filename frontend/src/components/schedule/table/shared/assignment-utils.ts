@@ -8,6 +8,7 @@ import { ShiftT, ShiftRestType } from '../../../../types/shift';
 import { RequestT } from '../../../../types/request';
 import { AttributeOwnerType } from '../../../../types/attribute';
 import { RecurrenceRuleT } from '@/types/recurrence';
+import { RotationT } from '@/types/rotation';
 import { ShiftDemandDTO } from '@/types/shiftDemand';
 import {
   AssignmentsDictT,
@@ -27,6 +28,7 @@ export const buildAssignmentsDataByOwnerAndDate = (
   ownerType: AttributeOwnerType,
   assignments: AssignmentT[],
   recurrences: RecurrenceRuleT[],
+  rotations: RotationT[],
   workers: WorkerT[],
   shifts: ShiftT[],
   breaches: BreachT[],
@@ -38,6 +40,12 @@ export const buildAssignmentsDataByOwnerAndDate = (
   const recurrenceMap = new Map<string, RecurrenceRuleT>();
   recurrences.forEach((recurrence) => {
     recurrenceMap.set(recurrence.id, recurrence);
+  });
+
+  // Precompute a map of rotations by rotationId
+  const rotationMap = new Map<string, RotationT>();
+  rotations.forEach((rotation) => {
+    rotationMap.set(rotation.id, rotation);
   });
 
   // Precompute a map of breaches by shiftId and date
@@ -74,6 +82,9 @@ export const buildAssignmentsDataByOwnerAndDate = (
     // Get the recurrence for the assignment
     const recurrence = assignment.sourceId ? recurrenceMap.get(assignment.sourceId) || null : null;
 
+    // Get the rotation for the assignment
+    const rotation = assignment.sourceId ? rotationMap.get(assignment.sourceId) || null : null;
+
     // Get associated breaches using the precomputed map
     const breachKey = `${shift.id}-${assignment.date.format('YYYY-MM-DD')}`;
     const associatedBreaches = breachMap.get(breachKey) || [];
@@ -98,6 +109,7 @@ export const buildAssignmentsDataByOwnerAndDate = (
           shift,
           assignment,
           recurrence,
+          rotation,
           breaches: associatedBreaches,
           requests: associatedRequests,
         });
@@ -113,6 +125,7 @@ export const buildAssignmentsDataByOwnerAndDate = (
       shift,
       assignment,
       recurrence,
+      rotation,
       breaches: associatedBreaches,
       requests: associatedRequests,
     });
@@ -266,6 +279,7 @@ export const buildScheduleCellDict = (
   assignments: AssignmentT[],
   shiftDemands: ShiftDemandDTO[],
   recurrences: RecurrenceRuleT[],
+  rotations: RotationT[],
   requests: RequestT[],
   workers: WorkerT[],
   shifts: ShiftT[],
@@ -276,6 +290,7 @@ export const buildScheduleCellDict = (
     ownerType,
     assignments,
     recurrences,
+    rotations,
     workers,
     shifts,
     breaches,

@@ -119,6 +119,10 @@ from shared.schemas.core.request import (
     RequestStatus,
     RequestType,
 )
+from shared.schemas.core.rotation import (
+    Rotation,
+    RotationBreakBehavior,
+)
 from shared.schemas.core.schedule import (
     DuplicateOptions,
     DuplicateRequest,
@@ -304,6 +308,8 @@ __all__ = [
     "RecurrenceRule",
     "OccurrenceType",
     "RecurrenceUpdateScope",
+    "Rotation",
+    "RotationBreakBehavior",
     "FulfillmentStatus",
     "Request",
     "RequestAugmented",

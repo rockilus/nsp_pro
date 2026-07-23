@@ -24,6 +24,7 @@ from src.routes.notification_preferences_routes import (
 )
 from src.routes.notification_routes import router as router_notification
 from src.routes.request_routes import router as router_request
+from src.routes.rotation_routes import router as router_rotation
 from src.routes.schedule_routes import router as router_schedule
 from src.routes.shift_demand_new_routes import (
     router as router_shift_demand_new,
@@ -60,6 +61,7 @@ __all__ = [
     "router_link_shift",
     "router_multitasking",
     "router_request",
+    "router_rotation",
     "router_schedule",
     "router_shift_demand_template",
     "router_shift_demand_new",

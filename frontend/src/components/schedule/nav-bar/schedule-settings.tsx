@@ -59,6 +59,7 @@ interface ScheduleSettingsProps {
   handleChangeTimeFrame: (newTimeFrame: 'week' | 'month') => void;
   handleExportSchedule?: (options: ExportOptionsT) => void;
   periodDates?: periodDateT[];
+  onOpenRotations?: () => void;
 }
 
 const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
@@ -74,6 +75,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   handleChangeTimeFrame,
   handleExportSchedule,
   periodDates = [],
+  onOpenRotations,
 }) => {
   const { t } = useTranslation(lng, 'schedule-page');
 
@@ -271,6 +273,18 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                   sx={{ fontSize: '0.8rem' }}
                 >
                   {t('export_to_excel')}
+                </MenuItem>
+              )}
+              {onOpenRotations && (
+                <MenuItem
+                  data-testid="settings-rotations-button"
+                  onClick={() => {
+                    onOpenRotations();
+                    handleClosePopover();
+                  }}
+                  sx={{ fontSize: '0.8rem' }}
+                >
+                  {t('rotations')}
                 </MenuItem>
               )}
             </div>
