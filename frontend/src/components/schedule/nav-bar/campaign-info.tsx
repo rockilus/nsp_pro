@@ -286,10 +286,7 @@ export default function CampaignInfo({
                 onClick={() => setBreachesDialogOpen(true)}
                 color={
                   (SolveStatusColors[currentSolveStatus] as
-                    | 'default'
-                    | 'success'
-                    | 'error'
-                    | 'warning') || 'default'
+                    'default' | 'success' | 'error' | 'warning') || 'default'
                 }
                 sx={{
                   height: '35px',

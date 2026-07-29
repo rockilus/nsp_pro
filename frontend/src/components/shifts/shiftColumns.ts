@@ -170,65 +170,63 @@ export const createShiftColumns = (
         ? dim.dimTypes.includes(DimensionType.REST_SHIFT)
         : dim.dimTypes.includes(DimensionType.SHIFT),
     )
-    .map(
-      (dimension): ColumnDefinition => ({
-        id: `dimension_${dimension.id}`,
-        label: dimension.name,
-        type: dimension.entryType === DimensionEntryType.BOOL ? 'boolean' : 'select',
-        getValue: (shift: ShiftT) => {
-          const attribute = shift.attributes.find((attr) => attr.dimensionId === dimension.id);
-          if (dimension.entryType === DimensionEntryType.BOOL) {
-            return attribute?.value ? 'true' : 'false';
-          }
-          if (dimension.entryType === DimensionEntryType.DIM_ENTRIES && attribute?.dimEntryIds) {
-            return attribute.dimEntryIds; // Return array instead of string
-          }
-          return attribute?.value?.toString() || '';
-        },
-        getDisplayValue: (shift: ShiftT) => {
-          const attribute = shift.attributes.find((attr) => attr.dimensionId === dimension.id);
-          if (!attribute) return 'N/A';
-          if (dimension.entryType === DimensionEntryType.BOOL) {
-            return attribute.value ? 'Yes' : 'No';
-          }
-          if (dimension.entryType === DimensionEntryType.DIM_ENTRIES && attribute.dimEntryIds) {
-            const entries = dimEntries.filter((entry) => attribute.dimEntryIds?.includes(entry.id));
-            return entries.map((e) => e.name).join(', ') || 'N/A';
-          }
-          return attribute.value?.toString() || 'N/A';
-        },
-        getOptions:
-          dimension.entryType === DimensionEntryType.BOOL
-            ? () => [
-                { value: 'true', label: 'Yes' },
-                { value: 'false', label: 'No' },
-              ]
-            : dimension.entryType === DimensionEntryType.DIM_ENTRIES
-              ? () =>
-                  dimEntries
-                    .filter((entry) => entry.dimensionId === dimension.id)
-                    .map((entry) => ({
-                      value: entry.id,
-                      label: entry.name,
-                    }))
-              : () => {
-                  // For STR and INT types, generate options from actual shift data
-                  const uniqueValues = [
-                    ...new Set(
-                      shifts
-                        .map((shift) => {
-                          const attribute = shift.attributes.find(
-                            (attr) => attr.dimensionId === dimension.id,
-                          );
-                          return attribute?.value?.toString() || '';
-                        })
-                        .filter((value) => value !== ''),
-                    ),
-                  ];
-                  return uniqueValues.map((value) => ({ value, label: value }));
-                },
-      }),
-    );
+    .map((dimension): ColumnDefinition => ({
+      id: `dimension_${dimension.id}`,
+      label: dimension.name,
+      type: dimension.entryType === DimensionEntryType.BOOL ? 'boolean' : 'select',
+      getValue: (shift: ShiftT) => {
+        const attribute = shift.attributes.find((attr) => attr.dimensionId === dimension.id);
+        if (dimension.entryType === DimensionEntryType.BOOL) {
+          return attribute?.value ? 'true' : 'false';
+        }
+        if (dimension.entryType === DimensionEntryType.DIM_ENTRIES && attribute?.dimEntryIds) {
+          return attribute.dimEntryIds; // Return array instead of string
+        }
+        return attribute?.value?.toString() || '';
+      },
+      getDisplayValue: (shift: ShiftT) => {
+        const attribute = shift.attributes.find((attr) => attr.dimensionId === dimension.id);
+        if (!attribute) return 'N/A';
+        if (dimension.entryType === DimensionEntryType.BOOL) {
+          return attribute.value ? 'Yes' : 'No';
+        }
+        if (dimension.entryType === DimensionEntryType.DIM_ENTRIES && attribute.dimEntryIds) {
+          const entries = dimEntries.filter((entry) => attribute.dimEntryIds?.includes(entry.id));
+          return entries.map((e) => e.name).join(', ') || 'N/A';
+        }
+        return attribute.value?.toString() || 'N/A';
+      },
+      getOptions:
+        dimension.entryType === DimensionEntryType.BOOL
+          ? () => [
+              { value: 'true', label: 'Yes' },
+              { value: 'false', label: 'No' },
+            ]
+          : dimension.entryType === DimensionEntryType.DIM_ENTRIES
+            ? () =>
+                dimEntries
+                  .filter((entry) => entry.dimensionId === dimension.id)
+                  .map((entry) => ({
+                    value: entry.id,
+                    label: entry.name,
+                  }))
+            : () => {
+                // For STR and INT types, generate options from actual shift data
+                const uniqueValues = [
+                  ...new Set(
+                    shifts
+                      .map((shift) => {
+                        const attribute = shift.attributes.find(
+                          (attr) => attr.dimensionId === dimension.id,
+                        );
+                        return attribute?.value?.toString() || '';
+                      })
+                      .filter((value) => value !== ''),
+                  ),
+                ];
+                return uniqueValues.map((value) => ({ value, label: value }));
+              },
+    }));
 
   return [...baseColumns, ...dimensionColumns];
 };

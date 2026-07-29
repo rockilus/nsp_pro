@@ -14,11 +14,7 @@
  * - Night shift (NS) → new shift
  */
 
-import ExcelJS from 'exceljs';
-
-const SHEET_MEMBERS = 'members';
-const SHEET_SHIFTS = 'shifts';
-const SHEET_SCHEDULE = 'schedule';
+import writeExcelFile from 'write-excel-file/node';
 
 // ── Public helpers ───────────────────────────────────────────────────────────
 
@@ -30,20 +26,17 @@ const SHEET_SCHEDULE = 'schedule';
  * can assert on date ranges.
  */
 export async function buildImportExcel(numDays: number = 10): Promise<Buffer> {
-  const wb = new ExcelJS.Workbook();
-
   const membersData = buildMembersData();
   const shiftsData = buildShiftsData();
   const scheduleData = buildScheduleData(membersData, shiftsData, numDays);
 
-  const wsMembers = wb.addWorksheet(SHEET_MEMBERS);
-  wsMembers.addRows(membersData);
-  const wsShifts = wb.addWorksheet(SHEET_SHIFTS);
-  wsShifts.addRows(shiftsData);
-  const wsSchedule = wb.addWorksheet(SHEET_SCHEDULE);
-  wsSchedule.addRows(scheduleData);
-
-  return Buffer.from(await wb.xlsx.writeBuffer());
+  return Buffer.from(
+    await writeExcelFile([
+      { data: membersData, sheet: 'members' },
+      { data: shiftsData, sheet: 'shifts' },
+      { data: scheduleData, sheet: 'schedule' },
+    ]).toBuffer(),
+  );
 }
 
 /**
@@ -61,7 +54,7 @@ export function writeExcelToTempFile(buf: Buffer, prefix: string = 'import-test'
 
 // ── Sheet builders ───────────────────────────────────────────────────────────
 
-function buildMembersData(): unknown[][] {
+function buildMembersData(): string[][] {
   return [
     // Header row
     ['name', 'code', 'start', 'end', 'skills', 'contract', 'desired', 'duty/month', 'leave'],
@@ -74,7 +67,7 @@ function buildMembersData(): unknown[][] {
   ];
 }
 
-function buildShiftsData(): unknown[][] {
+function buildShiftsData(): string[][] {
   return [
     // Header row
     ['name', 'code', 'duty', 'mandatory_rest', 'start', 'end', 'staffing'],
@@ -97,11 +90,7 @@ function buildShiftsData(): unknown[][] {
  *
  * This gives 4 assignments and 1 leave request spread across the period.
  */
-function buildScheduleData(
-  members: unknown[][],
-  _shifts: unknown[][],
-  numDays: number,
-): unknown[][] {
+function buildScheduleData(members: string[][], _shifts: string[][], numDays: number): string[][] {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth(); // 0-indexed
