@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
@@ -258,7 +258,7 @@ class AssignmentTemplateService:
         end_date: date,
         overwrite_existing: bool = True,
         shift_id_filter: Optional[str] = None,
-    ) -> Dict[str, int]:
+    ) -> Dict[str, Any]:
         try:
             template = await self.validate_template_for_team(template_id, team_id)
 
@@ -306,7 +306,7 @@ class AssignmentTemplateService:
         assignments_to_create: List[dict],
         template_shifts: set,
         shift_id_filter: Optional[str] = None,
-    ) -> Dict[str, int]:
+    ) -> Dict[str, Any]:
         # Query existing assignments in the date range and delete those
         # matching template shifts (scoped by shift_id_filter if provided).
         existing = self.db.assignment_db.get_assignments_by_dates(
@@ -380,7 +380,7 @@ class AssignmentTemplateService:
         template_id: str,
         team_id: str,
         assignments_to_create: List[dict],
-    ) -> Dict[str, int]:
+    ) -> Dict[str, Any]:
         assignments_created = 0
 
         for a_dict in assignments_to_create:
