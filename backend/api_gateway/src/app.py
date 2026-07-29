@@ -14,6 +14,7 @@ from src.rate_limiter import limiter
 from src.routes import (
     router_admin,
     router_assignment,
+    router_assignment_template,
     router_attribute,
     router_auth,
     router_breach,
@@ -84,6 +85,7 @@ def create_app(
     routers = [
         router_admin,
         router_assignment,
+        router_assignment_template,
         router_attribute,
         router_auth,
         router_breach,

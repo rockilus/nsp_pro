@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import ScheduleDisplay from './table/schedule-display';
 import ScheduleNavBar from './nav-bar/schedule-nav-bar';
 import ScheduleItemDialog from './dialogs/schedule-item-dialog';
+import { ScheduleTemplateManagementWindow } from './templates/ScheduleTemplateManagementWindow';
 import {
   ScheduleItemType,
   DialogMode,
@@ -334,6 +335,7 @@ export default function ScheduleTab({
     selectedAssignmentIds: [],
   });
   const [selectionScope, setSelectionScope] = useState<SelectionScope>('view');
+  const [templateManagementOpen, setTemplateManagementOpen] = useState(false);
 
   // Custom solve mode state - persisted alongside selected cells in localStorage
   const [
@@ -1700,6 +1702,7 @@ export default function ScheduleTab({
               workerSolveCells={workerSolveCells}
               shiftSolveCells={shiftSolveCells}
               handleExportSchedule={handleExportSchedule}
+              onOpenTemplates={() => setTemplateManagementOpen(true)}
               periodDates={periodDates}
             />
             {(selectionState.isActive ||
@@ -1721,6 +1724,18 @@ export default function ScheduleTab({
                   onBulkUpdate={handleBulkUpdateAssignments}
                   onBulkToggleFixed={handleBulkToggleFixed}
                   onBulkDelete={handleBulkDeleteAssignments}
+                  onSaveAsTemplate={() => {
+                    setSelectionState((prev) => ({
+                      ...prev,
+                      campaignIntent: prev.campaignIntent
+                        ? {
+                            ...prev.campaignIntent,
+                            selectedRowIds: shifts.map((s) => s.id),
+                          }
+                        : undefined,
+                    }));
+                    setTemplateManagementOpen(true);
+                  }}
                   onCancel={handleToggleSelectionMode}
                   activeFilters={
                     scheduleViewSettings.groupBy === 'worker'
@@ -1832,6 +1847,17 @@ export default function ScheduleTab({
           handleRescindRequest={handleRescindRequest}
           handleAcceptRequest={handleAcceptRequest}
           handleDenyRequest={handleDenyRequest}
+        />
+        <ScheduleTemplateManagementWindow
+          lng={lng}
+          open={templateManagementOpen}
+          onClose={() => setTemplateManagementOpen(false)}
+          teamId={teamWithMembership.team.id}
+          workers={workers.filter((w) => !w.deleted)}
+          shifts={shifts.filter((s) => !s.deleted)}
+          onTemplateApplied={() => {
+            queryClient.invalidateQueries({ queryKey: assignmentsQueryKeys.all });
+          }}
         />
       </div>
     </div>

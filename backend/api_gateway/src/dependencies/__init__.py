@@ -1,4 +1,7 @@
 from src.dependencies.assignment_service import get_assignment_service
+from src.dependencies.assignment_template_service import (
+    get_assignment_template_service,
+)
 from src.dependencies.attribute_service import get_attribute_service
 from src.dependencies.auth_dependencies import (
     get_effective_user_context,
@@ -47,6 +50,7 @@ from src.dependencies.worker_service import get_worker_service
 
 __all__ = [
     "get_assignment_service",
+    "get_assignment_template_service",
     "get_attribute_service",
     "get_auth_service",
     "get_campaign_quality_service",

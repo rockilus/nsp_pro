@@ -2,6 +2,9 @@ from dataclasses import dataclass
 
 from shared.database.interface import DatabaseInterface
 from shared.database.repositories.assignment import AssignmentRepository
+from shared.database.repositories.assignment_template import (
+    AssignmentTemplateRepository,
+)
 from shared.database.repositories.attribute import AttributeRepository
 from shared.database.repositories.breach import BreachRepository
 from shared.database.repositories.config import ConfigRepository
@@ -64,6 +67,7 @@ from shared.database.repositories.worker import WorkerRepository
 @dataclass
 class DatabaseCollections:
     assignment_db: AssignmentRepository
+    assignment_template_db: AssignmentTemplateRepository
     attribute_db: AttributeRepository
     breach_db: BreachRepository
     config_db: ConfigRepository
@@ -109,6 +113,7 @@ class DatabaseCollections:
 
         # Initialize all repositories with the database interface
         self.assignment_db = AssignmentRepository(database_interface)
+        self.assignment_template_db = AssignmentTemplateRepository(database_interface)
         self.attribute_db = AttributeRepository(database_interface)
         self.breach_db = BreachRepository(database_interface)
         self.config_db = ConfigRepository(database_interface)

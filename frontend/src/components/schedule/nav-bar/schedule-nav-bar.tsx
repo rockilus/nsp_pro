@@ -50,6 +50,7 @@ export default function ScheduleNavBar({
   workerSolveCells = [],
   shiftSolveCells = [],
   handleExportSchedule,
+  onOpenTemplates,
   periodDates = [],
 }: {
   lng: string;
@@ -81,6 +82,7 @@ export default function ScheduleNavBar({
   workerSolveCells?: SelectedScheduleCell[];
   shiftSolveCells?: SelectedScheduleCell[];
   handleExportSchedule?: (options: ExportOptionsT) => void;
+  onOpenTemplates?: () => void;
   periodDates?: periodDateT[];
 }) {
   const { t } = useTranslation(lng, 'schedule-page');
@@ -125,6 +127,7 @@ export default function ScheduleNavBar({
             endDate={currentPeriodEnd}
             scheduleViewSettings={scheduleViewSettings}
             onToggleSelectionMode={onToggleSelectionMode ?? (() => {})}
+            onOpenTemplates={onOpenTemplates}
             handleSendDuplicateRequest={handleSendDuplicateRequest}
             updateScheduleViewSettings={updateScheduleViewSettings}
             handleChangeTimeFrame={handleChangeTimeFrame}

@@ -7,6 +7,15 @@ from shared.schemas.dto.assignment import (
     BulkAssignmentUpdateDTO,
     SelectionIntentDTO,
 )
+from shared.schemas.dto.assignment_template import (
+    ApplyAssignmentTemplateToDateRangeDTO,
+    ApplyAssignmentsToTemplateWeekDTO,
+    AssignmentTemplateApplicationResult,
+    AssignmentTemplateCreateDTO,
+    AssignmentTemplateDTO,
+    AssignmentTemplateUpdateDTO,
+    AssignmentTemplateWeekDataDTO,
+)
 from shared.schemas.dto.attribute import AttributeDTO
 from shared.schemas.dto.auth import (
     ChangeEmailRequestDTO,
@@ -141,6 +150,13 @@ __all__ = [
     "BulkAssignmentToggleFixedDTO",
     "BulkAssignmentUpdateDTO",
     "SelectionIntentDTO",
+    "ApplyAssignmentTemplateToDateRangeDTO",
+    "ApplyAssignmentsToTemplateWeekDTO",
+    "AssignmentTemplateApplicationResult",
+    "AssignmentTemplateCreateDTO",
+    "AssignmentTemplateDTO",
+    "AssignmentTemplateUpdateDTO",
+    "AssignmentTemplateWeekDataDTO",
     "AttributeDTO",
     "BreachDTO",
     "CampaignQualityDTO",

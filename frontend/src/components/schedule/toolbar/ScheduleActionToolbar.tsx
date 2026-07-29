@@ -24,6 +24,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
 import { ScheduleSelectionState, SelectionScope } from '../../../types/scheduleSelection';
 import { WorkerT } from '../../../types/worker';
 import { ShiftT } from '../../../types/shift';
@@ -32,15 +33,16 @@ import { useTranslation } from '../../../app/i18n/client';
 import TableFilterBar from '../../table/TableFilterBar';
 import { ColumnFilter, TableSort } from '../../../types/filter';
 
-type ActionKey = 'create' | 'update' | 'toggleFixed' | 'delete';
+type ActionKey = 'create' | 'update' | 'toggleFixed' | 'delete' | 'saveAsTemplate';
 
 const ACTION_LABEL_KEYS: Record<ActionKey, string> = {
   create: 'select_mode_action_create_assignments',
   update: 'select_mode_action_update_assignments',
   toggleFixed: 'select_mode_action_toggle_fixed',
   delete: 'select_mode_action_delete_assignments',
+  saveAsTemplate: 'select_mode_action_save_as_template',
 };
-const ACTION_KEYS: ActionKey[] = ['create', 'update', 'toggleFixed', 'delete'];
+const ACTION_KEYS: ActionKey[] = ['create', 'update', 'toggleFixed', 'delete', 'saveAsTemplate'];
 
 interface ScheduleActionToolbarProps {
   lng: string;
@@ -53,6 +55,7 @@ interface ScheduleActionToolbarProps {
   onBulkUpdate: (id: string) => Promise<void>;
   onBulkToggleFixed: () => Promise<void>;
   onBulkDelete: () => Promise<void>;
+  onSaveAsTemplate?: () => void;
   onCancel: () => void;
   scope: SelectionScope;
   onScopeChange: (scope: SelectionScope) => void;
@@ -74,6 +77,7 @@ export function ScheduleActionToolbar({
   onBulkUpdate,
   onBulkToggleFixed,
   onBulkDelete,
+  onSaveAsTemplate,
   onCancel,
   scope,
   onScopeChange,
@@ -133,6 +137,9 @@ export function ScheduleActionToolbar({
       case 'delete':
         if (!hasAssignmentSelection) return t('select_mode_warning_no_assignment_selected');
         return null;
+      case 'saveAsTemplate':
+        if (!hasAssignmentSelection) return t('select_mode_warning_no_assignment_selected');
+        return null;
     }
   };
 
@@ -156,6 +163,7 @@ export function ScheduleActionToolbar({
       </span>
     ),
     delete: <DeleteIcon fontSize="small" sx={{ color: 'error.main' }} />,
+    saveAsTemplate: <SaveIcon fontSize="small" sx={{ color: 'text.secondary' }} />,
   };
 
   const handleMainAction = async () => {
@@ -185,6 +193,9 @@ export function ScheduleActionToolbar({
         case 'delete':
           await onBulkDelete();
           setDeleteConfirm(false);
+          break;
+        case 'saveAsTemplate':
+          onSaveAsTemplate?.();
           break;
       }
     } finally {

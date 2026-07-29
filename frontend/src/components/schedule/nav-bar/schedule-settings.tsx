@@ -50,6 +50,7 @@ interface ScheduleSettingsProps {
   endDate: dayjs.Dayjs;
   scheduleViewSettings: ScheduleViewSettingsT;
   onToggleSelectionMode: () => void;
+  onOpenTemplates?: () => void;
   handleSendDuplicateRequest: (
     request: DuplicateRequestT,
     campaignId: string,
@@ -69,6 +70,7 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   endDate,
   scheduleViewSettings,
   onToggleSelectionMode,
+  onOpenTemplates,
   handleSendDuplicateRequest,
   updateScheduleViewSettings,
   handleChangeTimeFrame,
@@ -251,6 +253,18 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
                   {t('select')}
                 </MenuItem>
               </Tooltip>
+              {onOpenTemplates && (
+                <MenuItem
+                  data-testid="settings-templates-button"
+                  onClick={() => {
+                    onOpenTemplates();
+                    handleClosePopover();
+                  }}
+                  sx={{ fontSize: '0.8rem' }}
+                >
+                  {t('templates')}
+                </MenuItem>
+              )}
               <MenuItem
                 data-testid="settings-duplicate-week-button"
                 onClick={handleDuplicateWeek}
