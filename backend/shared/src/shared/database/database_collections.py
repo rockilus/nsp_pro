@@ -28,7 +28,6 @@ from shared.database.repositories.recurrence_exclusion import (
     RecurrenceExclusionRepository,
 )
 from shared.database.repositories.request import RequestRepository
-from shared.database.repositories.rotation import RotationRepository
 from shared.database.repositories.schedule import ScheduleRepository
 from shared.database.repositories.shift import ShiftRepository
 from shared.database.repositories.shift_demand import ShiftDemandRepository
@@ -78,7 +77,6 @@ class DatabaseCollections:
     recurrence_db: RecurrenceRepository
     recurrence_exclusion_db: RecurrenceExclusionRepository
     request_db: RequestRepository
-    rotation_db: RotationRepository
     schedule_db: ScheduleRepository
     shift_db: ShiftRepository
     shift_demand_db: ShiftDemandRepository
@@ -124,7 +122,6 @@ class DatabaseCollections:
         self.recurrence_db = RecurrenceRepository(database_interface)
         self.recurrence_exclusion_db = RecurrenceExclusionRepository(database_interface)
         self.request_db = RequestRepository(database_interface)
-        self.rotation_db = RotationRepository(database_interface)
         self.schedule_db = ScheduleRepository(database_interface)
         self.shift_db = ShiftRepository(database_interface)
         self.shift_demand_db = ShiftDemandRepository(database_interface)

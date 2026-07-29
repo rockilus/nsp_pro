@@ -6,7 +6,6 @@ import './assignment-cell.css';
 import { AssignmentDataT, ScheduleViewSettingsT } from '../../../../types/schedule';
 import { ShiftType } from '@/types/shift';
 import { TeamMembershipRole, TeamWithMembership } from '@/types/team';
-import { AssignmentSource } from '@/types/assignment';
 // Constants
 import { ShiftColorMappings } from '../../../../constants/constants';
 
@@ -109,18 +108,6 @@ export default function AssignmentCell({
           🔒
         </span>
       )}
-      <span className="assignment-source-icons">
-        {assignmentData.assignment.source === AssignmentSource.RECURRENCE && (
-          <span className="assignment-source-icon" aria-label="recurring">
-            🔁
-          </span>
-        )}
-        {assignmentData.assignment.source === AssignmentSource.ROTATION && (
-          <span className="assignment-source-icon" aria-label="rotation">
-            🔄
-          </span>
-        )}
-      </span>
     </div>
   );
 }

@@ -27,7 +27,6 @@ from src.dependencies.notification_preferences_service import (
 from src.dependencies.notification_service import get_notification_service
 from src.dependencies.replacement_service import get_replacement_service
 from src.dependencies.request_service import get_request_service
-from src.dependencies.rotation_service import get_rotation_service
 from src.dependencies.schedule_service import get_schedule_service
 from src.dependencies.shift_demand_new_service import (
     get_shift_demand_new_service,
@@ -66,7 +65,6 @@ __all__ = [
     "get_multitasking_service",
     "get_replacement_service",
     "get_request_service",
-    "get_rotation_service",
     "get_import_service",
     "get_schedule_service",
     "get_shift_demand_new_service",

@@ -7,7 +7,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { AssignmentT, AssignmentsRecurrencesResultT } from '../../../types/assignment';
 import { RecurrenceRuleT } from '../../../types/recurrence';
-import { RotationT } from '../../../types/rotation';
 import { AssignmentApi } from '../api/assignmentApi';
 import { useApiClient } from '../api-client';
 import { useAuth } from '../../../contexts/auth-context';
@@ -42,7 +41,6 @@ export const assignmentsQueryKeys = {
 export interface UseAssignmentsByPeriodResult {
   assignments: AssignmentT[];
   recurrences: RecurrenceRuleT[];
-  rotations: RotationT[];
   isLoading: boolean;
   isFetching: boolean;
   error: Error | null;
@@ -117,7 +115,6 @@ export const useAssignmentsByPeriod = (
         console.log('✅ Assignments fetched:', {
           assignmentCount: result.assignmentsRead.length,
           recurrenceCount: result.recurrencesRead.length,
-          rotationCount: result.rotations.length,
         });
       }
 
@@ -135,7 +132,6 @@ export const useAssignmentsByPeriod = (
   return {
     assignments: query.data?.assignmentsRead || [],
     recurrences: query.data?.recurrencesRead || [],
-    rotations: query.data?.rotations || [],
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     error: query.error,

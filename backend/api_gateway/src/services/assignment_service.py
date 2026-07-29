@@ -529,7 +529,7 @@ class AssignmentService(BaseService):
                 if shift_type_map.get(a.shift_id) in allowed_types
             ]
 
-        # Lazy materialization: extend assignment lists
+        # Lazy materialization: extend recurrence assignments if needed
         newly_materialized_assignments = self._lazy_materialize_recurrences(
             team_id=team_id,
             start_date=start_date,
@@ -537,18 +537,7 @@ class AssignmentService(BaseService):
         )
         assignments.extend(newly_materialized_assignments)
 
-        newly_materialized_rotation_assignments = self._lazy_materialize_rotations(
-            team_id=team_id,
-            start_date=start_date,
-            end_date=end_date,
-        )
-        assignments.extend(newly_materialized_rotation_assignments)
-
         recurrences = self.collection.recurrence_db.get_recurrences_by_team_id(
-            team_id=team_id
-        )
-
-        rotations = self.collection.rotation_db.get_rotations_by_team_id(
             team_id=team_id
         )
 
@@ -561,7 +550,6 @@ class AssignmentService(BaseService):
             recurrences_read=recurrences,
             recurrence_updated=None,
             recurrences_deleted_ids=[],
-            rotations=rotations,
         )
 
     def _lazy_materialize_recurrences(
@@ -701,142 +689,6 @@ class AssignmentService(BaseService):
             )
 
         return newly_created
-
-    def _lazy_materialize_rotations(
-        self,
-        team_id: str,
-        start_date: date,
-        end_date: date,
-    ) -> List[Assignment]:
-        newly_created: List[Assignment] = []
-
-        rotations = self.collection.rotation_db.get_rotations_by_team_and_date_range(
-            team_id=team_id, start_date=start_date, end_date=end_date
-        )
-
-        campaign = self._get_active_campaign(team_id)
-        if not campaign:
-            return newly_created
-
-        for rotation in rotations:
-            watermark = rotation.last_materialized_until
-
-            if watermark is None:
-                existing_assignments = (
-                    self.collection.assignment_db.get_assignments_by_source_id(
-                        source_id=rotation.id
-                    )
-                )
-                if existing_assignments:
-                    watermark = max(a.date for a in existing_assignments)
-                else:
-                    watermark = rotation.start_date - timedelta(days=1)
-                self.collection.rotation_db.update_rotation_watermark(
-                    rotation_id=rotation.id,
-                    last_materialized_until=watermark,
-                )
-
-            rotation_end = rotation.end_date
-            if rotation_end is not None and watermark >= rotation_end:
-                continue
-
-            if watermark and watermark >= end_date:
-                continue
-
-            materialization_start = max(watermark + timedelta(days=1), start_date)
-            if rotation_end and materialization_start > rotation_end:
-                continue
-            materialization_end = end_date
-            if rotation_end and materialization_end > rotation_end:
-                materialization_end = rotation_end
-
-            if materialization_start > materialization_end:
-                continue
-
-            new_assignments = self._materialize_rotation_assignments_for_campaign(
-                rotation=rotation,
-                team_id=team_id,
-                start_date=materialization_start,
-                end_date=materialization_end,
-                campaign_id=campaign.id,
-            )
-            if new_assignments:
-                newly_created.extend(new_assignments)
-
-            self.collection.rotation_db.update_rotation_watermark(
-                rotation_id=rotation.id,
-                last_materialized_until=materialization_end,
-            )
-
-        return newly_created
-
-    def _materialize_rotation_assignments_for_campaign(
-        self,
-        rotation,
-        team_id: str,
-        start_date: date,
-        end_date: date,
-        campaign_id: str,
-    ) -> List[Assignment]:
-        from shared.schemas.core import (
-            AssignmentSource,
-        )
-
-        demand_dates = self.collection.shift_demand_new_db.get_shift_demands_by_shift_and_date_range(
-            team_id=team_id,
-            shift_id=rotation.shift_id,
-            start_date=start_date,
-            end_date=end_date,
-        )
-        demand_date_set: set[date] = {d.date for d in demand_dates}
-        if not demand_date_set:
-            return []
-
-        existing_assignments = (
-            self.collection.assignment_db.get_assignments_by_source_id_and_dates(
-                source_id=rotation.id,
-                start_date=min(demand_date_set),
-                end_date=max(demand_date_set),
-            )
-        )
-        existing_dates: set[date] = {a.date for a in existing_assignments}
-
-        assignments_to_create: List[Assignment] = []
-        current_pos = rotation.current_position
-
-        for d in sorted(demand_date_set):
-            if d in existing_dates:
-                continue
-            worker_id = rotation.worker_ids[current_pos % len(rotation.worker_ids)]
-            assignments_to_create.append(
-                Assignment(
-                    id="",
-                    team_id=team_id,
-                    schedule_id=campaign_id,
-                    worker_id=worker_id,
-                    date=d,
-                    shift_id=rotation.shift_id,
-                    fixed=True,
-                    source=AssignmentSource.ROTATION,
-                    reference_assignment_id=None,
-                    source_id=rotation.id,
-                )
-            )
-            current_pos += 1
-
-        if assignments_to_create:
-            created = self.collection.assignment_db.create_assignments(
-                assignments_to_create
-            )
-            rotation.current_position = current_pos % len(rotation.worker_ids)
-            self.collection.rotation_db.update_rotation(rotation)
-            return created
-        return []
-
-    def _get_active_campaign(self, team_id: str):
-        schedules = self.collection.schedule_db.get_schedules(team_id=team_id)
-        campaigns = [s for s in schedules if s.status == ScheduleStatus.CAMPAIGN]
-        return campaigns[0] if campaigns else None
 
     def update_assignment_and_recurrence(
         self,

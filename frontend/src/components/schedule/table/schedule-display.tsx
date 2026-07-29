@@ -19,7 +19,6 @@ import { ShiftT } from '../../../types/shift';
 import { WorkerT } from '../../../types/worker';
 import { RequestT } from '../../../types/request';
 import { RecurrenceRuleT } from '@/types/recurrence';
-import { RotationT } from '@/types/rotation';
 import { TeamWithMembership } from '@/types/team';
 import {
   ScheduleSelectionState,
@@ -38,7 +37,6 @@ export default function ScheduleDisplay({
   assignments,
   shiftDemands,
   recurrences,
-  rotations,
   breaches,
   workers,
   shifts,
@@ -77,7 +75,6 @@ export default function ScheduleDisplay({
   assignments: AssignmentT[];
   shiftDemands: ShiftDemandDTO[];
   recurrences: RecurrenceRuleT[];
-  rotations: RotationT[];
   breaches: BreachT[];
   workers: WorkerT[];
   shifts: ShiftT[];
@@ -120,7 +117,6 @@ export default function ScheduleDisplay({
         assignments={assignments}
         shiftDemands={shiftDemands}
         recurrences={recurrences}
-        rotations={rotations}
         scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
         breaches={breaches}
@@ -157,7 +153,6 @@ export default function ScheduleDisplay({
         assignments={assignments}
         shiftDemands={shiftDemands}
         recurrences={recurrences}
-        rotations={rotations}
         scheduleCampaign={scheduleCampaign}
         periodDates={periodDates}
         breaches={breaches}

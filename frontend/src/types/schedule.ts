@@ -13,7 +13,6 @@ import { DemandsResultT } from './shiftDemand';
 import { ShiftDemandDTO } from './shiftDemand';
 import { WorkerT } from './worker';
 import { RecurrenceRuleT } from './recurrence';
-import { RotationT } from './rotation';
 import { MAX_SCHEDULE_DURATION_MONTHS } from '../constants/constants';
 
 // Schedule
@@ -121,7 +120,6 @@ export type AssignmentDataT = {
   shift: ShiftT;
   assignment: AssignmentT;
   recurrence: RecurrenceRuleT | null;
-  rotation: RotationT | null;
   breaches: BreachT[];
   requests: RequestT[];
 };

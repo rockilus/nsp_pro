@@ -4,7 +4,6 @@ import { BreachT } from './breach';
 import { ShiftT } from './shift';
 import { WorkerT } from './worker';
 import { RecurrenceRuleT, toRecurrenceRuleT } from './recurrence';
-import { RotationT, toRotationT } from './rotation';
 
 // class AssignmentSource(Enum):
 //     MANUAL = "manual"
@@ -19,7 +18,6 @@ export enum AssignmentSource {
   DUPLICATE = 'duplicate',
   RECURRENCE = 'recurrence',
   REQUEST = 'request',
-  ROTATION = 'rotation',
 }
 
 export type AssignmentT = {
@@ -40,7 +38,6 @@ export type AssignmentDataDictT = {
   shift: ShiftT;
   assignment: AssignmentT;
   recurrence: RecurrenceRuleT | null;
-  rotation: RotationT | null;
   breaches: BreachT[];
   requests: RequestT[];
 };
@@ -66,7 +63,6 @@ export type AssignmentsRecurrencesResultT = {
   recurrencesRead: RecurrenceRuleT[];
   recurrenceUpdated: RecurrenceRuleT | null;
   recurrencesDeletedIds: string[];
-  rotations: RotationT[];
 };
 
 export const toAssignmentT = (data: any): AssignmentT => {
@@ -93,6 +89,5 @@ export const toAssignmentsRecurrencesResultT = (data: any): AssignmentsRecurrenc
     recurrencesRead: data.recurrencesRead.map((recurrence: any) => toRecurrenceRuleT(recurrence)),
     recurrenceUpdated: data.recurrenceUpdated ? toRecurrenceRuleT(data.recurrenceUpdated) : null,
     recurrencesDeletedIds: data.recurrencesDeletedIds || [],
-    rotations: (data.rotations || []).map((rotation: any) => toRotationT(rotation)),
   };
 };

@@ -224,7 +224,6 @@ export default function SwapTab({ teamWithMembership, currentUserId, lng }: Swap
         worker: workerMap.get(assignment.workerId) || ({} as WorkerT),
         shift: shiftMap.get(assignment.shiftId) || ({} as ShiftT),
         recurrence: null,
-        rotation: null,
         breaches: [],
         requests: [],
       }));

@@ -29,7 +29,6 @@ import { AssignmentT, CreateAssignmentT } from '@/types/assignment';
 import { RequestT } from '../../../../types/request';
 import { AttributeOwnerType } from '../../../../types/attribute';
 import { RecurrenceRuleT } from '@/types/recurrence';
-import { RotationT } from '@/types/rotation';
 import { TeamMembershipRole, TeamWithMembership } from '@/types/team';
 import {
   ScheduleSelectionState,
@@ -324,7 +323,6 @@ export default function ScheduleTableShift({
   assignments,
   shiftDemands,
   recurrences,
-  rotations,
   scheduleCampaign,
   periodDates,
   breaches,
@@ -358,7 +356,6 @@ export default function ScheduleTableShift({
   assignments: AssignmentT[];
   shiftDemands: ShiftDemandDTO[];
   recurrences: RecurrenceRuleT[];
-  rotations: RotationT[];
   scheduleCampaign: ScheduleT | null;
   periodDates: periodDateT[];
   breaches: BreachT[];
@@ -424,7 +421,6 @@ export default function ScheduleTableShift({
     assignments,
     shiftDemands,
     recurrences,
-    rotations,
     requests,
     workers,
     shifts,

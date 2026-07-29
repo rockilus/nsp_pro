@@ -3,7 +3,6 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from shared.schemas.dto.recurrence import RecurrenceRuleDTO
-from shared.schemas.dto.rotation import RotationDTO
 
 
 class AssignmentDTO(BaseModel):
@@ -28,7 +27,6 @@ class AssignmentsRecurrencesResultDTO(BaseModel):
     recurrencesRead: List[RecurrenceRuleDTO]
     recurrenceUpdated: RecurrenceRuleDTO | None
     recurrencesDeletedIds: List[str]
-    rotations: List[RotationDTO] = []
 
 
 class ExcludedCellDTO(BaseModel):
