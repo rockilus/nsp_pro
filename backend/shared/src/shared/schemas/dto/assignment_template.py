@@ -70,10 +70,6 @@ class ApplyAssignmentTemplateToDateRangeDTO(BaseModel):
 
 class AssignmentTemplateApplicationResult(BaseModel):
     success: bool = Field(..., description="Whether the operation was successful")
-    assignmentsCreated: int = Field(
-        ..., description="Number of assignments created"
-    )
-    assignmentsDeleted: int = Field(
-        ..., description="Number of assignments deleted"
-    )
+    assignmentsCreated: int = Field(..., description="Number of assignments created")
+    assignmentsDeleted: int = Field(..., description="Number of assignments deleted")
     message: str = Field(..., description="Result message")

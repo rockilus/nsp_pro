@@ -1,6 +1,5 @@
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, timedelta, timezone
-from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 import humps
@@ -38,9 +37,7 @@ class AssignmentTemplateWeekData:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "AssignmentTemplateWeekData":
-        entries = [
-            AssignmentTemplateEntry.from_dict(e) for e in data["entries"]
-        ]
+        entries = [AssignmentTemplateEntry.from_dict(e) for e in data["entries"]]
         return cls(week_number=data["week_number"], entries=entries)
 
 
@@ -223,7 +220,7 @@ class AssignmentTemplate:
                                 worker_ids=entry["workerIds"],
                             )
                         )
-                    except (ValueError, TypeError):
+                    except ValueError, TypeError:
                         continue
 
                 try:
@@ -233,7 +230,7 @@ class AssignmentTemplate:
                             entries=entry_list,
                         )
                     )
-                except (ValueError, TypeError):
+                except ValueError, TypeError:
                     continue
 
             self.weeks_data = self._normalize_weeks_data(weeks_data)
@@ -371,9 +368,7 @@ def apply_template_to_date_range(
         if not week_data:
             continue
 
-        day_entries = [
-            e for e in week_data.entries if e.day_of_week == template_day
-        ]
+        day_entries = [e for e in week_data.entries if e.day_of_week == template_day]
 
         for entry in day_entries:
             if shift_id_filter and entry.shift_id != shift_id_filter:

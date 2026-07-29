@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 from shared.database.database_collections import DatabaseCollections
 from shared.logger import log_info
@@ -9,8 +9,10 @@ from shared.schemas.core.assignment_template import (
     AssignmentTemplateEntry,
     AssignmentTemplateWeekData,
     TemplateType,
-    apply_template_to_date_range as apply_template_fn,
     create_template_from_assignments,
+)
+from shared.schemas.core.assignment_template import (
+    apply_template_to_date_range as apply_template_fn,
 )
 
 
@@ -19,9 +21,7 @@ class AssignmentTemplateService:
         self.db = db_collections
         self.template_repo = db_collections.assignment_template_db
 
-    async def create_template(
-        self, template: AssignmentTemplate
-    ) -> AssignmentTemplate:
+    async def create_template(self, template: AssignmentTemplate) -> AssignmentTemplate:
         try:
             existing = self.template_repo.get_template_by_name_and_team(
                 template.name, template.team_id
@@ -67,9 +67,7 @@ class AssignmentTemplateService:
             log_info(f"Failed to get assignment templates for team {team_id}: {str(e)}")
             raise
 
-    async def update_template(
-        self, template: AssignmentTemplate
-    ) -> AssignmentTemplate:
+    async def update_template(self, template: AssignmentTemplate) -> AssignmentTemplate:
         try:
             if not template.id:
                 raise ValueError("Template ID is required for update operation")
@@ -182,9 +180,7 @@ class AssignmentTemplateService:
         try:
             template = await self.validate_template_for_team(template_id, team_id)
 
-            week_start = source_week_start - timedelta(
-                days=source_week_start.weekday()
-            )
+            week_start = source_week_start - timedelta(days=source_week_start.weekday())
             week_end = week_start + timedelta(days=6)
 
             source_assignments = self.db.assignment_db.get_assignments_by_dates(
@@ -251,9 +247,7 @@ class AssignmentTemplateService:
             return saved
 
         except Exception as e:
-            log_info(
-                f"Failed to apply assignments to template week: {str(e)}"
-            )
+            log_info(f"Failed to apply assignments to template week: {str(e)}")
             raise
 
     async def apply_template_to_date_range(
@@ -289,9 +283,7 @@ class AssignmentTemplateService:
                     end_date=end_date,
                     assignments_to_create=assignments_to_create,
                     template_shifts=set(
-                        e.shift_id
-                        for w in template.weeks_data
-                        for e in w.entries
+                        e.shift_id for w in template.weeks_data for e in w.entries
                     ),
                     shift_id_filter=shift_id_filter,
                 )
@@ -341,16 +333,13 @@ class AssignmentTemplateService:
                 a_date = a_date.date()
 
             # Check if this specific assignment already exists
-            existing_for_slot = (
-                self.db.assignment_db.get_assignments_by_dates(
-                    team_id=team_id,
-                    start_date=a_date,
-                    end_date=a_date,
-                )
+            existing_for_slot = self.db.assignment_db.get_assignments_by_dates(
+                team_id=team_id,
+                start_date=a_date,
+                end_date=a_date,
             )
             already_exists = any(
-                e.shift_id == a_dict["shift_id"]
-                and e.worker_id == a_dict["worker_id"]
+                e.shift_id == a_dict["shift_id"] and e.worker_id == a_dict["worker_id"]
                 for e in existing_for_slot
             )
             if already_exists:
@@ -399,12 +388,10 @@ class AssignmentTemplateService:
             if isinstance(a_date, datetime):
                 a_date = a_date.date()
 
-            existing_for_slot = (
-                self.db.assignment_db.get_assignments_by_dates(
-                    team_id=team_id,
-                    start_date=a_date,
-                    end_date=a_date,
-                )
+            existing_for_slot = self.db.assignment_db.get_assignments_by_dates(
+                team_id=team_id,
+                start_date=a_date,
+                end_date=a_date,
             )
 
             slot_filled = any(
@@ -414,8 +401,7 @@ class AssignmentTemplateService:
                 continue
 
             already_has = any(
-                e.shift_id == a_dict["shift_id"]
-                and e.worker_id == a_dict["worker_id"]
+                e.shift_id == a_dict["shift_id"] and e.worker_id == a_dict["worker_id"]
                 for e in existing_for_slot
             )
             if already_has:

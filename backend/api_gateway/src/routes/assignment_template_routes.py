@@ -9,8 +9,8 @@ from shared.schemas.core.assignment_template import (
 )
 from shared.schemas.core.shift_demand_template import TemplateType
 from shared.schemas.dto.assignment_template import (
-    ApplyAssignmentTemplateToDateRangeDTO,
     ApplyAssignmentsToTemplateWeekDTO,
+    ApplyAssignmentTemplateToDateRangeDTO,
     AssignmentTemplateApplicationResult,
     AssignmentTemplateCreateDTO,
     AssignmentTemplateDTO,
@@ -119,9 +119,7 @@ async def get_templates_by_team(
     except HTTPException:
         raise
     except Exception as e:
-        log_info(
-            f"Failed to get assignment templates for team {team_id}: {str(e)}"
-        )
+        log_info(f"Failed to get assignment templates for team {team_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to get templates")
 
 
@@ -337,9 +335,7 @@ async def apply_assignments_to_template_week(
     except HTTPException:
         raise
     except Exception as e:
-        log_info(
-            f"Failed to apply assignments to template {template_id}: {str(e)}"
-        )
+        log_info(f"Failed to apply assignments to template {template_id}: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to apply assignments to template"
         )
@@ -363,12 +359,8 @@ async def apply_template_to_date_range(
         ):
             raise NotAuthorizedError("You do not have permission to apply templates")
 
-        start_date = datetime.fromtimestamp(
-            request.startDate, tz=timezone.utc
-        ).date()
-        end_date = datetime.fromtimestamp(
-            request.endDate, tz=timezone.utc
-        ).date()
+        start_date = datetime.fromtimestamp(request.startDate, tz=timezone.utc).date()
+        end_date = datetime.fromtimestamp(request.endDate, tz=timezone.utc).date()
 
         result = await service.apply_template_to_date_range(
             template_id=template_id,
@@ -407,8 +399,7 @@ async def apply_template_to_date_range(
         raise
     except Exception as e:
         log_info(
-            f"Failed to apply assignment template {template_id} "
-            f"to date range: {str(e)}"
+            f"Failed to apply assignment template {template_id} to date range: {str(e)}"
         )
         raise HTTPException(
             status_code=500, detail="Failed to apply template to date range"

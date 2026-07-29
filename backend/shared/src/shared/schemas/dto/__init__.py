@@ -8,8 +8,8 @@ from shared.schemas.dto.assignment import (
     SelectionIntentDTO,
 )
 from shared.schemas.dto.assignment_template import (
-    ApplyAssignmentTemplateToDateRangeDTO,
     ApplyAssignmentsToTemplateWeekDTO,
+    ApplyAssignmentTemplateToDateRangeDTO,
     AssignmentTemplateApplicationResult,
     AssignmentTemplateCreateDTO,
     AssignmentTemplateDTO,

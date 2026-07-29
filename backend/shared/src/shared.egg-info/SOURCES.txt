@@ -41,6 +41,7 @@ src/shared/database/providers.py
 src/shared/database/reset_service.py
 src/shared/database/repositories/__init__.py
 src/shared/database/repositories/assignment.py
+src/shared/database/repositories/assignment_template.py
 src/shared/database/repositories/attribute.py
 src/shared/database/repositories/base.py
 src/shared/database/repositories/breach.py
@@ -76,6 +77,7 @@ src/shared/database/repositories/user.py
 src/shared/database/repositories/worker.py
 src/shared/database/schemas/__init__.py
 src/shared/database/schemas/assignment.py
+src/shared/database/schemas/assignment_template.py
 src/shared/database/schemas/attribute.py
 src/shared/database/schemas/base.py
 src/shared/database/schemas/breach.py
@@ -148,6 +150,7 @@ src/shared/logger/middleware.py
 src/shared/schemas/__init__.py
 src/shared/schemas/core/__init__.py
 src/shared/schemas/core/assignment.py
+src/shared/schemas/core/assignment_template.py
 src/shared/schemas/core/attribute.py
 src/shared/schemas/core/breach.py
 src/shared/schemas/core/config.py
@@ -186,6 +189,7 @@ src/shared/schemas/core/user.py
 src/shared/schemas/core/worker.py
 src/shared/schemas/dto/__init__.py
 src/shared/schemas/dto/assignment.py
+src/shared/schemas/dto/assignment_template.py
 src/shared/schemas/dto/attribute.py
 src/shared/schemas/dto/auth.py
 src/shared/schemas/dto/breach.py

@@ -7,8 +7,10 @@ from shared.schemas.core.assignment_template import (
     AssignmentTemplate,
     AssignmentTemplateEntry,
     AssignmentTemplateWeekData,
-    apply_template_to_date_range as apply_assignment_template_to_date_range,
     create_template_from_assignments,
+)
+from shared.schemas.core.assignment_template import (
+    apply_template_to_date_range as apply_assignment_template_to_date_range,
 )
 from shared.schemas.core.attribute import Attribute, AttributeOwnerType
 from shared.schemas.core.breach import Breach, ObjectiveCategory, Variable

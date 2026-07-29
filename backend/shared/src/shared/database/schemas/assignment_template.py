@@ -117,9 +117,7 @@ class AssignmentTemplateSchema(DocumentBaseSchema):
                 }
                 for e in week.entries
             ]
-            weeks_data.append(
-                {"week_number": week.week_number, "entries": entries}
-            )
+            weeks_data.append({"week_number": week.week_number, "entries": entries})
 
         return cls(
             id=template.id,
