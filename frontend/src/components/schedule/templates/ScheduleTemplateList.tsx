@@ -55,7 +55,7 @@ export function ScheduleTemplateList({
         .then(() => setLoading(false))
         .catch(() => setLoading(false));
     }
-  }, [teamId]);
+  }, [teamId, onLoadTemplates]);
 
   return (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>

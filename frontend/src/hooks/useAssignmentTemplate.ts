@@ -58,7 +58,7 @@ export function useGetAssignmentTemplate() {
         throw error;
       }
     },
-    [apiClient, user, isAuthenticated, loading],
+    [apiClient, isAuthenticated, loading],
   );
 
   return getTemplate;
@@ -86,7 +86,7 @@ export function useCreateAssignmentTemplate() {
         throw error;
       }
     },
-    [apiClient, user, isAuthenticated, loading],
+    [apiClient, isAuthenticated, loading],
   );
 
   return createTemplate;
@@ -115,7 +115,7 @@ export function useUpdateAssignmentTemplate() {
         throw error;
       }
     },
-    [apiClient, user, isAuthenticated, loading],
+    [apiClient, isAuthenticated, loading],
   );
 
   return updateTemplate;
@@ -140,7 +140,7 @@ export function useDeleteAssignmentTemplate() {
         throw error;
       }
     },
-    [apiClient, user, isAuthenticated, loading],
+    [apiClient, isAuthenticated, loading],
   );
 
   return deleteTemplate;
@@ -174,7 +174,7 @@ export function useApplyAssignmentsToTemplateWeek() {
         throw error;
       }
     },
-    [apiClient, user, isAuthenticated, loading],
+    [apiClient, isAuthenticated, loading],
   );
 
   return apply;
@@ -208,7 +208,7 @@ export function useApplyAssignmentTemplateToDateRange() {
         throw error;
       }
     },
-    [apiClient, user, isAuthenticated, loading],
+    [apiClient, isAuthenticated, loading],
   );
 
   return apply;
