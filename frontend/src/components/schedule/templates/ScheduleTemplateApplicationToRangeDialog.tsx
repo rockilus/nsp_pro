@@ -56,7 +56,7 @@ export function ScheduleTemplateApplicationToRangeDialog({
   onError,
   onApplyTemplate,
 }: ScheduleTemplateApplicationToRangeDialogProps) {
-  const { t } = useTranslation(lng, 'assignment-templates');
+  const { t } = useTranslation(lng, 'schedule-page');
   const [startDate, setStartDate] = useState<dayjs.Dayjs | null>(null);
   const [endDate, setEndDate] = useState<dayjs.Dayjs | null>(null);
   const [overwriteExisting, setOverwriteExisting] = useState(true);

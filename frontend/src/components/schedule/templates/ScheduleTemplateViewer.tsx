@@ -53,7 +53,7 @@ export function ScheduleTemplateViewer({
   onDeleteTemplate,
   templateUpdateLoading,
 }: ScheduleTemplateViewerProps) {
-  const { t } = useTranslation(lng, 'assignment-templates');
+  const { t } = useTranslation(lng, 'schedule-page');
 
   const getWorkerName = (workerId: string) =>
     workers.find((w) => w.id === workerId)?.name || workerId;

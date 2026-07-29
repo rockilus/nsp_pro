@@ -57,7 +57,7 @@ export function ScheduleTemplateManagementWindow({
   shifts,
   onTemplateApplied,
 }: ScheduleTemplateManagementWindowProps) {
-  const { t } = useTranslation(lng, 'assignment-templates');
+  const { t } = useTranslation(lng, 'schedule-page');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 

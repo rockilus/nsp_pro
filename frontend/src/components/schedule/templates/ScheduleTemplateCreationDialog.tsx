@@ -34,7 +34,7 @@ export function ScheduleTemplateCreationDialog({
   onError,
   initialAssignments,
 }: ScheduleTemplateCreationDialogProps) {
-  const { t } = useTranslation(lng, 'assignment-templates');
+  const { t } = useTranslation(lng, 'schedule-page');
   const [name, setName] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);

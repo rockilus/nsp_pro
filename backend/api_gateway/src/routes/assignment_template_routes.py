@@ -48,7 +48,7 @@ async def create_template(
 ) -> AssignmentTemplateDTO:
     try:
         if not await authz.check(
-            user_context.user_id, "create-shift-demand", "team", team_id
+            user_context.user_id, "create-assignment-template", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to create templates")
 
@@ -97,7 +97,7 @@ async def get_templates_by_team(
 ) -> list[AssignmentTemplateDTO]:
     try:
         if not await authz.check(
-            user_context.user_id, "read-shift-demands", "team", team_id
+            user_context.user_id, "read-assignment-templates", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read templates")
 
@@ -136,7 +136,7 @@ async def get_template_by_id(
 ) -> AssignmentTemplateDTO:
     try:
         if not await authz.check(
-            user_context.user_id, "read-shift-demands", "team", team_id
+            user_context.user_id, "read-assignment-templates", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to read templates")
 
@@ -182,7 +182,7 @@ async def update_template(
 ) -> AssignmentTemplateDTO:
     try:
         if not await authz.check(
-            user_context.user_id, "update-shift-demand", "team", team_id
+            user_context.user_id, "update-assignment-template", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update templates")
 
@@ -235,7 +235,7 @@ async def delete_template(
 ):
     try:
         if not await authz.check(
-            user_context.user_id, "delete-shift-demand", "team", team_id
+            user_context.user_id, "delete-assignment-template", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to delete templates")
 
@@ -293,7 +293,7 @@ async def apply_assignments_to_template_week(
 ) -> AssignmentTemplateDTO:
     try:
         if not await authz.check(
-            user_context.user_id, "update-shift-demand", "team", team_id
+            user_context.user_id, "update-assignment-template", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to update templates")
 
@@ -355,7 +355,7 @@ async def apply_template_to_date_range(
 ) -> AssignmentTemplateApplicationResult:
     try:
         if not await authz.check(
-            user_context.user_id, "create-shift-demand", "team", team_id
+            user_context.user_id, "create-assignment-template", "team", team_id
         ):
             raise NotAuthorizedError("You do not have permission to apply templates")
 

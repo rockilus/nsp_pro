@@ -75,6 +75,10 @@ resourcePolicy:
         - update-constraint
         - delete-constraint
         - read-constraint-templates
+        - create-assignment-template
+        - read-assignment-templates
+        - update-assignment-template
+        - delete-assignment-template
         - solve-schedule
         - create-schedule
         - read-schedules
@@ -162,6 +166,10 @@ resourcePolicy:
         - update-constraint
         - delete-constraint
         - read-constraint-templates
+        - create-assignment-template
+        - read-assignment-templates
+        - update-assignment-template
+        - delete-assignment-template
         - read-schedules
         - read-schedule-work-times
         - create-schedule

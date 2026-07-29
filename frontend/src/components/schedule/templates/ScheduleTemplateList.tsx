@@ -45,7 +45,7 @@ export function ScheduleTemplateList({
   onLoadTemplates,
   onDeleteTemplateRequest,
 }: ScheduleTemplateListProps) {
-  const { t } = useTranslation(lng, 'assignment-templates');
+  const { t } = useTranslation(lng, 'schedule-page');
   const [loading, setLoading] = React.useState(false);
 
   useEffect(() => {
