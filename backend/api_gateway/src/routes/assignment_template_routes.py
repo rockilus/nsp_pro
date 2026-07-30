@@ -44,17 +44,13 @@ async def create_template(
     template_dto: AssignmentTemplateCreateDTO,
     user_context: UserContext = Depends(get_user_context),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
-    service: AssignmentTemplateService = Depends(
-        get_assignment_template_service
-    ),
+    service: AssignmentTemplateService = Depends(get_assignment_template_service),
 ) -> AssignmentTemplateDTO:
     try:
         if not await authz.check(
             user_context.user_id, "create-assignment-template", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to create templates"
-            )
+            raise NotAuthorizedError("You do not have permission to create templates")
 
         template = AssignmentTemplate(
             name=template_dto.name,
@@ -97,17 +93,13 @@ async def get_templates_by_team(
     ),
     user_context: UserContext = Depends(get_user_context),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
-    service: AssignmentTemplateService = Depends(
-        get_assignment_template_service
-    ),
+    service: AssignmentTemplateService = Depends(get_assignment_template_service),
 ) -> list[AssignmentTemplateDTO]:
     try:
         if not await authz.check(
             user_context.user_id, "read-assignment-templates", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read templates"
-            )
+            raise NotAuthorizedError("You do not have permission to read templates")
 
         if template_type and template_type not in ["standard", "even_odd"]:
             raise HTTPException(
@@ -127,9 +119,7 @@ async def get_templates_by_team(
     except HTTPException:
         raise
     except Exception as e:
-        log_info(
-            f"Failed to get assignment templates for team {team_id}: {str(e)}"
-        )
+        log_info(f"Failed to get assignment templates for team {team_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to get templates")
 
 
@@ -142,21 +132,15 @@ async def get_template_by_id(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
-    service: AssignmentTemplateService = Depends(
-        get_assignment_template_service
-    ),
+    service: AssignmentTemplateService = Depends(get_assignment_template_service),
 ) -> AssignmentTemplateDTO:
     try:
         if not await authz.check(
             user_context.user_id, "read-assignment-templates", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to read templates"
-            )
+            raise NotAuthorizedError("You do not have permission to read templates")
 
-        template = await service.validate_template_for_team(
-            template_id, team_id
-        )
+        template = await service.validate_template_for_team(template_id, team_id)
         return template.to_dto()
 
     except NotAuthorizedError:
@@ -194,17 +178,13 @@ async def update_template(
     template_dto: AssignmentTemplateUpdateDTO,
     user_context: UserContext = Depends(get_user_context),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
-    service: AssignmentTemplateService = Depends(
-        get_assignment_template_service
-    ),
+    service: AssignmentTemplateService = Depends(get_assignment_template_service),
 ) -> AssignmentTemplateDTO:
     try:
         if not await authz.check(
             user_context.user_id, "update-assignment-template", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update templates"
-            )
+            raise NotAuthorizedError("You do not have permission to update templates")
 
         existing_template = await service.validate_template_for_team(
             template_id, team_id
@@ -214,9 +194,7 @@ async def update_template(
 
         updated_template = await service.update_template(existing_template)
 
-        log_info(
-            f"Updated assignment template {template_id} for team {team_id}"
-        )
+        log_info(f"Updated assignment template {template_id} for team {team_id}")
         return updated_template.to_dto()
 
     except NotAuthorizedError:
@@ -240,12 +218,8 @@ async def update_template(
     except HTTPException:
         raise
     except Exception as e:
-        log_info(
-            f"Failed to update assignment template {template_id}: {str(e)}"
-        )
-        raise HTTPException(
-            status_code=500, detail="Failed to update template"
-        )
+        log_info(f"Failed to update assignment template {template_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update template")
 
 
 @router.delete(
@@ -257,17 +231,13 @@ async def delete_template(
     team_id: str,
     user_context: UserContext = Depends(get_user_context),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
-    service: AssignmentTemplateService = Depends(
-        get_assignment_template_service
-    ),
+    service: AssignmentTemplateService = Depends(get_assignment_template_service),
 ):
     try:
         if not await authz.check(
             user_context.user_id, "delete-assignment-template", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to delete templates"
-            )
+            raise NotAuthorizedError("You do not have permission to delete templates")
 
         await service.validate_template_for_team(template_id, team_id)
 
@@ -282,9 +252,7 @@ async def delete_template(
                 },
             )
 
-        log_info(
-            f"Deleted assignment template {template_id} for team {team_id}"
-        )
+        log_info(f"Deleted assignment template {template_id} for team {team_id}")
 
     except NotAuthorizedError:
         raise
@@ -307,12 +275,8 @@ async def delete_template(
     except HTTPException:
         raise
     except Exception as e:
-        log_info(
-            f"Failed to delete assignment template {template_id}: {str(e)}"
-        )
-        raise HTTPException(
-            status_code=500, detail="Failed to delete template"
-        )
+        log_info(f"Failed to delete assignment template {template_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete template")
 
 
 @router.post(
@@ -325,17 +289,13 @@ async def apply_assignments_to_template_week(
     request: ApplyAssignmentsToTemplateWeekDTO,
     user_context: UserContext = Depends(get_user_context),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
-    service: AssignmentTemplateService = Depends(
-        get_assignment_template_service
-    ),
+    service: AssignmentTemplateService = Depends(get_assignment_template_service),
 ) -> AssignmentTemplateDTO:
     try:
         if not await authz.check(
             user_context.user_id, "update-assignment-template", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to update templates"
-            )
+            raise NotAuthorizedError("You do not have permission to update templates")
 
         source_week_start = datetime.fromtimestamp(
             request.sourceWeekStartDate, tz=timezone.utc
@@ -375,9 +335,7 @@ async def apply_assignments_to_template_week(
     except HTTPException:
         raise
     except Exception as e:
-        log_info(
-            f"Failed to apply assignments to template {template_id}: {str(e)}"
-        )
+        log_info(f"Failed to apply assignments to template {template_id}: {str(e)}")
         raise HTTPException(
             status_code=500, detail="Failed to apply assignments to template"
         )
@@ -393,24 +351,16 @@ async def apply_template_to_date_range(
     request: ApplyAssignmentTemplateToDateRangeDTO,
     user_context: UserContext = Depends(get_user_context),
     authz: CerbosAuthzService = Depends(get_cerbos_authz_service),
-    service: AssignmentTemplateService = Depends(
-        get_assignment_template_service
-    ),
+    service: AssignmentTemplateService = Depends(get_assignment_template_service),
 ) -> AssignmentTemplateApplicationResult:
     try:
         if not await authz.check(
             user_context.user_id, "create-assignment-template", "team", team_id
         ):
-            raise NotAuthorizedError(
-                "You do not have permission to apply templates"
-            )
+            raise NotAuthorizedError("You do not have permission to apply templates")
 
-        start_date = datetime.fromtimestamp(
-            request.startDate, tz=timezone.utc
-        ).date()
-        end_date = datetime.fromtimestamp(
-            request.endDate, tz=timezone.utc
-        ).date()
+        start_date = datetime.fromtimestamp(request.startDate, tz=timezone.utc).date()
+        end_date = datetime.fromtimestamp(request.endDate, tz=timezone.utc).date()
 
         result = await service.apply_template_to_date_range(
             template_id=template_id,
