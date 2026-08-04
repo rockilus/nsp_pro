@@ -8,7 +8,7 @@ import { AccessGuard } from '@/components/access/access-guard';
 import { ScheduleTemplatesPage } from '@/components/templates/ScheduleTemplatesPage';
 import { useTeam } from '@/context/TeamContext';
 import { useUser } from '@/context/UserContext';
-import '../../../styles/page.css';
+import '../../../../styles/page.css';
 
 export default function Page({ params }: { params: Promise<{ lng: string }> }) {
   const { selectedTeam } = useTeam();

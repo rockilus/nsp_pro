@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useTranslation } from '../../../app/i18n/client';
@@ -79,7 +79,6 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
   periodDates = [],
 }) => {
   const { t } = useTranslation(lng, 'schedule-page');
-  const router = useRouter();
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [isDuplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
@@ -257,11 +256,10 @@ const ScheduleSettings: React.FC<ScheduleSettingsProps> = ({
               </Tooltip>
               {onOpenTemplates && (
                 <MenuItem
+                  component={Link}
+                  href={`/${lng}/plan/templates`}
                   data-testid="settings-templates-button"
-                  onClick={() => {
-                    router.push('/plan/templates');
-                    handleClosePopover();
-                  }}
+                  onClick={handleClosePopover}
                   sx={{ fontSize: '0.8rem' }}
                 >
                   {t('templates')}
