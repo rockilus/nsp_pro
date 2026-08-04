@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import isoWeek from 'dayjs/plugin/isoWeek';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { useTranslation } from '../../app/i18n/client';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ import {
 } from '../../types/schedule-template';
 
 dayjs.extend(utc);
+dayjs.extend(isoWeek);
 dayjs.extend(isSameOrBefore);
 
 interface TemplateApplyDialogProps {
