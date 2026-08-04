@@ -20,9 +20,9 @@ dependencies = [
 	"cerbos>=0.15.1",
 	"pydantic>=2.12.5",
 	"email-validator>=2.3.0",
-	"cryptography>=48.0.1",
-	"fastmcp>=3.4.3",
-	"litellm>=1.55.0",
+	"cryptography>=50.0.0",
+	"fastmcp>=3.4.5",
+	"litellm>=1.95.0",
 ]
 
 [dependency-groups]

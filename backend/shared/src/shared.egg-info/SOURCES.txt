@@ -60,6 +60,7 @@ src/shared/database/repositories/recurrence.py
 src/shared/database/repositories/recurrence_exclusion.py
 src/shared/database/repositories/request.py
 src/shared/database/repositories/schedule.py
+src/shared/database/repositories/schedule_template.py
 src/shared/database/repositories/shift.py
 src/shared/database/repositories/shift_demand.py
 src/shared/database/repositories/shift_demand_exclusion.py
@@ -96,6 +97,7 @@ src/shared/database/schemas/recurrence.py
 src/shared/database/schemas/recurrence_exclusion.py
 src/shared/database/schemas/request.py
 src/shared/database/schemas/schedule.py
+src/shared/database/schemas/schedule_template.py
 src/shared/database/schemas/shift.py
 src/shared/database/schemas/shift_demand.py
 src/shared/database/schemas/shift_demand_exclusion.py
@@ -171,6 +173,7 @@ src/shared/schemas/core/recurrence.py
 src/shared/schemas/core/replacement.py
 src/shared/schemas/core/request.py
 src/shared/schemas/core/schedule.py
+src/shared/schemas/core/schedule_template.py
 src/shared/schemas/core/shift.py
 src/shared/schemas/core/shift_demand.py
 src/shared/schemas/core/shift_demand_exclusion.py
@@ -208,6 +211,7 @@ src/shared/schemas/dto/recurrence.py
 src/shared/schemas/dto/replacement.py
 src/shared/schemas/dto/request.py
 src/shared/schemas/dto/schedule.py
+src/shared/schemas/dto/schedule_template.py
 src/shared/schemas/dto/shift.py
 src/shared/schemas/dto/shift_demand_new.py
 src/shared/schemas/dto/shift_demand_template.py
