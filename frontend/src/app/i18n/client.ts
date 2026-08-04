@@ -35,7 +35,15 @@ i18next
     },
     preload: runsOnServerSide ? languages : [],
     // Preload critical namespaces to prevent re-render cascades from lazy loading
-    ns: ['translation', 'request-page', 'shift-page', 'stats-page', 'schedule-page', 'common'],
+    ns: [
+      'translation',
+      'request-page',
+      'shift-page',
+      'stats-page',
+      'schedule-page',
+      'common',
+      'schedule-templates',
+    ],
   });
 
 export function useTranslation<

@@ -79,6 +79,11 @@ resourcePolicy:
         - read-assignment-templates
         - update-assignment-template
         - delete-assignment-template
+        - create-schedule-template
+        - read-schedule-templates
+        - update-schedule-template
+        - delete-schedule-template
+        - apply-schedule-template
         - solve-schedule
         - create-schedule
         - read-schedules
@@ -170,6 +175,11 @@ resourcePolicy:
         - read-assignment-templates
         - update-assignment-template
         - delete-assignment-template
+        - create-schedule-template
+        - read-schedule-templates
+        - update-schedule-template
+        - delete-schedule-template
+        - apply-schedule-template
         - read-schedules
         - read-schedule-work-times
         - create-schedule
