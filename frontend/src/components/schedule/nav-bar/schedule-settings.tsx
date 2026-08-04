@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { useTranslation } from '../../../app/i18n/client';
 // MUI
 import {
@@ -42,6 +43,7 @@ import { OccurrenceType } from '@/types/recurrence';
 import { TeamMembershipRole, TeamWithMembership } from '../../../types/team';
 
 dayjs.extend(utc);
+dayjs.extend(isSameOrBefore);
 
 interface ScheduleSettingsProps {
   lng: string;
