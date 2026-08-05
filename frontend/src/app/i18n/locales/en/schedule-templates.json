@@ -14,6 +14,8 @@
   "date_range_too_long": "Date range cannot exceed 365 days",
   "delete": "Delete",
   "delete_template": "Delete Template",
+  "hide_sidebar": "Hide sidebar",
+  "show_sidebar": "Show sidebar",
   "demand_count": "Demand count",
   "demands": "Demands",
   "description": "Description",

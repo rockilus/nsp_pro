@@ -14,6 +14,8 @@
   "date_range_too_long": "La plage de dates ne peut pas dépasser 365 jours",
   "delete": "Supprimer",
   "delete_template": "Supprimer le modèle",
+  "hide_sidebar": "Masquer la barre latérale",
+  "show_sidebar": "Afficher la barre latérale",
   "demand_count": "Couverture",
   "demands": "Couvertures",
   "description": "Description",

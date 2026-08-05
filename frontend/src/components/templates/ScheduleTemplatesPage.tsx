@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '../../app/i18n/client';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { PanelLeftOpen } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { TeamWithMembership } from '../../types/team';
 import { ShiftT } from '../../types/shift';
 import {
@@ -39,6 +42,7 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
 
   const getTemplates = useGetScheduleTemplates();
   const createTemplate = useCreateScheduleTemplate();
@@ -126,17 +130,36 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
 
   return (
     <div className="flex h-full">
-      <TemplateListSidebar
-        lng={lng}
-        templates={templates}
-        selectedTemplateId={selectedTemplate?.id ?? null}
-        isLoading={isLoading}
-        onSelect={handleSelectTemplate}
-        onCreate={() => setIsCreateOpen(true)}
-        onDelete={handleDelete}
-      />
+      {sidebarVisible && (
+        <TemplateListSidebar
+          lng={lng}
+          templates={templates}
+          selectedTemplateId={selectedTemplate?.id ?? null}
+          isLoading={isLoading}
+          onSelect={handleSelectTemplate}
+          onCreate={() => setIsCreateOpen(true)}
+          onToggleSidebar={() => setSidebarVisible(false)}
+        />
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col">
+        {!sidebarVisible && (
+          <div className="flex items-center border-b px-2 py-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => setSidebarVisible(true)}
+                  aria-label={t('show_sidebar')}
+                >
+                  <PanelLeftOpen className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">{t('show_sidebar')}</TooltipContent>
+            </Tooltip>
+          </div>
+        )}
         <TemplateEditor
           lng={lng}
           template={selectedTemplate}
