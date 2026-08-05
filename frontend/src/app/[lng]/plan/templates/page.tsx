@@ -8,7 +8,6 @@ import { AccessGuard } from '@/components/access/access-guard';
 import { ScheduleTemplatesPage } from '@/components/templates/ScheduleTemplatesPage';
 import { useTeam } from '@/context/TeamContext';
 import { useUser } from '@/context/UserContext';
-import '../../../../styles/page.css';
 
 export default function Page({ params }: { params: Promise<{ lng: string }> }) {
   const { selectedTeam } = useTeam();
@@ -19,7 +18,7 @@ export default function Page({ params }: { params: Promise<{ lng: string }> }) {
 
   return (
     <AccessGuard route="/templates" teamWithMembership={selectedTeam}>
-      <div className="page-layout">
+      <div className="h-full bg-background text-foreground">
         <ScheduleTemplatesPage lng={lng} teamWithMembership={selectedTeam} />
       </div>
     </AccessGuard>

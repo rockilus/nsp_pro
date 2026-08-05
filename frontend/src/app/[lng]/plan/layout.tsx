@@ -27,12 +27,12 @@ export default async function Layout({
   const { lng } = await params;
 
   const content = (
-    <div style={{ overflow: 'hidden', height: '100vh' }}>
+    <div style={{ overflow: 'hidden', height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <CssBaseline />
       <header className="desktop-only-nav">
         <NavAppBar lng={lng} />
       </header>
-      <main>{children}</main>
+      <main style={{ flex: 1, minHeight: 0 }}>{children}</main>
     </div>
   );
 
