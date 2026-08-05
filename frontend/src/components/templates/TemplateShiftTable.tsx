@@ -105,18 +105,11 @@ export function TemplateShiftTable({
   }, [visibleWeeks]);
 
   const rowShiftIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const week of weeksData) {
-      for (const entry of week.entries) {
-        ids.add(entry.shiftId);
-      }
-    }
-    return Array.from(ids).sort((a, b) => {
-      const shiftA = shifts.find((s) => s.id === a);
-      const shiftB = shifts.find((s) => s.id === b);
-      return (shiftA?.name ?? a).localeCompare(shiftB?.name ?? b);
-    });
-  }, [weeksData, shifts]);
+    return shifts
+      .filter((s) => !s.deleted)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((s) => s.id);
+  }, [shifts]);
 
   const rows = useMemo(() => {
     return rowShiftIds
@@ -360,14 +353,6 @@ export function TemplateShiftTable({
     setSelectionEnabled(false);
     setSelectedCells(new Set());
   }, []);
-
-  if (rows.length === 0) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
-        <p>{t('no_templates_description')}</p>
-      </div>
-    );
-  }
 
   const numColumns = visibleWeeks.length * DAYS_IN_WEEK;
   const weekLabels = visibleWeeks.map((w) => ({
