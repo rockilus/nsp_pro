@@ -77,10 +77,10 @@ export function TemplateListSidebar({
               <div
                 key={template.id}
                 className={cn(
-                  'cursor-pointer rounded-md border px-2 py-1.5 text-sm transition-colors',
+                  'cursor-pointer rounded-md border border-border px-2 py-1.5 text-sm transition-colors',
                   selectedTemplateId === template.id
-                    ? 'border-accent bg-accent text-accent-foreground'
-                    : 'border-transparent hover:bg-muted',
+                    ? 'bg-accent text-accent-foreground'
+                    : 'hover:bg-muted',
                 )}
                 onClick={() => onSelect(template)}
               >
