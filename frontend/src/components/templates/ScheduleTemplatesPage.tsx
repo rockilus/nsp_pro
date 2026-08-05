@@ -7,9 +7,9 @@ import { TeamWithMembership } from '../../types/team';
 import { ShiftT } from '../../types/shift';
 import {
   ScheduleTemplateDTO,
-  ScheduleTemplateUpdateDTO,
   ApplyScheduleTemplateToDateRangeDTO,
   ScheduleTemplateApplicationResult,
+  TemplateType,
 } from '../../types/schedule-template';
 import { TemplateListSidebar } from './TemplateListSidebar';
 import { TemplateEditor } from './TemplateEditor';
@@ -36,7 +36,9 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
   const [templates, setTemplates] = useState<ScheduleTemplateDTO[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<ScheduleTemplateDTO | null>(null);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editTemplateId, setEditTemplateId] = useState<string | null>(null);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarVisible, setSidebarVisible] = useState(true);
@@ -74,37 +76,61 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
     setSelectedTemplate(template);
   };
 
-  const handleCreate = async (name: string, description?: string) => {
-    try {
-      const created = await createTemplate(teamId, { name, description });
-      setTemplates((prev) => [...prev, created]);
-      setSelectedTemplate(created);
-      setIsCreateOpen(false);
-      toast.success(t('template_applied_successfully'));
-    } catch {
-      toast.error(t('template_application_failed'));
-    }
+  const handleCreate = () => {
+    setDialogMode('create');
+    setEditTemplateId(null);
+    setDialogOpen(true);
   };
 
-  const handleDelete = async (templateId: string) => {
-    try {
-      await deleteTemplate(templateId, teamId);
-      setTemplates((prev) => prev.filter((tp) => tp.id !== templateId));
-      if (selectedTemplate?.id === templateId) {
-        setSelectedTemplate(null);
+  const handleEdit = () => {
+    setDialogMode('edit');
+    setEditTemplateId(selectedTemplate?.id ?? null);
+    setDialogOpen(true);
+  };
+
+  const handleDialogSubmit = async (
+    name: string,
+    templateType: TemplateType,
+    description?: string,
+  ) => {
+    if (dialogMode === 'create') {
+      try {
+        const created = await createTemplate(teamId, {
+          name,
+          description,
+          templateType,
+        });
+        setTemplates((prev) => [...prev, created]);
+        setSelectedTemplate(created);
+        setDialogOpen(false);
+        toast.success(t('template_applied_successfully'));
+      } catch {
+        toast.error(t('template_application_failed'));
       }
-      toast.success(t('template_applied_successfully'));
-    } catch {
-      toast.error(t('template_application_failed'));
+    } else {
+      if (!editTemplateId) return;
+      try {
+        const updated = await updateTemplate(editTemplateId, teamId, {
+          name,
+          description,
+          templateType,
+        });
+        setTemplates((prev) => prev.map((tp) => (tp.id === updated.id ? updated : tp)));
+        setSelectedTemplate(updated);
+        setDialogOpen(false);
+        toast.success(t('template_applied_successfully'));
+      } catch {
+        toast.error(t('template_application_failed'));
+      }
     }
   };
 
-  const handleSave = async (update: ScheduleTemplateUpdateDTO) => {
+  const handleDelete = async () => {
     if (!selectedTemplate) return;
     try {
-      const updated = await updateTemplate(selectedTemplate.id, teamId, update);
-      setTemplates((prev) => prev.map((tp) => (tp.id === updated.id ? updated : tp)));
-      setSelectedTemplate(updated);
+      await deleteTemplate(selectedTemplate.id, teamId);
+      setTemplates((prev) => prev.filter((tp) => tp.id !== selectedTemplate.id));
+      setSelectedTemplate(null);
       toast.success(t('template_applied_successfully'));
     } catch {
       toast.error(t('template_application_failed'));
@@ -125,6 +151,11 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
     toast.success(result.message || t('template_applied_successfully'));
   };
 
+  const editingTemplate =
+    dialogMode === 'edit' && editTemplateId
+      ? (templates.find((tp) => tp.id === editTemplateId) ?? null)
+      : null;
+
   return (
     <div className="flex h-full">
       {sidebarVisible && (
@@ -134,7 +165,7 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
           selectedTemplateId={selectedTemplate?.id ?? null}
           isLoading={isLoading}
           onSelect={handleSelectTemplate}
-          onCreate={() => setIsCreateOpen(true)}
+          onCreate={handleCreate}
           onToggleSidebar={() => setSidebarVisible(false)}
         />
       )}
@@ -147,16 +178,21 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
           team={teamWithMembership.team}
           sidebarVisible={sidebarVisible}
           onToggleSidebar={() => setSidebarVisible(true)}
-          onSave={handleSave}
           onApply={() => setIsApplyOpen(true)}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
         />
       </div>
 
       <TemplateCreateDialog
         lng={lng}
-        open={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onCreate={handleCreate}
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onSubmit={handleDialogSubmit}
+        mode={dialogMode}
+        initialName={editingTemplate?.name ?? ''}
+        initialDescription={editingTemplate?.description ?? ''}
+        initialTemplateType={editingTemplate?.templateType ?? TemplateType.STANDARD}
       />
 
       {selectedTemplate && (

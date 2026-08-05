@@ -14,6 +14,8 @@
   "date_range_too_long": "El rango de fechas no puede exceder 365 días",
   "delete": "Eliminar",
   "delete_template": "Eliminar plantilla",
+  "edit": "Editar",
+  "edit_template": "Editar plantilla",
   "hide_sidebar": "Ocultar panel lateral",
   "show_sidebar": "Mostrar panel lateral",
   "demand_count": "Cobertura",

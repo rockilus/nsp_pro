@@ -30,6 +30,7 @@ export interface ScheduleTemplateDTO {
 export interface ScheduleTemplateCreateDTO {
   name: string;
   description?: string;
+  templateType?: TemplateType;
 }
 
 export interface ScheduleTemplateUpdateDTO {

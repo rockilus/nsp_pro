@@ -5,6 +5,7 @@ import { useTranslation } from '../../app/i18n/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Dialog,
   DialogContent,
@@ -12,19 +13,43 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { TemplateType } from '../../types/schedule-template';
 
 interface TemplateCreateDialogProps {
   lng: string;
   open: boolean;
   onClose: () => void;
-  onCreate: (name: string, description?: string) => void;
+  onSubmit: (name: string, templateType: TemplateType, description?: string) => void;
+  mode?: 'create' | 'edit';
+  initialName?: string;
+  initialDescription?: string;
+  initialTemplateType?: TemplateType;
 }
 
-export function TemplateCreateDialog({ lng, open, onClose, onCreate }: TemplateCreateDialogProps) {
+export function TemplateCreateDialog({
+  lng,
+  open,
+  onClose,
+  onSubmit,
+  mode = 'create',
+  initialName = '',
+  initialDescription = '',
+  initialTemplateType = TemplateType.STANDARD,
+}: TemplateCreateDialogProps) {
   const { t } = useTranslation(lng, 'schedule-templates');
-  const [name, setName] = React.useState('');
-  const [description, setDescription] = React.useState('');
+  const [name, setName] = React.useState(initialName);
+  const [description, setDescription] = React.useState(initialDescription);
+  const [templateType, setTemplateType] = React.useState<TemplateType>(initialTemplateType);
   const [error, setError] = React.useState('');
+
+  React.useEffect(() => {
+    if (open) {
+      setName(initialName);
+      setDescription(initialDescription);
+      setTemplateType(initialTemplateType);
+      setError('');
+    }
+  }, [open, initialName, initialDescription, initialTemplateType]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,24 +58,19 @@ export function TemplateCreateDialog({ lng, open, onClose, onCreate }: TemplateC
       return;
     }
     setError('');
-    onCreate(name.trim(), description.trim() || undefined);
+    onSubmit(name.trim(), templateType, description.trim() || undefined);
     setName('');
     setDescription('');
+    setTemplateType(TemplateType.STANDARD);
   };
 
-  React.useEffect(() => {
-    if (open) {
-      setName('');
-      setDescription('');
-      setError('');
-    }
-  }, [open]);
+  const isEdit = mode === 'edit';
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t('create_template')}</DialogTitle>
+          <DialogTitle>{isEdit ? t('edit_template') : t('create_template')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -74,11 +94,49 @@ export function TemplateCreateDialog({ lng, open, onClose, onCreate }: TemplateC
               maxLength={500}
             />
           </div>
+          <div className="space-y-2">
+            <Label>{t('template_type')}</Label>
+            <RadioGroup
+              value={templateType}
+              onValueChange={(v) => setTemplateType(v as TemplateType)}
+            >
+              <div className="flex items-start gap-3 rounded-md border p-3">
+                <RadioGroupItem
+                  value={TemplateType.STANDARD}
+                  id="type-standard"
+                  className="mt-0.5"
+                />
+                <div>
+                  <Label htmlFor="type-standard" className="font-medium">
+                    {t('standard')}
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t('standard_template_explanation')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 rounded-md border p-3">
+                <RadioGroupItem
+                  value={TemplateType.EVEN_ODD}
+                  id="type-even-odd"
+                  className="mt-0.5"
+                />
+                <div>
+                  <Label htmlFor="type-even-odd" className="font-medium">
+                    {t('even_odd')}
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t('even_odd_template_explanation')}
+                  </p>
+                </div>
+              </div>
+            </RadioGroup>
+          </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
               {t('cancel')}
             </Button>
-            <Button type="submit">{t('create_template')}</Button>
+            <Button type="submit">{isEdit ? t('save') : t('create_template')}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

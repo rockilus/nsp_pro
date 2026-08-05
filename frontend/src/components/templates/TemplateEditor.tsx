@@ -5,24 +5,23 @@ import { useTranslation } from '../../app/i18n/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { TemplateShiftTable } from './TemplateShiftTable';
 import {
   ScheduleTemplateDTO,
-  ScheduleTemplateUpdateDTO,
-  ScheduleTemplateWeekDataDTO,
   TemplateType,
   TEMPLATE_TYPE_CONSTRAINTS,
   SCHEDULE_TEMPLATE_CONSTRAINTS,
 } from '../../types/schedule-template';
 import { ShiftT } from '../../types/shift';
 import { TeamT } from '../../types/team';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Play, PanelLeftOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Play, PanelLeftOpen, Pencil } from 'lucide-react';
 
 interface TemplateEditorProps {
   lng: string;
@@ -31,9 +30,15 @@ interface TemplateEditorProps {
   team: TeamT;
   sidebarVisible: boolean;
   onToggleSidebar: () => void;
-  onSave: (update: ScheduleTemplateUpdateDTO) => void;
   onApply: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }
+
+const templateTypeLabelFn = (type: string, t: (key: string) => string) => {
+  if (type === TemplateType.EVEN_ODD) return t('even_odd');
+  return t('standard');
+};
 
 export function TemplateEditor({
   lng,
@@ -42,82 +47,38 @@ export function TemplateEditor({
   team,
   sidebarVisible,
   onToggleSidebar,
-  onSave,
   onApply,
+  onEdit,
+  onDelete,
 }: TemplateEditorProps) {
   const { t } = useTranslation(lng, 'schedule-templates');
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
   const [templateType, setTemplateType] = useState<TemplateType>(TemplateType.STANDARD);
-  const [weeksData, setWeeksData] = useState<ScheduleTemplateWeekDataDTO[]>([]);
   const [currentWeek, setCurrentWeek] = useState(0);
-  const [isDirty, setIsDirty] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     if (template) {
-      setName(template.name);
-      setDescription(template.description ?? '');
       setTemplateType(template.templateType as TemplateType);
-      setWeeksData(template.weeksData.map((w) => ({ ...w, entries: [...w.entries] })));
       setCurrentWeek(0);
-      setIsDirty(false);
     }
   }, [template]);
 
-  const markDirty = () => setIsDirty(true);
-
-  const handleTypeChange = (newType: string) => {
-    const t = newType as TemplateType;
-    setTemplateType(t);
-    markDirty();
-
-    if (t === TemplateType.EVEN_ODD) {
-      let newWeeks = [...weeksData];
-      while (newWeeks.length < 2) {
-        newWeeks.push({ weekNumber: newWeeks.length, entries: [] });
-      }
-      newWeeks = newWeeks.slice(0, 2).map((w, i) => ({ ...w, weekNumber: i }));
-      setWeeksData(newWeeks);
-      setCurrentWeek(0);
-    }
+  const handleTypeChange = (newType: TemplateType) => {
+    setTemplateType(newType);
   };
 
   const handleAddWeek = () => {
     const constraints = TEMPLATE_TYPE_CONSTRAINTS[templateType];
-    if (weeksData.length >= constraints.maxWeeks) return;
-    const newWeeks = [...weeksData, { weekNumber: weeksData.length, entries: [] }];
-    setWeeksData(newWeeks);
-    markDirty();
+    if (currentWeek + 1 >= constraints.maxWeeks) return;
+    setCurrentWeek((w) => w + 1);
   };
 
   const handleRemoveWeek = () => {
     const constraints = TEMPLATE_TYPE_CONSTRAINTS[templateType];
-    if (!constraints.allowWeekModification || weeksData.length <= constraints.minWeeks) return;
-    const newWeeks = weeksData
-      .filter((_, i) => i !== currentWeek)
-      .map((w, i) => ({ ...w, weekNumber: i }));
-    setWeeksData(newWeeks);
-    setCurrentWeek(Math.min(currentWeek, newWeeks.length - 1));
-    markDirty();
+    if (!constraints.allowWeekModification || currentWeek <= 0) return;
+    setCurrentWeek((w) => w - 1);
   };
-
-  const handleWeeksDataChange = (newWeeks: ScheduleTemplateWeekDataDTO[]) => {
-    setWeeksData(newWeeks);
-    markDirty();
-  };
-
-  const handleSave = () => {
-    onSave({
-      name: name || undefined,
-      description: description || undefined,
-      templateType,
-      weeksData,
-    });
-    setIsDirty(false);
-  };
-
-  const constraints = TEMPLATE_TYPE_CONSTRAINTS[templateType];
 
   if (!template) {
     return (
@@ -137,6 +98,9 @@ export function TemplateEditor({
     );
   }
 
+  const constraints = TEMPLATE_TYPE_CONSTRAINTS[templateType];
+  const weeksData = template.weeksData;
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center gap-2 border-b px-3 py-2">
@@ -150,35 +114,31 @@ export function TemplateEditor({
             <PanelLeftOpen className="h-3.5 w-3.5" />
           </Button>
         )}
-        <input
-          className="min-w-0 flex-1 border-b border-transparent bg-transparent px-1 text-sm font-semibold outline-none hover:border-input focus:border-input"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            markDirty();
-          }}
-          maxLength={SCHEDULE_TEMPLATE_CONSTRAINTS.MAX_NAME_LENGTH}
-        />
 
-        <Select value={templateType} onValueChange={handleTypeChange}>
-          <SelectTrigger size="sm" className="w-28">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={TemplateType.STANDARD}>{t('standard')}</SelectItem>
-            <SelectItem value={TemplateType.EVEN_ODD}>{t('even_odd')}</SelectItem>
-          </SelectContent>
-        </Select>
+        <span className="max-w-[200px] truncate text-sm font-semibold">{template.name}</span>
 
-        <Button size="sm" variant="outline" onClick={handleSave} disabled={!isDirty}>
-          {t('save')}
-        </Button>
+        <Badge variant="outline" className="h-4 px-1 text-[10px]">
+          {templateTypeLabelFn(template.templateType, t)}
+        </Badge>
 
         <div className="flex-1" />
 
-        <Button size="sm" onClick={onApply} className="gap-1">
+        <Button size="icon-xs" variant="ghost" onClick={onEdit} aria-label={t('edit_template')}>
+          <Pencil className="h-3.5 w-3.5" />
+        </Button>
+
+        <Button
+          size="icon-xs"
+          variant="ghost"
+          className="text-destructive hover:text-destructive"
+          onClick={() => setDeleteOpen(true)}
+          aria-label={t('delete_template')}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+
+        <Button size="icon-xs" onClick={onApply} aria-label={t('apply')}>
           <Play className="h-3.5 w-3.5" />
-          {t('apply_template')}
         </Button>
       </div>
 
@@ -244,22 +204,38 @@ export function TemplateEditor({
           shifts={shifts}
           team={team}
           templateType={templateType}
-          weeksData={weeksData}
-          onWeeksDataChange={handleWeeksDataChange}
-          onNameChange={(n) => {
-            setName(n);
-            markDirty();
-          }}
-          onDescriptionChange={(d) => {
-            setDescription(d);
-            markDirty();
-          }}
-          onTemplateTypeChange={(t) => {
-            setTemplateType(t);
-            markDirty();
-          }}
+          weeksData={template.weeksData}
+          onWeeksDataChange={() => {}}
+          onNameChange={() => {}}
+          onDescriptionChange={() => {}}
+          onTemplateTypeChange={handleTypeChange}
         />
       </div>
+
+      <Dialog open={deleteOpen} onOpenChange={(v) => !v && setDeleteOpen(false)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('delete_template')}</DialogTitle>
+            <DialogDescription>
+              {t('confirm_delete_template', { name: template.name })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+              {t('cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setDeleteOpen(false);
+                onDelete();
+              }}
+            >
+              {t('delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
