@@ -15,13 +15,24 @@ import {
 import { TemplateShiftTable } from './TemplateShiftTable';
 import {
   ScheduleTemplateDTO,
+  ScheduleTemplateWeekDataDTO,
   TemplateType,
   TEMPLATE_TYPE_CONSTRAINTS,
-  SCHEDULE_TEMPLATE_CONSTRAINTS,
 } from '../../types/schedule-template';
 import { ShiftT } from '../../types/shift';
 import { TeamT } from '../../types/team';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Play, PanelLeftOpen, Pencil } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Minus,
+  Trash2,
+  Play,
+  PanelLeftOpen,
+  Pencil,
+  Download,
+  CheckSquare,
+} from 'lucide-react';
 
 interface TemplateEditorProps {
   lng: string;
@@ -33,6 +44,7 @@ interface TemplateEditorProps {
   onApply: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onTemplateChange: (weeksData: ScheduleTemplateWeekDataDTO[]) => void;
 }
 
 const templateTypeLabelFn = (type: string, t: (key: string) => string) => {
@@ -50,12 +62,15 @@ export function TemplateEditor({
   onApply,
   onEdit,
   onDelete,
+  onTemplateChange,
 }: TemplateEditorProps) {
   const { t } = useTranslation(lng, 'schedule-templates');
 
   const [templateType, setTemplateType] = useState<TemplateType>(TemplateType.STANDARD);
   const [currentWeek, setCurrentWeek] = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [selectionEnabled, setSelectionEnabled] = useState(false);
 
   useEffect(() => {
     if (template) {
@@ -63,22 +78,6 @@ export function TemplateEditor({
       setCurrentWeek(0);
     }
   }, [template]);
-
-  const handleTypeChange = (newType: TemplateType) => {
-    setTemplateType(newType);
-  };
-
-  const handleAddWeek = () => {
-    const constraints = TEMPLATE_TYPE_CONSTRAINTS[templateType];
-    if (currentWeek + 1 >= constraints.maxWeeks) return;
-    setCurrentWeek((w) => w + 1);
-  };
-
-  const handleRemoveWeek = () => {
-    const constraints = TEMPLATE_TYPE_CONSTRAINTS[templateType];
-    if (!constraints.allowWeekModification || currentWeek <= 0) return;
-    setCurrentWeek((w) => w - 1);
-  };
 
   if (!template) {
     return (
@@ -100,6 +99,32 @@ export function TemplateEditor({
 
   const constraints = TEMPLATE_TYPE_CONSTRAINTS[templateType];
   const weeksData = template.weeksData;
+
+  const handleAddWeek = () => {
+    if (weeksData.length >= constraints.maxWeeks) return;
+    const updated = [...weeksData, { weekNumber: weeksData.length, entries: [] }];
+    onTemplateChange(updated);
+  };
+
+  const handleRemoveWeek = () => {
+    if (!constraints.allowWeekModification || weeksData.length <= constraints.minWeeks) return;
+    const updated = weeksData
+      .filter((_, i) => i !== currentWeek)
+      .map((w, i) => ({ ...w, weekNumber: i }));
+    setCurrentWeek(Math.min(currentWeek, updated.length - 1));
+    onTemplateChange(updated);
+  };
+
+  const handleWeeksDataChange = (updated: ScheduleTemplateWeekDataDTO[]) => {
+    onTemplateChange(updated);
+  };
+
+  const weekLabel =
+    templateType === TemplateType.EVEN_ODD
+      ? currentWeek === 0
+        ? t('even_week')
+        : t('odd_week')
+      : t('week_number', { number: currentWeek + 1 });
 
   return (
     <div className="flex h-full flex-col">
@@ -142,60 +167,73 @@ export function TemplateEditor({
         </Button>
       </div>
 
-      {constraints.allowWeekModification && (
-        <div className="flex items-center gap-2 border-b px-3 py-2">
-          <Button
-            variant="outline"
-            size="icon-xs"
-            disabled={currentWeek <= 0}
-            onClick={() => setCurrentWeek((w) => w - 1)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
+      <div className="flex items-center gap-1 border-b px-3 py-1.5">
+        <Button
+          variant="outline"
+          size="icon-xs"
+          disabled={currentWeek <= 0}
+          onClick={() => setCurrentWeek((w) => w - 1)}
+          aria-label={t('previous_week')}
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+        </Button>
 
-          <span className="min-w-20 text-center text-sm font-medium">
-            {t('week_number', { number: currentWeek + 1 })}
-          </span>
+        <span className="min-w-[80px] text-center text-xs font-medium">{weekLabel}</span>
 
-          <Button
-            variant="outline"
-            size="icon-xs"
-            disabled={currentWeek >= weeksData.length - 1}
-            onClick={() => setCurrentWeek((w) => w + 1)}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        <Button
+          variant="outline"
+          size="icon-xs"
+          disabled={currentWeek >= weeksData.length - 1}
+          onClick={() => setCurrentWeek((w) => w + 1)}
+          aria-label={t('next_week')}
+        >
+          <ChevronRight className="h-3.5 w-3.5" />
+        </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="ml-2 gap-1"
-            onClick={handleAddWeek}
-            disabled={weeksData.length >= constraints.maxWeeks}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            {t('add_week')}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1 text-destructive hover:text-destructive"
-            onClick={handleRemoveWeek}
-            disabled={weeksData.length <= constraints.minWeeks}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            {t('remove_week')}
-          </Button>
+        {constraints.allowWeekModification && (
+          <>
+                      <Button
+              variant="ghost"
+              size="icon-xs"
+              className="text-destructive hover:text-destructive"
+              onClick={handleRemoveWeek}
+              disabled={weeksData.length <= constraints.minWeeks}
+              aria-label={t('remove_week')}
+            >
+              <Minus className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={handleAddWeek}
+              disabled={weeksData.length >= constraints.maxWeeks}
+              aria-label={t('add_week')}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </>
+        )}
 
-          <Badge variant="outline" className="ml-2">
-            {templateType === TemplateType.EVEN_ODD
-              ? currentWeek === 0
-                ? t('even_week')
-                : t('odd_week')
-              : `${t('week')} ${currentWeek + 1}/${weeksData.length}`}
-          </Badge>
-        </div>
-      )}
+        <div className="flex-1" />
+
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => setImportOpen(true)}
+          aria-label={t('import_from_schedule')}
+        >
+          <Download className="h-3.5 w-3.5" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          onClick={() => setSelectionEnabled((v) => !v)}
+          aria-label={selectionEnabled ? t('exit_selection') : t('select')}
+        >
+          <CheckSquare className="h-3.5 w-3.5" />
+        </Button>
+      </div>
 
       <div className="flex min-h-0 flex-1 flex-col">
         <TemplateShiftTable
@@ -204,11 +242,10 @@ export function TemplateEditor({
           shifts={shifts}
           team={team}
           templateType={templateType}
-          weeksData={template.weeksData}
-          onWeeksDataChange={() => {}}
-          onNameChange={() => {}}
-          onDescriptionChange={() => {}}
-          onTemplateTypeChange={handleTypeChange}
+          weeksData={weeksData}
+          onWeeksDataChange={handleWeeksDataChange}
+          selectionEnabled={selectionEnabled}
+          onToggleSelection={() => setSelectionEnabled((v) => !v)}
         />
       </div>
 
@@ -232,6 +269,23 @@ export function TemplateEditor({
               }}
             >
               {t('delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={importOpen} onOpenChange={(v) => !v && setImportOpen(false)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('import_from_schedule')}</DialogTitle>
+            <DialogDescription>
+              Import an existing schedule into a template. Select a date range to extract shift
+              demands and assignments.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportOpen(false)}>
+              {t('close')}
             </Button>
           </DialogFooter>
         </DialogContent>

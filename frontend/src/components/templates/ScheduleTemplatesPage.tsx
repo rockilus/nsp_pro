@@ -7,6 +7,7 @@ import { TeamWithMembership } from '../../types/team';
 import { ShiftT } from '../../types/shift';
 import {
   ScheduleTemplateDTO,
+  ScheduleTemplateWeekDataDTO,
   ApplyScheduleTemplateToDateRangeDTO,
   ScheduleTemplateApplicationResult,
   TemplateType,
@@ -137,6 +138,20 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
     }
   };
 
+  const handleTemplateChange = useCallback(
+    async (weeksData: ScheduleTemplateWeekDataDTO[]) => {
+      if (!selectedTemplate) return;
+      try {
+        const updated = await updateTemplate(selectedTemplate.id, teamId, { weeksData });
+        setTemplates((prev) => prev.map((tp) => (tp.id === updated.id ? updated : tp)));
+        setSelectedTemplate(updated);
+      } catch {
+        toast.error(t('template_application_failed'));
+      }
+    },
+    [selectedTemplate, teamId, updateTemplate, t],
+  );
+
   const handleApply = async (request: ApplyScheduleTemplateToDateRangeDTO) => {
     if (!selectedTemplate) throw new Error('No template selected');
     const result = await applyToRange(selectedTemplate.id, teamId, {
@@ -181,6 +196,7 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
           onApply={() => setIsApplyOpen(true)}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onTemplateChange={handleTemplateChange}
         />
       </div>
 

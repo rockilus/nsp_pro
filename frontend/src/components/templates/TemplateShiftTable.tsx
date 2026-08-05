@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from '../../app/i18n/client';
 import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Input } from '../ui/input';
 import CalendarRowHeaderCell from '../calendar/CalendarRowHeaderCell';
 import { ShiftRowHeaderContent } from '../calendar/ShiftRowHeaderContent';
@@ -15,15 +13,11 @@ import {
   ScheduleTemplateEntryDTO,
   ScheduleTemplateWeekDataDTO,
   TemplateType,
-  TEMPLATE_TYPE_CONSTRAINTS,
-  SCHEDULE_TEMPLATE_CONSTRAINTS,
 } from '../../types/schedule-template';
 import { ShiftT } from '../../types/shift';
 import { TeamT } from '../../types/team';
 import { calendarGridTemplate } from '../../constants/constants';
-import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
 
-const MAX_VISIBLE_WEEKS = 4;
 const DAYS_IN_WEEK = 7;
 
 function getWeekLabel(
@@ -47,11 +41,10 @@ interface TemplateShiftTableProps {
   shifts: ShiftT[];
   team: TeamT;
   onWeeksDataChange: (weeksData: ScheduleTemplateWeekDataDTO[]) => void;
-  onNameChange: (name: string) => void;
-  onDescriptionChange: (description: string) => void;
-  onTemplateTypeChange: (type: TemplateType) => void;
   templateType: TemplateType;
   weeksData: ScheduleTemplateWeekDataDTO[];
+  selectionEnabled: boolean;
+  onToggleSelection?: () => void;
 }
 
 export function TemplateShiftTable({
@@ -60,39 +53,18 @@ export function TemplateShiftTable({
   shifts,
   team,
   onWeeksDataChange,
-  onNameChange,
-  onDescriptionChange,
-  onTemplateTypeChange,
   templateType,
   weeksData,
+  selectionEnabled,
 }: TemplateShiftTableProps) {
   const { t } = useTranslation(lng, 'schedule-templates');
 
-  const [currentPage, setCurrentPage] = useState(0);
-  const [selectionEnabled, setSelectionEnabled] = useState(false);
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
   const [bulkDemandCount, setBulkDemandCount] = useState(1);
 
-  const totalWeeks = weeksData.length;
-  const totalPages = Math.ceil(totalWeeks / MAX_VISIBLE_WEEKS);
-  const visibleWeeks = weeksData.slice(
-    currentPage * MAX_VISIBLE_WEEKS,
-    currentPage * MAX_VISIBLE_WEEKS + MAX_VISIBLE_WEEKS,
-  );
-
-  useEffect(() => {
-    if (currentPage >= totalPages && totalPages > 0) {
-      setCurrentPage(totalPages - 1);
-    }
-  }, [totalPages, currentPage]);
-
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [template.id]);
-
   const columns = useMemo(() => {
     const cols: { id: string; weekNumber: number; dayOfWeek: number }[] = [];
-    for (const week of visibleWeeks) {
+    for (const week of weeksData) {
       for (let dayOfWeek = 0; dayOfWeek < DAYS_IN_WEEK; dayOfWeek++) {
         cols.push({
           id: `${week.weekNumber}-${dayOfWeek}`,
@@ -102,7 +74,7 @@ export function TemplateShiftTable({
       }
     }
     return cols;
-  }, [visibleWeeks]);
+  }, [weeksData]);
 
   const rowShiftIds = useMemo(() => {
     return shifts
@@ -133,14 +105,14 @@ export function TemplateShiftTable({
 
   const shiftDemandTotals = useMemo(() => {
     const totals = new Map<string, number>();
-    for (const week of visibleWeeks) {
+    for (const week of weeksData) {
       for (const entry of week.entries) {
         const current = totals.get(entry.shiftId) ?? 0;
         totals.set(entry.shiftId, current + entry.demandCount);
       }
     }
     return totals;
-  }, [visibleWeeks]);
+  }, [weeksData]);
 
   const toggleCell = useCallback((key: string) => {
     setSelectedCells((prev) => {
@@ -349,74 +321,14 @@ export function TemplateShiftTable({
     setSelectedCells(new Set());
   }, [weeksData, selectedCells, bulkDemandCount, onWeeksDataChange]);
 
-  const handleExitSelection = useCallback(() => {
-    setSelectionEnabled(false);
-    setSelectedCells(new Set());
-  }, []);
-
-  const numColumns = visibleWeeks.length * DAYS_IN_WEEK;
-  const weekLabels = visibleWeeks.map((w) => ({
+  const numColumns = weeksData.length * DAYS_IN_WEEK;
+  const weekLabels = weeksData.map((w) => ({
     weekNumber: w.weekNumber,
     label: getWeekLabel(w.weekNumber, templateType, t),
   }));
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b px-3 py-1.5">
-        {totalWeeks > MAX_VISIBLE_WEEKS && (
-          <>
-            <Button
-              variant="outline"
-              size="icon-xs"
-              disabled={currentPage <= 0}
-              onClick={() => setCurrentPage((p) => p - 1)}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              {visibleWeeks.length > 0
-                ? t('weeks_range', {
-                    start: visibleWeeks[0].weekNumber + 1,
-                    end: visibleWeeks[visibleWeeks.length - 1].weekNumber + 1,
-                    total: totalWeeks,
-                  })
-                : ''}
-            </span>
-            <Button
-              variant="outline"
-              size="icon-xs"
-              disabled={currentPage >= totalPages - 1}
-              onClick={() => setCurrentPage((p) => p + 1)}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </>
-        )}
-
-        {totalWeeks <= MAX_VISIBLE_WEEKS && (
-          <Badge variant="outline" className="text-xs">
-            {templateType === TemplateType.EVEN_ODD
-              ? t('even_odd')
-              : t('weeks_range', {
-                  start: 1,
-                  end: totalWeeks,
-                  total: totalWeeks,
-                })}
-          </Badge>
-        )}
-
-        <div className="flex-1" />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-xs"
-          onClick={() => setSelectionEnabled((v) => !v)}
-        >
-          {selectionEnabled ? t('exit_selection') : t('select')}
-        </Button>
-      </div>
-
       {selectionEnabled && selectedCells.size > 0 && (
         <div className="flex items-center gap-2 border-b bg-accent/30 px-3 py-1.5">
           <span className="text-xs text-muted-foreground">
@@ -484,7 +396,7 @@ export function TemplateShiftTable({
                   shift={shift}
                   showStats={false}
                   shiftCountActual={getShiftDemandTotalForVisibleWeeks(
-                    visibleWeeks.flatMap((w) => w.entries.filter((e) => e.shiftId === shift.id)),
+                    weeksData.flatMap((w) => w.entries.filter((e) => e.shiftId === shift.id)),
                   )}
                   shiftCountTarget={0}
                 />
