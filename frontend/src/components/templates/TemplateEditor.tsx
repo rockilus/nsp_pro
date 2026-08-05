@@ -22,13 +22,15 @@ import {
 } from '../../types/schedule-template';
 import { ShiftT } from '../../types/shift';
 import { TeamT } from '../../types/team';
-import { ChevronLeft, ChevronRight, Plus, Trash2, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, Play, PanelLeftOpen } from 'lucide-react';
 
 interface TemplateEditorProps {
   lng: string;
   template: ScheduleTemplateDTO | null;
   shifts: ShiftT[];
   team: TeamT;
+  sidebarVisible: boolean;
+  onToggleSidebar: () => void;
   onSave: (update: ScheduleTemplateUpdateDTO) => void;
   onApply: () => void;
 }
@@ -38,6 +40,8 @@ export function TemplateEditor({
   template,
   shifts,
   team,
+  sidebarVisible,
+  onToggleSidebar,
   onSave,
   onApply,
 }: TemplateEditorProps) {
@@ -117,7 +121,17 @@ export function TemplateEditor({
 
   if (!template) {
     return (
-      <div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
+      <div className="flex flex-1 items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
+        {!sidebarVisible && (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={onToggleSidebar}
+            aria-label={t('show_sidebar')}
+          >
+            <PanelLeftOpen className="h-3.5 w-3.5" />
+          </Button>
+        )}
         {t('select_template_to_view')}
       </div>
     );
@@ -126,6 +140,16 @@ export function TemplateEditor({
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center gap-2 border-b p-3">
+        {!sidebarVisible && (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={onToggleSidebar}
+            aria-label={t('show_sidebar')}
+          >
+            <PanelLeftOpen className="h-3.5 w-3.5" />
+          </Button>
+        )}
         <input
           className="min-w-0 flex-1 border-b border-transparent bg-transparent px-1 text-sm font-semibold outline-none hover:border-input focus:border-input"
           value={name}

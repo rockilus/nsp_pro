@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Plus, PanelLeftClose } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScheduleTemplateDTO, TemplateType } from '../../types/schedule-template';
 import { cn } from '@/lib/utils';
 
@@ -41,32 +40,22 @@ export function TemplateListSidebar({
       <div className="flex items-center justify-between border-b p-3">
         <h2 className="text-sm font-semibold">{t('schedule_templates')}</h2>
         <div className="flex items-center gap-0.5">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={onCreate}
-                aria-label={t('create_new_template')}
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('create_new_template')}</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={onToggleSidebar}
-                aria-label={t('hide_sidebar')}
-              >
-                <PanelLeftClose className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('hide_sidebar')}</TooltipContent>
-          </Tooltip>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={onCreate}
+            aria-label={t('create_new_template')}
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            onClick={onToggleSidebar}
+            aria-label={t('hide_sidebar')}
+          >
+            <PanelLeftClose className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
 
@@ -88,15 +77,15 @@ export function TemplateListSidebar({
               <div
                 key={template.id}
                 className={cn(
-                  'cursor-pointer rounded-md px-2 py-1.5 text-sm transition-colors',
+                  'cursor-pointer rounded-md border px-2 py-1.5 text-sm transition-colors',
                   selectedTemplateId === template.id
-                    ? 'bg-accent text-accent-foreground'
-                    : 'hover:bg-muted',
+                    ? 'border-accent bg-accent text-accent-foreground'
+                    : 'border-transparent hover:bg-muted',
                 )}
                 onClick={() => onSelect(template)}
               >
                 <div className="truncate font-medium">{template.name}</div>
-                                {template.description && (
+                {template.description && (
                   <div className="mt-0.5 mb-1 truncate text-xs text-muted-foreground/70">
                     {template.description}
                   </div>
@@ -109,7 +98,6 @@ export function TemplateListSidebar({
                     {template.weeksData.length} {t('weeks').toLowerCase()}
                   </span>
                 </div>
-
               </div>
             ))}
           </div>
