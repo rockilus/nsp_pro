@@ -1,0 +1,530 @@
+'use client';
+
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from '../../app/i18n/client';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Input } from '../ui/input';
+import CalendarRowHeaderCell from '../calendar/CalendarRowHeaderCell';
+import { ShiftRowHeaderContent } from '../calendar/ShiftRowHeaderContent';
+import { TemplateColumnHeader } from './TemplateColumnHeader';
+import { TemplateCell } from './TemplateCell';
+import {
+  ScheduleTemplateDTO,
+  ScheduleTemplateEntryDTO,
+  ScheduleTemplateWeekDataDTO,
+  TemplateType,
+  TEMPLATE_TYPE_CONSTRAINTS,
+  SCHEDULE_TEMPLATE_CONSTRAINTS,
+} from '../../types/schedule-template';
+import { ShiftT } from '../../types/shift';
+import { TeamT } from '../../types/team';
+import { calendarGridTemplate } from '../../constants/constants';
+import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
+
+const MAX_VISIBLE_WEEKS = 4;
+const DAYS_IN_WEEK = 7;
+
+function getWeekLabel(
+  weekNumber: number,
+  templateType: TemplateType,
+  t: (key: string, params?: Record<string, unknown>) => string,
+): string {
+  if (templateType === TemplateType.EVEN_ODD) {
+    return weekNumber === 0 ? t('even_week') : t('odd_week');
+  }
+  return t('week_number', { number: weekNumber + 1 });
+}
+
+function getShiftDemandTotalForVisibleWeeks(entries: ScheduleTemplateEntryDTO[]): number {
+  return entries.reduce((sum, e) => sum + e.demandCount, 0);
+}
+
+interface TemplateShiftTableProps {
+  lng: string;
+  template: ScheduleTemplateDTO;
+  shifts: ShiftT[];
+  team: TeamT;
+  onWeeksDataChange: (weeksData: ScheduleTemplateWeekDataDTO[]) => void;
+  onNameChange: (name: string) => void;
+  onDescriptionChange: (description: string) => void;
+  onTemplateTypeChange: (type: TemplateType) => void;
+  templateType: TemplateType;
+  weeksData: ScheduleTemplateWeekDataDTO[];
+}
+
+export function TemplateShiftTable({
+  lng,
+  template,
+  shifts,
+  team,
+  onWeeksDataChange,
+  onNameChange,
+  onDescriptionChange,
+  onTemplateTypeChange,
+  templateType,
+  weeksData,
+}: TemplateShiftTableProps) {
+  const { t } = useTranslation(lng, 'schedule-templates');
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [selectionEnabled, setSelectionEnabled] = useState(false);
+  const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
+  const [bulkDemandCount, setBulkDemandCount] = useState(1);
+
+  const totalWeeks = weeksData.length;
+  const totalPages = Math.ceil(totalWeeks / MAX_VISIBLE_WEEKS);
+  const visibleWeeks = weeksData.slice(
+    currentPage * MAX_VISIBLE_WEEKS,
+    currentPage * MAX_VISIBLE_WEEKS + MAX_VISIBLE_WEEKS,
+  );
+
+  useEffect(() => {
+    if (currentPage >= totalPages && totalPages > 0) {
+      setCurrentPage(totalPages - 1);
+    }
+  }, [totalPages, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [template.id]);
+
+  const columns = useMemo(() => {
+    const cols: { id: string; weekNumber: number; dayOfWeek: number }[] = [];
+    for (const week of visibleWeeks) {
+      for (let dayOfWeek = 0; dayOfWeek < DAYS_IN_WEEK; dayOfWeek++) {
+        cols.push({
+          id: `${week.weekNumber}-${dayOfWeek}`,
+          weekNumber: week.weekNumber,
+          dayOfWeek,
+        });
+      }
+    }
+    return cols;
+  }, [visibleWeeks]);
+
+  const rowShiftIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const week of weeksData) {
+      for (const entry of week.entries) {
+        ids.add(entry.shiftId);
+      }
+    }
+    return Array.from(ids).sort((a, b) => {
+      const shiftA = shifts.find((s) => s.id === a);
+      const shiftB = shifts.find((s) => s.id === b);
+      return (shiftA?.name ?? a).localeCompare(shiftB?.name ?? b);
+    });
+  }, [weeksData, shifts]);
+
+  const rows = useMemo(() => {
+    return rowShiftIds
+      .map((id) => shifts.find((s) => s.id === id))
+      .filter((s): s is ShiftT => s !== undefined);
+  }, [rowShiftIds, shifts]);
+
+  const entryMap = useMemo(() => {
+    const map = new Map<string, ScheduleTemplateEntryDTO | null>();
+    for (const week of weeksData) {
+      for (let dayOfWeek = 0; dayOfWeek < DAYS_IN_WEEK; dayOfWeek++) {
+        for (const shiftId of rowShiftIds) {
+          const entry =
+            week.entries.find((e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek) ?? null;
+          map.set(`${shiftId}-${week.weekNumber}-${dayOfWeek}`, entry);
+        }
+      }
+    }
+    return map;
+  }, [weeksData, rowShiftIds]);
+
+  const shiftDemandTotals = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const week of visibleWeeks) {
+      for (const entry of week.entries) {
+        const current = totals.get(entry.shiftId) ?? 0;
+        totals.set(entry.shiftId, current + entry.demandCount);
+      }
+    }
+    return totals;
+  }, [visibleWeeks]);
+
+  const toggleCell = useCallback((key: string) => {
+    setSelectedCells((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }, []);
+
+  const isCellSelected = useCallback(
+    (rowId: string, colId: string) => {
+      return selectedCells.has(`${rowId}-${colId}`);
+    },
+    [selectedCells],
+  );
+
+  const isRowSelected = useCallback(
+    (rowId: string): boolean => {
+      if (columns.length === 0) return false;
+      return columns.every((col) => selectedCells.has(`${rowId}-${col.id}`));
+    },
+    [selectedCells, columns],
+  );
+
+  const isRowIndeterminate = useCallback(
+    (rowId: string): boolean => {
+      if (columns.length === 0) return false;
+      const some = columns.some((col) => selectedCells.has(`${rowId}-${col.id}`));
+      const all = columns.every((col) => selectedCells.has(`${rowId}-${col.id}`));
+      return some && !all;
+    },
+    [selectedCells, columns],
+  );
+
+  const isColumnSelected = useCallback(
+    (colId: string): boolean => {
+      return rows.every((row) => selectedCells.has(`${row.id}-${colId}`));
+    },
+    [selectedCells, rows],
+  );
+
+  const isColumnIndeterminate = useCallback(
+    (colId: string): boolean => {
+      const some = rows.some((row) => selectedCells.has(`${row.id}-${colId}`));
+      const all = rows.every((row) => selectedCells.has(`${row.id}-${colId}`));
+      return some && !all;
+    },
+    [selectedCells, rows],
+  );
+
+  const isAllSelected = useMemo(() => {
+    if (columns.length === 0 || rows.length === 0) return false;
+    return columns.every((col) => rows.every((row) => selectedCells.has(`${row.id}-${col.id}`)));
+  }, [selectedCells, columns, rows]);
+
+  const isSomeSelected = useMemo(() => {
+    return selectedCells.size > 0;
+  }, [selectedCells]);
+
+  const handleCellClick = useCallback(
+    (shiftId: string, weekNumber: number, dayOfWeek: number) => {
+      if (selectionEnabled) return;
+
+      const newWeeks = weeksData.map((week) => {
+        if (week.weekNumber !== weekNumber) return week;
+        const otherEntries = week.entries.filter(
+          (e) => !(e.shiftId === shiftId && e.dayOfWeek === dayOfWeek),
+        );
+        const existingEntry = week.entries.find(
+          (e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek,
+        );
+        if (existingEntry) {
+          const newDemandCount = (existingEntry.demandCount + 1) % 3;
+          if (newDemandCount > 0) {
+            return {
+              ...week,
+              entries: [
+                ...otherEntries,
+                {
+                  shiftId,
+                  dayOfWeek,
+                  demandCount: newDemandCount,
+                  workerIds: existingEntry.workerIds,
+                },
+              ],
+            };
+          }
+          return { ...week, entries: otherEntries };
+        }
+        return {
+          ...week,
+          entries: [...week.entries, { shiftId, dayOfWeek, demandCount: 1, workerIds: [] }],
+        };
+      });
+      onWeeksDataChange(newWeeks);
+    },
+    [weeksData, selectionEnabled, onWeeksDataChange],
+  );
+
+  const handleCellSelectToggle = useCallback(
+    (rowId: string, colId: string) => {
+      toggleCell(`${rowId}-${colId}`);
+    },
+    [toggleCell],
+  );
+
+  const handleRowSelect = useCallback(
+    (rowId: string) => {
+      setSelectedCells((prev) => {
+        const next = new Set(prev);
+        const rowAllSelected = columns.every((col) => prev.has(`${rowId}-${col.id}`));
+        for (const col of columns) {
+          const key = `${rowId}-${col.id}`;
+          if (rowAllSelected) {
+            next.delete(key);
+          } else {
+            next.add(key);
+          }
+        }
+        return next;
+      });
+    },
+    [columns],
+  );
+
+  const handleColumnSelect = useCallback(
+    (colId: string) => {
+      setSelectedCells((prev) => {
+        const next = new Set(prev);
+        const colAllSelected = rows.every((row) => prev.has(`${row.id}-${colId}`));
+        for (const row of rows) {
+          const key = `${row.id}-${colId}`;
+          if (colAllSelected) {
+            next.delete(key);
+          } else {
+            next.add(key);
+          }
+        }
+        return next;
+      });
+    },
+    [rows],
+  );
+
+  const handleSelectAll = useCallback(() => {
+    setSelectedCells((prev) => {
+      if (isAllSelected) {
+        return new Set();
+      }
+      const next = new Set<string>();
+      for (const row of rows) {
+        for (const col of columns) {
+          next.add(`${row.id}-${col.id}`);
+        }
+      }
+      return next;
+    });
+  }, [isAllSelected, rows, columns]);
+
+  const handleBulkClearSelected = useCallback(() => {
+    const newWeeks = weeksData.map((week) => {
+      const newEntries = week.entries.filter((entry) => {
+        const key = `${entry.shiftId}-${week.weekNumber}-${entry.dayOfWeek}`;
+        return !selectedCells.has(key);
+      });
+      return { ...week, entries: newEntries };
+    });
+    onWeeksDataChange(newWeeks);
+    setSelectedCells(new Set());
+  }, [weeksData, selectedCells, onWeeksDataChange]);
+
+  const handleBulkSetDemand = useCallback(() => {
+    const newWeeks = weeksData.map((week) => {
+      const newEntries = [...week.entries];
+      for (const cellKey of selectedCells) {
+        const parts = cellKey.split('-');
+        const weekNum = parseInt(parts[0], 10);
+        const dayOfWeek = parseInt(parts[1], 10);
+        const shiftId = parts.slice(2).join('-');
+
+        if (week.weekNumber !== weekNum) continue;
+
+        const idx = newEntries.findIndex((e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek);
+        if (idx >= 0) {
+          if (bulkDemandCount > 0) {
+            newEntries[idx] = { ...newEntries[idx], demandCount: bulkDemandCount };
+          } else {
+            newEntries.splice(idx, 1);
+          }
+        } else if (bulkDemandCount > 0) {
+          newEntries.push({
+            shiftId,
+            dayOfWeek,
+            demandCount: bulkDemandCount,
+            workerIds: [],
+          });
+        }
+      }
+      return { ...week, entries: newEntries };
+    });
+    onWeeksDataChange(newWeeks);
+    setSelectedCells(new Set());
+  }, [weeksData, selectedCells, bulkDemandCount, onWeeksDataChange]);
+
+  const handleExitSelection = useCallback(() => {
+    setSelectionEnabled(false);
+    setSelectedCells(new Set());
+  }, []);
+
+  if (rows.length === 0) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8 text-sm text-muted-foreground">
+        <p>{t('no_templates_description')}</p>
+      </div>
+    );
+  }
+
+  const numColumns = visibleWeeks.length * DAYS_IN_WEEK;
+  const weekLabels = visibleWeeks.map((w) => ({
+    weekNumber: w.weekNumber,
+    label: getWeekLabel(w.weekNumber, templateType, t),
+  }));
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center gap-2 border-b px-3 py-1.5">
+        {totalWeeks > MAX_VISIBLE_WEEKS && (
+          <>
+            <Button
+              variant="outline"
+              size="icon-xs"
+              disabled={currentPage <= 0}
+              onClick={() => setCurrentPage((p) => p - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              {visibleWeeks.length > 0
+                ? t('weeks_range', {
+                    start: visibleWeeks[0].weekNumber + 1,
+                    end: visibleWeeks[visibleWeeks.length - 1].weekNumber + 1,
+                    total: totalWeeks,
+                  })
+                : ''}
+            </span>
+            <Button
+              variant="outline"
+              size="icon-xs"
+              disabled={currentPage >= totalPages - 1}
+              onClick={() => setCurrentPage((p) => p + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+
+        {totalWeeks <= MAX_VISIBLE_WEEKS && (
+          <Badge variant="outline" className="text-xs">
+            {templateType === TemplateType.EVEN_ODD
+              ? t('even_odd')
+              : t('weeks_range', {
+                  start: 1,
+                  end: totalWeeks,
+                  total: totalWeeks,
+                })}
+          </Badge>
+        )}
+
+        <div className="flex-1" />
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-xs"
+          onClick={() => setSelectionEnabled((v) => !v)}
+        >
+          {selectionEnabled ? t('exit_selection') : t('select')}
+        </Button>
+      </div>
+
+      {selectionEnabled && selectedCells.size > 0 && (
+        <div className="flex items-center gap-2 border-b bg-accent/30 px-3 py-1.5">
+          <span className="text-xs text-muted-foreground">
+            {t('cells_selected', { count: selectedCells.size })}
+          </span>
+          <Input
+            type="number"
+            min={0}
+            max={99}
+            value={bulkDemandCount}
+            onChange={(e) => setBulkDemandCount(parseInt(e.target.value, 10) || 0)}
+            className="h-7 w-16 text-xs"
+          />
+          <Button size="sm" variant="outline" className="text-xs" onClick={handleBulkSetDemand}>
+            {t('set_demand')}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-xs text-destructive hover:text-destructive"
+            onClick={handleBulkClearSelected}
+          >
+            {t('clear_selected')}
+          </Button>
+        </div>
+      )}
+
+      <div className="flex-1 overflow-auto" data-testid="template-shift-table">
+        <TemplateColumnHeader
+          lng={lng}
+          weeks={weekLabels}
+          rowHeaderLabel={t('shift')}
+          selectionEnabled={selectionEnabled}
+          isAllSelected={isAllSelected}
+          isSomeSelected={isSomeSelected}
+          onSelectAll={handleSelectAll}
+          isColumnSelected={isColumnSelected}
+          isColumnIndeterminate={isColumnIndeterminate}
+          onColumnSelect={handleColumnSelect}
+        />
+
+        {rows.map((shift) => {
+          const demandTotal = shiftDemandTotals.get(shift.id) ?? 0;
+          return (
+            <div
+              key={shift.id}
+              className="border-b border-border/50"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: calendarGridTemplate(numColumns),
+              }}
+            >
+              <CalendarRowHeaderCell
+                data-testid={`template-row-header-${shift.id}`}
+                isBulkMode={selectionEnabled}
+                isSelected={isRowSelected(shift.id)}
+                isIndeterminate={isRowIndeterminate(shift.id)}
+                onSelect={() => handleRowSelect(shift.id)}
+                checkboxTestId={`template-row-checkbox-${shift.id}`}
+                className="py-1"
+              >
+                <ShiftRowHeaderContent
+                  lng={lng}
+                  team={team}
+                  shift={shift}
+                  showStats={false}
+                  shiftCountActual={getShiftDemandTotalForVisibleWeeks(
+                    visibleWeeks.flatMap((w) => w.entries.filter((e) => e.shiftId === shift.id)),
+                  )}
+                  shiftCountTarget={0}
+                />
+              </CalendarRowHeaderCell>
+
+              {columns.map((col) => {
+                const entry =
+                  entryMap.get(`${shift.id}-${col.weekNumber}-${col.dayOfWeek}`) ?? null;
+                const cellKey = `${shift.id}-${col.id}`;
+                return (
+                  <TemplateCell
+                    key={col.id}
+                    entry={entry}
+                    isWeekend={col.dayOfWeek === 5 || col.dayOfWeek === 6}
+                    isSelected={isCellSelected(shift.id, col.id)}
+                    selectionEnabled={selectionEnabled}
+                    onClick={() => handleCellClick(shift.id, col.weekNumber, col.dayOfWeek)}
+                    onSelectToggle={() => handleCellSelectToggle(shift.id, col.id)}
+                  />
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

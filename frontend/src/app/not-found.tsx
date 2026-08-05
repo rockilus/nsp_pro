@@ -41,10 +41,8 @@ export default function NotFound() {
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-6 text-center">
       <div className="text-2xl font-bold text-blue-600">Rockilus</div>
       <h1 className="text-lg font-semibold">Page not found</h1>
-      <p className="text-sm text-slate-500">
-        The page you requested could not be found.
-      </p>
-      <div className="flex gap-3 mt-2">
+      <p className="text-sm text-slate-500">The page you requested could not be found.</p>
+      <div className="mt-2 flex gap-3">
         {[
           { href: '/en/', flag: '🇬🇧', label: 'English' },
           { href: '/fr/', flag: '🇫🇷', label: 'Français' },
@@ -53,9 +51,9 @@ export default function NotFound() {
           <a
             key={href}
             href={href}
-            className="flex flex-col items-center px-4 py-2.5 rounded-lg border border-slate-200 no-underline text-sm font-medium text-slate-800 hover:bg-slate-50 transition-colors"
+            className="flex flex-col items-center rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-800 no-underline transition-colors hover:bg-slate-50"
           >
-            <span className="text-xl mb-0.5">{flag}</span>
+            <span className="mb-0.5 text-xl">{flag}</span>
             {label}
           </a>
         ))}

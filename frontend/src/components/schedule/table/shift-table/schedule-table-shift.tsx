@@ -3,10 +3,10 @@ import { useTranslation } from '../../../../app/i18n/client';
 import { Sparkle } from 'lucide-react';
 // shadcn/ui
 import { Checkbox } from '../../../ui/checkbox';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../ui/tooltip';
 // Components
 import CalendarTableHeader from '../../../calendar/CalendarTableHeader';
 import CalendarRowHeaderCell from '../../../calendar/CalendarRowHeaderCell';
+import { ShiftRowHeaderContent } from '../../../calendar/ShiftRowHeaderContent';
 import DailyShiftDemandRow from '../shared/daily-shift-demand-row';
 import ShiftCell from './shift-cell';
 import { RoleBased } from '../../../access/role-based';
@@ -14,7 +14,7 @@ import { buildScheduleCellDict, generateOwnerIdDateKey } from '../shared/assignm
 import { getRelevantShifts } from './shift-table-utils';
 import { countShiftsTotalPeriod } from '../shared/assignment-count-methods';
 // Types
-import { ShiftT, ShiftType } from '../../../../types/shift';
+import { ShiftT } from '../../../../types/shift';
 import { WorkerT } from '../../../../types/worker';
 import {
   ScheduleT,
@@ -36,110 +36,8 @@ import {
   SelectionScope,
 } from '../../../../types/scheduleSelection';
 // Constants
-import { ShiftColorMappings, calendarGridTemplate } from '../../../../constants/constants';
+import { calendarGridTemplate } from '../../../../constants/constants';
 import { ColumnDefinition, ColumnFilter, TableSort } from '@/types/filter';
-
-// ─── Inline ShiftRowHeader content ──────────────────────────────────────────
-
-function ShiftRowHeaderContent({
-  lng,
-  teamWithMembership,
-  shift,
-  assignments,
-  shiftDemands,
-  scheduleCampaign,
-}: {
-  lng: string;
-  teamWithMembership: TeamWithMembership;
-  shift: ShiftT;
-  assignments: AssignmentT[];
-  shiftDemands: ShiftDemandDTO[];
-  scheduleCampaign: ScheduleT | null;
-}) {
-  const { t } = useTranslation(lng, 'schedule-page');
-  const { sample } = ShiftColorMappings[shift.color] || { sample: '#9e9e9e' };
-
-  const { countActual: shiftCountActual, countTarget: shiftCountTarget } = scheduleCampaign
-    ? countShiftsTotalPeriod(
-        [shift],
-        assignments,
-        shiftDemands,
-        scheduleCampaign.startDate,
-        scheduleCampaign.endDate,
-      )
-    : { countActual: 0, countTarget: 0 };
-
-  return (
-    <div className="flex w-full min-w-0 flex-row items-center">
-      {/* Colored type marker - reserve space for alignment like shift-demand header */}
-      <div
-        className={
-          shift.shiftType === ShiftType.DUTY || shift.shiftType === ShiftType.ON_CALL
-            ? 'mr-1 w-1 flex-shrink-0 self-stretch rounded-sm'
-            : 'invisible mr-1 w-1 flex-shrink-0 self-stretch rounded-sm'
-        }
-        style={
-          shift.shiftType === ShiftType.DUTY
-            ? { backgroundColor: sample }
-            : shift.shiftType === ShiftType.ON_CALL
-              ? {
-                  backgroundImage: `repeating-linear-gradient(to bottom, ${sample} 0px, ${sample} 8px, transparent 8px, transparent 12px)`,
-                }
-              : undefined
-        }
-      />
-      {/* Left: name + stats */}
-      <div className="flex w-full min-w-0 flex-col">
-        <span
-          className="text-[0.9rem] font-semibold break-words text-foreground"
-          data-testid={`shift-name-${shift.id}`}
-        >
-          {shift.name} ({shift.acronym})
-        </span>
-        <RoleBased
-          role={teamWithMembership.membership.role}
-          allowedRoles={[TeamMembershipRole.OWNER]}
-        >
-          <TooltipProvider>
-            {teamWithMembership.team.useSolver && scheduleCampaign && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span
-                    className={
-                      shiftCountActual !== shiftCountTarget
-                        ? 'text-[0.8rem] font-medium text-destructive'
-                        : 'text-[0.8rem] font-medium text-green-600'
-                    }
-                    data-testid={`shift-count-${shift.id}`}
-                  >
-                    {shiftCountActual} / {shiftCountTarget}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>{t('shift_count_tooltip')}</TooltipContent>
-              </Tooltip>
-            )}
-          </TooltipProvider>
-        </RoleBased>
-      </div>
-      {/* Right: times */}
-      <div className="flex shrink-0 flex-col items-center justify-center px-1">
-        <span
-          className="text-[0.75rem] font-medium text-muted-foreground"
-          data-testid={`shift-time-start-${shift.id}`}
-        >
-          {shift.startTime.format('HH:mm')}
-        </span>
-        <span
-          className="text-[0.75rem] font-medium text-muted-foreground"
-          data-testid={`shift-time-end-${shift.id}`}
-        >
-          {shift.endTime.format('HH:mm')}
-          {!shift.endTime.isSame(shift.startTime, 'day') && <sup>+1</sup>}
-        </span>
-      </div>
-    </div>
-  );
-}
 
 // ─── Inline ShiftRow ─────────────────────────────────────────────────────────
 
@@ -263,14 +161,32 @@ function ShiftRow({
         customSelectTestId={`shift-row-custom-select-${shift.id}`}
         className="py-1"
       >
-        <ShiftRowHeaderContent
-          lng={lng}
-          teamWithMembership={teamWithMembership}
-          shift={shift}
-          assignments={assignments}
-          shiftDemands={shiftDemands}
-          scheduleCampaign={scheduleCampaign}
-        />
+        {(() => {
+          const { countActual, countTarget } = scheduleCampaign
+            ? countShiftsTotalPeriod(
+                [shift],
+                assignments,
+                shiftDemands,
+                scheduleCampaign.startDate,
+                scheduleCampaign.endDate,
+              )
+            : { countActual: 0, countTarget: 0 };
+          const showStats =
+            teamWithMembership.membership.role === TeamMembershipRole.OWNER &&
+            teamWithMembership.team.useSolver &&
+            !!scheduleCampaign;
+
+          return (
+            <ShiftRowHeaderContent
+              lng={lng}
+              team={teamWithMembership.team}
+              shift={shift}
+              showStats={showStats}
+              shiftCountActual={countActual}
+              shiftCountTarget={countTarget}
+            />
+          );
+        })()}
       </CalendarRowHeaderCell>
 
       {/* Day cells — direct grid children */}

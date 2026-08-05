@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '../../app/i18n/client';
 import { toast } from 'sonner';
 import { TeamWithMembership } from '../../types/team';
+import { ShiftT } from '../../types/shift';
 import {
   ScheduleTemplateDTO,
   ScheduleTemplateUpdateDTO,
@@ -21,6 +22,7 @@ import {
   useDeleteScheduleTemplate,
   useApplyScheduleTemplateToDateRange,
 } from '../../hooks/useScheduleTemplate';
+import { useGetShifts } from '../../hooks/useShift';
 
 interface ScheduleTemplatesPageProps {
   lng: string;
@@ -33,6 +35,7 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
 
   const [templates, setTemplates] = useState<ScheduleTemplateDTO[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<ScheduleTemplateDTO | null>(null);
+  const [shifts, setShifts] = useState<ShiftT[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,6 +45,7 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
   const updateTemplate = useUpdateScheduleTemplate();
   const deleteTemplate = useDeleteScheduleTemplate();
   const applyToRange = useApplyScheduleTemplateToDateRange();
+  const getShifts = useGetShifts();
 
   const loadTemplates = useCallback(async () => {
     setIsLoading(true);
@@ -58,6 +62,12 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
   useEffect(() => {
     loadTemplates();
   }, [loadTemplates]);
+
+  useEffect(() => {
+    getShifts(teamId)
+      .then(setShifts)
+      .catch(() => {});
+  }, [getShifts, teamId]);
 
   const handleSelectTemplate = (template: ScheduleTemplateDTO) => {
     setSelectedTemplate(template);
@@ -130,6 +140,8 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
         <TemplateEditor
           lng={lng}
           template={selectedTemplate}
+          shifts={shifts}
+          team={teamWithMembership.team}
           onSave={handleSave}
           onApply={() => setIsApplyOpen(true)}
         />

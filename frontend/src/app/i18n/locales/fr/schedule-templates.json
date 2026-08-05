@@ -65,5 +65,11 @@
   "week": "Semaine",
   "week_number": "Semaine {{number}}",
   "weeks": "Semaines",
-  "workers": "Membres"
+  "workers": "Membres",
+  "cells_selected": "{{count}} cellules selectionnees",
+  "clear_selected": "Effacer la selection",
+  "set_demand": "Definir la couverture",
+  "select": "Selectionner",
+  "exit_selection": "Terminer",
+  "weeks_range": "Semaines {{start}}–{{end}} sur {{total}}"
 }

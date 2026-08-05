@@ -65,5 +65,11 @@
   "week": "Week",
   "week_number": "Week {{number}}",
   "weeks": "Weeks",
-  "workers": "Workers"
+  "workers": "Workers",
+  "cells_selected": "{{count}} cells selected",
+  "clear_selected": "Clear selected",
+  "set_demand": "Set demand",
+  "select": "Select",
+  "exit_selection": "Done",
+  "weeks_range": "Weeks {{start}}–{{end}} of {{total}}"
 }
