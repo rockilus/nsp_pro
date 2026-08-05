@@ -18,6 +18,7 @@ import { ShiftT } from '../../types/shift';
 import { TeamT } from '../../types/team';
 import { calendarGridTemplate } from '../../constants/constants';
 
+const MAX_VISIBLE_WEEKS = 4;
 const DAYS_IN_WEEK = 7;
 
 function getWeekLabel(
@@ -43,6 +44,7 @@ interface TemplateShiftTableProps {
   onWeeksDataChange: (weeksData: ScheduleTemplateWeekDataDTO[]) => void;
   templateType: TemplateType;
   weeksData: ScheduleTemplateWeekDataDTO[];
+  weekOffset: number;
   selectionEnabled: boolean;
   onToggleSelection?: () => void;
 }
@@ -55,16 +57,22 @@ export function TemplateShiftTable({
   onWeeksDataChange,
   templateType,
   weeksData,
+  weekOffset,
   selectionEnabled,
 }: TemplateShiftTableProps) {
   const { t } = useTranslation(lng, 'schedule-templates');
+
+  const visibleWeeks = useMemo(
+    () => weeksData.slice(weekOffset, weekOffset + MAX_VISIBLE_WEEKS),
+    [weeksData, weekOffset],
+  );
 
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
   const [bulkDemandCount, setBulkDemandCount] = useState(1);
 
   const columns = useMemo(() => {
     const cols: { id: string; weekNumber: number; dayOfWeek: number }[] = [];
-    for (const week of weeksData) {
+    for (const week of visibleWeeks) {
       for (let dayOfWeek = 0; dayOfWeek < DAYS_IN_WEEK; dayOfWeek++) {
         cols.push({
           id: `${week.weekNumber}-${dayOfWeek}`,
@@ -74,7 +82,7 @@ export function TemplateShiftTable({
       }
     }
     return cols;
-  }, [weeksData]);
+  }, [visibleWeeks]);
 
   const rowShiftIds = useMemo(() => {
     return shifts
@@ -105,14 +113,14 @@ export function TemplateShiftTable({
 
   const shiftDemandTotals = useMemo(() => {
     const totals = new Map<string, number>();
-    for (const week of weeksData) {
+    for (const week of visibleWeeks) {
       for (const entry of week.entries) {
         const current = totals.get(entry.shiftId) ?? 0;
         totals.set(entry.shiftId, current + entry.demandCount);
       }
     }
     return totals;
-  }, [weeksData]);
+  }, [visibleWeeks]);
 
   const toggleCell = useCallback((key: string) => {
     setSelectedCells((prev) => {
@@ -321,8 +329,8 @@ export function TemplateShiftTable({
     setSelectedCells(new Set());
   }, [weeksData, selectedCells, bulkDemandCount, onWeeksDataChange]);
 
-  const numColumns = weeksData.length * DAYS_IN_WEEK;
-  const weekLabels = weeksData.map((w) => ({
+  const numColumns = visibleWeeks.length * DAYS_IN_WEEK;
+  const weekLabels = visibleWeeks.map((w) => ({
     weekNumber: w.weekNumber,
     label: getWeekLabel(w.weekNumber, templateType, t),
   }));
@@ -396,7 +404,7 @@ export function TemplateShiftTable({
                   shift={shift}
                   showStats={false}
                   shiftCountActual={getShiftDemandTotalForVisibleWeeks(
-                    weeksData.flatMap((w) => w.entries.filter((e) => e.shiftId === shift.id)),
+                    visibleWeeks.flatMap((w) => w.entries.filter((e) => e.shiftId === shift.id)),
                   )}
                   shiftCountTarget={0}
                 />

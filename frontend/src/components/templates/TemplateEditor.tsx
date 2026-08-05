@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from '../../app/i18n/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +33,8 @@ import {
   Download,
   CheckSquare,
 } from 'lucide-react';
+
+const MAX_VISIBLE_WEEKS = 4;
 
 interface TemplateEditorProps {
   lng: string;
@@ -67,7 +69,7 @@ export function TemplateEditor({
   const { t } = useTranslation(lng, 'schedule-templates');
 
   const [templateType, setTemplateType] = useState<TemplateType>(TemplateType.STANDARD);
-  const [currentWeek, setCurrentWeek] = useState(0);
+  const [weekOffset, setWeekOffset] = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [selectionEnabled, setSelectionEnabled] = useState(false);
@@ -75,9 +77,30 @@ export function TemplateEditor({
   useEffect(() => {
     if (template) {
       setTemplateType(template.templateType as TemplateType);
-      setCurrentWeek(0);
+      setWeekOffset(0);
     }
   }, [template]);
+
+  const weeksData = template?.weeksData ?? [];
+  const totalWeeks = weeksData.length;
+  const canPaginate = totalWeeks > MAX_VISIBLE_WEEKS;
+  const visibleEnd = Math.min(weekOffset + MAX_VISIBLE_WEEKS, totalWeeks);
+
+  const clampOffset = useCallback(
+    (offset: number) => {
+      const maxOffset = Math.max(0, totalWeeks - MAX_VISIBLE_WEEKS);
+      return Math.max(0, Math.min(offset, maxOffset));
+    },
+    [totalWeeks],
+  );
+
+  const handleWeekOffsetChange = (direction: -1 | 1) => {
+    setWeekOffset((w) => clampOffset(w + direction));
+  };
+
+  useEffect(() => {
+    setWeekOffset((w) => clampOffset(w));
+  }, [totalWeeks, clampOffset]);
 
   if (!template) {
     return (
@@ -98,7 +121,6 @@ export function TemplateEditor({
   }
 
   const constraints = TEMPLATE_TYPE_CONSTRAINTS[templateType];
-  const weeksData = template.weeksData;
 
   const handleAddWeek = () => {
     if (weeksData.length >= constraints.maxWeeks) return;
@@ -109,9 +131,8 @@ export function TemplateEditor({
   const handleRemoveWeek = () => {
     if (!constraints.allowWeekModification || weeksData.length <= constraints.minWeeks) return;
     const updated = weeksData
-      .filter((_, i) => i !== currentWeek)
+      .filter((_, i) => i !== weekOffset)
       .map((w, i) => ({ ...w, weekNumber: i }));
-    setCurrentWeek(Math.min(currentWeek, updated.length - 1));
     onTemplateChange(updated);
   };
 
@@ -121,10 +142,18 @@ export function TemplateEditor({
 
   const weekLabel =
     templateType === TemplateType.EVEN_ODD
-      ? currentWeek === 0
+      ? weekOffset === 0
         ? t('even_week')
         : t('odd_week')
-      : t('week_number', { number: currentWeek + 1 });
+      : canPaginate
+        ? t('weeks_range', {
+            start: weekOffset + 1,
+            end: visibleEnd,
+            total: totalWeeks,
+          })
+        : t('weeks_range', { start: 1, end: totalWeeks, total: totalWeeks });
+
+  const navDisabled = !canPaginate;
 
   return (
     <div className="flex h-full flex-col">
@@ -171,20 +200,20 @@ export function TemplateEditor({
         <Button
           variant="outline"
           size="icon-xs"
-          disabled={currentWeek <= 0}
-          onClick={() => setCurrentWeek((w) => w - 1)}
+          disabled={navDisabled || weekOffset <= 0}
+          onClick={() => handleWeekOffsetChange(-1)}
           aria-label={t('previous_week')}
         >
           <ChevronLeft className="h-3.5 w-3.5" />
         </Button>
 
-        <span className="min-w-[80px] text-center text-xs font-medium">{weekLabel}</span>
+        <span className="min-w-[100px] text-center text-xs font-medium">{weekLabel}</span>
 
         <Button
           variant="outline"
           size="icon-xs"
-          disabled={currentWeek >= weeksData.length - 1}
-          onClick={() => setCurrentWeek((w) => w + 1)}
+          disabled={navDisabled || weekOffset >= totalWeeks - MAX_VISIBLE_WEEKS}
+          onClick={() => handleWeekOffsetChange(1)}
           aria-label={t('next_week')}
         >
           <ChevronRight className="h-3.5 w-3.5" />
@@ -192,7 +221,7 @@ export function TemplateEditor({
 
         {constraints.allowWeekModification && (
           <>
-                      <Button
+            <Button
               variant="ghost"
               size="icon-xs"
               className="text-destructive hover:text-destructive"
@@ -243,6 +272,7 @@ export function TemplateEditor({
           team={team}
           templateType={templateType}
           weeksData={weeksData}
+          weekOffset={weekOffset}
           onWeeksDataChange={handleWeeksDataChange}
           selectionEnabled={selectionEnabled}
           onToggleSelection={() => setSelectionEnabled((v) => !v)}
