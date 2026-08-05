@@ -75,5 +75,12 @@
   "set_demand": "Set demand",
   "select": "Select",
   "exit_selection": "Done",
-  "weeks_range": "Weeks {{start}}–{{end}} of {{total}}"
+  "weeks_range": "Weeks {{start}}–{{end}} of {{total}}",
+  "add_demand": "Add demand",
+  "add_assignment": "Add assignment",
+  "select_worker": "Select worker",
+  "assigned_workers": "Assigned workers",
+  "remove": "Remove",
+  "no_workers_assigned": "No workers assigned",
+  "add": "Add"
 }

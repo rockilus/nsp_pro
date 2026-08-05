@@ -75,5 +75,12 @@
   "set_demand": "Establecer cobertura",
   "select": "Seleccionar",
   "exit_selection": "Listo",
-  "weeks_range": "Semanas {{start}}–{{end}} de {{total}}"
+  "weeks_range": "Semanas {{start}}–{{end}} de {{total}}",
+  "add_demand": "Añadir cobertura",
+  "add_assignment": "Añadir asignación",
+  "select_worker": "Seleccionar miembro",
+  "assigned_workers": "Miembros asignados",
+  "remove": "Quitar",
+  "no_workers_assigned": "Ningún miembro asignado",
+  "add": "Añadir"
 }

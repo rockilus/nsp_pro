@@ -5,6 +5,7 @@ import { useTranslation } from '../../app/i18n/client';
 import { toast } from 'sonner';
 import { TeamWithMembership } from '../../types/team';
 import { ShiftT } from '../../types/shift';
+import { WorkerT } from '../../types/worker';
 import {
   ScheduleTemplateDTO,
   ScheduleTemplateWeekDataDTO,
@@ -24,6 +25,7 @@ import {
   useApplyScheduleTemplateToDateRange,
 } from '../../hooks/useScheduleTemplate';
 import { useGetShifts } from '../../hooks/useShift';
+import { useGetWorkers } from '../../hooks/useWorker';
 
 interface ScheduleTemplatesPageProps {
   lng: string;
@@ -37,6 +39,7 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
   const [templates, setTemplates] = useState<ScheduleTemplateDTO[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<ScheduleTemplateDTO | null>(null);
   const [shifts, setShifts] = useState<ShiftT[]>([]);
+  const [workers, setWorkers] = useState<WorkerT[]>([]);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editTemplateId, setEditTemplateId] = useState<string | null>(null);
@@ -50,6 +53,7 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
   const deleteTemplate = useDeleteScheduleTemplate();
   const applyToRange = useApplyScheduleTemplateToDateRange();
   const getShifts = useGetShifts();
+  const getWorkers = useGetWorkers();
 
   const loadTemplates = useCallback(async () => {
     setIsLoading(true);
@@ -72,6 +76,12 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
       .then(setShifts)
       .catch(() => {});
   }, [getShifts, teamId]);
+
+  useEffect(() => {
+    getWorkers(teamId)
+      .then(setWorkers)
+      .catch(() => {});
+  }, [getWorkers, teamId]);
 
   const handleSelectTemplate = (template: ScheduleTemplateDTO) => {
     setSelectedTemplate(template);
@@ -191,6 +201,7 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
           template={selectedTemplate}
           shifts={shifts}
           team={teamWithMembership.team}
+          workers={workers}
           sidebarVisible={sidebarVisible}
           onToggleSidebar={() => setSidebarVisible(true)}
           onApply={() => setIsApplyOpen(true)}

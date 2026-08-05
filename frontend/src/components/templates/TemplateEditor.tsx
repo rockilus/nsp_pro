@@ -21,6 +21,7 @@ import {
 } from '../../types/schedule-template';
 import { ShiftT } from '../../types/shift';
 import { TeamT } from '../../types/team';
+import { WorkerT } from '../../types/worker';
 import {
   ChevronLeft,
   ChevronRight,
@@ -41,6 +42,7 @@ interface TemplateEditorProps {
   template: ScheduleTemplateDTO | null;
   shifts: ShiftT[];
   team: TeamT;
+  workers: WorkerT[];
   sidebarVisible: boolean;
   onToggleSidebar: () => void;
   onApply: () => void;
@@ -59,6 +61,7 @@ export function TemplateEditor({
   template,
   shifts,
   team,
+  workers,
   sidebarVisible,
   onToggleSidebar,
   onApply,
@@ -270,6 +273,7 @@ export function TemplateEditor({
           template={template}
           shifts={shifts}
           team={team}
+          workers={workers}
           templateType={templateType}
           weeksData={weeksData}
           weekOffset={weekOffset}

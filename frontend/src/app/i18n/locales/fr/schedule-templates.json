@@ -75,5 +75,12 @@
   "set_demand": "Definir la couverture",
   "select": "Selectionner",
   "exit_selection": "Terminer",
-  "weeks_range": "Semaines {{start}}–{{end}} sur {{total}}"
+  "weeks_range": "Semaines {{start}}–{{end}} sur {{total}}",
+  "add_demand": "Ajouter une couverture",
+  "add_assignment": "Ajouter une affectation",
+  "select_worker": "Sélectionner un membre",
+  "assigned_workers": "Membres affectés",
+  "remove": "Retirer",
+  "no_workers_assigned": "Aucun membre affecté",
+  "add": "Ajouter"
 }

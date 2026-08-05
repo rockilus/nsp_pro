@@ -8,6 +8,7 @@ import CalendarRowHeaderCell from '../calendar/CalendarRowHeaderCell';
 import { ShiftRowHeaderContent } from '../calendar/ShiftRowHeaderContent';
 import { TemplateColumnHeader } from './TemplateColumnHeader';
 import { TemplateCell } from './TemplateCell';
+import { AssignWorkerDialog } from './AssignWorkerDialog';
 import {
   ScheduleTemplateDTO,
   ScheduleTemplateEntryDTO,
@@ -16,6 +17,7 @@ import {
 } from '../../types/schedule-template';
 import { ShiftT } from '../../types/shift';
 import { TeamT } from '../../types/team';
+import { WorkerT } from '../../types/worker';
 import { calendarGridTemplate } from '../../constants/constants';
 
 const MAX_VISIBLE_WEEKS = 4;
@@ -41,6 +43,7 @@ interface TemplateShiftTableProps {
   template: ScheduleTemplateDTO;
   shifts: ShiftT[];
   team: TeamT;
+  workers: WorkerT[];
   onWeeksDataChange: (weeksData: ScheduleTemplateWeekDataDTO[]) => void;
   templateType: TemplateType;
   weeksData: ScheduleTemplateWeekDataDTO[];
@@ -54,6 +57,7 @@ export function TemplateShiftTable({
   template,
   shifts,
   team,
+  workers,
   onWeeksDataChange,
   templateType,
   weeksData,
@@ -69,6 +73,12 @@ export function TemplateShiftTable({
 
   const [selectedCells, setSelectedCells] = useState<Set<string>>(new Set());
   const [bulkDemandCount, setBulkDemandCount] = useState(1);
+  const [assignDialogState, setAssignDialogState] = useState<{
+    open: boolean;
+    shiftId: string;
+    weekNumber: number;
+    dayOfWeek: number;
+  }>({ open: false, shiftId: '', weekNumber: 0, dayOfWeek: 0 });
 
   const columns = useMemo(() => {
     const cols: { id: string; weekNumber: number; dayOfWeek: number }[] = [];
@@ -224,6 +234,97 @@ export function TemplateShiftTable({
     [weeksData, selectionEnabled, onWeeksDataChange],
   );
 
+  const handleAddDemand = useCallback(
+    (shiftId: string, weekNumber: number, dayOfWeek: number) => {
+      const newWeeks = weeksData.map((week) => {
+        if (week.weekNumber !== weekNumber) return week;
+        const existing = week.entries.find(
+          (e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek,
+        );
+        if (existing) return week;
+        return {
+          ...week,
+          entries: [...week.entries, { shiftId, dayOfWeek, demandCount: 1, workerIds: [] }],
+        };
+      });
+      onWeeksDataChange(newWeeks);
+    },
+    [weeksData, onWeeksDataChange],
+  );
+
+  const handleAddWorker = useCallback(
+    (shiftId: string, weekNumber: number, dayOfWeek: number, workerId: string) => {
+      const newWeeks = weeksData.map((week) => {
+        if (week.weekNumber !== weekNumber) return week;
+        const existing = week.entries.find(
+          (e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek,
+        );
+        const otherEntries = week.entries.filter(
+          (e) => !(e.shiftId === shiftId && e.dayOfWeek === dayOfWeek),
+        );
+        if (existing) {
+          return {
+            ...week,
+            entries: [
+              ...otherEntries,
+              {
+                ...existing,
+                workerIds: [...existing.workerIds, workerId],
+              },
+            ],
+          };
+        }
+        return {
+          ...week,
+          entries: [...week.entries, { shiftId, dayOfWeek, demandCount: 0, workerIds: [workerId] }],
+        };
+      });
+      onWeeksDataChange(newWeeks);
+    },
+    [weeksData, onWeeksDataChange],
+  );
+
+  const handleRemoveWorker = useCallback(
+    (shiftId: string, weekNumber: number, dayOfWeek: number, workerId: string) => {
+      const newWeeks = weeksData.map((week) => {
+        if (week.weekNumber !== weekNumber) return week;
+        const existing = week.entries.find(
+          (e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek,
+        );
+        if (!existing) return week;
+        const updatedWorkerIds = existing.workerIds.filter((id) => id !== workerId);
+        if (updatedWorkerIds.length === 0 && existing.demandCount === 0) {
+          return {
+            ...week,
+            entries: week.entries.filter(
+              (e) => !(e.shiftId === shiftId && e.dayOfWeek === dayOfWeek),
+            ),
+          };
+        }
+        return {
+          ...week,
+          entries: [
+            ...week.entries.filter((e) => !(e.shiftId === shiftId && e.dayOfWeek === dayOfWeek)),
+            { ...existing, workerIds: updatedWorkerIds },
+          ],
+        };
+      });
+      onWeeksDataChange(newWeeks);
+    },
+    [weeksData, onWeeksDataChange],
+  );
+
+  const handleOpenAssignDialog = useCallback(
+    (shiftId: string, weekNumber: number, dayOfWeek: number) => {
+      setAssignDialogState({ open: true, shiftId, weekNumber, dayOfWeek });
+    },
+    [],
+  );
+
+  const handleCloseAssignDialog = useCallback(() => {
+    setAssignDialogState((prev) => ({ ...prev, open: false }));
+  }, []);
+
   const handleCellSelectToggle = useCallback(
     (rowId: string, colId: string) => {
       toggleCell(`${rowId}-${colId}`);
@@ -335,6 +436,32 @@ export function TemplateShiftTable({
     label: getWeekLabel(w.weekNumber, templateType, t),
   }));
 
+  const assignDialogEntry = useMemo(
+    () =>
+      entryMap.get(
+        `${assignDialogState.shiftId}-${assignDialogState.weekNumber}-${assignDialogState.dayOfWeek}`,
+      ) ?? null,
+    [entryMap, assignDialogState],
+  );
+
+  const assignDialogShift = useMemo(
+    () => shifts.find((s) => s.id === assignDialogState.shiftId) ?? null,
+    [shifts, assignDialogState.shiftId],
+  );
+
+  const assignDialogDayLabel = useMemo(() => {
+    const dayKeys = [
+      'monday_short',
+      'tuesday_short',
+      'wednesday_short',
+      'thursday_short',
+      'friday_short',
+      'saturday_short',
+      'sunday_short',
+    ];
+    return t(dayKeys[assignDialogState.dayOfWeek] ?? '');
+  }, [t, assignDialogState.dayOfWeek]);
+
   return (
     <div className="flex h-full flex-col">
       {selectionEnabled && selectedCells.size > 0 && (
@@ -423,6 +550,10 @@ export function TemplateShiftTable({
                     selectionEnabled={selectionEnabled}
                     onClick={() => handleCellClick(shift.id, col.weekNumber, col.dayOfWeek)}
                     onSelectToggle={() => handleCellSelectToggle(shift.id, col.id)}
+                    onAddDemand={() => handleAddDemand(shift.id, col.weekNumber, col.dayOfWeek)}
+                    onAssignWorker={() =>
+                      handleOpenAssignDialog(shift.id, col.weekNumber, col.dayOfWeek)
+                    }
                   />
                 );
               })}
@@ -430,6 +561,32 @@ export function TemplateShiftTable({
           );
         })}
       </div>
+
+      <AssignWorkerDialog
+        lng={lng}
+        workers={workers}
+        assignedWorkerIds={assignDialogEntry?.workerIds ?? []}
+        open={assignDialogState.open}
+        onClose={handleCloseAssignDialog}
+        onAddWorker={(workerId) => {
+          handleAddWorker(
+            assignDialogState.shiftId,
+            assignDialogState.weekNumber,
+            assignDialogState.dayOfWeek,
+            workerId,
+          );
+        }}
+        onRemoveWorker={(workerId) => {
+          handleRemoveWorker(
+            assignDialogState.shiftId,
+            assignDialogState.weekNumber,
+            assignDialogState.dayOfWeek,
+            workerId,
+          );
+        }}
+        shiftName={assignDialogShift?.name ?? ''}
+        dayLabel={assignDialogDayLabel}
+      />
     </div>
   );
 }

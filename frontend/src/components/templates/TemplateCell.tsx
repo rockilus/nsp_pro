@@ -3,6 +3,7 @@ import { Badge } from '../ui/badge';
 import { Checkbox } from '../ui/checkbox';
 import { cn } from '@/lib/utils';
 import { ScheduleTemplateEntryDTO } from '../../types/schedule-template';
+import { Users, UserPlus } from 'lucide-react';
 
 interface TemplateCellProps {
   entry: ScheduleTemplateEntryDTO | null;
@@ -11,6 +12,8 @@ interface TemplateCellProps {
   selectionEnabled?: boolean;
   onClick?: () => void;
   onSelectToggle?: () => void;
+  onAddDemand?: () => void;
+  onAssignWorker?: () => void;
 }
 
 export function TemplateCell({
@@ -20,6 +23,8 @@ export function TemplateCell({
   selectionEnabled = false,
   onClick,
   onSelectToggle,
+  onAddDemand,
+  onAssignWorker,
 }: TemplateCellProps) {
   const hasEntry = entry !== null;
   const demandCount = entry?.demandCount ?? 0;
@@ -28,9 +33,9 @@ export function TemplateCell({
   return (
     <div
       className={cn(
-        'relative flex min-h-[2.5rem] items-center justify-center border-r border-b border-border/50 p-1',
+        'group relative flex min-h-[2.5rem] items-center justify-center border-r border-b border-border/50 p-1',
         isWeekend && 'bg-muted',
-        !selectionEnabled && hasEntry && 'cursor-pointer hover:bg-accent/50',
+        !selectionEnabled && 'cursor-pointer hover:bg-accent/50',
         isSelected && 'bg-primary/10 outline outline-2 outline-primary',
       )}
       onClick={(e) => {
@@ -67,6 +72,35 @@ export function TemplateCell({
           {demandCount}
           {workerCount > 0 && ` (${workerCount})`}
         </Badge>
+      )}
+
+      {!selectionEnabled && (
+        <div className="absolute inset-x-0 bottom-0 flex h-5 items-stretch opacity-0 transition-opacity group-hover:opacity-100">
+          <button
+            type="button"
+            className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddDemand?.();
+            }}
+            aria-label="Add demand"
+            data-testid="template-cell-add-demand"
+          >
+            <Users className="size-3" />
+          </button>
+          <button
+            type="button"
+            className="flex flex-1 items-center justify-center gap-0.5 bg-secondary/50 text-[10px] font-medium text-secondary-foreground hover:bg-secondary/70"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAssignWorker?.();
+            }}
+            aria-label="Add assignment"
+            data-testid="template-cell-add-assignment"
+          >
+            <UserPlus className="size-3" />
+          </button>
+        </div>
       )}
     </div>
   );
