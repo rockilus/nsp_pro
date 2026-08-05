@@ -3,7 +3,7 @@ import { Badge } from '../ui/badge';
 import { Checkbox } from '../ui/checkbox';
 import { cn } from '@/lib/utils';
 import { ScheduleTemplateEntryDTO } from '../../types/schedule-template';
-import { Users, UserPlus } from 'lucide-react';
+import { Briefcase, UserPlus } from 'lucide-react';
 
 interface TemplateCellProps {
   entry: ScheduleTemplateEntryDTO | null;
@@ -86,11 +86,11 @@ export function TemplateCell({
             aria-label="Add demand"
             data-testid="template-cell-add-demand"
           >
-            <Users className="size-3" />
+            <Briefcase className="size-3" />
           </button>
           <button
             type="button"
-            className="flex flex-1 items-center justify-center gap-0.5 bg-secondary/50 text-[10px] font-medium text-secondary-foreground hover:bg-secondary/70"
+            className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25"
             onClick={(e) => {
               e.stopPropagation();
               onAssignWorker?.();
