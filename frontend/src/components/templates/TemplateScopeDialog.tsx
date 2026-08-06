@@ -138,7 +138,6 @@ export function TemplateScopeDialog({
       setLocalIncludeAll(false);
     } else {
       setLocalScope(new Set(workShifts.map((s) => s.id)));
-      setLocalIncludeAll(true);
     }
   };
 
