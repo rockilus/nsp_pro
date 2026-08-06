@@ -330,6 +330,36 @@ export function TemplateShiftTable({
     [weeksData, onWeeksDataChange],
   );
 
+  const handleReplaceWorker = useCallback(
+    (
+      shiftId: string,
+      weekNumber: number,
+      dayOfWeek: number,
+      oldWorkerId: string,
+      newWorkerId: string,
+    ) => {
+      const newWeeks = weeksData.map((week) => {
+        if (week.weekNumber !== weekNumber) return week;
+        const existing = week.entries.find(
+          (e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek,
+        );
+        if (!existing) return week;
+        const updatedWorkerIds = existing.workerIds
+          .filter((id) => id !== oldWorkerId)
+          .concat(newWorkerId);
+        return {
+          ...week,
+          entries: [
+            ...week.entries.filter((e) => !(e.shiftId === shiftId && e.dayOfWeek === dayOfWeek)),
+            { ...existing, workerIds: updatedWorkerIds },
+          ],
+        };
+      });
+      onWeeksDataChange(newWeeks);
+    },
+    [weeksData, onWeeksDataChange],
+  );
+
   const handleOpenAssignDialog = useCallback(
     (shiftId: string, weekNumber: number, dayOfWeek: number, workerId?: string) => {
       setAssignDialogState({
@@ -620,6 +650,15 @@ export function TemplateShiftTable({
             assignDialogState.weekNumber,
             assignDialogState.dayOfWeek,
             workerId,
+          );
+        }}
+        onReplace={(oldWorkerId, newWorkerId) => {
+          handleReplaceWorker(
+            assignDialogState.shiftId,
+            assignDialogState.weekNumber,
+            assignDialogState.dayOfWeek,
+            oldWorkerId,
+            newWorkerId,
           );
         }}
         shiftName={assignDialogShift?.name ?? ''}

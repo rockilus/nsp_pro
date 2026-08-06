@@ -28,6 +28,7 @@ interface AssignWorkerDialogProps {
   onClose: () => void;
   onSave: (workerId: string) => void;
   onDelete: (workerId: string) => void;
+  onReplace: (oldWorkerId: string, newWorkerId: string) => void;
   shiftName: string;
   shiftAcronym: string;
   dayLabel: string;
@@ -43,6 +44,7 @@ export function AssignWorkerDialog({
   onClose,
   onSave,
   onDelete,
+  onReplace,
   shiftName,
   shiftAcronym,
   dayLabel,
@@ -113,9 +115,10 @@ export function AssignWorkerDialog({
           <Button
             onClick={() => {
               if (isEditMode && selectedWorkerId !== editWorkerId) {
-                onDelete(editWorkerId);
+                onReplace(editWorkerId, selectedWorkerId);
+              } else {
+                onSave(selectedWorkerId);
               }
-              onSave(selectedWorkerId);
               onClose();
             }}
             disabled={!selectedWorkerId || isSelectedAlreadyAssigned}
