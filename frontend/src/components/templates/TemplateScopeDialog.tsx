@@ -51,6 +51,7 @@ export function TemplateScopeDialog({
 
   const pendingUncheckShiftId = useState<string | null>(null);
   const [warningShiftId, setWarningShiftId] = pendingUncheckShiftId;
+  const [pendingUncheckType, setPendingUncheckType] = useState<ShiftType | null>(null);
 
   const workShifts = useMemo(
     () =>
@@ -114,17 +115,24 @@ export function TemplateScopeDialog({
 
   const handleConfirmUncheck = () => {
     if (!warningShiftId) return;
+    const type = pendingUncheckType;
+    setPendingUncheckType(null);
+    setWarningShiftId(null);
+    setLocalIncludeAll(false);
     setLocalScope((prev) => {
       const next = new Set(prev);
-      next.delete(warningShiftId);
+      if (type !== null) {
+        for (const id of groupedShifts[type].map((s) => s.id)) next.delete(id);
+      } else {
+        next.delete(warningShiftId);
+      }
       return next;
     });
-    setLocalIncludeAll(false);
-    setWarningShiftId(null);
   };
 
   const handleCancelUncheck = () => {
     setWarningShiftId(null);
+    setPendingUncheckType(null);
   };
 
   const handleToggleAll = () => {
@@ -138,6 +146,32 @@ export function TemplateScopeDialog({
       setLocalIncludeAll(false);
     } else {
       setLocalScope(new Set(workShifts.map((s) => s.id)));
+    }
+  };
+
+  const handleToggleShiftType = (shiftType: ShiftType) => {
+    const groupShiftIds = groupedShifts[shiftType].map((s) => s.id);
+    const allInScope = groupShiftIds.every((id) => localScope.has(id));
+
+    if (allInScope) {
+      const populatedInGroup = groupedShifts[shiftType].find((s) => populatedShiftIds.has(s.id));
+      if (populatedInGroup) {
+        setWarningShiftId(populatedInGroup.id);
+        setPendingUncheckType(shiftType);
+        return;
+      }
+      setLocalScope((prev) => {
+        const next = new Set(prev);
+        for (const id of groupShiftIds) next.delete(id);
+        return next;
+      });
+      setLocalIncludeAll(false);
+    } else {
+      setLocalScope((prev) => {
+        const next = new Set(prev);
+        for (const id of groupShiftIds) next.add(id);
+        return next;
+      });
     }
   };
 
@@ -201,9 +235,16 @@ export function TemplateScopeDialog({
 
                   return (
                     <div key={shiftType}>
-                      <Label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
-                        {t(SHIFT_TYPE_LABEL_KEY[shiftType])}
-                      </Label>
+                      <label className="mb-1.5 flex cursor-pointer items-center gap-2">
+                        <Checkbox
+                          checked={groupShifts.every((s) => localScope.has(s.id))}
+                          onCheckedChange={() => handleToggleShiftType(shiftType)}
+                          className="shrink-0"
+                        />
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          {t(SHIFT_TYPE_LABEL_KEY[shiftType])}
+                        </span>
+                      </label>
                       <div className="space-y-0.5">
                         {groupShifts.map((shift) => {
                           const isChecked = localScope.has(shift.id);
