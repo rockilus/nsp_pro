@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Check } from 'lucide-react';
 import { WorkerT } from '../../types/worker';
 
 interface AssignWorkerDialogProps {
@@ -71,8 +70,11 @@ export function AssignWorkerDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {weekLabel} — {dayLabel} — {shiftName} ({shiftAcronym})
+            {shiftName} ({shiftAcronym})
           </DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            {dayLabel}, {weekLabel.toLowerCase()}
+          </p>
         </DialogHeader>
 
         <Select value={selectedWorkerId} onValueChange={setSelectedWorkerId}>
@@ -85,17 +87,11 @@ export function AssignWorkerDialog({
                 {t('no_workers_assigned')}
               </div>
             ) : (
-              activeWorkers.map((w) => {
-                const isAssigned = assignedWorkerIds.includes(w.id);
-                return (
-                  <SelectItem key={w.id} value={w.id}>
-                    <span className="flex items-center gap-1.5">
-                      {w.name}
-                      {isAssigned && <Check className="size-3.5 text-muted-foreground" />}
-                    </span>
-                  </SelectItem>
-                );
-              })
+              activeWorkers.map((w) => (
+                <SelectItem key={w.id} value={w.id}>
+                  {w.name}
+                </SelectItem>
+              ))
             )}
           </SelectContent>
         </Select>

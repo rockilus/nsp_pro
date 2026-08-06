@@ -473,13 +473,13 @@ export function TemplateShiftTable({
 
   const assignDialogDayLabel = useMemo(() => {
     const dayKeys = [
-      'monday_short',
-      'tuesday_short',
-      'wednesday_short',
-      'thursday_short',
-      'friday_short',
-      'saturday_short',
-      'sunday_short',
+      'monday_full',
+      'tuesday_full',
+      'wednesday_full',
+      'thursday_full',
+      'friday_full',
+      'saturday_full',
+      'sunday_full',
     ];
     return t(dayKeys[assignDialogState.dayOfWeek] ?? '');
   }, [t, assignDialogState.dayOfWeek]);
