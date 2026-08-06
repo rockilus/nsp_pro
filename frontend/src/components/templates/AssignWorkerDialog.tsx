@@ -91,11 +91,15 @@ export function AssignWorkerDialog({
                 {t('no_workers_assigned')}
               </div>
             ) : (
-              activeWorkers.map((w) => (
-                <SelectItem key={w.id} value={w.id}>
-                  {w.name}
-                </SelectItem>
-              ))
+              activeWorkers.map((w) => {
+                const isAssigned = assignedWorkerIds.includes(w.id);
+                const disabled = isAssigned && w.id !== editWorkerId;
+                return (
+                  <SelectItem key={w.id} value={w.id} disabled={disabled}>
+                    {w.name}
+                  </SelectItem>
+                );
+              })
             )}
           </SelectContent>
         </Select>
