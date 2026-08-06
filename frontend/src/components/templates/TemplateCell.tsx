@@ -123,7 +123,7 @@ export function TemplateCell({
           {demandCount === 0 && (
             <button
               type="button"
-              className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25 cursor-pointer"
+              className="flex flex-1 cursor-pointer items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25"
               onClick={(e) => {
                 e.stopPropagation();
                 onAddDemand?.();
@@ -136,7 +136,7 @@ export function TemplateCell({
           )}
           <button
             type="button"
-            className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25 cursor-pointer"
+            className="flex flex-1 cursor-pointer items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25"
             onClick={(e) => {
               e.stopPropagation();
               onAssignWorker?.();

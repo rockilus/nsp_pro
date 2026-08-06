@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../../app/i18n/client';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { X, UserPlus } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { WorkerT } from '../../types/worker';
 
 interface AssignWorkerDialogProps {
@@ -28,8 +27,8 @@ interface AssignWorkerDialogProps {
   assignedWorkerIds: string[];
   open: boolean;
   onClose: () => void;
-  onAddWorker: (workerId: string) => void;
-  onRemoveWorker: (workerId: string) => void;
+  onSave: (workerId: string) => void;
+  onDelete: (workerId: string) => void;
   shiftName: string;
   dayLabel: string;
 }
@@ -40,31 +39,27 @@ export function AssignWorkerDialog({
   assignedWorkerIds,
   open,
   onClose,
-  onAddWorker,
-  onRemoveWorker,
+  onSave,
+  onDelete,
   shiftName,
   dayLabel,
 }: AssignWorkerDialogProps) {
   const { t } = useTranslation(lng, 'schedule-templates');
   const [selectedWorkerId, setSelectedWorkerId] = useState('');
 
-  const assignedWorkers = workers.filter((w) => assignedWorkerIds.includes(w.id));
-
-  const availableWorkers = workers
-    .filter((w) => !w.deleted && !assignedWorkerIds.includes(w.id))
+  const activeWorkers = workers
+    .filter((w) => !w.deleted)
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const isSelectedAlreadyAssigned = selectedWorkerId
+    ? assignedWorkerIds.includes(selectedWorkerId)
+    : false;
 
   useEffect(() => {
     if (open) {
       setSelectedWorkerId('');
     }
   }, [open]);
-
-  const handleAdd = () => {
-    if (!selectedWorkerId) return;
-    onAddWorker(selectedWorkerId);
-    setSelectedWorkerId('');
-  };
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -75,66 +70,53 @@ export function AssignWorkerDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>{t('assigned_workers')}</Label>
-            <div className="flex min-h-[2rem] flex-wrap gap-1.5 rounded-md border p-3">
-              {assignedWorkers.length === 0 ? (
-                <span className="text-xs text-muted-foreground">{t('no_workers_assigned')}</span>
+        <div className="space-y-2">
+          <Label>{t('select_worker')}</Label>
+          <Select value={selectedWorkerId} onValueChange={setSelectedWorkerId}>
+            <SelectTrigger>
+              <SelectValue placeholder={t('select_worker')} />
+            </SelectTrigger>
+            <SelectContent>
+              {activeWorkers.length === 0 ? (
+                <div className="px-2 py-3 text-xs text-muted-foreground">
+                  {t('no_workers_assigned')}
+                </div>
               ) : (
-                assignedWorkers.map((w) => (
-                  <Badge
-                    key={w.id}
-                    variant="secondary"
-                    className="flex items-center gap-1 pr-1 text-xs"
-                  >
-                    {w.name}
-                    <button
-                      type="button"
-                      className="ml-0.5 inline-flex size-4 items-center justify-center rounded-full hover:bg-muted-foreground/20"
-                      onClick={() => onRemoveWorker(w.id)}
-                      aria-label={t('remove')}
-                    >
-                      <X className="size-3" />
-                    </button>
-                  </Badge>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t('select_worker')}</Label>
-            <div className="flex items-center gap-2">
-              <Select value={selectedWorkerId} onValueChange={setSelectedWorkerId}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder={t('select_worker')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableWorkers.length === 0 ? (
-                    <div className="px-2 py-3 text-xs text-muted-foreground">
-                      {t('no_workers_assigned')}
-                    </div>
-                  ) : (
-                    availableWorkers.map((w) => (
-                      <SelectItem key={w.id} value={w.id}>
+                activeWorkers.map((w) => {
+                  const isAssigned = assignedWorkerIds.includes(w.id);
+                  return (
+                    <SelectItem key={w.id} value={w.id}>
+                      <span className="flex items-center gap-1.5">
                         {w.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              <Button size="sm" variant="outline" onClick={handleAdd} disabled={!selectedWorkerId}>
-                <UserPlus className="mr-1 size-3.5" />
-                {t('add')}
-              </Button>
-            </div>
-          </div>
+                        {isAssigned && <Check className="size-3.5 text-muted-foreground" />}
+                      </span>
+                    </SelectItem>
+                  );
+                })
+              )}
+            </SelectContent>
+          </Select>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            {t('close')}
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button
+            variant="destructive"
+            onClick={() => {
+              onDelete(selectedWorkerId);
+              setSelectedWorkerId('');
+            }}
+            disabled={!isSelectedAlreadyAssigned}
+          >
+            {t('delete')}
+          </Button>
+          <Button
+            onClick={() => {
+              onSave(selectedWorkerId);
+              setSelectedWorkerId('');
+            }}
+            disabled={!selectedWorkerId || isSelectedAlreadyAssigned}
+          >
+            {t('save')}
           </Button>
         </DialogFooter>
       </DialogContent>

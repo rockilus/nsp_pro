@@ -593,7 +593,7 @@ export function TemplateShiftTable({
         assignedWorkerIds={assignDialogEntry?.workerIds ?? []}
         open={assignDialogState.open}
         onClose={handleCloseAssignDialog}
-        onAddWorker={(workerId) => {
+        onSave={(workerId) => {
           handleAddWorker(
             assignDialogState.shiftId,
             assignDialogState.weekNumber,
@@ -601,7 +601,7 @@ export function TemplateShiftTable({
             workerId,
           );
         }}
-        onRemoveWorker={(workerId) => {
+        onDelete={(workerId) => {
           handleRemoveWorker(
             assignDialogState.shiftId,
             assignDialogState.weekNumber,
