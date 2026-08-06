@@ -18,7 +18,7 @@ import {
 import { ShiftT } from '../../types/shift';
 import { TeamT } from '../../types/team';
 import { WorkerT } from '../../types/worker';
-import { calendarGridTemplate, ShiftColorMappings } from '../../constants/constants';
+import { calendarGridTemplate } from '../../constants/constants';
 
 const MAX_VISIBLE_WEEKS = 4;
 const DAYS_IN_WEEK = 7;
@@ -554,13 +554,8 @@ export function TemplateShiftTable({
                     isWeekend={col.dayOfWeek === 5 || col.dayOfWeek === 6}
                     isSelected={isCellSelected(shift.id, col.id)}
                     selectionEnabled={selectionEnabled}
-                    shiftColor={
-                      ShiftColorMappings[shift.color] ?? {
-                        background: '#f5f5f5',
-                        sample: '#9e9e9e',
-                        text: '#212121',
-                      }
-                    }
+                    shift={shift}
+                    workers={workers}
                     onSelectToggle={() => handleCellSelectToggle(shift.id, col.id)}
                     onAddDemand={() => handleAddDemand(shift.id, col.weekNumber, col.dayOfWeek)}
                     onIncrement={() =>
@@ -571,6 +566,9 @@ export function TemplateShiftTable({
                     }
                     onAssignWorker={() =>
                       handleOpenAssignDialog(shift.id, col.weekNumber, col.dayOfWeek)
+                    }
+                    onRemoveWorker={(workerId: string) =>
+                      handleRemoveWorker(shift.id, col.weekNumber, col.dayOfWeek, workerId)
                     }
                   />
                 );

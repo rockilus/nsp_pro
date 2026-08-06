@@ -4,10 +4,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import './assignment-cell.css';
 // Types
 import { AssignmentDataT, ScheduleViewSettingsT } from '../../../../types/schedule';
-import { ShiftType } from '@/types/shift';
 import { TeamMembershipRole, TeamWithMembership } from '@/types/team';
 // Constants
 import { ShiftColorMappings } from '../../../../constants/constants';
+import { AssignmentChip } from './assignment-chip';
 
 export default function AssignmentCell({
   assignmentData,
@@ -66,48 +66,28 @@ export default function AssignmentCell({
           data-testid={`assignment-checkbox-${assignmentData.assignment.id}`}
         />
       )}
-      <span className="a-cell-title">
-        {scheduleViewSettings.groupBy === 'worker'
-          ? scheduleViewSettings.timeFrame === 'week'
+      <AssignmentChip
+        name={
+          scheduleViewSettings.groupBy === 'worker'
             ? assignmentData.shift.name
-            : assignmentData.shift.acronym
-          : scheduleViewSettings.groupBy === 'shift'
-            ? scheduleViewSettings.timeFrame === 'week'
-              ? assignmentData.worker.name
-              : assignmentData.worker.acronym
-            : null}
-      </span>
-      {scheduleViewSettings.groupBy === 'worker' && scheduleViewSettings.timeFrame === 'week' && (
-        <div className="a-cell-shift-times-container">
-          <span className="a-cell-shift-times-text">
-            {assignmentData.shift.startTime.format('HH:mm')}
-          </span>
-          <span className="a-cell-shift-times-text">{' - '}</span>
-          <span className="a-cell-shift-times-text">
-            {assignmentData.shift.endTime.format('HH:mm')}
-            {!assignmentData.shift.endTime.isSame(assignmentData.shift.startTime, 'day') && (
-              <sup>+1</sup>
-            )}
-          </span>
-        </div>
-      )}
-      {scheduleViewSettings.groupBy === 'worker' && (
-        <div
-          className={`a-cell-shift-type-marker ${
-            assignmentData.shift.shiftType === ShiftType.DUTY
-              ? 'duty'
-              : assignmentData.shift.shiftType === ShiftType.ON_CALL
-                ? 'on-call'
-                : 'other'
-          }`}
-          style={{ '--bg-color': sample } as React.CSSProperties}
-        ></div>
-      )}
-      {assignmentData.assignment.fixed && (
-        <span className="assignment-fixed-lock" aria-label="fixed">
-          🔒
-        </span>
-      )}
+            : assignmentData.worker.name
+        }
+        acronym={
+          scheduleViewSettings.groupBy === 'worker'
+            ? assignmentData.shift.acronym
+            : assignmentData.worker.acronym
+        }
+        showFullName={scheduleViewSettings.timeFrame === 'week'}
+        shiftType={assignmentData.shift.shiftType}
+        shiftStartTime={assignmentData.shift.startTime.format('HH:mm')}
+        shiftEndTime={assignmentData.shift.endTime.format('HH:mm')}
+        isNextDay={!assignmentData.shift.endTime.isSame(assignmentData.shift.startTime, 'day')}
+        showTimes={
+          scheduleViewSettings.groupBy === 'worker' && scheduleViewSettings.timeFrame === 'week'
+        }
+        isFixed={assignmentData.assignment.fixed}
+        shiftColor={{ background, sample, text }}
+      />
     </div>
   );
 }

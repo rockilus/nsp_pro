@@ -2,20 +2,26 @@ import React, { useState } from 'react';
 import { Checkbox } from '../ui/checkbox';
 import { cn } from '@/lib/utils';
 import { ScheduleTemplateEntryDTO } from '../../types/schedule-template';
+import { ShiftT } from '../../types/shift';
+import { WorkerT } from '../../types/worker';
 import { Briefcase, UserPlus } from 'lucide-react';
 import { DemandCellContent } from '../shiftDemand/DemandCellContent';
+import { AssignmentChip } from '../schedule/table/shared/assignment-chip';
+import { ShiftColorMappings } from '../../constants/constants';
 
 interface TemplateCellProps {
   entry: ScheduleTemplateEntryDTO | null;
   isWeekend: boolean;
   isSelected?: boolean;
   selectionEnabled?: boolean;
-  shiftColor: { background: string; sample: string; text: string };
+  shift: ShiftT;
+  workers: WorkerT[];
   onSelectToggle?: () => void;
   onAddDemand?: () => void;
   onIncrement?: () => void;
   onDecrement?: () => void;
   onAssignWorker?: () => void;
+  onRemoveWorker?: (workerId: string) => void;
 }
 
 export function TemplateCell({
@@ -23,18 +29,28 @@ export function TemplateCell({
   isWeekend,
   isSelected = false,
   selectionEnabled = false,
-  shiftColor,
+  shift,
+  workers,
   onSelectToggle,
   onAddDemand,
   onIncrement,
   onDecrement,
   onAssignWorker,
+  onRemoveWorker,
 }: TemplateCellProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   const hasEntry = entry !== null;
   const demandCount = entry?.demandCount ?? 0;
-  const workerCount = entry?.workerIds.length ?? 0;
+  const workerIds = entry?.workerIds ?? [];
+
+  const shiftColor = ShiftColorMappings[shift.color] ?? {
+    background: '#f5f5f5',
+    sample: '#9e9e9e',
+    text: '#212121',
+  };
+
+  const assignedWorkers = workers.filter((w) => !w.deleted && workerIds.includes(w.id));
 
   return (
     <div
@@ -73,22 +89,36 @@ export function TemplateCell({
         </div>
       )}
 
-      {hasEntry && (
-        <DemandCellContent
-          value={demandCount}
-          isSaving={false}
-          isHovered={isHovered}
-          onAddDemand={onAddDemand ?? (() => {})}
-          onIncrement={onIncrement ?? (() => {})}
-          onDecrement={onDecrement ?? (() => {})}
-        />
-      )}
+      <div className="flex w-full flex-col items-center gap-0.5">
+        {hasEntry && (
+          <DemandCellContent
+            value={demandCount}
+            isSaving={false}
+            isHovered={isHovered}
+            onAddDemand={onAddDemand ?? (() => {})}
+            onIncrement={onIncrement ?? (() => {})}
+            onDecrement={onDecrement ?? (() => {})}
+          />
+        )}
 
-      {workerCount > 0 && (
-        <span className="absolute top-0.5 right-0.5 z-10 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-primary px-1 text-[8px] font-bold text-primary-foreground">
-          {workerCount}
-        </span>
-      )}
+        {assignedWorkers.map((worker) => (
+          <AssignmentChip
+            key={worker.id}
+            name={worker.name}
+            acronym={worker.acronym}
+            showFullName={false}
+            shiftType={shift.shiftType}
+            shiftStartTime={shift.startTime.format('HH:mm')}
+            shiftEndTime={shift.endTime.format('HH:mm')}
+            isNextDay={!shift.endTime.isSame(shift.startTime, 'day')}
+            showTimes={false}
+            shiftColor={shiftColor}
+            className="w-full"
+            onClick={onAssignWorker}
+            dataTestId={`template-chip-${worker.id}`}
+          />
+        ))}
+      </div>
 
       {!selectionEnabled && isHovered && (
         <div className="absolute inset-x-0 bottom-0 z-10 flex h-5 items-stretch">
