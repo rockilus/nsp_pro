@@ -83,10 +83,12 @@ export function TemplateScopeDialog({
     return ids;
   }, [weeksData]);
 
-  const [localScope, setLocalScope] = useState<Set<string>>(new Set(scopeShiftIds));
-  const [localIncludeAll, setLocalIncludeAll] = useState(includeAllWorkShifts);
-
   const allWorkShiftIds = useMemo(() => new Set(workShifts.map((s) => s.id)), [workShifts]);
+
+  const [localScope, setLocalScope] = useState<Set<string>>(
+    () => new Set(includeAllWorkShifts ? allWorkShiftIds : scopeShiftIds),
+  );
+  const [localIncludeAll, setLocalIncludeAll] = useState(includeAllWorkShifts);
 
   const isAllSelected = useMemo(
     () => workShifts.length > 0 && workShifts.every((s) => localScope.has(s.id)),
@@ -102,6 +104,7 @@ export function TemplateScopeDialog({
           return prev;
         }
         next.delete(shiftId);
+        setLocalIncludeAll(false);
       } else {
         next.add(shiftId);
       }
@@ -116,6 +119,7 @@ export function TemplateScopeDialog({
       next.delete(warningShiftId);
       return next;
     });
+    setLocalIncludeAll(false);
     setWarningShiftId(null);
   };
 
@@ -131,8 +135,10 @@ export function TemplateScopeDialog({
         return;
       }
       setLocalScope(new Set());
+      setLocalIncludeAll(false);
     } else {
       setLocalScope(new Set(workShifts.map((s) => s.id)));
+      setLocalIncludeAll(true);
     }
   };
 
@@ -157,7 +163,13 @@ export function TemplateScopeDialog({
           >
             <Checkbox
               checked={localIncludeAll}
-              onCheckedChange={(v) => setLocalIncludeAll(v === true)}
+              onCheckedChange={(v) => {
+                const checked = v === true;
+                setLocalIncludeAll(checked);
+                if (checked) {
+                  setLocalScope(new Set(workShifts.map((s) => s.id)));
+                }
+              }}
               className="mt-0.5 shrink-0"
             />
             <div className="flex flex-col gap-0.5">
@@ -168,72 +180,66 @@ export function TemplateScopeDialog({
             </div>
           </label>
 
-          {localIncludeAll ? (
-            <p className="py-2 text-center text-xs text-muted-foreground">
-              {t('scope_all_work_shifts_included')}
-            </p>
-          ) : (
-            <>
-              <div className="flex items-center justify-between py-1">
-                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={handleToggleAll}>
-                  {isAllSelected ? t('scope_deselect_all') : t('scope_select_all')}
-                </Button>
-                <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-                  {localScope.size}/{workShifts.length}
-                </Badge>
-              </div>
+          <>
+            <div className="flex items-center justify-between py-1">
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={handleToggleAll}>
+                {isAllSelected ? t('scope_deselect_all') : t('scope_select_all')}
+              </Button>
+              <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+                {localScope.size}/{workShifts.length}
+              </Badge>
+            </div>
 
-              {workShifts.length === 0 ? (
-                <p className="py-4 text-center text-sm text-muted-foreground">
-                  {t('scope_no_work_shifts')}
-                </p>
-              ) : (
-                <div className="max-h-[60vh] space-y-3 overflow-y-auto pr-1">
-                  {WORK_SHIFT_TYPES.map((shiftType) => {
-                    const groupShifts = groupedShifts[shiftType];
-                    if (groupShifts.length === 0) return null;
+            {workShifts.length === 0 ? (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                {t('scope_no_work_shifts')}
+              </p>
+            ) : (
+              <div className="max-h-[60vh] space-y-3 overflow-y-auto pr-1">
+                {WORK_SHIFT_TYPES.map((shiftType) => {
+                  const groupShifts = groupedShifts[shiftType];
+                  if (groupShifts.length === 0) return null;
 
-                    return (
-                      <div key={shiftType}>
-                        <Label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
-                          {t(SHIFT_TYPE_LABEL_KEY[shiftType])}
-                        </Label>
-                        <div className="space-y-0.5">
-                          {groupShifts.map((shift) => {
-                            const isChecked = localScope.has(shift.id);
-                            return (
-                              <label
-                                key={shift.id}
-                                className={cn(
-                                  'flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-accent hover:text-accent-foreground',
-                                  !isChecked && 'text-muted-foreground',
-                                )}
-                              >
-                                <Checkbox
-                                  checked={isChecked}
-                                  onCheckedChange={() => handleToggleShift(shift.id)}
-                                  className="shrink-0"
-                                />
-                                <span className="flex-1 truncate text-sm">{shift.name}</span>
-                                {populatedShiftIds.has(shift.id) && (
-                                  <Badge
-                                    variant="outline"
-                                    className="h-4 shrink-0 px-1 text-[10px]"
-                                  >
-                                    {t('demands')}
-                                  </Badge>
-                                )}
-                              </label>
-                            );
-                          })}
-                        </div>
+                  return (
+                    <div key={shiftType}>
+                      <Label className="mb-1.5 block text-xs font-semibold text-muted-foreground">
+                        {t(SHIFT_TYPE_LABEL_KEY[shiftType])}
+                      </Label>
+                      <div className="space-y-0.5">
+                        {groupShifts.map((shift) => {
+                          const isChecked = localScope.has(shift.id);
+                          return (
+                            <label
+                              key={shift.id}
+                              className={cn(
+                                'flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-accent hover:text-accent-foreground',
+                                !isChecked && 'text-muted-foreground',
+                              )}
+                            >
+                              <Checkbox
+                                checked={isChecked}
+                                onCheckedChange={() => handleToggleShift(shift.id)}
+                                className="shrink-0"
+                              />
+                              <span className="flex-1 truncate text-sm">{shift.name}</span>
+                              {populatedShiftIds.has(shift.id) && (
+                                <Badge
+                                  variant="outline"
+                                  className="h-4 shrink-0 px-1 text-[10px]"
+                                >
+                                  {t('demands')}
+                                </Badge>
+                              )}
+                            </label>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
-              )}
-            </>
-          )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
 
           <DialogFooter>
             <Button variant="outline" onClick={onClose}>
