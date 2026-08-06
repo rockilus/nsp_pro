@@ -89,5 +89,18 @@
   "assigned_workers": "Assigned workers",
   "remove": "Remove",
   "no_workers_assigned": "No workers assigned",
-  "add": "Add"
+  "add": "Add",
+  "scope": "Scope",
+  "scope_dialog_title": "Template Scope",
+  "scope_dialog_description": "Select which work shifts are affected by this template. Shifts not in scope will be hidden from the template and unaffected when applied.",
+  "scope_select_all": "Select all",
+  "scope_deselect_all": "Deselect all",
+  "scope_normal_shifts": "Normal",
+  "scope_duty_shifts": "Duty",
+  "scope_on_call_shifts": "On-call",
+  "scope_save": "Save scope",
+  "scope_no_work_shifts": "No work shifts available",
+  "scope_deselect_warning_title": "Remove shift from scope?",
+  "scope_deselect_warning": "This shift has demand entries or worker assignments in the template. Removing it from scope will permanently delete this data.",
+  "scope_remove_shift": "Remove"
 }

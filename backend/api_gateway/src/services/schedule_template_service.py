@@ -243,6 +243,7 @@ class ScheduleTemplateService:
             team_id=team_id,
             start_date=start_date,
             end_date=end_date,
+            shift_ids=template.scope_shift_ids if template.scope_shift_ids else None,
         )
 
         demands_created = 0

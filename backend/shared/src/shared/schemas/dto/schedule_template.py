@@ -27,6 +27,7 @@ class ScheduleTemplateDTO(BaseModel):
     teamId: str
     templateType: str = Field(..., pattern="^(standard|even_odd)$")
     weeksData: List[ScheduleTemplateWeekDataDTO]
+    scopeShiftIds: List[str] = Field(default_factory=list)
     description: Optional[str] = Field(None, max_length=500)
     createdBy: str
     createdAt: float
@@ -36,12 +37,14 @@ class ScheduleTemplateDTO(BaseModel):
 class ScheduleTemplateCreateDTO(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
+    scopeShiftIds: Optional[List[str]] = Field(None)
 
 
 class ScheduleTemplateUpdateDTO(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
     templateType: Optional[str] = Field(None, pattern="^(standard|even_odd)$")
+    scopeShiftIds: Optional[List[str]] = Field(None)
     weeksData: Optional[List[ScheduleTemplateWeekDataDTO]] = Field(
         None, min_length=1, max_length=8
     )

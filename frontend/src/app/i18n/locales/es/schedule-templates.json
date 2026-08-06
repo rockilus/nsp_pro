@@ -89,5 +89,18 @@
   "assigned_workers": "Miembros asignados",
   "remove": "Quitar",
   "no_workers_assigned": "Ningún miembro asignado",
-  "add": "Añadir"
+  "add": "Añadir",
+  "scope": "Alcance",
+  "scope_dialog_title": "Alcance de la plantilla",
+  "scope_dialog_description": "Seleccione qué turnos de trabajo son afectados por esta plantilla. Los turnos fuera del alcance se ocultarán y no se verán afectados al aplicar.",
+  "scope_select_all": "Seleccionar todo",
+  "scope_deselect_all": "Deseleccionar todo",
+  "scope_normal_shifts": "Normal",
+  "scope_duty_shifts": "Guardia",
+  "scope_on_call_shifts": "Disponibilidad",
+  "scope_save": "Guardar alcance",
+  "scope_no_work_shifts": "No hay turnos de trabajo disponibles",
+  "scope_deselect_warning_title": "¿Quitar turno del alcance?",
+  "scope_deselect_warning": "Este turno tiene coberturas o asignaciones en la plantilla. Quitarlo eliminará permanentemente estos datos.",
+  "scope_remove_shift": "Quitar"
 }

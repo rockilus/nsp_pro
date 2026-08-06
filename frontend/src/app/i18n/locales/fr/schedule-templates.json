@@ -89,5 +89,18 @@
   "assigned_workers": "Membres affectés",
   "remove": "Retirer",
   "no_workers_assigned": "Aucun membre affecté",
-  "add": "Ajouter"
+  "add": "Ajouter",
+  "scope": "Périmètre",
+  "scope_dialog_title": "Périmètre du modèle",
+  "scope_dialog_description": "Sélectionnez les quarts de travail affectés par ce modèle. Les quarts hors périmètre seront masqués et non affectés lors de l'application.",
+  "scope_select_all": "Tout sélectionner",
+  "scope_deselect_all": "Tout désélectionner",
+  "scope_normal_shifts": "Normal",
+  "scope_duty_shifts": "Garde",
+  "scope_on_call_shifts": "Astreinte",
+  "scope_save": "Enregistrer le périmètre",
+  "scope_no_work_shifts": "Aucun quart de travail disponible",
+  "scope_deselect_warning_title": "Retirer le quart du périmètre ?",
+  "scope_deselect_warning": "Ce quart a des couvertures ou des affectations dans le modèle. Le retirer supprimera définitivement ces données.",
+  "scope_remove_shift": "Retirer"
 }

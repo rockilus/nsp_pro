@@ -57,6 +57,7 @@ async def create_template(
             team_id=team_id,
             template_type=TemplateType.STANDARD,
             weeks_data=[empty_week],
+            scope_shift_ids=template_dto.scopeShiftIds or [],
             created_by=user_context.effective_user_id,
         )
 

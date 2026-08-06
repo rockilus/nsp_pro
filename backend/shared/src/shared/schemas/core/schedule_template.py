@@ -60,6 +60,7 @@ class ScheduleTemplate:
     template_type: TemplateType
     weeks_data: List[ScheduleTemplateWeekData]
     description: Optional[str] = None
+    scope_shift_ids: List[str] = field(default_factory=list)
     created_by: str = ""
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -132,6 +133,17 @@ class ScheduleTemplate:
                 )
             )
 
+        if self.scope_shift_ids:
+            normalized_weeks = [
+                ScheduleTemplateWeekData(
+                    week_number=w.week_number,
+                    entries=[
+                        e for e in w.entries if e.shift_id in self.scope_shift_ids
+                    ],
+                )
+                for w in normalized_weeks
+            ]
+
         return normalized_weeks
 
     @property
@@ -144,6 +156,7 @@ class ScheduleTemplate:
         out["created_at"] = self.created_at.timestamp()
         out["updated_at"] = self.updated_at.timestamp()
         out["weeks_data"] = [week.to_dict() for week in self.weeks_data]
+        out["scope_shift_ids"] = self.scope_shift_ids
         return out
 
     @classmethod
@@ -154,6 +167,7 @@ class ScheduleTemplate:
         data["weeks_data"] = [
             ScheduleTemplateWeekData.from_dict(w) for w in data["weeks_data"]
         ]
+        data["scope_shift_ids"] = data.get("scope_shift_ids", [])
         return cls(**data)
 
     def update_timestamp(self):
@@ -178,6 +192,7 @@ class ScheduleTemplate:
         team_id: str,
         template_type: TemplateType,
         weeks_data: List[ScheduleTemplateWeekData],
+        scope_shift_ids: Optional[List[str]] = None,
     ) -> "ScheduleTemplate":
         now = datetime.now(timezone.utc)
         return cls(
@@ -186,6 +201,7 @@ class ScheduleTemplate:
             team_id=team_id,
             template_type=template_type,
             weeks_data=weeks_data,
+            scope_shift_ids=scope_shift_ids or [],
             created_by=created_by,
             created_at=now,
             updated_at=now,
@@ -203,6 +219,9 @@ class ScheduleTemplate:
 
         if "templateType" in data_dict:
             self.template_type = TemplateType(data_dict["templateType"])
+
+        if "scopeShiftIds" in data_dict:
+            self.scope_shift_ids = data_dict["scopeShiftIds"]
 
         if "weeksData" in data_dict:
             weeks_data: List[ScheduleTemplateWeekData] = []

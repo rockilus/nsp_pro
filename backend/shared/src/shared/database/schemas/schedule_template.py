@@ -17,6 +17,7 @@ class ScheduleTemplateSchema(DocumentBaseSchema):
     team: str
     template_type: str
     weeks_data: List[Dict[str, Any]]
+    scope_shift_ids: list[str] = []
     description: Optional[str] = None
     created_by: str
     created_at: float
@@ -102,6 +103,7 @@ class ScheduleTemplateSchema(DocumentBaseSchema):
             team_id=self.team,
             template_type=TemplateType(self.template_type),
             weeks_data=weeks_data,
+            scope_shift_ids=self.scope_shift_ids,
             description=self.description,
             created_by=self.created_by,
             created_at=datetime.fromtimestamp(self.created_at, tz=timezone.utc),
@@ -129,6 +131,7 @@ class ScheduleTemplateSchema(DocumentBaseSchema):
             team=template.team_id,
             template_type=template.template_type.value,
             weeks_data=weeks_data,
+            scope_shift_ids=template.scope_shift_ids,
             description=template.description,
             created_by=template.created_by,
             created_at=template.created_at.timestamp(),

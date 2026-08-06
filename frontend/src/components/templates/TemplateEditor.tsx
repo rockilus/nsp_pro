@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { TemplateShiftTable } from './TemplateShiftTable';
+import { TemplateScopeDialog } from './TemplateScopeDialog';
 import {
   ScheduleTemplateDTO,
   ScheduleTemplateWeekDataDTO,
@@ -33,6 +34,7 @@ import {
   Pencil,
   Download,
   CheckSquare,
+  Filter,
 } from 'lucide-react';
 
 const MAX_VISIBLE_WEEKS = 4;
@@ -48,7 +50,7 @@ interface TemplateEditorProps {
   onApply: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onTemplateChange: (weeksData: ScheduleTemplateWeekDataDTO[]) => void;
+  onTemplateChange: (weeksData: ScheduleTemplateWeekDataDTO[], scopeShiftIds?: string[]) => void;
 }
 
 const templateTypeLabelFn = (type: string, t: (key: string) => string) => {
@@ -76,6 +78,7 @@ export function TemplateEditor({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [selectionEnabled, setSelectionEnabled] = useState(false);
+  const [scopeOpen, setScopeOpen] = useState(false);
 
   useEffect(() => {
     if (template) {
@@ -141,6 +144,17 @@ export function TemplateEditor({
 
   const handleWeeksDataChange = (updated: ScheduleTemplateWeekDataDTO[]) => {
     onTemplateChange(updated);
+  };
+
+  const handleScopeSave = (newScopeShiftIds: string[]) => {
+    const removedIds = (template.scopeShiftIds ?? []).filter(
+      (id) => !newScopeShiftIds.includes(id),
+    );
+    const cleanedWeeksData = weeksData.map((week) => ({
+      ...week,
+      entries: week.entries.filter((e) => !removedIds.includes(e.shiftId)),
+    }));
+    onTemplateChange(cleanedWeeksData, newScopeShiftIds);
   };
 
   const weekLabel =
@@ -260,6 +274,15 @@ export function TemplateEditor({
         <Button
           variant="ghost"
           size="icon-xs"
+          onClick={() => setScopeOpen(true)}
+          aria-label={t('scope')}
+        >
+          <Filter className="h-3.5 w-3.5" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon-xs"
           onClick={() => setSelectionEnabled((v) => !v)}
           aria-label={selectionEnabled ? t('exit_selection') : t('select')}
         >
@@ -277,6 +300,7 @@ export function TemplateEditor({
           templateType={templateType}
           weeksData={weeksData}
           weekOffset={weekOffset}
+          scopeShiftIds={template.scopeShiftIds ?? []}
           onWeeksDataChange={handleWeeksDataChange}
           selectionEnabled={selectionEnabled}
           onToggleSelection={() => setSelectionEnabled((v) => !v)}
@@ -324,6 +348,16 @@ export function TemplateEditor({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <TemplateScopeDialog
+        lng={lng}
+        open={scopeOpen}
+        onClose={() => setScopeOpen(false)}
+        shifts={shifts}
+        scopeShiftIds={template.scopeShiftIds ?? []}
+        weeksData={weeksData}
+        onSave={handleScopeSave}
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import {
   ScheduleTemplateWeekDataDTO,
   ApplyScheduleTemplateToDateRangeDTO,
   ScheduleTemplateApplicationResult,
+  ScheduleTemplateUpdateDTO,
   TemplateType,
 } from '../../types/schedule-template';
 import { TemplateListSidebar } from './TemplateListSidebar';
@@ -149,10 +150,14 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
   };
 
   const handleTemplateChange = useCallback(
-    async (weeksData: ScheduleTemplateWeekDataDTO[]) => {
+    async (weeksData: ScheduleTemplateWeekDataDTO[], scopeShiftIds?: string[]) => {
       if (!selectedTemplate) return;
       try {
-        const updated = await updateTemplate(selectedTemplate.id, teamId, { weeksData });
+        const dto: ScheduleTemplateUpdateDTO = { weeksData };
+        if (scopeShiftIds !== undefined) {
+          dto.scopeShiftIds = scopeShiftIds;
+        }
+        const updated = await updateTemplate(selectedTemplate.id, teamId, dto);
         setTemplates((prev) => prev.map((tp) => (tp.id === updated.id ? updated : tp)));
         setSelectedTemplate(updated);
       } catch {

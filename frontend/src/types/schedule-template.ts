@@ -21,6 +21,7 @@ export interface ScheduleTemplateDTO {
   teamId: string;
   templateType: TemplateType;
   weeksData: ScheduleTemplateWeekDataDTO[];
+  scopeShiftIds: string[];
   description?: string;
   createdBy: string;
   createdAt: number;
@@ -31,12 +32,14 @@ export interface ScheduleTemplateCreateDTO {
   name: string;
   description?: string;
   templateType?: TemplateType;
+  scopeShiftIds?: string[];
 }
 
 export interface ScheduleTemplateUpdateDTO {
   name?: string;
   description?: string;
   templateType?: TemplateType;
+  scopeShiftIds?: string[];
   weeksData?: ScheduleTemplateWeekDataDTO[];
 }
 
