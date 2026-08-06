@@ -57,7 +57,7 @@ export function TemplateCell({
       className={cn(
         'relative flex min-h-[2.5rem] items-center justify-center border-r border-b border-border/50 p-1',
         isWeekend && 'bg-muted',
-        !selectionEnabled && 'cursor-pointer hover:bg-accent/50',
+        !selectionEnabled && 'hover:bg-accent/50',
         isSelected && 'bg-primary/10 outline outline-2 outline-primary',
       )}
       style={
@@ -123,7 +123,7 @@ export function TemplateCell({
           {demandCount === 0 && (
             <button
               type="button"
-              className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25"
+              className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25 cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
                 onAddDemand?.();
@@ -136,7 +136,7 @@ export function TemplateCell({
           )}
           <button
             type="button"
-            className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25"
+            className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               onAssignWorker?.();
