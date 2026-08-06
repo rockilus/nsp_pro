@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Loader2, Plus, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DemandCellContentProps {
   value: number;
   isSaving: boolean;
-  isHovered: boolean;
   isMultitaskingMode?: boolean;
   onIncrement: () => void;
   onDecrement: () => void;
@@ -14,11 +13,12 @@ interface DemandCellContentProps {
 export function DemandCellContent({
   value,
   isSaving,
-  isHovered,
   isMultitaskingMode = false,
   onIncrement,
   onDecrement,
 }: DemandCellContentProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <div
       className={cn(
@@ -29,6 +29,8 @@ export function DemandCellContent({
         backgroundColor: isSaving ? '#ffb74d' : 'var(--shift-bg-color)',
         color: 'var(--shift-text-color)',
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {isSaving && (
         <Loader2

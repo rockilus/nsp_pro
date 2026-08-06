@@ -181,7 +181,6 @@ function ShiftDemandCell({
         <DemandCellContent
           value={value}
           isSaving={isSaving}
-          isHovered={isHovered}
           isMultitaskingMode={isMultitaskingMode}
           onIncrement={handleIncrement}
           onDecrement={handleDecrement}

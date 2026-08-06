@@ -94,7 +94,6 @@ export function TemplateCell({
           <DemandCellContent
             value={demandCount}
             isSaving={false}
-            isHovered={isHovered}
             onIncrement={onIncrement ?? (() => {})}
             onDecrement={onDecrement ?? (() => {})}
           />
