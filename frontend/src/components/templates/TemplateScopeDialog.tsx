@@ -237,7 +237,13 @@ export function TemplateScopeDialog({
                     <div key={shiftType}>
                       <label className="mb-1.5 flex cursor-pointer items-center gap-2">
                         <Checkbox
-                          checked={groupShifts.every((s) => localScope.has(s.id))}
+                          checked={
+                            groupShifts.every((s) => localScope.has(s.id))
+                              ? true
+                              : groupShifts.some((s) => localScope.has(s.id))
+                                ? 'indeterminate'
+                                : false
+                          }
                           onCheckedChange={() => handleToggleShiftType(shiftType)}
                           className="shrink-0"
                         />
@@ -277,7 +283,7 @@ export function TemplateScopeDialog({
                     </div>
                   );
                 })}
-              </div>
+                </div>
             )}
           </>
 
@@ -285,7 +291,7 @@ export function TemplateScopeDialog({
             <Button variant="outline" onClick={onClose}>
               {t('cancel')}
             </Button>
-            <Button onClick={handleSave}>{t('scope_save')}</Button>
+            <Button onClick={handleSave}>{t('save')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
