@@ -20,7 +20,7 @@ import {
   TemplateType,
   TEMPLATE_TYPE_CONSTRAINTS,
 } from '../../types/schedule-template';
-import { ShiftT } from '../../types/shift';
+import { ShiftT, ShiftType } from '../../types/shift';
 import { TeamT } from '../../types/team';
 import { WorkerT } from '../../types/worker';
 import {
@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 
 const MAX_VISIBLE_WEEKS = 4;
+const WORK_SHIFT_TYPES: ShiftType[] = [ShiftType.NORMAL, ShiftType.DUTY, ShiftType.ON_CALL];
 
 interface TemplateEditorProps {
   lng: string;
@@ -83,6 +84,14 @@ export function TemplateEditor({
   const [importOpen, setImportOpen] = useState(false);
   const [selectionEnabled, setSelectionEnabled] = useState(false);
   const [scopeOpen, setScopeOpen] = useState(false);
+
+  const workShifts = React.useMemo(
+    () =>
+      shifts
+        .filter((s) => !s.deleted && WORK_SHIFT_TYPES.includes(s.shiftType))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [shifts],
+  );
 
   useEffect(() => {
     if (template) {
@@ -298,7 +307,7 @@ export function TemplateEditor({
         <TemplateShiftTable
           lng={lng}
           template={template}
-          shifts={shifts}
+          shifts={workShifts}
           team={team}
           workers={workers}
           templateType={templateType}
@@ -358,7 +367,7 @@ export function TemplateEditor({
         lng={lng}
         open={scopeOpen}
         onClose={() => setScopeOpen(false)}
-        shifts={shifts}
+        shifts={workShifts}
         scopeShiftIds={template.scopeShiftIds ?? []}
         includeAllWorkShifts={template.includeAllWorkShifts ?? true}
         weeksData={weeksData}

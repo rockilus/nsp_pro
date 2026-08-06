@@ -269,10 +269,7 @@ export function TemplateScopeDialog({
                               />
                               <span className="flex-1 truncate text-sm">{shift.name}</span>
                               {populatedShiftIds.has(shift.id) && (
-                                <Badge
-                                  variant="outline"
-                                  className="h-4 shrink-0 px-1 text-[10px]"
-                                >
+                                <Badge variant="outline" className="h-4 shrink-0 px-1 text-[10px]">
                                   {t('demands')}
                                 </Badge>
                               )}
@@ -283,7 +280,7 @@ export function TemplateScopeDialog({
                     </div>
                   );
                 })}
-                </div>
+              </div>
             )}
           </>
 

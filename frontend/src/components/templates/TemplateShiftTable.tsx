@@ -103,9 +103,8 @@ export function TemplateShiftTable({
     return shifts
       .filter((s) => {
         if (s.deleted) return false;
-        if (!includeAllWorkShifts && scopeShiftIds.length > 0 && !scopeShiftIds.includes(s.id))
-          return false;
-        return true;
+        if (includeAllWorkShifts) return true;
+        return scopeShiftIds.length === 0 || scopeShiftIds.includes(s.id);
       })
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((s) => s.id);
