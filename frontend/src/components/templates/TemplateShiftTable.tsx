@@ -78,6 +78,7 @@ export function TemplateShiftTable({
     shiftId: string;
     weekNumber: number;
     dayOfWeek: number;
+    preSelectedWorkerId?: string;
   }>({ open: false, shiftId: '', weekNumber: 0, dayOfWeek: 0 });
 
   const columns = useMemo(() => {
@@ -330,8 +331,14 @@ export function TemplateShiftTable({
   );
 
   const handleOpenAssignDialog = useCallback(
-    (shiftId: string, weekNumber: number, dayOfWeek: number) => {
-      setAssignDialogState({ open: true, shiftId, weekNumber, dayOfWeek });
+    (shiftId: string, weekNumber: number, dayOfWeek: number, workerId?: string) => {
+      setAssignDialogState({
+        open: true,
+        shiftId,
+        weekNumber,
+        dayOfWeek,
+        preSelectedWorkerId: workerId,
+      });
     },
     [],
   );
@@ -477,6 +484,11 @@ export function TemplateShiftTable({
     return t(dayKeys[assignDialogState.dayOfWeek] ?? '');
   }, [t, assignDialogState.dayOfWeek]);
 
+  const assignDialogWeekLabel = useMemo(
+    () => getWeekLabel(assignDialogState.weekNumber, templateType, t),
+    [assignDialogState.weekNumber, templateType, t],
+  );
+
   return (
     <div className="flex h-full flex-col">
       {selectionEnabled && selectedCells.size > 0 && (
@@ -573,8 +585,8 @@ export function TemplateShiftTable({
                     onDecrement={() =>
                       handleDecrementDemand(shift.id, col.weekNumber, col.dayOfWeek)
                     }
-                    onAssignWorker={() =>
-                      handleOpenAssignDialog(shift.id, col.weekNumber, col.dayOfWeek)
+                    onAssignWorker={(workerId?: string) =>
+                      handleOpenAssignDialog(shift.id, col.weekNumber, col.dayOfWeek, workerId)
                     }
                     onRemoveWorker={(workerId: string) =>
                       handleRemoveWorker(shift.id, col.weekNumber, col.dayOfWeek, workerId)
@@ -591,6 +603,7 @@ export function TemplateShiftTable({
         lng={lng}
         workers={workers}
         assignedWorkerIds={assignDialogEntry?.workerIds ?? []}
+        preSelectedWorkerId={assignDialogState.preSelectedWorkerId}
         open={assignDialogState.open}
         onClose={handleCloseAssignDialog}
         onSave={(workerId) => {
@@ -610,7 +623,9 @@ export function TemplateShiftTable({
           );
         }}
         shiftName={assignDialogShift?.name ?? ''}
+        shiftAcronym={assignDialogShift?.acronym ?? ''}
         dayLabel={assignDialogDayLabel}
+        weekLabel={assignDialogWeekLabel}
       />
     </div>
   );

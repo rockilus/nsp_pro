@@ -20,7 +20,7 @@ interface TemplateCellProps {
   onAddDemand?: () => void;
   onIncrement?: () => void;
   onDecrement?: () => void;
-  onAssignWorker?: () => void;
+  onAssignWorker?: (workerId?: string) => void;
   onRemoveWorker?: (workerId: string) => void;
 }
 
@@ -112,7 +112,7 @@ export function TemplateCell({
             showTimes={false}
             shiftColor={shiftColor}
             className="w-full"
-            onClick={onAssignWorker}
+            onClick={() => onAssignWorker?.(worker.id)}
             dataTestId={`template-chip-${worker.id}`}
           />
         ))}
