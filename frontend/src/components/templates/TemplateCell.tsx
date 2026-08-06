@@ -120,7 +120,7 @@ export function TemplateCell({
       </div>
 
       {!selectionEnabled && isHovered && (
-        <div className="absolute inset-x-0 bottom-0 z-10 flex h-5 items-stretch">
+        <div className="absolute inset-x-0 -bottom-2.5 z-20 flex h-5 items-stretch">
           {demandCount === 0 && (
             <button
               type="button"

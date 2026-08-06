@@ -201,7 +201,16 @@ export function TemplateShiftTable({
         const existing = week.entries.find(
           (e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek,
         );
-        if (existing) return week;
+        if (existing) {
+          if (existing.demandCount > 0) return week;
+          const otherEntries = week.entries.filter(
+            (e) => !(e.shiftId === shiftId && e.dayOfWeek === dayOfWeek),
+          );
+          return {
+            ...week,
+            entries: [...otherEntries, { ...existing, demandCount: 1 }],
+          };
+        }
         return {
           ...week,
           entries: [...week.entries, { shiftId, dayOfWeek, demandCount: 1, workerIds: [] }],
