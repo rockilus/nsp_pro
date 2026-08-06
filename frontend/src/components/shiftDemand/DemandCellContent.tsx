@@ -7,7 +7,6 @@ interface DemandCellContentProps {
   isSaving: boolean;
   isHovered: boolean;
   isMultitaskingMode?: boolean;
-  onAddDemand: () => void;
   onIncrement: () => void;
   onDecrement: () => void;
 }
@@ -17,33 +16,9 @@ export function DemandCellContent({
   isSaving,
   isHovered,
   isMultitaskingMode = false,
-  onAddDemand,
   onIncrement,
   onDecrement,
 }: DemandCellContentProps) {
-  if (value === 0) {
-    return (
-      <div
-        className={cn(
-          'flex h-full w-full items-center justify-center rounded border border-dashed border-transparent transition-all duration-200',
-          !isMultitaskingMode &&
-            isHovered &&
-            'border-[var(--shift-sample-color)] bg-[var(--shift-bg-color)]',
-        )}
-        onClick={!isMultitaskingMode ? onAddDemand : undefined}
-      >
-        {isSaving ? (
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        ) : (
-          isHovered &&
-          !isMultitaskingMode && (
-            <Plus className="h-4 w-4 opacity-70" style={{ color: 'var(--shift-sample-color)' }} />
-          )
-        )}
-      </div>
-    );
-  }
-
   return (
     <div
       className={cn(

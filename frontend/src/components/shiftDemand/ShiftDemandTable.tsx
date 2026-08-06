@@ -10,6 +10,7 @@ import { MultitaskingSelectionState } from '../../types/multitasking';
 import { ShiftColorMappings, calendarGridTemplate } from '../../constants/constants';
 import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
 import { DemandCellContent } from './DemandCellContent';
+import { EmptyDemandCell } from './EmptyDemandCell';
 import CalendarTableHeader from '../calendar/CalendarTableHeader';
 import CalendarRowHeaderCell from '../calendar/CalendarRowHeaderCell';
 
@@ -169,13 +170,19 @@ function ShiftDemandCell({
           />
           <span className="ml-1 text-xs">{value}</span>
         </div>
+      ) : value === 0 ? (
+        <EmptyDemandCell
+          isSaving={isSaving}
+          isHovered={isHovered}
+          isMultitaskingMode={isMultitaskingMode}
+          onAddDemand={handleAddDemand}
+        />
       ) : (
         <DemandCellContent
           value={value}
           isSaving={isSaving}
           isHovered={isHovered}
           isMultitaskingMode={isMultitaskingMode}
-          onAddDemand={handleAddDemand}
           onIncrement={handleIncrement}
           onDecrement={handleDecrement}
         />

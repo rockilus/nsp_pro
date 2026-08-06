@@ -90,12 +90,11 @@ export function TemplateCell({
       )}
 
       <div className="flex w-full flex-col items-center gap-0.5">
-        {hasEntry && (
+        {hasEntry && demandCount > 0 && (
           <DemandCellContent
             value={demandCount}
             isSaving={false}
             isHovered={isHovered}
-            onAddDemand={onAddDemand ?? (() => {})}
             onIncrement={onIncrement ?? (() => {})}
             onDecrement={onDecrement ?? (() => {})}
           />
