@@ -102,5 +102,8 @@
   "scope_no_work_shifts": "No work shifts available",
   "scope_deselect_warning_title": "Remove shift from scope?",
   "scope_deselect_warning": "This shift has demand entries or worker assignments in the template. Removing it from scope will permanently delete this data.",
-  "scope_remove_shift": "Remove"
+  "scope_remove_shift": "Remove",
+  "scope_include_all_work_shifts": "Always include all work shifts",
+  "scope_include_all_work_shifts_description": "New shifts added to the team will be automatically included in this template's scope.",
+  "scope_all_work_shifts_included": "All work shifts are included"
 }

@@ -239,11 +239,15 @@ class ScheduleTemplateService:
             start_week_number=start_week_number,
         )
 
+        shift_ids_filter: Optional[List[str]] = None
+        if not template.include_all_work_shifts and template.scope_shift_ids:
+            shift_ids_filter = template.scope_shift_ids
+
         demands_deleted = self.db.shift_demand_new_db.delete_demands_by_date_range(
             team_id=team_id,
             start_date=start_date,
             end_date=end_date,
-            shift_ids=template.scope_shift_ids if template.scope_shift_ids else None,
+            shift_ids=shift_ids_filter,
         )
 
         demands_created = 0

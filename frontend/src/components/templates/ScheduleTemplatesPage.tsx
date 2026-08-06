@@ -150,12 +150,19 @@ export function ScheduleTemplatesPage({ lng, teamWithMembership }: ScheduleTempl
   };
 
   const handleTemplateChange = useCallback(
-    async (weeksData: ScheduleTemplateWeekDataDTO[], scopeShiftIds?: string[]) => {
+    async (
+      weeksData: ScheduleTemplateWeekDataDTO[],
+      scopeShiftIds?: string[],
+      includeAllWorkShifts?: boolean,
+    ) => {
       if (!selectedTemplate) return;
       try {
         const dto: ScheduleTemplateUpdateDTO = { weeksData };
         if (scopeShiftIds !== undefined) {
           dto.scopeShiftIds = scopeShiftIds;
+        }
+        if (includeAllWorkShifts !== undefined) {
+          dto.includeAllWorkShifts = includeAllWorkShifts;
         }
         const updated = await updateTemplate(selectedTemplate.id, teamId, dto);
         setTemplates((prev) => prev.map((tp) => (tp.id === updated.id ? updated : tp)));

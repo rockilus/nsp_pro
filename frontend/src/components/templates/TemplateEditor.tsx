@@ -50,7 +50,11 @@ interface TemplateEditorProps {
   onApply: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onTemplateChange: (weeksData: ScheduleTemplateWeekDataDTO[], scopeShiftIds?: string[]) => void;
+  onTemplateChange: (
+    weeksData: ScheduleTemplateWeekDataDTO[],
+    scopeShiftIds?: string[],
+    includeAllWorkShifts?: boolean,
+  ) => void;
 }
 
 const templateTypeLabelFn = (type: string, t: (key: string) => string) => {
@@ -146,15 +150,15 @@ export function TemplateEditor({
     onTemplateChange(updated);
   };
 
-  const handleScopeSave = (newScopeShiftIds: string[]) => {
+  const handleScopeSave = (includeAllWorkShifts: boolean, newScopeShiftIds: string[]) => {
     const removedIds = (template.scopeShiftIds ?? []).filter(
-      (id) => !newScopeShiftIds.includes(id),
+      (id) => !includeAllWorkShifts && !newScopeShiftIds.includes(id),
     );
     const cleanedWeeksData = weeksData.map((week) => ({
       ...week,
       entries: week.entries.filter((e) => !removedIds.includes(e.shiftId)),
     }));
-    onTemplateChange(cleanedWeeksData, newScopeShiftIds);
+    onTemplateChange(cleanedWeeksData, newScopeShiftIds, includeAllWorkShifts);
   };
 
   const weekLabel =
@@ -301,6 +305,7 @@ export function TemplateEditor({
           weeksData={weeksData}
           weekOffset={weekOffset}
           scopeShiftIds={template.scopeShiftIds ?? []}
+          includeAllWorkShifts={template.includeAllWorkShifts ?? true}
           onWeeksDataChange={handleWeeksDataChange}
           selectionEnabled={selectionEnabled}
           onToggleSelection={() => setSelectionEnabled((v) => !v)}
@@ -355,6 +360,7 @@ export function TemplateEditor({
         onClose={() => setScopeOpen(false)}
         shifts={shifts}
         scopeShiftIds={template.scopeShiftIds ?? []}
+        includeAllWorkShifts={template.includeAllWorkShifts ?? true}
         weeksData={weeksData}
         onSave={handleScopeSave}
       />

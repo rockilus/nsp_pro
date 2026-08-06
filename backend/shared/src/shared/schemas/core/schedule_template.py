@@ -61,6 +61,7 @@ class ScheduleTemplate:
     weeks_data: List[ScheduleTemplateWeekData]
     description: Optional[str] = None
     scope_shift_ids: List[str] = field(default_factory=list)
+    include_all_work_shifts: bool = True
     created_by: str = ""
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -133,7 +134,7 @@ class ScheduleTemplate:
                 )
             )
 
-        if self.scope_shift_ids:
+        if self.scope_shift_ids and not self.include_all_work_shifts:
             normalized_weeks = [
                 ScheduleTemplateWeekData(
                     week_number=w.week_number,
@@ -157,6 +158,7 @@ class ScheduleTemplate:
         out["updated_at"] = self.updated_at.timestamp()
         out["weeks_data"] = [week.to_dict() for week in self.weeks_data]
         out["scope_shift_ids"] = self.scope_shift_ids
+        out["include_all_work_shifts"] = self.include_all_work_shifts
         return out
 
     @classmethod
@@ -168,6 +170,7 @@ class ScheduleTemplate:
             ScheduleTemplateWeekData.from_dict(w) for w in data["weeks_data"]
         ]
         data["scope_shift_ids"] = data.get("scope_shift_ids", [])
+        data["include_all_work_shifts"] = data.get("include_all_work_shifts", True)
         return cls(**data)
 
     def update_timestamp(self):
@@ -193,6 +196,7 @@ class ScheduleTemplate:
         template_type: TemplateType,
         weeks_data: List[ScheduleTemplateWeekData],
         scope_shift_ids: Optional[List[str]] = None,
+        include_all_work_shifts: Optional[bool] = None,
     ) -> "ScheduleTemplate":
         now = datetime.now(timezone.utc)
         return cls(
@@ -202,6 +206,9 @@ class ScheduleTemplate:
             template_type=template_type,
             weeks_data=weeks_data,
             scope_shift_ids=scope_shift_ids or [],
+            include_all_work_shifts=include_all_work_shifts
+            if include_all_work_shifts is not None
+            else True,
             created_by=created_by,
             created_at=now,
             updated_at=now,
@@ -222,6 +229,9 @@ class ScheduleTemplate:
 
         if "scopeShiftIds" in data_dict:
             self.scope_shift_ids = data_dict["scopeShiftIds"]
+
+        if "includeAllWorkShifts" in data_dict:
+            self.include_all_work_shifts = data_dict["includeAllWorkShifts"]
 
         if "weeksData" in data_dict:
             weeks_data: List[ScheduleTemplateWeekData] = []

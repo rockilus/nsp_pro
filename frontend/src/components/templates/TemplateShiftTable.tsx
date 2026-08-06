@@ -49,6 +49,7 @@ interface TemplateShiftTableProps {
   weeksData: ScheduleTemplateWeekDataDTO[];
   weekOffset: number;
   scopeShiftIds: string[];
+  includeAllWorkShifts: boolean;
   selectionEnabled: boolean;
   onToggleSelection?: () => void;
 }
@@ -64,6 +65,7 @@ export function TemplateShiftTable({
   weeksData,
   weekOffset,
   scopeShiftIds,
+  includeAllWorkShifts,
   selectionEnabled,
 }: TemplateShiftTableProps) {
   const { t } = useTranslation(lng, 'schedule-templates');
@@ -101,12 +103,13 @@ export function TemplateShiftTable({
     return shifts
       .filter((s) => {
         if (s.deleted) return false;
-        if (scopeShiftIds.length > 0 && !scopeShiftIds.includes(s.id)) return false;
+        if (!includeAllWorkShifts && scopeShiftIds.length > 0 && !scopeShiftIds.includes(s.id))
+          return false;
         return true;
       })
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((s) => s.id);
-  }, [shifts, scopeShiftIds]);
+  }, [shifts, scopeShiftIds, includeAllWorkShifts]);
 
   const rows = useMemo(() => {
     return rowShiftIds

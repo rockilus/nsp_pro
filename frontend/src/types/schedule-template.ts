@@ -22,6 +22,7 @@ export interface ScheduleTemplateDTO {
   templateType: TemplateType;
   weeksData: ScheduleTemplateWeekDataDTO[];
   scopeShiftIds: string[];
+  includeAllWorkShifts: boolean;
   description?: string;
   createdBy: string;
   createdAt: number;
@@ -33,6 +34,7 @@ export interface ScheduleTemplateCreateDTO {
   description?: string;
   templateType?: TemplateType;
   scopeShiftIds?: string[];
+  includeAllWorkShifts?: boolean;
 }
 
 export interface ScheduleTemplateUpdateDTO {
@@ -40,6 +42,7 @@ export interface ScheduleTemplateUpdateDTO {
   description?: string;
   templateType?: TemplateType;
   scopeShiftIds?: string[];
+  includeAllWorkShifts?: boolean;
   weeksData?: ScheduleTemplateWeekDataDTO[];
 }
 

@@ -102,5 +102,8 @@
   "scope_no_work_shifts": "Aucun quart de travail disponible",
   "scope_deselect_warning_title": "Retirer le quart du périmètre ?",
   "scope_deselect_warning": "Ce quart a des couvertures ou des affectations dans le modèle. Le retirer supprimera définitivement ces données.",
-  "scope_remove_shift": "Retirer"
+  "scope_remove_shift": "Retirer",
+  "scope_include_all_work_shifts": "Toujours inclure tous les quarts de travail",
+  "scope_include_all_work_shifts_description": "Les nouveaux quarts ajoutés à l'équipe seront automatiquement inclus dans le périmètre de ce modèle.",
+  "scope_all_work_shifts_included": "Tous les quarts de travail sont inclus"
 }

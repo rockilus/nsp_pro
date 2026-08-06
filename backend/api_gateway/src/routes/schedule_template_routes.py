@@ -58,6 +58,9 @@ async def create_template(
             template_type=TemplateType.STANDARD,
             weeks_data=[empty_week],
             scope_shift_ids=template_dto.scopeShiftIds or [],
+            include_all_work_shifts=template_dto.includeAllWorkShifts
+            if template_dto.includeAllWorkShifts is not None
+            else True,
             created_by=user_context.effective_user_id,
         )
 

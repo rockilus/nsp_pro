@@ -102,5 +102,8 @@
   "scope_no_work_shifts": "No hay turnos de trabajo disponibles",
   "scope_deselect_warning_title": "¿Quitar turno del alcance?",
   "scope_deselect_warning": "Este turno tiene coberturas o asignaciones en la plantilla. Quitarlo eliminará permanentemente estos datos.",
-  "scope_remove_shift": "Quitar"
+  "scope_remove_shift": "Quitar",
+  "scope_include_all_work_shifts": "Incluir siempre todos los turnos de trabajo",
+  "scope_include_all_work_shifts_description": "Los nuevos turnos añadidos al equipo se incluirán automáticamente en el alcance de esta plantilla.",
+  "scope_all_work_shifts_included": "Todos los turnos de trabajo están incluidos"
 }
