@@ -23,7 +23,7 @@ interface AssignWorkerDialogProps {
   lng: string;
   workers: WorkerT[];
   assignedWorkerIds: string[];
-  preSelectedWorkerId?: string;
+  editWorkerId?: string;
   open: boolean;
   onClose: () => void;
   onSave: (workerId: string) => void;
@@ -38,7 +38,7 @@ export function AssignWorkerDialog({
   lng,
   workers,
   assignedWorkerIds,
-  preSelectedWorkerId,
+  editWorkerId,
   open,
   onClose,
   onSave,
@@ -59,11 +59,13 @@ export function AssignWorkerDialog({
     ? assignedWorkerIds.includes(selectedWorkerId)
     : false;
 
+  const isEditMode = editWorkerId !== undefined;
+
   useEffect(() => {
     if (open) {
-      setSelectedWorkerId(preSelectedWorkerId ?? '');
+      setSelectedWorkerId(editWorkerId ?? '');
     }
-  }, [open, preSelectedWorkerId]);
+  }, [open, editWorkerId]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -97,16 +99,17 @@ export function AssignWorkerDialog({
         </Select>
 
         <DialogFooter className="gap-2 sm:gap-2">
-          <Button
-            variant="destructive"
-            onClick={() => {
-              onDelete(selectedWorkerId);
-              setSelectedWorkerId('');
-            }}
-            disabled={!isSelectedAlreadyAssigned}
-          >
-            {t('delete')}
-          </Button>
+          {isEditMode && (
+            <Button
+              variant="destructive"
+              onClick={() => {
+                onDelete(editWorkerId);
+                setSelectedWorkerId('');
+              }}
+            >
+              {t('delete')}
+            </Button>
+          )}
           <Button
             onClick={() => {
               onSave(selectedWorkerId);

@@ -78,7 +78,7 @@ export function TemplateShiftTable({
     shiftId: string;
     weekNumber: number;
     dayOfWeek: number;
-    preSelectedWorkerId?: string;
+    editWorkerId?: string;
   }>({ open: false, shiftId: '', weekNumber: 0, dayOfWeek: 0 });
 
   const columns = useMemo(() => {
@@ -337,7 +337,7 @@ export function TemplateShiftTable({
         shiftId,
         weekNumber,
         dayOfWeek,
-        preSelectedWorkerId: workerId,
+        editWorkerId: workerId,
       });
     },
     [],
@@ -603,7 +603,7 @@ export function TemplateShiftTable({
         lng={lng}
         workers={workers}
         assignedWorkerIds={assignDialogEntry?.workerIds ?? []}
-        preSelectedWorkerId={assignDialogState.preSelectedWorkerId}
+        editWorkerId={assignDialogState.editWorkerId}
         open={assignDialogState.open}
         onClose={handleCloseAssignDialog}
         onSave={(workerId) => {
