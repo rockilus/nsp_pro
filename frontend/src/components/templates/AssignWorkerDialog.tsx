@@ -104,7 +104,7 @@ export function AssignWorkerDialog({
               variant="destructive"
               onClick={() => {
                 onDelete(editWorkerId);
-                setSelectedWorkerId('');
+                onClose();
               }}
             >
               {t('delete')}
@@ -112,8 +112,11 @@ export function AssignWorkerDialog({
           )}
           <Button
             onClick={() => {
+              if (isEditMode && selectedWorkerId !== editWorkerId) {
+                onDelete(editWorkerId);
+              }
               onSave(selectedWorkerId);
-              setSelectedWorkerId('');
+              onClose();
             }}
             disabled={!selectedWorkerId || isSelectedAlreadyAssigned}
           >
