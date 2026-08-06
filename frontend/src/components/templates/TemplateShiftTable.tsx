@@ -18,7 +18,7 @@ import {
 import { ShiftT } from '../../types/shift';
 import { TeamT } from '../../types/team';
 import { WorkerT } from '../../types/worker';
-import { calendarGridTemplate } from '../../constants/constants';
+import { calendarGridTemplate, ShiftColorMappings } from '../../constants/constants';
 
 const MAX_VISIBLE_WEEKS = 4;
 const DAYS_IN_WEEK = 7;
@@ -194,46 +194,6 @@ export function TemplateShiftTable({
     return selectedCells.size > 0;
   }, [selectedCells]);
 
-  const handleCellClick = useCallback(
-    (shiftId: string, weekNumber: number, dayOfWeek: number) => {
-      if (selectionEnabled) return;
-
-      const newWeeks = weeksData.map((week) => {
-        if (week.weekNumber !== weekNumber) return week;
-        const otherEntries = week.entries.filter(
-          (e) => !(e.shiftId === shiftId && e.dayOfWeek === dayOfWeek),
-        );
-        const existingEntry = week.entries.find(
-          (e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek,
-        );
-        if (existingEntry) {
-          const newDemandCount = (existingEntry.demandCount + 1) % 3;
-          if (newDemandCount > 0) {
-            return {
-              ...week,
-              entries: [
-                ...otherEntries,
-                {
-                  shiftId,
-                  dayOfWeek,
-                  demandCount: newDemandCount,
-                  workerIds: existingEntry.workerIds,
-                },
-              ],
-            };
-          }
-          return { ...week, entries: otherEntries };
-        }
-        return {
-          ...week,
-          entries: [...week.entries, { shiftId, dayOfWeek, demandCount: 1, workerIds: [] }],
-        };
-      });
-      onWeeksDataChange(newWeeks);
-    },
-    [weeksData, selectionEnabled, onWeeksDataChange],
-  );
-
   const handleAddDemand = useCallback(
     (shiftId: string, weekNumber: number, dayOfWeek: number) => {
       const newWeeks = weeksData.map((week) => {
@@ -245,6 +205,52 @@ export function TemplateShiftTable({
         return {
           ...week,
           entries: [...week.entries, { shiftId, dayOfWeek, demandCount: 1, workerIds: [] }],
+        };
+      });
+      onWeeksDataChange(newWeeks);
+    },
+    [weeksData, onWeeksDataChange],
+  );
+
+  const handleIncrementDemand = useCallback(
+    (shiftId: string, weekNumber: number, dayOfWeek: number) => {
+      const newWeeks = weeksData.map((week) => {
+        if (week.weekNumber !== weekNumber) return week;
+        const existing = week.entries.find(
+          (e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek,
+        );
+        if (!existing) return week;
+        const otherEntries = week.entries.filter(
+          (e) => !(e.shiftId === shiftId && e.dayOfWeek === dayOfWeek),
+        );
+        return {
+          ...week,
+          entries: [...otherEntries, { ...existing, demandCount: existing.demandCount + 1 }],
+        };
+      });
+      onWeeksDataChange(newWeeks);
+    },
+    [weeksData, onWeeksDataChange],
+  );
+
+  const handleDecrementDemand = useCallback(
+    (shiftId: string, weekNumber: number, dayOfWeek: number) => {
+      const newWeeks = weeksData.map((week) => {
+        if (week.weekNumber !== weekNumber) return week;
+        const existing = week.entries.find(
+          (e) => e.shiftId === shiftId && e.dayOfWeek === dayOfWeek,
+        );
+        if (!existing) return week;
+        const otherEntries = week.entries.filter(
+          (e) => !(e.shiftId === shiftId && e.dayOfWeek === dayOfWeek),
+        );
+        const newDemandCount = Math.max(0, existing.demandCount - 1);
+        if (newDemandCount === 0 && existing.workerIds.length === 0) {
+          return { ...week, entries: otherEntries };
+        }
+        return {
+          ...week,
+          entries: [...otherEntries, { ...existing, demandCount: newDemandCount }],
         };
       });
       onWeeksDataChange(newWeeks);
@@ -548,9 +554,21 @@ export function TemplateShiftTable({
                     isWeekend={col.dayOfWeek === 5 || col.dayOfWeek === 6}
                     isSelected={isCellSelected(shift.id, col.id)}
                     selectionEnabled={selectionEnabled}
-                    onClick={() => handleCellClick(shift.id, col.weekNumber, col.dayOfWeek)}
+                    shiftColor={
+                      ShiftColorMappings[shift.color] ?? {
+                        background: '#f5f5f5',
+                        sample: '#9e9e9e',
+                        text: '#212121',
+                      }
+                    }
                     onSelectToggle={() => handleCellSelectToggle(shift.id, col.id)}
                     onAddDemand={() => handleAddDemand(shift.id, col.weekNumber, col.dayOfWeek)}
+                    onIncrement={() =>
+                      handleIncrementDemand(shift.id, col.weekNumber, col.dayOfWeek)
+                    }
+                    onDecrement={() =>
+                      handleDecrementDemand(shift.id, col.weekNumber, col.dayOfWeek)
+                    }
                     onAssignWorker={() =>
                       handleOpenAssignDialog(shift.id, col.weekNumber, col.dayOfWeek)
                     }

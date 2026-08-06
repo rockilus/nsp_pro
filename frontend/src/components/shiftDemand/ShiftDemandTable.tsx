@@ -4,12 +4,12 @@ import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Plus, Minus } from 'lucide-react';
 import { useTranslation } from '../../app/i18n/client';
 import { ShiftT, ShiftType } from '../../types/shift';
 import { MultitaskingSelectionState } from '../../types/multitasking';
 import { ShiftColorMappings, calendarGridTemplate } from '../../constants/constants';
 import { ColumnDefinition, ColumnFilter, TableSort } from '../../types/filter';
+import { DemandCellContent } from './DemandCellContent';
 import CalendarTableHeader from '../calendar/CalendarTableHeader';
 import CalendarRowHeaderCell from '../calendar/CalendarRowHeaderCell';
 
@@ -106,14 +106,12 @@ function ShiftDemandCell({
     await onCellChange(shiftId, date, '1');
   };
 
-  const handleIncrement = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleIncrement = async () => {
     if (isSaving) return;
     await onCellChange(shiftId, date, String(value + 1));
   };
 
-  const handleDecrement = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDecrement = async () => {
     if (isSaving) return;
     await onCellChange(shiftId, date, String(Math.max(0, value - 1)));
   };
@@ -152,6 +150,8 @@ function ShiftDemandCell({
       }
       data-testid={`shift-demand-cell-${shiftId}-${date.format('YYYY-MM-DD')}`}
       onClick={isMultitaskingMode ? handleCellClick : undefined}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {isBulkMode ? (
         /* Bulk selection mode */
@@ -169,79 +169,16 @@ function ShiftDemandCell({
           />
           <span className="ml-1 text-xs">{value}</span>
         </div>
-      ) : value === 0 ? (
-        /* Empty state */
-        <div
-          className={cn(
-            'flex h-full w-full items-center justify-center rounded border border-dashed border-transparent transition-all duration-200',
-            !isMultitaskingMode &&
-              isHovered &&
-              'border-[var(--shift-sample-color)] bg-[var(--shift-bg-color)]',
-          )}
-          data-testid={`shift-demand-empty-${shiftId}-${date.format('YYYY-MM-DD')}`}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onClick={!isMultitaskingMode ? handleAddDemand : undefined}
-        >
-          {isSaving ? (
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          ) : (
-            isHovered &&
-            !isMultitaskingMode && (
-              <Plus className="h-4 w-4 opacity-70" style={{ color: 'var(--shift-sample-color)' }} />
-            )
-          )}
-        </div>
       ) : (
-        /* Demand state */
-        <div
-          className={cn(
-            'relative flex h-full w-full items-center justify-center rounded shadow-sm transition-all duration-200',
-            isSaving ? 'opacity-70' : isHovered && !isMultitaskingMode && 'scale-[1.02] shadow-md',
-          )}
-          style={{
-            backgroundColor: isSaving ? '#ffb74d' : 'var(--shift-bg-color)',
-            color: 'var(--shift-text-color)',
-          }}
-          data-testid={`shift-demand-value-container-${shiftId}-${date.format('YYYY-MM-DD')}`}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          {isSaving && (
-            <Loader2
-              className="absolute h-4 w-4 animate-spin"
-              style={{ color: 'var(--shift-text-color)' }}
-            />
-          )}
-
-          {isHovered && !isSaving && !isMultitaskingMode && (
-            <button
-              onClick={handleDecrement}
-              className="absolute top-1/2 left-0.5 flex h-3.5 w-3.5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/15 hover:bg-black/25"
-              data-testid={`shift-demand-decrement-${shiftId}-${date.format('YYYY-MM-DD')}`}
-            >
-              <Minus className="h-2 w-2" style={{ color: 'var(--shift-text-color)' }} />
-            </button>
-          )}
-
-          <span
-            className={cn('text-sm font-bold', isSaving && 'opacity-30')}
-            style={{ color: 'var(--shift-text-color)' }}
-            data-testid={`shift-demand-value-${shiftId}-${date.format('YYYY-MM-DD')}`}
-          >
-            {value}
-          </span>
-
-          {isHovered && !isSaving && !isMultitaskingMode && (
-            <button
-              onClick={handleIncrement}
-              className="absolute top-1/2 right-0.5 flex h-3.5 w-3.5 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-black/15 hover:bg-black/25"
-              data-testid={`shift-demand-increment-${shiftId}-${date.format('YYYY-MM-DD')}`}
-            >
-              <Plus className="h-2 w-2" style={{ color: 'var(--shift-text-color)' }} />
-            </button>
-          )}
-        </div>
+        <DemandCellContent
+          value={value}
+          isSaving={isSaving}
+          isHovered={isHovered}
+          isMultitaskingMode={isMultitaskingMode}
+          onAddDemand={handleAddDemand}
+          onIncrement={handleIncrement}
+          onDecrement={handleDecrement}
+        />
       )}
     </div>
   );

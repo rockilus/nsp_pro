@@ -1,18 +1,20 @@
-import React from 'react';
-import { Badge } from '../ui/badge';
+import React, { useState } from 'react';
 import { Checkbox } from '../ui/checkbox';
 import { cn } from '@/lib/utils';
 import { ScheduleTemplateEntryDTO } from '../../types/schedule-template';
 import { Briefcase, UserPlus } from 'lucide-react';
+import { DemandCellContent } from '../shiftDemand/DemandCellContent';
 
 interface TemplateCellProps {
   entry: ScheduleTemplateEntryDTO | null;
   isWeekend: boolean;
   isSelected?: boolean;
   selectionEnabled?: boolean;
-  onClick?: () => void;
+  shiftColor: { background: string; sample: string; text: string };
   onSelectToggle?: () => void;
   onAddDemand?: () => void;
+  onIncrement?: () => void;
+  onDecrement?: () => void;
   onAssignWorker?: () => void;
 }
 
@@ -21,11 +23,15 @@ export function TemplateCell({
   isWeekend,
   isSelected = false,
   selectionEnabled = false,
-  onClick,
+  shiftColor,
   onSelectToggle,
   onAddDemand,
+  onIncrement,
+  onDecrement,
   onAssignWorker,
 }: TemplateCellProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
   const hasEntry = entry !== null;
   const demandCount = entry?.demandCount ?? 0;
   const workerCount = entry?.workerIds.length ?? 0;
@@ -33,19 +39,26 @@ export function TemplateCell({
   return (
     <div
       className={cn(
-        'group relative flex min-h-[2.5rem] items-center justify-center border-r border-b border-border/50 p-1',
+        'relative flex min-h-[2.5rem] items-center justify-center border-r border-b border-border/50 p-1',
         isWeekend && 'bg-muted',
         !selectionEnabled && 'cursor-pointer hover:bg-accent/50',
         isSelected && 'bg-primary/10 outline outline-2 outline-primary',
       )}
+      style={
+        {
+          '--shift-bg-color': shiftColor.background,
+          '--shift-sample-color': shiftColor.sample,
+          '--shift-text-color': shiftColor.text,
+        } as React.CSSProperties
+      }
       onClick={(e) => {
         if (selectionEnabled) {
           onSelectToggle?.();
           e.stopPropagation();
-          return;
         }
-        onClick?.();
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       data-testid={`template-cell-${entry?.shiftId ?? 'empty'}-${entry?.dayOfWeek ?? ''}`}
     >
       {selectionEnabled && (
@@ -61,33 +74,38 @@ export function TemplateCell({
       )}
 
       {hasEntry && (
-        <Badge
-          variant={demandCount > 0 ? 'default' : 'secondary'}
-          className={cn(
-            'text-[10px] font-medium',
-            demandCount > 0 && 'bg-primary/10 text-primary hover:bg-primary/10',
-          )}
-          data-testid={`template-cell-badge-${entry.shiftId}-${entry.dayOfWeek}`}
-        >
-          {demandCount}
-          {workerCount > 0 && ` (${workerCount})`}
-        </Badge>
+        <DemandCellContent
+          value={demandCount}
+          isSaving={false}
+          isHovered={isHovered}
+          onAddDemand={onAddDemand ?? (() => {})}
+          onIncrement={onIncrement ?? (() => {})}
+          onDecrement={onDecrement ?? (() => {})}
+        />
       )}
 
-      {!selectionEnabled && (
-        <div className="absolute inset-x-0 bottom-0 flex h-5 items-stretch opacity-0 transition-opacity group-hover:opacity-100">
-          <button
-            type="button"
-            className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddDemand?.();
-            }}
-            aria-label="Add demand"
-            data-testid="template-cell-add-demand"
-          >
-            <Briefcase className="size-3" />
-          </button>
+      {workerCount > 0 && (
+        <span className="absolute top-0.5 right-0.5 z-10 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-primary px-1 text-[8px] font-bold text-primary-foreground">
+          {workerCount}
+        </span>
+      )}
+
+      {!selectionEnabled && isHovered && (
+        <div className="absolute inset-x-0 bottom-0 z-10 flex h-5 items-stretch">
+          {demandCount === 0 && (
+            <button
+              type="button"
+              className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddDemand?.();
+              }}
+              aria-label="Add demand"
+              data-testid="template-cell-add-demand"
+            >
+              <Briefcase className="size-3" />
+            </button>
+          )}
           <button
             type="button"
             className="flex flex-1 items-center justify-center gap-0.5 bg-primary/15 text-[10px] font-medium text-primary hover:bg-primary/25"
